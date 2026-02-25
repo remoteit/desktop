@@ -4,8 +4,6 @@ import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { DEFAULT_ROLE } from '../models/organization'
 import {
-  SxProps,
-  Theme,
   Box,
   Chip,
   Stack,

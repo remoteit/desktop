@@ -34,7 +34,7 @@ export default createModel<RootModel>()({
       const all = await dispatch.announcements.parse(response)
       dispatch.announcements.set({ all })
     },
-    async parse(response: AxiosResponse<any> | void, globalState): Promise<IAnnouncement[]> {
+    async parse(response: AxiosResponse<any> | void): Promise<IAnnouncement[]> {
       if (!response) return []
       const all = response?.data?.data?.notices
       if (!all) return []
@@ -50,7 +50,7 @@ export default createModel<RootModel>()({
         read: n.read ? new Date(n.read) : undefined,
       }))
     },
-    async read(id: string, state) {
+    async read(id: string) {
       console.log('ANNOUNCEMENT READ', id)
       await graphQLReadNotice(id)
       dispatch.announcements.setRead(id)

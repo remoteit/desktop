@@ -6,7 +6,6 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
-  IconButton,
   Collapse,
   Button,
   Chip,

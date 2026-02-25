@@ -115,7 +115,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             }}
             onOpen={() => setOpen(true)}
             onClose={() => setOpen(false)}
-            onChange={(event, ssid, reason) => {
+            onChange={(_event, ssid) => {
               if (!ssid || disabled) return
               setForm({ ...form, ssid })
               passwordRef.current?.focus()

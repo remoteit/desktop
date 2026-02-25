@@ -1,6 +1,6 @@
 import React from 'react'
 import structuredClone from '@ungap/structured-clone'
-import { Typography, List, ListItem, Button, Chip, Stack, Divider } from '@mui/material'
+import { Typography, List, ListItem, Button, Chip, Stack } from '@mui/material'
 import { ArgumentsValueForm } from './ArgumentsValueForm'
 import { TagFilter } from './TagFilter'
 import { Notice } from './Notice'

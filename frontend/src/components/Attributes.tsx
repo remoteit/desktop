@@ -1,33 +1,33 @@
-import React from 'react'
 import { IP_PRIVATE } from '@common/constants'
-import { TargetPlatform } from './TargetPlatform'
-import { QualityDetails } from './QualityDetails'
-import { ServiceIndicators } from './ServiceIndicators'
-import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
-import { ListItemText, Chip, Typography } from '@mui/material'
-import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
-import { ServiceGraphColumn } from './ServiceGraphColumn'
-import { DeviceGraphColumn } from './DeviceGraphColumn'
-import { ConnectAttribute } from './ConnectAttribute'
-import { ServiceMiniState } from './ServiceMiniState'
+import { Chip,ListItemText,Typography } from '@mui/material'
+import React from 'react'
 import { RestoreButton } from '../buttons/RestoreButton'
-import { ReactiveTags } from './ReactiveTags'
-import { DeviceName } from './DeviceName'
-import { LicenseChip } from './LicenseChip'
-import { AvatarList } from './AvatarList'
+import { lanShareRestriction,lanShared } from '../helpers/lanSharing'
+import { toLookup } from '../helpers/utilHelper'
 import { PERMISSION } from '../models/organization'
+import { Avatar } from './Avatar'
+import { AvatarList } from './AvatarList'
+import { ConnectAttribute } from './ConnectAttribute'
+import { DeviceGeo } from './DeviceGeo'
+import { DeviceGraphColumn } from './DeviceGraphColumn'
+import { DeviceName } from './DeviceName'
 import { DeviceRole } from './DeviceRole'
+import { Duration } from './Duration'
+import { Icon } from './Icon'
+import { INITIATOR_PLATFORMS } from './InitiatorPlatform'
+import { LicenseChip } from './LicenseChip'
+import { Link } from './Link'
+import { QualityDetails } from './QualityDetails'
+import { ReactiveTags } from './ReactiveTags'
+import { ServiceGraphColumn } from './ServiceGraphColumn'
+import { ServiceIndicators } from './ServiceIndicators'
+import { ServiceMiniState } from './ServiceMiniState'
 import { StatusChip } from './StatusChip'
+import { TargetPlatform } from './TargetPlatform'
 import { TimeSeries } from './TimeSeries'
 import { Timestamp } from './Timestamp'
-import { DeviceGeo } from './DeviceGeo'
-import { Duration } from './Duration'
-import { toLookup } from '../helpers/utilHelper'
-import { Avatar } from './Avatar'
-import { Link } from './Link'
-import { Icon } from './Icon'
 
-export class Attribute {
+export class Attribute<TOptions = IDataOptions> {
   id: string = ''
   label: string | React.ReactNode = ''
   help?: string
@@ -41,24 +41,24 @@ export class Attribute {
   details: boolean = true // show on device details page
   column: boolean = true // show as device list column
   query?: string // key to device query - fall back to id
-  value: (options: IDataOptions) => any = options => options
+  value: (options: TOptions) => React.ReactNode = options => options as React.ReactNode
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
 
   constructor(options: {
-    id: Attribute['id']
-    label: Attribute['label']
-    help?: Attribute['help']
-    required?: Attribute['required']
-    align?: Attribute['align']
-    column?: Attribute['column']
-    defaultWidth?: Attribute['defaultWidth']
-    feature?: Attribute['feature']
-    multiline?: Attribute['multiline']
-    copyable?: Attribute['copyable']
-    details?: Attribute['details']
-    query?: Attribute['query']
-    type?: Attribute['type']
-    value?: Attribute['value']
+    id: Attribute<TOptions>['id']
+    label: Attribute<TOptions>['label']
+    help?: Attribute<TOptions>['help']
+    required?: Attribute<TOptions>['required']
+    align?: Attribute<TOptions>['align']
+    column?: Attribute<TOptions>['column']
+    defaultWidth?: Attribute<TOptions>['defaultWidth']
+    feature?: Attribute<TOptions>['feature']
+    multiline?: Attribute<TOptions>['multiline']
+    copyable?: Attribute<TOptions>['copyable']
+    details?: Attribute<TOptions>['details']
+    query?: Attribute<TOptions>['query']
+    type?: Attribute<TOptions>['type']
+    value?: Attribute<TOptions>['value']
   }) {
     Object.assign(this, options)
   }
@@ -68,24 +68,24 @@ export class Attribute {
   }
 }
 
-export class DeviceAttribute extends Attribute {
-  type: Attribute['type'] = 'DEVICE'
+export class DeviceAttribute<TOptions = IDataOptions> extends Attribute<TOptions> {
+  type: Attribute<TOptions>['type'] = 'DEVICE'
 }
 
-class InstanceAttribute extends Attribute {
-  type: Attribute['type'] = 'INSTANCE'
+class InstanceAttribute<TOptions = IDataOptions> extends Attribute<TOptions> {
+  type: Attribute<TOptions>['type'] = 'INSTANCE'
 }
 
-class ServiceAttribute extends Attribute {
-  type: Attribute['type'] = 'SERVICE'
+class ServiceAttribute<TOptions = IDataOptions> extends Attribute<TOptions> {
+  type: Attribute<TOptions>['type'] = 'SERVICE'
 }
 
-class ConnectionAttribute extends Attribute {
-  type: Attribute['type'] = 'CONNECTION'
+class ConnectionAttribute<TOptions = IDataOptions> extends Attribute<TOptions> {
+  type: Attribute<TOptions>['type'] = 'CONNECTION'
 }
 
-class RestoreAttribute extends Attribute {
-  type: Attribute['type'] = 'RESTORE'
+class RestoreAttribute<TOptions = IDataOptions> extends Attribute<TOptions> {
+  type: Attribute<TOptions>['type'] = 'RESTORE'
 }
 
 const ATTRIBUTES = [

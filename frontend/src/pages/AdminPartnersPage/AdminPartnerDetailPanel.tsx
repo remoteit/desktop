@@ -510,7 +510,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddAdminDialogOpen(false)} color="grayDark">Cancel</Button>
+          <Button onClick={() => setAddAdminDialogOpen(false)} color="inherit">Cancel</Button>
           <Button onClick={handleAddAdmin} disabled={!newAdminEmail || addingAdmin}>
             {addingAdmin ? 'Adding...' : 'Add Admin'}
           </Button>
@@ -533,7 +533,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddRegistrantDialogOpen(false)} color="grayDark">Cancel</Button>
+          <Button onClick={() => setAddRegistrantDialogOpen(false)} color="inherit">Cancel</Button>
           <Button onClick={handleAddRegistrant} disabled={!newRegistrantEmail || addingRegistrant}>
             {addingRegistrant ? 'Adding...' : 'Add Registrant'}
           </Button>
@@ -558,7 +558,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddChildDialogOpen(false)} color="grayDark">Cancel</Button>
+          <Button onClick={() => setAddChildDialogOpen(false)} color="inherit">Cancel</Button>
           <Button onClick={handleAddChild} disabled={!selectedChildId || addingChild}>
             {addingChild ? 'Adding...' : 'Add Child'}
           </Button>
@@ -567,4 +567,3 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     </Container>
   )
 }
-

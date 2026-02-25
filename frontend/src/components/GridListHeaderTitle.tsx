@@ -1,17 +1,17 @@
-import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { Box } from '@mui/material'
-import { Attribute } from './Attributes'
+import { makeStyles } from '@mui/styles'
+import React from 'react'
 import { spacing } from '../styling'
+import { Attribute } from './Attributes'
 
-type Props = {
-  attribute: Attribute
+type Props<TOptions = IDataOptions> = {
+  attribute: Attribute<TOptions>
   sticky?: boolean
-  onMouseDown: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>, Attribute) => void
+  onMouseDown: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>, attribute: Attribute<TOptions>) => void
   children?: React.ReactNode
 }
 
-export const GridListHeaderTitle: React.FC<Props> = ({ attribute, sticky, onMouseDown, children }) => {
+export const GridListHeaderTitle = <TOptions,>({ attribute, sticky, onMouseDown, children }: Props<TOptions>) => {
   const css = useStyles()
   const justifyContent =
     attribute?.align === 'center' ? 'center' : attribute?.align === 'right' ? 'flex-end' : undefined

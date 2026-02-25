@@ -1,15 +1,15 @@
+import { Checkbox,useMediaQuery } from '@mui/material'
 import React from 'react'
-import { useMediaQuery, Checkbox } from '@mui/material'
 import { MOBILE_WIDTH } from '../constants'
-import { ProductListItem } from './ProductListItem'
-import { Attribute } from './Attributes'
+import { IDeviceProduct } from '../models/products'
 import { GridList } from './GridList'
 import { Icon } from './Icon'
-import { IDeviceProduct } from '../models/products'
+import { ProductAttribute } from './ProductAttributes'
+import { ProductListItem } from './ProductListItem'
 
 export interface ProductListProps {
-  attributes: Attribute[]
-  required?: Attribute
+  attributes: ProductAttribute[]
+  required?: ProductAttribute
   columnWidths: ILookup<number>
   fetching?: boolean
   products?: IDeviceProduct[]
@@ -69,4 +69,3 @@ export const ProductList: React.FC<ProductListProps> = ({
     </GridList>
   )
 }
-

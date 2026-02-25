@@ -14,7 +14,6 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { radius } from '../styling'
-import { Pre } from '../components/Pre'
 
 type Props = {
   showBack?: boolean

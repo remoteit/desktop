@@ -13,7 +13,6 @@ import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { IconButton } from '../buttons/IconButton'
-import { Gutters } from '../components/Gutters'
 
 type Props = {
   isNew?: boolean

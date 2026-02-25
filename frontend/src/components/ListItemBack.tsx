@@ -3,9 +3,9 @@ import { useHistory } from 'react-router-dom'
 import { ListItemButtonProps, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { Icon } from './Icon'
 
-export type Props = ListItemButtonProps & {
+export type Props = Omit<ListItemButtonProps, 'title'> & {
   to: string
-  title?: string
+  title?: React.ReactNode
 }
 
 export const ListItemBack: React.FC<Props> = ({ to, title, children, ...props }) => {

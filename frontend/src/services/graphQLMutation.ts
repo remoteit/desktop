@@ -1,5 +1,5 @@
-import { graphQLBasicRequest } from './graphQL'
 import { addConnectionProps } from '../models/networks'
+import { graphQLBasicRequest } from './graphQL'
 
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
   return await graphQLBasicRequest(
@@ -598,7 +598,7 @@ export async function graphQLModifyFile(params: { fileId: string; name?: string;
 export async function graphQLSetJob(params: {
   fileId: string
   jobId?: string
-  arguments?: IFileArgument[]
+  arguments?: IArgumentValue[]
   tagFilter?: ITagFilter
   deviceIds?: string[]
 }) {

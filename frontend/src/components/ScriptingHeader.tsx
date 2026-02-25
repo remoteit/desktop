@@ -1,17 +1,17 @@
+import { Button, Stack, Tooltip, useMediaQuery } from '@mui/material'
 import React from 'react'
-import { State, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
-import { Stack, Button, Tooltip, useMediaQuery } from '@mui/material'
-import { Link as RouteLink, Route, useLocation, useHistory } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { Route, Link as RouteLink, useHistory, useLocation } from 'react-router-dom'
+import { IconButton } from '../buttons/IconButton'
+import { MOBILE_WIDTH } from '../constants'
 import { selectPermissions } from '../selectors/organizations'
 import { ScriptingActionBar } from './ScriptingActionBar'
 import { ScriptingTabBar } from './ScriptingTabBar'
-import { IconButton } from '../buttons/IconButton'
-import { Container } from './Container'
+import { Dispatch, State } from '../store'
 import { ColorChip } from './ColorChip'
-import { Link } from './Link'
+import { Container } from './Container'
 import { Icon } from './Icon'
-import { MOBILE_WIDTH } from '../constants'
+import { Link } from './Link'
 
 type Props = {
   children?: React.ReactNode
@@ -32,7 +32,18 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
         <>
-          <ScriptingActionBar />
+          <Route
+            path={[
+              '/scripts',
+              '/runs/:jobID?',
+              '/files/:fileID?',
+              '/file/:fileID?',
+              '/script/:fileID/:jobID?/:jobDeviceID?',
+            ]}
+            exact
+          >
+            <ScriptingActionBar />
+          </Route>
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center" width="100%" paddingRight={4}>
             <ScriptingTabBar />
             {!selectedIds.length && (

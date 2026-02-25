@@ -55,7 +55,6 @@ export function SignIn({
   onUsernameChange,
   onGoogleSignIn,
   onAppleSignIn,
-  onOktaSignIn,
   onSignIn,
   onSamlSignIn,
   showLogo = true,

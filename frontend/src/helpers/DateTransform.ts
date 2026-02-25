@@ -9,10 +9,10 @@ const isIsoDateString = value => {
 // Transform function
 const DateTransform = createTransform(
   // Transform state going to storage (no changes needed)
-  (inboundState, key) => inboundState,
+  (inboundState) => inboundState,
 
   // Transform state coming out of storage
-  (outboundState, key) => {
+  (outboundState) => {
     // Recursively convert date strings to Date objects
     const convertDates = obj => {
       if (obj !== null && typeof obj === 'object') {

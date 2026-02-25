@@ -17,7 +17,7 @@ type Props = {
   isScript?: boolean
 }
 
-export const FileListItem: React.FC<Props> = ({ script, required, attributes, mobile, selectedIds, fileID, isScript = true }) => {
+export const FileListItem: React.FC<Props> = ({ script, required, attributes, mobile, fileID, isScript = true }) => {
   const history = useHistory()
 
   if (!script) return null

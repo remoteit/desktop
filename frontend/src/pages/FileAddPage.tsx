@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Typography } from '@mui/material'
 import { selectRole } from '../selectors/organizations'
-import { initialForm } from '../models/files'
 import { useSelector, useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { Body } from '../components/Body'

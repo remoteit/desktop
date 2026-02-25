@@ -1,23 +1,15 @@
+import { IconButton,Tooltip } from '@mui/material'
 import React from 'react'
-import { Tooltip, IconButton } from '@mui/material'
 import { Icon } from '../components/Icon'
 
 type Props = {
-  className?: string
   onClick?: () => void
 }
 
-export const EditButton: React.FC<Props> = ({ className, onClick }) => {
+export const EditButton: React.FC<Props> = ({ onClick }) => {
   return (
     <Tooltip title="Edit">
-      <IconButton
-        className={className}
-        onClick={event => {
-          event.stopPropagation()
-          onClick?.()
-        }}
-        size="large"
-      >
+      <IconButton onClick={() => onClick && onClick()} size="large">
         <Icon name="pencil" size="md" fixedWidth />
       </IconButton>
     </Tooltip>

@@ -26,7 +26,6 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
-import { Pre } from './Pre'
 
 export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ variant = 'connection' }) => {
   const location = useLocation<{

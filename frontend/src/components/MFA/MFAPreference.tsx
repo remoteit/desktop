@@ -49,7 +49,7 @@ export const MFAPreference: React.FC = () => {
     setLoading(false)
   }
 
-  const cancelTotp = event => {
+  const cancelTotp = () => {
     setShowEnableSelection(true)
     setShowAuthenticatorConfig(false)
   }

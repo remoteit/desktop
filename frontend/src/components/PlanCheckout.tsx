@@ -8,7 +8,6 @@ import { currencyFormatter } from '../helpers/utilHelper'
 import { QuantitySelector } from './QuantitySelector'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
-import { Pre } from './Pre'
 
 type Props = {
   plans: IPlan[]

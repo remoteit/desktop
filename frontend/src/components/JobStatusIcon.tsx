@@ -7,13 +7,13 @@ type JobStatusIconProps = IconProps & {
   status?: IJobStatus
   size?: Sizes
   device?: boolean
-  title?: boolean
+  showTooltip?: boolean
   padding?: number
 }
 
 export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
   status,
-  title = true,
+  showTooltip = true,
   padding = 0.7,
   device,
   ...props
@@ -38,7 +38,7 @@ export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
     </Box>
   )
 
-  return title ? (
+  return showTooltip ? (
     <Tooltip
       arrow
       placement="top"

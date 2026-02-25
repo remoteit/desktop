@@ -116,7 +116,7 @@ export default createModel<RootModel>()({
         return
       }
     },
-    async delete(fileId: string, state) {
+    async delete(fileId: string) {
       console.log('DELETE FILE', fileId)
 
       const result = await graphQLDeleteFile(fileId)

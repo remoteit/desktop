@@ -522,6 +522,7 @@ declare global {
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
     apiKey?: string
     language?: string
+    admin?: boolean
   }
 
   type IGuest = {

@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { Typography, Box, TextField, ToggleButtonGroup, ToggleButton, Stack } from '@mui/material'
+import { Box,Stack,TextField,ToggleButton,ToggleButtonGroup,Typography } from '@mui/material'
+import React,{ useEffect,useState } from 'react'
+import { useDispatch,useSelector } from 'react-redux'
+import { useHistory,useLocation } from 'react-router-dom'
 import { Container } from '../../components/Container'
-import { Icon } from '../../components/Icon'
-import { IconButton } from '../../buttons/IconButton'
-import { LoadingMessage } from '../../components/LoadingMessage'
-import { graphQLAdminUsers } from '../../services/graphQLRequest'
-import { Gutters } from '../../components/Gutters'
 import { GridList } from '../../components/GridList'
+import { Gutters } from '../../components/Gutters'
+import { Icon } from '../../components/Icon'
+import { LoadingMessage } from '../../components/LoadingMessage'
+import { removeObject } from '../../helpers/utilHelper'
+import { Dispatch,State } from '../../store'
 import { AdminUserListItem } from './AdminUserListItem'
 import { adminUserAttributes } from './adminUserAttributes'
-import { removeObject } from '../../helpers/utilHelper'
-import { State, Dispatch } from '../../store'
 
 type SearchType = 'all' | 'email' | 'userId'
 
@@ -27,9 +25,7 @@ export const AdminUsersListPage: React.FC = () => {
   // Get state from Redux
   const users = useSelector((state: State) => state.adminUsers.users)
   const loading = useSelector((state: State) => state.adminUsers.loading)
-  const total = useSelector((state: State) => state.adminUsers.total)
   const page = useSelector((state: State) => state.adminUsers.page)
-  const pageSize = useSelector((state: State) => state.adminUsers.pageSize)
   const searchValue = useSelector((state: State) => state.adminUsers.searchValue)
   const searchType = useSelector((state: State) => state.adminUsers.searchType)
 
@@ -40,7 +36,7 @@ export const AdminUsersListPage: React.FC = () => {
 
   // Fetch on mount if empty
   useEffect(() => {
-    dispatch.adminUsers.fetchIfEmpty()
+    dispatch.adminUsers.fetchIfEmpty(undefined)
   }, [])
 
   // Fetch when page/search changes (but not on initial mount)
@@ -50,12 +46,12 @@ export const AdminUsersListPage: React.FC = () => {
       isInitialMount.current = false
       return
     }
-    dispatch.adminUsers.fetch()
+    dispatch.adminUsers.fetch(undefined)
   }, [page, searchValue, searchType])
 
   useEffect(() => {
     const handleRefresh = () => {
-      dispatch.adminUsers.fetch()
+      dispatch.adminUsers.fetch(undefined)
     }
     window.addEventListener('refreshAdminData', handleRefresh)
     return () => window.removeEventListener('refreshAdminData', handleRefresh)
@@ -165,4 +161,3 @@ export const AdminUsersListPage: React.FC = () => {
     </Container>
   )
 }
-

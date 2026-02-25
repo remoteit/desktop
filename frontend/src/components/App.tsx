@@ -41,7 +41,6 @@ export const App: React.FC = () => {
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const reseller = useSelector(selectResellerRef)
-  const viewAsUser = useSelector((state: State) => state.ui.viewAsUser)
   const dispatch = useDispatch<Dispatch>()
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)

@@ -91,7 +91,7 @@ export default createModel<RootModel>()({
       dispatch.search.set({ fetching: false })
     },
 
-    async parse({ response, id }: { response: any; id: string }): Promise<ISearch[]> {
+    async parse({ response }: { response: any; id: string }): Promise<ISearch[]> {
       const data = response?.data?.data?.login?.account
 
       const accountId = data.id

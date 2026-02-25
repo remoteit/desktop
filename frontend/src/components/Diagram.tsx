@@ -11,7 +11,6 @@ import { DiagramIndicator, IndicatorProps } from './DiagramIndicator'
 import { REGEX_LAST_PATH } from '../constants'
 import { DiagramLabel } from './DiagramLabel'
 import { lanShared } from '../helpers/lanSharing'
-import { Pre } from './Pre'
 
 type Props = {
   to?: { [key in DiagramGroupType]?: string }

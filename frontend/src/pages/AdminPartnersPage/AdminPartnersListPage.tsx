@@ -1,58 +1,82 @@
-import React, { useEffect, useState, useMemo } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
 import {
-  Typography, Box, TextField, InputAdornment, Stack, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useHistory, useLocation } from 'react-router-dom'
+import { Attribute } from '../../components/Attributes'
 import { Container } from '../../components/Container'
-import { Icon } from '../../components/Icon'
-import { IconButton } from '../../buttons/IconButton'
-import { LoadingMessage } from '../../components/LoadingMessage'
-import { graphQLCreatePartner } from '../../services/graphQLRequest'
-import { Gutters } from '../../components/Gutters'
 import { GridList } from '../../components/GridList'
 import { GridListItem } from '../../components/GridListItem'
-import { Attribute } from '../../components/Attributes'
-import { State, Dispatch } from '../../store'
-import { makeStyles } from '@mui/styles'
+import { Gutters } from '../../components/Gutters'
+import { Icon } from '../../components/Icon'
+import { LoadingMessage } from '../../components/LoadingMessage'
 import { removeObject } from '../../helpers/utilHelper'
+import { graphQLCreatePartner } from '../../services/graphQLRequest'
+import { Dispatch, State } from '../../store'
 
-class AdminPartnerAttribute extends Attribute {
+type AdminPartnerAttributeOptions = {
+  partner?: AdminPartnerRow
+}
+
+type AdminPartnerRow = {
+  id: string
+  name?: string
+  deviceCount?: number
+  activated?: number
+  active?: number
+  online?: number
+}
+
+class AdminPartnerAttribute extends Attribute<AdminPartnerAttributeOptions> {
   type: Attribute['type'] = 'MASTER'
 }
 
-const adminPartnerAttributes: Attribute[] = [
+const adminPartnerAttributes: AdminPartnerAttribute[] = [
   new AdminPartnerAttribute({
     id: 'partnerName',
     label: 'Name',
     defaultWidth: 250,
     required: true,
-    value: ({ partner }: { partner: any }) => partner?.name || partner?.id,
+    value: ({ partner }: AdminPartnerAttributeOptions) => partner?.name || partner?.id,
   }),
   new AdminPartnerAttribute({
     id: 'partnerDevicesTotal',
     label: 'Devices',
     defaultWidth: 80,
-    value: ({ partner }: { partner: any }) => partner?.deviceCount || 0,
+    value: ({ partner }: AdminPartnerAttributeOptions) => partner?.deviceCount || 0,
   }),
   new AdminPartnerAttribute({
     id: 'partnerActivated',
     label: 'Activated',
     defaultWidth: 100,
-    value: ({ partner }: { partner: any }) => partner?.activated || 0,
+    value: ({ partner }: AdminPartnerAttributeOptions) => partner?.activated || 0,
   }),
   new AdminPartnerAttribute({
     id: 'partnerActive',
     label: 'Active',
     defaultWidth: 80,
-    value: ({ partner }: { partner: any }) => partner?.active || 0,
+    value: ({ partner }: AdminPartnerAttributeOptions) => partner?.active || 0,
   }),
   new AdminPartnerAttribute({
     id: 'partnerOnline',
     label: 'Online',
     defaultWidth: 80,
-    value: ({ partner }: { partner: any }) => partner?.online || 0,
+    value: ({ partner }: AdminPartnerAttributeOptions) => partner?.online || 0,
   }),
 ]
 
@@ -69,12 +93,12 @@ export const AdminPartnersListPage: React.FC = () => {
   const [creating, setCreating] = useState(false)
 
   // Get state from Redux
-  const partners = useSelector((state: State) => state.adminPartners.partners)
+  const partners = useSelector((state: State) => state.adminPartners.partners as AdminPartnerRow[])
   const loading = useSelector((state: State) => state.adminPartners.loading)
   const searchValue = useSelector((state: State) => state.adminPartners.searchValue)
 
   useEffect(() => {
-    dispatch.adminPartners.fetchIfEmpty()
+    dispatch.adminPartners.fetchIfEmpty(undefined)
   }, [])
 
   useEffect(() => {
@@ -88,14 +112,17 @@ export const AdminPartnersListPage: React.FC = () => {
   const filteredPartners = useMemo(() => {
     if (!searchValue.trim()) return partners
     const search = searchValue.toLowerCase()
-    return partners.filter(partner =>
-      partner.name?.toLowerCase().includes(search) ||
-      partner.id?.toLowerCase().includes(search)
+    return partners.filter(
+      partner => partner.name?.toLowerCase().includes(search) || partner.id?.toLowerCase().includes(search)
     )
   }, [partners, searchValue])
 
   const handlePartnerClick = (partnerId: string) => {
-    dispatch.ui.setDefaultSelected({ key: '/admin/partners', value: `/admin/partners/${partnerId}`, accountId: 'admin' })
+    dispatch.ui.setDefaultSelected({
+      key: '/admin/partners',
+      value: `/admin/partners/${partnerId}`,
+      accountId: 'admin',
+    })
     history.push(`/admin/partners/${partnerId}`)
   }
 
@@ -126,11 +153,7 @@ export const AdminPartnersListPage: React.FC = () => {
       header={
         <Gutters>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button
-              onClick={() => setCreateDialogOpen(true)}
-              size="small"
-              children="Create Partner"
-            />
+            <Button onClick={() => setCreateDialogOpen(true)} size="small" children="Create Partner" />
             <TextField
               fullWidth
               size="small"
@@ -159,12 +182,7 @@ export const AdminPartnersListPage: React.FC = () => {
           </Typography>
         </Box>
       ) : (
-        <GridList
-          attributes={attributes}
-          required={required}
-          columnWidths={columnWidths}
-          fetching={loading}
-        >
+        <GridList attributes={attributes} required={required} columnWidths={columnWidths} fetching={loading}>
           {filteredPartners.map(partner => (
             <GridListItem
               key={partner.id}
@@ -176,9 +194,7 @@ export const AdminPartnersListPage: React.FC = () => {
             >
               {attributes.map(attribute => (
                 <Box key={attribute.id} className="attribute">
-                  <div className={css.truncate}>
-                    {attribute.value({ partner })}
-                  </div>
+                  <div className={css.truncate}>{attribute.value({ partner })}</div>
                 </Box>
               ))}
             </GridListItem>
@@ -196,7 +212,7 @@ export const AdminPartnersListPage: React.FC = () => {
             label="Partner Name"
             fullWidth
             value={newPartnerName}
-            onChange={(e) => setNewPartnerName(e.target.value)}
+            onChange={e => setNewPartnerName(e.target.value)}
             sx={{ marginTop: 2 }}
           />
           <FormControl fullWidth sx={{ marginTop: 2 }}>
@@ -204,17 +220,19 @@ export const AdminPartnersListPage: React.FC = () => {
             <Select
               value={newPartnerParentId}
               label="Parent Partner (Optional)"
-              onChange={(e) => setNewPartnerParentId(e.target.value)}
+              onChange={e => setNewPartnerParentId(e.target.value)}
             >
               <MenuItem value="">None (Top-level)</MenuItem>
-              {partners.map((p: any) => (
-                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+              {partners.map((p: AdminPartnerRow) => (
+                <MenuItem key={p.id} value={p.id}>
+                  {p.name}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)} color="grayDark">Cancel</Button>
+          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
           <Button onClick={handleCreatePartner} disabled={!newPartnerName.trim() || creating}>
             {creating ? 'Creating...' : 'Create'}
           </Button>
@@ -233,4 +251,3 @@ const useStyles = makeStyles(() => ({
     flex: 1,
   },
 }))
-

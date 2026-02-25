@@ -1,6 +1,5 @@
 import React from 'react'
 import { combinedName } from '@common/nameHelper'
-import { Pre } from '../Pre'
 
 export const EventActions = ['add', 'update']
 

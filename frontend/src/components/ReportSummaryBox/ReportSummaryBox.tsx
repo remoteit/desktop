@@ -12,7 +12,7 @@ export interface ReportSummaryBoxProps {
   total?: number
   width?: number
 }
-export const ReportSummaryBox: React.FC<ReportSummaryBoxProps> = ({ iconTitle, count, label, icon, total, width }) => {
+export const ReportSummaryBox: React.FC<ReportSummaryBoxProps> = ({ count, label, icon, total, width }) => {
   const css = useStyles()
   return (
     <Box boxShadow={3} width={width}>

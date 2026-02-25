@@ -8,7 +8,7 @@ import { Notice } from './Notice'
 
 type Props = { device?: IDevice; service?: IService; user?: IUser }
 
-export const ScriptDeleteButton: React.FC<Props> = ({ device, service }) => {
+export const ScriptDeleteButton: React.FC<Props> = ({  }) => {
   const { fileID } = useParams<{ fileID?: string }>()
   const permissions = useSelector(selectPermissions)
   const dispatch = useDispatch<Dispatch>()

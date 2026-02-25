@@ -7,7 +7,7 @@ import { Link } from './Link'
 
 type Props = { type: DiagramGroupType; end?: boolean }
 
-export const DiagramIcon: React.FC<Props> = ({ type, end }) => {
+export const DiagramIcon: React.FC<Props> = ({ type }) => {
   const [hover, setHover] = React.useState<boolean>(false)
   const { highlightTypes, activeTypes, errorTypes, state, proxy } = useContext(DiagramContext)
   const { device } = useContext(DeviceContext)

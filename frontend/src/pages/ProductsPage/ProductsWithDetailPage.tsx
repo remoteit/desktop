@@ -34,8 +34,7 @@ export const ProductsWithDetailPage: React.FC = () => {
     minWidth: MIN_WIDTH,
   })
 
-  const { all: products } = useSelector(getProductModel)
-  const product = products.find(p => p.id === productId)
+  useSelector(getProductModel)
 
   // Determine panel count based on layout.singlePanel and container width
   // - singlePanel (<=750px): 1 panel

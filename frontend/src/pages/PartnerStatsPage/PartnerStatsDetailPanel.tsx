@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import {
-  Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, Button
-} from '@mui/material'
+  Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider} from '@mui/material'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -14,17 +13,15 @@ import { LoadingMessage } from '../../components/LoadingMessage'
 import { graphQLExportPartnerDevices } from '../../services/graphQLRequest'
 import { windowOpen } from '../../services/browser'
 import { spacing } from '../../styling'
-import { State, Dispatch as AppDispatch } from '../../store'
+import { State } from '../../store'
 import { getPartnerStatsModel } from '../../models/partnerStats'
 
 export const PartnerStatsDetailPanel: React.FC = () => {
   const { partnerId } = useParams<{ partnerId: string }>()
   const history = useHistory()
-  const dispatch = useDispatch<AppDispatch>()
   const [exporting, setExporting] = useState(false)
-  const userId = useSelector((state: State) => state.user.id)
   const partnerStatsModel = useSelector((state: State) => getPartnerStatsModel(state))
-  const { flattened: partners, all: rootPartners, fetching: loading } = partnerStatsModel
+  const { flattened: partners, fetching: loading } = partnerStatsModel
 
   // Find the partner in the flattened list
   const partner = useMemo(() => {

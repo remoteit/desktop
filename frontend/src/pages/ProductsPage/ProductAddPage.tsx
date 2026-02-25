@@ -38,7 +38,7 @@ export const ProductAddPage: React.FC = () => {
   useEffect(() => {
     const fetchPlatforms = async () => {
       const response = await graphQLPlatformTypes()
-      if (!graphQLGetErrors(response)) {
+      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
         setPlatformTypes(response?.data?.data?.platformTypes || [])
       }
     }

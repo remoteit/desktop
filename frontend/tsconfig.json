@@ -8,6 +8,8 @@
     "noEmit": true,
     "noFallthroughCasesInSwitch": false,
     "noImplicitAny": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "target": "ESNext",
     "outDir": "./build",
     "paths": {

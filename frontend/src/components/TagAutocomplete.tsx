@@ -123,7 +123,7 @@ export const TagAutocomplete: React.FC<Props> = ({
             noOptions: css.empty,
           }}
           onClose={onClose}
-          onChange={(event, value, reason) => {
+          onChange={(_event, value) => {
             if (!value || !onSelect || disabled) return
             if (value.created) onSelect('add', value)
             else onSelect('new', { name: inputValue, color: value.color, created: new Date() })
@@ -132,7 +132,7 @@ export const TagAutocomplete: React.FC<Props> = ({
           PopperComponent={BoxComponent}
           noOptionsText={false}
           getOptionLabel={option => option.name || ''}
-          onInputChange={(event, newValue) => {
+          onInputChange={(_event, newValue) => {
             const result = newValue.replace(REGEX_TAG_SAFE, '')
             setInputValue(result)
             if (onChange) onChange(result)

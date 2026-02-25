@@ -1,6 +1,5 @@
 // import sleep from '../helpers/sleep'
 import structuredClone from '@ungap/structured-clone'
-import { VALID_JOB_ID_LENGTH } from '../constants'
 import { selectJobs } from '../selectors/scripting'
 import { getDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -104,7 +103,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ redirect: `/script/${form.fileId}/latest` })
       return jobId
     },
-    async run({ jobId, fileId }: { jobId?: string; fileId: string }, state) {
+    async run({ jobId, fileId }: { jobId?: string; fileId: string }) {
       if (!jobId) return console.error('NO JOB ID TO RUN')
       const result = await graphQLStartJob(jobId)
       if (result === 'ERROR') return

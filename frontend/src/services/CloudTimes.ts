@@ -1,12 +1,8 @@
 class CloudTimes {
   private times: Map<string, number>
-  private cleanupInterval?: NodeJS.Timeout
-  private threshold: number
 
-  constructor(cleanupMinutes: number = 5) {
+  constructor(_cleanupMinutes: number = 5) {
     this.times = new Map<string, number>()
-    this.threshold = cleanupMinutes * 60 * 1000
-    this.cleanupInterval = setInterval(() => this.cleanup(), this.threshold)
   }
 
   outdated(timestamp: number, id?: string): boolean {
@@ -18,14 +14,6 @@ class CloudTimes {
     return true
   }
 
-  private cleanup() {
-    const now = Date.now()
-    this.times.forEach((timestamp, id) => {
-      if (now - timestamp > this.threshold) {
-        this.times.delete(id)
-      }
-    })
-  }
 }
 
 export default CloudTimes

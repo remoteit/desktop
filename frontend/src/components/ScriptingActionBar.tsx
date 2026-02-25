@@ -1,10 +1,10 @@
+import { Stack,Typography,useMediaQuery } from '@mui/material'
 import React from 'react'
-import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Stack, Typography } from '@mui/material'
-import { State, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useDispatch,useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { IconButton } from '../buttons/IconButton'
+import { MOBILE_WIDTH } from '../constants'
+import { Dispatch,State } from '../store'
 import { radius } from '../styling'
 import { Icon } from './Icon'
 
@@ -14,16 +14,9 @@ export const ScriptingActionBar: React.FC = () => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
-  const location = useLocation()
 
-  // Hide when no devices selected, when scriptForm is active (mid-device-selection),
-  // or when already on a script edit/run/add page
-  const onScriptWorkflowPage =
-    location.pathname.includes('/edit') ||
-    location.pathname.includes('/run') ||
-    location.pathname === '/scripts/add' ||
-    location.pathname === '/scripts/add/run'
-  if (!selected.length || scriptForm || onScriptWorkflowPage) return null
+  // Route-specific hiding is handled by ScriptingHeader.
+  if (!selected.length || scriptForm) return null
 
   return (
     <Stack

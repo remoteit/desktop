@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Typography, Tooltip, useMediaQuery } from '@mui/material'
 import { makeStyles } from '@mui/styles'
@@ -20,7 +20,6 @@ type Props = {
 
 export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }) => {
   const history = useHistory()
-  const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
@@ -80,7 +79,7 @@ export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ }) => ({
   header: {
     display: 'flex',
     alignItems: 'center',

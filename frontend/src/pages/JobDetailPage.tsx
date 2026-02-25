@@ -79,7 +79,7 @@ export const JobDetailPage: React.FC<Props> = () => {
     dispatch.ui.set({
       scriptForm: {
         ...initialForm,
-        fileId,
+        fileId: fileID,
         deviceIds,
         tag: job.tag ?? initialForm.tag,
         access,
@@ -106,7 +106,7 @@ export const JobDetailPage: React.FC<Props> = () => {
         <>
           <Typography variant="h1" sx={{ alignItems: 'center' }}>
             <Box marginRight={2}>
-              <JobStatusIcon status={job.status} title={false} padding={0} size="xl" />
+              <JobStatusIcon status={job.status} showTooltip={false} padding={0} size="xl" />
             </Box>
             <Box sx={{ flex: 1 }}>{file.name}</Box>
             <ColorChip

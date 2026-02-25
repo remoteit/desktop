@@ -51,7 +51,7 @@ export default createModel<RootModel>()({
         account: { ...state.applicationTypes.account, [accountId]: applicationTypes.sort(sortFunction) },
       })
     },
-    async fetchAll(_: void, state) {
+    async fetchAll(_: void) {
       const result = await graphQLBasicRequest(
         ` query ApplicationTypesAll {
             ${APPLICATION_TYPES_QUERY}

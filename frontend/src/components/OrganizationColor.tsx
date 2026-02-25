@@ -1,7 +1,6 @@
 import Color from 'color'
 import React, { useState } from 'react'
 import { REGEX_TAG_SAFE } from '../constants'
-import { DEFAULT_RESELLER } from '../models/organization'
 import { ColorSelect } from '../components/ColorSelect'
 import { Dispatch, State } from '../store'
 import { useDispatch, useSelector } from 'react-redux'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, Divider, Collapse } from '@mui/material'
+import { Typography, Collapse } from '@mui/material'
 import { TimeSeries } from './TimeSeries'
 import { GraphTitle } from './GraphTitle'
 import { IconButton } from '../buttons/IconButton'

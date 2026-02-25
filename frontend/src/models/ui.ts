@@ -228,7 +228,7 @@ export default createModel<RootModel>()({
     async init() {
       console.log('UI INIT')
       // add color scheme listener
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
         dispatch.ui.setTheme(undefined)
       })
       await dispatch.ui.restoreState()
