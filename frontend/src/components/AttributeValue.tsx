@@ -10,11 +10,16 @@ export const AttributeValue: React.FC<IDataOptions & { attribute?: Attribute; cl
   ...options
 }) => {
   const value = attribute?.value({ instance: options.device, ...options }) || ''
+  const justifyContent =
+    attribute?.align === 'center' ? 'center' : attribute?.align === 'right' ? 'flex-end' : undefined
+
   return (
     <Box
       className={classNames(`attribute attribute-${attribute?.id}`, className)}
       style={{ whiteSpace: attribute?.multiline ? 'pre-line' : undefined }}
       textAlign={attribute?.align}
+      justifyContent={justifyContent}
+      width={justifyContent ? '100%' : undefined}
       marginRight={attribute?.align === 'right' ? `${spacing.md}px` : undefined}
     >
       {value}

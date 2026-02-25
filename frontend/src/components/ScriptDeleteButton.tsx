@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dispatch } from '../store'
-import { useParams } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
 import { selectPermissions } from '../selectors/organizations'
 import { useDispatch, useSelector } from 'react-redux'
 import { DeleteButton } from '../buttons/DeleteButton'
@@ -8,10 +8,11 @@ import { Notice } from './Notice'
 
 type Props = { device?: IDevice; service?: IService; user?: IUser }
 
-export const ScriptDeleteButton: React.FC<Props> = ({ device, service }) => {
+export const ScriptDeleteButton: React.FC<Props> = ({  }) => {
   const { fileID } = useParams<{ fileID?: string }>()
   const permissions = useSelector(selectPermissions)
   const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
 
   if (!permissions.includes('ADMIN') || !fileID) return null
 
@@ -23,7 +24,10 @@ export const ScriptDeleteButton: React.FC<Props> = ({ device, service }) => {
           This can not be undone.
         </Notice>
       }
-      onDelete={async () => await dispatch.files.delete(fileID)}
+      onDelete={async () => {
+        await dispatch.files.delete(fileID)
+        history.push('/scripts')
+      }}
     />
   )
 }

@@ -1,20 +1,22 @@
+import { Stack,Typography,useMediaQuery } from '@mui/material'
 import React from 'react'
-import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Stack, Typography } from '@mui/material'
-import { State, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch,useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { IconButton } from '../buttons/IconButton'
+import { MOBILE_WIDTH } from '../constants'
+import { Dispatch,State } from '../store'
 import { radius } from '../styling'
 import { Icon } from './Icon'
 
 export const ScriptingActionBar: React.FC = () => {
   const selected = useSelector((state: State) => state.ui.selected)
+  const scriptForm = useSelector((state: State) => state.ui.scriptForm)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
 
-  if (!selected.length) return null
+  // Route-specific hiding is handled by ScriptingHeader.
+  if (!selected.length || scriptForm) return null
 
   return (
     <Stack

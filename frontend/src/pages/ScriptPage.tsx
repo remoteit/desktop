@@ -1,53 +1,69 @@
 import React, { useEffect } from 'react'
-import { VALID_JOB_ID_LENGTH } from '../constants'
 import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
-import { getJobAttribute } from '../components/JobAttributes'
-import { ListItemLocation } from '../components/ListItemLocation'
-import { Redirect, useParams } from 'react-router-dom'
+import { Redirect, useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, Stack, List, Typography } from '@mui/material'
-import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
+import { List, Typography, Chip } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
+import { ListItemLocation } from '../components/ListItemLocation'
 import { JobStatusIcon } from '../components/JobStatusIcon'
+import { ReactiveTagNames } from '../components/ReactiveTagNames'
+import { Duration } from '../components/Duration'
 import { Container } from '../components/Container'
-import { Timestamp } from '../components/Timestamp'
-import { RunButton } from '../buttons/RunButton'
+import { IconButton } from '../buttons/IconButton'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
-import { Icon } from '../components/Icon'
-// import { Pre } from '../components/Pre'
 
-export const ScriptPage: React.FC<{ layout: ILayout }> = ({ layout }) => {
+const MAX_RUNS = 12
+
+export const ScriptPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
+  const history = useHistory()
+  const { fileID } = useParams<{ fileID?: string }>()
   const file = useSelector((state: State) => selectFile(state, undefined, fileID))
   const jobs = useSelector(selectJobs).filter(j => j.file?.id === fileID)
-  const job: IJob | undefined = jobs.find(j => j.id === jobID) || jobs[0]
   const fetching = useSelector((state: State) => state.files.fetching)
-  const noDevices = !job || !job?.jobDevices.length
-  const validJobID = jobID && jobID.length >= VALID_JOB_ID_LENGTH
 
-  // load jobs if not already loaded
+  // Load jobs if not already loaded
   useEffect(() => {
     if (!jobs.length && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
   }, [file])
 
   if (!file) return <Redirect to={{ pathname: '/scripts', state: { isRedirect: true } }} />
 
-  if (
-    !layout.singlePanel &&
-    jobDeviceID !== 'edit' &&
-    (!jobDeviceID || (jobID === 'latest' && !job?.jobDevices.some(jd => jd.id === jobDeviceID)))
-  ) {
+  // Split jobs into groups
+  const readyJobs = jobs.filter(j => j.status === 'READY')
+  const runningJobs = jobs.filter(j => j.status === 'RUNNING' || j.status === 'WAITING')
+  const completedJobs = [...jobs]
+    .filter(j => j.status === 'SUCCESS' || j.status === 'FAILED' || j.status === 'CANCELLED')
+    .sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime())
+    .slice(0, MAX_RUNS)
+
+  const args = file.versions?.[0]?.arguments
+
+  const renderJobRow = (job: IJob) => {
+    const deviceCount = job.jobDevices.length
+    const deviceLabel =
+      deviceCount === 1 ? job.jobDevices[0].device.name : deviceCount === 0 ? 'No devices' : `${deviceCount} devices`
+    const tagNames = job.tag?.values || []
+    const to = job.status === 'READY' ? `/script/${file.id}/run/${job.id}` : `/script/${file.id}/${job.id}`
+    const matchPath = job.status === 'READY' ? `/script/${file.id}/run/${job.id}` : `/script/${file.id}/${job.id}`
+
     return (
-      <Redirect
-        to={{
-          pathname: `/script/${file.id}/${validJobID ? jobID : 'latest'}/${noDevices ? 'edit' : job?.jobDevices[0].id}`,
-          state: { isRedirect: true },
-        }}
-      />
+      <ListItemLocation
+        dense
+        key={job.id}
+        to={to}
+        match={matchPath}
+        icon={<JobStatusIcon status={job.status} padding={0.5} />}
+        title={deviceLabel}
+      >
+        {tagNames.length > 0 && <ReactiveTagNames tags={tagNames} small max={1} />}
+        <Typography variant="caption" color="grayDarkest.main" noWrap sx={{ flexShrink: 0, ml: 0.5, mr: 2 }}>
+          <Duration startDate={new Date(job.updated)} humanizeOptions={{ largest: 1 }} tiered ago />
+        </Typography>
+      </ListItemLocation>
     )
   }
 
@@ -56,83 +72,89 @@ export const ScriptPage: React.FC<{ layout: ILayout }> = ({ layout }) => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <>
-          <List sx={{ marginBottom: 0 }}>
+          <List disablePadding>
             <ListItemLocation
-              to={`/script/${fileID}/${jobID}/edit`}
+              to={`/script/${fileID}/edit`}
               title={<Typography variant="h2">{file.name}</Typography>}
-              icon={<JobStatusIcon status={job?.status} size="lg" />}
+              icon="scroll"
               exactMatch
-            >
-              <Box marginRight={2}>
-                <Icon name="chevron-right" color="grayDark" className="hidden" />
-              </Box>
-            </ListItemLocation>
+            />
           </List>
-          <Gutters inset="icon" bottom="lg" top={null}>
-            {!!job?.tag.values.length && <Box marginBottom={2}>{getJobAttribute('jobTags').value({ job })}</Box>}
-            {job?.jobDevices[0]?.updated && (
-              <Typography variant="caption" color="GrayText" marginTop={1} textTransform="capitalize" component="p">
-                {job?.status.toLowerCase()} &nbsp;
-                <Timestamp date={new Date(job?.jobDevices[0].updated)} />
-              </Typography>
-            )}
-            {file.shortDesc && (
-              <Typography color="grayDarkest.main" variant="caption" component="p" marginTop={1}>
+          {/* ── Script Details ── */}
+          {file.shortDesc && (
+            <Gutters top={null} inset="xl" sx={{ marginLeft: 5 }}>
+              <Typography variant="caption" component="p">
                 {file.shortDesc}
               </Typography>
+            </Gutters>
+          )}
+          <List disablePadding sx={{ marginBottom: 2 }}>
+            {args && args.length > 0 && (
+              <ListItemLocation
+                dense
+                icon="sliders"
+                iconTooltip="Arguments"
+                title={args.map(arg => (
+                  <Chip key={arg.name} label={arg.name} size="small" variant="outlined" />
+                ))}
+              />
             )}
-          </Gutters>
-          <List>
-            <ListItemLocation title="Run History" to={`/runs/${fileID}`} icon="clock-rotate-left" />
+            <ListItemLocation
+              icon="calendar"
+              iconTooltip="Timestamps"
+              subtitle={
+                <>
+                  Created <Duration startDate={new Date(file.created)} humanizeOptions={{ largest: 1 }} ago />
+                  <br />
+                  Updated <Duration startDate={new Date(file.updated)} humanizeOptions={{ largest: 1 }} ago />
+                </>
+              }
+            ></ListItemLocation>
           </List>
           <LinearProgress loading={fetching} />
         </>
       }
     >
-      <>
-        <Typography variant="subtitle1">
-          <Title>Devices</Title>
-          <Stack direction="row" spacing={1} marginRight={2}>
-            <Typography variant="caption" paddingLeft={2}>
-              {job?.jobDevices.length || '-'}
-            </Typography>
-            <JobStatusIcon device padding={0} />
-            <Typography variant="caption" paddingLeft={2}>
-              {job?.jobDevices.filter(d => d.status === 'SUCCESS').length || '-'}
-            </Typography>
-            <JobStatusIcon status="SUCCESS" padding={0} />
-            <Typography variant="caption" paddingLeft={2}>
-              {job?.jobDevices.filter(d => d.status === 'FAILED' || d.status === 'CANCELLED').length || '-'}
-            </Typography>
-            <JobStatusIcon status="FAILED" padding={0} />
-          </Stack>
-        </Typography>
-        {noDevices ? (
-          <Notice gutterTop>This script has not been run yet.</Notice>
-        ) : (
-          <Box marginY={3} marginX={4}>
-            <RunButton
-              job={job}
-              size="small"
-              onRun={async () => await dispatch.jobs.run({ jobId: job?.id, fileId: file.id })}
-              onRunAgain={async () => await dispatch.jobs.runAgain({ ...file, job })}
-              onCancel={async () => await dispatch.jobs.cancel(job?.id)}
-              fullWidth
-            />
-          </Box>
+      {/* ── Ready ── */}
+      {readyJobs.length > 0 && (
+        <>
+          <Typography variant="subtitle1">
+            <Title>Ready</Title>
+            <IconButton icon="plus" title="New Run" size="md" onClick={() => history.push(`/script/${fileID}/run`)} />
+          </Typography>
+          <List>{readyJobs.map(renderJobRow)}</List>
+        </>
+      )}
+
+      {/* ── Running ── */}
+      {runningJobs.length > 0 && (
+        <>
+          <Typography variant="subtitle1">
+            <Title>Running</Title>
+          </Typography>
+          <List>{runningJobs.map(renderJobRow)}</List>
+        </>
+      )}
+
+      {/* ── Runs ── */}
+      <Typography variant="subtitle1">
+        <Title>Runs</Title>
+        {!readyJobs.length && (
+          <IconButton
+            icon="plus"
+            title="New Run"
+            size="md"
+            onClick={() => {
+              history.push(`/script/${fileID}/run`)
+            }}
+          />
         )}
-        <List>
-          {job?.jobDevices.map(jd => (
-            <ListItemLocation
-              sx={{ paddingRight: 2 }}
-              key={jd.id}
-              to={`/script/${fileID}/${validJobID ? jobID : 'latest'}/${jd.id}`}
-              title={jd.device.name}
-              icon={<JobStatusIcon status={jd.status} device />}
-            />
-          ))}
-        </List>
-      </>
+      </Typography>
+      {completedJobs.length ? (
+        <List>{completedJobs.map(renderJobRow)}</List>
+      ) : (
+        <Notice sx={{ mx: 2 }}>No runs yet.</Notice>
+      )}
     </Container>
   )
 }

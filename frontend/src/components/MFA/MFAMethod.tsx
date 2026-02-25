@@ -61,7 +61,7 @@ export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, back
   )
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   chip: {
     marginTop: spacing.lg,
     marginBottom: spacing.sm,

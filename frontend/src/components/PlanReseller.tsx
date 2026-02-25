@@ -7,7 +7,7 @@ type Props = {
   license: ILicense | null
 }
 
-export const PlanReseller: React.FC<Props> = ({ license }) => {
+export const PlanReseller: React.FC<Props> = ({ }) => {
   return (
     <PlanGutters>
       <PlanCard

@@ -1,7 +1,6 @@
 import React from 'react'
 import { List, ListItem, Tooltip } from '@mui/material'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
-import { fontSizes } from '../../styling'
 import { makeStyles } from '@mui/styles'
 import { Attribute } from '../Attributes'
 import { Icon } from '../Icon'
@@ -22,6 +21,7 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
       {attributes.map((attribute, index) => {
         if (limits && !attribute.show(limits)) return null
         const value = attribute.value(props)
+        const copyValue = typeof value === 'string' || typeof value === 'number' ? value : undefined
         return (
           value != null && (
             <ListItem key={index} disableGutters>
@@ -42,7 +42,7 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
                   size="sm"
                   color="gray"
                   title={`Copy ${attribute.label}`}
-                  value={value}
+                  value={copyValue}
                 />
               )}
             </ListItem>

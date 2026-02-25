@@ -57,7 +57,7 @@ export const ServiceFormApplications: React.FC<Props> = ({
           <MenuItem
             key={a.id}
             value={a.id}
-            onClick={e => {
+            onClick={() => {
               onSelect(a)
               setAnchorEl(null)
             }}
@@ -71,7 +71,7 @@ export const ServiceFormApplications: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ }) => ({
   item: {
     display: 'flex',
     alignItems: 'flex-start',

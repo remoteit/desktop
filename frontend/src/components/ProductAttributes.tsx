@@ -1,15 +1,15 @@
+import { Chip,Typography } from '@mui/material'
 import React from 'react'
-import { Chip, Typography } from '@mui/material'
+import { IDeviceProduct } from '../models/products'
 import { Attribute } from './Attributes'
 import { Timestamp } from './Timestamp'
-import { IDeviceProduct } from '../models/products'
 
-export class ProductAttribute extends Attribute {
-  type: Attribute['type'] = 'DEVICE'
+export type ProductAttributeOptions = {
+  product?: IDeviceProduct
 }
 
-interface IProductOptions {
-  product?: IDeviceProduct
+export class ProductAttribute extends Attribute<ProductAttributeOptions> {
+  type: Attribute['type'] = 'DEVICE'
 }
 
 export const productAttributes: ProductAttribute[] = [
@@ -18,7 +18,7 @@ export const productAttributes: ProductAttribute[] = [
     label: 'Name',
     required: true,
     defaultWidth: 300,
-    value: ({ product }: IProductOptions) => (
+    value: ({ product }: ProductAttributeOptions) => (
       <Typography noWrap>{product?.name}</Typography>
     ),
   }),
@@ -26,7 +26,7 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productPlatform',
     label: 'Platform',
     defaultWidth: 100,
-    value: ({ product }: IProductOptions) => (
+    value: ({ product }: ProductAttributeOptions) => (
       <Typography variant="body2" color="grayDarker.main" noWrap>
         {product?.platform?.name || product?.platform?.id}
       </Typography>
@@ -36,7 +36,7 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productStatus',
     label: 'Status',
     defaultWidth: 100,
-    value: ({ product }: IProductOptions) => (
+    value: ({ product }: ProductAttributeOptions) => (
       <Chip
         size="small"
         label={product?.status === 'LOCKED' ? 'Locked' : 'Draft'}
@@ -49,7 +49,7 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productServices',
     label: 'Services',
     defaultWidth: 80,
-    value: ({ product }: IProductOptions) => (
+    value: ({ product }: ProductAttributeOptions) => (
       <Typography variant="body2" color="grayDarker.main" noWrap>
         {product?.services?.length || 0}
       </Typography>
@@ -59,7 +59,7 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productCreated',
     label: 'Created',
     defaultWidth: 150,
-    value: ({ product }: IProductOptions) =>
+    value: ({ product }: ProductAttributeOptions) =>
       product?.created && (
         <Typography variant="body2" color="grayDarker.main" noWrap>
           <Timestamp date={new Date(product.created)} />
@@ -70,7 +70,7 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productUpdated',
     label: 'Updated',
     defaultWidth: 150,
-    value: ({ product }: IProductOptions) =>
+    value: ({ product }: ProductAttributeOptions) =>
       product?.updated && (
         <Typography variant="body2" color="grayDarker.main" noWrap>
           <Timestamp date={new Date(product.updated)} />
@@ -78,4 +78,3 @@ export const productAttributes: ProductAttribute[] = [
       ),
   }),
 ]
-

@@ -1,5 +1,5 @@
-import { graphQLBasicRequest } from './graphQL'
 import { addConnectionProps } from '../models/networks'
+import { graphQLBasicRequest } from './graphQL'
 
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
   return await graphQLBasicRequest(
@@ -586,10 +586,19 @@ export async function graphQLDeleteFile(fileId: string) {
   )
 }
 
+export async function graphQLModifyFile(params: { fileId: string; name?: string; shortDesc?: string; longDesc?: string }) {
+  return await graphQLBasicRequest(
+    ` mutation ModifyFile($fileId: String!, $name: String, $shortDesc: String, $longDesc: String) {
+        modifyFile(fileId: $fileId, name: $name, shortDesc: $shortDesc, longDesc: $longDesc)
+      }`,
+    params
+  )
+}
+
 export async function graphQLSetJob(params: {
   fileId: string
   jobId?: string
-  arguments?: IFileArgument[]
+  arguments?: IArgumentValue[]
   tagFilter?: ITagFilter
   deviceIds?: string[]
 }) {
@@ -614,6 +623,15 @@ export async function graphQLCancelJob(jobId?: string) {
   return await graphQLBasicRequest(
     ` mutation CancelJob($jobId: String) {
         cancelJob(jobId: $jobId)
+      }`,
+    { jobId }
+  )
+}
+
+export async function graphQLDeleteJob(jobId: string) {
+  return await graphQLBasicRequest(
+    ` mutation DeleteJob($jobId: String!) {
+        deleteJob(jobId: $jobId)
       }`,
     { jobId }
   )

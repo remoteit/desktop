@@ -40,7 +40,7 @@ export default createModel<RootModel>()({
       const { apiKey, accessKeys } = await dispatch.keys.parse(result)
       dispatch.keys.set({ apiKey, accessKeys })
     },
-    async parse(result: AxiosResponse<any> | undefined, globalState) {
+    async parse(result: AxiosResponse<any> | undefined) {
       const data = result?.data?.data?.login
       const parsed = {
         apiKey: data?.apiKey?.key,

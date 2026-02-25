@@ -2,14 +2,7 @@ import React from 'react'
 import { Typography } from '@mui/material'
 import { Attribute } from './Attributes'
 import { Timestamp } from './Timestamp'
-import { Icon, IconProps } from './Icon'
-import { Pre } from './Pre'
 
-const argumentIconLookup: ILookup<IconProps> = {
-  FileSelect: { name: 'cloud' },
-  StringSelect: { name: 'triangle', rotate: 180 },
-  StringEntry: { name: 'rectangle-wide' },
-}
 
 class ScriptAttribute extends Attribute {
   type: Attribute['type'] = 'SCRIPT'

@@ -1,67 +1,81 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Box,Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import React,{ useEffect,useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Typography, Box } from '@mui/material'
-import { Container } from '../../components/Container'
-import { Title } from '../../components/Title'
-import { Icon } from '../../components/Icon'
+import { useParams } from 'react-router-dom'
+import { Attribute } from '../../components/Attributes'
 import { Body } from '../../components/Body'
-import { LoadingMessage } from '../../components/LoadingMessage'
+import { Container } from '../../components/Container'
 import { GridList } from '../../components/GridList'
 import { GridListItem } from '../../components/GridListItem'
-import { Attribute } from '../../components/Attributes'
-import { TargetPlatform } from '../../components/TargetPlatform'
+import { Icon } from '../../components/Icon'
+import { LoadingMessage } from '../../components/LoadingMessage'
 import { StatusChip } from '../../components/StatusChip'
+import { TargetPlatform } from '../../components/TargetPlatform'
 import { Timestamp } from '../../components/Timestamp'
+import { Title } from '../../components/Title'
+import { removeObject } from '../../helpers/utilHelper'
 import { graphQLAdminUserDevices } from '../../services/graphQLRequest'
 import { State } from '../../store'
-import { makeStyles } from '@mui/styles'
-import { removeObject } from '../../helpers/utilHelper'
 
-class AdminDeviceAttribute extends Attribute {
+type AdminDeviceAttributeOptions = {
+  device?: AdminDeviceRow
+}
+
+type AdminDeviceRow = {
+  id: string
+  name?: string
+  state?: IDevice['state']
+  services?: unknown[]
+  platform?: number
+  lastReported?: string
+}
+
+class AdminDeviceAttribute extends Attribute<AdminDeviceAttributeOptions> {
   type: Attribute['type'] = 'DEVICE'
 }
 
-const adminDeviceAttributes: Attribute[] = [
+const adminDeviceAttributes: AdminDeviceAttribute[] = [
   new AdminDeviceAttribute({
     id: 'adminDeviceName',
     label: 'Name',
     defaultWidth: 250,
     required: true,
-    value: ({ device }: { device: any }) => device?.name || device?.id,
+    value: ({ device }: AdminDeviceAttributeOptions) => device?.name || device?.id,
   }),
   new AdminDeviceAttribute({
     id: 'adminDeviceStatus',
     label: 'Status',
     defaultWidth: 100,
-    value: ({ device }: { device: any }) => (
-      <StatusChip device={{ state: device?.state, services: device?.services || [] }} />
+    value: ({ device }: AdminDeviceAttributeOptions) => (
+      <StatusChip device={{ state: device?.state, services: (device?.services as IService[]) || [] } as IDevice} />
     ),
   }),
   new AdminDeviceAttribute({
     id: 'adminDevicePlatform',
     label: 'Platform',
     defaultWidth: 150,
-    value: ({ device }: { device: any }) => TargetPlatform({ id: device?.platform, label: true }),
+    value: ({ device }: AdminDeviceAttributeOptions) => TargetPlatform({ id: device?.platform, label: true }),
   }),
   new AdminDeviceAttribute({
     id: 'adminDeviceServices',
     label: 'Services',
     defaultWidth: 80,
-    value: ({ device }: { device: any }) => device?.services?.length || 0,
+    value: ({ device }: AdminDeviceAttributeOptions) => device?.services?.length || 0,
   }),
   new AdminDeviceAttribute({
     id: 'adminDeviceLastReported',
     label: 'Last Reported',
     defaultWidth: 150,
-    value: ({ device }: { device: any }) => device?.lastReported ? <Timestamp date={new Date(device.lastReported)} /> : '-',
+    value: ({ device }: AdminDeviceAttributeOptions) =>
+      device?.lastReported ? <Timestamp date={new Date(device.lastReported)} /> : '-',
   }),
 ]
 
 export const AdminUserDevicesPanel: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
   const css = useStyles()
-  const [devices, setDevices] = useState<any[]>([])
+  const [devices, setDevices] = useState<AdminDeviceRow[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
@@ -147,4 +161,3 @@ const useStyles = makeStyles(() => ({
     flex: 1,
   },
 }))
-

@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { MAX_NAME_LENGTH } from '@common/constants'
 
-export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> = ({ network, orgName }) => {
+export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> = ({ network }) => {
   const dispatch = useDispatch<Dispatch>()
   const disabled = !network.permissions.includes('MANAGE')
 

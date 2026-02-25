@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Typography, List, ListItemText, Stack, Chip, Divider, Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { Title } from '../../components/Title'
@@ -26,7 +25,6 @@ export const ProductPage: React.FC<Props> = ({ showRefresh = true }) => {
   const handleBack = () => {
     history.push('/products')
   }
-  const css = useStyles()
   const { all: products, fetching, initialized } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
 
@@ -151,7 +149,4 @@ export const ProductPage: React.FC<Props> = ({ showRefresh = true }) => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  // Styles can be added as needed
-}))
 

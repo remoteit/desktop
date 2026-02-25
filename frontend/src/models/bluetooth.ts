@@ -115,7 +115,7 @@ export default createModel<RootModel>()({
       }
     },
 
-    async stop(_: void, state) {
+    async stop(_: void) {
       await dispatch.bluetooth.stopNotifications()
       await dispatch.bluetooth.disconnect()
       await dispatch.bluetooth.reset()

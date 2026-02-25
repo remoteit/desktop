@@ -85,7 +85,7 @@ export const ProductsListHeader: React.FC<Props> = ({ showBack, onBack }) => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ }) => ({
   header: {
     display: 'flex',
     alignItems: 'center',

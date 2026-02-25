@@ -1,5 +1,4 @@
 import React from 'react'
-import { Stack } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'

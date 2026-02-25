@@ -1,5 +1,5 @@
 import React from 'react'
-import browser, { windowOpen, getOs } from '../services/browser'
+import browser, { windowOpen } from '../services/browser'
 import { safeHostname } from '@common/nameHelper'
 import { useSelector } from 'react-redux'
 import { State } from '../store'

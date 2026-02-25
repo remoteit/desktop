@@ -522,6 +522,7 @@ declare global {
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
     apiKey?: string
     language?: string
+    admin?: boolean
   }
 
   type IGuest = {
@@ -636,6 +637,20 @@ declare global {
 
   type IFileArgumentType = 'FileSelect' | 'StringSelect' | 'StringEntry'
 
+  // For defining arguments when creating/editing scripts (sent to upload API)
+  type IArgumentDefinition = {
+    name: string
+    type: IFileArgumentType
+    desc: string
+    options?: string[]
+  }
+
+  // For passing argument values when running scripts (sent to setJob mutation)
+  type IArgumentValue = {
+    name: string
+    value: string
+  }
+
   type IFileForm = {
     name: string
     description: string
@@ -647,6 +662,8 @@ declare global {
     jobId?: string
     tag?: ITagFilter
     file?: File
+    argumentDefinitions?: IArgumentDefinition[]  // For script creation/edit
+    argumentValues?: IArgumentValue[]            // For running scripts
   }
 
   type IJob = {
@@ -662,6 +679,17 @@ declare global {
       name: string
     }
     jobDevices: IJobDevice[]
+    arguments: IJobArgument[]
+  }
+
+  type IJobArgument = {
+    id: string
+    name: string
+    desc: string
+    order: number
+    argumentType: 'File' | 'String'
+    value?: string
+    created: ISOTimestamp
   }
 
   type IJobDevice = {

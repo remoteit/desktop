@@ -46,9 +46,9 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
               <IconButton name="chevron-left" type="solid" color="primary" onClick={() => setPage(page - 1)} />
               <Slider
                 valueLabelDisplay="auto"
-                valueLabelFormat={value => pageUsers[0]?.email?.substring(0, 1) || '-'}
+                valueLabelFormat={() => pageUsers[0]?.email?.substring(0, 1) || '-'}
                 max={pageCount}
-                onChange={(e, page) => setPage(Number(page))}
+                onChange={(_e, page) => setPage(Number(page))}
                 size="small"
               />
               <IconButton name="chevron-right" type="solid" color="primary" onClick={() => setPage(page + 1)} />
@@ -58,7 +58,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
               <Pagination
                 classes={{ ul: css.pagination }}
                 count={pageCount}
-                onChange={(e, page) => setPage(Math.max(page, 1))}
+                onChange={(_e, page) => setPage(Math.max(page, 1))}
                 size="small"
               />
             )
@@ -68,7 +68,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
       defaultExpanded
     >
       <List>
-        {pageUsers.map((user, i) => (
+        {pageUsers.map((user) => (
           <UserListItem key={user.id} user={user} isConnected={connected} member={members} remove={remove}>
             <ShareDetails user={user} device={device} />
           </UserListItem>

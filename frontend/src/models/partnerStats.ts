@@ -130,7 +130,7 @@ export default createModel<RootModel>()({
       const accountId = selectActiveAccountId(state)
       dispatch.partnerStats.set({ fetching: true, accountId })
       const response = await graphQLPartnerEntities(accountId)
-      if (!graphQLGetErrors(response)) {
+      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
         const entities = response?.data?.data?.login?.account?.partnerEntities || []
         const flattened = flattenPartners(entities)
         dispatch.partnerStats.set({ all: entities, flattened, initialized: true, accountId })

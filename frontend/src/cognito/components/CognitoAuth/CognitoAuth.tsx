@@ -113,7 +113,7 @@ export function CognitoAuth({
     await cognito.confirmSignIn(code, challengeName)
   }
 
-  async function handleSendCustomChallengeAnswer(code: string): Promise<CognitoUser> {
+  async function handleSendCustomChallengeAnswer(_code: string): Promise<CognitoUser> {
     alert('send custom challenge answer')
     return {} as CognitoUser
   }

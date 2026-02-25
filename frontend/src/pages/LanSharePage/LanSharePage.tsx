@@ -16,7 +16,6 @@ import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { maskIPClass } from '../../helpers/lanSharing'
 import { Quote } from '../../components/Quote'
-import { Pre } from '../../components/Pre'
 
 type Selections = { value: string | Function; name: string; note: string; id: number }
 

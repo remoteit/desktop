@@ -107,6 +107,7 @@ export type UIState = {
   mobileWelcome: boolean
   showDesktopNotice: boolean
   scriptForm?: IFileForm
+  scriptRunForms: ILookup<IFileForm>
   adminMode: boolean
   viewAsUser: { id: string; email: string } | null
 }
@@ -121,6 +122,7 @@ export const defaultState: UIState = {
     showOrgs: false,
     hideSidebar: false,
     singlePanel: false,
+    triplePanel: false,
     sidePanelWidth: SIDEBAR_WIDTH,
     showBottomMenu: false,
     insets: { top: 0, left: 0, bottom: 0, right: 0, topPx: '', bottomPx: '', leftPx: '', rightPx: '' },
@@ -184,6 +186,8 @@ export const defaultState: UIState = {
     devices: 400,
     networks: 450,
     connections: 450,
+    files: 450,
+    file: 450,
     settings: 350,
     account: 300,
     organization: 350,
@@ -213,6 +217,7 @@ export const defaultState: UIState = {
   mobileWelcome: true,
   showDesktopNotice: true,
   scriptForm: undefined,
+  scriptRunForms: {},
   adminMode: false,
   viewAsUser: null,
 }
@@ -223,7 +228,7 @@ export default createModel<RootModel>()({
     async init() {
       console.log('UI INIT')
       // add color scheme listener
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
         dispatch.ui.setTheme(undefined)
       })
       await dispatch.ui.restoreState()

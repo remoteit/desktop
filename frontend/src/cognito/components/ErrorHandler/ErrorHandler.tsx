@@ -14,7 +14,7 @@ interface State {
 export class ErrorHandler extends React.Component<Props, State> {
   state: State = { error: null }
 
-  componentDidCatch(error: Error, info: any) {
+  componentDidCatch(error: Error, _info: any) {
     if (MODE === 'test') throw error
     console.error('[CAUGHT ERROR]:', error)
     this.setState({ error })

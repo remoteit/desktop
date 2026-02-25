@@ -71,7 +71,7 @@ export const OrganizationGuestList: React.FC = () => {
       </List>
       {guests.length > perPage && (
         <Gutters className={css.center}>
-          <Pagination className={css.pagination} count={pageCount} onChange={(e, page) => setPage(page)} size="small" />
+          <Pagination className={css.pagination} count={pageCount} onChange={(_e, page) => setPage(page)} size="small" />
         </Gutters>
       )}
     </>

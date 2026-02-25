@@ -151,7 +151,7 @@ const defaultState: IPlans = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async restore(_: void, state) {
+    async restore(_: void) {
       dispatch.plans.set({ purchasing: undefined, updating: undefined })
     },
 
@@ -161,7 +161,7 @@ export default createModel<RootModel>()({
       await dispatch.plans.parse(result)
     },
 
-    async parse(gqlResponse: AxiosResponse<any> | void, state) {
+    async parse(gqlResponse: AxiosResponse<any> | void) {
       if (!gqlResponse) return
       const data = gqlResponse?.data?.data
       await dispatch.plans.set({
@@ -171,7 +171,7 @@ export default createModel<RootModel>()({
       })
     },
 
-    async subscribe(form: IPurchase, state) {
+    async subscribe(form: IPurchase) {
       dispatch.plans.set({ purchasing: form.planId })
       const result = await graphQLSubscribe(form)
 

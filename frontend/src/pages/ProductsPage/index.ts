@@ -1,5 +1,4 @@
 export { ProductsPage } from './ProductsPage'
-export { ProductDetailPage } from './ProductDetailPage'
 export { ProductAddPage } from './ProductAddPage'
 export { ProductPage } from './ProductPage'
 export { ProductServiceDetailPage } from './ProductServiceDetailPage'

@@ -92,7 +92,7 @@ export default createModel<RootModel>()({
       await dispatch.connections.updateCLI()
     },
 
-    async updateConnectionState({ devices, accountId }: { devices: IDevice[]; accountId: string }, state) {
+    async updateConnectionState({ devices }: { devices: IDevice[]; accountId: string }, state) {
       let lookup = getConnectionLookup(state)
       let result: IConnection[] = []
 
@@ -493,7 +493,7 @@ export default createModel<RootModel>()({
       dispatch.connections.updateConnection({ ...connection, launched: false })
     },
 
-    async setAll(all: IConnection[], state) {
+    async setAll(all: IConnection[]) {
       all.sort((a, b) => nameSort(a.name || '', b.name || ''))
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
     },

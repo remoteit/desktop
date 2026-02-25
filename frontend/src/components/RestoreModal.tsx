@@ -7,7 +7,7 @@ type Props = Omit<DialogProps, 'open'> & {
   device: IDevice
 }
 
-export const RestoreModal: React.FC<Props> = ({ device, ...props }) => {
+export const RestoreModal: React.FC<Props> = ({ device }) => {
   const { showRestoreModal } = useSelector((state: State) => state.ui)
   const [loading, setLoading] = useState<boolean>(false)
   const [result, setResult] = useState<{ restoreCommand?: string; restoreCode?: string }>({})

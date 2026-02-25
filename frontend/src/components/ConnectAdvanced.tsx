@@ -25,7 +25,7 @@ import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 export const ConnectAdvanced: React.FC = () => {
-  const { connection, service, instance, device } = React.useContext(DeviceContext)
+  const { connection, service, instance } = React.useContext(DeviceContext)
   const accordion = useSelector((state: State) => state.ui.accordion)
   const dispatch = useDispatch<Dispatch>()
   const app = useApplication(service, connection)

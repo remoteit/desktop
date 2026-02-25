@@ -1,25 +1,25 @@
-import React from 'react'
-import classnames from 'classnames'
+import { List,ListProps } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { List, ListProps } from '@mui/material'
-import { spacing, fontSizes } from '../styling'
-import { GridListHeader } from './GridListHeader'
+import classnames from 'classnames'
+import React from 'react'
+import { fontSizes,spacing } from '../styling'
 import { Attribute } from './Attributes'
+import { GridListHeader } from './GridListHeader'
 
-type DeviceListProps = ListProps & {
-  attributes: Attribute[]
-  required?: Attribute
+type DeviceListProps<TOptions = IDataOptions, THeaderContext = unknown> = ListProps & {
+  attributes: Attribute<TOptions>[]
+  required?: Attribute<TOptions>
   columnWidths: ILookup<number>
   mobile?: boolean
   fetching?: boolean
   rowHeight?: number
   rowShrink?: number
-  headerIcon?: React.ReactNode
-  headerContextData?: any
-  headerContextProvider?: React.Provider<any>
+  headerIcon?: React.ReactNode | boolean
+  headerContextData?: THeaderContext
+  headerContextProvider?: React.Provider<THeaderContext>
 }
 
-export const GridList: React.FC<DeviceListProps> = ({
+export const GridList = <TOptions, THeaderContext = unknown>({
   attributes,
   required,
   columnWidths,
@@ -32,7 +32,7 @@ export const GridList: React.FC<DeviceListProps> = ({
   headerContextProvider: HeaderContextProvider,
   children,
   ...props
-}) => {
+}: DeviceListProps<TOptions, THeaderContext>) => {
   const requiredWidth = required?.width(columnWidths) || 0
   const css = useStyles({
     attributes,
@@ -43,11 +43,13 @@ export const GridList: React.FC<DeviceListProps> = ({
     mobile,
   })
 
-  const header = <GridListHeader {...{ required, attributes, fetching, columnWidths, mobile }} icon={headerIcon} />
+  const header = (
+    <GridListHeader<TOptions> {...{ required, attributes, fetching, columnWidths, mobile }} icon={headerIcon} />
+  )
 
   return (
     <List className={classnames(css.list, css.grid)} disablePadding {...props}>
-      {HeaderContextProvider ? (
+      {HeaderContextProvider && headerContextData !== undefined ? (
         <HeaderContextProvider value={headerContextData}>{header}</HeaderContextProvider>
       ) : (
         header
@@ -58,7 +60,7 @@ export const GridList: React.FC<DeviceListProps> = ({
 }
 
 type StyleProps = {
-  attributes: Attribute[]
+  attributes: { width: (columnWidths: ILookup<number>) => number }[]
   requiredWidth: number
   columnWidths: ILookup<number>
   mobile?: boolean
@@ -71,7 +73,7 @@ const useStyles = makeStyles(({ palette }) => ({
     minWidth: '100%',
     width: requiredWidth + (mobile ? 0 : attributes?.reduce((w, a) => w + a.width(columnWidths), 0)),
     '& .MuiListItemButton-root, & .MuiListSubheader-root': {
-      gridTemplateColumns: `${requiredWidth}px ${
+      gridTemplateColumns: `${requiredWidth ? `${requiredWidth}px ` : ''}${
         mobile ? '' : attributes?.map(a => a.width(columnWidths)).join('px ') + 'px'
       }`,
     },
@@ -84,6 +86,7 @@ const useStyles = makeStyles(({ palette }) => ({
       display: 'inline-grid',
       alignItems: 'start',
       '& > .MuiBox-root': {
+        paddingLeft: spacing.xs,
         paddingRight: spacing.sm,
       },
     },

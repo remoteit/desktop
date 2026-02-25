@@ -4,7 +4,6 @@ import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
-import { selectActiveAccountId } from '../selectors/accounts'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import {

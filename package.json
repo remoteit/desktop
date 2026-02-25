@@ -25,6 +25,7 @@
     "mobile-sync-dev": "cross-env NODE_ENV=development npx cap sync",
     "open-android": "npx cap open android",
     "open-ios": "npx cap open ios",
+    "typecheck": "npm run typecheck -w=frontend",
     "postinstall": "npm run copy-env && npm run brand-web",
     "install-electron": "npm run build-frontend && npm install --workspace=electron",
     "start": "npm run brand-web && npm start -w=frontend",

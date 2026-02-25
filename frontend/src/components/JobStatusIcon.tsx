@@ -7,13 +7,13 @@ type JobStatusIconProps = IconProps & {
   status?: IJobStatus
   size?: Sizes
   device?: boolean
-  title?: boolean
+  showTooltip?: boolean
   padding?: number
 }
 
 export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
   status,
-  title = true,
+  showTooltip = true,
   padding = 0.7,
   device,
   ...props
@@ -21,13 +21,13 @@ export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
   const icon = (
     <Box padding={padding}>
       {status === 'READY' ? (
-        <Icon name="chevron-right" type="solid" color="primary" {...props} />
+        <Icon name="circle-play" type="solid" color="primary" {...props} />
       ) : status === 'SUCCESS' ? (
         <Icon name="badge-check" type="solid" color="primary" {...props} />
       ) : status === 'FAILED' || status === 'CANCELLED' ? (
         <Icon name="octagon-xmark" type="solid" color="error" {...props} />
       ) : status === 'WAITING' ? (
-        <Icon name="ellipsis" type="solid" color="info" {...props} />
+        <Icon name="circle-dot" type="solid" color="info" {...props} />
       ) : status === 'RUNNING' ? (
         <Icon name="ellipsis" type="solid" color="primary" {...props} />
       ) : device ? (
@@ -38,7 +38,7 @@ export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
     </Box>
   )
 
-  return title ? (
+  return showTooltip ? (
     <Tooltip
       arrow
       placement="top"

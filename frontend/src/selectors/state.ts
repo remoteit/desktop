@@ -3,14 +3,14 @@ import { getLocalStorage } from '../services/browser'
 import { NOTICE_VERSION_ID } from '../models/backend'
 
 export const optionalParam = (_: State, first?: any) => first
-export const optionalSecondParam = (_: State, first?: string, second?: any) => second
-export const optionalThirdParam = (_: State, first?: string, second?: any, third?: any) => third
+export const optionalSecondParam = (_: State, _first?: string, second?: any) => second
+export const optionalThirdParam = (_: State, _first?: string, _second?: any, third?: any) => third
 
 export const getUser = (state: State) => state.user
 export const getUserId = (state: State) => state.auth.user?.id || ''
 export const getMemberships = (state: State) => state.accounts.membership
 export const optionalAccountId = (_: State, accountId?: string) => accountId
-export const optionalCustomerId = (_: State, accountId?: string, customerId?: string) => customerId
+export const optionalCustomerId = (_: State, _accountId?: string, customerId?: string) => customerId
 export const getActiveId = (state: State) => state.accounts.activeId
 export const getPlans = (state: State) => state.plans.plans
 export const getPlansTests = (state: State) => state.plans.tests
@@ -20,8 +20,8 @@ export const getTestLimits = (state: State) => (state.plans.tests.limit ? state.
 
 export const getDevicesState = (state: State) => state.devices
 export const getColumns = (state: State) => state.ui.columns
-export const optionalId = (_: State, accountId?: string, id?: string) => id
-export const optionalDeviceId = (_: State, accountId?: string, deviceId?: string) => deviceId
+export const optionalId = (_: State, _accountId?: string, id?: string) => id
+export const optionalDeviceId = (_: State, _accountId?: string, deviceId?: string) => deviceId
 
 export const getSessions = (state: State) => state.sessions.all
 export const getConnections = (state: State) => state.connections.all

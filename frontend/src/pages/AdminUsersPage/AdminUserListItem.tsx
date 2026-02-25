@@ -1,14 +1,14 @@
-import React from 'react'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
+import React from 'react'
 import { GridListItem } from '../../components/GridListItem'
-import { Attribute } from '../../components/Attributes'
 import { Icon } from '../../components/Icon'
+import { AdminUserAttribute,AdminUserRow } from './adminUserAttributes'
 
 interface Props {
-  user: any
-  required?: Attribute
-  attributes: Attribute[]
+  user: AdminUserRow
+  required?: AdminUserAttribute
+  attributes: AdminUserAttribute[]
   active?: boolean
   onClick: () => void
 }

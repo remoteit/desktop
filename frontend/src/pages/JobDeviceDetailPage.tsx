@@ -1,6 +1,6 @@
 import React from 'react'
 import { State } from '../store'
-import { useParams } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Box, Typography } from '@mui/material'
@@ -14,9 +14,13 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { radius } from '../styling'
-import { Pre } from '../components/Pre'
 
-export const JobDeviceDetailPage: React.FC = () => {
+type Props = {
+  showBack?: boolean
+}
+
+export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
+  const history = useHistory()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID))
   const job = script?.jobs.find(j => j.id === jobID) || script?.jobs[0]
@@ -34,8 +38,16 @@ export const JobDeviceDetailPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
+            {showBack && (
+              <IconButton
+                name="chevron-left"
+                onClick={() => history.push(`/script/${fileID}/${jobID || 'latest'}`)}
+                size="md"
+                title="Back"
+              />
+            )}
             <Box marginRight={2}>
-              <JobStatusIcon status={jobDevice?.status} size="xl" device />
+              <JobStatusIcon status={jobDevice?.status} size="xl" device padding={0} />
             </Box>
             <Title>{jobDevice?.device?.name || 'Unknown'}</Title>
             <IconButton name="router" to={`/devices/${jobDevice?.device.id}`} title="Device details" />

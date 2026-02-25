@@ -1,17 +1,17 @@
-import React from 'react'
-import { useHistory } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
 import { Box } from '@mui/material'
-import { GridListItem } from './GridListItem'
-import { Attribute } from './Attributes'
-import { Icon } from './Icon'
+import React from 'react'
+import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { IDeviceProduct } from '../models/products'
 import { Dispatch } from '../store'
+import { GridListItem } from './GridListItem'
+import { Icon } from './Icon'
+import { ProductAttribute,ProductAttributeOptions } from './ProductAttributes'
 
 interface Props {
   product: IDeviceProduct
-  required?: Attribute
-  attributes: Attribute[]
+  required?: ProductAttribute
+  attributes: ProductAttribute[]
   mobile?: boolean
   select?: boolean
   selected?: boolean
@@ -63,10 +63,9 @@ export const ProductListItem: React.FC<Props> = ({
     >
       {attributes.map(attribute => (
         <Box key={attribute.id} className="attribute">
-          {attribute.value({ product })}
+          {attribute.value({ product } as ProductAttributeOptions)}
         </Box>
       ))}
     </GridListItem>
   )
 }
-

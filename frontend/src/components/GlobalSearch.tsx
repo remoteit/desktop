@@ -88,13 +88,13 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         options={data}
         loading={fetching}
         classes={{ listbox: css.listbox }}
-        onChange={(event, newValue: any | ISearch | null, reason: string) => {
+        onChange={(_event, newValue: any | ISearch | null, reason: string) => {
           console.log('CHANGE', newValue, reason)
           if (reason === 'selectOption') select(newValue)
           if (reason === 'createOption') submit()
         }}
         groupBy={option => option.nodeId}
-        onInputChange={(event, newQuery, reason) => {
+        onInputChange={(_event, newQuery, reason) => {
           if (reason === 'input') setQuery(newQuery)
           if (reason === 'clear') clear()
         }}
@@ -125,7 +125,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             }}
           />
         )}
-        renderOption={(props, option: ISearch, state) => {
+        renderOption={(props, option: ISearch) => {
           const parts = reactStringReplace(
             option.serviceName,
             new RegExp(`(${escapeRegexp(query.trim())})`, 'i'),

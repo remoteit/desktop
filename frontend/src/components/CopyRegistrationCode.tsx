@@ -3,7 +3,6 @@ import { State, Dispatch } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { CopyCodeBlock, CopyCodeBlockProps } from './CopyCodeBlock'
-import { Confirm } from './Confirm'
 
 export function CopyRegistrationCode(props: CopyCodeBlockProps) {
   const dispatch = useDispatch<Dispatch>()

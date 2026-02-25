@@ -1,7 +1,17 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useMatches } from '../hooks/useMatches'
-import { SxProps, Theme, MenuItem, ListItem, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material'
+import {
+  SxProps,
+  Theme,
+  MenuItem,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Badge,
+  Tooltip,
+} from '@mui/material'
 import { Sizes } from '../styling'
 import { Icon } from './Icon'
 
@@ -11,6 +21,7 @@ export type ListItemLocationProps = {
   title?: React.ReactNode
   subtitle?: React.ReactNode
   icon?: React.ReactNode
+  iconTooltip?: string
   iconColor?: Color
   iconType?: IconType
   iconSize?: Sizes
@@ -36,6 +47,7 @@ export const ListItemLocation: React.FC<ListItemLocationProps> = ({
   title,
   subtitle,
   icon,
+  iconTooltip,
   iconColor,
   iconType,
   iconSize,
@@ -74,20 +86,30 @@ export const ListItemLocation: React.FC<ListItemLocationProps> = ({
       icon
     )
 
+  const iconNode = iconTooltip ? (
+    <Tooltip title={iconTooltip} placement="top" arrow>
+      <span>
+        {badge ? (
+          <Badge variant={badge > 1 ? undefined : 'dot'} badgeContent={badge} color="error">
+            {iconEl}
+          </Badge>
+        ) : (
+          iconEl
+        )}
+      </span>
+    </Tooltip>
+  ) : badge ? (
+    <Badge variant={badge > 1 ? undefined : 'dot'} badgeContent={badge} color="error">
+      {iconEl}
+    </Badge>
+  ) : (
+    iconEl
+  )
+
   const Contents = (
     <>
-      {icon && (
-        <ListItemIcon>
-          {badge ? (
-            <Badge variant={badge > 1 ? undefined : 'dot'} badgeContent={badge} color="error">
-              {iconEl}
-            </Badge>
-          ) : (
-            iconEl
-          )}
-        </ListItemIcon>
-      )}
-      {title && <ListItemText primary={title} secondary={subtitle} />}
+      {icon && <ListItemIcon>{iconNode}</ListItemIcon>}
+      {(title || subtitle) && <ListItemText primary={title} secondary={subtitle} />}
       {children}
     </>
   )

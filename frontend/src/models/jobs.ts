@@ -1,10 +1,9 @@
 // import sleep from '../helpers/sleep'
 import structuredClone from '@ungap/structured-clone'
-import { VALID_JOB_ID_LENGTH } from '../constants'
 import { selectJobs } from '../selectors/scripting'
 import { getDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { graphQLSetJob, graphQLStartJob, graphQLCancelJob } from '../services/graphQLMutation'
+import { graphQLSetJob, graphQLStartJob, graphQLCancelJob, graphQLDeleteJob } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
@@ -104,7 +103,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ redirect: `/script/${form.fileId}/latest` })
       return jobId
     },
-    async run({ jobId, fileId }: { jobId?: string; fileId: string }, state) {
+    async run({ jobId, fileId }: { jobId?: string; fileId: string }) {
       if (!jobId) return console.error('NO JOB ID TO RUN')
       const result = await graphQLStartJob(jobId)
       if (result === 'ERROR') return
@@ -114,6 +113,11 @@ export default createModel<RootModel>()({
     async runAgain(script: IScript) {
       const deviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
       const tagValues = script?.job?.tag?.values || []
+      // Convert job arguments to argument values format
+      const argumentValues: IArgumentValue[] = script?.job?.arguments?.map(arg => ({
+        name: arg.name,
+        value: arg.value || '',
+      })) || []
       await dispatch.jobs.saveRun({
         deviceIds,
         jobId: script.job?.id || '',
@@ -123,12 +127,28 @@ export default createModel<RootModel>()({
         executable: script.executable,
         tag: script.job?.tag,
         access: tagValues.length ? 'TAG' : deviceIds.length ? 'CUSTOM' : 'NONE',
+        argumentValues,
       })
     },
     async cancel(jobId: string | undefined) {
       const result = await graphQLCancelJob(jobId)
       if (result === 'ERROR') return
       console.log('CANCELED JOB', { result, jobId })
+    },
+    async delete({ jobId, fileId }: { jobId: string; fileId: string }, state) {
+      const result = await graphQLDeleteJob(jobId)
+      if (result === 'ERROR') {
+        dispatch.ui.set({ errorMessage: 'Error deleting job' })
+        return false
+      }
+      console.log('DELETED JOB', { result, jobId })
+      // Remove from local state
+      const accountId = selectActiveAccountId(state)
+      const jobs = state.jobs.all[accountId]?.filter(j => j.id !== jobId) || []
+      dispatch.jobs.setAccount({ accountId, jobs })
+      // Redirect to script page
+      dispatch.ui.set({ redirect: `/script/${fileId}` })
+      return true
     },
     async unauthorized(deviceIds: string[], state) {
       return getDevices(state).filter(
@@ -167,7 +187,7 @@ function formAdaptor(form: IFileForm) {
   return {
     fileId: form.fileId,
     jobId: form.jobId,
-    arguments: undefined, // form.arguments to be implemented
+    arguments: form.argumentValues?.length ? form.argumentValues : undefined,
     tagFilter: form.access === 'TAG' ? form.tag : undefined,
     deviceIds: form.access === 'SELECTED' || form.access === 'CUSTOM' ? form.deviceIds : undefined,
     // all: form.access === 'ALL',

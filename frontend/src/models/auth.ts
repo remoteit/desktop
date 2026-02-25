@@ -95,7 +95,7 @@ export default createModel<RootModel>()({
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')
     },
-    async fetchUser(_: void, state) {
+    async fetchUser(_: void) {
       const { auth } = dispatch
       const response = await graphQLLogin()
       if (response === 'ERROR') return
@@ -164,7 +164,7 @@ export default createModel<RootModel>()({
         console.error('Check sign in error', error)
       }
     },
-    async handleSignInSuccess(cognitoUser: CognitoUser, state): Promise<void> {
+    async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
       if (cognitoUser?.username) {
         await dispatch.auth.set({ authenticated: true })
         await dispatch.auth.fetchUser()
@@ -195,7 +195,7 @@ export default createModel<RootModel>()({
       //send message to backend to sign out
       emit('user/lock')
     },
-    async backendSignInError(signInError: string, state) {
+    async backendSignInError(signInError: string) {
       console.error(signInError)
       await dispatch.auth.set({ signInError })
       await dispatch.auth.signedOut()

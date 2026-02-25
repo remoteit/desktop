@@ -1,39 +1,39 @@
-import React, { useState, useRef } from 'react'
-import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
+import { ListItemIcon,ListSubheader } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { ListSubheader, ListItemIcon, useMediaQuery } from '@mui/material'
-import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
+import React,{ useRef,useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from '../store'
+import { Attribute } from './Attributes'
 import { GridListHeaderTitle } from './GridListHeaderTitle'
 import { LinearProgress } from './LinearProgress'
-import { Attribute } from './Attributes'
 
 const MIN_WIDTH = 50
 
-type Props = {
-  required?: Attribute
-  attributes?: Attribute[]
+type Props<TOptions = IDataOptions> = {
+  required?: Attribute<TOptions>
+  attributes?: Attribute<TOptions>[]
   columnWidths: ILookup<number>
-  icon?: React.ReactNode
+  icon?: React.ReactNode | boolean
   fetching?: boolean
   mobile?: boolean
 }
 
-export const GridListHeader: React.FC<Props> = ({
+export const GridListHeader = <TOptions,>({
   required,
   attributes = [],
   columnWidths,
   icon,
   fetching,
   mobile,
-}) => {
+}: Props<TOptions>) => {
   const { ui } = useDispatch<Dispatch>()
   const [resize, setResize] = useState<number>(0)
   const containerRef = useRef<HTMLLIElement>(null)
   const moveRef = useRef<[string, number, number, number, number]>(['', 0, 0, 0, 0])
   const css = useStyles()
+  const iconNode = icon === true ? null : icon
 
-  const onDown = (event: React.MouseEvent, attribute: Attribute) => {
+  const onDown = (event: React.MouseEvent, attribute: Attribute<TOptions>) => {
     const containerX = containerRef.current?.getBoundingClientRect().left || 0
     const containerY = containerRef.current?.parentElement?.getBoundingClientRect().height || 0
     moveRef.current = [attribute.id, attribute.width(columnWidths), event.clientX, containerX, containerY]
@@ -64,7 +64,7 @@ export const GridListHeader: React.FC<Props> = ({
       />
       {required && (
         <GridListHeaderTitle attribute={required} onMouseDown={onDown} sticky>
-          {icon && <ListItemIcon>{icon}</ListItemIcon>}
+          {!!icon && <ListItemIcon>{iconNode}</ListItemIcon>}
         </GridListHeaderTitle>
       )}
       {!mobile &&

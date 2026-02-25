@@ -71,7 +71,7 @@ export const ProfilePage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ }) => ({
   profile: {
     display: 'flex',
     justifyContent: 'center',

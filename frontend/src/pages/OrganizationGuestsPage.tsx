@@ -1,5 +1,4 @@
 import React from 'react'
-import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
 import { selectPermissions } from '../selectors/organizations'

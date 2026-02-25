@@ -1,5 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { usePanelWidth } from '../hooks/usePanelWidth'
+import { usePanelDrag } from '../hooks/usePanelDrag'
 import { makeStyles } from '@mui/styles'
 import { Header } from './Header'
 import classnames from 'classnames'
@@ -16,76 +17,56 @@ const PADDING = 9
 
 export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout, header = true }) => {
   const [panelWidth, setPanelWidth] = usePanelWidth()
-  const handleRef = useRef<number>(panelWidth)
   const primaryRef = useRef<HTMLDivElement>(null)
-  const moveRef = useRef<number>(0)
-  const [width, setWidth] = useState<number>(panelWidth)
   const [parentWidth, setParentWidth] = useState<number | undefined>()
-  const [grab, setGrab] = useState<boolean>(false)
   const css = useStyles({ layout })
 
   const sidePanelWidth = layout.sidePanelWidth + PADDING
 
-  const onMove = (event: MouseEvent) => {
-    const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
-    handleRef.current += event.clientX - moveRef.current
-    moveRef.current = event.clientX
-    if (handleRef.current > MIN_WIDTH && handleRef.current < fullWidth - MIN_WIDTH - sidePanelWidth) {
-      setWidth(handleRef.current)
-    }
-  }
+  const getMaxWidth = useCallback(
+    () => {
+      const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
+      return fullWidth - MIN_WIDTH - sidePanelWidth
+    },
+    [sidePanelWidth]
+  )
 
-  const measure = () => {
+  const drag = usePanelDrag(panelWidth, {
+    panelRef: primaryRef,
+    minWidth: MIN_WIDTH,
+    getMaxWidth,
+    onPersist: setPanelWidth,
+    layoutDep: layout,
+  })
+
+  const measureParent = useCallback(() => {
     const parent = (primaryRef.current?.parentElement?.offsetWidth || 1000) - sidePanelWidth
     setParentWidth(parent)
-    if (width < MIN_WIDTH) setWidth(MIN_WIDTH)
-    else if (width > parent - MIN_WIDTH) setWidth(parent - MIN_WIDTH)
-  }
-
-  const onDown = (event: React.MouseEvent) => {
-    setGrab(true)
-    measure()
-    moveRef.current = event.clientX
-    handleRef.current = primaryRef.current?.offsetWidth || width
-    event.preventDefault()
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
-  }
-
-  const onUp = (event: MouseEvent) => {
-    setGrab(false)
-    event.preventDefault()
-    window.removeEventListener('mousemove', onMove)
-    window.removeEventListener('mouseup', onUp)
-    setPanelWidth(primaryRef.current?.offsetWidth || width)
-  }
+  }, [sidePanelWidth])
 
   useEffect(() => {
-    setWidth(panelWidth)
-  }, [panelWidth])
+    measureParent()
+  }, [layout, drag.width, measureParent])
 
   useEffect(() => {
-    measure()
-    window.addEventListener('resize', measure)
-    return function cleanup() {
-      window.removeEventListener('resize', measure)
-    }
-  }, [layout])
+    window.addEventListener('resize', measureParent)
+    return () => window.removeEventListener('resize', measureParent)
+  }, [measureParent])
 
   return (
     <>
-      <div className={classnames(css.panel, css.primary)} style={{ minWidth: width, width }} ref={primaryRef}>
+      <div className={classnames(css.panel, css.primary)} style={{ minWidth: drag.width, width: drag.width }} ref={primaryRef}>
         {header && <Header />}
         {primary}
       </div>
       <div className={css.anchor}>
-        <div className={css.handle} onMouseDown={onDown}>
-          <div className={grab ? 'active' : undefined} />
+        <div className={css.handle} onMouseDown={drag.onDown}>
+          <div className={drag.grab ? 'active' : undefined} />
         </div>
       </div>
       <div
         className={classnames(css.panel, css.secondary, 'drag-region')}
-        style={{ minWidth: parentWidth ? parentWidth - width : undefined }}
+        style={{ minWidth: parentWidth ? parentWidth - drag.width : undefined }}
       >
         {secondary}
       </div>
@@ -100,6 +81,7 @@ type StyleProps = {
 const useStyles = makeStyles(({ palette, spacing }) => ({
   panel: ({ layout }: StyleProps) => ({
     height: '100%',
+    overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     contain: 'content',

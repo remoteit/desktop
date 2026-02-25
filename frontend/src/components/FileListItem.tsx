@@ -14,16 +14,18 @@ type Props = {
   mobile?: boolean
   selectedIds?: string[]
   fileID?: string
+  isScript?: boolean
 }
 
-export const FileListItem: React.FC<Props> = ({ script, required, attributes, mobile, selectedIds, fileID }) => {
+export const FileListItem: React.FC<Props> = ({ script, required, attributes, mobile, fileID, isScript = true }) => {
   const history = useHistory()
 
   if (!script) return null
 
+  const basePath = isScript ? 'script' : 'file'
+
   const handleClick = () => {
-    if (selectedIds?.length) history.push(`/scripts/${script.id}`)
-    else history.push(`/script/${script.id}`)
+    history.push(`/${basePath}/${script.id}`)
   }
 
   return (

@@ -1,55 +1,59 @@
-import React, { useEffect, useState, useMemo } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
-import { Typography, Box, TextField, InputAdornment } from '@mui/material'
+import { Box,InputAdornment,TextField,Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import React,{ useEffect,useMemo,useState } from 'react'
+import { useDispatch,useSelector } from 'react-redux'
+import { useHistory,useLocation } from 'react-router-dom'
+import { Attribute } from '../../components/Attributes'
 import { Container } from '../../components/Container'
-import { Icon } from '../../components/Icon'
-import { LoadingMessage } from '../../components/LoadingMessage'
-import { Gutters } from '../../components/Gutters'
 import { GridList } from '../../components/GridList'
 import { GridListItem } from '../../components/GridListItem'
-import { Attribute } from '../../components/Attributes'
-import { State, Dispatch } from '../../store'
-import { makeStyles } from '@mui/styles'
+import { Gutters } from '../../components/Gutters'
+import { Icon } from '../../components/Icon'
+import { LoadingMessage } from '../../components/LoadingMessage'
 import { removeObject } from '../../helpers/utilHelper'
-import { useSelector, useDispatch } from 'react-redux'
-import { getPartnerStatsModel } from '../../models/partnerStats'
+import { getPartnerStatsModel,IPartnerEntity } from '../../models/partnerStats'
 import { selectDefaultSelectedPage } from '../../selectors/ui'
+import { Dispatch,State } from '../../store'
 
-class PartnerStatsAttribute extends Attribute {
+type PartnerStatsAttributeOptions = {
+  partner?: IPartnerEntity
+}
+
+class PartnerStatsAttribute extends Attribute<PartnerStatsAttributeOptions> {
   type: Attribute['type'] = 'MASTER'
 }
 
-const partnerStatsAttributes: Attribute[] = [
+const partnerStatsAttributes: PartnerStatsAttribute[] = [
   new PartnerStatsAttribute({
     id: 'partnerName',
     label: 'Name',
     defaultWidth: 250,
     required: true,
-    value: ({ partner }: { partner: any }) => partner?.name || partner?.id,
+    value: ({ partner }: PartnerStatsAttributeOptions) => partner?.name || partner?.id,
   }),
   new PartnerStatsAttribute({
     id: 'partnerDevicesTotal',
     label: 'Devices',
     defaultWidth: 80,
-    value: ({ partner }: { partner: any }) => partner?.deviceCount || 0,
+    value: ({ partner }: PartnerStatsAttributeOptions) => partner?.deviceCount || 0,
   }),
   new PartnerStatsAttribute({
     id: 'partnerActivated',
     label: 'Activated',
     defaultWidth: 100,
-    value: ({ partner }: { partner: any }) => partner?.activated || 0,
+    value: ({ partner }: PartnerStatsAttributeOptions) => partner?.activated || 0,
   }),
   new PartnerStatsAttribute({
     id: 'partnerActive',
     label: 'Active',
     defaultWidth: 80,
-    value: ({ partner }: { partner: any }) => partner?.active || 0,
+    value: ({ partner }: PartnerStatsAttributeOptions) => partner?.active || 0,
   }),
   new PartnerStatsAttribute({
     id: 'partnerOnline',
     label: 'Online',
     defaultWidth: 80,
-    value: ({ partner }: { partner: any }) => partner?.online || 0,
+    value: ({ partner }: PartnerStatsAttributeOptions) => partner?.online || 0,
   }),
 ]
 
@@ -67,7 +71,7 @@ export const PartnerStatsListPage: React.FC = () => {
   const defaultSelected = useSelector(selectDefaultSelectedPage)
 
   useEffect(() => {
-    dispatch.partnerStats.fetchIfEmpty()
+    dispatch.partnerStats.fetchIfEmpty(undefined)
     // Restore previous selection for this account, or clear to root if none
     const savedPath = defaultSelected['/partner-stats']
     if (savedPath && location.pathname !== savedPath) {
@@ -129,12 +133,7 @@ export const PartnerStatsListPage: React.FC = () => {
           </Typography>
         </Box>
       ) : (
-        <GridList
-          attributes={attributes}
-          required={required}
-          columnWidths={columnWidths}
-          fetching={loading}
-        >
+        <GridList attributes={attributes} required={required} columnWidths={columnWidths} fetching={loading} headerIcon>
           {filteredPartners.map(partner => (
             <GridListItem
               key={partner.id}
@@ -146,9 +145,7 @@ export const PartnerStatsListPage: React.FC = () => {
             >
               {attributes.map(attribute => (
                 <Box key={attribute.id} className="attribute">
-                  <div className={css.truncate}>
-                    {attribute.value({ partner })}
-                  </div>
+                  <div className={css.truncate}>{attribute.value({ partner })}</div>
                 </Box>
               ))}
             </GridListItem>

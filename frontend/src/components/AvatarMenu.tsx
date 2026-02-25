@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from 'react'
-import browser from '../services/browser'
 import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { State, Dispatch } from '../store'
@@ -15,7 +14,6 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { emit } from '../services/Controller'
-import { Icon } from './Icon'
 
 const ENTER_DELAY = 300
 const LEAVE_DELAY = 400 // must be longer than transition duration
@@ -213,7 +211,7 @@ export const AvatarMenu: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({  }) => ({
   menu: {
     '& .MuiPaper-root': {
       overflow: 'visible',

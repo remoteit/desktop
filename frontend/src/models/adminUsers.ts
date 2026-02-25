@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
-import { graphQLAdminUsers, graphQLAdminUser } from '../services/graphQLRequest'
 import type { RootModel } from '.'
+import { graphQLAdminUser,graphQLAdminUsers } from '../services/graphQLRequest'
 
 interface AdminUser {
   id: string
@@ -74,7 +74,7 @@ export const adminUsers = createModel<RootModel>()({
     reset: () => initialState
   },
   effects: (dispatch) => ({
-    async fetch(_payload, rootState) {
+    async fetch(_: void, rootState) {
       const state = rootState.adminUsers
       dispatch.adminUsers.setLoading(true)
 
@@ -119,9 +119,9 @@ export const adminUsers = createModel<RootModel>()({
         dispatch.adminUsers.setLoading(false)
       }
     },
-    async fetchIfEmpty(_payload, rootState) {
+    async fetchIfEmpty(_: void, rootState) {
       if (rootState.adminUsers.users.length === 0) {
-        await dispatch.adminUsers.fetch()
+        await dispatch.adminUsers.fetch(undefined)
       }
     },
     async fetchUserDetail(userId: string, rootState) {

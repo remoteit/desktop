@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
-import { Tooltip, Chip, IconButton, alpha } from '@mui/material'
+import { Tooltip, Chip, IconButton } from '@mui/material'
 import { spacing, Sizes } from '../styling'
 import { useLabel } from '../hooks/useLabel'
 import { Icon } from '../components/Icon'

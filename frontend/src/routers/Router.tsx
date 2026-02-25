@@ -9,7 +9,6 @@ import { ScriptingRouter } from './ScriptingRouter'
 import { ProductsRouter } from './ProductsRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
 import { State, Dispatch } from '../store'
-import { REGEX_FIRST_PATH } from '../constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { OnboardRouter } from './OnboardRouter'
@@ -265,7 +264,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Panel>
       </Route>
       {/* Scripting */}
-      <Route path={['/scripts', '/runs/:jobID?', '/script/:fileID?/:jobID?']}>
+      <Route path={['/scripts', '/runs/:jobID?', '/files/:fileID?', '/file/:fileID?', '/script/:fileID?/:jobID?']}>
         <ScriptingRouter layout={layout} />
       </Route>
       {/* Settings */}

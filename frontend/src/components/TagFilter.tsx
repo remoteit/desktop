@@ -4,8 +4,6 @@ import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { DEFAULT_ROLE } from '../models/organization'
 import {
-  SxProps,
-  Theme,
   Box,
   Chip,
   Stack,
@@ -33,7 +31,6 @@ type Props = ListItemProps & {
   systemRole?: boolean
   icon?: boolean
   selectedIds?: string[]
-  countsSx?: SxProps<Theme>
   selectAll?: boolean
   selectDevices?: boolean
   onSelectIds?: () => void
@@ -47,7 +44,6 @@ export const TagFilter: React.FC<Props> = ({
   systemRole,
   icon,
   selectedIds,
-  countsSx,
   onChange,
   selectAll,
   selectDevices,
@@ -93,7 +89,7 @@ export const TagFilter: React.FC<Props> = ({
           {selectDevices && <MenuItem value="SELECTED">{selectedIds?.length ? 'Selected' : 'Select'} Devices</MenuItem>}
           {form.deviceIds?.length && <MenuItem value="CUSTOM">Saved Devices</MenuItem>}
         </TextField>
-        <ListItemSecondaryAction sx={countsSx}>
+        <ListItemSecondaryAction sx={{ marginRight: selectDevices ? 2 : 0 }}>
           {formAccess === 'CUSTOM' && form.deviceIds?.length ? (
             <Chip size="small" label={`${form.deviceIds.length} device${form.deviceIds.length > 1 ? 's' : ''}`} />
           ) : formAccess === 'SELECTED' && selectedIds?.length ? (

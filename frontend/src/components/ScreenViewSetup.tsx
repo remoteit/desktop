@@ -1,12 +1,12 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Divider, Typography } from '@mui/material'
+import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Divider } from '@mui/material'
 import { MobileUI } from '../components/MobileUI'
 import { Icon } from '../components/Icon'
 
 type Props = { className?: string; onClick?: () => void }
 
-export const ScreenViewSetup: React.FC<Props> = ({ className, onClick }) => {
+export const ScreenViewSetup: React.FC<Props> = ({ className }) => {
   const history = useHistory()
 
   const handleClick = () => history.push('/add/screenview')
