@@ -1,6 +1,4 @@
 import React, { useState, useContext } from 'react'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
 import { MobileServiceName } from './MobileServiceName'
 import { DeviceListContext } from '../services/Context'
@@ -10,6 +8,7 @@ import { GridListItem } from './GridListItem'
 import { Restore } from './Restore'
 import { Icon } from './Icon'
 import { Box } from '@mui/material'
+import { useSelect } from '../hooks/useSelect'
 
 type Props = {
   restore?: boolean
@@ -31,7 +30,6 @@ export const DeviceListItem: React.FC<Props> = ({
   onClick,
 }) => {
   const [startRestore, setStartRestore] = useState<boolean>(false)
-  const dispatch = useDispatch<Dispatch>()
   const { connections, device, service, attributes, required } = useContext(DeviceListContext)
   const connection =
     connections && (service ? connections.find(c => c.id === service.id) : connections.find(c => c.enabled))
@@ -39,22 +37,15 @@ export const DeviceListItem: React.FC<Props> = ({
 
   if (!device) return null
 
-  const isSelected = selected.includes(device.id)
+  const { isSelected, isAnchorRow, handleSelect } = useSelect({
+    deviceId: device.id,
+    selected,
+    selectMode: select,
+  })
 
-  const onSelect = deviceId => {
-    const select = [...selected]
-    if (isSelected) {
-      const index = select.indexOf(deviceId)
-      select.splice(index, 1)
-    } else {
-      select.push(deviceId)
-    }
-    dispatch.ui.set({ selected: select })
-  }
-
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     onClick?.()
-    if (select) onSelect?.(device.id)
+    if (select) handleSelect(event?.shiftKey)
     else if (restore) setStartRestore(true)
     else history.push(`/devices/${device.id}${service ? `/${service.id}/connect` : ''}`)
   }
@@ -66,6 +57,15 @@ export const DeviceListItem: React.FC<Props> = ({
         selected={isSelected}
         disabled={disabled}
         mobile={mobile}
+        sx={
+          isAnchorRow
+            ? {
+                '& > .MuiBox-root:first-of-type': {
+                  boxShadow: theme => `inset 2px 0 0 ${theme.palette.primary.main}`,
+                },
+              }
+            : undefined
+        }
         icon={
           duplicateName ? null : select ? (
             isSelected ? (
