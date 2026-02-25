@@ -28,6 +28,7 @@ type BaseProps = {
   loading?: boolean
   label?: string
   subLabel?: string
+  selectionStatusLabel?: string
   allowedExtensions?: string[]
   topActions?: (api: FileUploadActionApi) => React.ReactNode
 }
@@ -162,6 +163,7 @@ export const FileUpload: React.FC<Props> = props => {
 
   const uploadLabel = props.label || (isTextMode ? 'Select File' : 'Upload')
   const uploadSubLabel = props.subLabel || 'Drag and drop or click'
+  const selectionStatusLabel = props.selectionStatusLabel || 'selected'
   const selectedFile = isFileMode ? props.value : undefined
 
   return (
@@ -190,8 +192,8 @@ export const FileUpload: React.FC<Props> = props => {
           {uploadSubLabel}
         </Typography>
         {(selectedFile || uploadedFilename) && !isScriptMode && (
-          <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-            {(selectedFile?.name || uploadedFilename) ?? ''} selected
+          <Typography variant="caption" color="primary.main" sx={{ mt: 0.5 }}>
+            "{(selectedFile?.name || uploadedFilename) ?? ''}" {selectionStatusLabel}
           </Typography>
         )}
       </ButtonBase>

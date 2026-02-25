@@ -169,6 +169,7 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
             attached
             label="Upload file"
             subLabel="Drag and drop or click"
+            selectionStatusLabel="uploaded"
             allowedExtensions={options}
             disabled={disabled}
             onChange={async file => {
