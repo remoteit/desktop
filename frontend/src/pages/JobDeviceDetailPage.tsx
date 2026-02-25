@@ -1,9 +1,9 @@
 import React from 'react'
-import { State, Dispatch } from '../store'
+import { State } from '../store'
 import { useParams, useHistory } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { JobStatusIcon } from '../components/JobStatusIcon'
-import { Box, Typography, useMediaQuery } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { JobAttribute } from '../components/JobAttributes'
 import { selectScript } from '../selectors/scripting'
 import { DataDisplay } from '../components/DataDisplay'
@@ -15,18 +15,14 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { radius } from '../styling'
 import { Pre } from '../components/Pre'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
 
 type Props = {
   showBack?: boolean
-  showMenu?: boolean
 }
 
-export const JobDeviceDetailPage: React.FC<Props> = ({ showBack, showMenu }) => {
-  const dispatch = useDispatch<Dispatch>()
+export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
   const history = useHistory()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const script = useSelector((state: State) => selectScript(state, undefined, fileID))
   const job = script?.jobs.find(j => j.id === jobID) || script?.jobs[0]
   const jobDevice = job?.jobDevices.find(jd => jd.id === jobDeviceID)
@@ -43,14 +39,6 @@ export const JobDeviceDetailPage: React.FC<Props> = ({ showBack, showMenu }) => 
       header={
         <>
           <Typography variant="h1">
-            {showMenu && sidebarHidden && (
-              <IconButton
-                name="bars"
-                size="md"
-                color="grayDarker"
-                onClick={() => dispatch.ui.set({ sidebarMenu: true })}
-              />
-            )}
             {showBack && (
               <IconButton
                 name="chevron-left"
@@ -60,7 +48,7 @@ export const JobDeviceDetailPage: React.FC<Props> = ({ showBack, showMenu }) => 
               />
             )}
             <Box marginRight={2}>
-              <JobStatusIcon status={jobDevice?.status} size="xl" device />
+              <JobStatusIcon status={jobDevice?.status} size="xl" device padding={0} />
             </Box>
             <Title>{jobDevice?.device?.name || 'Unknown'}</Title>
             <IconButton name="router" to={`/devices/${jobDevice?.device.id}`} title="Device details" />

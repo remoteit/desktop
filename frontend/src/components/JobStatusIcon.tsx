@@ -29,7 +29,7 @@ export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
       ) : status === 'WAITING' ? (
         <Icon name="circle-dot" type="solid" color="info" {...props} />
       ) : status === 'RUNNING' ? (
-        <Icon name="circle" type="solid" color="primary" {...props} />
+        <Icon name="ellipsis" type="solid" color="primary" {...props} />
       ) : device ? (
         <Icon platform={65535} platformIcon {...props} />
       ) : (

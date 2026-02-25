@@ -18,7 +18,7 @@ export interface ScriptListProps {
 export const JobList: React.FC<ScriptListProps> = ({ attributes, required, jobs = [], columnWidths, fetching, hideIcon, activeJobId }) => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   return (
-    <GridList {...{ attributes, required, fetching, columnWidths, mobile }}>
+    <GridList {...{ attributes, required, fetching, columnWidths, mobile }} headerIcon>
       {jobs?.map((job, index) => (
         <JobListItem key={index} {...{ job, required, attributes, mobile, hideIcon, activeJobId }} />
       ))}

@@ -12,7 +12,6 @@ import { useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
 import { ProductsHeaderButtons } from './ProductsHeaderButtons'
-import { ScriptDeleteButton } from '../ScriptDeleteButton'
 import { UpgradeNotice } from '../UpgradeNotice'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -64,12 +63,12 @@ export const Header: React.FC = () => {
           <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
         )}
         {(layout.hideSidebar || browser.isMobile) && (
-          <>
-            <Route path="/add" exact>
-              <IconButton to="/devices" icon="chevron-left" size="md" color="grayDarker" />
-            </Route>
-            {!isRootMenu && <IconButton onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />}
-          </>
+          <Route path="/add" exact>
+            <IconButton title="Back" to="/devices" icon="chevron-left" size="md" color="grayDarker" />
+          </Route>
+        )}
+        {!isRootMenu && !browser.isElectron && (
+          <IconButton title="Back" onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />
         )}
         {!(showSearch || searched) && browser.isElectron && !layout.hideSidebar && (
           <>
@@ -142,9 +141,6 @@ export const Header: React.FC = () => {
             )}
             <Route path={['/products', '/products/add']} exact>
               <ProductsHeaderButtons />
-            </Route>
-            <Route path={layout.singlePanel ? '/script/:fileID' : '/script/:fileID/:jobID?/:jobDeviceID?'} exact>
-              <ScriptDeleteButton />
             </Route>
           </>
         )}

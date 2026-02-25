@@ -5,7 +5,7 @@ import { removeObject } from '../helpers/utilHelper'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { Typography, Stack } from '@mui/material'
+import { Stack } from '@mui/material'
 import { ScriptingHeader } from '../components/ScriptingHeader'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { jobAttributes } from '../components/JobAttributes'
@@ -33,9 +33,6 @@ export const JobsPage: React.FC = () => {
       ) : !jobs.length ? (
         <Body center>
           <Stack alignItems="center">
-            <Typography variant="body2" color="gray.main" gutterBottom>
-              No runs found
-            </Typography>
             <Notice gutterBottom>Run a script to get started</Notice>
           </Stack>
         </Body>

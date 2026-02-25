@@ -122,6 +122,7 @@ export const defaultState: UIState = {
     showOrgs: false,
     hideSidebar: false,
     singlePanel: false,
+    triplePanel: false,
     sidePanelWidth: SIDEBAR_WIDTH,
     showBottomMenu: false,
     insets: { top: 0, left: 0, bottom: 0, right: 0, topPx: '', bottomPx: '', leftPx: '', rightPx: '' },

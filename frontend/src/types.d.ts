@@ -253,6 +253,7 @@ declare global {
     hideSidebar: boolean
     showBottomMenu: boolean
     singlePanel: boolean
+    triplePanel: boolean
     sidePanelWidth: number
   }
 }

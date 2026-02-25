@@ -1,8 +1,6 @@
 import React from 'react'
-import { ScriptConfigPage } from './ScriptConfigPage'
+import { ScriptEditPage } from './ScriptEditPage'
 
-type Props = { center?: boolean }
-
-export const ScriptAddPage: React.FC<Props> = () => {
-  return <ScriptConfigPage isNew showBack />
+export const ScriptAddPage: React.FC = () => {
+  return <ScriptEditPage isNew />
 }

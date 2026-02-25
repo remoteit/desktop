@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useHistory, Redirect } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Typography, List, ListItem, TextField, Box, Divider, Button, ButtonBase, useMediaQuery } from '@mui/material'
-import { useDropzone } from 'react-dropzone'
+import { Typography, List, ListItem, TextField, Box, Divider, Button, useMediaQuery } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { selectFile } from '../selectors/scripting'
@@ -12,8 +11,7 @@ import { FileDeleteButton } from '../components/FileDeleteButton'
 import { Container } from '../components/Container'
 import { IconButton } from '../buttons/IconButton'
 import { Gutters } from '../components/Gutters'
-import { Icon } from '../components/Icon'
-import { radius } from '../styling'
+import { FileUpload } from '../components/FileUpload'
 
 export const FileDetailPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -46,19 +44,6 @@ export const FileDetailPage: React.FC = () => {
     setForm(setupForm)
     setUploadedFile(undefined)
   }, [fileID, file?.id])
-
-  const onDrop = useCallback((files: File[]) => {
-    if (files.length > 0) {
-      const droppedFile = files[0]
-      setUploadedFile(droppedFile)
-      // Update form name to match new file if name hasn't been changed
-      if (form && form.name === defaultForm?.name) {
-        setForm(prev => prev ? { ...prev, name: droppedFile.name } : prev)
-      }
-    }
-  }, [form, defaultForm])
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
   const handleSave = async () => {
     if (!form || !file) return
@@ -168,40 +153,18 @@ export const FileDetailPage: React.FC = () => {
             <Typography variant="subtitle2" color="textSecondary" gutterBottom>
               Upload New Version
             </Typography>
-            
-            <ButtonBase
-              {...getRootProps()}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px dotted',
-                borderColor: isDragActive ? 'primary.main' : 'grayLightest.main',
-                backgroundColor: 'grayLightest.main',
-                padding: 2,
-                borderRadius: `${radius.sm}px`,
-                width: '100%',
-                minHeight: 80,
-                '&:hover': { backgroundColor: 'primaryHighlight.main', borderColor: 'primaryHighlight.main' },
+
+            <FileUpload
+              mode="file"
+              label="Upload New Version"
+              value={uploadedFile}
+              onChange={file => {
+                setUploadedFile(file)
+                if (file && form.name === defaultForm?.name) {
+                  setForm(prev => (prev ? { ...prev, name: file.name } : prev))
+                }
               }}
-            >
-              <input {...getInputProps()} />
-              {uploadedFile ? (
-                <>
-                  <Icon name="file" size="md" color="primary" />
-                  <Typography variant="body2" sx={{ mt: 1 }}>{uploadedFile.name}</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    {(uploadedFile.size / 1024).toFixed(1)} KB - Click or drag to replace
-                  </Typography>
-                </>
-              ) : (
-                <>
-                  <Typography variant="body2">Upload</Typography>
-                  <Typography variant="caption" color="textSecondary">Drag and drop or click</Typography>
-                </>
-              )}
-            </ButtonBase>
+            />
           </>
         )}
 

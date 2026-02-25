@@ -1,22 +1,8 @@
 import React, { useState } from 'react'
-import {
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton as MuiIconButton,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Button,
-  Stack,
-  Collapse,
-  Typography,
-  Box,
-} from '@mui/material'
-import { Icon } from './Icon'
+import { Collapse, Typography, Box } from '@mui/material'
+import { ArgumentDefinitionList } from './ArgumentDefinitionList'
+import { ArgumentDefinitionEditForm } from './ArgumentDefinitionEditForm'
+import { radius } from '../styling'
 
 type Props = {
   definitions: IArgumentDefinition[]
@@ -86,6 +72,14 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
 
   const deleteDefinition = (index: number) => {
     onChange(definitions.filter((_, i) => i !== index))
+    if (editing === 'new') return
+    if (typeof editing === 'number') {
+      if (editing === index) {
+        cancelEdit()
+      } else if (editing > index) {
+        setEditing(editing - 1)
+      }
+    }
   }
 
   const handleDragStart = (index: number) => {
@@ -135,101 +129,59 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
   const showOptions = editForm.type === 'StringSelect' || editForm.type === 'FileSelect'
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        <Typography variant="subtitle2" color="textSecondary">
-          Script Arguments
-        </Typography>
-        {!disabled && editing !== 'new' && (
-          <Button
-            size="small"
-            startIcon={<Icon name="plus" size="sm" />}
-            onClick={startNew}
-            sx={{ ml: 'auto' }}
-          >
-            Add
-          </Button>
-        )}
-      </Box>
-      <List disablePadding dense>
-        {definitions.map((def, index) => (
-          <React.Fragment key={index}>
-            <ListItem
-              disableGutters
-              draggable={!disabled && editing !== index}
-              onDragStart={() => handleDragStart(index)}
-              onDragOver={e => handleDragOver(e, index)}
-              onDrop={e => handleDrop(e, index)}
-              onDragEnd={handleDragEnd}
+    <>
+      <ArgumentDefinitionList
+        definitions={definitions}
+        disabled={disabled}
+        editing={editing}
+        dragIndex={dragIndex}
+        dragOverIndex={dragOverIndex}
+        argumentTypes={ARGUMENT_TYPES}
+        onStartNew={startNew}
+        onStartEdit={startEdit}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onDragEnd={handleDragEnd}
+        renderItemEditor={index => (
+          <Collapse in={editing === index} unmountOnExit>
+            <Box
               sx={{
-                bgcolor:
-                  editing === index
-                    ? 'action.selected'
-                    : dragOverIndex === index
-                      ? 'action.hover'
-                      : 'transparent',
-                borderRadius: 1,
-                mb: 0.5,
-                opacity: dragIndex === index ? 0.4 : 1,
-                transition: 'background-color 0.15s ease',
-                cursor: !disabled && editing !== index ? 'grab' : undefined,
-                '&:active': !disabled && editing !== index ? { cursor: 'grabbing' } : undefined,
+                padding: 2,
+                borderBottomRightRadius: radius.lg + 'px',
+                borderBottomLeftRadius: radius.lg + 'px',
+                backgroundColor: 'primaryBackground.main',
+                marginBottom: 1,
               }}
             >
-              {!disabled && editing !== index && (
-                <Box sx={{ display: 'flex', alignItems: 'center', mr: 1, color: 'text.disabled' }}>
-                  <Icon name="grip-vertical" size="sm" />
-                </Box>
-              )}
-              <ListItemText
-                primary={def.name}
-                secondary={
-                  <>
-                    {ARGUMENT_TYPES.find(t => t.value === def.type)?.label || def.type}
-                    {def.desc && ` - ${def.desc}`}
-                    {def.options?.length ? ` (${def.options.length} options)` : ''}
-                  </>
-                }
+              <ArgumentDefinitionEditForm
+                form={editForm}
+                optionsText={optionsText}
+                showOptions={showOptions}
+                canSave={canSave}
+                argumentTypes={ARGUMENT_TYPES}
+                onFormChange={setEditForm}
+                onOptionsChange={setOptionsText}
+                onSave={saveEdit}
+                onCancel={cancelEdit}
+                onDelete={() => deleteDefinition(index)}
               />
-              {!disabled && editing !== index && (
-                <ListItemSecondaryAction>
-                  <MuiIconButton size="small" onClick={() => startEdit(index)}>
-                    <Icon name="pencil" size="sm" />
-                  </MuiIconButton>
-                  <MuiIconButton size="small" onClick={() => deleteDefinition(index)}>
-                    <Icon name="trash" size="sm" />
-                  </MuiIconButton>
-                </ListItemSecondaryAction>
-              )}
-            </ListItem>
-            <Collapse in={editing === index} unmountOnExit>
-              <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1, mb: 1 }}>
-                <ArgumentEditForm
-                  form={editForm}
-                  optionsText={optionsText}
-                  showOptions={showOptions}
-                  canSave={canSave}
-                  onFormChange={setEditForm}
-                  onOptionsChange={setOptionsText}
-                  onSave={saveEdit}
-                  onCancel={cancelEdit}
-                />
-              </Box>
-            </Collapse>
-          </React.Fragment>
-        ))}
-      </List>
+            </Box>
+          </Collapse>
+        )}
+      />
 
       <Collapse in={editing === 'new'} unmountOnExit>
         <Box sx={{ mt: 1, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
           <Typography variant="subtitle2" gutterBottom>
             New Argument
           </Typography>
-          <ArgumentEditForm
+          <ArgumentDefinitionEditForm
             form={editForm}
             optionsText={optionsText}
             showOptions={showOptions}
             canSave={canSave}
+            argumentTypes={ARGUMENT_TYPES}
             onFormChange={setEditForm}
             onOptionsChange={setOptionsText}
             onSave={saveEdit}
@@ -237,100 +189,6 @@ export const ArgumentDefinitionForm: React.FC<Props> = ({ definitions, onChange,
           />
         </Box>
       </Collapse>
-
-      {definitions.length === 0 && editing !== 'new' && (
-        <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-          No arguments defined. Arguments allow users to provide input values when running the script.
-        </Typography>
-      )}
-    </Box>
+    </>
   )
 }
-
-// Extracted edit form component to avoid duplication
-type EditFormProps = {
-  form: IArgumentDefinition
-  optionsText: string
-  showOptions: boolean
-  canSave: boolean
-  onFormChange: (form: IArgumentDefinition) => void
-  onOptionsChange: (text: string) => void
-  onSave: () => void
-  onCancel: () => void
-}
-
-const ArgumentEditForm: React.FC<EditFormProps> = ({
-  form,
-  optionsText,
-  showOptions,
-  canSave,
-  onFormChange,
-  onOptionsChange,
-  onSave,
-  onCancel,
-}) => (
-  <Stack spacing={2}>
-    <TextField
-      fullWidth
-      variant="filled"
-      label="Variable Name"
-      placeholder="e.g., fileName, url, action"
-      value={form.name}
-      onChange={e => onFormChange({ ...form, name: e.target.value.replace(/\s/g, '_') })}
-      helperText="Name used in script (no spaces)"
-      error={form.name.trim().length === 0}
-      InputLabelProps={{ shrink: true }}
-    />
-    <FormControl fullWidth variant="filled">
-      <InputLabel shrink>Type</InputLabel>
-      <Select
-        value={form.type}
-        label="Type"
-        onChange={e => onFormChange({ ...form, type: e.target.value as IFileArgumentType })}
-      >
-        {ARGUMENT_TYPES.map(t => (
-          <MenuItem key={t.value} value={t.value}>
-            {t.label}
-            <Typography variant="caption" color="textSecondary" sx={{ ml: 1 }}>
-              - {t.description}
-            </Typography>
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-    <TextField
-      fullWidth
-      variant="filled"
-      label="Description"
-      placeholder="Description shown to user"
-      value={form.desc}
-      onChange={e => onFormChange({ ...form, desc: e.target.value })}
-      helperText="Help text displayed to user when filling in the value"
-      InputLabelProps={{ shrink: true }}
-    />
-    {showOptions && (
-      <TextField
-        fullWidth
-        variant="filled"
-        label={form.type === 'FileSelect' ? 'File Extensions' : 'Options'}
-        placeholder={form.type === 'FileSelect' ? '.txt, .log, .csv' : 'Option1, Option2, Option3'}
-        value={optionsText}
-        onChange={e => onOptionsChange(e.target.value)}
-        helperText={
-          form.type === 'FileSelect'
-            ? 'Comma-separated file extensions to filter by (optional)'
-            : 'Comma-separated list of options for dropdown'
-        }
-        InputLabelProps={{ shrink: true }}
-      />
-    )}
-    <Stack direction="row" spacing={1}>
-      <Button size="small" variant="contained" onClick={onSave} disabled={!canSave}>
-        Save
-      </Button>
-      <Button size="small" onClick={onCancel}>
-        Cancel
-      </Button>
-    </Stack>
-  </Stack>
-)

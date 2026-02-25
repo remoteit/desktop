@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import React, { useRef, useCallback } from 'react'
 import { usePanelWidth } from '../hooks/usePanelWidth'
 import { usePanelDrag } from '../hooks/usePanelDrag'
 import { makeStyles } from '@mui/styles'
@@ -7,7 +7,8 @@ import classnames from 'classnames'
 
 type Props = {
   primary: React.ReactNode
-  secondary?: React.ReactNode
+  secondary: React.ReactNode
+  tertiary: React.ReactNode
   layout: ILayout
   header?: boolean
 }
@@ -15,60 +16,78 @@ type Props = {
 const MIN_WIDTH = 250
 const PADDING = 9
 
-export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout, header = true }) => {
-  const [panelWidth, setPanelWidth] = usePanelWidth()
+export const TriplePanel: React.FC<Props> = ({ primary, secondary, tertiary, layout, header = true }) => {
+  const [primaryPanelWidth, setPrimaryPanelWidth] = usePanelWidth('primary')
+  const [secondaryPanelWidth, setSecondaryPanelWidth] = usePanelWidth('secondary')
   const primaryRef = useRef<HTMLDivElement>(null)
-  const [parentWidth, setParentWidth] = useState<number | undefined>()
+  const secondaryRef = useRef<HTMLDivElement>(null)
   const css = useStyles({ layout })
 
   const sidePanelWidth = layout.sidePanelWidth + PADDING
 
-  const getMaxWidth = useCallback(
+  const getPrimaryMaxWidth = useCallback(
     () => {
       const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
-      return fullWidth - MIN_WIDTH - sidePanelWidth
+      const secondaryWidth = secondaryRef.current?.offsetWidth || MIN_WIDTH
+      return fullWidth - secondaryWidth - MIN_WIDTH - sidePanelWidth
     },
     [sidePanelWidth]
   )
 
-  const drag = usePanelDrag(panelWidth, {
+  const getSecondaryMaxWidth = useCallback(
+    () => {
+      const fullWidth = secondaryRef.current?.parentElement?.offsetWidth || 1000
+      const primaryWidth = primaryRef.current?.offsetWidth || MIN_WIDTH
+      return fullWidth - primaryWidth - MIN_WIDTH - sidePanelWidth
+    },
+    [sidePanelWidth]
+  )
+
+  const dragPrimary = usePanelDrag(primaryPanelWidth, {
     panelRef: primaryRef,
     minWidth: MIN_WIDTH,
-    getMaxWidth,
-    onPersist: setPanelWidth,
+    getMaxWidth: getPrimaryMaxWidth,
+    onPersist: setPrimaryPanelWidth,
     layoutDep: layout,
   })
 
-  const measureParent = useCallback(() => {
-    const parent = (primaryRef.current?.parentElement?.offsetWidth || 1000) - sidePanelWidth
-    setParentWidth(parent)
-  }, [sidePanelWidth])
-
-  useEffect(() => {
-    measureParent()
-  }, [layout, drag.width, measureParent])
-
-  useEffect(() => {
-    window.addEventListener('resize', measureParent)
-    return () => window.removeEventListener('resize', measureParent)
-  }, [measureParent])
+  const dragSecondary = usePanelDrag(secondaryPanelWidth, {
+    panelRef: secondaryRef,
+    minWidth: MIN_WIDTH,
+    getMaxWidth: getSecondaryMaxWidth,
+    onPersist: setSecondaryPanelWidth,
+    layoutDep: layout,
+  })
 
   return (
     <>
-      <div className={classnames(css.panel, css.primary)} style={{ minWidth: drag.width, width: drag.width }} ref={primaryRef}>
+      <div
+        className={classnames(css.panel, css.primary)}
+        style={{ minWidth: dragPrimary.width, width: dragPrimary.width }}
+        ref={primaryRef}
+      >
         {header && <Header />}
         {primary}
       </div>
       <div className={css.anchor}>
-        <div className={css.handle} onMouseDown={drag.onDown}>
-          <div className={drag.grab ? 'active' : undefined} />
+        <div className={css.handle} onMouseDown={dragPrimary.onDown}>
+          <div className={dragPrimary.grab ? 'active' : undefined} />
         </div>
       </div>
       <div
-        className={classnames(css.panel, css.secondary, 'drag-region')}
-        style={{ minWidth: parentWidth ? parentWidth - drag.width : undefined }}
+        className={classnames(css.panel, css.middle)}
+        style={{ minWidth: dragSecondary.width, width: dragSecondary.width }}
+        ref={secondaryRef}
       >
         {secondary}
+      </div>
+      <div className={css.anchor}>
+        <div className={css.handle} onMouseDown={dragSecondary.onDown}>
+          <div className={dragSecondary.grab ? 'active' : undefined} />
+        </div>
+      </div>
+      <div className={classnames(css.panel, css.tertiary, 'drag-region')}>
+        {tertiary}
       </div>
     </>
   )
@@ -93,10 +112,14 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     // for iOS mobile
     paddingLeft: layout.hideSidebar ? layout.insets?.leftPx : 0,
   }),
-  secondary: ({ layout }: StyleProps) => ({
+  middle: () => ({
+    paddingTop: spacing(3),
+  }),
+  tertiary: ({ layout }: StyleProps) => ({
     flexGrow: 1,
     flexShrink: 10,
     paddingTop: spacing(3),
+    minWidth: MIN_WIDTH,
     // for iOS mobile
     paddingRight: layout.insets?.rightPx,
   }),
