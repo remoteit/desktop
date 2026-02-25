@@ -9,7 +9,20 @@ export function usePanelWidth(suffix?: string): [number, (value: number) => void
   const location = useLocation()
 
   const match = location.pathname.match(REGEX_FIRST_PATH)
-  const resize = match ? match[0].substring(1) : ''
+  const raw = match ? match[0].substring(1) : ''
+  const normalizeKey = (key: string) => {
+    switch (key) {
+      case 'file':
+        return 'files'
+      case 'script':
+        return 'scripts'
+      case 'run':
+        return 'runs'
+      default:
+        return key
+    }
+  }
+  const resize = normalizeKey(raw)
   const key = suffix ? `${resize}-${suffix}` : resize
   const panelWidth = useSelector((state: State) => state.ui.panelWidth)
 
