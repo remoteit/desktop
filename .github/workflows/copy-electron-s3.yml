@@ -11,6 +11,10 @@ on:
         description: 'S3 path (ex: test/desktop/)'     
         required: true
         default: 'desktop/'
+
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: bash
