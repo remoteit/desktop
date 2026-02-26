@@ -182,18 +182,7 @@ export const defaultState: UIState = {
   successMessage: '',
   noticeMessage: '',
   errorMessage: '',
-  panelWidth: {
-    devices: 400,
-    networks: 450,
-    connections: 450,
-    files: 450,
-    file: 450,
-    settings: 350,
-    account: 300,
-    organization: 350,
-    scripts: 550,
-    script: 450,
-  },
+  panelWidth: {},
   guides: {
     // all multi-step guides disabled while testing the guide bubbles
     // - consider removing guide steps feature if not needed any longer
