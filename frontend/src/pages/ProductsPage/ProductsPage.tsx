@@ -8,19 +8,12 @@ import { Body } from '../../components/Body'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { ProductList } from '../../components/ProductList'
 import { ProductsActionBar } from '../../components/ProductsActionBar'
-import { ProductsListHeader } from './ProductsListHeader'
 import { productAttributes } from '../../components/ProductAttributes'
 import { removeObject } from '../../helpers/utilHelper'
 import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
-type Props = {
-  showHeader?: boolean
-  showBack?: boolean
-  onBack?: () => void
-}
-
-export const ProductsPage: React.FC<Props> = ({ showHeader = false, showBack, onBack }) => {
+export const ProductsPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const { productId } = useParams<{ productId?: string }>()
@@ -55,7 +48,6 @@ export const ProductsPage: React.FC<Props> = ({ showHeader = false, showBack, on
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {showHeader && <ProductsListHeader showBack={showBack} onBack={onBack} />}
       <ProductsActionBar select={select} />
       <Container
         integrated

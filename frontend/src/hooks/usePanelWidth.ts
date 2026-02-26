@@ -13,8 +13,9 @@ const PANEL_WIDTH_DEFAULTS: Record<string, { default: number; primary?: number; 
   settings: { default: 350 },
   account: { default: 300 },
   organization: { default: 350 },
+  products: { default: 450, primary: 330, secondary: 400 },
   scripts: { default: 550 },
-  script: { default: 400, primary: 330, secondary: 400 },
+  script: { default: 450, primary: 330, secondary: 400 },
 }
 
 export function usePanelWidth(suffix?: string): [number, (value: number) => void] {
