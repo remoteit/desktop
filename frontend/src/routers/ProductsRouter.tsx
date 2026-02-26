@@ -1,5 +1,5 @@
 import React from 'react'
-import { Switch, Route, useLocation, Redirect, useParams } from 'react-router-dom'
+import { Switch, Route, useLocation } from 'react-router-dom'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { Panel } from '../components/Panel'
 import { ProductsPage } from '../pages/ProductsPage/ProductsPage'
@@ -11,8 +11,6 @@ import { ProductServiceAddPage } from '../pages/ProductsPage/ProductServiceAddPa
 import { ProductTransferPage } from '../pages/ProductsPage/ProductTransferPage'
 
 const ProductTertiaryRoutes: React.FC = () => {
-  const { productId } = useParams<{ productId: string }>()
-
   return (
     <Switch>
       <Route path="/products/:productId/add">
@@ -22,7 +20,7 @@ const ProductTertiaryRoutes: React.FC = () => {
         <ProductTransferPage />
       </Route>
       <Route path="/products/:productId/details">
-        <Redirect to={`/products/${productId}`} />
+        <ProductSettingsPage />
       </Route>
       <Route path="/products/:productId/:serviceId">
         <ProductServiceDetailPage />

@@ -59,9 +59,8 @@ export const ProductPage: React.FC = () => {
         <>
           <List>
             <ListItemLocation
-              to={`/products/${product.id}`}
-              match={`/products/${product.id}`}
-              exactMatch
+              to={`/products/${product.id}/details`}
+              match={`/products/${product.id}/details`}
               icon={<Icon platform={product.platform?.id} platformIcon size="lg" color="grayDark" />}
               title={
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ marginRight: 1 }}>
