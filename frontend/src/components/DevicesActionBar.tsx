@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { selectLimitsLookup, selectPermissions } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
+import { canEditTags } from '../models/tags'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { useHistory } from 'react-router-dom'
@@ -28,6 +29,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const removing = useSelector((state: State) => state.tags.removing)
   const destroying = useSelector((state: State) => state.ui.destroying)
   const permissions = useSelector(selectPermissions)
+  const canEdit = useSelector((state: State) => canEditTags(state, accountId))
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
@@ -43,7 +45,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           {mobile ? <Icon name="check" inline /> : 'Selected'}
         </Typography>
       </Title>
-      {feature.tagging && (
+      {feature.tagging && canEdit && (
         <>
           {mobile || <InputLabel shrink>tags</InputLabel>}
           <TagEditor
