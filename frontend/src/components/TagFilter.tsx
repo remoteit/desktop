@@ -18,6 +18,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { RoleAccessCounts } from './RoleAccessCounts'
 import { selectTags } from '../selectors/tags'
+import { canEditTags } from '../models/tags'
 import { TagEditor } from './TagEditor'
 import { ColorChip } from './ColorChip'
 import { Tags } from './Tags'
@@ -53,6 +54,7 @@ export const TagFilter: React.FC<Props> = ({
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const tags = useSelector(selectTags)
+  const canEdit = useSelector(canEditTags)
   const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
 
   // Handle empty states
@@ -138,6 +140,7 @@ export const TagFilter: React.FC<Props> = ({
           </Stack>
           <Box flexGrow={1}>
             <TagEditor
+              allowAdding={canEdit}
               onCreate={async tag => await dispatch.tags.create({ tag })}
               onSelect={tag => {
                 const formTag = structuredClone(form.tag || DEFAULT_ROLE.tag)
