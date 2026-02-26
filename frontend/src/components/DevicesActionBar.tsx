@@ -132,7 +132,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
         color="alwaysWhite"
         placement="bottom"
         onClick={() => {
-          dispatch.ui.set({ selected: [] })
+          dispatch.ui.set({ selected: [], selectionAnchor: undefined })
           history.push('/devices')
         }}
       />

@@ -48,6 +48,7 @@ export type UIState = {
   layout: ILayout
   silent: string | null
   selected: IDevice['id'][]
+  selectionAnchor?: IDevice['id']
   connected: boolean
   offline?: { severity: NoticeProps['severity']; title: string; message: NoticeProps['children'] }
   mobileNavigation: string[]
@@ -129,6 +130,7 @@ export const defaultState: UIState = {
   },
   silent: null,
   selected: [],
+  selectionAnchor: undefined,
   connected: false,
   offline: undefined,
   mobileNavigation: [],

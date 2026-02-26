@@ -18,7 +18,7 @@ export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) =
     if (indeterminate || selected.length === 0) {
       dispatch.ui.set({ selected: devices.map(d => d.id) })
     } else {
-      dispatch.ui.set({ selected: [] })
+      dispatch.ui.set({ selected: [], selectionAnchor: undefined })
     }
   }
 
