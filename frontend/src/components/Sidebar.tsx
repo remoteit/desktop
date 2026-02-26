@@ -21,12 +21,18 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
   return (
     <OrganizationSidebar insets={layout.insets} hide={!layout.showOrgs || adminMode}>
       <Body className={css.sidebar} scrollbarBackground="grayLighter">
-        <section className={css.header}>
-          <AvatarMenu />
-          {!adminMode && <RegisterMenu buttonSize={38} sidebar type="solid" />}
-        </section>
-        {adminMode ? <AdminSidebarNav /> : <SidebarNav />}
-        {!adminMode && <RemoteManagement />}
+        {adminMode ? (
+          <AdminSidebarNav />
+        ) : (
+          <>
+            <section className={css.header}>
+              <AvatarMenu />
+              <RegisterMenu buttonSize={38} sidebar type="solid" />
+            </section>
+            <SidebarNav />
+            <RemoteManagement />
+          </>
+        )}
       </Body>
     </OrganizationSidebar>
   )

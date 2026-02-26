@@ -1,13 +1,15 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { State, Dispatch } from '../store'
+import { useDispatch, useSelector } from 'react-redux'
 import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
+import { ListItemLocation } from './ListItemLocation'
 import { Icon } from './Icon'
-import { State } from '../store'
 
 export const AdminSidebarNav: React.FC = () => {
   const history = useHistory()
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
+  const dispatch = useDispatch<Dispatch>()
   const currentPath = history.location.pathname
 
   const handleNavClick = (baseRoute: string) => {
@@ -21,26 +23,36 @@ export const AdminSidebarNav: React.FC = () => {
       sx={{
         position: 'static',
         '& .MuiListItemIcon-root': {
-          color: 'grayDark.main'
+          color: 'grayDark.main',
         },
         '& .MuiListItemText-primary': {
-          color: 'grayDarkest.main'
+          color: 'grayDarkest.main',
         },
         '& .MuiListItemButton-root:hover .MuiListItemText-primary': {
-          color: 'black.main'
+          color: 'black.main',
         },
         '& .Mui-selected, & .Mui-selected:hover': {
           backgroundColor: 'primaryLighter.main',
           '& .MuiListItemIcon-root': {
-            color: 'grayDarker.main'
+            color: 'grayDarker.main',
           },
           '& .MuiListItemText-primary': {
             color: 'black.main',
-            fontWeight: 500
+            fontWeight: 500,
           },
         },
       }}
     >
+      <ListItemLocation
+        dense
+        title="Return to App"
+        icon="arrow-left"
+        to="/devices"
+        onClick={async () => {
+          await dispatch.ui.set({ adminMode: false })
+        }}
+      />
+
       <ListItemButton
         dense
         selected={currentPath.includes('/admin/users')}
@@ -65,4 +77,3 @@ export const AdminSidebarNav: React.FC = () => {
     </List>
   )
 }
-
