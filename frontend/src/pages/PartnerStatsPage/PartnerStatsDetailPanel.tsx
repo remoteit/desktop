@@ -13,14 +13,13 @@ import { LoadingMessage } from '../../components/LoadingMessage'
 import { graphQLExportPartnerDevices } from '../../services/graphQLRequest'
 import { windowOpen } from '../../services/browser'
 import { spacing } from '../../styling'
-import { State } from '../../store'
-import { getPartnerStatsModel } from '../../models/partnerStats'
+import { getPartnerStats } from '../../models/partnerStats'
 
 export const PartnerStatsDetailPanel: React.FC = () => {
   const { partnerId } = useParams<{ partnerId: string }>()
   const history = useHistory()
   const [exporting, setExporting] = useState(false)
-  const partnerStatsModel = useSelector((state: State) => getPartnerStatsModel(state))
+  const partnerStatsModel = useSelector(getPartnerStats)
   const { flattened: partners, fetching: loading } = partnerStatsModel
 
   // Find the partner in the flattened list
