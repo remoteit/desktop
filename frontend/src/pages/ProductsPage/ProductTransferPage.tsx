@@ -1,24 +1,18 @@
 import React, { useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Typography, Button, Box } from '@mui/material'
+import { Typography, Button } from '@mui/material'
 import { ContactSelector } from '../../components/ContactSelector'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
 import { Confirm } from '../../components/Confirm'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
-import { IconButton } from '../../buttons/IconButton'
 import { Body } from '../../components/Body'
-import { spacing } from '../../styling'
 import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
-type Props = {
-  showBack?: boolean
-}
-
-export const ProductTransferPage: React.FC<Props> = ({ showBack = true }) => {
+export const ProductTransferPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   const { contacts = [], transferring } = useSelector((state: State) => ({
@@ -30,10 +24,6 @@ export const ProductTransferPage: React.FC<Props> = ({ showBack = true }) => {
   
   const [open, setOpen] = useState<boolean>(false)
   const [selected, setSelected] = useState<string | undefined>()
-
-  const handleBack = () => {
-    history.push(`/products/${productId}`)
-  }
 
   const handleChange = (emails: string[]) => {
     setSelected(undefined)
@@ -71,16 +61,6 @@ export const ProductTransferPage: React.FC<Props> = ({ showBack = true }) => {
       gutterBottom
       header={
         <>
-          {showBack && (
-            <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-              <IconButton
-                icon="chevron-left"
-                title="Back to Product"
-                onClick={handleBack}
-                size="md"
-              />
-            </Box>
-          )}
           <Typography variant="h1">Transfer Product</Typography>
           <Gutters top={null}>
             <ContactSelector

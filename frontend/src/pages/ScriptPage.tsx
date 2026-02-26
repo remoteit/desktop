@@ -75,6 +75,7 @@ export const ScriptPage: React.FC = () => {
           <List disablePadding>
             <ListItemLocation
               to={`/script/${fileID}/edit`}
+              match={[`/script/${fileID}`, `/script/${fileID}/edit`]}
               title={<Typography variant="h2">{file.name}</Typography>}
               icon="scroll"
               exactMatch

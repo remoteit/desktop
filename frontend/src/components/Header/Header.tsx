@@ -94,7 +94,7 @@ export const Header: React.FC = () => {
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (
-          <Route path={['/products', '/products/add']} exact>
+          <Route path="/products">
             <Typography variant="h2">
               <Title>Products</Title>
             </Typography>
@@ -139,7 +139,7 @@ export const Header: React.FC = () => {
                 <HeaderDeviceOptionMenu />
               </Route>
             )}
-            <Route path={['/products', '/products/add']} exact>
+            <Route path="/products" exact>
               <ProductsHeaderButtons />
             </Route>
           </>

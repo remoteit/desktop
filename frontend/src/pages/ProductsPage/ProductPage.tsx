@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Typography, List, ListItemText, Stack, Chip, Divider, Box } from '@mui/material'
+import { Typography, List, ListItemText, Stack, Chip, Divider } from '@mui/material'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { Title } from '../../components/Title'
@@ -10,21 +10,12 @@ import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { spacing } from '../../styling'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
-type Props = {
-  showRefresh?: boolean
-}
-
-export const ProductPage: React.FC<Props> = ({ showRefresh = true }) => {
+export const ProductPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
-  
-  const handleBack = () => {
-    history.push('/products')
-  }
   const { all: products, fetching, initialized } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
 
@@ -65,24 +56,7 @@ export const ProductPage: React.FC<Props> = ({ showRefresh = true }) => {
     <Container
       bodyProps={{ verticalOverflow: true }}
       header={
-        <Box>
-          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-            <IconButton
-              icon="chevron-left"
-              title="Back to Products"
-              onClick={handleBack}
-              size="md"
-            />
-            {showRefresh && (
-              <IconButton
-                icon="sync"
-                title="Refresh product"
-                onClick={() => dispatch.products.fetchSingle(productId)}
-                spin={fetching}
-                size="md"
-              />
-            )}
-          </Box>
+        <>
           <List>
             <ListItemLocation
               to={`/products/${product.id}/details`}
@@ -106,7 +80,7 @@ export const ProductPage: React.FC<Props> = ({ showRefresh = true }) => {
               </Typography>
             </Stack>
           </List>
-        </Box>
+        </>
       }
     >
       <Typography variant="subtitle1">
@@ -148,5 +122,3 @@ export const ProductPage: React.FC<Props> = ({ showRefresh = true }) => {
     </Container>
   )
 }
-
-

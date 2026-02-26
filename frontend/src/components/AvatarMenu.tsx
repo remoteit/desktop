@@ -36,7 +36,6 @@ export const AvatarMenu: React.FC = () => {
   const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
   const licenseIndicator = useSelector(selectLicenseIndicator)
   const activeUser = useSelector(selectActiveUser)
-  const adminMode = useSelector((state: State) => state.ui.adminMode)
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
 
   const css = useStyles()
@@ -99,32 +98,17 @@ export const AvatarMenu: React.FC = () => {
           badge={licenseIndicator}
           onClick={handleClose}
         />
-        {adminMode ? (
+        {userAdmin && (
           <ListItemLocation
             dense
-            title="Return to App"
-            icon="arrow-left"
-            to="/devices"
+            title="Admin"
+            icon="skull"
+            to="/admin/users"
             onClick={async () => {
-              await dispatch.ui.set({ adminMode: false })
+              await dispatch.ui.set({ adminMode: true })
               handleClose()
-              history.push('/devices')
             }}
           />
-        ) : (
-          userAdmin && (
-            <ListItemLocation
-              dense
-              title="Admin"
-              icon="user-shield"
-              to="/admin/users"
-              onClick={async () => {
-                await dispatch.ui.set({ adminMode: true })
-                handleClose()
-                history.push('/admin/users')
-              }}
-            />
-          )
         )}
         <ListItemLink
           title="Support"

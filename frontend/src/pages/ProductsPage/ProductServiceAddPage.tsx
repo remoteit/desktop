@@ -16,28 +16,19 @@ import {
 import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
 import { Icon } from '../../components/Icon'
-import { IconButton } from '../../buttons/IconButton'
 import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { spacing } from '../../styling'
 import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
-type Props = {
-  showBack?: boolean
-}
-
-export const ProductServiceAddPage: React.FC<Props> = ({ showBack = true }) => {
+export const ProductServiceAddPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   const css = useStyles()
   const applicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const { all: products } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
-  
-  const handleBack = () => {
-    history.push(`/products/${productId}`)
-  }
 
   const [name, setName] = useState('')
   const [type, setType] = useState('')
@@ -126,21 +117,7 @@ export const ProductServiceAddPage: React.FC<Props> = ({ showBack = true }) => {
   }
 
   return (
-    <Container 
-      gutterBottom
-      header={
-        showBack ? (
-          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-            <IconButton
-              icon="chevron-left"
-              title="Back to Product"
-              onClick={handleBack}
-              size="md"
-            />
-          </Box>
-        ) : undefined
-      }
-    >
+    <Container gutterBottom>
       <div className={css.content}>
         {error && (
           <Notice severity="error" fullWidth gutterBottom>
@@ -246,4 +223,3 @@ const useStyles = makeStyles(({ palette }) => ({
     marginTop: spacing.lg,
   },
 }))
-

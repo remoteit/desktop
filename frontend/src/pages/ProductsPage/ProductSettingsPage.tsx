@@ -10,12 +10,10 @@ import {
   Switch,
   Button,
   Divider,
-  Box,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Container } from '../../components/Container'
 import { Icon } from '../../components/Icon'
-import { IconButton } from '../../buttons/IconButton'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { CopyCodeBlock } from '../../components/CopyCodeBlock'
 import { Body } from '../../components/Body'
@@ -25,20 +23,12 @@ import { spacing } from '../../styling'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
-type Props = {
-  showBack?: boolean
-}
-
-export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
+export const ProductSettingsPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   const css = useStyles()
   const { all: products } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
-  
-  const handleBack = () => {
-    history.push(`/products/${productId}`)
-  }
   const [updating, setUpdating] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -80,21 +70,7 @@ export const ProductSettingsPage: React.FC<Props> = ({ showBack = true }) => {
   }
 
   return (
-    <Container 
-      gutterBottom
-      header={
-        showBack ? (
-          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-            <IconButton
-              icon="chevron-left"
-              title="Back to Product"
-              onClick={handleBack}
-              size="md"
-            />
-          </Box>
-        ) : undefined
-      }
-    >
+    <Container gutterBottom>
       <div className={css.content}>
         {isLocked && product.registrationCode && (
           <section className={css.section}>

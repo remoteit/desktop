@@ -4,7 +4,33 @@ import { DynamicPanel } from '../components/DynamicPanel'
 import { Panel } from '../components/Panel'
 import { ProductsPage } from '../pages/ProductsPage/ProductsPage'
 import { ProductAddPage } from '../pages/ProductsPage/ProductAddPage'
-import { ProductsWithDetailPage } from '../pages/ProductsPage/ProductsWithDetailPage'
+import { ProductPage } from '../pages/ProductsPage/ProductPage'
+import { ProductSettingsPage } from '../pages/ProductsPage/ProductSettingsPage'
+import { ProductServiceDetailPage } from '../pages/ProductsPage/ProductServiceDetailPage'
+import { ProductServiceAddPage } from '../pages/ProductsPage/ProductServiceAddPage'
+import { ProductTransferPage } from '../pages/ProductsPage/ProductTransferPage'
+
+const ProductTertiaryRoutes: React.FC = () => {
+  return (
+    <Switch>
+      <Route path="/products/:productId/add">
+        <ProductServiceAddPage />
+      </Route>
+      <Route path="/products/:productId/transfer">
+        <ProductTransferPage />
+      </Route>
+      <Route path="/products/:productId/details">
+        <ProductSettingsPage />
+      </Route>
+      <Route path="/products/:productId/:serviceId">
+        <ProductServiceDetailPage />
+      </Route>
+      <Route path="/products/:productId" exact>
+        <ProductSettingsPage />
+      </Route>
+    </Switch>
+  )
+}
 
 export const ProductsRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const location = useLocation()
@@ -26,11 +52,22 @@ export const ProductsRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           root="/products"
         />
       </Route>
-      {/* Product detail routes - custom three panel layout */}
+      {/* Product detail routes */}
       <Route path="/products/:productId">
-        <Panel layout={layout} header={false}>
-          <ProductsWithDetailPage />
-        </Panel>
+        <DynamicPanel
+          primary={<ProductsPage />}
+          secondary={<ProductPage />}
+          tertiary={<ProductTertiaryRoutes />}
+          layout={layout}
+          root="/products/:productId"
+          subRoot={[
+            '/products/:productId/add',
+            '/products/:productId/transfer',
+            '/products/:productId/details',
+            '/products/:productId/:serviceId',
+            '/products/:productId',
+          ]}
+        />
       </Route>
       {/* Products list */}
       <Route path="/products" exact>
