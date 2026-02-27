@@ -104,10 +104,7 @@ export const AvatarMenu: React.FC = () => {
             title="Admin"
             icon="skull"
             to="/admin/users"
-            onClick={async () => {
-              await dispatch.ui.set({ adminMode: true })
-              handleClose()
-            }}
+            onClick={handleClose}
           />
         )}
         <ListItemLink

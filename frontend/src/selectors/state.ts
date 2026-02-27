@@ -7,6 +7,7 @@ export const optionalSecondParam = (_: State, _first?: string, second?: any) => 
 export const optionalThirdParam = (_: State, _first?: string, _second?: any, third?: any) => third
 
 export const getUser = (state: State) => state.user
+export const getUserAdmin = (state: State) => state.auth.user?.admin || false
 export const getUserId = (state: State) => state.auth.user?.id || ''
 export const getMemberships = (state: State) => state.accounts.membership
 export const optionalAccountId = (_: State, accountId?: string) => accountId
