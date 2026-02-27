@@ -108,7 +108,6 @@ export type UIState = {
   showDesktopNotice: boolean
   scriptForm?: IFileForm
   scriptRunForms: ILookup<IFileForm>
-  adminMode: boolean
   viewAsUser: { id: string; email: string } | null
 }
 
@@ -207,7 +206,6 @@ export const defaultState: UIState = {
   showDesktopNotice: true,
   scriptForm: undefined,
   scriptRunForms: {},
-  adminMode: false,
   viewAsUser: null,
 }
 
