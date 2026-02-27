@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import useMobileNavigation from '../hooks/useMobileNavigation'
 import { emit } from '../services/Controller'
 import { RolesRouter } from './RolesRouter'
@@ -61,6 +61,7 @@ import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
+import { AdminRouteGuard } from './AdminRouteGuard'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   useMobileNavigation()
@@ -73,23 +74,16 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const thisId = useSelector((state: State) => state.backend.thisId)
   const registered = useSelector((state: State) => !!state.backend.thisId)
   const os = useSelector((state: State) => state.backend.environment.os) || getOs()
-  const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
-  const adminMode = useSelector((state: State) => state.ui.adminMode)
+  const wasAdminRoute = useRef(location.pathname.startsWith('/admin'))
 
-  // Auto-set admin mode when navigating to admin routes
+  // Clear navigation history when crossing admin/app route boundaries
   useEffect(() => {
     const isAdminRoute = location.pathname.startsWith('/admin')
-    if (isAdminRoute && userAdmin && !adminMode) {
-      ui.set({ adminMode: true })
-      // Clear navigation history when entering admin mode
+    if (isAdminRoute !== wasAdminRoute.current) {
       emit('navigate', 'CLEAR')
-    } else if (!isAdminRoute && adminMode) {
-      // Exit admin mode when leaving admin routes
-      ui.set({ adminMode: false })
-      // Clear navigation history when returning to app
-      emit('navigate', 'CLEAR')
+      wasAdminRoute.current = isAdminRoute
     }
-  }, [location.pathname, userAdmin, adminMode, ui])
+  }, [location.pathname])
 
   useEffect(() => {
     const initialRoute = window.localStorage.getItem('initialRoute')
@@ -403,18 +397,25 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         />
       </Route>
       {/* Admin Routes */}
-      <Route path="/admin" exact>
-        <Redirect to="/admin/users" />
-      </Route>
-      <Route path="/admin/users/:userId?">
-        <Panel layout={layout}>
-          <AdminUsersWithDetailPage />
-        </Panel>
-      </Route>
-      <Route path="/admin/partners/:partnerId?">
-        <Panel layout={layout}>
-          <AdminPartnersPage />
-        </Panel>
+      <Route path="/admin">
+        <AdminRouteGuard>
+          <Switch>
+            <Route path="/admin" exact>
+              <Redirect to="/admin/users" />
+            </Route>
+            <Route path="/admin/users/:userId?">
+              <Panel layout={layout}>
+                <AdminUsersWithDetailPage />
+              </Panel>
+            </Route>
+            <Route path="/admin/partners/:partnerId?">
+              <Panel layout={layout}>
+                <AdminPartnersPage />
+              </Panel>
+            </Route>
+            <Redirect to="/admin/users" />
+          </Switch>
+        </AdminRouteGuard>
       </Route>
       <Route path="/partner-stats/:partnerId?">
         <PartnerStatsPage />

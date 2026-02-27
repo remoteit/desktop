@@ -9,6 +9,7 @@ import {
   getPreferences,
   getDeviceTimeSeries,
   getServiceTimeSeries,
+  getUserAdmin,
 } from './state'
 import { selectActiveAccountId } from './accounts'
 import { selectLimit } from './organizations'
@@ -50,4 +51,10 @@ export const selectTimeSeries = createSelector(
       serviceTimeSeries: serviceTimeSeries || timeSeriesDefaults.serviceTimeSeries,
     }
   }
+)
+
+
+export const selectIsAdminRouteMode = createSelector(
+  [getUserAdmin, (_state, pathname: string) => pathname],
+  (userAdmin, pathname) => userAdmin && pathname.startsWith('/admin')
 )
