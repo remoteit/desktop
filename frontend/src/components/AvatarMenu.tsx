@@ -98,15 +98,6 @@ export const AvatarMenu: React.FC = () => {
           badge={licenseIndicator}
           onClick={handleClose}
         />
-        {userAdmin && (
-          <ListItemLocation
-            dense
-            title="Admin"
-            icon="skull"
-            to="/admin/users"
-            onClick={handleClose}
-          />
-        )}
         <ListItemLink
           title="Support"
           icon="life-ring"
@@ -128,6 +119,9 @@ export const AvatarMenu: React.FC = () => {
           }}
           dense
         />
+        {userAdmin && (
+          <ListItemLocation dense title="Admin" icon="person-to-portal" to="/admin/users" onClick={handleClose} />
+        )}
         {(altMenu || testUI) && (
           <ListItemSetting
             confirm={!testUI}
@@ -144,8 +138,6 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         )}
-        {/* <Divider />
-        <OrganizationSelectList /> */}
         <Divider />
         <DesktopUI>
           <ListItemSetting

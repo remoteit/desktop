@@ -42,12 +42,7 @@ export const AdminSidebarNav: React.FC = () => {
         },
       }}
     >
-      <ListItemLocation
-        dense
-        title="Return to App"
-        icon="arrow-left"
-        to="/devices"
-      />
+      <ListItemLocation dense title="Return to App" icon="person-to-portal" to="/devices" />
 
       <ListItemButton
         dense
