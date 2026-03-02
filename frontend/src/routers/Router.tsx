@@ -1,6 +1,4 @@
-import React, { useEffect, useRef } from 'react'
-import useMobileNavigation from '../hooks/useMobileNavigation'
-import { emit } from '../services/Controller'
+import React, { useEffect } from 'react'
 import { RolesRouter } from './RolesRouter'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
@@ -64,7 +62,6 @@ import analytics from '../services/analytics'
 import { AdminRouteGuard } from './AdminRouteGuard'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  useMobileNavigation()
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
@@ -74,29 +71,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const thisId = useSelector((state: State) => state.backend.thisId)
   const registered = useSelector((state: State) => !!state.backend.thisId)
   const os = useSelector((state: State) => state.backend.environment.os) || getOs()
-  const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
-  const adminMode = useSelector((state: State) => state.ui.adminMode)
-  const wasAdminRoute = useRef(location.pathname.startsWith('/admin'))
-
-  // Auto-set admin mode when navigating to admin routes
-  useEffect(() => {
-    const isAdminRoute = location.pathname.startsWith('/admin')
-    if (isAdminRoute && userAdmin && !adminMode) {
-      ui.set({ adminMode: true })
-    } else if (!isAdminRoute && adminMode) {
-      // Exit admin mode when leaving admin routes
-      ui.set({ adminMode: false })
-    }
-  }, [location.pathname, userAdmin, adminMode, ui])
-
-  // Clear navigation history when crossing admin/app route boundaries
-  useEffect(() => {
-    const isAdminRoute = location.pathname.startsWith('/admin')
-    if (isAdminRoute !== wasAdminRoute.current) {
-      emit('navigate', 'CLEAR')
-      wasAdminRoute.current = isAdminRoute
-    }
-  }, [location.pathname])
 
   useEffect(() => {
     const initialRoute = window.localStorage.getItem('initialRoute')
@@ -114,8 +88,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       ui.set({ redirect: undefined })
     }
     analytics.pageView(location.pathname)
-    // update navigation state
-    emit('navigate', 'STATUS')
   }, [history.location, ui, redirect])
 
   return (
