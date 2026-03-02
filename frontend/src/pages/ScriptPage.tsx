@@ -47,8 +47,8 @@ export const ScriptPage: React.FC = () => {
     const deviceLabel =
       deviceCount === 1 ? job.jobDevices[0].device.name : deviceCount === 0 ? 'No devices' : `${deviceCount} devices`
     const tagNames = job.tag?.values || []
-    const to = job.status === 'READY' ? `/script/${file.id}/run/${job.id}` : `/script/${file.id}/${job.id}`
-    const matchPath = job.status === 'READY' ? `/script/${file.id}/run/${job.id}` : `/script/${file.id}/${job.id}`
+    const to = job.status === 'READY' ? `/script/${file.id}/${job.id}/run` : `/script/${file.id}/${job.id}`
+    const matchPath = job.status === 'READY' ? `/script/${file.id}/${job.id}/run` : `/script/${file.id}/${job.id}`
 
     return (
       <ListItemLocation
