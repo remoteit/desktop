@@ -35,10 +35,6 @@ const ScriptTertiaryRoutes: React.FC = () => {
       <Route path="/script/:fileID/edit" exact>
         <ScriptEditPage />
       </Route>
-      {/* Legacy run URL → redirect to new shape */}
-      <Route path="/script/:fileID/run/:jobID">
-        <RedirectToRunPage />
-      </Route>
       {/* New run config (no existing job) */}
       <Route path="/script/:fileID/run" exact>
         <ScriptRunPage />

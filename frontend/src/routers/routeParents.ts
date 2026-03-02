@@ -34,16 +34,8 @@ const ROUTE_PARENTS: [string, string][] = [
   // Devices — device page → devices list
   ['/devices/:deviceID', '/devices'],
 
-  // Networks — service sub-pages → network page (mirrors device service routes)
-  ['/networks/:networkID/:serviceID/connect', '/networks/:networkID'],
-  ['/networks/:networkID/:serviceID/configure', '/networks/:networkID'],
-  ['/networks/:networkID/:serviceID/edit', '/networks/:networkID'],
-  ['/networks/:networkID/:serviceID/users/:userID', '/networks/:networkID'],
-  ['/networks/:networkID/:serviceID/users', '/networks/:networkID'],
-  ['/networks/:networkID/:serviceID/defaults', '/networks/:networkID'],
+  // Networks
   ['/networks/:networkID/:serviceID/lan', '/networks/:networkID'],
-  ['/networks/:networkID/:serviceID/advanced', '/networks/:networkID'],
-  ['/networks/:networkID/:serviceID/share', '/networks/:networkID'],
   ['/networks/:networkID/:serviceID', '/networks/:networkID'],
   ['/networks/:networkID/share', '/networks/:networkID'],
   ['/networks/:networkID/users', '/networks/:networkID'],
