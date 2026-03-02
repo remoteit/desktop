@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { State, Dispatch } from '../store'
-import { useDispatch, useSelector } from 'react-redux'
+import { State } from '../store'
+import { useSelector } from 'react-redux'
 import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { Icon } from './Icon'
@@ -9,7 +9,6 @@ import { Icon } from './Icon'
 export const AdminSidebarNav: React.FC = () => {
   const history = useHistory()
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
-  const dispatch = useDispatch<Dispatch>()
   const currentPath = history.location.pathname
 
   const handleNavClick = (baseRoute: string) => {
@@ -43,15 +42,7 @@ export const AdminSidebarNav: React.FC = () => {
         },
       }}
     >
-      <ListItemLocation
-        dense
-        title="Return to App"
-        icon="arrow-left"
-        to="/devices"
-        onClick={async () => {
-          await dispatch.ui.set({ adminMode: false })
-        }}
-      />
+      <ListItemLocation dense title="Return to App" icon="person-to-portal" to="/devices" />
 
       <ListItemButton
         dense

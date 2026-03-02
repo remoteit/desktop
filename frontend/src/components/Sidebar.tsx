@@ -12,10 +12,13 @@ import { spacing } from '../styling'
 import { Body } from './Body'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
+import { useLocation } from 'react-router-dom'
+import { selectIsAdminRouteMode } from '../selectors/ui'
 
 export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const addSpace = browser.isMac && browser.isElectron && !layout.showOrgs
-  const adminMode = useSelector((state: State) => state.ui.adminMode)
+  const location = useLocation()
+  const adminMode = useSelector((state: State) => selectIsAdminRouteMode(state, location.pathname))
   const css = useStyles({ insets: layout.insets, addSpace })
 
   return (

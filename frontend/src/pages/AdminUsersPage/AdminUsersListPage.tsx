@@ -49,14 +49,6 @@ export const AdminUsersListPage: React.FC = () => {
     dispatch.adminUsers.fetch(undefined)
   }, [page, searchValue, searchType])
 
-  useEffect(() => {
-    const handleRefresh = () => {
-      dispatch.adminUsers.fetch(undefined)
-    }
-    window.addEventListener('refreshAdminData', handleRefresh)
-    return () => window.removeEventListener('refreshAdminData', handleRefresh)
-  }, [])
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(event.target.value)
   }
@@ -86,7 +78,7 @@ export const AdminUsersListPage: React.FC = () => {
   }
 
   const handleUserClick = (userId: string) => {
-    const route = `/admin/users/${userId}/account`
+    const route = `/admin/users/${userId}`
     dispatch.ui.setDefaultSelected({ key: '/admin/users', value: route, accountId: 'admin' })
     history.push(route)
   }
