@@ -36,8 +36,9 @@ export const App: React.FC = () => {
   const location = useLocation()
   const hideSplashScreen = useCapacitor()
   const authInitialized = useSelector((state: State) => state.auth.initialized)
+  const authenticated = useSelector((state: State) => state.auth.authenticated)
+  const user = useSelector((state: State) => state.auth.user)
   const installed = useSelector((state: State) => state.binaries.installed)
-  const signedOut = useSelector((state: State) => !state.auth.initialized || !state.auth.authenticated)
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const reseller = useSelector(selectResellerRef)
@@ -49,6 +50,8 @@ export const App: React.FC = () => {
   const sidePanelWidth = hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
   const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
+  const needsUserHydration = authenticated && !user
+  const signedOut = !authInitialized || !authenticated
 
   const layout: ILayout = {
     insets,
@@ -78,7 +81,7 @@ export const App: React.FC = () => {
       </Page>
     )
 
-  if (!authInitialized)
+  if (!authInitialized || needsUserHydration)
     return (
       <Page>
         {reseller ? (
