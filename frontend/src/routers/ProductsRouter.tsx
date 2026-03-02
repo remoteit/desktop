@@ -10,7 +10,7 @@ import { ProductServiceDetailPage } from '../pages/ProductsPage/ProductServiceDe
 import { ProductServiceAddPage } from '../pages/ProductsPage/ProductServiceAddPage'
 import { ProductTransferPage } from '../pages/ProductsPage/ProductTransferPage'
 
-const ProductTertiaryRoutes: React.FC = () => {
+const ProductDetailRoutes: React.FC = () => {
   return (
     <Switch>
       <Route path="/products/:productId/add">
@@ -25,6 +25,7 @@ const ProductTertiaryRoutes: React.FC = () => {
       <Route path="/products/:productId/:serviceId">
         <ProductServiceDetailPage />
       </Route>
+      {/* Default: show settings without redirecting, so /products/:productId stays a valid navigation position */}
       <Route path="/products/:productId" exact>
         <ProductSettingsPage />
       </Route>
@@ -49,24 +50,16 @@ export const ProductsRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           primary={<ProductsPage />}
           secondary={<ProductAddPage />}
           layout={layout}
-          root="/products"
         />
       </Route>
-      {/* Product detail routes */}
+      {/* Product detail: primary=product overview, secondary=service/settings detail, tertiary=products list (triple only) */}
       <Route path="/products/:productId">
         <DynamicPanel
-          primary={<ProductsPage />}
-          secondary={<ProductPage />}
-          tertiary={<ProductTertiaryRoutes />}
-          layout={layout}
+          primary={<ProductPage />}
+          secondary={<ProductDetailRoutes />}
+          tertiary={<ProductsPage />}
           root="/products/:productId"
-          subRoot={[
-            '/products/:productId/add',
-            '/products/:productId/transfer',
-            '/products/:productId/details',
-            '/products/:productId/:serviceId',
-            '/products/:productId',
-          ]}
+          layout={layout}
         />
       </Route>
       {/* Products list */}

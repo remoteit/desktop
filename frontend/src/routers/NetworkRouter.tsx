@@ -44,8 +44,8 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           </Route>
         </Switch>
       }
-      layout={layout}
       root="/networks"
+      layout={layout}
     />
   )
 }
