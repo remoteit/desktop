@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react'
 import { Switch, Route, useParams, useHistory, useLocation } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { AdminUsersListPage } from './AdminUsersListPage'
 import { AdminUserDetailPage } from './AdminUserDetailPage'
 import { AdminUserAccountPanel } from './AdminUserAccountPanel'
 import { AdminUserDevicesPanel } from './AdminUserDevicesPanel'
-import { State } from '../../store'
+import { State, Dispatch } from '../../store'
 import { useContainerWidth } from '../../hooks/useContainerWidth'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
 
@@ -20,6 +20,7 @@ export const AdminUsersWithDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>()
   const history = useHistory()
   const location = useLocation()
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
@@ -47,12 +48,12 @@ export const AdminUsersWithDetailPage: React.FC = () => {
     }
   }, []) // Empty dependency array - only run once on mount
 
-  // Redirect to /account tab if navigating directly to user without a sub-route
+  // Persist explicit navigation back to the users list
   useEffect(() => {
-    if (userId && location.pathname === `/admin/users/${userId}`) {
-      history.replace(`/admin/users/${userId}/account`)
+    if (location.pathname === '/admin/users') {
+      dispatch.ui.setDefaultSelected({ key: '/admin/users', value: '/admin/users', accountId: 'admin' })
     }
-  }, [userId, location.pathname, history])
+  }, [location.pathname, dispatch])
 
   // Only show detail panels when a user is selected
   const hasUserSelected = !!userId
@@ -117,7 +118,7 @@ export const AdminUsersWithDetailPage: React.FC = () => {
                 <AdminUserDevicesPanel />
               </Route>
               <Route path="/admin/users/:userId" exact>
-                {!showMiddle && <AdminUserDetailPage />}
+                {showMiddle ? <AdminUserAccountPanel /> : <AdminUserDetailPage />}
               </Route>
             </Switch>
           </Box>

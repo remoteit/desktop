@@ -31,16 +31,6 @@ export const AdminUserAccountPanel: React.FC = () => {
     }
   }, [userId])
 
-  useEffect(() => {
-    const handleRefresh = () => {
-      if (userId) {
-        fetchUser()
-      }
-    }
-    window.addEventListener('refreshAdminData', handleRefresh)
-    return () => window.removeEventListener('refreshAdminData', handleRefresh)
-  }, [userId])
-
   const fetchUser = async () => {
     setLoading(true)
     const userData = await dispatch.adminUsers.fetchUserDetail(userId)
@@ -61,8 +51,7 @@ export const AdminUserAccountPanel: React.FC = () => {
         // Invalidate cache and refresh
         dispatch.adminUsers.invalidateUserDetail(userId)
         await fetchUser()
-        // Refresh the user list
-        window.dispatchEvent(new Event('refreshAdminData'))
+        await dispatch.adminUsers.fetch(undefined)
       } else {
         dispatch.ui.set({ errorMessage: 'Failed to update email' })
       }
@@ -88,8 +77,7 @@ export const AdminUserAccountPanel: React.FC = () => {
         setDeleteConfirmOpen(false)
         // Redirect to user list
         history.push('/admin/users')
-        // Refresh the user list
-        window.dispatchEvent(new Event('refreshAdminData'))
+        await dispatch.adminUsers.fetch(undefined)
       } else {
         dispatch.ui.set({ errorMessage: 'Failed to delete user' })
       }
@@ -294,4 +282,3 @@ export const AdminUserAccountPanel: React.FC = () => {
     </Container>
   )
 }
-

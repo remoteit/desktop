@@ -66,10 +66,6 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     setLoading(false)
   }
 
-  const handleBack = () => {
-    history.push('/admin/partners')
-  }
-
   const handleNavigateToPartner = (id: string) => {
     history.push(`/admin/partners/${id}`)
   }
@@ -247,22 +243,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Box>
-          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton
-                icon="chevron-left"
-                title="Back to Partners"
-                onClick={handleBack}
-                size="md"
-              />
-              <IconButton
-                icon="sync"
-                title="Refresh partner"
-                onClick={() => fetchPartner(true)}
-                spin={loading}
-                size="md"
-              />
-            </Box>
+          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <IconButton
                 icon="arrow-to-bottom"

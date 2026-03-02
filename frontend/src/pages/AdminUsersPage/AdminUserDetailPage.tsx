@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Typography, List, ListItemText, Box, Divider } from '@mui/material'
 import { Container } from '../../components/Container'
@@ -15,7 +15,6 @@ import { windowOpen } from '../../services/browser'
 
 export const AdminUserDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
-  const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -26,16 +25,6 @@ export const AdminUserDetailPage: React.FC = () => {
     }
   }, [userId])
 
-  useEffect(() => {
-    const handleRefresh = () => {
-      if (userId) {
-        fetchUser(true)
-      }
-    }
-    window.addEventListener('refreshAdminData', handleRefresh)
-    return () => window.removeEventListener('refreshAdminData', handleRefresh)
-  }, [userId])
-
   const fetchUser = async (forceRefresh = false) => {
     setLoading(true)
     if (forceRefresh) {
@@ -44,10 +33,6 @@ export const AdminUserDetailPage: React.FC = () => {
     const userData = await dispatch.adminUsers.fetchUserDetail(userId)
     setUser(userData)
     setLoading(false)
-  }
-
-  const handleBack = () => {
-    history.push('/admin/users')
   }
 
   const handleViewAsUser = () => {
@@ -87,19 +72,6 @@ export const AdminUserDetailPage: React.FC = () => {
       header={
         <Box>
           <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-            <IconButton
-              icon="chevron-left"
-              title="Back to Users"
-              onClick={handleBack}
-              size="md"
-            />
-            <IconButton
-              icon="sync"
-              title="Refresh user"
-              onClick={() => fetchUser(true)}
-              spin={loading}
-              size="md"
-            />
             <IconButton
               icon="eye"
               title="View as User"

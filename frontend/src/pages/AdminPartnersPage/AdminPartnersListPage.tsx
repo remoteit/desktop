@@ -101,14 +101,6 @@ export const AdminPartnersListPage: React.FC = () => {
     dispatch.adminPartners.fetchIfEmpty(undefined)
   }, [])
 
-  useEffect(() => {
-    const handleRefresh = () => {
-      dispatch.adminPartners.fetch()
-    }
-    window.addEventListener('refreshAdminData', handleRefresh)
-    return () => window.removeEventListener('refreshAdminData', handleRefresh)
-  }, [])
-
   const filteredPartners = useMemo(() => {
     if (!searchValue.trim()) return partners
     const search = searchValue.toLowerCase()

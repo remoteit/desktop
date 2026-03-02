@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { Box } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { AdminPartnersListPage } from './AdminPartnersListPage'
 import { AdminPartnerDetailPanel } from './AdminPartnerDetailPanel'
-import { State } from '../../store'
+import { State, Dispatch } from '../../store'
 import { useContainerWidth } from '../../hooks/useContainerWidth'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
 
@@ -17,6 +17,7 @@ export const AdminPartnersPage: React.FC = () => {
   const { partnerId } = useParams<{ partnerId?: string }>()
   const history = useHistory()
   const location = useLocation()
+  const dispatch = useDispatch<Dispatch>()
   const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
@@ -41,6 +42,13 @@ export const AdminPartnersPage: React.FC = () => {
       hasRestoredRef.current = true
     }
   }, []) // Empty dependency array - only run once on mount
+
+  // Persist explicit navigation back to the partners list
+  useEffect(() => {
+    if (location.pathname === '/admin/partners') {
+      dispatch.ui.setDefaultSelected({ key: '/admin/partners', value: '/admin/partners', accountId: 'admin' })
+    }
+  }, [location.pathname, dispatch])
 
   const hasPartnerSelected = !!partnerId
   const showLeft = !hasPartnerSelected || maxPanels >= 2
@@ -138,4 +146,3 @@ const useStyles = makeStyles(({ palette }) => ({
     },
   },
 }))
-

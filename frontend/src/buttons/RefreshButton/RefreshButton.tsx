@@ -16,7 +16,13 @@ import { limitDays } from '../../models/plans'
 
 export const RefreshButton: React.FC<ButtonProps> = props => {
   const dispatch = useDispatch<Dispatch>()
-  const { deviceID, fileID, jobID } = useParams<{ deviceID?: string; fileID?: string; jobID?: string }>()
+  const { deviceID, fileID, jobID, userId, partnerId } = useParams<{
+    deviceID?: string
+    fileID?: string
+    jobID?: string
+    userId?: string
+    partnerId?: string
+  }>()
   const device = useSelector((state: State) => selectDevice(state, undefined, deviceID))
   const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const fetching = useSelector(
@@ -95,17 +101,23 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
     // admin users pages
   } else if (adminUsersPage) {
-    title = 'Refresh users'
-    methods.push(async () => {
-      window.dispatchEvent(new CustomEvent('refreshAdminData'))
-    })
+    title = userId ? 'Refresh user' : 'Refresh users'
+    if (userId)
+      methods.push(async () => {
+        await dispatch.adminUsers.invalidateUserDetail(userId)
+        await dispatch.adminUsers.fetchUserDetail(userId)
+      })
+    else methods.push(async () => await dispatch.adminUsers.fetch(undefined))
 
     // admin partners pages
   } else if (adminPartnersPage) {
-    title = 'Refresh partners'
-    methods.push(async () => {
-      window.dispatchEvent(new CustomEvent('refreshAdminData'))
-    })
+    title = partnerId ? 'Refresh partner' : 'Refresh partners'
+    if (partnerId)
+      methods.push(async () => {
+        await dispatch.adminPartners.invalidatePartnerDetail(partnerId)
+        await dispatch.adminPartners.fetchPartnerDetail(partnerId)
+      })
+    else methods.push(async () => await dispatch.adminPartners.fetch())
   }
 
   const refresh = async () => {
