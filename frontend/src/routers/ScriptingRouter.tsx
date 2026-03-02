@@ -20,7 +20,7 @@ import { Box } from '@mui/material'
 // Redirect legacy prepared-job edit route to the new run page
 const RedirectToRunPage: React.FC = () => {
   const { fileID, jobID } = useParams<{ fileID: string; jobID: string }>()
-  return <Redirect to={`/script/${fileID}/run/${jobID}`} />
+  return <Redirect to={`/script/${fileID}/${jobID}/run`} />
 }
 
 const ScriptTertiaryRoutes: React.FC = () => {
@@ -35,8 +35,8 @@ const ScriptTertiaryRoutes: React.FC = () => {
       <Route path="/script/:fileID/edit" exact>
         <ScriptEditPage />
       </Route>
-      {/* Run config — new run or edit prepared job */}
-      <Route path="/script/:fileID/run/:jobID?">
+      {/* New run config (no existing job) */}
+      <Route path="/script/:fileID/run" exact>
         <ScriptRunPage />
       </Route>
       <Route path="/script/:fileID/history" exact>
@@ -45,12 +45,17 @@ const ScriptTertiaryRoutes: React.FC = () => {
       <Route path="/script/:fileID/prepared" exact>
         <Redirect to={`/script/${fileID}/edit`} />
       </Route>
+      {/* Run config for a prepared job — must precede /:jobID/:jobDeviceID */}
+      <Route path="/script/:fileID/:jobID/run">
+        <ScriptRunPage />
+      </Route>
       <Route path="/script/:fileID/:jobID/:jobDeviceID">
         <JobDetailPage />
       </Route>
       <Route path="/script/:fileID/:jobID">
         <JobDetailPage />
       </Route>
+      {/* Default: show edit page without redirecting, so /script/:fileID stays a valid navigation position */}
       <Route path="/script/:fileID" exact>
         <ScriptEditPage />
       </Route>
@@ -102,7 +107,6 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           primary={<FilesPage scripts />}
           secondary={<ScriptRunPage isNew />}
           layout={layout}
-          root="/scripts"
         />
       </Route>
       {/* New script edit form (step 1 of new script workflow) */}
@@ -111,7 +115,6 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           primary={<FilesPage scripts />}
           secondary={<ScriptAddPage />}
           layout={layout}
-          root="/scripts"
         />
       </Route>
       {/* Files list with add panel */}
@@ -120,18 +123,16 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           primary={<FilesPage />}
           secondary={<FileAddPage />}
           layout={layout}
-          root="/files"
         />
       </Route>
-      {/* Script detail routes - triple-panel capable */}
+      {/* Script detail: primary=job list, secondary=edit/run/job detail, tertiary=file list (triple only) */}
       <Route path="/script/:fileID">
         <DynamicPanel
-          primary={<FilesPage scripts />}
-          secondary={<ScriptPage />}
-          tertiary={<ScriptTertiaryRoutes />}
-          layout={layout}
+          primary={<ScriptPage />}
+          secondary={<ScriptTertiaryRoutes />}
+          tertiary={<FilesPage scripts />}
           root="/script/:fileID"
-          subRoot={['/script/:fileID/edit', '/script/:fileID/run', '/script/:fileID/:jobID', '/script/:fileID']}
+          layout={layout}
         />
       </Route>
       {/* File detail routes */}
@@ -140,7 +141,6 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           primary={<FilesPage />}
           secondary={<FileDetailPage />}
           layout={layout}
-          root="/file/:fileID"
         />
       </Route>
       {/* Jobs/runs page */}

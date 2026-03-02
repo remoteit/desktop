@@ -12,8 +12,8 @@ export const PartnerStatsPage: React.FC = () => {
     <DynamicPanel
       primary={<PartnerStatsListPage />}
       secondary={<PartnerStatsDetailPanel />}
-      layout={layout}
       root="/partner-stats"
+      layout={layout}
     />
   )
 }

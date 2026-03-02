@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Typography, Box } from '@mui/material'
+import { Typography } from '@mui/material'
 import { State, Dispatch, store } from '../store'
 import { selectScript } from '../selectors/scripting'
 import { getDevices, getAllDevices } from '../selectors/devices'
@@ -9,7 +9,6 @@ import { selectRole } from '../selectors/organizations'
 import { initialForm } from '../models/files'
 import { ScriptRunForm } from '../components/ScriptRunForm'
 import { Container } from '../components/Container'
-import { IconButton } from '../buttons/IconButton'
 
 type Props = {
   isNew?: boolean
@@ -226,11 +225,6 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
     }
   }
 
-  const handleBack = () => {
-    if (isNew && editFormSnapshotRef.current) dispatch.ui.set({ scriptForm: editFormSnapshotRef.current })
-    history.push(isNew ? '/scripts/add' : `/script/${fileID}/edit`)
-  }
-
   const hasValidEditSnapshot = !isNew || !!(editFormSnapshotRef.current?.name && editFormSnapshotRef.current?.script)
 
   const canRun =
@@ -249,12 +243,7 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
     <Container
       integrated
       bodyProps={{ inset: true, verticalOverflow: true, gutterBottom: true }}
-      header={
-        <Typography variant="h1">
-          {!isNew && !!jobID && <IconButton name="chevron-left" onClick={handleBack} size="md" title="Back" />}
-          <Box sx={{ flex: 1, ml: !isNew && !!jobID ? 1 : 0 }}>{isNew ? 'Run Script' : script?.name || 'Run'}</Box>
-        </Typography>
-      }
+      header={<Typography variant="h1">{isNew ? 'Run Script' : script?.name || 'Run'}</Typography>}
     >
       <ScriptRunForm
         runForm={runForm}

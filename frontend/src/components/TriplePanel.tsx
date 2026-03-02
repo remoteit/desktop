@@ -6,9 +6,9 @@ import { Header } from './Header'
 import classnames from 'classnames'
 
 type Props = {
-  primary: React.ReactNode
-  secondary: React.ReactNode
-  tertiary: React.ReactNode
+  left: React.ReactNode
+  center: React.ReactNode
+  right: React.ReactNode
   layout: ILayout
   header?: boolean
 }
@@ -16,7 +16,7 @@ type Props = {
 const MIN_WIDTH = 250
 const PADDING = 9
 
-export const TriplePanel: React.FC<Props> = ({ primary, secondary, tertiary, layout, header = true }) => {
+export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, header = true }) => {
   const [primaryPanelWidth, setPrimaryPanelWidth] = usePanelWidth('primary')
   const [secondaryPanelWidth, setSecondaryPanelWidth] = usePanelWidth('secondary')
   const primaryRef = useRef<HTMLDivElement>(null)
@@ -66,8 +66,8 @@ export const TriplePanel: React.FC<Props> = ({ primary, secondary, tertiary, lay
         style={{ minWidth: dragPrimary.width, width: dragPrimary.width }}
         ref={primaryRef}
       >
-        {header && <Header />}
-        {primary}
+        {header && <Header panels={3} />}
+        {left}
       </div>
       <div className={css.anchor}>
         <div className={css.handle} onMouseDown={dragPrimary.onDown}>
@@ -79,7 +79,7 @@ export const TriplePanel: React.FC<Props> = ({ primary, secondary, tertiary, lay
         style={{ minWidth: dragSecondary.width, width: dragSecondary.width }}
         ref={secondaryRef}
       >
-        {secondary}
+        {center}
       </div>
       <div className={css.anchor}>
         <div className={css.handle} onMouseDown={dragSecondary.onDown}>
@@ -87,7 +87,7 @@ export const TriplePanel: React.FC<Props> = ({ primary, secondary, tertiary, lay
         </div>
       </div>
       <div className={classnames(css.panel, css.tertiary, 'drag-region')}>
-        {tertiary}
+        {right}
       </div>
     </>
   )

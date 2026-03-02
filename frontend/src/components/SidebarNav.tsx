@@ -22,7 +22,8 @@ import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
-import { getPartnerStatsModel } from '../models/partnerStats'
+import { getHasPartner } from '../models/partnerStats'
+import { TestUI } from './TestUI'
 
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
@@ -37,9 +38,7 @@ export const SidebarNav: React.FC = () => {
   const css = useStyles({ active: counts.active, insets })
   const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
 
-  // Check if user has admin access to any partner entities
-  const partnerStatsModel = useSelector((state: State) => getPartnerStatsModel(state))
-  const hasPartnerAdminAccess = partnerStatsModel.initialized && partnerStatsModel.all.length > 0
+  const hasPartner = useSelector(getHasPartner)
 
   if (remoteUI)
     return (
@@ -111,8 +110,11 @@ export const SidebarNav: React.FC = () => {
         match={['/script', '/scripts', '/runs']}
         dense
       />
+      <TestUI>
+        <ListItemLocation title="Products" to="/products" match="/products" icon="conveyor-belt-boxes" dense />
+      </TestUI>
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
-      {hasPartnerAdminAccess && (
+      {hasPartner && (
         <ListItemLocation
           title="Partner Stats"
           to="/partner-stats"
@@ -121,7 +123,6 @@ export const SidebarNav: React.FC = () => {
           onClick={() => dispatch.partnerStats.fetchIfEmpty()}
         />
       )}
-      <ListItemLocation title="Products" to="/products" match="/products" icon="box" dense />
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
       <Box className={css.footer}>
         <UpgradeBanner />

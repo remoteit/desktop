@@ -43,6 +43,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   return (
     <DynamicPanel
       primary={<DevicePage />}
+      root="/devices/:deviceID"
       secondary={
         <Switch>
           <Route path="/devices/:deviceID/add/scan">
@@ -78,7 +79,6 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Switch>
       }
       layout={layout}
-      root="/devices/:deviceID"
     />
   )
 }

@@ -220,10 +220,10 @@ export default createModel<RootModel>()({
             connection = { ...newConnection(service), ...picked }
             setConnection(connection)
           } else if (!connection.port) {
-            console.error('No service or connection port found in connection. Connection cleared.', { connection })
+            console.error(`No service or connection port found in connection. Connection cleared. ${JSON.stringify(connection)}`)
             dispatch.connections.forget(connection.id)
           } else {
-            console.warn(`No service found for connection ${connection.id}`, { connection })
+            console.warn(`No service found for connection ${connection.id}. ${JSON.stringify(connection)}`)
             // @TODO fetch device if trying to restore a non-loaded connection
             // const device = await dispatch.devices.fetchSingle({ id: connection.id, hidden: true })
             // console.log('FETCHED DEVICE RETURNED:', device)

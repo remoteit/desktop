@@ -4,39 +4,36 @@ import { TriplePanel } from './TriplePanel'
 import { DoublePanel } from './DoublePanel'
 import { Panel } from './Panel'
 
+// Layout by panel count:
+//   1 panel:  primary (at root) or secondary (deeper)
+//   2 panels: primary (left) + secondary (right)
+//   3 panels: tertiary (left) + primary (center) + secondary (right)
+
 type Props = {
   primary: React.ReactNode
   secondary?: React.ReactNode
   tertiary?: React.ReactNode
   layout: ILayout
-  root?: string | string[]
-  subRoot?: string | string[]
+  root?: string  // single panel: show primary when pathname matches this exactly, secondary otherwise
   header?: boolean
 }
 
-export const DynamicPanel: React.FC<Props> = ({ root, subRoot, header = true, ...props }) => {
+export const DynamicPanel: React.FC<Props> = ({ primary, secondary, tertiary, layout, root, header = true }) => {
   const location = useLocation()
-  const rootMatch = matchPath(location.pathname, { path: root, exact: true })
-  const subRootMatch = subRoot ? matchPath(location.pathname, { path: subRoot }) : null
 
-  if (props.layout.singlePanel || !props.secondary) {
-    // Single panel: at root show secondary (detail), otherwise show deepest active content
-    if (rootMatch && props.secondary) return <Panel layout={props.layout} header={header}>{props.secondary}</Panel>
-    if (subRootMatch && props.tertiary) return <Panel layout={props.layout} header={header}>{props.tertiary}</Panel>
-    return <Panel layout={props.layout} header={header}>{props.secondary}</Panel>
+  if (layout.singlePanel) {
+    const atRoot = root ? !!matchPath(location.pathname, { path: root, exact: true }) : !secondary
+    if (!atRoot && secondary) return <Panel layout={layout} header={header}>{secondary}</Panel>
+    return <Panel layout={layout} header={header}>{primary}</Panel>
   }
 
-  // Triple panel: show all three when layout supports it and tertiary content is active
-  if (props.layout.triplePanel && props.tertiary && subRootMatch) {
-    return <TriplePanel header={header} primary={props.primary} secondary={props.secondary} tertiary={props.tertiary} layout={props.layout} />
+  if (layout.triplePanel && tertiary && secondary) {
+    return <TriplePanel header={header} left={tertiary} center={primary} right={secondary} layout={layout} />
   }
 
-  // Double panel: choose the two most relevant panels
-  if (subRootMatch && props.tertiary) {
-    // Deep navigation: show secondary + tertiary
-    return <DoublePanel header={header} primary={props.secondary} secondary={props.tertiary} layout={props.layout} />
+  if (secondary) {
+    return <DoublePanel header={header} left={primary} right={secondary} layout={layout} />
   }
 
-  // Default: show primary + secondary
-  return <DoublePanel header={header} primary={props.primary} secondary={props.secondary} layout={props.layout} />
+  return <Panel layout={layout} header={header}>{primary}</Panel>
 }

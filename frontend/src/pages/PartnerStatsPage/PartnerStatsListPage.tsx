@@ -11,7 +11,7 @@ import { Gutters } from '../../components/Gutters'
 import { Icon } from '../../components/Icon'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { removeObject } from '../../helpers/utilHelper'
-import { getPartnerStatsModel,IPartnerEntity } from '../../models/partnerStats'
+import { getPartnerStats, IPartnerEntity } from '../../models/partnerStats'
 import { selectDefaultSelectedPage } from '../../selectors/ui'
 import { Dispatch,State } from '../../store'
 
@@ -65,7 +65,7 @@ export const PartnerStatsListPage: React.FC = () => {
   const [searchValue, setSearchValue] = useState('')
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const userId = useSelector((state: State) => state.user.id)
-  const partnerStatsModel = useSelector((state: State) => getPartnerStatsModel(state))
+  const partnerStatsModel = useSelector(getPartnerStats)
   const { flattened: partners, fetching: loading, initialized } = partnerStatsModel
   const [required, attributes] = removeObject(partnerStatsAttributes, a => a.required === true)
   const defaultSelected = useSelector(selectDefaultSelectedPage)

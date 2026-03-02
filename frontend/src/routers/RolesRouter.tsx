@@ -13,6 +13,7 @@ export const RolesRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   return (
     <DynamicPanel
       primary={<OrganizationRolesPage />}
+      root="/organization/roles"
       secondary={
         <Switch>
           <Route path="/organization/roles/:roleID">
@@ -29,7 +30,6 @@ export const RolesRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Switch>
       }
       layout={layout}
-      root="/organization/roles"
     />
   )
 }

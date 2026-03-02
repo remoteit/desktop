@@ -6,8 +6,8 @@ import { Header } from './Header'
 import classnames from 'classnames'
 
 type Props = {
-  primary: React.ReactNode
-  secondary?: React.ReactNode
+  left: React.ReactNode
+  right?: React.ReactNode
   layout: ILayout
   header?: boolean
 }
@@ -15,7 +15,7 @@ type Props = {
 const MIN_WIDTH = 250
 const PADDING = 9
 
-export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout, header = true }) => {
+export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = true }) => {
   const [panelWidth, setPanelWidth] = usePanelWidth()
   const primaryRef = useRef<HTMLDivElement>(null)
   const [parentWidth, setParentWidth] = useState<number | undefined>()
@@ -56,8 +56,8 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout, heade
   return (
     <>
       <div className={classnames(css.panel, css.primary)} style={{ minWidth: drag.width, width: drag.width }} ref={primaryRef}>
-        {header && <Header />}
-        {primary}
+        {header && <Header panels={2} />}
+        {left}
       </div>
       <div className={css.anchor}>
         <div className={css.handle} onMouseDown={drag.onDown}>
@@ -68,7 +68,7 @@ export const DoublePanel: React.FC<Props> = ({ primary, secondary, layout, heade
         className={classnames(css.panel, css.secondary, 'drag-region')}
         style={{ minWidth: parentWidth ? parentWidth - drag.width : undefined }}
       >
-        {secondary}
+        {right}
       </div>
     </>
   )

@@ -58,10 +58,15 @@ const defaultAccountState: PartnerStatsAccountState = {
   default: { ...defaultState },
 }
 
-// Helper to get partner stats model for a specific account
-export function getPartnerStatsModel(state: State, accountId?: string): PartnerStatsState {
+// Helper to get partner stats state for a specific account
+export function getPartnerStats(state: State, accountId?: string): PartnerStatsState {
   const activeAccountId = selectActiveAccountId(state)
   return state.partnerStats[accountId || activeAccountId] || state.partnerStats.default || defaultState
+}
+
+export function getHasPartner(state: State, accountId?: string): boolean {
+  const ps = getPartnerStats(state, accountId)
+  return ps.initialized && ps.all.length > 0
 }
 
 // Helper to flatten partner entities (including children)
@@ -140,9 +145,9 @@ export default createModel<RootModel>()({
 
     async fetchIfEmpty(_: void, state) {
       const accountId = selectActiveAccountId(state)
-      const partnerStatsModel = getPartnerStatsModel(state, accountId)
+      const ps = getPartnerStats(state, accountId)
       // Only fetch if not initialized for this account
-      if (!partnerStatsModel.initialized) {
+      if (!ps.initialized) {
         await dispatch.partnerStats.fetch()
       }
     },
@@ -150,7 +155,7 @@ export default createModel<RootModel>()({
     // Set effect that updates state for a specific account
     async set(params: Partial<PartnerStatsState> & { accountId?: string }, state) {
       const accountId = params.accountId || selectActiveAccountId(state)
-      const partnerStatsState = { ...getPartnerStatsModel(state, accountId) }
+      const partnerStatsState = { ...getPartnerStats(state, accountId) }
 
       Object.keys(params).forEach(key => {
         if (key !== 'accountId') {

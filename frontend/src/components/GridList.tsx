@@ -86,7 +86,6 @@ const useStyles = makeStyles(({ palette }) => ({
       display: 'inline-grid',
       alignItems: 'start',
       '& > .MuiBox-root': {
-        paddingLeft: spacing.xs,
         paddingRight: spacing.sm,
       },
     },

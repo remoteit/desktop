@@ -1,8 +1,7 @@
 import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
 import React, { useState, useRef } from 'react'
-import useMobileBack from '../../hooks/useMobileBack'
+import useNavigationUp from '../../hooks/useNavigationUp'
 import browser from '../../services/browser'
-import { emit } from '../../services/Controller'
 import { State } from '../../store'
 import { Dispatch } from '../../store'
 import { useMediaQuery, Typography } from '@mui/material'
@@ -21,14 +20,17 @@ import { IconButton } from '../../buttons/IconButton'
 import { Title } from '../Title'
 import { Box } from '@mui/material'
 
-export const Header: React.FC = () => {
+type Props = {
+  panels?: number
+}
+
+export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
-  const canNavigate = useSelector((state: State) => state.backend.canNavigate)
   const layout = useSelector((state: State) => state.ui.layout)
   const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
-  const mobileGoBack = useMobileBack()
+  const navigateUp = useNavigationUp(panels)
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
@@ -67,30 +69,8 @@ export const Header: React.FC = () => {
             <IconButton title="Back" to="/devices" icon="chevron-left" size="md" color="grayDarker" />
           </Route>
         )}
-        {!isRootMenu && !browser.isElectron && (
-          <IconButton title="Back" onClick={mobileGoBack} icon="chevron-left" size="md" color="grayDarker" />
-        )}
-        {!(showSearch || searched) && browser.isElectron && !layout.hideSidebar && (
-          <>
-            <IconButton
-              title="Back"
-              placement="bottom"
-              disabled={!canNavigate.canGoBack}
-              onClick={() => emit('navigate', 'BACK')}
-              icon="chevron-left"
-              size="md"
-              color={canNavigate.canGoBack ? 'grayDarker' : 'grayLight'}
-            />
-            <IconButton
-              title="Forward"
-              placement="bottom"
-              disabled={!canNavigate.canGoForward}
-              onClick={() => emit('navigate', 'FORWARD')}
-              icon="chevron-right"
-              size="md"
-              color={canNavigate.canGoForward ? 'grayDarker' : 'grayLight'}
-            />
-          </>
+        {!isRootMenu && (
+          <IconButton title="Back" onClick={navigateUp} icon="chevron-left" size="md" color="grayDarker" />
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (
