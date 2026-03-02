@@ -191,7 +191,6 @@ function getEventHandlers() {
     preferences: (result: IPreferences) => backend.set({ preferences: result }),
 
     'app/filePath': (filePath: string) => backend.set({ filePath }),
-    'app/canNavigate': canNavigate => backend.set({ canNavigate }),
 
     // AutoUpdate
     'update/status': (updateStatus: IBackendState['updateStatus']) => {

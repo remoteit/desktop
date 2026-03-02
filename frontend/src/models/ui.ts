@@ -51,7 +51,6 @@ export type UIState = {
   selectionAnchor?: IDevice['id']
   connected: boolean
   offline?: { severity: NoticeProps['severity']; title: string; message: NoticeProps['children'] }
-  mobileNavigation: string[]
   waitMessage?: string
   claiming: boolean
   fetching: boolean
@@ -133,7 +132,6 @@ export const defaultState: UIState = {
   selectionAnchor: undefined,
   connected: false,
   offline: undefined,
-  mobileNavigation: [],
   waitMessage: undefined,
   claiming: false,
   fetching: false,

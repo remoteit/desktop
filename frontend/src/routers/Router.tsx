@@ -1,6 +1,4 @@
 import React, { useEffect } from 'react'
-import useMobileNavigation from '../hooks/useMobileNavigation'
-import { emit } from '../services/Controller'
 import { RolesRouter } from './RolesRouter'
 import { DeviceRouter } from './DeviceRouter'
 import { ServiceRouter } from './ServiceRouter'
@@ -63,7 +61,6 @@ import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
-  useMobileNavigation()
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
@@ -81,13 +78,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
     const isAdminRoute = location.pathname.startsWith('/admin')
     if (isAdminRoute && userAdmin && !adminMode) {
       ui.set({ adminMode: true })
-      // Clear navigation history when entering admin mode
-      emit('navigate', 'CLEAR')
     } else if (!isAdminRoute && adminMode) {
       // Exit admin mode when leaving admin routes
       ui.set({ adminMode: false })
-      // Clear navigation history when returning to app
-      emit('navigate', 'CLEAR')
     }
   }, [location.pathname, userAdmin, adminMode, ui])
 
@@ -107,8 +100,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       ui.set({ redirect: undefined })
     }
     analytics.pageView(location.pathname)
-    // update navigation state
-    emit('navigate', 'STATUS')
   }, [history.location, ui, redirect])
 
   return (
@@ -161,8 +152,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 </Route>
               </Switch>
             }
-            layout={layout}
             root="/connections"
+            layout={layout}
           />
         </DeviceContextWrapper>
       </Route>
@@ -293,8 +284,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
             </Switch>
           }
-          layout={layout}
           root="/settings"
+          layout={layout}
         />
       </Route>
       {/* Organization */}
@@ -364,8 +355,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
             </Switch>
           }
+          root="/organization"
           layout={layout}
-          root={['/organization']}
         />
       </Route>
       {/* Account */}
@@ -398,8 +389,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
             </Switch>
           }
-          layout={layout}
           root="/account"
+          layout={layout}
         />
       </Route>
       {/* Admin Routes */}
