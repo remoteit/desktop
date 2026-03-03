@@ -1,6 +1,6 @@
 name: Build / Electron
 
-on: 
+on:
   workflow_dispatch:
     inputs:
       brand:
@@ -17,7 +17,11 @@ on:
         type: boolean
         default: true
       publishing_behavior:
-        description: 'Publishing behavior: always=upload from branch/tag, onTagOrDraft=upload on tag or existing draft release, never=build only'
+        description: |-
+          Publishing behavior:
+          always=upload from branch/tag
+          onTagOrDraft=upload on tag or existing draft release
+          never=build only
         required: false
         type: choice
         default: always
@@ -37,7 +41,7 @@ env:
   CI: ''
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
   SKIP_SIGNING: ${{ inputs.skip_signing }}
-  PUBLISH_MODE: ${{ inputs.publishing_behavior || 'always' }}
+  PUB_MODE: ${{ inputs.publishing_behavior || 'always' }}
   BRAND: ${{ inputs.brand || 'remoteit' }}
   GH_TOKEN: ${{ secrets.github_token }}
 
@@ -91,7 +95,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           cd electron
-          npm run build -- --publish "$PUBLISH_MODE"
+          npm run build-ci
+          npm run build-electron -- --publish "$PUB_MODE"
 
       # macOS build
       - name: Build Electron app (macOS)
@@ -101,11 +106,13 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
         run: |
           cd electron
-          npm run build -- --publish "$PUBLISH_MODE"
+          npm run build-ci
+          npm run build-electron -- --publish "$PUB_MODE"
 
       # Windows build
       - name: Build Electron app (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           cd electron
-          npm run build -- --publish "$PUBLISH_MODE"
+          npm run build-ci
+          npm run build-electron -- --publish "$PUB_MODE"

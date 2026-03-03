@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-s build-frontend brand copy-install copy-entitlements compile build-electron",
+    "build-ci": "cross-env NODE_ENV=production run-s build-frontend brand copy-install copy-entitlements compile",
     "build-local": "cross-env NODE_ENV=production run-s copy-env clean build-frontend brand copy-install copy-entitlements compile build-electron",
     "build-frontend": "cd ../ && npm run build-frontend",
     "build-electron": "cross-env NODE_ARCH=$npm_config_arch electron-builder",
