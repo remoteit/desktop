@@ -2,6 +2,7 @@ import { Color as ColorType, ColorPartial } from '@mui/material/styles/createPal
 import { SafeAreaInsets } from 'capacitor-plugin-safe-area'
 import { Application } from './shared/applications'
 import { Attribute } from './components/Attributes'
+import { IDeviceProduct, IProductService } from './models/products'
 
 declare global {
   type DiagramGroupType =
@@ -219,6 +220,8 @@ declare global {
     device?: IDevice
     instance?: IInstance
     service?: IService
+    product?: IDeviceProduct
+    productService?: IProductService
     session?: ISession
     connection?: IConnection
     connections?: IConnection[]

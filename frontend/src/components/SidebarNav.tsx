@@ -110,9 +110,7 @@ export const SidebarNav: React.FC = () => {
         match={['/script', '/scripts', '/runs']}
         dense
       />
-      <TestUI>
-        <ListItemLocation title="Products" to="/products" match="/products" icon="conveyor-belt-boxes" dense />
-      </TestUI>
+      <ListItemLocation title="Products" to="/products" match="/products" icon="conveyor-belt-boxes" dense />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       {hasPartner && (
         <ListItemLocation

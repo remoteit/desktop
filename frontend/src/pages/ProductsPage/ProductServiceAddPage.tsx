@@ -1,91 +1,30 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import {
-  Typography,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Switch,
-  Box,
-} from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { Typography } from '@mui/material'
+import { ServiceForm } from '../../components/ServiceForm'
 import { Container } from '../../components/Container'
+import { Title } from '../../components/Title'
+import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
-import { Notice } from '../../components/Notice'
-import { spacing } from '../../styling'
-import { dispatch, State } from '../../store'
+import { Gutters } from '../../components/Gutters'
+import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
 export const ProductServiceAddPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
-  const css = useStyles()
-  const applicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const { all: products } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
-
-  const [name, setName] = useState('')
-  const [type, setType] = useState('')
-  const [port, setPort] = useState('')
-  const [enabled, setEnabled] = useState(true)
   const [creating, setCreating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string>()
 
   const isLocked = product?.status === 'LOCKED'
 
-  const handleTypeChange = (selectedType: string) => {
-    setType(selectedType)
-    // Set default port for the selected application type
-    const appType = applicationTypes.find(t => String(t.id) === selectedType)
-    if (appType?.port) {
-      setPort(String(appType.port))
-    }
-  }
-
-  const handleCreate = async () => {
-    if (!productId) return
-    
-    if (!name.trim()) {
-      setError('Service name is required')
-      return
-    }
-    if (!type) {
-      setError('Service type is required')
-      return
-    }
-    const portNum = parseInt(port)
-    if (isNaN(portNum) || portNum < 0 || portNum > 65535) {
-      setError('Port must be a number between 0 and 65535')
-      return
-    }
-
-    setError(null)
-    setCreating(true)
-
-    const service = await dispatch.products.addService({
-      productId,
-      input: {
-        name: name.trim(),
-        type,
-        port: portNum,
-        enabled,
-      },
-    })
-
-    setCreating(false)
-
-    if (service) {
-      history.push(`/products/${productId}/${service.id}`)
-    } else {
-      setError('Failed to add service')
-    }
-  }
+  useEffect(() => {
+    dispatch.applicationTypes.fetchAll()
+  }, [])
 
   if (!product) {
     return (
@@ -117,109 +56,49 @@ export const ProductServiceAddPage: React.FC = () => {
   }
 
   return (
-    <Container gutterBottom>
-      <div className={css.content}>
+    <Container
+      gutterBottom
+      bodyProps={{ verticalOverflow: true }}
+      integrated
+      header={
+        <Typography variant="h1">
+          <Title>New service</Title>
+        </Typography>
+      }
+    >
+      <Gutters>
         {error && (
           <Notice severity="error" fullWidth gutterBottom>
             {error}
           </Notice>
         )}
+      </Gutters>
 
-        <Box className={css.form}>
-          <TextField
-            label="Service Name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            fullWidth
-            required
-            autoFocus
-            margin="normal"
-            disabled={creating}
-          />
-
-          <FormControl fullWidth margin="normal" required>
-            <InputLabel>Service Type</InputLabel>
-            <Select
-              value={type}
-              onChange={e => handleTypeChange(e.target.value)}
-              label="Service Type"
-              disabled={creating}
-            >
-              {applicationTypes.map(t => (
-                <MenuItem key={t.id} value={String(t.id)}>
-                  {t.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <TextField
-            label="Port"
-            value={port}
-            onChange={e => setPort(e.target.value)}
-            fullWidth
-            required
-            type="number"
-            margin="normal"
-            disabled={creating}
-            inputProps={{ min: 0, max: 65535 }}
-          />
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={enabled}
-                onChange={e => setEnabled(e.target.checked)}
-                disabled={creating}
-              />
-            }
-            label="Enabled"
-            sx={{ marginTop: 2 }}
-          />
-
-          <Box className={css.actions}>
-            <Button
-              onClick={() => history.push(`/products/${productId}`)}
-              disabled={creating}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCreate}
-              disabled={creating}
-            >
-              {creating ? (
-                <>
-                  <Icon name="spinner-third" spin size="sm" inline />
-                  Adding...
-                </>
-              ) : (
-                'Add Service'
-              )}
-            </Button>
-          </Box>
-        </Box>
-      </div>
+      <ServiceForm
+        adding
+        compact
+        thisDevice={false}
+        editable
+        disabled={creating}
+        onSubmit={async form => {
+          setError(undefined)
+          setCreating(true)
+          const service = await dispatch.products.addService({
+            productId,
+            input: {
+              name: (form.name || '').trim(),
+              type: String(form.typeID),
+              port: form.port || 1,
+              enabled: !!form.enabled,
+            },
+          })
+          setCreating(false)
+          if (service) history.push(`/products/${productId}/${service.id}`)
+          else setError('Failed to add service')
+        }}
+        onCancel={() => history.push(`/products/${productId}`)}
+        actionGuttersSize="xl"
+      />
     </Container>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  content: {
-    padding: spacing.md,
-  },
-  form: {
-    backgroundColor: palette.white.main,
-    borderRadius: 8,
-    border: `1px solid ${palette.grayLighter.main}`,
-    padding: spacing.md,
-  },
-  actions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-  },
-}))

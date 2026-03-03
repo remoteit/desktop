@@ -9,6 +9,7 @@ import { Confirm } from '../../components/Confirm'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
+import { ProductHeaderMenu } from '../../components/ProductHeaderMenu'
 import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
@@ -57,22 +58,13 @@ export const ProductTransferPage: React.FC = () => {
   }
 
   return (
-    <Container
-      gutterBottom
-      header={
-        <>
-          <Typography variant="h1">Transfer Product</Typography>
-          <Gutters top={null}>
-            <ContactSelector
-              contacts={contacts}
-              selected={selected ? [selected] : []}
-              onSelect={handleChange}
-              isMulti={false}
-            />
-          </Gutters>
-        </>
-      }
-    >
+    <ProductHeaderMenu product={product}>
+      <Gutters size="md" bottom={null}>
+        <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+          Transfer Product
+        </Typography>
+        <ContactSelector contacts={contacts} selected={selected ? [selected] : []} onSelect={handleChange} isMulti={false} />
+      </Gutters>
       <Gutters>
         <Typography variant="body2" gutterBottom>
           You are transferring "{product.name}" to a new owner.
@@ -108,6 +100,6 @@ export const ProductTransferPage: React.FC = () => {
           <b> {selected}</b>.
         </Typography>
       </Confirm>
-    </Container>
+    </ProductHeaderMenu>
   )
 }

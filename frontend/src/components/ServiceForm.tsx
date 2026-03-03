@@ -21,7 +21,7 @@ import { usePortScan } from '../hooks/usePortScan'
 import { validPort } from '../helpers/connectionHelper'
 import { findType } from '../models/applicationTypes'
 import { Gutters } from './Gutters'
-import { spacing } from '../styling'
+import { spacing, Sizes } from '../styling'
 import { Notice } from './Notice'
 
 export type ServiceFormProps = {
@@ -31,6 +31,8 @@ export type ServiceFormProps = {
   editable: boolean
   disabled?: boolean
   adding?: boolean
+  compact?: boolean
+  actionGuttersSize?: Sizes | null
   onChange?: (form: IService) => void /// swap for URL form?
   onSubmit: (form: IService) => void
   onCancel: () => void
@@ -43,6 +45,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   editable,
   disabled,
   adding,
+  compact,
+  actionGuttersSize = 'xxs',
   onChange,
   onSubmit,
   onCancel,
@@ -276,25 +280,27 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
               }}
             />
           </ListItem>
-          <ListItem className={css.field}>
-            <TextField
-              multiline
-              label="Service Description"
-              value={form.attributes.description || ''}
-              disabled={disabled}
-              variant="filled"
-              placeholder="&ndash;"
-              InputLabelProps={{ shrink: true }}
-              onChange={event => {
-                form.attributes.description = event.target.value.substring(0, MAX_DESCRIPTION_LENGTH)
-                setForm({ ...form })
-              }}
-            />
-            <Typography variant="caption">
-              Service description or connection instructions.
-              <i>Optional</i>
-            </Typography>
-          </ListItem>
+          {!compact && (
+            <ListItem className={css.field}>
+              <TextField
+                multiline
+                label="Service Description"
+                value={form.attributes.description || ''}
+                disabled={disabled}
+                variant="filled"
+                placeholder="&ndash;"
+                InputLabelProps={{ shrink: true }}
+                onChange={event => {
+                  form.attributes.description = event.target.value.substring(0, MAX_DESCRIPTION_LENGTH)
+                  setForm({ ...form })
+                }}
+              />
+              <Typography variant="caption">
+                Service description or connection instructions.
+                <i>Optional</i>
+              </Typography>
+            </ListItem>
+          )}
           {editable ? (
             <ListItemCheckbox
               checked={form.enabled}
@@ -321,25 +327,27 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           )}
         </List>
       </AccordionMenuItem>
-      <AccordionMenuItem subtitle="Setup connection defaults" gutters>
-        <List>
-          <ServiceAttributesForm
-            connection={{
-              ...DEFAULT_CONNECTION,
-              ...form.attributes,
-              typeID: form.typeID,
-            }}
-            disabled={disabled}
-            attributes={form.attributes}
-            onChange={attributes => {
-              const result = { ...form, attributes }
-              setForm(result)
-              setUrlField(result)
-            }}
-          />
-        </List>
-      </AccordionMenuItem>
-      <Gutters size="xxs" top="lg">
+      {!compact && (
+        <AccordionMenuItem subtitle="Setup connection defaults" gutters>
+          <List>
+            <ServiceAttributesForm
+              connection={{
+                ...DEFAULT_CONNECTION,
+                ...form.attributes,
+                typeID: form.typeID,
+              }}
+              disabled={disabled}
+              attributes={form.attributes}
+              onChange={attributes => {
+                const result = { ...form, attributes }
+                setForm(result)
+                setUrlField(result)
+              }}
+            />
+          </List>
+        </AccordionMenuItem>
+      )}
+      <Gutters size={actionGuttersSize} top="lg">
         <Button
           type="submit"
           variant="contained"
