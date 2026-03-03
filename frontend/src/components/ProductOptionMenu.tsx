@@ -13,7 +13,7 @@ type Props = { product?: IDeviceProduct }
 export const ProductOptionMenu: React.FC<Props> = ({ product }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const history = useHistory()
-  const handleClick = event => setAnchorEl(event.currentTarget)
+  const handleClick = (event: React.MouseEvent<Element>) => setAnchorEl(event.currentTarget as HTMLButtonElement)
   const handleClose = () => setAnchorEl(null)
 
   if (!product) return null

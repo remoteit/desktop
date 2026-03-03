@@ -1,29 +1,15 @@
 import { Chip, Typography } from '@mui/material'
 import React from 'react'
-import { IDeviceProduct, IProductService } from '../models/products'
 import { Attribute } from './Attributes'
 import { ProductStatusChip } from './ProductStatusChip'
 import { Timestamp } from './Timestamp'
-
-export type ProductAttributeOptions = {
-  product?: IDeviceProduct
-}
 
 export class ProductAttribute extends Attribute<IDataOptions> {
   type: Attribute['type'] = 'DEVICE'
 }
 
-export type ProductDetailAttributeOptions = {
-  product?: IDeviceProduct
-}
-
 export class ProductDetailAttribute extends Attribute<IDataOptions> {
   type: Attribute['type'] = 'DEVICE'
-}
-
-export type ProductServiceAttributeOptions = {
-  product?: IDeviceProduct
-  productService?: IProductService
 }
 
 export class ProductServiceAttribute extends Attribute<IDataOptions> {
@@ -36,7 +22,7 @@ export const productAttributes: ProductAttribute[] = [
     label: 'Name',
     required: true,
     defaultWidth: 300,
-    value: ({ product }: ProductAttributeOptions) => (
+    value: ({ product }: IDataOptions) => (
       <Typography noWrap>{product?.name}</Typography>
     ),
   }),
@@ -44,7 +30,7 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productPlatform',
     label: 'Platform',
     defaultWidth: 100,
-    value: ({ product }: ProductAttributeOptions) => (
+    value: ({ product }: IDataOptions) => (
       <Typography variant="body2" color="grayDarker.main" noWrap>
         {product?.platform?.name || product?.platform?.id}
       </Typography>
@@ -54,13 +40,13 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productStatus',
     label: 'Status',
     defaultWidth: 100,
-    value: ({ product }: ProductAttributeOptions) => <ProductStatusChip status={product?.status} />,
+    value: ({ product }: IDataOptions) => <ProductStatusChip status={product?.status} />,
   }),
   new ProductAttribute({
     id: 'productServices',
     label: 'Services',
     defaultWidth: 80,
-    value: ({ product }: ProductAttributeOptions) => (
+    value: ({ product }: IDataOptions) => (
       <Typography variant="body2" color="grayDarker.main" noWrap>
         {product?.services?.length || 0}
       </Typography>
@@ -70,7 +56,7 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productCreated',
     label: 'Created',
     defaultWidth: 150,
-    value: ({ product }: ProductAttributeOptions) =>
+    value: ({ product }: IDataOptions) =>
       product?.created && (
         <Typography variant="body2" color="grayDarker.main" noWrap>
           <Timestamp date={new Date(product.created)} />
@@ -81,7 +67,7 @@ export const productAttributes: ProductAttribute[] = [
     id: 'productUpdated',
     label: 'Updated',
     defaultWidth: 150,
-    value: ({ product }: ProductAttributeOptions) =>
+    value: ({ product }: IDataOptions) =>
       product?.updated && (
         <Typography variant="body2" color="grayDarker.main" noWrap>
           <Timestamp date={new Date(product.updated)} />
@@ -94,33 +80,33 @@ export const productDetailAttributes: ProductDetailAttribute[] = [
   new ProductDetailAttribute({
     id: 'productPlatformDetail',
     label: 'Platform',
-    value: ({ product }: ProductDetailAttributeOptions) => product?.platform?.name || product?.platform?.id,
+    value: ({ product }: IDataOptions) => product?.platform?.name || product?.platform?.id,
   }),
   new ProductDetailAttribute({
     id: 'productStatusDetail',
     label: 'Status',
-    value: ({ product }: ProductDetailAttributeOptions) => <ProductStatusChip status={product?.status} />,
+    value: ({ product }: IDataOptions) => <ProductStatusChip status={product?.status} />,
   }),
   new ProductDetailAttribute({
     id: 'productServicesDetail',
     label: 'Services',
-    value: ({ product }: ProductDetailAttributeOptions) => product?.services?.length || 0,
+    value: ({ product }: IDataOptions) => product?.services?.length || 0,
   }),
   new ProductDetailAttribute({
     id: 'productCreatedDetail',
     label: 'Created',
-    value: ({ product }: ProductDetailAttributeOptions) => product?.created && <Timestamp date={new Date(product.created)} />,
+    value: ({ product }: IDataOptions) => product?.created && <Timestamp date={new Date(product.created)} />,
   }),
   new ProductDetailAttribute({
     id: 'productUpdatedDetail',
     label: 'Updated',
-    value: ({ product }: ProductDetailAttributeOptions) => product?.updated && <Timestamp date={new Date(product.updated)} />,
+    value: ({ product }: IDataOptions) => product?.updated && <Timestamp date={new Date(product.updated)} />,
   }),
   new ProductDetailAttribute({
     id: 'productIdDetail',
     label: 'Product ID',
     copyable: true,
-    value: ({ product }: ProductDetailAttributeOptions) => product?.id,
+    value: ({ product }: IDataOptions) => product?.id,
   }),
 ]
 
@@ -128,17 +114,17 @@ export const productServiceDetailAttributes: ProductServiceAttribute[] = [
   new ProductServiceAttribute({
     id: 'productServiceTypeDetail',
     label: 'Service Type',
-    value: ({ productService }: ProductServiceAttributeOptions) => productService?.type?.name || 'Unknown',
+    value: ({ productService }: IDataOptions) => productService?.type?.name || 'Unknown',
   }),
   new ProductServiceAttribute({
     id: 'productServicePortDetail',
     label: 'Port',
-    value: ({ productService }: ProductServiceAttributeOptions) => productService?.port,
+    value: ({ productService }: IDataOptions) => productService?.port,
   }),
   new ProductServiceAttribute({
     id: 'productServiceStatusDetail',
     label: 'Status',
-    value: ({ productService }: ProductServiceAttributeOptions) =>
+    value: ({ productService }: IDataOptions) =>
       productService ? (
         <Chip
           size="small"
@@ -152,6 +138,6 @@ export const productServiceDetailAttributes: ProductServiceAttribute[] = [
     id: 'productServiceIdDetail',
     label: 'Service ID',
     copyable: true,
-    value: ({ productService }: ProductServiceAttributeOptions) => productService?.id,
+    value: ({ productService }: IDataOptions) => productService?.id,
   }),
 ]

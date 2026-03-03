@@ -6,7 +6,7 @@ import { IDeviceProduct } from '../models/products'
 import { Dispatch } from '../store'
 import { GridListItem } from './GridListItem'
 import { Icon } from './Icon'
-import { ProductAttribute,ProductAttributeOptions } from './ProductAttributes'
+import { ProductAttribute } from './ProductAttributes'
 
 interface Props {
   product: IDeviceProduct
@@ -63,7 +63,7 @@ export const ProductListItem: React.FC<Props> = ({
     >
       {attributes.map(attribute => (
         <Box key={attribute.id} className="attribute">
-          {attribute.value({ product } as ProductAttributeOptions)}
+          {attribute.value({ product } as IDataOptions)}
         </Box>
       ))}
     </GridListItem>
