@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { DeviceContext } from '../services/Context'
-import { Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { LoadingMessage } from './LoadingMessage'
 import { ListHorizontal } from './ListHorizontal'
@@ -22,15 +22,17 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
       bodyProps={{ verticalOverflow: true }}
       header={
         <>
-          <Typography variant="h1">
+          <Typography variant="h1" sx={{ alignItems: 'center', width: '100%', gap: 1 }}>
             <Title>{device.name || 'Unknown'}</Title>
-            <MobileUI hide>
-              <ShareButton
-                to={`/devices/${device.id}/share`}
-                hide={!device.permissions.includes('MANAGE')}
-                title="Share access"
-              />
-            </MobileUI>
+            <Box display="flex" alignItems="center">
+              <MobileUI hide>
+                <ShareButton
+                  to={`/devices/${device.id}/share`}
+                  hide={!device.permissions.includes('MANAGE')}
+                  title="Share access"
+                />
+              </MobileUI>
+            </Box>
           </Typography>
           {device.attributes.description && (
             <Gutters top={null}>

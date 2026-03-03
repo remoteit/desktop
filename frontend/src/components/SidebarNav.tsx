@@ -23,7 +23,6 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
 import { getHasPartner } from '../models/partnerStats'
-import { TestUI } from './TestUI'
 
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
@@ -110,9 +109,7 @@ export const SidebarNav: React.FC = () => {
         match={['/script', '/scripts', '/runs']}
         dense
       />
-      <TestUI>
-        <ListItemLocation title="Products" to="/products" match="/products" icon="conveyor-belt-boxes" dense />
-      </TestUI>
+      <ListItemLocation title="Products" to="/products" match="/products" icon="conveyor-belt-boxes" dense />
       <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
       {hasPartner && (
         <ListItemLocation

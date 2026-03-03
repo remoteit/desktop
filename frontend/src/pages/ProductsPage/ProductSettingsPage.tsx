@@ -1,37 +1,24 @@
 import React, { useState } from 'react'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  Switch,
-  Button,
-  Divider,
-} from '@mui/material'
-import { makeStyles } from '@mui/styles'
-import { Container } from '../../components/Container'
+import { Typography, List } from '@mui/material'
 import { Icon } from '../../components/Icon'
-import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { CopyCodeBlock } from '../../components/CopyCodeBlock'
 import { Body } from '../../components/Body'
-import { Notice } from '../../components/Notice'
-import { Confirm } from '../../components/Confirm'
-import { spacing } from '../../styling'
+import { Gutters } from '../../components/Gutters'
+import { DataDisplay } from '../../components/DataDisplay'
+import { Container } from '../../components/Container'
+import { ProductHeaderMenu } from '../../components/ProductHeaderMenu'
+import { productDetailAttributes } from '../../components/ProductAttributes'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
 export const ProductSettingsPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
-  const history = useHistory()
-  const css = useStyles()
   const { all: products } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
   const [updating, setUpdating] = useState(false)
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleting, setDeleting] = useState(false)
 
   const isLocked = product?.status === 'LOCKED'
   const registrationCommand = product?.registrationCommand
@@ -44,16 +31,6 @@ export const ProductSettingsPage: React.FC = () => {
       input: { lock: true },
     })
     setUpdating(false)
-  }
-
-  const handleDelete = async () => {
-    if (!product) return
-    setDeleting(true)
-    const success = await dispatch.products.delete(product.id)
-    setDeleting(false)
-    if (success) {
-      history.push('/products')
-    }
   }
 
   if (!product) {
@@ -70,15 +47,29 @@ export const ProductSettingsPage: React.FC = () => {
   }
 
   return (
-    <Container gutterBottom>
-      <div className={css.content}>
+    <ProductHeaderMenu product={product}>
+      <List>
+        <ListItemSetting
+          icon="lock"
+          label="Lock Product"
+          subLabel={
+            isLocked
+              ? 'This product is locked and cannot be unlocked.'
+              : 'Lock the product to enable bulk registration. Once locked, it cannot be unlocked.'
+          }
+          toggle={isLocked}
+          disabled={updating || isLocked}
+          onClick={handleLockToggle}
+        />
+      </List>
+      <Gutters>
         {isLocked && product.registrationCode && (
-          <section className={css.section}>
+          <>
             <Typography variant="subtitle2" color="textSecondary" gutterBottom>
               {registrationCommand ? 'Registration Command' : 'Registration Code'}
             </Typography>
             <Typography variant="body2" color="textSecondary" gutterBottom sx={{ marginBottom: 2 }}>
-              {registrationCommand 
+              {registrationCommand
                 ? 'Use this command to register devices with this product configuration:'
                 : 'Use this registration code to register devices with this product configuration:'}
             </Typography>
@@ -86,168 +77,14 @@ export const ProductSettingsPage: React.FC = () => {
               value={registrationCommand || product.registrationCode}
               code={registrationCommand ? product.registrationCode : undefined}
             />
-          </section>
+          </>
         )}
 
-        <section className={css.section}>
-          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-            Product Details
-          </Typography>
-          <List dense>
-            {isLocked && product.registrationCode && (
-              <>
-                <ListItem>
-                  <ListItemText
-                    primary="Registration Code"
-                    secondary={product.registrationCode}
-                  />
-                  <ListItemSecondaryAction>
-                    <CopyIconButton value={product.registrationCode} title="Copy Registration Code" size="md" />
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider component="li" />
-              </>
-            )}
-            <ListItem>
-              <ListItemText
-                primary="Platform"
-                secondary={product.platform?.name || `Platform ${product.platform?.id}`}
-              />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText
-                primary="Status"
-                secondary={isLocked ? 'Locked' : 'Draft'}
-              />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText
-                primary="Created"
-                secondary={new Date(product.created).toLocaleString()}
-              />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText
-                primary="Updated"
-                secondary={new Date(product.updated).toLocaleString()}
-              />
-            </ListItem>
-            <Divider component="li" />
-            <ListItem>
-              <ListItemText
-                primary="Product ID"
-                secondary={product.id}
-              />
-              <ListItemSecondaryAction>
-                <CopyIconButton value={product.id} title="Copy Product ID" size="md" />
-              </ListItemSecondaryAction>
-            </ListItem>
-          </List>
-        </section>
-
-        <section className={css.section}>
-          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-            Product Settings
-          </Typography>
-          <List>
-            <ListItem sx={{ paddingRight: '80px' }}>
-              <ListItemText
-                primary="Lock Product"
-                secondary={
-                  isLocked
-                    ? 'This product is locked and cannot be unlocked.'
-                    : 'Lock the product to enable bulk registration. Once locked, it cannot be unlocked.'
-                }
-              />
-              <ListItemSecondaryAction>
-                <Switch
-                  checked={isLocked}
-                  onChange={handleLockToggle}
-                  disabled={updating || isLocked}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-          </List>
-        </section>
-
-        <section className={css.section}>
-          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-            Transfer Ownership
-          </Typography>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary="Transfer Product"
-                secondary="Transfer this product and all its services to another user."
-              />
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => history.push(`/products/${productId}/transfer`)}
-                startIcon={<Icon name="arrow-turn-down-right" />}
-              >
-                Transfer
-              </Button>
-            </ListItem>
-          </List>
-        </section>
-
-        <section className={css.section}>
-          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-            Danger Zone
-          </Typography>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary="Delete Product"
-                secondary="Permanently delete this product and all its services."
-              />
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                onClick={() => setDeleteOpen(true)}
-                startIcon={<Icon name="trash" />}
-              >
-                Delete
-              </Button>
-            </ListItem>
-          </List>
-        </section>
-      </div>
-
-      <Confirm
-        open={deleteOpen}
-        onConfirm={handleDelete}
-        onDeny={() => setDeleteOpen(false)}
-        title="Delete Product"
-        action={deleting ? 'Deleting...' : 'Delete'}
-        disabled={deleting}
-        color="error"
-      >
-        <Notice severity="error" gutterBottom fullWidth>
-          This action cannot be undone.
-        </Notice>
-        <Typography variant="body2">
-          Are you sure you want to permanently delete the product <b>{product.name}</b> and all its services?
+        <Typography variant="subtitle2" color="textSecondary" gutterBottom sx={{ marginTop: 3 }}>
+          Details
         </Typography>
-      </Confirm>
-    </Container>
+        <DataDisplay product={product} attributes={productDetailAttributes} />
+      </Gutters>
+    </ProductHeaderMenu>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  content: {
-    padding: spacing.md,
-  },
-  section: {
-    marginBottom: spacing.lg,
-    backgroundColor: palette.white.main,
-    borderRadius: 8,
-    border: `1px solid ${palette.grayLighter.main}`,
-    padding: spacing.md,
-  },
-}))

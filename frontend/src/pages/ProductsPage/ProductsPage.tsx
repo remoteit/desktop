@@ -25,7 +25,10 @@ export const ProductsPage: React.FC = () => {
   const initialized = productModel.initialized || false
   const selected = productModel.selected || []
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
-  const [required, attributes] = removeObject(productAttributes, a => a.required === true)
+  const [required, attributes] = removeObject(
+    productAttributes.filter(a => a.id !== 'productPlatform'),
+    a => a.required === true
+  )
 
   useEffect(() => {
     dispatch.products.fetchIfEmpty()

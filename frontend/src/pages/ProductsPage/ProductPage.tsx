@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Typography, List, ListItemText, Stack, Chip, Divider } from '@mui/material'
+import { Typography, List, Stack, ListItemText } from '@mui/material'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
 import { Title } from '../../components/Title'
@@ -10,8 +10,12 @@ import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
+import { ProductStatusChip } from '../../components/ProductStatusChip'
+import { ColorChip } from '../../components/ColorChip'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
+import { spacing } from '../../styling'
+import { Gutters } from '../../components/Gutters'
 
 export const ProductPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
@@ -65,17 +69,12 @@ export const ProductPage: React.FC = () => {
               title={
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ marginRight: 1 }}>
                   <Title>{product.name}</Title>
-                  <Chip
-                    size="small"
-                    label={isLocked ? 'Locked' : 'Draft'}
-                    color={isLocked ? 'primary' : 'default'}
-                    icon={<Icon name={isLocked ? 'lock' : 'pencil'} size="xs" />}
-                  />
+                  <ProductStatusChip status={product.status} />
                 </Stack>
               }
             />
-            <Stack flexWrap="wrap" flexDirection="row" marginLeft={9} marginRight={3}>
-              <Typography variant="caption" color="grayDarker.main">
+            <Stack flexWrap="wrap" flexDirection="row" marginLeft={9.5} marginRight={3}>
+              <Typography variant="caption" color="grayDarker.main" gutterBottom>
                 {product.platform?.name || `Platform ${product.platform?.id}`}
               </Typography>
             </Stack>
@@ -96,26 +95,45 @@ export const ProductPage: React.FC = () => {
       </Typography>
 
       {product.services.length === 0 ? (
-        <Notice severity="info" gutterTop fullWidth>
-          No services defined. Add at least one service before locking the product.
-        </Notice>
+        <Gutters>
+          <Notice severity="info" gutterTop fullWidth>
+            No services defined. Add at least one service before locking the product.
+          </Notice>
+        </Gutters>
       ) : (
-        <List>
-          {product.services.map((service, index) => (
-            <React.Fragment key={service.id}>
-              {index > 0 && <Divider variant="inset" />}
-              <ListItemLocation
-                to={`/products/${product.id}/${service.id}`}
-                match={`/products/${product.id}/${service.id}`}
-                dense
-                icon={<Icon name={service.type?.name === 'SSH' ? 'terminal' : 'plug'} size="md" />}
-              >
-                <ListItemText
-                  primary={service.name}
-                  secondary={`${service.type?.name || 'Unknown'} · Port ${service.port}`}
-                />
-              </ListItemLocation>
-            </React.Fragment>
+        <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
+          {product.services.map(service => (
+            <ListItemLocation
+              key={service.id}
+              to={`/products/${product.id}/${service.id}`}
+              match={`/products/${product.id}/${service.id}`}
+              dense
+              inset={1.5}
+            >
+              <IconButton
+                icon={service.type?.name === 'SSH' ? 'terminal' : 'port'}
+                size="sm"
+                buttonBaseSize="small"
+                color={service.enabled ? 'primary' : 'grayDark'}
+                type="solid"
+                hideDisableFade
+                sx={{ marginLeft: 0.375, marginRight: 0.75 }}
+              />
+              <ListItemText
+                primary={
+                  <Typography variant="body1" sx={{ opacity: service.enabled ? 1 : 0.55 }}>
+                    {service.name}
+                  </Typography>
+                }
+              />
+              <ColorChip
+                size="small"
+                label={service.type?.name || 'Unknown'}
+                color="grayDark"
+                variant="text"
+                sx={{ marginRight: 1 }}
+              />
+            </ListItemLocation>
           ))}
         </List>
       )}
