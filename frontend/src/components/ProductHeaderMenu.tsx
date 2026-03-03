@@ -6,7 +6,6 @@ import { LoadingMessage } from './LoadingMessage'
 import { Title } from './Title'
 import { Gutters } from './Gutters'
 import { ProductOptionMenu } from './ProductOptionMenu'
-import { ProductStatusChip } from './ProductStatusChip'
 
 type Props = {
   product?: IDeviceProduct

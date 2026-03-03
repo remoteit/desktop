@@ -23,7 +23,6 @@ import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
 import { getHasPartner } from '../models/partnerStats'
-import { TestUI } from './TestUI'
 
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
