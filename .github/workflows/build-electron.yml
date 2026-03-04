@@ -68,8 +68,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install electron dependencies locally
-        run: cd electron && npm install --workspaces=false
+      - name: Install electron production dependencies locally
+        run: cd electron && npm install --omit=dev --workspaces=false
 
       - name: Build and publish Electron app
         env:
