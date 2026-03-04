@@ -11,11 +11,11 @@
     "email": "support@remote.it"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-s build-frontend brand copy-install copy-entitlements compile build-electron",
-    "build-ci": "cross-env NODE_ENV=production run-s build-frontend brand copy-install copy-entitlements compile",
-    "build-local": "cross-env NODE_ENV=production run-s copy-env clean build-frontend brand copy-install copy-entitlements compile build-electron",
+    "build": "cross-env NODE_ENV=production run-s copy-env clean build-frontend brand copy-install copy-entitlements compile build-electron",
     "build-frontend": "cd ../ && npm run build-frontend",
     "build-electron": "cross-env NODE_ARCH=$npm_config_arch electron-builder",
+    "release": "cross-env NODE_ENV=production run-s build-frontend brand copy-install copy-entitlements compile release-electron",
+    "release-electron": "cross-env NODE_ARCH=$npm_config_arch electron-builder --publish always",
     "clean": "rimraf build/* dist/*",
     "compile": "run-s typecheck-common typecheck sync-assets",
     "typecheck-common": "tsc -p ../common/tsconfig.json",
