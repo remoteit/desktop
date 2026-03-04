@@ -1,6 +1,6 @@
 name: Build / Electron
 
-on:
+on: 
   workflow_dispatch:
     inputs:
       brand:
@@ -43,7 +43,13 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v3
 
-      - name: Install Node.js and NPM
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
           node-version: 20
@@ -60,19 +66,36 @@ jobs:
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Install SSL.com Sign Tool on Windows
+        shell: bash
         if: matrix.os == 'windows-latest' && !inputs.skip_signing
         run: |
           curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/CodeSignTool.zip
           unzip ~/Downloads/CodeSignTool.zip -d ~/CodeSignTool
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install dependencies and build web assets
+        run: |
+          npm install
 
-      - name: Install electron production dependencies locally
-        run: cd electron && npm install --omit=dev --workspaces=false
+      # Linux build
+      - name: Build Electron app (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd electron
+          npm run build
 
-      - name: Build and publish Electron app
+      # macOS build
+      - name: Build Electron app (macOS)
+        if: matrix.os == 'macos-14'
         env:
-          CSC_LINK: ${{ matrix.os == 'macos-14' && secrets.mac_certs || '' }}
-          CSC_KEY_PASSWORD: ${{ matrix.os == 'macos-14' && secrets.mac_certs_password || '' }}
-        run: cd electron && npm run release
+          CSC_LINK: ${{ secrets.mac_certs }}
+          CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
+        run: |
+          cd electron
+          npm run build
+
+      # Windows build
+      - name: Build Electron app (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd electron
+          npm run build
