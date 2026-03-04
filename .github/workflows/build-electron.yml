@@ -69,7 +69,7 @@ jobs:
         run: npm install
 
       - name: Install electron dependencies locally
-        run: cd electron && npm ci --workspaces=false
+        run: cd electron && npm install --workspaces=false
 
       - name: Build and publish Electron app
         env:
