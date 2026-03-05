@@ -82,23 +82,23 @@ export const ScriptPage: React.FC = () => {
             />
           </List>
           {/* ── Script Details ── */}
-          {file.shortDesc && (
-            <Gutters top={null} inset="xl" sx={{ marginLeft: 5 }}>
+          <Gutters top={null} inset="xl" sx={{ marginLeft: 5 }}>
+            {file.shortDesc && (
               <Typography variant="caption" component="p" gutterBottom>
                 {file.shortDesc}
               </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                startIcon={<Icon name="pencil" size="sm" fixedWidth />}
-                sx={{ mr: 1 }}
-                onClick={() => history.push(`/script/${fileID}/edit`)}
-              >
-                Edit
-              </Button>
-            </Gutters>
-          )}
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<Icon name="pencil" size="sm" fixedWidth />}
+              sx={{ mr: 1 }}
+              onClick={() => history.push(`/script/${fileID}/edit`)}
+            >
+              Edit
+            </Button>
+          </Gutters>
           <List disablePadding sx={{ marginBottom: 2 }}>
             {args && args.length > 0 && (
               <ListItemLocation

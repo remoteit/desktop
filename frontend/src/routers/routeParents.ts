@@ -48,7 +48,7 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/connections/:serviceID', '/connections'],
 
   // Scripting — job device result → job detail
-  ['/script/:fileID/:jobID/:jobDeviceID', '/script/:fileID'],
+  ['/script/:fileID/:jobID/:jobDeviceID', '/script/:fileID/:jobID'],
   // Scripting — job-level pages → script page
   ['/script/:fileID/:jobID/run', '/script/:fileID'],
   ['/script/:fileID/:jobID', '/script/:fileID'],
@@ -57,6 +57,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/script/:fileID/run', '/script/:fileID'],
   // Scripting — script page → scripts list
   ['/script/:fileID', '/scripts'],
+  // Scripting — filtered runs list → runs list
+  ['/runs/:fileID', '/runs'],
   // Scripting — file detail → files list
   ['/file/:fileID', '/files'],
   // Scripting — add pages

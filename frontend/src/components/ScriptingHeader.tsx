@@ -35,7 +35,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
           <Route
             path={[
               '/scripts',
-              '/runs/:jobID?',
+              '/runs/:fileID?',
               '/files/:fileID?',
               '/file/:fileID?',
               '/script/:fileID/:jobID?/:jobDeviceID?',
