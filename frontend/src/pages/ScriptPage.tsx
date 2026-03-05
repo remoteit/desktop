@@ -3,7 +3,7 @@ import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
 import { Redirect, useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { List, Typography, Chip } from '@mui/material'
+import { List, Typography, Chip, Button, Box } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { JobStatusIcon } from '../components/JobStatusIcon'
@@ -83,10 +83,19 @@ export const ScriptPage: React.FC = () => {
           </List>
           {/* ── Script Details ── */}
           {file.shortDesc && (
-            <Gutters top={null} inset="xl" sx={{ marginLeft: 5 }}>
-              <Typography variant="caption" component="p">
+            <Gutters top={null} inset="xl" bottom="sm" sx={{ marginLeft: 5 }}>
+              <Typography variant="caption" component="p" gutterBottom>
                 {file.shortDesc}
               </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                onClick={() => history.push(`/script/${fileID}/run`)}
+                sx={{ mr: 1 }}
+              >
+                New Run
+              </Button>
             </Gutters>
           )}
           <List disablePadding sx={{ marginBottom: 2 }}>
@@ -102,7 +111,6 @@ export const ScriptPage: React.FC = () => {
             )}
             <ListItemLocation
               icon="calendar"
-              iconTooltip="Timestamps"
               subtitle={
                 <>
                   Created <Duration startDate={new Date(file.created)} humanizeOptions={{ largest: 1 }} ago />
@@ -110,7 +118,7 @@ export const ScriptPage: React.FC = () => {
                   Updated <Duration startDate={new Date(file.updated)} humanizeOptions={{ largest: 1 }} ago />
                 </>
               }
-            ></ListItemLocation>
+            />
           </List>
           <LinearProgress loading={fetching} />
         </>

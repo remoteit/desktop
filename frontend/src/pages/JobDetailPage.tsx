@@ -131,15 +131,14 @@ export const JobDetailPage: React.FC<Props> = () => {
           >
             <Timestamp date={new Date(job.created)} />
           </Typography>
-          <Box sx={{ px: spacing.xl + 'px', pb: 2, maxHeight: 300, overflowY: 'auto' }}>
+          <Box sx={{ px: 4.5, pb: 2, maxHeight: 300, overflowY: 'auto' }}>
             {isActive && (
               <Button
-                variant="outlined"
                 color="error"
+                variant="contained"
                 size="small"
-                fullWidth
-                sx={{ mb: 2 }}
                 onClick={async () => await dispatch.jobs.cancel(job.id)}
+                sx={{ my: 2 }}
               >
                 Cancel Run
               </Button>
