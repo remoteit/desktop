@@ -1,13 +1,15 @@
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
-import { EventBus, Logger, EVENTS, preferences, environment } from './backend'
+import { EventBus, Logger, EVENTS, preferences, environment, brand } from './backend'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
-const GITHUB_OWNER = 'remoteit'
-const GITHUB_REPO = 'desktop'
-const GITHUB_RELEASES_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases?per_page=30`
-const GITHUB_RELEASES_DOWNLOAD_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download`
+const DEFAULT_GITHUB_REPO = 'desktop'
+
+interface GitHubFeedConfig {
+  owner: string
+  repo: string
+}
 
 interface GitHubReleaseAsset {
   name: string
@@ -29,6 +31,10 @@ export default class AppUpdater {
   version?: string
   error: boolean = false
   private readonly updateManifestFile = process.platform === 'darwin' ? 'latest-mac.yml' : 'latest.yml'
+  private readonly defaultGithubFeed: GitHubFeedConfig = {
+    owner: brand?.name || 'remoteit',
+    repo: DEFAULT_GITHUB_REPO,
+  }
 
   constructor() {
     if (environment.isHeadless) return
@@ -135,8 +141,8 @@ export default class AppUpdater {
   private setDefaultFeed() {
     autoUpdater.setFeedURL({
       provider: 'github',
-      owner: GITHUB_OWNER,
-      repo: GITHUB_REPO,
+      owner: this.defaultGithubFeed.owner,
+      repo: this.defaultGithubFeed.repo,
     })
   }
 
@@ -154,7 +160,7 @@ export default class AppUpdater {
 
       autoUpdater.setFeedURL({
         provider: 'generic',
-        url: `${GITHUB_RELEASES_DOWNLOAD_URL}/${tag}`,
+        url: `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`,
       })
       Logger.warn('AUTO UPDATE FALLBACK RELEASE', { tag, manifest: this.updateManifestFile })
       await autoUpdater.checkForUpdatesAndNotify()
@@ -167,9 +173,10 @@ export default class AppUpdater {
   }
 
   private async findFallbackReleaseTag(): Promise<string | undefined> {
-    const { data } = await axios.get<GitHubRelease[]>(GITHUB_RELEASES_API_URL, {
-      headers: { Accept: 'application/vnd.github+json' },
-    })
+    const { data } = await axios.get<GitHubRelease[]>(
+      `https://api.github.com/repos/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases?per_page=30`,
+      { headers: { Accept: 'application/vnd.github+json' } }
+    )
 
     const release = data.find(item => {
       if (item.draft) return false
