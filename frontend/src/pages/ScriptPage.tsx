@@ -3,7 +3,7 @@ import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
 import { Redirect, useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { List, Typography, Chip } from '@mui/material'
+import { List, Typography, Chip, Button } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { JobStatusIcon } from '../components/JobStatusIcon'
@@ -14,6 +14,7 @@ import { IconButton } from '../buttons/IconButton'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 
 const MAX_RUNS = 12
 
@@ -74,21 +75,30 @@ export const ScriptPage: React.FC = () => {
         <>
           <List disablePadding>
             <ListItemLocation
-              to={`/script/${fileID}/edit`}
-              match={[`/script/${fileID}`, `/script/${fileID}/edit`]}
+              to={`/script/${fileID}/latest/run`}
               title={<Typography variant="h2">{file.name}</Typography>}
               icon="scroll"
               exactMatch
             />
           </List>
           {/* ── Script Details ── */}
-          {file.shortDesc && (
-            <Gutters top={null} inset="xl" sx={{ marginLeft: 5 }}>
-              <Typography variant="caption" component="p">
+          <Gutters top={null} inset="xl" sx={{ marginLeft: 5 }}>
+            {file.shortDesc && (
+              <Typography variant="caption" component="p" gutterBottom>
                 {file.shortDesc}
               </Typography>
-            </Gutters>
-          )}
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<Icon name="pencil" size="sm" fixedWidth />}
+              sx={{ mr: 1 }}
+              onClick={() => history.push(`/script/${fileID}/edit`)}
+            >
+              Edit
+            </Button>
+          </Gutters>
           <List disablePadding sx={{ marginBottom: 2 }}>
             {args && args.length > 0 && (
               <ListItemLocation
@@ -102,7 +112,6 @@ export const ScriptPage: React.FC = () => {
             )}
             <ListItemLocation
               icon="calendar"
-              iconTooltip="Timestamps"
               subtitle={
                 <>
                   Created <Duration startDate={new Date(file.created)} humanizeOptions={{ largest: 1 }} ago />
@@ -110,7 +119,7 @@ export const ScriptPage: React.FC = () => {
                   Updated <Duration startDate={new Date(file.updated)} humanizeOptions={{ largest: 1 }} ago />
                 </>
               }
-            ></ListItemLocation>
+            />
           </List>
           <LinearProgress loading={fetching} />
         </>

@@ -204,6 +204,62 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
           {!isNew && <ScriptDeleteButton />}
         </Typography>
       }
+      footer={
+        <Box sx={{ px: 3, py: 2 }}>
+          <Stack direction="row" spacing={1}>
+            {isNew ? (
+              <>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={!canNext || saving || loading}
+                  onClick={handleSaveAndRun}
+                  sx={{ flexGrow: 1 }}
+                >
+                  {saving ? 'Saving...' : 'Save and Run'}
+                </Button>
+                {manager && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={!hasEditChanges || saving || loading}
+                    onClick={handleSave}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={!canNext || loading}
+                  onClick={handleNext}
+                  sx={{ flexGrow: 1 }}
+                >
+                  New Run
+                </Button>
+                {manager && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={!hasEditChanges || saving || loading}
+                    onClick={handleSave}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
+                )}
+              </>
+            )}
+          </Stack>
+          {!isNew && hasEditChanges && (
+            <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
+              Unsaved changes won't affect the run - it uses the last saved version.
+            </Typography>
+          )}
+        </Box>
+      }
     >
       <Typography variant="subtitle2">
         <Title>Edit Script</Title>
@@ -257,58 +313,6 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
             </ListItem>
           </List>
         </>
-      )}
-      <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-        {isNew ? (
-          <>
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={!canNext || saving || loading}
-              onClick={handleSaveAndRun}
-              sx={{ flexGrow: 1 }}
-            >
-              {saving ? 'Saving...' : 'Save and Run'}
-            </Button>
-            {manager && (
-              <Button
-                variant="contained"
-                color="primary"
-                disabled={!hasEditChanges || saving || loading}
-                onClick={handleSave}
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
-            )}
-          </>
-        ) : (
-          <>
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={!canNext || loading}
-              onClick={handleNext}
-              sx={{ flexGrow: 1 }}
-            >
-              New Run
-            </Button>
-            {manager && (
-              <Button
-                variant="contained"
-                color="primary"
-                disabled={!hasEditChanges || saving || loading}
-                onClick={handleSave}
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
-            )}
-          </>
-        )}
-      </Stack>
-      {!isNew && hasEditChanges && (
-        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-          Unsaved changes won't affect the run — it uses the last saved version.
-        </Typography>
       )}
     </Container>
   )
