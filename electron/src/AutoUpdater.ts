@@ -4,6 +4,7 @@ import { EventBus, Logger, EVENTS, preferences, environment, brand } from './bac
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
+const DEFAULT_GITHUB_OWNER = 'remoteit'
 const DEFAULT_GITHUB_REPO = 'desktop'
 
 interface GitHubFeedConfig {
@@ -22,6 +23,16 @@ interface GitHubRelease {
   assets: GitHubReleaseAsset[]
 }
 
+const resolveGitHubFeedFromBrand = (): GitHubFeedConfig => {
+  const repositoryUrl = brand?.package?.repository?.url || ''
+  const match = repositoryUrl.match(/github\.com[/:]([^/]+)\/([^/.]+)(?:\.git)?$/i)
+
+  return {
+    owner: match?.[1] || DEFAULT_GITHUB_OWNER,
+    repo: match?.[2] || DEFAULT_GITHUB_REPO,
+  }
+}
+
 export default class AppUpdater {
   nextCheck: number = 0
   checking: boolean = false
@@ -31,10 +42,7 @@ export default class AppUpdater {
   version?: string
   error: boolean = false
   private readonly updateManifestFile = process.platform === 'darwin' ? 'latest-mac.yml' : 'latest.yml'
-  private readonly defaultGithubFeed: GitHubFeedConfig = {
-    owner: brand?.name || 'remoteit',
-    repo: DEFAULT_GITHUB_REPO,
-  }
+  private readonly defaultGithubFeed: GitHubFeedConfig = resolveGitHubFeedFromBrand()
 
   constructor() {
     if (environment.isHeadless) return
