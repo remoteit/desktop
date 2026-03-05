@@ -33,7 +33,7 @@ export const JobStatusIcon: React.FC<JobStatusIconProps> = ({
       ) : device ? (
         <Icon platform={65535} platformIcon {...props} />
       ) : (
-        <Icon name="circle-small" type="solid" color="grayLight" {...props} />
+        <Icon name="scroll" color="gray" {...props} />
       )}
     </Box>
   )

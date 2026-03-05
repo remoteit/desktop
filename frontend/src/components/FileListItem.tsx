@@ -32,13 +32,7 @@ export const FileListItem: React.FC<Props> = ({ script, required, attributes, mo
     <GridListItem
       onClick={handleClick}
       mobile={mobile}
-      icon={
-        script.job ? (
-          <JobStatusIcon status={script.job?.status} />
-        ) : (
-          <Icon name="file" size="sm" color="grayLight" type="solid" />
-        )
-      }
+      icon={isScript ? <JobStatusIcon status={script.job?.status} /> : <Icon name="file" color="gray" />}
       required={<AttributeValue {...{ mobile, file: script, attribute: required }} />}
       selected={script.id === fileID}
       disableGutters
