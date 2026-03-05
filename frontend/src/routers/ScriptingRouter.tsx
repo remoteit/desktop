@@ -17,20 +17,10 @@ import { Panel } from '../components/Panel'
 import { Body } from '../components/Body'
 import { Box } from '@mui/material'
 
-// Redirect legacy prepared-job edit route to the new run page
-const RedirectToRunPage: React.FC = () => {
-  const { fileID, jobID } = useParams<{ fileID: string; jobID: string }>()
-  return <Redirect to={`/script/${fileID}/${jobID}/run`} />
-}
-
-const ScriptTertiaryRoutes: React.FC = () => {
+const ScriptSecondaryRoutes: React.FC = () => {
   const { fileID } = useParams<{ fileID: string }>()
   return (
     <Switch>
-      {/* Legacy prepared-job edit route → redirect to new run page */}
-      <Route path="/script/:fileID/edit/:jobID">
-        <RedirectToRunPage />
-      </Route>
       {/* Script edit form */}
       <Route path="/script/:fileID/edit" exact>
         <ScriptEditPage />
@@ -55,9 +45,9 @@ const ScriptTertiaryRoutes: React.FC = () => {
       <Route path="/script/:fileID/:jobID">
         <JobDetailPage />
       </Route>
-      {/* Default: show edit page without redirecting, so /script/:fileID stays a valid navigation position */}
+      {/* Default script route goes to latest run config */}
       <Route path="/script/:fileID" exact>
-        <ScriptEditPage />
+        <Redirect to={`/script/${fileID}/latest/run`} />
       </Route>
     </Switch>
   )
@@ -103,33 +93,21 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Route>
       {/* New script run config (step 2 of new script workflow) */}
       <Route path="/scripts/add/run">
-        <DynamicPanel
-          primary={<FilesPage scripts />}
-          secondary={<ScriptRunPage isNew />}
-          layout={layout}
-        />
+        <DynamicPanel primary={<FilesPage scripts />} secondary={<ScriptRunPage isNew />} layout={layout} />
       </Route>
       {/* New script edit form (step 1 of new script workflow) */}
       <Route path="/scripts/add">
-        <DynamicPanel
-          primary={<FilesPage scripts />}
-          secondary={<ScriptAddPage />}
-          layout={layout}
-        />
+        <DynamicPanel primary={<FilesPage scripts />} secondary={<ScriptAddPage />} layout={layout} />
       </Route>
       {/* Files list with add panel */}
       <Route path="/files/add">
-        <DynamicPanel
-          primary={<FilesPage />}
-          secondary={<FileAddPage />}
-          layout={layout}
-        />
+        <DynamicPanel primary={<FilesPage />} secondary={<FileAddPage />} layout={layout} />
       </Route>
       {/* Script detail: primary=job list, secondary=edit/run/job detail, tertiary=file list (triple only) */}
       <Route path="/script/:fileID">
         <DynamicPanel
           primary={<ScriptPage />}
-          secondary={<ScriptTertiaryRoutes />}
+          secondary={<ScriptSecondaryRoutes />}
           tertiary={<FilesPage scripts />}
           root="/script/:fileID"
           layout={layout}
@@ -137,11 +115,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Route>
       {/* File detail routes */}
       <Route path="/file/:fileID">
-        <DynamicPanel
-          primary={<FilesPage />}
-          secondary={<FileDetailPage />}
-          layout={layout}
-        />
+        <DynamicPanel primary={<FilesPage />} secondary={<FileDetailPage />} layout={layout} />
       </Route>
       {/* Jobs/runs page */}
       <Route path="/runs/:fileID?">

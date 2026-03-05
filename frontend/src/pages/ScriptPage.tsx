@@ -14,6 +14,7 @@ import { IconButton } from '../buttons/IconButton'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 
 const MAX_RUNS = 12
 
@@ -74,8 +75,7 @@ export const ScriptPage: React.FC = () => {
         <>
           <List disablePadding>
             <ListItemLocation
-              to={`/script/${fileID}/edit`}
-              match={[`/script/${fileID}`, `/script/${fileID}/edit`]}
+              to={`/script/${fileID}/latest/run`}
               title={<Typography variant="h2">{file.name}</Typography>}
               icon="scroll"
               exactMatch
@@ -83,7 +83,7 @@ export const ScriptPage: React.FC = () => {
           </List>
           {/* ── Script Details ── */}
           {file.shortDesc && (
-            <Gutters top={null} inset="xl" bottom="sm" sx={{ marginLeft: 5 }}>
+            <Gutters top={null} inset="xl" sx={{ marginLeft: 5 }}>
               <Typography variant="caption" component="p" gutterBottom>
                 {file.shortDesc}
               </Typography>
@@ -91,10 +91,11 @@ export const ScriptPage: React.FC = () => {
                 variant="contained"
                 color="primary"
                 size="small"
-                onClick={() => history.push(`/script/${fileID}/run`)}
+                startIcon={<Icon name="pencil" size="sm" fixedWidth />}
                 sx={{ mr: 1 }}
+                onClick={() => history.push(`/script/${fileID}/edit`)}
               >
-                New Run
+                Edit
               </Button>
             </Gutters>
           )}
