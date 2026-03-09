@@ -220,7 +220,9 @@ export default createModel<RootModel>()({
             connection = { ...newConnection(service), ...picked }
             setConnection(connection)
           } else if (!connection.port) {
-            console.error(`No service or connection port found in connection. Connection cleared. ${JSON.stringify(connection)}`)
+            console.error(
+              `No service or connection port found in connection. Connection cleared. ${JSON.stringify(connection)}`
+            )
             dispatch.connections.forget(connection.id)
           } else {
             console.warn(`No service found for connection ${connection.id}. ${JSON.stringify(connection)}`)
@@ -344,8 +346,10 @@ export default createModel<RootModel>()({
       })
 
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
-        connection.error = { message: 'Persistent connection update failed. Please contact support.' }
-        dispatch.connections.updateConnection(connection)
+        dispatch.connections.patchConnection({
+          id: connection.id,
+          error: { message: 'Persistent connection update failed. Please contact support.' },
+        })
         dispatch.devices.fetchSingleFull({ id: connection.id, isService: true })
         return
       }
@@ -386,8 +390,10 @@ export default createModel<RootModel>()({
       const result = await graphQLRemoveLink(connection.id)
 
       if (result === 'ERROR') {
-        connection.error = { message: 'An error occurred removing your persistent connection. Please contact support.' }
-        await dispatch.connections.updateConnection(connection)
+        dispatch.connections.patchConnection({
+          id: connection.id,
+          error: { message: 'An error occurred removing your persistent connection. Please contact support.' },
+        })
       }
 
       await dispatch.devices.fetchSingleFull({ id: connection.id, isService: true })
@@ -433,11 +439,17 @@ export default createModel<RootModel>()({
 
       if (connection.connected && !forceStop) {
         connection = { ...connection, disconnecting: true }
-        dispatch.connections.updateConnection(connection)
+        dispatch.connections.patchConnection({ id: connection.id, disconnecting: true })
         emit('service/disconnect', connection)
       } else {
-        connection = { ...connection, stopping: true, stopLock: Date.now(), error: undefined, enabled: false }
-        dispatch.connections.updateConnection(connection)
+        const stopUpdate: Pick<IConnection, 'stopping' | 'stopLock' | 'error' | 'enabled'> = {
+          stopping: true,
+          stopLock: Date.now(),
+          error: undefined,
+          enabled: false,
+        }
+        connection = { ...connection, ...stopUpdate }
+        dispatch.connections.patchConnection({ id: connection.id, ...stopUpdate })
         emit('service/stop', connection)
       }
       heartbeat.disconnect()
@@ -490,7 +502,7 @@ export default createModel<RootModel>()({
         emit('launch/app', app.disconnectString, app.launchType)
         await sleep(2000)
       }
-      dispatch.connections.updateConnection({ ...connection, launched: false })
+      dispatch.connections.patchConnection({ id: connection.id, launched: false })
     },
 
     async setAll(all: IConnection[]) {
@@ -507,6 +519,11 @@ export default createModel<RootModel>()({
       Object.keys(params).forEach(key => {
         state[key] = params[key]
       })
+      return state
+    },
+    patchConnection(state: IConnectionsState, params: Partial<IConnection> & { id: string }) {
+      const index = state.all.findIndex(c => c.id === params.id)
+      if (index >= 0) state.all[index] = { ...state.all[index], ...params }
       return state
     },
   },
