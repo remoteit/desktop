@@ -38,6 +38,11 @@ const EVENTS = `
             }
           }
         }
+        ... on DeviceConnectEvent {
+          txBytes
+          rxBytes
+          lifetime
+        }
         ... on JobEvent {
           job {
             file {

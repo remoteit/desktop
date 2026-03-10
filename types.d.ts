@@ -829,6 +829,9 @@ declare global {
     action: string
     devices?: { id: string; name: string }[]
     job?: { file?: { name: string } }
+    txBytes?: number
+    rxBytes?: number
+    lifetime?: number
   }
 
   type IEventType =
