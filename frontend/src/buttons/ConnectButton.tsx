@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import browser from '../services/browser'
 import { Stack } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -28,6 +28,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   onClick,
   ...props
 }) => {
+  const [forceDisconnecting, setForceDisconnecting] = useState(false)
+  const disconnectingTimer = useRef<number>()
   const instanceId = service?.id || connection?.id || ''
   const { autoConnect } = useSelector((state: State) => state.ui)
   const dispatch = useDispatch<Dispatch>()
@@ -47,6 +49,11 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     if (connection?.connectLink) {
       await dispatch.connections.setConnectLink({ ...connection, enabled: false })
     } else if (connection?.connecting || connection?.enabled || connection?.starting) {
+      if (connection.connected && !forceStop) {
+        setForceDisconnecting(true)
+        if (disconnectingTimer.current) window.clearTimeout(disconnectingTimer.current)
+        disconnectingTimer.current = window.setTimeout(() => setForceDisconnecting(false), 450)
+      }
       if (connection.connected) dispatch.connections.onClose(connection)
       await dispatch.connections.disconnect({ connection, forceStop })
     } else {
@@ -63,6 +70,12 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       clickHandler()
     }
   }, [autoConnect, service])
+
+  useEffect(() => {
+    return () => {
+      if (disconnectingTimer.current) window.clearTimeout(disconnectingTimer.current)
+    }
+  }, [])
 
   let title = 'Connect'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
@@ -82,7 +95,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     if (chip.disabled) clickHandler = async () => history.push('/account/plans')
   }
 
-  switch (state) {
+  const displayState: IConnectionState = forceDisconnecting ? 'disconnecting' : state
+
+  switch (displayState) {
     case 'ready':
       title = 'Stop'
       icon = 'stop'
@@ -126,7 +141,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (props.loading) icon = 'spinner-third'
   if (service?.attributes.route === 'p2p' && !browser.hasBackend) disabled = true
   if (disabled && props.size === 'icon') title = ''
-  if (connection?.connectLink && state !== 'offline') {
+  if (connection?.connectLink && displayState !== 'offline') {
     title = connection.enabled ? 'Disable' : 'Enable'
     icon = 'circle-medium'
   }
@@ -143,7 +158,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     />
   )
 
-  return state === 'connected' && props.size === 'large' && browser.hasBackend ? (
+  return displayState === 'connected' && props.size === 'large' && browser.hasBackend ? (
     <Stack flexDirection="row">
       {button}
       <DynamicButton
