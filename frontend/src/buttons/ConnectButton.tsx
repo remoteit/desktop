@@ -35,6 +35,29 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
 
+  useEffect(() => {
+    if (!connection?.id) return
+    console.log('CONNECT BUTTON STATE', {
+      id: connection.id,
+      state,
+      connected: connection.connected,
+      disconnecting: connection.disconnecting,
+      connecting: connection.connecting,
+      starting: connection.starting,
+      stopping: connection.stopping,
+      enabled: connection.enabled,
+    })
+  }, [
+    connection?.id,
+    state,
+    connection?.connected,
+    connection?.disconnecting,
+    connection?.connecting,
+    connection?.starting,
+    connection?.stopping,
+    connection?.enabled,
+  ])
+
   let clickHandler = async (event?: React.MouseEvent<HTMLButtonElement | HTMLDivElement>, forceStop?: boolean) => {
     event?.stopPropagation()
     event?.preventDefault()
@@ -47,7 +70,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     if (connection?.connectLink) {
       await dispatch.connections.setConnectLink({ ...connection, enabled: false })
     } else if (connection?.connecting || connection?.enabled || connection?.starting) {
-      if (connection.connected) await dispatch.connections.onClose(connection)
+      if (connection.connected) dispatch.connections.onClose(connection)
       await dispatch.connections.disconnect({ connection, forceStop })
     } else {
       connection = connection || newConnection(service)
