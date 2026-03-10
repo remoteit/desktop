@@ -174,6 +174,14 @@ export default createModel<RootModel>()({
       let exists = false
       all.some((c, index) => {
         if (c.id === connection.id) {
+          // Keep user-requested disconnect/stop transitions from regressing to
+          // opposite transient states (e.g. "connecting") from out-of-order updates.
+          if (c.disconnecting && (connection.connecting || connection.starting)) {
+            connection = { ...connection, disconnecting: true, connecting: false, starting: false }
+          }
+          if (c.stopping && (connection.connecting || connection.starting || connection.connected)) {
+            connection = { ...connection, stopping: true, connected: false, connecting: false, starting: false }
+          }
           all[index] = connection
           dispatch.connections.setAll(all)
           exists = true
@@ -438,15 +446,26 @@ export default createModel<RootModel>()({
       }
 
       if (connection.connected && !forceStop) {
-        connection = { ...connection, disconnecting: true }
-        dispatch.connections.patchConnection({ id: connection.id, disconnecting: true })
+        connection = { ...connection, disconnecting: true, connecting: false, starting: false }
+        dispatch.connections.patchConnection({
+          id: connection.id,
+          disconnecting: true,
+          connecting: false,
+          starting: false,
+        })
         emit('service/disconnect', connection)
       } else {
-        const stopUpdate: Pick<IConnection, 'stopping' | 'stopLock' | 'error' | 'enabled'> = {
+        const stopUpdate: Pick<
+          IConnection,
+          'stopping' | 'stopLock' | 'error' | 'enabled' | 'disconnecting' | 'connecting' | 'starting'
+        > = {
           stopping: true,
           stopLock: Date.now(),
           error: undefined,
           enabled: false,
+          disconnecting: false,
+          connecting: false,
+          starting: false,
         }
         connection = { ...connection, ...stopUpdate }
         dispatch.connections.patchConnection({ id: connection.id, ...stopUpdate })
