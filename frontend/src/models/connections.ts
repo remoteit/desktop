@@ -174,13 +174,37 @@ export default createModel<RootModel>()({
       let exists = false
       all.some((c, index) => {
         if (c.id === connection.id) {
+          const transition = {
+            id: connection.id,
+            previous: {
+              connected: c.connected,
+              disconnecting: c.disconnecting,
+              connecting: c.connecting,
+              starting: c.starting,
+              stopping: c.stopping,
+              enabled: c.enabled,
+            },
+            incoming: {
+              connected: connection.connected,
+              disconnecting: connection.disconnecting,
+              connecting: connection.connecting,
+              starting: connection.starting,
+              stopping: connection.stopping,
+              enabled: connection.enabled,
+            },
+          }
           // Keep user-requested disconnect/stop transitions from regressing to
           // opposite transient states (e.g. "connecting") from out-of-order updates.
-          if (c.disconnecting && (connection.connecting || connection.starting)) {
+          if (c.disconnecting && connection.connected !== false) {
             connection = { ...connection, disconnecting: true, connecting: false, starting: false }
+            console.log('HOLD DISCONNECTING TRANSITION', transition)
           }
           if (c.stopping && (connection.connecting || connection.starting || connection.connected)) {
             connection = { ...connection, stopping: true, connected: false, connecting: false, starting: false }
+            console.log('HOLD STOPPING TRANSITION', transition)
+          }
+          if (c.disconnecting || connection.disconnecting || c.connected !== connection.connected) {
+            console.log('CONNECTION TRANSITION UPDATE', transition)
           }
           all[index] = connection
           dispatch.connections.setAll(all)
@@ -439,6 +463,14 @@ export default createModel<RootModel>()({
         console.warn('No connection to disconnect')
         return
       }
+      console.log('DISCONNECT REQUEST', {
+        id: connection.id,
+        forceStop,
+        connected: connection.connected,
+        disconnecting: connection.disconnecting,
+        connecting: connection.connecting,
+        starting: connection.starting,
+      })
 
       if (connection.public || !browser.hasBackend) {
         dispatch.connections.proxyDisconnect(connection)
