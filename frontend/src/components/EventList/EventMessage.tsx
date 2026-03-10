@@ -1,5 +1,7 @@
 import React from 'react'
 import { combinedName } from '@common/nameHelper'
+import { formatBytes, formatDuration, isUsageNumber } from '../../helpers/usageHelper'
+import { Icon } from '../Icon'
 
 export const EventActions = ['add', 'update']
 
@@ -30,6 +32,7 @@ export function EventMessage({
   const affected = userList === loggedInUser.email ? 'you' : userList
 
   let message: JSX.Element | string = ''
+  let detail: JSX.Element | null = null
   switch (item.type) {
     case 'AUTH_LOGIN':
       message = (
@@ -85,6 +88,24 @@ export function EventMessage({
       break
 
     case 'DEVICE_CONNECT':
+      if (isUsageNumber(item.txBytes) || isUsageNumber(item.rxBytes) || isUsageNumber(item.lifetime)) {
+        detail = (
+          <div className="event-usage">
+            <span className="event-usage-sent">
+              <Icon name="chevron-up" color="primary" size="xxs" type="solid" title="Sent" />
+              <strong>{formatBytes(item.txBytes)}</strong>
+            </span>
+            <span className="event-usage-received">
+              <Icon name="chevron-down" color="primary" size="xxs" type="solid" title="Received" />
+              <strong>{formatBytes(item.rxBytes)}</strong>
+            </span>
+            <span className="event-usage-duration">
+              <Icon name="clock" size="xxs" type="regular" title="Duration" />
+              <strong>{formatDuration(item.lifetime)}</strong>
+            </span>
+          </div>
+        )
+      }
       message = (
         <>
           <b>{actorName}</b> {item.state === EventState.connected ? 'connected to' : 'disconnected from'} <i>{name} </i>
@@ -166,7 +187,12 @@ export function EventMessage({
       message = <>Unknown event type {item.type} occurred</>
   }
 
-  return <div>{message}</div>
+  return (
+    <div>
+      <div>{message}</div>
+      {detail}
+    </div>
+  )
 }
 
 function statusDisplay(status?: IJobStatus): string {

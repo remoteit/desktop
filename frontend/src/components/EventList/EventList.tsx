@@ -100,6 +100,29 @@ const useStyles = makeStyles(({ palette, breakpoints }) => ({
         color: palette.grayDarker.main,
         fontStyle: 'normal',
       },
+      '& .event-usage': {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: spacing.xs,
+        marginTop: '0.6em',
+        lineHeight: '0.6em',
+        color: palette.grayDark.main,
+        fontSize: fontSizes.xxs,
+        textTransform: 'uppercase',
+        letterSpacing: '0.03em',
+        '& > span': {
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: spacing.xxxs,
+        },
+        '& svg': {
+          flexShrink: 0,
+        },
+        '& strong': {
+          color: palette.grayDarker.main,
+          fontWeight: 500,
+        },
+      },
     },
   },
 }))
