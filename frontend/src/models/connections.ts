@@ -388,6 +388,7 @@ export default createModel<RootModel>()({
         dispatch.connections.patchConnection({
           id: connection.id,
           error: { message: 'Persistent connection update failed. Please contact support.' },
+          updating: false,
         })
         dispatch.devices.fetchSingleFull({ id: connection.id, isService: true })
         return
