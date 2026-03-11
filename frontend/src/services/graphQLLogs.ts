@@ -1,7 +1,7 @@
 import { graphQLBasicRequest } from './graphQL'
 
 const EVENTS = `
-    events(after: $after, size: $size, minDate: $minDate, maxDate: $maxDate) {
+    events(after: $after, size: $size, minDate: $minDate, maxDate: $maxDate, types: $types) {
       hasMore
       last
       total
@@ -53,11 +53,18 @@ const EVENTS = `
       }
     }`
 
-const EVENTS_URL = 'eventsUrl(minDate: $minDate, maxDate: $maxDate)'
+const EVENTS_URL = 'eventsUrl(minDate: $minDate, maxDate: $maxDate, types: $types)'
 
-export async function graphQLGetDeviceLogs(id: string, size: number, after?: string, minDate?: Date, maxDate?: Date) {
+export async function graphQLGetDeviceLogs(
+  id: string,
+  size: number,
+  after?: string,
+  minDate?: Date,
+  maxDate?: Date,
+  types?: IEventType[]
+) {
   return await graphQLBasicRequest(
-    `  query DeviceLogs($id: [String!]!, $after: ID, $size: Int, $minDate: DateTime, $maxDate: DateTime) {
+    `  query DeviceLogs($id: [String!]!, $after: ID, $size: Int, $minDate: DateTime, $maxDate: DateTime, $types: [EventType!]) {
           login {
             id
             device(id: $id) {  
@@ -73,13 +80,21 @@ export async function graphQLGetDeviceLogs(id: string, size: number, after?: str
       minDate: minDate?.toISOString(),
       maxDate: maxDate?.toISOString(),
       size,
+      types,
     }
   )
 }
 
-export async function graphQLGetLogs(account: string, size: number, after?: string, minDate?: Date, maxDate?: Date) {
+export async function graphQLGetLogs(
+  account: string,
+  size: number,
+  after?: string,
+  minDate?: Date,
+  maxDate?: Date,
+  types?: IEventType[]
+) {
   return await graphQLBasicRequest(
-    `  query Logs($account: String!, $after: ID, $size: Int, $minDate: DateTime, $maxDate: DateTime) {
+    `  query Logs($account: String!, $after: ID, $size: Int, $minDate: DateTime, $maxDate: DateTime, $types: [EventType!]) {
           login {
             account(id: $account) {
               id
@@ -94,13 +109,14 @@ export async function graphQLGetLogs(account: string, size: number, after?: stri
       minDate: minDate?.toISOString(),
       maxDate: maxDate?.toISOString(),
       size,
+      types,
     }
   )
 }
 
-export async function graphQLGetDeviceUrl(id: string, minDate?: Date, maxDate?: Date) {
+export async function graphQLGetDeviceUrl(id: string, minDate?: Date, maxDate?: Date, types?: IEventType[]) {
   return await graphQLBasicRequest(
-    `   query DeviceLogsUrl($id: [String!]!, $minDate: DateTime, $maxDate: DateTime) {
+    `   query DeviceLogsUrl($id: [String!]!, $minDate: DateTime, $maxDate: DateTime, $types: [EventType!]) {
           login {
             id
             device(id: $id) {  
@@ -114,13 +130,14 @@ export async function graphQLGetDeviceUrl(id: string, minDate?: Date, maxDate?: 
       id,
       minDate: minDate?.toISOString(),
       maxDate: maxDate?.toISOString(),
+      types,
     }
   )
 }
 
-export async function graphQLGetUrl(account: string, minDate?: Date, maxDate?: Date) {
+export async function graphQLGetUrl(account: string, minDate?: Date, maxDate?: Date, types?: IEventType[]) {
   return await graphQLBasicRequest(
-    `   query LogsUrl($account: String!, $minDate: DateTime, $maxDate: DateTime) {
+    `   query LogsUrl($account: String!, $minDate: DateTime, $maxDate: DateTime, $types: [EventType!]) {
           login {
             account(id: $account) {
               id
@@ -133,6 +150,7 @@ export async function graphQLGetUrl(account: string, minDate?: Date, maxDate?: D
       account,
       minDate: minDate?.toISOString(),
       maxDate: maxDate?.toISOString(),
+      types,
     }
   )
 }
