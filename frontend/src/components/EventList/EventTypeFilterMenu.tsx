@@ -33,7 +33,10 @@ export const EventTypeFilterMenu: React.FC<Props> = ({ value, onChange }) => {
     else types.forEach(type => next.add(type))
 
     onChange(next.size ? Array.from(next) : undefined)
+    handleClose()
   }
+
+  const handleClose = () => setAnchorEl(null)
 
   return (
     <>
@@ -47,7 +50,7 @@ export const EventTypeFilterMenu: React.FC<Props> = ({ value, onChange }) => {
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
+        onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         disableScrollLock

@@ -6,7 +6,7 @@ import { selectLimit } from '../../selectors/organizations'
 import { Dispatch, State } from '../../store'
 import { selectActiveAccountId } from '../../selectors/accounts'
 import { useDispatch, useSelector } from 'react-redux'
-import { Box, List, ListItem, ListItemSecondaryAction } from '@mui/material'
+import { List, ListItem, ListItemSecondaryAction } from '@mui/material'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../DatePicker'
 import { EventTypeFilterMenu } from './EventTypeFilterMenu'
@@ -84,10 +84,8 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       <ListItem dense>
         <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
         <ListItemSecondaryAction>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <EventTypeFilterMenu value={eventTypes} onChange={handleChangeEventTypes} />
-            <CSVDownloadButton fetchUrl={fetchCsvUrl} />
-          </Box>
+          <EventTypeFilterMenu value={eventTypes} onChange={handleChangeEventTypes} />
+          <CSVDownloadButton fetchUrl={fetchCsvUrl} />
         </ListItemSecondaryAction>
       </ListItem>
     </List>
