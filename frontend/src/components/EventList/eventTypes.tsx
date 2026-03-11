@@ -14,7 +14,7 @@ export const eventFilterOptions: EventFilterOption[] = [
   {
     key: 'password-activity',
     label: 'Password Activity',
-    types: ['AUTH_PASSWORD_CHANGE', 'AUTH_PASSWORD_RESET', 'AUTH_PASSWORD_RESET_CONFIRMED'],
+    types: ['AUTH_PASSWORD_CHANGE', 'AUTH_PASSWORD_RESET'],
     iconTypes: ['AUTH_PASSWORD_CHANGE'],
   },
   { key: 'phone-change', label: 'Phone Change', types: ['AUTH_PHONE_CHANGE'] },

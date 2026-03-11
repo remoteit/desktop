@@ -62,13 +62,6 @@ export function EventMessage({
         </>
       )
       break
-    case 'AUTH_PASSWORD_RESET_CONFIRMED':
-      message = (
-        <>
-          Reset password was confirmed for <b>{actorName}</b>
-        </>
-      )
-      break
     case 'AUTH_PHONE_CHANGE':
       message = 'Phone number changed'
       break
