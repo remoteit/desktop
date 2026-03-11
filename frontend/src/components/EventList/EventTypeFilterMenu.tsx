@@ -33,7 +33,6 @@ export const EventTypeFilterMenu: React.FC<Props> = ({ value, onChange }) => {
     else types.forEach(type => next.add(type))
 
     onChange(next.size ? Array.from(next) : undefined)
-    handleClose()
   }
 
   const handleClose = () => setAnchorEl(null)
