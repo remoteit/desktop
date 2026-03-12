@@ -11,12 +11,10 @@ export interface Props {
 }
 
 export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
-  const { AWSPhone, AWSUser, mfaMethod } = useSelector((state: State) => ({
-    AWSPhone: state.auth.AWSUser.phone_number || '',
-    AWSUser: state.auth.AWSUser,
-    mfaMethod: state.mfa.mfaMethod,
-  }))
+  const AWSUser = useSelector((state: State) => state.auth.AWSUser)
+  const mfaMethod = useSelector((state: State) => state.mfa.mfaMethod)
   const { mfa } = useDispatch<Dispatch>()
+  const AWSPhone = AWSUser.phone_number || ''
   const originalPhone = AWSUser.phone_number
   const [phone, setPhone] = useState<string>(AWSPhone)
   const [error, setError] = React.useState<string | null>(null)

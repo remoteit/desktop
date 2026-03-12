@@ -10,16 +10,9 @@ import { MFAMethod } from './MFAMethod'
 import { Gutters } from '../Gutters'
 
 export const MFAPreference: React.FC = () => {
-  const { AWSPhone, AWSUser, mfaMethod, verificationCode, showMFASelection, showSMSConfig, backupCode } = useSelector(
-    (state: State) => ({
-      AWSPhone: state.auth.AWSUser.phone_number || '',
-      AWSUser: state.auth.AWSUser,
-      mfaMethod: state.mfa.mfaMethod,
-      verificationCode: state.mfa.verificationCode,
-      showMFASelection: state.mfa.showMFASelection,
-      showSMSConfig: state.mfa.showSMSConfig,
-      backupCode: state.mfa.backupCode,
-    })
+  const AWSUser = useSelector((state: State) => state.auth.AWSUser)
+  const { mfaMethod, verificationCode, showMFASelection, showSMSConfig, backupCode } = useSelector(
+    (state: State) => state.mfa
   )
   const { mfa } = useDispatch<Dispatch>()
   const [showEnableSelection, setShowEnableSelection] = useState<boolean>(mfaMethod === 'NO_MFA')
@@ -34,6 +27,7 @@ export const MFAPreference: React.FC = () => {
     AWSUser && !AWSUser.phone_number_verified
   )
 
+  const AWSPhone = AWSUser.phone_number || ''
   const loadTotpCode = async () => setTotpCode(await mfa.getTotpCode())
   const setVerificationCode = (verificationCode: string) => mfa.set({ verificationCode })
   const setShowPhone = (showPhone: boolean) => mfa.set({ showPhone })

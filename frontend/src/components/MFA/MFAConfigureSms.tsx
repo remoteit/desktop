@@ -28,11 +28,9 @@ export const MFAConfigureSms: React.FC<Props> = ({
   setCancelShowVerificationCode,
 }) => {
   const { mfa } = useDispatch<Dispatch>()
-  const { showPhone, showVerificationCode, AWSPhone } = useSelector((state: State) => ({
-    showPhone: state.mfa.showPhone,
-    showVerificationCode: state.mfa.showVerificationCode,
-    AWSPhone: state.auth.AWSUser.phone_number || '',
-  }))
+  const { showPhone, showVerificationCode } = useSelector((state: State) => state.mfa)
+  const AWSUser = useSelector((state: State) => state.auth.AWSUser)
+  const AWSPhone = AWSUser.phone_number || ''
   return (
     <>
       {showPhone && (
