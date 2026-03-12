@@ -413,6 +413,12 @@ export class AuthService {
 
   public async changePassword(existingPassword: string, newPassword: string) {
     const awsUser = await this.cognitoAuth.currentAuthenticatedUser()
+    const session = await this.currentCognitoSession()
+    const refreshToken = session.getRefreshToken()
+    await new Promise((res, rej) => {
+      // @ts-ignore
+      awsUser.refreshSession(refreshToken, (err: any, data: unknown) => (err ? rej(err) : res(data)))
+    })
     await Auth.changePassword(awsUser, existingPassword, newPassword)
   }
 

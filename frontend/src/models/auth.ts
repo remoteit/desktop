@@ -111,15 +111,24 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: 'Login failed.' })
       }
     },
-    async changePassword(passwordValues: IPasswordValue, state) {
+    async changePassword(passwordValues: IPasswordValue, state): Promise<boolean> {
       const existingPassword = passwordValues.currentPassword
       const newPassword = passwordValues.password
 
       try {
         await state.auth.authService?.changePassword(existingPassword, newPassword)
+        dispatch.ui.set({ successMessage: 'Password changed successfully.' })
         return true
-      } catch (error) {
-        dispatch.ui.set({ errorMessage: `Change password error: ${error}` })
+      } catch (error: any) {
+        const message =
+          error.code === 'NotAuthorizedException'
+            ? 'Current password is incorrect.'
+            : error.code === 'InvalidPasswordException'
+              ? error.message || 'New password does not meet the requirements.'
+              : error.code === 'LimitExceededException'
+                ? 'Too many attempts. Please try again later.'
+                : error.message || 'An unexpected error occurred. Please try again.'
+        dispatch.ui.set({ errorMessage: message })
         return false
       }
     },
