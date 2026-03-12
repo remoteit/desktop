@@ -85,7 +85,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       <ListItem dense>
         <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
         <ListItemSecondaryAction>
-          <EventTypeFilterMenu value={eventTypes} onChange={handleChangeEventTypes} />
+          <EventTypeFilterMenu device={device} value={eventTypes} onChange={handleChangeEventTypes} />
           <CSVDownloadButton fetchUrl={fetchCsvUrl} />
         </ListItemSecondaryAction>
       </ListItem>

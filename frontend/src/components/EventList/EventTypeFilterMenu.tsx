@@ -4,20 +4,26 @@ import { State } from '../../store'
 import { useSelector } from 'react-redux'
 import { Icon } from '../Icon'
 import { IconButton } from '../../buttons/IconButton'
-import { eventFilterOptions } from './eventTypes'
+import { deviceHiddenEventFilterOptionKeys, eventFilterOptions } from './eventTypes'
 import { EventFilterIcon } from './EventFilterIcon'
 import { EventTypeFilterMenuItem } from './EventTypeFilterMenuItem'
 
 type Props = {
+  device?: IDevice
   value?: IEventType[]
   onChange: (value?: IEventType[]) => void
 }
 
-export const EventTypeFilterMenu: React.FC<Props> = ({ value, onChange }) => {
+export const EventTypeFilterMenu: React.FC<Props> = ({ device, value, onChange }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const user = useSelector((state: State) => state.user)
   const selectedValues = value || []
   const activeTypes = useMemo(() => new Set(selectedValues), [selectedValues])
+  const visibleOptions = useMemo(
+    () =>
+      device ? eventFilterOptions.filter(option => !deviceHiddenEventFilterOptionKeys.has(option.key)) : eventFilterOptions,
+    [device]
+  )
   const isFiltered = selectedValues.length > 0
 
   const handleToggle = (types?: IEventType[]) => {
@@ -63,7 +69,7 @@ export const EventTypeFilterMenu: React.FC<Props> = ({ value, onChange }) => {
           icon={<Icon name="asterisk" size="md" color={!isFiltered ? 'primary' : 'gray'} />}
         />
         <Divider />
-        {eventFilterOptions.map(option => {
+        {visibleOptions.map(option => {
           const selected = option.types.every(type => activeTypes.has(type))
 
           return (
