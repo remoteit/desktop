@@ -2,6 +2,7 @@ import { createModel } from '@rematch/core'
 import { graphQLGetLogs, graphQLGetDeviceLogs, graphQLGetUrl, graphQLGetDeviceUrl } from '../services/graphQLLogs'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
+import { store } from '../store'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -9,6 +10,7 @@ type ILogState = {
   size: number
   after?: string
   eventTypes?: IEventType[]
+  requestId: number
   maxDate?: Date
   minDate?: Date
   fetching: boolean
@@ -22,6 +24,7 @@ type ILogState = {
 const defaultState: ILogState = {
   after: undefined,
   eventTypes: undefined,
+  requestId: 0,
   size: 100,
   maxDate: undefined,
   minDate: undefined,
@@ -46,21 +49,30 @@ export default createModel<RootModel>()({
       const { size, after, maxDate, minDate, events, eventTypes } = state.logs
       const accountId = selectActiveAccountId(state)
       const existingItems = after ? events.items : []
+      const requestId = state.logs.requestId + 1
 
-      after ? set({ fetchingMore: true }) : set({ fetching: true })
+      after ? set({ fetchingMore: true, requestId }) : set({ fetching: true, requestId })
 
       let result
       let response: Awaited<ReturnType<typeof graphQLGetDeviceUrl>>
 
       if (deviceId) {
         response = await graphQLGetDeviceLogs(deviceId, size, after, minDate, maxDate, eventTypes)
-        if (response === 'ERROR') return
+        if (response === 'ERROR') {
+          if (store.getState().logs.requestId === requestId) set({ fetching: false, fetchingMore: false })
+          return
+        }
         result = response?.data?.data?.login?.device[0] || {}
       } else {
         response = await graphQLGetLogs(accountId, size, after, minDate, maxDate, eventTypes)
-        if (response === 'ERROR') return
+        if (response === 'ERROR') {
+          if (store.getState().logs.requestId === requestId) set({ fetching: false, fetchingMore: false })
+          return
+        }
         result = response?.data?.data?.login?.account || {}
       }
+
+      if (store.getState().logs.requestId !== requestId) return
 
       const mergedItems = existingItems.concat(result?.events?.items || [])
       const nextEvents = {

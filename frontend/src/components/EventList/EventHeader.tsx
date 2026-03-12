@@ -36,6 +36,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   useEffect(() => {
     set({
       after: undefined,
+      eventTypes: undefined,
       events: { ...events, items: [] },
       maxDate: undefined,
       selectedDate: undefined,
