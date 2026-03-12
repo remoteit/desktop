@@ -12,25 +12,30 @@ export const ChangePassword = () => {
   const [password, setPassword] = useState<string>('')
   const [isValid, setValid] = useState<boolean>(false)
   const [saving, setSaving] = useState<boolean>(false)
+  const [key, setKey] = useState<number>(0)
   const { auth } = useDispatch<Dispatch>()
   const history = useHistory()
 
   const evaluateCurrentPassword = (e: { target: { value: React.SetStateAction<string> } }) => {
     setCurrentPassword(e.target.value.toString())
   }
-  const updatePassword = async (event: { preventDefault: () => void }) => {
-    event.preventDefault()
+  const updatePassword = async () => {
     setSaving(true)
-    await auth.changePassword({ currentPassword: currentPassword, password: password })
+    const success = await auth.changePassword({ currentPassword, password })
     setSaving(false)
-    window.location.reload()
+    if (success) {
+      setCurrentPassword('')
+      setPassword('')
+      setValid(false)
+      setKey(k => k + 1)
+    }
   }
   return (
     <>
       <Typography variant="subtitle1" gutterBottom>
         Change Password
       </Typography>
-      <Gutters sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
+      <Gutters key={key} sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
         <TextField
           fullWidth
           variant="filled"
@@ -51,7 +56,6 @@ export const ChangePassword = () => {
           title="Save"
           variant="contained"
           color="primary"
-          type="submit"
           size="small"
           disabled={!isValid || saving}
           onClick={updatePassword}
@@ -63,7 +67,7 @@ export const ChangePassword = () => {
                   Changing your password will <b>NOT</b> automatically sign you out of other sessions.
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  The app will reload after your password is updated. You can manually sign out from all sessions below.
+                  You can manually sign out from all sessions below.
                 </Typography>
               </>
             ),
