@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { List, ListItem, ListItemSecondaryAction } from '@mui/material'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../DatePicker'
+import { EventTypeFilterMenu } from './EventTypeFilterMenu'
 
 const retentionStartDate = (allowedDays: number, device?: IDevice): Date | undefined => {
   if (!allowedDays) return undefined
@@ -26,7 +27,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const activeAccount = useSelector(selectActiveAccountId)
-  const { events, minDate, selectedDate } = useSelector((state: State) => state.logs)
+  const { events, minDate, selectedDate, eventTypes } = useSelector((state: State) => state.logs)
 
   const allowedDays = Math.max(limitDays(logLimit?.value) || 0, 0)
   const minDateValue = useMemo(() => retentionStartDate(allowedDays, device), [allowedDays, device?.createdAt])
@@ -35,6 +36,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   useEffect(() => {
     set({
       after: undefined,
+      eventTypes: undefined,
       events: { ...events, items: [] },
       maxDate: undefined,
       selectedDate: undefined,
@@ -68,11 +70,22 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   const fetchCsvUrl = () => dispatch.logs.fetchUrl(device?.id)
 
+  const handleChangeEventTypes = (nextEventTypes?: IEventType[]) => {
+    set({
+      eventTypes: nextEventTypes,
+      after: undefined,
+      events: { ...events, items: [] },
+      planUpgrade: false,
+    })
+    fetch({ allowedDays, deviceId: device?.id })
+  }
+
   return (
     <List disablePadding>
       <ListItem dense>
         <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
         <ListItemSecondaryAction>
+          <EventTypeFilterMenu value={eventTypes} onChange={handleChangeEventTypes} />
           <CSVDownloadButton fetchUrl={fetchCsvUrl} />
         </ListItemSecondaryAction>
       </ListItem>

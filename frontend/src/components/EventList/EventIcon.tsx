@@ -23,7 +23,6 @@ export function EventIcon({ item, loggedInUser }: Props): JSX.Element {
       break
     case 'AUTH_PASSWORD_CHANGE':
     case 'AUTH_PASSWORD_RESET':
-    case 'AUTH_PASSWORD_RESET_CONFIRMED':
       icon = 'key-skeleton'
       color = 'grayDarker'
       break

@@ -112,7 +112,10 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
         placement="bottom"
         disabled={!selected.length}
         loading={destroying}
-        onClick={async () => await dispatch.devices.destroySelected(selected)}
+        onClick={async () => {
+          await dispatch.devices.destroySelected(selected)
+          history.push('/devices')
+        }}
         confirmProps={{
           title: 'Confirm Device Deletion',
           color: 'error',

@@ -117,11 +117,10 @@ export default createModel<RootModel>()({
 
       try {
         await state.auth.authService?.changePassword(existingPassword, newPassword)
-        sleep(300)
-        window.location.reload()
-        dispatch.ui.set({ successMessage: `Password Changed Successfully` })
+        return true
       } catch (error) {
         dispatch.ui.set({ errorMessage: `Change password error: ${error}` })
+        return false
       }
     },
     /* TODO validate and hook changeEmail up */

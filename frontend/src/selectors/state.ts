@@ -2,6 +2,8 @@ import { State } from '../store'
 import { getLocalStorage } from '../services/browser'
 import { NOTICE_VERSION_ID } from '../models/backend'
 
+const EMPTY_CONNECTION_DEFAULTS = {}
+
 export const optionalParam = (_: State, first?: any) => first
 export const optionalSecondParam = (_: State, _first?: string, second?: any) => second
 export const optionalThirdParam = (_: State, _first?: string, _second?: any, third?: any) => third
@@ -28,12 +30,10 @@ export const getSessions = (state: State) => state.sessions.all
 export const getConnections = (state: State) => state.connections.all
 export const optionalService = (_: State, service?: IService) => service
 
-export const getConnectionDefaults = (state: State) => state.user.attributes?.connectionDefaults || {}
+export const getConnectionDefaults = (state: State) => state.user.attributes?.connectionDefaults || EMPTY_CONNECTION_DEFAULTS
 export const getApplicationTypes = (state: State) => state.applicationTypes
-export const getApplicationParams = (_: State, service?: IService, connection?: IConnection) => ({
-  service,
-  connection,
-})
+export const getApplicationService = (_: State, service?: IService) => service
+export const getApplicationConnection = (_: State, _service?: IService, connection?: IConnection) => connection
 
 export const getAllNetworks = (state: State) => state.networks.all
 export const getTags = (state: State) => state.tags.all
