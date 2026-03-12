@@ -5,6 +5,14 @@ export type EventFilterOption = {
   iconTypes?: IEventType[]
 }
 
+export const deviceHiddenEventFilterOptionKeys = new Set([
+  'login-activity',
+  'password-activity',
+  'phone-change',
+  'mfa-change',
+  'license-updated',
+])
+
 export const eventFilterOptions: EventFilterOption[] = [
   {
     key: 'login-activity',
