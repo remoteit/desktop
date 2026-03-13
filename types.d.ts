@@ -837,7 +837,6 @@ declare global {
   type IEventType =
     | 'AUTH_LOGIN'
     | 'AUTH_LOGIN_ATTEMPT'
-    | 'AUTH_PASSWORD_CHANGE'
     | 'AUTH_PASSWORD_RESET'
     | 'AUTH_PHONE_CHANGE'
     | 'AUTH_MFA_ENABLED'

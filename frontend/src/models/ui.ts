@@ -33,6 +33,7 @@ const SAVED_ACROSS_LOGOUT = [
   'serviceTimeSeries',
   'showDesktopNotice',
   'mobileWelcome',
+  'logsFilters',
 ]
 
 export type UIState = {
@@ -109,6 +110,7 @@ export type UIState = {
   scriptForm?: IFileForm
   scriptRunForms: ILookup<IFileForm>
   viewAsUser: { id: string; email: string } | null
+  logsFilters: LogsFiltersByAccount
 }
 
 export const defaultState: UIState = {
@@ -207,6 +209,7 @@ export const defaultState: UIState = {
   scriptForm: undefined,
   scriptRunForms: {},
   viewAsUser: null,
+  logsFilters: {},
 }
 
 export default createModel<RootModel>()({
@@ -298,6 +301,26 @@ export default createModel<RootModel>()({
       defaultSelection[id] = defaultSelection[id] || {}
       defaultSelection[id][key] = value
       dispatch.ui.set({ defaultSelection })
+    },
+    async setLogsFilter(
+      {
+        accountId,
+        context,
+        eventTypes,
+      }: {
+        accountId?: string
+        context: LogsFilterContext
+        eventTypes?: IEventType[]
+      },
+      state
+    ) {
+      const id = accountId || selectActiveAccountId(state)
+      if (!id) return
+
+      const logsFilters = structuredClone(state.ui.logsFilters)
+      logsFilters[id] = logsFilters[id] || {}
+      logsFilters[id][context] = { eventTypes }
+      dispatch.ui.setPersistent({ logsFilters })
     },
     async setPersistent(params: ILookup<any>, state) {
       dispatch.ui.set(params)

@@ -48,13 +48,6 @@ export function EventMessage({
         </>
       )
       break
-    case 'AUTH_PASSWORD_CHANGE':
-      message = (
-        <>
-          <b>{actorName}</b> changed {actorAdjective} password
-        </>
-      )
-      break
     case 'AUTH_PASSWORD_RESET':
       message = (
         <>
