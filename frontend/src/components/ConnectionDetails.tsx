@@ -4,7 +4,7 @@ import { makeStyles } from '@mui/styles'
 import { replaceHost } from '@common/nameHelper'
 import { Application } from '@common/applications'
 import { Typography, Tooltip, Collapse, Paper, Box, alpha } from '@mui/material'
-import { getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
+import { copyReady, getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
 import { LaunchQuickSelect } from './LaunchQuickSelect'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { LaunchButton } from '../buttons/LaunchButton'
@@ -58,6 +58,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   let port = connection?.port
 
   const disabled = !(connection?.enabled || session) || !connection?.online
+  const canCopy = copyReady(connection)
   const endpoint = getEndpoint(name, port)
   const endpointName = (connection?.public || connection?.connectLink ? 'Public' : 'Local') + ' Endpoint'
   const secureReverseProxy = isSecureReverseProxy(app.string)
@@ -76,6 +77,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
         variant="h3"
         className={css.h3}
         onClick={() => {
+          if (!canCopy) return
           buttonRef.current?.click()
           setCopied('Copied')
         }}
@@ -193,43 +195,47 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                     <Typography variant="h5" color="alwaysWhite.main" sx={{ my: 0.5 }}>
                       Copy {hover === 'launch' ? '' : hover === 'copy' ? app.contextTitle : hover}
                     </Typography>
-                    <CopyIconButton
-                      ref={buttonRef}
-                      color="alwaysWhite"
-                      icon="clone"
-                      value={endpoint}
-                      onMouseEnter={() => setHover('endpoint')}
-                      onMouseLeave={() => setHover(undefined)}
-                      onCopy={() => setCopied(undefined)}
-                    />
-                    {connection?.host && (
+                    {canCopy && (
                       <>
-                        {connection.port && (
+                        <CopyIconButton
+                          ref={buttonRef}
+                          color="alwaysWhite"
+                          icon="clone"
+                          value={endpoint}
+                          onMouseEnter={() => setHover('endpoint')}
+                          onMouseLeave={() => setHover(undefined)}
+                          onCopy={() => setCopied(undefined)}
+                        />
+                        {connection?.host && (
                           <>
+                            {connection.port && (
+                              <>
+                                <CopyIconButton
+                                  color="alwaysWhite"
+                                  icon="host"
+                                  value={connection.host}
+                                  onMouseEnter={() => setHover('host')}
+                                  onMouseLeave={() => setHover(undefined)}
+                                />
+                                <CopyIconButton
+                                  color="alwaysWhite"
+                                  icon="port"
+                                  value={connection.port}
+                                  onMouseEnter={() => setHover('port')}
+                                  onMouseLeave={() => setHover(undefined)}
+                                />
+                              </>
+                            )}
                             <CopyIconButton
                               color="alwaysWhite"
-                              icon="host"
-                              value={connection.host}
-                              onMouseEnter={() => setHover('host')}
-                              onMouseLeave={() => setHover(undefined)}
-                            />
-                            <CopyIconButton
-                              color="alwaysWhite"
-                              icon="port"
-                              value={connection.port}
-                              onMouseEnter={() => setHover('port')}
+                              icon={app.copyIcon}
+                              app={app}
+                              value={app.sshConfigString}
+                              onMouseEnter={() => setHover('copy')}
                               onMouseLeave={() => setHover(undefined)}
                             />
                           </>
                         )}
-                        <CopyIconButton
-                          color="alwaysWhite"
-                          icon={app.copyIcon}
-                          app={app}
-                          value={app.sshConfigString}
-                          onMouseEnter={() => setHover('copy')}
-                          onMouseLeave={() => setHover(undefined)}
-                        />
                       </>
                     )}
                   </span>

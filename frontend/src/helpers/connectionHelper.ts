@@ -210,6 +210,10 @@ export function getEndpoint(name?: string, port?: number) {
   return name + (port ? ':' + port : '')
 }
 
+export function copyReady(connection?: IConnection) {
+  return !!(connection?.connectLink || connection?.ready)
+}
+
 export function sanitizeUrl(name: string) {
   return name?.toLowerCase().replace(REGEX_CONNECTION_NAME, '-').replace(REGEX_CONNECTION_TRIM, '')
 }
