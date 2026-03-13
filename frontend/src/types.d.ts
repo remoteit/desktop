@@ -244,6 +244,16 @@ declare global {
     children?: React.ReactNode
   }
 
+  type LogsFilterContext = 'root' | 'device'
+
+  type LogsFilterPreference = {
+    eventTypes?: IEventType[]
+  }
+
+  type LogsFiltersByAccount = {
+    [accountId: string]: Partial<Record<LogsFilterContext, LogsFilterPreference>>
+  }
+
   type ILayout = {
     insets: SafeAreaInsets['insets'] & {
       topPx: string
