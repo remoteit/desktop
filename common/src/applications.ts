@@ -152,7 +152,7 @@ export class Application {
   }
 
   get defaultTemplate() {
-    return this.launchMethod.defaultTemplate // need resolved
+    return this.resolvedDefaultTemplate(this.launchType)
   }
 
   get template() {

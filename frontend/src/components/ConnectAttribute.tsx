@@ -4,9 +4,11 @@ import { CopyIconButton } from '../buttons/CopyIconButton'
 import { ComboButton } from '../buttons/ComboButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { Box } from '@mui/material'
+import { copyReady } from '../helpers/connectionHelper'
 
 export const ConnectAttribute = ({ device, service, connection }: IDataOptions) => {
   const app = useApplication(service, connection)
+  const canCopy = copyReady(connection)
   const buttons =
     connection &&
     connection.online &&
@@ -23,15 +25,17 @@ export const ConnectAttribute = ({ device, service, connection }: IDataOptions) 
         {buttons && (
           <>
             &nbsp;
-            <CopyIconButton
-              app={app}
-              color="primary"
-              icon="clone"
-              type="regular"
-              size="sm"
-              buttonBaseSize="small"
-              fixedWidth
-            />
+            {canCopy && (
+              <CopyIconButton
+                app={app}
+                color="primary"
+                icon="clone"
+                type="regular"
+                size="sm"
+                buttonBaseSize="small"
+                fixedWidth
+              />
+            )}
             <LaunchButton
               app={app}
               connection={connection}

@@ -24,19 +24,23 @@ const hasDateChanged = (lhs?: Date, rhs?: Date) => lhs?.getTime() !== rhs?.getTi
 export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const dispatch = useDispatch<Dispatch>()
   const { fetch, set } = dispatch.logs
+  const { setLogsFilter } = dispatch.ui
 
   const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const activeAccount = useSelector(selectActiveAccountId)
   const { events, minDate, selectedDate, eventTypes } = useSelector((state: State) => state.logs)
+  const logsFilters = useSelector((state: State) => state.ui.logsFilters)
 
   const allowedDays = Math.max(limitDays(logLimit?.value) || 0, 0)
   const minDateValue = useMemo(() => retentionStartDate(allowedDays, device), [allowedDays, device?.createdAt])
+  const logsFilterContext: LogsFilterContext = device ? 'device' : 'root'
+  const savedEventTypes = activeAccount ? logsFilters[activeAccount]?.[logsFilterContext]?.eventTypes : undefined
 
   // Clear logs and fetch whenever device or account changes
   useEffect(() => {
     set({
       after: undefined,
-      eventTypes: undefined,
+      eventTypes: savedEventTypes,
       events: { ...events, items: [] },
       maxDate: undefined,
       selectedDate: undefined,
@@ -77,6 +81,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       events: { ...events, items: [] },
       planUpgrade: false,
     })
+    setLogsFilter({ accountId: activeAccount, context: logsFilterContext, eventTypes: nextEventTypes })
     fetch({ allowedDays, deviceId: device?.id })
   }
 
