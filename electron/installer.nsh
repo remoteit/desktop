@@ -83,6 +83,18 @@ Var FileHandle
 !macro customRemoveFiles
     !insertmacro openLogFile "CustomRemoveFiles"
 
+    FileWrite $FileHandle "INSTDIR before fix: $INSTDIR$\r$\n"
+
+    ; Fix: electron-builder's un.onInit can resolve $INSTDIR to Program Files (x86)
+    ; during upgrade->uninstall flow. Explicitly read the 64-bit registry to correct it.
+    SetRegView 64
+    ReadRegStr $0 HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation
+    ${ifNot} $0 == ""
+        StrCpy $INSTDIR $0
+    ${endIf}
+
+    FileWrite $FileHandle "INSTDIR after fix: $INSTDIR$\r$\n"
+
     ; Detect update (auto or manual)
     ${if} ${IsUpdated}
         FileWrite $FileHandle "Updating... do not check for registered device.$\r$\n"
