@@ -89,11 +89,11 @@ Var FileHandle
     ${else}
         FileWrite $FileHandle "Uninstalling...$\r$\n"
 
-        IfFileExists "$COMMONPROGRAMDATA\remoteit\config.json" config_found config_not_found
+        IfFileExists "C:\ProgramData\remoteit\config.json" config_found config_not_found
         config_found:
             FileWrite $FileHandle "Config found$\r$\n"
             
-            !insertmacro logPowershell "(Get-Content -Raw -Path '$COMMONPROGRAMDATA\remoteit\config.json' | ConvertFrom-Json).device.uid.length"
+            !insertmacro logPowershell "(Get-Content -Raw -Path 'C:\ProgramData\remoteit\config.json' | ConvertFrom-Json).device.uid.length"
             
             IntCmp $1 0 notDevice notDevice thereIsDevice
                 notDevice:
@@ -120,14 +120,14 @@ Var FileHandle
                     next:
                     Goto done
             done:
-            goto end_of_config
+            Goto end_of_config
         config_not_found:
             FileWrite $FileHandle "Device config not found$\r$\n"
         end_of_config:
 
         ; Remove app data
-        FileWrite $FileHandle "RMDir $PROFILE\AppData\Local\remoteit$\r$\n"
-        RMDir /r "$PROFILE\AppData\Local\remoteit"
+        FileWrite $FileHandle "RMDir $LOCALAPPDATA\remoteit$\r$\n"
+        RMDir /r "$LOCALAPPDATA\remoteit"
     ${endIf}
 
     ; Remove agent
@@ -140,6 +140,7 @@ Var FileHandle
     ; Remove files
     FileWrite $FileHandle "$\r$\nRemoving installation directories... $\r$\n"
     FileWrite $FileHandle "RMDir $INSTDIR$\r$\n"
+    SetOutPath $TEMP
     RMDir /r "$INSTDIR"
 
     FileWrite $FileHandle "End CustomRemoveFiles$\r$\n"
