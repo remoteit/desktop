@@ -58,7 +58,7 @@ Var FileHandle
 
     ; Install new agent
     FileWrite $FileHandle "Installing Agent ... $\r$\n"
-    !insertmacro logExec "$\"$INSTDIR\resources\remoteit$\" agent install"
+    !insertmacro logExecRequired "$\"$INSTDIR\resources\remoteit$\" agent install" "The Remote.It agent service could not be installed. Setup will now exit."
     
     ; REMOVE AFTER v3.16.x -- Remove from machine path env var incase already there
     FileWrite $FileHandle "Cleaning up old PATH ... $\r$\n"
@@ -89,11 +89,11 @@ Var FileHandle
     ${else}
         FileWrite $FileHandle "Uninstalling...$\r$\n"
 
-        IfFileExists "$APPDATA\remoteit\config.json" config_found config_not_found
+        IfFileExists "$COMMONAPPDATA\remoteit\config.json" config_found config_not_found
         config_found:
             FileWrite $FileHandle "Config found$\r$\n"
             
-            !insertmacro logPowershell "(Get-Content -Raw -Path $APPDATA\remoteit\config.json | ConvertFrom-Json).device.uid.length"
+            !insertmacro logPowershell "(Get-Content -Raw -Path '$COMMONAPPDATA\remoteit\config.json' | ConvertFrom-Json).device.uid.length"
             
             IntCmp $1 0 notDevice notDevice thereIsDevice
                 notDevice:
@@ -135,6 +135,7 @@ Var FileHandle
     
     ; Remove from path env var
     !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'Machine')).Split(';') | Where-Object { ($$_ -notlike '*\${PRODUCT_FILENAME}*') -and ($$_ -ne '') }) -join ';', 'Machine')"
+    !insertmacro logPowershell "[Environment]::SetEnvironmentVariable('PATH', (([Environment]::GetEnvironmentVariable('PATH', 'User')).Split(';') | Where-Object { ($$_ -notlike '*\${PRODUCT_FILENAME}*') -and ($$_ -ne '') }) -join ';', 'User')"
 
     ; Remove files
     FileWrite $FileHandle "$\r$\nRemoving installation directories... $\r$\n"
@@ -192,6 +193,16 @@ Var FileHandle
     Pop $1
     FileWrite $FileHandle "Result Code: $0$\r$\n"
     FileWrite $FileHandle "Result Output: $1$\r$\n"
+!macroend
+
+!macro logExecRequired command errorMessage
+    !insertmacro logExec "${command}"
+    ${If} $0 != 0
+        FileWrite $FileHandle "Fatal installer error: ${errorMessage}$\r$\n"
+        FileClose $FileHandle
+        MessageBox MB_OK|MB_ICONSTOP "${errorMessage}"
+        Abort
+    ${EndIf}
 !macroend
 
 !macro openLogFile section
