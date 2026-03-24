@@ -38,7 +38,12 @@ exports.default = async function sign(configuration) {
 
     console.log(`  ${BLUE}•${END} signing         ${BLUE}path${END}=${configuration.path}`)
 
-    execSync(signFile, { env: { CODE_SIGN_TOOL_PATH: TOOL_DIR } })
+    execSync(signFile, {
+      env: {
+        ...process.env,
+        CODE_SIGN_TOOL_PATH: TOOL_DIR,
+      },
+    })
     const signedTempPath = fs.existsSync(tempFile) ? tempFile : legacyTempFile
     fs.renameSync(signedTempPath, outputFile)
   } else {

@@ -89,11 +89,11 @@ Var FileHandle
     ${else}
         FileWrite $FileHandle "Uninstalling...$\r$\n"
 
-        IfFileExists "$COMMONAPPDATA\remoteit\config.json" config_found config_not_found
+        IfFileExists "$COMMONPROGRAMDATA\remoteit\config.json" config_found config_not_found
         config_found:
             FileWrite $FileHandle "Config found$\r$\n"
             
-            !insertmacro logPowershell "(Get-Content -Raw -Path '$COMMONAPPDATA\remoteit\config.json' | ConvertFrom-Json).device.uid.length"
+            !insertmacro logPowershell "(Get-Content -Raw -Path '$COMMONPROGRAMDATA\remoteit\config.json' | ConvertFrom-Json).device.uid.length"
             
             IntCmp $1 0 notDevice notDevice thereIsDevice
                 notDevice:
