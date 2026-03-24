@@ -83,6 +83,8 @@ Var FileHandle
 !macro customRemoveFiles
     !insertmacro openLogFile "CustomRemoveFiles"
 
+    FileWrite $FileHandle "INSTDIR: $INSTDIR$\r$\n"
+
     ; Detect update (auto or manual)
     ${if} ${IsUpdated}
         FileWrite $FileHandle "Updating... do not check for registered device.$\r$\n"
