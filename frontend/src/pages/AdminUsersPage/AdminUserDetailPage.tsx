@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Typography, List, ListItemText, Box, Divider } from '@mui/material'
 import { Container } from '../../components/Container'
@@ -7,14 +7,16 @@ import { ListItemLocation } from '../../components/ListItemLocation'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
-import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
+import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
 import { Dispatch } from '../../store'
+import browser from '../../services/browser'
 import { windowOpen } from '../../services/browser'
 
 export const AdminUserDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
+  const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -33,13 +35,6 @@ export const AdminUserDetailPage: React.FC = () => {
     const userData = await dispatch.adminUsers.fetchUserDetail(userId)
     setUser(userData)
     setLoading(false)
-  }
-
-  const handleViewAsUser = () => {
-    if (!user) return
-    const viewAsParam = `${user.id},${encodeURIComponent(user.email)}`
-    const url = `${window.location.origin}${window.location.pathname}#/devices?viewAs=${viewAsParam}`
-    windowOpen(url, '_blank')
   }
 
   if (loading) {
@@ -65,6 +60,15 @@ export const AdminUserDetailPage: React.FC = () => {
 
   const deviceCount = user.info?.devices?.total || 0
   const deviceOnline = user.info?.devices?.online || 0
+
+  const handleViewAsUser = () => {
+    const viewAs = `/devices?viewAs=${user.id},${encodeURIComponent(user.email || '')}`
+    if (browser.isElectron || browser.isMobile) {
+      history.push(viewAs)
+      return
+    }
+    windowOpen(`${window.location.href.split('#')[0]}#${viewAs}`, '_blank')
+  }
 
   return (
     <Container
