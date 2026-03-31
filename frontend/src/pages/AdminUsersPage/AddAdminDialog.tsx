@@ -61,6 +61,7 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
 
     try {
       const result = await graphQLAdminUsers({ from: 0, size: 1 }, { email: email.trim() })
+      if (result === 'ERROR') throw new Error('Search failed')
       const users = result?.data?.data?.admin?.users?.items
       if (users && users.length > 0) {
         setFoundUser(users[0])

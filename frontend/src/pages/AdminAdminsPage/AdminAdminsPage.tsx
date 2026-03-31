@@ -17,7 +17,7 @@ export const AdminAdminsPage: React.FC = () => {
   const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
 
-  const { containerRef, containerWidth } = useContainerWidth()
+  const { containerRef } = useContainerWidth()
   const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, {
     minWidth: MIN_WIDTH,
   })

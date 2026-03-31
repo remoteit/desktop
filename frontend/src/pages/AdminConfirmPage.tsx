@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
 import { Typography, Box, TextField, Button, CircularProgress } from '@mui/material'
 import { Container } from '../components/Container'
 import { Icon } from '../components/Icon'
 import { Notice } from '../components/Notice'
-import { Dispatch } from '../store'
 import { graphQLConfirmAdminPromotion } from '../services/graphQLMutation'
 
 export const AdminConfirmPage: React.FC = () => {
   const location = useLocation()
   const history = useHistory()
-  const dispatch = useDispatch<Dispatch>()
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'manual'>('loading')
   const [manualCode, setManualCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
