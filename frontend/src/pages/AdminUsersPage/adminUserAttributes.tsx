@@ -9,6 +9,7 @@ export type AdminUserRow = {
   id: string
   email?: string
   created?: string
+  admin?: boolean
   info?: {
     devices?: {
       total?: number

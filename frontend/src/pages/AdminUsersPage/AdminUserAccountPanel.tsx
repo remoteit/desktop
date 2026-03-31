@@ -11,7 +11,7 @@ import { LoadingMessage } from '../../components/LoadingMessage'
 import { Confirm } from '../../components/Confirm'
 import { Notice } from '../../components/Notice'
 import { Dispatch } from '../../store'
-import { graphQLAdminUpdateEmail, graphQLAdminDeleteUser } from '../../services/graphQLMutation'
+import { graphQLAdminUpdateEmail, graphQLAdminDeleteUser, graphQLRemoveAdmin } from '../../services/graphQLMutation'
 import { ChangeEmailDialog } from './ChangeEmailDialog'
 
 export const AdminUserAccountPanel: React.FC = () => {
@@ -22,6 +22,8 @@ export const AdminUserAccountPanel: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [changeEmailOpen, setChangeEmailOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [removeAdminConfirmOpen, setRemoveAdminConfirmOpen] = useState(false)
+  const [removingAdmin, setRemovingAdmin] = useState(false)
   const [forceDelete, setForceDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -86,6 +88,27 @@ export const AdminUserAccountPanel: React.FC = () => {
       dispatch.ui.set({ errorMessage: 'Failed to delete user' })
     } finally {
       setDeleting(false)
+    }
+  }
+
+  const handleRemoveAdmin = async () => {
+    setRemovingAdmin(true)
+    try {
+      const result = await graphQLRemoveAdmin(userId)
+      if (result !== 'ERROR') {
+        dispatch.ui.set({ successMessage: 'Admin privileges removed' })
+        setRemoveAdminConfirmOpen(false)
+        dispatch.adminUsers.invalidateUserDetail(userId)
+        await fetchUser()
+        await dispatch.adminUsers.fetch(undefined)
+      } else {
+        dispatch.ui.set({ errorMessage: 'Failed to remove admin privileges' })
+      }
+    } catch (error) {
+      console.error('Error removing admin:', error)
+      dispatch.ui.set({ errorMessage: 'Failed to remove admin privileges' })
+    } finally {
+      setRemovingAdmin(false)
     }
   }
 
@@ -154,6 +177,25 @@ export const AdminUserAccountPanel: React.FC = () => {
         </ListItem>
         <Divider component="li" />
 
+        <ListItem>
+          <ListItemText
+            primary="Admin Status"
+            secondary={
+              user.admin ? (
+                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                  <Icon name="shield" size="sm" color="primary" />
+                  <Typography variant="body2" component="span" color="primary">
+                    System Admin
+                  </Typography>
+                </Box>
+              ) : (
+                'Standard User'
+              )
+            }
+          />
+        </ListItem>
+        <Divider component="li" />
+
         {user.organization?.name && (
           <>
             <ListItem>
@@ -198,16 +240,24 @@ export const AdminUserAccountPanel: React.FC = () => {
         <Title>Admin Actions</Title>
       </Typography>
       <List disablePadding>
-        <ListItem>
+        <ListItem sx={{ flexWrap: 'wrap', gap: 1 }}>
           <Button
             variant="outlined"
             color="primary"
             onClick={handleChangeEmail}
             disabled={!user.email}
-            sx={{ marginRight: 2 }}
           >
             Change Email
           </Button>
+          {user.admin && (
+            <Button
+              variant="outlined"
+              color="warning"
+              onClick={() => setRemoveAdminConfirmOpen(true)}
+            >
+              Remove Admin
+            </Button>
+          )}
           <Button
             variant="outlined"
             color="error"
@@ -278,6 +328,23 @@ export const AdminUserAccountPanel: React.FC = () => {
             }
           />
         </Box>
+      </Confirm>
+
+      <Confirm
+        open={removeAdminConfirmOpen}
+        onConfirm={handleRemoveAdmin}
+        onDeny={() => setRemoveAdminConfirmOpen(false)}
+        title="Remove Admin Privileges"
+        action={removingAdmin ? 'Removing...' : 'Remove Admin'}
+        disabled={removingAdmin}
+        color="warning"
+      >
+        <Typography variant="body2" gutterBottom>
+          Are you sure you want to remove admin privileges from <strong>{user.email || user.id}</strong>?
+        </Typography>
+        <Typography variant="body2" color="textSecondary">
+          This user will no longer have access to the admin panel.
+        </Typography>
       </Confirm>
     </Container>
   )

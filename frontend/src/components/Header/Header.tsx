@@ -42,7 +42,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
 
   // Admin pages have two-level roots: /admin/users and /admin/partners (without IDs)
-  const adminRootPages = ['/admin/users', '/admin/partners', '/partner-stats']
+  const adminRootPages = ['/admin/users', '/admin/admins', '/admin/partners', '/partner-stats']
   const isAdminRootPage = adminRootPages.includes(location.pathname)
   const isRootMenu = menu === location.pathname || isAdminRootPage
 

@@ -57,6 +57,17 @@ export const AdminSidebarNav: React.FC = () => {
 
       <ListItemButton
         dense
+        selected={currentPath.includes('/admin/admins')}
+        onClick={() => handleNavClick('/admin/admins')}
+      >
+        <ListItemIcon>
+          <Icon name="shield" size="md" />
+        </ListItemIcon>
+        <ListItemText primary="Admins" />
+      </ListItemButton>
+
+      <ListItemButton
+        dense
         selected={currentPath.includes('/admin/partners')}
         onClick={() => handleNavClick('/admin/partners')}
       >

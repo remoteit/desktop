@@ -410,17 +410,18 @@ export async function graphQLFetchOrganizations(ids: string[]) {
 
 export async function graphQLAdminUsers(
   options: { from?: number; size?: number },
-  filters?: { search?: string; email?: string; accountId?: string },
+  filters?: { search?: string; email?: string; accountId?: string; admin?: boolean },
   sort?: string
 ) {
   return await graphQLBasicRequest(
-    ` query AdminUsers($from: Int, $size: Int, $search: String, $email: String, $accountId: String, $sort: String) {
+    ` query AdminUsers($from: Int, $size: Int, $search: String, $email: String, $accountId: String, $sort: String, $admin: Boolean) {
         admin {
-          users(from: $from, size: $size, search: $search, email: $email, accountId: $accountId, sort: $sort) {
+          users(from: $from, size: $size, search: $search, email: $email, accountId: $accountId, sort: $sort, admin: $admin) {
             items {
               id
               email
               created
+              admin
               info {
                 devices {
                   total
@@ -438,6 +439,7 @@ export async function graphQLAdminUsers(
       search: filters?.search,
       email: filters?.email,
       accountId: filters?.accountId,
+      admin: filters?.admin,
       sort,
     }
   )
@@ -453,6 +455,7 @@ export async function graphQLAdminUser(accountId: string) {
               email
               created
               lastLogin
+              admin
               info {
                 devices {
                   total
