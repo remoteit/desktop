@@ -1,4 +1,4 @@
-import { Box,Stack,TextField,ToggleButton,ToggleButtonGroup,Typography } from '@mui/material'
+import { Box,Button,Stack,TextField,ToggleButton,ToggleButtonGroup,Typography } from '@mui/material'
 import React,{ useEffect,useState } from 'react'
 import { useDispatch,useSelector } from 'react-redux'
 import { useHistory,useLocation } from 'react-router-dom'
@@ -25,6 +25,7 @@ export const AdminUsersListPage: React.FC = () => {
   // Get state from Redux
   const users = useSelector((state: State) => state.adminUsers.users)
   const loading = useSelector((state: State) => state.adminUsers.loading)
+  const hasMore = useSelector((state: State) => state.adminUsers.hasMore)
   const page = useSelector((state: State) => state.adminUsers.page)
   const searchValue = useSelector((state: State) => state.adminUsers.searchValue)
   const searchType = useSelector((state: State) => state.adminUsers.searchType)
@@ -122,7 +123,7 @@ export const AdminUsersListPage: React.FC = () => {
         </Gutters>
       }
     >
-      {loading ? (
+      {loading && users.length === 0 ? (
         <LoadingMessage message="Loading users..." />
       ) : users.length === 0 ? (
         <Box sx={{ textAlign: 'center', padding: 4 }}>
@@ -148,6 +149,17 @@ export const AdminUsersListPage: React.FC = () => {
               onClick={() => handleUserClick(user.id)}
             />
           ))}
+          {hasMore && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+              <Button
+                color="primary"
+                disabled={loading}
+                onClick={() => dispatch.adminUsers.fetchMore(undefined)}
+              >
+                {loading ? 'Loading...' : 'Load More'}
+              </Button>
+            </Box>
+          )}
         </GridList>
       )}
     </Container>
