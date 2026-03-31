@@ -13,6 +13,7 @@ interface AdminUser {
 interface AdminUsersState {
   users: AdminUser[]
   total: number
+  hasMore: boolean
   loading: boolean
   page: number
   pageSize: number
@@ -24,6 +25,7 @@ interface AdminUsersState {
 const initialState: AdminUsersState = {
   users: [],
   total: 0,
+  hasMore: false,
   loading: false,
   page: 1,
   pageSize: 50,
@@ -36,10 +38,18 @@ export const adminUsers = createModel<RootModel>()({
   name: 'adminUsers',
   state: initialState,
   reducers: {
-    setUsers: (state, payload: { users: AdminUser[]; total: number }) => ({
+    setUsers: (state, payload: { users: AdminUser[]; total: number; hasMore: boolean }) => ({
       ...state,
       users: payload.users,
       total: payload.total,
+      hasMore: payload.hasMore,
+      loading: false
+    }),
+    appendUsers: (state, payload: { users: AdminUser[]; total: number; hasMore: boolean }) => ({
+      ...state,
+      users: [...state.users, ...payload.users],
+      total: payload.total,
+      hasMore: payload.hasMore,
       loading: false
     }),
     setLoading: (state, loading: boolean) => ({
@@ -108,10 +118,57 @@ export const adminUsers = createModel<RootModel>()({
         const users = data.items || []
         dispatch.adminUsers.setUsers({
           users,
-          total: data.total || 0
+          total: data.total || 0,
+          hasMore: !!data.hasMore
         })
 
-        // Cache user details for users in the list
+        users.forEach((user: AdminUser) => {
+          dispatch.adminUsers.cacheUserDetail({ userId: user.id, user })
+        })
+      } else {
+        dispatch.adminUsers.setLoading(false)
+      }
+    },
+    async fetchMore(_: void, rootState) {
+      const state = rootState.adminUsers
+      if (!state.hasMore || state.loading) return
+
+      dispatch.adminUsers.setLoading(true)
+
+      const from = state.users.length
+      const filters: { search?: string; email?: string; accountId?: string } = {}
+      const trimmedValue = state.searchValue.trim()
+
+      if (trimmedValue) {
+        switch (state.searchType) {
+          case 'email':
+            filters.email = trimmedValue
+            break
+          case 'userId':
+            filters.accountId = trimmedValue
+            break
+          case 'all':
+          default:
+            filters.search = trimmedValue
+            break
+        }
+      }
+
+      const result = await graphQLAdminUsers(
+        { from, size: state.pageSize },
+        Object.keys(filters).length > 0 ? filters : undefined,
+        'email'
+      )
+
+      if (result !== 'ERROR' && result?.data?.data?.admin?.users) {
+        const data = result.data.data.admin.users
+        const users = data.items || []
+        dispatch.adminUsers.appendUsers({
+          users,
+          total: data.total || 0,
+          hasMore: !!data.hasMore
+        })
+
         users.forEach((user: AdminUser) => {
           dispatch.adminUsers.cacheUserDetail({ userId: user.id, user })
         })
