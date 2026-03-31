@@ -39,8 +39,9 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
     setLoading(true)
     try {
       const result = await graphQLAdminUser(adminId)
-      if (result !== 'ERROR' && result?.data?.data?.admin?.users?.items?.[0]) {
-        setAdmin(result.data.data.admin.users.items[0])
+      const user = result !== 'ERROR' ? result?.data?.data?.admin?.users?.items?.[0] : null
+      if (user?.admin) {
+        setAdmin(user)
       } else {
         setAdmin(null)
       }
@@ -59,6 +60,8 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
       if (result !== 'ERROR') {
         dispatch.ui.set({ successMessage: `Admin privileges removed from ${admin?.email}` })
         setRemoveConfirmOpen(false)
+        dispatch.adminUsers.invalidateUserDetail(adminId)
+        dispatch.adminUsers.fetch(undefined)
         history.push('/admin/admins')
         onAdminRemoved?.()
         window.dispatchEvent(new Event('refreshAdminData'))

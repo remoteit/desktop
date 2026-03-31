@@ -1,4 +1,4 @@
-import { Box, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { Box, Button, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -15,6 +15,8 @@ import { AddAdminDialog } from '../AdminUsersPage/AddAdminDialog'
 import { adminAdminAttributes, AdminAdminRow } from './adminAdminAttributes'
 import { graphQLAdminUsers } from '../../services/graphQLRequest'
 
+const PAGE_SIZE = 50
+
 type SearchType = 'all' | 'email' | 'userId'
 
 export const AdminAdminsListPage: React.FC = () => {
@@ -25,6 +27,7 @@ export const AdminAdminsListPage: React.FC = () => {
 
   const [admins, setAdmins] = useState<AdminAdminRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasMore, setHasMore] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [searchType, setSearchType] = useState<SearchType>('email')
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -34,27 +37,33 @@ export const AdminAdminsListPage: React.FC = () => {
   searchInputRef.current = searchInput
   searchTypeRef.current = searchType
 
+  const buildFilters = () => {
+    const filters: { admin: boolean; email?: string; accountId?: string; search?: string } = { admin: true }
+    const trimmed = searchInputRef.current.trim()
+    if (trimmed) {
+      switch (searchTypeRef.current) {
+        case 'email':
+          filters.email = trimmed
+          break
+        case 'userId':
+          filters.accountId = trimmed
+          break
+        case 'all':
+          filters.search = trimmed
+          break
+      }
+    }
+    return filters
+  }
+
   const fetchAdmins = useCallback(async () => {
     setLoading(true)
     try {
-      const filters: { admin: boolean; email?: string; accountId?: string; search?: string } = { admin: true }
-      const trimmed = searchInputRef.current.trim()
-      if (trimmed) {
-        switch (searchTypeRef.current) {
-          case 'email':
-            filters.email = trimmed
-            break
-          case 'userId':
-            filters.accountId = trimmed
-            break
-          case 'all':
-            filters.search = trimmed
-            break
-        }
-      }
-      const result = await graphQLAdminUsers({ from: 0, size: 100 }, filters, 'email')
+      const result = await graphQLAdminUsers({ from: 0, size: PAGE_SIZE }, buildFilters(), 'email')
       if (result !== 'ERROR' && result?.data?.data?.admin?.users) {
-        setAdmins(result.data.data.admin.users.items || [])
+        const data = result.data.data.admin.users
+        setAdmins(data.items || [])
+        setHasMore(!!data.hasMore)
       }
     } catch (error) {
       console.error('Failed to fetch admins:', error)
@@ -62,6 +71,23 @@ export const AdminAdminsListPage: React.FC = () => {
       setLoading(false)
     }
   }, [])
+
+  const fetchMore = useCallback(async () => {
+    if (loading || !hasMore) return
+    setLoading(true)
+    try {
+      const result = await graphQLAdminUsers({ from: admins.length, size: PAGE_SIZE }, buildFilters(), 'email')
+      if (result !== 'ERROR' && result?.data?.data?.admin?.users) {
+        const data = result.data.data.admin.users
+        setAdmins(prev => [...prev, ...(data.items || [])])
+        setHasMore(!!data.hasMore)
+      }
+    } catch (error) {
+      console.error('Failed to fetch more admins:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [loading, hasMore, admins.length])
 
   useEffect(() => {
     fetchAdmins()
@@ -147,7 +173,7 @@ export const AdminAdminsListPage: React.FC = () => {
         </Gutters>
       }
     >
-      {loading ? (
+      {loading && admins.length === 0 ? (
         <LoadingMessage message="Loading admins..." />
       ) : admins.length === 0 ? (
         <Box sx={{ textAlign: 'center', padding: 4 }}>
@@ -173,6 +199,17 @@ export const AdminAdminsListPage: React.FC = () => {
               onClick={() => handleAdminClick(admin.id)}
             />
           ))}
+          {hasMore && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+              <Button
+                color="primary"
+                disabled={loading}
+                onClick={fetchMore}
+              >
+                {loading ? 'Loading...' : 'Load More'}
+              </Button>
+            </Box>
+          )}
         </GridList>
       )}
 
