@@ -3,23 +3,17 @@ import { makeStyles } from '@mui/styles'
 import React from 'react'
 import { GridListItem } from '../../components/GridListItem'
 import { Icon } from '../../components/Icon'
-import { AdminUserAttribute,AdminUserRow } from './adminUserAttributes'
+import { AdminAdminAttribute, AdminAdminRow } from './adminAdminAttributes'
 
 interface Props {
-  user: AdminUserRow
-  required?: AdminUserAttribute
-  attributes: AdminUserAttribute[]
+  admin: AdminAdminRow
+  required?: AdminAdminAttribute
+  attributes: AdminAdminAttribute[]
   active?: boolean
   onClick: () => void
 }
 
-export const AdminUserListItem: React.FC<Props> = ({
-  user,
-  required,
-  attributes,
-  active,
-  onClick,
-}) => {
+export const AdminAdminListItem: React.FC<Props> = ({ admin, required, attributes, active, onClick }) => {
   const css = useStyles()
 
   return (
@@ -27,14 +21,12 @@ export const AdminUserListItem: React.FC<Props> = ({
       onClick={onClick}
       selected={active}
       disableGutters
-      icon={<Icon name={user.admin ? 'shield' : 'user'} size="md" color={user.admin ? 'primary' : undefined} />}
-      required={required?.value({ user })}
+      icon={<Icon name="shield" size="md" color="primary" />}
+      required={required?.value({ admin })}
     >
       {attributes.map(attribute => (
         <Box key={attribute.id} className="attribute">
-          <div className={css.truncate}>
-            {attribute.value({ user })}
-          </div>
+          <div className={css.truncate}>{attribute.value({ admin })}</div>
         </Box>
       ))}
     </GridListItem>

@@ -55,6 +55,8 @@ import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { AdminUsersWithDetailPage } from '../pages/AdminUsersPage/AdminUsersWithDetailPage'
+import { AdminConfirmPage } from '../pages/AdminConfirmPage'
+import { AdminAdminsPage } from '../pages/AdminAdminsPage/AdminAdminsPage'
 import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
@@ -387,6 +389,16 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Switch>
             <Route path="/admin" exact>
               <Redirect to="/admin/users" />
+            </Route>
+            <Route path="/admin/confirm">
+              <Panel layout={layout}>
+                <AdminConfirmPage />
+              </Panel>
+            </Route>
+            <Route path="/admin/admins/:adminId?">
+              <Panel layout={layout}>
+                <AdminAdminsPage />
+              </Panel>
             </Route>
             <Route path="/admin/users/:userId?">
               <Panel layout={layout}>

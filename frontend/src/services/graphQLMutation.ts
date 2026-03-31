@@ -646,6 +646,33 @@ export async function graphQLRentANode(data: string[]) {
   )
 }
 
+export async function graphQLRequestAdminPromotion(userId: string) {
+  return await graphQLBasicRequest(
+    ` mutation RequestAdminPromotion($userId: String!) {
+        requestAdminPromotion(userId: $userId)
+      }`,
+    { userId }
+  )
+}
+
+export async function graphQLConfirmAdminPromotion(token?: string, code?: string) {
+  return await graphQLBasicRequest(
+    ` mutation ConfirmAdminPromotion($token: String, $code: String) {
+        confirmAdminPromotion(token: $token, code: $code)
+      }`,
+    { token, code }
+  )
+}
+
+export async function graphQLRemoveAdmin(userId: string) {
+  return await graphQLBasicRequest(
+    ` mutation RemoveAdmin($userId: String!) {
+        removeAdmin(userId: $userId)
+      }`,
+    { userId }
+  )
+}
+
 export async function graphQLAdminUpdateEmail(from: string, to: string) {
   return await graphQLBasicRequest(
     ` mutation UpdateEmail($from: String!, $to: String!) {
