@@ -1,5 +1,6 @@
 import network from './Network'
-import { dispatch } from '../store'
+import { store, dispatch } from '../store'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 
 class CloudSync {
   initialized = false
@@ -56,7 +57,15 @@ class CloudSync {
   all = async () => {
     console.log('CLOUD SYNC ALL')
     await this.core()
-    await dispatch.devices.set({ from: 0 })
+    // Preserve pagination: re-fetch all loaded devices instead of resetting to first page
+    const state = store.getState()
+    const deviceModel = selectDeviceModelAttributes(state)
+    const loadedCount = deviceModel.from + deviceModel.size
+    if (loadedCount > deviceModel.size) {
+      await dispatch.devices.set({ from: 0, size: loadedCount })
+    } else {
+      await dispatch.devices.set({ from: 0 })
+    }
     await this.call([
       dispatch.files.fetch,
       dispatch.jobs.fetch,
@@ -67,6 +76,10 @@ class CloudSync {
       dispatch.products.fetch,
       dispatch.partnerStats.fetch,
     ])
+    // Restore original pagination position after refresh
+    if (loadedCount > deviceModel.size) {
+      await dispatch.devices.set({ from: deviceModel.from, size: deviceModel.size })
+    }
   }
 }
 
