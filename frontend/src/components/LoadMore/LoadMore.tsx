@@ -2,24 +2,37 @@ import React from 'react'
 import { Dispatch, State } from '../../store'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { useDispatch, useSelector } from 'react-redux'
-import { makeStyles } from '@mui/styles'
-import { Box, Button } from '@mui/material'
-import { spacing } from '../../styling'
+import { Box, Button, Typography } from '@mui/material'
 
 export const LoadMore: React.FC = () => {
   const { from, size, total, results, searched, fetching } = useSelector((state: State) =>
     selectDeviceModelAttributes(state)
   )
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
 
   const pages = Math.ceil((searched ? results : total) / size)
   const nextPage = Math.floor(from / size) + 1
 
+  const count = searched ? results : total
+  const showing = Math.min(from + size, count)
+
   if (nextPage >= pages) return null
 
   return (
-    <Box className={css.box}>
+    <Box
+      sx={{
+        position: 'absolute',
+        display: 'flex',
+        // justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 3,
+        paddingBottom: 4.5,
+        height: 100,
+        marginLeft: 4.5,
+        marginTop: 4.5,
+        gap: 4,
+      }}
+    >
       <Button
         color="primary"
         disabled={fetching}
@@ -30,21 +43,9 @@ export const LoadMore: React.FC = () => {
       >
         {fetching ? `Loading ${from} - ${from + size}...` : 'Load More'}
       </Button>
+      <Typography variant="subtitle2" color="GrayText">
+        {showing.toLocaleString()} of {count.toLocaleString()}
+      </Typography>
     </Box>
   )
 }
-
-const useStyles = makeStyles({
-  box: {
-    position: 'absolute',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'column',
-    padding: spacing.lg,
-    paddingBottom: spacing.xl,
-    height: 100,
-    marginLeft: spacing.xl,
-    marginTop: spacing.xl,
-  },
-})
