@@ -89,6 +89,8 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
       return (
         <TextField
           fullWidth
+          multiline
+          maxRows={20}
           label={name}
           value={value}
           onChange={e => onChange(e.target.value)}
