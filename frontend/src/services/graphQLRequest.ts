@@ -763,6 +763,18 @@ export async function graphQLCreatePartner(name: string, parentId?: string) {
   )
 }
 
+export async function graphQLUpdatePartner(id: string, name: string) {
+  return await graphQLBasicRequest(
+    `mutation UpdatePartner($id: String!, $name: String!) {
+      updatePartner(id: $id, name: $name) {
+        id
+        name
+      }
+    }`,
+    { id, name }
+  )
+}
+
 export async function graphQLDeletePartner(id: string) {
   return await graphQLBasicRequest(
     `mutation DeletePartner($id: String!) {

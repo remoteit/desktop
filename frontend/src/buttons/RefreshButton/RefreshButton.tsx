@@ -102,22 +102,22 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     // admin users pages
   } else if (adminUsersPage) {
     title = userId ? 'Refresh user' : 'Refresh users'
+    methods.push(async () => await dispatch.adminUsers.fetch(undefined))
     if (userId)
       methods.push(async () => {
         await dispatch.adminUsers.invalidateUserDetail(userId)
         await dispatch.adminUsers.fetchUserDetail(userId)
       })
-    else methods.push(async () => await dispatch.adminUsers.fetch(undefined))
 
     // admin partners pages
   } else if (adminPartnersPage) {
     title = partnerId ? 'Refresh partner' : 'Refresh partners'
+    methods.push(async () => await dispatch.adminPartners.fetch())
     if (partnerId)
       methods.push(async () => {
         await dispatch.adminPartners.invalidatePartnerDetail(partnerId)
         await dispatch.adminPartners.fetchPartnerDetail(partnerId)
       })
-    else methods.push(async () => await dispatch.adminPartners.fetch())
   }
 
   const refresh = async () => {
