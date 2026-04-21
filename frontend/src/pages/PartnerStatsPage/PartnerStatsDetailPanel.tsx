@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import {
-  Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider} from '@mui/material'
+  Typography, List, ListItem, ListItemText, ListItemButton, ListItemIcon, Box, Divider, TextField} from '@mui/material'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -10,15 +10,20 @@ import { Body } from '../../components/Body'
 import { IconButton } from '../../buttons/IconButton'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { graphQLExportPartnerDevices } from '../../services/graphQLRequest'
+import { graphQLExportPartnerDevices, graphQLUpdatePartner } from '../../services/graphQLRequest'
 import { windowOpen } from '../../services/browser'
 import { spacing } from '../../styling'
 import { getPartnerStats } from '../../models/partnerStats'
+import { Dispatch } from '../../store'
 
 export const PartnerStatsDetailPanel: React.FC = () => {
   const { partnerId } = useParams<{ partnerId: string }>()
   const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
   const [exporting, setExporting] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [editedName, setEditedName] = useState('')
+  const [savingName, setSavingName] = useState(false)
   const partnerStatsModel = useSelector(getPartnerStats)
   const { flattened: partners, fetching: loading } = partnerStatsModel
 
@@ -47,6 +52,34 @@ export const PartnerStatsDetailPanel: React.FC = () => {
       windowOpen(url)
     } else {
       alert('Failed to export devices.')
+    }
+  }
+
+  const handleStartEditName = () => {
+    setEditedName(partner?.name || '')
+    setEditingName(true)
+  }
+
+  const handleCancelEditName = () => {
+    setEditingName(false)
+    setEditedName('')
+  }
+
+  const handleSaveName = async () => {
+    const trimmed = editedName.trim()
+    if (!trimmed || trimmed === partner?.name) {
+      handleCancelEditName()
+      return
+    }
+    setSavingName(true)
+    const result = await graphQLUpdatePartner(partnerId, trimmed)
+    setSavingName(false)
+    if (result !== 'ERROR' && result?.data?.data?.updatePartner) {
+      setEditingName(false)
+      setEditedName('')
+      dispatch.partnerStats.fetch()
+    } else {
+      alert('Failed to update partner name.')
     }
   }
 
@@ -105,9 +138,50 @@ export const PartnerStatsDetailPanel: React.FC = () => {
             />
           </Box>
           <Box sx={{ paddingX: `${spacing.md}px`, paddingBottom: `${spacing.md}px` }}>
-            <Typography variant="h2">
-              <Title>{partner.name}</Title>
-            </Typography>
+            {editingName ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  autoFocus
+                  size="small"
+                  value={editedName}
+                  onChange={e => setEditedName(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleSaveName()
+                    if (e.key === 'Escape') handleCancelEditName()
+                  }}
+                  disabled={savingName}
+                  sx={{ flex: 1 }}
+                />
+                <IconButton
+                  icon={savingName ? 'spinner-third' : 'check'}
+                  title="Save"
+                  onClick={handleSaveName}
+                  disabled={savingName || !editedName.trim()}
+                  spin={savingName}
+                  size="md"
+                  color="success"
+                />
+                <IconButton
+                  icon="times"
+                  title="Cancel"
+                  onClick={handleCancelEditName}
+                  disabled={savingName}
+                  size="md"
+                />
+              </Box>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="h2">
+                  <Title>{partner.name}</Title>
+                </Typography>
+                <IconButton
+                  icon="pen"
+                  title="Rename partner"
+                  onClick={handleStartEditName}
+                  size="sm"
+                />
+              </Box>
+            )}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginTop: 1 }}>
               <Typography variant="caption" color="textSecondary" sx={{ fontFamily: 'monospace' }}>
                 {partner.id}

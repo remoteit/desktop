@@ -12,6 +12,7 @@ import { Icon } from '../../components/Icon'
 import { Body } from '../../components/Body'
 import { IconButton } from '../../buttons/IconButton'
 import { CopyIconButton } from '../../buttons/CopyIconButton'
+import { LinearProgress } from '../../components/LinearProgress'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import {
   graphQLAdminPartners,
@@ -22,6 +23,7 @@ import {
   graphQLAddPartnerChild,
   graphQLRemovePartnerChild,
   graphQLDeletePartner,
+  graphQLUpdatePartner,
   graphQLExportPartnerDevices
 } from '../../services/graphQLRequest'
 import { windowOpen } from '../../services/browser'
@@ -45,6 +47,9 @@ export const AdminPartnerDetailPanel: React.FC = () => {
   const [removingChild, setRemovingChild] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [editedName, setEditedName] = useState('')
+  const [savingName, setSavingName] = useState(false)
   const [addRegistrantDialogOpen, setAddRegistrantDialogOpen] = useState(false)
   const [newRegistrantEmail, setNewRegistrantEmail] = useState('')
   const [addingRegistrant, setAddingRegistrant] = useState(false)
@@ -212,7 +217,36 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     }
   }
 
-  if (loading) {
+  const handleStartEditName = () => {
+    setEditedName(partner?.name || '')
+    setEditingName(true)
+  }
+
+  const handleCancelEditName = () => {
+    setEditingName(false)
+    setEditedName('')
+  }
+
+  const handleSaveName = async () => {
+    const trimmed = editedName.trim()
+    if (!trimmed || trimmed === partner?.name) {
+      handleCancelEditName()
+      return
+    }
+    setSavingName(true)
+    const result = await graphQLUpdatePartner(partnerId, trimmed)
+    setSavingName(false)
+    if (result !== 'ERROR' && result?.data?.data?.updatePartner) {
+      setEditingName(false)
+      setEditedName('')
+      fetchPartner(true)
+      dispatch.adminPartners.fetch()
+    } else {
+      alert('Failed to update partner name.')
+    }
+  }
+
+  if (loading && !partner) {
     return (
       <Container gutterBottom>
         <LoadingMessage message="Loading partner..." />
@@ -242,7 +276,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
       header={
-        <Box>
+        <Box sx={{ position: 'relative' }}>
           <Box sx={{ height: 45, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <IconButton
@@ -265,9 +299,50 @@ export const AdminPartnerDetailPanel: React.FC = () => {
             </Box>
           </Box>
           <Box sx={{ paddingX: `${spacing.md}px`, paddingBottom: `${spacing.md}px` }}>
-            <Typography variant="h2">
-              <Title>{partner.name}</Title>
-            </Typography>
+            {editingName ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  autoFocus
+                  size="small"
+                  value={editedName}
+                  onChange={e => setEditedName(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleSaveName()
+                    if (e.key === 'Escape') handleCancelEditName()
+                  }}
+                  disabled={savingName}
+                  sx={{ flex: 1 }}
+                />
+                <IconButton
+                  icon={savingName ? 'spinner-third' : 'check'}
+                  title="Save"
+                  onClick={handleSaveName}
+                  disabled={savingName || !editedName.trim()}
+                  spin={savingName}
+                  size="md"
+                  color="success"
+                />
+                <IconButton
+                  icon="times"
+                  title="Cancel"
+                  onClick={handleCancelEditName}
+                  disabled={savingName}
+                  size="md"
+                />
+              </Box>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="h2">
+                  <Title>{partner.name}</Title>
+                </Typography>
+                <IconButton
+                  icon="pen"
+                  title="Rename partner"
+                  onClick={handleStartEditName}
+                  size="sm"
+                />
+              </Box>
+            )}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginTop: 1 }}>
               <Typography variant="caption" color="textSecondary" sx={{ fontFamily: 'monospace' }}>
                 {partner.id}
@@ -275,6 +350,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
               <CopyIconButton value={partner.id} size="xs" />
             </Box>
           </Box>
+          <LinearProgress loading={loading} />
           <Divider />
         </Box>
       }
