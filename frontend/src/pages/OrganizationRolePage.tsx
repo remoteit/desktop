@@ -41,7 +41,7 @@ export const OrganizationRolePage: React.FC = () => {
   }
 
   useEffect(() => {
-    changeForm(role)
+    setForm(role)
   }, [roleID])
 
   return (
