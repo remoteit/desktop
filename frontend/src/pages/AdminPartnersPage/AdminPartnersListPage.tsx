@@ -164,7 +164,7 @@ export const AdminPartnersListPage: React.FC = () => {
         </Gutters>
       }
     >
-      {loading ? (
+      {loading && partners.length === 0 ? (
         <LoadingMessage message="Loading partners..." />
       ) : filteredPartners.length === 0 ? (
         <Box sx={{ textAlign: 'center', padding: 4 }}>
