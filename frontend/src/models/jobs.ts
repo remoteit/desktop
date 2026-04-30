@@ -7,6 +7,7 @@ import { graphQLSetJob, graphQLStartJob, graphQLCancelJob, graphQLDeleteJob } fr
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
+import { getJobLogs, triggerBrowserDownload } from '../services/jobLogs'
 import { RootModel } from '.'
 
 type ScriptsState = {
@@ -129,6 +130,37 @@ export default createModel<RootModel>()({
         access: tagValues.length ? 'TAG' : deviceIds.length ? 'CUSTOM' : 'NONE',
         argumentValues,
       })
+    },
+    async downloadLogs({ jobId, jobDeviceId }: { jobId: string; jobDeviceId: string }) {
+      const result = await getJobLogs(jobId)
+      if (result.kind === 'error') {
+        dispatch.ui.set({ errorMessage: `Couldn’t load logs: ${result.message}` })
+        return false
+      }
+      if (result.kind === 'missing') {
+        dispatch.ui.set({ errorMessage: 'No logs available yet.' })
+        return false
+      }
+      const entry = result.data.devices.find(d => d.jobDeviceId === jobDeviceId)
+      if (!entry?.downloadUrl) {
+        dispatch.ui.set({ errorMessage: 'No logs available for this device yet.' })
+        return false
+      }
+      triggerBrowserDownload(entry.downloadUrl, entry.filename || 'logs.tar.gz')
+      return true
+    },
+    async downloadAllLogs({ jobId }: { jobId: string }) {
+      const result = await getJobLogs(jobId)
+      if (result.kind === 'error') {
+        dispatch.ui.set({ errorMessage: `Couldn’t load logs: ${result.message}` })
+        return false
+      }
+      if (result.kind === 'missing' || !result.data.downloadUrl) {
+        dispatch.ui.set({ errorMessage: 'No logs are available for this run yet.' })
+        return false
+      }
+      triggerBrowserDownload(result.data.downloadUrl, result.data.filename || 'all-logs.zip')
+      return true
     },
     async cancel(jobId: string | undefined) {
       const result = await graphQLCancelJob(jobId)
