@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, Stack, List, Typography, Button } from '@mui/material'
+import { Box, Stack, List, ListItem, ListItemIcon, ListItemText, Typography, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { selectScript } from '../selectors/scripting'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -170,28 +170,29 @@ export const JobDetailPage: React.FC<Props> = () => {
             to={`/script/${fileID}/${jobID}`}
             title={<Typography variant="subtitle2">DEVICE RESULTS</Typography>}
           />
-          <Stack direction="row" alignItems="center">
-            <Box flex={1}>
-              <ListItemLocation
-                title={jobDevice.device?.name}
-                icon={<JobStatusIcon status={jobDevice.status} device padding={0} size="md" />}
-                dense
-                disableGutters
+          <ListItem
+            dense
+            disableGutters
+            secondaryAction={
+              <IconButton
+                icon="arrow-to-bottom"
+                title="Download logs for this device"
+                size="md"
+                disabled={jobDevice.status === 'WAITING' || jobDevice.status === 'RUNNING'}
+                onClick={async () => {
+                  await dispatch.jobs.downloadLogs({
+                    jobId: job.id,
+                    jobDeviceId: jobDevice.id,
+                  })
+                }}
               />
-            </Box>
-            <IconButton
-              icon="arrow-to-bottom"
-              title="Download logs for this device"
-              size="md"
-              disabled={jobDevice.status === 'WAITING' || jobDevice.status === 'RUNNING'}
-              onClick={async () => {
-                await dispatch.jobs.downloadLogs({
-                  jobId: job.id,
-                  jobDeviceId: jobDevice.id,
-                })
-              }}
-            />
-          </Stack>
+            }
+          >
+            <ListItemIcon>
+              <JobStatusIcon status={jobDevice.status} device padding={0} size="md" />
+            </ListItemIcon>
+            <ListItemText primary={jobDevice.device?.name} />
+          </ListItem>
           {jobDevice.updated && (
             <Typography sx={{ ml: '56px', mt: 0.25 }} gutterBottom variant="caption" component="p">
               <Timestamp date={new Date(jobDevice.updated)} />
