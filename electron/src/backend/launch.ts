@@ -5,6 +5,22 @@ import EventBus from './EventBus'
 import Command from './Command'
 import environment from './environment'
 
+export const WINDOWS_32_BIT_OPENSSH = '%WINDIR%\\Sysnative\\OpenSSH\\ssh.exe'
+
+export function resolveWindowsTerminalCommand(command: string, isWindows32 = environment.isWindows32) {
+  if (!isWindows32) return command
+
+  return command.replace(/^\s*ssh(?:\.exe)?(?=\s|$)/i, match => {
+    const leadingWhitespace = match.match(/^\s*/)?.[0] || ''
+    return `${leadingWhitespace}${WINDOWS_32_BIT_OPENSSH}`
+  })
+}
+
+export function buildWindowsTerminalCommand(command: string, isWindows32 = environment.isWindows32) {
+  const terminalCommand = command.replace(/^start cmd \/k\s*/i, '')
+  return `start cmd /k ${resolveWindowsTerminalCommand(terminalCommand, isWindows32)}`
+}
+
 export default async function launch(command: string, type: 'TERMINAL' | 'SCRIPT' | 'COMMAND' = 'COMMAND') {
   Logger.info('LAUNCH', { type, path: __filename })
   let scriptPath = ''
@@ -17,7 +33,7 @@ export default async function launch(command: string, type: 'TERMINAL' | 'SCRIPT
     } else if (environment.isLinux) {
       command = `gnome-terminal -- /bin/bash -c '${command}; read'`
     } else {
-      command = `start cmd /k ${command.replace('start cmd /k', '')}`
+      command = buildWindowsTerminalCommand(command)
     }
   }
 
