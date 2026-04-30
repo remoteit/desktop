@@ -115,6 +115,15 @@ export const JobDetailPage: React.FC<Props> = () => {
               color={statusColor}
               sx={{ textTransform: 'capitalize', mr: 1 }}
             />
+            <IconButton
+              icon="arrow-to-bottom"
+              title="Download logs for all devices"
+              size="md"
+              disabled={isActive}
+              onClick={async () => {
+                await dispatch.jobs.downloadAllLogs({ jobId: job.id })
+              }}
+            />
             <DeleteButton
               title="Delete Run"
               warning="This will permanently delete this run and all its results."
@@ -161,12 +170,28 @@ export const JobDetailPage: React.FC<Props> = () => {
             to={`/script/${fileID}/${jobID}`}
             title={<Typography variant="subtitle2">DEVICE RESULTS</Typography>}
           />
-          <ListItemLocation
-            title={jobDevice.device?.name}
-            icon={<JobStatusIcon status={jobDevice.status} device padding={0} size="md" />}
-            dense
-            disableGutters
-          />
+          <Stack direction="row" alignItems="center">
+            <Box flex={1}>
+              <ListItemLocation
+                title={jobDevice.device?.name}
+                icon={<JobStatusIcon status={jobDevice.status} device padding={0} size="md" />}
+                dense
+                disableGutters
+              />
+            </Box>
+            <IconButton
+              icon="arrow-to-bottom"
+              title="Download logs for this device"
+              size="md"
+              disabled={jobDevice.status === 'WAITING' || jobDevice.status === 'RUNNING'}
+              onClick={async () => {
+                await dispatch.jobs.downloadLogs({
+                  jobId: job.id,
+                  jobDeviceId: jobDevice.id,
+                })
+              }}
+            />
+          </Stack>
           {jobDevice.updated && (
             <Typography sx={{ ml: '56px', mt: 0.25 }} gutterBottom variant="caption" component="p">
               <Timestamp date={new Date(jobDevice.updated)} />

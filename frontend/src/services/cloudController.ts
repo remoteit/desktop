@@ -119,6 +119,14 @@ class CloudController {
   authenticate = async () => {
     const message = JSON.stringify({
       action: 'subscribe',
+      // Opt in to bulk-frame delivery on the server. The notify Lambda
+      // buffers events for ~200ms per connection and ships them in a
+      // single `{events: [...]}` frame, instead of one frame per event.
+      // This bypasses API Gateway's per-connection serialised send queue
+      // (which caps at ~4 msg/sec) and is what makes a 300-device burst
+      // land in seconds instead of ~2 minutes. Old clients that omit
+      // this flag continue to receive single-event frames.
+      supportsBatch: true,
       headers: {
         authorization: await getToken(),
         'User-Agent': `remoteit/${version} ${agent()}`,
@@ -250,7 +258,36 @@ class CloudController {
       return
     }
 
-    let event = this.parse(response)
+    // The server may bundle several GraphQL subscription results into a
+    // single WS frame as `{events: [<payload>, <payload>, ...]}` when the
+    // connection opted in via `supportsBatch: true` at subscribe time.
+    // Decode once and dispatch each contained payload through the same
+    // per-event pipeline as a legacy single-frame message — flattened
+    // here so the rest of the app never sees the bulk envelope.
+    let raw: any
+    try {
+      raw = JSON.parse(response.data)
+    } catch (error) {
+      console.warn('Event parsing error', response, error)
+      return
+    }
+
+    if (raw && Array.isArray(raw.events)) {
+      for (const payload of raw.events) {
+        this.handleParsed(payload)
+      }
+      return
+    }
+
+    this.handleParsed(raw)
+  }
+
+  // Per-event handler shared by the legacy (single-frame) and bulk-frame
+  // delivery paths. Accepts an already-parsed GraphQL response object
+  // (`{data: {event: {...}}}` or `{errors: [...]}`); converting from the
+  // raw WS string lives in `onMessage`.
+  handleParsed = (payload: any) => {
+    let event = this.toCloudEvent(payload)
     if (!event) return
 
     this.log('EVENT', event)
@@ -263,12 +300,14 @@ class CloudController {
     return !!errors?.length
   }
 
-  parse(response): ICloudEvent | undefined {
-    if (response.data === 'pong') return
-
+  // Convert one parsed GraphQL subscription response (`{data: {event}}`)
+  // into the `ICloudEvent` shape the rest of the desktop app consumes.
+  // Pre-existing logic from `parse(response)`; only the input changed
+  // from a raw WS response to an already-decoded object so the bulk
+  // path can call this directly per array element.
+  toCloudEvent(json: any): ICloudEvent | undefined {
     const state = store.getState()
     try {
-      const json = JSON.parse(response.data)
       if (this.errors(json)) {
         console.error('CLOUD GRAPHQL WS ERROR', json.errors)
         this.log('ERROR', json.errors)
@@ -319,7 +358,7 @@ class CloudController {
         }),
       }
     } catch (error) {
-      console.warn('Event parsing error', response, error)
+      console.warn('Event parsing error', json, error)
     }
   }
 
