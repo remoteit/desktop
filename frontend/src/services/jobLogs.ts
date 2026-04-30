@@ -19,10 +19,27 @@ export type JobLogsResponse = {
   devices: DeviceLogEntry[]
 }
 
-/** Fetch presigned URLs for the all-logs zip and every per-device archive. */
-export async function getJobLogs(jobId: string): Promise<JobLogsResponse | null> {
+export type GetJobLogsResult =
+  | { kind: 'ok'; data: JobLogsResponse }
+  | { kind: 'missing' }
+  | { kind: 'error'; status?: number; message: string }
+
+/**
+ * Fetch presigned URLs for the all-logs zip and every per-device archive.
+ *
+ * The `kind` field lets callers distinguish:
+ *   - `ok`: payload available
+ *   - `missing`: 404 (job has no logs yet — usual "still uploading" case)
+ *   - `error`: anything else (auth expiry, network failure, server error)
+ *
+ * Conflating the last two as `null` made the UI report "No logs available"
+ * for transient operational failures and gave users no recovery path.
+ */
+export async function getJobLogs(jobId: string): Promise<GetJobLogsResult> {
   const token = await getToken()
-  if (!token) return null
+  if (!token) {
+    return { kind: 'error', status: 401, message: 'Not signed in' }
+  }
 
   const headers: any = { Authorization: token, ...getTestHeader() }
   const viewAsUser = store.getState().ui.viewAsUser
@@ -30,12 +47,13 @@ export async function getJobLogs(jobId: string): Promise<JobLogsResponse | null>
 
   try {
     const response = await axios.get(`${getApiURL()}/job/log/all/${jobId}`, { headers })
-    return response?.data as JobLogsResponse
+    return { kind: 'ok', data: response?.data as JobLogsResponse }
   } catch (err: any) {
-    const status = err?.response?.status
-    if (status === 404) return null
-    console.error('getJobLogs error:', err?.message || err)
-    return null
+    const status: number | undefined = err?.response?.status
+    if (status === 404) return { kind: 'missing' }
+    const message: string = err?.response?.data?.message || err?.message || 'Failed to load logs'
+    console.error('getJobLogs error:', { status, message, err })
+    return { kind: 'error', status, message }
   }
 }
 

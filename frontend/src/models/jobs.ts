@@ -133,11 +133,15 @@ export default createModel<RootModel>()({
     },
     async downloadLogs({ jobId, jobDeviceId }: { jobId: string; jobDeviceId: string }) {
       const result = await getJobLogs(jobId)
-      if (!result) {
+      if (result.kind === 'error') {
+        dispatch.ui.set({ errorMessage: `Couldn’t load logs: ${result.message}` })
+        return false
+      }
+      if (result.kind === 'missing') {
         dispatch.ui.set({ errorMessage: 'No logs available yet.' })
         return false
       }
-      const entry = result.devices.find(d => d.jobDeviceId === jobDeviceId)
+      const entry = result.data.devices.find(d => d.jobDeviceId === jobDeviceId)
       if (!entry?.downloadUrl) {
         dispatch.ui.set({ errorMessage: 'No logs available for this device yet.' })
         return false
@@ -147,11 +151,15 @@ export default createModel<RootModel>()({
     },
     async downloadAllLogs({ jobId }: { jobId: string }) {
       const result = await getJobLogs(jobId)
-      if (!result?.downloadUrl) {
+      if (result.kind === 'error') {
+        dispatch.ui.set({ errorMessage: `Couldn’t load logs: ${result.message}` })
+        return false
+      }
+      if (result.kind === 'missing' || !result.data.downloadUrl) {
         dispatch.ui.set({ errorMessage: 'No logs are available for this run yet.' })
         return false
       }
-      triggerBrowserDownload(result.downloadUrl, result.filename || 'all-logs.zip')
+      triggerBrowserDownload(result.data.downloadUrl, result.data.filename || 'all-logs.zip')
       return true
     },
     async cancel(jobId: string | undefined) {
