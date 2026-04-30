@@ -17,7 +17,15 @@ export default async function launch(command: string, type: 'TERMINAL' | 'SCRIPT
     } else if (environment.isLinux) {
       command = `gnome-terminal -- /bin/bash -c '${command}; read'`
     } else {
-      command = `start cmd /k ${command.replace('start cmd /k', '')}`
+      // When the 32-bit (ia32) build runs on 64-bit Windows, WOW64 redirects
+      // C:\Windows\System32 to SysWOW64 — which lacks OpenSSH and other native
+      // tools. Spawning cmd.exe via the Sysnative alias gives us the host's
+      // native cmd, so PATH lookup resolves the real System32 binaries.
+      const cmd =
+        process.env.PROCESSOR_ARCHITEW6432 && process.env.SystemRoot
+          ? `"${process.env.SystemRoot}\\Sysnative\\cmd.exe"`
+          : 'cmd'
+      command = `start "" ${cmd} /k ${command.replace('start cmd /k', '')}`
     }
   }
 
