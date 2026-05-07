@@ -16,7 +16,7 @@ export const Tags: React.FC<TagProps> = ({ tags, small, max = 1, showEmpty, hide
   const dot = tags.length > max && small
 
   const Tags = [...tags]
-    .sort(colorSort)
+    .sort(nameSort)
     .map((tag, index) => (
       <Tag
         key={index}
@@ -38,7 +38,6 @@ export const Tags: React.FC<TagProps> = ({ tags, small, max = 1, showEmpty, hide
   return <>{dot ? <Chip size="small" label={Tags} /> : Tags}</>
 }
 
-function colorSort(a: ITag, b: ITag) {
-  return a.color < b.color ? -1 : 1
-  // return a.name.localeCompare(b.name)
+function nameSort(a: ITag, b: ITag) {
+  return a.name.localeCompare(b.name)
 }

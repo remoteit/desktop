@@ -17,6 +17,5 @@ export function getSelectedTags(devices?: IDevice[], selected?: IDevice['id'][])
       })
     }
   })
-  // sort
-  return result
+  return result.sort((a, b) => a.name.localeCompare(b.name))
 }
