@@ -13,7 +13,6 @@ import { useSelect } from '../hooks/useSelect'
 type Props = {
   restore?: boolean
   select?: boolean
-  selected: string[]
   mobile?: boolean
   disabled?: boolean
   duplicateName?: boolean
@@ -23,7 +22,6 @@ type Props = {
 export const DeviceListItem: React.FC<Props> = ({
   restore,
   select,
-  selected,
   mobile,
   disabled,
   duplicateName,
@@ -39,7 +37,6 @@ export const DeviceListItem: React.FC<Props> = ({
 
   const { isSelected, isAnchorRow, handleSelect } = useSelect({
     deviceId: device.id,
-    selected,
     selectMode: select,
   })
 

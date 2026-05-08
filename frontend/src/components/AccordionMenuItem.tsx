@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/styles'
 import { Button, ListSubheader, Accordion, AccordionSummary, AccordionDetails } from '@mui/material'
 import { ExpandIcon } from './ExpandIcon'
 import { spacing } from '../styling'
@@ -31,7 +30,6 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
   action,
   children,
 }) => {
-  const css = useStyles({ gutters })
   const [open, setOpen] = useState<boolean>(!!defaultExpanded)
   const clickHandler = () => {
     onClick && onClick(!open)
@@ -48,7 +46,28 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
       defaultExpanded={defaultExpanded}
       disabled={disabled}
     >
-      <AccordionSummary className={css.item}>
+      <AccordionSummary
+        sx={{
+          marginTop: `${spacing.xxs}px`,
+          marginBottom: `${spacing.xxs}px`,
+          marginLeft: gutters ? `${spacing.md}px` : undefined,
+          marginRight: gutters ? `${spacing.md}px` : undefined,
+          '& .MuiIconButton-root': {
+            marginTop: `${-spacing.xxs}px`,
+            marginBottom: `${-spacing.xxs}px`,
+          },
+          '& .MuiButton-root:first-of-type': {
+            width: '100%',
+            textAlign: 'left',
+            display: 'block',
+            padding: 0,
+            margin: 0,
+          },
+          '& .MuiButton-root + .MuiButton-root': {
+            marginRight: `${spacing.md}px`,
+          },
+        }}
+      >
         <Button onClick={clickHandler}>
           <ListSubheader disableGutters>
             {subtitle}
@@ -73,26 +92,3 @@ export const AccordionMenuItem: React.FC<IAccordionMenu> = ({
     </Accordion>
   )
 }
-
-const useStyles = makeStyles({
-  item: ({ gutters }: any) => ({
-    marginTop: spacing.xxs,
-    marginBottom: spacing.xxs,
-    marginLeft: gutters && spacing.md,
-    marginRight: gutters && spacing.md,
-    '& .MuiIconButton-root': {
-      marginTop: -spacing.xxs,
-      marginBottom: -spacing.xxs,
-    },
-    '& .MuiButton-root:first-of-type': {
-      width: '100%',
-      textAlign: 'left',
-      display: 'block',
-      padding: 0,
-      margin: 0,
-    },
-    '& .MuiButton-root + .MuiButton-root': {
-      marginRight: spacing.md,
-    },
-  }),
-})

@@ -1,8 +1,6 @@
 import React, { forwardRef } from 'react'
-import { makeStyles } from '@mui/styles'
 import { Chip, ChipProps, alpha, darken } from '@mui/material'
 import { spacing } from '../styling'
-import classnames from 'classnames'
 
 export type Props = Omit<ChipProps, 'variant' | 'color'> & {
   color?: Color
@@ -10,46 +8,47 @@ export type Props = Omit<ChipProps, 'variant' | 'color'> & {
   inline?: boolean
 }
 
-export const ColorChip = forwardRef<HTMLDivElement, Props>(({ variant, color, ...props }, ref) => {
-  const css = useStyles({ variant, color, ...props })
-  return <Chip {...props} ref={ref} className={classnames(css.color, props.className)} />
-})
+export const ColorChip = forwardRef<HTMLDivElement, Props>(
+  ({ variant = 'text', color = 'grayDarker', inline, sx, ...props }, ref) => (
+    <Chip
+      {...props}
+      ref={ref}
+      sx={[
+        theme => {
+          let typeColor: string
+          let hoverColor: string
+          let backgroundColor: string | undefined
 
-const useStyles = makeStyles(({ palette }) => ({
-  color: ({ variant, color, inline }: Props) => {
-    variant ||= 'text'
-    color ||= 'grayDarker'
+          switch (variant) {
+            case 'outlined':
+              typeColor = theme.palette[color].main
+              hoverColor = alpha(theme.palette[color].main, 0.1)
+              break
+            case 'contained':
+              typeColor = theme.palette.alwaysWhite.main
+              backgroundColor = theme.palette[color].main
+              hoverColor = darken(theme.palette[color].main, 0.1)
+              break
+            case 'text':
+            default:
+              typeColor = theme.palette[color].main
+              backgroundColor = alpha(theme.palette[color].main, 0.1)
+              hoverColor = alpha(theme.palette[color].main, 0.2)
+              break
+          }
 
-    let typeColor: string
-    let hoverColor: string
-    let backgroundColor: string | undefined
-
-    switch (variant) {
-      case 'outlined':
-        typeColor = palette[color].main
-        hoverColor = alpha(palette[color].main, 0.1)
-        break
-      case 'contained':
-        typeColor = palette.alwaysWhite.main
-        backgroundColor = palette[color].main
-        hoverColor = darken(palette[color].main, 0.1)
-        break
-      case 'text':
-      default:
-        typeColor = palette[color].main
-        backgroundColor = alpha(palette[color].main, 0.1)
-        hoverColor = alpha(palette[color].main, 0.2)
-        break
-    }
-
-    return {
-      backgroundColor: backgroundColor,
-      color: typeColor,
-      fontWeight: 500,
-      letterSpacing: 0.3,
-      marginRight: inline ? spacing.sm : undefined,
-      marginLeft: inline ? spacing.sm : undefined,
-      '&:hover': { backgroundColor: hoverColor },
-    }
-  },
-}))
+          return {
+            backgroundColor,
+            color: typeColor,
+            fontWeight: 500,
+            letterSpacing: 0.3,
+            marginRight: inline ? `${spacing.sm}px` : undefined,
+            marginLeft: inline ? `${spacing.sm}px` : undefined,
+            '&:hover': { backgroundColor: hoverColor },
+          }
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
+    />
+  )
+)

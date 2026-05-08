@@ -47,7 +47,6 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, 
         enabled={networkConnected || networkEnabled}
         noLink={connectionsPage}
         expanded={expanded}
-        offline={recent}
         onClick={toggle}
       >
         {recent && <ClearButton all onClick={() => dispatch.connections.clearRecent()} />}
