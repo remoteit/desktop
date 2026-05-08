@@ -10,7 +10,6 @@ import { Box } from '@mui/material'
 export interface Props {
   network?: INetwork
   expanded?: boolean
-  offline?: boolean
   noLink?: boolean
   enabled?: boolean
   onClick?: (event: React.MouseEvent) => void
@@ -20,13 +19,12 @@ export interface Props {
 export const NetworkListTitle: React.FC<Props> = ({
   network,
   expanded = true,
-  offline,
   noLink,
   enabled,
   onClick,
   children,
 }) => {
-  const css = useStyles({ enabled, offline })
+  const css = useStyles()
   return (
     <ListItemLocation
       className={css.item}

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import browser from '../services/browser'
 import { useLocation } from 'react-router-dom'
 import { MOBILE_WIDTH } from '../constants'
@@ -14,6 +14,8 @@ import { GuideBubble } from './GuideBubble'
 import { LoadMore } from './LoadMore'
 import { GridList } from './GridList'
 
+const GUIDE_START_DATE = new Date('2022-09-20')
+
 export interface DeviceListProps {
   attributes: Attribute[]
   required: Attribute
@@ -26,6 +28,75 @@ export interface DeviceListProps {
   selected?: string[]
 }
 
+type RowProps = {
+  device: IDevice
+  deviceConnections?: IConnection[]
+  attributes: Attribute[]
+  required: Attribute
+  restore?: boolean
+  canRestore: boolean
+  select?: boolean
+  mobile: boolean
+  disabled?: boolean
+  showGuide: boolean
+  onClick?: () => void
+}
+
+const DeviceListRow: React.FC<RowProps> = React.memo(
+  ({
+    device,
+    deviceConnections,
+    attributes,
+    required,
+    restore,
+    canRestore,
+    select,
+    mobile,
+    disabled,
+    showGuide,
+    onClick,
+  }) => {
+    const value = useMemo(
+      () => ({ device, connections: deviceConnections, required, attributes }),
+      [device, deviceConnections, required, attributes]
+    )
+    return (
+      <DeviceListContext.Provider value={value}>
+        <DeviceListItem
+          restore={restore && canRestore}
+          select={select}
+          mobile={mobile}
+          onClick={onClick}
+          disabled={disabled}
+        />
+        {showGuide && (
+          <GuideBubble
+            enterDelay={400}
+            guide="deviceList"
+            placement="bottom"
+            startDate={GUIDE_START_DATE}
+            queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
+            instructions={
+              <>
+                <Typography variant="h3" gutterBottom>
+                  <b>Access a device</b>
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  A device can host it's own applications (services), or it can host another service on it's local
+                  network.
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  Select a device to connect to a service, or configure it.
+                </Typography>
+              </>
+            }
+          />
+        )}
+      </DeviceListContext.Provider>
+    )
+  }
+)
+
 export const DeviceList: React.FC<DeviceListProps> = ({
   attributes,
   required,
@@ -35,11 +106,12 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   fetching,
   restore,
   select,
-  selected = [],
 }) => {
   const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
+  const onFirstClick = useCallback(() => dispatch.ui.pop('deviceList'), [dispatch])
+  const isScriptsPath = location.pathname.includes('scripts')
 
   return (
     <GridList
@@ -51,44 +123,22 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       {devices?.map((device, index) => {
         const canRestore = isOffline(device) && !device.shared
         if (restore && !canRestore) return null
-        const disabled = select && !device.scriptable && location.pathname.includes('scripts')
+        const disabled = select && !device.scriptable && isScriptsPath
         return (
-          <DeviceListContext.Provider
+          <DeviceListRow
             key={device.id}
-            value={{ device, connections: connections[device.id], required, attributes }}
-          >
-            <DeviceListItem
-              restore={restore && canRestore}
-              select={select}
-              selected={selected}
-              mobile={mobile}
-              onClick={index ? undefined : () => dispatch.ui.pop('deviceList')}
-              disabled={disabled}
-            />
-            {!index && (
-              <GuideBubble
-                enterDelay={400}
-                guide="deviceList"
-                placement="bottom"
-                startDate={new Date('2022-09-20')}
-                queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
-                instructions={
-                  <>
-                    <Typography variant="h3" gutterBottom>
-                      <b>Access a device</b>
-                    </Typography>
-                    <Typography variant="body2" gutterBottom>
-                      A device can host it's own applications (services), or it can host another service on it's local
-                      network.
-                    </Typography>
-                    <Typography variant="body2" gutterBottom>
-                      Select a device to connect to a service, or configure it.
-                    </Typography>
-                  </>
-                }
-              />
-            )}
-          </DeviceListContext.Provider>
+            device={device}
+            deviceConnections={connections[device.id]}
+            attributes={attributes}
+            required={required}
+            restore={restore}
+            canRestore={canRestore}
+            select={select}
+            mobile={mobile}
+            disabled={disabled}
+            showGuide={!index}
+            onClick={index ? undefined : onFirstClick}
+          />
         )
       })}
       <LoadMore />

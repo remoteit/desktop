@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Chip, BoxProps, Typography } from '@mui/material'
 import { Tag } from './Tag'
 
@@ -14,19 +14,7 @@ export type TagProps = BoxProps & {
 
 export const Tags: React.FC<TagProps> = ({ tags, small, max = 1, showEmpty, hideLabels, onClick, onDelete }) => {
   const dot = tags.length > max && small
-
-  const Tags = [...tags]
-    .sort(nameSort)
-    .map((tag, index) => (
-      <Tag
-        key={index}
-        dot={dot}
-        tag={tag}
-        hideLabels={hideLabels}
-        onDelete={onDelete ? () => onDelete(tag) : undefined}
-        onClick={onClick ? () => onClick(tag) : undefined}
-      />
-    ))
+  const sortedTags = useMemo(() => [...tags].sort(nameSort), [tags])
 
   if (!tags.length && showEmpty)
     return (
@@ -35,7 +23,18 @@ export const Tags: React.FC<TagProps> = ({ tags, small, max = 1, showEmpty, hide
       </Typography>
     )
 
-  return <>{dot ? <Chip size="small" label={Tags} /> : Tags}</>
+  const tagElements = sortedTags.map((tag, index) => (
+    <Tag
+      key={index}
+      dot={dot}
+      tag={tag}
+      hideLabels={hideLabels}
+      onDelete={onDelete}
+      onClick={onClick}
+    />
+  ))
+
+  return <>{dot ? <Chip size="small" label={tagElements} /> : tagElements}</>
 }
 
 function nameSort(a: ITag, b: ITag) {
