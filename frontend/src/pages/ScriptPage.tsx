@@ -161,7 +161,17 @@ export const ScriptPage: React.FC = () => {
         )}
       </Typography>
       {completedJobs.length ? (
-        <List>{completedJobs.map(renderJobRow)}</List>
+        <>
+          <List>{completedJobs.map(renderJobRow)}</List>
+          <Button
+            size="small"
+            variant="text"
+            sx={{ display: 'block', mx: 'auto', mt: 1 }}
+            onClick={() => history.push(`/runs/${fileID}`)}
+          >
+            View all runs
+          </Button>
+        </>
       ) : (
         <Notice sx={{ mx: 2 }}>No runs yet.</Notice>
       )}
