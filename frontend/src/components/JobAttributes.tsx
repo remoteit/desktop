@@ -183,6 +183,7 @@ export const jobAttributes: JobAttribute[] = [
     value: ({ job }) => {
       if (!job?.updated) return null
       const date = new Date(job.updated)
+      const recent = Date.now() - date.getTime() < 24 * 60 * 60 * 1000
       return (
         <Stack sx={{ lineHeight: 1.2 }}>
           <Typography variant="caption" color="grayDarkest.main">
@@ -193,9 +194,11 @@ export const jobAttributes: JobAttribute[] = [
               minute: '2-digit',
             })}
           </Typography>
-          <Typography variant="caption" color="gray.main">
-            <Duration startDate={date} humanizeOptions={{ largest: 1 }} ago />
-          </Typography>
+          {recent && (
+            <Typography variant="caption" color="gray.main">
+              <Duration startDate={date} humanizeOptions={{ largest: 1 }} ago />
+            </Typography>
+          )}
         </Stack>
       )
     },
