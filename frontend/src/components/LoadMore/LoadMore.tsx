@@ -1,19 +1,17 @@
 import React from 'react'
-import { Dispatch, State } from '../../store'
-import { selectDeviceModelAttributes } from '../../selectors/devices'
-import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Typography } from '@mui/material'
 
-export const LoadMore: React.FC = () => {
-  const { from, size, total, results, searched, fetching } = useSelector((state: State) =>
-    selectDeviceModelAttributes(state)
-  )
-  const dispatch = useDispatch<Dispatch>()
+type Props = {
+  from: number
+  size: number
+  count: number
+  fetching: boolean
+  onLoadMore: () => void
+}
 
-  const pages = Math.ceil((searched ? results : total) / size)
+export const LoadMore: React.FC<Props> = ({ from, size, count, fetching, onLoadMore }) => {
+  const pages = Math.ceil(count / size)
   const nextPage = Math.floor(from / size) + 1
-
-  const count = searched ? results : total
   const showing = Math.min(from + size, count)
 
   if (nextPage >= pages) return null
@@ -23,7 +21,6 @@ export const LoadMore: React.FC = () => {
       sx={{
         position: 'absolute',
         display: 'flex',
-        // justifyContent: 'space-between',
         alignItems: 'center',
         padding: 3,
         paddingBottom: 4.5,
@@ -33,14 +30,7 @@ export const LoadMore: React.FC = () => {
         gap: 4,
       }}
     >
-      <Button
-        color="primary"
-        disabled={fetching}
-        onClick={() => {
-          dispatch.devices.set({ from: nextPage * size, append: true })
-          dispatch.devices.fetchList()
-        }}
-      >
+      <Button color="primary" disabled={fetching} onClick={onLoadMore}>
         {fetching ? `Loading ${from} - ${from + size}...` : 'Load More'}
       </Button>
       <Typography variant="subtitle2" color="GrayText">
