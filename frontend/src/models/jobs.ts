@@ -49,7 +49,7 @@ export default createModel<RootModel>()({
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOBS', accountId, jobs)
       const merge = from > 0 || !!fileID
-      if (merge) dispatch.jobs.setJobs({ accountId, jobs })
+      if (merge) dispatch.jobs.appendJobs({ accountId, jobs })
       else dispatch.jobs.setAccount({ accountId, jobs })
       dispatch.jobs.set({ fetching: false, initialized: true, total })
     },
@@ -85,7 +85,7 @@ export default createModel<RootModel>()({
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED FILE JOBS', accountId, jobs)
 
-      dispatch.jobs.setJobs({ accountId, jobs })
+      dispatch.jobs.appendJobs({ accountId, jobs })
       dispatch.jobs.set({ fetching: false })
     },
     async fetchIfEmpty(accountId: string | void, state) {
@@ -214,6 +214,19 @@ export default createModel<RootModel>()({
       jobs.forEach(job => {
         const index = updated.findIndex(j => j.id === job.id)
         if (index === -1) updated.unshift(job)
+        else updated[index] = job
+      })
+
+      dispatch.jobs.setAccount({ accountId, jobs: updated })
+    },
+    async appendJobs({ accountId, jobs }: { accountId: string; jobs: IJob[] }, state) {
+      // Upsert preserving server order — used for paginated and filtered fetches
+      // (setJobs unshifts new entries, which reverses pages and prepends "load older" results).
+      const updated = structuredClone(state.jobs.all[accountId] || [])
+
+      jobs.forEach(job => {
+        const index = updated.findIndex(j => j.id === job.id)
+        if (index === -1) updated.push(job)
         else updated[index] = job
       })
 

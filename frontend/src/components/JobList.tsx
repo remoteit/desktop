@@ -2,7 +2,7 @@ import React from 'react'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery } from '@mui/material'
 import { JobListItem } from './JobListItem'
-import { JobLoadMore } from './JobLoadMore'
+import { JobLoadMore } from './LoadMore'
 import { Attribute } from './Attributes'
 import { GridList } from './GridList'
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Dispatch, State } from '../store'
+import { Dispatch, State } from '../../store'
 import { LoadMore } from './LoadMore'
 
 export const JobLoadMore: React.FC = () => {
