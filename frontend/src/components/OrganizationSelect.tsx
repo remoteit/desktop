@@ -14,6 +14,12 @@ import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
+const CLEAR_ID_BASE: Record<string, string> = {
+  '/runs': '/runs',
+  '/script': '/scripts',
+  '/file': '/files',
+}
+
 export const OrganizationSelect: React.FC = () => {
   const css = useStyles()
   const history = useHistory()
@@ -59,8 +65,12 @@ export const OrganizationSelect: React.FC = () => {
     tags.fetchIfEmpty()
     products.fetchIfEmpty()
     partnerStats.fetchIfEmpty()
-    if (!mobile && ['/devices', '/networks', '/connections', '/products', '/partner-stats'].includes(menu)) {
+    if (mobile) return
+    if (['/devices', '/networks', '/connections', '/products', '/partner-stats'].includes(menu)) {
       history.push(defaultSelection[id]?.[menu] || menu)
+    } else if (CLEAR_ID_BASE[menu]) {
+      // Clear stale resource IDs from the URL when switching accounts
+      history.push(CLEAR_ID_BASE[menu])
     }
   }
 
