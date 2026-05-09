@@ -47,12 +47,20 @@ export async function graphQLFiles(accountId: string, ids?: string[]) {
   )
 }
 
-export async function graphQLJobs(accountId: string, fileIds?: string[], ids?: string[]) {
+export async function graphQLJobs(args: {
+  accountId: string
+  fileIds?: string[]
+  ids?: string[]
+  from?: number
+  size?: number
+}) {
+  const { accountId, fileIds, ids, from, size } = args
   return await graphQLBasicRequest(
-    ` query Jobs($accountId: String, $ids: [ID!], $fileIds: [ID!]) {
+    ` query Jobs($accountId: String, $ids: [ID!], $fileIds: [ID!], $from: Int, $size: Int) {
         login {
           account(id: $accountId) {
-            jobs(ids: $ids, fileIds: $fileIds, size: 50) {
+            jobs(ids: $ids, fileIds: $fileIds, from: $from, size: $size) {
+              total
               items {
                 id
                 status
@@ -102,7 +110,7 @@ export async function graphQLJobs(accountId: string, fileIds?: string[], ids?: s
           }
         }
       }`,
-    { accountId, fileIds, ids }
+    { accountId, fileIds, ids, from, size }
   )
 }
 

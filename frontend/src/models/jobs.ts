@@ -13,6 +13,9 @@ import { RootModel } from '.'
 type ScriptsState = {
   initialized: boolean
   fetching: boolean
+  size: number
+  from: number
+  total: number
   all: {
     [accountId: string]: IJob[]
   }
@@ -21,21 +24,39 @@ type ScriptsState = {
 const defaultState: ScriptsState = {
   initialized: false,
   fetching: true,
+  size: 50,
+  from: 0,
+  total: 0,
   all: {},
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(accountId: string | void, state) {
-      dispatch.jobs.set({ fetching: true })
-      accountId = accountId || selectActiveAccountId(state)
-      const result = await graphQLJobs(accountId)
-      if (result === 'ERROR') return
+    async fetch(args: { accountId?: string; fileID?: string; from?: number } | void, state) {
+      const accountId = args?.accountId || selectActiveAccountId(state)
+      const fileID = args?.fileID
+      const from = args?.from ?? 0
+      const { size } = state.jobs
+      dispatch.jobs.set({ fetching: true, from })
+      const fileIds = fileID ? [fileID] : undefined
+      const result = await graphQLJobs({ accountId, fileIds, from, size })
+      if (result === 'ERROR') {
+        dispatch.jobs.set({ fetching: false })
+        return
+      }
+      const total = result?.data?.data?.login?.account?.jobs?.total ?? 0
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOBS', accountId, jobs)
-      dispatch.jobs.setAccount({ accountId, jobs })
-      dispatch.jobs.set({ fetching: false, initialized: true })
+      const merge = from > 0 || !!fileID
+      if (merge) dispatch.jobs.setJobs({ accountId, jobs })
+      else dispatch.jobs.setAccount({ accountId, jobs })
+      dispatch.jobs.set({ fetching: false, initialized: true, total })
+    },
+    async loadMore(args: { fileID?: string } | void, state) {
+      if (state.jobs.fetching) return
+      const { from, size } = state.jobs
+      await dispatch.jobs.fetch({ fileID: args?.fileID, from: from + size })
     },
     async fetchSingle({ accountId, jobId }: { accountId?: string; jobId: string }, state) {
       dispatch.jobs.set({ fetching: true })
@@ -47,7 +68,7 @@ export default createModel<RootModel>()({
       // }
 
       accountId = accountId || selectActiveAccountId(state)
-      const result = await graphQLJobs(accountId, undefined, [jobId])
+      const result = await graphQLJobs({ accountId, ids: [jobId] })
       if (result === 'ERROR') return
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOB', accountId, jobs)
@@ -58,7 +79,7 @@ export default createModel<RootModel>()({
       dispatch.jobs.set({ fetching: true })
       accountId = accountId || selectActiveAccountId(state)
 
-      const result = await graphQLJobs(accountId, fileIds, undefined)
+      const result = await graphQLJobs({ accountId, fileIds })
       if (result === 'ERROR') return
 
       const jobs = await dispatch.jobs.parse(result)
@@ -69,7 +90,7 @@ export default createModel<RootModel>()({
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
-      if (!state.jobs.all[accountId]) dispatch.jobs.fetch(accountId)
+      if (!state.jobs.all[accountId]) dispatch.jobs.fetch({ accountId })
     },
     async parse(result: AxiosResponse<any> | undefined): Promise<IJob[]> {
       const data = result?.data?.data?.login?.account
