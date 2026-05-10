@@ -209,28 +209,12 @@ export default createModel<RootModel>()({
       )
     },
     async setJobs({ accountId, jobs }: { accountId: string; jobs: IJob[] }, state) {
-      const updated = structuredClone(state.jobs.all[accountId] || [])
-
-      jobs.forEach(job => {
-        const index = updated.findIndex(j => j.id === job.id)
-        if (index === -1) updated.unshift(job)
-        else updated[index] = job
-      })
-
-      dispatch.jobs.setAccount({ accountId, jobs: updated })
+      // Prepends new entries — fetchSingle uses this so freshly-saved jobs appear at the top.
+      dispatch.jobs.setAccount({ accountId, jobs: upsertJobs(state.jobs.all[accountId], jobs, 'start') })
     },
     async appendJobs({ accountId, jobs }: { accountId: string; jobs: IJob[] }, state) {
-      // Upsert preserving server order — used for paginated and filtered fetches
-      // (setJobs unshifts new entries, which reverses pages and prepends "load older" results).
-      const updated = structuredClone(state.jobs.all[accountId] || [])
-
-      jobs.forEach(job => {
-        const index = updated.findIndex(j => j.id === job.id)
-        if (index === -1) updated.push(job)
-        else updated[index] = job
-      })
-
-      dispatch.jobs.setAccount({ accountId, jobs: updated })
+      // Appends new entries — preserves server order for paginated and filtered fetches.
+      dispatch.jobs.setAccount({ accountId, jobs: upsertJobs(state.jobs.all[accountId], jobs, 'end') })
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)
@@ -248,6 +232,17 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function upsertJobs(cache: IJob[] | undefined, incoming: IJob[], position: 'start' | 'end'): IJob[] {
+  const updated = structuredClone(cache || [])
+  incoming.forEach(job => {
+    const index = updated.findIndex(j => j.id === job.id)
+    if (index !== -1) updated[index] = job
+    else if (position === 'end') updated.push(job)
+    else updated.unshift(job)
+  })
+  return updated
+}
 
 function formAdaptor(form: IFileForm) {
   return {

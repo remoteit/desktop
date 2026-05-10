@@ -5,6 +5,7 @@ import { ReactiveTagNames } from './ReactiveTagNames'
 import { JobStatusIcon } from './JobStatusIcon'
 import { Attribute } from './Attributes'
 import { Duration } from './Duration'
+import { DAY_MS } from '../models/logs'
 import { Icon } from './Icon'
 
 const MAX_ROWS = 2
@@ -183,7 +184,7 @@ export const jobAttributes: JobAttribute[] = [
     value: ({ job }) => {
       if (!job?.updated) return null
       const date = new Date(job.updated)
-      const recent = Date.now() - date.getTime() < 24 * 60 * 60 * 1000
+      const recent = Date.now() - date.getTime() < DAY_MS
       return (
         <Stack sx={{ lineHeight: 1.2 }}>
           <Typography variant="caption" color="grayDarkest.main">

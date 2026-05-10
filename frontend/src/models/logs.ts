@@ -4,7 +4,7 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 import { store } from '../store'
 
-const DAY_MS = 24 * 60 * 60 * 1000
+export const DAY_MS = 24 * 60 * 60 * 1000
 
 type ILogState = {
   size: number
