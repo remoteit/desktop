@@ -10,7 +10,7 @@ import { DeviceListContext } from '../services/Context'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { GridList } from './GridList'
-import { LoadMore } from './LoadMore'
+import { DeviceLoadMore } from './LoadMore'
 
 export interface DeviceListProps {
   attributes: Attribute[]
@@ -76,7 +76,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
           </DeviceListContext.Provider>
         )
       })}
-      <LoadMore />
+      <DeviceLoadMore />
     </GridList>
   )
 }

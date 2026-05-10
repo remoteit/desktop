@@ -38,6 +38,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const adminUsersPage = useRouteMatch('/admin/users')
   const adminPartnersPage = useRouteMatch('/admin/partners')
   const scriptingPage = useRouteMatch(['/script', '/scripts', '/runs'])
+  const runsPage = useRouteMatch<{ fileID?: string }>('/runs/:fileID?')
   const scriptPage = useRouteMatch('/script')
 
   let title = 'Refresh application'
@@ -57,7 +58,8 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   } else if (scriptingPage) {
     title = 'Refresh scripts'
     methods.push(dispatch.files.fetch)
-    methods.push(dispatch.jobs.fetch)
+    const runsFileID = runsPage?.params.fileID
+    methods.push(async () => await dispatch.jobs.fetch({ fileID: runsFileID }))
 
     // script pages
   } else if (scriptPage) {

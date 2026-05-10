@@ -18,7 +18,8 @@ export const selectFiles = createSelector([getFiles, selectActiveAccountId], (fi
 
 export const selectJobs = createSelector(
   [getJobs, selectActiveAccountId, optionalSecondParam],
-  (jobs, accountId, fileId) => (fileId ? jobs[accountId].filter(f => f.file?.id === fileId) : jobs[accountId] || [])
+  (jobs, accountId, fileId) =>
+    fileId ? (jobs[accountId] || []).filter(f => f.file?.id === fileId) : jobs[accountId] || []
 )
 
 export const selectFile = createSelector(

@@ -23,8 +23,8 @@ export const JobsPage: React.FC = () => {
   const fetching = useSelector((state: State) => state.ui.fetching || state.jobs.fetching)
 
   useEffect(() => {
-    dispatch.jobs.fetchIfEmpty()
-  }, [accountId])
+    dispatch.jobs.fetch({ fileID })
+  }, [accountId, fileID])
 
   return (
     <ScriptingHeader>
@@ -37,7 +37,7 @@ export const JobsPage: React.FC = () => {
           </Stack>
         </Body>
       ) : (
-        <JobList attributes={attributes} {...{ required, jobs, columnWidths, fetching }} />
+        <JobList attributes={attributes} loadMore {...{ required, jobs, columnWidths, fetching }} />
       )}
     </ScriptingHeader>
   )

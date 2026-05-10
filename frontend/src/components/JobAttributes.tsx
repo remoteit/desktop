@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { toLookup } from '../helpers/utilHelper'
-import { Box, Chip, Typography } from '@mui/material'
+import { Box, Chip, Stack, Typography } from '@mui/material'
 import { ReactiveTagNames } from './ReactiveTagNames'
 import { JobStatusIcon } from './JobStatusIcon'
 import { Attribute } from './Attributes'
 import { Duration } from './Duration'
+import { DAY_MS } from '../models/logs'
 import { Icon } from './Icon'
 
 const MAX_ROWS = 2
@@ -179,13 +180,29 @@ export const jobAttributes: JobAttribute[] = [
   new JobAttribute({
     id: 'jobUpdated',
     label: 'Time',
-    defaultWidth: 160,
-    value: ({ job }) =>
-      job?.updated && (
-        <Typography variant="caption" color="grayDarkest.main">
-          <Duration startDate={new Date(job.updated)} humanizeOptions={{ largest: 1 }} ago />
-        </Typography>
-      ),
+    defaultWidth: 180,
+    value: ({ job }) => {
+      if (!job?.updated) return null
+      const date = new Date(job.updated)
+      const recent = Date.now() - date.getTime() < DAY_MS
+      return (
+        <Stack sx={{ lineHeight: 1.2 }}>
+          <Typography variant="caption" color="grayDarkest.main">
+            {date.toLocaleString(navigator.language, {
+              month: 'short',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+            })}
+          </Typography>
+          {recent && (
+            <Typography variant="caption" color="gray.main">
+              <Duration startDate={date} humanizeOptions={{ largest: 1 }} ago />
+            </Typography>
+          )}
+        </Stack>
+      )
+    },
   }),
   new JobAttribute({
     id: 'jobTags',

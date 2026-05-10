@@ -13,6 +13,9 @@ import { RootModel } from '.'
 type ScriptsState = {
   initialized: boolean
   fetching: boolean
+  size: number
+  from: number
+  total: number
   all: {
     [accountId: string]: IJob[]
   }
@@ -21,21 +24,39 @@ type ScriptsState = {
 const defaultState: ScriptsState = {
   initialized: false,
   fetching: true,
+  size: 50,
+  from: 0,
+  total: 0,
   all: {},
 }
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(accountId: string | void, state) {
-      dispatch.jobs.set({ fetching: true })
-      accountId = accountId || selectActiveAccountId(state)
-      const result = await graphQLJobs(accountId)
-      if (result === 'ERROR') return
+    async fetch(args: { accountId?: string; fileID?: string; from?: number } | void, state) {
+      const accountId = args?.accountId || selectActiveAccountId(state)
+      const fileID = args?.fileID
+      const from = args?.from ?? 0
+      const { size } = state.jobs
+      dispatch.jobs.set({ fetching: true, from })
+      const fileIds = fileID ? [fileID] : undefined
+      const result = await graphQLJobs({ accountId, fileIds, from, size })
+      if (result === 'ERROR') {
+        dispatch.jobs.set({ fetching: false })
+        return
+      }
+      const total = result?.data?.data?.login?.account?.jobs?.total ?? 0
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOBS', accountId, jobs)
-      dispatch.jobs.setAccount({ accountId, jobs })
-      dispatch.jobs.set({ fetching: false, initialized: true })
+      const merge = from > 0 || !!fileID
+      if (merge) dispatch.jobs.appendJobs({ accountId, jobs })
+      else dispatch.jobs.setAccount({ accountId, jobs })
+      dispatch.jobs.set({ fetching: false, initialized: true, total })
+    },
+    async loadMore(args: { fileID?: string } | void, state) {
+      if (state.jobs.fetching) return
+      const { from, size } = state.jobs
+      await dispatch.jobs.fetch({ fileID: args?.fileID, from: from + size })
     },
     async fetchSingle({ accountId, jobId }: { accountId?: string; jobId: string }, state) {
       dispatch.jobs.set({ fetching: true })
@@ -47,7 +68,7 @@ export default createModel<RootModel>()({
       // }
 
       accountId = accountId || selectActiveAccountId(state)
-      const result = await graphQLJobs(accountId, undefined, [jobId])
+      const result = await graphQLJobs({ accountId, ids: [jobId] })
       if (result === 'ERROR') return
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOB', accountId, jobs)
@@ -58,18 +79,18 @@ export default createModel<RootModel>()({
       dispatch.jobs.set({ fetching: true })
       accountId = accountId || selectActiveAccountId(state)
 
-      const result = await graphQLJobs(accountId, fileIds, undefined)
+      const result = await graphQLJobs({ accountId, fileIds })
       if (result === 'ERROR') return
 
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED FILE JOBS', accountId, jobs)
 
-      dispatch.jobs.setJobs({ accountId, jobs })
+      dispatch.jobs.appendJobs({ accountId, jobs })
       dispatch.jobs.set({ fetching: false })
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
-      if (!state.jobs.all[accountId]) dispatch.jobs.fetch(accountId)
+      if (!state.jobs.all[accountId]) dispatch.jobs.fetch({ accountId })
     },
     async parse(result: AxiosResponse<any> | undefined): Promise<IJob[]> {
       const data = result?.data?.data?.login?.account
@@ -188,15 +209,12 @@ export default createModel<RootModel>()({
       )
     },
     async setJobs({ accountId, jobs }: { accountId: string; jobs: IJob[] }, state) {
-      const updated = structuredClone(state.jobs.all[accountId] || [])
-
-      jobs.forEach(job => {
-        const index = updated.findIndex(j => j.id === job.id)
-        if (index === -1) updated.unshift(job)
-        else updated[index] = job
-      })
-
-      dispatch.jobs.setAccount({ accountId, jobs: updated })
+      // Prepends new entries — fetchSingle uses this so freshly-saved jobs appear at the top.
+      dispatch.jobs.setAccount({ accountId, jobs: upsertJobs(state.jobs.all[accountId], jobs, 'start') })
+    },
+    async appendJobs({ accountId, jobs }: { accountId: string; jobs: IJob[] }, state) {
+      // Appends new entries — preserves server order for paginated and filtered fetches.
+      dispatch.jobs.setAccount({ accountId, jobs: upsertJobs(state.jobs.all[accountId], jobs, 'end') })
     },
     async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
       let all = structuredClone(state.jobs.all)
@@ -214,6 +232,17 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+function upsertJobs(cache: IJob[] | undefined, incoming: IJob[], position: 'start' | 'end'): IJob[] {
+  const updated = structuredClone(cache || [])
+  incoming.forEach(job => {
+    const index = updated.findIndex(j => j.id === job.id)
+    if (index !== -1) updated[index] = job
+    else if (position === 'end') updated.push(job)
+    else updated.unshift(job)
+  })
+  return updated
+}
 
 function formAdaptor(form: IFileForm) {
   return {

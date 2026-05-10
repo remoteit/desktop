@@ -36,10 +36,11 @@ export const ScriptPage: React.FC = () => {
   // Split jobs into groups
   const readyJobs = jobs.filter(j => j.status === 'READY')
   const runningJobs = jobs.filter(j => j.status === 'RUNNING' || j.status === 'WAITING')
-  const completedJobs = [...jobs]
+  const allCompleted = [...jobs]
     .filter(j => j.status === 'SUCCESS' || j.status === 'FAILED' || j.status === 'CANCELLED')
     .sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime())
-    .slice(0, MAX_RUNS)
+  const completedJobs = allCompleted.slice(0, MAX_RUNS)
+  const hasMoreRuns = allCompleted.length > completedJobs.length
 
   const args = file.versions?.[0]?.arguments
 
@@ -161,7 +162,19 @@ export const ScriptPage: React.FC = () => {
         )}
       </Typography>
       {completedJobs.length ? (
-        <List>{completedJobs.map(renderJobRow)}</List>
+        <>
+          <List>{completedJobs.map(renderJobRow)}</List>
+          {hasMoreRuns && (
+            <Button
+              size="small"
+              variant="text"
+              sx={{ display: 'block', mx: 'auto', mt: 1 }}
+              onClick={() => history.push(`/runs/${fileID}`)}
+            >
+              View all runs
+            </Button>
+          )}
+        </>
       ) : (
         <Notice sx={{ mx: 2 }}>No runs yet.</Notice>
       )}

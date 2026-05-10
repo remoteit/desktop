@@ -11,7 +11,7 @@ import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { isOffline } from '../models/devices'
 import { GuideBubble } from './GuideBubble'
-import { LoadMore } from './LoadMore'
+import { DeviceLoadMore } from './LoadMore'
 import { GridList } from './GridList'
 
 const GUIDE_START_DATE = new Date('2022-09-20')
@@ -141,7 +141,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           />
         )
       })}
-      <LoadMore />
+      <DeviceLoadMore />
     </GridList>
   )
 }
