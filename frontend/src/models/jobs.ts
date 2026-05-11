@@ -37,7 +37,7 @@ export default createModel<RootModel>()({
       const accountId = args?.accountId || selectActiveAccountId(state)
       const fileID = args?.fileID
       const from = args?.from ?? 0
-      const { size } = state.jobs
+      const size = state.jobs.size || defaultState.size
       dispatch.jobs.set({ fetching: true, from })
       const fileIds = fileID ? [fileID] : undefined
       const result = await graphQLJobs({ accountId, fileIds, from, size })
@@ -55,7 +55,8 @@ export default createModel<RootModel>()({
     },
     async loadMore(args: { fileID?: string } | void, state) {
       if (state.jobs.fetching) return
-      const { from, size } = state.jobs
+      const from = state.jobs.from ?? 0
+      const size = state.jobs.size || defaultState.size
       await dispatch.jobs.fetch({ fileID: args?.fileID, from: from + size })
     },
     async fetchSingle({ accountId, jobId }: { accountId?: string; jobId: string }, state) {
