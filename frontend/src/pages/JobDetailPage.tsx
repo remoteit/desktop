@@ -46,20 +46,36 @@ export const JobDetailPage: React.FC<Props> = () => {
   const jobsFetching = useSelector((state: State) => state.jobs.fetching)
   const scriptName = file?.name || job?.file?.name
 
-  // Track jobIDs we've already attempted to fetch via fetchSingle so a
-  // missing/deleted job doesn't loop when fetching toggles back to false.
-  const attemptedJobIds = useRef<Set<string>>(new Set())
+  // Track fetches we've already attempted so empty/missing results don't loop
+  // when the fetching flag toggles back to false. Keys are scoped per-fetch
+  // so a file-scoped fetch and a job-scoped fetch are tracked independently.
+  const attempted = useRef<Set<string>>(new Set())
+
+  // Reset tracked attempts when the active account changes so users who
+  // switch orgs/accounts can re-attempt the same URL under the new context.
+  useEffect(() => {
+    attempted.current = new Set()
+  }, [accountId])
 
   // Load jobs if not already loaded
   useEffect(() => {
     if (job) return
-    if (fileID) {
-      if (!fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
+
+    // Prefer file-scoped fetch when the script is in our local cache.
+    if (fileID && file) {
+      const key = `file:${file.id}`
+      if (fetching || jobsFetching || attempted.current.has(key)) return
+      attempted.current.add(key)
+      dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
       return
     }
+
+    // Otherwise fetch the job directly. This handles guest/private scripts
+    // (file never enters our cache) and direct /runs/job/:jobID links.
     if (!jobID || jobsFetching) return
-    if (attemptedJobIds.current.has(jobID)) return
-    attemptedJobIds.current.add(jobID)
+    const key = `job:${jobID}`
+    if (attempted.current.has(key)) return
+    attempted.current.add(key)
     dispatch.jobs.fetchSingle({ jobId: jobID })
   }, [file, job, fetching, fileID, jobID, jobsFetching])
 
