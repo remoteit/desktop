@@ -5,6 +5,7 @@ import {
   CognitoUser,
   ChallengeOption,
   ConfirmSignInFunc,
+  FederatedSignInFunc,
   RecoverPasswordRequestFunc,
   SendCustomChallengeAnswerFunc,
   SignInFunc,
@@ -26,9 +27,9 @@ import { Wrapper } from '../Wrapper'
 
 export type AuthProps = {
   onConfirmSignIn: ConfirmSignInFunc
-  onGoogleSignIn: () => void
-  onAppleSignIn: () => void
-  onOktaSignIn: () => void
+  onGoogleSignIn: FederatedSignInFunc
+  onAppleSignIn: FederatedSignInFunc
+  onOktaSignIn: FederatedSignInFunc
   onRecoverPasswordRequest: RecoverPasswordRequestFunc
   onSendCustomChallengeAnswer: SendCustomChallengeAnswerFunc
   onSignIn: SignInFunc
@@ -96,7 +97,7 @@ function Routes({
   }
 
   async function handleSamlSignIn(domain: string) {
-    onSamlSignIn(domain)
+    await onSamlSignIn(domain)
   }
 
   async function handleSignIn2(username: string) {

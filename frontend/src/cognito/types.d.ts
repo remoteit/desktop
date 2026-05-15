@@ -62,7 +62,9 @@ export type ChallengeOption =
 
 export type SignInFunc = (username: string, password?: string) => Promise<ChallengeOption | undefined>
 
-export type SamlSignInFunc = (domain: string) => Void
+export type FederatedSignInFunc = () => void | Promise<void>
+
+export type SamlSignInFunc = (domain: string) => void | Promise<void>
 
 export type UsernameChangeFunc = (email: string) => Promise<void>
 
