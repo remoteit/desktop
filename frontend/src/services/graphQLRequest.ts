@@ -81,6 +81,9 @@ export async function graphQLJobs(args: {
                 file {
                   id
                   name
+                  owner {
+                    id
+                  }
                 }
                 arguments {
                   id

@@ -15,6 +15,7 @@ export interface ScriptListProps {
   hideIcon?: boolean
   activeJobId?: string
   loadMore?: boolean
+  jobOnlyRoute?: boolean
 }
 
 export const JobList: React.FC<ScriptListProps> = ({
@@ -26,12 +27,13 @@ export const JobList: React.FC<ScriptListProps> = ({
   hideIcon,
   activeJobId,
   loadMore,
+  jobOnlyRoute,
 }) => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   return (
     <GridList {...{ attributes, required, fetching, columnWidths, mobile }} headerIcon>
       {jobs?.map((job, index) => (
-        <JobListItem key={index} {...{ job, required, attributes, mobile, hideIcon, activeJobId }} />
+        <JobListItem key={index} {...{ job, required, attributes, mobile, hideIcon, activeJobId, jobOnlyRoute }} />
       ))}
       {loadMore && <JobLoadMore />}
     </GridList>
