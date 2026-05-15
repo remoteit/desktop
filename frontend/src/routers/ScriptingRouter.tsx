@@ -76,7 +76,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   if (
     (locationParts[1] === 'scripts' && locationParts.length === 2) ||
     (locationParts[1] === 'files' && locationParts.length === 2) ||
-    (locationParts[1] === 'runs' && locationParts.length === 2)
+    (locationParts[1] === 'runs' && (locationParts.length === 2 || locationParts[2] !== 'job'))
   )
     layout = { ...layout, singlePanel: true }
 
@@ -125,7 +125,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         <DynamicPanel primary={<FilesPage />} secondary={<FileDetailPage />} layout={layout} />
       </Route>
       {/* Jobs/runs page */}
-      <Route path="/runs">
+      <Route path="/runs/job/:jobID/:jobDeviceID?">
         <DynamicPanel
           primary={<JobsPage />}
           secondary={
@@ -138,6 +138,9 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           root="/runs"
           layout={layout}
         />
+      </Route>
+      <Route path="/runs/:fileID?">
+        <DynamicPanel primary={<JobsPage />} secondary={<></>} root="/runs" layout={layout} />
       </Route>
       {/* Files list */}
       <Route path="/files">
