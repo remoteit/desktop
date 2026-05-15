@@ -3,7 +3,7 @@ import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Stack, List, ListItem, ListItemIcon, ListItemText, Typography, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
-import { selectScript } from '../selectors/scripting'
+import { selectJob, selectScript } from '../selectors/scripting'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { initialForm } from '../models/files'
 import { ScriptRunSummary } from '../components/ScriptRunSummary'
@@ -29,19 +29,28 @@ type Props = {
 export const JobDetailPage: React.FC<Props> = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
-  const { fileID, jobID, jobDeviceID } = useParams<{ fileID: string; jobID: string; jobDeviceID?: string }>()
+  const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID: string; jobDeviceID?: string }>()
 
-  const script = useSelector((state: State) => selectScript(state, undefined, fileID, jobID))
+  const script = useSelector((state: State) => fileID ? selectScript(state, undefined, fileID, jobID) : undefined)
+  const fallbackJob = useSelector((state: State) => selectJob(state, undefined, jobID))
   const accountId = useSelector(selectActiveAccountId)
-  const file = script
-  const job = script?.job
+  const job = script?.job || fallbackJob
+  const isPrivateScript = !!job?.file?.owner?.id && job.file.owner.id !== accountId
+  const file = isPrivateScript ? undefined : script
+  const scriptFileRef = file || (!isPrivateScript ? job?.file : undefined)
   const files = useSelector((state: State) => state.files.all[accountId] || [])
   const fetching = useSelector((state: State) => state.files.fetching)
+  const jobsFetching = useSelector((state: State) => state.jobs.fetching)
+  const scriptName = file?.name || job?.file?.name || 'Guest script'
 
   // Load jobs if not already loaded
   useEffect(() => {
+    if (!job && jobID && !jobsFetching) {
+      dispatch.jobs.fetchSingle({ jobId: jobID })
+      return
+    }
     if (!job && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
-  }, [file, job, fetching])
+  }, [file, job, fetching, jobID, jobsFetching])
 
   // Ensure files are loaded for file argument display
   useEffect(() => {
@@ -69,7 +78,7 @@ export const JobDetailPage: React.FC<Props> = () => {
       : 'gray'
 
   const handleNewRun = () => {
-    if (!job) return
+    if (!job || !scriptFileRef) return
 
     const deviceIds = job.jobDevices.map(d => d.device.id)
     const tagValues = job.tag?.values || []
@@ -79,7 +88,7 @@ export const JobDetailPage: React.FC<Props> = () => {
     dispatch.ui.set({
       scriptForm: {
         ...initialForm,
-        fileId: fileID,
+        fileId: scriptFileRef.id,
         deviceIds,
         tag: job.tag ?? initialForm.tag,
         access,
@@ -88,10 +97,10 @@ export const JobDetailPage: React.FC<Props> = () => {
       selected: [],
     })
 
-    history.push(`/script/${fileID}/run`)
+    history.push(`/script/${scriptFileRef.id}/run`)
   }
 
-  if (!file || !job) {
+  if (!job) {
     return (
       <Container>
         <Notice severity="warning">Job not found</Notice>
@@ -108,7 +117,25 @@ export const JobDetailPage: React.FC<Props> = () => {
             <Box marginRight={2}>
               <JobStatusIcon status={job.status} showTooltip={false} padding={0} size="xl" />
             </Box>
-            <Box sx={{ flex: 1 }}>{file.name}</Box>
+            <Box sx={{ flex: 1 }}>
+              {scriptFileRef ? (
+                <Button
+                  variant="text"
+                  color="inherit"
+                  sx={{ font: 'inherit', textTransform: 'none', p: 0, minWidth: 0, verticalAlign: 'baseline' }}
+                  onClick={() => history.push(`/script/${scriptFileRef.id}`)}
+                >
+                  {scriptName}
+                </Button>
+              ) : (
+                scriptName
+              )}
+              {isPrivateScript && (
+                <Typography component="span" variant="caption" color="textSecondary" sx={{ ml: 1 }}>
+                  Guest script
+                </Typography>
+              )}
+            </Box>
             <ColorChip
               label={job.status}
               size="small"
@@ -124,14 +151,16 @@ export const JobDetailPage: React.FC<Props> = () => {
                 await dispatch.jobs.downloadAllLogs({ jobId: job.id })
               }}
             />
-            <DeleteButton
-              title="Delete Run"
-              warning="This will permanently delete this run and all its results."
-              disabled={isActive}
-              onDelete={async () => {
-                await dispatch.jobs.delete({ jobId: job.id, fileId: file.id })
-              }}
-            />
+            {file && (
+              <DeleteButton
+                title="Delete Run"
+                warning="This will permanently delete this run and all its results."
+                disabled={isActive}
+                onDelete={async () => {
+                  await dispatch.jobs.delete({ jobId: job.id, fileId: file.id })
+                }}
+              />
+            )}
           </Typography>
           <Typography
             variant="caption"
@@ -153,12 +182,12 @@ export const JobDetailPage: React.FC<Props> = () => {
               </Button>
             )}
             <ScriptRunSummary
-              scriptArguments={scriptArguments}
+              scriptArguments={file ? scriptArguments : []}
               argumentValues={job.arguments?.map(arg => ({ name: arg.name, value: arg.value || '' }))}
               jobDevices={job.jobDevices}
               tag={job.tag}
               files={files}
-              runConfigAction={<IconButton icon="plus" title="New Run" size="md" onClick={handleNewRun} />}
+              runConfigAction={scriptFileRef ? <IconButton icon="plus" title="New Run" size="md" onClick={handleNewRun} /> : undefined}
             />
           </Box>
         </>
@@ -167,7 +196,7 @@ export const JobDetailPage: React.FC<Props> = () => {
       {jobDevice ? (
         <Gutters size="md" bottom={null}>
           <ListItemBack
-            to={`/script/${fileID}/${jobID}`}
+            to={file ? `/script/${file.id}/${jobID}` : `/runs/job/${jobID}`}
             title={<Typography variant="subtitle2">DEVICE RESULTS</Typography>}
           />
           <ListItem
@@ -251,7 +280,7 @@ export const JobDetailPage: React.FC<Props> = () => {
                 <ListItemLocation
                   sx={{ paddingRight: 2 }}
                   key={jd.id}
-                  to={`/script/${fileID}/${jobID}/${jd.id}`}
+                  to={file ? `/script/${file.id}/${jobID}/${jd.id}` : `/runs/job/${jobID}/${jd.id}`}
                   title={jd.device.name}
                   icon={<JobStatusIcon status={jd.status} device />}
                 />

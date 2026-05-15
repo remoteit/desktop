@@ -229,6 +229,7 @@ declare global {
     customer?: ICustomer
     file?: IFile
     job?: IJob
+    accountId?: string
   }
 
   type ICustomer = IUserRef & {

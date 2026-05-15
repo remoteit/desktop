@@ -103,14 +103,28 @@ export const jobAttributes: JobAttribute[] = [
     label: 'Name',
     required: true,
     defaultWidth: 350,
-    value: ({ job }) =>
-      job?.file?.name ? (
-        <Typography>{job.file.name}</Typography>
-      ) : (
+    value: ({ job, accountId }) => {
+      const privateScript = !!job?.file?.owner?.id && job.file.owner.id !== accountId
+      const name = job?.file?.name
+      if (name) {
+        return (
+          <Typography>
+            {name}
+            {privateScript && (
+              <Typography component="span" variant="caption" color="textSecondary">
+                {' '}
+                (guest script)
+              </Typography>
+            )}
+          </Typography>
+        )
+      }
+      return (
         <Typography variant="body2" fontStyle="italic">
           File Deleted&nbsp;
         </Typography>
-      ),
+      )
+    },
   }),
   new JobAttribute({
     id: 'jobDeviceCount',

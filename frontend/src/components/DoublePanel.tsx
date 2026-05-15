@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { usePanelWidth } from '../hooks/usePanelWidth'
+import { getPanelWidthDefault, usePanelWidth } from '../hooks/usePanelWidth'
 import { usePanelDrag } from '../hooks/usePanelDrag'
+import { REGEX_FIRST_PATH } from '../constants'
+import { useLocation } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 import { Header } from './Header'
 import classnames from 'classnames'
@@ -17,6 +19,9 @@ const PADDING = 9
 
 export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = true }) => {
   const [panelWidth, setPanelWidth] = usePanelWidth()
+  const location = useLocation()
+  const routeKey = location.pathname.match(REGEX_FIRST_PATH)?.[0].substring(1) || ''
+  const secondaryMinWidth = getPanelWidthDefault(routeKey)
   const primaryRef = useRef<HTMLDivElement>(null)
   const [parentWidth, setParentWidth] = useState<number | undefined>()
   const css = useStyles({ layout })
@@ -26,9 +31,9 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
   const getMaxWidth = useCallback(
     () => {
       const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
-      return fullWidth - MIN_WIDTH - sidePanelWidth
+      return fullWidth - secondaryMinWidth - sidePanelWidth
     },
-    [sidePanelWidth]
+    [secondaryMinWidth, sidePanelWidth]
   )
 
   const drag = usePanelDrag(panelWidth, {
@@ -66,7 +71,7 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
       </div>
       <div
         className={classnames(css.panel, css.secondary, 'drag-region')}
-        style={{ minWidth: parentWidth ? parentWidth - drag.width : undefined }}
+        style={{ minWidth: parentWidth ? Math.max(parentWidth - drag.width, secondaryMinWidth) : secondaryMinWidth }}
       >
         {right}
       </div>

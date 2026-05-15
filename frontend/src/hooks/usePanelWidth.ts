@@ -16,6 +16,13 @@ const PANEL_WIDTH_DEFAULTS: Record<string, { default: number; primary?: number; 
   products: { default: 450, primary: 330, secondary: 400 },
   scripts: { default: 550 },
   script: { default: 450, primary: 330, secondary: 400 },
+  runs: { default: 330 },
+}
+
+export function getPanelWidthDefault(routeKey: string, suffix?: 'primary' | 'secondary'): number {
+  return suffix
+    ? PANEL_WIDTH_DEFAULTS[routeKey]?.[suffix] || PANEL_WIDTH_DEFAULTS[routeKey]?.default || 9999
+    : PANEL_WIDTH_DEFAULTS[routeKey]?.default || 9999
 }
 
 export function usePanelWidth(suffix?: string): [number, (value: number) => void] {
@@ -26,9 +33,7 @@ export function usePanelWidth(suffix?: string): [number, (value: number) => void
   const routeKey = match ? match[0].substring(1) : ''
   const key = suffix ? `${routeKey}-${suffix}` : routeKey
   const panelWidth = useSelector((state: State) => state.ui.panelWidth)
-  const defaultWidth = suffix
-    ? PANEL_WIDTH_DEFAULTS[routeKey]?.[suffix as 'primary' | 'secondary'] || 9999
-    : PANEL_WIDTH_DEFAULTS[routeKey]?.default || 9999
+  const defaultWidth = getPanelWidthDefault(routeKey, suffix as 'primary' | 'secondary' | undefined)
 
   const setPanelWidth = (value: number) => {
     console.log('setPanelWidth', key, value)

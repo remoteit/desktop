@@ -677,6 +677,11 @@ declare global {
     file?: {
       id: string
       name: string
+      shortDesc?: string
+      longDesc?: string
+      owner?: {
+        id: string
+      }
     }
     jobDevices: IJobDevice[]
     arguments: IJobArgument[]
