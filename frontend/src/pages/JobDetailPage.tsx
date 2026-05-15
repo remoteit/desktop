@@ -231,7 +231,7 @@ export const JobDetailPage: React.FC<Props> = () => {
       {jobDevice ? (
         <Gutters size="md" bottom={null}>
           <ListItemBack
-            to={file ? `/script/${file.id}/${jobID}` : `/runs/job/${jobID}`}
+            to={fileID ? `/script/${fileID}/${jobID}` : `/runs/job/${jobID}`}
             title={<Typography variant="subtitle2">DEVICE RESULTS</Typography>}
           />
           <ListItem
@@ -315,7 +315,7 @@ export const JobDetailPage: React.FC<Props> = () => {
                 <ListItemLocation
                   sx={{ paddingRight: 2 }}
                   key={jd.id}
-                  to={file ? `/script/${file.id}/${jobID}/${jd.id}` : `/runs/job/${jobID}/${jd.id}`}
+                  to={fileID ? `/script/${fileID}/${jobID}/${jd.id}` : `/runs/job/${jobID}/${jd.id}`}
                   title={jd.device.name}
                   icon={<JobStatusIcon status={jd.status} device />}
                 />
