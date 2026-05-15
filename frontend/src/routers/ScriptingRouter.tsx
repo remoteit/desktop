@@ -91,6 +91,13 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path="/run" exact>
         <Redirect to="/runs" />
       </Route>
+      <Route
+        path="/run/:jobID/:jobDeviceID?"
+        render={({ match }) => {
+          const { jobID, jobDeviceID } = match.params as { jobID: string; jobDeviceID?: string }
+          return <Redirect to={`/runs/job/${jobID}${jobDeviceID ? `/${jobDeviceID}` : ''}`} />
+        }}
+      />
       {/* New script run config (step 2 of new script workflow) */}
       <Route path="/scripts/add/run">
         <DynamicPanel primary={<FilesPage scripts />} secondary={<ScriptRunPage isNew />} layout={layout} />

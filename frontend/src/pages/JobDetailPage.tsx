@@ -151,13 +151,13 @@ export const JobDetailPage: React.FC<Props> = () => {
                 await dispatch.jobs.downloadAllLogs({ jobId: job.id })
               }}
             />
-            {file && (
+            {scriptFileRef && (
               <DeleteButton
                 title="Delete Run"
                 warning="This will permanently delete this run and all its results."
                 disabled={isActive}
                 onDelete={async () => {
-                  await dispatch.jobs.delete({ jobId: job.id, fileId: file.id })
+                  await dispatch.jobs.delete({ jobId: job.id, fileId: scriptFileRef.id })
                 }}
               />
             )}
