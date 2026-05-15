@@ -126,18 +126,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       </Route>
       {/* Jobs/runs page */}
       <Route path="/runs/job/:jobID/:jobDeviceID?">
-        <DynamicPanel
-          primary={<JobsPage />}
-          secondary={
-            <Switch>
-              <Route path="/runs/job/:jobID/:jobDeviceID?">
-                <JobDetailPage />
-              </Route>
-            </Switch>
-          }
-          root="/runs"
-          layout={layout}
-        />
+        <DynamicPanel primary={<JobsPage />} secondary={<JobDetailPage />} root="/runs" layout={layout} />
       </Route>
       <Route path="/runs/:fileID?">
         <DynamicPanel primary={<JobsPage />} root="/runs" layout={layout} />

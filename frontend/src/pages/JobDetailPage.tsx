@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Stack, List, ListItem, ListItemIcon, ListItemText, Typography, Button } from '@mui/material'
@@ -9,6 +9,7 @@ import { initialForm } from '../models/files'
 import { ScriptRunSummary } from '../components/ScriptRunSummary'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { JobAttribute } from '../components/JobAttributes'
+import { LoadingMessage } from '../components/LoadingMessage'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ListItemBack } from '../components/ListItemBack'
 import { IconButton } from '../buttons/IconButton'
@@ -37,12 +38,17 @@ export const JobDetailPage: React.FC<Props> = () => {
   const script = useSelector((state: State) => scriptFileId ? selectScript(state, undefined, scriptFileId, jobID) : undefined)
   const job = script?.job || fallbackJob
   const isPrivateScript = !!job?.file?.owner?.id && job.file.owner.id !== accountId
+  const isFileMissing = !job?.file?.name
   const file = isPrivateScript ? undefined : script
   const scriptFileRef = file || (!isPrivateScript ? job?.file : undefined)
   const files = useSelector((state: State) => state.files.all[accountId] || [])
   const fetching = useSelector((state: State) => state.files.fetching)
   const jobsFetching = useSelector((state: State) => state.jobs.fetching)
-  const scriptName = file?.name || job?.file?.name || 'Guest script'
+  const scriptName = file?.name || job?.file?.name
+
+  // Track jobIDs we've already attempted to fetch via fetchSingle so a
+  // missing/deleted job doesn't loop when fetching toggles back to false.
+  const attemptedJobIds = useRef<Set<string>>(new Set())
 
   // Load jobs if not already loaded
   useEffect(() => {
@@ -51,7 +57,10 @@ export const JobDetailPage: React.FC<Props> = () => {
       if (!fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
       return
     }
-    if (jobID && !jobsFetching) dispatch.jobs.fetchSingle({ jobId: jobID })
+    if (!jobID || jobsFetching) return
+    if (attemptedJobIds.current.has(jobID)) return
+    attemptedJobIds.current.add(jobID)
+    dispatch.jobs.fetchSingle({ jobId: jobID })
   }, [file, job, fetching, fileID, jobID, jobsFetching])
 
   // Ensure files are loaded for file argument display
@@ -105,7 +114,11 @@ export const JobDetailPage: React.FC<Props> = () => {
   if (!job) {
     return (
       <Container>
-        <Notice severity="warning">Job not found</Notice>
+        {jobsFetching || fetching ? (
+          <LoadingMessage />
+        ) : (
+          <Notice severity="warning">Job not found</Notice>
+        )}
       </Container>
     )
   }
@@ -120,7 +133,11 @@ export const JobDetailPage: React.FC<Props> = () => {
               <JobStatusIcon status={job.status} showTooltip={false} padding={0} size="xl" />
             </Box>
             <Box sx={{ flex: 1 }}>
-              {scriptFileRef ? (
+              {isFileMissing ? (
+                <Typography component="span" variant="body2" fontStyle="italic">
+                  File Deleted&nbsp;
+                </Typography>
+              ) : scriptFileRef ? (
                 <Button
                   variant="text"
                   color="inherit"

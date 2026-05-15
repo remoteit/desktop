@@ -19,10 +19,14 @@ const PANEL_WIDTH_DEFAULTS: Record<string, { default: number; primary?: number; 
   runs: { default: 330 },
 }
 
-export function getPanelWidthDefault(routeKey: string, suffix?: 'primary' | 'secondary'): number {
+export function getPanelWidthDefault(
+  routeKey: string,
+  suffix?: 'primary' | 'secondary',
+  fallback: number = 9999,
+): number {
   return suffix
-    ? PANEL_WIDTH_DEFAULTS[routeKey]?.[suffix] || PANEL_WIDTH_DEFAULTS[routeKey]?.default || 9999
-    : PANEL_WIDTH_DEFAULTS[routeKey]?.default || 9999
+    ? PANEL_WIDTH_DEFAULTS[routeKey]?.[suffix] || PANEL_WIDTH_DEFAULTS[routeKey]?.default || fallback
+    : PANEL_WIDTH_DEFAULTS[routeKey]?.default || fallback
 }
 
 export function usePanelWidth(suffix?: string): [number, (value: number) => void] {

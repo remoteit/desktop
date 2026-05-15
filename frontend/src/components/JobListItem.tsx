@@ -24,8 +24,6 @@ export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile
   const privateScript = !!job.file?.owner?.id && job.file.owner.id !== accountId
   const disabled = !job.file
 
-  if (!job) return null
-
   const handleClick = () => {
     if (jobOnlyRoute || privateScript) {
       history.push(`/runs/job/${job.id}`)
