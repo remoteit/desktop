@@ -248,7 +248,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route
         path={[
           '/scripts',
-          '/runs/:jobSection?/:jobID?/:jobDeviceID?',
+          '/runs/job/:jobID?/:jobDeviceID?',
+          '/runs/:fileID?',
           '/run/:jobID?/:jobDeviceID?',
           '/files/:fileID?',
           '/file/:fileID?',
