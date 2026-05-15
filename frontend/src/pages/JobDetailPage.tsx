@@ -31,9 +31,10 @@ export const JobDetailPage: React.FC<Props> = () => {
   const history = useHistory()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID: string; jobDeviceID?: string }>()
 
-  const script = useSelector((state: State) => fileID ? selectScript(state, undefined, fileID, jobID) : undefined)
   const fallbackJob = useSelector((state: State) => selectJob(state, undefined, jobID))
   const accountId = useSelector(selectActiveAccountId)
+  const scriptFileId = fileID || (fallbackJob?.file?.owner?.id === accountId ? fallbackJob.file.id : undefined)
+  const script = useSelector((state: State) => scriptFileId ? selectScript(state, undefined, scriptFileId, jobID) : undefined)
   const job = script?.job || fallbackJob
   const isPrivateScript = !!job?.file?.owner?.id && job.file.owner.id !== accountId
   const file = isPrivateScript ? undefined : script
