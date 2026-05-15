@@ -46,12 +46,13 @@ export const JobDetailPage: React.FC<Props> = () => {
 
   // Load jobs if not already loaded
   useEffect(() => {
-    if (!job && jobID && !jobsFetching) {
-      dispatch.jobs.fetchSingle({ jobId: jobID })
+    if (job) return
+    if (fileID) {
+      if (!fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
       return
     }
-    if (!job && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
-  }, [file, job, fetching, jobID, jobsFetching])
+    if (jobID && !jobsFetching) dispatch.jobs.fetchSingle({ jobId: jobID })
+  }, [file, job, fetching, fileID, jobID, jobsFetching])
 
   // Ensure files are loaded for file argument display
   useEffect(() => {
