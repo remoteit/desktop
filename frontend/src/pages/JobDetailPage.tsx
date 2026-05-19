@@ -144,24 +144,24 @@ export const JobDetailPage: React.FC<Props> = () => {
       bodyProps={{ verticalOverflow: true, gutterBottom: true }}
       header={
         <>
-          <Typography variant="h1" sx={{ alignItems: 'center' }}>
+          <Typography
+            variant="h2"
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              pl: `${spacing.xl}px`,
+              pr: `${spacing.xl - 8}px`,
+              py: `${spacing.xxs}px`,
+            }}
+          >
             <Box marginRight={2}>
-              <JobStatusIcon status={job.status} showTooltip={false} padding={0} size="xl" />
+              <JobStatusIcon status={job.status} showTooltip={false} padding={0} size="lg" />
             </Box>
             <Box sx={{ flex: 1 }}>
               {isFileMissing ? (
                 <Typography component="span" variant="body2" fontStyle="italic">
                   File Deleted&nbsp;
                 </Typography>
-              ) : scriptFileRef ? (
-                <Button
-                  variant="text"
-                  color="inherit"
-                  sx={{ font: 'inherit', textTransform: 'none', p: 0, minWidth: 0, verticalAlign: 'baseline' }}
-                  onClick={() => history.push(`/script/${scriptFileRef.id}`)}
-                >
-                  {scriptName}
-                </Button>
               ) : (
                 scriptName
               )}
@@ -200,10 +200,20 @@ export const JobDetailPage: React.FC<Props> = () => {
           <Typography
             variant="caption"
             color="textSecondary"
-            sx={{ display: 'block', px: spacing.xl + 'px', pl: `calc(${spacing.xl}px + 44px)`, mt: -0.5, mb: 1.5 }}
+            sx={{ display: 'block', px: spacing.xl + 'px', pl: `calc(${spacing.xl}px + 36px)`, mt: -0.5, mb: 1 }}
           >
             <Timestamp date={new Date(job.created)} />
           </Typography>
+          {scriptFileRef && (
+            <List disablePadding sx={{ mb: 1 }}>
+              <ListItemLocation
+                dense
+                to={`/script/${scriptFileRef.id}`}
+                icon="scroll"
+                title={scriptName}
+              />
+            </List>
+          )}
           <Box sx={{ px: 4.5, pb: 2, maxHeight: 300, overflowY: 'auto' }}>
             {isActive && (
               <Button
