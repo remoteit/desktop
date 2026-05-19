@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useRouteMatch } from 'react-router-dom'
 import { selectJobs } from '../selectors/scripting'
 import { removeObject } from '../helpers/utilHelper'
 import { State, Dispatch } from '../store'
@@ -16,6 +16,7 @@ import { Body } from '../components/Body'
 export const JobsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { fileID } = useParams<{ fileID?: string }>()
+  const jobMatch = useRouteMatch<{ jobID: string }>('/runs/job/:jobID')
   const [required, attributes] = removeObject(jobAttributes, a => a.required === true)
   const jobs = useSelector((state: State) => selectJobs(state, undefined, fileID))
   const accountId = useSelector(selectActiveAccountId)
@@ -37,7 +38,13 @@ export const JobsPage: React.FC = () => {
           </Stack>
         </Body>
       ) : (
-        <JobList attributes={attributes} loadMore {...{ required, jobs, columnWidths, fetching }} />
+        <JobList
+          attributes={attributes}
+          {...{ required, jobs, columnWidths, fetching }}
+          activeJobId={jobMatch?.params.jobID}
+          jobOnlyRoute
+          loadMore
+        />
       )}
     </ScriptingHeader>
   )
