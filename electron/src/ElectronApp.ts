@@ -320,9 +320,6 @@ export default class ElectronApp {
     })
     webContents.on('unresponsive', () => Logger.warn('ELECTRON WEB CONSOLE unresponsive'))
     webContents.on('responsive', () => Logger.warn('ELECTRON WEB CONSOLE responsive'))
-    webContents.on('plugin-crashed', (event, name, version) =>
-      Logger.error('ELECTRON WEB CONSOLE plugin-crashed', { name, version })
-    )
     webContents.on('preload-error', (event, preloadPath, error) =>
       Logger.error('ELECTRON WEB CONSOLE preload-error', { preloadPath, error })
     )
