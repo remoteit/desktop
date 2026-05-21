@@ -13,7 +13,7 @@ import {
   InputAdornment,
   Collapse,
 } from '@mui/material'
-import { SignInFunc, SamlSignInFunc, UsernameChangeFunc, CheckSamlFunc } from '../../types'
+import { SignInFunc, SamlSignInFunc, UsernameChangeFunc, CheckSamlFunc, FederatedSignInFunc } from '../../types'
 import { useTranslation } from 'react-i18next'
 import { Notice } from '../../../components/Notice'
 import { Icon } from '../../../components/Icon'
@@ -39,9 +39,9 @@ export type SignInProps = {
   email?: string
   onCheckSaml: CheckSamlFunc
   onUsernameChange?: UsernameChangeFunc
-  onGoogleSignIn: () => void
-  onAppleSignIn: () => void
-  onOktaSignIn: () => void
+  onGoogleSignIn: FederatedSignInFunc
+  onAppleSignIn: FederatedSignInFunc
+  onOktaSignIn: FederatedSignInFunc
   onSignIn: SignInFunc
   onSamlSignIn: SamlSignInFunc
   showLogo?: boolean
@@ -77,6 +77,11 @@ export function SignIn({
   const passRef = React.useRef<HTMLInputElement>()
   const css = useStyles()
 
+  React.useEffect(() => {
+    setError(errorMessage ? new Error(errorMessage) : null)
+    if (errorMessage) setLoading(false)
+  }, [errorMessage])
+
   function scrollIntoView(event: React.FocusEvent<HTMLInputElement>) {
     event.target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -85,8 +90,40 @@ export function SignIn({
     event.target.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
+  function getError(error: unknown): Error {
+    return error instanceof Error ? error : new Error('Sign in failed, please try again.')
+  }
+
+  function handleEnterKey(e: React.KeyboardEvent<HTMLFormElement>): void {
+    if (e.key !== 'Enter' || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return
+
+    const target = e.target as HTMLElement
+    if (target.tagName !== 'INPUT') return
+
+    e.preventDefault()
+    e.currentTarget.requestSubmit()
+  }
+
+  async function handleFederatedSignIn(signIn: FederatedSignInFunc): Promise<void> {
+    if (loading) return
+
+    setError(null)
+    setLoading(true)
+
+    try {
+      await signIn()
+    } catch (error) {
+      console.error(error)
+      setError(getError(error))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault()
+    if (loading) return
+
     setError(null)
 
     if (!username || (!password && emailProcessed)) return alert('Please enter a username and password')
@@ -94,8 +131,8 @@ export function SignIn({
     setLoading(true)
     if (remember) rememberMe.set({ username, emailProcessed })
 
-    if (emailProcessed) {
-      try {
+    try {
+      if (emailProcessed) {
         // await onSignIn(username, password)
         const challenge = await onSignIn(username, password)
 
@@ -116,23 +153,23 @@ export function SignIn({
 
           // TODO: handle other challenge options
         }
-      } catch (error) {
-        console.error(error)
-        setError(error)
-      }
-    } else {
-      if (username) {
-        const result = await onCheckSaml(username)
-        if (result.isSaml && result.orgName) {
-          //Its an org!
-          onSamlSignIn(result.orgName)
-        } else {
-          setEmailProcessed(true)
+      } else {
+        if (username) {
+          const result = await onCheckSaml(username)
+          if (result.isSaml && result.orgName) {
+            //Its an org!
+            await onSamlSignIn(result.orgName)
+          } else {
+            setEmailProcessed(true)
+          }
         }
       }
+    } catch (error) {
+      console.error(error)
+      setError(getError(error))
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -140,18 +177,12 @@ export function SignIn({
       <Box mt={4} textAlign="center">
         <GoogleSignInButton
           fullWidth
-          onClick={() => {
-            setLoading(true)
-            onGoogleSignIn()
-          }}
+          onClick={() => handleFederatedSignIn(onGoogleSignIn)}
           disabled={loading}
         />
         <AppleSignInButton
           fullWidth
-          onClick={() => {
-            setLoading(true)
-            onAppleSignIn()
-          }}
+          onClick={() => handleFederatedSignIn(onAppleSignIn)}
           disabled={loading}
         />
       </Box>
@@ -160,7 +191,7 @@ export function SignIn({
         <Typography variant="caption">{t('pages.sign-in.or')?.toLowerCase()}</Typography>
         <Divider />
       </Box>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} onKeyDown={handleEnterKey}>
         {error?.message && (
           <Notice severity="error" fullWidth gutterBottom>
             {error.message}
