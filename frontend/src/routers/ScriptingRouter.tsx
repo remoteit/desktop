@@ -76,7 +76,7 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   if (
     (locationParts[1] === 'scripts' && locationParts.length === 2) ||
     (locationParts[1] === 'files' && locationParts.length === 2) ||
-    locationParts[1] === 'runs'
+    (locationParts[1] === 'runs' && (locationParts.length === 2 || locationParts[2] !== 'job'))
   )
     layout = { ...layout, singlePanel: true }
 
@@ -91,6 +91,13 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path="/run" exact>
         <Redirect to="/runs" />
       </Route>
+      <Route
+        path="/run/:jobID/:jobDeviceID?"
+        render={({ match }) => {
+          const { jobID, jobDeviceID } = match.params as { jobID: string; jobDeviceID?: string }
+          return <Redirect to={`/runs/job/${jobID}${jobDeviceID ? `/${jobDeviceID}` : ''}`} />
+        }}
+      />
       {/* New script run config (step 2 of new script workflow) */}
       <Route path="/scripts/add/run">
         <DynamicPanel primary={<FilesPage scripts />} secondary={<ScriptRunPage isNew />} layout={layout} />
@@ -118,10 +125,11 @@ export const ScriptingRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
         <DynamicPanel primary={<FilesPage />} secondary={<FileDetailPage />} layout={layout} />
       </Route>
       {/* Jobs/runs page */}
+      <Route path="/runs/job/:jobID/:jobDeviceID?">
+        <DynamicPanel primary={<JobsPage />} secondary={<JobDetailPage />} root="/runs" layout={layout} />
+      </Route>
       <Route path="/runs/:fileID?">
-        <Panel layout={layout}>
-          <JobsPage />
-        </Panel>
+        <DynamicPanel primary={<JobsPage />} root="/runs" layout={layout} />
       </Route>
       {/* Files list */}
       <Route path="/files">
