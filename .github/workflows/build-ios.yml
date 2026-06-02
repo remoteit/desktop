@@ -56,7 +56,6 @@ jobs:
           PROVISION_PROFILE_DEV_BASE64: ${{ secrets.PROVISION_PROFILE_DEV_BASE64 }}
           PROVISION_PROFILE_DIST_BASE64: ${{ secrets.PROVISION_PROFILE_DIST_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
-          APPLE_MOBILE_APP_PASSWORD: ${{ secrets.APPLE_MOBILE_APP_PASSWORD }}
           BUILD_PATH: $RUNNER_TEMP/build
         run: |
           # create variables
@@ -82,8 +81,6 @@ jobs:
 
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          # add remoteit-mobile-desktop to keychain list
-          xcrun altool --store-password-in-keychain-item 'remoteit-mobile-desktop' -u 'appledeveloper@remote.it' -p $APPLE_MOBILE_APP_PASSWORD --keychain $KEYCHAIN_PATH
           # list the keychain items
           security list-keychain -d user -s $KEYCHAIN_PATH
 
@@ -117,12 +114,32 @@ jobs:
         run: |
           xcodebuild -exportArchive -archivePath $BUILD_PATH/remoteit.xcarchive -exportOptionsPlist ./ExportOptions.plist -exportPath $BUILD_PATH
 
+      - name: Install App Store Connect API key
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
+
       - name: Validate ipa
         working-directory: ./ios/App
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
         run: |
-          xcrun altool --validate-app -f "$BUILD_PATH/Remote.It.ipa" -t ios --keychain "$RUNNER_TEMP/app-signing.keychain-db" -p '@keychain:remoteit-mobile-desktop' --output-format xml
+          xcrun altool --validate-app -f "$BUILD_PATH/Remote.It.ipa" -t ios \
+            --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_API_ISSUER_ID" \
+            --output-format xml
 
       - name: Upload ipa
         working-directory: ./ios/App
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
         run: |
-          xcrun altool --upload-app -f "$BUILD_PATH/Remote.It.ipa" -t ios --keychain "$RUNNER_TEMP/app-signing.keychain-db" -p '@keychain:remoteit-mobile-desktop' --output-format xml
+          xcrun altool --upload-app -f "$BUILD_PATH/Remote.It.ipa" -t ios \
+            --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_API_ISSUER_ID" \
+            --output-format xml
