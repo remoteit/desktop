@@ -22,6 +22,11 @@ export type MFACodeProps = {
   cognitoUser?: CognitoUser
 }
 
+function formatMaskedDestination(destination?: string): string {
+  const lastFour = destination?.match(/\d{4}$/)?.[0]
+  return lastFour ? ` (ending in ${lastFour})` : ''
+}
+
 export function MFACode({
   challengeName,
   onConfirmSignIn,
@@ -106,7 +111,13 @@ export function MFACode({
           </Notice>
         )}
         <Box my={4}>
-          {challengeName === 'SMS_MFA' && <Typography>{t('pages.auth-mfa.mfa-verification-sent')}</Typography>}
+          {challengeName === 'SMS_MFA' && (
+            <Typography>
+              {t('pages.auth-mfa.mfa-verification-sent', {
+                number: formatMaskedDestination(localCognitoUser.challengeParam?.CODE_DELIVERY_DESTINATION),
+              })}
+            </Typography>
+          )}
           {challengeName === 'SOFTWARE_TOKEN_MFA' && (
             <Typography>{t('pages.auth-mfa.totp-mfa-verification')}</Typography>
           )}

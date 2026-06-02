@@ -11,6 +11,7 @@ export interface CognitoUser /*extends CognitoCognitoUser*/ {
   challengeName?: ChallengeOption
   challengeParam?: {
     challengeType: RecoveryChallengeType
+    CODE_DELIVERY_DESTINATION?: string
   }
   preferredMFA: MFAMethod
   username: string
