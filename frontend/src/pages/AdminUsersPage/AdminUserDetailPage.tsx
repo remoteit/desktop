@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Typography, List, ListItemText, Box, Divider } from '@mui/material'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -10,7 +10,7 @@ import { Body } from '../../components/Body'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
-import { Dispatch } from '../../store'
+import { Dispatch, State } from '../../store'
 import browser from '../../services/browser'
 import { windowOpen } from '../../services/browser'
 
@@ -18,8 +18,8 @@ export const AdminUserDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const user = useSelector((state: State) => state.adminUsers.detailCache[userId])
+  const [loading, setLoading] = useState(!user)
 
   useEffect(() => {
     if (userId) {
@@ -29,15 +29,11 @@ export const AdminUserDetailPage: React.FC = () => {
 
   const fetchUser = async (forceRefresh = false) => {
     setLoading(true)
-    if (forceRefresh) {
-      dispatch.adminUsers.invalidateUserDetail(userId)
-    }
-    const userData = await dispatch.adminUsers.fetchUserDetail(userId)
-    setUser(userData)
+    await dispatch.adminUsers.fetchUserDetail({ userId, force: forceRefresh })
     setLoading(false)
   }
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <Container gutterBottom>
         <LoadingMessage message="Loading user..." />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
-import { Typography, List, ListItem, ListItemText, Box, Divider, Button, Checkbox, FormControlLabel } from '@mui/material'
+import { useDispatch, useSelector } from 'react-redux'
+import { Typography, List, ListItem, ListItemText, Box, Divider, Button } from '@mui/material'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -10,7 +10,7 @@ import { CopyIconButton } from '../../buttons/CopyIconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { Confirm } from '../../components/Confirm'
 import { Notice } from '../../components/Notice'
-import { Dispatch } from '../../store'
+import { Dispatch, State } from '../../store'
 import { graphQLAdminUpdateEmail, graphQLAdminDeleteUser, graphQLRemoveAdmin } from '../../services/graphQLMutation'
 import { ChangeEmailDialog } from './ChangeEmailDialog'
 
@@ -18,13 +18,12 @@ export const AdminUserAccountPanel: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const user = useSelector((state: State) => state.adminUsers.detailCache[userId])
+  const [loading, setLoading] = useState(!user)
   const [changeEmailOpen, setChangeEmailOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [removeAdminConfirmOpen, setRemoveAdminConfirmOpen] = useState(false)
   const [removingAdmin, setRemovingAdmin] = useState(false)
-  const [forceDelete, setForceDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
@@ -33,10 +32,9 @@ export const AdminUserAccountPanel: React.FC = () => {
     }
   }, [userId])
 
-  const fetchUser = async () => {
+  const fetchUser = async (force = false) => {
     setLoading(true)
-    const userData = await dispatch.adminUsers.fetchUserDetail(userId)
-    setUser(userData)
+    await dispatch.adminUsers.fetchUserDetail({ userId, force })
     setLoading(false)
   }
 
@@ -50,9 +48,8 @@ export const AdminUserAccountPanel: React.FC = () => {
 
       if (result !== 'ERROR') {
         dispatch.ui.set({ successMessage: 'Email updated successfully' })
-        // Invalidate cache and refresh
-        dispatch.adminUsers.invalidateUserDetail(userId)
-        await fetchUser()
+        // Refresh in place (keeps current data visible until fresh data loads)
+        await fetchUser(true)
         await dispatch.adminUsers.fetch(undefined)
       } else {
         dispatch.ui.set({ errorMessage: 'Failed to update email' })
@@ -65,14 +62,13 @@ export const AdminUserAccountPanel: React.FC = () => {
   }
 
   const handleDeleteUser = () => {
-    setForceDelete(false)
     setDeleteConfirmOpen(true)
   }
 
   const handleConfirmDelete = async () => {
     setDeleting(true)
     try {
-      const result = await graphQLAdminDeleteUser(userId, forceDelete)
+      const result = await graphQLAdminDeleteUser(userId)
 
       if (result !== 'ERROR') {
         dispatch.ui.set({ successMessage: 'User deleted successfully' })
@@ -98,8 +94,8 @@ export const AdminUserAccountPanel: React.FC = () => {
       if (result !== 'ERROR') {
         dispatch.ui.set({ successMessage: 'Admin privileges removed' })
         setRemoveAdminConfirmOpen(false)
-        dispatch.adminUsers.invalidateUserDetail(userId)
-        await fetchUser()
+        // Refresh in place (keeps current data visible until fresh data loads)
+        await fetchUser(true)
         await dispatch.adminUsers.fetch(undefined)
       } else {
         dispatch.ui.set({ errorMessage: 'Failed to remove admin privileges' })
@@ -112,7 +108,7 @@ export const AdminUserAccountPanel: React.FC = () => {
     }
   }
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <Container gutterBottom>
         <LoadingMessage message="Loading account..." />
@@ -136,8 +132,6 @@ export const AdminUserAccountPanel: React.FC = () => {
   const deviceCount = user.info?.devices?.total || 0
   const deviceOnline = user.info?.devices?.online || 0
   const deviceOffline = deviceCount - deviceOnline
-  const hasOnlineDevices = deviceOnline > 0
-  const canDelete = !hasOnlineDevices || forceDelete
 
   return (
     <Container
@@ -281,7 +275,7 @@ export const AdminUserAccountPanel: React.FC = () => {
         onDeny={() => setDeleteConfirmOpen(false)}
         title="Delete User"
         action={deleting ? 'Deleting...' : 'Delete'}
-        disabled={deleting || !canDelete}
+        disabled={deleting}
         color="error"
       >
         <Notice severity="error" gutterBottom fullWidth>
@@ -292,42 +286,10 @@ export const AdminUserAccountPanel: React.FC = () => {
         </Typography>
         {deviceCount > 0 && (
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            This user has <strong>{deviceCount} device{deviceCount !== 1 ? 's' : ''}</strong> that will also be removed.
+            This user's <strong>{deviceCount} device{deviceCount !== 1 ? 's' : ''}</strong> will be transferred to the holding
+            account and tagged with the user's email and the deletion date.
           </Typography>
         )}
-
-        {hasOnlineDevices && (
-          <Notice severity="warning" gutterBottom fullWidth sx={{ marginTop: 2 }}>
-            <Typography variant="body2" gutterBottom>
-              <strong>Warning: This user has {deviceOnline} online device{deviceOnline !== 1 ? 's' : ''}.</strong>
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              To delete this user without forcing, you must first uninstall Remote.It on all online devices so they go offline.
-            </Typography>
-            <Typography variant="body2">
-              If you force delete with online devices, they will continue attempting to connect to Remote.It but will be unsuccessful.
-            </Typography>
-          </Notice>
-        )}
-
-        <Box sx={{ marginTop: 2 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={forceDelete}
-                onChange={(e) => setForceDelete(e.target.checked)}
-                disabled={deleting}
-              />
-            }
-            label={
-              <Typography variant="body2">
-                {hasOnlineDevices
-                  ? 'Force delete (required for users with online devices)'
-                  : 'Force delete (bypasses safety checks)'}
-              </Typography>
-            }
-          />
-        </Box>
       </Confirm>
 
       <Confirm

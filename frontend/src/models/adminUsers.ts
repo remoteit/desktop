@@ -66,13 +66,32 @@ export const adminUsers = createModel<RootModel>()({
       searchType: payload.searchType,
       page: 1 // Reset to first page on new search
     }),
-    cacheUserDetail: (state, payload: { userId: string; user: AdminUser }) => ({
-      ...state,
-      detailCache: {
-        ...state.detailCache,
-        [payload.userId]: payload.user
+    cacheUserDetail: (state, payload: { userId: string; user: AdminUser }) => {
+      // Merge so sparse list data (e.g. from a list refresh) doesn't clobber
+      // detail-only fields already cached (lastLogin, online/offline, org, ...)
+      const existing = state.detailCache[payload.userId]
+      const user = existing
+        ? {
+            ...existing,
+            ...payload.user,
+            info: {
+              ...existing.info,
+              ...payload.user.info,
+              devices: {
+                ...existing.info?.devices,
+                ...payload.user.info?.devices
+              }
+            }
+          }
+        : payload.user
+      return {
+        ...state,
+        detailCache: {
+          ...state.detailCache,
+          [payload.userId]: user
+        }
       }
-    }),
+    },
     invalidateUserDetail: (state, userId: string) => {
       const newCache = { ...state.detailCache }
       delete newCache[userId]
@@ -181,10 +200,14 @@ export const adminUsers = createModel<RootModel>()({
         await dispatch.adminUsers.fetch(undefined)
       }
     },
-    async fetchUserDetail(userId: string, rootState) {
-      // Check cache first
+    async fetchUserDetail(payload: string | { userId: string; force?: boolean }, rootState) {
+      const { userId, force } = typeof payload === 'string' ? { userId: payload, force: false } : payload
+
+      // Use cache unless a forced refresh is requested. On force we keep the
+      // existing cache entry in place and overwrite it once fresh data arrives
+      // (via cacheUserDetail's merge) so the UI never shows an empty state.
       const cached = rootState.adminUsers.detailCache[userId]
-      if (cached) {
+      if (cached && !force) {
         return cached
       }
 
@@ -195,7 +218,7 @@ export const adminUsers = createModel<RootModel>()({
         dispatch.adminUsers.cacheUserDetail({ userId, user })
         return user
       }
-      return null
+      return cached || null
     }
   })
 })

@@ -107,8 +107,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     methods.push(async () => await dispatch.adminUsers.fetch(undefined))
     if (userId)
       methods.push(async () => {
-        await dispatch.adminUsers.invalidateUserDetail(userId)
-        await dispatch.adminUsers.fetchUserDetail(userId)
+        await dispatch.adminUsers.fetchUserDetail({ userId, force: true })
       })
 
     // admin partners pages
