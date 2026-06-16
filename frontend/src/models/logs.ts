@@ -44,7 +44,7 @@ const defaultState: ILogState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch({ allowedDays, deviceId }: { allowedDays: number; deviceId?: string }, state) {
+    async fetch({ deviceId }: { deviceId?: string }, state) {
       const { set } = dispatch.logs
       const { size, after, maxDate, minDate, events, eventTypes } = state.logs
       const accountId = selectActiveAccountId(state)
@@ -80,10 +80,9 @@ export default createModel<RootModel>()({
         items: mergedItems,
       }
 
-      const hasReachedLimit = !nextEvents.hasMore && allowedDays > 0
-      const firstLogMs = state.user.created?.getTime() || 0
-      const logLimitMs = Date.now() - allowedDays * DAY_MS
-      const planUpgrade = hasReachedLimit && firstLogMs < logLimitMs
+      // The server reports whether older events are being withheld by the plan's
+      // log-retention limit, so the upgrade notice only shows when logs are actually hidden.
+      const planUpgrade = Boolean(nextEvents.limited)
 
       set({
         events: nextEvents,

@@ -6,7 +6,7 @@ import { State, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { List, Box, Button, Typography } from '@mui/material'
 import { fontSizes, spacing } from '../../styling'
-import { humanizeDays, limitDays } from '../../models/plans'
+import { humanizeDays } from '../../models/plans'
 import { EventItem } from './EventItem'
 import { BillingUI } from '../BillingUI'
 import { Notice } from '../Notice'
@@ -23,9 +23,8 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
   const { events, planUpgrade, fetching, fetchingMore } = useSelector((state: State) => state.logs)
 
   const fetchMore = async () => {
-    const allowedDays = Math.max(limitDays(logLimit?.value) || 0, 0)
     await dispatch.logs.set({ after: events?.last })
-    await dispatch.logs.fetch({ allowedDays, deviceId: device?.id })
+    await dispatch.logs.fetch({ deviceId: device?.id })
   }
 
   const showPlanUpgradeNotice = Boolean(planUpgrade && !fetching && !fetchingMore)

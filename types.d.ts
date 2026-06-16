@@ -859,6 +859,7 @@ declare global {
     last: string
     items: IEvent[]
     hasMore: boolean
+    limited?: boolean // server indicates older events exist but are hidden by the plan log-retention limit
     deviceId?: string
   }
 
