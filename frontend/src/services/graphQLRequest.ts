@@ -616,6 +616,32 @@ export async function graphQLAdminUserDevices(
   )
 }
 
+export async function graphQLAdminEnterpriseCustomers(
+  options: { from?: number; size?: number },
+  search?: string
+) {
+  return await graphQLBasicRequest(
+    ` query AdminEnterpriseCustomers($from: Int, $size: Int, $search: String) {
+        admin {
+          enterpriseCustomers(from: $from, size: $size, search: $search) {
+            items {
+              userId
+              email
+              name
+              deviceCount
+              memberCount
+              licenseId
+              created
+            }
+            total
+            hasMore
+          }
+        }
+      }`,
+    { from: options.from || 0, size: options.size || 50, search: search || undefined }
+  )
+}
+
 export async function graphQLAdminPartners() {
   return await graphQLBasicRequest(
     ` query AdminPartners {

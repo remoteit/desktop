@@ -673,6 +673,32 @@ export async function graphQLRemoveAdmin(userId: string) {
   )
 }
 
+export async function graphQLAddEnterpriseCustomer(email: string) {
+  return await graphQLBasicRequest(
+    ` mutation AddEnterpriseCustomer($email: String!) {
+        addEnterpriseCustomer(email: $email) {
+          userId
+          email
+          name
+          deviceCount
+          memberCount
+          licenseId
+          created
+        }
+      }`,
+    { email }
+  )
+}
+
+export async function graphQLRemoveEnterpriseCustomer(userId: string) {
+  return await graphQLBasicRequest(
+    ` mutation RemoveEnterpriseCustomer($userId: String!) {
+        removeEnterpriseCustomer(userId: $userId)
+      }`,
+    { userId }
+  )
+}
+
 export async function graphQLAdminUpdateEmail(from: string, to: string) {
   return await graphQLBasicRequest(
     ` mutation UpdateEmail($from: String!, $to: String!) {
