@@ -156,14 +156,15 @@ export const selectIsFiltered = createSelector(
 */
 export function deviceMatchesFilters(
   device: IDevice,
-  model: Pick<IDeviceState, 'filter' | 'owner' | 'platform' | 'tag' | 'query' | 'searched' | 'applicationTypes'>,
-  userId: string
+  model: Pick<IDeviceState, 'filter' | 'owner' | 'platform' | 'tag' | 'appliedName' | 'applicationTypes'>,
+  accountId: string
 ): boolean {
   // state (online/offline)
   if (model.filter !== 'all' && device.state !== model.filter) return false
-  // owner (me / others)
-  if (model.owner === 'me' && device.owner?.id !== userId) return false
-  if (model.owner === 'others' && device.owner?.id === userId) return false
+  // owner (me / others) — ownership is relative to the active account, not the logged-in
+  // user, matching the adaptor's `shared: accountId !== owner.id` (org accounts differ).
+  if (model.owner === 'me' && device.owner?.id !== accountId) return false
+  if (model.owner === 'others' && device.owner?.id === accountId) return false
   // platform
   if (model.platform?.length && !model.platform.includes(device.targetPlatform)) return false
   // tags (match ALL or ANY of the selected tag names)
@@ -176,10 +177,10 @@ export function deviceMatchesFilters(
   // service-type tab (applicationTypes): device must have a service of a selected type
   if (model.applicationTypes?.length && !device.services?.some(s => model.applicationTypes!.includes(s.typeID)))
     return false
-  // search query — only when a search has actually been applied (model.query tracks the
-  // live input, which can be ahead of the displayed results until submitted/searched).
+  // search query — match the name actually applied to the current list (captured at fetch
+  // time); the live `query` input can be ahead of the results until re-submitted.
   // Best-effort: device name only — the server search also matches service names.
-  const query = model.searched ? model.query?.trim().toLowerCase() : undefined
+  const query = model.appliedName?.trim().toLowerCase()
   if (query && !(device.name || '').toLowerCase().includes(query)) return false
 
   return true

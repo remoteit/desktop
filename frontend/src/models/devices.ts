@@ -34,7 +34,6 @@ import {
   selectDeviceModelAttributes,
   deviceMatchesFilters,
 } from '../selectors/devices'
-import { getUserId } from '../selectors/state'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
@@ -51,6 +50,7 @@ export type IDeviceState = {
   fetching: boolean
   fetchingMore: boolean
   query: string
+  appliedName: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
   sort: string
@@ -75,6 +75,7 @@ export const defaultState: IDeviceState = {
   fetching: true,
   fetchingMore: false,
   query: '',
+  appliedName: '',
   append: false,
   filter: 'all',
   sort: 'state,name',
@@ -138,7 +139,9 @@ export default createModel<RootModel>()({
       }
 
       if (!error) dispatch.search.updateSearch()
-      set({ fetching: false, append: false, initialized: true, accountId })
+      // Record the name the current list was actually filtered by (the live `query` can
+      // be ahead of the results until re-submitted) so new devices match the same view.
+      set({ fetching: false, append: false, initialized: true, appliedName: query, accountId })
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -212,7 +215,7 @@ export default createModel<RootModel>()({
         let matchesFilter = true
         if (newDevice) {
           const model = selectDeviceModelAttributes(state, accountId)
-          matchesFilter = deviceMatchesFilters(result, model, getUserId(state))
+          matchesFilter = deviceMatchesFilters(result, model, accountId)
           if (matchesFilter) {
             result.newDevice = true
             dispatch.devices.incrementTotal(accountId)
