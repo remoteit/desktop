@@ -1,5 +1,5 @@
 import { State } from '../store'
-import { defaultState } from '../models/devices'
+import { defaultState, IDeviceState } from '../models/devices'
 import { createSelector } from 'reselect'
 import { selectActiveAccountId } from './accounts'
 import { removeObject, removeObjectAttribute } from '../helpers/utilHelper'
@@ -148,3 +148,40 @@ export const selectIsFiltered = createSelector(
     deviceModelAttributes.platform !== defaultState.platform ||
     deviceModelAttributes.tag !== defaultState.tag
 )
+
+/*
+  Determines whether a device belongs in the currently filtered device list.
+  Mirrors the server-side filtering applied by graphQLFetchDeviceList so that a
+  newly-arrived device can be shown or hidden to match the active filter.
+*/
+export function deviceMatchesFilters(
+  device: IDevice,
+  model: Pick<IDeviceState, 'filter' | 'owner' | 'platform' | 'tag' | 'appliedName' | 'applicationTypes'>,
+  accountId: string
+): boolean {
+  // state (online/offline)
+  if (model.filter !== 'all' && device.state !== model.filter) return false
+  // owner (me / others) — ownership is relative to the active account, not the logged-in
+  // user, matching the adaptor's `shared: accountId !== owner.id` (org accounts differ).
+  if (model.owner === 'me' && device.owner?.id !== accountId) return false
+  if (model.owner === 'others' && device.owner?.id === accountId) return false
+  // platform
+  if (model.platform?.length && !model.platform.includes(device.targetPlatform)) return false
+  // tags (match ALL or ANY of the selected tag names)
+  if (model.tag?.values.length) {
+    const names = device.tags?.map(t => t.name) ?? []
+    const has = (v: string) => names.includes(v)
+    const matches = model.tag.operator === 'ALL' ? model.tag.values.every(has) : model.tag.values.some(has)
+    if (!matches) return false
+  }
+  // service-type tab (applicationTypes): device must have a service of a selected type
+  if (model.applicationTypes?.length && !device.services?.some(s => model.applicationTypes!.includes(s.typeID)))
+    return false
+  // search query — match the name actually applied to the current list (captured at fetch
+  // time); the live `query` input can be ahead of the results until re-submitted.
+  // Best-effort: device name only — the server search also matches service names.
+  const query = model.appliedName?.trim().toLowerCase()
+  if (query && !(device.name || '').toLowerCase().includes(query)) return false
+
+  return true
+}

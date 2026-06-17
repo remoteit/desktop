@@ -3,6 +3,7 @@ import { graphQLBasicRequest } from './graphQL'
 const EVENTS = `
     events(after: $after, size: $size, minDate: $minDate, maxDate: $maxDate, types: $types) {
       hasMore
+      limited
       last
       total
       items {

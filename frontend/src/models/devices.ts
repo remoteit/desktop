@@ -32,6 +32,7 @@ import {
   selectById,
   selectActiveColumns,
   selectDeviceModelAttributes,
+  deviceMatchesFilters,
 } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { AxiosResponse } from 'axios'
@@ -39,7 +40,7 @@ import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { State } from '../store'
 
-type IDeviceState = {
+export type IDeviceState = {
   all: IDevice[]
   initialized: boolean
   accountId: string
@@ -49,6 +50,7 @@ type IDeviceState = {
   fetching: boolean
   fetchingMore: boolean
   query: string
+  appliedName: string
   append: boolean
   filter: 'all' | 'active' | 'inactive'
   sort: string
@@ -73,6 +75,7 @@ export const defaultState: IDeviceState = {
   fetching: true,
   fetchingMore: false,
   query: '',
+  appliedName: '',
   append: false,
   filter: 'all',
   sort: 'state,name',
@@ -136,7 +139,9 @@ export default createModel<RootModel>()({
       }
 
       if (!error) dispatch.search.updateSearch()
-      set({ fetching: false, append: false, initialized: true, accountId })
+      // Record the name the current list was actually filtered by (the live `query` can
+      // be ahead of the results until re-submitted) so new devices match the same view.
+      set({ fetching: false, append: false, initialized: true, appliedName: query, accountId })
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -204,13 +209,28 @@ export default createModel<RootModel>()({
 
       if (result) {
         result.thisDevice = result.thisDevice || thisDevice
+
+        // Only surface a newly-arrived device (NEW badge, count, prepend) when it matches
+        // the active list filter — otherwise it shouldn't appear in the filtered view.
+        let matchesFilter = true
         if (newDevice) {
-          result.newDevice = true
-          dispatch.devices.incrementTotal(accountId)
+          const model = selectDeviceModelAttributes(state, accountId)
+          matchesFilter = deviceMatchesFilters(result, model, accountId)
+          if (matchesFilter) {
+            result.newDevice = true
+            dispatch.devices.incrementTotal(accountId)
+          }
         }
-        console.log('FETCHED FULL DEVICE', { id, device: result, accountId })
+
+        console.log('FETCHED FULL DEVICE', { id, device: result, accountId, matchesFilter })
         await dispatch.connections.updateConnectionState({ devices: [result], accountId })
-        await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
+        await dispatch.accounts.setDevice({
+          id: result.id,
+          device: result,
+          accountId,
+          prepend: newDevice && matchesFilter,
+          suppressAdd: newDevice && !matchesFilter,
+        })
       } else {
         if (!isService && state.ui.silent !== id)
           dispatch.ui.set({

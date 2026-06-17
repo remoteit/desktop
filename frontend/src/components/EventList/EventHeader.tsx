@@ -47,7 +47,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       planUpgrade: false,
       minDate: minDateValue,
     })
-    fetch({ allowedDays, deviceId: device?.id })
+    fetch({ deviceId: device?.id })
   }, [activeAccount, device?.id])
 
   // Update minDate when allowedDays or device creation date changes
@@ -69,7 +69,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       events: { ...events, items: [] },
       planUpgrade: false,
     })
-    fetch({ allowedDays, deviceId: device?.id })
+    fetch({ deviceId: device?.id })
   }
 
   const fetchCsvUrl = () => dispatch.logs.fetchUrl(device?.id)
@@ -82,7 +82,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       planUpgrade: false,
     })
     setLogsFilter({ accountId: activeAccount, context: logsFilterContext, eventTypes: nextEventTypes })
-    fetch({ allowedDays, deviceId: device?.id })
+    fetch({ deviceId: device?.id })
   }
 
   return (
