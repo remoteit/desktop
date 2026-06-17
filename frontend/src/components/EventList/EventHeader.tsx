@@ -11,6 +11,9 @@ import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../DatePicker'
 import { EventTypeFilterMenu } from './EventTypeFilterMenu'
 
+// Earliest date the user can select in the picker: the start of the plan's retention
+// window, floored at device creation. This is purely a UI bound — it is NOT sent as the
+// query's minDate (see below), so it never narrows the server's "older logs hidden?" check.
 const retentionStartDate = (allowedDays: number, device?: IDevice): Date | undefined => {
   if (!allowedDays) return undefined
   const cutoff = DateTime.utc().minus({ days: allowedDays }).toMillis()
@@ -19,8 +22,6 @@ const retentionStartDate = (allowedDays: number, device?: IDevice): Date | undef
   return new Date(Math.max(cutoff, createdAt))
 }
 
-const hasDateChanged = (lhs?: Date, rhs?: Date) => lhs?.getTime() !== rhs?.getTime()
-
 export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   const dispatch = useDispatch<Dispatch>()
   const { fetch, set } = dispatch.logs
@@ -28,15 +29,18 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const activeAccount = useSelector(selectActiveAccountId)
-  const { events, minDate, selectedDate, eventTypes } = useSelector((state: State) => state.logs)
+  const { events, selectedDate, eventTypes } = useSelector((state: State) => state.logs)
   const logsFilters = useSelector((state: State) => state.ui.logsFilters)
 
   const allowedDays = Math.max(limitDays(logLimit?.value) || 0, 0)
-  const minDateValue = useMemo(() => retentionStartDate(allowedDays, device), [allowedDays, device?.createdAt])
+  const pickerMinDay = useMemo(() => retentionStartDate(allowedDays, device), [allowedDays, device?.createdAt])
   const logsFilterContext: LogsFilterContext = device ? 'device' : 'root'
   const savedEventTypes = activeAccount ? logsFilters[activeAccount]?.[logsFilterContext]?.eventTypes : undefined
 
-  // Clear logs and fetch whenever device or account changes
+  // Clear logs and fetch whenever device or account changes.
+  // minDate is left undefined: the server clamps the visible window to the plan's retention
+  // limit, and treats the absence of a caller minDate as "show everything you're allowed to"
+  // — which is what lets it report when older logs are being withheld (the upgrade notice).
   useEffect(() => {
     set({
       after: undefined,
@@ -45,17 +49,10 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
       maxDate: undefined,
       selectedDate: undefined,
       planUpgrade: false,
-      minDate: minDateValue,
+      minDate: undefined,
     })
     fetch({ deviceId: device?.id })
   }, [activeAccount, device?.id])
-
-  // Update minDate when allowedDays or device creation date changes
-  useEffect(() => {
-    if (hasDateChanged(minDate, minDateValue)) {
-      set({ minDate: minDateValue })
-    }
-  }, [minDateValue])
 
   const handleChangeDate = (date: Date | null | undefined) => {
     // set to end of day
@@ -64,7 +61,6 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
     set({
       selectedDate: date,
       after: undefined,
-      minDate,
       maxDate: date && isToday(date) ? undefined : date,
       events: { ...events, items: [] },
       planUpgrade: false,
@@ -88,7 +84,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
   return (
     <List disablePadding>
       <ListItem dense>
-        <DatePicker onChange={handleChangeDate} minDay={minDate} selectedDate={selectedDate} />
+        <DatePicker onChange={handleChangeDate} minDay={pickerMinDay} selectedDate={selectedDate} />
         <ListItemSecondaryAction>
           <EventTypeFilterMenu device={device} value={eventTypes} onChange={handleChangeEventTypes} />
           <CSVDownloadButton fetchUrl={fetchCsvUrl} />
