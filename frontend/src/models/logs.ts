@@ -81,8 +81,9 @@ export default createModel<RootModel>()({
       }
 
       // The server reports whether older events are being withheld by the plan's
-      // log-retention limit, so the upgrade notice only shows when logs are actually hidden.
-      const planUpgrade = Boolean(nextEvents.limited)
+      // log-retention limit. Still gate on hasMore so the notice only replaces pagination
+      // once the accessible logs are exhausted — never while there's more to load.
+      const planUpgrade = !nextEvents.hasMore && Boolean(nextEvents.limited)
 
       set({
         events: nextEvents,
