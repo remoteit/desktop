@@ -1,5 +1,5 @@
 import { State } from '../store'
-import { defaultState } from '../models/devices'
+import { defaultState, IDeviceState } from '../models/devices'
 import { createSelector } from 'reselect'
 import { selectActiveAccountId } from './accounts'
 import { removeObject, removeObjectAttribute } from '../helpers/utilHelper'
@@ -148,3 +148,39 @@ export const selectIsFiltered = createSelector(
     deviceModelAttributes.platform !== defaultState.platform ||
     deviceModelAttributes.tag !== defaultState.tag
 )
+
+/*
+  Determines whether a device belongs in the currently filtered device list.
+  Mirrors the server-side filtering applied by graphQLFetchDeviceList so that a
+  newly-arrived device can be shown or hidden to match the active filter.
+*/
+export function deviceMatchesFilters(
+  device: IDevice,
+  model: Pick<IDeviceState, 'filter' | 'owner' | 'platform' | 'tag' | 'query' | 'searched' | 'applicationTypes'>,
+  userId: string
+): boolean {
+  // state (online/offline)
+  if (model.filter !== 'all' && device.state !== model.filter) return false
+  // owner (me / others)
+  if (model.owner === 'me' && device.owner?.id !== userId) return false
+  if (model.owner === 'others' && device.owner?.id === userId) return false
+  // platform
+  if (model.platform?.length && !model.platform.includes(device.targetPlatform)) return false
+  // tags (match ALL or ANY of the selected tag names)
+  if (model.tag?.values.length) {
+    const names = device.tags?.map(t => t.name) ?? []
+    const has = (v: string) => names.includes(v)
+    const matches = model.tag.operator === 'ALL' ? model.tag.values.every(has) : model.tag.values.some(has)
+    if (!matches) return false
+  }
+  // service-type tab (applicationTypes): device must have a service of a selected type
+  if (model.applicationTypes?.length && !device.services?.some(s => model.applicationTypes!.includes(s.typeID)))
+    return false
+  // search query — only when a search has actually been applied (model.query tracks the
+  // live input, which can be ahead of the displayed results until submitted/searched).
+  // Best-effort: device name only — the server search also matches service names.
+  const query = model.searched ? model.query?.trim().toLowerCase() : undefined
+  if (query && !(device.name || '').toLowerCase().includes(query)) return false
+
+  return true
+}

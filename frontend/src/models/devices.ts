@@ -32,14 +32,16 @@ import {
   selectById,
   selectActiveColumns,
   selectDeviceModelAttributes,
+  deviceMatchesFilters,
 } from '../selectors/devices'
+import { getUserId } from '../selectors/state'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { State } from '../store'
 
-type IDeviceState = {
+export type IDeviceState = {
   all: IDevice[]
   initialized: boolean
   accountId: string
@@ -204,13 +206,28 @@ export default createModel<RootModel>()({
 
       if (result) {
         result.thisDevice = result.thisDevice || thisDevice
+
+        // Only surface a newly-arrived device (NEW badge, count, prepend) when it matches
+        // the active list filter — otherwise it shouldn't appear in the filtered view.
+        let matchesFilter = true
         if (newDevice) {
-          result.newDevice = true
-          dispatch.devices.incrementTotal(accountId)
+          const model = selectDeviceModelAttributes(state, accountId)
+          matchesFilter = deviceMatchesFilters(result, model, getUserId(state))
+          if (matchesFilter) {
+            result.newDevice = true
+            dispatch.devices.incrementTotal(accountId)
+          }
         }
-        console.log('FETCHED FULL DEVICE', { id, device: result, accountId })
+
+        console.log('FETCHED FULL DEVICE', { id, device: result, accountId, matchesFilter })
         await dispatch.connections.updateConnectionState({ devices: [result], accountId })
-        await dispatch.accounts.setDevice({ id: result.id, device: result, accountId, prepend: newDevice })
+        await dispatch.accounts.setDevice({
+          id: result.id,
+          device: result,
+          accountId,
+          prepend: newDevice && matchesFilter,
+          suppressAdd: newDevice && !matchesFilter,
+        })
       } else {
         if (!isService && state.ui.silent !== id)
           dispatch.ui.set({

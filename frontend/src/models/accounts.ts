@@ -139,7 +139,13 @@ export default createModel<RootModel>()({
       })
     },
     async setDevice(
-      { id, accountId, device, prepend }: { id: string; accountId?: string; device?: IDevice; prepend?: boolean },
+      {
+        id,
+        accountId,
+        device,
+        prepend,
+        suppressAdd,
+      }: { id: string; accountId?: string; device?: IDevice; prepend?: boolean; suppressAdd?: boolean },
       state
     ) {
       accountId = accountId || device?.accountId
@@ -158,8 +164,8 @@ export default createModel<RootModel>()({
         })
         .filter((d): d is IDevice => !!d)
 
-      // Add if new
-      if (!updated && device) prepend ? devices.unshift(device) : devices.push(device)
+      // Add if new (unless suppressed because it doesn't match the active filter)
+      if (!updated && device && !suppressAdd) prepend ? devices.unshift(device) : devices.push(device)
       await dispatch.accounts.setDevices({ devices, accountId })
     },
     /* 
