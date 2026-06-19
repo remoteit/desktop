@@ -243,7 +243,12 @@ export class AuthService {
       `scope=${this.scope.join('+')}`,
     ]
     const authUrl = `https://${this.config.cognitoAuthDomain}/oauth2/authorize?${params.join('&')}`
-    await windowOpen(authUrl, 'auth')
+    // Open the hosted UI in the external system browser rather than the in-app
+    // browser. On iOS, presenting and dismissing the in-app browser (SFSafariViewController)
+    // over the WKWebView leaves the web view unable to raise the soft keyboard, so
+    // returning to the sign-in form (e.g. after canceling) breaks email/password entry.
+    // The auth flow returns via the authCallback deep link, so an external browser works.
+    await windowOpen(authUrl, 'auth', true)
     // await this.loginWithCognito() @TODO implement with oauth2
   }
 
@@ -433,7 +438,9 @@ export class AuthService {
           `scope=${this.scope.join('+')}`,
         ]
         const logoutUrl = `https://${this.config.cognitoAuthDomain}/logout?${params.join('&')}`
-        await windowOpen(logoutUrl, 'auth')
+        // Use the external browser (see mobileAuth) so the WKWebView keyboard keeps
+        // working on the sign-in form the user returns to after signing out.
+        await windowOpen(logoutUrl, 'auth', true)
       }
       await this.cognitoAuth.signOut()
     } catch {}
