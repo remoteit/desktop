@@ -543,6 +543,8 @@ export default createModel<RootModel>()({
       tags,
       accountId,
       template,
+      oneTimeUse,
+      code,
     }: {
       name?: string
       services: IServiceRegistration[]
@@ -550,14 +552,21 @@ export default createModel<RootModel>()({
       tags?: string[]
       accountId: string
       template?: string | boolean
-    }) {
+      oneTimeUse?: boolean
+      code?: string
+    }, state) {
       if (platform === 65535) platform = undefined // Clear out the platform if it's the unknown type
-      const result = await graphQLRegistration({ name, services, platform, tags, accountId })
+      const result = await graphQLRegistration({ name, services, platform, tags, accountId, oneTimeUse, code })
       if (result !== 'ERROR') {
         let { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         if (template && typeof template === 'string') registrationCommand = template.replace('[CODE]', registrationCode)
         console.log('CREATE REGISTRATION', registrationCode)
-        dispatch.ui.set({ registrationCommand, registrationCode })
+        if (
+          state.ui.registrationCode !== registrationCode ||
+          state.ui.registrationCommand !== registrationCommand
+        ) {
+          dispatch.ui.set({ registrationCommand, registrationCode })
+        }
         return registrationCode
       }
     },

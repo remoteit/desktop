@@ -10,9 +10,10 @@ type Props = {
   platform?: IPlatform
   tags?: string[]
   redirect?: string
+  oneTimeUse?: boolean
 }
 
-export function useAutoRegistration({ platform, tags, serviceTypes, redirect }: Props) {
+export function useAutoRegistration({ platform, tags, serviceTypes, redirect, oneTimeUse }: Props) {
   const organization = useSelector((state: State) => selectOrganization(state))
   const registrationCommand = useSelector((state: State) => state.ui.registrationCommand)
   const registrationCode = useSelector((state: State) => state.ui.registrationCode)
@@ -45,6 +46,8 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect }: 
         tags,
         accountId,
         services: serviceTypes.map(type => ({ application: type })),
+        oneTimeUse,
+        code: registrationCode,
       }
       if (platform) {
         options.platform = platforms.findType(platform.id)
@@ -64,11 +67,13 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect }: 
         console.warn('Failed to redirect to:', error)
       }
     })()
+  }, [accountId, platform, tags?.length, serviceTypes.length, fetching, oneTimeUse])
 
-    return function cleanup() {
-      dispatch.ui.set({ registrationCommand: undefined }) // remove registration code so we don't redirect to new device page
+  useEffect(() => {
+    return () => {
+      dispatch.ui.set({ registrationCommand: undefined })
     }
-  }, [accountId, platform, tags?.length, serviceTypes.length, fetching])
+  }, [dispatch])
 
   return { registrationCommand, registrationCode, redirectUrl: getRedirect(redirect, registrationCode), fetching }
 }

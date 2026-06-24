@@ -159,13 +159,15 @@ export async function graphQLRegistration(props: {
   platform?: number
   services: IServiceRegistration[]
   accountId: string
+  oneTimeUse?: boolean
+  code?: string
 }) {
   return await graphQLBasicRequest(
-    ` query Registration($accountId: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!]) {
+    ` query Registration($accountId: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!], $oneTimeUse: Boolean, $code: String) {
         login {
           account(id: $accountId) {
-            registrationCode(name: $name, platform: $platform, tags: $tags, services: $services)
-            registrationCommand(name: $name, platform: $platform, tags: $tags, services: $services)
+            registrationCode(name: $name, platform: $platform, tags: $tags, services: $services, oneTimeUse: $oneTimeUse, code: $code)
+            registrationCommand(name: $name, platform: $platform, tags: $tags, services: $services, oneTimeUse: $oneTimeUse, code: $code)
           }
         }
       }`,
