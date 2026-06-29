@@ -28,6 +28,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const adding = useSelector((state: State) => state.tags.adding)
   const removing = useSelector((state: State) => state.tags.removing)
   const destroying = useSelector((state: State) => state.ui.destroying)
+  const transferring = useSelector((state: State) => state.ui.transferring)
   const permissions = useSelector(selectPermissions)
   const canEdit = useSelector((state: State) => canEditTags(state, accountId))
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
@@ -105,6 +106,15 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           <Divider orientation="vertical" color="white" />
         </>
       )}
+      <IconButton
+        icon="arrow-turn-down-right"
+        title="Transfer selected"
+        color="alwaysWhite"
+        placement="bottom"
+        disabled={!selected.length}
+        loading={transferring}
+        to="/devices/transfer"
+      />
       <ConfirmIconButton
         icon="trash"
         title="Delete selected"

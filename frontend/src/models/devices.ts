@@ -14,6 +14,7 @@ import {
   graphQLRemoveApp,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
+  graphQLTransferDevices,
   graphQLRemoveLink,
   graphQLSetLink,
 } from '../services/graphQLMutation'
@@ -662,6 +663,51 @@ export default createModel<RootModel>()({
         }
         dispatch.ui.set({ transferring: false })
       }
+    },
+
+    async transferSelected(data: { deviceIds: string[]; email: string }, state): Promise<boolean> {
+      const { deviceIds, email } = data
+      if (!deviceIds.length || !email) return false
+
+      // Pre-validate locally for friendlier messaging; the API re-checks each device's permission
+      for (const id of deviceIds) {
+        const device = selectDevice(state, undefined, id)
+        if (!device) {
+          dispatch.ui.set({
+            errorMessage: `A device id could not be found. Deselect ${id} and try again.`,
+          })
+          return false
+        }
+        if (device.shared) {
+          dispatch.ui.set({
+            errorMessage: `You cannot transfer a shared device. Deselect or leave "${device.name}" and try again.`,
+          })
+          return false
+        }
+        if (!device.permissions.includes('MANAGE')) {
+          dispatch.ui.set({
+            errorMessage: `You do not have permission to transfer a device. Deselect "${device.name}" and try again.`,
+          })
+          return false
+        }
+      }
+
+      dispatch.ui.set({ transferring: true })
+      const result = await graphQLTransferDevices(deviceIds, email)
+      const success = result !== 'ERROR'
+      if (success) {
+        await dispatch.ui.set({ selected: [] })
+        await dispatch.devices.cleanup(deviceIds)
+        dispatch.ui.set({
+          successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully transferred to ${email}.`,
+        })
+      } else {
+        // The transfer is not atomic server-side, so a failure may have still moved
+        // some devices. Resync the list so any partial transfer is reflected locally.
+        await dispatch.devices.fetchList()
+      }
+      dispatch.ui.set({ transferring: false })
+      return success
     },
 
     async cleanup(deviceIds: string[]) {
