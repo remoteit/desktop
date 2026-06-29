@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { useMediaQuery, Typography, Box, Stack, Divider, Theme, Chip } from '@mui/material'
+import { useMediaQuery, Typography, Box, Stack, Divider, Theme, Chip, Button } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
 import { AddPlatformTags } from '../components/AddPlatformTags'
@@ -11,16 +11,33 @@ import { platforms } from '../platforms'
 import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
+import { dispatch } from '../store'
 
 export const PlatformAddPage: React.FC = () => {
   let { platform = '', redirect } = useParams<{ platform?: string; redirect?: string }>()
+  const history = useHistory()
   const platformObj = platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
   const permissions = useSelector(selectPermissions)
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [serviceTypes, setServiceTypes] = useState<number[]>(defaultServices)
   const [oneTimeUse, setOneTimeUse] = useState(false)
+  const [creatingProduct, setCreatingProduct] = useState(false)
   const xs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
+
+  const handleMakeProduct = async () => {
+    const platformCode = platforms.findType(platformObj.id)
+    if (!platformCode || serviceTypes.length === 0) return
+
+    setCreatingProduct(true)
+    const product = await dispatch.products.createFromRegistration({
+      platform: platformCode,
+      tags: platformTags,
+      services: serviceTypes.map(type => ({ application: type })),
+    })
+    setCreatingProduct(false)
+    if (product) history.push(`/products/${product.id}/details`)
+  }
 
   return (
     <Body center>
@@ -53,7 +70,7 @@ export const PlatformAddPage: React.FC = () => {
                 onChange={tags => setPlatformTags(tags)}
                 alignItems={{ xs: 'flex-start', md: 'flex-end' }}
               />
-              <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }} marginTop={2}>
+              <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }} marginTop={2} spacing={1} width="100%">
                 <Chip
                   label={oneTimeUse ? 'ONE-TIME USE' : 'MULTI USE'}
                   size="small"
@@ -70,6 +87,21 @@ export const PlatformAddPage: React.FC = () => {
                     '& .MuiChip-label': { width: '100%', textAlign: 'center', px: 0 },
                   }}
                 />
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={creatingProduct || serviceTypes.length === 0}
+                  onClick={handleMakeProduct}
+                  sx={{
+                    fontWeight: 500,
+                    letterSpacing: 1,
+                    whiteSpace: 'nowrap',
+                    width: '100%',
+                    minWidth: 130,
+                  }}
+                >
+                  MAKE PRODUCT
+                </Button>
               </Stack>
             </Stack>
           )}

@@ -161,17 +161,18 @@ export async function graphQLRegistration(props: {
   accountId: string
   oneTimeUse?: boolean
   code?: string
+  unique?: boolean
 }) {
   return await graphQLBasicRequest(
-    ` query Registration($accountId: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!], $oneTimeUse: Boolean, $code: String) {
+    ` query Registration($accountId: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!], $oneTimeUse: Boolean, $code: String, $unique: Boolean) {
         login {
           account(id: $accountId) {
-            registrationCode(name: $name, platform: $platform, tags: $tags, services: $services, oneTimeUse: $oneTimeUse, code: $code)
-            registrationCommand(name: $name, platform: $platform, tags: $tags, services: $services, oneTimeUse: $oneTimeUse, code: $code)
+            registrationCode(name: $name, platform: $platform, tags: $tags, services: $services, oneTimeUse: $oneTimeUse, code: $code, unique: $unique)
+            registrationCommand(name: $name, platform: $platform, tags: $tags, services: $services, oneTimeUse: $oneTimeUse, code: $code, unique: $unique)
           }
         }
       }`,
-    props
+    { ...props, unique: props.unique ?? true }
   )
 }
 
