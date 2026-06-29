@@ -34,12 +34,7 @@ export const ProductTagEditor: React.FC<Props> = ({ product, button }) => {
       />
       {canEdit && (
         <TagEditor
-          onCreate={async tag => {
-            await dispatch.tags.create({ tag, accountId })
-            if (!productTagNames.includes(tag.name)) {
-              updateTags([...productTagNames, tag.name])
-            }
-          }}
+          onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
           onSelect={tag => {
             if (!productTagNames.includes(tag.name)) {
               updateTags([...productTagNames, tag.name])
