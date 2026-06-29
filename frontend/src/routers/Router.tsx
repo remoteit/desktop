@@ -205,9 +205,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Panel>
       </Route>
       <Route path="/devices/transfer">
-        <Panel layout={layout}>
-          <DeviceBulkTransferPage />
-        </Panel>
+        <DynamicPanel layout={layout} primary={<DevicesPage select />} secondary={<DeviceBulkTransferPage />} />
       </Route>
       <Route path="/devices" exact>
         {remoteUI ? (
