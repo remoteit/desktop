@@ -14,6 +14,7 @@ import {
   graphQLRemoveApp,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
+  graphQLTransferDevices,
   graphQLRemoveLink,
   graphQLSetLink,
 } from '../services/graphQLMutation'
@@ -668,8 +669,7 @@ export default createModel<RootModel>()({
       const { deviceIds, email } = data
       if (!deviceIds.length || !email) return
 
-      // Check that transfer is allowed for all devices
-      const devices: IDevice[] = []
+      // Pre-validate locally for friendlier messaging; the API re-checks each device's permission
       for (const id of deviceIds) {
         const device = selectDevice(state, undefined, id)
         if (!device) {
@@ -690,21 +690,15 @@ export default createModel<RootModel>()({
           })
           return
         }
-        devices.push(device)
       }
 
       dispatch.ui.set({ transferring: true })
-      const transferred: string[] = []
-      for (const device of devices) {
-        const result = await graphQLTransferDevice({ device, email })
-        if (result !== 'ERROR') transferred.push(device.id)
-      }
-
-      if (transferred.length) {
+      const result = await graphQLTransferDevices(deviceIds, email)
+      if (result !== 'ERROR') {
         await dispatch.ui.set({ selected: [] })
-        await dispatch.devices.cleanup(transferred)
+        await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
-          successMessage: `${transferred.length} device${transferred.length > 1 ? 's were' : ' was'} successfully transferred to ${email}.`,
+          successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully transferred to ${email}.`,
         })
       }
       dispatch.ui.set({ transferring: false })

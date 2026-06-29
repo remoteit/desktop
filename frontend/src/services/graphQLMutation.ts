@@ -463,7 +463,7 @@ export async function graphQLTransferDevice(params: ITransferProps) {
   return await graphQLBasicRequest(
     ` mutation TransferDevice($deviceId: String!, $email: String!) {
         transfer(
-            deviceId: $deviceId, 
+            deviceId: $deviceId,
             email: $email
           )
         }`,
@@ -471,6 +471,15 @@ export async function graphQLTransferDevice(params: ITransferProps) {
       deviceId: params.device?.id,
       email: params.email,
     }
+  )
+}
+
+export async function graphQLTransferDevices(deviceIds: string[], email: string) {
+  return await graphQLBasicRequest(
+    ` mutation TransferDevices($deviceIds: [String!], $email: String!) {
+        transfer(deviceIds: $deviceIds, email: $email)
+      }`,
+    { deviceIds, email }
   )
 }
 
