@@ -701,6 +701,10 @@ export default createModel<RootModel>()({
         dispatch.ui.set({
           successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully transferred to ${email}.`,
         })
+      } else {
+        // The transfer is not atomic server-side, so a failure may have still moved
+        // some devices. Resync the list so any partial transfer is reflected locally.
+        await dispatch.devices.fetchList()
       }
       dispatch.ui.set({ transferring: false })
       return success
