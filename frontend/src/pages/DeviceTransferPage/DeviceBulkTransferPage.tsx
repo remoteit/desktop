@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
 import { Typography, Button } from '@mui/material'
 import { ContactSelector } from '../../components/ContactSelector'
+import { getDevices } from '../../selectors/devices'
 import { Redirect, useHistory } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
@@ -15,21 +16,25 @@ export const DeviceBulkTransferPage: React.FC = () => {
     transferring: state.ui.transferring,
     selected: state.ui.selected,
   }))
+  const devices = useSelector(getDevices)
   const history = useHistory()
   const [open, setOpen] = useState<boolean>(false)
   const [email, setEmail] = useState<string | undefined>()
-  const { devices } = useDispatch<Dispatch>()
+  const { devices: deviceActions } = useDispatch<Dispatch>()
 
   const count = selected.length
+  const selectedDevices = selected.map(id => devices.find(d => d.id === id)).filter((d): d is IDevice => !!d)
+  const blocked = selectedDevices.filter(d => d.shared || !d.permissions.includes('MANAGE'))
+  const canTransfer = !blocked.length
 
   const handleChange = (emails: string[]) => {
     setEmail(emails.length > 0 ? emails[0] : undefined)
   }
   const onCancel = () => history.goBack()
   const onTransfer = async () => {
-    if (!email) return
-    await devices.transferSelected({ deviceIds: selected, email })
-    history.push('/devices')
+    if (!email || !canTransfer) return
+    const ok = await deviceActions.transferSelected({ deviceIds: selected, email })
+    if (ok) history.push('/devices')
   }
 
   if (!count) return <Redirect to="/devices" />
@@ -51,6 +56,17 @@ export const DeviceBulkTransferPage: React.FC = () => {
         </>
       }
     >
+      {!canTransfer && (
+        <Gutters bottom={null}>
+          <Notice severity="warning" fullWidth>
+            {blocked.length} of the selected device{blocked.length === 1 ? '' : 's'} cannot be transferred.
+            <em>
+              You can only transfer devices you own. Go back and deselect:{' '}
+              {blocked.map(d => d.name).join(', ')}.
+            </em>
+          </Notice>
+        </Gutters>
+      )}
       <Gutters>
         <Typography variant="body2" gutterBottom>
           You are transferring {count} device{count === 1 ? '' : 's'} to a new owner.
@@ -61,7 +77,12 @@ export const DeviceBulkTransferPage: React.FC = () => {
         </Typography>
       </Gutters>
       <Gutters top="xl">
-        <Button color="primary" onClick={() => setOpen(true)} disabled={!email || transferring} variant="contained">
+        <Button
+          color="primary"
+          onClick={() => setOpen(true)}
+          disabled={!email || !canTransfer || transferring}
+          variant="contained"
+        >
           {transferring ? 'Transferring...' : 'Transfer'}
         </Button>
         <Button disabled={transferring} onClick={onCancel}>

@@ -665,9 +665,9 @@ export default createModel<RootModel>()({
       }
     },
 
-    async transferSelected(data: { deviceIds: string[]; email: string }, state) {
+    async transferSelected(data: { deviceIds: string[]; email: string }, state): Promise<boolean> {
       const { deviceIds, email } = data
-      if (!deviceIds.length || !email) return
+      if (!deviceIds.length || !email) return false
 
       // Pre-validate locally for friendlier messaging; the API re-checks each device's permission
       for (const id of deviceIds) {
@@ -676,25 +676,26 @@ export default createModel<RootModel>()({
           dispatch.ui.set({
             errorMessage: `A device id could not be found. Deselect ${id} and try again.`,
           })
-          return
+          return false
         }
         if (device.shared) {
           dispatch.ui.set({
             errorMessage: `You cannot transfer a shared device. Deselect or leave "${device.name}" and try again.`,
           })
-          return
+          return false
         }
         if (!device.permissions.includes('MANAGE')) {
           dispatch.ui.set({
             errorMessage: `You do not have permission to transfer a device. Deselect "${device.name}" and try again.`,
           })
-          return
+          return false
         }
       }
 
       dispatch.ui.set({ transferring: true })
       const result = await graphQLTransferDevices(deviceIds, email)
-      if (result !== 'ERROR') {
+      const success = result !== 'ERROR'
+      if (success) {
         await dispatch.ui.set({ selected: [] })
         await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
@@ -702,6 +703,7 @@ export default createModel<RootModel>()({
         })
       }
       dispatch.ui.set({ transferring: false })
+      return success
     },
 
     async cleanup(deviceIds: string[]) {
