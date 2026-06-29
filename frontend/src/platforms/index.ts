@@ -25,6 +25,7 @@ export interface IPlatformOverrideProps {
   platform: IPlatform
   serviceTypes: number[]
   tags?: string[]
+  oneTimeUse?: boolean
 }
 
 class Platforms {

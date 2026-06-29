@@ -126,7 +126,7 @@ export const PlatformAddPage: React.FC = () => {
               <Notice>You must have the register permission to add a device to this organization.</Notice>
             </Box>
           ) : platformObj.override ? (
-            <platformObj.override platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} />
+            <platformObj.override platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} oneTimeUse={oneTimeUse} />
           ) : platformObj.installation?.command && !platformObj.installation?.download ? (
             <AddDevice platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} redirect={redirect} oneTimeUse={oneTimeUse} />
           ) : (

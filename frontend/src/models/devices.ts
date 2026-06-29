@@ -567,7 +567,7 @@ export default createModel<RootModel>()({
         ) {
           dispatch.ui.set({ registrationCommand, registrationCode })
         }
-        return registrationCode
+        return { registrationCode, registrationCommand }
       }
     },
 
