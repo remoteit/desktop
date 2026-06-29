@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
-import { Typography } from '@mui/material'
+import { Typography, Button } from '@mui/material'
 import { TransferForm } from './TransferForm'
 import { getAllDevices } from '../../selectors/devices'
 import { Redirect, useHistory } from 'react-router-dom'
 import { Notice } from '../../components/Notice'
+import { Icon } from '../../components/Icon'
 
 export const DeviceBulkTransferPage: React.FC = () => {
   const { contacts = [], transferring, selected } = useSelector((state: State) => ({
@@ -39,9 +40,17 @@ export const DeviceBulkTransferPage: React.FC = () => {
       disabled={!canTransfer}
       notice={
         !canTransfer && (
-          <Notice severity="warning" fullWidth>
+          <Notice
+            severity="warning"
+            fullWidth
+            button={
+              <Button size="small" variant="contained" color="warning" onClick={() => history.goBack()}>
+                <Icon name="arrow-left" size="sm" color="alwaysWhite" inlineLeft /> Go Back
+              </Button>
+            }
+          >
             {blocked.length} of the selected device{blocked.length === 1 ? '' : 's'} cannot be transferred.
-            <em>You can only transfer devices you own. Go back and deselect: {blocked.map(d => d.name).join(', ')}.</em>
+            <em>You can only transfer devices you own: {blocked.map(d => d.name).join(', ')}.</em>
           </Notice>
         )
       }
