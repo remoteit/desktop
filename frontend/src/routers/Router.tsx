@@ -18,6 +18,7 @@ import { ClaimPage } from '../pages/ClaimPage'
 import { TestPage } from '../pages/TestPage'
 import { AddPage } from '../pages/AddPage'
 import { DevicesPage } from '../pages/DevicesPage'
+import { DeviceBulkTransferPage } from '../pages/DeviceTransferPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
 import { ResellerPage } from '../pages/ResellerPage'
@@ -201,6 +202,11 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path={['/devices/select', '/devices/select/scripts']}>
         <Panel layout={layout}>
           <DevicesPage select />
+        </Panel>
+      </Route>
+      <Route path="/devices/transfer">
+        <Panel layout={layout}>
+          <DeviceBulkTransferPage />
         </Panel>
       </Route>
       <Route path="/devices" exact>

@@ -664,6 +664,52 @@ export default createModel<RootModel>()({
       }
     },
 
+    async transferSelected(data: { deviceIds: string[]; email: string }, state) {
+      const { deviceIds, email } = data
+      if (!deviceIds.length || !email) return
+
+      // Check that transfer is allowed for all devices
+      const devices: IDevice[] = []
+      for (const id of deviceIds) {
+        const device = selectDevice(state, undefined, id)
+        if (!device) {
+          dispatch.ui.set({
+            errorMessage: `A device id could not be found. Deselect ${id} and try again.`,
+          })
+          return
+        }
+        if (device.shared) {
+          dispatch.ui.set({
+            errorMessage: `You cannot transfer a shared device. Deselect or leave "${device.name}" and try again.`,
+          })
+          return
+        }
+        if (!device.permissions.includes('MANAGE')) {
+          dispatch.ui.set({
+            errorMessage: `You do not have permission to transfer a device. Deselect "${device.name}" and try again.`,
+          })
+          return
+        }
+        devices.push(device)
+      }
+
+      dispatch.ui.set({ transferring: true })
+      const transferred: string[] = []
+      for (const device of devices) {
+        const result = await graphQLTransferDevice({ device, email })
+        if (result !== 'ERROR') transferred.push(device.id)
+      }
+
+      if (transferred.length) {
+        await dispatch.ui.set({ selected: [] })
+        await dispatch.devices.cleanup(transferred)
+        dispatch.ui.set({
+          successMessage: `${transferred.length} device${transferred.length > 1 ? 's were' : ' was'} successfully transferred to ${email}.`,
+        })
+      }
+      dispatch.ui.set({ transferring: false })
+    },
+
     async cleanup(deviceIds: string[]) {
       for (const id of deviceIds) {
         await dispatch.connections.clearByDevice(id)
