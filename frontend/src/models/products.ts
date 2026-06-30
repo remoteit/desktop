@@ -5,10 +5,11 @@ import {
   graphQLDeviceProduct,
   graphQLCreateDeviceProduct,
   graphQLDeleteDeviceProduct,
-  graphQLUpdateDeviceProductSettings,
   graphQLAddDeviceProductService,
   graphQLRemoveDeviceProductService,
   graphQLTransferDeviceProduct,
+  graphQLCreateDeviceProductFromRegistration,
+  graphQLUpdateDeviceProduct,
 } from '../services/graphQLDeviceProducts'
 import { graphQLGetErrors } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -29,6 +30,8 @@ export interface IDeviceProduct {
   status: 'NEW' | 'LOCKED'
   registrationCode?: string
   registrationCommand?: string
+  tags?: string[]
+  source?: string
   created: string
   updated: string
   services: IProductService[]
@@ -185,23 +188,6 @@ export default createModel<RootModel>()({
       dispatch.products.set({ selected: [], accountId })
     },
 
-    async updateSettings({ id, input }: { id: string; input: { lock?: boolean } }, state) {
-      const accountId = selectActiveAccountId(state)
-      const response = await graphQLUpdateDeviceProductSettings(id, input)
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
-        const updatedProduct = response?.data?.data?.updateDeviceProductSettings
-        if (updatedProduct) {
-          const productModel = getProductModel(state, accountId)
-          dispatch.products.set({
-            all: productModel.all.map(p => (p.id === id ? updatedProduct : p)),
-            accountId,
-          })
-        }
-        return updatedProduct
-      }
-      return null
-    },
-
     async addService(
       { productId, input }: { productId: string; input: { name: string; type: string; port: number; enabled: boolean } },
       state
@@ -220,6 +206,50 @@ export default createModel<RootModel>()({
           })
         }
         return newService
+      }
+      return null
+    },
+
+    async createFromRegistration(
+      input: {
+        platform: number
+        tags?: string[]
+        services: { application: number; name?: string; port?: number; enabled?: boolean }[]
+      },
+      state
+    ) {
+      const accountId = selectActiveAccountId(state)
+      const response = await graphQLCreateDeviceProductFromRegistration({ ...input, accountId })
+      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+        const newProduct = response?.data?.data?.createDeviceProductFromRegistration
+        if (newProduct) {
+          const productModel = getProductModel(state, accountId)
+          dispatch.products.set({
+            all: [...productModel.all, newProduct],
+            accountId,
+          })
+          return newProduct
+        }
+      }
+      return null
+    },
+
+    async updateProduct(
+      { id, input }: { id: string; input: { name?: string; platform?: number; tags?: string[] } },
+      state
+    ) {
+      const accountId = selectActiveAccountId(state)
+      const response = await graphQLUpdateDeviceProduct(id, input)
+      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+        const updatedProduct = response?.data?.data?.updateDeviceProduct
+        if (updatedProduct) {
+          const productModel = getProductModel(state, accountId)
+          dispatch.products.set({
+            all: productModel.all.map(p => (p.id === id ? updatedProduct : p)),
+            accountId,
+          })
+        }
+        return updatedProduct
       }
       return null
     },

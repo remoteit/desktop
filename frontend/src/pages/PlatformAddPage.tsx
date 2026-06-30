@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { useMediaQuery, Typography, Box, Stack, Divider, Theme } from '@mui/material'
+import { useMediaQuery, Typography, Box, Stack, Divider, Theme, Chip } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
 import { AddPlatformTags } from '../components/AddPlatformTags'
@@ -19,6 +19,7 @@ export const PlatformAddPage: React.FC = () => {
   const permissions = useSelector(selectPermissions)
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [serviceTypes, setServiceTypes] = useState<number[]>(defaultServices)
+  const [oneTimeUse, setOneTimeUse] = useState(false)
   const xs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
   return (
@@ -52,6 +53,22 @@ export const PlatformAddPage: React.FC = () => {
                 onChange={tags => setPlatformTags(tags)}
                 alignItems={{ xs: 'flex-start', md: 'flex-end' }}
               />
+              <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }} marginTop={2} width="100%">
+                <Chip
+                  label={oneTimeUse ? 'ONE-TIME USE' : 'MULTI USE'}
+                  size="small"
+                  color={oneTimeUse ? 'primary' : 'default'}
+                  onClick={() => setOneTimeUse(!oneTimeUse)}
+                  sx={{
+                    fontWeight: 500,
+                    letterSpacing: 1,
+                    color: oneTimeUse ? undefined : 'grayDarker.main',
+                    whiteSpace: 'nowrap',
+                    width: 120,
+                    '& .MuiChip-label': { width: '100%', textAlign: 'center', px: 0 },
+                  }}
+                />
+              </Stack>
             </Stack>
           )}
         </Stack>
@@ -75,9 +92,9 @@ export const PlatformAddPage: React.FC = () => {
               <Notice>You must have the register permission to add a device to this organization.</Notice>
             </Box>
           ) : platformObj.override ? (
-            <platformObj.override platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} />
+            <platformObj.override platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} oneTimeUse={oneTimeUse} />
           ) : platformObj.installation?.command && !platformObj.installation?.download ? (
-            <AddDevice platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} redirect={redirect} />
+            <AddDevice platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} redirect={redirect} oneTimeUse={oneTimeUse} />
           ) : (
             <>
               <AddDownload platform={platformObj} />
@@ -91,6 +108,7 @@ export const PlatformAddPage: React.FC = () => {
                     tags={platformTags}
                     serviceTypes={serviceTypes}
                     redirect={redirect}
+                    oneTimeUse={oneTimeUse}
                     minimal
                   />
                 </>

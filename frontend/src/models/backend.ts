@@ -123,16 +123,17 @@ export default createModel<RootModel>()({
     },
     async registerDevice({ services, name, accountId }: { services: IService[]; name: string; accountId: string }) {
       dispatch.ui.set({ setupRegisteringDevice: true })
-      const code = await dispatch.devices.createRegistration({
-        name,
-        accountId,
-        services: services.map(t => ({
-          name: t.name,
-          application: t.typeID,
-          port: t.port,
-          host: t.host,
-        })),
-      })
+      const { registrationCode: code } =
+        (await dispatch.devices.createRegistration({
+          name,
+          accountId,
+          services: services.map(t => ({
+            name: t.name,
+            application: t.typeID,
+            port: t.port,
+            host: t.host,
+          })),
+        })) || {}
       emit('registration', code)
     },
     async setUpdateNotice(updateVersion: string | undefined, state) {

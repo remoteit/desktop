@@ -21,8 +21,6 @@ export const ProductServiceDetailPage: React.FC = () => {
   const product = products.find(p => p.id === productId)
   const service = product?.services.find(s => s.id === serviceId)
 
-  const isLocked = product?.status === 'LOCKED'
-
   const handleDelete = async () => {
     if (!product || !service) return
     const success = await dispatch.products.removeService({
@@ -67,20 +65,17 @@ export const ProductServiceDetailPage: React.FC = () => {
     <ProductServiceHeaderMenu
       product={product}
       service={service}
-      locked={isLocked}
       action={
-        !isLocked && (
-          <DeleteButton
-            title="Remove Service"
-            icon="trash"
-            onDelete={handleDelete}
-            warning={
-              <Notice severity="error" fullWidth>
-                Are you sure you want to remove the service <b>{service.name}</b>? This action cannot be undone.
-              </Notice>
-            }
-          />
-        )
+        <DeleteButton
+          title="Remove Service"
+          icon="trash"
+          onDelete={handleDelete}
+          warning={
+            <Notice severity="error" fullWidth>
+              Are you sure you want to remove the service <b>{service.name}</b>? This action cannot be undone.
+            </Notice>
+          }
+        />
       }
     >
       <Gutters>

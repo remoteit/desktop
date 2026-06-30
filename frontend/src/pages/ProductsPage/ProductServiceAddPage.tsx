@@ -20,8 +20,6 @@ export const ProductServiceAddPage: React.FC = () => {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string>()
 
-  const isLocked = product?.status === 'LOCKED'
-
   useEffect(() => {
     dispatch.applicationTypes.fetchAll()
   }, [])
@@ -33,22 +31,6 @@ export const ProductServiceAddPage: React.FC = () => {
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
             Product not found
-          </Typography>
-        </Body>
-      </Container>
-    )
-  }
-
-  if (isLocked) {
-    return (
-      <Container gutterBottom>
-        <Body center>
-          <Icon name="lock" size="xxl" color="grayDark" />
-          <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Product is locked
-          </Typography>
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            Services cannot be added to a locked product.
           </Typography>
         </Body>
       </Container>

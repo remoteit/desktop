@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useHistory } from 'react-router-dom'
 import { Divider, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { ListItemLocation } from './ListItemLocation'
@@ -18,6 +18,7 @@ type Props = { device?: IDevice; service?: IService; user?: IUser }
 
 export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const { deviceID } = useParams<{ deviceID?: string }>()
+  const history = useHistory()
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
@@ -26,6 +27,21 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const deviceOnly = device && !service
 
   if (!device) return null
+
+  const handleMakeProduct = async () => {
+    handleClose()
+    const product = await dispatch.products.createFromRegistration({
+      platform: device.targetPlatform,
+      tags: device.tags?.map(t => t.name),
+      services: device.services.map(s => ({
+        application: s.typeID,
+        name: s.name,
+        port: s.port,
+        enabled: s.enabled,
+      })),
+    })
+    if (product) history.push(`/products/${product.id}/details`)
+  }
 
   return (
     <>
@@ -98,6 +114,12 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
                 <Icon name="arrow-turn-down-right" size="md" />
               </ListItemIcon>
               <ListItemText primary="Transfer Device" />
+            </MenuItem>,
+            <MenuItem dense key="makeProduct" onClick={handleMakeProduct}>
+              <ListItemIcon>
+                <Icon name="conveyor-belt-boxes" size="md" />
+              </ListItemIcon>
+              <ListItemText primary="Make Product" />
             </MenuItem>,
           ]}
         {device.permissions.includes('MANAGE') &&

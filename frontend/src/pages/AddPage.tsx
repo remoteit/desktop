@@ -18,6 +18,7 @@ import { platforms } from '../platforms'
 import { spacing } from '../styling'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { ConveyorBeltBoxes } from '../assets/ConveyorBeltBoxes'
 
 export const AddPage: React.FC = () => {
   const css = useStyles()
@@ -118,6 +119,15 @@ export const AddPage: React.FC = () => {
           })}
         </List>
         <ClaimDevice className={classnames(css.list, css.smallList)} />
+        <List className={classnames(css.list, css.smallList)} dense disablePadding>
+          <ListSubheader disableGutters>Add many</ListSubheader>
+          <ListItemButton disableGutters onClick={() => history.push('/products')}>
+            <ListItemIcon>
+              <ConveyorBeltBoxes style={{ height: '2.25rem', width: 'auto' }} />
+            </ListItemIcon>
+            <ListItemText primary="Products" secondary="Provision in bulk" />
+          </ListItemButton>
+        </List>
       </Stack>
     </Container>
   )
