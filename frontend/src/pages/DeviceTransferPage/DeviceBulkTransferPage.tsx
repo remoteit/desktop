@@ -4,7 +4,11 @@ import { Dispatch, State } from '../../store'
 import { Typography, Button } from '@mui/material'
 import { TransferForm } from './TransferForm'
 import { getAllDevices } from '../../selectors/devices'
-import { Redirect, useHistory } from 'react-router-dom'
+import { isPersonal } from '../../models/plans'
+import { Redirect, Link, useHistory } from 'react-router-dom'
+import { Container } from '../../components/Container'
+import { Gutters } from '../../components/Gutters'
+import { BillingUI } from '../../components/BillingUI'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
 
@@ -16,6 +20,7 @@ export const DeviceBulkTransferPage: React.FC = () => {
   }))
   // Resolve against the same pool as the transferSelected thunk (selectDevice → getAllDevices)
   const allDevices = useSelector(getAllDevices)
+  const paidPlan = useSelector((state: State) => !isPersonal(state))
   const history = useHistory()
   const { devices } = useDispatch<Dispatch>()
 
@@ -31,6 +36,28 @@ export const DeviceBulkTransferPage: React.FC = () => {
   }
 
   if (!count) return <Redirect to="/devices" />
+
+  if (!paidPlan)
+    return (
+      <Container gutterBottom header={<Typography variant="h1">Transfer Devices</Typography>}>
+        <Gutters>
+          <Notice
+            severity="info"
+            fullWidth
+            button={
+              <BillingUI>
+                <Button to="/account/plans" variant="contained" color="primary" size="small" component={Link}>
+                  Upgrade
+                </Button>
+              </BillingUI>
+            }
+          >
+            Bulk device transfer requires a paid plan.
+            <em>Upgrade to transfer multiple devices at once. You can still transfer devices one at a time.</em>
+          </Notice>
+        </Gutters>
+      </Container>
+    )
 
   return (
     <TransferForm
