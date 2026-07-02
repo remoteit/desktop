@@ -7,6 +7,7 @@ import { useParams, useHistory } from 'react-router-dom'
 import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
 import { selectOrganization } from '../../selectors/organizations'
+import { selectContacts } from '../../selectors/contacts'
 import { ContactSelector } from '../../components/ContactSelector'
 import { SharingForm } from '../../components/SharingForm'
 import { getAccess } from '../../helpers/userHelper'
@@ -20,7 +21,7 @@ export const SharePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { device, service } = useContext(DeviceContext)
   const { userID = '' } = useParams<{ userID?: string }>()
-  const contacts = useSelector((state: State) => state.contacts.all)
+  const contacts = useSelector(selectContacts)
   const guests = device ? device.access : (useSelector(selectOrganization).guests as IUserRef[])
   const deleting = useSelector((state: State) => state.shares.deleting)
   const users = useSelector((state: State) => state.shares.currentDevice?.users || [])

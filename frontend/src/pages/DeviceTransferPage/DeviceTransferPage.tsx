@@ -3,15 +3,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
 import { Typography } from '@mui/material'
 import { TransferForm } from './TransferForm'
+import { selectContacts } from '../../selectors/contacts'
 import { Notice } from '../../components/Notice'
 
 type Props = { device?: IDevice }
 
 export const DeviceTransferPage: React.FC<Props> = ({ device }) => {
-  const { contacts = [], transferring } = useSelector((state: State) => ({
-    contacts: state.contacts.all,
-    transferring: state.ui.transferring,
-  }))
+  const contacts = useSelector(selectContacts)
+  const transferring = useSelector((state: State) => state.ui.transferring)
   const { devices } = useDispatch<Dispatch>()
 
   if (!device) return null
