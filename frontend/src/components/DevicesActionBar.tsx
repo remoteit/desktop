@@ -1,19 +1,19 @@
 import React from 'react'
 import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Box, Divider, Typography, InputLabel } from '@mui/material'
+import { Box, Divider, Typography, InputLabel } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLimitsLookup, selectPermissions } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
+import { useContainerWidth } from '../hooks/useContainerWidth'
 import { canEditTags } from '../models/tags'
-import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { useHistory } from 'react-router-dom'
 import { selectTags } from '../selectors/tags'
+import { DevicesActionMenu } from './DevicesActionMenu'
 import { TagEditor } from './TagEditor'
-import { Notice } from './Notice'
 import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
@@ -27,11 +27,10 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const selected = useSelector((state: State) => state.ui.selected)
   const adding = useSelector((state: State) => state.tags.adding)
   const removing = useSelector((state: State) => state.tags.removing)
-  const destroying = useSelector((state: State) => state.ui.destroying)
-  const transferring = useSelector((state: State) => state.ui.transferring)
   const permissions = useSelector(selectPermissions)
   const canEdit = useSelector((state: State) => canEditTags(state, accountId))
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const { containerRef, containerWidth } = useContainerWidth()
+  const mobile = containerWidth < MOBILE_WIDTH
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const css = useStyles()
@@ -39,13 +38,24 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const onCreate = async tag => await dispatch.tags.create({ tag, accountId })
 
   return (
-    <Box className={css.actions}>
-      <Title>
+    <Box className={css.actions} ref={containerRef}>
+      <IconButton
+        icon="times"
+        title="Clear selection"
+        color="alwaysWhite"
+        placement="bottom"
+        onClick={() => {
+          dispatch.ui.set({ selected: [], selectionAnchor: undefined })
+          history.push('/devices')
+        }}
+      />
+      <Title sx={{ flexGrow: 0 }}>
         <Typography variant="subtitle1">
           {selected.length}&nbsp;
           {mobile ? <Icon name="check" inline /> : 'Selected'}
         </Typography>
       </Title>
+      <Box sx={{ flexGrow: 1 }} />
       {feature.tagging && canEdit && (
         <>
           {mobile || <InputLabel shrink>tags</InputLabel>}
@@ -106,51 +116,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           <Divider orientation="vertical" color="white" />
         </>
       )}
-      <IconButton
-        icon="arrow-turn-down-right"
-        title="Transfer selected"
-        color="alwaysWhite"
-        placement="bottom"
-        disabled={!selected.length}
-        loading={transferring}
-        to="/devices/transfer"
-      />
-      <ConfirmIconButton
-        icon="trash"
-        title="Delete selected"
-        color="alwaysWhite"
-        placement="bottom"
-        disabled={!selected.length}
-        loading={destroying}
-        onClick={async () => {
-          await dispatch.devices.destroySelected(selected)
-          history.push('/devices')
-        }}
-        confirmProps={{
-          title: 'Confirm Device Deletion',
-          color: 'error',
-          action: `Delete ${selected.length} device${selected.length === 1 ? '' : 's'}`,
-          children: (
-            <>
-              <Notice severity="error" gutterBottom fullWidth>
-                Deletion is irreversible and may require device access for recovery.
-              </Notice>
-              <Typography variant="body2">Uninstall the Remote.It agent before deletion for best results.</Typography>
-            </>
-          ),
-        }}
-        confirm
-      />
-      <IconButton
-        icon="times"
-        title="Clear selection"
-        color="alwaysWhite"
-        placement="bottom"
-        onClick={() => {
-          dispatch.ui.set({ selected: [], selectionAnchor: undefined })
-          history.push('/devices')
-        }}
-      />
+      <DevicesActionMenu />
     </Box>
   )
 }
@@ -168,11 +134,13 @@ const useStyles = makeStyles(({ palette }) => ({
     marginLeft: spacing.sm,
     marginRight: spacing.sm,
     marginBottom: spacing.xs,
+    paddingLeft: spacing.sm,
     paddingRight: spacing.sm,
     zIndex: 10,
     '& .MuiTypography-subtitle1': {
       marginTop: spacing.xs,
       marginBottom: spacing.xs,
+      paddingLeft: spacing.sm,
       fontWeight: 800,
       color: palette.alwaysWhite.main,
     },
