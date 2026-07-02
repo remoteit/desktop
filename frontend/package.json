@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@airbrake/browser": "^2.1.9",
-    "@aws-amplify/auth": "^5.6.6",
+    "@aws-amplify/auth": "^5.6.21",
     "@capacitor-community/bluetooth-le": "^7.1.1",
     "@capacitor/app": "^7.0.1",
     "@capacitor/app-launcher": "^7.0.1",
