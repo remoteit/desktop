@@ -5,6 +5,7 @@ import { Typography, Button } from '@mui/material'
 import { TransferForm } from './TransferForm'
 import { getAllDevices } from '../../selectors/devices'
 import { selectContacts } from '../../selectors/contacts'
+import { useGuests } from '../../hooks/useGuests'
 import { Redirect, useHistory } from 'react-router-dom'
 import { Notice } from '../../components/Notice'
 import { Icon } from '../../components/Icon'
@@ -13,6 +14,7 @@ export const DeviceBulkTransferPage: React.FC = () => {
   const contacts = useSelector(selectContacts)
   const transferring = useSelector((state: State) => state.ui.transferring)
   const selected = useSelector((state: State) => state.ui.selected)
+  useGuests()
   // Resolve against the same pool as the transferSelected thunk (selectDevice → getAllDevices)
   const allDevices = useSelector(getAllDevices)
   const history = useHistory()

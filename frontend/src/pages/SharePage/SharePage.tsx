@@ -6,8 +6,8 @@ import { Dispatch, State } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
-import { selectOrganization } from '../../selectors/organizations'
 import { selectContacts } from '../../selectors/contacts'
+import { useGuests } from '../../hooks/useGuests'
 import { ContactSelector } from '../../components/ContactSelector'
 import { SharingForm } from '../../components/SharingForm'
 import { getAccess } from '../../helpers/userHelper'
@@ -22,7 +22,8 @@ export const SharePage: React.FC = () => {
   const { device, service } = useContext(DeviceContext)
   const { userID = '' } = useParams<{ userID?: string }>()
   const contacts = useSelector(selectContacts)
-  const guests = device ? device.access : (useSelector(selectOrganization).guests as IUserRef[])
+  const { guests: orgGuests } = useGuests()
+  const guests = device ? device.access : (orgGuests as IUserRef[])
   const deleting = useSelector((state: State) => state.shares.deleting)
   const users = useSelector((state: State) => state.shares.currentDevice?.users || [])
   const guest = guests.find(g => g.id === userID)
