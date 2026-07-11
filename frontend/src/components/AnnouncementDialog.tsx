@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Box, Dialog } from '@mui/material'
+import { Box, Dialog, Grow } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { Dispatch, State } from '../store'
 import { selectLatestAnnouncement, selectLatestUnreadAnnouncement } from '../selectors/announcements'
@@ -11,19 +11,20 @@ export const AnnouncementDialog: React.FC = () => {
   const [dismissedIds, setDismissedIds] = useState<string[]>([])
   const [activeId, setActiveId] = useState<string>()
   const [activeTest, setActiveTest] = useState(false)
+  const [open, setOpen] = useState(false)
   const [lastPresentationTest, setLastPresentationTest] = useState<number>()
   const latestUnread = useSelector((state: State) => selectLatestUnreadAnnouncement(state))
   const latestAnnouncement = useSelector((state: State) => selectLatestAnnouncement(state))
   const presentationTest = useSelector((state: State) => state.ui.announcementPresentationTest)
   const activeAnnouncement = useSelector((state: State) => state.announcements.all.find(a => a.id === activeId))
   const { announcements } = useDispatch<Dispatch>()
-  const open = !!activeAnnouncement && (activeTest || !dismissedIds.includes(activeAnnouncement.id))
 
   useEffect(() => {
     if (!presentationTest || presentationTest === lastPresentationTest || !latestAnnouncement) return
 
     setActiveId(latestAnnouncement.id)
     setActiveTest(true)
+    setOpen(true)
     setLastPresentationTest(presentationTest)
   }, [lastPresentationTest, latestAnnouncement?.id, presentationTest])
 
@@ -32,18 +33,26 @@ export const AnnouncementDialog: React.FC = () => {
 
     setActiveId(latestUnread.id)
     setActiveTest(false)
+    setOpen(true)
   }, [activeId, dismissedIds, latestUnread?.id])
 
   const handleClose = useCallback(() => {
     if (!activeAnnouncement) return
 
+    setOpen(false)
     setDismissedIds(ids => (ids.includes(activeAnnouncement.id) ? ids : [...ids, activeAnnouncement.id]))
-    setActiveId(undefined)
     if (activeTest) return
 
     announcements.setPresentedThrough(activeAnnouncement.modified?.getTime() || 0)
     announcements.read(activeAnnouncement.id).catch(error => console.warn('Failed to mark announcement read', error))
   }, [activeAnnouncement, activeTest, announcements])
+
+  // Clear the active announcement only after the exit transition finishes, so the card stays
+  // mounted and animates out instead of disappearing instantly.
+  const handleExited = useCallback(() => {
+    setActiveId(undefined)
+    setActiveTest(false)
+  }, [])
 
   if (!activeAnnouncement) return null
 
@@ -52,6 +61,8 @@ export const AnnouncementDialog: React.FC = () => {
       fullScreen
       open={open}
       onClose={handleClose}
+      TransitionComponent={Grow}
+      TransitionProps={{ onExited: handleExited }}
       sx={{
         '& .MuiDialog-paper': { backgroundColor: 'transparent', boxShadow: 'none' },
         '& .MuiBackdrop-root': {

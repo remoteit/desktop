@@ -16,7 +16,7 @@ const defaultState: IAnnouncementsState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async fetch() {
+    async fetch(_: void, state) {
       const response = await graphQLBasicRequest(
         ` query Announcements {
             notices {
@@ -34,6 +34,9 @@ export default createModel<RootModel>()({
       if (response === 'ERROR') return
       const all = await dispatch.announcements.parse(response)
       dispatch.announcements.set({ all })
+      // Seed the presentation watermark on first load so existing users aren't shown their
+      // historical backlog full-screen. Only notices published after this point auto-present.
+      if (state.announcements.presentedThrough === undefined) dispatch.announcements.setPresentedThrough(Date.now())
     },
     async parse(response: AxiosResponse<any> | void): Promise<IAnnouncement[]> {
       if (!response) return []
@@ -88,7 +91,9 @@ export default createModel<RootModel>()({
       return state
     },
     clearPresentedThrough(state) {
-      state.presentedThrough = undefined
+      // 0 (not undefined) so fetch() won't re-seed the watermark — lets the test control
+      // replay every announcement instead of suppressing the backlog.
+      state.presentedThrough = 0
       return state
     },
     set(state, params: ILookup<IAnnouncement[]>) {

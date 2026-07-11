@@ -6,7 +6,9 @@ export const selectAnnouncements = createSelector(
   (announcements, unread?: boolean) => announcements.filter(a => !unread || !a.read)
 )
 
-export const selectLatestAnnouncement = createSelector([getAnnouncements], announcements => getLatestAnnouncement(announcements))
+export const selectLatestAnnouncement = createSelector([getAnnouncements], announcements =>
+  getLatestAnnouncement(announcements)
+)
 
 export const selectLatestUnreadAnnouncement = createSelector(
   [getAnnouncements, state => state.announcements.presentedThrough],
