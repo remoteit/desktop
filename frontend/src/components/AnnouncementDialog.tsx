@@ -16,6 +16,7 @@ export const AnnouncementDialog: React.FC = () => {
   const latestUnread = useSelector((state: State) => selectLatestUnreadAnnouncement(state))
   const latestAnnouncement = useSelector((state: State) => selectLatestAnnouncement(state))
   const presentationTest = useSelector((state: State) => state.ui.announcementPresentationTest)
+  const presentedThrough = useSelector((state: State) => state.announcements.presentedThrough)
   const activeAnnouncement = useSelector((state: State) => state.announcements.all.find(a => a.id === activeId))
   const { announcements } = useDispatch<Dispatch>()
 
@@ -29,12 +30,17 @@ export const AnnouncementDialog: React.FC = () => {
   }, [lastPresentationTest, latestAnnouncement?.id, presentationTest])
 
   useEffect(() => {
-    if (!latestUnread || activeId || dismissedIds.includes(latestUnread.id)) return
+    // Wait until the watermark is seeded before presenting, otherwise the brief undefined window
+    // on load lets an already-seen notice slip through and reopen on every reload.
+    if (presentedThrough === undefined || !latestUnread || activeId || dismissedIds.includes(latestUnread.id)) return
 
     setActiveId(latestUnread.id)
     setActiveTest(false)
     setOpen(true)
-  }, [activeId, dismissedIds, latestUnread?.id])
+    // Advance the watermark as soon as we present, so a reload (or any close) won't replay it.
+    // Marking it read still happens on dismiss to clear the navigation badge.
+    announcements.setPresentedThrough(latestUnread.modified?.getTime() || 0)
+  }, [activeId, announcements, dismissedIds, latestUnread?.id, presentedThrough])
 
   const handleClose = useCallback(() => {
     if (!activeAnnouncement) return
@@ -43,7 +49,6 @@ export const AnnouncementDialog: React.FC = () => {
     setDismissedIds(ids => (ids.includes(activeAnnouncement.id) ? ids : [...ids, activeAnnouncement.id]))
     if (activeTest) return
 
-    announcements.setPresentedThrough(activeAnnouncement.modified?.getTime() || 0)
     announcements.read(activeAnnouncement.id).catch(error => console.warn('Failed to mark announcement read', error))
   }, [activeAnnouncement, activeTest, announcements])
 
