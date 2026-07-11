@@ -333,12 +333,12 @@ export async function graphQLRemoveApp(props: { deviceIds: string[]; application
   )
 }
 
-export async function graphQLReadNotice(id: string) {
+export async function graphQLReadNotice(id: string, value: boolean = true) {
   return await graphQLBasicRequest(
-    ` mutation ReadNotice($id: String!) {
-        readNotice(id: $id)
+    ` mutation ReadNotice($id: String!, $value: Boolean!) {
+        readNotice(id: $id, value: $value)
       }`,
-    { id }
+    { id, value }
   )
 }
 

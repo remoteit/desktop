@@ -13,16 +13,17 @@ const types = {
   COMMUNICATION: 'Announcement',
 }
 
-export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: number }> = ({
+export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: number; hideUnreadAction?: boolean }> = ({
   data,
   scrollPosition,
+  hideUnreadAction,
 }) => {
   const { announcements } = useDispatch<Dispatch>()
   const [read, setRead] = useState<boolean>(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   const unread = !(data.read && data.read < new Date())
-  const date = data.read && data.read.toLocaleString(navigator.language, dateDefaults)
+  const modified = data.modified && data.modified.toLocaleString(navigator.language, dateDefaults)
   const css = useStyles({ unread })
 
   const handleRead = () => {
@@ -41,12 +42,12 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
 
   return (
     <Card ref={cardRef} className={css.card} elevation={unread ? 3 : 1}>
-      <CardHeader className={css.header} title={types[data.type] || types.GENERIC} action={unread ? undefined : date} />
+      <CardHeader className={css.header} title={types[data.type] || types.GENERIC} action={modified} />
       {data.image && <CardMedia className={css.media} image={data.image} title={data.title} />}
       <CardContent>
         <Typography variant="h1" gutterBottom>
           {data.title}
-          {unread && (
+          {unread && !hideUnreadAction && (
             <Tooltip title="Mark read">
               <Button onClick={handleRead} variant="contained" size="small" color="primary">
                 NEW

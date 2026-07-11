@@ -54,6 +54,21 @@ export const TestPage: React.FC = () => {
           toggle={testUI === 'ON'}
           onClick={() => dispatch.ui.setPersistent({ testUI: testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })}
         />
+        <ListItemSetting
+          hideIcon
+          label="Show latest announcement"
+          subLabel="Previews the latest announcement without changing its read status."
+          onClick={() => {
+            dispatch.ui.set({ announcementPresentationTest: Date.now() })
+            dispatch.announcements.fetch().catch(error => console.warn('Failed to refresh announcements', error))
+          }}
+        />
+        <ListItemSetting
+          hideIcon
+          label="Clear viewed announcements"
+          subLabel="Marks all loaded announcements unread for this account."
+          onClick={() => dispatch.announcements.clearRead()}
+        />
         <PortalUI>
           <InlineTextFieldSetting
             value={testHeader}

@@ -111,6 +111,7 @@ export type UIState = {
   scriptRunForms: ILookup<IFileForm>
   viewAsUser: { id: string; email: string } | null
   logsFilters: LogsFiltersByAccount
+  announcementPresentationTest?: number
 }
 
 export const defaultState: UIState = {
@@ -210,6 +211,7 @@ export const defaultState: UIState = {
   scriptRunForms: {},
   viewAsUser: null,
   logsFilters: {},
+  announcementPresentationTest: undefined,
 }
 
 export default createModel<RootModel>()({

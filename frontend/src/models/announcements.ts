@@ -6,6 +6,7 @@ import { RootModel } from '.'
 
 type IAnnouncementsState = ILookup<IAnnouncement[]> & {
   all: IAnnouncement[]
+  presentedThrough?: number
 }
 
 const defaultState: IAnnouncementsState = {
@@ -52,8 +53,19 @@ export default createModel<RootModel>()({
     },
     async read(id: string) {
       console.log('ANNOUNCEMENT READ', id)
-      await graphQLReadNotice(id)
-      dispatch.announcements.setRead(id)
+      const response = await graphQLReadNotice(id)
+      if (response !== 'ERROR') dispatch.announcements.setRead({ id, value: true })
+    },
+    async clearRead(_: void, state) {
+      const read = state.announcements.all.filter(announcement => announcement.read)
+      const results = await Promise.all(
+        read.map(async announcement => ({ id: announcement.id, response: await graphQLReadNotice(announcement.id, false) }))
+      )
+
+      results.forEach(({ id, response }) => {
+        if (response !== 'ERROR') dispatch.announcements.setRead({ id, value: false })
+      })
+      dispatch.announcements.clearPresentedThrough()
     },
   }),
   reducers: {
@@ -61,14 +73,22 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
-    setRead(state, id: string) {
+    setRead(state, { id, value }: { id: string; value: boolean }) {
       state.all.find((a, i) => {
         if (a.id === id) {
-          state.all[i].read = new Date()
+          state.all[i].read = value ? new Date() : undefined
           return true
         }
         return false
       })
+      return state
+    },
+    setPresentedThrough(state, modified: number) {
+      state.presentedThrough = Math.max(state.presentedThrough || 0, modified)
+      return state
+    },
+    clearPresentedThrough(state) {
+      state.presentedThrough = undefined
       return state
     },
     set(state, params: ILookup<IAnnouncement[]>) {

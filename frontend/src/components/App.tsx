@@ -30,6 +30,7 @@ import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
 import { ViewAsBanner } from './ViewAsBanner'
+import { AnnouncementDialog } from './AnnouncementDialog'
 
 export const App: React.FC = () => {
   const { insets } = useSafeArea()
@@ -125,6 +126,7 @@ export const App: React.FC = () => {
           <Router layout={layout} />
         </Box>
         {showBottomMenu && <BottomMenu layout={layout} />}
+        <AnnouncementDialog />
       </PersistGate>
     </Page>
   )
