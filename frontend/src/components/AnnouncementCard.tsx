@@ -13,10 +13,10 @@ const types = {
   COMMUNICATION: 'Announcement',
 }
 
-export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: number; hideUnreadAction?: boolean }> = ({
+export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: number; hideMarkReadAction?: boolean }> = ({
   data,
   scrollPosition,
-  hideUnreadAction,
+  hideMarkReadAction,
 }) => {
   const { announcements } = useDispatch<Dispatch>()
   const [read, setRead] = useState<boolean>(false)
@@ -47,7 +47,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
       <CardContent>
         <Typography variant="h1" gutterBottom>
           {data.title}
-          {unread && !hideUnreadAction && (
+          {unread && !hideMarkReadAction && (
             <Tooltip title="Mark read">
               <Button onClick={handleRead} variant="contained" size="small" color="primary">
                 NEW

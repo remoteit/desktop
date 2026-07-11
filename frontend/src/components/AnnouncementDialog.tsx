@@ -76,7 +76,7 @@ export const AnnouncementDialog: React.FC = () => {
       >
         <Box sx={{ minHeight: '100%', width: '100%', display: 'flex', justifyContent: 'center' }}>
           <Box onClick={event => event.stopPropagation()}>
-            <AnnouncementCard data={activeAnnouncement} hideUnreadAction />
+            <AnnouncementCard data={activeAnnouncement} hideMarkReadAction />
           </Box>
         </Box>
       </Box>
