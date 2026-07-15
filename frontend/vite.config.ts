@@ -24,5 +24,17 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: { '@common': path.resolve(__dirname, '../common/src') },
   },
+  server: {
+    // Dev-only: same-origin path to the local ai-agent service, so the app's
+    // CSP ('self') passes without loosening. Staging/prod set VITE_AGENT_URL
+    // to the deployed agent domain instead — this proxy does not exist in builds.
+    proxy: {
+      '/agent': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: p => p.replace(/^\/agent/, ''),
+      },
+    },
+  },
   type: 'module',
 }))

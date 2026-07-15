@@ -16,6 +16,9 @@ import {
   ORGANIZATION_BAR_WIDTH,
   REGEX_FIRST_PATH,
   SHOW_TRIPLE_PANEL_WIDTH,
+  CHAT_PANEL_WIDTH,
+  CHAT_PANEL_WIDTH_EXPANDED,
+  MODE,
 } from '../constants'
 import { State, Dispatch } from '../store'
 import { useMediaQuery, Box } from '@mui/material'
@@ -26,6 +29,7 @@ import { SidebarMenu } from './SidebarMenu'
 import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
+import { ChatPanel } from './Chat/ChatPanel'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
@@ -41,13 +45,23 @@ export const App: React.FC = () => {
   const installed = useSelector((state: State) => state.binaries.installed)
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
+  const chatOpen = useSelector((state: State) => state.chat.open)
+  const chatExpanded = useSelector((state: State) => state.chat.expanded)
   const reseller = useSelector(selectResellerRef)
   const dispatch = useDispatch<Dispatch>()
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
   const triplePanel = useMediaQuery(`(min-width:${SHOW_TRIPLE_PANEL_WIDTH}px)`)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
-  const sidePanelWidth = hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
+  // The open chat column reserves layout space the same way the sidebar does,
+  // so Panel/DoublePanel/TriplePanel all reflow and clamp their resize math to it
+  const chatPanelWidth =
+    MODE === 'development' && chatOpen && !singlePanel
+      ? chatExpanded
+        ? CHAT_PANEL_WIDTH_EXPANDED
+        : CHAT_PANEL_WIDTH
+      : 0
+  const sidePanelWidth = (hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)) + chatPanelWidth
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
   const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
   const needsUserHydration = authenticated && !user
@@ -123,6 +137,7 @@ export const App: React.FC = () => {
         >
           {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
           <Router layout={layout} />
+          {MODE === 'development' && <ChatPanel />}
         </Box>
         {showBottomMenu && <BottomMenu layout={layout} />}
       </PersistGate>

@@ -20,6 +20,7 @@ const persistConfig: PersistConfig<RootModel> = {
     'accounts',
     'announcements',
     'applicationTypes',
+    'chat',
     'connections',
     'contacts',
     'devices',
