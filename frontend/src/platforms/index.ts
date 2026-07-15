@@ -61,6 +61,7 @@ class Platforms {
     'remoteit',
     'this',
     'tinkerboard',
+    'toa',
     'ubiquiti',
     'ubuntu',
     'unknown',
