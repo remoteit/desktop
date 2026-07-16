@@ -48,11 +48,21 @@ export const AuthorizedAgentCard: React.FC<{ agent: IAuthorizedAgent }> = ({ age
               <Icon name={limited ? 'lock' : 'globe'} size="xxs" inlineLeft />
               {reachSummary(agent.reach, accountLabel)}
             </Typography>
-            {agent.grantedAt && (
-              <Typography variant="caption" color="textSecondary" display="block">
-                Authorized <Timestamp date={new Date(agent.grantedAt)} variant="long" />
-              </Typography>
-            )}
+            <Typography variant="caption" color="textSecondary" display="block">
+              {agent.grantedAt && (
+                <>
+                  Authorized <Timestamp date={new Date(agent.grantedAt)} variant="long" />
+                  {' · '}
+                </>
+              )}
+              {agent.lastActive ? (
+                <>
+                  Last active <Timestamp date={new Date(agent.lastActive)} variant="long" />
+                </>
+              ) : (
+                'No activity yet'
+              )}
+            </Typography>
           </>
         }
       />

@@ -830,6 +830,7 @@ declare global {
     grantedAt?: string
     expiresAt?: string
     reach?: IAgentReach
+    lastActive?: string // last API request seen (merged from graphql login.agentActivity)
   }
 
   // One account an agent may reach, limited to the given tags (owned by that account; null = all

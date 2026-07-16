@@ -41,13 +41,21 @@ export default createModel<RootModel>()({
         const [result, scopeResult] = await Promise.all([fetchAuthorizedAgents(), graphQLGetAgentScopes()])
 
         const reach: { [clientId: string]: IAgentReach } = {}
+        const active: { [clientId: string]: string } = {}
         if (scopeResult && scopeResult !== 'ERROR') {
-          const scopes: IAgentReach[] = scopeResult.data?.data?.login?.agentScopes || []
+          const login = scopeResult.data?.data?.login
+          const scopes: IAgentReach[] = login?.agentScopes || []
           scopes.forEach(scope => (reach[scope.clientId] = scope))
+          const activity: { clientId: string; lastActive: string }[] = login?.agentActivity || []
+          activity.forEach(a => (active[a.clientId] = a.lastActive))
         }
 
         dispatch.agents.set({
-          agents: result.agents.map(agent => ({ ...agent, reach: reach[agent.clientId] })),
+          agents: result.agents.map(agent => ({
+            ...agent,
+            reach: reach[agent.clientId],
+            lastActive: active[agent.clientId],
+          })),
           accessTokenTtlSeconds: result.accessTokenTtlSeconds,
         })
       } catch (error) {

@@ -79,10 +79,19 @@ export const ConnectedAppDetailPage: React.FC = () => {
           <Box>
             <Typography variant="h3">{name}</Typography>
             {agent.grantedAt && (
-              <Typography variant="caption" color="textSecondary">
+              <Typography variant="caption" color="textSecondary" display="block">
                 Authorized <Timestamp date={new Date(agent.grantedAt)} variant="long" />
               </Typography>
             )}
+            <Typography variant="caption" color="textSecondary" display="block">
+              {agent.lastActive ? (
+                <>
+                  Last active <Timestamp date={new Date(agent.lastActive)} variant="long" />
+                </>
+              ) : (
+                'No activity recorded yet'
+              )}
+            </Typography>
           </Box>
         </Stack>
 

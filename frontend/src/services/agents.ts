@@ -68,6 +68,8 @@ export async function revokeAuthorizedAgent(clientId: string): Promise<boolean> 
 
 // Device-reach policy is a graphql concern (r3_AgentScope, applied at visibleDevices), keyed by the
 // agent's OAuth client id. Read via login.agentScopes; write via setAgentScope / clearAgentScope.
+// One round-trip for everything graphql knows about the user's agents: the reach policies and the
+// last-active timestamps (both keyed by clientId; the agent list itself comes from /consents).
 export async function graphQLGetAgentScopes() {
   return await graphQLBasicRequest(
     ` query AgentScopes {
@@ -80,6 +82,10 @@ export async function graphQLGetAgentScopes() {
               operator
             }
             updated
+          }
+          agentActivity {
+            clientId
+            lastActive
           }
         }
       }`
