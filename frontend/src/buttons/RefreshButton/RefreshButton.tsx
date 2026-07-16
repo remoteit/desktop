@@ -31,6 +31,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
   const devicesPage = useRouteMatch('/devices')
   const productsPage = useRouteMatch('/products')
+  const connectedAppsPage = useRouteMatch('/account/connected')
   const partnerStatsPage = useRouteMatch('/partner-stats')
   const adminUsersPage = useRouteMatch('/admin/users')
   const adminPartnersPage = useRouteMatch('/admin/partners')
@@ -92,6 +93,11 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   } else if (productsPage) {
     title = 'Refresh products'
     methods.push(dispatch.products.fetch)
+
+    // connected apps pages (list + detail — prefix match covers /account/connected/:clientId)
+  } else if (connectedAppsPage) {
+    title = 'Refresh connected apps'
+    methods.push(dispatch.agents.fetch)
 
     // partner stats pages
   } else if (partnerStatsPage) {
