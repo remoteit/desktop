@@ -35,7 +35,7 @@ export const AuthorizedAgentCard: React.FC<{ agent: IAuthorizedAgent }> = ({ age
                 ))
               ) : (
                 <Typography variant="caption" color="textSecondary">
-                  Sign-in only
+                  No device access
                 </Typography>
               )}
             </Box>

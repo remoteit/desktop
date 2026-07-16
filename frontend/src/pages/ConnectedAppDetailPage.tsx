@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
+import { IconButton } from '../buttons/IconButton'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
@@ -41,6 +42,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
 
   const header = (title: string) => (
     <Typography variant="h1">
+      <IconButton name="chevron-left" onClick={() => history.push('/account/connected')} size="md" title="Back" />
       <Title>{title}</Title>
     </Typography>
   )
@@ -91,7 +93,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
             ))
           ) : (
             <Typography variant="body2" color="textSecondary">
-              Sign-in only (no device access)
+              No device access — it can confirm your identity, but cannot see or control any devices.
             </Typography>
           )}
         </Section>
