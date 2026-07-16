@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { store } from '../store'
-import { version } from '../helpers/versionHelper'
+import { getApiURL } from '../helpers/apiHelper'
 import { CONSENTS_API, CONSENTS_BETA_API } from '../constants'
 import { graphQLBasicRequest } from './graphQL'
 
@@ -8,8 +8,15 @@ import { graphQLBasicRequest } from './graphQL'
 // — NOT the graphql API — because only it can reach Hydra's admin to read/kill consent sessions.
 // It authenticates with the user's own Cognito ID token (a different app-client audience than the
 // front's own login client, allow-listed server-side via CONSENTS_ALLOWED_AUDIENCES).
+//
+// The front must be the SAME environment the graphql API is pointed at (dev Hydra pairs with
+// dev/beta/evan graphql; prod with prod), so derive it from the ACTIVE graphql target — honoring
+// the in-app API switch and VITE overrides — rather than a second, independent switch. Prod graphql
+// is the only `…/graphql/v1` path; anything else (beta, an evan/dev override, the API switcher) is
+// non-prod → the dev front. VITE_CONSENTS_API / VITE_CONSENTS_BETA_API still override explicitly.
 function consentsBase(): string {
-  return version.includes('alpha') || version.includes('beta') ? CONSENTS_BETA_API : CONSENTS_API
+  const graphql = getApiURL() || ''
+  return graphql.includes('/graphql/v1') ? CONSENTS_API : CONSENTS_BETA_API
 }
 
 // The /consents API keys on the verified email, which lives in the ID token (the graphql access
@@ -25,21 +32,32 @@ async function idToken(): Promise<string> {
 }
 
 export async function fetchAuthorizedAgents(): Promise<IAuthorizedAgent[]> {
-  const token = await idToken()
-  if (!token) return []
-  const response = await axios.get(`${consentsBase()}/consents`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return response.data?.agents || []
+  const url = `${consentsBase()}/consents`
+  try {
+    const token = await idToken()
+    if (!token) {
+      console.warn('CONNECTED APPS: no Cognito ID token; skipping', url)
+      return []
+    }
+    const response = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } })
+    return response.data?.agents || []
+  } catch (error) {
+    console.error(`CONNECTED APPS: GET ${url} failed`, error?.response?.status, error?.message, error)
+    return []
+  }
 }
 
 export async function revokeAuthorizedAgent(clientId: string): Promise<boolean> {
-  const token = await idToken()
-  if (!token) return false
-  const response = await axios.post(`${consentsBase()}/consents/${encodeURIComponent(clientId)}/revoke`, null, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return !!response.data?.revoked
+  const url = `${consentsBase()}/consents/${encodeURIComponent(clientId)}/revoke`
+  try {
+    const token = await idToken()
+    if (!token) return false
+    const response = await axios.post(url, null, { headers: { Authorization: `Bearer ${token}` } })
+    return !!response.data?.revoked
+  } catch (error) {
+    console.error(`CONNECTED APPS: POST ${url} failed`, error?.response?.status, error?.message, error)
+    return false
+  }
 }
 
 // Device-reach policy is a graphql concern (r3_AgentScope, applied at visibleDevices), keyed by the

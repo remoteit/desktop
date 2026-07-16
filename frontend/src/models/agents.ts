@@ -32,19 +32,24 @@ export default createModel<RootModel>()({
     },
     async fetch() {
       dispatch.agents.set({ fetching: true })
-      // The list comes from the Hydra front (/consents); the per-agent reach limits from graphql.
-      const [agents, scopeResult] = await Promise.all([fetchAuthorizedAgents(), graphQLGetAgentScopes()])
+      try {
+        // The list comes from the Hydra front (/consents); the per-agent reach limits from graphql.
+        // Each source is independently resilient so one failing never hangs the screen (or hides the
+        // other's data) — a failure logs and yields an empty result rather than throwing.
+        const [agents, scopeResult] = await Promise.all([fetchAuthorizedAgents(), graphQLGetAgentScopes()])
 
-      const reach: { [clientId: string]: IAgentReach } = {}
-      if (scopeResult && scopeResult !== 'ERROR') {
-        const scopes: IAgentReach[] = scopeResult.data?.data?.login?.agentScopes || []
-        scopes.forEach(scope => (reach[scope.clientId] = scope))
+        const reach: { [clientId: string]: IAgentReach } = {}
+        if (scopeResult && scopeResult !== 'ERROR') {
+          const scopes: IAgentReach[] = scopeResult.data?.data?.login?.agentScopes || []
+          scopes.forEach(scope => (reach[scope.clientId] = scope))
+        }
+
+        dispatch.agents.set({ agents: agents.map(agent => ({ ...agent, reach: reach[agent.clientId] })) })
+      } catch (error) {
+        console.error('CONNECTED APPS: fetch failed', error)
+      } finally {
+        dispatch.agents.set({ fetching: false })
       }
-
-      dispatch.agents.set({
-        agents: agents.map(agent => ({ ...agent, reach: reach[agent.clientId] })),
-        fetching: false,
-      })
     },
     async revoke(clientId: string) {
       dispatch.agents.set({ updating: clientId })
