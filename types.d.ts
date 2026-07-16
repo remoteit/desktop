@@ -813,6 +813,28 @@ declare global {
     lastUsed: Date
   }
 
+  // An OAuth app / AI agent the user has authorized (a Hydra consent), from the login front's
+  // /consents API. `reach` is merged in from graphql (login.agentScopes); undefined = full reach.
+  type IAuthorizedAgent = {
+    clientId: string
+    clientName?: string
+    logoUri?: string
+    capabilities: string[] // device:read / device:write / … scopes granted
+    audience: string[] // resource URLs the token is valid for
+    grantedAt?: string
+    expiresAt?: string
+    reach?: IAgentReach
+  }
+
+  // An agent's device-reach limit (r3_AgentScope). A null axis = no limit on that axis.
+  type IAgentReach = {
+    clientId: string
+    accounts: string[] | null // account ids the agent may reach; null = all reachable
+    tags: string[] | null // tag names the agent is limited to; null = no tag limit
+    tagOperator: ITagOperator // 'ANY' | 'ALL'
+    updated?: string
+  }
+
   type IRouteType = 'failover' | 'p2p' | 'proxy' | 'public'
 
   interface IEvent {

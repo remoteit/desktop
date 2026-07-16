@@ -44,6 +44,7 @@ export const AccountPage: React.FC = () => {
         </BillingUI>
         <ListItemLocation title="License" to="/account/license" icon="id-badge" dense />
         <ListItemLocation title="Access Keys" to="/account/accessKey" icon="key" dense />
+        <ListItemLocation title="Connected Apps" to="/account/connected" icon="plug" dense />
       </List>
     </Container>
   )

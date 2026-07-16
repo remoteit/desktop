@@ -10,6 +10,11 @@ export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
 export const GRAPHQL_API = env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
 export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
+// The Hydra OAuth front — the ONLY surface that can list/revoke a user's authorized agents
+// (it reaches Hydra admin). Beta/alpha builds point at the dev front; prod at login.remote.it
+// (inert until the prod Hydra workspace is live). See the Connected Apps screen (models/agents).
+export const CONSENTS_API = env.VITE_CONSENTS_API || 'https://login.remote.it'
+export const CONSENTS_BETA_API = env.VITE_CONSENTS_BETA_API || 'https://login.dev.remote.it'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
