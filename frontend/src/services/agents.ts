@@ -1,94 +1,46 @@
-import axios from 'axios'
-import { store } from '../store'
-import { getApiURL } from '../helpers/apiHelper'
-import { CONSENTS_API, CONSENTS_BETA_API } from '../constants'
 import { graphQLBasicRequest } from './graphQL'
 
-// The agent-management API (list / revoke a user's authorized OAuth apps) is the Hydra OAuth front
-// — NOT the graphql API — because only it can reach Hydra's admin to read/kill consent sessions.
-// It authenticates with the user's own Cognito ID token (a different app-client audience than the
-// front's own login client, allow-listed server-side via CONSENTS_ALLOWED_AUDIENCES).
-//
-// The front must be the SAME environment the graphql API is pointed at (dev Hydra pairs with
-// dev/beta/evan graphql; prod with prod), so derive it from the ACTIVE graphql target — honoring
-// the in-app API switch and VITE overrides — rather than a second, independent switch. Prod graphql
-// is the only `…/graphql/v1` path; anything else (beta, an evan/dev override, the API switcher) is
-// non-prod → the dev front. VITE_CONSENTS_API / VITE_CONSENTS_BETA_API still override explicitly.
-function consentsBase(): string {
-  const graphql = getApiURL() || ''
-  return graphql.includes('/graphql/v1') ? CONSENTS_API : CONSENTS_BETA_API
-}
+// Connected Apps data — ALL via graphql (the façade): login.connectedApps merges the agent list
+// (graphql calls the Hydra front's admin surface service-to-service on our behalf) with the reach
+// policies and last-active timestamps, and revokeAgent revokes through the same path. One host,
+// one token (the normal access token) — the desktop no longer talks to the OAuth front directly
+// or handles the Cognito ID token.
 
-// The /consents API keys on the verified email, which lives in the ID token (the graphql access
-// token used elsewhere carries no email), so this path deliberately uses getIdToken(), not getToken().
-async function idToken(): Promise<string> {
-  try {
-    const session = await store.getState().auth.authService?.currentCognitoSession()
-    return session?.getIdToken().getJwtToken() || ''
-  } catch (error) {
-    console.error('AGENTS ID TOKEN ERROR', error)
-    return ''
-  }
-}
-
-export type IAuthorizedAgentsResult = { agents: IAuthorizedAgent[]; accessTokenTtlSeconds: number }
-
-export async function fetchAuthorizedAgents(): Promise<IAuthorizedAgentsResult> {
-  const url = `${consentsBase()}/consents`
-  const empty = { agents: [], accessTokenTtlSeconds: 300 }
-  try {
-    const token = await idToken()
-    if (!token) {
-      console.warn('CONNECTED APPS: no Cognito ID token; skipping', url)
-      return empty
-    }
-    const response = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } })
-    return {
-      agents: response.data?.agents || [],
-      accessTokenTtlSeconds: response.data?.accessTokenTtlSeconds || 300,
-    }
-  } catch (error) {
-    console.error(`CONNECTED APPS: GET ${url} failed`, error?.response?.status, error?.message, error)
-    return empty
-  }
-}
-
-export async function revokeAuthorizedAgent(clientId: string): Promise<boolean> {
-  const url = `${consentsBase()}/consents/${encodeURIComponent(clientId)}/revoke`
-  try {
-    const token = await idToken()
-    if (!token) return false
-    const response = await axios.post(url, null, { headers: { Authorization: `Bearer ${token}` } })
-    return !!response.data?.revoked
-  } catch (error) {
-    console.error(`CONNECTED APPS: POST ${url} failed`, error?.response?.status, error?.message, error)
-    return false
-  }
-}
-
-// Device-reach policy is a graphql concern (r3_AgentScope, applied at visibleDevices), keyed by the
-// agent's OAuth client id. Read via login.agentScopes; write via setAgentScope / clearAgentScope.
-// One round-trip for everything graphql knows about the user's agents: the reach policies and the
-// last-active timestamps (both keyed by clientId; the agent list itself comes from /consents).
-export async function graphQLGetAgentScopes() {
+export async function graphQLGetConnectedApps() {
   return await graphQLBasicRequest(
-    ` query AgentScopes {
+    ` query ConnectedApps {
         login {
-          agentScopes {
-            clientId
-            accounts {
-              account
-              tags
-              operator
+          connectedApps {
+            accessTokenTtlSeconds
+            agents {
+              clientId
+              clientName
+              logoUri
+              capabilities
+              audience {
+                url
+                label
+              }
+              grantedAt
+              reach {
+                account
+                tags
+                operator
+              }
+              lastActive
             }
-            updated
-          }
-          agentActivity {
-            clientId
-            lastActive
           }
         }
       }`
+  )
+}
+
+export async function graphQLRevokeAgent(clientId: string) {
+  return await graphQLBasicRequest(
+    ` mutation RevokeAgent($clientId: String!) {
+        revokeAgent(clientId: $clientId)
+      }`,
+    { clientId }
   )
 }
 

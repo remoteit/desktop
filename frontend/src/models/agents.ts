@@ -1,8 +1,7 @@
 import { createModel } from '@rematch/core'
 import {
-  fetchAuthorizedAgents,
-  revokeAuthorizedAgent,
-  graphQLGetAgentScopes,
+  graphQLGetConnectedApps,
+  graphQLRevokeAgent,
   graphQLSetAgentScope,
   graphQLClearAgentScope,
 } from '../services/agents'
@@ -35,29 +34,16 @@ export default createModel<RootModel>()({
     async fetch() {
       dispatch.agents.set({ fetching: true })
       try {
-        // The list comes from the Hydra front (/consents); the per-agent reach limits from graphql.
-        // Each source is independently resilient so one failing never hangs the screen (or hides the
-        // other's data) — a failure logs and yields an empty result rather than throwing.
-        const [result, scopeResult] = await Promise.all([fetchAuthorizedAgents(), graphQLGetAgentScopes()])
-
-        const reach: { [clientId: string]: IAgentReach } = {}
-        const active: { [clientId: string]: string } = {}
-        if (scopeResult && scopeResult !== 'ERROR') {
-          const login = scopeResult.data?.data?.login
-          const scopes: IAgentReach[] = login?.agentScopes || []
-          scopes.forEach(scope => (reach[scope.clientId] = scope))
-          const activity: { clientId: string; lastActive: string }[] = login?.agentActivity || []
-          activity.forEach(a => (active[a.clientId] = a.lastActive))
+        // One call: graphql's Connected Apps façade returns the agent list (it queries the Hydra
+        // front on our behalf) already merged with reach + last-active.
+        const result = await graphQLGetConnectedApps()
+        if (result && result !== 'ERROR') {
+          const connectedApps = result.data?.data?.login?.connectedApps
+          dispatch.agents.set({
+            agents: connectedApps?.agents || [],
+            accessTokenTtlSeconds: connectedApps?.accessTokenTtlSeconds || 300,
+          })
         }
-
-        dispatch.agents.set({
-          agents: result.agents.map(agent => ({
-            ...agent,
-            reach: reach[agent.clientId],
-            lastActive: active[agent.clientId],
-          })),
-          accessTokenTtlSeconds: result.accessTokenTtlSeconds,
-        })
       } catch (error) {
         console.error('CONNECTED APPS: fetch failed', error)
       } finally {
@@ -66,7 +52,7 @@ export default createModel<RootModel>()({
     },
     async revoke(clientId: string) {
       dispatch.agents.set({ updating: clientId })
-      await revokeAuthorizedAgent(clientId)
+      await graphQLRevokeAgent(clientId)
       await dispatch.agents.fetch()
       dispatch.agents.set({ updating: undefined })
     },

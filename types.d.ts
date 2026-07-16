@@ -819,8 +819,8 @@ declare global {
     label: string
   }
 
-  // An OAuth app / AI agent the user has authorized (a Hydra consent), from the login front's
-  // /consents API. `reach` is merged in from graphql (login.agentScopes); undefined = full reach.
+  // An OAuth app / AI agent the user has authorized (a Hydra consent), from graphql's
+  // login.connectedApps façade (list + reach + lastActive pre-merged). null reach = full reach.
   type IAuthorizedAgent = {
     clientId: string
     clientName?: string
