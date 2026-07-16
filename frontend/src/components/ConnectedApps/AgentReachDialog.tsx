@@ -41,10 +41,14 @@ export const AgentReachDialog: React.FC<{ agent: IAuthorizedAgent; open: boolean
 
   const [rules, setRules] = useState<IRule[]>([])
 
-  // Seed from the agent's current per-account reach each time the dialog opens.
+  // Seed from the agent's current per-account reach each time the dialog opens, and load each
+  // account's own tags (fetchIfEmpty is a no-op when already cached) so the tag picker offers only
+  // that account's real tags.
   useEffect(() => {
     if (!open) return
-    setRules((agent.reach?.accounts || []).map(r => ({ account: r.account, tags: r.tags || [], operator: r.operator })))
+    const seeded = (agent.reach?.accounts || []).map(r => ({ account: r.account, tags: r.tags || [], operator: r.operator }))
+    setRules(seeded)
+    seeded.forEach(rule => dispatch.tags.fetchIfEmpty(rule.account))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
@@ -87,17 +91,22 @@ export const AgentReachDialog: React.FC<{ agent: IAuthorizedAgent; open: boolean
               <Typography variant="subtitle2">{labelFor(rule.account)}</Typography>
               <IconButton icon="times" size="sm" title="Remove account" onClick={() => removeRule(i)} />
             </Stack>
-            <Autocomplete
-              multiple
-              freeSolo
-              size="small"
-              options={tagsByAccount[rule.account] || []}
-              value={rule.tags}
-              onChange={(_, value) => updateRule(i, { tags: value as string[] })}
-              renderInput={params => (
-                <TextField {...params} variant="filled" label="Tags — leave empty for all devices" />
-              )}
-            />
+            {tagsByAccount[rule.account]?.length === 0 && !rule.tags.length ? (
+              <Typography variant="caption" color="textSecondary">
+                This account has no tags — the app will reach all its devices.
+              </Typography>
+            ) : (
+              <Autocomplete
+                multiple
+                size="small"
+                options={Array.from(new Set([...(tagsByAccount[rule.account] || []), ...rule.tags]))}
+                value={rule.tags}
+                onChange={(_, value) => updateRule(i, { tags: value as string[] })}
+                renderInput={params => (
+                  <TextField {...params} variant="filled" label="Tags — leave empty for all devices" />
+                )}
+              />
+            )}
             {rule.tags.length > 1 && (
               <Box mt={1}>
                 <ToggleButtonGroup
@@ -122,7 +131,12 @@ export const AgentReachDialog: React.FC<{ agent: IAuthorizedAgent; open: boolean
               options={addable}
               getOptionLabel={option => option.label}
               value={null}
-              onChange={(_, value) => value && setRules([...rules, { account: (value as IAccountOption).id, tags: [], operator: 'ANY' }])}
+              onChange={(_, value) => {
+                if (!value) return
+                const id = (value as IAccountOption).id
+                dispatch.tags.fetchIfEmpty(id) // load this account's tags for the picker
+                setRules([...rules, { account: id, tags: [], operator: 'ANY' }])
+              }}
               renderInput={params => <TextField {...params} variant="filled" label="Add an account…" />}
             />
           </Box>
