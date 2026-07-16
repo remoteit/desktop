@@ -12,7 +12,7 @@ import { Icon } from '../components/Icon'
 import { Timestamp } from '../components/Timestamp'
 import { RevokeAgentDialog } from '../components/ConnectedApps/RevokeAgentDialog'
 import { AgentReachDialog } from '../components/ConnectedApps/AgentReachDialog'
-import { capabilityLabel, reachSummary, useAccountLabel } from '../components/ConnectedApps/helpers'
+import { capabilityLabel, useAccountLabel } from '../components/ConnectedApps/helpers'
 
 const Section: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <Box mb={3}>
@@ -119,22 +119,32 @@ export const ConnectedAppDetailPage: React.FC = () => {
         </Section>
 
         <Section label="Device reach">
-          <Typography variant="body2" gutterBottom>
-            {reachSummary(agent.reach, accountLabel)}
-          </Typography>
-          {agent.reach?.accounts && (
-            <Box mb={1}>
-              {agent.reach.accounts.map(id => (
-                <Chip key={id} size="small" label={accountLabel(id)} sx={{ mr: 0.5, mb: 0.5 }} />
-              ))}
-            </Box>
-          )}
-          {agent.reach?.tags && (
-            <Box mb={1}>
-              {agent.reach.tags.map(tag => (
-                <Chip key={tag} size="small" variant="outlined" label={tag} sx={{ mr: 0.5, mb: 0.5 }} />
-              ))}
-            </Box>
+          {agent.reach?.accounts == null ? (
+            <Typography variant="body2" gutterBottom>
+              Can reach all your devices.
+            </Typography>
+          ) : (
+            agent.reach.accounts.map(rule => (
+              <Box key={rule.account} mb={1.5}>
+                <Typography variant="body2">
+                  <b>{accountLabel(rule.account)}</b>
+                </Typography>
+                {rule.tags?.length ? (
+                  <Box mt={0.5}>
+                    <Typography variant="caption" color="textSecondary">
+                      devices tagged ({rule.operator === 'ALL' ? 'all of' : 'any of'}):{' '}
+                    </Typography>
+                    {rule.tags.map(tag => (
+                      <Chip key={tag} size="small" variant="outlined" label={tag} sx={{ mr: 0.5, mb: 0.5 }} />
+                    ))}
+                  </Box>
+                ) : (
+                  <Typography variant="caption" color="textSecondary">
+                    all devices
+                  </Typography>
+                )}
+              </Box>
+            ))
           )}
           <Button size="small" onClick={() => setReachOpen(true)} sx={{ mt: 1 }}>
             Change device limits

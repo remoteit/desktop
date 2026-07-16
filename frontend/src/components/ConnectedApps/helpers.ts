@@ -16,8 +16,7 @@ export function capabilityLabel(scope: string): string {
   return CAPABILITY_LABEL[scope] || scope
 }
 
-export const agentIsLimited = (agent: IAuthorizedAgent): boolean =>
-  !!(agent.reach && (agent.reach.accounts != null || agent.reach.tags != null))
+export const agentIsLimited = (agent: IAuthorizedAgent): boolean => !!(agent.reach && agent.reach.accounts != null)
 
 // Resolve an account id to a human label (the account email, or "you" for the signed-in user).
 // A hook so the list/detail share one implementation; memoized to keep the map reference stable.
@@ -34,12 +33,14 @@ export function useAccountLabel(): (id: string) => string {
   }, [membership, meId, meEmail])
 }
 
+// A concise one-liner for the row; the detail page renders the full per-account breakdown.
 export function reachSummary(reach: IAgentReach | undefined, accountLabel: (id: string) => string): string {
-  if (!reach || (reach.accounts == null && reach.tags == null)) return 'Can reach all your devices'
-  const parts: string[] = []
-  if (reach.accounts) {
-    parts.push(reach.accounts.length === 1 ? accountLabel(reach.accounts[0]) : `${reach.accounts.length} accounts`)
+  if (!reach || reach.accounts == null) return 'Can reach all your devices'
+  if (!reach.accounts.length) return 'No device access'
+  if (reach.accounts.length === 1) {
+    const rule = reach.accounts[0]
+    const tags = rule.tags?.length ? ` (tags ${rule.tags.join(', ')})` : ''
+    return `Limited to ${accountLabel(rule.account)}${tags}`
   }
-  if (reach.tags) parts.push(`tags ${reach.tags.join(', ')} (${reach.tagOperator === 'ALL' ? 'all' : 'any'})`)
-  return `Limited to ${parts.join(' and ')}`
+  return `Limited to ${reach.accounts.length} accounts`
 }

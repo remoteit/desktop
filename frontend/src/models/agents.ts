@@ -62,9 +62,9 @@ export default createModel<RootModel>()({
       await dispatch.agents.fetch()
       dispatch.agents.set({ updating: undefined })
     },
-    async setLimit(params: { clientId: string; accounts: string[] | null; tags: string[] | null; operator: ITagOperator }) {
+    async setLimit(params: { clientId: string; accounts: IAccountReach[] | null }) {
       dispatch.agents.set({ updating: params.clientId })
-      const result = await graphQLSetAgentScope(params.clientId, params.accounts, params.tags, params.operator)
+      const result = await graphQLSetAgentScope(params.clientId, params.accounts)
       if (result !== 'ERROR') await dispatch.agents.fetch()
       dispatch.agents.set({ updating: undefined })
     },

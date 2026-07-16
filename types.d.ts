@@ -832,12 +832,18 @@ declare global {
     reach?: IAgentReach
   }
 
-  // An agent's device-reach limit (r3_AgentScope). A null axis = no limit on that axis.
+  // One account an agent may reach, limited to the given tags (owned by that account; null = all
+  // its devices) matched by the operator.
+  type IAccountReach = {
+    account: string // account id
+    tags: string[] | null
+    operator: ITagOperator // 'ANY' | 'ALL'
+  }
+
+  // An agent's per-account device-reach limit (r3_AgentScope). null accounts = no limit (all).
   type IAgentReach = {
     clientId: string
-    accounts: string[] | null // account ids the agent may reach; null = all reachable
-    tags: string[] | null // tag names the agent is limited to; null = no tag limit
-    tagOperator: ITagOperator // 'ANY' | 'ALL'
+    accounts: IAccountReach[] | null
     updated?: string
   }
 

@@ -74,9 +74,11 @@ export async function graphQLGetAgentScopes() {
         login {
           agentScopes {
             clientId
-            accounts
-            tags
-            tagOperator
+            accounts {
+              account
+              tags
+              operator
+            }
             updated
           }
         }
@@ -84,17 +86,18 @@ export async function graphQLGetAgentScopes() {
   )
 }
 
-export async function graphQLSetAgentScope(
-  clientId: string,
-  accounts: string[] | null,
-  tags: string[] | null,
-  operator: ITagOperator
-) {
+// `accounts` = the per-account reach rules; null/empty clears the limit (full reach).
+export async function graphQLSetAgentScope(clientId: string, accounts: IAccountReach[] | null) {
   return await graphQLBasicRequest(
-    ` mutation SetAgentScope($clientId: String!, $accounts: [String!], $tags: [String!], $operator: ListOperator) {
-        setAgentScope(clientId: $clientId, accounts: $accounts, tags: $tags, operator: $operator)
+    ` mutation SetAgentScope($clientId: String!, $accounts: [AgentAccountReachInput!]) {
+        setAgentScope(clientId: $clientId, accounts: $accounts)
       }`,
-    { clientId, accounts, tags, operator }
+    {
+      clientId,
+      accounts: accounts?.length
+        ? accounts.map(rule => ({ account: rule.account, tags: rule.tags, operator: rule.operator }))
+        : null,
+    }
   )
 }
 
