@@ -13,6 +13,7 @@ type IAgentsState = {
   fetching: boolean
   updating?: string // the clientId currently being revoked / limited (per-row spinner)
   agents: IAuthorizedAgent[]
+  accessTokenTtlSeconds: number // how long a revoked agent's in-flight token still works
 }
 
 const defaultState: IAgentsState = {
@@ -20,6 +21,7 @@ const defaultState: IAgentsState = {
   fetching: false,
   updating: undefined,
   agents: [],
+  accessTokenTtlSeconds: 300,
 }
 
 export default createModel<RootModel>()({
@@ -36,7 +38,7 @@ export default createModel<RootModel>()({
         // The list comes from the Hydra front (/consents); the per-agent reach limits from graphql.
         // Each source is independently resilient so one failing never hangs the screen (or hides the
         // other's data) — a failure logs and yields an empty result rather than throwing.
-        const [agents, scopeResult] = await Promise.all([fetchAuthorizedAgents(), graphQLGetAgentScopes()])
+        const [result, scopeResult] = await Promise.all([fetchAuthorizedAgents(), graphQLGetAgentScopes()])
 
         const reach: { [clientId: string]: IAgentReach } = {}
         if (scopeResult && scopeResult !== 'ERROR') {
@@ -44,7 +46,10 @@ export default createModel<RootModel>()({
           scopes.forEach(scope => (reach[scope.clientId] = scope))
         }
 
-        dispatch.agents.set({ agents: agents.map(agent => ({ ...agent, reach: reach[agent.clientId] })) })
+        dispatch.agents.set({
+          agents: result.agents.map(agent => ({ ...agent, reach: reach[agent.clientId] })),
+          accessTokenTtlSeconds: result.accessTokenTtlSeconds,
+        })
       } catch (error) {
         console.error('CONNECTED APPS: fetch failed', error)
       } finally {

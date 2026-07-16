@@ -31,19 +31,25 @@ async function idToken(): Promise<string> {
   }
 }
 
-export async function fetchAuthorizedAgents(): Promise<IAuthorizedAgent[]> {
+export type IAuthorizedAgentsResult = { agents: IAuthorizedAgent[]; accessTokenTtlSeconds: number }
+
+export async function fetchAuthorizedAgents(): Promise<IAuthorizedAgentsResult> {
   const url = `${consentsBase()}/consents`
+  const empty = { agents: [], accessTokenTtlSeconds: 300 }
   try {
     const token = await idToken()
     if (!token) {
       console.warn('CONNECTED APPS: no Cognito ID token; skipping', url)
-      return []
+      return empty
     }
     const response = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } })
-    return response.data?.agents || []
+    return {
+      agents: response.data?.agents || [],
+      accessTokenTtlSeconds: response.data?.accessTokenTtlSeconds || 300,
+    }
   } catch (error) {
     console.error(`CONNECTED APPS: GET ${url} failed`, error?.response?.status, error?.message, error)
-    return []
+    return empty
   }
 }
 

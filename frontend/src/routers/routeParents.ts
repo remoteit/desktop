@@ -108,6 +108,7 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/account/license', '/account'],
   ['/account/accessKey', '/account'],
   ['/account/connected', '/account'],
+  ['/account/connected/:clientId', '/account/connected'],
   ['/account/overview', '/account'],
 
   // Admin

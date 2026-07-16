@@ -1,39 +1,23 @@
-import React, { useState } from 'react'
-import { Avatar, Box, Chip, ListItem, ListItemAvatar, ListItemText, Stack, Typography, Button } from '@mui/material'
-import { useSelector } from 'react-redux'
-import { State } from '../../store'
+import React from 'react'
+import { useHistory } from 'react-router-dom'
+import { Avatar, Box, Chip, ListItemButton, ListItemAvatar, ListItemText, Typography } from '@mui/material'
 import { Timestamp } from '../Timestamp'
 import { Icon } from '../Icon'
-import { RevokeAgentDialog } from './RevokeAgentDialog'
-import { AgentReachDialog } from './AgentReachDialog'
+import { capabilityLabel, agentIsLimited, reachSummary, useAccountLabel } from './helpers'
 
-// Friendly labels for the device-capability scopes an agent may hold.
-const CAPABILITY_LABEL: { [scope: string]: string } = {
-  'device:read': 'View devices',
-  'device:write': 'Manage devices',
-  'device:connect': 'Connect',
-  'device:execute': 'Run scripts',
-  'user:read': 'View account',
-  'org:read': 'View organization',
-}
-
-function reachSummary(reach?: IAgentReach): string {
-  if (!reach || (reach.accounts == null && reach.tags == null)) return 'Can reach all your devices'
-  const parts: string[] = []
-  if (reach.accounts) parts.push(`${reach.accounts.length} account${reach.accounts.length === 1 ? '' : 's'}`)
-  if (reach.tags) parts.push(`tags ${reach.tags.join(', ')} (${reach.tagOperator === 'ALL' ? 'all' : 'any'})`)
-  return `Limited to ${parts.join(' and ')}`
-}
-
+// A rich, clickable summary row — the full breakdown + actions live on the detail page it links to.
 export const AuthorizedAgentCard: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) => {
-  const [reachOpen, setReachOpen] = useState(false)
-  const updating = useSelector((state: State) => state.agents.updating === agent.clientId)
+  const history = useHistory()
+  const accountLabel = useAccountLabel()
   const name = agent.clientName || agent.clientId
   const monogram = (name.trim()[0] || '?').toUpperCase()
-  const limited = !!(agent.reach && (agent.reach.accounts != null || agent.reach.tags != null))
+  const limited = agentIsLimited(agent)
 
   return (
-    <ListItem alignItems="flex-start" disableGutters>
+    <ListItemButton
+      alignItems="flex-start"
+      onClick={() => history.push(`/account/connected/${encodeURIComponent(agent.clientId)}`)}
+    >
       <ListItemAvatar>
         <Avatar src={agent.logoUri} alt="">
           {monogram}
@@ -47,7 +31,7 @@ export const AuthorizedAgentCard: React.FC<{ agent: IAuthorizedAgent }> = ({ age
             <Box mt={0.5} mb={0.5}>
               {agent.capabilities.length ? (
                 agent.capabilities.map(scope => (
-                  <Chip key={scope} size="small" label={CAPABILITY_LABEL[scope] || scope} sx={{ mr: 0.5, mb: 0.5 }} />
+                  <Chip key={scope} size="small" label={capabilityLabel(scope)} sx={{ mr: 0.5, mb: 0.5 }} />
                 ))
               ) : (
                 <Typography variant="caption" color="textSecondary">
@@ -55,9 +39,14 @@ export const AuthorizedAgentCard: React.FC<{ agent: IAuthorizedAgent }> = ({ age
                 </Typography>
               )}
             </Box>
+            {agent.audience.length > 0 && (
+              <Typography variant="caption" color="textSecondary" display="block">
+                Access: {agent.audience.map(a => a.label).join(', ')}
+              </Typography>
+            )}
             <Typography variant="caption" color="textSecondary" display="block">
               <Icon name={limited ? 'lock' : 'globe'} size="xxs" inlineLeft />
-              {reachSummary(agent.reach)}
+              {reachSummary(agent.reach, accountLabel)}
             </Typography>
             {agent.grantedAt && (
               <Typography variant="caption" color="textSecondary" display="block">
@@ -67,14 +56,7 @@ export const AuthorizedAgentCard: React.FC<{ agent: IAuthorizedAgent }> = ({ age
           </>
         }
       />
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: 1 }}>
-        {updating && <Icon name="spinner-third" spin color="gray" />}
-        <Button size="small" onClick={() => setReachOpen(true)} disabled={updating}>
-          Limit
-        </Button>
-        <RevokeAgentDialog agent={agent} />
-      </Stack>
-      <AgentReachDialog agent={agent} open={reachOpen} onClose={() => setReachOpen(false)} />
-    </ListItem>
+      <Icon name="angle-right" color="grayDark" fixedWidth />
+    </ListItemButton>
   )
 }

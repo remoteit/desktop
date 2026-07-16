@@ -55,6 +55,7 @@ import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
+import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { AdminUsersWithDetailPage } from '../pages/AdminUsersPage/AdminUsersWithDetailPage'
 import { AdminConfirmPage } from '../pages/AdminConfirmPage'
@@ -389,6 +390,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
               <Route path="/account/accessKey">
                 <AccessKeyPage />
+              </Route>
+              <Route path="/account/connected/:clientId">
+                <ConnectedAppDetailPage />
               </Route>
               <Route path="/account/connected">
                 <ConnectedAppsPage />

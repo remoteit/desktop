@@ -813,6 +813,12 @@ declare global {
     lastUsed: Date
   }
 
+  // A surface an agent's token is valid for: the raw resource URL + the friendly catalog label.
+  type IAgentAudience = {
+    url: string
+    label: string
+  }
+
   // An OAuth app / AI agent the user has authorized (a Hydra consent), from the login front's
   // /consents API. `reach` is merged in from graphql (login.agentScopes); undefined = full reach.
   type IAuthorizedAgent = {
@@ -820,7 +826,7 @@ declare global {
     clientName?: string
     logoUri?: string
     capabilities: string[] // device:read / device:write / … scopes granted
-    audience: string[] // resource URLs the token is valid for
+    audience: IAgentAudience[] // surfaces the token is valid for (url + friendly label)
     grantedAt?: string
     expiresAt?: string
     reach?: IAgentReach
