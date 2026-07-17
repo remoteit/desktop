@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { Chip, List, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
@@ -26,7 +26,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const ttl = useSelector((state: State) => state.agents.accessTokenTtlSeconds)
   const fetching = useSelector((state: State) => state.agents.fetching)
   const init = useSelector((state: State) => state.agents.init)
-  const [revoking, setRevoking] = useState(false)
+  const revoking = useSelector((state: State) => state.agents.updating === decoded)
 
   useEffect(() => {
     dispatch.agents.init()
@@ -93,7 +93,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
               ),
             }}
             onClick={async () => {
-              setRevoking(true)
               await dispatch.agents.revoke(agent.clientId)
               back()
             }}

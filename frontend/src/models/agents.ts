@@ -10,7 +10,7 @@ import { RootModel } from '.'
 type IAgentsState = {
   init: boolean
   fetching: boolean
-  updating?: string // the clientId currently being revoked / limited (per-row spinner)
+  updating?: string // the clientId currently being revoked (drives the revoke button spinner)
   agents: IAuthorizedAgent[]
   accessTokenTtlSeconds: number // how long a revoked agent's in-flight token still works
 }
@@ -57,23 +57,19 @@ export default createModel<RootModel>()({
       dispatch.agents.set({ updating: undefined })
     },
     // Optimistic: the mutation is a full replacement, so on success the local value IS the
-    // server value — no refetch. On error, revert to the previous reach (the graphql layer
-    // has already surfaced the error to the user).
+    // server value — no refetch, and no `updating` flag (the UI updates instantly). On error,
+    // revert to the previous reach (the graphql layer has already surfaced the error).
     async setLimit(params: { clientId: string; accounts: IAccountReach[] | null }, globalState) {
       const previous = globalState.agents.agents.find(a => a.clientId === params.clientId)?.reach ?? null
       dispatch.agents.setReach({ clientId: params.clientId, reach: params.accounts })
-      dispatch.agents.set({ updating: params.clientId })
       const result = await graphQLSetAgentScope(params.clientId, params.accounts)
       if (result === 'ERROR') dispatch.agents.setReach({ clientId: params.clientId, reach: previous })
-      dispatch.agents.set({ updating: undefined })
     },
     async clearLimit(clientId: string, globalState) {
       const previous = globalState.agents.agents.find(a => a.clientId === clientId)?.reach ?? null
       dispatch.agents.setReach({ clientId, reach: null })
-      dispatch.agents.set({ updating: clientId })
       const result = await graphQLClearAgentScope(clientId)
       if (result === 'ERROR') dispatch.agents.setReach({ clientId, reach: previous })
-      dispatch.agents.set({ updating: undefined })
     },
   }),
   reducers: {
