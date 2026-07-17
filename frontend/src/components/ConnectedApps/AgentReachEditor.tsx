@@ -45,11 +45,18 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
     apply(rules.map(r => (r.account === id ? { ...r, ...patch } : r)))
 
   const name = agent.clientName || 'This app'
-  const summary = unlimited
-    ? `${name} can reach all devices in every account you belong to.`
-    : !rules.length
-    ? `${name} cannot reach any devices.`
-    : `${name} is limited to ${rules.length} of ${accountIds.length} account${accountIds.length === 1 ? '' : 's'}.`
+  const tagged = rules.filter(r => r.tags?.length).length
+  let summary
+  if (unlimited) summary = `${name} can reach all devices in every account you belong to.`
+  else if (!rules.length) summary = `${name} cannot reach any devices.`
+  else {
+    const scope =
+      rules.length >= accountIds.length
+        ? 'every account you belong to'
+        : `${rules.length} of ${accountIds.length} accounts`
+    const limits = tagged ? `, limited to tagged devices in ${tagged === 1 ? 'one' : `${tagged} of them`}` : ''
+    summary = `${name} can reach ${scope}${limits}.`
+  }
 
   return (
     <>
