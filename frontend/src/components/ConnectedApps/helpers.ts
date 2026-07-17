@@ -43,7 +43,7 @@ export function reachSummary(reach: IAccountReach[] | null | undefined, accountL
     const tags = rule.tags?.length ? ` (tags ${rule.tags.join(', ')})` : ''
     return `Limited to ${accountLabel(rule.account)}${tags}`
   }
-  return `Limited to ${reach.length} accounts`
+  return `Limited to ${reach.length} organizations`
 }
 
 // How long a revoked agent's in-flight access token still works (stateless JWT verification):

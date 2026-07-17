@@ -37,6 +37,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
   // Load each account's own tags for its picker (no-op when already cached).
   useEffect(() => {
     accountIds.forEach(id => dispatch.tags.fetchIfEmpty(id))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountIds.join()])
 
   // null reach = no limit; render that as every account checked with no tags.
@@ -91,7 +92,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
         const shown = rule || lastRules.current[id]
         const accountTags = allTags[id] || []
         const selected: ITag[] = (shown?.tags || []).map(
-          name => accountTags.find(t => t.name === name) || { name, color: 0 }
+          tagName => accountTags.find(t => t.name === tagName) || { name: tagName, color: 0 }
         )
         return (
           <React.Fragment key={id}>
