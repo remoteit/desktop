@@ -4,7 +4,7 @@ import {
   graphQLRevokeAgent,
   graphQLSetAgentScope,
   graphQLClearAgentScope,
-} from '../services/agents'
+} from '../services/graphQLAgents'
 import { RootModel } from '.'
 
 type IAgentsState = {
