@@ -18,7 +18,8 @@ export function capabilityLabel(scope: string): string {
 
 export const agentIsLimited = (agent: IAuthorizedAgent): boolean => agent.reach != null
 
-// Resolve an account id to a human label (the account email, or "you" for the signed-in user).
+// Resolve an account id to a human label: the org name for organizations you belong to (falling
+// back to their account email), or "you" for the signed-in user's own account.
 // A hook so the list/detail share one implementation; memoized to keep the map reference stable.
 export function useAccountLabel(): (id: string) => string {
   const membership = useSelector((state: State) => state.accounts.membership)
@@ -28,7 +29,7 @@ export function useAccountLabel(): (id: string) => string {
   return useMemo(() => {
     const map: { [id: string]: string } = {}
     if (meId) map[meId] = meEmail ? `${meEmail} (you)` : 'Your devices'
-    membership.forEach(m => (map[m.account.id] = m.account.email))
+    membership.forEach(m => (map[m.account.id] = m.name || m.account.email))
     return (id: string) => map[id] || id
   }, [membership, meId, meEmail])
 }

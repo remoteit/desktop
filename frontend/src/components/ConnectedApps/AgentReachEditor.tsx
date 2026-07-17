@@ -5,7 +5,9 @@ import { Chip, List, Typography } from '@mui/material'
 import { ListItemSetting } from '../ListItemSetting'
 import { TagEditor } from '../TagEditor'
 import { Gutters } from '../Gutters'
+import { Avatar } from '../Avatar'
 import { Tags } from '../Tags'
+import { spacing } from '../../styling'
 import { useAccountLabel } from './helpers'
 
 // Inline editor for an agent's device reach: each account gets an on/off toggle and the
@@ -15,9 +17,18 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
   const accountLabel = useAccountLabel()
   const allTags = useSelector((state: State) => state.tags.all)
   const meId = useSelector((state: State) => state.auth.user?.id || state.user.id)
+  const meEmail = useSelector((state: State) => state.auth.user?.email || state.user.email)
   const membership = useSelector((state: State) => state.accounts.membership)
 
   const accountIds = [meId, ...membership.map(m => m.account.id)].filter(Boolean)
+
+  // Avatar keyed on the account email with the org name as its initial fallback — the same
+  // colored circle the organization picker shows.
+  const accountAvatar = (id: string) => {
+    const org = membership.find(m => m.account.id === id)
+    const email = id === meId ? meEmail : org?.account.email
+    return <Avatar email={email} fallback={id === meId ? meEmail : org?.name} size={spacing.lg} />
+  }
 
   // Load each account's own tags for its picker (no-op when already cached).
   useEffect(() => {
@@ -78,7 +89,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
         return (
           <React.Fragment key={id}>
             <ListItemSetting
-              icon={id === meId ? 'user' : 'industry-alt'}
+              icon={accountAvatar(id)}
               label={accountLabel(id)}
               toggle={!!rule}
               onClick={() => toggleAccount(id, !rule)}

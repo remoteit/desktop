@@ -16,7 +16,7 @@ import { spacing } from '../../styling'
 import { Quote } from '../Quote'
 
 type Props = {
-  icon?: string
+  icon?: React.ReactNode
   iconColor?: IconProps['color']
   iconType?: IconProps['type']
   hideIcon?: boolean
@@ -113,15 +113,19 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
       <>
         <TooltipWrapper>
           <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
-            <Icon
-              ref={iconRef}
-              name={icon}
-              color={iconColor}
-              size="md"
-              modified={modified}
-              type={iconType}
-              fixedWidth
-            />
+            {typeof icon === 'string' ? (
+              <Icon
+                ref={iconRef}
+                name={icon}
+                color={iconColor}
+                size="md"
+                modified={modified}
+                type={iconType}
+                fixedWidth
+              />
+            ) : (
+              icon
+            )}
           </ListItemIcon>
         </TooltipWrapper>
         {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
