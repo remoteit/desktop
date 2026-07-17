@@ -1,23 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
-import { Chip, Collapse, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
+import { Chip, List } from '@mui/material'
 import { ListItemCheckbox } from '../ListItemCheckbox'
-import { ExpandIcon } from '../ExpandIcon'
 import { TagEditor } from '../TagEditor'
 import { Gutters } from '../Gutters'
 import { Tags } from '../Tags'
-import { Icon } from '../Icon'
-import { agentIsLimited, reachSummary, useAccountLabel } from './helpers'
+import { useAccountLabel } from './helpers'
 
-// Inline expand/collapse editor for an agent's device reach. The collapsed row shows the
-// current summary; expanded, each account gets a checkbox and the standard tag picker.
-// Changes apply immediately, like tag edits elsewhere in the app.
+// Inline editor for an agent's device reach: each account gets a checkbox and the standard
+// tag picker. Changes apply optimistically, like tag edits elsewhere in the app.
 export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) => {
-  const [open, setOpen] = useState(false)
   const dispatch = useDispatch<Dispatch>()
   const accountLabel = useAccountLabel()
-  const updating = useSelector((state: State) => state.agents.updating === agent.clientId)
   const allTags = useSelector((state: State) => state.tags.all)
   const meId = useSelector((state: State) => state.auth.user?.id || state.user.id)
   const membership = useSelector((state: State) => state.accounts.membership)
@@ -26,8 +21,8 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
 
   // Load each account's own tags for its picker (no-op when already cached).
   useEffect(() => {
-    if (open) accountIds.forEach(id => dispatch.tags.fetchIfEmpty(id))
-  }, [open])
+    accountIds.forEach(id => dispatch.tags.fetchIfEmpty(id))
+  }, [accountIds.join()])
 
   // null reach = no limit; render that as every account checked with no tags.
   const unlimited = agent.reach == null
@@ -50,66 +45,59 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
     apply(rules.map(r => (r.account === id ? { ...r, ...patch } : r)))
 
   return (
-    <>
-      <ListItemButton onClick={() => setOpen(!open)} dense>
-        <ListItemIcon>
-          <Icon name={agentIsLimited(agent) ? 'lock' : 'globe'} size="md" fixedWidth />
-        </ListItemIcon>
-        <ListItemText
-          primary={reachSummary(agent.reach, accountLabel)}
-          secondary="Choose the accounts and device tags this app can reach"
-        />
-        {updating ? <Icon name="spinner-third" spin color="primary" inlineLeft /> : <ExpandIcon open={open} />}
-      </ListItemButton>
-      <Collapse in={open}>
-        <List disablePadding>
-          {accountIds.map(id => {
-            const rule = rules.find(r => r.account === id)
-            const accountTags = allTags[id] || []
-            const selected: ITag[] = (rule?.tags || []).map(
-              name => accountTags.find(t => t.name === name) || { name, color: 0 }
-            )
-            return (
-              <React.Fragment key={id}>
-                <ListItemCheckbox
-                  label={accountLabel(id)}
-                  subLabel={rule && !rule.tags?.length ? 'All devices' : undefined}
-                  checked={!!rule}
-                  onClick={checked => toggleAccount(id, checked)}
-                />
-                {rule && (
-                  <Gutters inset="icon" top={null} bottom="sm">
-                    <Tags
-                      tags={selected}
-                      onDelete={tag => {
-                        const tags = (rule.tags || []).filter(name => name !== tag.name)
-                        updateRule(id, { tags: tags.length ? tags : null })
-                      }}
-                    />
-                    <TagEditor
-                      tags={accountTags}
-                      filter={selected}
-                      placeholder="Add tag..."
-                      allowAdding={false}
-                      keyboardShortcut={false}
-                      onSelect={tag => updateRule(id, { tags: [...(rule.tags || []), tag.name] })}
-                    />
-                    {(rule.tags?.length || 0) > 1 && (
-                      <Chip
-                        size="small"
-                        variant="outlined"
-                        sx={{ marginLeft: 1 }}
-                        label={rule.operator === 'ALL' ? 'Match: all tags' : 'Match: any tag'}
-                        onClick={() => updateRule(id, { operator: rule.operator === 'ALL' ? 'ANY' : 'ALL' })}
-                      />
-                    )}
-                  </Gutters>
+    <List>
+      {accountIds.map(id => {
+        const rule = rules.find(r => r.account === id)
+        const accountTags = allTags[id] || []
+        const selected: ITag[] = (rule?.tags || []).map(
+          name => accountTags.find(t => t.name === name) || { name, color: 0 }
+        )
+        return (
+          <React.Fragment key={id}>
+            <ListItemCheckbox
+              label={accountLabel(id)}
+              checked={!!rule}
+              onClick={checked => toggleAccount(id, checked)}
+            />
+            {rule && (
+              <Gutters inset="icon" top={null} bottom="sm">
+                {rule.tags?.length ? (
+                  <Tags
+                    tags={selected}
+                    onDelete={tag => {
+                      const tags = (rule.tags || []).filter(name => name !== tag.name)
+                      updateRule(id, { tags: tags.length ? tags : null })
+                    }}
+                  />
+                ) : (
+                  <Chip
+                    label="All devices"
+                    size="small"
+                    sx={{ fontWeight: 500, letterSpacing: 1, color: 'grayDarker.main' }}
+                  />
                 )}
-              </React.Fragment>
-            )
-          })}
-        </List>
-      </Collapse>
-    </>
+                <TagEditor
+                  tags={accountTags}
+                  filter={selected}
+                  placeholder="Add tag..."
+                  allowAdding={false}
+                  keyboardShortcut={false}
+                  onSelect={tag => updateRule(id, { tags: [...(rule.tags || []), tag.name] })}
+                />
+                {(rule.tags?.length || 0) > 1 && (
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    sx={{ marginLeft: 1 }}
+                    label={rule.operator === 'ALL' ? 'Match: all tags' : 'Match: any tag'}
+                    onClick={() => updateRule(id, { operator: rule.operator === 'ALL' ? 'ANY' : 'ALL' })}
+                  />
+                )}
+              </Gutters>
+            )}
+          </React.Fragment>
+        )
+      })}
+    </List>
   )
 }

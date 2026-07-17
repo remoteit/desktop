@@ -109,11 +109,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
         )}
       </Gutters>
 
-      <Typography variant="subtitle1">Device reach</Typography>
-      <List>
-        <AgentReachEditor agent={agent} />
-      </List>
-
       <Typography variant="subtitle1">Details</Typography>
       <List>
         {agent.audience.length > 0 && (
@@ -153,6 +148,9 @@ export const ConnectedAppDetailPage: React.FC = () => {
           displayOnly
         />
       </List>
+
+      <Typography variant="subtitle1">Device reach</Typography>
+      <AgentReachEditor agent={agent} />
     </Container>
   )
 }
