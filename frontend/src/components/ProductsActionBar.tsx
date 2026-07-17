@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Typography, Collapse } from '@mui/material'
 import { useSelector } from 'react-redux'
@@ -23,7 +22,6 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const history = useHistory()
   const location = useLocation()
-  const css = useStyles()
 
   const clearSelectMode = () => {
     const newParams = new URLSearchParams(location.search)
@@ -41,7 +39,29 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
 
   return (
     <Collapse in={!!(select || selected.length)} mountOnEnter unmountOnExit>
-      <Box className={css.actions}>
+      <Box
+        sx={theme => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderTop: `1px solid ${theme.palette.white.main}`,
+          position: 'relative',
+          overflow: 'hidden',
+          backgroundColor: theme.palette.primary.main,
+          borderRadius: `${radius.lg}px`,
+          marginLeft: `${spacing.sm}px`,
+          marginRight: `${spacing.sm}px`,
+          marginBottom: `${spacing.xs}px`,
+          paddingRight: `${spacing.sm}px`,
+          zIndex: 10,
+          '& .MuiTypography-subtitle1': {
+            marginTop: `${spacing.xs}px`,
+            marginBottom: `${spacing.xs}px`,
+            fontWeight: 800,
+            color: theme.palette.alwaysWhite.main,
+          },
+        })}
+      >
         <Title>
           <Typography variant="subtitle1">
             {selected.length}&nbsp;
@@ -90,28 +110,4 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
     </Collapse>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  actions: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTop: `1px solid ${palette.white.main}`,
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: palette.primary.main,
-    borderRadius: radius.lg,
-    marginLeft: spacing.sm,
-    marginRight: spacing.sm,
-    marginBottom: spacing.xs,
-    paddingRight: spacing.sm,
-    zIndex: 10,
-    '& .MuiTypography-subtitle1': {
-      marginTop: spacing.xs,
-      marginBottom: spacing.xs,
-      fontWeight: 800,
-      color: palette.alwaysWhite.main,
-    },
-  },
-}))
 

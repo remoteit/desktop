@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useTheme, makeStyles } from '@mui/styles'
+import { Box, useTheme } from '@mui/material'
 import * as d3 from 'd3'
 
 export type BarGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
@@ -23,7 +23,6 @@ export const BarGraph: React.FC<BarGraphProps> = ({
   ...props
 }) => {
   const theme = useTheme()
-  const css = useStyles({ height })
 
   const bars = useMemo(() => {
     const xScale = d3
@@ -41,35 +40,36 @@ export const BarGraph: React.FC<BarGraphProps> = ({
   }, [data, width, height, min, max])
 
   return (
-    <svg width={width} height={height + 1} className={css.graph} {...props}>
+    <Box
+      component="svg"
+      width={width}
+      height={height + 1}
+      viewBox={`0 0 ${width} ${height + 1}`}
+      sx={theme => ({
+        backgroundColor: theme.palette.white.main,
+        borderBottomLeftRadius: `${height / 8}px`,
+        borderLeft: `1px solid ${theme.palette.gray.main}`,
+        borderBottom: `1px solid ${theme.palette.gray.main}`,
+        '& .bar': { fill: 'transparent' },
+        '& .bar:hover': { fill: theme.palette.screen.main },
+      })}
+      {...props}
+    >
       {bars.map((bar, i) => [
         <rect key={i} x={bar.x} y={bar.y} width={bar.width - 1} height={bar.height} fill={theme.palette[color].main} />,
         onHover && (
           <rect
             key={`${i}-bg`}
+            className="bar"
             x={bar.x}
             y={0}
             width={bar.width}
             height={height}
-            className={css.bar}
             onMouseOver={() => onHover([data.time[i], data.data[i]])}
             onMouseOut={() => onHover(undefined)}
           />
         ),
       ])}
-    </svg>
+    </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  graph: ({ height }: { height: number }) => ({
-    backgroundColor: palette.white.main,
-    borderBottomLeftRadius: height / 8,
-    borderLeft: `1px solid ${palette.gray.main}`,
-    borderBottom: `1px solid ${palette.gray.main}`,
-  }),
-  bar: {
-    fill: 'transparent',
-    '&:hover': { fill: palette.screen.main },
-  },
-}))

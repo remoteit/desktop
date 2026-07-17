@@ -1,10 +1,8 @@
 import React from 'react'
 import { Icon } from '../Icon'
 import { IconProps } from '../Icon'
-import { Tooltip } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
-import { IconButton, Badge } from '@mui/material'
+import { Box, Tooltip, IconButton, Badge } from '@mui/material'
 import { spacing, Sizes } from '../../styling'
 
 export interface ConnectionStateIconProps extends Partial<IconProps> {
@@ -37,13 +35,22 @@ export function ConnectionStateIcon({
     spin = true
   }
 
-  const css = useStyles()
-
   if (mini)
     element = (
-      <span className={css.mini}>
+      <Box
+        component="span"
+        sx={{
+          '& > span': {
+            height: '4px',
+            borderRadius: '4px',
+            width: `${spacing.md}px`,
+            display: 'inline-block',
+            marginLeft: `${spacing.xxs}px`,
+          },
+        }}
+      >
         <span />
-      </span>
+      </Box>
     )
   else {
     element = <Icon {...props} size={size} name={name} spin={spin} platform={device?.targetPlatform} platformIcon />
@@ -65,7 +72,7 @@ export function ConnectionStateIcon({
 
     element = (
       <IconButton
-        className={css.button}
+        sx={{ margin: `${-spacing.sm}px ${-spacing.sm}px` }}
         onClick={event => {
           event.stopPropagation()
           history.push(`/devices/${device.id}/details`)
@@ -75,7 +82,12 @@ export function ConnectionStateIcon({
         <Badge
           variant="dot"
           color="error"
-          classes={{ colorError: device.quality === 'POOR' ? css.poor : css.moderate, badge: css.badge }}
+          sx={theme => ({
+            '& .MuiBadge-badge': {
+              backgroundColor: device.quality === 'POOR' ? theme.palette.danger.main : theme.palette.warning.main,
+              boxShadow: `0 0 4px 3px ${theme.palette.grayLightest.main}`,
+            },
+          })}
         >
           {element}
         </Badge>
@@ -85,36 +97,11 @@ export function ConnectionStateIcon({
 
   return quality ? (
     <Tooltip title={quality} placement="top" arrow>
-      <span className={css.icon}>{element}</span>
+      <Box component="span" sx={{ lineHeight: 1 }}>
+        {element}
+      </Box>
     </Tooltip>
   ) : (
     element
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  capitalize: { textTransform: 'capitalize' },
-  icon: { lineHeight: 1 },
-  mini: {
-    '& > span': {
-      height: 4,
-      borderRadius: 4,
-      width: spacing.md,
-      display: 'inline-block',
-      marginLeft: spacing.xxs,
-    },
-  },
-  combo: {
-    '& sup': {
-      position: 'absolute',
-      marginTop: -6,
-      marginLeft: -8,
-      backgroundColor: palette.white.main,
-      borderRadius: '50%',
-    },
-  },
-  moderate: { backgroundColor: palette.warning.main },
-  poor: { backgroundColor: palette.danger.main },
-  button: { margin: `${-spacing.sm}px ${-spacing.sm}px` },
-  badge: { boxShadow: `0 0 4px 3px ${palette.grayLightest.main}` },
-}))
