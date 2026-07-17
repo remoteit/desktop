@@ -1,6 +1,5 @@
 import React from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { makeStyles } from '@mui/styles'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { spacing, radius } from '../../styling'
 
@@ -27,11 +26,9 @@ export const MFAConfigureApp: React.FC<Props> = ({
   loading,
   cancel,
 }) => {
-  const css = useStyles()
-
   return (
     <Box mt={3} display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'start', sm: 'end' }}>
-      <Box className={css.qrcode}>
+      <Box sx={{ padding: `${spacing.md}px`, backgroundColor: 'alwaysWhite.main', borderRadius: `${radius.sm}px` }}>
         <QRCodeSVG value={`otpauth://totp/remoteit:${email}?secret=${totpCode}&issuer=remote.it`} />
       </Box>
       <Box ml={3}>
@@ -73,10 +70,3 @@ export const MFAConfigureApp: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  qrcode: {
-    padding: spacing.md,
-    backgroundColor: palette.alwaysWhite.main,
-    borderRadius: radius.sm,
-  },
-}))

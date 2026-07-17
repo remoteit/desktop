@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Box, Button, Checkbox, TextField, Typography, FormControlLabel } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { SignUpFunc, ResendFunc } from '../../types'
@@ -30,7 +29,6 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
   const [verified, setVerified] = useState<boolean>(hideCaptcha || false)
   const [isValidPassword, setIsValidPassword] = useState<boolean>(false)
   const [email, setEmail] = useState<string>(decodeURIComponent(params?.email || ''))
-  const css = useStyles()
 
   async function resend() {
     onResend(email)
@@ -121,7 +119,11 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
           />
         </Box>
         {!hideCaptcha && (
-          <Box className={css.captcha} height={isValidPassword && !verified ? '96px' : '0px'} mt={2}>
+          <Box
+            sx={{ transition: 'height 600ms', overflow: 'hidden', position: 'relative' }}
+            height={isValidPassword && !verified ? '96px' : '0px'}
+            mt={2}
+          >
             <Captcha id="sign-up-captcha" onVerify={() => setVerified(true)} />
           </Box>
         )}
@@ -167,6 +169,3 @@ export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpPro
   )
 }
 
-const useStyles = makeStyles({
-  captcha: { transition: 'height 600ms', overflow: 'hidden', position: 'relative' },
-})
