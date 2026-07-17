@@ -99,9 +99,14 @@ export const ConnectedAppDetailPage: React.FC = () => {
       <Typography variant="subtitle1">Permissions</Typography>
       <Gutters top={null}>
         {agent.capabilities.length ? (
-          agent.capabilities.map(scope => (
-            <Chip key={scope} size="small" label={capabilityLabel(scope)} sx={{ mr: 1, mb: 0.5 }} />
-          ))
+          <>
+            {agent.capabilities.map(scope => (
+              <Chip key={scope} size="small" label={capabilityLabel(scope)} sx={{ mr: 1, mb: 0.5 }} />
+            ))}
+            <Typography variant="caption" display="block" sx={{ marginTop: 0.5 }}>
+              Granted when {name} signed in. To change them, revoke access and have it sign in again.
+            </Typography>
+          </>
         ) : (
           <Typography variant="body2" color="textSecondary">
             No device access — it can confirm your identity, but cannot see or control any devices.

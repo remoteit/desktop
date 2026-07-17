@@ -6,7 +6,6 @@ import { ListItemCheckbox } from '../ListItemCheckbox'
 import { TagEditor } from '../TagEditor'
 import { Gutters } from '../Gutters'
 import { Tags } from '../Tags'
-import { Icon } from '../Icon'
 import { useAccountLabel } from './helpers'
 
 // Inline editor for an agent's device reach: each account gets a checkbox and the standard
@@ -55,8 +54,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
   return (
     <>
       <Gutters top={null} bottom={null}>
-        <Typography variant="body2" gutterBottom>
-          <Icon name={unlimited ? 'globe' : 'lock'} size="sm" color="grayDark" inlineLeft />
+        <Typography variant="body2" sx={{ marginBottom: 0.5 }}>
           {summary}
         </Typography>
         <Typography variant="caption" display="block">
