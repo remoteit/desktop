@@ -67,7 +67,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
       header={
         <Typography variant="h1">
           <Title>
-            <AgentAvatar agent={agent} size={spacing.lg} inline />
+            <AgentAvatar agent={agent} size={spacing.xl} inline />
             {name}
           </Title>
           <ConfirmIconButton
@@ -100,7 +100,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
       <Gutters top={null}>
         {agent.capabilities.length ? (
           <>
-            <Typography variant="caption" display="block" sx={{ marginBottom: 1 }}>
+            <Typography variant="caption" display="block" sx={{ marginBottom: 1.5 }}>
               Granted when {name} signed in. To change them, revoke access and have it sign in again.
             </Typography>
             {agent.capabilities.map(scope => (
