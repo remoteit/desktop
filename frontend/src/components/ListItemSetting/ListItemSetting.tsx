@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react'
-import { makeStyles } from '@mui/styles'
 import {
   Tooltip,
   ListItem,
@@ -71,7 +70,6 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
     const iconRef = useRef<HTMLDivElement>(null)
     const showToggle = toggle !== undefined
     const showButton = button !== undefined
-    const css = useStyles()
 
     secondaryContentWidth = secondaryContentWidth || (showButton || showToggle || secondaryContent ? '60px' : undefined)
 
@@ -103,7 +101,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
     // Defining a wrapper component inside render would remount its subtree (and refetch any
     // avatar image) every render, so wrap the icon node with a plain conditional instead.
     const iconNode = (
-      <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
+      <ListItemIcon sx={hideIcon ? { minWidth: `${spacing.sm}px` } : undefined}>
         {typeof icon === 'string' ? (
           <Icon ref={iconRef} name={icon} color={iconColor} size="md" modified={modified} type={iconType} fixedWidth />
         ) : (
@@ -165,5 +163,3 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
     )
   }
 )
-
-const useStyles = makeStyles({ hideIcon: { minWidth: spacing.sm } })

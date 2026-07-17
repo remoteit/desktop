@@ -1,12 +1,10 @@
 import React, { useEffect } from 'react'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { makeStyles } from '@mui/styles'
 import { ListItemButton, ListItemText, ListItemSecondaryAction, InputLabel, TextFieldProps } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
 import { emit } from '../services/Controller'
-import classnames from 'classnames'
 
 type Props = {
   label?: string
@@ -33,7 +31,6 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
 }) => {
   const { filePath } = useSelector((state: State) => state.backend)
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles({ filled: variant === 'filled' })
 
   const filePrompt = () => emit('filePrompt', token)
 
@@ -46,7 +43,12 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
 
   return (
     <ListItemButton
-      className={classnames(className, css.container)}
+      className={className}
+      sx={theme => ({
+        backgroundColor: variant === 'filled' ? theme.palette.grayLightest.main : undefined,
+        '& .MuiListItemText-root': { marginLeft: `${spacing.sm}px` },
+        '& .MuiListItemSecondaryAction-root': { right: `${spacing.xs}px` },
+      })}
       onClick={filePrompt}
       disabled={disabled}
       disableGutters={disableGutters}
@@ -63,11 +65,3 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
     </ListItemButton>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  container: ({ filled }: { filled?: boolean }) => ({
-    backgroundColor: filled ? palette.grayLightest.main : undefined,
-    '& .MuiListItemText-root': { marginLeft: spacing.sm },
-    '& .MuiListItemSecondaryAction-root': { right: spacing.xs },
-  }),
-}))
