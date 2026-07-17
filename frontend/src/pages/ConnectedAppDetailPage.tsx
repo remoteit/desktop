@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { Chip, List, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
@@ -26,7 +26,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const ttl = useSelector((state: State) => state.agents.accessTokenTtlSeconds)
   const fetching = useSelector((state: State) => state.agents.fetching)
   const init = useSelector((state: State) => state.agents.init)
-  const updating = useSelector((state: State) => state.agents.updating)
+  const [revoking, setRevoking] = useState(false)
 
   useEffect(() => {
     dispatch.agents.init()
@@ -75,8 +75,9 @@ export const ConnectedAppDetailPage: React.FC = () => {
             icon="trash"
             size="md"
             title="Revoke access"
-            loading={updating === agent.clientId}
-            disabled={updating === agent.clientId}
+            color={revoking ? 'danger' : undefined}
+            loading={revoking}
+            disabled={revoking}
             confirmProps={{
               title: 'Revoke access?',
               action: 'Revoke',
@@ -92,6 +93,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
               ),
             }}
             onClick={async () => {
+              setRevoking(true)
               await dispatch.agents.revoke(agent.clientId)
               back()
             }}
