@@ -84,7 +84,9 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/settings/options', '/settings'],
 
   // Organization
-  ['/organization/roles/:roleID', '/organization/roles'],
+  // Roles land back at the org root: /organization/roles has no standalone view — it redirects
+  // to the first role — so stepping "up" to it would just bounce back here.
+  ['/organization/roles/:roleID', '/organization'],
   ['/organization/customer/add', '/organization'],
   ['/organization/customer/:userID/plans', '/organization/customer/:userID'],
   ['/organization/customer/:userID', '/organization'],
