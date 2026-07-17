@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
-import { Chip, List } from '@mui/material'
+import { Chip, List, Typography } from '@mui/material'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { TagEditor } from '../TagEditor'
 import { Gutters } from '../Gutters'
 import { Tags } from '../Tags'
+import { Icon } from '../Icon'
 import { useAccountLabel } from './helpers'
 
 // Inline editor for an agent's device reach: each account gets a checkbox and the standard
@@ -44,8 +45,25 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
   const updateRule = (id: string, patch: Partial<IAccountReach>) =>
     apply(rules.map(r => (r.account === id ? { ...r, ...patch } : r)))
 
+  const name = agent.clientName || 'This app'
+  const summary = unlimited
+    ? `${name} can reach all devices in every account you belong to.`
+    : !rules.length
+    ? `${name} cannot reach any devices.`
+    : `${name} is limited to ${rules.length} of ${accountIds.length} account${accountIds.length === 1 ? '' : 's'}.`
+
   return (
-    <List>
+    <>
+      <Gutters top={null} bottom={null}>
+        <Typography variant="body2" gutterBottom>
+          <Icon name={unlimited ? 'globe' : 'lock'} size="sm" color="grayDark" inlineLeft />
+          {summary}
+        </Typography>
+        <Typography variant="caption" display="block">
+          Check the accounts and organizations it may access. Add tags to limit an account to matching devices only.
+        </Typography>
+      </Gutters>
+      <List>
       {accountIds.map(id => {
         const rule = rules.find(r => r.account === id)
         const accountTags = allTags[id] || []
@@ -98,6 +116,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
           </React.Fragment>
         )
       })}
-    </List>
+      </List>
+    </>
   )
 }

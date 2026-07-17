@@ -149,7 +149,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
         />
       </List>
 
-      <Typography variant="subtitle1">Device reach</Typography>
+      <Typography variant="subtitle1">Device access</Typography>
       <AgentReachEditor agent={agent} />
     </Container>
   )
