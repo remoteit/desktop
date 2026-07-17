@@ -1,5 +1,4 @@
-import { ListItemIcon,ListSubheader } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { Box,ListItemIcon,ListSubheader } from '@mui/material'
 import React,{ useRef,useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
@@ -30,7 +29,6 @@ export const GridListHeader = <TOptions,>({
   const [resize, setResize] = useState<number>(0)
   const containerRef = useRef<HTMLLIElement>(null)
   const moveRef = useRef<[string, number, number, number, number]>(['', 0, 0, 0, 0])
-  const css = useStyles()
   const iconNode = icon === true ? null : icon
 
   const onDown = (event: React.MouseEvent, attribute: Attribute<TOptions>) => {
@@ -57,9 +55,24 @@ export const GridListHeader = <TOptions,>({
   }
 
   return (
-    <ListSubheader className={css.header} ref={containerRef} disableGutters>
-      <span
-        className={css.handle}
+    <ListSubheader
+      sx={theme => ({
+        padding: 0,
+        minWidth: '100%',
+        boxShadow: `inset 0 -1px ${theme.palette.grayLighter.main}`,
+      })}
+      ref={containerRef}
+      disableGutters
+    >
+      <Box
+        component="span"
+        sx={theme => ({
+          position: 'absolute',
+          zIndex: 80,
+          top: 0,
+          width: '1px',
+          borderRight: `1px dotted ${theme.palette.primaryLight.main}`,
+        })}
         style={{ left: resize, height: moveRef.current[4], display: resize ? 'block' : 'none' }}
       />
       {required && (
@@ -75,21 +88,3 @@ export const GridListHeader = <TOptions,>({
     </ListSubheader>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  header: {
-    padding: 0,
-    minWidth: '100%',
-    boxShadow: `inset 0 -1px ${palette.grayLighter.main}`,
-  },
-  checkbox: {
-    maxWidth: 60,
-  },
-  handle: {
-    position: 'absolute',
-    zIndex: 80,
-    top: 0,
-    width: 1,
-    borderRight: `1px dotted ${palette.primaryLight.main}`,
-  },
-}))
