@@ -1,10 +1,8 @@
-import classnames from 'classnames'
 import React, { useState, useContext } from 'react'
 import browser from '../services/browser'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
 import { DeviceContext } from '../services/Context'
 import { newConnection } from '../helpers/connectionHelper'
 import { Divider, Menu, MenuItem, ListSubheader, ListItemIcon, Fade, darken } from '@mui/material'
@@ -21,7 +19,6 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [menuWidth, setMenuWidth] = useState<number>()
   const connection = connections?.find(c => c.deviceID === device?.id && c.enabled)
-  const css = useStyles(props)
 
   if (!device) return null
 
@@ -72,14 +69,32 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
         iconType="solid"
         preventDefault
         onClick={clickHandler}
-        className={css.button}
+        sx={{ marginLeft: 2, marginRight: 1 }}
         connection={connection}
         permissions={device.permissions}
         {...props}
       />
       <Menu
         elevation={2}
-        classes={{ paper: classnames(props.color === 'primary' && css.menu), list: css.subhead }}
+        sx={theme => ({
+          '& .MuiList-root': {
+            paddingTop: '4px',
+            ...(props.color === 'primary' ? { backgroundColor: theme.palette.primary.main } : {}),
+          },
+          '& .MuiListSubheader-root': { backgroundColor: theme.palette.grayLightest.main },
+          '& .MuiListSubheader-root + .MuiDivider-root': { marginTop: '2px' },
+          ...(props.color === 'primary'
+            ? {
+                '& .MuiListItem-root': {
+                  color: theme.palette.alwaysWhite.main,
+                  fontWeight: '500',
+                  '&:hover': { backgroundColor: darken(theme.palette.primary.main, 0.1) },
+                  '&:focus': { backgroundColor: darken(theme.palette.primary.main, 0.1) },
+                  '&:focus:hover': { backgroundColor: darken(theme.palette.primary.main, 0.15) },
+                },
+              }
+            : {}),
+        })}
         anchorEl={anchorEl}
         open={!!anchorEl}
         onClose={closeHandler}
@@ -131,37 +146,3 @@ export const DeviceConnectMenu: React.FC<Props> = ({ onClick, ...props }) => {
     </>
   )
 }
-
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  button: {
-    marginLeft: spacing(2),
-    marginRight: spacing(1),
-  },
-  subhead: {
-    paddingTop: 4,
-    '& .MuiListSubheader-root': {
-      backgroundColor: palette.grayLightest.main,
-    },
-    '& .MuiListSubheader-root + .MuiDivider-root': {
-      marginTop: 2,
-    },
-  },
-  menu: {
-    '& .MuiList-root': {
-      backgroundColor: palette.primary.main,
-    },
-    '& .MuiListItem-root': {
-      color: palette.alwaysWhite.main,
-      fontWeight: '500',
-      '&:hover': {
-        backgroundColor: darken(palette.primary.main, 0.1),
-      },
-      '&:focus': {
-        backgroundColor: darken(palette.primary.main, 0.1),
-      },
-      '&:focus:hover': {
-        backgroundColor: darken(palette.primary.main, 0.15),
-      },
-    },
-  },
-}))

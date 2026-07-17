@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 import sleep from '../helpers/sleep'
-import classnames from 'classnames'
-import { makeStyles } from '@mui/styles'
 import { setConnection } from '../helpers/connectionHelper'
-import { Typography, Collapse, Paper, Button } from '@mui/material'
+import { Typography, Collapse, Paper, Button, Theme } from '@mui/material'
 import { Dispatch, State } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { windowOpen } from '../services/browser'
@@ -11,6 +9,48 @@ import { IconButton } from '../buttons/IconButton'
 import { Countdown } from './Countdown'
 import { Gutters } from './Gutters'
 import { spacing } from '../styling'
+
+const layoutSx = (theme: Theme) => ({
+  padding: `${spacing.lg}px`,
+  paddingLeft: `${spacing.xl}px`,
+  position: 'relative' as const,
+  '& > .MuiIconButton-root': {
+    position: 'absolute',
+    right: `${spacing.sm}px`,
+    top: `${spacing.sm}px`,
+  },
+  '& .MuiButton-root': {
+    marginRight: `${spacing.md}px`,
+  },
+  '& > .MuiTypography-caption': {
+    color: theme.palette.grayLight.main,
+  },
+})
+
+const surveySx = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  minHeight: 60,
+  '& span': { whiteSpace: 'nowrap', marginTop: `${-spacing.md}px`, marginBottom: `${-spacing.md}px` },
+  '& .IconButtonTooltip + .IconButtonTooltip': {
+    marginLeft: `${-spacing.xs}px`,
+  },
+} as const
+
+const highlightSx = (theme: Theme) => ({
+  '@keyframes connectionSurveyHighlight': {
+    '0%': { boxShadow: `0 0 0 4px ${theme.palette.primaryHighlight.main}` },
+    '30%': { boxShadow: `0 0 0 4px ${theme.palette.primary.main}` },
+    '80%': { boxShadow: `0 0 0 4px ${theme.palette.primaryHighlight.main}` },
+  },
+  animationName: 'connectionSurveyHighlight',
+  animationIterationCount: '6',
+  animationTimingFunction: 'ease-out',
+  animationDuration: '0.7s',
+})
 
 const SUCCESS_DISMISS = 1000
 const FEEDBACK_DISMISS = 15000
@@ -25,7 +65,6 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => 
   const user = useSelector((state: State) => state.user)
   const dispatch = useDispatch<Dispatch>()
   const [rated, setRated] = useState<number | null>(null)
-  const css = useStyles()
 
   if (!connection) return null
 
@@ -65,11 +104,11 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => 
     <Collapse in={show}>
       <Gutters bottom={null} size="md">
         {rated === 100 ? (
-          <Paper elevation={0} className={classnames(css.layout, css.survey)}>
+          <Paper elevation={0} sx={[layoutSx, surveySx]}>
             <Typography variant="body2">Thank you for your feedback!</Typography>
           </Paper>
         ) : rated === 50 || rated === 0 ? (
-          <Paper elevation={0} className={css.layout}>
+          <Paper elevation={0} sx={layoutSx}>
             <IconButton size="sm" name="times" onClick={resetRating} />
             <Typography variant="subtitle2" gutterBottom>
               Let us know what happened.
@@ -85,7 +124,7 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => 
             </Typography>
           </Paper>
         ) : (
-          <Paper elevation={0} className={classnames(css.layout, css.survey, highlight && css.highlight)}>
+          <Paper elevation={0} sx={[layoutSx, surveySx, highlight ? highlightSx : {}]}>
             How was your last connection?
             <span>
               <IconButton
@@ -119,45 +158,3 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => 
     </Collapse>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  '@keyframes highlight': {
-    '0%': { boxShadow: `0 0 0 4px ${palette.primaryHighlight.main}` },
-    '30%': { boxShadow: `0 0 0 4px ${palette.primary.main}` },
-    '80%': { boxShadow: `0 0 0 4px ${palette.primaryHighlight.main}` },
-  },
-  survey: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    minHeight: 60,
-    '& span': { whiteSpace: 'nowrap', marginTop: -spacing.md, marginBottom: -spacing.md },
-    '& .IconButtonTooltip + .IconButtonTooltip': {
-      marginLeft: -spacing.xs,
-    },
-  },
-  layout: {
-    padding: spacing.lg,
-    paddingLeft: spacing.xl,
-    position: 'relative',
-    '& > .MuiIconButton-root': {
-      position: 'absolute',
-      right: spacing.sm,
-      top: spacing.sm,
-    },
-    '& .MuiButton-root': {
-      marginRight: spacing.md,
-    },
-    '& > .MuiTypography-caption': {
-      color: palette.grayLight.main,
-    },
-  },
-  highlight: {
-    animationName: '$highlight',
-    animationIterationCount: '6',
-    animationTimingFunction: 'ease-out',
-    animationDuration: '0.7s',
-  },
-}))

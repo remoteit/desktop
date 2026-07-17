@@ -3,12 +3,11 @@ import { ListItem, TextField, TextFieldProps, Typography } from '@mui/material'
 
 type Props = TextFieldProps & {
   onChange: (value: string) => void
-  className?: string
 }
 
-export const TemplateSetting: React.FC<Props> = ({ onChange, className, children, ...props }) => {
+export const TemplateSetting: React.FC<Props> = ({ onChange, sx, children, ...props }) => {
   return (
-    <ListItem dense className={className}>
+    <ListItem dense sx={sx}>
       <TextField {...props} variant="filled" onChange={event => onChange(event.target.value)} multiline={true} />
       <Typography variant="caption">{children}</Typography>
     </ListItem>

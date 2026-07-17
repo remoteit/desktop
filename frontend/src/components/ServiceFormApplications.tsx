@@ -1,5 +1,4 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { Chip, Menu, MenuItem } from '@mui/material'
 import { KEY_APPS, getApplicationType } from '@common/applications'
 import { spacing } from '../styling'
@@ -21,7 +20,6 @@ export const ServiceFormApplications: React.FC<Props> = ({
   disabled,
   onSelect,
 }) => {
-  const css = useStyles()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const allowedApplications = applicationTypes.filter(a => getApplicationType(a.id).visibility(device))
   const keyApplications = allowedApplications.filter(a => KEY_APPS.has(a.id)).slice(0, 5)
@@ -29,7 +27,17 @@ export const ServiceFormApplications: React.FC<Props> = ({
   const otherSelected = otherApplications.find(a => a.id === selected)
 
   return (
-    <Gutters top={null} bottom={null} className={css.item}>
+    <Gutters
+      top={null}
+      bottom={null}
+      sx={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        flexWrap: 'wrap',
+        '& > *': { margin: `${spacing.xxs}px` },
+      }}
+    >
       {keyApplications.map(t => (
         <Chip
           label={t.name}
@@ -70,13 +78,3 @@ export const ServiceFormApplications: React.FC<Props> = ({
     </Gutters>
   )
 }
-
-const useStyles = makeStyles(({ }) => ({
-  item: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-    flexWrap: 'wrap',
-    '& > *': { margin: spacing.xxs },
-  },
-}))

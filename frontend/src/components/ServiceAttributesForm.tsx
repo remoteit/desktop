@@ -1,7 +1,7 @@
 import React from 'react'
 import browser from '../services/browser'
 import { State } from '../store'
-import { useStyles } from './ServiceForm'
+import { fieldSx } from './ServiceForm'
 import { useSelector } from 'react-redux'
 import { useApplication } from '../hooks/useApplication'
 import { Typography, TextField, List, ListItem, MenuItem } from '@mui/material'
@@ -34,14 +34,13 @@ export const ServiceAttributesForm: React.FC<Props> = ({
 }) => {
   const { routingLock, routingMessage } = useSelector((state: State) => state.ui)
   const app = useApplication(undefined, connection)
-  const css = useStyles()
 
   customTokens = customTokens.length ? customTokens : app.allCustomTokens
 
   return (
     <>
       {!globalDefaults && (
-        <ListItem className={css.field}>
+        <ListItem sx={fieldSx}>
           <TextField
             label="Local Port"
             value={attributes.defaultPort || ''}
@@ -54,7 +53,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           </Typography>
         </ListItem>
       )}
-      <ListItem className={css.field}>
+      <ListItem sx={fieldSx}>
         <TextField
           select
           label="Routing"
@@ -80,7 +79,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         </Typography>
       </ListItem>
       {!globalDefaults && app.reverseProxy && (
-        <ListItem className={css.field}>
+        <ListItem sx={fieldSx}>
           <TextField
             label="Host Header Override"
             value={attributes.targetHost || ''}
@@ -100,7 +99,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       )}
       {globalDefaults && (
         <>
-          <ListItem className={css.field}>
+          <ListItem sx={fieldSx}>
             <TextField
               select
               variant="filled"
@@ -129,7 +128,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         </>
       )}
       <TemplateSetting
-        className={css.field}
+        sx={fieldSx}
         label={`${app.launchTitle} Template`}
         value={attributes.launchTemplate || ''}
         placeholder={app.launchTemplate}
@@ -147,7 +146,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         )}
       </TemplateSetting>
       <TemplateSetting
-        className={css.field}
+        sx={fieldSx}
         label={`${app.commandTitle} Template`}
         value={attributes.commandTemplate || ''}
         placeholder={app.commandTemplate}
@@ -180,7 +179,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                     onSave={value => onChange({ ...attributes, [token]: value })}
                   />
                 ) : (
-                  <ListItem disableGutters key={token} className={css.field}>
+                  <ListItem disableGutters key={token} sx={fieldSx}>
                     <TextField
                       fullWidth
                       label={`${token} default`}
