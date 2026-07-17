@@ -2,7 +2,6 @@ import React from 'react'
 import { Route, Link } from 'react-router-dom'
 import { Notice } from './Notice'
 import { Button } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
@@ -18,7 +17,6 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () 
   const limit = limits.find(l => l.name === 'iot-devices')
   const overLimit = limit && limit.actual > limit.value
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
 
   if (!visible || !limit || !overLimit) return null
 
@@ -28,7 +26,7 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () 
   return (
     <Route path="/devices">
       <Notice
-        className={css.notice}
+        sx={{ zIndex: 9 }}
         severity="warning"
         onClose={() => dispatch.ui.setPersistent({ updateNoticeCleared: Date.now() })}
         button={
@@ -47,6 +45,3 @@ export const UpgradeNotice: React.FC<React.HTMLAttributes<HTMLDivElement>> = () 
   )
 }
 
-const useStyles = makeStyles({
-  notice: { zIndex: 9 },
-})
