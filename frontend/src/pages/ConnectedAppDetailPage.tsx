@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
-import { IconButton } from '../buttons/IconButton'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { FormDisplay } from '../components/FormDisplay'
 import { Gutters } from '../components/Gutters'
@@ -43,7 +42,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
         gutterBottom
         header={
           <Typography variant="h1">
-            <IconButton name="chevron-left" onClick={back} size="md" title="Back" />
             <Title>Connected App</Title>
           </Typography>
         }
@@ -86,7 +84,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <IconButton name="chevron-left" onClick={back} size="md" title="Back" />
           <Title>
             <AgentAvatar agent={agent} size={spacing.lg} inline />
             {name}
