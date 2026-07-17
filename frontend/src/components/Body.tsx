@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import browser from '../services/browser'
-import { Box, Theme } from '@mui/material'
+import { Box, SxProps, Theme } from '@mui/material'
 import { spacing } from '../styling'
 
 export type BodyProps = {
@@ -9,6 +9,7 @@ export type BodyProps = {
   flex?: boolean
   bodyRef?: React.RefObject<HTMLDivElement>
   className?: string
+  sx?: SxProps<Theme>
   maxHeight?: string
   gutterBottom?: boolean
   gutterTop?: boolean
@@ -25,6 +26,7 @@ export const Body: React.FC<BodyProps> = ({
   bodyRef,
   maxHeight,
   className,
+  sx,
   gutterBottom,
   gutterTop,
   verticalOverflow,
@@ -122,6 +124,7 @@ export const Body: React.FC<BodyProps> = ({
                 },
               })
             : {},
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
         ]}
       >
         {children}
