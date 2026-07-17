@@ -129,4 +129,13 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/add/:platform', '/add'],
 ]
 
+/**
+ * Sections whose primary panel is a static menu rather than a list.
+ * In multi-panel layouts, UP normally jumps to the section root because the
+ * root list is already visible in the left panel (e.g. /devices). In these
+ * sections the left panel is a menu, so the parent list only exists in the
+ * secondary panel — UP must follow ROUTE_PARENTS one level at a time.
+ */
+export const MENU_SECTIONS = ['/account', '/organization', '/settings']
+
 export default ROUTE_PARENTS
