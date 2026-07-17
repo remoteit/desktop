@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { List, Typography } from '@mui/material'
+import { List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
 import { AgentListItem } from './AgentListItem'
@@ -31,11 +31,15 @@ export const ConnectedApps: React.FC = () => {
           </Notice>
         </Gutters>
       ) : (
-        <Gutters top={null}>
-          <Typography variant="body2" color="textSecondary">
-            <Icon name="spinner-third" spin inlineLeft /> Loading…
-          </Typography>
-        </Gutters>
+        // Match the first agent row's layout so the content doesn't jump when it loads in.
+        <List>
+          <ListItem dense>
+            <ListItemIcon>
+              <Icon name="spinner-third" spin size="lg" color="grayDark" />
+            </ListItemIcon>
+            <ListItemText primary="Loading…" primaryTypographyProps={{ color: 'textSecondary' }} />
+          </ListItem>
+        </List>
       )}
     </>
   )
