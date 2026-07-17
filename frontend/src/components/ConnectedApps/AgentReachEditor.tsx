@@ -75,7 +75,6 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
                   label={accountLabel(id)}
                   subLabel={rule && !rule.tags?.length ? 'All devices' : undefined}
                   checked={!!rule}
-                  disabled={updating}
                   onClick={checked => toggleAccount(id, checked)}
                 />
                 {rule && (
@@ -93,7 +92,6 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
                       placeholder="Add tag..."
                       allowAdding={false}
                       keyboardShortcut={false}
-                      disabled={updating}
                       onSelect={tag => updateRule(id, { tags: [...(rule.tags || []), tag.name] })}
                     />
                     {(rule.tags?.length || 0) > 1 && (

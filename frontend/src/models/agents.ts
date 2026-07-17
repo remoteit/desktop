@@ -56,22 +56,33 @@ export default createModel<RootModel>()({
       await dispatch.agents.fetch()
       dispatch.agents.set({ updating: undefined })
     },
-    async setLimit(params: { clientId: string; accounts: IAccountReach[] | null }) {
+    // Optimistic: the mutation is a full replacement, so on success the local value IS the
+    // server value — no refetch. On error, revert to the previous reach (the graphql layer
+    // has already surfaced the error to the user).
+    async setLimit(params: { clientId: string; accounts: IAccountReach[] | null }, globalState) {
+      const previous = globalState.agents.agents.find(a => a.clientId === params.clientId)?.reach ?? null
+      dispatch.agents.setReach({ clientId: params.clientId, reach: params.accounts })
       dispatch.agents.set({ updating: params.clientId })
       const result = await graphQLSetAgentScope(params.clientId, params.accounts)
-      if (result !== 'ERROR') await dispatch.agents.fetch()
+      if (result === 'ERROR') dispatch.agents.setReach({ clientId: params.clientId, reach: previous })
       dispatch.agents.set({ updating: undefined })
     },
-    async clearLimit(clientId: string) {
+    async clearLimit(clientId: string, globalState) {
+      const previous = globalState.agents.agents.find(a => a.clientId === clientId)?.reach ?? null
+      dispatch.agents.setReach({ clientId, reach: null })
       dispatch.agents.set({ updating: clientId })
       const result = await graphQLClearAgentScope(clientId)
-      if (result !== 'ERROR') await dispatch.agents.fetch()
+      if (result === 'ERROR') dispatch.agents.setReach({ clientId, reach: previous })
       dispatch.agents.set({ updating: undefined })
     },
   }),
   reducers: {
     reset(state: IAgentsState) {
       state = { ...defaultState }
+      return state
+    },
+    setReach(state: IAgentsState, params: { clientId: string; reach: IAccountReach[] | null }) {
+      state.agents = state.agents.map(a => (a.clientId === params.clientId ? { ...a, reach: params.reach } : a))
       return state
     },
     set(state: IAgentsState, params: Partial<IAgentsState>) {
