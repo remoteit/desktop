@@ -1,7 +1,5 @@
 import React from 'react'
-import classnames from 'classnames'
-import { Divider } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { Box, Divider } from '@mui/material'
 import { spacing, radius } from '../../styling'
 import { Body, BodyProps } from '../Body'
 
@@ -30,64 +28,64 @@ export const Container: React.FC<Props> = ({
   className,
   children,
 }) => {
-  const css = useStyles({ backgroundColor })
   return (
-    <div className={classnames(className, css.container)}>
+    <Box
+      className={className}
+      sx={theme => ({
+        backgroundColor: backgroundColor ? theme.palette[backgroundColor].main : theme.palette.white.main,
+        display: 'flex',
+        alignItems: 'stretch',
+        flexFlow: 'column',
+        height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+      })}
+    >
       {header && (
-        <div className={css.header}>
+        <Box
+          sx={theme => ({
+            position: 'relative',
+            zIndex: 10,
+            backgroundColor: theme.palette.white.main,
+            borderBottom: backgroundColor ? `1px solid ${theme.palette.grayLighter.main}` : undefined,
+            '& .MuiTypography-h1': {
+              display: 'flex',
+              padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
+            },
+          })}
+        >
           {header}
           {integrated || !!backgroundColor || <Divider variant="inset" />}
-        </div>
+        </Box>
       )}
-      {drawer && <div className={css.drawer}>{drawer}</div>}
+      {drawer && (
+        <Box
+          sx={theme => ({
+            display: 'flex',
+            flexFlow: 'row',
+            flexGrow: 1,
+            overflow: 'hidden',
+            position: 'absolute',
+            height: '100%',
+            borderTopLeftRadius: `${radius.lg}px`,
+            backgroundColor: theme.palette.white.main,
+            boxShadow: `0 3px 5px ${theme.palette.shadow.main}`,
+            right: 0,
+            zIndex: 12,
+          })}
+        >
+          {drawer}
+        </Box>
+      )}
       <Body bodyRef={bodyRef} {...bodyProps} gutterBottom={gutterBottom} scrollbarBackground={backgroundColor}>
         {children}
       </Body>
       {footer && (
-        <div className={css.footer}>
+        <Box sx={{ position: 'relative', zIndex: 7 }}>
           <Divider variant="inset" />
           {footer}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  container: ({ backgroundColor }: any) => ({
-    backgroundColor: backgroundColor ? palette[backgroundColor].main : palette.white.main,
-    display: 'flex',
-    alignItems: 'stretch',
-    flexFlow: 'column',
-    height: '100%',
-    position: 'relative',
-    overflow: 'hidden',
-  }),
-  header: ({ backgroundColor }: any) => ({
-    position: 'relative',
-    zIndex: 10,
-    backgroundColor: palette.white.main,
-    borderBottom: backgroundColor && `1px solid ${palette.grayLighter.main}`,
-    '& .MuiTypography-h1': {
-      display: 'flex',
-      padding: `${spacing.xxs}px ${spacing.xl - 8}px ${spacing.xxs}px ${spacing.xl}px`,
-    },
-  }),
-  drawer: {
-    display: 'flex',
-    flexFlow: 'row',
-    flexGrow: 1,
-    overflow: 'hidden',
-    position: 'absolute',
-    height: '100%',
-    borderTopLeftRadius: radius.lg,
-    backgroundColor: palette.white.main,
-    boxShadow: `0 3px 5px ${palette.shadow.main}`,
-    right: 0,
-    zIndex: 12,
-  },
-  footer: {
-    position: 'relative',
-    zIndex: 7,
-  },
-}))
