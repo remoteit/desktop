@@ -813,6 +813,34 @@ declare global {
     lastUsed: Date
   }
 
+  // A surface an agent's token is valid for: the raw resource URL + the friendly catalog label.
+  type IAgentAudience = {
+    url: string
+    label: string
+  }
+
+  // An OAuth app / AI agent the user has authorized (a Hydra consent), from graphql's
+  // login.connectedApps façade (list + reach + lastActive pre-merged). null reach = full reach.
+  type IAuthorizedAgent = {
+    clientId: string
+    clientName?: string
+    logoUri?: string
+    capabilities: string[] // device:read / device:write / … scopes granted
+    audience: IAgentAudience[] // surfaces the token is valid for (url + friendly label)
+    grantedAt?: string
+    expiresAt?: string
+    reach?: IAccountReach[] | null // per-account reach limit; null/absent = no limit (all devices)
+    lastActive?: string // last API request seen (merged from graphql login.agentActivity)
+  }
+
+  // One account an agent may reach, limited to the given tags (owned by that account; null = all
+  // its devices) matched by the operator.
+  type IAccountReach = {
+    account: string // account id
+    tags: string[] | null
+    operator: ITagOperator // 'ANY' | 'ALL'
+  }
+
   type IRouteType = 'failover' | 'p2p' | 'proxy' | 'public'
 
   interface IEvent {
