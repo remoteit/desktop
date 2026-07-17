@@ -89,7 +89,7 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/organization/roles/:roleID', '/organization'],
   ['/organization/customer/add', '/organization'],
   ['/organization/customer/:userID/plans', '/organization/customer/:userID'],
-  ['/organization/customer/:userID', '/organization'],
+  ['/organization/customer/:userID', '/organization/customer'],
   ['/organization/customer', '/organization'],
   ['/organization/add', '/organization'],
   ['/organization/settings', '/organization'],
