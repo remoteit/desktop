@@ -829,7 +829,7 @@ declare global {
     audience: IAgentAudience[] // surfaces the token is valid for (url + friendly label)
     grantedAt?: string
     expiresAt?: string
-    reach?: IAgentReach
+    reach?: IAccountReach[] | null // per-account reach limit; null/absent = no limit (all devices)
     lastActive?: string // last API request seen (merged from graphql login.agentActivity)
   }
 
@@ -839,13 +839,6 @@ declare global {
     account: string // account id
     tags: string[] | null
     operator: ITagOperator // 'ANY' | 'ALL'
-  }
-
-  // An agent's per-account device-reach limit (r3_AgentScope). null accounts = no limit (all).
-  type IAgentReach = {
-    clientId: string
-    accounts: IAccountReach[] | null
-    updated?: string
   }
 
   type IRouteType = 'failover' | 'p2p' | 'proxy' | 'public'

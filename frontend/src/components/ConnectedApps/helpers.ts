@@ -16,7 +16,7 @@ export function capabilityLabel(scope: string): string {
   return CAPABILITY_LABEL[scope] || scope
 }
 
-export const agentIsLimited = (agent: IAuthorizedAgent): boolean => !!(agent.reach && agent.reach.accounts != null)
+export const agentIsLimited = (agent: IAuthorizedAgent): boolean => agent.reach != null
 
 // Resolve an account id to a human label (the account email, or "you" for the signed-in user).
 // A hook so the list/detail share one implementation; memoized to keep the map reference stable.
@@ -34,15 +34,15 @@ export function useAccountLabel(): (id: string) => string {
 }
 
 // A concise one-liner for the row; the detail page renders the full per-account breakdown.
-export function reachSummary(reach: IAgentReach | undefined, accountLabel: (id: string) => string): string {
-  if (!reach || reach.accounts == null) return 'All devices'
-  if (!reach.accounts.length) return 'No devices'
-  if (reach.accounts.length === 1) {
-    const rule = reach.accounts[0]
+export function reachSummary(reach: IAccountReach[] | null | undefined, accountLabel: (id: string) => string): string {
+  if (reach == null) return 'All devices'
+  if (!reach.length) return 'No devices'
+  if (reach.length === 1) {
+    const rule = reach[0]
     const tags = rule.tags?.length ? ` (tags ${rule.tags.join(', ')})` : ''
     return `Limited to ${accountLabel(rule.account)}${tags}`
   }
-  return `Limited to ${reach.accounts.length} accounts`
+  return `Limited to ${reach.length} accounts`
 }
 
 // How long a revoked agent's in-flight access token still works (stateless JWT verification):

@@ -29,11 +29,11 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
     if (open) accountIds.forEach(id => dispatch.tags.fetchIfEmpty(id))
   }, [open])
 
-  // null accounts = no limit; render that as every account checked with no tags.
-  const unlimited = agent.reach?.accounts == null
+  // null reach = no limit; render that as every account checked with no tags.
+  const unlimited = agent.reach == null
   const rules: IAccountReach[] = unlimited
     ? accountIds.map(id => ({ account: id, tags: null, operator: 'ANY' }))
-    : agent.reach?.accounts || []
+    : agent.reach || []
 
   // Persist a new rule set; full reach (every account, no tags) is stored as "no limit".
   const apply = (next: IAccountReach[]) => {
