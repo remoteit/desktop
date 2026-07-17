@@ -10,16 +10,16 @@ import {
   Button,
   Chip,
   Typography,
+  Box,
 } from '@mui/material'
 import { Icon } from '../Icon'
-import { makeStyles } from '@mui/styles'
 import { getType } from '../../models/applicationTypes'
 import { REGEX_LAST_PATH } from '../../constants'
 import { IP_PRIVATE, REGEX_NAME_SAFE } from '@common/constants'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../../store'
-import { spacing, fontSizes } from '../../styling'
+import { spacing } from '../../styling'
 
 type Props = {
   data: IScan[]
@@ -40,7 +40,6 @@ const InterfaceIcon: IInterfaceIcon = {
 }
 
 export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, privateIP }) => {
-  const css = useStyles()
   const history = useHistory()
   const location = useLocation()
   const { ui } = useDispatch<Dispatch>()
@@ -79,14 +78,22 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
 
   return (
     <>
-      <div className={css.caption}>
+      <Box
+        sx={theme => ({
+          color: theme.palette.gray.main,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+        })}
+      >
         <Typography variant="subtitle1" gutterBottom>
           Add a service
         </Typography>
         <Chip
           size="small"
           onClick={toggleAll}
-          className={css.chip}
+          sx={{ marginRight: `${spacing.md}px` }}
           label={
             <>
               {allClosed ? 'Expand All' : 'Close All'}
@@ -94,7 +101,7 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
             </>
           }
         />
-      </div>
+      </Box>
       <List>
         {data.map((ip, row) => (
           <span key={row}>
@@ -109,7 +116,15 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
             </ListItemButton>
             <Collapse in={open.includes(row)}>
               {ip[1].map((port, key) => (
-                <ListItem key={key} dense className={css.port}>
+                <ListItem
+                  key={key}
+                  dense
+                  sx={{
+                    paddingLeft: '70px',
+                    paddingRight: `${spacing.lg}px`,
+                    '& div.MuiListItemText-root:nth-child(1)': { maxWidth: '20%' },
+                  }}
+                >
                   <ListItemText primary={port[0]} />
                   <ListItemText primary={port[1]} />
                   <ListItemSecondaryAction sx={{ right: spacing.lg }}>
@@ -150,31 +165,3 @@ export const ScanNetwork: React.FC<Props> = ({ data, services, interfaceType, pr
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  caption: {
-    color: palette.gray.main,
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-  },
-  chip: {
-    marginRight: spacing.md,
-  },
-  port: {
-    paddingLeft: 70,
-    paddingRight: spacing.lg,
-    '& div.MuiListItemText-root:nth-child(1)': {
-      maxWidth: '20%',
-    },
-  },
-  loading: {
-    alignItems: 'center',
-    flexDirection: 'column',
-    '& p': {
-      fontSize: fontSizes.sm,
-      margin: spacing.lg,
-      color: palette.grayLight.main,
-    },
-  },
-}))

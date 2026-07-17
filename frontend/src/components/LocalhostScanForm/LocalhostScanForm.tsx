@@ -7,7 +7,6 @@ import { State, Dispatch } from '../../store'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { LoadingMessage } from '../LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
-import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Title } from '../Title'
 import { emit } from '../../services/Controller'
@@ -17,7 +16,6 @@ type Props = {
 }
 
 export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
-  const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const [state, setState] = useState<boolean[]>([])
   const { applicationTypes, timestamp, loading, scanTimestamp, scanData } = useSelector((state: State) => {
@@ -68,7 +66,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
 
   return (
     <>
-      <Typography className={css.body} variant="body2" color="textSecondary">
+      <Typography sx={{ display: 'flex', alignItems: 'center' }} variant="body2" color="textSecondary">
         <Title>Select any found services to auto setup</Title>
         <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="Rescan" size="lg" />
       </Typography>
@@ -87,7 +85,7 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
             }}
           >
             <Chip
-              className={css.chip}
+              sx={{ marginRight: `${spacing.md}px` }}
               label={findType(applicationTypes, row.typeID).name + ' - ' + row.port}
               size="small"
             />
@@ -100,7 +98,3 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
   )
 }
 
-const useStyles = makeStyles({
-  chip: { marginRight: spacing.md },
-  body: { display: 'flex', alignItems: 'center' },
-})

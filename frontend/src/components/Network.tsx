@@ -7,8 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { selectConnectionSessions, selectConnections } from '../selectors/connections'
 import { Collapse, List } from '@mui/material'
-import { spacing, radius, fontSizes } from '../styling'
-import { makeStyles } from '@mui/styles'
+import { spacing, radius } from '../styling'
 import { Tags } from './Tags'
 
 export interface Props {
@@ -26,8 +25,6 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, 
   const networkEnabled = useSelector((state: State) =>
     selectConnections(state).some(c => c.enabled && network?.serviceIds.includes(c.id))
   )
-  const css = useStyles({ highlight })
-
   if (!network?.id) return null
 
   const networkConnected = sessions.some(s => network?.serviceIds.includes(s.target.id))
@@ -41,7 +38,32 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, 
   }
 
   return (
-    <List className={css.list}>
+    <List
+      sx={
+        highlight
+          ? theme => ({
+              backgroundColor: theme.palette.primaryHighlight.main,
+              margin: `${spacing.md}px`,
+              borderRadius: `${radius.sm}px`,
+              '& .MuiListItem-root': {
+                width: `calc(100% - ${spacing.lg}px)`,
+                marginLeft: `${spacing.sm}px`,
+              },
+              '& .MuiListItemIcon-root:first-of-type': {
+                marginLeft: `${-spacing.sm}px`,
+              },
+              '& .MuiListItem-button': {
+                '&:hover,&:focus,&.Mui-selected': {
+                  backgroundColor: theme.palette.white.main,
+                },
+              },
+              '& .Mui-selected': {
+                backgroundColor: theme.palette.white.main,
+              },
+            })
+          : undefined
+      }
+    >
       <NetworkListTitle
         network={network}
         enabled={networkConnected || networkEnabled}
@@ -76,37 +98,3 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, 
     </List>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  list: ({ highlight }: Props) =>
-    highlight
-      ? {
-          backgroundColor: highlight ? palette.primaryHighlight.main : undefined,
-          margin: spacing.md,
-          borderRadius: radius.sm,
-          '& .MuiListItem-root': {
-            width: `calc(100% - ${spacing.lg}px)`,
-            marginLeft: spacing.sm,
-          },
-          '& .MuiListItemIcon-root:first-of-type': {
-            marginLeft: -spacing.sm,
-          },
-          '& .MuiListItem-button': {
-            '&:hover,&:focus,&.Mui-selected': {
-              backgroundColor: palette.white.main,
-            },
-          },
-          '& .Mui-selected': {
-            backgroundColor: palette.white.main,
-          },
-        }
-      : {},
-  note: {
-    color: palette.primary.main,
-    textTransform: 'uppercase',
-    letterSpacing: '0.2em',
-    fontWeight: 500,
-    fontSize: fontSizes.xxxs,
-    marginRight: spacing.sm,
-  },
-}))
