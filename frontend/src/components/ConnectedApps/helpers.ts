@@ -35,12 +35,20 @@ export function useAccountLabel(): (id: string) => string {
 
 // A concise one-liner for the row; the detail page renders the full per-account breakdown.
 export function reachSummary(reach: IAgentReach | undefined, accountLabel: (id: string) => string): string {
-  if (!reach || reach.accounts == null) return 'Can reach all your devices'
-  if (!reach.accounts.length) return 'No device access'
+  if (!reach || reach.accounts == null) return 'All devices'
+  if (!reach.accounts.length) return 'No devices'
   if (reach.accounts.length === 1) {
     const rule = reach.accounts[0]
     const tags = rule.tags?.length ? ` (tags ${rule.tags.join(', ')})` : ''
     return `Limited to ${accountLabel(rule.account)}${tags}`
   }
   return `Limited to ${reach.accounts.length} accounts`
+}
+
+// How long a revoked agent's in-flight access token still works (stateless JWT verification):
+// revoke kills refresh immediately, but the last access token lives out its TTL.
+export function accessWindow(seconds: number): string {
+  const mins = Math.round(seconds / 60)
+  if (mins >= 1) return `${mins} minute${mins === 1 ? '' : 's'}`
+  return `${seconds} seconds`
 }

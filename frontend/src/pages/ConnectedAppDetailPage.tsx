@@ -1,27 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { Avatar, Box, Button, Chip, Divider, List, ListItem, ListItemText, Stack, Typography } from '@mui/material'
+import { Chip, List, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { IconButton } from '../buttons/IconButton'
+import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
+import { FormDisplay } from '../components/FormDisplay'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 import { Timestamp } from '../components/Timestamp'
-import { RevokeAgentDialog } from '../components/ConnectedApps/RevokeAgentDialog'
+import { AgentAvatar } from '../components/ConnectedApps/AgentAvatar'
 import { AgentReachDialog } from '../components/ConnectedApps/AgentReachDialog'
-import { capabilityLabel, useAccountLabel } from '../components/ConnectedApps/helpers'
-
-const Section: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <Box mb={3}>
-    <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-      {label}
-    </Typography>
-    {children}
-  </Box>
-)
+import { capabilityLabel, agentIsLimited, accessWindow, useAccountLabel } from '../components/ConnectedApps/helpers'
+import { spacing } from '../styling'
 
 export const ConnectedAppDetailPage: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>()
@@ -34,22 +28,26 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const ttl = useSelector((state: State) => state.agents.accessTokenTtlSeconds)
   const fetching = useSelector((state: State) => state.agents.fetching)
   const init = useSelector((state: State) => state.agents.init)
+  const updating = useSelector((state: State) => state.agents.updating)
   const accountLabel = useAccountLabel()
 
   useEffect(() => {
     dispatch.agents.init()
   }, [])
 
-  const header = (title: string) => (
-    <Typography variant="h1">
-      <IconButton name="chevron-left" onClick={() => history.push('/account/connected')} size="md" title="Back" />
-      <Title>{title}</Title>
-    </Typography>
-  )
+  const back = () => history.push('/account/connected')
 
   if (!agent) {
     return (
-      <Container gutterBottom header={header('Connected App')}>
+      <Container
+        gutterBottom
+        header={
+          <Typography variant="h1">
+            <IconButton name="chevron-left" onClick={back} size="md" title="Back" />
+            <Title>Connected App</Title>
+          </Typography>
+        }
+      >
         <Gutters>
           {fetching || !init ? (
             <Typography variant="body2" color="textSecondary">
@@ -66,110 +64,117 @@ export const ConnectedAppDetailPage: React.FC = () => {
   }
 
   const name = agent.clientName || agent.clientId
-  const monogram = (name.trim()[0] || '?').toUpperCase()
-  const mins = Math.max(1, Math.round(ttl / 60))
+  const limited = agentIsLimited(agent)
+
+  const reachDisplay = !limited ? (
+    'All your devices'
+  ) : !agent.reach?.accounts?.length ? (
+    'No devices'
+  ) : (
+    agent.reach.accounts.map(rule => (
+      <span key={rule.account} style={{ display: 'block' }}>
+        {accountLabel(rule.account)}
+        {rule.tags?.length
+          ? ` — devices tagged ${rule.operator === 'ALL' ? 'all of' : 'any of'}: ${rule.tags.join(', ')}`
+          : ' — all devices'}
+      </span>
+    ))
+  )
 
   return (
-    <Container gutterBottom header={header(name)}>
-      <Gutters>
-        <Stack direction="row" spacing={2} alignItems="center" mb={3}>
-          <Avatar src={agent.logoUri} alt="">
-            {monogram}
-          </Avatar>
-          <Box>
-            <Typography variant="h3">{name}</Typography>
-            {agent.grantedAt && (
-              <Typography variant="caption" color="textSecondary" display="block">
-                Authorized <Timestamp date={new Date(agent.grantedAt)} variant="long" />
-              </Typography>
-            )}
-            <Typography variant="caption" color="textSecondary" display="block">
-              {agent.lastActive ? (
-                <>
-                  Last active <Timestamp date={new Date(agent.lastActive)} variant="long" />
-                </>
-              ) : (
-                'No activity recorded yet'
-              )}
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Section label="Can do">
-          {agent.capabilities.length ? (
-            agent.capabilities.map(scope => (
-              <Chip key={scope} size="small" label={capabilityLabel(scope)} sx={{ mr: 0.5, mb: 0.5 }} />
-            ))
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              No device access — it can confirm your identity, but cannot see or control any devices.
-            </Typography>
-          )}
-        </Section>
-
-        <Section label="Can access">
-          {agent.audience.length ? (
-            <List dense disablePadding>
-              {agent.audience.map(a => (
-                <ListItem key={a.url} disableGutters>
-                  <ListItemText
-                    primary={a.label}
-                    secondary={a.url}
-                    secondaryTypographyProps={{ sx: { wordBreak: 'break-all' } }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              —
-            </Typography>
-          )}
-        </Section>
-
-        <Section label="Device reach">
-          {agent.reach?.accounts == null ? (
-            <Typography variant="body2" gutterBottom>
-              Can reach all your devices.
-            </Typography>
-          ) : (
-            agent.reach.accounts.map(rule => (
-              <Box key={rule.account} mb={1.5}>
-                <Typography variant="body2">
-                  <b>{accountLabel(rule.account)}</b>
-                </Typography>
-                {rule.tags?.length ? (
-                  <Box mt={0.5}>
-                    <Typography variant="caption" color="textSecondary">
-                      devices tagged ({rule.operator === 'ALL' ? 'all of' : 'any of'}):{' '}
-                    </Typography>
-                    {rule.tags.map(tag => (
-                      <Chip key={tag} size="small" variant="outlined" label={tag} sx={{ mr: 0.5, mb: 0.5 }} />
-                    ))}
-                  </Box>
-                ) : (
-                  <Typography variant="caption" color="textSecondary">
-                    all devices
-                  </Typography>
-                )}
-              </Box>
-            ))
-          )}
-          <Button size="small" onClick={() => setReachOpen(true)} sx={{ mt: 1 }}>
-            Change device limits
-          </Button>
-        </Section>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Section label="Revoke access">
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            Signs {name} out. New access is blocked immediately; any in-progress session ends within {mins} minute
-            {mins === 1 ? '' : 's'}. It can request access again by signing in.
+    <Container
+      gutterBottom
+      header={
+        <Typography variant="h1">
+          <IconButton name="chevron-left" onClick={back} size="md" title="Back" />
+          <Title>
+            <AgentAvatar agent={agent} size={spacing.lg} inline />
+            {name}
+          </Title>
+          <ConfirmIconButton
+            confirm
+            icon="trash"
+            size="md"
+            title="Revoke access"
+            loading={updating === agent.clientId}
+            disabled={updating === agent.clientId}
+            confirmProps={{
+              title: 'Revoke access?',
+              action: 'Revoke',
+              color: 'error',
+              children: (
+                <Notice severity="warning" fullWidth gutterBottom>
+                  <b>{name}</b> will be signed out. New access is blocked immediately; any session already in progress
+                  ends within <b>{accessWindow(ttl)}</b>. It can request access again by signing in.
+                </Notice>
+              ),
+            }}
+            onClick={async () => {
+              await dispatch.agents.revoke(agent.clientId)
+              back()
+            }}
+          />
+        </Typography>
+      }
+    >
+      <Typography variant="subtitle1">Permissions</Typography>
+      <Gutters top={null}>
+        {agent.capabilities.length ? (
+          agent.capabilities.map(scope => (
+            <Chip key={scope} size="small" label={capabilityLabel(scope)} sx={{ mr: 1, mb: 0.5 }} />
+          ))
+        ) : (
+          <Typography variant="body2" color="textSecondary">
+            No device access — it can confirm your identity, but cannot see or control any devices.
           </Typography>
-          <RevokeAgentDialog agent={agent} onRevoked={() => history.push('/account/connected')} />
-        </Section>
+        )}
       </Gutters>
+
+      <Typography variant="subtitle1">Details</Typography>
+      <List>
+        <FormDisplay
+          icon={limited ? 'lock' : 'globe'}
+          label="Device reach"
+          displayValue={reachDisplay}
+          onClick={() => setReachOpen(true)}
+        />
+        {agent.audience.length > 0 && (
+          <FormDisplay
+            icon="cloud"
+            label="Service"
+            displayValue={agent.audience.map(a => (
+              <span key={a.url} style={{ display: 'block' }}>
+                {a.label}
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  component="span"
+                  sx={{ display: 'block', wordBreak: 'break-all' }}
+                >
+                  {a.url}
+                </Typography>
+              </span>
+            ))}
+            displayOnly
+          />
+        )}
+        {agent.grantedAt && (
+          <FormDisplay
+            icon="calendar-star"
+            label="Authorized"
+            displayValue={<Timestamp date={new Date(agent.grantedAt)} variant="long" />}
+            displayOnly
+          />
+        )}
+        <FormDisplay
+          icon="clock"
+          label="Last active"
+          displayValue={
+            agent.lastActive ? <Timestamp date={new Date(agent.lastActive)} variant="long" /> : 'No activity yet'
+          }
+          displayOnly
+        />
+      </List>
       <AgentReachDialog agent={agent} open={reachOpen} onClose={() => setReachOpen(false)} />
     </Container>
   )
