@@ -62,13 +62,13 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
   const name = agent.clientName || 'This app'
   const tagged = rules.filter(r => r.tags?.length).length
   let summary
-  if (unlimited) summary = `${name} can reach all devices in every account you belong to.`
+  if (unlimited) summary = `${name} can reach all devices in every organization you belong to.`
   else if (!rules.length) summary = `${name} cannot reach any devices.`
   else {
     const scope =
       rules.length >= accountIds.length
-        ? 'every account you belong to'
-        : `${rules.length} of ${accountIds.length} accounts`
+        ? 'every organization you belong to'
+        : `${rules.length} of ${accountIds.length} organizations`
     const limits = tagged ? `, limited to tagged devices in ${tagged === 1 ? 'one' : `${tagged} of them`}` : ''
     summary = `${name} can reach ${scope}${limits}.`
   }
@@ -80,7 +80,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
           {summary}
         </Typography>
         <Typography variant="caption" display="block">
-          Turn on the accounts and organizations it may access. Add tags to limit an account to matching devices only.
+          Turn on the organizations it may access. Add tags to limit an organization to matching devices only.
         </Typography>
       </Gutters>
       <List>
