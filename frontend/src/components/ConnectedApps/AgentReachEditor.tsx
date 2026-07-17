@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
-import { Chip, List, Typography } from '@mui/material'
+import { Chip, Collapse, List, Typography } from '@mui/material'
 import { ListItemSetting } from '../ListItemSetting'
 import { TagEditor } from '../TagEditor'
 import { Gutters } from '../Gutters'
@@ -21,6 +21,10 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
   const membership = useSelector((state: State) => state.accounts.membership)
 
   const accountIds = [meId, ...membership.map(m => m.account.id)].filter(Boolean)
+
+  // Remember each account's last active rule so its settings keep rendering through the
+  // collapse-out transition after it's toggled off (by then it's gone from `rules`).
+  const lastRules = useRef<{ [id: string]: IAccountReach }>({})
 
   // Avatar keyed on the account email with the org name as its initial fallback — the same
   // colored circle the organization picker shows.
@@ -82,8 +86,11 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
       <List>
       {accountIds.map(id => {
         const rule = rules.find(r => r.account === id)
+        if (rule) lastRules.current[id] = rule
+        // Render from the retained rule so the settings persist through the collapse-out.
+        const shown = rule || lastRules.current[id]
         const accountTags = allTags[id] || []
-        const selected: ITag[] = (rule?.tags || []).map(
+        const selected: ITag[] = (shown?.tags || []).map(
           name => accountTags.find(t => t.name === name) || { name, color: 0 }
         )
         return (
@@ -94,42 +101,44 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
               toggle={!!rule}
               onClick={() => toggleAccount(id, !rule)}
             />
-            {rule && (
-              <Gutters inset="icon" top={null} bottom="sm">
-                {rule.tags?.length ? (
-                  <Tags
-                    tags={selected}
-                    onDelete={tag => {
-                      const tags = (rule.tags || []).filter(name => name !== tag.name)
-                      updateRule(id, { tags: tags.length ? tags : null })
-                    }}
+            <Collapse in={!!rule} unmountOnExit>
+              {shown && (
+                <Gutters inset="icon" top={null} bottom="sm">
+                  {shown.tags?.length ? (
+                    <Tags
+                      tags={selected}
+                      onDelete={tag => {
+                        const tags = (shown.tags || []).filter(name => name !== tag.name)
+                        updateRule(id, { tags: tags.length ? tags : null })
+                      }}
+                    />
+                  ) : (
+                    <Chip
+                      label="All devices"
+                      size="small"
+                      sx={{ fontWeight: 500, letterSpacing: 1, color: 'grayDarker.main' }}
+                    />
+                  )}
+                  <TagEditor
+                    tags={accountTags}
+                    filter={selected}
+                    placeholder="Add tag..."
+                    allowAdding={false}
+                    keyboardShortcut={false}
+                    onSelect={tag => updateRule(id, { tags: [...(shown.tags || []), tag.name] })}
                   />
-                ) : (
-                  <Chip
-                    label="All devices"
-                    size="small"
-                    sx={{ fontWeight: 500, letterSpacing: 1, color: 'grayDarker.main' }}
-                  />
-                )}
-                <TagEditor
-                  tags={accountTags}
-                  filter={selected}
-                  placeholder="Add tag..."
-                  allowAdding={false}
-                  keyboardShortcut={false}
-                  onSelect={tag => updateRule(id, { tags: [...(rule.tags || []), tag.name] })}
-                />
-                {(rule.tags?.length || 0) > 1 && (
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    sx={{ marginLeft: 1 }}
-                    label={rule.operator === 'ALL' ? 'Match: all tags' : 'Match: any tag'}
-                    onClick={() => updateRule(id, { operator: rule.operator === 'ALL' ? 'ANY' : 'ALL' })}
-                  />
-                )}
-              </Gutters>
-            )}
+                  {(shown.tags?.length || 0) > 1 && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      sx={{ marginLeft: 1 }}
+                      label={shown.operator === 'ALL' ? 'Match: all tags' : 'Match: any tag'}
+                      onClick={() => updateRule(id, { operator: shown.operator === 'ALL' ? 'ANY' : 'ALL' })}
+                    />
+                  )}
+                </Gutters>
+              )}
+            </Collapse>
           </React.Fragment>
         )
       })}
