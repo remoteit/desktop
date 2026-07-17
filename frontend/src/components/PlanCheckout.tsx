@@ -1,13 +1,19 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
-import { Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
+import { Box, Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { QuantitySelector } from './QuantitySelector'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
+
+const listSx = {
+  width: '50%',
+  minWidth: 400,
+  '& .MuiListItem-root': { padding: `${spacing.sm}px` },
+  '& h2': { textTransform: 'capitalize' },
+}
 
 type Props = {
   plans: IPlan[]
@@ -19,7 +25,6 @@ type Props = {
 }
 
 export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel, onSuccess }) => {
-  const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
   const purchasing = useSelector((state: State) => state.plans.purchasing === form.planId)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
@@ -54,7 +59,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   if (form.planId === PERSONAL_PLAN_ID)
     return (
       <>
-        <List className={css.list}>
+        <List sx={listSx}>
           <ListItem>
             <Typography variant="h1">Personal plan</Typography>
           </ListItem>
@@ -64,7 +69,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             </Typography>
           </ListItem>
         </List>
-        <List className={css.list}>
+        <List sx={listSx}>
           <ListItem>
             <Button
               onClick={async () => {
@@ -87,16 +92,33 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
 
   return (
     <>
-      <List className={css.list}>
+      <List sx={listSx}>
         <ListItem>
           <Typography variant="h2">{selectedPlan?.description} plan</Typography>
         </ListItem>
       </List>
-      <List className={css.list}>
+      <List sx={listSx}>
         <ListItem onClick={() => setNextInterval()}>
           <Typography variant="h3">Interval</Typography>
           <ListItemSecondaryAction>
-            <div className={css.group}>
+            <Box
+              sx={theme => ({
+                border: `1px solid ${theme.palette.grayLighter.main}`,
+                borderRadius: `${spacing.md}px`,
+                backgroundColor: theme.palette.white.main,
+                display: 'inline-block',
+                '& > .MuiButton-root': { height: 30, borderRadius: 0 },
+                '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
+                '& > .MuiButton-root:first-of-type': {
+                  borderTopLeftRadius: `${spacing.md}px`,
+                  borderBottomLeftRadius: `${spacing.md}px`,
+                },
+                '& > .MuiButton-root:last-child': {
+                  borderTopRightRadius: `${spacing.md}px`,
+                  borderBottomRightRadius: `${spacing.md}px`,
+                },
+              })}
+            >
               {selectedPlan?.prices?.map(price => (
                 <Button
                   key={price.id}
@@ -108,7 +130,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
                   {price.interval}
                 </Button>
               ))}
-            </div>
+            </Box>
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem onClick={() => setQuantity(form.quantity + 1)}>
@@ -136,7 +158,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           </ListItemSecondaryAction>
         </ListItem>
       </List>
-      <List className={css.list}>
+      <List sx={listSx}>
         <Divider />
         <ListItem>
           <Typography variant="h3">Total</Typography>
@@ -155,7 +177,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           </ListItemSecondaryAction>
         </ListItem>
       </List>
-      <List className={css.list}>
+      <List sx={listSx}>
         <ListItem>
           <Button
             onClick={onSubmit}
@@ -174,21 +196,3 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
   )
 }
 
-export const useStyles = makeStyles(({ palette }) => ({
-  list: {
-    width: '50%',
-    minWidth: 400,
-    '& .MuiListItem-root': { padding: spacing.sm },
-    '& h2': { textTransform: 'capitalize' },
-  },
-  group: {
-    border: `1px solid ${palette.grayLighter.main}`,
-    borderRadius: spacing.md,
-    backgroundColor: palette.white.main,
-    display: 'inline-block',
-    '& > .MuiButton-root': { height: 30, borderRadius: 0 },
-    '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
-    '& > .MuiButton-root:first-of-type': { borderTopLeftRadius: spacing.md, borderBottomLeftRadius: spacing.md },
-    '& > .MuiButton-root:last-child': { borderTopRightRadius: spacing.md, borderBottomRightRadius: spacing.md },
-  },
-}))
