@@ -101,7 +101,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
               toggle={!!rule}
               onClick={() => toggleAccount(id, !rule)}
             />
-            <Collapse in={!!rule} unmountOnExit>
+            <Collapse in={!!rule}>
               {shown && (
                 <Gutters inset="icon" top={null} bottom="sm">
                   {shown.tags?.length ? (
