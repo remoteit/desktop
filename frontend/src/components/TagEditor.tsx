@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import { makeStyles } from '@mui/styles'
 import { Chip, Tooltip } from '@mui/material'
 import { TagAutocomplete } from './TagAutocomplete'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
@@ -42,7 +41,6 @@ export const TagEditor: React.FC<Props> = ({
   const [creating, setCreating] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const chipRef = React.useRef<HTMLDivElement>(null)
-  const css = useStyles()
 
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
@@ -81,7 +79,7 @@ export const TagEditor: React.FC<Props> = ({
               {label}
             </>
           }
-          className={css.chip}
+          sx={{ fontWeight: 500, letterSpacing: 1, color: 'grayDarker.main' }}
           size="small"
           onClick={handleOpen}
           ref={chipRef}
@@ -119,6 +117,3 @@ export const TagEditor: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  chip: { fontWeight: 500, letterSpacing: 1, color: palette.grayDarker.main },
-}))
