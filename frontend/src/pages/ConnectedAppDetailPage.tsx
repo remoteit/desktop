@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { Chip, List, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
@@ -12,8 +12,8 @@ import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 import { Timestamp } from '../components/Timestamp'
 import { AgentAvatar } from '../components/ConnectedApps/AgentAvatar'
-import { AgentReachDialog } from '../components/ConnectedApps/AgentReachDialog'
-import { capabilityLabel, agentIsLimited, accessWindow, useAccountLabel } from '../components/ConnectedApps/helpers'
+import { AgentReachEditor } from '../components/ConnectedApps/AgentReachEditor'
+import { capabilityLabel, accessWindow } from '../components/ConnectedApps/helpers'
 import { spacing } from '../styling'
 
 export const ConnectedAppDetailPage: React.FC = () => {
@@ -21,14 +21,12 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const decoded = decodeURIComponent(clientId)
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const [reachOpen, setReachOpen] = useState(false)
 
   const agent = useSelector((state: State) => state.agents.agents.find(a => a.clientId === decoded))
   const ttl = useSelector((state: State) => state.agents.accessTokenTtlSeconds)
   const fetching = useSelector((state: State) => state.agents.fetching)
   const init = useSelector((state: State) => state.agents.init)
   const updating = useSelector((state: State) => state.agents.updating)
-  const accountLabel = useAccountLabel()
 
   useEffect(() => {
     dispatch.agents.init()
@@ -62,22 +60,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
   }
 
   const name = agent.clientName || agent.clientId
-  const limited = agentIsLimited(agent)
-
-  const reachDisplay = !limited ? (
-    'All your devices'
-  ) : !agent.reach?.accounts?.length ? (
-    'No devices'
-  ) : (
-    agent.reach.accounts.map(rule => (
-      <span key={rule.account} style={{ display: 'block' }}>
-        {accountLabel(rule.account)}
-        {rule.tags?.length
-          ? ` — devices tagged ${rule.operator === 'ALL' ? 'all of' : 'any of'}: ${rule.tags.join(', ')}`
-          : ' — all devices'}
-      </span>
-    ))
-  )
 
   return (
     <Container
@@ -127,14 +109,13 @@ export const ConnectedAppDetailPage: React.FC = () => {
         )}
       </Gutters>
 
+      <Typography variant="subtitle1">Device reach</Typography>
+      <List>
+        <AgentReachEditor agent={agent} />
+      </List>
+
       <Typography variant="subtitle1">Details</Typography>
       <List>
-        <FormDisplay
-          icon={limited ? 'lock' : 'globe'}
-          label="Device reach"
-          displayValue={reachDisplay}
-          onClick={() => setReachOpen(true)}
-        />
         {agent.audience.length > 0 && (
           <FormDisplay
             icon="cloud"
@@ -172,7 +153,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
           displayOnly
         />
       </List>
-      <AgentReachDialog agent={agent} open={reachOpen} onClose={() => setReachOpen(false)} />
     </Container>
   )
 }

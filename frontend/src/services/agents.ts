@@ -44,7 +44,8 @@ export async function graphQLRevokeAgent(clientId: string) {
   )
 }
 
-// `accounts` = the per-account reach rules; null/empty clears the limit (full reach).
+// `accounts` = the per-account reach rules. null clears the limit (full reach); an empty
+// array is a real value — an empty allowlist, i.e. no device access.
 export async function graphQLSetAgentScope(clientId: string, accounts: IAccountReach[] | null) {
   return await graphQLBasicRequest(
     ` mutation SetAgentScope($clientId: String!, $accounts: [AgentAccountReachInput!]) {
@@ -52,7 +53,7 @@ export async function graphQLSetAgentScope(clientId: string, accounts: IAccountR
       }`,
     {
       clientId,
-      accounts: accounts?.length
+      accounts: accounts
         ? accounts.map(rule => ({ account: rule.account, tags: rule.tags, operator: rule.operator }))
         : null,
     }
