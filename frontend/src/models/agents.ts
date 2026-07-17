@@ -59,6 +59,9 @@ export default createModel<RootModel>()({
     // Optimistic: the mutation is a full replacement, so on success the local value IS the
     // server value — no refetch, and no `updating` flag (the UI updates instantly). On error,
     // revert to the previous reach (the graphql layer has already surfaced the error).
+    // Known edge: with rapid toggles, a request that fails *after* a later one succeeds reverts
+    // to its own stale `previous`, briefly diverging from the server until the next fetch
+    // reconciles it. Accepted — a failure interleaved with rapid edits is rare and self-heals.
     async setLimit(params: { clientId: string; accounts: IAccountReach[] | null }, globalState) {
       const previous = globalState.agents.agents.find(a => a.clientId === params.clientId)?.reach ?? null
       dispatch.agents.setReach({ clientId: params.clientId, reach: params.accounts })
