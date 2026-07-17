@@ -2,14 +2,14 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
 import { Chip, List, Typography } from '@mui/material'
-import { ListItemCheckbox } from '../ListItemCheckbox'
+import { ListItemSetting } from '../ListItemSetting'
 import { TagEditor } from '../TagEditor'
 import { Gutters } from '../Gutters'
 import { Tags } from '../Tags'
 import { useAccountLabel } from './helpers'
 
-// Inline editor for an agent's device reach: each account gets a checkbox and the standard
-// tag picker. Changes apply optimistically, like tag edits elsewhere in the app.
+// Inline editor for an agent's device reach: each account gets an on/off toggle and the
+// standard tag picker. Changes apply optimistically, like tag edits elsewhere in the app.
 export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) => {
   const dispatch = useDispatch<Dispatch>()
   const accountLabel = useAccountLabel()
@@ -65,7 +65,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
           {summary}
         </Typography>
         <Typography variant="caption" display="block">
-          Check the accounts and organizations it may access. Add tags to limit an account to matching devices only.
+          Turn on the accounts and organizations it may access. Add tags to limit an account to matching devices only.
         </Typography>
       </Gutters>
       <List>
@@ -77,10 +77,11 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
         )
         return (
           <React.Fragment key={id}>
-            <ListItemCheckbox
+            <ListItemSetting
+              icon={id === meId ? 'user' : 'industry-alt'}
               label={accountLabel(id)}
-              checked={!!rule}
-              onClick={checked => toggleAccount(id, checked)}
+              toggle={!!rule}
+              onClick={() => toggleAccount(id, !rule)}
             />
             {rule && (
               <Gutters inset="icon" top={null} bottom="sm">
