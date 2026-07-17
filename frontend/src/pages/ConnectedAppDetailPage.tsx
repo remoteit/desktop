@@ -82,10 +82,13 @@ export const ConnectedAppDetailPage: React.FC = () => {
               action: 'Revoke',
               color: 'error',
               children: (
-                <Notice severity="warning" fullWidth gutterBottom>
-                  <b>{name}</b> will be signed out. New access is blocked immediately; any session already in progress
-                  ends within <b>{accessWindow(ttl)}</b>. It can request access again by signing in.
-                </Notice>
+                <>
+                  <Notice severity="error" gutterBottom fullWidth>
+                    <b>{name}</b> will be signed out. New access is blocked immediately; any session already in progress
+                    ends within <b>{accessWindow(ttl)}</b>.
+                  </Notice>
+                  <Typography variant="body2">It can request access again by signing in.</Typography>
+                </>
               ),
             }}
             onClick={async () => {
