@@ -1,27 +1,24 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
-import { Tooltip } from '@mui/material'
+import { Box, Tooltip } from '@mui/material'
 import { radius, spacing } from '../styling'
 
 type Props = React.HTMLAttributes<HTMLDivElement> & { message: string; children: any }
 
 export const Help: React.FC<Props> = ({ children, message, ...props }) => {
-  const css = useStyles()
-
   return (
     <Tooltip title={message} placement="top" arrow>
-      <span {...props} className={css.style}>
+      <Box
+        component="span"
+        {...props}
+        sx={{
+          fontWeight: 500,
+          backgroundColor: 'primaryLighter.main',
+          borderRadius: `${radius.sm}px`,
+          padding: `0 ${spacing.xs}px 2px`,
+        }}
+      >
         {children}
-      </span>
+      </Box>
     </Tooltip>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  style: {
-    fontWeight: 500,
-    backgroundColor: palette.primaryLighter.main,
-    borderRadius: radius.sm,
-    padding: `0 ${spacing.xs}px 2px`,
-  },
-}))

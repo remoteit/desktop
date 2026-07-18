@@ -2,7 +2,7 @@ import React from 'react'
 import { Box, Tooltip, TooltipProps, BoxProps, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { useStyles } from './GuideStep'
+import { tipSx, arrowSx, boxSx } from './GuideStep'
 import { Link } from './Link'
 
 type Props = {
@@ -46,7 +46,6 @@ export const GuideBubble: React.FC<Props> = ({
   const hideForSidebar = sidebarOpen && !sidebar
   const queued = !!queueAfter && !poppedBubbles.includes(queueAfter)
   const open: boolean = !hide && !poppedBubbles.includes(guide) && !expired && !waiting && !queued && !hideForSidebar
-  const css = useStyles({ highlight: highlight && open })
 
   React.useEffect(() => {
     const timeout = setTimeout(() => setWaiting(false), enterDelay || 0)
@@ -57,7 +56,7 @@ export const GuideBubble: React.FC<Props> = ({
 
   return (
     <Tooltip
-      classes={{ tooltip: css.tip, arrow: css.arrow }}
+      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx } }}
       open={open}
       arrow={!hideArrow}
       placement={placement || 'top'}
@@ -73,7 +72,11 @@ export const GuideBubble: React.FC<Props> = ({
         </>
       }
     >
-      <Box className={css.box} sx={sx} onClick={() => ui.pop(guide)} component={component}>
+      <Box
+        sx={[boxSx(highlight && open), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+        onClick={() => ui.pop(guide)}
+        component={component}
+      >
         {children}
       </Box>
     </Tooltip>
