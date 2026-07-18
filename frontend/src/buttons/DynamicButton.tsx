@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react'
-import { IconButton, Tooltip, Button, ButtonProps, Theme, alpha, darken } from '@mui/material'
+import { Box, IconButton, Tooltip, Button, ButtonProps, Theme, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
 import { spacing } from '../styling'
 
@@ -24,8 +24,11 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
     variant = 'contained',
     className,
     loading,
+    sx,
     ...rest
   }: DynamicButtonProps = props
+
+  const sxArray = Array.isArray(sx) ? sx : sx ? [sx] : []
 
   const buttonSx = (theme: Theme) => {
     let background = rest.disabled ? theme.palette.grayLight.main : color ? theme.palette[color].main : undefined
@@ -65,7 +68,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
 
   if (size === 'chip') {
     return (
-      <Button ref={ref} size="small" variant={variant} className={className} sx={buttonSx} {...rest}>
+      <Button ref={ref} size="small" variant={variant} className={className} sx={[buttonSx, ...sxArray]} {...rest}>
         {title}
       </Button>
     )
@@ -88,7 +91,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
 
   if (size === 'small' || size === 'medium' || size === 'large') {
     return (
-      <Button ref={ref} size={size} variant={variant} {...rest} className={className} sx={buttonSx}>
+      <Button ref={ref} size={size} variant={variant} {...rest} className={className} sx={[buttonSx, ...sxArray]}>
         {IconComponent}
         {title}
       </Button>
@@ -97,11 +100,11 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
 
   return (
     <Tooltip title={title} className={className} placement="top" enterDelay={400} arrow>
-      <span>
+      <Box component="span" sx={sx}>
         <IconButton ref={ref} disabled={rest.disabled} onClick={rest.onClick} size="small">
           {IconComponent}
         </IconButton>
-      </span>
+      </Box>
     </Tooltip>
   )
 })

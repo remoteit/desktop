@@ -226,9 +226,9 @@ export const OrganizationSelect: React.FC = () => {
               </Badge>
             )
           })}
-          {/* <ListItem disableGutters className={css.buttonContainer}>
+          {/* <ListItem disableGutters sx={buttonContainerSx}>
             <IconButton
-              className={css.button}
+              sx={buttonSx}
               title="Memberships"
               icon="ellipsis-h"
               to="/organization/memberships"

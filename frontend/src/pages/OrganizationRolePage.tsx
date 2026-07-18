@@ -67,7 +67,7 @@ export const OrganizationRolePage: React.FC = () => {
       <List
         sx={{
           '& .MuiTextField-root': { maxWidth: 400 },
-          '& .MuiListItem-secondaryAction': { paddingRight: 130 },
+          '& .MuiListItem-secondaryAction': { paddingRight: '130px' },
         }}
       >
         {systemRole && (
