@@ -1,10 +1,9 @@
 import React from 'react'
 import { Redirect } from 'react-router-dom'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
 import { Dispatch, State } from '../store'
 import { selectOrganization } from '../selectors/organizations'
-import { TextField, Typography, Button } from '@mui/material'
+import { Box, TextField, Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { spacing } from '../styling'
 import { Gutters } from '../components/Gutters'
@@ -18,7 +17,6 @@ export const OrganizationEmptyPage: React.FC = () => {
   const [name, setName] = React.useState<string>(`${username}'s org`)
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
 
   if (hasOrganization) return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
@@ -29,8 +27,17 @@ export const OrganizationEmptyPage: React.FC = () => {
         automatically share devices to your members.
       </Typography>
       <Gutters bottom="xxl">
-        <form
-          className={css.form}
+        <Box
+          component="form"
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            '& .MuiTextField-root': { width: 260, margin: `${spacing.xs}px` },
+          }}
           onSubmit={async event => {
             event.preventDefault()
             await dispatch.organization.setOrganization({ name })
@@ -48,23 +55,9 @@ export const OrganizationEmptyPage: React.FC = () => {
           <Button variant="contained" color="primary" type="submit" size="large">
             Create
           </Button>
-        </form>
+        </Box>
       </Gutters>
     </Body>
   )
 }
 
-const useStyles = makeStyles({
-  form: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    '& .MuiTextField-root': {
-      width: 260,
-      margin: spacing.xs,
-    },
-  },
-})

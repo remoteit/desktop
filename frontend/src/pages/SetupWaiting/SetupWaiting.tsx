@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react'
-import { Typography, CircularProgress, Divider } from '@mui/material'
+import { Box, Typography, CircularProgress, Divider } from '@mui/material'
 import { State } from '../../store'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { getDevices } from '../../selectors/devices'
-import { makeStyles } from '@mui/styles'
 import { DocsLinks } from '../../components/DocsLinks'
 import { osName } from '@common/nameHelper'
 import { Body } from '../../components/Body'
@@ -18,7 +17,6 @@ export const SetupWaiting: React.FC<Props> = ({ os }) => {
     device: getDevices(state).find(d => d.thisDevice),
   }))
   const history = useHistory()
-  const css = useStyles()
 
   useEffect(() => {
     if (device) {
@@ -33,19 +31,15 @@ export const SetupWaiting: React.FC<Props> = ({ os }) => {
     <Body center>
       <CircularProgress thickness={1.5} size={60} />
       <section>
-        <Typography className={css.title} variant="h3" align="center" gutterBottom>
+        <Typography sx={{ marginTop: `${spacing.xl}px` }} variant="h3" align="center" gutterBottom>
           Your {osName(os)} is being registered with Remote.It
         </Typography>
       </section>
-      <div className={css.divider}>
+      <Box sx={{ width: 400, marginBottom: `${spacing.xl}px`, marginTop: `${spacing.md}px` }}>
         <Divider />
-      </div>
+      </Box>
       <DocsLinks os={os} />
     </Body>
   )
 }
 
-const useStyles = makeStyles({
-  title: { marginTop: spacing.xl },
-  divider: { width: 400, marginBottom: spacing.xl, marginTop: spacing.md },
-})

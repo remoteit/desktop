@@ -6,11 +6,17 @@ import { ListItemSetting } from '../../components/ListItemSetting'
 import { setConnection } from '../../helpers/connectionHelper'
 import { selectConnection } from '../../selectors/connections'
 import { selectById } from '../../selectors/devices'
-import { makeStyles } from '@mui/styles'
 import { AccordionMenuItem } from '../../components/AccordionMenuItem'
 import { ListItemBack } from '../../components/ListItemBack'
 import { Gutters } from '../../components/Gutters'
 import { spacing } from '../../styling'
+
+const containerSx = {
+  paddingLeft: `${spacing.xl}px`,
+  margin: `${spacing.sm}px ${spacing.xxl}px ${spacing.lg}px`,
+  '& > p': { marginBottom: `${spacing.md}px` },
+  '& > div': { marginBottom: `${spacing.sm}px` },
+}
 import { State } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -52,7 +58,6 @@ export const LanSharePage: React.FC = () => {
   const [address, setAddress] = useState<string>(restriction || '192.168.')
   const selected = selections[selection] || {}
   const history = useHistory()
-  const css = useStyles()
   const [error, setError] = useState<string>()
   const [disabled, setDisabled] = useState(true)
 
@@ -126,7 +131,7 @@ export const LanSharePage: React.FC = () => {
           />
         </List>
 
-        <div className={css.container}>
+        <Box sx={containerSx}>
           <div>
             <Typography variant="caption">Your local IP address</Typography>
             <Typography variant="h3">{lanIp}</Typography>
@@ -137,7 +142,7 @@ export const LanSharePage: React.FC = () => {
           {enabledLocalSharing && (
             <>
               <TextField
-                className={css.textField}
+                sx={{ minWidth: 300 }}
                 multiline={currentIp.toString().length > 30}
                 label="Bind IP Address"
                 error={!!error}
@@ -149,7 +154,7 @@ export const LanSharePage: React.FC = () => {
               <br />
               <TextField
                 select
-                className={css.textField}
+                sx={{ minWidth: 300 }}
                 variant="filled"
                 label="Local Network Security"
                 value={selection.toString()}
@@ -163,15 +168,15 @@ export const LanSharePage: React.FC = () => {
               </TextField>
               <Typography variant="body2" color="textSecondary">
                 {selected.note} <br />
-                <span className={css.mask}>
+                <Box component="span" sx={{ fontStyle: 'italic' }}>
                   Mask {getSelectionValue()}
                   {getSelectionMask()}
-                </span>
+                </Box>
               </Typography>
               {typeof selected.value === 'function' && (
                 <Quote>
                   <TextField
-                    className={css.textField}
+                    sx={{ minWidth: 300 }}
                     value={address}
                     variant="filled"
                     label="IP address"
@@ -181,29 +186,15 @@ export const LanSharePage: React.FC = () => {
               )}
             </>
           )}
-        </div>
-        <div className={css.container}>
+        </Box>
+        <Box sx={containerSx}>
           <Button onClick={save} variant="contained" color="primary" disabled={disabled}>
             Save
           </Button>
           <Button onClick={() => history.goBack()}>Cancel</Button>
-        </div>
+        </Box>
       </AccordionMenuItem>
     </Gutters>
   )
 }
 
-const useStyles = makeStyles({
-  container: {
-    paddingLeft: spacing.xl,
-    margin: `${spacing.sm}px ${spacing.xxl}px ${spacing.lg}px`,
-    '& > p': { marginBottom: spacing.md },
-    '& > div': { marginBottom: spacing.sm },
-  },
-  textField: {
-    minWidth: 300,
-  },
-  mask: {
-    fontStyle: 'italic',
-  },
-})
