@@ -55,7 +55,7 @@ export const Container: React.FC<Props> = ({
           })}
         >
           {header}
-          {integrated || !!backgroundColor || <Divider variant="inset" />}
+          {!integrated && !backgroundColor && <Divider variant="inset" />}
         </Box>
       )}
       {drawer && (

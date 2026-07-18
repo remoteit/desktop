@@ -96,7 +96,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
       <Box sx={{ flexGrow: 1 }} />
       {feature.tagging && canEdit && (
         <>
-          {mobile || <InputLabel shrink>tags</InputLabel>}
+          {!mobile && <InputLabel shrink>tags</InputLabel>}
           <TagEditor
             button="plus"
             tags={tags}
