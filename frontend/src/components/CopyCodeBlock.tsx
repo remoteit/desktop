@@ -23,13 +23,21 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
   link,
   hideCopyLabel,
   onCopy,
+  sx,
   ...props
 }) => {
   if (code === value) code = undefined
   if (!value) return null
 
   return (
-    <Paper elevation={0} sx={{ display: 'flex', backgroundColor: 'grayLightest.main', minWidth: 200 }} {...props}>
+    <Paper
+      elevation={0}
+      sx={[
+        { display: 'flex', backgroundColor: 'grayLightest.main', minWidth: 200 },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
+      {...props}
+    >
       <Stack
         flexGrow={1}
         justifyContent="center"

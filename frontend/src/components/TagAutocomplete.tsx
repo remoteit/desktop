@@ -105,11 +105,35 @@ export const TagAutocomplete: React.FC<Props> = ({
     >
       <Paper
         elevation={1}
-        sx={{
+        sx={theme => ({
           minWidth: 200,
           backgroundColor: 'grayLightest.main',
           '& .MuiAutocomplete-root .MuiFilledInput-root': { padding: 0 },
-        }}
+          // The Autocomplete popup renders as a sibling of .MuiAutocomplete-root (not a descendant),
+          // so these popup selectors must be scoped to this wrapping Paper, not the Autocomplete's own sx.
+          '& .MuiAutocomplete-popper': { width: '100%', position: 'relative' },
+          '& .MuiAutocomplete-paper': { borderTopLeftRadius: 0, borderTopRightRadius: 0, boxShadow: 'none' },
+          '& .MuiAutocomplete-listbox': {
+            paddingTop: `${spacing.xxs}px`,
+            paddingBottom: `${spacing.xxs}px`,
+            backgroundColor: theme.palette.grayLightest.main,
+          },
+          '& .MuiAutocomplete-noOptions': { display: 'none' },
+          '& .MuiAutocomplete-option': {
+            borderRadius: `${radius.sm}px`,
+            marginLeft: `${spacing.xs}px`,
+            marginRight: `${spacing.xs}px`,
+            marginBottom: '1px',
+            paddingLeft: '2px',
+            paddingRight: '2px',
+            minHeight: 20,
+            color: theme.palette.grayDarker.main,
+            '&.Mui-focused': { backgroundColor: theme.palette.primaryHighlight.main },
+            '&.Mui-selected': { backgroundColor: theme.palette.primaryHighlight.main },
+            '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
+            '& .MuiListItemIcon-root': { minWidth: 40 },
+          },
+        })}
       >
         <Autocomplete
           open
@@ -120,30 +144,6 @@ export const TagAutocomplete: React.FC<Props> = ({
           options={options}
           includeInputInList
           inputValue={inputValue}
-          sx={theme => ({
-            '& .MuiAutocomplete-popper': { width: '100%', position: 'relative' },
-            '& .MuiAutocomplete-paper': { borderTopLeftRadius: 0, borderTopRightRadius: 0, boxShadow: 'none' },
-            '& .MuiAutocomplete-listbox': {
-              paddingTop: `${spacing.xxs}px`,
-              paddingBottom: `${spacing.xxs}px`,
-              backgroundColor: theme.palette.grayLightest.main,
-            },
-            '& .MuiAutocomplete-noOptions': { display: 'none' },
-            '& .MuiAutocomplete-option': {
-              borderRadius: `${radius.sm}px`,
-              marginLeft: `${spacing.xs}px`,
-              marginRight: `${spacing.xs}px`,
-              marginBottom: '1px',
-              paddingLeft: '2px',
-              paddingRight: '2px',
-              minHeight: 20,
-              color: theme.palette.grayDarker.main,
-              '&.Mui-focused': { backgroundColor: theme.palette.primaryHighlight.main },
-              '&.Mui-selected': { backgroundColor: theme.palette.primaryHighlight.main },
-              '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
-              '& .MuiListItemIcon-root': { minWidth: 40 },
-            },
-          })}
           onClose={onClose}
           onChange={(_event, value) => {
             if (!value || !onSelect || disabled) return
