@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react'
-import { Box, IconButton, Tooltip, Button, ButtonProps, Theme, alpha, darken } from '@mui/material'
+import { IconButton, Tooltip, Button, ButtonProps, Theme, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
 import { spacing } from '../styling'
 
@@ -100,11 +100,11 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
 
   return (
     <Tooltip title={title} className={className} placement="top" enterDelay={400} arrow>
-      <Box component="span" sx={sx}>
+      <span>
         <IconButton ref={ref} disabled={rest.disabled} onClick={rest.onClick} size="small">
           {IconComponent}
         </IconButton>
-      </Box>
+      </span>
     </Tooltip>
   )
 })
