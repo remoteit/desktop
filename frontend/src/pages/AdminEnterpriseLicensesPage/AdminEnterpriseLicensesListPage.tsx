@@ -11,7 +11,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Attribute } from '../../components/Attributes'
@@ -65,7 +64,6 @@ const enterpriseCustomerAttributes: EnterpriseCustomerAttribute[] = [
 
 export const AdminEnterpriseLicensesListPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [newCustomerEmail, setNewCustomerEmail] = useState('')
@@ -214,7 +212,9 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
                   {attribute.id === 'actions' ? (
                     attribute.value({ customer })
                   ) : (
-                    <div className={css.truncate}>{attribute.value({ customer })}</div>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>
+                      {attribute.value({ customer })}
+                    </Box>
                   )}
                 </Box>
               ))}
@@ -271,12 +271,3 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(() => ({
-  truncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-    flex: 1,
-  },
-}))

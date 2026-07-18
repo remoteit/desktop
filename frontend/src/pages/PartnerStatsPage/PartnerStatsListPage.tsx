@@ -1,5 +1,4 @@
 import { Box,InputAdornment,TextField,Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import React,{ useEffect,useMemo,useState } from 'react'
 import { useDispatch,useSelector } from 'react-redux'
 import { useHistory,useLocation } from 'react-router-dom'
@@ -61,7 +60,6 @@ export const PartnerStatsListPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const location = useLocation()
-  const css = useStyles()
   const [searchValue, setSearchValue] = useState('')
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const userId = useSelector((state: State) => state.user.id)
@@ -145,7 +143,9 @@ export const PartnerStatsListPage: React.FC = () => {
             >
               {attributes.map(attribute => (
                 <Box key={attribute.id} className="attribute">
-                  <div className={css.truncate}>{attribute.value({ partner })}</div>
+                  <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>
+                    {attribute.value({ partner })}
+                  </Box>
                 </Box>
               ))}
             </GridListItem>
@@ -156,12 +156,3 @@ export const PartnerStatsListPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(() => ({
-  truncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-    flex: 1,
-  },
-}))
