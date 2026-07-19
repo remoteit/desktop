@@ -108,7 +108,9 @@ export const TagAutocomplete: React.FC<Props> = ({
         sx={theme => ({
           minWidth: 200,
           backgroundColor: 'grayLightest.main',
-          '& .MuiAutocomplete-root .MuiFilledInput-root': { padding: 0 },
+          // Out-specify MUI's .hasClearIcon endAdornment padding-right (0,3,0) so the caller's
+          // "#" endAdornment sits flush right, matching the pre-migration makeStyles behavior.
+          '& .MuiAutocomplete-root .MuiAutocomplete-inputRoot.MuiFilledInput-root': { padding: 0 },
           // The Autocomplete popup renders as a sibling of .MuiAutocomplete-root (not a descendant),
           // so these popup selectors must be scoped to this wrapping Paper, not the Autocomplete's own sx.
           '& .MuiAutocomplete-popper': { width: '100%', position: 'relative' },

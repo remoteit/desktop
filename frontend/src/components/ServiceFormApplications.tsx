@@ -35,7 +35,9 @@ export const ServiceFormApplications: React.FC<Props> = ({
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
         flexWrap: 'wrap',
-        '& > *': { margin: `${spacing.xxs}px` },
+        // Target .MuiChip-root (0,2,0) to out-specify MUI's Chip base `margin: 0` (0,1,0),
+        // which otherwise wins the tie now that this is sx instead of makeStyles.
+        '& > .MuiChip-root': { margin: `${spacing.xxs}px` },
       }}
     >
       {keyApplications.map(t => (
