@@ -2,19 +2,23 @@ import React, { useEffect, useState, useMemo } from 'react'
 import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
 import debounce from 'lodash.debounce'
-import classnames from 'classnames'
 import { sortSearch } from '../models/search'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { TextField, Typography, ListItem, ListSubheader, Autocomplete, createFilterOptions } from '@mui/material'
+import { Box, TextField, Typography, ListItem, ListSubheader, Autocomplete, createFilterOptions, Theme } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
 import { TargetPlatform } from './TargetPlatform'
-import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { Icon } from './Icon'
 
 type Props = { inputRef?: React.RefObject<HTMLInputElement>; onClose?: () => void }
+
+const highlightSx = (theme: Theme) => ({
+  borderRadius: '4px',
+  backgroundColor: theme.palette.primaryLighter.main,
+  color: theme.palette.black.main,
+})
 
 export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   const search = useSelector((state: State) => state.search.search)
@@ -25,7 +29,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
     .filter(c => c.enabled)
     .map(c => c.id)
   const data = sortSearch([...search])
-  const css = useStyles()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const [query, setQuery] = useState<string>(queryDefault)
@@ -72,7 +75,27 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
   }, [query])
 
   return (
-    <div className={css.container}>
+    <Box
+      sx={theme => ({
+        padding: 0,
+        width: '100%',
+        zIndex: 1,
+        '& .MuiAutocomplete-listbox': {
+          maxHeight: '60vh',
+          backgroundColor: theme.palette.grayLightest.main,
+          '& .MuiAutocomplete-option': {
+            display: 'block',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            padding: 0,
+            paddingLeft: `${spacing.xxs}px`,
+            fontSize: fontSizes.base,
+            color: theme.palette.grayDarker.main,
+            '&[data-focus="true"]': { backgroundColor: theme.palette.primaryHighlight.main },
+          },
+        },
+      })}
+    >
       <Autocomplete
         // open // debug
         freeSolo
@@ -87,7 +110,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
         inputValue={query || ''}
         options={data}
         loading={fetching}
-        classes={{ listbox: css.listbox }}
         onChange={(_event, newValue: any | ISearch | null, reason: string) => {
           console.log('CHANGE', newValue, reason)
           if (reason === 'selectOption') select(newValue)
@@ -116,7 +138,13 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             placeholder="Search device or service name"
             variant="filled"
             inputRef={inputRef}
-            className={css.input}
+            sx={{
+              WebkitAppRegion: 'no-drag',
+              '& .MuiInputBase-root .MuiInputBase-input.MuiAutocomplete-input': {
+                padding: `${spacing.sm}px`,
+                fontSize: fontSizes.base,
+              },
+            }}
             onBlur={() => onClose?.()}
             onKeyDown={event => event.key === 'Enter' && !query && clear()}
             InputProps={{
@@ -130,29 +158,55 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             option.serviceName,
             new RegExp(`(${escapeRegexp(query.trim())})`, 'i'),
             (match, i) => (
-              <span key={i} className={css.highlight}>
+              <Box component="span" key={i} sx={highlightSx}>
                 {match}
-              </span>
+              </Box>
             )
           )
           const enabled = enabledIds.includes(option.serviceId)
           return (
             <ListItem {...props} key={props.id}>
-              <span
-                className={classnames(enabled && css.enabled, css.indent)}
+              <Box
+                component="span"
+                sx={[
+                  theme => ({
+                    display: 'inline-block',
+                    marginLeft: `${spacing.xs}px`,
+                    padding: `${spacing.xs}px ${spacing.lg}px`,
+                    borderLeft: `1px solid ${theme.palette.grayLight.main}`,
+                  }),
+                  enabled ? (theme: Theme) => ({ color: theme.palette.primary.main }) : {},
+                ]}
                 data-email={option.ownerEmail}
                 data-platform={option.targetPlatform || option.nodeType}
                 data-name={option.nodeName}
               >
                 {parts}
-              </span>
+              </Box>
             </ListItem>
           )
         }}
         renderGroup={option => {
           const props = option.children && option.children[0].props.children.props
           return [
-            <ListSubheader disableGutters className={css.subhead} key={option.key}>
+            <ListSubheader
+              disableGutters
+              key={option.key}
+              sx={theme => ({
+                top: -8,
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: `${spacing.sm}px ${spacing.md}px`,
+                fontSize: fontSizes.base,
+                color: theme.palette.grayDarkest.main,
+                backgroundColor: theme.palette.grayLightest.main,
+                width: '100%',
+                borderRadius: 0,
+                textTransform: 'inherit',
+                letterSpacing: 'inherit',
+                '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontWeight: 500 },
+              })}
+            >
               <Typography variant="body2">
                 {props['data-platform'] === 'NETWORK' ? (
                   <Icon name="chart-network" color="grayDarker" inlineLeft size="md" />
@@ -163,9 +217,9 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
                   props['data-name'],
                   new RegExp(`(${escapeRegexp(query.trim())})`, 'i'),
                   (match, i) => (
-                    <span key={i} className={css.highlight}>
+                    <Box component="span" key={i} sx={highlightSx}>
                       {match}
-                    </span>
+                    </Box>
                   )
                 )}
               </Typography>
@@ -175,62 +229,6 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
           ]
         }}
       />
-    </div>
+    </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  container: {
-    padding: 0,
-    width: '100%',
-    zIndex: 1,
-  },
-  input: {
-    WebkitAppRegion: 'no-drag',
-    '& .MuiInputBase-root .MuiInputBase-input.MuiAutocomplete-input': {
-      padding: `${spacing.sm}px`,
-      fontSize: fontSizes.base,
-    },
-  },
-  button: { marginBottom: -spacing.sm },
-  enabled: { color: palette.primary.main },
-  subhead: {
-    top: -8,
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: `${spacing.sm}px ${spacing.md}px`,
-    fontSize: fontSizes.base,
-    color: palette.grayDarkest.main,
-    backgroundColor: palette.grayLightest.main,
-    width: '100%',
-    borderRadius: 0,
-    textTransform: 'inherit',
-    letterSpacing: 'inherit',
-    '& > p': { overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontWeight: 500 },
-  },
-  listbox: {
-    maxHeight: '60vh',
-    backgroundColor: palette.grayLightest.main,
-    '& .MuiAutocomplete-option': {
-      display: 'block',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      padding: 0,
-      paddingLeft: spacing.xxs,
-      fontSize: fontSizes.base,
-      color: palette.grayDarker.main,
-      '&[data-focus="true"]': { backgroundColor: palette.primaryHighlight.main },
-    },
-  },
-  indent: {
-    display: 'inline-block',
-    marginLeft: spacing.xs,
-    padding: `${spacing.xs}px ${spacing.lg}px`,
-    borderLeft: `1px solid ${palette.grayLight.main}`,
-  },
-  highlight: {
-    borderRadius: 4,
-    backgroundColor: palette.primaryLighter.main,
-    color: palette.black.main,
-  },
-}))

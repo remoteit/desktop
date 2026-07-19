@@ -1,10 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { ListItem, ListItemIcon, ListItemSecondaryAction } from '@mui/material'
+import { Box, ListItem, ListItemIcon, ListItemSecondaryAction, SxProps, Theme } from '@mui/material'
 import { FormDisplay, FormDisplayProps } from './FormDisplay'
 import { spacing, fontSizes } from '../styling'
 import { IconButton } from '../buttons/IconButton'
-import { makeStyles } from '@mui/styles'
 import { Icon } from './Icon'
+
+export const hideIconSx: SxProps<Theme> = { minWidth: `${spacing.sm}px` }
+
+export const actionSx: SxProps<Theme> = {
+  position: 'absolute',
+  display: 'flex',
+  minWidth: 60,
+  justifyContent: 'center',
+  zIndex: 1,
+  right: 'auto',
+  left: 18,
+  marginTop: `${spacing.xs}px`,
+}
+
+export const viewSx: SxProps<Theme> = {
+  paddingTop: '7px',
+  paddingBottom: '7px',
+  '& .MuiInputLabel-root': { position: 'absolute', marginTop: '1px' },
+  '& .MuiInputLabel-root + .MuiListItemText-root': { marginTop: '15px', marginBottom: '3px' },
+}
 
 type Props = {
   value?: string | number
@@ -47,7 +66,6 @@ export const InlineSetting: React.FC<Props> = ({
   children,
   ...props
 }) => {
-  const css = useStyles()
   const [edit, setEdit] = useState<boolean>(false)
   const canceled = useRef<boolean>(false)
 
@@ -72,15 +90,41 @@ export const InlineSetting: React.FC<Props> = ({
   }, [edit])
 
   if (typeof icon === 'string') icon = <Icon name={icon} size="md" modified={modified} fixedWidth />
-  icon = <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
+  icon = <ListItemIcon sx={hideIcon ? hideIconSx : undefined}>{icon}</ListItemIcon>
 
   const editForm = (
     <>
-      {props.actionIcon && <span className={css.action}> {props.actionIcon}</span>}
-      <ListItem className={css.active} disableGutters={disableGutters} dense>
+      {props.actionIcon && (
+        <Box component="span" sx={actionSx}>
+          {' '}
+          {props.actionIcon}
+        </Box>
+      )}
+      <ListItem
+        sx={theme => ({
+          paddingTop: 0,
+          paddingBottom: 0,
+          backgroundColor: theme.palette.primaryHighlight.main,
+          minHeight: 51,
+        })}
+        disableGutters={disableGutters}
+        dense
+      >
         {icon}
-        <form
-          className={css.form}
+        <Box
+          component="form"
+          sx={{
+            display: 'flex',
+            width: '100%',
+            marginRight: '120px',
+            alignItems: 'center',
+            '& .MuiInput-input': { paddingTop: '13px', paddingBottom: '13px', marginLeft: `${spacing.sm}px` },
+            '& .MuiFilledInput-input': { paddingTop: '21px', paddingBottom: '10px', fontSize: 14 },
+            '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
+            '& .select': { marginLeft: 0, marginTop: '8px', height: 40, '& .MuiInput-root': { marginTop: '9px' } },
+            '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: '3px', paddingBottom: '4px' },
+            '& .MuiListItemSecondaryAction-root': { right: `${spacing.xs}px` },
+          }}
           onSubmit={e => {
             e.preventDefault()
             onSubmit()
@@ -125,7 +169,7 @@ export const InlineSetting: React.FC<Props> = ({
               submit
             />
           </ListItemSecondaryAction>
-        </form>
+        </Box>
       </ListItem>
     </>
   )
@@ -149,43 +193,3 @@ export const InlineSetting: React.FC<Props> = ({
 
   return edit ? editForm : viewForm
 }
-
-export const useStyles = makeStyles(({ palette }) => ({
-  view: {
-    paddingTop: 7,
-    paddingBottom: 7,
-    '& .MuiInputLabel-root': { position: 'absolute', marginTop: 1 },
-    '& .MuiInputLabel-root + .MuiListItemText-root': { marginTop: 15, marginBottom: 3 },
-  },
-  form: {
-    display: 'flex',
-    width: '100%',
-    marginRight: 120,
-    alignItems: 'center',
-    '& .MuiInput-input': { paddingTop: 13, paddingBottom: 13, marginLeft: spacing.sm },
-    '& .MuiFilledInput-input': { paddingTop: 21, paddingBottom: 10, fontSize: 14 },
-    '& .MuiFilledInput-multiline': { paddingTop: 0, paddingBottom: 0 },
-    '& .select': { marginLeft: 0, marginTop: 8, height: 40, '& .MuiInput-root': { marginTop: 9 } },
-    '& .MuiSelect-select': { fontSize: fontSizes.base, paddingTop: 3, paddingBottom: 4 },
-    '& .MuiListItemSecondaryAction-root': { right: spacing.xs },
-  },
-  active: {
-    paddingTop: 0,
-    paddingBottom: 0,
-    backgroundColor: palette.primaryHighlight.main,
-    minHeight: 51,
-  },
-  action: {
-    position: 'absolute',
-    display: 'flex',
-    minWidth: 60,
-    justifyContent: 'center',
-    zIndex: 1,
-    right: 'auto',
-    left: 18,
-    marginTop: spacing.xs,
-  },
-  hideIcon: {
-    minWidth: spacing.sm,
-  },
-}))

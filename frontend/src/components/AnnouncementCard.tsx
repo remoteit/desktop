@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { dateDefaults } from './Duration/Duration'
-import { makeStyles } from '@mui/styles'
 import { Tooltip, Card, CardContent, CardMedia, CardHeader, CardActions, Button, Typography } from '@mui/material'
 
 const types = {
@@ -23,7 +22,6 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
 
   const unread = !(data.read && data.read < new Date())
   const date = data.read && data.read.toLocaleString(navigator.language, dateDefaults)
-  const css = useStyles({ unread })
 
   const handleRead = () => {
     setRead(true)
@@ -40,9 +38,39 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
   if (!data) return null
 
   return (
-    <Card ref={cardRef} className={css.card} elevation={unread ? 3 : 1}>
-      <CardHeader className={css.header} title={types[data.type] || types.GENERIC} action={unread ? undefined : date} />
-      {data.image && <CardMedia className={css.media} image={data.image} title={data.title} />}
+    <Card
+      ref={cardRef}
+      sx={theme => ({
+        width: 500,
+        overflow: 'hidden',
+        marginTop: 2.25,
+        marginLeft: 1.5,
+        marginRight: 1.5,
+        backgroundColor: theme.palette.grayLightest.main,
+        '& .MuiButtonBase-root': { float: 'right' },
+        [theme.breakpoints.down('sm')]: { marginLeft: 0, marginRight: 0, width: '100%' },
+      })}
+      elevation={unread ? 3 : 1}
+    >
+      <CardHeader
+        sx={theme => ({
+          transition: 'background-color 1s',
+          backgroundColor: unread ? theme.palette.primary.main : theme.palette.grayDarker.main,
+        })}
+        title={types[data.type] || types.GENERIC}
+        action={unread ? undefined : date}
+      />
+      {data.image && (
+        <CardMedia
+          sx={theme => ({
+            height: 150,
+            backgroundColor: theme.palette.primaryLight.main,
+            [theme.breakpoints.down('sm')]: { height: 100 },
+          })}
+          image={data.image}
+          title={data.title}
+        />
+      )}
       <CardContent>
         <Typography variant="h1" gutterBottom>
           {data.title}
@@ -73,24 +101,3 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
   )
 }
 
-const useStyles = makeStyles(({ palette, breakpoints, spacing }) => ({
-  card: {
-    width: 500,
-    overflow: 'hidden',
-    marginTop: spacing(2.25),
-    marginLeft: spacing(1.5),
-    marginRight: spacing(1.5),
-    backgroundColor: palette.grayLightest.main,
-    '& .MuiButtonBase-root': { float: 'right' },
-    [breakpoints.down('sm')]: { marginLeft: 0, marginRight: 0, width: '100%' },
-  },
-  header: ({ unread }: { unread: boolean }) => ({
-    transition: 'background-color 1s',
-    backgroundColor: unread ? palette.primary.main : palette.grayDarker.main,
-  }),
-  media: {
-    height: 150,
-    backgroundColor: palette.primaryLight.main,
-    [breakpoints.down('sm')]: { height: 100 },
-  },
-}))

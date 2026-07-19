@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import browser from '../services/browser'
-import classnames from 'classnames'
-import { makeStyles } from '@mui/styles'
-import { spacing } from '../styling'
+import { Box, SxProps, Theme } from '@mui/material'
+import { spacing, toSxArray } from '../styling'
 
 export type BodyProps = {
   inset?: boolean
@@ -10,6 +9,7 @@ export type BodyProps = {
   flex?: boolean
   bodyRef?: React.RefObject<HTMLDivElement>
   className?: string
+  sx?: SxProps<Theme>
   maxHeight?: string
   gutterBottom?: boolean
   gutterTop?: boolean
@@ -25,7 +25,8 @@ export const Body: React.FC<BodyProps> = ({
   flex,
   bodyRef,
   maxHeight,
-  className = '',
+  className,
+  sx,
   gutterBottom,
   gutterTop,
   verticalOverflow,
@@ -33,116 +34,101 @@ export const Body: React.FC<BodyProps> = ({
   scrollbarBackground,
   children,
 }) => {
-  const css = useStyles({
-    horizontalOverflow,
-    verticalOverflow,
-    scrollbarWidth: browser.isMobile ? 0 : 15,
-    scrollbarBackground: scrollbarBackground || 'white',
-  })
   const [hover, setHover] = useState<boolean>(false)
-  className = classnames(
-    className,
-    css.body,
-    flex && css.flex,
-    center && css.center,
-    inset && css.inset,
-    gutterBottom && css.gutterBottom,
-    gutterTop && css.gutterTop,
-    hover && css.showScroll
-  )
-  let style = maxHeight ? { maxHeight } : {}
+  const scrollbarWidth = browser.isMobile ? 0 : 15
+  const bg: Color = scrollbarBackground || 'white'
 
   return (
     <>
-      {verticalOverflow && <div className={css.verticalOverflow} />}
-      {horizontalOverflow && <div className={css.horizontalOverflow} />}
-      <div
+      {verticalOverflow && (
+        <Box
+          sx={theme => ({
+            position: 'absolute',
+            height: 30,
+            zIndex: 7,
+            width: '100%',
+            right: horizontalOverflow ? `${scrollbarWidth}px` : undefined,
+            bottom: horizontalOverflow ? `${scrollbarWidth}px` : 0,
+            backgroundImage: `linear-gradient(transparent, ${theme.palette[bg].main})`,
+            pointerEvents: 'none',
+          })}
+        />
+      )}
+      {horizontalOverflow && (
+        <Box
+          sx={theme => ({
+            position: 'absolute',
+            width: 30,
+            top: 0,
+            bottom: `${scrollbarWidth}px`,
+            zIndex: 7,
+            right: `${scrollbarWidth}px`,
+            backgroundImage: `linear-gradient(90deg, transparent, ${theme.palette[bg].main})`,
+            pointerEvents: 'none',
+          })}
+        />
+      )}
+      <Box
         ref={bodyRef}
         className={className}
-        style={style}
+        style={maxHeight ? { maxHeight } : undefined}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
+        sx={[
+          theme => ({
+            flexGrow: 1,
+            height: '100%',
+            overflow: verticalOverflow && horizontalOverflow ? 'scroll' : 'auto',
+            overscrollBehaviorX: 'none',
+            position: 'relative',
+            WebkitOverflowScrolling: 'touch',
+            '&::-webkit-scrollbar': { WebkitAppearance: 'none' },
+            '&::-webkit-scrollbar:vertical': { width: `${scrollbarWidth}px` },
+            '&::-webkit-scrollbar:horizontal': { height: `${scrollbarWidth}px` },
+            '&::-webkit-scrollbar-corner': { background: theme.palette[bg].main },
+            '&::-webkit-scrollbar-thumb': {
+              borderRadius: '8px',
+              border: `4px solid ${theme.palette[bg].main}`,
+              backgroundColor: theme.palette[bg].main,
+            },
+            [theme.breakpoints.down('sm')]: {
+              overflowX: 'hidden',
+            },
+            // forces right scrollbar to appear (overflow: scroll causes extra padding)
+            ...(horizontalOverflow ? { '& > *:first-of-type': { minHeight: '100.1%' } } : {}),
+          }),
+          flex
+            ? {
+                display: 'flex',
+                alignContent: 'flex-start',
+                flexWrap: 'wrap',
+                justifyContent: 'space-evenly',
+              }
+            : {},
+          center
+            ? {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: verticalOverflow && browser.isAndroid ? undefined : 'center',
+                flexDirection: 'column',
+                padding: `${spacing.md}px ${spacing.md}px ${spacing.xl}px`,
+              }
+            : {},
+          inset ? { padding: `${spacing.sm}px ${spacing.xl}px` } : {},
+          gutterBottom ? { paddingBottom: `${spacing.xxl}px` } : {},
+          gutterTop ? { paddingTop: `${spacing.sm}px` } : {},
+          hover
+            ? (theme: Theme) => ({
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: `${theme.palette.grayLight.main} !important`,
+                },
+              })
+            : {},
+          ...toSxArray(sx),
+        ]}
       >
         {children}
-      </div>
+      </Box>
     </>
   )
 }
-
-type StyleProps = {
-  verticalOverflow?: boolean
-  horizontalOverflow?: boolean
-  scrollbarWidth: number
-  scrollbarBackground: Color
-}
-
-const useStyles = makeStyles(({ palette, breakpoints }) => ({
-  body: ({ scrollbarBackground, verticalOverflow, horizontalOverflow, scrollbarWidth }: StyleProps) => ({
-    flexGrow: 1,
-    height: '100%',
-    overflow: verticalOverflow && horizontalOverflow ? 'scroll' : 'auto',
-    overscrollBehaviorX: 'none',
-    position: 'relative',
-    '-webkit-overflow-scrolling': 'touch',
-    '&::-webkit-scrollbar': { '-webkit-appearance': 'none' },
-    '&::-webkit-scrollbar:vertical': { width: scrollbarWidth },
-    '&::-webkit-scrollbar:horizontal': { height: scrollbarWidth },
-    '&::-webkit-scrollbar-corner': { background: palette[scrollbarBackground].main },
-    '&::-webkit-scrollbar-thumb': {
-      borderRadius: 8,
-      border: `4px solid ${palette[scrollbarBackground].main}`,
-      backgroundColor: `${palette[scrollbarBackground].main}`,
-    },
-    [breakpoints.down('sm')]: {
-      overflowX: 'hidden',
-    },
-    '& > *:first-of-type': horizontalOverflow ? { minHeight: '100.1%' } : undefined, // forces right scrollbar to appear (overflow: scroll causes extra padding)
-  }),
-  verticalOverflow: ({ horizontalOverflow, scrollbarWidth, scrollbarBackground }: StyleProps) => ({
-    position: 'absolute',
-    height: 30,
-    zIndex: 7,
-    width: '100%',
-    right: horizontalOverflow ? scrollbarWidth : undefined,
-    bottom: horizontalOverflow ? scrollbarWidth : 0,
-    backgroundImage: `linear-gradient(transparent, ${palette[scrollbarBackground].main})`,
-    pointerEvents: 'none',
-  }),
-  horizontalOverflow: ({ scrollbarWidth, scrollbarBackground }: StyleProps) => ({
-    position: 'absolute',
-    width: 30,
-    top: 0,
-    bottom: scrollbarWidth,
-    zIndex: 7,
-    right: scrollbarWidth,
-    backgroundImage: `linear-gradient(90deg, transparent, ${palette[scrollbarBackground].main})`,
-    pointerEvents: 'none',
-  }),
-  showScroll: {
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: `${palette.grayLight.main} !important`,
-    },
-  },
-  flex: {
-    display: 'flex',
-    alignContent: 'flex-start',
-    flexWrap: 'wrap',
-    justifyContent: 'space-evenly',
-  },
-  inset: {
-    padding: `${spacing.sm}px ${spacing.xl}px`,
-  },
-  gutterBottom: {
-    paddingBottom: spacing.xxl,
-  },
-  gutterTop: {
-    paddingTop: spacing.sm,
-  },
-  center: ({ verticalOverflow }: StyleProps) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: verticalOverflow && browser.isAndroid ? undefined : 'center',
-    flexDirection: 'column',
-    padding: `${spacing.md}px ${spacing.md}px ${spacing.xl}px`,
-  }),
-}))

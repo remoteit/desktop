@@ -3,8 +3,7 @@ import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
 import { MAX_DESCRIPTION_LENGTH } from '../constants'
 import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '@common/constants'
-import { Typography, TextField, List, ListItem, Button } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { Typography, TextField, List, ListItem, Button, Theme } from '@mui/material'
 import { useURLForm } from '../hooks/useURLForm'
 import { AddFromNetwork } from './AddFromNetwork'
 import { useApplication } from '../hooks/useApplication'
@@ -84,7 +83,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const [urlField, setUrlField, urlError] = useURLForm(form, setForm, application.urlForm)
   const appType = findType(applicationTypes, form?.typeID)
   const changed = !isEqual(form, defaultForm)
-  const css = useStyles()
 
   disabled = disabled || saving
 
@@ -183,7 +181,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 </ListItem>
               )}
               {application.urlForm ? (
-                <ListItem className={css.field}>
+                <ListItem sx={fieldSx}>
                   <TextField
                     required
                     value={urlField}
@@ -211,7 +209,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 </ListItem>
               ) : (
                 <>
-                  <ListItem className={css.field}>
+                  <ListItem sx={fieldSx}>
                     <TextField
                       required
                       label="Service Host"
@@ -237,7 +235,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                       <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
                     </Typography>
                   </ListItem>
-                  <ListItem className={css.field}>
+                  <ListItem sx={fieldSx}>
                     <TextField
                       required
                       label="Service Port"
@@ -263,7 +261,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
               )}
             </>
           )}
-          <ListItem className={css.field}>
+          <ListItem sx={fieldSx}>
             <TextField
               label="Service Name"
               value={form.name || ''}
@@ -281,7 +279,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             />
           </ListItem>
           {!compact && (
-            <ListItem className={css.field}>
+            <ListItem sx={fieldSx}>
               <TextField
                 multiline
                 label="Service Description"
@@ -363,25 +361,21 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   )
 }
 
-export const useStyles = makeStyles(({ breakpoints }) => ({
-  field: {
-    paddingRight: spacing.lg,
-    paddingLeft: spacing.md,
-    alignItems: 'flex-start',
-    '& > *': {
-      width: '50%',
-      maxWidth: 400,
-    },
-    '& > span.MuiTypography-root': {
-      width: `calc(50% - ${spacing.lg}px)`,
-      marginLeft: spacing.lg,
-    },
+export const fieldSx = (theme: Theme) => ({
+  paddingRight: `${spacing.lg}px`,
+  paddingLeft: `${spacing.md}px`,
+  alignItems: 'flex-start',
+  '& > *': {
+    width: '50%',
+    maxWidth: 400,
   },
-  [breakpoints.down('sm')]: {
-    field: {
-      flexDirection: 'column',
-      '& > *': { width: '100%' },
-      '& > span.MuiTypography-root': { margin: spacing.xs, width: '100%', marginBottom: spacing.md },
-    },
+  '& > span.MuiTypography-root': {
+    width: `calc(50% - ${spacing.lg}px)`,
+    marginLeft: `${spacing.lg}px`,
   },
-}))
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    '& > *': { width: '100%' },
+    '& > span.MuiTypography-root': { margin: `${spacing.xs}px`, width: '100%', marginBottom: `${spacing.md}px` },
+  },
+})

@@ -1,8 +1,6 @@
 import React from 'react'
-import classnames from 'classnames'
-import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Typography, List, ListItem, ListItemIcon, Divider, Button } from '@mui/material'
+import { useMediaQuery, Typography, List, ListItem, ListItemIcon, Divider, Button, Box } from '@mui/material'
 import { spacing, fontSizes, radius } from '../styling'
 import { Icon } from './Icon'
 
@@ -22,10 +20,6 @@ type Props = {
   onSelect?: () => void
 }
 
-type StyleProps = {
-  wide?: boolean
-  selected?: boolean
-}
 
 export const PlanCard: React.FC<Props> = ({
   name,
@@ -44,38 +38,121 @@ export const PlanCard: React.FC<Props> = ({
 }) => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   wide = wide && !mobile
-  const css = useStyles({ wide, selected })
 
   return (
-    <div className={classnames(css.card, selected ? css.selected : promoted && css.promoted, 'planCard')}>
+    <Box
+      className="planCard"
+      sx={[
+        theme => ({
+          display: 'flex',
+          width: '100%',
+          maxWidth: 840,
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          borderRadius: `${radius.lg}px`,
+          backgroundColor: selected ? theme.palette.primaryHighlight.main : theme.palette.grayLightest.main,
+          paddingBottom: `${spacing.md}px`,
+          marginBottom: `${spacing.md}px`,
+          [theme.breakpoints.up('sm')]: {
+            '& + .planCard': { marginLeft: `${spacing.md}px` },
+          },
+          '& .planCardColumn': {
+            display: wide ? 'flex' : 'block',
+            '& > div + div': { marginLeft: wide ? `${spacing.md}px` : undefined },
+          },
+        }),
+        selected
+          ? theme => ({
+              borderRadius: `${radius.lg}px`,
+              position: 'relative',
+              overflow: 'hidden',
+              '& .MuiDivider-root': { borderColor: theme.palette.primaryLight.main },
+              '& header': {
+                width: '100%',
+                position: 'absolute',
+                textTransform: 'uppercase',
+                textAlign: 'center',
+                backgroundColor: theme.palette.primaryLight.main,
+                letterSpacing: spacing.xxs,
+                fontSize: fontSizes.xxxs,
+                color: theme.palette.alwaysWhite.main,
+                fontWeight: 700,
+                lineHeight: 2,
+              },
+            })
+          : {},
+        !selected && promoted
+          ? theme => ({
+              position: 'relative',
+              overflow: 'hidden',
+              '& header': {
+                width: 160,
+                left: -40,
+                top: 24,
+                position: 'absolute',
+                textTransform: 'uppercase',
+                transform: 'rotate(-45deg)',
+                backgroundColor: theme.palette.danger.main,
+                letterSpacing: spacing.xxs,
+                fontSize: fontSizes.xs,
+                color: theme.palette.alwaysWhite.main,
+                fontWeight: 700,
+                lineHeight: 2.6,
+              },
+            })
+          : {},
+      ]}
+    >
       {selected ? <header>Current plan</header> : promoted && <header>New</header>}
-      <div className={css.plan}>
+      <Box sx={{ padding: `${spacing.md}px`, paddingTop: `${spacing.xl}px`, textAlign: 'center', '& h1': { textTransform: 'capitalize' } }}>
         <Typography variant="h1">{name}</Typography>
         <Typography variant="caption">{description}</Typography>
-      </div>
+      </Box>
       <Divider flexItem variant="inset" />
       <div className="planCardColumn">
         <div>
-          <div className={css.price}>
+          <Box
+            sx={{
+              padding: `${spacing.md}px`,
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 100,
+              '& .MuiButton-root': { marginTop: `${spacing.sm}px` },
+            }}
+          >
             {price !== undefined && <Typography variant="h1">{price}</Typography>}
             <Typography variant="body2" component="div">
               {caption}
             </Typography>
             {note !== undefined && <Typography variant="caption">{note}</Typography>}
-          </div>
+          </Box>
           <Button
             onClick={onSelect}
             size="small"
             variant="contained"
             disabled={disabled}
             color={loading ? 'inherit' : 'primary'}
-            className={css.select}
+            sx={{ marginBottom: `${spacing.sm}px` }}
           >
             {loading ? 'Processing...' : button}
           </Button>
         </div>
         {!!features.length && (
-          <div className={css.features}>
+          <Box
+            sx={theme => ({
+              paddingRight: `${spacing.sm}px`,
+              color: theme.palette.grayDarker.main,
+              fontSize: fontSizes.sm,
+              maxWidth: wide ? 440 : 200,
+              lineHeight: 1.3,
+              '& b': { fontWeight: 400, color: theme.palette.grayDarkest.main },
+              '& .MuiListItemIcon-root': { minWidth: 40 },
+            })}
+          >
             <List dense>
               {features[0] && (
                 <Item>
@@ -84,10 +161,10 @@ export const PlanCard: React.FC<Props> = ({
               )}
               {features.map((f, index) => index > 0 && <Item key={index}>{f}</Item>)}
             </List>
-          </div>
+          </Box>
         )}
       </div>
-    </div>
+    </Box>
   )
 }
 
@@ -102,89 +179,3 @@ export const Item: React.FC<{ children?: React.ReactNode }> = ({ children }) => 
   )
 }
 
-const useStyles = makeStyles(({ palette, breakpoints }) => ({
-  card: ({ wide, selected }: StyleProps) => ({
-    display: 'flex',
-    width: '100%',
-    maxWidth: 840,
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    borderRadius: radius.lg,
-    backgroundColor: selected ? palette.primaryHighlight.main : palette.grayLightest.main,
-    paddingBottom: spacing.md,
-    marginBottom: spacing.md,
-    [breakpoints.up('sm')]: {
-      '& + .planCard': { marginLeft: spacing.md },
-    },
-    '& .planCardColumn': {
-      // paddingBottom: spacing.lg,
-      display: wide ? 'flex' : 'block',
-      '& > div + div': { marginLeft: wide ? spacing.md : undefined },
-    },
-  }),
-  selected: {
-    borderRadius: radius.lg,
-    position: 'relative',
-    overflow: 'hidden',
-    '& .MuiDivider-root': { borderColor: palette.primaryLight.main },
-    '& header': {
-      width: '100%',
-      position: 'absolute',
-      textTransform: 'uppercase',
-      textAlign: 'center',
-      backgroundColor: palette.primaryLight.main,
-      letterSpacing: spacing.xxs,
-      fontSize: fontSizes.xxxs,
-      color: palette.alwaysWhite.main,
-      fontWeight: 700,
-      lineHeight: 2,
-    },
-  },
-  promoted: {
-    position: 'relative',
-    overflow: 'hidden',
-    '& header': {
-      width: 160,
-      left: -40,
-      top: 24,
-      position: 'absolute',
-      textTransform: 'uppercase',
-      transform: 'rotate(-45deg)',
-      backgroundColor: palette.danger.main,
-      letterSpacing: spacing.xxs,
-      fontSize: fontSizes.xs,
-      color: palette.alwaysWhite.main,
-      fontWeight: 700,
-      lineHeight: 2.6,
-    },
-  },
-  plan: {
-    padding: spacing.md,
-    paddingTop: spacing.xl,
-    textAlign: 'center',
-    '& h1': { textTransform: 'capitalize' },
-  },
-  price: {
-    padding: spacing.md,
-    textAlign: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 100,
-    '& .MuiButton-root': { marginTop: spacing.sm },
-  },
-  select: {
-    marginBottom: spacing.sm,
-  },
-  features: ({ wide }: StyleProps) => ({
-    paddingRight: spacing.sm,
-    color: palette.grayDarker.main,
-    fontSize: fontSizes.sm,
-    maxWidth: wide ? 440 : 200,
-    lineHeight: 1.3,
-    '& b': { fontWeight: 400, color: palette.grayDarkest.main },
-    '& .MuiListItemIcon-root': { minWidth: 40 },
-  }),
-}))

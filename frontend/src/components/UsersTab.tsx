@@ -3,10 +3,9 @@ import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { selectSessionUsers } from '../selectors/sessions'
 import { selectMembersWithAccess } from '../selectors/organizations'
-import { ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { GuideBubble } from './GuideBubble'
-import { makeStyles } from '@mui/styles'
 import { Icon } from './Icon'
 
 type Props = {
@@ -18,7 +17,6 @@ type Props = {
 }
 
 export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, size = 'large' }) => {
-  const css = useStyles()
   const connected = useSelector((state: State) =>
     selectSessionUsers(state, undefined, service ? service.id : instance?.id)
   ).length
@@ -62,7 +60,11 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
               <>
                 {total ? total + ' total' : ''}
                 <br />
-                {!!connected && <span className={css.text}>{connected} connected</span>}
+                {!!connected && (
+                  <Box component="span" sx={{ color: 'primary.main' }}>
+                    {connected} connected
+                  </Box>
+                )}
               </>
             )
           }
@@ -71,7 +73,3 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
     </GuideBubble>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  text: { color: palette.primary.main },
-}))

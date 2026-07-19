@@ -1,10 +1,8 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
-import { Box, alpha, useTheme } from '@mui/material'
+import { Box, alpha, useTheme, Theme } from '@mui/material'
 import { spacing, fontSizes, radius } from '../styling'
 import { ServiceLinkIcon } from './ServiceLinkIcon'
 import { getLicenseChip } from './LicenseChip'
-import classnames from 'classnames'
 
 interface Props {
   connection?: IConnection
@@ -15,7 +13,6 @@ interface Props {
 
 export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick, className }) => {
   const theme = useTheme()
-  const css = useStyles()
 
   let color: Color = 'grayDark'
   let colorBackground: string = ''
@@ -65,7 +62,32 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
   return (
     <Box
       component="span"
-      className={classnames(onClick && css.clickable, css.indicator, className)}
+      className={className}
+      sx={[
+        {
+          display: 'inline-flex',
+          alignItems: 'center',
+          '& > span': {
+            borderRadius: `${radius.sm}px`,
+            fontSize: fontSizes.xs,
+            fontWeight: 500,
+            padding: '1px',
+            paddingLeft: `${spacing.xs}px`,
+            paddingRight: `${spacing.xs}px`,
+            marginLeft: '1px',
+            marginRight: '1px',
+            '& svg': { marginRight: '2px' },
+          },
+        },
+        ...(onClick
+          ? [
+              (theme: Theme) => ({
+                cursor: 'pointer',
+                '&:hover > span': { backgroundColor: theme.palette.action.hover },
+              }),
+            ]
+          : []),
+      ]}
       onMouseDown={onClick && onMouseDown}
     >
       <Box
@@ -82,25 +104,3 @@ export const ServiceMiniState: React.FC<Props> = ({ connection, service, onClick
     </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  indicator: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    '& > span': {
-      borderRadius: radius.sm,
-      fontSize: fontSizes.xs,
-      fontWeight: 500,
-      padding: 1,
-      paddingLeft: spacing.xs,
-      paddingRight: spacing.xs,
-      marginLeft: 1,
-      marginRight: 1,
-      '& svg': { marginRight: 2 },
-    },
-  },
-  clickable: {
-    cursor: 'pointer',
-    '&:hover > span': { backgroundColor: palette.action.hover },
-  },
-}))

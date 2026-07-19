@@ -1,7 +1,6 @@
 import React from 'react'
 import { State } from '../store'
 import { IP_PRIVATE } from '@common/constants'
-import { makeStyles } from '@mui/styles'
 import { Typography, List, ListItem, ListItemText, Box } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
 import { selectOwnDevices } from '../selectors/devices'
@@ -19,7 +18,6 @@ export const RemoteManagement: React.FC = () => {
   const device = useSelector(selectOwnDevices).find(d => d.thisDevice)
   const remoteUI = useSelector((state: State) => isRemoteUI(state))
   const name = device?.name || ''
-  const css = useStyles()
 
   if (!browser.isRemote) return null
 
@@ -37,7 +35,7 @@ export const RemoteManagement: React.FC = () => {
   }
 
   return (
-    <Box className={css.container}>
+    <Box sx={{ padding: `${spacing.sm}px` }}>
       <section>
         <Typography variant="h3" gutterBottom>
           You are managing <br />a remote device
@@ -47,7 +45,23 @@ export const RemoteManagement: React.FC = () => {
             Any connections you create will be to <em>{name}</em>, not your local machine.
           </Typography>
         )}
-        <Box className={css.graphic}>
+        <Box
+          sx={theme => ({
+            display: 'flex',
+            marginTop: `${spacing.lg}px`,
+            '& svg': { height: 220, margin: `${spacing.xs}px`, marginRight: `${spacing.md}px` },
+            '& ul': {
+              padding: 0,
+              display: 'flex',
+              flexGrow: 1,
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            },
+            '& li > div': { justifyContent: 'left', minWidth: 45 },
+            '& li > div span': { fontSize: fontSizes.base, color: theme.palette.grayDarker.main },
+            '& li > div + div': { flexGrow: 1 },
+          })}
+        >
           <Graphic />
           <List>
             {diagram.map((i: NetworkType, key) => (
@@ -61,24 +75,3 @@ export const RemoteManagement: React.FC = () => {
     </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  container: {
-    padding: spacing.sm,
-  },
-  graphic: {
-    display: 'flex',
-    marginTop: spacing.lg,
-    '& svg': { height: 220, margin: spacing.xs, marginRight: spacing.md },
-    '& ul': {
-      padding: 0,
-      display: 'flex',
-      flexGrow: 1,
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-    },
-    '& li > div': { justifyContent: 'left', minWidth: 45 },
-    '& li > div span': { fontSize: fontSizes.base, color: palette.grayDarker.main },
-    '& li > div + div': { flexGrow: 1 },
-  },
-}))

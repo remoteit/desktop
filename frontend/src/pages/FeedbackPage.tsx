@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/styles'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { Button, Typography, TextField } from '@mui/material'
@@ -16,7 +15,6 @@ export const FeedbackPage: React.FC<{}> = () => {
   const history = useHistory()
   const [subject, setSubject] = useState(presets.subject)
   const [body, setBody] = useState(presets.body)
-  const css = useStyles()
 
   const sendFeedback = () => {
     dispatch.feedback.set({ subject, body, data: presets.data })
@@ -55,11 +53,11 @@ export const FeedbackPage: React.FC<{}> = () => {
           label="Message"
           variant="filled"
           value={body}
-          className={css.input}
+          sx={{ '& .MuiInputBase-input': { minHeight: '10rem' } }}
           onChange={e => setBody(e.target.value)}
         />
       </Gutters>
-      <Gutters className={css.flex}>
+      <Gutters sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Button disabled={body.length === 0} onClick={sendFeedback} color="primary" variant="contained">
           Send
         </Button>
@@ -80,7 +78,3 @@ export const FeedbackPage: React.FC<{}> = () => {
   )
 }
 
-const useStyles = makeStyles({
-  input: { '& .MuiInputBase-input': { minHeight: '10rem' } },
-  flex: { display: 'flex', justifyContent: 'space-between' },
-})

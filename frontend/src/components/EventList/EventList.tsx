@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
 import { selectLimit } from '../../selectors/organizations'
 import { State, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -16,7 +15,6 @@ export interface LogListProps {
 }
 
 export const EventList: React.FC<LogListProps> = ({ device }) => {
-  const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
   const user = useSelector((state: State) => state.user)
   const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
@@ -31,7 +29,39 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
 
   return (
     <>
-      <List className={css.item}>
+      <List
+        sx={theme => ({
+          '& li': {
+            padding: '4px 0',
+            fontSize: fontSizes.sm,
+            color: theme.palette.grayDark.main,
+            alignItems: 'start',
+            '& > span': {
+              fontSize: fontSizes.xxs,
+              textAlign: 'right',
+              fontFamily: 'Roboto Mono',
+              minWidth: 150,
+              [theme.breakpoints.down('sm')]: { minWidth: 100, width: 100 },
+            },
+            '& b': { color: theme.palette.grayDarkest.main, fontWeight: 400 },
+            '& i': { color: theme.palette.grayDarker.main, fontStyle: 'normal' },
+            '& .event-usage': {
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: `${spacing.xs}px`,
+              marginTop: '0.6em',
+              lineHeight: '0.6em',
+              color: theme.palette.grayDark.main,
+              fontSize: fontSizes.xxs,
+              textTransform: 'uppercase',
+              letterSpacing: '0.03em',
+              '& > span': { display: 'inline-flex', alignItems: 'center', gap: `${spacing.xxxs}px` },
+              '& svg': { flexShrink: 0 },
+              '& strong': { color: theme.palette.grayDarker.main, fontWeight: 500 },
+            },
+          },
+        })}
+      >
         {events?.items?.map((item, index) => (
           <EventItem item={item} device={device} user={user} key={index} />
         ))}
@@ -50,7 +80,15 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
           Plan upgrade required to view logs past {humanizeDays(logLimit?.value)}.
         </Notice>
       ) : (
-        <Box className={css.box}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            padding: `${spacing.lg}px`,
+          }}
+        >
           {fetching || fetchingMore ? (
             <Button color="primary" disabled size="small">
               Loading...
@@ -70,58 +108,3 @@ export const EventList: React.FC<LogListProps> = ({ device }) => {
   )
 }
 
-const useStyles = makeStyles(({ palette, breakpoints }) => ({
-  box: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'column',
-    padding: spacing.lg,
-  },
-  item: {
-    '& li': {
-      padding: `4px 0`,
-      fontSize: fontSizes.sm,
-      color: palette.grayDark.main,
-      alignItems: 'start',
-      '& > span': {
-        fontSize: fontSizes.xxs,
-        textAlign: 'right',
-        fontFamily: 'Roboto Mono',
-        minWidth: 150,
-        [breakpoints.down('sm')]: { minWidth: 100, width: 100 },
-      },
-      '& b': {
-        color: palette.grayDarkest.main,
-        fontWeight: 400,
-      },
-      '& i': {
-        color: palette.grayDarker.main,
-        fontStyle: 'normal',
-      },
-      '& .event-usage': {
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: spacing.xs,
-        marginTop: '0.6em',
-        lineHeight: '0.6em',
-        color: palette.grayDark.main,
-        fontSize: fontSizes.xxs,
-        textTransform: 'uppercase',
-        letterSpacing: '0.03em',
-        '& > span': {
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: spacing.xxxs,
-        },
-        '& svg': {
-          flexShrink: 0,
-        },
-        '& strong': {
-          color: palette.grayDarker.main,
-          fontWeight: 500,
-        },
-      },
-    },
-  },
-}))

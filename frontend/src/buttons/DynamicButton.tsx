@@ -1,9 +1,7 @@
 import React, { forwardRef } from 'react'
-import classnames from 'classnames'
-import { makeStyles } from '@mui/styles'
-import { IconButton, Tooltip, Button, ButtonProps, alpha, darken } from '@mui/material'
+import { Box, IconButton, Tooltip, Button, ButtonProps, Theme, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
-import { spacing } from '../styling'
+import { spacing, toSxArray } from '../styling'
 
 export type DynamicButtonProps = Omit<ButtonProps, 'color' | 'size'> & {
   title?: string
@@ -16,7 +14,6 @@ export type DynamicButtonProps = Omit<ButtonProps, 'color' | 'size'> & {
 }
 
 export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((props, ref) => {
-  const css = useStyles(props)
   let {
     title,
     icon,
@@ -27,8 +24,42 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
     variant = 'contained',
     className,
     loading,
+    sx,
     ...rest
   }: DynamicButtonProps = props
+
+  const sxArray = toSxArray(sx)
+
+  const buttonSx = (theme: Theme) => {
+    let background = rest.disabled ? theme.palette.grayLight.main : color ? theme.palette[color].main : undefined
+    let hover = background ? darken(background, 0.25) : undefined
+    let foreground = theme.palette.alwaysWhite.main
+    let style: any = {}
+
+    if (variant === 'text' && background) {
+      foreground = background
+      background = alpha(foreground, 0.1)
+      hover = alpha(foreground, 0.2)
+    }
+
+    if (size === 'chip') {
+      style.textTransform = 'none'
+      style.height = 20
+      style.fontWeight = 500
+      style.letterSpacing = 0.3
+      style.padding = `0px ${spacing.sm}px`
+    }
+
+    return {
+      '&.MuiButton-root': {
+        '&:hover': { backgroundColor: rest.disabled ? background : hover },
+        backgroundColor: background,
+        color: foreground,
+        minWidth: 0,
+        ...style,
+      },
+    }
+  }
 
   if (icon && loading && size === 'small') {
     icon = 'spinner-third'
@@ -37,7 +68,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
 
   if (size === 'chip') {
     return (
-      <Button ref={ref} size="small" variant={variant} className={classnames(className, css.button)} {...rest}>
+      <Button ref={ref} size="small" variant={variant} className={className} sx={[buttonSx, ...sxArray]} {...rest}>
         {title}
       </Button>
     )
@@ -60,53 +91,28 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
 
   if (size === 'small' || size === 'medium' || size === 'large') {
     return (
-      <Button ref={ref} size={size} variant={variant} {...rest} className={classnames(className, css.button)}>
+      <Button ref={ref} size={size} variant={variant} {...rest} className={className} sx={[buttonSx, ...sxArray]}>
         {IconComponent}
         {title}
       </Button>
     )
   }
 
+  const iconButton = (
+    <IconButton ref={ref} disabled={rest.disabled} onClick={rest.onClick} size="small">
+      {IconComponent}
+    </IconButton>
+  )
+
   return (
     <Tooltip title={title} className={className} placement="top" enterDelay={400} arrow>
-      <span>
-        <IconButton ref={ref} disabled={rest.disabled} onClick={rest.onClick} size="small">
-          {IconComponent}
-        </IconButton>
-      </span>
+      {sxArray.length ? (
+        <Box component="span" sx={sxArray}>
+          {iconButton}
+        </Box>
+      ) : (
+        <span>{iconButton}</span>
+      )}
     </Tooltip>
   )
 })
-
-const useStyles = makeStyles(({ palette }) => ({
-  button: (props: DynamicButtonProps) => {
-    let background = props.disabled ? palette.grayLight.main : props.color ? palette[props.color].main : undefined
-    let hover = background ? darken(background, 0.25) : undefined
-    let foreground = palette.alwaysWhite.main
-    let style: any = {}
-
-    if (props.variant === 'text' && background) {
-      foreground = background
-      background = alpha(foreground, 0.1)
-      hover = alpha(foreground, 0.2)
-    }
-
-    if (props.size === 'chip') {
-      style.textTransform = 'none'
-      style.height = 20
-      style.fontWeight = 500
-      style.letterSpacing = 0.3
-      style.padding = `0px ${spacing.sm}px`
-    }
-
-    return {
-      '&.MuiButton-root': {
-        '&:hover': { backgroundColor: props.disabled ? background : hover },
-        backgroundColor: background,
-        color: foreground,
-        minWidth: 0,
-        ...style,
-      },
-    }
-  },
-}))

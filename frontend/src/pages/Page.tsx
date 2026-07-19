@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Snackbar, IconButton, Dialog, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { spacing } from '../styling'
-import { makeStyles } from '@mui/styles'
 import { selectDevice } from '../selectors/devices'
 import { MaximizeAppRegion } from '../components/MaximizeAppRegion'
 import { ConnectionNotice } from '../components/ConnectionNotice'
@@ -35,10 +34,12 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   const clearSuccessMessage = () => ui.set({ successMessage: undefined })
   const clearErrorMessage = () => ui.set({ errorMessage: undefined })
   const reconnect = () => Controller.open(false, true)
-  const css = useStyles({
-    margin: layout.showOrgs && !layout.hideSidebar ? ORGANIZATION_BAR_WIDTH : spacing.sm,
-    mobile: layout.mobile,
-  })
+  const margin = layout.showOrgs && !layout.hideSidebar ? ORGANIZATION_BAR_WIDTH : spacing.sm
+  const snackbarSx = {
+    marginLeft: layout.mobile ? `${spacing.xs}px` : `${margin}px`,
+    marginRight: layout.mobile ? `${spacing.xs}px` : `${margin}px`,
+    bottom: `${layout.mobile ? 110 : 80}px !important`,
+  }
 
   // only show one message at a time
   let snackbar = ''
@@ -74,10 +75,10 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         </Dialog>
       )}
       <GlobalConfirm />
-      <ConnectionNotice className={css.snackbar} />
-      <UpdateNotice className={css.snackbar} />
+      <ConnectionNotice sx={snackbarSx} />
+      <UpdateNotice sx={snackbarSx} />
       <Snackbar
-        className={css.snackbar}
+        sx={snackbarSx}
         open={snackbar === 'retry'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         message={
@@ -96,7 +97,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         }
       />
       <Snackbar
-        className={css.snackbar}
+        sx={snackbarSx}
         key="error"
         open={snackbar === 'error'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
@@ -109,7 +110,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         }
       />
       <Snackbar
-        className={css.snackbar}
+        sx={snackbarSx}
         key="notice"
         open={snackbar === 'notice'}
         onClose={clearNoticeMessage}
@@ -122,7 +123,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         }
       />
       <Snackbar
-        className={css.snackbar}
+        sx={snackbarSx}
         key="success"
         open={snackbar === 'success'}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
@@ -138,10 +139,3 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
   )
 }
 
-const useStyles = makeStyles({
-  snackbar: ({ margin, mobile }: { margin: number; mobile: boolean }) => ({
-    marginLeft: mobile ? spacing.xs : margin,
-    marginRight: mobile ? spacing.xs : margin,
-    bottom: `${mobile ? 110 : 80}px !important`,
-  }),
-})

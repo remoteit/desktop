@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useStyles } from './SharedUsersPaginatedList'
+import { paginationSx, centerSx } from './SharedUsersPaginatedList'
 import { List, ListSubheader, ListItemSecondaryAction, Box, Chip } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { useGuests } from '../hooks/useGuests'
@@ -10,7 +10,6 @@ import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
 export const OrganizationGuestList: React.FC = () => {
-  const css = useStyles()
   const [page, setPage] = useState<number>(1)
   const { guests, guestsLoaded } = useGuests()
   const perPage = 20
@@ -63,8 +62,8 @@ export const OrganizationGuestList: React.FC = () => {
         ))}
       </List>
       {guests.length > perPage && (
-        <Gutters className={css.center}>
-          <Pagination className={css.pagination} count={pageCount} onChange={(_e, page) => setPage(page)} size="small" />
+        <Gutters sx={centerSx}>
+          <Pagination sx={paginationSx} count={pageCount} onChange={(_e, page) => setPage(page)} size="small" />
         </Gutters>
       )}
     </>

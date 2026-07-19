@@ -1,11 +1,26 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/styles'
 import { List, Pagination, Slider, Box } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { UserListItem } from './UserListItem'
 import { ShareDetails } from './ShareDetails'
 import { IconButton } from '../buttons/IconButton'
+
+export const paginationSx = {
+  margin: 0,
+  whiteSpace: 'nowrap',
+  flexWrap: 'nowrap',
+  '& .MuiSlider-sizeSmall': { width: 200 },
+  '& .MuiIconButton-root': { marginTop: `${-spacing.lg}px` },
+  '& .MuiPaginationItem-sizeSmall': { fontSize: fontSizes.xxs },
+  '& .MuiPaginationItem-page.Mui-selected': {
+    backgroundColor: 'primary.main',
+    color: 'alwaysWhite.main',
+    fontWeight: 500,
+  },
+}
+
+export const centerSx = { display: 'flex', justifyContent: 'center' }
 
 interface Props {
   title: string
@@ -27,7 +42,6 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
   perPage = 12,
 }) => {
   const [page, setPage] = useState<number>(1)
-  const css = useStyles()
 
   if (!users?.length) return null
 
@@ -40,7 +54,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
       gutters
       subtitle={title}
       action={
-        <Box className={css.pagination}>
+        <Box sx={paginationSx}>
           {users.length > perPage * 3 ? (
             <>
               <IconButton name="chevron-left" type="solid" color="primary" onClick={() => setPage(page - 1)} />
@@ -56,7 +70,7 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
           ) : (
             users.length > perPage && (
               <Pagination
-                classes={{ ul: css.pagination }}
+                sx={{ '& .MuiPagination-ul': paginationSx }}
                 count={pageCount}
                 onChange={(_e, page) => setPage(Math.max(page, 1))}
                 size="small"
@@ -77,20 +91,3 @@ export const SharedUsersPaginatedList: React.FC<Props> = ({
     </AccordionMenuItem>
   )
 }
-
-export const useStyles = makeStyles(({ palette }) => ({
-  pagination: {
-    margin: 0,
-    whiteSpace: 'nowrap',
-    flexWrap: 'nowrap',
-    '& .MuiSlider-sizeSmall': { width: 200 },
-    '& .MuiIconButton-root': { marginTop: -spacing.lg },
-    '& .MuiPaginationItem-sizeSmall': { fontSize: fontSizes.xxs },
-    '& .MuiPaginationItem-page.Mui-selected': {
-      backgroundColor: palette.primary.main,
-      color: palette.alwaysWhite.main,
-      fontWeight: 500,
-    },
-  },
-  center: { display: 'flex', justifyContent: 'center' },
-}))

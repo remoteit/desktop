@@ -1,4 +1,9 @@
+import type { SxProps, Theme } from '@mui/material'
+
 export type Sizes = 'bug' | 'xxxs' | 'xxs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'max'
+
+// Normalize an optional sx prop into an array for merging: sx={[baseSx, ...toSxArray(sx)]}
+export const toSxArray = (sx?: SxProps<Theme>) => (Array.isArray(sx) ? sx : sx ? [sx] : [])
 
 export const fontSizes: { [key in Sizes]: string } = {
   bug: '0.4375rem', // 7px

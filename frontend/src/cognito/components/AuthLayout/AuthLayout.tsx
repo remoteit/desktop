@@ -1,6 +1,5 @@
 import React from 'react'
 import { Box, Stack, Tooltip, IconButton } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SplashScreen } from '../SplashScreen'
@@ -19,7 +18,6 @@ export type AuthLayoutProps = {
 export function AuthLayout({ children, i18nKey, showLogo, back, backLink, fullWidth }: AuthLayoutProps): JSX.Element {
   const { t } = useTranslation()
   const history = useHistory()
-  const css = useStyles()
 
   let logo: null | React.ReactElement = null
   if (showLogo) {
@@ -34,7 +32,10 @@ export function AuthLayout({ children, i18nKey, showLogo, back, backLink, fullWi
           <PageHeading>
             {!!back && (
               <Tooltip title="back">
-                <IconButton className={css.back} onClick={() => (backLink ? history.push(backLink) : history.goBack())}>
+                <IconButton
+                  sx={{ position: 'absolute', marginLeft: '-60px', marginTop: '-10px' }}
+                  onClick={() => (backLink ? history.push(backLink) : history.goBack())}
+                >
                   <Icon fixedWidth name="chevron-left" size="lg" />
                 </IconButton>
               </Tooltip>
@@ -47,10 +48,3 @@ export function AuthLayout({ children, i18nKey, showLogo, back, backLink, fullWi
     </Box>
   )
 }
-const useStyles = makeStyles({
-  back: {
-    position: 'absolute',
-    marginLeft: -60,
-    marginTop: -10,
-  },
-})

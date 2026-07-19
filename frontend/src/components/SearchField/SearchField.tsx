@@ -1,9 +1,8 @@
 import React from 'react'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
-import { TextField, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, TextField, IconButton, Tooltip, Typography } from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
-import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -16,14 +15,14 @@ export const SearchField: React.FC = () => {
   // not compatible with DESK-648
   const disabled = Boolean(fetching || query.length < 2)
 
-  const css = useStyles()
 
   const totalTitle = filter ? 'Filtered' : 'Total'
   const title = searched ? `Searched / ${totalTitle}` : `${totalTitle} Devices`
 
   return (
-    <form
-      className={css.field}
+    <Box
+      component="form"
+      sx={{ width: '100%', display: 'flex', alignItems: 'center', position: 'relative' }}
       onSubmit={e => {
         e.preventDefault()
         devices.set({ searched: true, from: 0 })
@@ -34,7 +33,7 @@ export const SearchField: React.FC = () => {
         fullWidth
         value={query}
         variant="filled"
-        className={css.input}
+        sx={{ marginRight: `${spacing.sm}px` }}
         onKeyPress={e => {
           if (e.key === 'Enter' && query.trim().length < 2) {
             devices.set({ query: '', searched: false, from: 0 })
@@ -44,9 +43,11 @@ export const SearchField: React.FC = () => {
         onChange={e => devices.set({ query: e.target.value })}
         placeholder="Search devices and services..."
       />
-      <div className={css.right}>
-        <Tooltip className={css.total} title={title}>
-          <Typography variant="caption">{searched ? `${results}/${total}` : total}</Typography>
+      <Box sx={{ position: 'absolute', right: `${spacing.lg}px` }}>
+        <Tooltip title={title}>
+          <Typography sx={{ marginRight: `${spacing.sm}px` }} variant="caption">
+            {searched ? `${results}/${total}` : total}
+          </Typography>
         </Tooltip>
         {(searched || query) && (
           <Tooltip title="Clear search">
@@ -69,26 +70,7 @@ export const SearchField: React.FC = () => {
             </IconButton>
           </span>
         </Tooltip>
-      </div>
-    </form>
+      </Box>
+    </Box>
   )
 }
-
-const useStyles = makeStyles({
-  field: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  input: {
-    marginRight: spacing.sm,
-  },
-  total: {
-    marginRight: spacing.sm,
-  },
-  right: {
-    position: 'absolute',
-    right: spacing.lg,
-  },
-})

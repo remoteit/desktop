@@ -1,5 +1,4 @@
 import { Box,Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import React,{ useEffect,useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
@@ -74,7 +73,6 @@ const adminDeviceAttributes: AdminDeviceAttribute[] = [
 
 export const AdminUserDevicesPanel: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
-  const css = useStyles()
   const [devices, setDevices] = useState<AdminDeviceRow[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
@@ -139,9 +137,9 @@ export const AdminUserDevicesPanel: React.FC = () => {
             >
               {attributes.map(attribute => (
                 <Box key={attribute.id} className="attribute">
-                  <div className={css.truncate}>
+                  <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>
                     {attribute.value({ device })}
-                  </div>
+                  </Box>
                 </Box>
               ))}
             </GridListItem>
@@ -152,12 +150,3 @@ export const AdminUserDevicesPanel: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(() => ({
-  truncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-    flex: 1,
-  },
-}))

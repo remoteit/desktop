@@ -1,11 +1,11 @@
 import React from 'react'
 import classnames from 'classnames'
 import { ListItemLocation } from './ListItemLocation'
-import { useStyles } from './ConnectionListItem'
+import { itemSx } from './ConnectionListItem'
 import { Avatar } from './Avatar'
 import { Title } from './Title'
 import { Icon } from './Icon'
-import { Box } from '@mui/material'
+import { Box, useTheme } from '@mui/material'
 
 export interface Props {
   network?: INetwork
@@ -24,15 +24,25 @@ export const NetworkListTitle: React.FC<Props> = ({
   onClick,
   children,
 }) => {
-  const css = useStyles()
+  const theme = useTheme()
   return (
     <ListItemLocation
-      className={css.item}
+      sx={{
+        ...(itemSx as object),
+        '& .mergeIcon': {
+          zIndex: 2,
+          backgroundImage: `radial-gradient(${theme.palette.white.main}, transparent)`,
+        },
+        '& .sliderIcon': {
+          position: 'absolute',
+          marginTop: '-1px',
+        },
+      }}
       exactMatch
       icon={
         <>
           {noLink && network?.owner?.id ? (
-            <Box className={css.mergeIcon}>
+            <Box className="mergeIcon">
               <Avatar
                 email={network?.owner.email}
                 fallback={network?.name === 'Personal' ? undefined : network?.name}
@@ -41,7 +51,7 @@ export const NetworkListTitle: React.FC<Props> = ({
             </Box>
           ) : (
             <Icon
-              className={classnames(css.mergeIcon, noLink || 'hoverHide')}
+              className={classnames('mergeIcon', noLink || 'hoverHide')}
               name={network?.icon}
               type={network?.iconType}
               color={enabled ? 'primary' : undefined}
@@ -49,7 +59,7 @@ export const NetworkListTitle: React.FC<Props> = ({
           )}
           {!noLink && (
             <Icon
-              className={classnames(css.mergeIcon, css.hover, 'hidden')}
+              className={classnames('mergeIcon', 'sliderIcon', 'hidden')}
               name="sliders-h"
               type="light"
               size="md"

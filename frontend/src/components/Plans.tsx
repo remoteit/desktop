@@ -2,7 +2,6 @@ import React from 'react'
 import { Notice } from './Notice'
 import { Overlay } from './Overlay'
 import { PlanCard } from './PlanCard'
-import { makeStyles } from '@mui/styles'
 import { PlanGutters } from './PlanGutters'
 import { PlanCheckout } from './PlanCheckout'
 import { LoadingMessage } from './LoadingMessage'
@@ -22,7 +21,6 @@ type Props = {
 }
 
 export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans }) => {
-  const css = useStyles()
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
@@ -72,7 +70,7 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
       )}
       {license?.custom && (
         <PlanGutters>
-          <NoticeCustomPlan className={css.notice} fullWidth />
+          <NoticeCustomPlan sx={{ maxWidth: 840 }} fullWidth />
         </PlanGutters>
       )}
       <PlanGutters>
@@ -177,8 +175,3 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
   )
 }
 
-const useStyles = makeStyles({
-  notice: {
-    maxWidth: 840,
-  },
-})

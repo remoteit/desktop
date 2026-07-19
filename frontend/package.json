@@ -29,7 +29,6 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/lab": "^5.0.0-alpha.155",
     "@mui/material": "^5.15.17",
-    "@mui/styles": "^5.15.17",
     "@mui/x-date-pickers": "^6.19.7",
     "@rematch/core": "^2.2.0",
     "@rematch/immer": "^2.1.3",

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
-import { makeStyles } from '@mui/styles'
 import { useParams } from 'react-router-dom'
 import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
@@ -22,7 +21,6 @@ const NAME_MAX_LENGTH = 64
 export const OrganizationRolePage: React.FC = () => {
   const { roleID } = useParams<{ roleID?: string }>()
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
   const disabled = useSelector((state: State) => state.organization.updating)
   const roles = useSelector((state: State) => selectOrganization(state).roles)
   const role = structuredClone(roles?.find(r => r.id === roleID) || DEFAULT_ROLE)
@@ -66,7 +64,12 @@ export const OrganizationRolePage: React.FC = () => {
         </Typography>
       }
     >
-      <List className={css.form}>
+      <List
+        sx={{
+          '& .MuiTextField-root': { maxWidth: 400 },
+          '& .MuiListItem-secondaryAction': { paddingRight: '130px' },
+        }}
+      >
         {systemRole && (
           <Notice severity="info" gutterBottom>
             System roles cannot be modified.
@@ -137,10 +140,3 @@ export const OrganizationRolePage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  form: {
-    '& .MuiTextField-root': { maxWidth: 400 },
-    '& .MuiListItem-secondaryAction': { paddingRight: 130 },
-  },
-  button: { fontWeight: 500, letterSpacing: 1, color: palette.grayDarker.main },
-}))

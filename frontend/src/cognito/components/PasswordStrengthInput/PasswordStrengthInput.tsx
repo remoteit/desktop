@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../../constants'
-import { makeStyles } from '@mui/styles'
 import { useTranslation } from 'react-i18next'
 import { Box, TextField, Typography } from '@mui/material'
 import zxcvbn from 'zxcvbn'
@@ -13,7 +12,6 @@ export type Props = {
 
 export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.Element {
   const { t } = useTranslation()
-  const css = useStyles()
   const [password, setPassword] = useState<string>('')
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
@@ -202,7 +200,13 @@ export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.E
           helperText={confirmError ? t('pages.forgot-password-verify.password-error.passwords-do-not-match') : ' '}
         />
       </Box>
-      <Box className={css.meter + (!!password || valid ? '' : ' ' + css.disabled)} mb={2}>
+      <Box
+        sx={[
+          { textAlign: 'right', height: 40, '& progress': { width: '100%' } },
+          !!password || valid ? {} : { opacity: 0.3 },
+        ]}
+        mb={2}
+      >
         <progress
           className={`password-strength-meter strength-${checkTestedResult(password)}`}
           max="4"
@@ -231,7 +235,3 @@ export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.E
   )
 }
 
-const useStyles = makeStyles({
-  meter: { textAlign: 'right', height: 40, '& progress': { width: '100%' } },
-  disabled: { opacity: 0.3 },
-})

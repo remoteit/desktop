@@ -1,5 +1,4 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { Box, Divider, Typography, InputLabel } from '@mui/material'
 import { State, Dispatch } from '../store'
@@ -33,12 +32,51 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const mobile = containerWidth < MOBILE_WIDTH
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
-  const css = useStyles()
 
   const onCreate = async tag => await dispatch.tags.create({ tag, accountId })
 
   return (
-    <Box className={css.actions} ref={containerRef}>
+    <Box
+      ref={containerRef}
+      sx={theme => ({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderTop: `1px solid ${theme.palette.white.main}`,
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: theme.palette.primary.main,
+        borderRadius: `${radius.lg}px`,
+        marginLeft: `${spacing.sm}px`,
+        marginRight: `${spacing.sm}px`,
+        marginBottom: `${spacing.xs}px`,
+        paddingLeft: `${spacing.sm}px`,
+        paddingRight: `${spacing.sm}px`,
+        zIndex: 10,
+        '& .MuiTypography-subtitle1': {
+          marginTop: `${spacing.xs}px`,
+          marginBottom: `${spacing.xs}px`,
+          paddingLeft: `${spacing.sm}px`,
+          fontWeight: 800,
+          color: theme.palette.alwaysWhite.main,
+        },
+        '& .MuiInputLabel-root': {
+          color: theme.palette.alwaysWhite.main,
+          marginRight: `${spacing.xs}px`,
+          transform: 'translate(0, 3px) scale(0.75)',
+        },
+        '& > div + div': {
+          marginLeft: `${-spacing.xs}px`,
+        },
+        '& .MuiDivider-root': {
+          height: '1.5em',
+          backgroundColor: theme.palette.alwaysWhite.main,
+          marginLeft: `${spacing.sm}px`,
+          marginRight: `${spacing.sm}px`,
+          opacity: 0.3,
+        },
+      })}
+    >
       <IconButton
         icon="times"
         title="Clear selection"
@@ -58,7 +96,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
       <Box sx={{ flexGrow: 1 }} />
       {feature.tagging && canEdit && (
         <>
-          {mobile || <InputLabel shrink>tags</InputLabel>}
+          {!mobile && <InputLabel shrink>tags</InputLabel>}
           <TagEditor
             button="plus"
             tags={tags}
@@ -120,44 +158,3 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
     </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  actions: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTop: `1px solid ${palette.white.main}`,
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: palette.primary.main,
-    borderRadius: radius.lg,
-    marginLeft: spacing.sm,
-    marginRight: spacing.sm,
-    marginBottom: spacing.xs,
-    paddingLeft: spacing.sm,
-    paddingRight: spacing.sm,
-    zIndex: 10,
-    '& .MuiTypography-subtitle1': {
-      marginTop: spacing.xs,
-      marginBottom: spacing.xs,
-      paddingLeft: spacing.sm,
-      fontWeight: 800,
-      color: palette.alwaysWhite.main,
-    },
-    '& .MuiInputLabel-root': {
-      color: palette.alwaysWhite.main,
-      marginRight: spacing.xs,
-      transform: 'translate(0, 3px) scale(0.75)',
-    },
-    '& > div + div': {
-      marginLeft: -spacing.xs,
-    },
-    '& .MuiDivider-root': {
-      height: '1.5em',
-      backgroundColor: palette.alwaysWhite.main,
-      marginLeft: spacing.sm,
-      marginRight: spacing.sm,
-      opacity: 0.3,
-    },
-  },
-}))

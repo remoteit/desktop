@@ -1,7 +1,6 @@
 import React from 'react'
 import { LANGUAGES } from '../constants'
 import { Dispatch, State } from '../store'
-import { makeStyles } from '@mui/styles'
 import { isPersonal } from '../models/plans'
 import { Typography, List } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -24,7 +23,6 @@ export const ProfilePage: React.FC = () => {
     deleteAccount: state.ui.deleteAccount,
   }))
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
 
   if (!user) return null
 
@@ -39,7 +37,16 @@ export const ProfilePage: React.FC = () => {
         </>
       }
     >
-      <Gutters top="xl" className={css.profile}>
+      <Gutters
+        top="xl"
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          maxWidth: 500,
+          '& .MuiAvatar-root': { marginRight: `${spacing.xl}px` },
+        }}
+      >
         <Avatar email={user.email} size={125} />
         <Typography variant="caption">
           Your profile picture is imported from the free service Gravatar.
@@ -71,12 +78,3 @@ export const ProfilePage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ }) => ({
-  profile: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    maxWidth: 500,
-    '& .MuiAvatar-root': { marginRight: spacing.xl },
-  },
-}))
