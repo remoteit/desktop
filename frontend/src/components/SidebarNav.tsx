@@ -32,7 +32,7 @@ const listSx = (theme: Theme) => ({
   '& .MuiChip-root': { marginRight: `${spacing.sm}px` },
   '& .MuiListItemButton-root:hover .MuiListItemText-primary': { color: theme.palette.black.main },
   '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, borderColor: theme.palette.grayLight.main },
-  '& .Mui-selected, & .Mui-selected:hover': {
+  '& .MuiListItemButton-root.Mui-selected, & .MuiListItemButton-root.Mui-selected:hover': {
     backgroundColor: theme.palette.primaryLighter.main,
     '& .MuiListItemIcon-root': { color: theme.palette.grayDarker.main },
     '& .MuiListItemText-primary': { color: theme.palette.black.main, fontWeight: 500 },

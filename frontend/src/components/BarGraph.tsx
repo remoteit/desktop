@@ -44,7 +44,6 @@ export const BarGraph: React.FC<BarGraphProps> = ({
       component="svg"
       width={width}
       height={height + 1}
-      viewBox={`0 0 ${width} ${height + 1}`}
       sx={theme => ({
         backgroundColor: theme.palette.white.main,
         borderBottomLeftRadius: `${height / 8}px`,

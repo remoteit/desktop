@@ -24,7 +24,7 @@ const nameSx = (theme: Theme) => ({
   whiteSpace: 'nowrap',
   position: 'relative' as const,
   height: '2em',
-  '& > *': {
+  '& > .MuiTypography-root': {
     position: 'absolute',
     right: 0,
     color: theme.palette.grayDarkest.main,
