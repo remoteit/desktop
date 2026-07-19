@@ -57,7 +57,7 @@ export const Network: React.FC<Props> = ({ onClear, recent, highlight, network, 
                   backgroundColor: theme.palette.white.main,
                 },
               },
-              '& .Mui-selected': {
+              '& .MuiListItemButton-root.Mui-selected': {
                 backgroundColor: theme.palette.white.main,
               },
             })
