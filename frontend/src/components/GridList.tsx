@@ -1,6 +1,6 @@
 import { List,ListProps } from '@mui/material'
 import React from 'react'
-import { fontSizes,spacing } from '../styling'
+import { fontSizes, spacing, toSxArray } from '../styling'
 import { Attribute } from './Attributes'
 import { GridListHeader } from './GridListHeader'
 
@@ -84,7 +84,7 @@ export const GridList = <TOptions, THeaderContext = unknown>({
             marginBottom: `${rowShrink / 2 - 1}px`,
           },
         }),
-        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ...toSxArray(sx),
       ]}
       disablePadding
       {...props}

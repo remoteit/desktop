@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import browser from '../services/browser'
 import { Box, SxProps, Theme } from '@mui/material'
-import { spacing } from '../styling'
+import { spacing, toSxArray } from '../styling'
 
 export type BodyProps = {
   inset?: boolean
@@ -124,7 +124,7 @@ export const Body: React.FC<BodyProps> = ({
                 },
               })
             : {},
-          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+          ...toSxArray(sx),
         ]}
       >
         {children}

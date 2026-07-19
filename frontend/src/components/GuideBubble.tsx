@@ -3,6 +3,7 @@ import { Box, Tooltip, TooltipProps, BoxProps, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { tipSx, arrowSx, boxSx } from './GuideStep'
+import { toSxArray } from '../styling'
 import { Link } from './Link'
 
 type Props = {
@@ -73,7 +74,7 @@ export const GuideBubble: React.FC<Props> = ({
       }
     >
       <Box
-        sx={[boxSx(highlight && open), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+        sx={[boxSx(highlight && open), ...toSxArray(sx)]}
         onClick={() => ui.pop(guide)}
         component={component}
       >

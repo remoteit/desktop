@@ -1,7 +1,7 @@
 import React from 'react'
 import { Icon } from './Icon'
 import { IconButton } from '../buttons/IconButton'
-import { spacing, fontSizes } from '../styling'
+import { spacing, fontSizes, toSxArray } from '../styling'
 import { alpha, SxProps, Theme, Paper, Box } from '@mui/material'
 
 const severityColors = { info: 'calm', error: 'error', warning: 'warning', success: 'success' } as const
@@ -96,7 +96,7 @@ export const Notice: React.FC<NoticeProps> = ({
           '& .MuiButton-root': { marginTop: '5px' },
         },
         (theme: Theme) => severitySx(theme, severity, solid),
-        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ...toSxArray(sx),
       ]}
     >
       {icon}

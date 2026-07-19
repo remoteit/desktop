@@ -1,7 +1,7 @@
 import React from 'react'
 import { MOBILE_WIDTH } from '../constants'
 import { List, ListProps, useMediaQuery } from '@mui/material'
-import { spacing } from '../styling'
+import { spacing, toSxArray } from '../styling'
 
 type Props = ListProps & {
   size?: 'large' | 'small'
@@ -41,7 +41,7 @@ export const ListHorizontal: React.FC<Props> = ({ size = 'large', hideIcons, chi
             fontSize: mobile ? '12px' : undefined,
           },
         },
-        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ...toSxArray(sx),
       ]}
     >
       {children}

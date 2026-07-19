@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react'
 import { Box, IconButton, Tooltip, Button, ButtonProps, Theme, alpha, darken } from '@mui/material'
 import { Icon, IconProps } from '../components/Icon'
-import { spacing } from '../styling'
+import { spacing, toSxArray } from '../styling'
 
 export type DynamicButtonProps = Omit<ButtonProps, 'color' | 'size'> & {
   title?: string
@@ -28,7 +28,7 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
     ...rest
   }: DynamicButtonProps = props
 
-  const sxArray = Array.isArray(sx) ? sx : sx ? [sx] : []
+  const sxArray = toSxArray(sx)
 
   const buttonSx = (theme: Theme) => {
     let background = rest.disabled ? theme.palette.grayLight.main : color ? theme.palette[color].main : undefined
@@ -98,13 +98,21 @@ export const DynamicButton = forwardRef<HTMLButtonElement, DynamicButtonProps>((
     )
   }
 
+  const iconButton = (
+    <IconButton ref={ref} disabled={rest.disabled} onClick={rest.onClick} size="small">
+      {IconComponent}
+    </IconButton>
+  )
+
   return (
     <Tooltip title={title} className={className} placement="top" enterDelay={400} arrow>
-      <Box component="span" sx={sxArray}>
-        <IconButton ref={ref} disabled={rest.disabled} onClick={rest.onClick} size="small">
-          {IconComponent}
-        </IconButton>
-      </Box>
+      {sxArray.length ? (
+        <Box component="span" sx={sxArray}>
+          {iconButton}
+        </Box>
+      ) : (
+        <span>{iconButton}</span>
+      )}
     </Tooltip>
   )
 })

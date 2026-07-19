@@ -1,7 +1,7 @@
 import React from 'react'
 import { windowOpen } from '../services/browser'
 import { Box, Stack, Paper, PaperProps, Typography } from '@mui/material'
-import { spacing, fontSizes } from '../styling'
+import { spacing, fontSizes, toSxArray } from '../styling'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 
@@ -34,7 +34,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
       elevation={0}
       sx={[
         { display: 'flex', backgroundColor: 'grayLightest.main', minWidth: 200 },
-        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ...toSxArray(sx),
       ]}
       {...props}
     >

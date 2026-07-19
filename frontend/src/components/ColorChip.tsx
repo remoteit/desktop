@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react'
 import { Chip, ChipProps, alpha, darken } from '@mui/material'
-import { spacing } from '../styling'
+import { spacing, toSxArray } from '../styling'
 
 export type Props = Omit<ChipProps, 'variant' | 'color'> & {
   color?: Color
@@ -47,7 +47,7 @@ export const ColorChip = forwardRef<HTMLDivElement, Props>(
             '&:hover': { backgroundColor: hoverColor },
           }
         },
-        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ...toSxArray(sx),
       ]}
     />
   )

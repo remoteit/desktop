@@ -1,5 +1,5 @@
 import React from 'react'
-import { radius, spacing } from '../styling'
+import { radius, spacing, toSxArray } from '../styling'
 import { Box, ListItemIcon, ListItemButton, ListItemButtonProps } from '@mui/material'
 
 type Props = ListItemButtonProps & {
@@ -33,7 +33,7 @@ export const GridListItem: React.FC<Props> = ({ required, icon, mobile, stickyCe
             width: '100%',
           },
         }),
-        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ...toSxArray(sx),
       ]}
       {...props}
     >
