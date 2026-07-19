@@ -343,7 +343,7 @@ export function graphQLDeviceAdaptor({
       lastReported: d.lastReported && new Date(d.lastReported),
       externalAddress: d.endpoint?.externalAddress,
       internalAddress: d.endpoint?.internalAddress,
-      targetPlatform: d.platform, // || 1214,
+      targetPlatform: d.platform, // || 1214 to preview a new platform
       availability: d.endpoint?.availability,
       instability: d.endpoint?.instability,
       quality: d.endpoint?.quality,

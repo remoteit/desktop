@@ -5,18 +5,16 @@ import { selectPermissions, selectLimitsLookup, selectOrganization } from '../se
 import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
-import { ListItemBack } from '../components/ListItemBack'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { BillingUI } from '../components/BillingUI'
-import { MobileUI } from '../components/MobileUI'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 export const OrganizationRolesPage: React.FC = () => {
   const history = useHistory()
-  const { name, roles, members, limits, permissions } = useSelector((state: State) => ({
+  const { roles, members, limits, permissions } = useSelector((state: State) => ({
     ...selectOrganization(state),
     limits: selectLimitsLookup(state),
     permissions: selectPermissions(state),
@@ -33,11 +31,6 @@ export const OrganizationRolesPage: React.FC = () => {
           <Typography variant="h1">
             <Title>Roles</Title>
           </Typography>
-          <MobileUI hide>
-            <List sx={{ paddingTop: 0 }}>
-              <ListItemBack title={name} to="/organization" disableGutters={false} />
-            </List>
-          </MobileUI>
         </>
       }
     >

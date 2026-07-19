@@ -1,6 +1,4 @@
 import React, { useEffect } from 'react'
-import classnames from 'classnames'
-import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
@@ -21,7 +19,6 @@ import { Icon } from '../components/Icon'
 import { ConveyorBeltBoxes } from '../assets/ConveyorBeltBoxes'
 
 export const AddPage: React.FC = () => {
-  const css = useStyles()
   const dispatch = useDispatch<Dispatch>()
   const allApplicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const claiming = useSelector((state: State) => state.ui.claiming)
@@ -43,9 +40,51 @@ export const AddPage: React.FC = () => {
         </Typography>
       }
     >
-      <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" width="100%" paddingX={{ xs: 1, sm: 4 }}>
-        <RentANodeAdd className={classnames(css.list, css.smallList)} />
-        <List className={classnames(css.list, css.smallList)} dense disablePadding>
+      <Stack
+        flexWrap="wrap"
+        alignItems="flex-start"
+        flexDirection="row"
+        width="100%"
+        paddingX={{ xs: 1, sm: 4 }}
+        sx={theme => ({
+          '& .addList': {
+            minWidth: 175,
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            marginTop: `${spacing.md}px`,
+            paddingRight: `${spacing.xs}px`,
+            paddingLeft: `${spacing.md}px`,
+            '& .MuiListItemButton-root': {
+              display: 'block',
+              paddingLeft: `${spacing.md}px`,
+              paddingTop: `${spacing.lg}px`,
+              paddingRight: `${spacing.md}px`,
+              flexGrow: 'initial',
+            },
+            '& .MuiListItemText-root': { marginTop: `${spacing.sm}px`, marginBottom: `${spacing.sm}px` },
+            '& .MuiListItemSecondaryAction-root': { right: `${spacing.xs}px`, top: 45 },
+            '& .MuiListSubheader-root': {
+              width: '100%',
+              borderBottom: `1px solid ${theme.palette.grayLight.main}`,
+              marginBottom: `${spacing.xs}px`,
+            },
+          },
+          '& .addSmall': {
+            width: '50%',
+            [theme.breakpoints.up('sm')]: { width: 200 },
+          },
+          '& .addIcons': {
+            '& .MuiListItemButton-root, & .MuiListItem-root': { width: 140, minWidth: 140, minHeight: 100, margin: '1px' },
+            [theme.breakpoints.down('sm')]: {
+              '& .MuiListItemButton-root, & .MuiListItem-root': { width: 110, minWidth: 110 },
+            },
+          },
+        })}
+      >
+        <RentANodeAdd className="addList addSmall" />
+        <List className="addList addSmall" dense disablePadding>
           <ListSubheader disableGutters>Try a device</ListSubheader>
           <ListItemButton
             disableGutters
@@ -61,10 +100,10 @@ export const AddPage: React.FC = () => {
             <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
           </ListItemButton>
         </List>
-        <AndroidSetup className={classnames(css.list, css.smallList)} />
-        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
-        <BluetoothScan className={classnames(css.list, css.smallList)} />
-        <List className={classnames(css.list, css.icons)} dense disablePadding>
+        <AndroidSetup className="addList addSmall" />
+        <DeviceSetupItem className="addList addSmall" />
+        <BluetoothScan className="addList addSmall" />
+        <List className="addList addIcons" dense disablePadding>
           <ListSubheader disableGutters>Add an instance</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
@@ -82,7 +121,7 @@ export const AddPage: React.FC = () => {
             )
           })}
         </List>
-        <List className={classnames(css.list, css.icons)} dense disablePadding>
+        <List className="addList addIcons" dense disablePadding>
           <ListSubheader disableGutters>Add a device</ListSubheader>
           {[
             'raspberrypi',
@@ -118,8 +157,8 @@ export const AddPage: React.FC = () => {
             )
           })}
         </List>
-        <ClaimDevice className={classnames(css.list, css.smallList)} />
-        <List className={classnames(css.list, css.smallList)} dense disablePadding>
+        <ClaimDevice className="addList addSmall" />
+        <List className="addList addSmall" dense disablePadding>
           <ListSubheader disableGutters>Add many</ListSubheader>
           <ListItemButton disableGutters onClick={() => history.push('/products')}>
             <ListItemIcon>
@@ -133,48 +172,3 @@ export const AddPage: React.FC = () => {
   )
 }
 
-export const useStyles = makeStyles(({ palette, breakpoints }) => ({
-  list: {
-    minWidth: 175,
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    marginTop: spacing.md,
-    paddingRight: spacing.xs,
-    paddingLeft: spacing.md,
-    '& .MuiListItemButton-root': {
-      display: 'block',
-      paddingLeft: spacing.md,
-      paddingTop: spacing.lg,
-      paddingRight: spacing.md,
-      flexGrow: 'initial',
-    },
-    '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
-    '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
-    '& .MuiListSubheader-root': {
-      width: '100%',
-      borderBottom: `1px solid ${palette.grayLight.main}`,
-      marginBottom: spacing.xs,
-    },
-  },
-  icons: {
-    '& .MuiListItemButton-root, & .MuiListItem-root': {
-      width: 140,
-      minWidth: 140,
-      minHeight: 100,
-      margin: 1,
-    },
-    [breakpoints.down('sm')]: {
-      '& .MuiListItemButton-root, & .MuiListItem-root': {
-        width: 110,
-        minWidth: 110,
-      },
-    },
-  },
-  smallList: {
-    width: '50%',
-    [breakpoints.up('sm')]: { width: 200 },
-    // [breakpoints.up('md')]: { width: 200 },
-  },
-}))

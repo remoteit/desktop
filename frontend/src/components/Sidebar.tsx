@@ -1,6 +1,6 @@
 import React from 'react'
 import browser from '../services/browser'
-import { makeStyles } from '@mui/styles'
+import { Box } from '@mui/material'
 import { SIDEBAR_WIDTH } from '../constants'
 import { OrganizationSidebar } from './OrganizationSidebar'
 import { RemoteManagement } from './RemoteManagement'
@@ -19,19 +19,43 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const addSpace = browser.isMac && browser.isElectron && !layout.showOrgs
   const location = useLocation()
   const adminMode = useSelector((state: State) => selectIsAdminRouteMode(state, location.pathname))
-  const css = useStyles({ insets: layout.insets, addSpace })
+  const insets = layout.insets
 
   return (
     <OrganizationSidebar insets={layout.insets} hide={!layout.showOrgs || adminMode}>
-      <Body className={css.sidebar} scrollbarBackground="grayLighter">
+      <Body
+        scrollbarBackground="grayLighter"
+        sx={theme => ({
+          display: 'flex',
+          flexDirection: 'column',
+          contain: 'layout',
+          backgroundColor: theme.palette.grayLighter.main,
+          width: SIDEBAR_WIDTH,
+          minWidth: SIDEBAR_WIDTH,
+          maxWidth: SIDEBAR_WIDTH,
+          '& section': { margin: `${spacing.xl}px ${spacing.md}px ${spacing.sm}px`, padding: 0 },
+          '& section:first-of-type': { marginTop: `${spacing.sm}px` },
+          // for iOS mobile
+          paddingTop: `${spacing.md + (insets.top ? insets.top : addSpace ? spacing.md : 0)}px`,
+          paddingBottom: `${insets?.bottom ?? 0}px`,
+        })}
+      >
         {adminMode ? (
           <AdminSidebarNav />
         ) : (
           <>
-            <section className={css.header}>
+            <Box
+              component="section"
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: `${spacing.sm}px`,
+              }}
+            >
               <AvatarMenu />
               <RegisterMenu buttonSize={38} sidebar type="solid" />
-            </section>
+            </Box>
             <SidebarNav />
             <RemoteManagement />
           </>
@@ -40,31 +64,3 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
     </OrganizationSidebar>
   )
 }
-
-type StyleProps = {
-  addSpace: boolean
-  insets: ILayout['insets']
-}
-
-const useStyles = makeStyles(({ palette }) => ({
-  sidebar: ({ insets, addSpace }: StyleProps) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    contain: 'layout',
-    backgroundColor: palette.grayLighter.main,
-    width: SIDEBAR_WIDTH,
-    minWidth: SIDEBAR_WIDTH,
-    maxWidth: SIDEBAR_WIDTH,
-    '& section': { margin: `${spacing.xl}px ${spacing.md}px ${spacing.sm}px`, padding: 0 },
-    '& section:first-of-type': { marginTop: spacing.sm },
-    // for iOS mobile
-    paddingTop: spacing.md + (insets.top ? insets.top : addSpace ? spacing.md : 0),
-    paddingBottom: insets?.bottom,
-  }),
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-}))

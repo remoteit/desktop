@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import { Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
 import { useLocation } from 'react-router-dom'
@@ -23,7 +22,6 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   const location = useLocation()
   const state = connectionState(service, connection)
   const lan = lanShared(connection)
-  const css = useStyles()
 
   const proxy = connection.proxyOnly
   const publik = connection.connectLink || connection.public
@@ -86,7 +84,16 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   return (
     <DiagramContext.Provider value={{ state, relay, toTypes, activeTypes, highlightTypes, errorTypes }}>
       {/* <Pre {...{ state }} /> */}
-      <Box className={css.diagram}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'stretch',
+          position: 'relative',
+          paddingTop: '24px',
+          paddingBottom: '6px',
+        }}
+      >
         {lan && (
           <>
             <DiagramLabel type="lan" />
@@ -154,13 +161,3 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   )
 }
 
-const useStyles = makeStyles({
-  diagram: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'stretch',
-    position: 'relative',
-    paddingTop: 24,
-    paddingBottom: 6,
-  },
-})

@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../../store'
 import { Tooltip, Select, MenuItem } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 
 export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
@@ -10,7 +9,6 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
   const { devices } = useDispatch<Dispatch>()
   const { labels } = useSelector((state: State) => state)
   const label = labels.find(l => l.id === device.attributes.color) || labels[0]
-  const css = useStyles()
 
   function handleUpdate(color: number) {
     device.attributes = { ...device.attributes, color }
@@ -24,8 +22,16 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
         onMouseEnter={() => setTooltip(true)}
         onMouseLeave={() => setTooltip(false)}
         style={{ backgroundColor: label.color }}
-        className={css.all}
-        classes={{ icon: css.icon, select: css.menu }}
+        sx={theme => ({
+          border: `3px solid ${theme.palette.grayLighter.main}`,
+          width: 30,
+          height: 30,
+          borderRadius: '50%',
+          '& .MuiSelect-select:focus': { background: 'inherit' },
+          '&:hover': { borderColor: theme.palette.primaryLight.main },
+          '& .MuiSelect-icon': { display: 'none' },
+          '& .MuiSelect-select': { marginLeft: '-10px' },
+        })}
         value={label.id}
         onOpen={() => setTooltip(false)}
         onChange={event => handleUpdate(Number(event.target.value))}
@@ -35,7 +41,24 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
         }}
       >
         {labels.map(l => (
-          <MenuItem key={l.id} value={l.id} className={css.item}>
+          <MenuItem
+            key={l.id}
+            value={l.id}
+            sx={theme => ({
+              width: spacing.xxl,
+              paddingRight: 0,
+              paddingLeft: 0,
+              marginLeft: `${spacing.xxs}px`,
+              marginRight: `${spacing.xxs}px`,
+              justifyContent: 'center',
+              '& > em': {
+                borderRadius: '50%',
+                height: spacing.lg,
+                width: spacing.lg,
+                border: `1px solid ${theme.palette.grayLighter.main}`,
+              },
+            })}
+          >
             <em style={{ backgroundColor: l.color }} />
           </MenuItem>
         ))}
@@ -43,29 +66,3 @@ export const LabelButton: React.FC<{ device: IDevice }> = ({ device }) => {
     </Tooltip>
   )
 }
-const useStyles = makeStyles(({ palette }) => ({
-  all: {
-    border: `3px solid ${palette.grayLighter.main}`,
-    width: 30,
-    height: 30,
-    borderRadius: '50%',
-    '& .MuiSelect-select:focus': { background: 'inherit' },
-    '&:hover': { borderColor: palette.primaryLight.main },
-  },
-  item: {
-    width: spacing.xxl,
-    paddingRight: 0,
-    paddingLeft: 0,
-    marginLeft: spacing.xxs,
-    marginRight: spacing.xxs,
-    justifyContent: 'center',
-    '& > em': {
-      borderRadius: '50%',
-      height: spacing.lg,
-      width: spacing.lg,
-      border: `1px solid ${palette.grayLighter.main}`,
-    },
-  },
-  menu: { marginLeft: -10 },
-  icon: { display: 'none' },
-}))

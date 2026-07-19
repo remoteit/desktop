@@ -14,7 +14,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -84,7 +83,6 @@ export const AdminPartnersListPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(adminPartnerAttributes, a => a.required === true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -186,7 +184,9 @@ export const AdminPartnersListPage: React.FC = () => {
             >
               {attributes.map(attribute => (
                 <Box key={attribute.id} className="attribute">
-                  <div className={css.truncate}>{attribute.value({ partner })}</div>
+                  <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>
+                    {attribute.value({ partner })}
+                  </Box>
                 </Box>
               ))}
             </GridListItem>
@@ -234,12 +234,3 @@ export const AdminPartnersListPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(() => ({
-  truncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-    flex: 1,
-  },
-}))

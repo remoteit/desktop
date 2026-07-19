@@ -1,6 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
-import { TextField, Button } from '@mui/material'
+import { Box, TextField, Button } from '@mui/material'
 import { spacing, fontSizes } from '../styling'
 import { Icon } from './Icon'
 
@@ -10,8 +9,6 @@ type Props = {
 }
 
 export const QuantitySelector: React.FC<Props> = ({ quantity, onChange }) => {
-  const css = useStyles()
-
   const setQuantity = (value: number) => {
     let result = Math.ceil(Math.max(Math.min(+value, 9999), 0))
     if (isNaN(result)) result = 1
@@ -19,9 +16,30 @@ export const QuantitySelector: React.FC<Props> = ({ quantity, onChange }) => {
   }
 
   return (
-    <div className={css.group}>
+    <Box
+      sx={theme => ({
+        border: `1px solid ${theme.palette.grayLighter.main}`,
+        borderRadius: `${spacing.md}px`,
+        backgroundColor: theme.palette.white.main,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: `${spacing.xs}px`,
+        marginBottom: `${spacing.xs}px`,
+        '& > .MuiButton-root': { height: 30, borderRadius: 0 },
+        '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
+        '& > .MuiButton-root:first-of-type': {
+          borderTopLeftRadius: `${spacing.md}px`,
+          borderBottomLeftRadius: `${spacing.md}px`,
+        },
+        '& > .MuiButton-root:last-child': {
+          borderTopRightRadius: `${spacing.md}px`,
+          borderBottomRightRadius: `${spacing.md}px`,
+        },
+      })}
+    >
       <Button
-        className={css.button}
+        sx={{ padding: 0 }}
         size="small"
         variant="contained"
         color="primary"
@@ -36,10 +54,20 @@ export const QuantitySelector: React.FC<Props> = ({ quantity, onChange }) => {
         value={quantity}
         color="primary"
         onChange={e => setQuantity(+e.target.value)}
-        className={css.quantity}
+        sx={{
+          maxWidth: 60,
+          '& .MuiInputBase-input': {
+            height: `${spacing.sm}px`,
+            fontSize: fontSizes.base,
+            fontWeight: 500,
+            padding: `${spacing.xs}px`,
+            textAlign: 'center',
+            margin: 0,
+          },
+        }}
       />
       <Button
-        className={css.button}
+        sx={{ padding: 0 }}
         size="small"
         variant="contained"
         color="primary"
@@ -47,37 +75,7 @@ export const QuantitySelector: React.FC<Props> = ({ quantity, onChange }) => {
       >
         <Icon name="plus" size="sm" />
       </Button>
-    </div>
+    </Box>
   )
 }
 
-export const useStyles = makeStyles(({ palette }) => ({
-  group: {
-    border: `1px solid ${palette.grayLighter.main}`,
-    borderRadius: spacing.md,
-    backgroundColor: palette.white.main,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.xs,
-    marginBottom: spacing.xs,
-    '& > .MuiButton-root': { height: 30, borderRadius: 0 },
-    '& > .MuiButton-root + .MuiButton-root': { marginLeft: 0 },
-    '& > .MuiButton-root:first-of-type': { borderTopLeftRadius: spacing.md, borderBottomLeftRadius: spacing.md },
-    '& > .MuiButton-root:last-child': { borderTopRightRadius: spacing.md, borderBottomRightRadius: spacing.md },
-  },
-  button: {
-    padding: 0,
-  },
-  quantity: {
-    maxWidth: 60,
-    '& .MuiInputBase-input': {
-      height: spacing.sm,
-      fontSize: fontSizes.base,
-      fontWeight: 500,
-      padding: spacing.xs,
-      textAlign: 'center',
-      margin: 0,
-    },
-  },
-}))

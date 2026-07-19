@@ -1,6 +1,5 @@
 import React from 'react'
 import { rememberMe, sanitizeEmail } from '../../../helpers/userHelper'
-import { makeStyles } from '@mui/styles'
 import {
   Box,
   Button,
@@ -25,15 +24,6 @@ import { spacing } from '../../../styling'
 import { useHistory } from 'react-router-dom'
 import { IconButton } from '../../../buttons/IconButton'
 
-const useStyles = makeStyles({
-  or: {
-    display: 'flex',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    '& span': { padding: spacing.sm },
-    '& hr': { flexGrow: 1 },
-  },
-})
 
 export type SignInProps = {
   email?: string
@@ -75,7 +65,6 @@ export function SignIn({
   const [emailProcessed, setEmailProcessed] = React.useState<boolean>(rememberMe.emailProcessed)
   const [remember, setRemember] = React.useState<boolean>(rememberMe.checked)
   const passRef = React.useRef<HTMLInputElement>()
-  const css = useStyles()
 
   React.useEffect(() => {
     setError(errorMessage ? new Error(errorMessage) : null)
@@ -186,7 +175,17 @@ export function SignIn({
           disabled={loading}
         />
       </Box>
-      <Box className={css.or} mb={3} mt={3}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-evenly',
+          alignItems: 'center',
+          '& span': { padding: `${spacing.sm}px` },
+          '& hr': { flexGrow: 1 },
+        }}
+        mb={3}
+        mt={3}
+      >
         <Divider />
         <Typography variant="caption">{t('pages.sign-in.or')?.toLowerCase()}</Typography>
         <Divider />

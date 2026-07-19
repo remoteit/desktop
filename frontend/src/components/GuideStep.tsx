@@ -1,11 +1,52 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
-import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button, alpha } from '@mui/material'
+import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button, Theme, alpha } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { selectPriorityGuide } from '../models/ui'
 import { IconButton } from '../buttons/IconButton'
 import { spacing, radius, fontSizes } from '../styling'
+
+export const boxSx = (highlight?: boolean) => (theme: Theme) => ({
+  border: highlight ? `1px dotted ${theme.palette.guide.main}` : undefined,
+  borderRadius: `${radius.lg}px`,
+  position: 'relative' as const,
+})
+
+export const arrowSx = (theme: Theme) => ({ color: theme.palette.guide.main })
+
+export const tipSx = (theme: Theme) => ({
+  backgroundColor: theme.palette.guide.main,
+  color: theme.palette.white.main,
+  fontSize: fontSizes.lg,
+  padding: `${spacing.lg}px`,
+  paddingRight: `${spacing.xl}px`,
+  margin: `${spacing.lg}px`,
+  position: 'relative',
+  borderRadius: `${radius.lg}px`,
+  '& .MuiTypography-caption': { color: theme.palette.white.main, marginTop: `${spacing.md}px`, display: 'block' },
+  '& .MuiLink-root': {
+    color: theme.palette.white.main,
+    marginRight: `${-spacing.sm}px`,
+    textDecoration: 'none',
+    fontSize: fontSizes.xs,
+    fontWeight: 400,
+    cursor: 'pointer',
+    opacity: 0.3,
+  },
+  '& .MuiLink-root:hover': { opacity: 1 },
+  '& .IconButtonTooltip': { position: 'absolute', right: `${spacing.xs}px`, top: `${spacing.xs}px` },
+  '& .MuiButton-root': { background: alpha(theme.palette.white.main, 0.15), color: theme.palette.white.main },
+  '& .MuiButton-root:hover': { background: alpha(theme.palette.white.main, 0.3) },
+  '& cite': {
+    fontStyle: 'normal',
+    textTransform: 'uppercase',
+    fontWeight: 700,
+    fontSize: '0.8em',
+    letterSpacing: 1,
+    paddingLeft: `${spacing.xs}px`,
+    paddingRight: `${spacing.xs}px`,
+  },
+})
 
 type Props = {
   guide: string
@@ -47,7 +88,6 @@ export const GuideStep: React.FC<Props> = ({
   const { ui } = useDispatch<Dispatch>()
   const state = useSelector((state: State) => selectPriorityGuide(state, guide, startDate))
   const open: boolean = !!(!hide && (state.step === step || !!show) && state.active)
-  const css = useStyles({ highlight: highlight && open })
   const start = () => ui.guide({ guide, step, active: true, done: false })
   const last = step === state.total
 
@@ -59,7 +99,7 @@ export const GuideStep: React.FC<Props> = ({
 
   return (
     <Tooltip
-      classes={{ tooltip: css.tip, arrow: css.arrow }}
+      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx } }}
       open={open}
       arrow={!hideArrow}
       placement={placement || 'top'}
@@ -82,7 +122,7 @@ export const GuideStep: React.FC<Props> = ({
             </Button>
           )}
           {showNavigation && (
-            <Box className={css.nav}>
+            <Box sx={{ position: 'absolute', right: `${spacing.sm}px`, bottom: `${spacing.sm}px` }}>
               <IconButton
                 icon="angle-left"
                 title="previous"
@@ -110,7 +150,7 @@ export const GuideStep: React.FC<Props> = ({
       }
     >
       <Box
-        className={css.box}
+        sx={boxSx(highlight && open)}
         onClick={() => autoNext && ui.guide({ guide, step: last ? 0 : step + 1, done: last })}
         component={component}
       >
@@ -119,7 +159,7 @@ export const GuideStep: React.FC<Props> = ({
             icon="sparkles"
             onClick={start}
             color={state.done || step === 1 ? 'grayLight' : 'guide'}
-            className={css.icon}
+            sx={{ position: 'absolute', zIndex: 1, top: `${-spacing.lg}px`, right: `${-spacing.xl}px` }}
           />
         )}
         {children}
@@ -128,58 +168,3 @@ export const GuideStep: React.FC<Props> = ({
   )
 }
 
-export const useStyles = makeStyles(({ palette }) => ({
-  icon: { position: 'absolute', zIndex: 1, top: -spacing.lg, right: -spacing.xl },
-  box: ({ highlight }: any) => ({
-    border: highlight ? `1px dotted ${palette.guide.main}` : undefined,
-    // boxShadow: highlight ? `0 0 2px 0px ${palette.guide.main} inset` : undefined,
-    // background: highlight ? alpha(palette.guide.main, 0.05) : undefined,
-    borderRadius: radius.lg,
-    position: 'relative',
-  }),
-  nav: {
-    position: 'absolute',
-    right: spacing.sm,
-    bottom: spacing.sm,
-  },
-  tip: {
-    backgroundColor: palette.guide.main,
-    color: palette.white.main,
-    fontSize: fontSizes.lg,
-    padding: spacing.lg,
-    paddingRight: spacing.xl,
-    margin: spacing.lg,
-    position: 'relative',
-    borderRadius: radius.lg,
-    '& .MuiTypography-caption': { color: palette.white.main, marginTop: spacing.md, display: 'block' },
-    '& .MuiLink-root': {
-      color: palette.white.main,
-      marginRight: -spacing.sm,
-      textDecoration: 'none',
-      fontSize: fontSizes.xs,
-      fontWeight: 400,
-      cursor: 'pointer',
-      opacity: 0.3,
-    },
-    '& .MuiLink-root:hover': { opacity: 1 },
-    '& .IconButtonTooltip': {
-      position: 'absolute',
-      right: spacing.xs,
-      top: spacing.xs,
-    },
-    '& .MuiButton-root': { background: alpha(palette.white.main, 0.15), color: palette.white.main },
-    '& .MuiButton-root:hover': { background: alpha(palette.white.main, 0.3) },
-    '& cite': {
-      fontStyle: 'normal',
-      textTransform: 'uppercase',
-      fontWeight: 700,
-      fontSize: '0.8em',
-      letterSpacing: 1,
-      paddingLeft: spacing.xs,
-      paddingRight: spacing.xs,
-    },
-  },
-  arrow: {
-    color: palette.guide.main,
-  },
-}))

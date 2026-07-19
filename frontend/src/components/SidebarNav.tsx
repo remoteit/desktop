@@ -1,6 +1,5 @@
 import React from 'react'
 import browser from '../services/browser'
-import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
@@ -13,6 +12,7 @@ import {
   Divider,
   Tooltip,
   Chip,
+  Theme,
   useMediaQuery,
 } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
@@ -24,6 +24,21 @@ import { useCounts } from '../hooks/useCounts'
 import { spacing } from '../styling'
 import { getHasPartner } from '../models/partnerStats'
 
+const listSx = (theme: Theme) => ({
+  position: 'static',
+  '& .MuiBadge-badge': { right: 12 },
+  '& .MuiListItemIcon-root': { color: theme.palette.grayDark.main },
+  '& .MuiListItemText-primary': { color: theme.palette.grayDarkest.main },
+  '& .MuiChip-root': { marginRight: `${spacing.sm}px` },
+  '& .MuiListItemButton-root:hover .MuiListItemText-primary': { color: theme.palette.black.main },
+  '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, borderColor: theme.palette.grayLight.main },
+  '& .MuiListItemButton-root.Mui-selected, & .MuiListItemButton-root.Mui-selected:hover': {
+    backgroundColor: theme.palette.primaryLighter.main,
+    '& .MuiListItemIcon-root': { color: theme.palette.grayDarker.main },
+    '& .MuiListItemText-primary': { color: theme.palette.black.main, fontWeight: 500 },
+  },
+})
+
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
   const reseller = useSelector((state: State) => state.user.reseller)
@@ -34,21 +49,20 @@ export const SidebarNav: React.FC = () => {
   const rootPaths = useSelector((state: State) => !browser.isElectron && state.ui.layout.hideSidebar)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles({ active: counts.active, insets })
   const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
 
   const hasPartner = useSelector(getHasPartner)
 
   if (remoteUI)
     return (
-      <List className={css.list}>
+      <List sx={listSx}>
         <ListItemLocation title="This Device" to="/devices" match="/devices/:any?/:any?/:any?" icon="laptop" dense />
         <ListItemLocation title="Logs" to="/logs" icon="file-alt" dense />
       </List>
     )
 
   return (
-    <List className={css.list}>
+    <List sx={listSx}>
       {!mobile && (
         <>
           <ListItemLocation
@@ -67,7 +81,7 @@ export const SidebarNav: React.FC = () => {
                 <Chip
                   size="small"
                   label={counts.active.toLocaleString()}
-                  className={css.active}
+                  sx={{ fontWeight: 500 }}
                   variant="filled"
                   color="primary"
                 />
@@ -121,7 +135,15 @@ export const SidebarNav: React.FC = () => {
         />
       )}
       <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
-      <Box className={css.footer}>
+      <Box
+        sx={theme => ({
+          width: '100%',
+          position: 'fixed',
+          bottom: insets.bottom || spacing.lg,
+          backgroundColor: theme.palette.grayLighter.main,
+          zIndex: 3,
+        })}
+      >
         <UpgradeBanner />
         <ResellerLogo reseller={reseller} marginLeft={4} size="small">
           <Divider />
@@ -149,35 +171,3 @@ export const SidebarNav: React.FC = () => {
     </List>
   )
 }
-
-type StyleProps = {
-  active: number
-  insets: ILayout['insets']
-}
-
-const useStyles = makeStyles(({ palette }) => ({
-  list: {
-    position: 'static',
-    '& .MuiBadge-badge': { right: 12 },
-    '& .MuiListItemIcon-root': { color: palette.grayDark.main },
-    '& .MuiListItemText-primary': { color: palette.grayDarkest.main },
-    '& .MuiChip-root': { marginRight: spacing.sm },
-    '& .MuiListItemButton-root:hover .MuiListItemText-primary': { color: palette.black.main },
-    '& .MuiDivider-root': { margin: `${spacing.md}px ${spacing.lg}px`, borderColor: palette.grayLight.main },
-    '& .Mui-selected, & .Mui-selected:hover': {
-      backgroundColor: palette.primaryLighter.main,
-      '& .MuiListItemIcon-root': { color: palette.grayDarker.main },
-      '& .MuiListItemText-primary': { color: palette.black.main, fontWeight: 500 },
-    },
-  },
-  active: {
-    fontWeight: 500,
-  },
-  footer: ({ insets }: StyleProps) => ({
-    width: '100%',
-    position: 'fixed',
-    bottom: insets.bottom || spacing.lg,
-    backgroundColor: palette.grayLighter.main,
-    zIndex: 3,
-  }),
-}))

@@ -1,6 +1,5 @@
 import React from 'react'
 import useClipboard from '../hooks/useClipboard'
-import { makeStyles } from '@mui/styles'
 import { ListItemButton, DataButtonProps } from '../buttons/ListItemButton'
 import { IconButton } from '../buttons/IconButton'
 import { spacing } from '../styling'
@@ -12,7 +11,6 @@ type Props = Omit<DataButtonProps, 'title' | 'onClick' | 'icon'> & {
 
 export const ListItemCopy: React.FC<Props> = ({ hideIcon, link, ...props }) => {
   const clipboard = useClipboard({ copiedTimeout: 1000 })
-  const css = useStyles()
 
   if (!props.value) return null
 
@@ -31,20 +29,16 @@ export const ListItemCopy: React.FC<Props> = ({ hideIcon, link, ...props }) => {
             color="primary"
             variant="contained"
             onClick={() => (window.location.href = link)}
-            className={css.button}
+            sx={{
+              minHeight: 80,
+              width: 80,
+              marginRight: `${-spacing.xxl}px`,
+              borderTopLeftRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}
           />
         ) : undefined
       }
     />
   )
 }
-
-const useStyles = makeStyles(() => ({
-  button: {
-    minHeight: 80,
-    width: 80,
-    marginRight: -spacing.xxl,
-    borderTopLeftRadius: 0,
-    borderBottomLeftRadius: 0,
-  },
-}))

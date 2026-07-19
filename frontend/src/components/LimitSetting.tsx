@@ -1,11 +1,9 @@
 import React from 'react'
 import { humanizeDays } from '../models/plans'
-import { makeStyles } from '@mui/styles'
 import { LinearProgress, Typography, Box } from '@mui/material'
 import { spacing } from '../styling'
 
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
-  const css = useStyles()
   const v = (value?: number): string => (value || 0).toLocaleString()
   const overLimit = limit.value !== null && limit.actual > limit.value ? limit.actual - limit.value : 0
 
@@ -90,11 +88,14 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
         <Box marginBottom={3}>
           <Typography variant="caption">{message}</Typography>
           <LinearProgress
-            classes={{
-              root: css.root,
-              colorPrimary: overLimit ? css.warning : css.background,
-              bar: overLimit ? css.warningBar : undefined,
-            }}
+            sx={theme => ({
+              height: `${spacing.xs}px`,
+              borderRadius: `${spacing.xxs}px`,
+              width: '100%',
+              marginTop: `${spacing.xxs}px`,
+              backgroundColor: overLimit ? theme.palette.warning.main : theme.palette.grayLighter.main,
+              '& .MuiLinearProgress-bar': overLimit ? { backgroundColor: theme.palette.primary.main } : {},
+            })}
             variant="determinate"
             value={value}
           />
@@ -104,21 +105,3 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       return null
   }
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    height: spacing.xs,
-    borderRadius: spacing.xxs,
-    width: '100%',
-    marginTop: spacing.xxs,
-  },
-  background: {
-    backgroundColor: palette.grayLighter.main,
-  },
-  warning: {
-    backgroundColor: palette.warning.main,
-  },
-  warningBar: {
-    backgroundColor: palette.primary.main,
-  },
-}))

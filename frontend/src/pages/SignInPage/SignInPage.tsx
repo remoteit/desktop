@@ -1,8 +1,7 @@
 import React from 'react'
 import browser from '../../services/browser'
 import { IP_PRIVATE } from '@common/constants'
-import { Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { Box, Typography } from '@mui/material'
 import { SignInApp } from '../../components/SignInApp'
 import { Panel } from '../../components/Panel'
 import { Body } from '../../components/Body'
@@ -16,7 +15,6 @@ type Props = {
 
 export function SignInPage({ layout }: Props) {
   const short = browser.isAndroid || browser.isAndroidBrowser
-  const css = useStyles({ short })
   const { hostname, protocol } = window.location
   const allowSwitch =
     !browser.isElectron && !browser.isMobile && hostname !== 'localhost' && hostname !== IP_PRIVATE && hostname
@@ -25,10 +23,21 @@ export function SignInPage({ layout }: Props) {
 
   return (
     <Panel layout={layout} header={false}>
-      <Body className={css.body} center={!short}>
+      <Body
+        sx={{ paddingTop: short ? '20px' : 0, paddingBottom: short ? '50vh' : 0, '& > div': { maxWidth: 440 } }}
+        center={!short}
+      >
         <SignInApp />
         {allowSwitch && !secure && (
-          <div className={css.insecure}>
+          <Box
+            sx={{
+              marginTop: `${spacing.xl}px`,
+              margin: `${spacing.xs}px auto`,
+              textAlign: 'center',
+              lineHeight: '1em',
+              '& > a': { color: 'success.main' },
+            }}
+          >
             <Typography variant="body2" align="center">
               On an insecure network?
               <Link href={switchUrl}>
@@ -42,24 +51,9 @@ export function SignInPage({ layout }: Props) {
               <br /> Your data is still encrypted.
               <Link href="https://link.remote.it/documentation-desktop/https-connections">Learn more</Link>
             </Typography>
-          </div>
+          </Box>
         )}
       </Body>
     </Panel>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  body: ({ short }: { short: boolean }) => ({
-    paddingTop: short ? 20 : 0,
-    paddingBottom: short ? '50vh' : 0,
-    '& > div': { maxWidth: 440 },
-  }),
-  insecure: {
-    marginTop: spacing.xl,
-    margin: `${spacing.xs}px auto`,
-    textAlign: 'center',
-    lineHeight: '1em',
-    '& > a': { color: palette.success.main },
-  },
-}))

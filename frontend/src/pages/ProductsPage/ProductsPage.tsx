@@ -57,41 +57,41 @@ export const ProductsPage: React.FC = () => {
         gutterBottom
         bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       >
-      {fetching && !initialized ? (
-        <LoadingMessage message="Loading products..." />
-      ) : products.length === 0 ? (
-        <Body center>
-          <Icon name="box-open" size="xxl" color="grayLight" />
-          <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            No products
-          </Typography>
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            Products are used for bulk device registration and management.
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ marginTop: 2 }}
-            onClick={() => history.push('/products/add')}
-          >
-            <Icon name="plus" size="sm" inline />
-            Create your first product
-          </Button>
-        </Body>
-      ) : (
-        <ProductList
-          attributes={attributes}
-          required={required}
-          products={products}
-          columnWidths={columnWidths}
-          fetching={fetching}
-          select={select}
-          selected={selected}
-          activeProductId={productId}
-          onSelect={handleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      )}
+        {fetching && !initialized ? (
+          <LoadingMessage message="Loading products..." />
+        ) : products.length === 0 ? (
+          <Body center>
+            <Icon name="box-open" size="xxl" color="grayLight" />
+            <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
+              No products
+            </Typography>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Products are used for bulk device registration and management.
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ marginTop: 2 }}
+              onClick={() => history.push('/products/add')}
+            >
+              <Icon name="plus" size="sm" inlineLeft />
+              Create your first product
+            </Button>
+          </Body>
+        ) : (
+          <ProductList
+            attributes={attributes}
+            required={required}
+            products={products}
+            columnWidths={columnWidths}
+            fetching={fetching}
+            select={select}
+            selected={selected}
+            activeProductId={productId}
+            onSelect={handleSelect}
+            onSelectAll={handleSelectAll}
+          />
+        )}
       </Container>
     </Box>
   )

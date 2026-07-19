@@ -1,11 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectTheme } from '../selectors/ui'
-import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles'
-
-declare module '@mui/styles/defaultTheme' {
-  interface DefaultTheme extends Theme {}
-}
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles'
 
 export interface Props {
   children: React.ReactNode

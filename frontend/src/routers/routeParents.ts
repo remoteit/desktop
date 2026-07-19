@@ -84,10 +84,12 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/settings/options', '/settings'],
 
   // Organization
-  ['/organization/roles/:roleID', '/organization/roles'],
+  // Roles land back at the org root: /organization/roles has no standalone view — it redirects
+  // to the first role — so stepping "up" to it would just bounce back here.
+  ['/organization/roles/:roleID', '/organization'],
   ['/organization/customer/add', '/organization'],
   ['/organization/customer/:userID/plans', '/organization/customer/:userID'],
-  ['/organization/customer/:userID', '/organization'],
+  ['/organization/customer/:userID', '/organization/customer'],
   ['/organization/customer', '/organization'],
   ['/organization/add', '/organization'],
   ['/organization/settings', '/organization'],
@@ -95,8 +97,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/organization/tags', '/organization'],
   ['/organization/guests/:userID/:deviceID', '/organization/guests/:userID'],
   ['/organization/members/:userID/:deviceID', '/organization/members/:userID'],
-  ['/organization/guests/:userID', '/organization'],
-  ['/organization/members/:userID', '/organization'],
+  ['/organization/guests/:userID', '/organization/guests'],
+  ['/organization/members/:userID', '/organization/members'],
   ['/organization/account/:userID', '/organization'],
   ['/organization/guests', '/organization'],
   ['/organization/memberships', '/organization'],
@@ -107,6 +109,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/account/billing', '/account'],
   ['/account/license', '/account'],
   ['/account/accessKey', '/account'],
+  ['/account/connected', '/account'],
+  ['/account/connected/:clientId', '/account/connected'],
   ['/account/overview', '/account'],
 
   // Admin
@@ -126,5 +130,14 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/add/:platform/:redirect', '/add'],
   ['/add/:platform', '/add'],
 ]
+
+/**
+ * Sections whose primary panel is a static menu rather than a list.
+ * In multi-panel layouts, UP normally jumps to the section root because the
+ * root list is already visible in the left panel (e.g. /devices). In these
+ * sections the left panel is a menu, so the parent list only exists in the
+ * secondary panel — UP must follow ROUTE_PARENTS one level at a time.
+ */
+export const MENU_SECTIONS = ['/account', '/organization', '/settings']
 
 export default ROUTE_PARENTS

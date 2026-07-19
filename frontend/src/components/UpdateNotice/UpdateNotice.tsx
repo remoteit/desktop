@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../../store'
-import { Snackbar, Button } from '@mui/material'
+import { Snackbar, Button, SxProps, Theme } from '@mui/material'
 import { selectUpdateNotice } from '../../selectors/ui'
 import { Confirm } from '../Confirm'
 import { Notice } from '../Notice'
 import browser from '../../services/browser'
 
-export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
+export const UpdateNotice: React.FC<{ sx?: SxProps<Theme> }> = ({ sx }) => {
   const updateReady = useSelector((state: State) => selectUpdateNotice(state))
   const [confirm, setConfirm] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(!!updateReady)
@@ -39,7 +39,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
     <>
       <Snackbar
         open={open}
-        className={className}
+        sx={sx}
         message={
           <Notice
             invert

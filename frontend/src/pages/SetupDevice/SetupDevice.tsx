@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../../store'
 import { safeHostname, osName, serviceNameValidation } from '@common/nameHelper'
-import { TextField, Button, Typography } from '@mui/material'
+import { Box, TextField, Button, Typography } from '@mui/material'
 import { LocalhostScanForm } from '../../components/LocalhostScanForm'
 import { selectActiveUser } from '../../selectors/accounts'
 import { spacing, radius } from '../../styling'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
 import { getDevices } from '../../selectors/devices'
 import { emit } from '../../services/Controller'
 import { Body } from '../../components/Body'
@@ -23,7 +22,6 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
       .filter((device: IDevice) => !device.shared)
       .map((d: IDevice) => d.name.toLowerCase()),
   }))
-  const css = useStyles()
   const history = useHistory()
   const { backend } = useDispatch<Dispatch>()
   const [name, setName] = useState<string>(safeHostname(hostname, nameBlacklist) || '')
@@ -52,7 +50,15 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
           history.push('/devices/setupWaiting')
         }}
       >
-        <section className={css.device}>
+        <Box
+          component="section"
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'start',
+            marginBottom: `${spacing.xl}px`,
+          }}
+        >
           <TextField
             label="Name"
             sx={{ width: 325, maxWidth: 325 }}
@@ -90,18 +96,9 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
           >
             Add Device
           </Button>
-        </section>
+        </Box>
         <LocalhostScanForm onSelect={setSelected} />
       </form>
     </Body>
   )
 }
-
-const useStyles = makeStyles({
-  device: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'start',
-    marginBottom: spacing.xl,
-  },
-})

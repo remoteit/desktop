@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from 'react'
-import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
 import { State, Dispatch } from '../store'
 import { HIDE_SIDEBAR_WIDTH } from '../constants'
@@ -38,7 +37,6 @@ export const AvatarMenu: React.FC = () => {
   const activeUser = useSelector(selectActiveUser)
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
 
-  const css = useStyles()
   const handleOpen = () => {
     window.addEventListener('keydown', checkAltMenu)
     setOpen(true)
@@ -79,7 +77,22 @@ export const AvatarMenu: React.FC = () => {
       <Menu
         open={open}
         anchorEl={buttonRef.current}
-        className={css.menu}
+        sx={{
+          '& .MuiPaper-root': {
+            overflow: 'visible',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: -AVATAR_SIZE - AVATAR_BORDER,
+              width: AVATAR_SIZE + AVATAR_BORDER,
+              height: AVATAR_SIZE + AVATAR_BORDER,
+              cursor: 'pointer',
+            },
+          },
+          '& .MuiList-root': {
+            backgroundColor: 'transparent',
+          },
+        }}
         onClose={handleClose}
         slotProps={{ paper: { onMouseEnter: handleEnter, onMouseLeave: handleLeave } }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
@@ -183,22 +196,3 @@ export const AvatarMenu: React.FC = () => {
     </>
   )
 }
-
-const useStyles = makeStyles(({  }) => ({
-  menu: {
-    '& .MuiPaper-root': {
-      overflow: 'visible',
-      '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: -AVATAR_SIZE - AVATAR_BORDER,
-        width: AVATAR_SIZE + AVATAR_BORDER,
-        height: AVATAR_SIZE + AVATAR_BORDER,
-        cursor: 'pointer',
-      },
-    },
-    '& .MuiList-root': {
-      backgroundColor: 'transparent',
-    },
-  },
-}))

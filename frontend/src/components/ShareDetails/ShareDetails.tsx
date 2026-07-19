@@ -2,7 +2,6 @@ import React from 'react'
 import { getAccess } from '../../helpers/userHelper'
 import { ListItemSecondaryAction, Tooltip } from '@mui/material'
 import { ServiceIndicators } from '../ServiceIndicators'
-import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -12,13 +11,13 @@ type Props = {
 }
 
 export const ShareDetails: React.FC<Props> = ({ user, device }) => {
-  const css = useStyles()
-
   if (!device) return null
 
   const { services, scripting } = getAccess(device, user.email)
   return (
-    <ListItemSecondaryAction className={css.indicators}>
+    <ListItemSecondaryAction
+      sx={{ display: 'flex', alignItems: 'center', '& svg': { marginRight: `${spacing.sm}px` } }}
+    >
       {scripting && (
         <Tooltip title="Allow scripting" arrow placement="top">
           <span>
@@ -30,11 +29,3 @@ export const ShareDetails: React.FC<Props> = ({ user, device }) => {
     </ListItemSecondaryAction>
   )
 }
-
-const useStyles = makeStyles({
-  indicators: {
-    display: 'flex',
-    alignItems: 'center',
-    '& svg': { marginRight: spacing.sm },
-  },
-})

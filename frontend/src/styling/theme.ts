@@ -5,10 +5,6 @@ import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides }
 import { ArrowIcon } from '../components/ArrowIcon'
 import { State } from '../store'
 
-declare module '@mui/styles' {
-  interface DefaultTheme extends Theme {}
-}
-
 export const jssTheme = (isDark: boolean): ThemeOptions => {
   const LIST_ITEM_ICON_WIDTH = 56
   let colors = isDark ? darkColors : lightColors
