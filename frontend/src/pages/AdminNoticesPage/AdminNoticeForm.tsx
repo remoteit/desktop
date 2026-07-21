@@ -146,7 +146,9 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
             onChange={e => change({ stage: e.target.value })}
           />
           <Typography variant="caption">
-            Limit to one deployment stage to test before going live. <b>Blank targets every stage.</b>
+            Limit to one API deployment stage to test before going live. Must match the stage exactly — one of{' '}
+            <b>prod</b>, <b>beta</b>, <b>dev</b>, or a personal stage (<b>alt</b>, <b>benoit</b>, <b>evan</b>,{' '}
+            <b>jamie</b>). <b>Blank targets every stage.</b>
           </Typography>
         </ListItem>
 
