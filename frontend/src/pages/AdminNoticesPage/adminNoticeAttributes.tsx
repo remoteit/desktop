@@ -23,6 +23,18 @@ export const noticeStatus = (notice: IAdminNotice): NoticeStatus => {
   return 'Live'
 }
 
+// Surface what is reaching users right now. The API returns `modified DESC`, which answers "what
+// did I edit recently?" but scatters live notices through the list — so group by status here and
+// keep most-recently-edited first within each group.
+const STATUS_ORDER: Record<NoticeStatus, number> = { Live: 0, Scheduled: 1, Disabled: 2, Expired: 3 }
+
+export const sortNotices = (notices: IAdminNotice[]): IAdminNotice[] =>
+  [...notices].sort((a, b) => {
+    const byStatus = STATUS_ORDER[noticeStatus(a)] - STATUS_ORDER[noticeStatus(b)]
+    if (byStatus) return byStatus
+    return (b.modified?.getTime() || 0) - (a.modified?.getTime() || 0)
+  })
+
 const dateLabel = (date?: Date) => (date ? date.toLocaleString() : '—')
 
 const plainText = (html?: string) => html?.replace(/<[^>]*>/g, '').trim()

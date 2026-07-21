@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Stack, Typography } from '@mui/material'
@@ -10,7 +10,7 @@ import { Gutters } from '../../components/Gutters'
 import { Icon } from '../../components/Icon'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { Notice } from '../../components/Notice'
-import { adminNoticeAttributes, noticeStatus } from './adminNoticeAttributes'
+import { adminNoticeAttributes, noticeStatus, sortNotices } from './adminNoticeAttributes'
 
 export const AdminNoticesListPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -24,6 +24,8 @@ export const AdminNoticesListPage: React.FC = () => {
   useEffect(() => {
     dispatch.adminNotices.fetch()
   }, [])
+
+  const sorted = useMemo(() => sortNotices(notices), [notices])
 
   const required = adminNoticeAttributes.find(a => a.required)
   const attributes = adminNoticeAttributes.filter(a => !a.required)
@@ -46,7 +48,7 @@ export const AdminNoticesListPage: React.FC = () => {
         </Gutters>
       }
     >
-      {!notices.length ? (
+      {!sorted.length ? (
         <Gutters>
           <Notice severity="info" fullWidth>
             No notices yet
@@ -55,7 +57,7 @@ export const AdminNoticesListPage: React.FC = () => {
         </Gutters>
       ) : (
         <GridList attributes={attributes} required={required} columnWidths={columnWidths} fetching={loading}>
-          {notices.map(notice => (
+          {sorted.map(notice => (
             <GridListItem
               key={notice.id}
               onClick={() => history.push(`/admin/notices/${notice.id}`)}
