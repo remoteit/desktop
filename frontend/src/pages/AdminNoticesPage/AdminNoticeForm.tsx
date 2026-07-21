@@ -5,8 +5,18 @@ import { ListItemCheckbox } from '../../components/ListItemCheckbox'
 import { AnnouncementCard } from '../../components/AnnouncementCard'
 import { Gutters } from '../../components/Gutters'
 import { Notice } from '../../components/Notice'
+import { bannerSeverity, isBannerType } from '../../helpers/noticeHelper'
 
-const NOTICE_TYPES: INoticeType[] = ['GENERIC', 'SYSTEM', 'SECURITY', 'RELEASE', 'COMMUNICATION', 'BANNER']
+const NOTICE_TYPES: INoticeType[] = [
+  'GENERIC',
+  'SYSTEM',
+  'SECURITY',
+  'RELEASE',
+  'COMMUNICATION',
+  'BANNER',
+  'BANNER_WARN',
+  'BANNER_DANGER',
+]
 
 // `datetime-local` needs `YYYY-MM-DDTHH:mm` in local time — toISOString() would shift to UTC.
 const toInputValue = (date?: Date | string | null) => {
@@ -40,7 +50,7 @@ type Props = {
 export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onSave }) => {
   const [form, setForm] = useState<INoticeInput>(() => initialForm(notice))
 
-  const isBanner = form.type === 'BANNER'
+  const isBanner = isBannerType(form.type)
   const change = (values: Partial<INoticeInput>) => setForm(f => ({ ...f, ...values }))
 
   // Shape the in-progress form as an IAnnouncement so the real card component can render it.
@@ -218,7 +228,7 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
           {isBanner ? 'BANNER PREVIEW' : 'CARD PREVIEW'}
         </Typography>
         {isBanner ? (
-          <Notice severity="info" fullWidth solid sx={{ borderRadius: 0, marginTop: 0.5 }}>
+          <Notice severity={bannerSeverity(form.type)} fullWidth solid sx={{ borderRadius: 0, marginTop: 0.5 }}>
             <strong>{form.title || 'Title'}</strong>
             {form.body ? <em dangerouslySetInnerHTML={{ __html: String(form.body) }} /> : null}
           </Notice>

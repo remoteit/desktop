@@ -2,6 +2,7 @@ import React from 'react'
 import { Box, Chip, Tooltip } from '@mui/material'
 import { Attribute } from '../../components/Attributes'
 import { Icon } from '../../components/Icon'
+import { isBannerType } from '../../helpers/noticeHelper'
 
 export type AdminNoticeAttributeOptions = {
   notice?: IAdminNotice
@@ -44,6 +45,8 @@ const NOTICE_ICONS: Record<INoticeType, string> = {
   RELEASE: 'sparkles', // "Release Note" — something new
   COMMUNICATION: 'comments', // "Announcement"
   BANNER: 'bullhorn', // persistent top bar
+  BANNER_WARN: 'triangle-exclamation', // persistent top bar, warning
+  BANNER_DANGER: 'octagon-xmark', // persistent top bar, error
 }
 
 export const noticeIcon = (type?: INoticeType) => (type && NOTICE_ICONS[type]) || NOTICE_ICONS.GENERIC
@@ -110,7 +113,7 @@ export const adminNoticeAttributes: AdminNoticeAttribute[] = [
     value: ({ notice }: AdminNoticeAttributeOptions) => {
       if (!notice) return '—'
       // A banner with no end date can only be taken down by hand — call it out.
-      if (notice.type === 'BANNER' && !notice.until)
+      if (isBannerType(notice.type) && !notice.until)
         return (
           <Tooltip title="Banners cannot be dismissed — set an end date">
             <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>

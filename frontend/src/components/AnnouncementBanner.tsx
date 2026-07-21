@@ -4,6 +4,7 @@ import { Box, Button } from '@mui/material'
 import { State } from '../store'
 import { selectBannerAnnouncements } from '../selectors/announcements'
 import { Notice } from './Notice'
+import { bannerSeverity } from '../helpers/noticeHelper'
 
 export const AnnouncementBanner: React.FC = () => {
   const banners = useSelector((state: State) => selectBannerAnnouncements(state))
@@ -21,7 +22,7 @@ export const AnnouncementBanner: React.FC = () => {
       {active.map(banner => (
         <Notice
           key={banner.id}
-          severity="info"
+          severity={bannerSeverity(banner.type)}
           fullWidth
           solid
           // Square corners so it reads as a bar rather than a card — the app panel in

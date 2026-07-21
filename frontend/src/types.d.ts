@@ -185,7 +185,15 @@ declare global {
     read?: Date
   }
 
-  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY' | 'BANNER'
+  type INoticeType =
+    | 'GENERIC'
+    | 'SYSTEM'
+    | 'RELEASE'
+    | 'COMMUNICATION'
+    | 'SECURITY'
+    | 'BANNER'
+    | 'BANNER_WARN'
+    | 'BANNER_DANGER'
 
   // Admin-only view of a notice — includes the scheduling and targeting fields that the
   // user-facing `notices` query filters on server side and therefore never returns.
