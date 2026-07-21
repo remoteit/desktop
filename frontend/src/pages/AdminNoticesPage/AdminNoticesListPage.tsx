@@ -54,13 +54,7 @@ export const AdminNoticesListPage: React.FC = () => {
           </Notice>
         </Gutters>
       ) : (
-        <GridList
-          attributes={attributes}
-          required={required}
-          columnWidths={columnWidths}
-          fetching={loading}
-          rowHeight={52}
-        >
+        <GridList attributes={attributes} required={required} columnWidths={columnWidths} fetching={loading}>
           {notices.map(notice => (
             <GridListItem
               key={notice.id}

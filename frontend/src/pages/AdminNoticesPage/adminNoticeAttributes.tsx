@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Chip, Tooltip, Typography } from '@mui/material'
+import { Box, Chip, Tooltip } from '@mui/material'
 import { Attribute } from '../../components/Attributes'
 import { Icon } from '../../components/Icon'
 
@@ -29,21 +29,19 @@ export const adminNoticeAttributes: AdminNoticeAttribute[] = [
   new AdminNoticeAttribute({
     id: 'title',
     label: 'Title',
-    defaultWidth: 240,
+    defaultWidth: 220,
     required: true,
-    value: ({ notice }: AdminNoticeAttributeOptions) =>
-      notice && (
-        <Box sx={{ overflow: 'hidden' }}>
-          <Typography variant="body2" noWrap>
-            {notice.title}
-          </Typography>
-          {notice.preview && (
-            <Typography variant="caption" color="textSecondary" noWrap component="div">
-              {notice.preview}
-            </Typography>
-          )}
-        </Box>
-      ),
+    // The master column has no ellipsis clamp of its own (unlike `.attribute` columns), so a long
+    // title would wrap and make the row taller than the rest.
+    value: ({ notice }: AdminNoticeAttributeOptions) => (
+      <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{notice?.title || '—'}</Box>
+    ),
+  }),
+  new AdminNoticeAttribute({
+    id: 'subtitle',
+    label: 'Subtitle',
+    defaultWidth: 240,
+    value: ({ notice }: AdminNoticeAttributeOptions) => notice?.preview || '—',
   }),
   new AdminNoticeAttribute({
     id: 'status',
