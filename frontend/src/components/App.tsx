@@ -31,6 +31,7 @@ import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
 import { ViewAsBanner } from './ViewAsBanner'
 import { AnnouncementDialog } from './AnnouncementDialog'
+import { AnnouncementBanner } from './AnnouncementBanner'
 
 export const App: React.FC = () => {
   const { insets } = useSafeArea()
@@ -110,6 +111,7 @@ export const App: React.FC = () => {
   return (
     <Page>
       <ViewAsBanner />
+      <AnnouncementBanner />
       <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
         <Box
           sx={{

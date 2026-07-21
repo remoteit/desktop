@@ -23,10 +23,12 @@ export default createModel<RootModel>()({
               id
               title
               body
+              preview
               image
               link
               type
               modified
+              until
               read
             }
           }`
@@ -47,10 +49,12 @@ export default createModel<RootModel>()({
         id: n.id,
         title: n.title,
         body: n.body,
+        preview: n.preview,
         image: n.image,
         link: n.link,
         type: n.type,
         modified: new Date(n.modified),
+        until: n.until ? new Date(n.until) : undefined,
         read: n.read ? new Date(n.read) : undefined,
       }))
     },

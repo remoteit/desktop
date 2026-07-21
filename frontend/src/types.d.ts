@@ -180,11 +180,13 @@ declare global {
     link: string
     image: string
     body: string | React.ReactNode
+    preview?: string
     modified?: Date
+    until?: Date
     read?: Date
   }
 
-  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY'
+  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY' | 'BANNER'
 
   type IPurchase = {
     checkout?: boolean
