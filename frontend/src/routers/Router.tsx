@@ -62,8 +62,7 @@ import { AdminConfirmPage } from '../pages/AdminConfirmPage'
 import { AdminAdminsPage } from '../pages/AdminAdminsPage/AdminAdminsPage'
 import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { AdminEnterpriseLicensesListPage } from '../pages/AdminEnterpriseLicensesPage/AdminEnterpriseLicensesListPage'
-import { AdminNoticesListPage } from '../pages/AdminNoticesPage/AdminNoticesListPage'
-import { AdminNoticePage } from '../pages/AdminNoticesPage/AdminNoticePage'
+import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
@@ -440,15 +439,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
                 <AdminEnterpriseLicensesListPage />
               </Panel>
             </Route>
-            <Route path="/admin/notices" exact>
-              <Panel layout={layout}>
-                <AdminNoticesListPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/notices/:noticeId">
-              <Panel layout={layout}>
-                <AdminNoticePage />
-              </Panel>
+            <Route path="/admin/notices/:noticeId?">
+              <AdminNoticesPage />
             </Route>
             <Redirect to="/admin/users" />
           </Switch>

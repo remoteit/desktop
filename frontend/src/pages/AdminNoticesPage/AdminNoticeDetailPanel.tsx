@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Box, Typography } from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { Container } from '../../components/Container'
+import { Confirm } from '../../components/Confirm'
 import { Title } from '../../components/Title'
 import { IconButton } from '../../buttons/IconButton'
 import { Gutters } from '../../components/Gutters'
@@ -14,13 +15,20 @@ import { AdminNoticeForm } from './AdminNoticeForm'
 
 const LIST_ROUTE = '/admin/notices'
 
-export const AdminNoticePage: React.FC = () => {
+type Props = {
+  // Only shown when the list panel is hidden — otherwise the list is already on screen and the
+  // global header back button covers going up.
+  showBackArrow?: boolean
+}
+
+export const AdminNoticeDetailPanel: React.FC<Props> = ({ showBackArrow }) => {
   const { noticeId } = useParams<{ noticeId?: string }>()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const notices = useSelector((state: State) => state.adminNotices.notices)
   const saving = useSelector((state: State) => state.adminNotices.saving)
   const initialized = useSelector((state: State) => state.adminNotices.initialized)
+  const [removeOpen, setRemoveOpen] = React.useState(false)
 
   const isNew = noticeId === 'new'
   const notice = isNew ? undefined : notices.find(n => n.id === noticeId)
@@ -39,22 +47,34 @@ export const AdminNoticePage: React.FC = () => {
     if (saved) handleBack()
   }
 
+  const handleRemove = async () => {
+    setRemoveOpen(false)
+    if (notice && (await dispatch.adminNotices.remove(notice.id))) handleBack()
+  }
+
   const header = (
     <Box>
-      <Box
-        sx={{
-          height: 45,
-          display: 'flex',
-          alignItems: 'center',
-          paddingX: `${spacing.md}px`,
-          marginTop: `${spacing.sm}px`,
-        }}
-      >
-        <IconButton icon="chevron-left" title="Back to Notices" onClick={handleBack} size="md" color="grayDarker" />
+      {showBackArrow && (
+        <Box
+          sx={{
+            height: 45,
+            display: 'flex',
+            alignItems: 'center',
+            paddingX: `${spacing.md}px`,
+            marginTop: `${spacing.sm}px`,
+          }}
+        >
+          <IconButton icon="chevron-left" title="Back to Notices" onClick={handleBack} size="md" color="grayDarker" />
+        </Box>
+      )}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 2 }}>
+        <Typography variant="h2" sx={{ padding: 2 }}>
+          <Title>{isNew ? 'New notice' : 'Edit notice'}</Title>
+        </Typography>
+        {!isNew && notice && (
+          <IconButton icon="trash" title="Delete notice" onClick={() => setRemoveOpen(true)} size="md" />
+        )}
       </Box>
-      <Typography variant="h2" sx={{ padding: 2 }}>
-        <Title>{isNew ? 'New notice' : 'Edit notice'}</Title>
-      </Typography>
     </Box>
   )
 
@@ -74,7 +94,25 @@ export const AdminNoticePage: React.FC = () => {
 
   return (
     <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header}>
-      <AdminNoticeForm notice={notice} saving={saving} onCancel={handleBack} onSave={handleSave} />
+      <AdminNoticeForm
+        key={notice?.id || 'new'}
+        notice={notice}
+        saving={saving}
+        onCancel={handleBack}
+        onSave={handleSave}
+      />
+      <Confirm
+        open={removeOpen}
+        title="Delete notice?"
+        onConfirm={handleRemove}
+        onDeny={() => setRemoveOpen(false)}
+        action="Delete"
+        color="error"
+      >
+        <Typography variant="body2">
+          "{notice?.title}" will be permanently deleted. This cannot be undone.
+        </Typography>
+      </Confirm>
     </Container>
   )
 }
