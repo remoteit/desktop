@@ -112,13 +112,14 @@ export const adminNoticeAttributes: AdminNoticeAttribute[] = [
     defaultWidth: 170,
     value: ({ notice }: AdminNoticeAttributeOptions) => {
       if (!notice) return '—'
-      // A banner with no end date can only be taken down by hand — call it out.
+      // A banner with no end date can only be taken down by hand — flag it. Keep the same "—" the
+      // other rows use so an equal value looks equal; the icon carries the warning, not the text.
       if (isBannerType(notice.type) && !notice.until)
         return (
           <Tooltip title="Banners cannot be dismissed — set an end date">
             <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
               <Icon name="exclamation-triangle" size="sm" color="warning" />
-              none
+              {dateLabel(undefined)}
             </Box>
           </Tooltip>
         )
