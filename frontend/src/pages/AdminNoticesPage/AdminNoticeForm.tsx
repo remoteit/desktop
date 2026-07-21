@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { Button, List, ListItem, MenuItem, TextField, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, MenuItem, TextField, Typography } from '@mui/material'
 import { fieldSx } from '../../components/ServiceForm'
 import { ListItemCheckbox } from '../../components/ListItemCheckbox'
+import { AnnouncementCard } from '../../components/AnnouncementCard'
 import { Gutters } from '../../components/Gutters'
 import { Notice } from '../../components/Notice'
 
@@ -22,6 +23,7 @@ const initialForm = (notice?: IAdminNotice): INoticeInput => ({
   title: notice?.title || '',
   body: notice?.body || '',
   preview: notice?.preview || '',
+  image: notice?.image || '',
   link: notice?.link || '',
   stage: notice?.stage || '',
   enabled: notice?.enabled ?? false,
@@ -42,6 +44,18 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
   const isBanner = form.type === 'BANNER'
   const change = (values: Partial<INoticeInput>) => setForm(f => ({ ...f, ...values }))
 
+  // Shape the in-progress form as an IAnnouncement so the real card component can render it.
+  const previewAnnouncement: IAnnouncement = {
+    id: 'preview',
+    type: (form.type || 'GENERIC') as INoticeType,
+    title: form.title || 'Title',
+    body: form.body || '',
+    preview: form.preview || undefined,
+    image: form.image || '',
+    link: form.link || '',
+    modified: new Date(),
+  }
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
     // The API preserves explicit nulls (that is how you clear a field) but ignores undefined.
@@ -50,6 +64,7 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
     onSave({
       ...form,
       preview: blankToNull(form.preview),
+      image: blankToNull(form.image),
       link: blankToNull(form.link),
       stage: blankToNull(form.stage),
       body: form.body || '',
@@ -126,6 +141,22 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
           </ListItem>
         )}
 
+        {!isBanner && (
+          <ListItem sx={fieldSx}>
+            <TextField
+              label="Image"
+              variant="filled"
+              value={form.image || ''}
+              inputProps={{ maxLength: 255 }}
+              onChange={e => change({ image: e.target.value })}
+            />
+            <Typography variant="caption">
+              URL of a banner image shown across the top of the announcement card. Not used by banners.{' '}
+              <b>Max 255 characters.</b>
+            </Typography>
+          </ListItem>
+        )}
+
         <ListItem sx={fieldSx}>
           <TextField
             label="Link"
@@ -187,17 +218,24 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
         />
       </List>
 
-      {isBanner && (
-        <Gutters top={null}>
-          <Typography variant="caption" color="textSecondary">
-            BANNER PREVIEW
-          </Typography>
+      <Gutters top={null}>
+        <Typography variant="caption" color="textSecondary">
+          {isBanner ? 'BANNER PREVIEW' : 'CARD PREVIEW'}
+        </Typography>
+        {isBanner ? (
           <Notice severity="warning" fullWidth solid sx={{ borderRadius: 0, marginTop: 0.5 }}>
             <strong>{form.title || 'Title'}</strong>
             {form.preview ? <em>{form.preview}</em> : null}
           </Notice>
-        </Gutters>
-      )}
+        ) : (
+          // Reuse the real card so the preview can't drift from what users actually see.
+          // `hideMarkReadAction` suppresses the NEW button, which would otherwise mark a
+          // fabricated preview id as read.
+          <Box sx={{ marginTop: 0.5, '& .MuiCard-root': { marginLeft: 0, marginRight: 0 } }}>
+            <AnnouncementCard data={previewAnnouncement} hideMarkReadAction />
+          </Box>
+        )}
+      </Gutters>
 
       {isBanner && !form.until && (
         <Gutters top={null}>
