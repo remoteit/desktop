@@ -22,7 +22,6 @@ const initialForm = (notice?: IAdminNotice): INoticeInput => ({
   type: notice?.type || 'BANNER',
   title: notice?.title || '',
   body: notice?.body || '',
-  preview: notice?.preview || '',
   image: notice?.image || '',
   link: notice?.link || '',
   stage: notice?.stage || '',
@@ -50,7 +49,6 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
     type: (form.type || 'GENERIC') as INoticeType,
     title: form.title || 'Title',
     body: form.body || '',
-    preview: form.preview || undefined,
     image: form.image || '',
     link: form.link || '',
     modified: new Date(),
@@ -63,7 +61,6 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
     const blankToNull = (value?: string | null) => (value ? value : null)
     onSave({
       ...form,
-      preview: blankToNull(form.preview),
       image: blankToNull(form.image),
       link: blankToNull(form.link),
       stage: blankToNull(form.stage),
@@ -115,31 +112,24 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
 
         <ListItem sx={fieldSx}>
           <TextField
-            label="Subtitle"
+            multiline
+            minRows={isBanner ? 2 : 4}
+            label="Body"
             variant="filled"
-            value={form.preview || ''}
-            inputProps={{ maxLength: 255 }}
-            onChange={e => change({ preview: e.target.value })}
+            value={form.body || ''}
+            onChange={e => change({ body: e.target.value })}
           />
           <Typography variant="caption">
-            {isBanner ? 'Smaller second line under the banner title. ' : 'Short summary shown under the title. '}
-            <b>Leave blank for title only. Max 255 characters.</b>
+            {isBanner ? (
+              <>
+                Smaller second line under the banner title. <b>Keep it to a single short sentence</b> — it renders
+                inline in a one-line bar, so long copy or block HTML will look wrong.
+              </>
+            ) : (
+              'HTML shown on the announcement card.'
+            )}
           </Typography>
         </ListItem>
-
-        {!isBanner && (
-          <ListItem sx={fieldSx}>
-            <TextField
-              multiline
-              minRows={4}
-              label="Body"
-              variant="filled"
-              value={form.body || ''}
-              onChange={e => change({ body: e.target.value })}
-            />
-            <Typography variant="caption">HTML shown on the announcement card. Not used by banners.</Typography>
-          </ListItem>
-        )}
 
         {!isBanner && (
           <ListItem sx={fieldSx}>
@@ -225,7 +215,7 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
         {isBanner ? (
           <Notice severity="warning" fullWidth solid sx={{ borderRadius: 0, marginTop: 0.5 }}>
             <strong>{form.title || 'Title'}</strong>
-            {form.preview ? <em>{form.preview}</em> : null}
+            {form.body ? <em dangerouslySetInnerHTML={{ __html: String(form.body) }} /> : null}
           </Notice>
         ) : (
           // Reuse the real card so the preview can't drift from what users actually see.

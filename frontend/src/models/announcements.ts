@@ -23,7 +23,6 @@ export default createModel<RootModel>()({
               id
               title
               body
-              preview
               image
               link
               type
@@ -49,7 +48,6 @@ export default createModel<RootModel>()({
         id: n.id,
         title: n.title,
         body: n.body,
-        preview: n.preview,
         image: n.image,
         link: n.link,
         type: n.type,

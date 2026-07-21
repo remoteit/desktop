@@ -25,6 +25,8 @@ export const noticeStatus = (notice: IAdminNotice): NoticeStatus => {
 
 const dateLabel = (date?: Date) => (date ? date.toLocaleString() : '—')
 
+const plainText = (html?: string) => html?.replace(/<[^>]*>/g, '').trim()
+
 export const adminNoticeAttributes: AdminNoticeAttribute[] = [
   new AdminNoticeAttribute({
     id: 'title',
@@ -38,10 +40,11 @@ export const adminNoticeAttributes: AdminNoticeAttribute[] = [
     ),
   }),
   new AdminNoticeAttribute({
-    id: 'subtitle',
-    label: 'Subtitle',
+    id: 'body',
+    label: 'Body',
     defaultWidth: 240,
-    value: ({ notice }: AdminNoticeAttributeOptions) => notice?.preview || '—',
+    // Body is HTML — strip tags so the cell shows readable text rather than markup.
+    value: ({ notice }: AdminNoticeAttributeOptions) => plainText(notice?.body) || '—',
   }),
   new AdminNoticeAttribute({
     id: 'status',

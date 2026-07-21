@@ -39,12 +39,12 @@ export const AnnouncementBanner: React.FC = () => {
         >
           {/*
             Bind the two lines structurally rather than relying on the notice author to hand-write
-            `<strong>`/`<em>` inside `preview`. `title` is NOT NULL so a banner always has a
-            heading, and both columns are varchar(255) — so this spends none of that budget on
-            markup. Notice styles `strong` as the title and `em` as a smaller block subtitle.
+            `<strong>`/`<em>`. `title` is NOT NULL so a banner always has a heading, and `body`
+            supplies the smaller line. Notice styles `strong` as the title and `em` as a smaller
+            block subtitle.
           */}
           <strong>{banner.title}</strong>
-          {banner.preview && <em dangerouslySetInnerHTML={{ __html: banner.preview }} />}
+          {banner.body && <em dangerouslySetInnerHTML={{ __html: String(banner.body) }} />}
         </Notice>
       ))}
     </Box>

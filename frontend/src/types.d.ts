@@ -180,7 +180,6 @@ declare global {
     link: string
     image: string
     body: string | React.ReactNode
-    preview?: string
     modified?: Date
     until?: Date
     read?: Date
