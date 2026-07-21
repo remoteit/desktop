@@ -59,6 +59,7 @@ class Platforms {
     'openwrt',
     'raspberrypi',
     'remoteit',
+    'teltonika',
     'this',
     'tinkerboard',
     'toa',
