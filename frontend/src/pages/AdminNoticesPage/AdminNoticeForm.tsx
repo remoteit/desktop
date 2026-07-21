@@ -202,8 +202,13 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
 
         <ListItemCheckbox
           checked={!!form.enabled}
-          label={form.enabled ? 'Enabled' : 'Disabled'}
-          subLabel={form.enabled ? 'Visible to users once the dates allow.' : 'Hidden from users.'}
+          label="Enable notice"
+          subLabel={
+            <>
+              Disabling hides the notice from everyone, whatever the dates say.&nbsp;
+              <i>Notice is{form.enabled ? ' enabled' : ' disabled'}</i>
+            </>
+          }
           onClick={checked => change({ enabled: checked })}
         />
       </List>
