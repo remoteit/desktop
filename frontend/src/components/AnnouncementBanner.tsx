@@ -24,19 +24,27 @@ export const AnnouncementBanner: React.FC = () => {
           severity="warning"
           fullWidth
           solid
+          // Square corners so it reads as a bar rather than a card — the app panel in
+          // RemoteHeader is `overflow: hidden` and rounded, so it clips the top corners for us.
+          sx={{ borderRadius: 0 }}
           button={
             banner.link ? (
-              <Button color="inherit" href={banner.link} size="small" target="_blank">
+              // The theme's Button default resolves `inherit` to grayDark, which is unreadable on
+              // the solid severity background — pin it to the same white the banner text uses.
+              <Button href={banner.link} size="small" target="_blank" sx={{ color: 'alwaysWhite.main' }}>
                 Learn more
               </Button>
             ) : undefined
           }
         >
-          {banner.preview ? (
-            <span dangerouslySetInnerHTML={{ __html: banner.preview }} />
-          ) : (
-            <strong>{banner.title}</strong>
-          )}
+          {/*
+            Bind the two lines structurally rather than relying on the notice author to hand-write
+            `<strong>`/`<em>` inside `preview`. `title` is NOT NULL so a banner always has a
+            heading, and both columns are varchar(255) — so this spends none of that budget on
+            markup. Notice styles `strong` as the title and `em` as a smaller block subtitle.
+          */}
+          <strong>{banner.title}</strong>
+          {banner.preview && <em dangerouslySetInnerHTML={{ __html: banner.preview }} />}
         </Notice>
       ))}
     </Box>
