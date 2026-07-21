@@ -100,14 +100,14 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
 
         <ListItem sx={fieldSx}>
           <TextField
-            label={isBanner ? 'Subtitle' : 'Preview'}
+            label="Subtitle"
             variant="filled"
             value={form.preview || ''}
             inputProps={{ maxLength: 255 }}
             onChange={e => change({ preview: e.target.value })}
           />
           <Typography variant="caption">
-            {isBanner ? 'Smaller second line under the title. ' : 'Short summary. '}
+            {isBanner ? 'Smaller second line under the banner title. ' : 'Short summary shown under the title. '}
             <b>Leave blank for title only. Max 255 characters.</b>
           </Typography>
         </ListItem>
@@ -190,7 +190,7 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
       {isBanner && (
         <Gutters top={null}>
           <Typography variant="caption" color="textSecondary">
-            PREVIEW
+            BANNER PREVIEW
           </Typography>
           <Notice severity="warning" fullWidth solid sx={{ borderRadius: 0, marginTop: 0.5 }}>
             <strong>{form.title || 'Title'}</strong>
