@@ -53,3 +53,38 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
           destination_dir: ${{ github.event.inputs.s3_path }}/${{ github.event.inputs.tag }}/
+
+      # Repoint the /latest aliases at this release — previously a manual step in
+      # the AWS console. downloads.remote.it serves these as 302s (S3 website
+      # redirects); the marketing site's daily catalog refresh reads the redirect
+      # target to discover the current version, so this step is what makes a
+      # release show up on remote.it/download automatically.
+      - name: Point /latest at this release
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          BUCKET: ${{ secrets.AWS_BUCKET }}
+          S3_PATH: ${{ github.event.inputs.s3_path }}
+          TAG: ${{ github.event.inputs.tag }}
+        run: |
+          set -euo pipefail
+          # Strip a trailing slash so key joins stay clean (input is "desktop/")
+          prefix="${S3_PATH%/}"
+
+          # desktop/latest/<file> → /desktop/<tag>/<file> for every asset
+          for f in release-assets/*; do
+            n=$(basename "$f")
+            aws s3api put-object --bucket "$BUCKET" --key "$prefix/latest/$n" \
+              --website-redirect-location "/$prefix/$TAG/$n"
+          done
+
+          # Updater manifests live version-named at the prefix root, with
+          # latest*.yml redirect aliases (mirrors the existing bucket layout:
+          # desktop/latest.yml → /desktop/v3.46.1.yml)
+          for yml in latest.yml latest-mac.yml; do
+            [ -f "release-assets/$yml" ] || continue
+            versioned="$TAG${yml#latest}"   # latest.yml → v1.2.3.yml, latest-mac.yml → v1.2.3-mac.yml
+            aws s3 cp "release-assets/$yml" "s3://$BUCKET/$prefix/$versioned"
+            aws s3api put-object --bucket "$BUCKET" --key "$prefix/$yml" \
+              --website-redirect-location "/$prefix/$versioned"
+          done
