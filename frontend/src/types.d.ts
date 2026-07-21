@@ -181,10 +181,51 @@ declare global {
     image: string
     body: string | React.ReactNode
     modified?: Date
+    until?: Date
     read?: Date
   }
 
-  type INoticeType = 'GENERIC' | 'SYSTEM' | 'RELEASE' | 'COMMUNICATION' | 'SECURITY'
+  type INoticeType =
+    | 'GENERIC'
+    | 'SYSTEM'
+    | 'RELEASE'
+    | 'COMMUNICATION'
+    | 'SECURITY'
+    | 'BANNER'
+    | 'BANNER_WARN'
+    | 'BANNER_DANGER'
+
+  // Admin-only view of a notice — includes the scheduling and targeting fields that the
+  // user-facing `notices` query filters on server side and therefore never returns.
+  type IAdminNotice = {
+    id: string
+    type: INoticeType
+    title: string
+    body: string
+    preview?: string
+    image?: string
+    link?: string
+    stage?: string
+    language?: string
+    enabled: boolean
+    from?: Date
+    until?: Date
+    modified?: Date
+  }
+
+  type INoticeInput = {
+    type?: INoticeType
+    title?: string
+    body?: string
+    preview?: string
+    image?: string
+    link?: string
+    stage?: string
+    language?: string
+    enabled?: boolean
+    from?: Date | string | null
+    until?: Date | string | null
+  }
 
   type IPurchase = {
     checkout?: boolean
