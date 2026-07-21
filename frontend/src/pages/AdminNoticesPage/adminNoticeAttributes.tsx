@@ -35,6 +35,19 @@ export const sortNotices = (notices: IAdminNotice[]): IAdminNotice[] =>
     return (b.modified?.getTime() || 0) - (a.modified?.getTime() || 0)
   })
 
+// One icon per notice type so the list is scannable at a glance. Names are all already in use
+// elsewhere in the app — an unknown name renders as a blank glyph rather than failing loudly.
+const NOTICE_ICONS: Record<INoticeType, string> = {
+  GENERIC: 'circle-info', // "Notice"
+  SYSTEM: 'wave-pulse', // "System Update" — maintenance and service health
+  SECURITY: 'shield', // "Security Notice"
+  RELEASE: 'sparkles', // "Release Note" — something new
+  COMMUNICATION: 'comments', // "Announcement"
+  BANNER: 'bullhorn', // persistent top bar
+}
+
+export const noticeIcon = (type?: INoticeType) => (type && NOTICE_ICONS[type]) || NOTICE_ICONS.GENERIC
+
 const dateLabel = (date?: Date) => (date ? date.toLocaleString() : '—')
 
 const plainText = (html?: string) => html?.replace(/<[^>]*>/g, '').trim()

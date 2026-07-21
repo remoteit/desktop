@@ -10,7 +10,7 @@ import { Gutters } from '../../components/Gutters'
 import { Icon } from '../../components/Icon'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { Notice } from '../../components/Notice'
-import { adminNoticeAttributes, noticeStatus, sortNotices } from './adminNoticeAttributes'
+import { adminNoticeAttributes, noticeIcon, noticeStatus, sortNotices } from './adminNoticeAttributes'
 
 export const AdminNoticesListPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -65,7 +65,7 @@ export const AdminNoticesListPage: React.FC = () => {
               disableGutters
               icon={
                 <Icon
-                  name={notice.type === 'BANNER' ? 'bullhorn' : 'circle-info'}
+                  name={noticeIcon(notice.type)}
                   size="md"
                   color={noticeStatus(notice) === 'Live' ? 'primary' : 'grayDark'}
                 />
