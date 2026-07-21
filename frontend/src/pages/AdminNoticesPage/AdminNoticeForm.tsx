@@ -218,7 +218,7 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
           {isBanner ? 'BANNER PREVIEW' : 'CARD PREVIEW'}
         </Typography>
         {isBanner ? (
-          <Notice severity="warning" fullWidth solid sx={{ borderRadius: 0, marginTop: 0.5 }}>
+          <Notice severity="info" fullWidth solid sx={{ borderRadius: 0, marginTop: 0.5 }}>
             <strong>{form.title || 'Title'}</strong>
             {form.body ? <em dangerouslySetInnerHTML={{ __html: String(form.body) }} /> : null}
           </Notice>

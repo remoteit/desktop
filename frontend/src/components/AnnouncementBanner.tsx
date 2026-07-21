@@ -21,7 +21,7 @@ export const AnnouncementBanner: React.FC = () => {
       {active.map(banner => (
         <Notice
           key={banner.id}
-          severity="warning"
+          severity="info"
           fullWidth
           solid
           // Square corners so it reads as a bar rather than a card — the app panel in
