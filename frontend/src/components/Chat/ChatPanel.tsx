@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, Typography } from '@mui/material'
+import { Box, TextField, Typography } from '@mui/material'
 import { State, Dispatch } from '../../store'
 import { CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_EXPANDED } from '../../constants'
 import { IconButton } from '../../buttons/IconButton'
@@ -13,6 +13,7 @@ export const ChatPanel: React.FC = () => {
   const chat = useSelector((state: State) => state.chat)
   const singlePanel = useSelector((state: State) => state.ui.layout.singlePanel)
   const dispatch = useDispatch<Dispatch>()
+  const [tokenDraft, setTokenDraft] = useState('')
 
   useEffect(() => {
     if (chat.open) {
@@ -61,6 +62,32 @@ export const ChatPanel: React.FC = () => {
       {chat.health === 'unreachable' && (
         <Notice severity="warning" gutterTop>
           Agent unreachable — is the dev service running on :3001?
+        </Notice>
+      )}
+      {chat.health === 'unauthorized' && (
+        <Notice severity="warning" gutterTop>
+          {/* Stage A: paste a token from the ai-agent dev harness
+              (`node scripts/hydra-login.mjs token`). Replaced by the in-app
+              sign-in flow in a later stage. */}
+          <>
+            Agent sign-in required.
+            <TextField
+              fullWidth
+              size="small"
+              type="password"
+              variant="filled"
+              label="Paste an agent access token"
+              value={tokenDraft}
+              onChange={event => setTokenDraft(event.target.value)}
+              onKeyDown={event => {
+                if (event.key === 'Enter' && tokenDraft.trim()) {
+                  dispatch.chat.setToken(tokenDraft)
+                  setTokenDraft('')
+                }
+              }}
+              sx={{ marginTop: 1 }}
+            />
+          </>
         </Notice>
       )}
       <ChatMessages messages={chat.messages} streaming={chat.streaming}>
