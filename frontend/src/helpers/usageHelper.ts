@@ -1,4 +1,4 @@
-import humanize from 'humanize-duration'
+import { humanizeDuration as humanize } from './dateHelper'
 
 export function isUsageNumber(value?: number | null): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0

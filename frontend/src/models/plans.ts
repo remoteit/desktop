@@ -20,7 +20,7 @@ import { graphQLFetchPlans } from '../services/graphQLRequest'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
 import cloudSync from '../services/CloudSync'
-import humanize from 'humanize-duration'
+import { humanizeDuration as humanize } from '../helpers/dateHelper'
 
 type ILicenseLookup = { productId: string; platform?: number }
 

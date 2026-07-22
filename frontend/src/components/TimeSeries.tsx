@@ -8,7 +8,7 @@ import {
 import { BarGraph, BarGraphProps } from './BarGraph'
 import { Typography, Stack, Box } from '@mui/material'
 import { Timestamp } from './Timestamp'
-import humanize from 'humanize-duration'
+import { humanizeDuration as humanize } from '../helpers/dateHelper'
 import * as d3 from 'd3'
 
 type Props = Omit<BarGraphProps, 'data'> & {

@@ -4,6 +4,7 @@ import { StatusBar, Style } from '@capacitor/status-bar'
 import { RootModel } from '.'
 import { isDarkMode } from '../styling/theme'
 import i18n, { resolveLanguage, LanguageMode } from '../i18n'
+import { Settings as LuxonSettings } from 'luxon'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../constants'
@@ -261,6 +262,7 @@ export default createModel<RootModel>()({
       language = language || state.ui.language
       const resolved = resolveLanguage(language)
       dispatch.ui.setPersistent({ language })
+      LuxonSettings.defaultLocale = resolved
       if (i18n.resolvedLanguage !== resolved) i18n.changeLanguage(resolved)
       // Sync the resolved code to the Electron main process (tray/menu/dialogs).
       if (browser.isElectron) {
