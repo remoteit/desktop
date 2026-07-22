@@ -34,6 +34,15 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: p => p.replace(/^\/agent/, ''),
       },
+      // Dev-only: same-origin path to the Hydra OAuth front so the browser's
+      // DCR + token-exchange calls avoid CORS entirely (top-level login
+      // redirects go to the real domain and don't need this). Packaged builds
+      // need the origin CORS-allow-listed or a main-process exchange instead.
+      '/hydra': {
+        target: process.env.VITE_HYDRA_ISSUER_URL || 'https://login.dev.remote.it',
+        changeOrigin: true,
+        rewrite: p => p.replace(/^\/hydra/, ''),
+      },
     },
   },
   type: 'module',
