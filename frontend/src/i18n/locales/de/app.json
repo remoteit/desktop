@@ -1,1 +1,8 @@
-{}
+{
+  "options": {
+    "language": {
+      "label": "Sprache",
+      "system": "Wie das System"
+    }
+  }
+}

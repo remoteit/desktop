@@ -1,1 +1,8 @@
-{}
+{
+  "options": {
+    "language": {
+      "label": "言語",
+      "system": "システムに合わせる"
+    }
+  }
+}
