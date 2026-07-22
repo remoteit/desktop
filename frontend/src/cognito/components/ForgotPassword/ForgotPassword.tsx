@@ -23,7 +23,7 @@ export function ForgotPassword({
   buttonKey,
   fullWidth,
 }: ForgotPasswordProps): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const history = useHistory()
   const [stateEmail, setEmail] = React.useState<string>(email ? email : '')
   const [error, setError] = React.useState<Error | null>(null)

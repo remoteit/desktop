@@ -45,6 +45,7 @@
     "humanize-duration": "^3.33.0",
     "i18next": "^22.5.0",
     "i18next-browser-languagedetector": "^7.0.1",
+    "i18next-resources-to-backend": "^1.2.1",
     "immer": "^9.0.21",
     "localforage": "^1.10.0",
     "lodash.debounce": "^4.0.8",
