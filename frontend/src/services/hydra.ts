@@ -27,6 +27,22 @@ const OAUTH_API = '/hydra'
 const CLIENT_KEY = 'agentOauthClient'
 const FLOW_KEY = 'agentOauthFlow'
 
+// Captured synchronously at module-evaluation time: the app's Cognito side
+// (Amplify, configured with an oauth block) installs a URL listener that
+// consumes and strips ?code/state params for ITS authorization-code flow.
+// Our Hydra callback uses the same param names on the same origin, so we must
+// grab them before Amplify boots — and only claim them when this tab actually
+// started an agent sign-in (flow state present), so a genuine Cognito
+// callback is left untouched.
+const bootParams = new URLSearchParams(window.location.search)
+const isAgentCallback =
+  !!window.sessionStorage.getItem(FLOW_KEY) && (bootParams.has('code') || bootParams.has('error'))
+if (isAgentCallback) {
+  // Strip immediately: hides the single-use code from Amplify's listener and
+  // from any reload. The hash route is preserved.
+  window.history.replaceState({}, '', window.location.pathname + window.location.hash)
+}
+
 const b64url = (bytes: ArrayBuffer | Uint8Array): string =>
   btoa(String.fromCharCode(...new Uint8Array(bytes)))
     .replace(/\+/g, '-')
@@ -123,23 +139,22 @@ export async function startAgentSignIn(): Promise<void> {
   window.location.assign(auth.toString())
 }
 
-/* Complete the flow after the redirect back. Call once on app boot; returns
-   null when the URL carries no sign-in response. */
-export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?: string } | null> {
-  const params = new URLSearchParams(window.location.search)
-  const code = params.get('code')
-  const error = params.get('error')
-  if (!code && !error) return null
+let callbackConsumed = false
 
-  // Strip the single-use code from the URL (keep the hash route) so a
-  // refresh doesn't try to reuse it.
-  window.history.replaceState({}, '', window.location.pathname + window.location.hash)
+/* Complete the flow after the redirect back. Call once on app boot; returns
+   null when this page load carries no agent sign-in response. Reads the
+   module-scope capture, not the live URL (already stripped above). */
+export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?: string } | null> {
+  if (!isAgentCallback || callbackConsumed) return null
+  callbackConsumed = true
+  const code = bootParams.get('code')
+  const error = bootParams.get('error')
 
   if (error) {
     // A client cached from before a scope/resource change can be rejected at
     // authorize (e.g. invalid_target); drop it so the next attempt re-registers.
     window.localStorage.removeItem(CLIENT_KEY)
-    return { ok: false, error: `${error}: ${params.get('error_description') || ''}` }
+    return { ok: false, error: `${error}: ${bootParams.get('error_description') || ''}` }
   }
 
   const flow = JSON.parse(window.sessionStorage.getItem(FLOW_KEY) || 'null') as {
@@ -148,7 +163,7 @@ export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?
     clientId: string
   } | null
   window.sessionStorage.removeItem(FLOW_KEY)
-  if (!flow || params.get('state') !== flow.state) return { ok: false, error: 'Sign-in expired — try again.' }
+  if (!flow || bootParams.get('state') !== flow.state) return { ok: false, error: 'Sign-in expired — try again.' }
 
   try {
     const tokens = await tokenRequest({
