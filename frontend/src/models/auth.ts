@@ -249,6 +249,10 @@ export default createModel<RootModel>()({
      */
     async signedOut(_: void, state) {
       await persistor.purge()
+      // Agent (Hydra) session goes with the app session — clears stored
+      // tokens synchronously, revoke is fire-and-forget so sign-out never
+      // blocks on it
+      dispatch.chat.signOut()
       // purge has to happen before signOut because signOut can trigger a reload
       await state.auth.authService?.signOut()
       await dispatch.auth.set({ user: undefined })

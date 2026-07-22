@@ -180,6 +180,30 @@ export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?
   }
 }
 
+/* Sign the agent out alongside the app: drop the local credentials, then
+   best-effort revoke the refresh token so Hydra's otherwise never-expiring
+   refresh chain dies server-side too. The DCR client registration is kept —
+   it belongs to the app origin, not the user. */
+export async function agentSignOut(): Promise<void> {
+  const session = getAgentSession()
+  const token = getAgentToken()
+  setAgentToken(null)
+  setAgentSession(null)
+  const revoke = (value: string, clientId: string) =>
+    fetch(`${OAUTH_API}/oauth2/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ token: value, client_id: clientId }),
+    })
+  try {
+    if (session?.refresh_token) await revoke(session.refresh_token, session.client_id)
+    else if (token && session?.client_id) await revoke(token, session.client_id)
+  } catch {
+    // Offline or proxy unavailable — locals are already cleared; the access
+    // token dies at its 30m TTL.
+  }
+}
+
 /* Refresh the access token when it is missing or close to expiry. Silent
    no-op when there is nothing to refresh (e.g. a hand-pasted token). */
 export async function ensureFreshAgentToken(): Promise<void> {
