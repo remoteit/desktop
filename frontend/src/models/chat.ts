@@ -10,7 +10,7 @@ import {
   AgentHealth,
   AgentMessageParam,
 } from '../services/agent'
-import { startAgentSignIn, handleAgentSignInCallback, ensureFreshAgentToken } from '../services/hydra'
+import { startAgentSignIn, handleAgentSignInCallback, ensureFreshAgentToken, agentSignOut } from '../services/hydra'
 
 export type ChatToolCall = {
   id: string
@@ -182,6 +182,14 @@ export default createModel<RootModel>()({
       dispatch.chat.set({ error: null })
       await dispatch.chat.checkHealth()
     },
+    /* App sign-out tears the agent session down with it: revoke + clear the
+       Hydra credentials and drop the transcript */
+    async signOut() {
+      abortController?.abort()
+      abortController = null
+      dispatch.chat.reset()
+      await agentSignOut()
+    },
   }),
   reducers: {
     set(state: IChatState, params: Partial<IChatState>) {
@@ -210,6 +218,9 @@ export default createModel<RootModel>()({
       state.pendingConfirmation = null
       state.error = null
       return state
+    },
+    reset() {
+      return { ...defaultChatState }
     },
   },
 })
