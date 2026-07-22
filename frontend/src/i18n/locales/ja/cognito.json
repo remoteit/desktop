@@ -3,6 +3,7 @@
     "connect": "モバイルアプリを使えば、どこからでも接続できます。",
     "unknown-os": "iOSおよびAndroidに対応しています。"
   },
+  "CUSTOM CHALLENGE": "",
   "global": {
     "action": {
       "continue": "続ける",
@@ -38,9 +39,11 @@
       "start-recovery": "復旧を開始",
       "title": "二要素認証によるアカウント復旧"
     },
-    "auth-mfa-totp": {
-      "invalid-code": "無効なコードです",
-      "title": "二要素認証"
+    "auth": {
+      "create-account": {
+        "button-label": "アカウントを作成",
+        "button-loading": "作成中..."
+      }
     },
     "auth-mfa": {
       "errors": {
@@ -54,11 +57,14 @@
       "totp-mfa-verification": "認証アプリで生成されたワンタイムパスワードを入力してください。",
       "verification-code-placeholder": "確認コードを入力"
     },
-    "auth": {
-      "create-account": {
-        "button-label": "アカウントを作成",
-        "button-loading": "作成中..."
-      }
+    "auth-mfa-totp": {
+      "invalid-code": "無効なコードです",
+      "title": "二要素認証"
+    },
+    "forgot-password": {
+      "email": "メールアドレス",
+      "reset-password": "パスワードをリセット",
+      "title": "パスワードをお忘れですか"
     },
     "forgot-password-verify": {
       "password-error": {
@@ -73,15 +79,16 @@
       "password-rules": "パスワードは{{min_length}}〜{{max_length}}文字で、数字、大文字と小文字、そして次の記号のいずれかを1つ以上含める必要があります ",
       "password-rules-reduced": "パスワードは{{min_length}}〜{{max_length}}文字である必要があります。",
       "password-strength-html": "パスワードの強度: {{strength}}",
-      "password-strength-score": ["非常に弱い", "弱い", "普通", "良い", "強い"],
+      "password-strength-score": {
+        "0": "非常に弱い",
+        "1": "弱い",
+        "2": "普通",
+        "3": "良い",
+        "4": "強い"
+      },
       "success-message": "パスワードがリセットされました。サインインしてください",
       "title": "アカウントを確認",
       "verification-link-message": "確認用のリンクをメールで送信しました。リンクをクリックした後、このページに戻ってください。その後「続ける」を押してサインインしてください。"
-    },
-    "forgot-password": {
-      "email": "メールアドレス",
-      "reset-password": "パスワードをリセット",
-      "title": "パスワードをお忘れですか"
     },
     "password-reset": {
       "cognito-reset-password-required": "セキュリティ上の理由により、パスワードは定期的に変更していただく必要があります。確認コードを{{email}}宛てに送信しましたので、メールをご確認のうえ、確認コードを入力してパスワードを更新してください。",
@@ -108,10 +115,10 @@
       "title": "パスワードの更新"
     },
     "verify-account": {
-      "sending": "送信中...",
-      "resent-notice": "確認メールを再送信しました。",
       "check-spam": "迷惑メールフォルダをご確認ください",
       "resend-confirmation": "アカウント確認メールを再送信する",
+      "resent-notice": "確認メールを再送信しました。",
+      "sending": "送信中...",
       "verification-received-message": "確認用リンクが届きませんか?"
     }
   }

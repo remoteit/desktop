@@ -3,6 +3,7 @@
     "connect": "Verbinden Sie sich von überall mit unserer mobilen App.",
     "unknown-os": "Jetzt verfügbar für iOS und Android."
   },
+  "CUSTOM CHALLENGE": "",
   "global": {
     "action": {
       "continue": "Weiter",
@@ -38,9 +39,11 @@
       "start-recovery": "Wiederherstellung starten",
       "title": "Zwei-Faktor-Kontowiederherstellung"
     },
-    "auth-mfa-totp": {
-      "invalid-code": "Ungültiger Code",
-      "title": "Zwei-Faktor-Authentifizierung"
+    "auth": {
+      "create-account": {
+        "button-label": "Konto erstellen",
+        "button-loading": "Wird erstellt..."
+      }
     },
     "auth-mfa": {
       "errors": {
@@ -54,11 +57,14 @@
       "totp-mfa-verification": "Geben Sie das von Ihrer Authentifizierungs-App generierte Einmalpasswort ein.",
       "verification-code-placeholder": "Bestätigungscode eingeben"
     },
-    "auth": {
-      "create-account": {
-        "button-label": "Konto erstellen",
-        "button-loading": "Wird erstellt..."
-      }
+    "auth-mfa-totp": {
+      "invalid-code": "Ungültiger Code",
+      "title": "Zwei-Faktor-Authentifizierung"
+    },
+    "forgot-password": {
+      "email": "E-Mail-Adresse",
+      "reset-password": "Passwort zurücksetzen",
+      "title": "Passwort vergessen"
     },
     "forgot-password-verify": {
       "password-error": {
@@ -73,15 +79,16 @@
       "password-rules": "Passwörter müssen {{min_length}}–{{max_length}} Zeichen lang sein und eine Zahl, einen Groß- und einen Kleinbuchstaben sowie mindestens eines der folgenden Zeichen enthalten ",
       "password-rules-reduced": "Passwörter müssen {{min_length}}–{{max_length}} Zeichen lang sein.",
       "password-strength-html": "Passwortstärke: {{strength}}",
-      "password-strength-score": ["Sehr schwach", "Schwach", "Ausreichend", "Gut", "Stark"],
+      "password-strength-score": {
+        "0": "Sehr schwach",
+        "1": "Schwach",
+        "2": "Ausreichend",
+        "3": "Gut",
+        "4": "Stark"
+      },
       "success-message": "Ihr Passwort wurde zurückgesetzt. Bitte melden Sie sich an",
       "title": "Konto bestätigen",
       "verification-link-message": "Ein Bestätigungslink wurde an Sie per E-Mail gesendet. Klicken Sie auf den Link und kehren Sie dann hierher zurück. Klicken Sie anschließend auf „Weiter“, um sich anzumelden."
-    },
-    "forgot-password": {
-      "email": "E-Mail-Adresse",
-      "reset-password": "Passwort zurücksetzen",
-      "title": "Passwort vergessen"
     },
     "password-reset": {
       "cognito-reset-password-required": "Aus Sicherheitsgründen müssen Benutzer ihr Passwort regelmäßig ändern. Ein Bestätigungscode wurde an {{email}} gesendet. Bitte prüfen Sie Ihre E-Mails, geben Sie den Bestätigungscode ein und aktualisieren Sie Ihr Passwort.",
@@ -108,10 +115,10 @@
       "title": "Passwort aktualisieren"
     },
     "verify-account": {
-      "sending": "Wird gesendet...",
-      "resent-notice": "Bestätigungs-E-Mail erneut gesendet.",
       "check-spam": "Überprüfen Sie Ihren Spam-Ordner",
       "resend-confirmation": "Kontobestätigung erneut senden.",
+      "resent-notice": "Bestätigungs-E-Mail erneut gesendet.",
+      "sending": "Wird gesendet...",
       "verification-received-message": "Keinen Bestätigungslink erhalten?"
     }
   }

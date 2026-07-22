@@ -1,8 +1,65 @@
 {
+  "common": {
+    "areYouSure": "Are you sure?"
+  },
   "options": {
+    "advanced": "Advanced",
+    "clearErrors": {
+      "label": "Clear all connection errors",
+      "subLabel": "Will leave connections all unchanged, but clear the saved error messages."
+    },
+    "disableDeepLinks": {
+      "confirm": "Please restart the desktop application for changes to take affect. You may also have to reset your default file handler on Linux.",
+      "confirmTitle": "Restart required",
+      "label": "Disable deep link handling",
+      "subLabel": "You can disable deep link handling to fix a bug in Linux where the desktop app is set to open html file types."
+    },
     "language": {
       "label": "Language",
       "system": "Same as system"
+    },
+    "namedConnections": {
+      "confirm": "Changing the certificate handling will require we restart all connections.",
+      "confirmTitle": "Continue?",
+      "label": "Named connections",
+      "subLabel": "Use a Remote.It HTTPS certificate to handle and name local connections"
+    },
+    "openAtLogin": "Open at login",
+    "reinstallAgent": {
+      "confirm": "This will stop and attempt to re-install the system agent.",
+      "installing": "Installing...",
+      "label": "Re-install system agent",
+      "version": "Version {{version}}"
+    },
+    "resetGuides": {
+      "label": "Reset interactive guides",
+      "subLabel": "Turn back on the in-app help bubbles."
+    },
+    "showFullInterface": {
+      "confirm": "New connections will be from {{device}} and not your local machine.",
+      "label": "Show full interface",
+      "subLabel": "Remote devices only show target configuration options. Enable for full access."
+    },
+    "showSupportFiles": {
+      "label": "Show support files",
+      "subLabel": "Will show the folders that contain the application logs and config file."
+    },
+    "sshConfig": {
+      "label": "Managed SSH config",
+      "subLabel": "Allow Remote.it to include it's managed SSH config file for easier access to your devices."
+    },
+    "theme": {
+      "dark": "Dark",
+      "label": "Theme",
+      "light": "Light",
+      "system": "Same as system"
+    },
+    "thisDevice": "this device",
+    "title": "Application",
+    "uninstall": {
+      "confirm": "You will remove this system as a host, your connections and command line utilities.",
+      "label": "Uninstall",
+      "subLabel": "De-register this device, completely remove all saved data, and uninstall the system agent and command line tools. Do this before removing the application from your system. Can only be done by the device owner."
     }
   }
 }

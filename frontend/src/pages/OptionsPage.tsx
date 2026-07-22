@@ -40,28 +40,28 @@ export const OptionsPage: React.FC = () => {
       bodyProps={{ gutterTop: true, verticalOverflow: true }}
       header={
         <Typography variant="h1" gutterBottom>
-          <Title>Application</Title>
+          <Title>{t('options.title', 'Application')}</Title>
         </Typography>
       }
     >
       <List>
         <ListItemSelect
-          label="Theme"
+          label={t('options.theme.label', 'Theme')}
           icon="palette"
           value={themeMode}
           options={[
-            { label: 'Same as system', value: 'system' },
-            { label: 'Light', value: 'light' },
-            { label: 'Dark', value: 'dark' },
+            { label: t('options.theme.system', 'Same as system'), value: 'system' },
+            { label: t('options.theme.light', 'Light'), value: 'light' },
+            { label: t('options.theme.dark', 'Dark'), value: 'dark' },
           ]}
           onChange={e => ui.setTheme(e.target.value as State['ui']['themeMode'])}
         />
         <ListItemSelect
-          label={t('options.language.label')}
+          label={t('options.language.label', 'Language')}
           icon="language"
           value={language}
           options={[
-            { label: t('options.language.system'), value: 'system' },
+            { label: t('options.language.system', 'Same as system'), value: 'system' },
             ...SUPPORTED_LANGUAGES,
           ]}
           onChange={e => ui.setLanguage(e.target.value as State['ui']['language'])}
@@ -69,27 +69,36 @@ export const OptionsPage: React.FC = () => {
         {browser.isRemote && (
           <ListItemSetting
             confirm={!preferences.remoteUIOverride}
-            label="Show full interface"
-            subLabel="Remote devices only show target configuration options. Enable for full access."
+            label={t('options.showFullInterface.label', 'Show full interface')}
+            subLabel={t(
+              'options.showFullInterface.subLabel',
+              'Remote devices only show target configuration options. Enable for full access.'
+            )}
             icon="sliders-h"
             toggle={!!preferences.remoteUIOverride}
             onClick={() => emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })}
             confirmProps={{
-              title: 'Are you sure?',
-              children: `New connections will be from ${thisDevice?.name || 'this device'} and not your local machine.`,
+              title: t('common.areYouSure', 'Are you sure?'),
+              children: t('options.showFullInterface.confirm', {
+                device: thisDevice?.name || t('options.thisDevice', 'this device'),
+                defaultValue: 'New connections will be from {{device}} and not your local machine.',
+              }),
             }}
           />
         )}
         <DesktopUI>
           <ListItemSetting
-            label="Open at login"
+            label={t('options.openAtLogin', 'Open at login')}
             icon="door-open"
             toggle={!!preferences.openAtLogin}
             onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
           />
           <ListItemSetting
-            label="Managed SSH config"
-            subLabel="Allow Remote.it to include it's managed SSH config file for easier access to your devices."
+            label={t('options.sshConfig.label', 'Managed SSH config')}
+            subLabel={t(
+              'options.sshConfig.subLabel',
+              "Allow Remote.it to include it's managed SSH config file for easier access to your devices."
+            )}
             icon="terminal"
             toggle={!!preferences.sshConfig}
             onClick={() => emit('sshConfig', !preferences.sshConfig)}
@@ -98,20 +107,26 @@ export const OptionsPage: React.FC = () => {
           />
           <ListItemSetting
             confirm
-            label="Named connections"
-            subLabel="Use a Remote.It HTTPS certificate to handle and name local connections"
+            label={t('options.namedConnections.label', 'Named connections')}
+            subLabel={t(
+              'options.namedConnections.subLabel',
+              'Use a Remote.It HTTPS certificate to handle and name local connections'
+            )}
             icon="file-certificate"
             toggle={!!preferences.useCertificate}
             onClick={() => emit('useCertificate', !preferences.useCertificate)}
             confirmProps={{
-              title: 'Continue?',
-              children: 'Changing the certificate handling will require we restart all connections.',
+              title: t('options.namedConnections.confirmTitle', 'Continue?'),
+              children: t(
+                'options.namedConnections.confirm',
+                'Changing the certificate handling will require we restart all connections.'
+              ),
             }}
           />
         </DesktopUI>
         <ListItemSetting
-          label="Reset interactive guides"
-          subLabel="Turn back on the in-app help bubbles."
+          label={t('options.resetGuides.label', 'Reset interactive guides')}
+          subLabel={t('options.resetGuides.subLabel', 'Turn back on the in-app help bubbles.')}
           icon="sparkles"
           onClick={() => ui.resetHelp()}
         />
@@ -119,52 +134,68 @@ export const OptionsPage: React.FC = () => {
       </List>
       {!remoteUI && (
         <DesktopUI>
-          <AccordionMenuItem subtitle="Advanced" gutters>
+          <AccordionMenuItem subtitle={t('options.advanced', 'Advanced')} gutters>
             <List>
               <ListItemSetting
-                label="Clear all connection errors"
-                subLabel="Will leave connections all unchanged, but clear the saved error messages."
+                label={t('options.clearErrors.label', 'Clear all connection errors')}
+                subLabel={t(
+                  'options.clearErrors.subLabel',
+                  'Will leave connections all unchanged, but clear the saved error messages.'
+                )}
                 icon="broom-wide"
                 onClick={() => emit('service/clearErrors')}
               />
               <ListItemSetting
-                label="Disable deep link handling"
-                subLabel="You can disable deep link handling to fix a bug in Linux where the desktop app is set to open html file types."
+                label={t('options.disableDeepLinks.label', 'Disable deep link handling')}
+                subLabel={t(
+                  'options.disableDeepLinks.subLabel',
+                  'You can disable deep link handling to fix a bug in Linux where the desktop app is set to open html file types.'
+                )}
                 icon={preferences.disableDeepLinks ? 'link-slash' : 'link'}
                 toggle={!!preferences.disableDeepLinks}
                 onClick={() => emit('preferences', { ...preferences, disableDeepLinks: !preferences.disableDeepLinks })}
                 confirm
                 confirmProps={{
-                  title: 'Restart required',
-                  children:
-                    'Please restart the desktop application for changes to take affect. You may also have to reset your default file handler on Linux.',
+                  title: t('options.disableDeepLinks.confirmTitle', 'Restart required'),
+                  children: t(
+                    'options.disableDeepLinks.confirm',
+                    'Please restart the desktop application for changes to take affect. You may also have to reset your default file handler on Linux.'
+                  ),
                 }}
               />
               <SettingsDisableNetworkItem />
               <ListItemSetting
                 confirm
-                label={installing ? 'Installing...' : 'Re-install system agent'}
-                subLabel={`Version ${cliVersion}`}
+                label={
+                  installing
+                    ? t('options.reinstallAgent.installing', 'Installing...')
+                    : t('options.reinstallAgent.label', 'Re-install system agent')
+                }
+                subLabel={t('options.reinstallAgent.version', { version: cliVersion, defaultValue: 'Version {{version}}' })}
                 disabled={installing}
                 icon="terminal"
                 onClick={() => binaries.install()}
                 confirmProps={{
-                  title: 'Are you sure?',
-                  children: 'This will stop and attempt to re-install the system agent.',
+                  title: t('common.areYouSure', 'Are you sure?'),
+                  children: t('options.reinstallAgent.confirm', 'This will stop and attempt to re-install the system agent.'),
                 }}
               />
               {os !== 'windows' && (
                 <ListItemSetting
                   confirm
-                  label="Uninstall"
+                  label={t('options.uninstall.label', 'Uninstall')}
                   disabled={notOwner}
-                  subLabel={
+                  subLabel={t(
+                    'options.uninstall.subLabel',
                     'De-register this device, completely remove all saved data, and uninstall the system agent and command line tools. Do this before removing the application from your system. Can only be done by the device owner.'
-                  }
+                  )}
                   icon="trash"
                   confirmProps={{
-                    title: 'Are you sure?',
-                    children: 'You will remove this system as a host, your connections and command line utilities.',
+                    title: t('common.areYouSure', 'Are you sure?'),
+                    children: t(
+                      'options.uninstall.confirm',
+                      'You will remove this system as a host, your connections and command line utilities.'
+                    ),
                   }}
                   onClick={() => {
                     emit('uninstall')
@@ -173,8 +204,11 @@ export const OptionsPage: React.FC = () => {
                 />
               )}
               <ListItemSetting
-                label="Show support files"
-                subLabel="Will show the folders that contain the application logs and config file."
+                label={t('options.showSupportFiles.label', 'Show support files')}
+                subLabel={t(
+                  'options.showSupportFiles.subLabel',
+                  'Will show the folders that contain the application logs and config file.'
+                )}
                 icon="folder"
                 onClick={() => emit('showFolder', 'logs')}
               />

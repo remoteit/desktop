@@ -14,7 +14,10 @@ export default {
   input: ['src/**/*.{ts,tsx}'],
   output: 'src/i18n/locales/$LOCALE/$NAMESPACE.json',
   sort: true,
-  keepRemoved: false,
+  // Never auto-prune: some keys are built dynamically (e.g. cognito error keys)
+  // and the parser can't see them statically. `npm run i18n:check` reports dead
+  // keys so they can be removed deliberately.
+  keepRemoved: true,
   // English keeps the inline default text; other locales stay empty until translated.
   defaultValue: (locale, _ns, _key, value) => (locale === 'en' ? value?.usageContext?.defaultValue ?? '' : ''),
   createOldCatalogs: false,

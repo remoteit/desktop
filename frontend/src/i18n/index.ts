@@ -50,6 +50,9 @@ i18n
     debug: false,
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
+    // An untranslated (empty-string) value must fall back to English, not render
+    // blank — catalogs are seeded incrementally, so empties are expected.
+    returnEmptyString: false,
     partialBundledLanguages: true,
     resources: {
       en: { app: enApp, notices: enNotices, cognito: enCognito },
