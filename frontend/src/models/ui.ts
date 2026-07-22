@@ -3,6 +3,7 @@ import { emit } from '../services/Controller'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { RootModel } from '.'
 import { isDarkMode } from '../styling/theme'
+import i18n, { resolveLanguage, LanguageMode } from '../i18n'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../constants'
@@ -19,6 +20,7 @@ const SAVED_ACROSS_LOGOUT = [
   'poppedBubbles',
   'expireBubbles',
   'themeMode',
+  'language',
   'accordion',
   'drawerMenu',
   'drawerAccordion',
@@ -39,6 +41,7 @@ const SAVED_ACROSS_LOGOUT = [
 export type UIState = {
   themeMode: 'light' | 'dark' | 'system'
   themeDark: boolean
+  language: LanguageMode
   testUI?: 'ON' | 'HIGHLIGHT'
   apis: {
     switchApi?: IPreferences['switchApi']
@@ -117,6 +120,7 @@ export type UIState = {
 export const defaultState: UIState = {
   themeMode: 'system',
   themeDark: isDarkMode(),
+  language: 'system',
   testUI: undefined,
   apis: {},
   layout: {
@@ -238,6 +242,7 @@ export default createModel<RootModel>()({
       states = migrateColumnStates(states)
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
+      dispatch.ui.setLanguage(states.language)
     },
     async setupUpdated(count: number, state) {
       if (count !== state.ui.setupServicesCount) {
@@ -251,6 +256,17 @@ export default createModel<RootModel>()({
       dispatch.ui.setPersistent({ themeMode })
       dispatch.ui.set({ themeDark })
       if (browser.isAndroid) StatusBar.setStyle({ style: themeDark ? Style.Dark : Style.Light })
+    },
+    async setLanguage(language: UIState['language'] | void, state) {
+      language = language || state.ui.language
+      const resolved = resolveLanguage(language)
+      dispatch.ui.setPersistent({ language })
+      if (i18n.resolvedLanguage !== resolved) i18n.changeLanguage(resolved)
+      // Sync the resolved code to the Electron main process (tray/menu/dialogs).
+      if (browser.isElectron) {
+        const { preferences } = state.backend
+        if (preferences.language !== resolved) emit('preferences', { ...preferences, language: resolved })
+      }
     },
     async resizeColumn(params: { id: string; width: number }, state) {
       const columnWidths = { ...state.ui.columnWidths, [params.id]: params.width }
