@@ -7,17 +7,38 @@
 // Staging/prod: set VITE_AGENT_URL to the deployed agent service domain.
 export const AGENT_URL = import.meta.env.VITE_AGENT_URL || '/agent'
 
-// Hydra access token for the agent service (AUTH_MODE=hydra). Stage A: the
-// token is pasted in (from `node scripts/hydra-login.mjs token` in the
-// ai-agent repo); the in-app PKCE flow replaces this as the writer later.
-// localStorage matches where Amplify keeps the Cognito session today.
+// Hydra credentials for the agent service (AUTH_MODE=hydra), written by the
+// in-app sign-in flow (services/hydra.ts) — or a token pasted from the
+// ai-agent dev harness as a fallback. localStorage matches where Amplify
+// keeps the Cognito session today.
 const AGENT_TOKEN_KEY = 'agentToken'
+const AGENT_SESSION_KEY = 'agentSession'
+
+export type AgentSession = {
+  refresh_token: string
+  expires_at: number
+  client_id: string
+}
 
 export const getAgentToken = (): string | null => window.localStorage.getItem(AGENT_TOKEN_KEY)
 
 export function setAgentToken(token: string | null): void {
   if (token?.trim()) window.localStorage.setItem(AGENT_TOKEN_KEY, token.trim().replace(/^Bearer\s+/i, ''))
   else window.localStorage.removeItem(AGENT_TOKEN_KEY)
+}
+
+export function getAgentSession(): AgentSession | null {
+  try {
+    const raw = window.localStorage.getItem(AGENT_SESSION_KEY)
+    return raw ? (JSON.parse(raw) as AgentSession) : null
+  } catch {
+    return null
+  }
+}
+
+export function setAgentSession(session: AgentSession | null): void {
+  if (session) window.localStorage.setItem(AGENT_SESSION_KEY, JSON.stringify(session))
+  else window.localStorage.removeItem(AGENT_SESSION_KEY)
 }
 
 /* The agent rejected our credential (401 reauth_required) — sign in again */

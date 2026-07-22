@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, TextField, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { State, Dispatch } from '../../store'
 import { CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_EXPANDED } from '../../constants'
 import { IconButton } from '../../buttons/IconButton'
@@ -13,7 +13,12 @@ export const ChatPanel: React.FC = () => {
   const chat = useSelector((state: State) => state.chat)
   const singlePanel = useSelector((state: State) => state.ui.layout.singlePanel)
   const dispatch = useDispatch<Dispatch>()
-  const [tokenDraft, setTokenDraft] = useState('')
+
+  // Completes a Hydra sign-in redirect if this page load carries ?code —
+  // runs on mount regardless of whether the panel is open
+  useEffect(() => {
+    dispatch.chat.handleSignInCallback()
+  }, [])
 
   useEffect(() => {
     if (chat.open) {
@@ -66,27 +71,17 @@ export const ChatPanel: React.FC = () => {
       )}
       {chat.health === 'unauthorized' && (
         <Notice severity="warning" gutterTop>
-          {/* Stage A: paste a token from the ai-agent dev harness
-              (`node scripts/hydra-login.mjs token`). Replaced by the in-app
-              sign-in flow in a later stage. */}
           <>
-            Agent sign-in required.
-            <TextField
+            The AI agent needs its own sign-in to act on your behalf.
+            <Button
               fullWidth
               size="small"
-              type="password"
-              variant="filled"
-              label="Paste an agent access token"
-              value={tokenDraft}
-              onChange={event => setTokenDraft(event.target.value)}
-              onKeyDown={event => {
-                if (event.key === 'Enter' && tokenDraft.trim()) {
-                  dispatch.chat.setToken(tokenDraft)
-                  setTokenDraft('')
-                }
-              }}
+              variant="contained"
+              onClick={() => dispatch.chat.signIn()}
               sx={{ marginTop: 1 }}
-            />
+            >
+              Sign in with remote.it
+            </Button>
           </>
         </Notice>
       )}

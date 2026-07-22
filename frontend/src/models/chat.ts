@@ -10,6 +10,7 @@ import {
   AgentHealth,
   AgentMessageParam,
 } from '../services/agent'
+import { startAgentSignIn, handleAgentSignInCallback, ensureFreshAgentToken } from '../services/hydra'
 
 export type ChatToolCall = {
   id: string
@@ -114,6 +115,7 @@ export default createModel<RootModel>()({
       dispatch.chat.set({ conversationId, streaming: true, error: null })
       abortController = new AbortController()
       try {
+        await ensureFreshAgentToken()
         await streamChat({
           conversationId,
           messages,
@@ -134,6 +136,7 @@ export default createModel<RootModel>()({
       const pending = state.chat.pendingConfirmation
       if (!pending) return
       try {
+        await ensureFreshAgentToken()
         await confirmTool({
           conversationId: state.chat.conversationId,
           toolUseId: pending.toolUseId,
@@ -152,10 +155,28 @@ export default createModel<RootModel>()({
       dispatch.chat.set({ streaming: false, pendingConfirmation: null })
     },
     async checkHealth() {
+      await ensureFreshAgentToken()
       dispatch.chat.set({ health: await agentHealth() })
     },
-    // Stage A: token pasted from the ai-agent dev harness. The in-app Hydra
-    // PKCE flow becomes the writer in a later stage; readers are unchanged.
+    /* Full-page redirect to the Hydra login (registers a client first if
+       needed); handleSignInCallback picks up the return after reload */
+    async signIn() {
+      try {
+        await startAgentSignIn()
+      } catch (error) {
+        dispatch.chat.set({ error: (error as Error).message })
+      }
+    },
+    /* Complete a sign-in redirect if this page load carries one */
+    async handleSignInCallback() {
+      const result = await handleAgentSignInCallback()
+      if (!result) return
+      if (result.ok) dispatch.chat.set({ error: null, open: true })
+      else dispatch.chat.set({ error: `Agent sign-in failed — ${result.error}`, open: true })
+      await dispatch.chat.checkHealth()
+    },
+    // Dev fallback: token pasted from the ai-agent harness (devtools:
+    // localStorage.agentToken). The sign-in flow is the normal writer.
     async setToken(token: string) {
       setAgentToken(token)
       dispatch.chat.set({ error: null })
