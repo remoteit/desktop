@@ -7,6 +7,33 @@
 // Staging/prod: set VITE_AGENT_URL to the deployed agent service domain.
 export const AGENT_URL = import.meta.env.VITE_AGENT_URL || '/agent'
 
+// Hydra access token for the agent service (AUTH_MODE=hydra). Stage A: the
+// token is pasted in (from `node scripts/hydra-login.mjs token` in the
+// ai-agent repo); the in-app PKCE flow replaces this as the writer later.
+// localStorage matches where Amplify keeps the Cognito session today.
+const AGENT_TOKEN_KEY = 'agentToken'
+
+export const getAgentToken = (): string | null => window.localStorage.getItem(AGENT_TOKEN_KEY)
+
+export function setAgentToken(token: string | null): void {
+  if (token?.trim()) window.localStorage.setItem(AGENT_TOKEN_KEY, token.trim().replace(/^Bearer\s+/i, ''))
+  else window.localStorage.removeItem(AGENT_TOKEN_KEY)
+}
+
+/* The agent rejected our credential (401 reauth_required) — sign in again */
+export class AgentAuthError extends Error {
+  constructor() {
+    super('Agent authentication required')
+  }
+}
+
+function agentHeaders(json = true): Record<string, string> {
+  const headers: Record<string, string> = json ? { 'Content-Type': 'application/json' } : {}
+  const token = getAgentToken()
+  if (token) headers.Authorization = `Bearer ${token}`
+  return headers
+}
+
 export type AgentEvent =
   | { type: 'text_delta'; text: string }
   | { type: 'tool_call_start'; id: string; name: string; input: Record<string, unknown> }
@@ -27,10 +54,11 @@ export async function streamChat(options: {
   const { conversationId, messages, signal, onEvent } = options
   const response = await fetch(`${AGENT_URL}/api/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: agentHeaders(),
     body: JSON.stringify({ conversationId, messages }),
     signal,
   })
+  if (response.status === 401) throw new AgentAuthError()
   if (!response.ok || !response.body) throw new Error(`Agent request failed (${response.status})`)
 
   const reader = response.body.getReader()
@@ -63,19 +91,23 @@ export async function confirmTool(options: {
 }): Promise<void> {
   const response = await fetch(`${AGENT_URL}/api/chat/confirm`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: agentHeaders(),
     body: JSON.stringify(options),
   })
+  if (response.status === 401) throw new AgentAuthError()
   if (!response.ok) throw new Error(`Confirm failed (${response.status})`)
 }
 
-export async function agentHealth(): Promise<boolean> {
+export type AgentHealth = 'ok' | 'unauthorized' | 'unreachable'
+
+export async function agentHealth(): Promise<AgentHealth> {
   try {
-    const response = await fetch(`${AGENT_URL}/api/health`)
-    if (!response.ok) return false
+    const response = await fetch(`${AGENT_URL}/api/health`, { headers: agentHeaders(false) })
+    if (response.status === 401) return 'unauthorized'
+    if (!response.ok) return 'unreachable'
     const body = (await response.json()) as { ok?: boolean }
-    return !!body.ok
+    return body.ok ? 'ok' : 'unreachable'
   } catch {
-    return false
+    return 'unreachable'
   }
 }

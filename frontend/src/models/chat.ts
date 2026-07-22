@@ -1,6 +1,15 @@
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import { streamChat, confirmTool, agentHealth, AgentEvent, AgentMessageParam } from '../services/agent'
+import {
+  streamChat,
+  confirmTool,
+  agentHealth,
+  setAgentToken,
+  AgentAuthError,
+  AgentEvent,
+  AgentHealth,
+  AgentMessageParam,
+} from '../services/agent'
 
 export type ChatToolCall = {
   id: string
@@ -22,7 +31,7 @@ export type IChatState = {
   streaming: boolean
   pendingConfirmation: { toolUseId: string; toolName: string; input: Record<string, unknown> } | null
   error: string | null
-  health: 'unknown' | 'ok' | 'unreachable'
+  health: 'unknown' | AgentHealth
 }
 
 export const defaultChatState: IChatState = {
@@ -71,7 +80,14 @@ function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
       state.pendingConfirmation = null
       break
     case 'error':
-      state.error = event.message
+      // The backend prefixes auth failures so the client knows a retry is
+      // pointless until the token is refreshed (e.g. it expired mid-turn).
+      if (event.message.startsWith('reauth_required')) {
+        state.error = 'Agent session expired — sign in again to continue.'
+        state.health = 'unauthorized'
+      } else {
+        state.error = event.message
+      }
       state.streaming = false
       state.pendingConfirmation = null
       if (assistant) assistant.interrupted = true
@@ -105,7 +121,9 @@ export default createModel<RootModel>()({
           onEvent: event => dispatch.chat.applyEvent(event),
         })
       } catch (error) {
-        if ((error as Error).name !== 'AbortError')
+        if (error instanceof AgentAuthError)
+          dispatch.chat.set({ error: 'Agent authentication required — sign in to continue.', health: 'unauthorized' })
+        else if ((error as Error).name !== 'AbortError')
           dispatch.chat.applyEvent({ type: 'error', message: (error as Error).message })
       } finally {
         abortController = null
@@ -123,7 +141,9 @@ export default createModel<RootModel>()({
         })
         dispatch.chat.set({ pendingConfirmation: null })
       } catch (error) {
-        dispatch.chat.set({ error: (error as Error).message })
+        if (error instanceof AgentAuthError)
+          dispatch.chat.set({ error: 'Agent authentication required — sign in to continue.', health: 'unauthorized' })
+        else dispatch.chat.set({ error: (error as Error).message })
       }
     },
     async stop() {
@@ -132,7 +152,14 @@ export default createModel<RootModel>()({
       dispatch.chat.set({ streaming: false, pendingConfirmation: null })
     },
     async checkHealth() {
-      dispatch.chat.set({ health: (await agentHealth()) ? 'ok' : 'unreachable' })
+      dispatch.chat.set({ health: await agentHealth() })
+    },
+    // Stage A: token pasted from the ai-agent dev harness. The in-app Hydra
+    // PKCE flow becomes the writer in a later stage; readers are unchanged.
+    async setToken(token: string) {
+      setAgentToken(token)
+      dispatch.chat.set({ error: null })
+      await dispatch.chat.checkHealth()
     },
   }),
   reducers: {
