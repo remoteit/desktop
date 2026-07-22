@@ -1,8 +1,10 @@
 import React from 'react'
 import { LANGUAGES } from '../constants'
+import { SUPPORTED_LANGUAGES } from '../i18n'
 import { Dispatch, State } from '../store'
 import { isPersonal } from '../models/plans'
 import { Typography, List } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { DeleteAccountSection } from '../components/DeleteAccountSection'
 import { SelectSetting } from '../components/SelectSetting'
@@ -23,6 +25,7 @@ export const ProfilePage: React.FC = () => {
     deleteAccount: state.ui.deleteAccount,
   }))
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
 
   if (!user) return null
 
@@ -60,6 +63,16 @@ export const ProfilePage: React.FC = () => {
           label="Member since"
           displayValue={<Timestamp date={user.created} />}
           displayOnly
+        />
+        <SelectSetting
+          icon="globe"
+          label={t('options.language.label', 'Language')}
+          value={user?.attributes?.language || 'system'}
+          values={[
+            { key: 'system', name: t('options.language.system', 'Same as system') },
+            ...SUPPORTED_LANGUAGES.map(l => ({ key: l.value, name: l.label })),
+          ]}
+          onChange={value => dispatch.user.setAppLanguage(value)}
         />
         <SelectSetting
           icon="language"

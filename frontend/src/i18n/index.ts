@@ -53,6 +53,8 @@ i18n
     // An untranslated (empty-string) value must fall back to English, not render
     // blank — catalogs are seeded incrementally, so empties are expected.
     returnEmptyString: false,
+    // t() always returns a string (never null), so results slot into string props.
+    returnNull: false,
     partialBundledLanguages: true,
     resources: {
       en: { app: enApp, notices: enNotices, cognito: enCognito },

@@ -4,7 +4,6 @@ import { emit } from '../services/Controller'
 import { State, Dispatch } from '../store'
 import { List, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { SUPPORTED_LANGUAGES } from '../i18n'
 import { useSelector, useDispatch } from 'react-redux'
 import { SettingsDisableNetworkItem } from '../components/SettingsDisableNetworkItem'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
@@ -28,7 +27,6 @@ export const OptionsPage: React.FC = () => {
     (state: State) => !!state.backend.thisId && !selectOwnDevices(state).find(d => d.thisDevice)
   )
   const themeMode = useSelector((state: State) => state.ui.themeMode)
-  const language = useSelector((state: State) => state.ui.language)
   const remoteUI = useSelector((state: State) => isRemoteUI(state))
   const { t } = useTranslation()
 
@@ -55,16 +53,6 @@ export const OptionsPage: React.FC = () => {
             { label: t('options.theme.dark', 'Dark'), value: 'dark' },
           ]}
           onChange={e => ui.setTheme(e.target.value as State['ui']['themeMode'])}
-        />
-        <ListItemSelect
-          label={t('options.language.label', 'Language')}
-          icon="language"
-          value={language}
-          options={[
-            { label: t('options.language.system', 'Same as system'), value: 'system' },
-            ...SUPPORTED_LANGUAGES,
-          ]}
-          onChange={e => ui.setLanguage(e.target.value as State['ui']['language'])}
         />
         {browser.isRemote && (
           <ListItemSetting

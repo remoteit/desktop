@@ -9,5 +9,7 @@ import 'i18next'
 declare module 'i18next' {
   interface CustomTypeOptions {
     defaultNS: 'app'
+    // Mirror the runtime init so t() is typed as always returning a string.
+    returnNull: false
   }
 }
