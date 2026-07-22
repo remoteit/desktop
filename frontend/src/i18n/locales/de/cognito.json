@@ -1,1 +1,118 @@
-{}
+{
+  "app-store-banner": {
+    "connect": "Verbinden Sie sich von überall mit unserer mobilen App.",
+    "unknown-os": "Jetzt verfügbar für iOS und Android."
+  },
+  "global": {
+    "action": {
+      "continue": "Weiter",
+      "continue-signup": "Weiter zur Anmeldung"
+    },
+    "actions": {
+      "cancel": "Abbrechen",
+      "signing-in": "Anmeldung läuft...",
+      "submit": "Absenden"
+    },
+    "user": {
+      "email": "E-Mail",
+      "new-password-confirm-placeholder": "Geben Sie Ihr neues Passwort erneut ein",
+      "new-password-placeholder": "Geben Sie Ihr neues Passwort ein",
+      "password": "Passwort",
+      "password-confirm": "Passwort bestätigen",
+      "password-confirm-placeholder": "Geben Sie Ihr Passwort erneut ein",
+      "password-current": "Aktuelles Passwort",
+      "password-current-placeholder": "Geben Sie Ihr aktuelles Passwort ein",
+      "password-placeholder": "Geben Sie ein Passwort ein",
+      "username": "E-Mail oder Benutzername"
+    }
+  },
+  "pages": {
+    "account-recovery": {
+      "account-recovery-code": "Wenn Sie nicht auf Ihr Mobilgerät zugreifen können, um den\n            Zwei-Faktor-Bestätigungscode zu erhalten, können Sie einen Bestätigungscode verwenden,\n            der an Ihre E-Mail-Adresse gesendet wird, sowie den Wiederherstellungscode,\n            den Sie bei der Aktivierung der Zwei-Faktor-Authentifizierung erhalten haben.",
+      "description": "Wir haben einen Anmeldecode an Ihre E-Mail-Adresse gesendet. Geben Sie unten sowohl den Anmeldecode als auch den Wiederherstellungscode ein",
+      "email-recovery-code-placeholder": "Anmeldecode eingeben",
+      "lost-recovery-code": "Wenn Sie weder auf Ihr Mobilgerät noch auf Ihren Wiederherstellungscode zugreifen können, können Sie eine Zurücksetzung Ihrer Authentifizierungseinstellungen beantragen. Aus Sicherheitsgründen kann dies 1–3 Werktage dauern.",
+      "lost-recovery-code-button": "Kontozurücksetzung anfordern",
+      "lost-recovery-code-heading": "Mobilgerät und Wiederherstellungscodes verloren?",
+      "recovery-code-placeholder": "Wiederherstellungscode eingeben",
+      "start-recovery": "Wiederherstellung starten",
+      "title": "Zwei-Faktor-Kontowiederherstellung"
+    },
+    "auth-mfa-totp": {
+      "invalid-code": "Ungültiger Code",
+      "title": "Zwei-Faktor-Authentifizierung"
+    },
+    "auth-mfa": {
+      "errors": {
+        "BACKUP_CODE_INVALID": "Ungültiger Sicherungscode",
+        "EMAIL_CODE_INVALID": "Ungültiger E-Mail-Code"
+      },
+      "having-problems": "Haben Sie Probleme?",
+      "mfa-verification-sent": "Ein Bestätigungscode wurde an Ihr Mobilgerät{{number}} gesendet. Dieser Code ist nur 3 Minuten lang gültig.",
+      "no-device-access": "Kein Zugriff auf Ihr Zwei-Faktor-Gerät",
+      "title": "SMS-Zwei-Faktor-Authentifizierung",
+      "totp-mfa-verification": "Geben Sie das von Ihrer Authentifizierungs-App generierte Einmalpasswort ein.",
+      "verification-code-placeholder": "Bestätigungscode eingeben"
+    },
+    "auth": {
+      "create-account": {
+        "button-label": "Konto erstellen",
+        "button-loading": "Wird erstellt..."
+      }
+    },
+    "forgot-password-verify": {
+      "password-error": {
+        "missing-lower": "Das Passwort muss einen Kleinbuchstaben enthalten.",
+        "missing-number": "Das Passwort muss eine Zahl enthalten.",
+        "missing-special-char": "Das Passwort muss mindestens eines der folgenden Zeichen enthalten ",
+        "missing-upper": "Das Passwort muss einen Großbuchstaben enthalten.",
+        "passwords-do-not-match": "Die Passwörter stimmen nicht überein",
+        "too-long": "Das Passwort darf höchstens {{max_length}} Zeichen lang sein.",
+        "too-short": "Das Passwort muss mindestens {{min_length}} Zeichen lang sein."
+      },
+      "password-rules": "Passwörter müssen {{min_length}}–{{max_length}} Zeichen lang sein und eine Zahl, einen Groß- und einen Kleinbuchstaben sowie mindestens eines der folgenden Zeichen enthalten ",
+      "password-rules-reduced": "Passwörter müssen {{min_length}}–{{max_length}} Zeichen lang sein.",
+      "password-strength-html": "Passwortstärke: {{strength}}",
+      "password-strength-score": ["Sehr schwach", "Schwach", "Ausreichend", "Gut", "Stark"],
+      "success-message": "Ihr Passwort wurde zurückgesetzt. Bitte melden Sie sich an",
+      "title": "Konto bestätigen",
+      "verification-link-message": "Ein Bestätigungslink wurde an Sie per E-Mail gesendet. Klicken Sie auf den Link und kehren Sie dann hierher zurück. Klicken Sie anschließend auf „Weiter“, um sich anzumelden."
+    },
+    "forgot-password": {
+      "email": "E-Mail-Adresse",
+      "reset-password": "Passwort zurücksetzen",
+      "title": "Passwort vergessen"
+    },
+    "password-reset": {
+      "cognito-reset-password-required": "Aus Sicherheitsgründen müssen Benutzer ihr Passwort regelmäßig ändern. Ein Bestätigungscode wurde an {{email}} gesendet. Bitte prüfen Sie Ihre E-Mails, geben Sie den Bestätigungscode ein und aktualisieren Sie Ihr Passwort.",
+      "signout-all-text": "Aktuelle Sitzungen bleiben aktiv. Falls Sie von einem Sicherheitsvorfall betroffen waren, empfehlen wir, sich überall abzumelden. Um sich überall abzumelden, melden Sie sich bei app.remote.it an und rufen Sie dann die Konten-Seite auf, um sich überall abzumelden.",
+      "update-button": "Passwort aktualisieren",
+      "verification-code": "Bestätigungscode",
+      "verification-code-message": "Ein Bestätigungscode wurde an {{email}} gesendet. Bitte prüfen Sie Ihre E-Mails, geben Sie den Bestätigungscode ein und aktualisieren Sie Ihr Passwort."
+    },
+    "sign-in": {
+      "create-account": "Noch kein Konto?",
+      "forgot-password": "Passwort vergessen?",
+      "or": "ODER",
+      "saml-link": "SAML-Anmeldung",
+      "sign-in": "Anmelden",
+      "sign-up-link": "Kostenlos registrieren!",
+      "signing-in": "Anmeldung läuft...",
+      "user-password-link": "Anmeldung mit Benutzername/Passwort"
+    },
+    "sign-up": {
+      "title": "Registrieren"
+    },
+    "update-password": {
+      "reset-password": "Passwort aktualisieren",
+      "title": "Passwort aktualisieren"
+    },
+    "verify-account": {
+      "sending": "Wird gesendet...",
+      "resent-notice": "Bestätigungs-E-Mail erneut gesendet.",
+      "check-spam": "Überprüfen Sie Ihren Spam-Ordner",
+      "resend-confirmation": "Kontobestätigung erneut senden.",
+      "verification-received-message": "Keinen Bestätigungslink erhalten?"
+    }
+  }
+}

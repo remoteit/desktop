@@ -1,1 +1,118 @@
-{}
+{
+  "app-store-banner": {
+    "connect": "Conéctate desde cualquier lugar con nuestra aplicación móvil.",
+    "unknown-os": "Ya disponible para iOS y Android."
+  },
+  "global": {
+    "action": {
+      "continue": "Continuar",
+      "continue-signup": "Continuar para iniciar sesión"
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "signing-in": "Iniciando sesión...",
+      "submit": "Enviar"
+    },
+    "user": {
+      "email": "Correo electrónico",
+      "new-password-confirm-placeholder": "Vuelve a introducir tu nueva contraseña",
+      "new-password-placeholder": "Introduce tu nueva contraseña",
+      "password": "Contraseña",
+      "password-confirm": "Confirmar contraseña",
+      "password-confirm-placeholder": "Vuelve a introducir tu contraseña",
+      "password-current": "Contraseña actual",
+      "password-current-placeholder": "Introduce tu contraseña actual",
+      "password-placeholder": "Introduce una contraseña",
+      "username": "Correo electrónico o nombre de usuario"
+    }
+  },
+  "pages": {
+    "account-recovery": {
+      "account-recovery-code": "Si no puedes acceder a tu dispositivo móvil para recibir el\n            código de verificación de dos factores, puedes usar un código de verificación\n            que se enviará a tu correo electrónico, junto con el código de recuperación\n            proporcionado al activar la autenticación de dos factores.",
+      "description": "Te enviamos un código de inicio de sesión a tu correo electrónico. Introduce a continuación tanto el código de inicio de sesión como el código de recuperación",
+      "email-recovery-code-placeholder": "Introduce el código de inicio de sesión",
+      "lost-recovery-code": "Si no puedes acceder a tu dispositivo móvil ni a tu código de recuperación, puedes solicitar un restablecimiento de tu configuración de autenticación. Por motivos de seguridad, esto puede tardar de 1 a 3 días hábiles.",
+      "lost-recovery-code-button": "Solicitar restablecimiento de cuenta",
+      "lost-recovery-code-heading": "¿Perdiste tu dispositivo móvil y tus códigos de recuperación?",
+      "recovery-code-placeholder": "Introduce el código de recuperación",
+      "start-recovery": "Iniciar recuperación",
+      "title": "Recuperación de cuenta con doble factor"
+    },
+    "auth-mfa-totp": {
+      "invalid-code": "Código no válido",
+      "title": "Autenticación de dos factores"
+    },
+    "auth-mfa": {
+      "errors": {
+        "BACKUP_CODE_INVALID": "Código de respaldo no válido",
+        "EMAIL_CODE_INVALID": "Código de correo electrónico no válido"
+      },
+      "having-problems": "¿Tienes problemas?",
+      "mfa-verification-sent": "Se ha enviado un código de verificación a tu dispositivo móvil{{number}}. Este código solo es válido durante 3 minutos.",
+      "no-device-access": "No puedo acceder a mi dispositivo de doble factor",
+      "title": "Autenticación de dos factores por SMS",
+      "totp-mfa-verification": "Introduce la contraseña de un solo uso generada por tu aplicación de autenticación.",
+      "verification-code-placeholder": "Introduce el código de verificación"
+    },
+    "auth": {
+      "create-account": {
+        "button-label": "Crear cuenta",
+        "button-loading": "Creando..."
+      }
+    },
+    "forgot-password-verify": {
+      "password-error": {
+        "missing-lower": "La contraseña debe contener una letra minúscula.",
+        "missing-number": "La contraseña debe contener un número.",
+        "missing-special-char": "La contraseña debe contener al menos uno de los siguientes caracteres ",
+        "missing-upper": "La contraseña debe contener una letra mayúscula.",
+        "passwords-do-not-match": "Las contraseñas no coinciden",
+        "too-long": "La contraseña no debe tener más de {{max_length}} caracteres.",
+        "too-short": "La contraseña debe tener al menos {{min_length}} caracteres."
+      },
+      "password-rules": "Las contraseñas deben tener entre {{min_length}} y {{max_length}} caracteres, contener un número, una letra mayúscula y una minúscula, y al menos uno de los siguientes caracteres ",
+      "password-rules-reduced": "Las contraseñas deben tener entre {{min_length}} y {{max_length}} caracteres.",
+      "password-strength-html": "Seguridad de la contraseña: {{strength}}",
+      "password-strength-score": ["Muy débil", "Débil", "Aceptable", "Buena", "Fuerte"],
+      "success-message": "Tu contraseña se ha restablecido; inicia sesión",
+      "title": "Verifica tu cuenta",
+      "verification-link-message": "Te hemos enviado un enlace de verificación por correo electrónico. Haz clic en el enlace y vuelve aquí. Luego pulsa continuar para iniciar sesión."
+    },
+    "forgot-password": {
+      "email": "Correo electrónico",
+      "reset-password": "Restablecer contraseña",
+      "title": "Olvidé mi contraseña"
+    },
+    "password-reset": {
+      "cognito-reset-password-required": "Por motivos de seguridad, pedimos a los usuarios que cambien su contraseña periódicamente. Se ha enviado un código de verificación a {{email}}; revisa tu correo, introduce el código de verificación y actualiza tu contraseña.",
+      "signout-all-text": "Las sesiones actuales permanecerán activas. Si has sufrido una brecha de seguridad, se recomienda cerrar sesión en todos los dispositivos. Para cerrar sesión en todos los dispositivos, inicia sesión en app.remote.it y luego ve a la página de cuentas para cerrar sesión en todas partes.",
+      "update-button": "Actualizar contraseña",
+      "verification-code": "Código de verificación",
+      "verification-code-message": "Se ha enviado un código de verificación a {{email}}; revisa tu correo, introduce el código de verificación y actualiza tu contraseña."
+    },
+    "sign-in": {
+      "create-account": "¿Aún no tienes una cuenta?",
+      "forgot-password": "¿Olvidaste tu contraseña?",
+      "or": "O",
+      "saml-link": "Inicio de sesión SAML",
+      "sign-in": "Iniciar sesión",
+      "sign-up-link": "¡Regístrate gratis!",
+      "signing-in": "Iniciando sesión...",
+      "user-password-link": "Inicio de sesión con usuario/contraseña"
+    },
+    "sign-up": {
+      "title": "Registrarse"
+    },
+    "update-password": {
+      "reset-password": "Actualizar contraseña",
+      "title": "Actualizar contraseña"
+    },
+    "verify-account": {
+      "sending": "Enviando...",
+      "resent-notice": "Se ha reenviado el correo de verificación.",
+      "check-spam": "Revisa tu carpeta de spam",
+      "resend-confirmation": "Reenviar confirmación de cuenta.",
+      "verification-received-message": "¿No recibiste tu enlace de verificación?"
+    }
+  }
+}
