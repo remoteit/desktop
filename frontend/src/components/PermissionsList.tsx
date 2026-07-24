@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { PERMISSION } from '../models/organization'
 import { ListItemSetting } from './ListItemSetting'
 
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export const PermissionsList: React.FC<Props> = ({ permissions, allowed, locked, disabled, onChange }) => {
+  const { t } = useTranslation()
   return (
     <>
       {permissions.map(p => {
@@ -22,8 +24,8 @@ export const PermissionsList: React.FC<Props> = ({ permissions, allowed, locked,
             toggle={toggle}
             disabled={disabled || PERMISSION[p].system || locked}
             icon={PERMISSION[p].icon}
-            label={PERMISSION[p].name}
-            subLabel={PERMISSION[p].description}
+            label={t(`permission.${p}.name`, PERMISSION[p].name)}
+            subLabel={t(`permission.${p}.description`, PERMISSION[p].description)}
             onClick={PERMISSION[p].system || locked ? undefined : () => onChange(toggle, permission)}
           />
         )

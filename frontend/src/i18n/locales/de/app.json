@@ -529,7 +529,51 @@
     "tags": "Tags",
     "targetPlatform": "Plattform",
     "unknown": "Unbekannt",
-    "version": "Daemon-Version"
+    "version": "Daemon-Version",
+    "body": "Text",
+    "categoryA": "Kategorie A",
+    "categoryB": "Kategorie B",
+    "categoryC": "Kategorie C",
+    "categoryD": "Kategorie D",
+    "categoryE": "Kategorie E",
+    "customerEmail": "E-Mail",
+    "customerPlan": "Plan",
+    "customerPrice": "Preis",
+    "customerQuantity": "Menge",
+    "customerReseller": "Vertreter",
+    "from": "Von",
+    "partnerActivated": "Aktiviert",
+    "partnerActive": "Aktiv",
+    "partnerDevicesTotal": "Geräte",
+    "partnerName": "Name",
+    "partnerOnline": "Online",
+    "productCreated": "Erstellt",
+    "productCreatedDetail": "Erstellt",
+    "productIdDetail": "Produkt-ID",
+    "productName": "Name",
+    "productPlatform": "Plattform",
+    "productPlatformDetail": "Plattform",
+    "productServiceIdDetail": "Dienst-ID",
+    "productServicePortDetail": "Port",
+    "productServices": "Dienste",
+    "productServicesDetail": "Dienste",
+    "productServiceStatusDetail": "Status",
+    "productServiceTypeDetail": "Diensttyp",
+    "productUpdated": "Aktualisiert",
+    "productUpdatedDetail": "Aktualisiert",
+    "scriptCreated": "Erstellt",
+    "scriptDescription": "Beschreibung",
+    "scriptName": "Skript",
+    "scriptUpdated": "Geändert",
+    "stage": "Phase",
+    "statusA": "Status A",
+    "statusB": "Status B",
+    "statusC": "Status C",
+    "statusD": "Status D",
+    "statusE": "Status E",
+    "title": "Titel",
+    "type": "Typ",
+    "until": "Bis"
   },
   "common": {
     "actionCannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
@@ -1133,6 +1177,34 @@
   "licensingPage": {
     "title": "Lizenz"
   },
+  "licensingSetting": {
+    "notSubscribed": "Nicht abonniert",
+    "plan": "Plan",
+    "renews": "Verlängert sich"
+  },
+  "limitSetting": {
+    "emailSupport": "E-Mail-Support verfügbar",
+    "evaluationPeriod": "Diensten wird ein Testzeitraum von {{period}} gewährt",
+    "forumSupport": "Nur Forum-Support",
+    "licensedDevices": "{{actual}} von {{value}} lizenzierten Geräten",
+    "logHistory": "Protokollverlauf ist für {{period}} verfügbar",
+    "nonCommercialDevices": "{{actual}} von {{value}} nicht-kommerziellen Geräten",
+    "noSplash": "Kein Startbildschirm auf dauerhaften Webseiten",
+    "overLimit_one": "Sie liegen {{over}} Gerät über Ihrem Gerätelimit von {{value}}",
+    "overLimit_other": "Sie liegen {{over}} Geräte über Ihrem Gerätelimit von {{value}}",
+    "overLimitNonCommercial_one": "Sie liegen {{over}} Gerät über Ihrem nicht-kommerziellen Gerätelimit von {{value}}",
+    "overLimitNonCommercial_other": "Sie liegen {{over}} Geräte über Ihrem nicht-kommerziellen Gerätelimit von {{value}}",
+    "rolesAvailable": "Benutzerdefinierte Rollen sind verfügbar",
+    "rolesUnavailable": "Benutzerdefinierte Rollen sind nicht verfügbar",
+    "samlAvailable": "SAML-Anmeldung ist verfügbar",
+    "samlUnavailable": "SAML-Anmeldung ist nicht verfügbar",
+    "servicesRegistered": "{{actual}} von {{value}} registrierten Diensten",
+    "splash": "Dauerhafte Webseiten zeigen einen Startbildschirm an",
+    "unlimitedDevices": "Unbegrenzte Geräte",
+    "unlimitedNonCommercial": "Unbegrenzte nicht-kommerzielle Geräte",
+    "unlimitedServices": "Unbegrenzte Dienste",
+    "userLicenses": "{{actual}} von {{value}} Benutzerlizenzen verwendet"
+  },
   "limitsSetting": {
     "licenseKey": "Lizenzschlüssel"
   },
@@ -1271,6 +1343,10 @@
     "manageRequired": "Sie müssen der Gerätebesitzer oder -verwalter sein, um die Netzwerke dieses Dienstes zu ändern.",
     "sharedRestricted": "Sie können die Netzwerke eines mit Ihnen geteilten Geräts nicht ändern.",
     "title": "Netzwerke"
+  },
+  "networkServicesList": {
+    "countOf": "{{shown}} von {{total}}",
+    "showMore": "Mehr anzeigen"
   },
   "networkSettings": {
     "nameLabel": "Netzwerkname"
@@ -2134,6 +2210,8 @@
     "graphLength": "Diagrammlänge",
     "graphType": "Diagrammtyp",
     "graphUnit": "Diagrammeinheit",
+    "lengthValue_one": "{{count}} {{unit}}",
+    "lengthValue_other": "{{count}} {{unit}}",
     "overLimit": " (Limit überschritten)"
   },
   "transferForm": {
@@ -2176,5 +2254,51 @@
   "viewAsBanner": {
     "exit": "Ansichtsmodus verlassen",
     "viewingAs": "Anzeige als: {{email}}"
+  },
+  "graphType": {
+    "AVAILABILITY": "Online %",
+    "CONNECT": "Verbindungsereignisse",
+    "CONNECT_DURATION": "Verbindungsdauer",
+    "DISCONNECT": "Trennungsereignisse",
+    "OFFLINE": "Offline-Ereignisse",
+    "ONLINE": "Online-Ereignisse",
+    "ONLINE_DURATION": "Online-Zeit",
+    "USAGE": "Verbunden %"
+  },
+  "graphUnit": {
+    "DAY": "Tag",
+    "HOUR": "Stunde",
+    "MONTH": "Monat",
+    "WEEK": "Woche"
+  },
+  "jobStatus": {
+    "CANCELLED": "Abgebrochen",
+    "FAILED": "Fehlgeschlagen",
+    "READY": "Bereit",
+    "RUNNING": "Läuft",
+    "SUCCESS": "Erfolgreich",
+    "WAITING": "Wartend"
+  },
+  "permission": {
+    "ADMIN": {
+      "description": "Organisations-Tags, Skripte, Mitglieder und Geräteregistrierungen verwalten. Protokolle anzeigen.",
+      "name": "Administrieren"
+    },
+    "CONNECT": {
+      "description": "Mit Gerätediensten verbinden",
+      "name": "Verbinden"
+    },
+    "MANAGE": {
+      "description": "Geräte und Netzwerke bearbeiten, löschen, übertragen und teilen",
+      "name": "Verwalten"
+    },
+    "SCRIPTING": {
+      "description": "Geräteskripte anzeigen und ausführen",
+      "name": "Skript"
+    },
+    "VIEW": {
+      "description": "Geräte und ihren aktuellen Status anzeigen",
+      "name": "Anzeigen"
+    }
   }
 }

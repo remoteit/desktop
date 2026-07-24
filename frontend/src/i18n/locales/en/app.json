@@ -478,6 +478,12 @@
   "columns": {
     "access": "Guests",
     "bind": "Bind Address",
+    "body": "Body",
+    "categoryA": "Category A",
+    "categoryB": "Category B",
+    "categoryC": "Category C",
+    "categoryD": "Category D",
+    "categoryE": "Category E",
     "city": "City",
     "configurable": "Configurable",
     "configurable_help": "Can be remotely configured",
@@ -485,10 +491,16 @@
     "connectionType": "Connection type",
     "country": "Country",
     "created": "Created date",
+    "customerEmail": "Email",
+    "customerPlan": "Plan",
+    "customerPrice": "Price",
+    "customerQuantity": "Quantity",
+    "customerReseller": "Rep",
     "deviceDescription": "Description",
     "deviceName": "Name",
     "duration": "Duration",
     "externalAddress": "External IP",
+    "from": "From",
     "hardwareId": "Hardware ID",
     "id": "Device ID",
     "initiatorPlatform": "Platform",
@@ -498,13 +510,36 @@
     "license": "License",
     "location": "Location",
     "owner": "Owner",
+    "partnerActivated": "Activated",
+    "partnerActive": "Active",
+    "partnerDevicesTotal": "Devices",
+    "partnerName": "Name",
+    "partnerOnline": "Online",
     "permissions": "Permissions",
     "presenceAddress": "Presence",
+    "productCreated": "Created",
+    "productCreatedDetail": "Created",
+    "productIdDetail": "Product ID",
+    "productName": "Name",
+    "productPlatform": "Platform",
+    "productPlatformDetail": "Platform",
+    "productServiceIdDetail": "Service ID",
+    "productServicePortDetail": "Port",
+    "productServices": "Services",
+    "productServicesDetail": "Services",
+    "productServiceStatusDetail": "Status",
+    "productServiceTypeDetail": "Service Type",
+    "productUpdated": "Updated",
+    "productUpdatedDetail": "Updated",
     "quality": "Stability",
     "qualitySmall": "Quality",
     "restore": "Restore",
     "restrict": "Local Security",
     "role": "Role",
+    "scriptCreated": "Created",
+    "scriptDescription": "Description",
+    "scriptName": "Script",
+    "scriptUpdated": "Modified",
     "serviceAccess": "Users",
     "serviceAction": "Action",
     "serviceCreated": "Service Created",
@@ -524,11 +559,20 @@
     "serviceStatus": "Status",
     "serviceType": "Service Type",
     "session": "Connection",
+    "stage": "Stage",
     "state": "State",
     "status": "Status",
+    "statusA": "Status A",
+    "statusB": "Status B",
+    "statusC": "Status C",
+    "statusD": "Status D",
+    "statusE": "Status E",
     "tags": "Tags",
     "targetPlatform": "Platform",
+    "title": "Title",
+    "type": "Type",
     "unknown": "Unknown",
+    "until": "Until",
     "version": "Daemon version"
   },
   "common": {
@@ -1003,6 +1047,22 @@
     "title": "Graphs",
     "updateToSeeMore": "Update to see more."
   },
+  "graphType": {
+    "AVAILABILITY": "Online %",
+    "CONNECT": "Connect events",
+    "CONNECT_DURATION": "Connected Time",
+    "DISCONNECT": "Disconnect events",
+    "OFFLINE": "Offline events",
+    "ONLINE": "Online events",
+    "ONLINE_DURATION": "Online Time",
+    "USAGE": "Connected %"
+  },
+  "graphUnit": {
+    "DAY": "Day",
+    "HOUR": "Hour",
+    "MONTH": "Month",
+    "WEEK": "Week"
+  },
   "guideStep": {
     "exitGuide": "Exit guide",
     "next": "next",
@@ -1076,6 +1136,14 @@
   "jobsPage": {
     "runScriptToStart": "Run a script to get started"
   },
+  "jobStatus": {
+    "CANCELLED": "Cancelled",
+    "FAILED": "Failed",
+    "READY": "Ready",
+    "RUNNING": "Running",
+    "SUCCESS": "Success",
+    "WAITING": "Waiting"
+  },
   "lanSharePage": {
     "allowUsersToConnect": "Allow users to connect to your remote device through your IP address using a custom port.",
     "bindIpAddress": "Bind IP Address",
@@ -1132,6 +1200,34 @@
   },
   "licensingPage": {
     "title": "License"
+  },
+  "licensingSetting": {
+    "notSubscribed": "Not subscribed",
+    "plan": "plan",
+    "renews": "Renews"
+  },
+  "limitSetting": {
+    "emailSupport": "Email support available",
+    "evaluationPeriod": "Services are granted an evaluation period of {{period}}",
+    "forumSupport": "Forum support only",
+    "licensedDevices": "{{actual}} of {{value}} licensed devices",
+    "logHistory": "Log history is available for {{period}}",
+    "nonCommercialDevices": "{{actual}} of {{value}} non-commercial devices",
+    "noSplash": "No splash screen displayed on persistent web pages",
+    "overLimit_one": "You are {{over}} device over your {{value}} device limit",
+    "overLimit_other": "You are {{over}} devices over your {{value}} device limit",
+    "overLimitNonCommercial_one": "You are {{over}} device over your {{value}} device non-commercial limit",
+    "overLimitNonCommercial_other": "You are {{over}} devices over your {{value}} device non-commercial limit",
+    "rolesAvailable": "Custom roles are available",
+    "rolesUnavailable": "Custom roles are unavailable",
+    "samlAvailable": "SAML login is available",
+    "samlUnavailable": "SAML login is unavailable",
+    "servicesRegistered": "{{actual}} of {{value}} services registered",
+    "splash": "Persistent web pages will display a splash screen",
+    "unlimitedDevices": "Unlimited devices",
+    "unlimitedNonCommercial": "Unlimited non-commercial devices",
+    "unlimitedServices": "Unlimited services",
+    "userLicenses": "{{actual}} of {{value}} user licenses used"
   },
   "limitsSetting": {
     "licenseKey": "License Key"
@@ -1271,6 +1367,10 @@
     "manageRequired": "You must be the device owner or manager to modify the networks of this service.",
     "sharedRestricted": "You can not modify the networks of a device shared to you.",
     "title": "Networks"
+  },
+  "networkServicesList": {
+    "countOf": "{{shown}} of {{total}}",
+    "showMore": "Show more"
   },
   "networkSettings": {
     "nameLabel": "Network Name"
@@ -1581,6 +1681,28 @@
     "tooShort": "The password must be at least {{minLength}} characters long.",
     "veryWeak": "Very Weak",
     "weak": "Weak"
+  },
+  "permission": {
+    "ADMIN": {
+      "description": "Manage organization tags, scripts, members and device registrations. View logs.",
+      "name": "Administer"
+    },
+    "CONNECT": {
+      "description": "Connect to device services",
+      "name": "Connect"
+    },
+    "MANAGE": {
+      "description": "Edit, delete, transfer and share devices and networks",
+      "name": "Manage"
+    },
+    "SCRIPTING": {
+      "description": "View and run device scripts",
+      "name": "Script"
+    },
+    "VIEW": {
+      "description": "See devices and their current state",
+      "name": "View"
+    }
   },
   "planCheckout": {
     "devices": "Devices",
@@ -2134,6 +2256,8 @@
     "graphLength": "Graph length",
     "graphType": "Graph type",
     "graphUnit": "Graph unit",
+    "lengthValue_one": "{{count}} {{unit}}",
+    "lengthValue_other": "{{count}} {{unit}}s",
     "overLimit": " (over limit)"
   },
   "transferForm": {

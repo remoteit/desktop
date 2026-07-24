@@ -1,5 +1,11 @@
 import React from 'react'
-import { TimeSeriesTypeLookup, TimeSeriesAvailableResolutions, TimeSeriesLengths } from '../helpers/dateHelper'
+import {
+  TimeSeriesTypeLookup,
+  TimeSeriesAvailableResolutions,
+  TimeSeriesLengths,
+  timeSeriesTypeLabel,
+  timeSeriesResolutionLabel,
+} from '../helpers/dateHelper'
 import { SelectSetting } from './SelectSetting'
 import { Duration } from 'luxon'
 import { List } from '@mui/material'
@@ -23,7 +29,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         label={t('timeSeriesSelect.graphType', 'Graph type')}
         value={timeSeriesOptions.type}
         defaultValue={defaults.type}
-        values={Object.keys(TimeSeriesTypeLookup).map(key => ({ key, name: TimeSeriesTypeLookup[key] }))}
+        values={Object.keys(TimeSeriesTypeLookup).map(key => ({ key, name: timeSeriesTypeLabel(key) }))}
         onChange={value => onChange?.({ ...timeSeriesOptions, type: value as ITimeSeriesType })}
       />
       <SelectSetting
@@ -35,7 +41,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
           const disabled = limitDuration.valueOf() < Duration.fromObject({ [key]: TimeSeriesLengths[key][0] }).valueOf()
           return {
             key,
-            name: TimeSeriesAvailableResolutions[key] + (disabled ? overLimitLabel : ''),
+            name: timeSeriesResolutionLabel(key) + (disabled ? overLimitLabel : ''),
             disabled,
           }
         })}
@@ -57,9 +63,13 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
             limitDuration.valueOf() < Duration.fromObject({ [timeSeriesOptions.resolution]: key }).valueOf()
           return {
             key,
-            name: `${key} ${TimeSeriesAvailableResolutions[timeSeriesOptions.resolution]}s${
-              disabled ? overLimitLabel : ''
-            }`,
+            name:
+              t('timeSeriesSelect.lengthValue', {
+                count: Number(key),
+                unit: timeSeriesResolutionLabel(timeSeriesOptions.resolution),
+                defaultValue_one: '{{count}} {{unit}}',
+                defaultValue_other: '{{count}} {{unit}}s',
+              }) + (disabled ? overLimitLabel : ''),
             disabled,
           }
         })}

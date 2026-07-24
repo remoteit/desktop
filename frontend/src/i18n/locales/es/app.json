@@ -541,7 +541,51 @@
     "tags": "Etiquetas",
     "targetPlatform": "Plataforma",
     "unknown": "Desconocido",
-    "version": "Versión del daemon"
+    "version": "Versión del daemon",
+    "body": "Cuerpo",
+    "categoryA": "Categoría A",
+    "categoryB": "Categoría B",
+    "categoryC": "Categoría C",
+    "categoryD": "Categoría D",
+    "categoryE": "Categoría E",
+    "customerEmail": "Correo",
+    "customerPlan": "Plan",
+    "customerPrice": "Precio",
+    "customerQuantity": "Cantidad",
+    "customerReseller": "Representante",
+    "from": "Desde",
+    "partnerActivated": "Activado",
+    "partnerActive": "Activo",
+    "partnerDevicesTotal": "Dispositivos",
+    "partnerName": "Nombre",
+    "partnerOnline": "En línea",
+    "productCreated": "Creado",
+    "productCreatedDetail": "Creado",
+    "productIdDetail": "ID de producto",
+    "productName": "Nombre",
+    "productPlatform": "Plataforma",
+    "productPlatformDetail": "Plataforma",
+    "productServiceIdDetail": "ID de servicio",
+    "productServicePortDetail": "Puerto",
+    "productServices": "Servicios",
+    "productServicesDetail": "Servicios",
+    "productServiceStatusDetail": "Estado",
+    "productServiceTypeDetail": "Tipo de servicio",
+    "productUpdated": "Actualizado",
+    "productUpdatedDetail": "Actualizado",
+    "scriptCreated": "Creado",
+    "scriptDescription": "Descripción",
+    "scriptName": "Script",
+    "scriptUpdated": "Modificado",
+    "stage": "Etapa",
+    "statusA": "Estado A",
+    "statusB": "Estado B",
+    "statusC": "Estado C",
+    "statusD": "Estado D",
+    "statusE": "Estado E",
+    "title": "Título",
+    "type": "Tipo",
+    "until": "Hasta"
   },
   "common": {
     "actionCannotBeUndone": "Esta acción no se puede deshacer.",
@@ -1152,6 +1196,36 @@
   "licensingPage": {
     "title": "Licencia"
   },
+  "licensingSetting": {
+    "notSubscribed": "Sin suscripción",
+    "plan": "plan",
+    "renews": "Se renueva"
+  },
+  "limitSetting": {
+    "emailSupport": "Soporte por correo electrónico disponible",
+    "evaluationPeriod": "Los servicios reciben un período de evaluación de {{period}}",
+    "forumSupport": "Solo soporte en el foro",
+    "licensedDevices": "{{actual}} de {{value}} dispositivos con licencia",
+    "logHistory": "El historial de registros está disponible durante {{period}}",
+    "nonCommercialDevices": "{{actual}} de {{value}} dispositivos no comerciales",
+    "noSplash": "No se muestra pantalla de bienvenida en páginas web persistentes",
+    "overLimit_one": "Ha superado su límite de {{value}} dispositivos en {{over}} dispositivo",
+    "overLimit_many": "Ha superado su límite de {{value}} dispositivos en {{over}} dispositivos",
+    "overLimit_other": "Ha superado su límite de {{value}} dispositivos en {{over}} dispositivos",
+    "overLimitNonCommercial_one": "Ha superado su límite no comercial de {{value}} dispositivos en {{over}} dispositivo",
+    "overLimitNonCommercial_many": "Ha superado su límite no comercial de {{value}} dispositivos en {{over}} dispositivos",
+    "overLimitNonCommercial_other": "Ha superado su límite no comercial de {{value}} dispositivos en {{over}} dispositivos",
+    "rolesAvailable": "Los roles personalizados están disponibles",
+    "rolesUnavailable": "Los roles personalizados no están disponibles",
+    "samlAvailable": "El inicio de sesión SAML está disponible",
+    "samlUnavailable": "El inicio de sesión SAML no está disponible",
+    "servicesRegistered": "{{actual}} de {{value}} servicios registrados",
+    "splash": "Las páginas web persistentes mostrarán una pantalla de bienvenida",
+    "unlimitedDevices": "Dispositivos ilimitados",
+    "unlimitedNonCommercial": "Dispositivos no comerciales ilimitados",
+    "unlimitedServices": "Servicios ilimitados",
+    "userLicenses": "{{actual}} de {{value}} licencias de usuario utilizadas"
+  },
   "limitsSetting": {
     "licenseKey": "Clave de licencia"
   },
@@ -1290,6 +1364,10 @@
     "manageRequired": "Debes ser el propietario o administrador del dispositivo para modificar las redes de este servicio.",
     "sharedRestricted": "No puedes modificar las redes de un dispositivo compartido contigo.",
     "title": "Redes"
+  },
+  "networkServicesList": {
+    "countOf": "{{shown}} de {{total}}",
+    "showMore": "Mostrar más"
   },
   "networkSettings": {
     "nameLabel": "Nombre de la red"
@@ -2176,6 +2254,9 @@
     "graphLength": "Duración del gráfico",
     "graphType": "Tipo de gráfico",
     "graphUnit": "Unidad del gráfico",
+    "lengthValue_one": "{{count}} {{unit}}",
+    "lengthValue_many": "{{count}} {{unit}}s",
+    "lengthValue_other": "{{count}} {{unit}}s",
     "overLimit": " (excede el límite)"
   },
   "transferForm": {
@@ -2218,5 +2299,51 @@
   "viewAsBanner": {
     "exit": "Salir del modo de vista como",
     "viewingAs": "Viendo como: {{email}}"
+  },
+  "graphType": {
+    "AVAILABILITY": "En línea %",
+    "CONNECT": "Eventos de conexión",
+    "CONNECT_DURATION": "Tiempo conectado",
+    "DISCONNECT": "Eventos de desconexión",
+    "OFFLINE": "Eventos sin conexión",
+    "ONLINE": "Eventos en línea",
+    "ONLINE_DURATION": "Tiempo en línea",
+    "USAGE": "Conectado %"
+  },
+  "graphUnit": {
+    "DAY": "Día",
+    "HOUR": "Hora",
+    "MONTH": "Mes",
+    "WEEK": "Semana"
+  },
+  "jobStatus": {
+    "CANCELLED": "Cancelado",
+    "FAILED": "Fallido",
+    "READY": "Listo",
+    "RUNNING": "En ejecución",
+    "SUCCESS": "Correcto",
+    "WAITING": "En espera"
+  },
+  "permission": {
+    "ADMIN": {
+      "description": "Gestionar etiquetas, scripts, miembros y registros de dispositivos de la organización. Ver registros.",
+      "name": "Administrar"
+    },
+    "CONNECT": {
+      "description": "Conectarse a los servicios del dispositivo",
+      "name": "Conectar"
+    },
+    "MANAGE": {
+      "description": "Editar, eliminar, transferir y compartir dispositivos y redes",
+      "name": "Gestionar"
+    },
+    "SCRIPTING": {
+      "description": "Ver y ejecutar scripts de dispositivos",
+      "name": "Script"
+    },
+    "VIEW": {
+      "description": "Ver dispositivos y su estado actual",
+      "name": "Ver"
+    }
   }
 }

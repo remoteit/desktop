@@ -174,7 +174,7 @@ export const JobDetailPage: React.FC<Props> = () => {
               )}
             </Box>
             <ColorChip
-              label={job.status}
+              label={t(`jobStatus.${job.status}`, { defaultValue: job.status })}
               size="small"
               color={statusColor}
               sx={{ textTransform: 'capitalize', mr: 1 }}

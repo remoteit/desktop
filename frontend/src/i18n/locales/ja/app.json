@@ -517,7 +517,51 @@
     "tags": "タグ",
     "targetPlatform": "プラットフォーム",
     "unknown": "不明",
-    "version": "デーモンバージョン"
+    "version": "デーモンバージョン",
+    "body": "本文",
+    "categoryA": "カテゴリーA",
+    "categoryB": "カテゴリーB",
+    "categoryC": "カテゴリーC",
+    "categoryD": "カテゴリーD",
+    "categoryE": "カテゴリーE",
+    "customerEmail": "メール",
+    "customerPlan": "プラン",
+    "customerPrice": "価格",
+    "customerQuantity": "数量",
+    "customerReseller": "担当者",
+    "from": "開始",
+    "partnerActivated": "有効化",
+    "partnerActive": "アクティブ",
+    "partnerDevicesTotal": "デバイス",
+    "partnerName": "名前",
+    "partnerOnline": "オンライン",
+    "productCreated": "作成日",
+    "productCreatedDetail": "作成日",
+    "productIdDetail": "製品ID",
+    "productName": "名前",
+    "productPlatform": "プラットフォーム",
+    "productPlatformDetail": "プラットフォーム",
+    "productServiceIdDetail": "サービスID",
+    "productServicePortDetail": "ポート",
+    "productServices": "サービス",
+    "productServicesDetail": "サービス",
+    "productServiceStatusDetail": "ステータス",
+    "productServiceTypeDetail": "サービスタイプ",
+    "productUpdated": "更新日",
+    "productUpdatedDetail": "更新日",
+    "scriptCreated": "作成日",
+    "scriptDescription": "説明",
+    "scriptName": "スクリプト",
+    "scriptUpdated": "変更日",
+    "stage": "ステージ",
+    "statusA": "ステータスA",
+    "statusB": "ステータスB",
+    "statusC": "ステータスC",
+    "statusD": "ステータスD",
+    "statusE": "ステータスE",
+    "title": "タイトル",
+    "type": "タイプ",
+    "until": "終了"
   },
   "common": {
     "actionCannotBeUndone": "この操作は元に戻せません。",
@@ -1114,6 +1158,32 @@
   "licensingPage": {
     "title": "ライセンス"
   },
+  "licensingSetting": {
+    "notSubscribed": "未契約",
+    "plan": "プラン",
+    "renews": "更新"
+  },
+  "limitSetting": {
+    "emailSupport": "メールサポートが利用可能です",
+    "evaluationPeriod": "サービスには{{period}}の評価期間が付与されます",
+    "forumSupport": "フォーラムサポートのみ",
+    "licensedDevices": "{{value}}台中{{actual}}台のライセンス済みデバイス",
+    "logHistory": "ログ履歴は{{period}}利用可能です",
+    "nonCommercialDevices": "{{value}}台中{{actual}}台の非商用デバイス",
+    "noSplash": "永続的なWebページにスプラッシュ画面は表示されません",
+    "overLimit_other": "デバイス数が上限の{{value}}台を{{over}}台超えています",
+    "overLimitNonCommercial_other": "非商用デバイス数が上限の{{value}}台を{{over}}台超えています",
+    "rolesAvailable": "カスタムロールを利用できます",
+    "rolesUnavailable": "カスタムロールは利用できません",
+    "samlAvailable": "SAMLログインを利用できます",
+    "samlUnavailable": "SAMLログインは利用できません",
+    "servicesRegistered": "{{value}}件中{{actual}}件のサービスを登録済み",
+    "splash": "永続的なWebページにスプラッシュ画面が表示されます",
+    "unlimitedDevices": "デバイス数無制限",
+    "unlimitedNonCommercial": "非商用デバイス数無制限",
+    "unlimitedServices": "サービス数無制限",
+    "userLicenses": "{{value}}件中{{actual}}件のユーザーライセンスを使用中"
+  },
   "limitsSetting": {
     "licenseKey": "ライセンスキー"
   },
@@ -1252,6 +1322,10 @@
     "manageRequired": "このサービスのネットワークを変更するには、デバイスの所有者または管理者である必要があります。",
     "sharedRestricted": "共有されたデバイスのネットワークを変更することはできません。",
     "title": "ネットワーク"
+  },
+  "networkServicesList": {
+    "countOf": "{{total}}件中{{shown}}件",
+    "showMore": "もっと見る"
   },
   "networkSettings": {
     "nameLabel": "ネットワーク名"
@@ -2092,6 +2166,7 @@
     "graphLength": "グラフの長さ",
     "graphType": "グラフの種類",
     "graphUnit": "グラフの単位",
+    "lengthValue_other": "{{count}}{{unit}}",
     "overLimit": " (制限超過)"
   },
   "transferForm": {
@@ -2134,5 +2209,51 @@
   "viewAsBanner": {
     "exit": "表示モードを終了",
     "viewingAs": "表示中: {{email}}"
+  },
+  "graphType": {
+    "AVAILABILITY": "オンライン%",
+    "CONNECT": "接続イベント",
+    "CONNECT_DURATION": "接続時間",
+    "DISCONNECT": "切断イベント",
+    "OFFLINE": "オフラインイベント",
+    "ONLINE": "オンラインイベント",
+    "ONLINE_DURATION": "オンライン時間",
+    "USAGE": "接続%"
+  },
+  "graphUnit": {
+    "DAY": "日",
+    "HOUR": "時間",
+    "MONTH": "月",
+    "WEEK": "週"
+  },
+  "jobStatus": {
+    "CANCELLED": "キャンセル済み",
+    "FAILED": "失敗",
+    "READY": "準備完了",
+    "RUNNING": "実行中",
+    "SUCCESS": "成功",
+    "WAITING": "待機中"
+  },
+  "permission": {
+    "ADMIN": {
+      "description": "組織のタグ、スクリプト、メンバー、デバイス登録を管理します。ログを表示します。",
+      "name": "管理者"
+    },
+    "CONNECT": {
+      "description": "デバイスサービスに接続",
+      "name": "接続"
+    },
+    "MANAGE": {
+      "description": "デバイスとネットワークの編集、削除、譲渡、共有",
+      "name": "管理"
+    },
+    "SCRIPTING": {
+      "description": "デバイススクリプトの閲覧と実行",
+      "name": "スクリプト"
+    },
+    "VIEW": {
+      "description": "デバイスと現在の状態を表示",
+      "name": "閲覧"
+    }
   }
 }
