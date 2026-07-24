@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
@@ -6,6 +7,7 @@ import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { TestUI } from './TestUI'
 
 export const DevicePresenceSetting: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const { device } = useContext(DeviceContext)
 
@@ -15,7 +17,7 @@ export const DevicePresenceSetting: React.FC = () => {
     <TestUI>
       <InlineTextFieldSetting
         icon="bullseye-pointer"
-        label="Presence Address"
+        label={t('devicePresenceSetting.label', 'Presence Address')}
         placeholder="presence.remote.it:443"
         value={device.presenceAddress}
         disabled={!device.permissions.includes('MANAGE')}

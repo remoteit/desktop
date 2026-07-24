@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import { State } from '../store'
 import { fieldSx } from './ServiceForm'
@@ -32,6 +33,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   globalDefaults,
   onChange,
 }) => {
+  const { t } = useTranslation()
   const { routingLock, routingMessage } = useSelector((state: State) => state.ui)
   const app = useApplication(undefined, connection)
 
@@ -42,21 +44,25 @@ export const ServiceAttributesForm: React.FC<Props> = ({
       {!globalDefaults && (
         <ListItem sx={fieldSx}>
           <TextField
-            label="Local Port"
+            label={t('serviceAttributesForm.localPort', 'Local Port')}
             value={attributes.defaultPort || ''}
             disabled={disabled}
             variant="filled"
             onChange={event => onChange({ ...attributes, defaultPort: validPort(event) })}
           />
           <Typography variant="caption">
-            Default local port to use when a system connects to this service. <b>Port will auto assign if unset.</b>
+            {t(
+              'serviceAttributesForm.localPortCaption',
+              'Default local port to use when a system connects to this service.'
+            )}{' '}
+            <b>{t('serviceAttributesForm.localPortAutoAssign', 'Port will auto assign if unset.')}</b>
           </Typography>
         </ListItem>
       )}
       <ListItem sx={fieldSx}>
         <TextField
           select
-          label="Routing"
+          label={t('serviceAttributesForm.routing', 'Routing')}
           value={routingLock || attributes.route || ''}
           disabled={!!routingLock || disabled}
           variant="filled"
@@ -64,7 +70,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           onChange={event => onChange({ ...attributes, route: event.target.value as IRouteType })}
         >
           <MenuItem value="">
-            <i>No default override</i>
+            <i>{t('serviceAttributesForm.noDefaultOverride', 'No default override')}</i>
           </MenuItem>
           {ROUTES.map(route => (
             <MenuItem value={route.key} key={route.key}>
@@ -74,24 +80,26 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         </TextField>
         <Typography variant="caption">
           {routingMessage || ROUTES.find(route => route.key === attributes.route)?.description}
-          <i> Routing is only available on desktop.</i>
-          <b> Default adaptive routing</b>
+          <i> {t('serviceAttributesForm.routingDesktopOnly', 'Routing is only available on desktop.')}</i>
+          <b> {t('serviceAttributesForm.defaultAdaptiveRouting', 'Default adaptive routing')}</b>
         </Typography>
       </ListItem>
       {!globalDefaults && app.reverseProxy && (
         <ListItem sx={fieldSx}>
           <TextField
-            label="Host Header Override"
+            label={t('serviceAttributesForm.hostHeaderOverride', 'Host Header Override')}
             value={attributes.targetHost || ''}
             disabled={disabled}
             variant="filled"
             onChange={event => onChange({ ...attributes, targetHost: event.target.value.toString() })}
           />
           <Typography variant="caption">
-            A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing
-            scenarios to route requests to the appropriate server.
+            {t(
+              'serviceAttributesForm.hostHeaderOverrideCaption',
+              'A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server.'
+            )}
             <i>
-              &nbsp;Example
+              &nbsp;{t('serviceAttributesForm.example', 'Example')}
               <b> webui.example.com</b>
             </i>
           </Typography>
@@ -103,21 +111,21 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             <TextField
               select
               variant="filled"
-              label="Launch method"
+              label={t('serviceAttributesForm.launchMethod', 'Launch method')}
               value={attributes.launchType || ''}
               onChange={event => onChange({ ...attributes, launchType: event.target.value })}
             >
               <MenuItem value="">
-                <i>No default override</i>
+                <i>{t('serviceAttributesForm.noDefaultOverride', 'No default override')}</i>
               </MenuItem>
               <MenuItem value="URL">URL</MenuItem>
-              <MenuItem value="COMMAND">Command</MenuItem>
+              <MenuItem value="COMMAND">{t('serviceAttributesForm.command', 'Command')}</MenuItem>
             </TextField>
           </ListItem>
           <ListItem dense>
             <ListItemCheckbox
               disableGutters
-              label="Auto Launch"
+              label={t('serviceAttributesForm.autoLaunch', 'Auto Launch')}
               checked={attributes.autoLaunch}
               indeterminate={attributes.autoLaunch === undefined}
               onClick={autoLaunch =>
@@ -135,13 +143,14 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         disabled={disabled}
         onChange={value => onChange({ ...attributes, launchTemplate: value })}
       >
-        Default tokens <b>{app.defaultTokens.join(', ')}</b>
+        {t('serviceAttributesForm.defaultTokens', 'Default tokens')} <b>{app.defaultTokens.join(', ')}</b>
         <br />
-        Default template <b>{globalDefaults ? app.defaultLaunchTemplate : app.launchTemplate}</b>
+        {t('serviceAttributesForm.defaultTemplate', 'Default template')}{' '}
+        <b>{globalDefaults ? app.defaultLaunchTemplate : app.launchTemplate}</b>
         {!!app.launchCustomTokens.length && (
           <>
             <br />
-            Custom tokens <b>{app.launchCustomTokens.join(', ')}</b>
+            {t('serviceAttributesForm.customTokens', 'Custom tokens')} <b>{app.launchCustomTokens.join(', ')}</b>
           </>
         )}
       </TemplateSetting>
@@ -153,13 +162,14 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         disabled={disabled}
         onChange={value => onChange({ ...attributes, commandTemplate: value })}
       >
-        Default tokens <b>{app.defaultTokens.join(', ')}</b>
+        {t('serviceAttributesForm.defaultTokens', 'Default tokens')} <b>{app.defaultTokens.join(', ')}</b>
         <br />
-        Default template <b>{globalDefaults ? app.defaultCommandTemplate : app.commandTemplate}</b>
+        {t('serviceAttributesForm.defaultTemplate', 'Default template')}{' '}
+        <b>{globalDefaults ? app.defaultCommandTemplate : app.commandTemplate}</b>
         {!!app.commandCustomTokens.length && (
           <>
             <br />
-            Custom tokens <b>{app.commandCustomTokens.join(', ')}</b>
+            {t('serviceAttributesForm.customTokens', 'Custom tokens')} <b>{app.commandCustomTokens.join(', ')}</b>
           </>
         )}
       </TemplateSetting>
@@ -174,7 +184,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                     token={token}
                     dense={false}
                     variant="filled"
-                    label="Application Path"
+                    label={t('serviceAttributesForm.applicationPath', 'Application Path')}
                     value={attributes[token] || ''}
                     onSave={value => onChange({ ...attributes, [token]: value })}
                   />
@@ -182,14 +192,19 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                   <ListItem disableGutters key={token} sx={fieldSx}>
                     <TextField
                       fullWidth
-                      label={`${token} default`}
+                      label={t('serviceAttributesForm.tokenDefault', {
+                        token,
+                        defaultValue: '{{token}} default',
+                      })}
                       value={attributes[token] || ''}
                       disabled={disabled}
                       variant="filled"
                       onChange={event => onChange({ ...attributes, [token]: event.target.value })}
                     />
                     {customTokensNote[token] && (
-                      <Typography variant="caption">This token was found in {customTokensNote[token]}</Typography>
+                      <Typography variant="caption">
+                        {t('serviceAttributesForm.tokenFoundIn', 'This token was found in')} {customTokensNote[token]}
+                      </Typography>
                     )}
                   </ListItem>
                 )
@@ -198,10 +213,12 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           </Quote>
         ) : (
           <Notice>
-            Add custom [tokens]
+            {t('serviceAttributesForm.addCustomTokens', 'Add custom [tokens]')}
             <em>
-              You can add custom [tokens] to the templates above. Just enclose a tag in brackets to create a [token] you
-              can set a default value for. If not filled out, tokens will prompt you at time of connection.
+              {t(
+                'serviceAttributesForm.addCustomTokensDescription',
+                'You can add custom [tokens] to the templates above. Just enclose a tag in brackets to create a [token] you can set a default value for. If not filled out, tokens will prompt you at time of connection.'
+              )}
             </em>
           </Notice>
         )}

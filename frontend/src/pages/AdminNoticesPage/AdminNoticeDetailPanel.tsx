@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { Container } from '../../components/Container'
@@ -22,6 +23,7 @@ type Props = {
 }
 
 export const AdminNoticeDetailPanel: React.FC<Props> = ({ showBackArrow }) => {
+  const { t } = useTranslation()
   const { noticeId } = useParams<{ noticeId?: string }>()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
@@ -64,15 +66,28 @@ export const AdminNoticeDetailPanel: React.FC<Props> = ({ showBackArrow }) => {
             marginTop: `${spacing.sm}px`,
           }}
         >
-          <IconButton icon="chevron-left" title="Back to Notices" onClick={handleBack} size="md" color="grayDarker" />
+          <IconButton
+            icon="chevron-left"
+            title={t('adminNoticeDetailPanel.backToNotices', 'Back to Notices')}
+            onClick={handleBack}
+            size="md"
+            color="grayDarker"
+          />
         </Box>
       )}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 2 }}>
         <Typography variant="h2" sx={{ padding: 2 }}>
-          <Title>{isNew ? 'New notice' : 'Edit notice'}</Title>
+          <Title>
+            {isNew ? t('adminNoticeDetailPanel.newNotice', 'New notice') : t('adminNoticeDetailPanel.editNotice', 'Edit notice')}
+          </Title>
         </Typography>
         {!isNew && notice && (
-          <IconButton icon="trash" title="Delete notice" onClick={() => setRemoveOpen(true)} size="md" />
+          <IconButton
+            icon="trash"
+            title={t('adminNoticeDetailPanel.deleteNotice', 'Delete notice')}
+            onClick={() => setRemoveOpen(true)}
+            size="md"
+          />
         )}
       </Box>
     </Box>
@@ -83,13 +98,13 @@ export const AdminNoticeDetailPanel: React.FC<Props> = ({ showBackArrow }) => {
       <Container gutterBottom header={header}>
         <Gutters>
           <Notice severity="error" fullWidth>
-            Notice not found
-            <em>It may have been deleted by someone else.</em>
+            {t('adminNoticeDetailPanel.noticeNotFound', 'Notice not found')}
+            <em>{t('adminNoticeDetailPanel.mayHaveBeenDeleted', 'It may have been deleted by someone else.')}</em>
           </Notice>
         </Gutters>
       </Container>
     ) : (
-      <LoadingMessage message="Loading notice..." />
+      <LoadingMessage message={t('adminNoticeDetailPanel.loadingNotice', 'Loading notice...')} />
     )
 
   return (
@@ -103,14 +118,17 @@ export const AdminNoticeDetailPanel: React.FC<Props> = ({ showBackArrow }) => {
       />
       <Confirm
         open={removeOpen}
-        title="Delete notice?"
+        title={t('adminNoticeDetailPanel.deleteNoticeConfirm', 'Delete notice?')}
         onConfirm={handleRemove}
         onDeny={() => setRemoveOpen(false)}
-        action="Delete"
+        action={t('common.delete', 'Delete')}
         color="error"
       >
         <Typography variant="body2">
-          "{notice?.title}" will be permanently deleted. This cannot be undone.
+          {t('adminNoticeDetailPanel.permanentlyDeleted', {
+            title: notice?.title,
+            defaultValue: '"{{title}}" will be permanently deleted. This cannot be undone.',
+          })}
         </Typography>
       </Confirm>
     </Container>

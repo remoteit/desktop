@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
@@ -24,6 +25,7 @@ type Props = {
 }
 
 export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, children }) => {
+  const { t } = useTranslation()
   const { connectThisDevice, layout } = useSelector((state: State) => state.ui)
   const { device, service, instance, user } = useContext(DeviceContext)
   const dispatch = useDispatch<Dispatch>()
@@ -64,14 +66,14 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
                 gutterBottom={!layout.mobile && !!service?.attributes.description}
                 paddingRight="0 !important"
               >
-                <Title>{service.name || 'unknown'}</Title>
+                <Title>{service.name || t('serviceHeaderMenu.unknown', 'unknown')}</Title>
               </Typography>
             </Box>
             <MobileUI hide>
               <ShareButton
                 to={`/devices/${device.id}/${service.id}/share`}
                 hide={!device.permissions.includes('MANAGE')}
-                title="Share access"
+                title={t('serviceHeaderMenu.shareAccess', 'Share access')}
                 size="md"
               />
             </MobileUI>
@@ -90,10 +92,15 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
           {displayThisDevice ? (
             <Gutters top={null} bottom="lg" size="xxs">
               <Notice gutterTop solid severity="info" onClose={() => dispatch.ui.set({ connectThisDevice: true })}>
-                <strong>This service is running on this device.</strong>
+                <strong>{t('serviceHeaderMenu.runningOnThisDevice', 'This service is running on this device.')}</strong>
                 <br />
-                It can be connected to from anywhere using Remote.It.
-                <em>Select another device from the devices menu to connect to it remotely.</em>
+                {t('serviceHeaderMenu.connectFromAnywhere', 'It can be connected to from anywhere using Remote.It.')}
+                <em>
+                  {t(
+                    'serviceHeaderMenu.selectAnotherDevice',
+                    'Select another device from the devices menu to connect to it remotely.'
+                  )}
+                </em>
               </Notice>
             </Gutters>
           ) : (

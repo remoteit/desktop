@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
 import { selectPermissions } from '../selectors/organizations'
@@ -9,13 +10,17 @@ import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 
 export const OrganizationGuestsPage: React.FC = () => {
+  const { t } = useTranslation()
   const permissions = useSelector(selectPermissions)
 
   if (!permissions.includes('MANAGE'))
     return (
       <Body center>
         <Typography variant="body2" color="textSecondary">
-          Please contact the organization owner to request device manager privileges.
+          {t(
+            'organizationGuestsPage.needManagePermission',
+            'Please contact the organization owner to request device manager privileges.'
+          )}
         </Typography>
       </Body>
     )
@@ -26,11 +31,11 @@ export const OrganizationGuestsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Guests</Title>
+            <Title>{t('organizationGuestsPage.title', 'Guests')}</Title>
           </Typography>
           <Gutters bottom="lg">
             <Typography variant="body2" color="textSecondary">
-              Users that have devices directly shared to them.
+              {t('organizationGuestsPage.description', 'Users that have devices directly shared to them.')}
             </Typography>
           </Gutters>
         </>

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { ListItemButton, ListItemText, ListItemSecondaryAction, InputLabel, TextFieldProps } from '@mui/material'
@@ -29,6 +30,7 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
   onSave,
   className,
 }) => {
+  const { t } = useTranslation()
   const { filePath } = useSelector((state: State) => state.backend)
   const dispatch = useDispatch<Dispatch>()
 
@@ -59,8 +61,19 @@ export const InlineFileFieldSetting: React.FC<Props> = ({
         {value || '–'}
       </ListItemText>
       <ListItemSecondaryAction>
-        <IconButton title="Reset" icon="undo" type="solid" size="sm" onClick={() => onSave && onSave(undefined)} />
-        <IconButton title="Select Application" icon="folder-open" size="md" onClick={filePrompt} />
+        <IconButton
+          title={t('inlineFileFieldSetting.reset', 'Reset')}
+          icon="undo"
+          type="solid"
+          size="sm"
+          onClick={() => onSave && onSave(undefined)}
+        />
+        <IconButton
+          title={t('inlineFileFieldSetting.selectApplication', 'Select Application')}
+          icon="folder-open"
+          size="md"
+          onClick={filePrompt}
+        />
       </ListItemSecondaryAction>
     </ListItemButton>
   )

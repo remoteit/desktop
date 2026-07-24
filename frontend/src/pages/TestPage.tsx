@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import cloudSync from '../services/CloudSync'
 import { TEST_HEADER } from '../constants'
 import { Dispatch, State } from '../store'
@@ -15,6 +16,7 @@ import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 
 export const TestPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const [testHeader, setTestHeader] = useState<string>(window.localStorage.getItem(TEST_HEADER) || '')
   const { tests, informed } = useSelector((state: State) => state.plans)
@@ -33,16 +35,19 @@ export const TestPage: React.FC = () => {
     <Container
       header={
         <Typography variant="h1">
-          <Title>Test Settings</Title>
+          <Title>{t('testPage.title', 'Test Settings')}</Title>
         </Typography>
       }
     >
-      <Typography variant="subtitle1">Test Options</Typography>
+      <Typography variant="subtitle1">{t('testPage.testOptions', 'Test Options')}</Typography>
       <List>
         <ListItemSetting
           hideIcon
-          label="Disable Test UI"
-          subLabel="To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift."
+          label={t('testPage.disableTestUI', 'Disable Test UI')}
+          subLabel={t(
+            'testPage.disableTestUIHint',
+            'To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift.'
+          )}
           onClick={() => {
             dispatch.ui.setPersistent({ testUI: undefined })
             emit('preferences', { ...preferences, allowPrerelease: false, switchApi: false })
@@ -50,14 +55,17 @@ export const TestPage: React.FC = () => {
         />
         <ListItemSetting
           hideIcon
-          label="Hide test UI backgrounds"
+          label={t('testPage.hideTestUIBackgrounds', 'Hide test UI backgrounds')}
           toggle={testUI === 'ON'}
           onClick={() => dispatch.ui.setPersistent({ testUI: testUI === 'HIGHLIGHT' ? 'ON' : 'HIGHLIGHT' })}
         />
         <ListItemSetting
           hideIcon
-          label="Show latest announcement"
-          subLabel="Previews the latest announcement without changing its read status."
+          label={t('testPage.showLatestAnnouncement', 'Show latest announcement')}
+          subLabel={t(
+            'testPage.showLatestAnnouncementHint',
+            'Previews the latest announcement without changing its read status.'
+          )}
           onClick={() => {
             dispatch.ui.set({ announcementPresentationTest: Date.now() })
             dispatch.announcements.fetch().catch(error => console.warn('Failed to refresh announcements', error))
@@ -65,16 +73,16 @@ export const TestPage: React.FC = () => {
         />
         <ListItemSetting
           hideIcon
-          label="Clear viewed announcements"
-          subLabel="Marks all loaded announcements unread for this account."
+          label={t('testPage.clearViewedAnnouncements', 'Clear viewed announcements')}
+          subLabel={t('testPage.clearViewedAnnouncementsHint', 'Marks all loaded announcements unread for this account.')}
           onClick={() => dispatch.announcements.clearRead()}
         />
         <PortalUI>
           <InlineTextFieldSetting
             value={testHeader}
-            label="Add query header"
+            label={t('testPage.addQueryHeader', 'Add query header')}
             displayValue={testHeader}
-            placeholder='Example: "key:value"'
+            placeholder={t('testPage.addQueryHeaderPlaceholder', 'Example: "key:value"')}
             multiline={false}
             resetValue=""
             maxLength={200}
@@ -88,7 +96,7 @@ export const TestPage: React.FC = () => {
 
         <ListItemSetting
           hideIcon
-          label="Override default APIs"
+          label={t('testPage.overrideDefaultAPIs', 'Override default APIs')}
           onClick={() => {
             setAPIPreference('switchApi', !apis.switchApi)
             emit('binaries/install')
@@ -100,7 +108,7 @@ export const TestPage: React.FC = () => {
             <List disablePadding>
               <InlineTextFieldSetting
                 value={getApiURL()}
-                label="Switch GraphQL APIs"
+                label={t('testPage.switchGraphQLAPIs', 'Switch GraphQL APIs')}
                 disabled={!apis.switchApi}
                 resetValue={getApiURL()}
                 maxLength={200}
@@ -113,7 +121,7 @@ export const TestPage: React.FC = () => {
               />
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
-                label="WebSocket URL"
+                label={t('testPage.webSocketURL', 'WebSocket URL')}
                 disabled={!apis.switchApi}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
@@ -127,7 +135,7 @@ export const TestPage: React.FC = () => {
           </Quote>
         </ListItem>
       </List>
-      <Typography variant="subtitle1">Features</Typography>
+      <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>
       <List>
         {limits.map(l => {
           if (typeof l.value === 'boolean')
@@ -135,7 +143,13 @@ export const TestPage: React.FC = () => {
               <ListItemSetting
                 hideIcon
                 key={l.name}
-                label={`${l.name} (default ${l.value ? 'enabled' : 'disabled'})`}
+                label={t('testPage.featureLabel', {
+                  name: l.name,
+                  state: l.value
+                    ? t('testPage.enabled', 'enabled')
+                    : t('testPage.disabled', 'disabled'),
+                  defaultValue: '{{name}} (default {{state}})',
+                })}
                 toggle={limitsOverride[l.name]}
                 onClick={() =>
                   dispatch.ui.setPersistent({
@@ -148,28 +162,31 @@ export const TestPage: React.FC = () => {
         <Divider variant="inset" />
         <ListItemSetting
           hideIcon
-          button="Reset"
-          label="Reset feature overrides"
+          button={t('testPage.reset', 'Reset')}
+          label={t('testPage.resetFeatureOverrides', 'Reset feature overrides')}
           onButtonClick={() => dispatch.ui.setPersistent({ limitsOverride: {} })}
         />
       </List>
-      <Typography variant="subtitle1">Licensing Options</Typography>
+      <Typography variant="subtitle1">{t('testPage.licensingOptions', 'Licensing Options')}</Typography>
       <List>
         <ListItemSetting
           hideIcon
-          label="Override licenses and limits"
+          label={t('testPage.overrideLicensesAndLimits', 'Override licenses and limits')}
           toggle={tests.limit}
           onClick={() => dispatch.plans.set({ tests: { ...tests, limit: !tests.limit, license: !tests.license } })}
         />
         <ListItemSetting
           hideIcon
-          label="Set service licenses"
-          subLabel="Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY"
+          label={t('testPage.setServiceLicenses', 'Set service licenses')}
+          subLabel={t(
+            'testPage.setServiceLicensesHint',
+            'Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY'
+          )}
           onClick={() => dispatch.plans.testServiceLicensing()}
         />
         <ListItemSetting
           hideIcon
-          label="License message cleared"
+          label={t('testPage.licenseMessageCleared', 'License message cleared')}
           toggle={informed}
           onClick={() => dispatch.plans.set({ informed: !informed })}
         />

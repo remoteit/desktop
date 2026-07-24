@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { emit } from '../../services/Controller'
 import { Button } from '@mui/material'
 import { fullVersion, version as currentVersion } from '../../helpers/versionHelper'
@@ -11,26 +12,27 @@ import { Duration } from '../Duration'
 import { TestUI } from '../TestUI'
 
 export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = ({ preferences, os }) => {
+  const { t } = useTranslation()
   const { version, nextCheck, checking, downloaded, downloading, error } = useSelector(
     (state: State) => state.backend.updateStatus
   )
   const dispatch = useDispatch<Dispatch>()
   const updateAvailable = downloaded && version !== currentVersion
 
-  let label = 'About'
-  if (updateAvailable) label = `Version ${version} available`
-  if (checking) label = 'Checking for updates...'
+  let label = t('updateSetting.about', 'About')
+  if (updateAvailable) label = t('updateSetting.versionAvailable', { version, defaultValue: 'Version {{version}} available' })
+  if (checking) label = t('updateSetting.checkingForUpdates', 'Checking for updates...')
 
   return (
     <>
       {(os === 'mac' || os === 'windows') && (
         <DesktopUI>
           <ListItemSetting
-            label="Auto update"
+            label={t('updateSetting.autoUpdate', 'Auto update')}
             subLabel={
               nextCheck && preferences.autoUpdate ? (
                 <>
-                  Next check in <Duration startDate={new Date(nextCheck)} />
+                  {t('updateSetting.nextCheckIn', 'Next check in')} <Duration startDate={new Date(nextCheck)} />
                 </>
               ) : undefined
             }
@@ -46,7 +48,11 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
                   size="small"
                   disabled={downloading}
                 >
-                  {downloading ? 'Downloading...' : checking ? 'Checking...' : 'Check'}
+                  {downloading
+                    ? t('updateSetting.downloading', 'Downloading...')
+                    : checking
+                      ? t('updateSetting.checking', 'Checking...')
+                      : t('updateSetting.check', 'Check')}
                 </Button>
               )
             }
@@ -57,7 +63,7 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
             <TestUI>
               <ListItemSetting
                 quote
-                label="Update to pre-release builds"
+                label={t('updateSetting.preReleaseBuilds', 'Update to pre-release builds')}
                 toggle={!!preferences.allowPrerelease}
                 onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
               />
@@ -67,11 +73,15 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
       )}
       <ListItemSetting
         label={label}
-        subLabel={<>{fullVersion()} — © remot3.it inc.</>}
+        subLabel={
+          <>
+            {fullVersion()} — {t('updateSetting.copyright', '© remot3.it inc.')}
+          </>
+        }
         icon="copyright"
         secondaryContent={
           error ? (
-            <ColorChip label="Update failed" color="warning" size="small" />
+            <ColorChip label={t('updateSetting.updateFailed', 'Update failed')} color="warning" size="small" />
           ) : updateAvailable && downloaded ? (
             <Button
               onClick={dispatch.backend.install}
@@ -80,7 +90,7 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
               size="small"
               disabled={checking || downloading}
             >
-              Install
+              {t('updateSetting.install', 'Install')}
             </Button>
           ) : undefined
         }

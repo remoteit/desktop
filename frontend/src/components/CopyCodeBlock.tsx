@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { windowOpen } from '../services/browser'
 import { Box, Stack, Paper, PaperProps, Typography } from '@mui/material'
 import { spacing, fontSizes, toSxArray } from '../styling'
@@ -26,6 +27,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
   sx,
   ...props
 }) => {
+  const { t } = useTranslation()
   if (code === value) code = undefined
   if (!value) return null
 
@@ -79,7 +81,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
         >
           {!hideCopyLabel && (
             <Typography variant="h5" marginTop={1}>
-              Copy
+              {t('copyCodeBlock.copy', 'Copy')}
             </Typography>
           )}
           {value && (
@@ -90,7 +92,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
               variant="text"
               icon={code ? 'command' : 'clone'}
               type="regular"
-              title={code ? 'Copy command' : 'Copy'}
+              title={code ? t('copyCodeBlock.copyCommand', 'Copy command') : t('copyCodeBlock.copy', 'Copy')}
               onCopy={onCopy}
             />
           )}
@@ -102,7 +104,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
               variant="text"
               type="regular"
               icon={code === value ? 'copy' : 'barcode'}
-              title="Copy code"
+              title={t('copyCodeBlock.copyCode', 'Copy code')}
               onCopy={onCopy}
             />
           )}

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
 import { Chip, Collapse, List, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { ListItemSetting } from '../ListItemSetting'
 import { TagEditor } from '../TagEditor'
 import { Gutters } from '../Gutters'
@@ -14,6 +15,7 @@ import { useAccountLabel } from './helpers'
 // standard tag picker. Changes apply optimistically, like tag edits elsewhere in the app.
 export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) => {
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
   const accountLabel = useAccountLabel()
   const allTags = useSelector((state: State) => state.tags.all)
   const meId = useSelector((state: State) => state.auth.user?.id || state.user.id)
@@ -60,18 +62,33 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
   const updateRule = (id: string, patch: Partial<IAccountReach>) =>
     apply(rules.map(r => (r.account === id ? { ...r, ...patch } : r)))
 
-  const name = agent.clientName || 'This app'
+  const name = agent.clientName || t('agentReachEditor.defaultAppName', 'This app')
   const tagged = rules.filter(r => r.tags?.length).length
   let summary
-  if (unlimited) summary = `${name} can reach all devices in every organization you belong to.`
-  else if (!rules.length) summary = `${name} cannot reach any devices.`
+  if (unlimited)
+    summary = t('agentReachEditor.summaryUnlimited', {
+      name,
+      defaultValue: '{{name}} can reach all devices in every organization you belong to.',
+    })
+  else if (!rules.length)
+    summary = t('agentReachEditor.summaryNone', { name, defaultValue: '{{name}} cannot reach any devices.' })
   else {
     const scope =
       rules.length >= accountIds.length
-        ? 'every organization you belong to'
-        : `${rules.length} of ${accountIds.length} organizations`
-    const limits = tagged ? `, limited to tagged devices in ${tagged === 1 ? 'one' : `${tagged} of them`}` : ''
-    summary = `${name} can reach ${scope}${limits}.`
+        ? t('agentReachEditor.scopeAll', 'every organization you belong to')
+        : t('agentReachEditor.scopeSome', {
+            count: rules.length,
+            total: accountIds.length,
+            defaultValue: '{{count}} of {{total}} organizations',
+          })
+    const limits = tagged
+      ? t('agentReachEditor.limitsSuffix', {
+          count: tagged,
+          defaultValue_one: ', limited to tagged devices in one of them',
+          defaultValue_other: ', limited to tagged devices in {{count}} of them',
+        })
+      : ''
+    summary = t('agentReachEditor.summary', { name, scope, limits, defaultValue: '{{name}} can reach {{scope}}{{limits}}.' })
   }
 
   return (
@@ -81,7 +98,10 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
           {summary}
         </Typography>
         <Typography variant="caption" display="block">
-          Turn on the organizations it may access. Add tags to limit an organization to matching devices only.
+          {t(
+            'agentReachEditor.instructions',
+            'Turn on the organizations it may access. Add tags to limit an organization to matching devices only.'
+          )}
         </Typography>
       </Gutters>
       <List>
@@ -115,7 +135,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
                     />
                   ) : (
                     <Chip
-                      label="All devices"
+                      label={t('agentReachEditor.allDevices', 'All devices')}
                       size="small"
                       sx={{ fontWeight: 500, letterSpacing: 1, color: 'grayDarker.main' }}
                     />
@@ -123,7 +143,7 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
                   <TagEditor
                     tags={accountTags}
                     filter={selected}
-                    placeholder="Add tag..."
+                    placeholder={t('agentReachEditor.addTagPlaceholder', 'Add tag...')}
                     allowAdding={false}
                     keyboardShortcut={false}
                     onSelect={tag => updateRule(id, { tags: [...(shown.tags || []), tag.name] })}
@@ -133,7 +153,11 @@ export const AgentReachEditor: React.FC<{ agent: IAuthorizedAgent }> = ({ agent 
                       size="small"
                       variant="outlined"
                       sx={{ marginLeft: 1 }}
-                      label={shown.operator === 'ALL' ? 'Match: all tags' : 'Match: any tag'}
+                      label={
+                        shown.operator === 'ALL'
+                          ? t('agentReachEditor.matchAll', 'Match: all tags')
+                          : t('agentReachEditor.matchAny', 'Match: any tag')
+                      }
                       onClick={() => updateRule(id, { operator: shown.operator === 'ALL' ? 'ANY' : 'ALL' })}
                     />
                   )}

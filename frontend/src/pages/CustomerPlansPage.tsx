@@ -2,6 +2,7 @@ import React from 'react'
 import { State } from '../store'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Typography, Stack } from '@mui/material'
 import { selectCustomer, selectOrganizationReseller } from '../selectors/organizations'
 import { Container } from '../components/Container'
@@ -13,6 +14,7 @@ export const CustomerPlansPage: React.FC = () => {
   const reseller = useSelector(selectOrganizationReseller)
   const customer = useSelector((state: State) => selectCustomer(state, undefined, userID))
   const license = customer?.license
+  const { t } = useTranslation()
 
   if (!customer || !license) return null
 
@@ -30,7 +32,7 @@ export const CustomerPlansPage: React.FC = () => {
             marginBottom={2}
           >
             <Typography variant="h1" flexGrow={1} flexDirection="column">
-              <Typography variant="caption">Select a plan for</Typography>
+              <Typography variant="caption">{t('customerPlansPage.selectPlanFor', 'Select a plan for')}</Typography>
               {customer?.email}
             </Typography>
             <Avatar email={customer?.email} />

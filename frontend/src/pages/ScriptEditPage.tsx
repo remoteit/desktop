@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import sleep from '../helpers/sleep'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
@@ -19,6 +20,7 @@ type Props = {
 }
 
 export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID } = useParams<{ fileID?: string }>()
@@ -167,7 +169,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       {!!editForm?.script && !loading && (
         <IconButton
           name={copied ? 'check' : 'copy'}
-          title={copied ? 'Copied!' : 'Copy Script'}
+          title={copied ? t('scriptEditPage.copied', 'Copied!') : t('scriptEditPage.copyScript', 'Copy Script')}
           color={copied ? 'success' : 'grayDark'}
           size="sm"
           onClick={() => {
@@ -180,7 +182,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       )}
       <IconButton
         name="terminal"
-        title="Add Demo Script"
+        title={t('scriptEditPage.addDemoScript', 'Add Demo Script')}
         color="grayDark"
         size="sm"
         onClick={async () => {
@@ -200,7 +202,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       bodyProps={{ inset: true, verticalOverflow: true, gutterBottom: true }}
       header={
         <Typography variant="h1">
-          <Box sx={{ flex: 1 }}>{isNew ? 'Add Script' : script?.name}</Box>
+          <Box sx={{ flex: 1 }}>{isNew ? t('scriptEditPage.addScript', 'Add Script') : script?.name}</Box>
           {!isNew && <ScriptDeleteButton />}
         </Typography>
       }
@@ -216,7 +218,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
                   onClick={handleSaveAndRun}
                   sx={{ flexGrow: 1 }}
                 >
-                  {saving ? 'Saving...' : 'Save and Run'}
+                  {saving ? t('scriptEditPage.saving', 'Saving...') : t('scriptEditPage.saveAndRun', 'Save and Run')}
                 </Button>
                 {manager && (
                   <Button
@@ -225,7 +227,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
                     disabled={!hasEditChanges || saving || loading}
                     onClick={handleSave}
                   >
-                    {saving ? 'Saving...' : 'Save'}
+                    {saving ? t('scriptEditPage.saving', 'Saving...') : t('scriptEditPage.save', 'Save')}
                   </Button>
                 )}
               </>
@@ -238,7 +240,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
                   onClick={handleNext}
                   sx={{ flexGrow: 1 }}
                 >
-                  New Run
+                  {t('scriptEditPage.newRun', 'New Run')}
                 </Button>
                 {manager && (
                   <Button
@@ -247,7 +249,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
                     disabled={!hasEditChanges || saving || loading}
                     onClick={handleSave}
                   >
-                    {saving ? 'Saving...' : 'Save'}
+                    {saving ? t('scriptEditPage.saving', 'Saving...') : t('scriptEditPage.save', 'Save')}
                   </Button>
                 )}
               </>
@@ -255,14 +257,17 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
           </Stack>
           {!isNew && hasEditChanges && (
             <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-              Unsaved changes won't affect the run - it uses the last saved version.
+              {t(
+                'scriptEditPage.unsavedChangesNote',
+                "Unsaved changes won't affect the run - it uses the last saved version."
+              )}
             </Typography>
           )}
         </Box>
       }
     >
       <Typography variant="subtitle2">
-        <Title>Edit Script</Title>
+        <Title>{t('scriptEditPage.editScript', 'Edit Script')}</Title>
       </Typography>
       {editForm && (
         <>
@@ -271,7 +276,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
               <TextField
                 required
                 fullWidth
-                label="Name"
+                label={t('scriptEditPage.name', 'Name')}
                 disabled={!manager}
                 value={editForm.name}
                 variant="filled"
@@ -283,7 +288,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
                 multiline
                 fullWidth
                 disabled={!manager}
-                label="Description"
+                label={t('scriptEditPage.description', 'Description')}
                 value={editForm.description}
                 variant="filled"
                 onChange={e => setEditForm({ ...editForm, description: e.target.value })}

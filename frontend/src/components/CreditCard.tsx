@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Typography,
   Button,
@@ -17,6 +18,7 @@ import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 export const CreditCard: React.FC = () => {
+  const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
@@ -39,12 +41,12 @@ export const CreditCard: React.FC = () => {
 
   return (
     <>
-      <Typography variant="subtitle1">Credit Card</Typography>
+      <Typography variant="subtitle1">{t('creditCard.title', 'Credit Card')}</Typography>
       <List>
         {expired && (
           <ListItem>
             <Notice severity="error" gutterTop>
-              Credit Card Expired. <em> Please update your card to continue service.</em>
+              {t('creditCard.expiredNotice', 'Credit Card Expired.')} <em>{t('creditCard.expiredNoticeDetail', 'Please update your card to continue service.')}</em>
             </Notice>
           </ListItem>
         )}
@@ -53,12 +55,28 @@ export const CreditCard: React.FC = () => {
             <Icon name="credit-card" size="md" />
           </ListItemIcon>
           <ListItemText
-            primary={`${card.brand.toUpperCase()} ending in ${card.last}`}
-            secondary={expired ? `Expired ${card.month}/${card.year}` : `Expiring ${card.month}/${card.year}`}
+            primary={t('creditCard.cardEndingIn', {
+              brand: card.brand.toUpperCase(),
+              last: card.last,
+              defaultValue: '{{brand}} ending in {{last}}',
+            })}
+            secondary={
+              expired
+                ? t('creditCard.expiredDate', {
+                    month: card.month,
+                    year: card.year,
+                    defaultValue: 'Expired {{month}}/{{year}}',
+                  })
+                : t('creditCard.expiringDate', {
+                    month: card.month,
+                    year: card.year,
+                    defaultValue: 'Expiring {{month}}/{{year}}',
+                  })
+            }
           />
           <ListItemSecondaryAction>
             <Button variant="contained" color="primary" size="small" onClick={update} disabled={!!updating}>
-              {updating ? 'Processing...' : 'Update'}
+              {updating ? t('creditCard.processing', 'Processing...') : t('creditCard.update', 'Update')}
             </Button>
           </ListItemSecondaryAction>
         </ListItemButton>

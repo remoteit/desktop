@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { selectOwnDevices } from '../selectors/devices'
@@ -10,6 +11,7 @@ import { Scan } from '../components/Scan'
 import { emit } from '../services/Controller'
 
 export const ScanPage: React.FC = () => {
+  const { t } = useTranslation()
   const { interfaces, services, scanData, privateIP } = useSelector((state: State) => ({
     interfaces: state.backend.interfaces,
     services: selectOwnDevices(state).find(d => d.thisDevice)?.services || [],
@@ -27,10 +29,10 @@ export const ScanPage: React.FC = () => {
       header={
         <>
           <OutOfBand />
-          <Typography variant="h1">Network Scan</Typography>
+          <Typography variant="h1">{t('scanPage.title', 'Network Scan')}</Typography>
           <Gutters top={null}>
             <Typography variant="body2" color="textSecondary">
-              Scan your system and local network for available ports to host.
+              {t('scanPage.description', 'Scan your system and local network for available ports to host.')}
             </Typography>
           </Gutters>
         </>

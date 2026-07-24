@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Tooltip, Typography, TooltipProps, BoxProps, Button, Theme, alpha } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { selectPriorityGuide } from '../models/ui'
 import { IconButton } from '../buttons/IconButton'
@@ -85,6 +86,7 @@ export const GuideStep: React.FC<Props> = ({
   hide,
   children,
 }) => {
+  const { t } = useTranslation()
   const { ui } = useDispatch<Dispatch>()
   const state = useSelector((state: State) => selectPriorityGuide(state, guide, startDate))
   const open: boolean = !!(!hide && (state.step === step || !!show) && state.active)
@@ -108,7 +110,7 @@ export const GuideStep: React.FC<Props> = ({
           {acknowledge || (
             <IconButton
               icon="times"
-              title="Exit guide"
+              title={t('guideStep.exitGuide', 'Exit guide')}
               color="white"
               onClick={() => ui.guide({ guide, step: 0, done: true })}
             />
@@ -118,14 +120,14 @@ export const GuideStep: React.FC<Props> = ({
           </Typography>
           {acknowledge && (
             <Button size="small" variant="text" onClick={() => ui.guide({ guide, step: 0, done: true })}>
-              Ok
+              {t('common.ok', 'Ok')}
             </Button>
           )}
           {showNavigation && (
             <Box sx={{ position: 'absolute', right: `${spacing.sm}px`, bottom: `${spacing.sm}px` }}>
               <IconButton
                 icon="angle-left"
-                title="previous"
+                title={t('guideStep.previous', 'previous')}
                 color="white"
                 type="light"
                 disabled={step <= 1}
@@ -133,7 +135,7 @@ export const GuideStep: React.FC<Props> = ({
               />
               <IconButton
                 icon="angle-right"
-                title="next"
+                title={t('guideStep.next', 'next')}
                 color="white"
                 type="light"
                 disabled={step >= state.total}
@@ -143,7 +145,7 @@ export const GuideStep: React.FC<Props> = ({
           )}
           {state.total > 1 && (
             <Typography variant="caption">
-              {step} of {state.total}
+              {t('guideStep.stepOf', { step, total: state.total, defaultValue: '{{step}} of {{total}}' })}
             </Typography>
           )}
         </>

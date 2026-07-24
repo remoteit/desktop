@@ -1,5 +1,6 @@
 import { Button, Stack, Tooltip, useMediaQuery } from '@mui/material'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Route, Link as RouteLink, useHistory, useLocation } from 'react-router-dom'
 import { IconButton } from '../buttons/IconButton'
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export const ScriptingHeader: React.FC<Props> = ({ children }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const location = useLocation()
@@ -51,7 +53,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                 <Stack flexDirection="row" alignItems="center">
                   {!mobile && (
                     <ColorChip
-                      label="Feedback"
+                      label={t('scriptingHeader.feedback', 'Feedback')}
                       size="small"
                       color="gray"
                       variant="text"
@@ -66,7 +68,11 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                   </Link>
                   <Route path={['/scripts', '/files']} exact>
                     <Tooltip
-                      title={permissions.includes('ADMIN') ? '' : 'Admin permissions required to upload'}
+                      title={
+                        permissions.includes('ADMIN')
+                          ? ''
+                          : t('scriptingHeader.adminRequired', 'Admin permissions required to upload')
+                      }
                       placement="top"
                       arrow
                     >
@@ -80,7 +86,9 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
                           startIcon={<Icon name="plus" />}
                           component={RouteLink}
                         >
-                          {location.pathname.startsWith('/files') ? 'Upload' : 'Add'}
+                          {location.pathname.startsWith('/files')
+                            ? t('scriptingHeader.upload', 'Upload')
+                            : t('scriptingHeader.add', 'Add')}
                         </Button>
                       </span>
                     </Tooltip>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { PasswordStrengthInput } from './PasswordStrengthInput'
 import { Button, TextField, Typography } from '@mui/material'
@@ -8,6 +9,7 @@ import { Dispatch } from '../../store'
 import { Gutters } from '../Gutters'
 
 export const ChangePassword = () => {
+  const { t } = useTranslation()
   const [currentPassword, setCurrentPassword] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [isValid, setValid] = useState<boolean>(false)
@@ -33,14 +35,14 @@ export const ChangePassword = () => {
   return (
     <>
       <Typography variant="subtitle1" gutterBottom>
-        Change Password
+        {t('changePassword.title', 'Change Password')}
       </Typography>
       <Gutters key={key} sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
         <TextField
           fullWidth
           variant="filled"
           type="password"
-          label="Current Password"
+          label={t('changePassword.currentPassword', 'Current Password')}
           onChange={e => evaluateCurrentPassword(e)}
         />
         <PasswordStrengthInput
@@ -53,28 +55,29 @@ export const ChangePassword = () => {
       <Gutters bottom="xl">
         <ConfirmButton
           confirm
-          title="Save"
+          title={t('common.save', 'Save')}
           variant="contained"
           color="primary"
           size="small"
           disabled={!isValid || saving}
           onClick={updatePassword}
           confirmProps={{
-            title: 'Notice',
+            title: t('changePassword.noticeTitle', 'Notice'),
             children: (
               <>
                 <Typography variant="body2" gutterBottom>
-                  Changing your password will <b>NOT</b> automatically sign you out of other sessions.
+                  {t('changePassword.noticeBefore', 'Changing your password will')} <b>{t('changePassword.noticeEmphasis', 'NOT')}</b>{' '}
+                  {t('changePassword.noticeAfter', 'automatically sign you out of other sessions.')}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  You can manually sign out from all sessions below.
+                  {t('changePassword.noticeSignOut', 'You can manually sign out from all sessions below.')}
                 </Typography>
               </>
             ),
           }}
         />
         <Button size="small" onClick={() => history.goBack()}>
-          Cancel
+          {t('common.cancel', 'Cancel')}
         </Button>
       </Gutters>
     </>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dispatch } from '../store'
 import { MAX_NAME_LENGTH } from '@common/constants'
 import { ListItemLocation, ListItemLocationProps } from './ListItemLocation'
@@ -49,6 +50,7 @@ const DisplayComponent: React.FC<DisplayComponentProps> = ({
   disabled,
   ...props
 }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   return (
     <ListItemLocation
@@ -68,7 +70,7 @@ const DisplayComponent: React.FC<DisplayComponentProps> = ({
           <DeviceName device={device} connection={connection} />
         </Typography>
       }
-      subtitle={device.thisDevice ? 'This device' : undefined}
+      subtitle={device.thisDevice ? t('deviceNameLocation.thisDevice', 'This device') : undefined}
       onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
       exactMatch
       {...props}
@@ -76,7 +78,7 @@ const DisplayComponent: React.FC<DisplayComponentProps> = ({
       {editable && (
         <ListItemSecondaryAction sx={{ marginTop: -0.1, marginRight: -1 }} className="hidden">
           <IconButton
-            title="Rename"
+            title={t('deviceNameLocation.rename', 'Rename')}
             buttonBaseSize="small"
             onClick={event => {
               event.stopPropagation()

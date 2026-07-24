@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Typography, Divider } from '@mui/material'
 import { selectNetworks } from '../selectors/networks'
 import { selectPermissions } from '../selectors/organizations'
@@ -16,6 +17,7 @@ import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 export const NetworksPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const all = [...useSelector(selectNetworks)].sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
   const initialized = useSelector((state: State) => state.networks.initialized)
@@ -32,7 +34,7 @@ export const NetworksPage: React.FC = () => {
       header={
         <>
           <Typography variant="subtitle1">
-            <Title>Networks</Title>
+            <Title>{t('networksPage.title', 'Networks')}</Title>
             {permissions.includes('MANAGE') && (
               <GuideBubble
                 guide="addNetwork"
@@ -42,18 +44,29 @@ export const NetworksPage: React.FC = () => {
                 instructions={
                   <>
                     <Typography variant="h3" gutterBottom>
-                      <b>Welcome to networks</b>
+                      <b>{t('networksPage.guideTitle', 'Welcome to networks')}</b>
                     </Typography>
                     <Typography variant="body2" gutterBottom>
-                      A network is a custom group of services organized for ease of access and sharing.
+                      {t(
+                        'networksPage.guideBody',
+                        'A network is a custom group of services organized for ease of access and sharing.'
+                      )}
                     </Typography>
                     <Typography variant="body2" gutterBottom>
-                      Select the <cite>+</cite> icon to get started.
+                      {t('networksPage.guideCtaBefore', 'Select the')} <cite>+</cite>{' '}
+                      {t('networksPage.guideCtaAfter', 'icon to get started.')}
                     </Typography>
                   </>
                 }
               >
-                <IconButton icon="plus" title="New Network" to="/networks/add" type="solid" size="md" shiftDown />
+                <IconButton
+                  icon="plus"
+                  title={t('networksPage.newNetwork', 'New Network')}
+                  to="/networks/add"
+                  type="solid"
+                  size="md"
+                  shiftDown
+                />
               </GuideBubble>
             )}
           </Typography>
@@ -68,8 +81,10 @@ export const NetworksPage: React.FC = () => {
               <Typography variant="h1" gutterBottom>
                 <Icon name="chart-network" fontSize={50} type="light" color="grayLight" />
               </Typography>
-              <Typography variant="h3">You have no networks</Typography>
-              <Typography variant="caption">Add a network with the '+' button above.</Typography>
+              <Typography variant="h3">{t('networksPage.empty', 'You have no networks')}</Typography>
+              <Typography variant="caption">
+                {t('networksPage.emptyHint', "Add a network with the '+' button above.")}
+              </Typography>
             </Gutters>
           )}
           {networks.map(n => (
@@ -87,7 +102,7 @@ export const NetworksPage: React.FC = () => {
             <>
               {!!networks.length && (
                 <>
-                  <Typography variant="subtitle1">Shared with you</Typography>
+                  <Typography variant="subtitle1">{t('networksPage.sharedWithYou', 'Shared with you')}</Typography>
                   <Divider variant="inset" />
                 </>
               )}
@@ -98,7 +113,7 @@ export const NetworksPage: React.FC = () => {
           )}
         </>
       ) : (
-        <LoadingMessage message="Loading..." spinner={false} />
+        <LoadingMessage message={t('common.loading', 'Loading...')} spinner={false} />
       )}
     </Container>
   )

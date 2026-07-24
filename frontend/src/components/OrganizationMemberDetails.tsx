@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { ENTERPRISE_PLAN_ID } from '../models/plans'
 import { IOrganizationState } from '../models/organization'
@@ -21,6 +22,7 @@ type Props = {
 }
 
 export const OrganizationMemberDetails: React.FC<Props> = ({ member, organization }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const license = useSelector(selectRemoteitLicense)
   const permissions = useSelector(selectPermissions)
@@ -35,7 +37,7 @@ export const OrganizationMemberDetails: React.FC<Props> = ({ member, organizatio
     <>
       {member && (
         <>
-          <Typography variant="subtitle1">Member</Typography>
+          <Typography variant="subtitle1">{t('organizationMemberDetails.member', 'Member')}</Typography>
           <Gutters>
             <Box display="flex" flexWrap="wrap" alignItems="center" justifyContent="space-between">
               <Box display="flex" marginRight={2} gap={1}>
@@ -61,7 +63,7 @@ export const OrganizationMemberDetails: React.FC<Props> = ({ member, organizatio
           </Gutters>
           <FormDisplay
             icon={<Icon name="calendar-star" />}
-            label="Member since"
+            label={t('organizationMemberDetails.memberSince', 'Member since')}
             displayValue={<Timestamp date={member?.created} />}
             displayOnly
           />
@@ -69,7 +71,7 @@ export const OrganizationMemberDetails: React.FC<Props> = ({ member, organizatio
       )}
       {!!accessible.length && (
         <>
-          <Typography variant="subtitle1">Networks</Typography>
+          <Typography variant="subtitle1">{t('organizationMemberDetails.networks', 'Networks')}</Typography>
           <List>
             {accessible.map(network => (
               <ListItemLocation
@@ -77,7 +79,7 @@ export const OrganizationMemberDetails: React.FC<Props> = ({ member, organizatio
                 key={network.id}
                 to={`/networks/${network.id}`}
                 icon={network ? <Icon name={network.icon} /> : <Icon name="spinner-third" spin />}
-                title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
+                title={network ? network.name : <Box sx={{ opacity: 0.3 }}>{t('organizationMemberDetails.loading', 'loading...')}</Box>}
               />
             ))}
           </List>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getAllDevices } from '../selectors/devices'
 import { selectNetworks } from '../selectors/networks'
 import { useSelector, useDispatch } from 'react-redux'
@@ -16,6 +17,7 @@ type Props = {
 }
 
 export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const [fetched, setFetched] = useState<boolean>(false)
 
@@ -46,11 +48,11 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
   return (
     <>
       <Gutters top="xl">
-        <Typography variant="h2">Guest Access</Typography>
+        <Typography variant="h2">{t('organizationGuestDetails.guestAccess', 'Guest Access')}</Typography>
       </Gutters>
       {!!guest?.deviceIds.length && (
         <>
-          <Typography variant="subtitle1">Devices</Typography>
+          <Typography variant="subtitle1">{t('organizationGuestDetails.devices', 'Devices')}</Typography>
           <List>
             {guest?.deviceIds.map(id => {
               const device = devices.find(d => d.id === id)
@@ -72,7 +74,11 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
                     device ? (
                       device.name
                     ) : (
-                      <Box sx={{ opacity: 0.4 }}>{fetched ? `Loading failed (${id})` : 'loading...'}</Box>
+                      <Box sx={{ opacity: 0.4 }}>
+                        {fetched
+                          ? t('organizationGuestDetails.loadingFailed', { id, defaultValue: 'Loading failed ({{id}})' })
+                          : t('organizationGuestDetails.loading', 'loading...')}
+                      </Box>
                     )
                   }
                 >
@@ -85,7 +91,7 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
       )}
       {!!guest?.networkIds.length && (
         <>
-          <Typography variant="subtitle1">Networks</Typography>
+          <Typography variant="subtitle1">{t('organizationGuestDetails.networks', 'Networks')}</Typography>
           <List>
             {guest?.networkIds.map(id => {
               const network = networks.find(d => d.id === id)
@@ -94,7 +100,9 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
                   key={id}
                   to={`/networks/${id}`}
                   icon={network ? <Icon name={network.icon} size="md" /> : <Icon name="spinner-third" spin />}
-                  title={network ? network.name : <Box sx={{ opacity: 0.3 }}>loading...</Box>}
+                  title={
+                    network ? network.name : <Box sx={{ opacity: 0.3 }}>{t('organizationGuestDetails.loading', 'loading...')}</Box>
+                  }
                 />
               )
             })}

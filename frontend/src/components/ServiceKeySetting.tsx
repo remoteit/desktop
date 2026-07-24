@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Notice } from './Notice'
 import { windowOpen } from '../services/browser'
 import { Typography, Collapse, ButtonBase, Box, Stack } from '@mui/material'
@@ -20,6 +21,7 @@ type Props = {
 }
 
 export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permissions, disabled }) => {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const dispatch = useDispatch<Dispatch>()
   const canManage = permissions.includes('MANAGE')
@@ -37,8 +39,8 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
         disabled={disabled}
         label={
           <>
-            Service Key &nbsp;
-            <ColorChip label="BETA" size="small" color="primary" variant="contained" />
+            {t('serviceKeySetting.label', 'Service Key')} &nbsp;
+            <ColorChip label={t('serviceKeySetting.beta', 'BETA')} size="small" color="primary" variant="contained" />
             {/* What is a Service Key? Help link... */}
           </>
         }
@@ -47,9 +49,15 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
             <Typography variant="caption" sx={{ display: 'block', lineHeight: 1.2, marginTop: 0.4 }}>
               {canManage
                 ? enabled
-                  ? 'Your Service Key has been generated. Use the key below to authorize connections through our SDK. Keep it secure and do not share it publicly. You can delete it to create a new one.'
-                  : 'Generate a Service Key to use authorize connections to this service through our SDK.'
-                : "Requires device 'Manage' permission"}
+                  ? t(
+                      'serviceKeySetting.enabledSubLabel',
+                      'Your Service Key has been generated. Use the key below to authorize connections through our SDK. Keep it secure and do not share it publicly. You can delete it to create a new one.'
+                    )
+                  : t(
+                      'serviceKeySetting.disabledSubLabel',
+                      'Generate a Service Key to use authorize connections to this service through our SDK.'
+                    )
+                : t('serviceKeySetting.permissionSubLabel', "Requires device 'Manage' permission")}
             </Typography>
           </>
         }
@@ -62,22 +70,23 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
         confirmProps={
           enabled
             ? {
-                action: 'Disable',
-                title: 'Disable Service Key?',
-                children: 'Anyone with this key will no longer be able to connect.',
+                action: t('serviceKeySetting.disableAction', 'Disable'),
+                title: t('serviceKeySetting.disableTitle', 'Disable Service Key?'),
+                children: t('serviceKeySetting.disableBody', 'Anyone with this key will no longer be able to connect.'),
               }
             : service.link?.code
             ? {
-                action: 'Enable',
-                title: 'Enable Service Key?',
-                children: 'Anyone with this key will be able to connect.',
+                action: t('serviceKeySetting.enableAction', 'Enable'),
+                title: t('serviceKeySetting.enableTitle', 'Enable Service Key?'),
+                children: t('serviceKeySetting.enableBody', 'Anyone with this key will be able to connect.'),
               }
             : {
-                action: 'Generate Key',
-                title: 'Generate Service Key?',
+                action: t('serviceKeySetting.generateAction', 'Generate Key'),
+                title: t('serviceKeySetting.generateTitle', 'Generate Service Key?'),
                 children: (
                   <Notice fullWidth>
-                    You are generating a new Service Key. <em>Anyone with this key will be able to connect.</em>
+                    {t('serviceKeySetting.generateBodyPrefix', 'You are generating a new Service Key.')}{' '}
+                    <em>{t('serviceKeySetting.generateBodySuffix', 'Anyone with this key will be able to connect.')}</em>
                   </Notice>
                 ),
               }
@@ -94,7 +103,7 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
                   name="github"
                   title={
                     <>
-                      Get the Node.js package
+                      {t('serviceKeySetting.nodePackage', 'Get the Node.js package')}
                       <Icon name="launch" size="xs" inline />
                     </>
                   }
@@ -114,17 +123,18 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
                 confirm
                 confirmProps={{
                   color: 'error',
-                  action: 'Delete Key',
-                  title: 'Delete Service Key?',
+                  action: t('serviceKeySetting.deleteAction', 'Delete Key'),
+                  title: t('serviceKeySetting.deleteTitle', 'Delete Service Key?'),
                   children: (
                     <Notice severity="error" gutterBottom fullWidth>
-                      This action cannot be undone. <em>Anyone with this key will no longer be able to connect.</em>
+                      {t('serviceKeySetting.deleteBodyPrefix', 'This action cannot be undone.')}{' '}
+                      <em>{t('serviceKeySetting.deleteBodySuffix', 'Anyone with this key will no longer be able to connect.')}</em>
                     </Notice>
                   ),
                 }}
                 disabled={disabled}
                 name="trash"
-                title="Delete Key"
+                title={t('serviceKeySetting.deleteKeyTitle', 'Delete Key')}
                 onClick={() => {
                   setLoading(true)
                   dispatch.devices.removeLink(service.id)

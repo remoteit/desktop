@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useParams, useRouteMatch } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { selectJobs } from '../selectors/scripting'
 import { removeObject } from '../helpers/utilHelper'
 import { State, Dispatch } from '../store'
@@ -14,6 +15,7 @@ import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
 
 export const JobsPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const { fileID } = useParams<{ fileID?: string }>()
   const jobMatch = useRouteMatch<{ jobID: string }>('/runs/job/:jobID')
@@ -34,7 +36,7 @@ export const JobsPage: React.FC = () => {
       ) : !jobs.length ? (
         <Body center>
           <Stack alignItems="center">
-            <Notice gutterBottom>Run a script to get started</Notice>
+            <Notice gutterBottom>{t('jobsPage.runScriptToStart', 'Run a script to get started')}</Notice>
           </Stack>
         </Body>
       ) : (

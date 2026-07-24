@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, deviceUserTotal } from '../models/plans'
 import { List, Stack } from '@mui/material'
@@ -15,6 +16,7 @@ import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ context }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const accountId = useSelector(selectActiveAccountId)
   const limits = useSelector(selectLimits)
@@ -77,8 +79,8 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
         hideIcon
         disabled={purchasing}
         loading={purchasing}
-        label="Licensing"
-        warning="This will change your billing."
+        label={t('seatsSetting.label', 'Licensing')}
+        warning={t('seatsSetting.warning', 'This will change your billing.')}
         value={form.quantity}
         displayValue={display}
         resetValue={getDefaults().quantity}
@@ -99,9 +101,17 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
               &nbsp;/&nbsp;
               {price?.interval?.toLowerCase()} &nbsp; &nbsp;
               <Icon name="user" size="sm" type="solid" color="gray" fixedWidth inlineLeft inline />
-              {totals.users} users
+              {t('seatsSetting.usersCount', {
+                count: totals.users,
+                defaultValue_one: '{{count}} user',
+                defaultValue_other: '{{count}} users',
+              })}
               <Icon name="unknown" size="lg" platformIcon inline inlineLeft />
-              {totals.devices} devices
+              {t('seatsSetting.devicesCount', {
+                count: totals.devices,
+                defaultValue_one: '{{count}} device',
+                defaultValue_other: '{{count}} devices',
+              })}
             </Stack>
           )}
         </Stack>
@@ -109,7 +119,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
       {confirm && (
         <Confirm
           open={confirm}
-          title="Confirm Billing Change"
+          title={t('seatsSetting.confirmTitle', 'Confirm Billing Change')}
           onConfirm={() => {
             dispatch.plans.updateSubscription(form)
             setConfirm(false)
@@ -119,13 +129,18 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
             setConfirm(false)
           }}
         >
-          Please confirm that you want to change your billing to &nbsp;
+          {t('seatsSetting.confirmBefore', 'Please confirm that you want to change your billing to')} &nbsp;
           <b>
             {currencyFormatter(price?.currency, (price?.amount || 0) * form.quantity)}
             &nbsp;/&nbsp;
             {price?.interval?.toLowerCase()}
           </b>
-          &nbsp; for {form.quantity} user license{form.quantity > 1 ? 's' : ''}.
+          &nbsp;{' '}
+          {t('seatsSetting.confirmAfter', {
+            count: form.quantity,
+            defaultValue_one: 'for {{count}} user license.',
+            defaultValue_other: 'for {{count}} user licenses.',
+          })}
         </Confirm>
       )}
     </List>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { List, ListItem, ListItemIcon, ListItemText, Box } from '@mui/material'
@@ -25,6 +26,7 @@ import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
 export const ConnectAdvanced: React.FC = () => {
+  const { t } = useTranslation()
   const { connection, service, instance } = React.useContext(DeviceContext)
   const accordion = useSelector((state: State) => state.ui.accordion)
   const dispatch = useDispatch<Dispatch>()
@@ -36,25 +38,30 @@ export const ConnectAdvanced: React.FC = () => {
     <Gutters size="md" top={null} bottom={null}>
       <ConnectionDetails connection={connection} app={app} show={connection.enabled || connection.connectLink} />
       <Box display="flex" marginTop={2}>
-        <ListItemBack title="Connection configuration" to="connect" />
+        <ListItemBack title={t('connectAdvanced.configTitle', 'Connection configuration')} to="connect" />
         <IconButton
           name="undo"
           color="grayDark"
-          title="Reset connection"
+          title={t('connectAdvanced.resetConnection', 'Reset connection')}
           onClick={() => dispatch.connections.forget(connection.id)}
         />
       </Box>
       <AccordionMenuItem
         gutters
-        subtitle="Advanced"
+        subtitle={t('connectAdvanced.advanced', 'Advanced')}
         defaultExpanded
         disabled
         action={
           <>
-            <IconButton name="square-dashed" title="Connection Defaults" color="grayDarker" to="defaults" />
+            <IconButton
+              name="square-dashed"
+              title={t('connectAdvanced.connectionDefaults', 'Connection Defaults')}
+              color="grayDarker"
+              to="defaults"
+            />
             <IconButton
               name="object-intersect"
-              title="Connection Type Defaults"
+              title={t('connectAdvanced.connectionTypeDefaults', 'Connection Type Defaults')}
               color="grayDarker"
               to={`/settings/defaults/${service?.typeID}`}
             />
@@ -83,7 +90,7 @@ export const ConnectAdvanced: React.FC = () => {
       {!connection.public && (
         <AccordionMenuItem
           gutters
-          subtitle="Logs"
+          subtitle={t('connectAdvanced.logs', 'Logs')}
           expanded={accordion.logs}
           onClick={() => dispatch.ui.accordion({ logs: !accordion.logs })}
           elevation={0}
@@ -93,7 +100,10 @@ export const ConnectAdvanced: React.FC = () => {
               <ListItemIcon>
                 <Icon name="terminal" />
               </ListItemIcon>
-              <ListItemText primary="CLI command log" secondary={connection.commandLog?.length ? undefined : 'Empty'} />
+              <ListItemText
+                primary={t('connectAdvanced.cliCommandLog', 'CLI command log')}
+                secondary={connection.commandLog?.length ? undefined : t('connectAdvanced.empty', 'Empty')}
+              />
             </ListItem>
             <ListItemQuote>
               {connection.commandLog?.map((l, i) => (
@@ -109,14 +119,26 @@ export const ConnectAdvanced: React.FC = () => {
                   <ListItemIcon>
                     <Icon name="code" />
                   </ListItemIcon>
-                  <ListItemText primary="Debugging" />
+                  <ListItemText primary={t('connectAdvanced.debugging', 'Debugging')} />
                 </ListItem>
                 <ListItemQuote>
                   <ListItem disablePadding>
-                    <ListItemCopy value={connection.rawEndpoint} label="Agent Endpoint" hideIcon fullWidth dense />
+                    <ListItemCopy
+                      value={connection.rawEndpoint}
+                      label={t('connectAdvanced.agentEndpoint', 'Agent Endpoint')}
+                      hideIcon
+                      fullWidth
+                      dense
+                    />
                   </ListItem>
                   <ListItem disablePadding>
-                    <ListItemCopy value={connection.rawCommand} label="Agent Command" hideIcon fullWidth dense />
+                    <ListItemCopy
+                      value={connection.rawCommand}
+                      label={t('connectAdvanced.agentCommand', 'Agent Command')}
+                      hideIcon
+                      fullWidth
+                      dense
+                    />
                   </ListItem>
                 </ListItemQuote>
               </>

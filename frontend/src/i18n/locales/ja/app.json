@@ -1,4 +1,468 @@
 {
+  "accessAccordion": {
+    "addAccess": "",
+    "guests": "",
+    "noUsers": "",
+    "organizationMembers": "",
+    "subtitle": ""
+  },
+  "accessKeyPage": {
+    "apiKey": "",
+    "description": "",
+    "developer": "",
+    "doNotShare": "",
+    "title": ""
+  },
+  "accountAccessKey": {
+    "created": "",
+    "description": "",
+    "generateCredentials": "",
+    "keyLimit": "",
+    "lastUsed": "",
+    "neverUsed": "",
+    "publicKey": "",
+    "secretKeyWarning": "",
+    "title": ""
+  },
+  "addAdminDialog": {
+    "addAdmin": "",
+    "adminAdded": "",
+    "alreadyAdmin": "",
+    "confirmAdminPromotion": "",
+    "confirmationCode": "",
+    "confirmationEmailNotice": "",
+    "confirmationEmailSent": "",
+    "confirmFailed": "",
+    "confirmInstructions": "",
+    "emailAddress": "",
+    "enterCode": "",
+    "enterEmail": "",
+    "invalidCodeRetry": "",
+    "isNowAdmin": "",
+    "noUserFound": "",
+    "promotingAfter": "",
+    "promotingBefore": "",
+    "promotionRequestFailed": "",
+    "search": "",
+    "searchDescription": "",
+    "searchFailed": "",
+    "sendingEllipsis": "",
+    "sendPromotionRequest": ""
+  },
+  "addFromNetwork": {
+    "scanForServices": "",
+    "scanNetwork": ""
+  },
+  "addPage": {
+    "addDevice": "",
+    "addInstance": "",
+    "addMany": "",
+    "alreadyShared": "",
+    "demoDevice": "",
+    "products": "",
+    "provisionInBulk": "",
+    "title": "",
+    "tryDevice": ""
+  },
+  "addPlatformServices": {
+    "label": "",
+    "placeholder": ""
+  },
+  "addProductServiceDialog": {
+    "addFailed": "",
+    "addingEllipsis": "",
+    "enabled": "",
+    "nameRequired": "",
+    "port": "",
+    "portRange": "",
+    "serviceName": "",
+    "serviceType": "",
+    "title": "",
+    "typeRequired": ""
+  },
+  "adminAdminDetailPanel": {
+    "actions": "",
+    "adminStatus": "",
+    "backToAdmins": "",
+    "created": "",
+    "deviceCounts": "",
+    "deviceSummary": "",
+    "email": "",
+    "lastLogin": "",
+    "loading": "",
+    "notFound": "",
+    "organization": "",
+    "removeAdmin": "",
+    "removeConfirmBody": "",
+    "removeConfirmSubBody": "",
+    "removeConfirmTitle": "",
+    "removedSuccess": "",
+    "removeFailed": "",
+    "removing": "",
+    "systemAdmin": "",
+    "title": "",
+    "userDevices": "",
+    "userId": ""
+  },
+  "adminAdminsListPage": {
+    "addAdmin": "",
+    "loading": "",
+    "loadingAdmins": "",
+    "loadMore": "",
+    "noAdminsFound": "",
+    "searchAllFieldsTitle": "",
+    "searchByAll": "",
+    "searchByEmail": "",
+    "searchByEmailTitle": "",
+    "searchByUserId": "",
+    "searchByUserIdTitle": ""
+  },
+  "adminConfirmPage": {
+    "backToAdmins": "",
+    "confirmAdminPromotion": "",
+    "confirmationFailed": "",
+    "confirmedMessage": "",
+    "confirmedTitle": "",
+    "confirmingPromotion": "",
+    "confirmWithCode": "",
+    "enterCode": "",
+    "enterCodeDescription": "",
+    "enterCodeTitle": "",
+    "invalidCodeLength": "",
+    "invalidCodeRetry": "",
+    "linkInvalid": "",
+    "manualCodeHint": "",
+    "title": ""
+  },
+  "adminEnterpriseLicensesListPage": {
+    "account": "",
+    "accountEmail": "",
+    "add": "",
+    "addCustomer": "",
+    "addDialogTitle": "",
+    "addedCustomer": "",
+    "addFailed": "",
+    "adding": "",
+    "confirmRemoveAfter": "",
+    "confirmRemoveBefore": "",
+    "created": "",
+    "devices": "",
+    "loading": "",
+    "loadingShort": "",
+    "loadMore_other": "",
+    "members": "",
+    "noMatching": "",
+    "noneFound": "",
+    "remove": "",
+    "removeCustomer": "",
+    "removedCustomer": "",
+    "removeDialogTitle": "",
+    "removeFailed": "",
+    "removing": "",
+    "searchPlaceholder": ""
+  },
+  "adminNoticeAttributes": {
+    "bannerNoEndDate": ""
+  },
+  "adminNoticeDetailPanel": {
+    "backToNotices": "",
+    "deleteNotice": "",
+    "deleteNoticeConfirm": "",
+    "editNotice": "",
+    "loadingNotice": "",
+    "mayHaveBeenDeleted": "",
+    "newNotice": "",
+    "noticeNotFound": "",
+    "permanentlyDeleted": ""
+  },
+  "adminNoticeForm": {
+    "bannerPreview": "",
+    "bannersCannotBeDismissed": "",
+    "blankTargetsEveryStage": "",
+    "body": "",
+    "bodyHelperBannerBold": "",
+    "bodyHelperBannerPost": "",
+    "bodyHelperBannerPre": "",
+    "bodyHelperCard": "",
+    "cancel": "",
+    "cardPreview": "",
+    "enableNotice": "",
+    "enableNoticeHelper": "",
+    "from": "",
+    "fromHelper": "",
+    "image": "",
+    "imageHelper": "",
+    "link": "",
+    "linkHelperBanner": "",
+    "linkHelperCard": "",
+    "max255Characters": "",
+    "noEndDateSet": "",
+    "noEndDateSetDetail": "",
+    "noticeIsDisabled": "",
+    "noticeIsEnabled": "",
+    "requiredMax255": "",
+    "save": "",
+    "saving": "",
+    "stage": "",
+    "stageHelperMid": "",
+    "stageHelperPre": "",
+    "title": "",
+    "titleHelperBanner": "",
+    "titleHelperCard": "",
+    "titlePlaceholder": "",
+    "type": "",
+    "typeHelperBanner": "",
+    "typeHelperCard": "",
+    "until": "",
+    "untilHelper": "",
+    "untilHelperBannerStrong": ""
+  },
+  "adminNoticesListPage": {
+    "loading": "",
+    "newNotice": "",
+    "noNotices": "",
+    "noNoticesHint": "",
+    "title": ""
+  },
+  "adminPartnerDetailPanel": {
+    "activated": "",
+    "activatedCount_other": "",
+    "activeLast30": "",
+    "addAdmin": "",
+    "addAdminDialogTitle": "",
+    "addAdminFailed": "",
+    "addChild": "",
+    "addChildDialogTitle": "",
+    "addChildFailed": "",
+    "adding": "",
+    "addRegistrant": "",
+    "addRegistrantDialogTitle": "",
+    "addRegistrantFailed": "",
+    "admins_other": "",
+    "childPartners_other": "",
+    "currentlyOnline": "",
+    "deleteConfirm": "",
+    "deleteFailed": "",
+    "deletePartner": "",
+    "deleteWithChildrenConfirm_other": "",
+    "deviceCounts": "",
+    "devicesCount_other": "",
+    "deviceSummary": "",
+    "emailLabel": "",
+    "exportDevices": "",
+    "exportFailed": "",
+    "loading": "",
+    "notFound": "",
+    "parentPartner": "",
+    "registrants_other": "",
+    "removeAdminConfirm": "",
+    "removeAdminFailed": "",
+    "removeChildConfirm": "",
+    "removeChildFailed": "",
+    "removeRegistrantConfirm": "",
+    "removeRegistrantFailed": "",
+    "renamePartner": "",
+    "selectPartner": "",
+    "totalDevices": "",
+    "updateNameFailed": ""
+  },
+  "adminPartnersListPage": {
+    "create": "",
+    "createDialogTitle": "",
+    "createFailed": "",
+    "createPartner": "",
+    "creating": "",
+    "loadingPartners": "",
+    "noMatchingPartners": "",
+    "noPartnersFound": "",
+    "parentPartnerLabel": "",
+    "partnerNameLabel": "",
+    "searchPlaceholder": "",
+    "topLevel": ""
+  },
+  "adminSidebarNav": {
+    "admins": "",
+    "enterprise": "",
+    "notices": "",
+    "partners": "",
+    "returnToApp": "",
+    "users": ""
+  },
+  "adminUserAccountPanel": {
+    "accountDetails": "",
+    "adminActions": "",
+    "adminRemoved": "",
+    "adminRemoveFailed": "",
+    "adminStatus": "",
+    "changeEmail": "",
+    "confirmDeleteBefore": "",
+    "confirmDeleteDevicesAfter": "",
+    "confirmDeleteDevicesBefore": "",
+    "confirmRemoveAdminAfter": "",
+    "confirmRemoveAdminBefore": "",
+    "created": "",
+    "delete": "",
+    "deleteUser": "",
+    "deleting": "",
+    "deviceCount_other": "",
+    "deviceSummary": "",
+    "deviceSummaryValue": "",
+    "email": "",
+    "emailUpdated": "",
+    "emailUpdateFailed": "",
+    "lastLogin": "",
+    "loading": "",
+    "notAvailable": "",
+    "organization": "",
+    "removeAdmin": "",
+    "removeAdminPrivileges": "",
+    "removing": "",
+    "standardUser": "",
+    "systemAdmin": "",
+    "userDeleted": "",
+    "userDeleteFailed": "",
+    "userDevices": "",
+    "userId": "",
+    "userNotFound": ""
+  },
+  "adminUserDetailPage": {
+    "devices": "",
+    "deviceSummary": "",
+    "loadingUser": "",
+    "userDevices": "",
+    "userNotFound": "",
+    "viewAsUser": ""
+  },
+  "adminUserDevicesPanel": {
+    "lastReported": "",
+    "loading": "",
+    "name": "",
+    "noDevicesFound": "",
+    "platform": "",
+    "services": "",
+    "status": "",
+    "userDevicesCount_other": ""
+  },
+  "adminUsersListPage": {
+    "loading": "",
+    "loadingUsers": "",
+    "loadMore": "",
+    "noUsersFound": "",
+    "searchAllFieldsTitle": "",
+    "searchByAll": "",
+    "searchByEmail": "",
+    "searchByEmailTitle": "",
+    "searchByUserId": "",
+    "searchByUserIdTitle": ""
+  },
+  "agentReachEditor": {
+    "addTagPlaceholder": "",
+    "allDevices": "",
+    "defaultAppName": "",
+    "instructions": "",
+    "limitsSuffix_other": "",
+    "matchAll": "",
+    "matchAny": "",
+    "scopeAll": "",
+    "scopeSome_other": "",
+    "summary": "",
+    "summaryNone": "",
+    "summaryUnlimited": ""
+  },
+  "announcementCard": {
+    "learnMore": "",
+    "markRead": "",
+    "new": "",
+    "typeCommunication": "",
+    "typeGeneric": "",
+    "typeRelease": "",
+    "typeSecurity": "",
+    "typeSystem": ""
+  },
+  "announcementsPage": {
+    "title": ""
+  },
+  "argumentDefinitionEditForm": {
+    "cancel": "",
+    "delete": "",
+    "description": "",
+    "descriptionHelper": "",
+    "descriptionPlaceholder": "",
+    "fileExtensions": "",
+    "fileExtensionsHelper": "",
+    "fileExtensionsPlaceholder": "",
+    "options": "",
+    "optionsHelper": "",
+    "optionsPlaceholder": "",
+    "save": "",
+    "type": "",
+    "variableName": "",
+    "variableNameHelper": "",
+    "variableNamePlaceholder": ""
+  },
+  "argumentDefinitionList": {
+    "add": "",
+    "cancel": "",
+    "edit": "",
+    "empty": "",
+    "optionsCount_other": "",
+    "title": ""
+  },
+  "argumentsValueForm": {
+    "allowedTypes": "",
+    "fileMissing": "",
+    "selectExistingFile": "",
+    "selectPlaceholder": "",
+    "title": "",
+    "unknownType": "",
+    "uploadedStatus": "",
+    "uploadFile": "",
+    "uploadFileSubLabel": ""
+  },
+  "attributeValue": {
+    "sinceRefresh": "",
+    "thisSystem": ""
+  },
+  "autoCloseToggle": {
+    "label": "",
+    "subLabel": ""
+  },
+  "autoLaunchToggle": {
+    "label": "",
+    "subLabel": ""
+  },
+  "billingPage": {
+    "title": ""
+  },
+  "changeEmailDialog": {
+    "cancel": "",
+    "currentEmail": "",
+    "emailRequired": "",
+    "invalidFormat": "",
+    "mustBeDifferent": "",
+    "newEmailLabel": "",
+    "title": "",
+    "updateEmail": "",
+    "updateFailed": "",
+    "updating": ""
+  },
+  "changePassword": {
+    "currentPassword": "",
+    "noticeAfter": "",
+    "noticeBefore": "",
+    "noticeEmphasis": "",
+    "noticeSignOut": "",
+    "noticeTitle": "",
+    "title": ""
+  },
+  "claimDevice": {
+    "claim": "",
+    "claimCode": "",
+    "claiming": "",
+    "claimingForOrg": "",
+    "claimingWarning": "",
+    "title": ""
+  },
   "columns": {
     "access": "ゲスト",
     "bind": "バインドアドレス",
@@ -56,9 +520,273 @@
     "version": "デーモンバージョン"
   },
   "common": {
+    "actionCannotBeUndone": "",
     "areYouSure": "本当によろしいですか?",
+    "cancel": "",
+    "cannotBeUndone": "",
+    "clear": "",
+    "close": "",
+    "confirm": "",
+    "confirmingEllipsis": "",
+    "delete": "",
+    "disable": "",
+    "done": "",
+    "enable": "",
+    "loading": "",
+    "loadingEllipsis": "",
+    "no": "",
+    "notAvailable": "",
+    "ok": "",
+    "or": "",
+    "remove": "",
     "save": "保存",
-    "saving": "保存中"
+    "saved": "",
+    "saving": "保存中",
+    "savingEllipsis": "",
+    "yes": ""
+  },
+  "connect": {
+    "connection": "",
+    "connectionConfiguration": "",
+    "downloadDesktop": "",
+    "persistentEndpointsBody": "",
+    "persistentEndpointsTitle": "",
+    "service": "",
+    "serviceConfiguration": ""
+  },
+  "connectAdvanced": {
+    "advanced": "",
+    "agentCommand": "",
+    "agentEndpoint": "",
+    "cliCommandLog": "",
+    "configTitle": "",
+    "connectionDefaults": "",
+    "connectionTypeDefaults": "",
+    "debugging": "",
+    "empty": "",
+    "logs": "",
+    "resetConnection": ""
+  },
+  "connectedAppDetailPage": {
+    "authorized": "",
+    "details": "",
+    "deviceAccess": "",
+    "grantedWhenSignedIn": "",
+    "lastActive": "",
+    "noActivityYet": "",
+    "noDeviceAccess": "",
+    "noLongerAuthorized": "",
+    "permissions": "",
+    "requestAgain": "",
+    "revoke": "",
+    "revokeAccess": "",
+    "revokeAccessConfirmTitle": "",
+    "service": "",
+    "signOutBefore": "",
+    "title": ""
+  },
+  "connectedApps": {
+    "empty": "",
+    "loading": "",
+    "title": ""
+  },
+  "connectedAppsPage": {
+    "description": "",
+    "title": ""
+  },
+  "connectionDefaultsForm": {
+    "saved": ""
+  },
+  "connectionDefaultsPage": {
+    "applicationType": "",
+    "applicationTypeDefaults": "",
+    "connection": "",
+    "overrideHint": "",
+    "reset": "",
+    "service": "",
+    "serviceType": "",
+    "title": ""
+  },
+  "connectionDetails": {
+    "cannotLaunch": "",
+    "copyLabel": "",
+    "guideCopyOrLaunchAfter": "",
+    "guideCopyOrLaunchBefore": "",
+    "guideCreatedBrowser": "",
+    "guideCreatedDesktop": "",
+    "guideLaunchMethod": "",
+    "guideTitle": "",
+    "host": "",
+    "localEndpoint": "",
+    "port": "",
+    "publicEndpoint": "",
+    "share": "",
+    "unencrypted": "",
+    "user": ""
+  },
+  "connectionLogSetting": {
+    "label": "",
+    "showLog": ""
+  },
+  "connectionOtherPage": {
+    "disconnect": ""
+  },
+  "connectionsPage": {
+    "connected": "",
+    "idle": "",
+    "loading": "",
+    "noConnections": "",
+    "noConnectionsHint": "",
+    "unknown": ""
+  },
+  "connectionSurvey": {
+    "bad": "",
+    "giveFeedback": "",
+    "good": "",
+    "howWasConnection": "",
+    "improveMessage": "",
+    "okay": "",
+    "thankYou": "",
+    "whatHappened": ""
+  },
+  "connectionType": {
+    "connecting": "",
+    "idle": "",
+    "inactive": "",
+    "localProxy": "",
+    "p2p": "",
+    "p2pWebsocket": "",
+    "persistentPublic": "",
+    "proxy": "",
+    "publicProxy": "",
+    "publicReverseProxy": "",
+    "serviceKey": ""
+  },
+  "connectLinkSetting": {
+    "authNone": "",
+    "authPassword": "",
+    "confirmBody": "",
+    "confirmBodyWithPassword": "",
+    "disabledSubLabel": "",
+    "enabledSubLabel": "",
+    "label": "",
+    "makePublicAction": "",
+    "noPasswordNotice": "",
+    "passwordLabel": "",
+    "passwordProtectedNotice": "",
+    "permissionSubLabel": "",
+    "webAuthenticationLabel": ""
+  },
+  "copyCodeBlock": {
+    "copy": "",
+    "copyCode": "",
+    "copyCommand": ""
+  },
+  "createAccessKey": {
+    "accessKeyIdLabel": "",
+    "creating": "",
+    "done": "",
+    "download": "",
+    "readyNotice": "",
+    "secretAccessKeyLabel": "",
+    "secretWarning": "",
+    "title": ""
+  },
+  "creditCard": {
+    "cardEndingIn": "",
+    "expiredDate": "",
+    "expiredNotice": "",
+    "expiredNoticeDetail": "",
+    "expiringDate": "",
+    "processing": "",
+    "title": "",
+    "update": ""
+  },
+  "customerAddPage": {
+    "add": "",
+    "adding": "",
+    "cancel": "",
+    "noticePrefix": "",
+    "noticeSuffix": "",
+    "subtitle": "",
+    "title": ""
+  },
+  "customerPage": {
+    "license": "",
+    "removeWarning": "",
+    "salesRep": "",
+    "updatePlan": ""
+  },
+  "customerPlansPage": {
+    "selectPlanFor": ""
+  },
+  "deleteAccessKey": {
+    "confirmLabel": "",
+    "confirmText": "",
+    "title": "",
+    "warning": ""
+  },
+  "deleteAccountSection": {
+    "confirmHelp": "",
+    "confirmSorry": "",
+    "confirmTitle": "",
+    "contactMeLabel": "",
+    "deleteButton": "",
+    "description": "",
+    "otherReasonLabel": "",
+    "paidPlanDowngrade": "",
+    "paidPlanNotice": "",
+    "permanentWarning": "",
+    "reasonAnotherAccount": "",
+    "reasonConnectionQuality": "",
+    "reasonCost": "",
+    "reasonCouldntConnect": "",
+    "reasonCouldntGetOnline": "",
+    "reasonInstallDifficult": "",
+    "reasonNotExpected": "",
+    "reasonNotUsing": "",
+    "reasonTooHard": "",
+    "reasonUnsupportedDevice": "",
+    "reasonUsingSomethingElse": "",
+    "snackbar": "",
+    "turnaround": ""
+  },
+  "deleteDevice": {
+    "deletingDevices": "",
+    "mustBeOffline": "",
+    "title": "",
+    "uninstallRecommendation": "",
+    "unregisterTitle": "",
+    "unregisterWarning": "",
+    "warning": ""
+  },
+  "deviceBulkTransferPage": {
+    "blockedCount_other": "",
+    "blockedNames": "",
+    "confirmOwnershipBefore": "",
+    "confirmOwnershipMiddle": "",
+    "confirmWarning": "",
+    "deviceCount_other": "",
+    "goBack": "",
+    "title": "",
+    "transferInfo": "",
+    "transferringCount_other": ""
+  },
+  "deviceDescriptionSetting": {
+    "label": ""
+  },
+  "deviceGraphColumn": {
+    "title": ""
+  },
+  "deviceHeaderMenu": {
+    "configure": "",
+    "details": "",
+    "logs": "",
+    "shareAccess": "",
+    "unknown": ""
+  },
+  "deviceLabelSetting": {
+    "label": ""
   },
   "deviceList": {
     "addTag": "タグを追加",
@@ -81,6 +809,377 @@
     "selected": "選択中",
     "selectToRestore": "復元するデバイスを選択してください。",
     "tagsLabel": "タグ"
+  },
+  "deviceName": {
+    "new": "",
+    "noDeviceFound": "",
+    "sharedBy": "",
+    "unlicensed": ""
+  },
+  "deviceNameLocation": {
+    "rename": "",
+    "thisDevice": ""
+  },
+  "deviceNameSetting": {
+    "label": ""
+  },
+  "deviceOptionMenu": {
+    "deviceDetails": "",
+    "deviceLink": "",
+    "makeProduct": "",
+    "restoreDevice": "",
+    "serviceLink": "",
+    "shareAccess": "",
+    "transferDevice": ""
+  },
+  "devicePage": {
+    "availableServices": "",
+    "availableServicesDescription": "",
+    "deviceNotFound": "",
+    "deviceOffline": "",
+    "deviceUnlicensed": "",
+    "registeringEllipsis": "",
+    "restoreDevice": "",
+    "selectServiceInstruction": "",
+    "service": ""
+  },
+  "devicePresenceSetting": {
+    "label": ""
+  },
+  "devicesActionMenu": {
+    "confirmTitle": "",
+    "delete": "",
+    "deleteCount_other": "",
+    "deleteWarning": "",
+    "more": "",
+    "selectedCount_other": "",
+    "transfer": "",
+    "uninstallHint": ""
+  },
+  "devicesApplicationsTabs": {
+    "allServices": "",
+    "screenView": ""
+  },
+  "deviceSetupItem": {
+    "alreadyCreated": "",
+    "alreadyRegistered": "",
+    "guideBody": "",
+    "guideTitle": "",
+    "notYourSystem": "",
+    "restore": "",
+    "restoring": "",
+    "thisSystem": ""
+  },
+  "deviceTransferPage": {
+    "confirmTransferPrefix": "",
+    "confirmTransferSuffix": "",
+    "loseAccessWarning": "",
+    "title": "",
+    "transferInfo": "",
+    "transferringTo": ""
+  },
+  "eventMessage": {
+    "allowed": "",
+    "and": "",
+    "attemptedToLogIn": "",
+    "connectedTo": "",
+    "deleted": "",
+    "deletedTarget": "",
+    "deletedUser": "",
+    "deviceCount_other": "",
+    "disconnectedFrom": "",
+    "duration": "",
+    "from": "",
+    "licenseUpdated": "",
+    "loggedIn": "",
+    "mfaDisabled": "",
+    "mfaEnabled": "",
+    "on": "",
+    "phoneNumberChanged": "",
+    "received": "",
+    "removedSharingOf": "",
+    "resetPassword": "",
+    "restricted": "",
+    "script": "",
+    "scriptExecutionWith": "",
+    "sent": "",
+    "shared": "",
+    "status": {
+      "cancelled": "",
+      "failed": "",
+      "ready": "",
+      "running": "",
+      "success": "",
+      "unknown": "",
+      "waiting": ""
+    },
+    "their": "",
+    "to": "",
+    "transferred": "",
+    "unknown": "",
+    "unknownEventType": "",
+    "wentOffline": "",
+    "wentOnline": "",
+    "with": "",
+    "you": "",
+    "youLeftSharedDevice": "",
+    "youLower": "",
+    "your": ""
+  },
+  "eventTypeFilterMenu": {
+    "all": "",
+    "filterEvents": ""
+  },
+  "feedbackPage": {
+    "emailUsAt": "",
+    "featureRequestHint": "",
+    "includedData": "",
+    "intro": "",
+    "message": "",
+    "send": "",
+    "subject": "",
+    "title": ""
+  },
+  "fileAddPage": {
+    "noPermission": "",
+    "uploadFile": "",
+    "uploading": ""
+  },
+  "fileDeleteButton": {
+    "title": "",
+    "warning": ""
+  },
+  "fileMetadataForm": {
+    "description": "",
+    "name": "",
+    "uploadFile": ""
+  },
+  "filesPage": {
+    "demoDescription": "",
+    "demoScript": "",
+    "demoScriptDescription": "",
+    "demoScriptName": "",
+    "moreExamples": "",
+    "needDevice": "",
+    "tryDocker": "",
+    "uploadFileNotice": "",
+    "visitDocs": ""
+  },
+  "fileUpload": {
+    "binaryScriptUploaded": "",
+    "dragAndDrop": "",
+    "loadingEllipsis": "",
+    "readError": "",
+    "scriptLabel": "",
+    "selected": "",
+    "selectFile": "",
+    "upload": ""
+  },
+  "globalSearch": {
+    "placeholder": ""
+  },
+  "graphsPage": {
+    "deviceListAndDetails": "",
+    "logsAvailable": "",
+    "serviceDetails": "",
+    "title": "",
+    "updateToSeeMore": ""
+  },
+  "guideStep": {
+    "exitGuide": "",
+    "next": "",
+    "previous": "",
+    "stepOf": ""
+  },
+  "header": {
+    "back": "",
+    "deviceSearch": "",
+    "hideSelect": "",
+    "products": "",
+    "showSelect": ""
+  },
+  "headerOverrideSetting": {
+    "description": "",
+    "title": ""
+  },
+  "inlineFileFieldSetting": {
+    "reset": "",
+    "selectApplication": ""
+  },
+  "inlineSetting": {
+    "cancel": "",
+    "reset": "",
+    "save": ""
+  },
+  "invoices": {
+    "amount": "",
+    "date": "",
+    "empty": "",
+    "invoice": "",
+    "loading": "",
+    "oneTime": "",
+    "plan": "",
+    "seeInvoice": "",
+    "title": ""
+  },
+  "jobAttributes": {
+    "fileDeleted": "",
+    "filter": "",
+    "guestScript": "",
+    "match": "",
+    "name": "",
+    "none": "",
+    "runBy": "",
+    "targets": "",
+    "time": "",
+    "unknown": ""
+  },
+  "jobDetailPage": {
+    "cancelRun": "",
+    "deleteRun": "",
+    "deleteRunWarning": "",
+    "deviceResults": "",
+    "devices": "",
+    "downloadLogsAllDevices": "",
+    "downloadLogsThisDevice": "",
+    "fileDeleted": "",
+    "guestScript": "",
+    "jobNotFound": "",
+    "newRun": "",
+    "noDevicesInRun": "",
+    "noReturnValues": ""
+  },
+  "jobDeviceDetailPage": {
+    "back": "",
+    "deviceDetails": "",
+    "noReturnValues": "",
+    "unknown": ""
+  },
+  "jobsPage": {
+    "runScriptToStart": ""
+  },
+  "lanSharePage": {
+    "allowUsersToConnect": "",
+    "bindIpAddress": "",
+    "cancel": "",
+    "classARestrictionName": "",
+    "classARestrictionNote": "",
+    "classBRestrictionName": "",
+    "classBRestrictionNote": "",
+    "classCRestrictionName": "",
+    "classCRestrictionNote": "",
+    "enableLanSharing": "",
+    "invalidIp": "",
+    "ipAddress": "",
+    "ipLatchingName": "",
+    "ipLatchingNote": "",
+    "localNetworkSecurity": "",
+    "localNetworkSharing": "",
+    "mask": "",
+    "noneName": "",
+    "noneNote": "",
+    "save": "",
+    "settings": "",
+    "singleIpRestrictionName": "",
+    "singleIpRestrictionNote": "",
+    "yourLocalIpAddress": ""
+  },
+  "launchTypeSelect": {
+    "label": "",
+    "none": ""
+  },
+  "leaveDevice": {
+    "title": "",
+    "warning": ""
+  },
+  "licensingNoticeDisplay": {
+    "canceledTitle": "",
+    "close": "",
+    "exceededLimit_other": "",
+    "expiredTitle": "",
+    "incompleteTitle": "",
+    "learnMore": "",
+    "pastDueTitle": "",
+    "planTitle": "",
+    "please": "",
+    "pleaseCheck": "",
+    "toContinueService": "",
+    "updatePaymentInformation": "",
+    "updatePaymentMethod": "",
+    "upgrade": "",
+    "upgradeLicense": "",
+    "upgradeToProfessional": "",
+    "willRenewOn": ""
+  },
+  "licensingPage": {
+    "title": ""
+  },
+  "limitsSetting": {
+    "licenseKey": ""
+  },
+  "localhostScanForm": {
+    "footerNote": "",
+    "rescan": "",
+    "scanning": "",
+    "title": "",
+    "typeAndPort": ""
+  },
+  "logsPage": {
+    "title": ""
+  },
+  "mfaConfigureApp": {
+    "code": "",
+    "generateNewCode": "",
+    "processing": "",
+    "scanInstructions": "",
+    "submit": "",
+    "verificationCodeLabel": ""
+  },
+  "mfaConfigureSms": {
+    "changePhoneNumber": "",
+    "confirm": "",
+    "confirming": "",
+    "didNotReceive": "",
+    "previouslySent": "",
+    "previouslySentHint": "",
+    "resendCode": "",
+    "sent": "",
+    "sentHint": "",
+    "verificationCode": ""
+  },
+  "mfaMethod": {
+    "onAuthenticatorApp": "",
+    "onSms": "",
+    "recoveryCode": "",
+    "recoveryCodeDescription": "",
+    "recoveryCodeWarning": "",
+    "turnOff": "",
+    "verified": ""
+  },
+  "mfaPhoneForm": {
+    "disableWarning": "",
+    "disclaimer": "",
+    "enterTitle": "",
+    "phoneLabel": "",
+    "sending": "",
+    "submit": "",
+    "updateTitle": "",
+    "verified": ""
+  },
+  "mfaPreference": {
+    "description": "",
+    "googleSignInNotice": "",
+    "offDisabled": "",
+    "title": "",
+    "turnOn": ""
+  },
+  "mfaSelectMethod": {
+    "authenticatorApp": "",
+    "cancel": "",
+    "chooseMethod": "",
+    "next": "",
+    "smsNumber": "",
+    "verificationMethod": ""
   },
   "nav": {
     "account": "アカウント",
@@ -114,6 +1213,101 @@
     "thisDevice": "このデバイス",
     "totalDevices": "合計デバイス数",
     "totalNetworks": "合計ネットワーク数"
+  },
+  "networkAdd": {
+    "add": "",
+    "adding": "",
+    "cancel": "",
+    "guideInstructions": "",
+    "name": ""
+  },
+  "networkAddPage": {
+    "title": ""
+  },
+  "networkHeaderMenu": {
+    "deleteNetwork": "",
+    "deletingBody": "",
+    "deletingNoticePrefix": "",
+    "details": "",
+    "leaveNetwork": "",
+    "leavingBody": "",
+    "leavingNoticePrefix": "",
+    "shareAccess": "",
+    "unknownNetwork": ""
+  },
+  "networkPage": {
+    "addServicesHint": "",
+    "connections": "",
+    "emptyNetwork": "",
+    "networkAdded": "",
+    "nextAddService": "",
+    "ownOrManageNote": "",
+    "settings": "",
+    "startAll": "",
+    "stopAll": ""
+  },
+  "networksAccordion": {
+    "addNetwork": "",
+    "connectToNetwork": "",
+    "manageRequired": "",
+    "sharedRestricted": "",
+    "title": ""
+  },
+  "networkSettings": {
+    "nameLabel": ""
+  },
+  "networkSharePage": {
+    "grantingAccess": "",
+    "share": "",
+    "shareTitle": "",
+    "sharingEllipsis": ""
+  },
+  "networksPage": {
+    "empty": "",
+    "emptyHint": "",
+    "guideBody": "",
+    "guideCtaAfter": "",
+    "guideCtaBefore": "",
+    "guideTitle": "",
+    "newNetwork": "",
+    "sharedWithYou": "",
+    "title": ""
+  },
+  "notificationSettings": {
+    "custom": "",
+    "email": "",
+    "globalSettings": "",
+    "systemNotification": "",
+    "title": ""
+  },
+  "onboardScanning": {
+    "addRemoteAccess": "",
+    "cancel": "",
+    "discoverableNote": "",
+    "help": "",
+    "noteBody": "",
+    "noteLabel": "",
+    "scan": "",
+    "title": "",
+    "turnOnPi": ""
+  },
+  "onboardWifi": {
+    "cellularConnected": "",
+    "connectedAnotherWay": "",
+    "connecting": "",
+    "connectInstructions": "",
+    "connectIntro": "",
+    "ethernetConnected": "",
+    "network": "",
+    "noNetworksFound": "",
+    "password": "",
+    "scanning": "",
+    "setWifi": "",
+    "skip": "",
+    "title": "",
+    "updateWifi": "",
+    "wifiConnected": "",
+    "wifiNotConnected": ""
   },
   "options": {
     "advanced": "詳細設定",
@@ -175,6 +1369,586 @@
       "subLabel": "このデバイスの登録を解除し、保存されたすべてのデータを完全に削除して、システムエージェントとコマンドラインツールをアンインストールします。アプリケーションをシステムから削除する前に実行してください。デバイスの所有者のみが実行できます。"
     }
   },
+  "organizationAddPage": {
+    "add": "",
+    "purchaseLicensesHint": "",
+    "roleAssignment": "",
+    "title": "",
+    "upgrade": ""
+  },
+  "organizationColor": {
+    "theme": ""
+  },
+  "organizationEmptyPage": {
+    "create": "",
+    "createOrgLine1": "",
+    "createOrgLine2": "",
+    "name": ""
+  },
+  "organizationGuestDetails": {
+    "devices": "",
+    "guestAccess": "",
+    "loading": "",
+    "loadingFailed": "",
+    "networks": ""
+  },
+  "organizationGuestsPage": {
+    "description": "",
+    "needManagePermission": "",
+    "title": ""
+  },
+  "organizationLicensingPage": {
+    "title": ""
+  },
+  "organizationMemberDetails": {
+    "loading": "",
+    "member": "",
+    "memberSince": "",
+    "networks": ""
+  },
+  "organizationMembershipPage": {
+    "cannotBeUndone": "",
+    "contactOwnerHint": "",
+    "editOrganization": "",
+    "joined": "",
+    "leaveAccount": "",
+    "leaveOrganization": "",
+    "noMemberships": "",
+    "noMembershipsHint": "",
+    "owner": "",
+    "title": "",
+    "yourOrganization": ""
+  },
+  "organizationMembersPage": {
+    "addMember": "",
+    "autoShareNotice": "",
+    "title": "",
+    "unlicensedLimit": ""
+  },
+  "organizationPage": {
+    "account": "",
+    "customers": "",
+    "guests": "",
+    "license": "",
+    "members": "",
+    "needAdminPrivileges": "",
+    "planTitle": "",
+    "roles": "",
+    "settings": "",
+    "tags": ""
+  },
+  "organizationRolePage": {
+    "deleteWarningAfter": "",
+    "deleteWarningBefore": "",
+    "deviceNetworkPermissions": "",
+    "name": "",
+    "newRole": "",
+    "save": "",
+    "saved": "",
+    "saving": "",
+    "systemRoleNotice": "",
+    "userPermissions": ""
+  },
+  "organizationRolesPage": {
+    "addRole": "",
+    "memberCount_other": "",
+    "none": "",
+    "role": "",
+    "roles": "",
+    "upgrade": "",
+    "upgradeToBusiness": ""
+  },
+  "organizationSAMLSettings": {
+    "checkDomain": "",
+    "checking": "",
+    "clientIdFieldLabel": "",
+    "clientIdLabel": "",
+    "clientSecretFieldLabel": "",
+    "dnsInstructions": "",
+    "domainLabel": "",
+    "enterDomain": "",
+    "identityProvider": "",
+    "instructionsLink": "",
+    "issuerFieldLabel": "",
+    "issuerLabel": "",
+    "providerEnabled": "",
+    "providerTypeLabel": "",
+    "requireLogin": "",
+    "requireLoginSubLabel": "",
+    "samlOidcSupported": "",
+    "setup": "",
+    "updating": "",
+    "uploadMetadata": "",
+    "validateDomainNotice": "",
+    "verificationCNAME": "",
+    "verificationValue": "",
+    "verified": ""
+  },
+  "organizationSamlUpload": {
+    "label": "",
+    "subLabel": ""
+  },
+  "organizationSelect": {
+    "activeConnectionsCount_other": "",
+    "guideDescription": "",
+    "guideTitle": "",
+    "memberLabel": "",
+    "organizations": "",
+    "ownerLabel": "",
+    "personalAccount": ""
+  },
+  "organizationSelectList": {
+    "membershipSettings": "",
+    "organizations": "",
+    "owner": "",
+    "personalAccount": ""
+  },
+  "organizationSettingsPage": {
+    "deleteOrganization": "",
+    "general": "",
+    "organizationName": "",
+    "permanentlyDeleting": "",
+    "removeMembersWarning": "",
+    "settings": ""
+  },
+  "partnerStatsDetailPanel": {
+    "activated": "",
+    "activeLast30Days": "",
+    "admins_other": "",
+    "backToPartners": "",
+    "cancel": "",
+    "childPartners_other": "",
+    "currentlyOnline": "",
+    "devicesCount_other": "",
+    "devicesReportedOnce_other": "",
+    "deviceSummary": "",
+    "exportFailed": "",
+    "exportToCsv": "",
+    "loadingPartner": "",
+    "parentPartner": "",
+    "partnerNotFound": "",
+    "partnerSummary": "",
+    "registrants_other": "",
+    "renamePartner": "",
+    "save": "",
+    "totalDevices": "",
+    "updateNameFailed": ""
+  },
+  "partnerStatsListPage": {
+    "loading": "",
+    "noAdminAccess": "",
+    "noMatchingPartners": "",
+    "noPartnersFound": "",
+    "searchPlaceholder": ""
+  },
+  "passwordStrengthInput": {
+    "confirmNewPassword": "",
+    "enterNewPassword": "",
+    "fair": "",
+    "fixProblems": "",
+    "good": "",
+    "helperText": "",
+    "noMatch": "",
+    "strengthDescription": "",
+    "strong": "",
+    "tooLong": "",
+    "tooShort": "",
+    "veryWeak": "",
+    "weak": ""
+  },
+  "planCheckout": {
+    "devices": "",
+    "downgrade": "",
+    "free": "",
+    "interval": "",
+    "licenses": "",
+    "personalPlan": "",
+    "processing": "",
+    "submit": "",
+    "switchToPersonalConfirm": "",
+    "total": "",
+    "users": ""
+  },
+  "plans": {
+    "billedMonthly": "",
+    "continue": "",
+    "currentPlan": "",
+    "downgradeNotice": "",
+    "downgradeNoticeDetail": "",
+    "downgradePlanTitle": "",
+    "freePlan": "",
+    "licenseCount_other": "",
+    "perMonthPerLicense": "",
+    "personal": "",
+    "select": "",
+    "update": "",
+    "usersAndDevices": ""
+  },
+  "plansPage": {
+    "loading": "",
+    "pricingNotice": "",
+    "removingResellerPrefix": "",
+    "removingResellerSuffix": "",
+    "severWarning": "",
+    "title": ""
+  },
+  "platformAddPage": {
+    "multiUse": "",
+    "oneTimeUse": "",
+    "registerPermissionRequired": "",
+    "screenViewCodeHint": ""
+  },
+  "portSetting": {
+    "localPort": ""
+  },
+  "productAddPage": {
+    "createFailed": "",
+    "creating": "",
+    "nameRequired": "",
+    "platform": "",
+    "platformRequired": "",
+    "productName": "",
+    "title": ""
+  },
+  "productOptionMenu": {
+    "cannotBeUndone": "",
+    "deleteConfirmPrefix": "",
+    "deleteConfirmSuffix": "",
+    "deleteProduct": "",
+    "transferProduct": ""
+  },
+  "productPage": {
+    "addService": "",
+    "loadingProduct": "",
+    "noServicesDefined": "",
+    "platformId": "",
+    "productNotFound": "",
+    "productNotFoundHint": "",
+    "service": "",
+    "unknown": ""
+  },
+  "productsActionBar": {
+    "clearSelection": "",
+    "confirmAction_other": "",
+    "confirmBody_other": "",
+    "confirmTitle": "",
+    "deleteSelected": "",
+    "selected": ""
+  },
+  "productServiceAddPage": {
+    "failedToAddService": "",
+    "newService": "",
+    "productNotFound": ""
+  },
+  "productServiceDetailPage": {
+    "actionCannotBeUndone": "",
+    "details": "",
+    "productNotFound": "",
+    "removeService": "",
+    "removeServiceConfirmPrefix": "",
+    "serviceMayHaveBeenRemoved": "",
+    "serviceNotFound": ""
+  },
+  "productTransferPage": {
+    "cancel": "",
+    "confirmMiddle": "",
+    "confirmPrefix": "",
+    "loseAccessWarning": "",
+    "notFound": "",
+    "title": "",
+    "transfer": "",
+    "transferDescription": "",
+    "transferring": "",
+    "transferringTo": ""
+  },
+  "promptModal": {
+    "applicationPath": "",
+    "title": ""
+  },
+  "publicSetting": {
+    "ipLatching": "",
+    "label": "",
+    "latchHelp": "",
+    "none": "",
+    "openHelp": ""
+  },
+  "qualityDetails": {
+    "availability": "",
+    "availabilityCaption": "",
+    "good": "",
+    "instability": "",
+    "instabilityCaption": "",
+    "moderate": "",
+    "poor": "",
+    "unknown": ""
+  },
+  "raspberrypiOptionsPage": {
+    "addAccessDescription": "",
+    "addAccessQuestion": "",
+    "addAccessTitle": "",
+    "downloadDescription": "",
+    "downloadQuestion": "",
+    "downloadTitle": "",
+    "heading": "",
+    "onboardDescription": "",
+    "onboardQuestion": "",
+    "onboardTitle": ""
+  },
+  "rentANodeForm": {
+    "addDns": "",
+    "addIpv6": "",
+    "all": "",
+    "deviceName": "",
+    "dnsAccessHelp": "",
+    "invalidPhone": "",
+    "openPorts": "",
+    "openPortsHelp": "",
+    "phone": "",
+    "processingNotice": "",
+    "sshPublicKey": "",
+    "submitRequest": "",
+    "submitting": "",
+    "title": ""
+  },
+  "rentANodeRequest": {
+    "availability": "",
+    "cores": "",
+    "description": "",
+    "memory": "",
+    "os": "",
+    "storage": ""
+  },
+  "resellerPage": {
+    "addCustomer": "",
+    "title": ""
+  },
+  "resellerSettings": {
+    "logoUrl": "",
+    "reseller": ""
+  },
+  "restore": {
+    "body": "",
+    "restoringDevice": "",
+    "title": ""
+  },
+  "restoreModal": {
+    "generatingCommand": "",
+    "instructions": "",
+    "restoreCodeLabel": "",
+    "title": ""
+  },
+  "roleAccessCounts": {
+    "counting": "",
+    "devicesCount_other": "",
+    "networksCount_other": ""
+  },
+  "routeSetting": {
+    "adaptiveDescription": "",
+    "adaptiveName": "",
+    "label": "",
+    "p2pDescription": "",
+    "p2pName": "",
+    "proxyDescription": "",
+    "proxyName": "",
+    "publicDescription": "",
+    "publicName": ""
+  },
+  "scanPage": {
+    "description": "",
+    "title": ""
+  },
+  "scriptDeleteButton": {
+    "title": "",
+    "warning": ""
+  },
+  "scriptEditPage": {
+    "addDemoScript": "",
+    "addScript": "",
+    "copied": "",
+    "copyScript": "",
+    "description": "",
+    "editScript": "",
+    "name": "",
+    "newRun": "",
+    "save": "",
+    "saveAndRun": "",
+    "saving": "",
+    "unsavedChangesNote": ""
+  },
+  "scriptingActionBar": {
+    "chooseScript": "",
+    "clearSelection": "",
+    "devicesSelected_other": ""
+  },
+  "scriptingHeader": {
+    "add": "",
+    "adminRequired": "",
+    "feedback": "",
+    "upload": ""
+  },
+  "scriptPage": {
+    "created": "",
+    "deviceCount_other": "",
+    "edit": "",
+    "newRun": "",
+    "noDevices": "",
+    "noRunsYet": "",
+    "ready": "",
+    "running": "",
+    "runs": "",
+    "updated": "",
+    "viewAllRuns": ""
+  },
+  "scriptRunForm": {
+    "devices": "",
+    "moreCount_other": "",
+    "noScriptData": "",
+    "notAllowedOn": "",
+    "removeDeviceCount_other": "",
+    "running": "",
+    "runNow": "",
+    "saveHint": "",
+    "targetDevices": ""
+  },
+  "scriptRunSummary": {
+    "all": "",
+    "arguments": "",
+    "filter": "",
+    "match": "",
+    "missingFile": "",
+    "noDevices": "",
+    "notSet": "",
+    "runConfiguration": "",
+    "showLess": "",
+    "showMore": "",
+    "showMoreCount_other": "",
+    "targets": ""
+  },
+  "scriptsListHeader": {
+    "add": "",
+    "adminRequired": "",
+    "back": "",
+    "files": "",
+    "scripts": "",
+    "upload": ""
+  },
+  "searchField": {
+    "clearSearch": "",
+    "filtered": "",
+    "placeholder": "",
+    "search": "",
+    "searchedOf": "",
+    "total": "",
+    "totalDevices": ""
+  },
+  "seatsSetting": {
+    "confirmAfter_other": "",
+    "confirmBefore": "",
+    "confirmTitle": "",
+    "devicesCount_other": "",
+    "label": "",
+    "usersCount_other": "",
+    "warning": ""
+  },
+  "serviceAddPage": {
+    "maxServices_other": "",
+    "newService": ""
+  },
+  "serviceAttributesForm": {
+    "addCustomTokens": "",
+    "addCustomTokensDescription": "",
+    "applicationPath": "",
+    "autoLaunch": "",
+    "command": "",
+    "customTokens": "",
+    "defaultAdaptiveRouting": "",
+    "defaultTemplate": "",
+    "defaultTokens": "",
+    "example": "",
+    "hostHeaderOverride": "",
+    "hostHeaderOverrideCaption": "",
+    "launchMethod": "",
+    "localPort": "",
+    "localPortAutoAssign": "",
+    "localPortCaption": "",
+    "noDefaultOverride": "",
+    "routing": "",
+    "routingDesktopOnly": "",
+    "tokenDefault": "",
+    "tokenFoundIn": ""
+  },
+  "serviceDefaultsPage": {
+    "defaults": "",
+    "description": "",
+    "title": ""
+  },
+  "serviceEditPage": {
+    "title": ""
+  },
+  "serviceForm": {
+    "awsExample": "",
+    "disableServiceHelp": "",
+    "doubleCheckRunning": "",
+    "enableService": "",
+    "noServiceFoundOn": "",
+    "notRemoteConfigurable": "",
+    "optional": "",
+    "or": "",
+    "retry": "",
+    "serviceDescription": "",
+    "serviceDescriptionHelp": "",
+    "serviceFoundOn": "",
+    "serviceHost": "",
+    "serviceHostHelp": "",
+    "serviceIsDisabled": "",
+    "serviceIsEnabled": "",
+    "serviceName": "",
+    "servicePort": "",
+    "servicePortHelp": "",
+    "serviceSetup": "",
+    "serviceUrl": "",
+    "serviceUrlHelp": "",
+    "setupConnectionDefaults": "",
+    "updatePackageHelp": ""
+  },
+  "serviceGraphColumn": {
+    "title": ""
+  },
+  "serviceHeaderMenu": {
+    "connectFromAnywhere": "",
+    "runningOnThisDevice": "",
+    "selectAnotherDevice": "",
+    "shareAccess": "",
+    "unknown": ""
+  },
+  "serviceKeySetting": {
+    "beta": "",
+    "deleteAction": "",
+    "deleteBodyPrefix": "",
+    "deleteBodySuffix": "",
+    "deleteKeyTitle": "",
+    "deleteTitle": "",
+    "disableAction": "",
+    "disableBody": "",
+    "disabledSubLabel": "",
+    "disableTitle": "",
+    "enableAction": "",
+    "enableBody": "",
+    "enabledSubLabel": "",
+    "enableTitle": "",
+    "generateAction": "",
+    "generateBodyPrefix": "",
+    "generateBodySuffix": "",
+    "generateTitle": "",
+    "label": "",
+    "nodePackage": "",
+    "permissionSubLabel": ""
+  },
+  "serviceUsersPage": {
+    "addGuestAccess": "",
+    "addOrgMember": "",
+    "serviceAccess": ""
+  },
   "settings": {
     "accessKeys": "アクセスキー",
     "accountDeletion": "アカウントの削除",
@@ -208,5 +1982,157 @@
     "urlEndpoint": "URLエンドポイント",
     "visitWeb": "Remote.Itのウェブサイトにアクセス",
     "webhookHelp": "公開されているHTTPS URLを使用してください。エンドポイントはPOSTを受け付け、5秒以内に200を返す必要があります。"
+  },
+  "settingsDisableNetworkItem": {
+    "description": "",
+    "label": "",
+    "restartNotice": ""
+  },
+  "setupDevice": {
+    "addDevice": "",
+    "addDifferent": "",
+    "name": "",
+    "nameInUse": "",
+    "setupFor": ""
+  },
+  "sharedAccessSetting": {
+    "label": "",
+    "subLabel": ""
+  },
+  "shareDetails": {
+    "allowScripting": ""
+  },
+  "sharedUsersLists": {
+    "addOrganizationMember": "",
+    "connected": "",
+    "createOrganization": "",
+    "guests": "",
+    "noAccess": "",
+    "or": "",
+    "organizationMembers": "",
+    "shareToGuest": ""
+  },
+  "sharingForm": {
+    "allowScriptExecution": "",
+    "allowScriptExecutionHelp": "",
+    "chooseServices": "",
+    "services": ""
+  },
+  "statusChip": {
+    "connected": "",
+    "idle": "",
+    "offline": "",
+    "offlineLabel": "",
+    "online": "",
+    "onlineLabel": "",
+    "public": "",
+    "unknown": "",
+    "unlicensed": ""
+  },
+  "subdomainSetting": {
+    "subdomain": ""
+  },
+  "tagEditor": {
+    "keyboardShortcut": "",
+    "label": "",
+    "placeholder": ""
+  },
+  "tagFilter": {
+    "accessLabel": "",
+    "all": "",
+    "any": "",
+    "deviceCount_other": "",
+    "matchLabel": "",
+    "noDevices": "",
+    "none": "",
+    "savedDevices": "",
+    "selectDevices": "",
+    "selectedCount_other": "",
+    "selectedDevices": "",
+    "tagged": ""
+  },
+  "tagsPage": {
+    "addTag": "",
+    "allDevicesTagRemoved": "",
+    "cannotBeUndone": "",
+    "deletingTag": "",
+    "merge": "",
+    "mergeInstructionsAfter": "",
+    "mergeInstructionsBefore": "",
+    "mergeInstructionsMid": "",
+    "mergeTagsConfirmTitle": "",
+    "title": ""
+  },
+  "testPage": {
+    "addQueryHeader": "",
+    "addQueryHeaderPlaceholder": "",
+    "clearViewedAnnouncements": "",
+    "clearViewedAnnouncementsHint": "",
+    "disableTestUI": "",
+    "disableTestUIHint": "",
+    "featureLabel": "",
+    "features": "",
+    "hideTestUIBackgrounds": "",
+    "licenseMessageCleared": "",
+    "licensingOptions": "",
+    "overrideDefaultAPIs": "",
+    "overrideLicensesAndLimits": "",
+    "reset": "",
+    "resetFeatureOverrides": "",
+    "setServiceLicenses": "",
+    "setServiceLicensesHint": "",
+    "showLatestAnnouncement": "",
+    "showLatestAnnouncementHint": "",
+    "switchGraphQLAPIs": "",
+    "testOptions": "",
+    "title": "",
+    "webSocketURL": ""
+  },
+  "timeSeriesSelect": {
+    "graphLength": "",
+    "graphType": "",
+    "graphUnit": "",
+    "overLimit": ""
+  },
+  "transferForm": {
+    "cancel": "",
+    "transfer": "",
+    "transferring": ""
+  },
+  "unauthorizedPage": {
+    "device": "",
+    "deviceMayBeRemoved": "",
+    "gainAccessHint": "",
+    "notAuthorized": "",
+    "service": ""
+  },
+  "updateNotice": {
+    "disableUpdates": "",
+    "install": "",
+    "recommendLocalConnection": "",
+    "restartWarning": "",
+    "updateAvailable": ""
+  },
+  "updateSetting": {
+    "about": "",
+    "autoUpdate": "",
+    "check": "",
+    "checking": "",
+    "checkingForUpdates": "",
+    "copyright": "",
+    "downloading": "",
+    "install": "",
+    "nextCheckIn": "",
+    "preReleaseBuilds": "",
+    "updateFailed": "",
+    "versionAvailable": ""
+  },
+  "upgradeBanner": {
+    "accessPremium": "",
+    "upgradePlan": ""
+  },
+  "viewAsBanner": {
+    "exit": "",
+    "viewingAs": ""
   }
 }

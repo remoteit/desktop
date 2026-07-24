@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dialog } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export const Restore: React.FC<Props> = ({ deviceId, restore, onComplete }) => {
+  const { t } = useTranslation()
   const { platform } = useParams<{ platform?: string }>()
   const [open, setOpen] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
@@ -33,7 +35,7 @@ export const Restore: React.FC<Props> = ({ deviceId, restore, onComplete }) => {
 
   return platform === 'pi' ? (
     <Dialog open={open} fullWidth>
-      <Notice fullWidth>Restoring device...</Notice>
+      <Notice fullWidth>{t('restore.restoringDevice', 'Restoring device...')}</Notice>
     </Dialog>
   ) : (
     <Confirm
@@ -47,10 +49,12 @@ export const Restore: React.FC<Props> = ({ deviceId, restore, onComplete }) => {
         setOpen(false)
         onComplete()
       }}
-      title="Restore device from Cloud"
+      title={t('restore.title', 'Restore device from Cloud')}
     >
-      We will attempt to restore this device's configuration. Please note this may not completely restore services that
-      have custom host information.
+      {t(
+        'restore.body',
+        "We will attempt to restore this device's configuration. Please note this may not completely restore services that have custom host information."
+      )}
     </Confirm>
   )
 }

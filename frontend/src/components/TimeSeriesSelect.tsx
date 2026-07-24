@@ -3,6 +3,7 @@ import { TimeSeriesTypeLookup, TimeSeriesAvailableResolutions, TimeSeriesLengths
 import { SelectSetting } from './SelectSetting'
 import { Duration } from 'luxon'
 import { List } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 
 type Props = {
   timeSeriesOptions: ITimeSeriesOptions
@@ -13,11 +14,13 @@ type Props = {
 
 export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit, defaults, onChange }) => {
   const limitDuration = Duration.fromISO(logLimit)
+  const { t } = useTranslation()
+  const overLimitLabel = t('timeSeriesSelect.overLimit', ' (over limit)')
   return (
     <List>
       <SelectSetting
         icon="chart-column"
-        label="Graph type"
+        label={t('timeSeriesSelect.graphType', 'Graph type')}
         value={timeSeriesOptions.type}
         defaultValue={defaults.type}
         values={Object.keys(TimeSeriesTypeLookup).map(key => ({ key, name: TimeSeriesTypeLookup[key] }))}
@@ -25,14 +28,14 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
       />
       <SelectSetting
         icon="timer"
-        label="Graph unit"
+        label={t('timeSeriesSelect.graphUnit', 'Graph unit')}
         value={timeSeriesOptions.resolution}
         defaultValue={defaults.resolution}
         values={Object.keys(TimeSeriesAvailableResolutions).map(key => {
           const disabled = limitDuration.valueOf() < Duration.fromObject({ [key]: TimeSeriesLengths[key][0] }).valueOf()
           return {
             key,
-            name: TimeSeriesAvailableResolutions[key] + (disabled ? ' (over limit)' : ''),
+            name: TimeSeriesAvailableResolutions[key] + (disabled ? overLimitLabel : ''),
             disabled,
           }
         })}
@@ -46,7 +49,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
       />
       <SelectSetting
         icon="ruler"
-        label="Graph length"
+        label={t('timeSeriesSelect.graphLength', 'Graph length')}
         value={timeSeriesOptions.length}
         defaultValue={defaults.length}
         values={TimeSeriesLengths[timeSeriesOptions.resolution].map(key => {
@@ -55,7 +58,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
           return {
             key,
             name: `${key} ${TimeSeriesAvailableResolutions[timeSeriesOptions.resolution]}s${
-              disabled ? ' (over limit)' : ''
+              disabled ? overLimitLabel : ''
             }`,
             disabled,
           }

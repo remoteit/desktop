@@ -14,6 +14,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
 } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { selectPermissions, selectOrganization, selectLimitsLookup } from '../selectors/organizations'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { OrganizationSAMLUpload } from './OrganizationSAMLUpload'
@@ -33,6 +34,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
   const limits = useSelector(selectLimitsLookup)
   const permissions = useSelector(selectPermissions)
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
   const [checking, setChecking] = useState<boolean>(false)
   const [form, setForm] = useState<IIdentityProviderSettings>({
     enabled: !!organization.identityProvider,
@@ -67,7 +69,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
       <List disablePadding>
         <InlineTextFieldSetting
           icon="globe-pointer"
-          label="Domain"
+          label={t('organizationSAMLSettings.domainLabel', 'Domain')}
           value={(domain || defaultDomain)?.toString()}
           displayValue={domain.toString()}
           resetValue={defaultDomain}
@@ -84,7 +86,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
               <ListItemText
                 primary={
                   <ColorChip
-                    label="Verified"
+                    label={t('organizationSAMLSettings.verified', 'Verified')}
                     color="primary"
                     variant="contained"
                     icon={<Icon name="check" size="sm" fixedWidth inline />}
@@ -97,19 +99,24 @@ export const OrganizationSAMLSettings: React.FC = () => {
               <ListItemIcon />
               <Box display="flex" flexDirection="column">
                 <Typography variant="caption" gutterBottom>
-                  Add the following CNAME and Value to your DNS records to validate your domain:
-                  <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
+                  {t(
+                    'organizationSAMLSettings.dnsInstructions',
+                    'Add the following CNAME and Value to your DNS records to validate your domain:'
+                  )}
+                  <Link href="https://link.remote.it/support/setup-domain">
+                    {t('organizationSAMLSettings.instructionsLink', 'Instructions.')}
+                  </Link>
                 </Typography>
                 <ListItemCopy
                   value={organization.verificationCNAME}
-                  label="Verification CNAME"
+                  label={t('organizationSAMLSettings.verificationCNAME', 'Verification CNAME')}
                   showBackground
                   fullWidth
                   gutterBottom
                 />
                 <ListItemCopy
                   value={organization.verificationValue}
-                  label="Verification Value"
+                  label={t('organizationSAMLSettings.verificationValue', 'Verification Value')}
                   showBackground
                   fullWidth
                 />
@@ -125,7 +132,9 @@ export const OrganizationSAMLSettings: React.FC = () => {
                       setChecking(false)
                     }}
                   >
-                    {checking ? 'checking...' : 'Check domain'}
+                    {checking
+                      ? t('organizationSAMLSettings.checking', 'checking...')
+                      : t('organizationSAMLSettings.checkDomain', 'Check domain')}
                   </Button>
                 </Box>
               </Box>
@@ -135,13 +144,15 @@ export const OrganizationSAMLSettings: React.FC = () => {
           <ListItem dense>
             <ListItemIcon />
             <Typography variant="caption" gutterBottom>
-              Enter your Organization's domain name.
-              <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
+              {t('organizationSAMLSettings.enterDomain', "Enter your Organization's domain name.")}
+              <Link href="https://link.remote.it/support/setup-domain">
+                {t('organizationSAMLSettings.instructionsLink', 'Instructions.')}
+              </Link>
             </Typography>
           </ListItem>
         )}
       </List>
-      <Typography variant="subtitle1">Identity Provider</Typography>
+      <Typography variant="subtitle1">{t('organizationSAMLSettings.identityProvider', 'Identity Provider')}</Typography>
       <List disablePadding>
         {organization.verified ? (
           organization.identityProvider ? (
@@ -151,7 +162,10 @@ export const OrganizationSAMLSettings: React.FC = () => {
                 <ListItemText
                   primary={
                     <ColorChip
-                      label={`${organization.identityProvider.type} Enabled`}
+                      label={t('organizationSAMLSettings.providerEnabled', {
+                        type: organization.identityProvider.type,
+                        defaultValue: '{{type}} Enabled',
+                      })}
                       color="primary"
                       variant="contained"
                       icon={<Icon name="shield" size="sm" fixedWidth inline />}
@@ -160,26 +174,32 @@ export const OrganizationSAMLSettings: React.FC = () => {
                 />
                 <ListItemSecondaryAction>
                   <Button variant="contained" disabled={updating} onClick={disable} size="small">
-                    {updating ? 'Updating...' : 'Disable'}
+                    {updating ? t('organizationSAMLSettings.updating', 'Updating...') : t('common.disable', 'Disable')}
                   </Button>
                 </ListItemSecondaryAction>
               </ListItem>
               <ListItemSetting
                 toggle={required}
-                label={`Require login with ${organization.identityProvider.type}`}
-                subLabel="All organization members will not be able to login with email/password or Google."
+                label={t('organizationSAMLSettings.requireLogin', {
+                  type: organization.identityProvider.type,
+                  defaultValue: 'Require login with {{type}}',
+                })}
+                subLabel={t(
+                  'organizationSAMLSettings.requireLoginSubLabel',
+                  'All organization members will not be able to login with email/password or Google.'
+                )}
                 disabled={!organization.verified}
                 onClick={() => dispatch.organization.setOrganization({ providers: required ? null : [form.type] })}
                 icon="shield-alt"
               />
-              <FormDisplay label="issuer" value={organization.identityProvider.issuer} displayOnly hideEmpty />
-              <FormDisplay label="Client ID" value={organization.identityProvider.clientId} displayOnly hideEmpty />
+              <FormDisplay label={t('organizationSAMLSettings.issuerLabel', 'issuer')} value={organization.identityProvider.issuer} displayOnly hideEmpty />
+              <FormDisplay label={t('organizationSAMLSettings.clientIdLabel', 'Client ID')} value={organization.identityProvider.clientId} displayOnly hideEmpty />
             </>
           ) : (
             <>
               <SelectSetting
                 icon="sign-in"
-                label="Provider type"
+                label={t('organizationSAMLSettings.providerTypeLabel', 'Provider type')}
                 value={form.type}
                 values={[
                   { key: 'SAML', name: 'SAML' },
@@ -191,7 +211,9 @@ export const OrganizationSAMLSettings: React.FC = () => {
                 <>
                   <ListItem dense>
                     <ListItemIcon />
-                    <ListItemText primary="Upload your metadata file to enable SAML"></ListItemText>
+                    <ListItemText
+                      primary={t('organizationSAMLSettings.uploadMetadata', 'Upload your metadata file to enable SAML')}
+                    ></ListItemText>
                   </ListItem>
                   <ListItem dense>
                     <ListItemIcon />
@@ -205,7 +227,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
                     <TextField
                       required
                       fullWidth
-                      label="Issuer"
+                      label={t('organizationSAMLSettings.issuerFieldLabel', 'Issuer')}
                       value={form.issuer || ''}
                       variant="filled"
                       onChange={event => setForm({ ...form, issuer: event.target.value })}
@@ -213,7 +235,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
                     <TextField
                       required
                       fullWidth
-                      label="Client ID"
+                      label={t('organizationSAMLSettings.clientIdFieldLabel', 'Client ID')}
                       value={form.clientId || ''}
                       variant="filled"
                       onChange={event => setForm({ ...form, clientId: event.target.value })}
@@ -221,7 +243,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
                     <TextField
                       required
                       fullWidth
-                      label="Client Secret"
+                      label={t('organizationSAMLSettings.clientSecretFieldLabel', 'Client Secret')}
                       value={form.clientSecret || ''}
                       variant="filled"
                       onChange={event => setForm({ ...form, clientSecret: event.target.value })}
@@ -233,11 +255,13 @@ export const OrganizationSAMLSettings: React.FC = () => {
                 <ListItemIcon />
                 <Box>
                   <Button variant="contained" color="primary" disabled={incomplete || updating} onClick={enable}>
-                    {updating ? 'Updating...' : 'Enable'}
+                    {updating ? t('organizationSAMLSettings.updating', 'Updating...') : t('common.enable', 'Enable')}
                   </Button>
                   <Typography variant="caption" sx={{ marginLeft: 3 }} gutterBottom>
-                    Setup
-                    <Link href="https://link.remote.it/support/setup-domain">Instructions.</Link>
+                    {t('organizationSAMLSettings.setup', 'Setup')}
+                    <Link href="https://link.remote.it/support/setup-domain">
+                      {t('organizationSAMLSettings.instructionsLink', 'Instructions.')}
+                    </Link>
                   </Typography>
                 </Box>
               </ListItem>
@@ -246,8 +270,8 @@ export const OrganizationSAMLSettings: React.FC = () => {
         ) : (
           <ListItem dense>
             <Notice severity="info" gutterTop>
-              Validate your domain name to use an Identity Provider
-              <em>SAML and ODIC are both supported</em>
+              {t('organizationSAMLSettings.validateDomainNotice', 'Validate your domain name to use an Identity Provider')}
+              <em>{t('organizationSAMLSettings.samlOidcSupported', 'SAML and ODIC are both supported')}</em>
             </Notice>
           </ListItem>
         )}

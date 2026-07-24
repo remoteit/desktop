@@ -1,5 +1,6 @@
 import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
 import React, { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
 import browser from '../../services/browser'
 import { State } from '../../store'
@@ -25,6 +26,7 @@ type Props = {
 }
 
 export const Header: React.FC<Props> = ({ panels = 1 }) => {
+  const { t } = useTranslation()
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
   const layout = useSelector((state: State) => state.ui.layout)
@@ -66,17 +68,23 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
         )}
         {(layout.hideSidebar || browser.isMobile) && (
           <Route path="/add" exact>
-            <IconButton title="Back" to="/devices" icon="chevron-left" size="md" color="grayDarker" />
+            <IconButton title={t('header.back', 'Back')} to="/devices" icon="chevron-left" size="md" color="grayDarker" />
           </Route>
         )}
         {!isRootMenu && (
-          <IconButton title="Back" onClick={navigateUp} icon="chevron-left" size="md" color="grayDarker" />
+          <IconButton
+            title={t('header.back', 'Back')}
+            onClick={navigateUp}
+            icon="chevron-left"
+            size="md"
+            color="grayDarker"
+          />
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (
           <Route path="/products">
             <Typography variant="h2">
-              <Title>Products</Title>
+              <Title>{t('header.products', 'Products')}</Title>
             </Typography>
           </Route>
         )}
@@ -86,7 +94,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
               size="md"
               icon="search"
               color="grayDarker"
-              title="Device Search"
+              title={t('header.deviceSearch', 'Device Search')}
               placement="bottom"
               fixedWidth
               onClick={() => {
@@ -107,10 +115,16 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             {manager && (
               <Switch>
                 <Route path="/devices" exact>
-                  <IconButton to="/devices/select" icon="check-square" title="Show Select" />
+                  <IconButton to="/devices/select" icon="check-square" title={t('header.showSelect', 'Show Select')} />
                 </Route>
                 <Route path="/devices/select" exact>
-                  <IconButton to="/devices" icon="check-square" type="solid" color="primary" title="Hide Select" />
+                  <IconButton
+                    to="/devices"
+                    icon="check-square"
+                    type="solid"
+                    color="primary"
+                    title={t('header.hideSelect', 'Hide Select')}
+                  />
                 </Route>
               </Switch>
             )}

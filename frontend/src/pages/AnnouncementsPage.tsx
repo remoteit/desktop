@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { selectAnnouncements } from '../selectors/announcements'
 import { AnnouncementCardTest } from '../components/AnnouncementCardTest'
 import { AnnouncementCard } from '../components/AnnouncementCard'
@@ -12,6 +13,7 @@ export const AnnouncementsPage = () => {
   const announcements = useSelector((state: State) => selectAnnouncements(state))
   const [scrollPosition, setScrollPosition] = useState<number>(0)
   const bodyRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const currentBodyRef = bodyRef.current
@@ -34,7 +36,7 @@ export const AnnouncementsPage = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <Title>Notifications</Title>
+          <Title>{t('announcementsPage.title', 'Notifications')}</Title>
         </Typography>
       }
     >

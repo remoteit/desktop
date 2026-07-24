@@ -1,17 +1,19 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Dispatch } from '../../store'
 import { InlineTextFieldSetting } from '../InlineTextFieldSetting'
 import { LabelButton } from '../../buttons/LabelButton'
 
 export const DeviceLabelSetting: React.FC<{ device: IDevice }> = ({ device }) => {
+  const { t } = useTranslation()
   const { devices } = useDispatch<Dispatch>()
 
   if (!device) return null
 
   return (
     <InlineTextFieldSetting
-      label="Device Label"
+      label={t('deviceLabelSetting.label', 'Device Label')}
       value={device.attributes.label}
       resetValue={device.attributes.label}
       icon={<LabelButton device={device} />}

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export const SharedUsersLists: React.FC<Props> = ({ device, network, connected = [], users = [] }) => {
+  const { t } = useTranslation()
   const instance = device || network
   const location = useLocation()
   const members = useSelector((state: State) => selectMembersWithAccess(state, undefined, instance)).map(m => m.user)
@@ -31,15 +33,15 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
       <Paper elevation={0} sx={{ contain: 'layout', marginTop: 2 }}>
         <Gutters center bottom="xxl" top="lg">
           <Box paddingBottom={4} paddingTop={4}>
-            <Tooltip title="No one has access to this service." placement="top" arrow>
+            <Tooltip title={t('sharedUsersLists.noAccess', 'No one has access to this service.')} placement="top" arrow>
               <Icon name="user-slash" type="light" fontSize={28} color="gray" />
             </Tooltip>
           </Box>
           <ShareButton to={location.pathname.replace('users', 'share')} iconInlineLeft>
-            <Typography variant="body2">Share to a guest</Typography>
+            <Typography variant="body2">{t('sharedUsersLists.shareToGuest', 'Share to a guest')}</Typography>
           </ShareButton>
           <Typography variant="caption" color="gray.main" component="div">
-            or
+            {t('sharedUsersLists.or', 'or')}
           </Typography>
           {hasOrganization ? (
             <IconButton
@@ -48,11 +50,17 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
               size="md"
               disabled={!instance?.permissions.includes('ADMIN')}
             >
-              <Typography variant="body2"> &nbsp;&nbsp; Add an organization member</Typography>
+              <Typography variant="body2">
+                {' '}
+                &nbsp;&nbsp; {t('sharedUsersLists.addOrganizationMember', 'Add an organization member')}
+              </Typography>
             </IconButton>
           ) : (
             <IconButton icon="industry-alt" to="/organization" size="md">
-              <Typography variant="body2"> &nbsp;&nbsp; Create your organization</Typography>
+              <Typography variant="body2">
+                {' '}
+                &nbsp;&nbsp; {t('sharedUsersLists.createOrganization', 'Create your organization')}
+              </Typography>
             </IconButton>
           )}
         </Gutters>
@@ -61,10 +69,25 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
 
   return (
     <>
-      <SharedUsersPaginatedList title="Connected" device={device} users={connected} connected />
-      <SharedUsersPaginatedList title="Guests" device={device} remove={network?.id} users={sort(disconnected)} />
+      <SharedUsersPaginatedList
+        title={t('sharedUsersLists.connected', 'Connected')}
+        device={device}
+        users={connected}
+        connected
+      />
+      <SharedUsersPaginatedList
+        title={t('sharedUsersLists.guests', 'Guests')}
+        device={device}
+        remove={network?.id}
+        users={sort(disconnected)}
+      />
       {manager && (
-        <SharedUsersPaginatedList title="Organization members" device={device} users={sort(members)} members />
+        <SharedUsersPaginatedList
+          title={t('sharedUsersLists.organizationMembers', 'Organization members')}
+          device={device}
+          users={sort(members)}
+          members
+        />
       )}
     </>
   )

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../../store'
@@ -15,6 +16,7 @@ import { Title } from '../../components/Title'
 type Props = { device?: IDevice }
 
 export const ServiceAddPage: React.FC<Props> = ({ device }) => {
+  const { t } = useTranslation()
   const { setupServicesLimit } = useSelector((state: State) => state.ui)
   const [forward, setForward] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
@@ -35,7 +37,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
       header={
         <>
           <Typography variant="h1">
-            <Title>New service</Title>
+            <Title>{t('serviceAddPage.newService', 'New service')}</Title>
           </Typography>
           <Gutters>
             <Diagram highlightTypes={['target', 'relay']} relay={forward} />
@@ -46,7 +48,10 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
     >
       {maxReached ? (
         <Typography variant="body2" color="textSecondary">
-          Desktop currently supports a maximum of {setupServicesLimit} services.
+          {t('serviceAddPage.maxServices', {
+            count: setupServicesLimit,
+            defaultValue: 'Desktop currently supports a maximum of {{count}} services.',
+          })}
         </Typography>
       ) : (
         <Gutters size="md" bottom={null}>

@@ -1,4 +1,480 @@
 {
+  "accessAccordion": {
+    "addAccess": "Add access",
+    "guests": "Guests",
+    "noUsers": "No\u00a0users",
+    "organizationMembers": "Organization members",
+    "subtitle": "Access"
+  },
+  "accessKeyPage": {
+    "apiKey": "API Key",
+    "description": "This is your unique Developer API key to use and access Remote.It APIs.",
+    "developer": "Developer",
+    "doNotShare": "Do not share it with anyone.",
+    "title": "Access Keys"
+  },
+  "accountAccessKey": {
+    "created": "Created",
+    "description": "Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit directory of your home folder:",
+    "generateCredentials": "Generate Credentials",
+    "keyLimit": "There is a limit of 2 access keys. Keep your keys safe.",
+    "lastUsed": "Last used",
+    "neverUsed": "Never used",
+    "publicKey": "Public Key",
+    "secretKeyWarning": "If you lose or forget your secret key, you cannot retrieve it.",
+    "title": "Authentication"
+  },
+  "addAdminDialog": {
+    "addAdmin": "Add Admin",
+    "adminAdded": "Admin Added",
+    "alreadyAdmin": "This user is already an admin.",
+    "confirmAdminPromotion": "Confirm Admin Promotion",
+    "confirmationCode": "Confirmation Code",
+    "confirmationEmailNotice": "A confirmation email will be sent to your admin email address. You must click the link or enter the code to complete the promotion.",
+    "confirmationEmailSent": "Confirmation email sent! Check your inbox for the code.",
+    "confirmFailed": "Failed to confirm admin promotion.",
+    "confirmInstructions": "Enter the 6-digit code from the email, or click the link in the email to confirm.",
+    "emailAddress": "Email Address",
+    "enterCode": "Please enter the 6-digit code",
+    "enterEmail": "Please enter an email address",
+    "invalidCodeRetry": "Invalid or expired code. Please try again.",
+    "isNowAdmin": "is now an admin.",
+    "noUserFound": "No user found with that email address",
+    "promotingAfter": "to admin.",
+    "promotingBefore": "Promoting",
+    "promotionRequestFailed": "Failed to request admin promotion.",
+    "search": "Search",
+    "searchDescription": "Search for a user by email to promote them to admin.",
+    "searchFailed": "Failed to search for user",
+    "sendingEllipsis": "Sending...",
+    "sendPromotionRequest": "Send Promotion Request"
+  },
+  "addFromNetwork": {
+    "scanForServices": "Scan for Services",
+    "scanNetwork": "Scan\u00a0network"
+  },
+  "addPage": {
+    "addDevice": "Add a device",
+    "addInstance": "Add an instance",
+    "addMany": "Add many",
+    "alreadyShared": "Already shared",
+    "demoDevice": "Demo device",
+    "products": "Products",
+    "provisionInBulk": "Provision in bulk",
+    "title": "What do you want to connect\u00a0to?",
+    "tryDevice": "Try a device"
+  },
+  "addPlatformServices": {
+    "label": "SERVICE",
+    "placeholder": "Add a service type..."
+  },
+  "addProductServiceDialog": {
+    "addFailed": "Failed to add service",
+    "addingEllipsis": "Adding...",
+    "enabled": "Enabled",
+    "nameRequired": "Service name is required",
+    "port": "Port",
+    "portRange": "Port must be a number between 0 and 65535",
+    "serviceName": "Service Name",
+    "serviceType": "Service Type",
+    "title": "Add Service",
+    "typeRequired": "Service type is required"
+  },
+  "adminAdminDetailPanel": {
+    "actions": "Actions",
+    "adminStatus": "Admin Status",
+    "backToAdmins": "Back to Admins",
+    "created": "Created",
+    "deviceCounts": "{{total}} total • {{online}} online • {{offline}} offline",
+    "deviceSummary": "Device Summary",
+    "email": "Email",
+    "lastLogin": "Last Login",
+    "loading": "Loading admin details...",
+    "notFound": "Admin not found",
+    "organization": "Organization",
+    "removeAdmin": "Remove Admin",
+    "removeConfirmBody": "Are you sure you want to remove admin privileges from",
+    "removeConfirmSubBody": "This user will no longer have access to the admin panel.",
+    "removeConfirmTitle": "Remove Admin Privileges",
+    "removedSuccess": "Admin privileges removed from {{email}}",
+    "removeFailed": "Failed to remove admin privileges",
+    "removing": "Removing...",
+    "systemAdmin": "System Admin",
+    "title": "Admin Details",
+    "userDevices": "User Devices",
+    "userId": "User ID"
+  },
+  "adminAdminsListPage": {
+    "addAdmin": "Add Admin",
+    "loading": "Loading...",
+    "loadingAdmins": "Loading admins...",
+    "loadMore": "Load More",
+    "noAdminsFound": "No admins found",
+    "searchAllFieldsTitle": "Search all fields",
+    "searchByAll": "Search by email, name, or user ID...",
+    "searchByEmail": "Search by email address...",
+    "searchByEmailTitle": "Search by email",
+    "searchByUserId": "Search by user ID (UUID)...",
+    "searchByUserIdTitle": "Search by user ID"
+  },
+  "adminConfirmPage": {
+    "backToAdmins": "Back to Admins",
+    "confirmAdminPromotion": "Confirm Admin Promotion",
+    "confirmationFailed": "Confirmation Failed",
+    "confirmedMessage": "The user has been successfully promoted to admin.",
+    "confirmedTitle": "Admin Promotion Confirmed",
+    "confirmingPromotion": "Confirming admin promotion...",
+    "confirmWithCode": "Confirm with Code",
+    "enterCode": "Enter code",
+    "enterCodeDescription": "Enter the 6-digit code from the confirmation email sent to your inbox.",
+    "enterCodeTitle": "Enter Confirmation Code",
+    "invalidCodeLength": "Please enter a valid 6-digit code.",
+    "invalidCodeRetry": "Invalid or expired code. Please try again.",
+    "linkInvalid": "The confirmation link is invalid or has expired.",
+    "manualCodeHint": "You can try entering the 6-digit code from your email manually:",
+    "title": "Admin Promotion Confirmation"
+  },
+  "adminEnterpriseLicensesListPage": {
+    "account": "Account",
+    "accountEmail": "Account Email",
+    "add": "Add",
+    "addCustomer": "Add Enterprise Customer",
+    "addDialogTitle": "Add Enterprise Customer",
+    "addedCustomer": "Added enterprise customer {{email}}",
+    "addFailed": "Failed to add enterprise customer",
+    "adding": "Adding...",
+    "confirmRemoveAfter": "from the enterprise license plan?",
+    "confirmRemoveBefore": "Are you sure you want to remove",
+    "created": "Created",
+    "devices": "Devices",
+    "loading": "Loading enterprise customers...",
+    "loadingShort": "Loading...",
+    "loadMore_one": "Load More ({{count}} of {{total}})",
+    "loadMore_other": "Load More ({{count}} of {{total}})",
+    "members": "Members",
+    "noMatching": "No matching enterprise customers",
+    "noneFound": "No enterprise customers found",
+    "remove": "Remove",
+    "removeCustomer": "Remove enterprise customer",
+    "removedCustomer": "Removed enterprise customer {{email}}",
+    "removeDialogTitle": "Remove Enterprise Customer",
+    "removeFailed": "Failed to remove enterprise customer",
+    "removing": "Removing...",
+    "searchPlaceholder": "Search by email or name, then press Enter..."
+  },
+  "adminNoticeAttributes": {
+    "bannerNoEndDate": "Banners cannot be dismissed — set an end date"
+  },
+  "adminNoticeDetailPanel": {
+    "backToNotices": "Back to Notices",
+    "deleteNotice": "Delete notice",
+    "deleteNoticeConfirm": "Delete notice?",
+    "editNotice": "Edit notice",
+    "loadingNotice": "Loading notice...",
+    "mayHaveBeenDeleted": "It may have been deleted by someone else.",
+    "newNotice": "New notice",
+    "noticeNotFound": "Notice not found",
+    "permanentlyDeleted": "\"{{title}}\" will be permanently deleted. This cannot be undone."
+  },
+  "adminNoticeForm": {
+    "bannerPreview": "BANNER PREVIEW",
+    "bannersCannotBeDismissed": "Banners cannot be dismissed.",
+    "blankTargetsEveryStage": "Blank targets every stage.",
+    "body": "Body",
+    "bodyHelperBannerBold": "Keep it to a single short sentence",
+    "bodyHelperBannerPost": "— it renders inline in a one-line bar, so long copy or block HTML will look wrong.",
+    "bodyHelperBannerPre": "Smaller second line under the banner title.",
+    "bodyHelperCard": "HTML shown on the announcement card.",
+    "cancel": "Cancel",
+    "cardPreview": "CARD PREVIEW",
+    "enableNotice": "Enable notice",
+    "enableNoticeHelper": "Disabling hides the notice from everyone, whatever the dates say.",
+    "from": "From",
+    "fromHelper": "When the notice starts showing. Blank shows it immediately.",
+    "image": "Image",
+    "imageHelper": "URL of a banner image shown across the top of the announcement card. Not used by banners.",
+    "link": "Link",
+    "linkHelperBanner": "Adds a \"Learn more\" button to the banner.",
+    "linkHelperCard": "Optional link.",
+    "max255Characters": "Max 255 characters.",
+    "noEndDateSet": "No end date set",
+    "noEndDateSetDetail": "Without an \"Until\" date this banner stays up until someone disables it by hand.",
+    "noticeIsDisabled": "Notice is disabled",
+    "noticeIsEnabled": "Notice is enabled",
+    "requiredMax255": "Required. Max 255 characters.",
+    "save": "Save",
+    "saving": "Saving...",
+    "stage": "Stage",
+    "stageHelperMid": "or a personal stage",
+    "stageHelperPre": "Limit to one API deployment stage to test before going live. Must match the stage exactly — one of",
+    "title": "Title",
+    "titleHelperBanner": "Bold first line of the banner.",
+    "titleHelperCard": "Notice heading.",
+    "titlePlaceholder": "Title",
+    "type": "Type",
+    "typeHelperBanner": "Shown as a persistent bar at the top of the app.",
+    "typeHelperCard": "Shown as an announcement card.",
+    "until": "Until",
+    "untilHelper": "When the notice disappears.",
+    "untilHelperBannerStrong": "Strongly recommended — a banner cannot be dismissed by the user."
+  },
+  "adminNoticesListPage": {
+    "loading": "Loading notices...",
+    "newNotice": "New notice",
+    "noNotices": "No notices yet",
+    "noNoticesHint": "Create one to announce maintenance, an outage, or a release.",
+    "title": "Notices"
+  },
+  "adminPartnerDetailPanel": {
+    "activated": "Activated",
+    "activatedCount_one": "{{count}} devices have reported at least once",
+    "activatedCount_other": "{{count}} devices have reported at least once",
+    "activeLast30": "Active (Last 30 Days)",
+    "addAdmin": "Add Admin",
+    "addAdminDialogTitle": "Add Admin to Partner",
+    "addAdminFailed": "Failed to add admin.",
+    "addChild": "Add Child",
+    "addChildDialogTitle": "Add Child Partner",
+    "addChildFailed": "Failed to add child partner.",
+    "adding": "Adding...",
+    "addRegistrant": "Add Registrant",
+    "addRegistrantDialogTitle": "Add Registrant to Partner",
+    "addRegistrantFailed": "Failed to add registrant. They may already have access to this entity.",
+    "admins_one": "Admins ({{count}})",
+    "admins_other": "Admins ({{count}})",
+    "childPartners_one": "Child Partners ({{count}})",
+    "childPartners_other": "Child Partners ({{count}})",
+    "currentlyOnline": "Currently Online",
+    "deleteConfirm": "Delete this partner? This action cannot be undone.",
+    "deleteFailed": "Failed to delete partner.",
+    "deletePartner": "Delete partner",
+    "deleteWithChildrenConfirm_one": "Delete this partner? Its {{count}} child partner(s) will become top-level partners.",
+    "deleteWithChildrenConfirm_other": "Delete this partner? Its {{count}} child partner(s) will become top-level partners.",
+    "deviceCounts": "{{total}} total • {{online}} online • {{active}} active",
+    "devicesCount_one": "{{count}} device",
+    "devicesCount_other": "{{count}} devices",
+    "deviceSummary": "Device Summary",
+    "emailLabel": "Email",
+    "exportDevices": "Export devices to CSV",
+    "exportFailed": "Failed to export devices.",
+    "loading": "Loading partner...",
+    "notFound": "Partner not found",
+    "parentPartner": "Parent Partner",
+    "registrants_one": "Registrants ({{count}})",
+    "registrants_other": "Registrants ({{count}})",
+    "removeAdminConfirm": "Are you sure you want to remove this admin?",
+    "removeAdminFailed": "Failed to remove admin.",
+    "removeChildConfirm": "Remove this child partner? It will become a top-level partner.",
+    "removeChildFailed": "Failed to remove child partner.",
+    "removeRegistrantConfirm": "Are you sure you want to remove this registrant?",
+    "removeRegistrantFailed": "Failed to remove registrant.",
+    "renamePartner": "Rename partner",
+    "selectPartner": "Select Partner",
+    "totalDevices": "Total Devices",
+    "updateNameFailed": "Failed to update partner name."
+  },
+  "adminPartnersListPage": {
+    "create": "Create",
+    "createDialogTitle": "Create New Partner",
+    "createFailed": "Failed to create partner.",
+    "createPartner": "Create Partner",
+    "creating": "Creating...",
+    "loadingPartners": "Loading partners...",
+    "noMatchingPartners": "No matching partners",
+    "noPartnersFound": "No partners found",
+    "parentPartnerLabel": "Parent Partner (Optional)",
+    "partnerNameLabel": "Partner Name",
+    "searchPlaceholder": "Search partners...",
+    "topLevel": "None (Top-level)"
+  },
+  "adminSidebarNav": {
+    "admins": "Admins",
+    "enterprise": "Enterprise",
+    "notices": "Notices",
+    "partners": "Partners",
+    "returnToApp": "Return to App",
+    "users": "Users"
+  },
+  "adminUserAccountPanel": {
+    "accountDetails": "Account Details",
+    "adminActions": "Admin Actions",
+    "adminRemoved": "Admin privileges removed",
+    "adminRemoveFailed": "Failed to remove admin privileges",
+    "adminStatus": "Admin Status",
+    "changeEmail": "Change Email",
+    "confirmDeleteBefore": "Are you sure you want to permanently delete user",
+    "confirmDeleteDevicesAfter": "will be transferred to the holding account and tagged with the user's email and the deletion date.",
+    "confirmDeleteDevicesBefore": "This user's",
+    "confirmRemoveAdminAfter": "This user will no longer have access to the admin panel.",
+    "confirmRemoveAdminBefore": "Are you sure you want to remove admin privileges from",
+    "created": "Created",
+    "delete": "Delete",
+    "deleteUser": "Delete User",
+    "deleting": "Deleting...",
+    "deviceCount_one": "{{count}} device",
+    "deviceCount_other": "{{count}} devices",
+    "deviceSummary": "Device Summary",
+    "deviceSummaryValue": "{{total}} total • {{online}} online • {{offline}} offline",
+    "email": "Email",
+    "emailUpdated": "Email updated successfully",
+    "emailUpdateFailed": "Failed to update email",
+    "lastLogin": "Last Login",
+    "loading": "Loading account...",
+    "notAvailable": "N/A",
+    "organization": "Organization",
+    "removeAdmin": "Remove Admin",
+    "removeAdminPrivileges": "Remove Admin Privileges",
+    "removing": "Removing...",
+    "standardUser": "Standard User",
+    "systemAdmin": "System Admin",
+    "userDeleted": "User deleted successfully",
+    "userDeleteFailed": "Failed to delete user",
+    "userDevices": "User Devices",
+    "userId": "User ID",
+    "userNotFound": "User not found"
+  },
+  "adminUserDetailPage": {
+    "devices": "Devices",
+    "deviceSummary": "{{total}} total • {{online}} online • {{offline}} offline",
+    "loadingUser": "Loading user...",
+    "userDevices": "User Devices",
+    "userNotFound": "User not found",
+    "viewAsUser": "View as User"
+  },
+  "adminUserDevicesPanel": {
+    "lastReported": "Last Reported",
+    "loading": "Loading devices...",
+    "name": "Name",
+    "noDevicesFound": "No devices found",
+    "platform": "Platform",
+    "services": "Services",
+    "status": "Status",
+    "userDevicesCount_one": "User Devices ({{count}})",
+    "userDevicesCount_other": "User Devices ({{count}})"
+  },
+  "adminUsersListPage": {
+    "loading": "Loading...",
+    "loadingUsers": "Loading users...",
+    "loadMore": "Load More",
+    "noUsersFound": "No users found",
+    "searchAllFieldsTitle": "Search all fields",
+    "searchByAll": "Search by email, name, or user ID...",
+    "searchByEmail": "Search by email address...",
+    "searchByEmailTitle": "Search by email",
+    "searchByUserId": "Search by user ID (UUID)...",
+    "searchByUserIdTitle": "Search by user ID"
+  },
+  "agentReachEditor": {
+    "addTagPlaceholder": "Add tag...",
+    "allDevices": "All devices",
+    "defaultAppName": "This app",
+    "instructions": "Turn on the organizations it may access. Add tags to limit an organization to matching devices only.",
+    "limitsSuffix_one": ", limited to tagged devices in one of them",
+    "limitsSuffix_other": ", limited to tagged devices in {{count}} of them",
+    "matchAll": "Match: all tags",
+    "matchAny": "Match: any tag",
+    "scopeAll": "every organization you belong to",
+    "scopeSome_one": "{{count}} of {{total}} organizations",
+    "scopeSome_other": "{{count}} of {{total}} organizations",
+    "summary": "{{name}} can reach {{scope}}{{limits}}.",
+    "summaryNone": "{{name}} cannot reach any devices.",
+    "summaryUnlimited": "{{name}} can reach all devices in every organization you belong to."
+  },
+  "announcementCard": {
+    "learnMore": "Learn more",
+    "markRead": "Mark read",
+    "new": "NEW",
+    "typeCommunication": "Announcement",
+    "typeGeneric": "Notice",
+    "typeRelease": "Release Note",
+    "typeSecurity": "Security Notice",
+    "typeSystem": "System Update"
+  },
+  "announcementsPage": {
+    "title": "Notifications"
+  },
+  "argumentDefinitionEditForm": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "description": "Description",
+    "descriptionHelper": "Help text displayed to user when filling in the value",
+    "descriptionPlaceholder": "Description shown to user",
+    "fileExtensions": "File Extensions",
+    "fileExtensionsHelper": "Comma-separated file extensions to filter by (optional)",
+    "fileExtensionsPlaceholder": ".txt, .log, .csv",
+    "options": "Options",
+    "optionsHelper": "Comma-separated list of options for dropdown",
+    "optionsPlaceholder": "Option1, Option2, Option3",
+    "save": "Save",
+    "type": "Type",
+    "variableName": "Variable Name",
+    "variableNameHelper": "Name used in script (no spaces)",
+    "variableNamePlaceholder": "e.g., fileName, url, action"
+  },
+  "argumentDefinitionList": {
+    "add": "Add",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "empty": "No arguments defined. Arguments allow users to provide input values when running the script.",
+    "optionsCount_one": "{{count}} option",
+    "optionsCount_other": "{{count}} options",
+    "title": "Script Arguments"
+  },
+  "argumentsValueForm": {
+    "allowedTypes": "Allowed types: {{types}}",
+    "fileMissing": "⚠️ Previously selected file is no longer available",
+    "selectExistingFile": "Select existing file ...",
+    "selectPlaceholder": "Select ...",
+    "title": "Script Arguments",
+    "unknownType": "Unknown type: {{argumentType}}",
+    "uploadedStatus": "uploaded",
+    "uploadFile": "Upload file",
+    "uploadFileSubLabel": "Drag and drop or click"
+  },
+  "attributeValue": {
+    "sinceRefresh": "since refresh",
+    "thisSystem": "This system"
+  },
+  "autoCloseToggle": {
+    "label": "Auto Close",
+    "subLabel": "Run cleanup command on disconnect"
+  },
+  "autoLaunchToggle": {
+    "label": "Auto Launch",
+    "subLabel": "Launch when the connection is started"
+  },
+  "billingPage": {
+    "title": "Billing"
+  },
+  "changeEmailDialog": {
+    "cancel": "Cancel",
+    "currentEmail": "Current email:",
+    "emailRequired": "Email is required",
+    "invalidFormat": "Invalid email format",
+    "mustBeDifferent": "New email must be different from current email",
+    "newEmailLabel": "New Email Address",
+    "title": "Change User Email",
+    "updateEmail": "Update Email",
+    "updateFailed": "Failed to update email. Please try again.",
+    "updating": "Updating..."
+  },
+  "changePassword": {
+    "currentPassword": "Current Password",
+    "noticeAfter": "automatically sign you out of other sessions.",
+    "noticeBefore": "Changing your password will",
+    "noticeEmphasis": "NOT",
+    "noticeSignOut": "You can manually sign out from all sessions below.",
+    "noticeTitle": "Notice",
+    "title": "Change Password"
+  },
+  "claimDevice": {
+    "claim": "Claim",
+    "claimCode": "Claim Code",
+    "claiming": "Claiming",
+    "claimingForOrg": "Claiming for {{name}}",
+    "claimingWarning": "You are claiming this device for an organization instead of yourself.",
+    "title": "Claim a device"
+  },
   "columns": {
     "access": "Guests",
     "bind": "Bind Address",
@@ -56,9 +532,276 @@
     "version": "Daemon version"
   },
   "common": {
+    "actionCannotBeUndone": "This action cannot be undone.",
     "areYouSure": "Are you sure?",
+    "cancel": "Cancel",
+    "cannotBeUndone": "This action cannot be undone.",
+    "clear": "Clear",
+    "close": "Close",
+    "confirm": "Confirm",
+    "confirmingEllipsis": "Confirming...",
+    "delete": "Delete",
+    "disable": "Disable",
+    "done": "Done",
+    "enable": "Enable",
+    "loading": "Loading...",
+    "loadingEllipsis": "Loading…",
+    "no": "No",
+    "notAvailable": "N/A",
+    "ok": "Ok",
+    "or": "or",
+    "remove": "Remove",
     "save": "Save",
-    "saving": "Saving"
+    "saved": "Saved",
+    "saving": "Saving",
+    "savingEllipsis": "Saving...",
+    "yes": "Yes"
+  },
+  "connect": {
+    "connection": "Connection",
+    "connectionConfiguration": "Connection configuration",
+    "downloadDesktop": "Download Desktop",
+    "persistentEndpointsBody": "On demand connections with persistent endpoints, remote access, and improved launch commands.",
+    "persistentEndpointsTitle": "Want Persistent Private Endpoints?",
+    "service": "Service",
+    "serviceConfiguration": "Service configuration"
+  },
+  "connectAdvanced": {
+    "advanced": "Advanced",
+    "agentCommand": "Agent Command",
+    "agentEndpoint": "Agent Endpoint",
+    "cliCommandLog": "CLI command log",
+    "configTitle": "Connection configuration",
+    "connectionDefaults": "Connection Defaults",
+    "connectionTypeDefaults": "Connection Type Defaults",
+    "debugging": "Debugging",
+    "empty": "Empty",
+    "logs": "Logs",
+    "resetConnection": "Reset connection"
+  },
+  "connectedAppDetailPage": {
+    "authorized": "Authorized",
+    "details": "Details",
+    "deviceAccess": "Device access",
+    "grantedWhenSignedIn": "Granted when {{name}} signed in. To change them, revoke access and have it sign in again.",
+    "lastActive": "Last active",
+    "noActivityYet": "No activity yet",
+    "noDeviceAccess": "No device access — it can confirm your identity, but cannot see or control any devices.",
+    "noLongerAuthorized": "This app is no longer authorized.",
+    "permissions": "Permissions",
+    "requestAgain": "It can request access again by signing in.",
+    "revoke": "Revoke",
+    "revokeAccess": "Revoke access",
+    "revokeAccessConfirmTitle": "Revoke access?",
+    "service": "Service",
+    "signOutBefore": "will be signed out. New access is blocked immediately; any session already in progress ends within",
+    "title": "Connected App"
+  },
+  "connectedApps": {
+    "empty": "You have not authorized any apps yet.",
+    "loading": "Loading…",
+    "title": "Apps & AI agents"
+  },
+  "connectedAppsPage": {
+    "description": "Apps and AI agents you have signed in to your Remote.It account. Select one to limit which devices it can reach, or to revoke its access.",
+    "title": "Connected Apps"
+  },
+  "connectionDefaultsForm": {
+    "saved": "Saved"
+  },
+  "connectionDefaultsPage": {
+    "applicationType": "application type {{name}}",
+    "applicationTypeDefaults": "the application type defaults",
+    "connection": "connection",
+    "overrideHint": "Defaults can be overridden by service specific default settings.",
+    "reset": "Reset",
+    "service": "service",
+    "serviceType": "Service Type",
+    "title": "Connection Defaults"
+  },
+  "connectionDetails": {
+    "cannotLaunch": "To launch, change your launch type to URL or download the desktop app",
+    "copyLabel": "Copy {{target}}",
+    "guideCopyOrLaunchAfter": "configured in the connection configuration.",
+    "guideCopyOrLaunchBefore": "Copy the endpoint or launch the application according to the",
+    "guideCreatedBrowser": "A connection was created to this service.",
+    "guideCreatedDesktop": "A fixed endpoint has been generated.",
+    "guideLaunchMethod": "launch method",
+    "guideTitle": "Using a connection",
+    "host": "Host",
+    "localEndpoint": "Local Endpoint",
+    "port": "Port",
+    "publicEndpoint": "Public Endpoint",
+    "share": "Share",
+    "unencrypted": "Local connection unencrypted",
+    "user": "User"
+  },
+  "connectionLogSetting": {
+    "label": "Connection Logging",
+    "showLog": "Show Log"
+  },
+  "connectionOtherPage": {
+    "disconnect": "Disconnect"
+  },
+  "connectionsPage": {
+    "connected": "Connected",
+    "idle": "Idle",
+    "loading": "Loading...",
+    "noConnections": "You have no connections",
+    "noConnectionsHint": "Begin by selecting a device's service from the Devices menu.",
+    "unknown": "Unknown"
+  },
+  "connectionSurvey": {
+    "bad": "Bad",
+    "giveFeedback": "Give Feedback",
+    "good": "Good",
+    "howWasConnection": "How was your last connection?",
+    "improveMessage": "Please provide additional information so that we may improve your future connections.",
+    "okay": "Okay",
+    "thankYou": "Thank you for your feedback!",
+    "whatHappened": "Let us know what happened."
+  },
+  "connectionType": {
+    "connecting": "Connecting...",
+    "idle": "Idle - Connect on demand",
+    "inactive": "Inactive",
+    "localProxy": "Local Proxy",
+    "p2p": "Peer to Peer",
+    "p2pWebsocket": "Peer to Peer WebSocket",
+    "persistentPublic": "Persistent Public Endpoint",
+    "proxy": "Proxy",
+    "publicProxy": "Public Proxy",
+    "publicReverseProxy": "Public Reverse Proxy",
+    "serviceKey": "Service Key"
+  },
+  "connectLinkSetting": {
+    "authNone": "None",
+    "authPassword": "Password",
+    "confirmBody": "This will create a fixed public endpoint for anyone to connect to.",
+    "confirmBodyWithPassword": "This will create a fixed public endpoint for anyone with the password to connect to.",
+    "disabledSubLabel": "Fixed public endpoints are only available for http(s) services.",
+    "enabledSubLabel": "Create a fixed public endpoint for anyone to connect to",
+    "label": "Persistent public url",
+    "makePublicAction": "Make Public",
+    "noPasswordNotice": "This endpoint has no password protection.",
+    "passwordLabel": "Password",
+    "passwordProtectedNotice": "This endpoint has password protection.",
+    "permissionSubLabel": "Requires device 'Manage' permission",
+    "webAuthenticationLabel": "Web Authentication"
+  },
+  "copyCodeBlock": {
+    "copy": "Copy",
+    "copyCode": "Copy code",
+    "copyCommand": "Copy command"
+  },
+  "createAccessKey": {
+    "accessKeyIdLabel": "Access Key ID",
+    "creating": "Creating...",
+    "done": "Done",
+    "download": "Download",
+    "readyNotice": "Your new access key is ready to use",
+    "secretAccessKeyLabel": "Secret Access key",
+    "secretWarning": "You will not see this secret key again. Please download and save it in the .remoteit directory of your home folder.",
+    "title": "Credentials"
+  },
+  "creditCard": {
+    "cardEndingIn": "{{brand}} ending in {{last}}",
+    "expiredDate": "Expired {{month}}/{{year}}",
+    "expiredNotice": "Credit Card Expired.",
+    "expiredNoticeDetail": "Please update your card to continue service.",
+    "expiringDate": "Expiring {{month}}/{{year}}",
+    "processing": "Processing...",
+    "title": "Credit Card",
+    "update": "Update"
+  },
+  "customerAddPage": {
+    "add": "Add",
+    "adding": "Adding...",
+    "cancel": "Cancel",
+    "noticePrefix": "New customers will be added to your reseller account and given a free plan.",
+    "noticeSuffix": "You can upgrade them to a paid plan afterwards.",
+    "subtitle": "Add a user to your reseller account.",
+    "title": "Add Customers"
+  },
+  "customerPage": {
+    "license": "License",
+    "removeWarning": "You are removing the customer ”{{email}}” from {{orgName}}.",
+    "salesRep": "Sales Rep",
+    "updatePlan": "Update Plan"
+  },
+  "customerPlansPage": {
+    "selectPlanFor": "Select a plan for"
+  },
+  "deleteAccessKey": {
+    "confirmLabel": "Type DELETE to confirm",
+    "confirmText": "Do you wish to delete key",
+    "title": "Delete Access Key",
+    "warning": "This action is permanent and cannot be undone."
+  },
+  "deleteAccountSection": {
+    "confirmHelp": "Please help us improve by telling us why it didn't work out.",
+    "confirmSorry": "We are sorry to see you go!",
+    "confirmTitle": "Why do you want to delete your account?",
+    "contactMeLabel": "I'm open to having someone contact me about my feedback.",
+    "deleteButton": "Delete my account",
+    "description": "If you no longer want/need your Remote.It account, you can request an account deletion. Once your delete request is processed, all your account information is removed permanently.",
+    "otherReasonLabel": "Other Reason",
+    "paidPlanDowngrade": "Please downgrade to Personal to request an account deletion.",
+    "paidPlanNotice": "You have a paid subscription plan.",
+    "permanentWarning": "I understand that this is permanent and that accounts and related devices can not be recovered.",
+    "reasonAnotherAccount": "Have another account",
+    "reasonConnectionQuality": "Connection quality or performance issues",
+    "reasonCost": "Cost of service",
+    "reasonCouldntConnect": "Couldn’t connect",
+    "reasonCouldntGetOnline": "Couldn’t get my device online",
+    "reasonInstallDifficult": "Installation was too difficult",
+    "reasonNotExpected": "Not what I thought it was",
+    "reasonNotUsing": "Not using it anymore",
+    "reasonTooHard": "Too hard to use",
+    "reasonUnsupportedDevice": "My device isn’t supported",
+    "reasonUsingSomethingElse": "Using something else",
+    "snackbar": "Your account delete request has been sent.",
+    "turnaround": "Deletion requests take 3 to 5 business days to complete."
+  },
+  "deleteDevice": {
+    "deletingDevices": "deleting devices.",
+    "mustBeOffline": "Device must be offline",
+    "title": "Delete Device",
+    "uninstallRecommendation": "We recommend uninstalling Remote.It before",
+    "unregisterTitle": "Unregister Device",
+    "unregisterWarning": "You are about to permanently remove this device and all of its services.",
+    "warning": "Deleting devices can't be undone so may require you to physically access the device if you wish to recover it."
+  },
+  "deviceBulkTransferPage": {
+    "blockedCount_one": "{{count}} of the selected device cannot be transferred.",
+    "blockedCount_other": "{{count}} of the selected devices cannot be transferred.",
+    "blockedNames": "You can only transfer devices you own: {{names}}.",
+    "confirmOwnershipBefore": "You are about to transfer ownership of",
+    "confirmOwnershipMiddle": "and all of their services to",
+    "confirmWarning": "You will lose all access and control of these devices upon transfer.",
+    "deviceCount_one": "{{count}} device",
+    "deviceCount_other": "{{count}} devices",
+    "goBack": "Go Back",
+    "title": "Transfer Devices",
+    "transferInfo": "Device transfer typically takes a few seconds to complete. An email will be sent to you and the new owner when the process is completed.",
+    "transferringCount_one": "You are transferring {{count}} device to a new owner.",
+    "transferringCount_other": "You are transferring {{count}} devices to a new owner."
+  },
+  "deviceDescriptionSetting": {
+    "label": "Device Description"
+  },
+  "deviceGraphColumn": {
+    "title": "Device Graph"
+  },
+  "deviceHeaderMenu": {
+    "configure": "Configure",
+    "details": "Details",
+    "logs": "Logs",
+    "shareAccess": "Share access",
+    "unknown": "Unknown"
+  },
+  "deviceLabelSetting": {
+    "label": "Device Label"
   },
   "deviceList": {
     "addTag": "Add Tag",
@@ -81,6 +824,381 @@
     "selected": "Selected",
     "selectToRestore": "Please select a device to restore.",
     "tagsLabel": "tags"
+  },
+  "deviceName": {
+    "new": "NEW",
+    "noDeviceFound": "No device found",
+    "sharedBy": "Shared by {{email}}",
+    "unlicensed": "Unlicensed"
+  },
+  "deviceNameLocation": {
+    "rename": "Rename",
+    "thisDevice": "This device"
+  },
+  "deviceNameSetting": {
+    "label": "Device Name"
+  },
+  "deviceOptionMenu": {
+    "deviceDetails": "Device Details",
+    "deviceLink": "Device Link",
+    "makeProduct": "Make Product",
+    "restoreDevice": "Restore Device",
+    "serviceLink": "Service Link",
+    "shareAccess": "Share access",
+    "transferDevice": "Transfer Device"
+  },
+  "devicePage": {
+    "availableServices": "Available services",
+    "availableServicesDescription": "The device's hosted services (applications) are listed here.",
+    "deviceNotFound": "Device not found.",
+    "deviceOffline": "Device offline",
+    "deviceUnlicensed": "Device unlicensed",
+    "registeringEllipsis": "Registering...",
+    "restoreDevice": "Restore Device",
+    "selectServiceInstruction": "Select a service to configure it or to start a connection.",
+    "service": "Service"
+  },
+  "devicePresenceSetting": {
+    "label": "Presence Address"
+  },
+  "devicesActionMenu": {
+    "confirmTitle": "Confirm Device Deletion",
+    "delete": "Delete",
+    "deleteCount_one": "Delete {{count}} device",
+    "deleteCount_other": "Delete {{count}} devices",
+    "deleteWarning": "Deletion is irreversible and may require device access for recovery.",
+    "more": "More",
+    "selectedCount_one": "{{count}} device selected",
+    "selectedCount_other": "{{count}} devices selected",
+    "transfer": "Transfer",
+    "uninstallHint": "Uninstall the Remote.It agent before deletion for best results."
+  },
+  "devicesApplicationsTabs": {
+    "allServices": "All Services",
+    "screenView": "ScreenView"
+  },
+  "deviceSetupItem": {
+    "alreadyCreated": "Already created",
+    "alreadyRegistered": "This system is already registered to another user. You'll need to log in as the device's owner to manage it.",
+    "guideBody": "You can setup the device you are currently using, or follow the simple instructions to setup one of the commonly used platforms.",
+    "guideTitle": "Select a device",
+    "notYourSystem": "This is not your system.",
+    "restore": "restore",
+    "restoring": "Restoring device...",
+    "thisSystem": "This system"
+  },
+  "deviceTransferPage": {
+    "confirmTransferPrefix": "You are about to transfer ownership of",
+    "confirmTransferSuffix": "and all of its services to",
+    "loseAccessWarning": "You will lose all access and control of this device upon transfer.",
+    "title": "Transfer Device",
+    "transferInfo": "Device transfer typically takes a few seconds to complete. An email will be sent to you and the new owner when the process is completed.",
+    "transferringTo": "You are transferring \"{{name}}\" to a new owner."
+  },
+  "eventMessage": {
+    "allowed": "allowed",
+    "and": "and",
+    "attemptedToLogIn": "attempted to log in",
+    "connectedTo": "connected to",
+    "deleted": "deleted",
+    "deletedTarget": "{{id}} (deleted)",
+    "deletedUser": "(deleted)",
+    "deviceCount_one": "{{count}} device",
+    "deviceCount_other": "{{count}} devices",
+    "disconnectedFrom": "disconnected from",
+    "duration": "Duration",
+    "from": "from",
+    "licenseUpdated": "Your license was updated",
+    "loggedIn": "logged in",
+    "mfaDisabled": "Multi-factor authentication (MFA) disabled",
+    "mfaEnabled": "Multi-factor authentication (MFA) enabled",
+    "on": "on",
+    "phoneNumberChanged": "Phone number changed",
+    "received": "Received",
+    "removedSharingOf": "removed sharing of",
+    "resetPassword": "reset {{adjective}} password",
+    "restricted": "restricted",
+    "script": "Script",
+    "scriptExecutionWith": "script execution with",
+    "sent": "Sent",
+    "shared": "shared",
+    "status": {
+      "cancelled": "was cancelled",
+      "failed": "failed",
+      "ready": "was ready to run",
+      "running": "ran",
+      "success": "ran successfully",
+      "unknown": "did something strange",
+      "waiting": "waited to run"
+    },
+    "their": "their",
+    "to": "to",
+    "transferred": "transferred",
+    "unknown": "Unknown",
+    "unknownEventType": "Unknown event type {{type}} occurred",
+    "wentOffline": "went offline",
+    "wentOnline": "went online",
+    "with": "with",
+    "you": "You",
+    "youLeftSharedDevice": "You left the shared device",
+    "youLower": "you",
+    "your": "your"
+  },
+  "eventTypeFilterMenu": {
+    "all": "All",
+    "filterEvents": "Filter events"
+  },
+  "feedbackPage": {
+    "emailUsAt": "You can also email us at",
+    "featureRequestHint": "If you have a feature request, please include why it’s important to you.",
+    "includedData": "Included data",
+    "intro": "Get support or provide feedback on how can we improve Remote.It.",
+    "message": "Message",
+    "send": "Send",
+    "subject": "Subject",
+    "title": "Contact"
+  },
+  "fileAddPage": {
+    "noPermission": "You do not have permission to upload files",
+    "uploadFile": "Upload File",
+    "uploading": "Uploading..."
+  },
+  "fileDeleteButton": {
+    "title": "Delete File",
+    "warning": "This can not be undone."
+  },
+  "fileMetadataForm": {
+    "description": "Description",
+    "name": "Name",
+    "uploadFile": "Upload File"
+  },
+  "filesPage": {
+    "demoDescription": "See how easy it is to run a script with our demo script.",
+    "demoScript": "Demo Script",
+    "demoScriptDescription": "Demo script to illustrate how to get data and add it to a device",
+    "demoScriptName": "Get Hostname",
+    "moreExamples": "For more examples and detailed guidance,",
+    "needDevice": "Need a device to test with?",
+    "tryDocker": "Try a docker container!",
+    "uploadFileNotice": "Upload a file for use in your scripts.",
+    "visitDocs": "visit our documentation site."
+  },
+  "fileUpload": {
+    "binaryScriptUploaded": "Binary script uploaded",
+    "dragAndDrop": "Drag and drop or click",
+    "loadingEllipsis": "loading...",
+    "readError": "File reading has failed",
+    "scriptLabel": "Script",
+    "selected": "selected",
+    "selectFile": "Select File",
+    "upload": "Upload"
+  },
+  "globalSearch": {
+    "placeholder": "Search device or service name"
+  },
+  "graphsPage": {
+    "deviceListAndDetails": "Device list and details",
+    "logsAvailable": "of logs are available with your plan.",
+    "serviceDetails": "Service details",
+    "title": "Graphs",
+    "updateToSeeMore": "Update to see more."
+  },
+  "guideStep": {
+    "exitGuide": "Exit guide",
+    "next": "next",
+    "previous": "previous",
+    "stepOf": "{{step}} of {{total}}"
+  },
+  "header": {
+    "back": "Back",
+    "deviceSearch": "Device Search",
+    "hideSelect": "Hide Select",
+    "products": "Products",
+    "showSelect": "Show Select"
+  },
+  "headerOverrideSetting": {
+    "description": "A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server.",
+    "title": "Host header override"
+  },
+  "inlineFileFieldSetting": {
+    "reset": "Reset",
+    "selectApplication": "Select Application"
+  },
+  "inlineSetting": {
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "save": "Save"
+  },
+  "invoices": {
+    "amount": "Amount",
+    "date": "Date",
+    "empty": "No invoices found.",
+    "invoice": "Invoice",
+    "loading": "Loading invoices...",
+    "oneTime": "one-time",
+    "plan": "Plan",
+    "seeInvoice": "See invoice",
+    "title": "Billing History"
+  },
+  "jobAttributes": {
+    "fileDeleted": "File Deleted",
+    "filter": "Filter",
+    "guestScript": "guest script",
+    "match": "Match",
+    "name": "Name",
+    "none": "None",
+    "runBy": "Run By",
+    "targets": "Targets",
+    "time": "Time",
+    "unknown": "Unknown"
+  },
+  "jobDetailPage": {
+    "cancelRun": "Cancel Run",
+    "deleteRun": "Delete Run",
+    "deleteRunWarning": "This will permanently delete this run and all its results.",
+    "deviceResults": "DEVICE RESULTS",
+    "devices": "Devices",
+    "downloadLogsAllDevices": "Download logs for all devices",
+    "downloadLogsThisDevice": "Download logs for this device",
+    "fileDeleted": "File Deleted",
+    "guestScript": "Guest script",
+    "jobNotFound": "Job not found",
+    "newRun": "New Run",
+    "noDevicesInRun": "No devices in this run",
+    "noReturnValues": "No return values from this device"
+  },
+  "jobDeviceDetailPage": {
+    "back": "Back",
+    "deviceDetails": "Device details",
+    "noReturnValues": "No return values from this device",
+    "unknown": "Unknown"
+  },
+  "jobsPage": {
+    "runScriptToStart": "Run a script to get started"
+  },
+  "lanSharePage": {
+    "allowUsersToConnect": "Allow users to connect to your remote device through your IP address using a custom port.",
+    "bindIpAddress": "Bind IP Address",
+    "cancel": "Cancel",
+    "classARestrictionName": "Class-A Restriction",
+    "classARestrictionNote": "IP restricted to the local network",
+    "classBRestrictionName": "Class-B Restriction",
+    "classBRestrictionNote": "Narrowly IP restrict on the local network",
+    "classCRestrictionName": "Class-C Restriction",
+    "classCRestrictionNote": "Focused IP restriction on the local network",
+    "enableLanSharing": "Enable LAN sharing",
+    "invalidIp": "invalid IP",
+    "ipAddress": "IP address",
+    "ipLatchingName": "IP Latching",
+    "ipLatchingNote": "Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.",
+    "localNetworkSecurity": "Local Network Security",
+    "localNetworkSharing": "Local Network Sharing",
+    "mask": "Mask {{value}}",
+    "noneName": "None",
+    "noneNote": "Available to all incoming requests.",
+    "save": "Save",
+    "settings": "Settings",
+    "singleIpRestrictionName": "Single IP Restriction",
+    "singleIpRestrictionNote": "Only allow a single IP address to connect to this device on the local network.",
+    "yourLocalIpAddress": "Your local IP address"
+  },
+  "launchTypeSelect": {
+    "label": "Launch method",
+    "none": "None"
+  },
+  "leaveDevice": {
+    "title": "Leave Device",
+    "warning": "This device will have to be re-shared to you if you wish to access it again."
+  },
+  "licensingNoticeDisplay": {
+    "canceledTitle": "Your {{description}} plan of {{productName}} has been canceled.",
+    "close": "Close",
+    "exceededLimit_one": "You have exceeded your limit by {{count}}.",
+    "exceededLimit_other": "You have exceeded your limit by {{count}}.",
+    "expiredTitle": "Your {{description}} plan of {{productName}} has expired.",
+    "incompleteTitle": "Your {{description}} plan of {{productName}} is incomplete.",
+    "learnMore": "Learn more.",
+    "pastDueTitle": "Your {{description}} plan of {{productName}} is past due.",
+    "planTitle": "Your {{description}} plan of {{productName}}",
+    "please": "Please",
+    "pleaseCheck": "Please check.",
+    "toContinueService": "to continue service.",
+    "updatePaymentInformation": "update your payment information ",
+    "updatePaymentMethod": "Please update your payment method.",
+    "upgrade": "Upgrade",
+    "upgradeLicense": "Please upgrade your license.",
+    "upgradeToProfessional": "Upgrade to a professional plan to enable full device list access and features.",
+    "willRenewOn": "will renew on"
+  },
+  "licensingPage": {
+    "title": "License"
+  },
+  "limitsSetting": {
+    "licenseKey": "License Key"
+  },
+  "localhostScanForm": {
+    "footerNote": "You can always add additional services after registration.",
+    "rescan": "Rescan",
+    "scanning": "Scanning...",
+    "title": "Select any found services to auto setup",
+    "typeAndPort": "{{type}} - {{port}}"
+  },
+  "logsPage": {
+    "title": "Logs"
+  },
+  "mfaConfigureApp": {
+    "code": "Code: {{code}}",
+    "generateNewCode": "Generate new QR Code",
+    "processing": "Processing...",
+    "scanInstructions": "Scan this QR Code with your Authenticator app.",
+    "submit": "Submit",
+    "verificationCodeLabel": "Verification Code"
+  },
+  "mfaConfigureSms": {
+    "changePhoneNumber": "Change your verification phone number",
+    "confirm": "Confirm",
+    "confirming": "Confirming...",
+    "didNotReceive": "Didn't receive the verification code?",
+    "previouslySent": "A verification code had previously been sent to your mobile device.",
+    "previouslySentHint": "A code is only valid for 24 hours. Please request the code again if it has been over 24 hours since requested.",
+    "resendCode": "Resend Verification Code",
+    "sent": "A verification code has been sent to your mobile device. {{phone}}",
+    "sentHint": "This code is only valid for 24 hours.",
+    "verificationCode": "Verification Code"
+  },
+  "mfaMethod": {
+    "onAuthenticatorApp": "ON / Authenticator App",
+    "onSms": "ON / SMS",
+    "recoveryCode": "Recovery code",
+    "recoveryCodeDescription": "The recovery code is used to access your account in the event you cannot receive two-factor authentication codes.",
+    "recoveryCodeWarning": "Treat your recovery code with the same level of attention as you would your password.",
+    "turnOff": "Turn off",
+    "verified": "Verified"
+  },
+  "mfaPhoneForm": {
+    "disableWarning": "Updating your mobile device number will disable two-factor authentication until the number is verified.",
+    "disclaimer": "We will only use this number for account security. Message and data rates may apply.",
+    "enterTitle": "Enter your mobile number so we can send you the verification code",
+    "phoneLabel": "Phone",
+    "sending": "Sending...",
+    "submit": "Submit",
+    "updateTitle": "Update your mobile device number and send verification code.",
+    "verified": "Your mobile device is verified."
+  },
+  "mfaPreference": {
+    "description": "Add an additional layer of security to your account by requiring more than just a password to sign in.",
+    "googleSignInNotice": "You are signed in with your Google account. You can enable two-factor authentication in your Google account settings. If you also have Remote.It login and password, you can sign in with those credentials and then enable two-factor authentication.",
+    "offDisabled": "OFF / Two-factor disabled",
+    "title": "Two-factor Authentication",
+    "turnOn": "Turn on"
+  },
+  "mfaSelectMethod": {
+    "authenticatorApp": "Authenticator app",
+    "cancel": "Cancel",
+    "chooseMethod": "Choose a verification method:",
+    "next": "Next",
+    "smsNumber": "SMS Number",
+    "verificationMethod": "Verification Method"
   },
   "nav": {
     "account": "Account",
@@ -114,6 +1232,101 @@
     "thisDevice": "This Device",
     "totalDevices": "Total Devices",
     "totalNetworks": "Total Networks"
+  },
+  "networkAdd": {
+    "add": "Add",
+    "adding": "Adding...",
+    "cancel": "Cancel",
+    "guideInstructions": "Click here after entering your network name.",
+    "name": "Name"
+  },
+  "networkAddPage": {
+    "title": "New network"
+  },
+  "networkHeaderMenu": {
+    "deleteNetwork": "Delete Network",
+    "deletingBody": "This will remove this network for you and all of the network's users.",
+    "deletingNoticePrefix": "You will be permanently deleting",
+    "details": "Details",
+    "leaveNetwork": "Leave network",
+    "leavingBody": "The network will have to be re-shared to you if you wish to access it again.",
+    "leavingNoticePrefix": "You will be leaving",
+    "shareAccess": "Share access",
+    "unknownNetwork": "Unknown Network"
+  },
+  "networkPage": {
+    "addServicesHint": "Add services to this network from a service page",
+    "connections": "Connections",
+    "emptyNetwork": "Empty network",
+    "networkAdded": "Network added!",
+    "nextAddService": "Next add a service. Find one from the devices page and use the network panel to add.",
+    "ownOrManageNote": "Note, you can only add from devices you own or manage.",
+    "settings": "Settings",
+    "startAll": "Start All",
+    "stopAll": "Stop All"
+  },
+  "networksAccordion": {
+    "addNetwork": "Add a network",
+    "connectToNetwork": "Connect to network",
+    "manageRequired": "You must be the device owner or manager to modify the networks of this service.",
+    "sharedRestricted": "You can not modify the networks of a device shared to you.",
+    "title": "Networks"
+  },
+  "networkSettings": {
+    "nameLabel": "Network Name"
+  },
+  "networkSharePage": {
+    "grantingAccess": "Granting connection access to all the services in this network.",
+    "share": "Share",
+    "shareTitle": "Share {{name}}",
+    "sharingEllipsis": "Sharing..."
+  },
+  "networksPage": {
+    "empty": "You have no networks",
+    "emptyHint": "Add a network with the '+' button above.",
+    "guideBody": "A network is a custom group of services organized for ease of access and sharing.",
+    "guideCtaAfter": "icon to get started.",
+    "guideCtaBefore": "Select the",
+    "guideTitle": "Welcome to networks",
+    "newNetwork": "New Network",
+    "sharedWithYou": "Shared with you",
+    "title": "Networks"
+  },
+  "notificationSettings": {
+    "custom": "Custom",
+    "email": "Email",
+    "globalSettings": "Global Settings",
+    "systemNotification": "System notification",
+    "title": "Device Notifications"
+  },
+  "onboardScanning": {
+    "addRemoteAccess": "add remote access.",
+    "cancel": "cancel",
+    "discoverableNote": "On first startup, the device could take up to 2 minutes to appear, and it will be discoverable for 10 minutes after.",
+    "help": "Help",
+    "noteBody": "This setup is only for Raspberry Pis that are enabled with Remote.It. If you already have a Pi online",
+    "noteLabel": "Note:",
+    "scan": "scan",
+    "title": "Bluetooth Onboarding",
+    "turnOnPi": "Turn on your Pi with Remote.It Bluetooth Onboarding now."
+  },
+  "onboardWifi": {
+    "cellularConnected": "Cellular Connected",
+    "connectedAnotherWay": "My device is connected another way. Skip this step.",
+    "connecting": "Connecting...",
+    "connectInstructions": "Select a network and enter its password.",
+    "connectIntro": "Connect your Raspberry Pi ({{name}}) to WiFi.",
+    "ethernetConnected": "Ethernet Connected",
+    "network": "Network",
+    "noNetworksFound": "No networks found",
+    "password": "Password",
+    "scanning": "Scanning...",
+    "setWifi": "Set WiFi",
+    "skip": "Skip",
+    "title": "WiFi Setup",
+    "updateWifi": "Update WiFi",
+    "wifiConnected": "WiFi Connected",
+    "wifiNotConnected": "Wifi Not Connected"
   },
   "options": {
     "advanced": "Advanced",
@@ -175,6 +1388,607 @@
       "subLabel": "De-register this device, completely remove all saved data, and uninstall the system agent and command line tools. Do this before removing the application from your system. Can only be done by the device owner."
     }
   },
+  "organizationAddPage": {
+    "add": "Add",
+    "purchaseLicensesHint": "Purchase additional licenses to grant this user full access.",
+    "roleAssignment": "Role Assignment",
+    "title": "Add Organization Members",
+    "upgrade": "Upgrade"
+  },
+  "organizationColor": {
+    "theme": "Theme"
+  },
+  "organizationEmptyPage": {
+    "create": "Create",
+    "createOrgLine1": "Create an organization to",
+    "createOrgLine2": "automatically share devices to your members.",
+    "name": "Name"
+  },
+  "organizationGuestDetails": {
+    "devices": "Devices",
+    "guestAccess": "Guest Access",
+    "loading": "loading...",
+    "loadingFailed": "Loading failed ({{id}})",
+    "networks": "Networks"
+  },
+  "organizationGuestsPage": {
+    "description": "Users that have devices directly shared to them.",
+    "needManagePermission": "Please contact the organization owner to request device manager privileges.",
+    "title": "Guests"
+  },
+  "organizationLicensingPage": {
+    "title": "License"
+  },
+  "organizationMemberDetails": {
+    "loading": "loading...",
+    "member": "Member",
+    "memberSince": "Member since",
+    "networks": "Networks"
+  },
+  "organizationMembershipPage": {
+    "cannotBeUndone": "This action cannot be undone.",
+    "contactOwnerHint": "You would need to contact the Organization owner to be re-added.",
+    "editOrganization": "Edit Organization",
+    "joined": "Joined",
+    "leaveAccount": "Leave Account",
+    "leaveOrganization": "Leave Organization",
+    "noMemberships": "No Organization Memberships",
+    "noMembershipsHint": "Organizations can add you to their account to provide access to the devices they own.",
+    "owner": "Owner",
+    "title": "Organization Memberships",
+    "yourOrganization": "Your organization"
+  },
+  "organizationMembersPage": {
+    "addMember": "Add member",
+    "autoShareNotice": "Members will automatically have devices shared to them.",
+    "title": "Members",
+    "unlicensedLimit": "Unlicensed members will only be able to connect to the first five devices."
+  },
+  "organizationPage": {
+    "account": "Account",
+    "customers": "Customers",
+    "guests": "Guests",
+    "license": "License",
+    "members": "Members",
+    "needAdminPrivileges": "You need admin privileges to change this organization.",
+    "planTitle": "{{description}} Plan",
+    "roles": "Roles",
+    "settings": "Settings",
+    "tags": "Tags"
+  },
+  "organizationRolePage": {
+    "deleteWarningAfter": "Any members with this role will lose access until they have been set to another role.",
+    "deleteWarningBefore": "You will be permanently deleting the role",
+    "deviceNetworkPermissions": "Device and Network Permissions",
+    "name": "Name",
+    "newRole": "New Role",
+    "save": "Save",
+    "saved": "Saved",
+    "saving": "Saving...",
+    "systemRoleNotice": "System roles cannot be modified.",
+    "userPermissions": "User Permissions"
+  },
+  "organizationRolesPage": {
+    "addRole": "Add role",
+    "memberCount_one": "{{count}} member",
+    "memberCount_other": "{{count}} members",
+    "none": "none",
+    "role": "Role",
+    "roles": "Roles",
+    "upgrade": "Upgrade",
+    "upgradeToBusiness": "Upgrade your plan to Business to add custom roles."
+  },
+  "organizationSAMLSettings": {
+    "checkDomain": "Check domain",
+    "checking": "checking...",
+    "clientIdFieldLabel": "Client ID",
+    "clientIdLabel": "Client ID",
+    "clientSecretFieldLabel": "Client Secret",
+    "dnsInstructions": "Add the following CNAME and Value to your DNS records to validate your domain:",
+    "domainLabel": "Domain",
+    "enterDomain": "Enter your Organization's domain name.",
+    "identityProvider": "Identity Provider",
+    "instructionsLink": "Instructions.",
+    "issuerFieldLabel": "Issuer",
+    "issuerLabel": "issuer",
+    "providerEnabled": "{{type}} Enabled",
+    "providerTypeLabel": "Provider type",
+    "requireLogin": "Require login with {{type}}",
+    "requireLoginSubLabel": "All organization members will not be able to login with email/password or Google.",
+    "samlOidcSupported": "SAML and ODIC are both supported",
+    "setup": "Setup",
+    "updating": "Updating...",
+    "uploadMetadata": "Upload your metadata file to enable SAML",
+    "validateDomainNotice": "Validate your domain name to use an Identity Provider",
+    "verificationCNAME": "Verification CNAME",
+    "verificationValue": "Verification Value",
+    "verified": "Verified"
+  },
+  "organizationSamlUpload": {
+    "label": "Select SAML metadata file",
+    "subLabel": "Drag and drop or click"
+  },
+  "organizationSelect": {
+    "activeConnectionsCount_one": "{{count}} active connection",
+    "activeConnectionsCount_other": "{{count}} active connections",
+    "guideDescription": "See devices, networks and logs that belong to this organization.",
+    "guideTitle": "Select an organization",
+    "memberLabel": "{{name}} - {{role}}",
+    "organizations": "Organizations",
+    "ownerLabel": "{{name}} - Owner",
+    "personalAccount": "Personal Account"
+  },
+  "organizationSelectList": {
+    "membershipSettings": "Membership Settings",
+    "organizations": "Organizations",
+    "owner": "Owner",
+    "personalAccount": "Personal Account"
+  },
+  "organizationSettingsPage": {
+    "deleteOrganization": "Delete Organization",
+    "general": "General",
+    "organizationName": "Organization Name",
+    "permanentlyDeleting": "You will be permanently deleting",
+    "removeMembersWarning": "This will remove all your members and their access to your devices.",
+    "settings": "Settings"
+  },
+  "partnerStatsDetailPanel": {
+    "activated": "Activated",
+    "activeLast30Days": "Active (Last 30 Days)",
+    "admins_one": "Admins ({{count}})",
+    "admins_other": "Admins ({{count}})",
+    "backToPartners": "Back to Partners",
+    "cancel": "Cancel",
+    "childPartners_one": "Child Partners ({{count}})",
+    "childPartners_other": "Child Partners ({{count}})",
+    "currentlyOnline": "Currently Online",
+    "devicesCount_one": "{{count}} device",
+    "devicesCount_other": "{{count}} devices",
+    "devicesReportedOnce_one": "{{count}} devices have reported at least once",
+    "devicesReportedOnce_other": "{{count}} devices have reported at least once",
+    "deviceSummary": "Device Summary",
+    "exportFailed": "Failed to export devices.",
+    "exportToCsv": "Export devices to CSV",
+    "loadingPartner": "Loading partner...",
+    "parentPartner": "Parent Partner",
+    "partnerNotFound": "Partner not found",
+    "partnerSummary": "{{total}} total • {{online}} online • {{active}} active",
+    "registrants_one": "Registrants ({{count}})",
+    "registrants_other": "Registrants ({{count}})",
+    "renamePartner": "Rename partner",
+    "save": "Save",
+    "totalDevices": "Total Devices",
+    "updateNameFailed": "Failed to update partner name."
+  },
+  "partnerStatsListPage": {
+    "loading": "Loading partners...",
+    "noAdminAccess": "You don't have admin access to any partner entities.",
+    "noMatchingPartners": "No matching partners",
+    "noPartnersFound": "No partners found",
+    "searchPlaceholder": "Search partners..."
+  },
+  "passwordStrengthInput": {
+    "confirmNewPassword": "Confirm new password",
+    "enterNewPassword": "Enter new password",
+    "fair": "Fair",
+    "fixProblems": "Please fix the following problems",
+    "good": "Good",
+    "helperText": "Password must be 7-64 characters in length.",
+    "noMatch": "The passwords do not match",
+    "strengthDescription": "Password Strength: {{strength}}",
+    "strong": "Strong",
+    "tooLong": "The password must be no more than {{maxLength}} characters long.",
+    "tooShort": "The password must be at least {{minLength}} characters long.",
+    "veryWeak": "Very Weak",
+    "weak": "Weak"
+  },
+  "planCheckout": {
+    "devices": "Devices",
+    "downgrade": "Downgrade",
+    "free": "Free",
+    "interval": "Interval",
+    "licenses": "Licenses",
+    "personalPlan": "Personal plan",
+    "processing": "Processing...",
+    "submit": "Submit",
+    "switchToPersonalConfirm": "Are you sure you want to switch to the Personal plan? This will cancel your subscription.",
+    "total": "Total",
+    "users": "Users"
+  },
+  "plans": {
+    "billedMonthly": "billed monthly",
+    "continue": "Continue",
+    "currentPlan": "Current Plan",
+    "downgradeNotice": "This plan will downgrade your service.",
+    "downgradeNoticeDetail": "You will lose access to some features and may lose access to some devices.",
+    "downgradePlanTitle": "Downgrade Plan?",
+    "freePlan": "Free Plan",
+    "licenseCount_one": "{{count}} license",
+    "licenseCount_other": "{{count}} licenses",
+    "perMonthPerLicense": "per month / per license",
+    "personal": "Personal",
+    "select": "Select",
+    "update": "Update",
+    "usersAndDevices": "{{users}} users + {{devices}} devices"
+  },
+  "plansPage": {
+    "loading": "Loading plans...",
+    "pricingNotice": "Pricing is represented and billed in US$ on most popular credit cards.",
+    "removingResellerPrefix": "You are removing",
+    "removingResellerSuffix": "as your reseller. This will remove your current plan and return you to the free plan.",
+    "severWarning": "This will sever your reseller relationship!",
+    "title": "Subscriptions"
+  },
+  "platformAddPage": {
+    "multiUse": "MULTI USE",
+    "oneTimeUse": "ONE-TIME USE",
+    "registerPermissionRequired": "You must have the register permission to add a device to this organization.",
+    "screenViewCodeHint": "Or use this registration code to manually claim the ScreenView app."
+  },
+  "portSetting": {
+    "localPort": "Local Port"
+  },
+  "productAddPage": {
+    "createFailed": "Failed to create product",
+    "creating": "Creating...",
+    "nameRequired": "Product name is required",
+    "platform": "Platform",
+    "platformRequired": "Platform is required",
+    "productName": "Product Name",
+    "title": "Create Product"
+  },
+  "productOptionMenu": {
+    "cannotBeUndone": "This action cannot be undone.",
+    "deleteConfirmPrefix": "Are you sure you want to permanently delete the product",
+    "deleteConfirmSuffix": "and all its services?",
+    "deleteProduct": "Delete Product",
+    "transferProduct": "Transfer Product"
+  },
+  "productPage": {
+    "addService": "Add Service",
+    "loadingProduct": "Loading product...",
+    "noServicesDefined": "No services defined. Add at least one service to this product.",
+    "platformId": "Platform {{id}}",
+    "productNotFound": "Product not found",
+    "productNotFoundHint": "The product may have been deleted or you don't have access to it.",
+    "service": "Service",
+    "unknown": "Unknown"
+  },
+  "productsActionBar": {
+    "clearSelection": "Clear selection",
+    "confirmAction_one": "Delete {{count}} product",
+    "confirmAction_other": "Delete {{count}} products",
+    "confirmBody_one": "Are you sure you want to delete {{count}} product?",
+    "confirmBody_other": "Are you sure you want to delete {{count}} products?",
+    "confirmTitle": "Confirm Product Deletion",
+    "deleteSelected": "Delete selected",
+    "selected": "Selected"
+  },
+  "productServiceAddPage": {
+    "failedToAddService": "Failed to add service",
+    "newService": "New service",
+    "productNotFound": "Product not found"
+  },
+  "productServiceDetailPage": {
+    "actionCannotBeUndone": "This action cannot be undone.",
+    "details": "Details",
+    "productNotFound": "Product not found",
+    "removeService": "Remove Service",
+    "removeServiceConfirmPrefix": "Are you sure you want to remove the service",
+    "serviceMayHaveBeenRemoved": "The service may have been removed.",
+    "serviceNotFound": "Service not found"
+  },
+  "productTransferPage": {
+    "cancel": "Cancel",
+    "confirmMiddle": "and all of its services to",
+    "confirmPrefix": "You are about to transfer ownership of",
+    "loseAccessWarning": "You will lose all access and control of this product upon transfer.",
+    "notFound": "Product not found",
+    "title": "Transfer Product",
+    "transfer": "Transfer",
+    "transferDescription": "Product transfer typically takes a few seconds to complete. The new owner will gain full access to the product and all its services.",
+    "transferring": "Transferring...",
+    "transferringTo": "You are transferring \"{{name}}\" to a new owner."
+  },
+  "promptModal": {
+    "applicationPath": "Application path",
+    "title": "Missing info found"
+  },
+  "publicSetting": {
+    "ipLatching": "IP Latching",
+    "label": "Security",
+    "latchHelp": "The connection will latch onto the first device to connect with IP restriction.",
+    "none": "None",
+    "openHelp": "Any device will be able to connect while the connection is active."
+  },
+  "qualityDetails": {
+    "availability": "Availability:",
+    "availabilityCaption": "Average time online per day.",
+    "good": "Good",
+    "instability": "Instability:",
+    "instabilityCaption": "Average number of disconnects per day.",
+    "moderate": "Moderate",
+    "poor": "Poor",
+    "unknown": "Unknown"
+  },
+  "raspberrypiOptionsPage": {
+    "addAccessDescription": "Get remote access with a single line of code.",
+    "addAccessQuestion": "Already have a Raspberry Pi set up?",
+    "addAccessTitle": "Add Remote Access",
+    "downloadDescription": "Download our disk image for easy, headless setup with Bluetooth WiFi onboarding.",
+    "downloadQuestion": "New to Pi?",
+    "downloadTitle": "Download Pi Image",
+    "heading": "Set Up Your Raspberry Pi for\u00a0Remote\u00a0Access",
+    "onboardDescription": "Set up WiFi via Bluetooth and register your device for remote access.",
+    "onboardQuestion": "Have our custom Pi image?",
+    "onboardTitle": "Onboard via Bluetooth"
+  },
+  "rentANodeForm": {
+    "addDns": "Add a public DNS address",
+    "addIpv6": "Add a public IPv6 address",
+    "all": "All",
+    "deviceName": "Device Name",
+    "dnsAccessHelp": "You will be able to access your node at this address.",
+    "invalidPhone": "Invalid phone number",
+    "openPorts": "Open Ports",
+    "openPortsHelp": "Please enter a comma separated list of ports, or leave blank to open all ports.",
+    "phone": "Phone",
+    "processingNotice": "Please allow up to two business days for your rental request to be processed. If you have any questions please contact us at",
+    "sshPublicKey": "SSH Public Key",
+    "submitRequest": "Submit Request",
+    "submitting": "Submitting...",
+    "title": "Node Rental Form"
+  },
+  "rentANodeRequest": {
+    "availability": "Subject to availability",
+    "cores": "8 ARM cores",
+    "description": "Rent a Symbiote Node from Cachengo's distributed cloud.",
+    "memory": "16 GB memory",
+    "os": "Ubuntu Linux",
+    "storage": "256 GB storage"
+  },
+  "resellerPage": {
+    "addCustomer": "Add customer",
+    "title": "Customers"
+  },
+  "resellerSettings": {
+    "logoUrl": "Logo URL",
+    "reseller": "Reseller"
+  },
+  "restore": {
+    "body": "We will attempt to restore this device's configuration. Please note this may not completely restore services that have custom host information.",
+    "restoringDevice": "Restoring device...",
+    "title": "Restore device from Cloud"
+  },
+  "restoreModal": {
+    "generatingCommand": "generating command...",
+    "instructions": "If you lost or deleted this device you can restore it by running the following command on the device.",
+    "restoreCodeLabel": "Restore Code",
+    "title": "Restore \"{{name}}\""
+  },
+  "roleAccessCounts": {
+    "counting": "Counting...",
+    "devicesCount_one": "{{count}} device",
+    "devicesCount_other": "{{count}} devices",
+    "networksCount_one": "{{count}} network",
+    "networksCount_other": "{{count}} networks"
+  },
+  "routeSetting": {
+    "adaptiveDescription": "Will pick the best route available, prioritizing a direct connection to this service.",
+    "adaptiveName": "Adaptive",
+    "label": "Routing",
+    "p2pDescription": "A direct connection to this service.",
+    "p2pName": "Peer to peer only",
+    "proxyDescription": "A private proxy connection routed through the cloud.",
+    "proxyName": "Proxy only",
+    "publicDescription": "A cloud proxy connection with a temporary public URL.",
+    "publicName": "Public Proxy"
+  },
+  "scanPage": {
+    "description": "Scan your system and local network for available ports to host.",
+    "title": "Network Scan"
+  },
+  "scriptDeleteButton": {
+    "title": "Delete Script",
+    "warning": "This can not be undone."
+  },
+  "scriptEditPage": {
+    "addDemoScript": "Add Demo Script",
+    "addScript": "Add Script",
+    "copied": "Copied!",
+    "copyScript": "Copy Script",
+    "description": "Description",
+    "editScript": "Edit Script",
+    "name": "Name",
+    "newRun": "New Run",
+    "save": "Save",
+    "saveAndRun": "Save and Run",
+    "saving": "Saving...",
+    "unsavedChangesNote": "Unsaved changes won't affect the run - it uses the last saved version."
+  },
+  "scriptingActionBar": {
+    "chooseScript": "Choose a script",
+    "clearSelection": "Clear selection",
+    "devicesSelected_one": "device selected",
+    "devicesSelected_other": "devices selected"
+  },
+  "scriptingHeader": {
+    "add": "Add",
+    "adminRequired": "Admin permissions required to upload",
+    "feedback": "Feedback",
+    "upload": "Upload"
+  },
+  "scriptPage": {
+    "created": "Created",
+    "deviceCount_one": "{{count}} devices",
+    "deviceCount_other": "{{count}} devices",
+    "edit": "Edit",
+    "newRun": "New Run",
+    "noDevices": "No devices",
+    "noRunsYet": "No runs yet.",
+    "ready": "Ready",
+    "running": "Running",
+    "runs": "Runs",
+    "updated": "Updated",
+    "viewAllRuns": "View all runs"
+  },
+  "scriptRunForm": {
+    "devices": "Devices",
+    "moreCount_one": "+{{count}} more",
+    "moreCount_other": "+{{count}} more",
+    "noScriptData": "No script data found. Please go back and complete the script form first.",
+    "notAllowedOn": "You are not allowed to run scripts on",
+    "removeDeviceCount_one": "Remove Device",
+    "removeDeviceCount_other": "Remove Devices",
+    "running": "Running...",
+    "runNow": "Run Now",
+    "saveHint": "Save creates a prepared run with the selected devices, tag, and argument values.",
+    "targetDevices": "Target Devices"
+  },
+  "scriptRunSummary": {
+    "all": "ALL",
+    "arguments": "Arguments",
+    "filter": "Filter",
+    "match": "Match",
+    "missingFile": "Missing file ({{value}})",
+    "noDevices": "No devices",
+    "notSet": "Not set",
+    "runConfiguration": "Run Configuration",
+    "showLess": "Show less",
+    "showMore": "Show more",
+    "showMoreCount_one": "Show {{count}} more",
+    "showMoreCount_other": "Show {{count}} more",
+    "targets": "Targets"
+  },
+  "scriptsListHeader": {
+    "add": "Add",
+    "adminRequired": "Admin permissions required",
+    "back": "Back",
+    "files": "Files",
+    "scripts": "Scripts",
+    "upload": "Upload"
+  },
+  "searchField": {
+    "clearSearch": "Clear search",
+    "filtered": "Filtered",
+    "placeholder": "Search devices and services...",
+    "search": "Search",
+    "searchedOf": "Searched / {{totalTitle}}",
+    "total": "Total",
+    "totalDevices": "{{totalTitle}} Devices"
+  },
+  "seatsSetting": {
+    "confirmAfter_one": "for {{count}} user license.",
+    "confirmAfter_other": "for {{count}} user licenses.",
+    "confirmBefore": "Please confirm that you want to change your billing to",
+    "confirmTitle": "Confirm Billing Change",
+    "devicesCount_one": "{{count}} device",
+    "devicesCount_other": "{{count}} devices",
+    "label": "Licensing",
+    "usersCount_one": "{{count}} user",
+    "usersCount_other": "{{count}} users",
+    "warning": "This will change your billing."
+  },
+  "serviceAddPage": {
+    "maxServices_one": "Desktop currently supports a maximum of {{count}} services.",
+    "maxServices_other": "Desktop currently supports a maximum of {{count}} services.",
+    "newService": "New service"
+  },
+  "serviceAttributesForm": {
+    "addCustomTokens": "Add custom [tokens]",
+    "addCustomTokensDescription": "You can add custom [tokens] to the templates above. Just enclose a tag in brackets to create a [token] you can set a default value for. If not filled out, tokens will prompt you at time of connection.",
+    "applicationPath": "Application Path",
+    "autoLaunch": "Auto Launch",
+    "command": "Command",
+    "customTokens": "Custom tokens",
+    "defaultAdaptiveRouting": "Default adaptive routing",
+    "defaultTemplate": "Default template",
+    "defaultTokens": "Default tokens",
+    "example": "Example",
+    "hostHeaderOverride": "Host Header Override",
+    "hostHeaderOverrideCaption": "A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server.",
+    "launchMethod": "Launch method",
+    "localPort": "Local Port",
+    "localPortAutoAssign": "Port will auto assign if unset.",
+    "localPortCaption": "Default local port to use when a system connects to this service.",
+    "noDefaultOverride": "No default override",
+    "routing": "Routing",
+    "routingDesktopOnly": "Routing is only available on desktop.",
+    "tokenDefault": "{{token}} default",
+    "tokenFoundIn": "This token was found in"
+  },
+  "serviceDefaultsPage": {
+    "defaults": "Defaults",
+    "description": "Default local settings for any connections to this service.",
+    "title": "Default Connection settings"
+  },
+  "serviceEditPage": {
+    "title": "Service configuration"
+  },
+  "serviceForm": {
+    "awsExample": "AWS example:",
+    "disableServiceHelp": "Disabling your service will take it offline.",
+    "doubleCheckRunning": "Double check that the host application running.",
+    "enableService": "Enable service",
+    "noServiceFoundOn": "No service found running on {{host}}:{{port}}.",
+    "notRemoteConfigurable": "This service isn't remote configurable.",
+    "optional": "Optional",
+    "or": "or",
+    "retry": "Retry",
+    "serviceDescription": "Service Description",
+    "serviceDescriptionHelp": "Service description or connection instructions.",
+    "serviceFoundOn": "Service found on",
+    "serviceHost": "Service Host",
+    "serviceHostHelp": "Enter a local network IP address or fully qualified domain name to configure this as a jump service to a system on your local network.",
+    "serviceIsDisabled": "Service is disabled",
+    "serviceIsEnabled": "Service is enabled",
+    "serviceName": "Service Name",
+    "servicePort": "Service Port",
+    "servicePortHelp": "Port the application's service is running on. Do not change this unless you know it is running on a custom port.",
+    "serviceSetup": "Service Setup",
+    "serviceUrl": "Service URL",
+    "serviceUrlHelp": "Full URL of the service you want to connect to. Example:",
+    "setupConnectionDefaults": "Setup connection defaults",
+    "updatePackageHelp": "Update it's device package to the latest version to be able to remote configure it."
+  },
+  "serviceGraphColumn": {
+    "title": "Service Graph"
+  },
+  "serviceHeaderMenu": {
+    "connectFromAnywhere": "It can be connected to from anywhere using Remote.It.",
+    "runningOnThisDevice": "This service is running on this device.",
+    "selectAnotherDevice": "Select another device from the devices menu to connect to it remotely.",
+    "shareAccess": "Share access",
+    "unknown": "unknown"
+  },
+  "serviceKeySetting": {
+    "beta": "BETA",
+    "deleteAction": "Delete Key",
+    "deleteBodyPrefix": "This action cannot be undone.",
+    "deleteBodySuffix": "Anyone with this key will no longer be able to connect.",
+    "deleteKeyTitle": "Delete Key",
+    "deleteTitle": "Delete Service Key?",
+    "disableAction": "Disable",
+    "disableBody": "Anyone with this key will no longer be able to connect.",
+    "disabledSubLabel": "Generate a Service Key to use authorize connections to this service through our SDK.",
+    "disableTitle": "Disable Service Key?",
+    "enableAction": "Enable",
+    "enableBody": "Anyone with this key will be able to connect.",
+    "enabledSubLabel": "Your Service Key has been generated. Use the key below to authorize connections through our SDK. Keep it secure and do not share it publicly. You can delete it to create a new one.",
+    "enableTitle": "Enable Service Key?",
+    "generateAction": "Generate Key",
+    "generateBodyPrefix": "You are generating a new Service Key.",
+    "generateBodySuffix": "Anyone with this key will be able to connect.",
+    "generateTitle": "Generate Service Key?",
+    "label": "Service Key",
+    "nodePackage": "Get the Node.js package",
+    "permissionSubLabel": "Requires device 'Manage' permission"
+  },
+  "serviceUsersPage": {
+    "addGuestAccess": "Add guest access",
+    "addOrgMember": "Add organization member",
+    "serviceAccess": "Service access"
+  },
   "settings": {
     "accessKeys": "Access Keys",
     "accountDeletion": "Account deletion",
@@ -208,5 +2022,159 @@
     "urlEndpoint": "URL endpoint",
     "visitWeb": "Visit Remote.It on the web",
     "webhookHelp": "Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds."
+  },
+  "settingsDisableNetworkItem": {
+    "description": "This will allow network access to the desktop UI on ports 29999 and 29998 in addition to sharing through Remote.It",
+    "label": "Enable local network discovery",
+    "restartNotice": "Please restart for changes to take effect."
+  },
+  "setupDevice": {
+    "addDevice": "Add Device",
+    "addDifferent": "add different {{os}}",
+    "name": "Name",
+    "nameInUse": "That device name is already in use.",
+    "setupFor": "Setup your {{os}} for remote access or"
+  },
+  "sharedAccessSetting": {
+    "label": "Disable shared access",
+    "subLabel": "While active, no other users will be able to connect to this device."
+  },
+  "shareDetails": {
+    "allowScripting": "Allow scripting"
+  },
+  "sharedUsersLists": {
+    "addOrganizationMember": "Add an organization member",
+    "connected": "Connected",
+    "createOrganization": "Create your organization",
+    "guests": "Guests",
+    "noAccess": "No one has access to this service.",
+    "or": "or",
+    "organizationMembers": "Organization members",
+    "shareToGuest": "Share to a guest"
+  },
+  "sharingForm": {
+    "allowScriptExecution": "Allow script execution",
+    "allowScriptExecutionHelp": "Give the user the ability to run scripts on this device.",
+    "chooseServices": "Choose the services you'd like to provide access to.",
+    "services": "Services"
+  },
+  "statusChip": {
+    "connected": "Connected",
+    "idle": "Idle",
+    "offline": "Offline",
+    "offlineLabel": "Offline ",
+    "online": "Online",
+    "onlineLabel": "Online ",
+    "public": "Public",
+    "unknown": "Unknown",
+    "unlicensed": "Unlicensed"
+  },
+  "subdomainSetting": {
+    "subdomain": "Subdomain"
+  },
+  "tagEditor": {
+    "keyboardShortcut": "Keyboard shortcut '#'",
+    "label": "TAG",
+    "placeholder": "New tag..."
+  },
+  "tagFilter": {
+    "accessLabel": "Access",
+    "all": "All",
+    "any": "Any",
+    "deviceCount_one": "{{count}} device",
+    "deviceCount_other": "{{count}} devices",
+    "matchLabel": "Match:",
+    "noDevices": "No devices",
+    "none": "None",
+    "savedDevices": "Saved Devices",
+    "selectDevices": "Select Devices",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "selectedDevices": "Selected Devices",
+    "tagged": "Tagged"
+  },
+  "tagsPage": {
+    "addTag": "Add Tag",
+    "allDevicesTagRemoved": "All devices will have this tag removed from them.",
+    "cannotBeUndone": "This cannot be undone.",
+    "deletingTag": "You are deleting the tag",
+    "merge": "Merge",
+    "mergeInstructionsAfter": "tag.",
+    "mergeInstructionsBefore": "You are about merge all instances of the",
+    "mergeInstructionsMid": "tag into the",
+    "mergeTagsConfirmTitle": "Merge tags?",
+    "title": "Tags"
+  },
+  "testPage": {
+    "addQueryHeader": "Add query header",
+    "addQueryHeaderPlaceholder": "Example: \"key:value\"",
+    "clearViewedAnnouncements": "Clear viewed announcements",
+    "clearViewedAnnouncementsHint": "Marks all loaded announcements unread for this account.",
+    "disableTestUI": "Disable Test UI",
+    "disableTestUIHint": "To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift.",
+    "featureLabel": "{{name}} (default {{state}})",
+    "features": "Features",
+    "hideTestUIBackgrounds": "Hide test UI backgrounds",
+    "licenseMessageCleared": "License message cleared",
+    "licensingOptions": "Licensing Options",
+    "overrideDefaultAPIs": "Override default APIs",
+    "overrideLicensesAndLimits": "Override licenses and limits",
+    "reset": "Reset",
+    "resetFeatureOverrides": "Reset feature overrides",
+    "setServiceLicenses": "Set service licenses",
+    "setServiceLicensesHint": "Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY",
+    "showLatestAnnouncement": "Show latest announcement",
+    "showLatestAnnouncementHint": "Previews the latest announcement without changing its read status.",
+    "switchGraphQLAPIs": "Switch GraphQL APIs",
+    "testOptions": "Test Options",
+    "title": "Test Settings",
+    "webSocketURL": "WebSocket URL"
+  },
+  "timeSeriesSelect": {
+    "graphLength": "Graph length",
+    "graphType": "Graph type",
+    "graphUnit": "Graph unit",
+    "overLimit": " (over limit)"
+  },
+  "transferForm": {
+    "cancel": "Cancel",
+    "transfer": "Transfer",
+    "transferring": "Transferring..."
+  },
+  "unauthorizedPage": {
+    "device": "device",
+    "deviceMayBeRemoved": "Device may have been removed ({{deviceID}})",
+    "gainAccessHint": "To gain access, please have the device owner share it with you.",
+    "notAuthorized": "You are not authorized to access this {{name}}.",
+    "service": "service"
+  },
+  "updateNotice": {
+    "disableUpdates": "Disable Updates",
+    "install": "Install",
+    "recommendLocalConnection": "It is recommended to have a local connection when updating.",
+    "restartWarning": "Restarting while connected over a Remote.It connection could cause the connection to be permanently lost.",
+    "updateAvailable": "An update is available (v{{version}})."
+  },
+  "updateSetting": {
+    "about": "About",
+    "autoUpdate": "Auto update",
+    "check": "Check",
+    "checking": "Checking...",
+    "checkingForUpdates": "Checking for updates...",
+    "copyright": "© remot3.it inc.",
+    "downloading": "Downloading...",
+    "install": "Install",
+    "nextCheckIn": "Next check in",
+    "preReleaseBuilds": "Update to pre-release builds",
+    "updateFailed": "Update failed",
+    "versionAvailable": "Version {{version}} available"
+  },
+  "upgradeBanner": {
+    "accessPremium": "Access premium features & support",
+    "upgradePlan": "Upgrade Plan"
+  },
+  "viewAsBanner": {
+    "exit": "Exit view-as mode",
+    "viewingAs": "Viewing as: {{email}}"
   }
 }

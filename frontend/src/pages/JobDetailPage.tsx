@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Stack, List, ListItem, ListItemIcon, ListItemText, Typography, Button } from '@mui/material'
@@ -28,6 +29,7 @@ type Props = {
 }
 
 export const JobDetailPage: React.FC<Props> = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID: string; jobDeviceID?: string }>()
@@ -133,7 +135,7 @@ export const JobDetailPage: React.FC<Props> = () => {
         {jobsFetching || fetching ? (
           <LoadingMessage />
         ) : (
-          <Notice severity="warning">Job not found</Notice>
+          <Notice severity="warning">{t('jobDetailPage.jobNotFound', 'Job not found')}</Notice>
         )}
       </Container>
     )
@@ -160,14 +162,14 @@ export const JobDetailPage: React.FC<Props> = () => {
             <Box sx={{ flex: 1 }}>
               {isFileMissing ? (
                 <Typography component="span" variant="body2" fontStyle="italic">
-                  File Deleted&nbsp;
+                  {t('jobDetailPage.fileDeleted', 'File Deleted')}&nbsp;
                 </Typography>
               ) : (
                 scriptName
               )}
               {isPrivateScript && (
                 <Typography component="span" variant="caption" color="textSecondary" sx={{ ml: 1 }}>
-                  Guest script
+                  {t('jobDetailPage.guestScript', 'Guest script')}
                 </Typography>
               )}
             </Box>
@@ -179,7 +181,7 @@ export const JobDetailPage: React.FC<Props> = () => {
             />
             <IconButton
               icon="arrow-to-bottom"
-              title="Download logs for all devices"
+              title={t('jobDetailPage.downloadLogsAllDevices', 'Download logs for all devices')}
               size="md"
               disabled={isActive}
               onClick={async () => {
@@ -188,8 +190,11 @@ export const JobDetailPage: React.FC<Props> = () => {
             />
             {scriptFileRef && (
               <DeleteButton
-                title="Delete Run"
-                warning="This will permanently delete this run and all its results."
+                title={t('jobDetailPage.deleteRun', 'Delete Run')}
+                warning={t(
+                  'jobDetailPage.deleteRunWarning',
+                  'This will permanently delete this run and all its results.'
+                )}
                 disabled={isActive}
                 onDelete={async () => {
                   await dispatch.jobs.delete({ jobId: job.id, fileId: scriptFileRef.id })
@@ -223,7 +228,7 @@ export const JobDetailPage: React.FC<Props> = () => {
                 onClick={async () => await dispatch.jobs.cancel(job.id)}
                 sx={{ my: 2 }}
               >
-                Cancel Run
+                {t('jobDetailPage.cancelRun', 'Cancel Run')}
               </Button>
             )}
             <ScriptRunSummary
@@ -232,7 +237,11 @@ export const JobDetailPage: React.FC<Props> = () => {
               jobDevices={job.jobDevices}
               tag={job.tag}
               files={files}
-              runConfigAction={scriptFileRef ? <IconButton icon="plus" title="New Run" size="md" onClick={handleNewRun} /> : undefined}
+              runConfigAction={
+                scriptFileRef ? (
+                  <IconButton icon="plus" title={t('jobDetailPage.newRun', 'New Run')} size="md" onClick={handleNewRun} />
+                ) : undefined
+              }
             />
           </Box>
         </>
@@ -242,7 +251,7 @@ export const JobDetailPage: React.FC<Props> = () => {
         <Gutters size="md" bottom={null}>
           <ListItemBack
             to={fileID ? `/script/${fileID}/${jobID}` : `/runs/job/${jobID}`}
-            title={<Typography variant="subtitle2">DEVICE RESULTS</Typography>}
+            title={<Typography variant="subtitle2">{t('jobDetailPage.deviceResults', 'DEVICE RESULTS')}</Typography>}
           />
           <ListItem
             dense
@@ -250,7 +259,7 @@ export const JobDetailPage: React.FC<Props> = () => {
             secondaryAction={
               <IconButton
                 icon="arrow-to-bottom"
-                title="Download logs for this device"
+                title={t('jobDetailPage.downloadLogsThisDevice', 'Download logs for this device')}
                 size="md"
                 disabled={jobDevice.status === 'WAITING' || jobDevice.status === 'RUNNING'}
                 onClick={async () => {
@@ -277,14 +286,14 @@ export const JobDetailPage: React.FC<Props> = () => {
               <DataDisplay attributes={jobDeviceAttributes} />
             </Box>
           ) : (
-            <Notice fullWidth>No return values from this device</Notice>
+            <Notice fullWidth>{t('jobDetailPage.noReturnValues', 'No return values from this device')}</Notice>
           )}
         </Gutters>
       ) : (
         <>
           {/* Device Status Summary */}
           <Typography variant="subtitle1">
-            <Title>Devices</Title>
+            <Title>{t('jobDetailPage.devices', 'Devices')}</Title>
             <Stack direction="row" spacing={0.5} marginRight={2} alignItems="center">
               <JobStatusIcon device padding={0} />
               <Typography variant="caption" sx={{ minWidth: 16 }}>
@@ -318,7 +327,7 @@ export const JobDetailPage: React.FC<Props> = () => {
           </Typography>
 
           {!job.jobDevices.length ? (
-            <Notice gutterTop>No devices in this run</Notice>
+            <Notice gutterTop>{t('jobDetailPage.noDevicesInRun', 'No devices in this run')}</Notice>
           ) : (
             <List>
               {job.jobDevices.map(jd => (

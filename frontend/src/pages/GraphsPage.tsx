@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Container } from '../components/Container'
 import { humanizeDays } from '../models/plans'
 import { Dispatch, State } from '../store'
@@ -13,6 +14,7 @@ import { Title } from '../components/Title'
 
 export const GraphsPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
   const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const timeSeriesDefaults = useSelector((state: State) => selectTimeSeriesDefaults(state))
   const { deviceTimeSeries, serviceTimeSeries } = useSelector((state: State) => selectTimeSeries(state))
@@ -22,14 +24,15 @@ export const GraphsPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1" gutterBottom>
-          <Title>Graphs</Title>
+          <Title>{t('graphsPage.title', 'Graphs')}</Title>
         </Typography>
       }
     >
       <Notice severity="info" button={<PlanActionChip />} gutterTop>
-        {humanizeDays(logLimit?.value)} of logs are available with your plan. <em>Update to see more.</em>
+        {humanizeDays(logLimit?.value)} {t('graphsPage.logsAvailable', 'of logs are available with your plan.')}{' '}
+        <em>{t('graphsPage.updateToSeeMore', 'Update to see more.')}</em>
       </Notice>
-      <Typography variant="subtitle1">Device list and details</Typography>
+      <Typography variant="subtitle1">{t('graphsPage.deviceListAndDetails', 'Device list and details')}</Typography>
       <TimeSeriesSelect
         timeSeriesOptions={deviceTimeSeries}
         logLimit={logLimit?.value}
@@ -39,7 +42,7 @@ export const GraphsPage: React.FC = () => {
           await dispatch.devices.fetchList()
         }}
       />
-      <Typography variant="subtitle1">Service details</Typography>
+      <Typography variant="subtitle1">{t('graphsPage.serviceDetails', 'Service details')}</Typography>
       <TimeSeriesSelect
         timeSeriesOptions={serviceTimeSeries}
         logLimit={logLimit?.value}

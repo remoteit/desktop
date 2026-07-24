@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { IPlatformOverrideProps } from '../platforms'
 import { Typography, Grid } from '@mui/material'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
@@ -14,27 +15,28 @@ const NodeAttribute = ({ label, ...props }: IconProps & { label: string }) => (
 )
 
 export const RentANodeRequest: React.FC<IPlatformOverrideProps> = ({ platform, tags, serviceTypes, oneTimeUse }) => {
+  const { t } = useTranslation()
   const { registrationCode } = useAutoRegistration({ platform, tags, serviceTypes, oneTimeUse })
   return (
     <>
       <OrganizationIndicator avatarSize={42} marginBottom={3} display="inline-flex" />
       <Typography variant="body2" color="textSecondary">
-        Rent a Symbiote Node from Cachengo's distributed cloud.
+        {t('rentANodeRequest.description', "Rent a Symbiote Node from Cachengo's distributed cloud.")}
         <br />
-        <em>Subject to availability</em>
+        <em>{t('rentANodeRequest.availability', 'Subject to availability')}</em>
       </Typography>
       <Grid container marginLeft={6} marginBottom={3} maxWidth={266}>
         <Grid item xs={6}>
-          <NodeAttribute name="microchip" label="8 ARM cores" />
+          <NodeAttribute name="microchip" label={t('rentANodeRequest.cores', '8 ARM cores')} />
         </Grid>
         <Grid item xs={6}>
-          <NodeAttribute name="memory" label="16 GB memory" />
+          <NodeAttribute name="memory" label={t('rentANodeRequest.memory', '16 GB memory')} />
         </Grid>
         <Grid item xs={6}>
-          <NodeAttribute name="hard-drive" label="256 GB storage" />
+          <NodeAttribute name="hard-drive" label={t('rentANodeRequest.storage', '256 GB storage')} />
         </Grid>
         <Grid item xs={6}>
-          <NodeAttribute name="ubuntu" type="brands" label="Ubuntu Linux" />
+          <NodeAttribute name="ubuntu" type="brands" label={t('rentANodeRequest.os', 'Ubuntu Linux')} />
         </Grid>
       </Grid>
       <RentANodeForm registrationCode={registrationCode} />

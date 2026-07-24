@@ -3,6 +3,7 @@ import { State } from '../store'
 import { Redirect } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Typography, List } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { ENTERPRISE_PLAN_ID } from '../models/plans'
 import { selectRemoteitLicense, selectPermissions, selectOrganization, selectOwner } from '../selectors/organizations'
 import { OrganizationMemberList } from '../components/OrganizationMemberList'
@@ -20,6 +21,7 @@ export const OrganizationMembersPage: React.FC = () => {
   const owner = useSelector(selectOwner)
   const userId = useSelector((state: State) => state.user.id)
   const enterprise = license?.plan.id === ENTERPRISE_PLAN_ID
+  const { t } = useTranslation()
 
   if (!permissions.includes('ADMIN'))
     return <Redirect to={{ pathname: `/organization/account/${userId}`, state: { isRedirect: true } }} />
@@ -31,16 +33,25 @@ export const OrganizationMembersPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Members</Title>
-            {organization?.id && <IconButton title="Add member" icon="user-plus" to="/organization/add" size="md" />}
+            <Title>{t('organizationMembersPage.title', 'Members')}</Title>
+            {organization?.id && (
+              <IconButton title={t('organizationMembersPage.addMember', 'Add member')} icon="user-plus" to="/organization/add" size="md" />
+            )}
           </Typography>
           {organization?.id && (
             <>
               <SeatsSetting context="user" />
               <Gutters bottom={null}>
                 <Typography variant="body2" color="textSecondary">
-                  Members will automatically have devices shared to them. &nbsp;
-                  {!enterprise && <b>Unlicensed members will only be able to connect to the first five devices.</b>}
+                  {t('organizationMembersPage.autoShareNotice', 'Members will automatically have devices shared to them.')} &nbsp;
+                  {!enterprise && (
+                    <b>
+                      {t(
+                        'organizationMembersPage.unlicensedLimit',
+                        'Unlicensed members will only be able to connect to the first five devices.'
+                      )}
+                    </b>
+                  )}
                 </Typography>
               </Gutters>
               <List>
