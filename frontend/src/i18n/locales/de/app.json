@@ -2300,5 +2300,94 @@
       "description": "Geräte und ihren aktuellen Status anzeigen",
       "name": "Anzeigen"
     }
+  },
+  "appType": {
+    "launch": {
+      "command": "Befehl",
+      "terminal": "Terminal",
+      "script": "Skript",
+      "copyCommand": "Befehl kopieren",
+      "browser": "Browser"
+    },
+    "public": {
+      "title": "Öffentlich"
+    },
+    "unauthenticated": {
+      "title": "Nicht authentifiziert"
+    },
+    "tcp": {
+      "use": "Für benutzerdefinierte TCP-Verbindungen ohne Webverkehr, da keine Reverse-Proxy-Funktionen vorhanden sind. Ideal für die direkte Kommunikation zwischen Anwendungen."
+    },
+    "vnc": {
+      "use": "Ideal für den Remote-Desktopzugriff auf grafische Oberflächen von Computern oder Servern. Verwenden Sie diese Option, wenn Sie ein Gerät mit grafischem Desktop remote steuern müssen."
+    },
+    "ssh": {
+      "use": "Für sicheren Terminalzugriff und die Ausführung von Befehlen auf Servern oder Geräten. Unverzichtbar für Systemadministratoren und Entwickler.",
+      "help": "Jedes SSH-Konfigurationsattribut kann hinzugefügt werden"
+    },
+    "rdp": {
+      "use": "Für den Remote-Desktopzugriff auf Windows-Server oder -Geräte. Verwenden Sie diese Option, wenn Sie ein Gerät mit grafischem Desktop remote steuern müssen."
+    },
+    "secureBrowser": {
+      "title": "Sicherer Browser",
+      "use": "Unverzichtbar für Webanwendungen, die sensible Daten verarbeiten, oder für Inhalte, die eine sichere Kommunikation über das Internet erfordern."
+    },
+    "browser": {
+      "title": "Browser",
+      "use": "Für den Zugriff auf oder das Hosten von Webanwendungen, die keine verschlüsselten Verbindungen unterstützen. Ideal für lokale Entwicklungsumgebungen oder interne Netzwerke, in denen Sicherheit keine Rolle spielt."
+    },
+    "samba": {
+      "use": "Verwenden Sie diese Option, um den gemeinsamen Zugriff auf Dateien, Drucker und serielle Ports innerhalb eines Windows-Netzwerks oder zwischen verschiedenen Betriebssystemen mit SMB-Unterstützung einzurichten."
+    },
+    "nxwitness": {
+      "use": "Für die Verbindung mit Nx Witness Video-Management-Systemen (VMS), geeignet für Sicherheitsexperten, die IP-Kameranetzwerke verwalten."
+    },
+    "nextcloud": {
+      "use": "Wählen Sie diese Option für den sicheren Zugriff auf Nextcloud-Hubs, der Dateifreigabe, Zusammenarbeit und Kommunikation in einer sicheren, privaten Cloud-Umgebung ermöglicht."
+    },
+    "openvpnTcp": {
+      "use": "Wählen Sie diese Option für zuverlässigen, sicheren VPN-Zugriff über das TCP-Protokoll. Am besten geeignet für stabile Verbindungen, bei denen Datenintegrität entscheidend ist, wenngleich möglicherweise langsamer als UDP."
+    },
+    "minecraft": {
+      "use": "Zum Hosten oder Verbinden mit einem Minecraft-Server über TCP für das Gameplay eingerichtet, sodass Spieler Ihrer Minecraft-Welt beitreten können."
+    },
+    "adminPanel": {
+      "title": "Admin-Panel",
+      "use": "Auf dem Gerät ausgeführtes Remote.It-Admin-Panel. Wurde früher zur Remote-Verwaltung der Gerätekonfiguration verwendet. Die meisten Geräte können jetzt über die Remote.it-App oder das Webportal verwaltet werden."
+    },
+    "terraria": {
+      "use": "Zum Hosten oder Verbinden mit einem Terraria-Spielserver eingerichtet, sodass Spieler gemeinsam eine einzigartige 2D-Welt erkunden, bauen und erleben können."
+    },
+    "redis": {
+      "use": "Wählen Sie diese Option für die Verbindung mit Redis-Servern, ideal für Entwickler, die mit leistungsstarken Datenbanken für Caching und Messaging arbeiten."
+    },
+    "mysql": {
+      "use": "Für den Remote-Zugriff auf MySQL-Datenbanken. Ideal für Entwickler und Datenbankadministratoren, die Datenbanken remote verwalten."
+    },
+    "postgresql": {
+      "use": "Für den Remote-Zugriff auf PostgreSQL-Datenbanken, unverzichtbar für Datenbankadministratoren und Entwickler, die Daten remote verwalten müssen."
+    },
+    "dockerApi": {
+      "use": "Für die Remote-Verwaltung von Docker-Containern. Ideal für Entwickler und Systemadministratoren, die Docker-Umgebungen remote steuern müssen."
+    },
+    "screenview": {
+      "use": "Für die Remote-Bildschirmanzeige oder -Steuerung über die ScreenView-App von Remote.It. Erleichtert Support, Zusammenarbeit und Remote-Zugriff."
+    },
+    "socks": {
+      "use": "Wird als Proxyserver zur Abwicklung des Internetverkehrs über das SOCKS-Protokoll verwendet. Bietet sichere und anonyme Kommunikation, sodass Benutzer Internetbeschränkungen umgehen und ihre Online-Privatsphäre schützen können.",
+      "disconnectDisplay": "Startet Ihren Browser neu, um den SOCKS-Proxy beim Trennen zu entfernen"
+    },
+    "udp": {
+      "use": "Wählen Sie diese Option für Anwendungen, die schnelle Kommunikation erfordern und bei denen Zuverlässigkeit weniger entscheidend ist, wie Streaming, Gaming oder Broadcasting."
+    },
+    "openvpnUdp": {
+      "use": "Wählen Sie diese Option für schnellen, sicheren VPN-Zugriff über das UDP-Protokoll. Am besten geeignet für geschwindigkeitssensible Anwendungen, bei denen gelegentlicher Paketverlust akzeptabel ist."
+    },
+    "wireguard": {
+      "use": "Wählen Sie diese Option für eine moderne, sichere VPN-Verbindung, die schnellen und sicheren Zugriff auf private Netzwerke bei einfacher Einrichtung und Verwaltung bietet."
+    },
+    "minecraftBedrock": {
+      "use": "Wählen Sie diese Option für Minecraft Bedrock Edition-Server, die UDP für das Gameplay auf Plattformen wie Mobilgeräten und Konsolen verwenden, sodass Spieler sich verbinden und gemeinsam spielen können."
+    }
   }
 }

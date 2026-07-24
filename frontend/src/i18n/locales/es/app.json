@@ -2345,5 +2345,94 @@
       "description": "Ver dispositivos y su estado actual",
       "name": "Ver"
     }
+  },
+  "appType": {
+    "launch": {
+      "command": "Comando",
+      "terminal": "Terminal",
+      "script": "Script",
+      "copyCommand": "Copiar comando",
+      "browser": "Navegador"
+    },
+    "public": {
+      "title": "Público"
+    },
+    "unauthenticated": {
+      "title": "Sin autenticación"
+    },
+    "tcp": {
+      "use": "Úsalo para conexiones TCP personalizadas que no impliquen tráfico web, ya que carece de funciones de proxy inverso. Ideal para la comunicación directa entre aplicaciones."
+    },
+    "vnc": {
+      "use": "Ideal para el acceso de escritorio remoto a interfaces gráficas en computadoras o servidores. Úsalo cuando necesites controlar un dispositivo con escritorio gráfico de forma remota."
+    },
+    "ssh": {
+      "use": "Para acceso seguro por terminal y ejecución de comandos en servidores o dispositivos. Esencial para administradores de sistemas y desarrolladores.",
+      "help": "Se puede agregar cualquier atributo de configuración SSH"
+    },
+    "rdp": {
+      "use": "Para acceso de escritorio remoto a servidores o dispositivos Windows. Úsalo cuando necesites controlar un dispositivo con escritorio gráfico de forma remota."
+    },
+    "secureBrowser": {
+      "title": "Navegador seguro",
+      "use": "Esencial para cualquier aplicación web que maneje datos sensibles, o cualquier contenido que requiera comunicación segura a través de internet."
+    },
+    "browser": {
+      "title": "Navegador",
+      "use": "Úsalo para acceder a aplicaciones web que no admiten conexiones cifradas o para alojarlas. Ideal para entornos de desarrollo locales o redes internas donde la seguridad no es una preocupación."
+    },
+    "samba": {
+      "use": "Utilízalo para configurar el acceso compartido a archivos, impresoras y puertos serie dentro de una red Windows o entre distintos sistemas operativos compatibles con el protocolo SMB."
+    },
+    "nxwitness": {
+      "use": "Úsalo para conectarte a sistemas de gestión de video Nx Witness (VMS), adecuado para profesionales de seguridad que administran redes de cámaras IP."
+    },
+    "nextcloud": {
+      "use": "Selecciónalo para acceder de forma segura a hubs de Nextcloud, lo que permite compartir archivos, colaborar y comunicarse dentro de un entorno de nube privada y segura."
+    },
+    "openvpnTcp": {
+      "use": "Elígelo para un acceso VPN fiable y seguro mediante el protocolo TCP. Ideal para conexiones estables donde la integridad de los datos es crucial, aunque puede ser más lento que UDP."
+    },
+    "minecraft": {
+      "use": "Configúralo para alojar o conectarte a un servidor de Minecraft mediante TCP para el juego, lo que permite que los jugadores se unan a tu mundo de Minecraft."
+    },
+    "adminPanel": {
+      "title": "Panel de administración",
+      "use": "Panel de administración de Remote.It que se ejecuta en el dispositivo. Anteriormente se usaba para gestionar de forma remota la configuración de un dispositivo. Ahora la mayoría de los dispositivos se pueden gestionar desde la aplicación Remote.it o el portal web."
+    },
+    "terraria": {
+      "use": "Configúralo para alojar o conectarte a un servidor de juego de Terraria, lo que permite a los jugadores explorar, construir y vivir aventuras juntos en un mundo 2D único."
+    },
+    "redis": {
+      "use": "Selecciónalo para conectarte a servidores Redis, ideal para desarrolladores que trabajan con bases de datos de alto rendimiento para almacenamiento en caché y mensajería."
+    },
+    "mysql": {
+      "use": "Utilízalo para el acceso remoto a bases de datos MySQL. Ideal para desarrolladores y administradores de bases de datos que las gestionan de forma remota."
+    },
+    "postgresql": {
+      "use": "Utilízalo para el acceso remoto a bases de datos PostgreSQL, esencial para administradores de bases de datos y desarrolladores que necesitan gestionar datos de forma remota."
+    },
+    "dockerApi": {
+      "use": "Úsalo para la gestión remota de contenedores Docker. Ideal para desarrolladores y administradores de sistemas que necesitan controlar entornos Docker de forma remota."
+    },
+    "screenview": {
+      "use": "Úsalo para ver o controlar pantallas de forma remota a través de la aplicación ScreenView de Remote.It. Facilita el soporte, la colaboración y el acceso remoto."
+    },
+    "socks": {
+      "use": "Úsalo como servidor proxy para gestionar el tráfico de internet mediante el protocolo SOCKS. Proporciona comunicación segura y anónima, lo que permite a los usuarios evitar restricciones de internet y proteger su privacidad en línea.",
+      "disconnectDisplay": "Reinicia tu navegador para eliminar el proxy SOCKS al desconectar"
+    },
+    "udp": {
+      "use": "Selecciónalo para aplicaciones que requieren comunicación rápida y donde la fiabilidad es menos crítica, como streaming, videojuegos o transmisiones."
+    },
+    "openvpnUdp": {
+      "use": "Elígelo para un acceso VPN rápido y seguro mediante el protocolo UDP. Ideal para aplicaciones sensibles a la velocidad donde se acepta una pérdida de paquetes ocasional."
+    },
+    "wireguard": {
+      "use": "Elígelo para una conexión VPN moderna y segura que ofrece acceso rápido y seguro a redes privadas con facilidad de configuración y gestión."
+    },
+    "minecraftBedrock": {
+      "use": "Elígelo para servidores de Minecraft Bedrock Edition, que usan UDP para el juego en plataformas como móviles y consolas, lo que permite a los jugadores conectarse y jugar juntos."
+    }
   }
 }
