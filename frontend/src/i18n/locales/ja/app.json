@@ -4,6 +4,28 @@
     "save": "保存",
     "saving": "保存中"
   },
+  "deviceList": {
+    "addTag": "タグを追加",
+    "cachengoRent": "Rent-A-Node",
+    "cachengoStart": "分散クラウドから Symbiote Node をレンタルして始めましょう。",
+    "cachengoWelcome": "Cachengo の Telepath へようこそ",
+    "chooseScript": "スクリプトを選択",
+    "clearSelection": "選択を解除",
+    "demoDevice": "デモデバイス",
+    "demoHelp": "AWS デモデバイスへの接続がいかに簡単か確認するか、画面左上のプラスメニューからご自身のデバイスを追加してください。",
+    "demoInstructions1": "下のボタンをクリックすると、デバイスが共有されます。",
+    "demoInstructions2": "デバイスを共有しています。しばらくお待ちください...",
+    "filterNoResults": "フィルターに一致する結果がありません",
+    "newScript": "新しいスクリプト",
+    "noDevices": "このアカウントにはデバイスがありません",
+    "removeTag": "タグを削除",
+    "removeTagPlaceholder": "タグを削除...",
+    "scriptLabel": "スクリプト",
+    "searchNoResults": "検索に一致する結果がありません",
+    "selectToRestore": "復元するデバイスを選択してください。",
+    "selected": "選択中",
+    "tagsLabel": "タグ"
+  },
   "nav": {
     "account": "アカウント",
     "admin": "管理",

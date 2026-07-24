@@ -4,6 +4,28 @@
     "save": "Save",
     "saving": "Saving"
   },
+  "deviceList": {
+    "addTag": "Add Tag",
+    "cachengoRent": "Rent-A-Node",
+    "cachengoStart": "Get started by renting a Symbiote Node from our distributed cloud.",
+    "cachengoWelcome": "Welcome to Telepath by Cachengo",
+    "chooseScript": "Choose Script",
+    "clearSelection": "Clear selection",
+    "demoDevice": "Demo Device",
+    "demoHelp": "See how simple it is to connect with our AWS demo device, or add your own device from the plus menu in the top left of the screen.",
+    "demoInstructions1": "Click the button below to have our device shared with you.",
+    "demoInstructions2": "Please wait while the device is being shared...",
+    "filterNoResults": "Your filter returned no results",
+    "newScript": "New Script",
+    "noDevices": "This account has no devices",
+    "removeTag": "Remove Tag",
+    "removeTagPlaceholder": "Remove a tag...",
+    "scriptLabel": "script",
+    "searchNoResults": "Your search returned no results",
+    "selected": "Selected",
+    "selectToRestore": "Please select a device to restore.",
+    "tagsLabel": "tags"
+  },
   "nav": {
     "account": "Account",
     "admin": "Admin",
