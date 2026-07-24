@@ -277,6 +277,7 @@ export default createModel<RootModel>()({
       dispatch.adminUsers.reset()
       dispatch.adminPartners.reset()
       dispatch.adminEnterpriseLicenses.reset()
+      dispatch.adminNotices.reset()
 
       cloudSync.reset()
       dispatch.accounts.set({ activeId: undefined })
