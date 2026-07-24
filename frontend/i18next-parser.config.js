@@ -14,9 +14,11 @@ export default {
   input: ['src/**/*.{ts,tsx}'],
   output: 'src/i18n/locales/$LOCALE/$NAMESPACE.json',
   sort: true,
-  // Never auto-prune: some keys are built dynamically (e.g. cognito error keys)
-  // and the parser can't see them statically. `npm run i18n:check` reports dead
-  // keys so they can be removed deliberately.
+  // Never auto-prune: some keys are built dynamically and the parser can't see
+  // them statically — cognito error keys, and the `columns.<id>` labels resolved
+  // by the Attribute getter in components/Attributes.tsx (hand-maintained in the
+  // catalogs). `npm run i18n:check` reports dead keys so they can be removed
+  // deliberately.
   keepRemoved: true,
   // English keeps the inline default text (passed as the 4th arg); other locales
   // stay empty until translated.
