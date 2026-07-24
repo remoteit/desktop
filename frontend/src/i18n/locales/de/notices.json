@@ -69,7 +69,7 @@
   "plan": {
     "cancelFailed": "Kündigung des Abonnements fehlgeschlagen, bitte wenden Sie sich an den Support.",
     "checkoutFailed": "Bezahlvorgang fehlgeschlagen, bitte wenden Sie sich an den Support.",
-    "missingPrice": "Für die ausgewählte Preisstufe fehlt ein Preis",
+    "missingPrice": "Für die ausgewählte Planauswahl fehlt ein Preis",
     "purchaseError": "Fehler beim Kauf der Lizenz",
     "subscriptionUpdatedOther": "Das {{plan}}-Abonnement von {{email}} wurde aktualisiert.",
     "subscriptionUpdatedYours": "Ihr {{plan}}-Abonnement wurde aktualisiert.",

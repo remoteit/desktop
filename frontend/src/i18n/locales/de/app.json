@@ -144,7 +144,7 @@
     "addFailed": "Hinzufügen des Enterprise-Kunden fehlgeschlagen",
     "adding": "Wird hinzugefügt...",
     "confirmRemoveAfter": "aus dem Enterprise-Lizenzplan entfernen?",
-    "confirmRemoveBefore": "Möchten Sie wirklich entfernen",
+    "confirmRemoveBefore": "Möchten Sie wirklich",
     "created": "Erstellt",
     "devices": "Geräte",
     "loading": "Enterprise-Kunden werden geladen...",
@@ -260,7 +260,7 @@
     "loading": "Partner wird geladen...",
     "notFound": "Partner nicht gefunden",
     "parentPartner": "Übergeordneter Partner",
-    "registrants_one": "Registrierte ({{count}})",
+    "registrants_one": "Registranten ({{count}})",
     "registrants_other": "Registranten ({{count}})",
     "removeAdminConfirm": "Möchten Sie diesen Admin wirklich entfernen?",
     "removeAdminFailed": "Admin konnte nicht entfernt werden.",
@@ -289,8 +289,8 @@
   },
   "adminSidebarNav": {
     "admins": "Admins",
-    "enterprise": "Unternehmen",
-    "notices": "Meldungen",
+    "enterprise": "Enterprise",
+    "notices": "Hinweise",
     "partners": "Partner",
     "returnToApp": "Zurück zur App",
     "users": "Benutzer"
@@ -303,8 +303,8 @@
     "adminStatus": "Admin-Status",
     "changeEmail": "E-Mail ändern",
     "confirmDeleteBefore": "Möchten Sie den Benutzer wirklich dauerhaft löschen",
-    "confirmDeleteDevicesAfter": "werden auf das Sammelkonto übertragen und mit der E-Mail-Adresse des Benutzers sowie dem Löschdatum getaggt.",
-    "confirmDeleteDevicesBefore": "Die Geräte dieses Benutzers",
+    "confirmDeleteDevicesAfter": "dieses Benutzers werden auf das Sammelkonto übertragen und mit seiner E-Mail-Adresse sowie dem Löschdatum getaggt.",
+    "confirmDeleteDevicesBefore": "Die",
     "confirmRemoveAdminAfter": "Dieser Benutzer hat dann keinen Zugriff mehr auf das Admin-Panel.",
     "confirmRemoveAdminBefore": "Möchten Sie die Admin-Rechte wirklich entziehen von",
     "created": "Erstellt",
@@ -320,7 +320,7 @@
     "emailUpdateFailed": "E-Mail konnte nicht aktualisiert werden",
     "lastLogin": "Letzte Anmeldung",
     "loading": "Konto wird geladen...",
-    "notAvailable": "n. v.",
+    "notAvailable": "Nicht verfügbar",
     "organization": "Organisation",
     "removeAdmin": "Admin entfernen",
     "removeAdminPrivileges": "Admin-Rechte entfernen",
@@ -497,7 +497,7 @@
     "lastReported": "Zuletzt gemeldet",
     "license": "Lizenz",
     "location": "Standort",
-    "owner": "Besitzer",
+    "owner": "Eigentümer",
     "permissions": "Berechtigungen",
     "presenceAddress": "Präsenz",
     "quality": "Stabilität",
@@ -515,8 +515,8 @@
     "serviceHost": "Dienst-Host",
     "serviceId": "Dienst-ID",
     "serviceLastReported": "Zuletzt gemeldet",
-    "serviceLink": "Service-Schlüssel",
-    "serviceName": "Servicename",
+    "serviceLink": "Dienstschlüssel",
+    "serviceName": "Dienstname",
     "servicePort": "Dienst-Port",
     "serviceProtocol": "Dienstprotokoll",
     "services": "Dienste",
@@ -524,7 +524,7 @@
     "serviceStatus": "Status",
     "serviceType": "Diensttyp",
     "session": "Verbindung",
-    "state": "Bundesland",
+    "state": "Region",
     "status": "Status",
     "tags": "Tags",
     "targetPlatform": "Plattform",
@@ -565,7 +565,7 @@
     "scriptDescription": "Beschreibung",
     "scriptName": "Skript",
     "scriptUpdated": "Geändert",
-    "stage": "Phase",
+    "stage": "Stufe",
     "statusA": "Status A",
     "statusB": "Status B",
     "statusC": "Status C",
@@ -784,7 +784,7 @@
   },
   "deleteAccountSection": {
     "confirmHelp": "Bitte helfen Sie uns, uns zu verbessern, indem Sie uns mitteilen, warum es nicht funktioniert hat.",
-    "confirmSorry": "Es tut uns leid, Sie gehen zu sehen!",
+    "confirmSorry": "Schade, dass Sie uns verlassen!",
     "confirmTitle": "Warum möchten Sie Ihr Konto löschen?",
     "contactMeLabel": "Ich bin damit einverstanden, dass mich jemand bezüglich meines Feedbacks kontaktiert.",
     "deleteButton": "Mein Konto löschen",
@@ -813,11 +813,11 @@
     "title": "Gerät löschen",
     "uninstallRecommendation": "Wir empfehlen, Remote.It vorher zu deinstallieren",
     "unregisterTitle": "Geräteregistrierung aufheben",
-    "unregisterWarning": "Sie sind dabei, dieses Gerät und alle zugehörigen Services dauerhaft zu entfernen.",
+    "unregisterWarning": "Sie sind dabei, dieses Gerät und alle zugehörigen Dienste dauerhaft zu entfernen.",
     "warning": "Das Löschen von Geräten kann nicht rückgängig gemacht werden. Um es wiederherzustellen, benötigen Sie möglicherweise physischen Zugriff darauf."
   },
   "deviceBulkTransferPage": {
-    "blockedCount_one": "{{count}} des ausgewählten Geräts kann nicht übertragen werden.",
+    "blockedCount_one": "{{count}} der ausgewählten Geräte kann nicht übertragen werden.",
     "blockedCount_other": "{{count}} der ausgewählten Geräte können nicht übertragen werden.",
     "blockedNames": "Sie können nur Geräte übertragen, die Ihnen gehören: {{names}}.",
     "confirmOwnershipBefore": "Sie sind dabei, das Eigentum zu übertragen von",
@@ -828,7 +828,7 @@
     "goBack": "Zurück",
     "title": "Geräte übertragen",
     "transferInfo": "Die Geräteübertragung dauert in der Regel nur wenige Sekunden. Sobald der Vorgang abgeschlossen ist, erhalten Sie und der neue Eigentümer eine E-Mail.",
-    "transferringCount_one": "Sie übertragen {{count}} Gerät an einen neuen Besitzer.",
+    "transferringCount_one": "Sie übertragen {{count}} Gerät an einen neuen Eigentümer.",
     "transferringCount_other": "Sie übertragen {{count}} Geräte an einen neuen Eigentümer."
   },
   "deviceDescriptionSetting": {
@@ -887,20 +887,20 @@
     "deviceLink": "Gerätelink",
     "makeProduct": "Produkt erstellen",
     "restoreDevice": "Gerät wiederherstellen",
-    "serviceLink": "Servicelink",
+    "serviceLink": "Dienstlink",
     "shareAccess": "Zugriff freigeben",
     "transferDevice": "Gerät übertragen"
   },
   "devicePage": {
-    "availableServices": "Verfügbare Services",
-    "availableServicesDescription": "Die vom Gerät gehosteten Services (Anwendungen) werden hier aufgelistet.",
+    "availableServices": "Verfügbare Dienste",
+    "availableServicesDescription": "Die vom Gerät gehosteten Dienste (Anwendungen) werden hier aufgelistet.",
     "deviceNotFound": "Gerät nicht gefunden.",
     "deviceOffline": "Gerät offline",
     "deviceUnlicensed": "Gerät nicht lizenziert",
     "registeringEllipsis": "Wird registriert …",
     "restoreDevice": "Gerät wiederherstellen",
-    "selectServiceInstruction": "Wählen Sie einen Service aus, um ihn zu konfigurieren oder eine Verbindung zu starten.",
-    "service": "Service"
+    "selectServiceInstruction": "Wählen Sie einen Dienst aus, um ihn zu konfigurieren oder eine Verbindung zu starten.",
+    "service": "Dienst"
   },
   "devicePresenceSetting": {
     "label": "Präsenzadresse"
@@ -918,7 +918,7 @@
     "uninstallHint": "Deinstallieren Sie den Remote.It-Agent vor dem Löschen, um beste Ergebnisse zu erzielen."
   },
   "devicesApplicationsTabs": {
-    "allServices": "Alle Services",
+    "allServices": "Alle Dienste",
     "screenView": "ScreenView"
   },
   "deviceSetupItem": {
@@ -1038,12 +1038,12 @@
     "upload": "Hochladen"
   },
   "globalSearch": {
-    "placeholder": "Gerätename oder Servicenamen suchen"
+    "placeholder": "Geräte- oder Dienstnamen suchen"
   },
   "graphsPage": {
     "deviceListAndDetails": "Geräteliste und Details",
     "logsAvailable": "an Protokollen sind mit Ihrem Plan verfügbar.",
-    "serviceDetails": "Servicedetails",
+    "serviceDetails": "Dienstdetails",
     "title": "Diagramme",
     "updateToSeeMore": "Aktualisieren Sie, um mehr zu sehen."
   },
@@ -1221,7 +1221,7 @@
   "mfaConfigureApp": {
     "code": "Code: {{code}}",
     "generateNewCode": "Neuen QR-Code generieren",
-    "processing": "Verarbeitung...",
+    "processing": "Wird verarbeitet...",
     "scanInstructions": "Scannen Sie diesen QR-Code mit Ihrer Authenticator-App.",
     "submit": "Absenden",
     "verificationCodeLabel": "Verifizierungscode"
@@ -1629,8 +1629,8 @@
     "parentPartner": "Übergeordneter Partner",
     "partnerNotFound": "Partner nicht gefunden",
     "partnerSummary": "{{total}} gesamt • {{online}} online • {{active}} aktiv",
-    "registrants_one": "Registrierte ({{count}})",
-    "registrants_other": "Registrierte ({{count}})",
+    "registrants_one": "Registranten ({{count}})",
+    "registrants_other": "Registranten ({{count}})",
     "renamePartner": "Partner umbenennen",
     "save": "Speichern",
     "totalDevices": "Geräte insgesamt",
@@ -1829,7 +1829,7 @@
   },
   "resellerSettings": {
     "logoUrl": "Logo-URL",
-    "reseller": "Wiederverkäufer"
+    "reseller": "Reseller"
   },
   "restore": {
     "body": "Wir werden versuchen, die Konfiguration dieses Geräts wiederherzustellen. Bitte beachten Sie, dass Dienste mit benutzerdefinierten Host-Informationen dabei möglicherweise nicht vollständig wiederhergestellt werden.",

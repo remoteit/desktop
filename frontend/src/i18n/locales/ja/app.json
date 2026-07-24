@@ -143,8 +143,8 @@
     "addedCustomer": "エンタープライズ顧客{{email}}を追加しました",
     "addFailed": "エンタープライズ顧客の追加に失敗しました",
     "adding": "追加中...",
-    "confirmRemoveAfter": "をエンタープライズライセンスプランから？",
-    "confirmRemoveBefore": "削除してもよろしいですか",
+    "confirmRemoveAfter": "をエンタープライズライセンスプランから削除してもよろしいですか？",
+    "confirmRemoveBefore": "",
     "created": "作成日",
     "devices": "デバイス",
     "loading": "エンタープライズ顧客を読み込み中...",
@@ -492,7 +492,7 @@
     "qualitySmall": "品質",
     "restore": "復元",
     "restrict": "ローカルセキュリティ",
-    "role": "役割",
+    "role": "ロール",
     "serviceAccess": "ユーザー",
     "serviceAction": "操作",
     "serviceCreated": "サービス作成日",
@@ -768,7 +768,7 @@
     "confirmLabel": "確認のため「DELETE」と入力してください",
     "confirmText": "このキーを削除しますか",
     "title": "アクセスキーを削除",
-    "warning": "この操作は永久的で、元に戻せません。"
+    "warning": "この操作は取り消せず、元に戻せません。"
   },
   "deleteAccountSection": {
     "confirmHelp": "うまくいかなかった理由を教えていただき、改善にご協力ください。",
@@ -870,7 +870,7 @@
   "deviceOptionMenu": {
     "deviceDetails": "デバイスの詳細",
     "deviceLink": "デバイスリンク",
-    "makeProduct": "プロダクトを作成",
+    "makeProduct": "製品を作成",
     "restoreDevice": "デバイスを復元",
     "serviceLink": "サービスリンク",
     "shareAccess": "アクセスを共有",
@@ -1039,7 +1039,7 @@
     "back": "戻る",
     "deviceSearch": "デバイス検索",
     "hideSelect": "選択を隠す",
-    "products": "プロダクト",
+    "products": "製品",
     "showSelect": "選択を表示"
   },
   "headerOverrideSetting": {
@@ -1145,9 +1145,9 @@
     "learnMore": "詳細はこちら。",
     "pastDueTitle": "{{productName}}の{{description}}プランは支払期限を過ぎています。",
     "planTitle": "{{productName}}の{{description}}プラン",
-    "please": "どうぞ",
+    "please": "",
     "pleaseCheck": "ご確認ください。",
-    "toContinueService": "サービスを継続するために。",
+    "toContinueService": "して、サービスを継続してください。",
     "updatePaymentInformation": "お支払い情報を更新 ",
     "updatePaymentMethod": "お支払い方法を更新してください。",
     "upgrade": "アップグレード",
@@ -1237,7 +1237,7 @@
     "verified": "お使いのモバイルデバイスは確認済みです。"
   },
   "mfaPreference": {
-    "description": "サインインにパスワード以上の情報を必要とすることで、アカウントにセキュリティのレイヤーを追加します。",
+    "description": "サインイン時にパスワードだけでなく追加の認証を必要とすることで、アカウントのセキュリティを強化します。",
     "googleSignInNotice": "Googleアカウントでサインインしています。2段階認証はGoogleアカウントの設定で有効にできます。Remote.Itのログインとパスワードもお持ちの場合は、それらの認証情報でサインインしてから2段階認証を有効にすることもできます。",
     "offDisabled": "OFF / 2段階認証は無効",
     "title": "2段階認証",
@@ -1446,7 +1446,7 @@
   "organizationAddPage": {
     "add": "追加",
     "purchaseLicensesHint": "このユーザーに完全なアクセス権を付与するには、追加のライセンスを購入してください。",
-    "roleAssignment": "役割の割り当て",
+    "roleAssignment": "ロールの割り当て",
     "title": "組織メンバーを追加",
     "upgrade": "アップグレード"
   },
@@ -1618,7 +1618,7 @@
   "passwordStrengthInput": {
     "confirmNewPassword": "新しいパスワードを確認",
     "enterNewPassword": "新しいパスワードを入力",
-    "fair": "まあまあ",
+    "fair": "普通",
     "fixProblems": "以下の問題を修正してください",
     "good": "良い",
     "helperText": "パスワードは7~64文字である必要があります。",
@@ -1676,20 +1676,20 @@
     "localPort": "ローカルポート"
   },
   "productAddPage": {
-    "createFailed": "プロダクトの作成に失敗しました",
+    "createFailed": "製品の作成に失敗しました",
     "creating": "作成中...",
-    "nameRequired": "プロダクト名は必須です",
+    "nameRequired": "製品名は必須です",
     "platform": "プラットフォーム",
     "platformRequired": "プラットフォームは必須です",
-    "productName": "プロダクト名",
-    "title": "プロダクトを作成"
+    "productName": "製品名",
+    "title": "製品を作成"
   },
   "productOptionMenu": {
     "cannotBeUndone": "この操作は元に戻せません。",
-    "deleteConfirmPrefix": "次のプロダクトを完全に削除してもよろしいですか",
-    "deleteConfirmSuffix": "、およびそのすべてのサービスも削除されますか?",
-    "deleteProduct": "プロダクトを削除",
-    "transferProduct": "プロダクトを転送"
+    "deleteConfirmPrefix": "次の製品",
+    "deleteConfirmSuffix": "とそのすべてのサービスを完全に削除してもよろしいですか？",
+    "deleteProduct": "製品を削除",
+    "transferProduct": "製品を譲渡"
   },
   "productPage": {
     "addService": "サービスを追加",
@@ -2048,7 +2048,7 @@
     "security": "セキュリティ",
     "signOutEverywhere": "すべてのデバイスからサインアウト",
     "signOutEverywhereButton": "すべてのデバイスからサインアウト",
-    "signOutEverywhereDescription": "この操作を行うと、ログイン中のすべての場所からRemote.Itがサインアウトされます。",
+    "signOutEverywhereDescription": "この操作を行うと、ログイン中のすべての端末でRemote.Itからサインアウトします。",
     "subscription": "サブスクリプション",
     "tags": "タグ",
     "testSettings": "テスト設定",
