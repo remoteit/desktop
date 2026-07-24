@@ -65,7 +65,7 @@ export const ProfilePage: React.FC = () => {
           displayOnly
         />
         <SelectSetting
-          icon="globe"
+          icon="language"
           label={t('options.language.label', 'Language')}
           value={user?.attributes?.language || 'system'}
           values={[
