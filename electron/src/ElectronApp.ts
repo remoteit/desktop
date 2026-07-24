@@ -341,18 +341,24 @@ export default class ElectronApp {
   }
 
   private createSystemTray() {
-    Logger.info('CREATE SYSTEM TRAY')
+    // On macOS the menu-bar tray is now provided by the standalone `remoteit-tray`
+    // app (cli-source), so it lives with the agent and survives this app quitting.
+    // Other platforms keep the Electron tray until remoteit-tray supports them.
+    if (environment.isMac) {
+      Logger.info('SYSTEM TRAY: macOS uses standalone remoteit-tray; skipping Electron tray')
+    } else {
+      Logger.info('CREATE SYSTEM TRAY')
+      this.tray = new electron.Tray(this.getIconPath())
+      new TrayMenu(this.tray)
+      if (environment.isWindows) {
+        electron.nativeTheme.on('updated', () => this.tray?.setImage(this.getIconPath()))
+      }
+    }
 
-    this.tray = new electron.Tray(this.getIconPath())
-    new TrayMenu(this.tray)
     const defaultMenu = Menu.getApplicationMenu()
     const items = defaultMenu?.items.filter(item => item.role !== 'help')
     const menu = Menu.buildFromTemplate(items || [])
     Menu.setApplicationMenu(menu)
-
-    if (environment.isWindows) {
-      electron.nativeTheme.on('updated', () => this.tray?.setImage(this.getIconPath()))
-    }
   }
 
   private getIconPath() {
@@ -375,7 +381,9 @@ export default class ElectronApp {
   }
 
   private openWindow = (location?: string, openDevTools?: boolean) => {
-    if (!this.window || !this.tray) return
+    // No longer gate on this.tray: on macOS the Electron tray is not created
+    // (see createSystemTray). The window is driven by activate/open-url handlers.
+    if (!this.window) return
 
     if (!this.window.isVisible()) {
       if (this.app.dock) this.app.dock.show()
