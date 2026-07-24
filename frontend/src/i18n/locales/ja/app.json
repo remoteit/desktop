@@ -805,16 +805,16 @@
     "warning": "デバイスの削除は元に戻せないため、復元するにはデバイスに物理的にアクセスする必要がある場合があります。"
   },
   "deviceBulkTransferPage": {
-    "blockedCount_other": "選択したデバイスのうち{{count}}台は転送できません。",
-    "blockedNames": "所有しているデバイスのみ転送できます: {{names}}。",
-    "confirmOwnershipBefore": "次の所有権を転送しようとしています:",
+    "blockedCount_other": "選択したデバイスのうち{{count}}台は譲渡できません。",
+    "blockedNames": "所有しているデバイスのみ譲渡できます: {{names}}。",
+    "confirmOwnershipBefore": "次の所有権を譲渡しようとしています:",
     "confirmOwnershipMiddle": "とそのすべてのサービスを次の相手に:",
-    "confirmWarning": "転送すると、これらのデバイスへのすべてのアクセスと制御を失います。",
+    "confirmWarning": "譲渡すると、これらのデバイスへのすべてのアクセスと制御を失います。",
     "deviceCount_other": "{{count}}台のデバイス",
     "goBack": "戻る",
-    "title": "デバイスを転送",
-    "transferInfo": "デバイスの転送は通常数秒で完了します。処理が完了すると、あなたと新しい所有者にメールが送信されます。",
-    "transferringCount_other": "{{count}}台のデバイスを新しい所有者に転送しています。"
+    "title": "デバイスを譲渡",
+    "transferInfo": "デバイスの譲渡は通常数秒で完了します。処理が完了すると、あなたと新しい所有者にメールが送信されます。",
+    "transferringCount_other": "{{count}}台のデバイスを新しい所有者に譲渡しています。"
   },
   "deviceDescriptionSetting": {
     "label": "デバイスの説明"
@@ -874,7 +874,7 @@
     "restoreDevice": "デバイスを復元",
     "serviceLink": "サービスリンク",
     "shareAccess": "アクセスを共有",
-    "transferDevice": "デバイスを転送"
+    "transferDevice": "デバイスを譲渡"
   },
   "devicePage": {
     "availableServices": "利用可能なサービス",
@@ -897,7 +897,7 @@
     "deleteWarning": "削除は元に戻せません。復元するにはデバイスへのアクセスが必要になる場合があります。",
     "more": "その他",
     "selectedCount_other": "{{count}}台のデバイスを選択中",
-    "transfer": "転送",
+    "transfer": "譲渡",
     "uninstallHint": "最良の結果を得るために、削除前にRemote.Itエージェントをアンインストールしてください。"
   },
   "devicesApplicationsTabs": {
@@ -915,12 +915,12 @@
     "thisSystem": "このシステム"
   },
   "deviceTransferPage": {
-    "confirmTransferPrefix": "次の所有権を転送しようとしています:",
+    "confirmTransferPrefix": "次の所有権を譲渡しようとしています:",
     "confirmTransferSuffix": "とそのすべてのサービスを次の相手に:",
-    "loseAccessWarning": "転送すると、このデバイスへのすべてのアクセスと制御を失います。",
-    "title": "デバイスを転送",
-    "transferInfo": "デバイスの転送は通常数秒で完了します。処理が完了すると、あなたと新しい所有者にメールが送信されます。",
-    "transferringTo": "「{{name}}」を新しい所有者に転送しています。"
+    "loseAccessWarning": "譲渡すると、このデバイスへのすべてのアクセスと制御を失います。",
+    "title": "デバイスを譲渡",
+    "transferInfo": "デバイスの譲渡は通常数秒で完了します。処理が完了すると、あなたと新しい所有者にメールが送信されます。",
+    "transferringTo": "「{{name}}」を新しい所有者に譲渡しています。"
   },
   "eventMessage": {
     "allowed": "許可されました",
@@ -959,7 +959,7 @@
     },
     "their": "その",
     "to": "へ",
-    "transferred": "転送しました",
+    "transferred": "譲渡しました",
     "unknown": "不明",
     "unknownEventType": "不明なイベントタイプ{{type}}が発生しました",
     "wentOffline": "オフラインになりました",
@@ -2171,8 +2171,8 @@
   },
   "transferForm": {
     "cancel": "キャンセル",
-    "transfer": "転送",
-    "transferring": "転送中..."
+    "transfer": "譲渡",
+    "transferring": "譲渡中..."
   },
   "unauthorizedPage": {
     "device": "デバイス",
