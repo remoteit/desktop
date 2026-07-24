@@ -1,6 +1,8 @@
 {
   "common": {
-    "areYouSure": "本当によろしいですか?"
+    "areYouSure": "本当によろしいですか?",
+    "save": "保存",
+    "saving": "保存中"
   },
   "nav": {
     "account": "アカウント",
@@ -94,5 +96,39 @@
       "label": "アンインストール",
       "subLabel": "このデバイスの登録を解除し、保存されたすべてのデータを完全に削除して、システムエージェントとコマンドラインツールをアンインストールします。アプリケーションをシステムから削除する前に実行してください。デバイスの所有者のみが実行できます。"
     }
+  },
+  "settings": {
+    "accessKeys": "アクセスキー",
+    "accountDeletion": "アカウントの削除",
+    "application": "アプリケーション",
+    "billing": "請求",
+    "connectedApps": "連携アプリ",
+    "connectionDefaults": "接続のデフォルト設定",
+    "docs": "ドキュメント",
+    "email": "メール",
+    "emailLanguage": "メールの言語",
+    "graphs": "グラフ",
+    "gravatarEdit": "プロフィール画像を編集または追加するには、次のリンクからアクセスしてください:",
+    "gravatarImported": "プロフィール画像は無料サービスのGravatarからインポートされています。",
+    "invalidUrl": "有効なURLを入力してください",
+    "license": "ライセンス",
+    "memberSince": "登録日",
+    "notificationMethod": "方法",
+    "notifications": "通知",
+    "notifyEmail": "メール",
+    "notifySystem": "システム通知",
+    "notifyWebhook": "Webhook",
+    "profile": "プロフィール",
+    "security": "セキュリティ",
+    "signOutEverywhere": "すべてのデバイスからサインアウト",
+    "signOutEverywhereButton": "すべてのデバイスからサインアウト",
+    "signOutEverywhereDescription": "この操作を行うと、ログイン中のすべての場所からRemote.Itがサインアウトされます。",
+    "subscription": "サブスクリプション",
+    "tags": "タグ",
+    "testSettings": "テスト設定",
+    "title": "設定",
+    "urlEndpoint": "URLエンドポイント",
+    "visitWeb": "Remote.Itのウェブサイトにアクセス",
+    "webhookHelp": "公開されているHTTPS URLを使用してください。エンドポイントはPOSTを受け付け、5秒以内に200を返す必要があります。"
   }
 }

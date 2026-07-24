@@ -1,6 +1,8 @@
 {
   "common": {
-    "areYouSure": "Sind Sie sicher?"
+    "areYouSure": "Sind Sie sicher?",
+    "save": "Speichern",
+    "saving": "Wird gespeichert"
   },
   "nav": {
     "account": "Konto",
@@ -94,5 +96,39 @@
       "label": "Deinstallieren",
       "subLabel": "Meldet dieses Gerät ab, entfernt vollständig alle gespeicherten Daten und deinstalliert den Systemagenten sowie die Kommandozeilen-Tools. Führen Sie dies aus, bevor Sie die Anwendung von Ihrem System entfernen. Kann nur vom Gerätebesitzer ausgeführt werden."
     }
+  },
+  "settings": {
+    "accessKeys": "Zugriffsschlüssel",
+    "accountDeletion": "Konto löschen",
+    "application": "Anwendung",
+    "billing": "Abrechnung",
+    "connectedApps": "Verbundene Apps",
+    "connectionDefaults": "Verbindungsstandards",
+    "docs": "Dokumentation",
+    "email": "E-Mail",
+    "emailLanguage": "E-Mail-Sprache",
+    "graphs": "Diagramme",
+    "gravatarEdit": "Um Ihr Profilbild zu bearbeiten oder hinzuzufügen, besuchen Sie bitte",
+    "gravatarImported": "Ihr Profilbild wird vom kostenlosen Dienst Gravatar importiert.",
+    "invalidUrl": "Bitte geben Sie eine gültige URL ein",
+    "license": "Lizenz",
+    "memberSince": "Mitglied seit",
+    "notificationMethod": "Methode",
+    "notifications": "Benachrichtigungen",
+    "notifyEmail": "E-Mail",
+    "notifySystem": "Systembenachrichtigung",
+    "notifyWebhook": "Webhook",
+    "profile": "Profil",
+    "security": "Sicherheit",
+    "signOutEverywhere": "Überall abmelden",
+    "signOutEverywhereButton": "Überall abmelden",
+    "signOutEverywhereDescription": "Dies meldet Sie überall von Remote.It ab, wo Sie derzeit angemeldet sind.",
+    "subscription": "Abonnement",
+    "tags": "Tags",
+    "testSettings": "Testeinstellungen",
+    "title": "Einstellungen",
+    "urlEndpoint": "URL-Endpunkt",
+    "visitWeb": "Remote.It im Web besuchen",
+    "webhookHelp": "Verwenden Sie eine öffentliche HTTPS-URL. Der Endpunkt muss POST akzeptieren und innerhalb von 5 Sekunden mit 200 antworten."
   }
 }

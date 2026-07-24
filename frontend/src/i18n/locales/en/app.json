@@ -1,6 +1,8 @@
 {
   "common": {
-    "areYouSure": "Are you sure?"
+    "areYouSure": "Are you sure?",
+    "save": "Save",
+    "saving": "Saving"
   },
   "nav": {
     "account": "Account",
@@ -94,5 +96,39 @@
       "label": "Uninstall",
       "subLabel": "De-register this device, completely remove all saved data, and uninstall the system agent and command line tools. Do this before removing the application from your system. Can only be done by the device owner."
     }
+  },
+  "settings": {
+    "accessKeys": "Access Keys",
+    "accountDeletion": "Account deletion",
+    "application": "Application",
+    "billing": "Billing",
+    "connectedApps": "Connected Apps",
+    "connectionDefaults": "Connection Defaults",
+    "docs": "Docs",
+    "email": "Email",
+    "emailLanguage": "Email Language",
+    "graphs": "Graphs",
+    "gravatarEdit": "To edit or add a profile image please visit",
+    "gravatarImported": "Your profile picture is imported from the free service Gravatar.",
+    "invalidUrl": "Please provide a valid URL",
+    "license": "License",
+    "memberSince": "Member since",
+    "notificationMethod": "Method",
+    "notifications": "Notifications",
+    "notifyEmail": "Email",
+    "notifySystem": "System notification",
+    "notifyWebhook": "Webhook",
+    "profile": "Profile",
+    "security": "Security",
+    "signOutEverywhere": "Sign out everywhere",
+    "signOutEverywhereButton": "Sign Out Everywhere",
+    "signOutEverywhereDescription": "This logs you out of Remote.It everywhere you're logged in.",
+    "subscription": "Subscription",
+    "tags": "Tags",
+    "testSettings": "Test Settings",
+    "title": "Settings",
+    "urlEndpoint": "URL endpoint",
+    "visitWeb": "Visit Remote.It on the web",
+    "webhookHelp": "Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds."
   }
 }

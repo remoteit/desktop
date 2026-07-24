@@ -35,7 +35,7 @@ export const ProfilePage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Profile</Title>
+            <Title>{t('settings.profile', 'Profile')}</Title>
           </Typography>
         </>
       }
@@ -52,15 +52,16 @@ export const ProfilePage: React.FC = () => {
       >
         <Avatar email={user.email} size={125} />
         <Typography variant="caption">
-          Your profile picture is imported from the free service Gravatar.
-          <br /> To edit or add a profile image please visit<Link href="https://gravatar.com">gravatar.com.</Link>
+          {t('settings.gravatarImported', 'Your profile picture is imported from the free service Gravatar.')}
+          <br /> {t('settings.gravatarEdit', 'To edit or add a profile image please visit')}
+          <Link href="https://gravatar.com">gravatar.com.</Link>
         </Typography>
       </Gutters>
       <List>
-        <FormDisplay icon={<Icon name="at" />} label="Email" displayValue={user.email} displayOnly />
+        <FormDisplay icon={<Icon name="at" />} label={t('settings.email', 'Email')} displayValue={user.email} displayOnly />
         <FormDisplay
           icon={<Icon name="calendar-star" />}
-          label="Member since"
+          label={t('settings.memberSince', 'Member since')}
           displayValue={<Timestamp date={user.created} />}
           displayOnly
         />
@@ -76,7 +77,7 @@ export const ProfilePage: React.FC = () => {
         />
         <SelectSetting
           icon="envelope"
-          label="Email Language"
+          label={t('settings.emailLanguage', 'Email Language')}
           value={user?.language}
           values={[
             { key: 'en', name: LANGUAGES.en },
@@ -85,7 +86,7 @@ export const ProfilePage: React.FC = () => {
           onChange={value => dispatch.user.changeLanguage(value)}
         />
       </List>
-      <Typography variant="subtitle1">Account deletion</Typography>
+      <Typography variant="subtitle1">{t('settings.accountDeletion', 'Account deletion')}</Typography>
       <DeleteAccountSection user={user} paidPlan={paidPlan} deleteAccount={deleteAccount} />
     </Container>
   )
