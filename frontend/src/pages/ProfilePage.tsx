@@ -75,7 +75,7 @@ export const ProfilePage: React.FC = () => {
           onChange={value => dispatch.user.setAppLanguage(value)}
         />
         <SelectSetting
-          icon="language"
+          icon="envelope"
           label="Email Language"
           value={user?.language}
           values={[
