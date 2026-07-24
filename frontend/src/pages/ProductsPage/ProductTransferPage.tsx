@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Typography, Button } from '@mui/material'
@@ -14,6 +15,7 @@ import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
 export const ProductTransferPage: React.FC = () => {
+  const { t } = useTranslation()
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   const { contacts = [], transferring } = useSelector((state: State) => ({
@@ -50,7 +52,7 @@ export const ProductTransferPage: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Product not found
+            {t('productTransferPage.notFound', 'Product not found')}
           </Typography>
         </Body>
       </Container>
@@ -61,24 +63,30 @@ export const ProductTransferPage: React.FC = () => {
     <ProductHeaderMenu product={product}>
       <Gutters size="md" bottom={null}>
         <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-          Transfer Product
+          {t('productTransferPage.title', 'Transfer Product')}
         </Typography>
         <ContactSelector contacts={contacts} selected={selected ? [selected] : []} onSelect={handleChange} isMulti={false} />
       </Gutters>
       <Gutters>
         <Typography variant="body2" gutterBottom>
-          You are transferring "{product.name}" to a new owner.
+          {t('productTransferPage.transferringTo', {
+            name: product.name,
+            defaultValue: 'You are transferring "{{name}}" to a new owner.',
+          })}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Product transfer typically takes a few seconds to complete. The new owner will gain full access to the product and all its services.
+          {t(
+            'productTransferPage.transferDescription',
+            'Product transfer typically takes a few seconds to complete. The new owner will gain full access to the product and all its services.'
+          )}
         </Typography>
       </Gutters>
       <Gutters top="xl">
         <Button color="primary" onClick={() => setOpen(true)} disabled={!selected || transferring} variant="contained">
-          {transferring ? 'Transferring...' : 'Transfer'}
+          {transferring ? t('productTransferPage.transferring', 'Transferring...') : t('productTransferPage.transfer', 'Transfer')}
         </Button>
         <Button disabled={transferring} onClick={onCancel}>
-          Cancel
+          {t('productTransferPage.cancel', 'Cancel')}
         </Button>
       </Gutters>
       <Confirm
@@ -89,14 +97,15 @@ export const ProductTransferPage: React.FC = () => {
         }}
         onDeny={() => setOpen(false)}
         color="error"
-        title="Are you sure?"
-        action="Transfer"
+        title={t('common.areYouSure', 'Are you sure?')}
+        action={t('productTransferPage.transfer', 'Transfer')}
       >
         <Notice severity="error" gutterBottom fullWidth>
-          You will lose all access and control of this product upon transfer.
+          {t('productTransferPage.loseAccessWarning', 'You will lose all access and control of this product upon transfer.')}
         </Notice>
         <Typography variant="body2">
-          You are about to transfer ownership of <b>{product.name}</b> and all of its services to
+          {t('productTransferPage.confirmPrefix', 'You are about to transfer ownership of')} <b>{product.name}</b>{' '}
+          {t('productTransferPage.confirmMiddle', 'and all of its services to')}
           <b> {selected}</b>.
         </Typography>
       </Confirm>

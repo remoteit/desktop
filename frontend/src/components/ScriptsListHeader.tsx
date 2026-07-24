@@ -2,6 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Typography, Tooltip, useMediaQuery } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { selectPermissions } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
 import { RefreshButton } from '../buttons/RefreshButton'
@@ -22,10 +23,11 @@ export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }
   const dispatch = useDispatch<Dispatch>()
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const permissions = useSelector(selectPermissions)
+  const { t } = useTranslation()
 
-  const title = scripts ? 'Scripts' : 'Files'
+  const title = scripts ? t('scriptsListHeader.scripts', 'Scripts') : t('scriptsListHeader.files', 'Files')
   const addPath = scripts ? '/scripts/add' : '/files/add'
-  const addLabel = scripts ? 'Add' : 'Upload'
+  const addLabel = scripts ? t('scriptsListHeader.add', 'Add') : t('scriptsListHeader.upload', 'Upload')
 
   return (
     <Box
@@ -51,7 +53,7 @@ export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }
         {showBack && (
           <IconButton
             icon="chevron-left"
-            title="Back"
+            title={t('scriptsListHeader.back', 'Back')}
             onClick={onBack}
             size="md"
           />
@@ -65,7 +67,7 @@ export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Tooltip
-          title={permissions.includes('ADMIN') ? '' : 'Admin permissions required'}
+          title={permissions.includes('ADMIN') ? '' : t('scriptsListHeader.adminRequired', 'Admin permissions required')}
           placement="top"
           arrow
         >

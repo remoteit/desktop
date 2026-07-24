@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Stack, Typography } from '@mui/material'
@@ -13,6 +14,7 @@ import { Notice } from '../../components/Notice'
 import { adminNoticeAttributes, noticeIcon, noticeStatus, sortNotices } from './adminNoticeAttributes'
 
 export const AdminNoticesListPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const location = useLocation()
@@ -30,7 +32,8 @@ export const AdminNoticesListPage: React.FC = () => {
   const required = adminNoticeAttributes.find(a => a.required)
   const attributes = adminNoticeAttributes.filter(a => !a.required)
 
-  if (loading && !initialized) return <LoadingMessage message="Loading notices..." />
+  if (loading && !initialized)
+    return <LoadingMessage message={t('adminNoticesListPage.loading', 'Loading notices...')} />
 
   return (
     <Container
@@ -40,9 +43,9 @@ export const AdminNoticesListPage: React.FC = () => {
       header={
         <Gutters>
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-            <Typography variant="h2">Notices</Typography>
+            <Typography variant="h2">{t('adminNoticesListPage.title', 'Notices')}</Typography>
             <Button variant="contained" size="small" onClick={() => history.push('/admin/notices/new')}>
-              New notice
+              {t('adminNoticesListPage.newNotice', 'New notice')}
             </Button>
           </Stack>
         </Gutters>
@@ -51,8 +54,10 @@ export const AdminNoticesListPage: React.FC = () => {
       {!sorted.length ? (
         <Gutters>
           <Notice severity="info" fullWidth>
-            No notices yet
-            <em>Create one to announce maintenance, an outage, or a release.</em>
+            {t('adminNoticesListPage.noNotices', 'No notices yet')}
+            <em>
+              {t('adminNoticesListPage.noNoticesHint', 'Create one to announce maintenance, an outage, or a release.')}
+            </em>
           </Notice>
         </Gutters>
       ) : (

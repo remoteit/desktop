@@ -44,8 +44,8 @@
     "noRunLogs": "この実行のログはまだありません。"
   },
   "mfa": {
-    "enabled": "二段階認証を有効にしました。",
-    "enableError": "二段階認証の有効化中にエラーが発生しました: {{error}}",
+    "enabled": "2段階認証を有効にしました。",
+    "enableError": "2段階認証の有効化中にエラーが発生しました: {{error}}",
     "invalidTotp": "TOTPコードが無効です。({{error}})",
     "phoneVerificationError": "電話番号の確認中にエラーが発生しました: {{error}}",
     "updatePhoneError": "電話番号の更新中にエラーが発生しました: {{error}}",

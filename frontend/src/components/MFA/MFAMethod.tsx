@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { List } from '@mui/material'
 import { ListItemCopy } from '../ListItemCopy'
 import { Box, Button, Typography } from '@mui/material'
@@ -24,24 +25,25 @@ type Props = {
 }
 
 export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, backupCode, loading, onClick }) => {
+  const { t } = useTranslation()
   return (
     <>
       {/* Authenticator Enabled */}
       {method === 'SOFTWARE_TOKEN_MFA' && (
         <Box sx={chipSx}>
-          <ColorChip label="ON / Authenticator App" variant="contained" color="success" />
+          <ColorChip label={t('mfaMethod.onAuthenticatorApp', 'ON / Authenticator App')} variant="contained" color="success" />
         </Box>
       )}
 
       {/* SMS Enabled */}
       {method === 'SMS_MFA' && (
         <Box sx={chipSx}>
-          <ColorChip label="ON / SMS" variant="contained" color="success" />
+          <ColorChip label={t('mfaMethod.onSms', 'ON / SMS')} variant="contained" color="success" />
           {verified && (
             <>
               <Typography variant="body2">{phoneNumber}</Typography>
               <Typography variant="body2" color="secondary">
-                Verified
+                {t('mfaMethod.verified', 'Verified')}
               </Typography>
             </>
           )}
@@ -51,15 +53,21 @@ export const MFAMethod: React.FC<Props> = ({ method, phoneNumber, verified, back
       {(method === 'SMS_MFA' || method === 'SOFTWARE_TOKEN_MFA') && (
         <>
           <List>
-            <ListItemCopy label="Recovery code" value={backupCode} showBackground />
+            <ListItemCopy label={t('mfaMethod.recoveryCode', 'Recovery code')} value={backupCode} showBackground />
           </List>
           <Typography variant="caption" component="div" gutterBottom>
-            The recovery code is used to access your account in the event you cannot receive two-factor authentication
-            codes. <br />
-            Treat your recovery code with the same level of attention as you would your password.
+            {t(
+              'mfaMethod.recoveryCodeDescription',
+              'The recovery code is used to access your account in the event you cannot receive two-factor authentication codes.'
+            )}{' '}
+            <br />
+            {t(
+              'mfaMethod.recoveryCodeWarning',
+              'Treat your recovery code with the same level of attention as you would your password.'
+            )}
           </Typography>
           <Button disabled={loading} onClick={onClick} variant="outlined" color="primary" size="small">
-            Turn off
+            {t('mfaMethod.turnOff', 'Turn off')}
           </Button>
         </>
       )}

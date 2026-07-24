@@ -1,5 +1,6 @@
 import { Box,InputAdornment,TextField,Typography } from '@mui/material'
 import React,{ useEffect,useMemo,useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch,useSelector } from 'react-redux'
 import { useHistory,useLocation } from 'react-router-dom'
 import { Attribute } from '../../components/Attributes'
@@ -57,6 +58,7 @@ const partnerStatsAttributes: PartnerStatsAttribute[] = [
 ]
 
 export const PartnerStatsListPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const location = useLocation()
@@ -104,7 +106,7 @@ export const PartnerStatsListPage: React.FC = () => {
           <TextField
             fullWidth
             size="small"
-            placeholder="Search partners..."
+            placeholder={t('partnerStatsListPage.searchPlaceholder', 'Search partners...')}
             value={searchValue}
             onChange={e => setSearchValue(e.target.value)}
             InputProps={{
@@ -119,15 +121,17 @@ export const PartnerStatsListPage: React.FC = () => {
       }
     >
       {loading && !initialized ? (
-        <LoadingMessage message="Loading partners..." />
+        <LoadingMessage message={t('partnerStatsListPage.loading', 'Loading partners...')} />
       ) : filteredPartners.length === 0 ? (
         <Box sx={{ textAlign: 'center', padding: 4 }}>
           <Icon name="handshake" size="xxl" color="grayLight" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            {searchValue ? 'No matching partners' : 'No partners found'}
+            {searchValue
+              ? t('partnerStatsListPage.noMatchingPartners', 'No matching partners')
+              : t('partnerStatsListPage.noPartnersFound', 'No partners found')}
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            You don't have admin access to any partner entities.
+            {t('partnerStatsListPage.noAdminAccess', "You don't have admin access to any partner entities.")}
           </Typography>
         </Box>
       ) : (

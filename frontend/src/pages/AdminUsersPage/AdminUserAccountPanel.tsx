@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Typography, List, ListItem, ListItemText, Box, Divider, Button } from '@mui/material'
@@ -15,6 +16,7 @@ import { graphQLAdminUpdateEmail, graphQLAdminDeleteUser, graphQLRemoveAdmin } f
 import { ChangeEmailDialog } from './ChangeEmailDialog'
 
 export const AdminUserAccountPanel: React.FC = () => {
+  const { t } = useTranslation()
   const { userId } = useParams<{ userId: string }>()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
@@ -47,16 +49,16 @@ export const AdminUserAccountPanel: React.FC = () => {
       const result = await graphQLAdminUpdateEmail(user.email, newEmail)
 
       if (result !== 'ERROR') {
-        dispatch.ui.set({ successMessage: 'Email updated successfully' })
+        dispatch.ui.set({ successMessage: t('adminUserAccountPanel.emailUpdated', 'Email updated successfully') })
         // Refresh in place (keeps current data visible until fresh data loads)
         await fetchUser(true)
         await dispatch.adminUsers.fetch(undefined)
       } else {
-        dispatch.ui.set({ errorMessage: 'Failed to update email' })
+        dispatch.ui.set({ errorMessage: t('adminUserAccountPanel.emailUpdateFailed', 'Failed to update email') })
       }
     } catch (error) {
       console.error('Error updating email:', error)
-      dispatch.ui.set({ errorMessage: 'Failed to update email' })
+      dispatch.ui.set({ errorMessage: t('adminUserAccountPanel.emailUpdateFailed', 'Failed to update email') })
       throw error
     }
   }
@@ -71,17 +73,17 @@ export const AdminUserAccountPanel: React.FC = () => {
       const result = await graphQLAdminDeleteUser(userId)
 
       if (result !== 'ERROR') {
-        dispatch.ui.set({ successMessage: 'User deleted successfully' })
+        dispatch.ui.set({ successMessage: t('adminUserAccountPanel.userDeleted', 'User deleted successfully') })
         setDeleteConfirmOpen(false)
         // Redirect to user list
         history.push('/admin/users')
         await dispatch.adminUsers.fetch(undefined)
       } else {
-        dispatch.ui.set({ errorMessage: 'Failed to delete user' })
+        dispatch.ui.set({ errorMessage: t('adminUserAccountPanel.userDeleteFailed', 'Failed to delete user') })
       }
     } catch (error) {
       console.error('Error deleting user:', error)
-      dispatch.ui.set({ errorMessage: 'Failed to delete user' })
+      dispatch.ui.set({ errorMessage: t('adminUserAccountPanel.userDeleteFailed', 'Failed to delete user') })
     } finally {
       setDeleting(false)
     }
@@ -92,17 +94,19 @@ export const AdminUserAccountPanel: React.FC = () => {
     try {
       const result = await graphQLRemoveAdmin(userId)
       if (result !== 'ERROR') {
-        dispatch.ui.set({ successMessage: 'Admin privileges removed' })
+        dispatch.ui.set({ successMessage: t('adminUserAccountPanel.adminRemoved', 'Admin privileges removed') })
         setRemoveAdminConfirmOpen(false)
         // Refresh in place (keeps current data visible until fresh data loads)
         await fetchUser(true)
         await dispatch.adminUsers.fetch(undefined)
       } else {
-        dispatch.ui.set({ errorMessage: 'Failed to remove admin privileges' })
+        dispatch.ui.set({
+          errorMessage: t('adminUserAccountPanel.adminRemoveFailed', 'Failed to remove admin privileges'),
+        })
       }
     } catch (error) {
       console.error('Error removing admin:', error)
-      dispatch.ui.set({ errorMessage: 'Failed to remove admin privileges' })
+      dispatch.ui.set({ errorMessage: t('adminUserAccountPanel.adminRemoveFailed', 'Failed to remove admin privileges') })
     } finally {
       setRemovingAdmin(false)
     }
@@ -111,7 +115,7 @@ export const AdminUserAccountPanel: React.FC = () => {
   if (loading && !user) {
     return (
       <Container gutterBottom>
-        <LoadingMessage message="Loading account..." />
+        <LoadingMessage message={t('adminUserAccountPanel.loading', 'Loading account...')} />
       </Container>
     )
   }
@@ -122,7 +126,7 @@ export const AdminUserAccountPanel: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            User not found
+            {t('adminUserAccountPanel.userNotFound', 'User not found')}
           </Typography>
         </Body>
       </Container>
@@ -139,14 +143,14 @@ export const AdminUserAccountPanel: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Typography variant="h2" sx={{ padding: 2 }}>
-          <Title>Account Details</Title>
+          <Title>{t('adminUserAccountPanel.accountDetails', 'Account Details')}</Title>
         </Typography>
       }
     >
       <List disablePadding>
         <ListItem>
           <ListItemText
-            primary="User ID"
+            primary={t('adminUserAccountPanel.userId', 'User ID')}
             secondary={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography
@@ -165,25 +169,25 @@ export const AdminUserAccountPanel: React.FC = () => {
 
         <ListItem>
           <ListItemText
-            primary="Email"
-            secondary={user.email || 'N/A'}
+            primary={t('adminUserAccountPanel.email', 'Email')}
+            secondary={user.email || t('adminUserAccountPanel.notAvailable', 'N/A')}
           />
         </ListItem>
         <Divider component="li" />
 
         <ListItem>
           <ListItemText
-            primary="Admin Status"
+            primary={t('adminUserAccountPanel.adminStatus', 'Admin Status')}
             secondary={
               user.admin ? (
                 <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
                   <Icon name="shield" size="sm" color="primary" />
                   <Typography variant="body2" component="span" color="primary">
-                    System Admin
+                    {t('adminUserAccountPanel.systemAdmin', 'System Admin')}
                   </Typography>
                 </Box>
               ) : (
-                'Standard User'
+                t('adminUserAccountPanel.standardUser', 'Standard User')
               )
             }
           />
@@ -194,7 +198,7 @@ export const AdminUserAccountPanel: React.FC = () => {
           <>
             <ListItem>
               <ListItemText
-                primary="Organization"
+                primary={t('adminUserAccountPanel.organization', 'Organization')}
                 secondary={user.organization.name}
               />
             </ListItem>
@@ -204,34 +208,39 @@ export const AdminUserAccountPanel: React.FC = () => {
 
         <ListItem>
           <ListItemText
-            primary="Created"
-            secondary={user.created ? new Date(user.created).toLocaleString() : 'N/A'}
+            primary={t('adminUserAccountPanel.created', 'Created')}
+            secondary={user.created ? new Date(user.created).toLocaleString() : t('adminUserAccountPanel.notAvailable', 'N/A')}
           />
         </ListItem>
         <Divider component="li" />
 
         <ListItem>
           <ListItemText
-            primary="Last Login"
-            secondary={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A'}
+            primary={t('adminUserAccountPanel.lastLogin', 'Last Login')}
+            secondary={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : t('adminUserAccountPanel.notAvailable', 'N/A')}
           />
         </ListItem>
       </List>
 
       <Typography variant="subtitle1" sx={{ marginTop: 3, paddingX: 2 }}>
-        <Title>Device Summary</Title>
+        <Title>{t('adminUserAccountPanel.deviceSummary', 'Device Summary')}</Title>
       </Typography>
       <List disablePadding>
         <ListItem>
           <ListItemText
-            primary="User Devices"
-            secondary={`${deviceCount} total • ${deviceOnline} online • ${deviceOffline} offline`}
+            primary={t('adminUserAccountPanel.userDevices', 'User Devices')}
+            secondary={t('adminUserAccountPanel.deviceSummaryValue', {
+              total: deviceCount,
+              online: deviceOnline,
+              offline: deviceOffline,
+              defaultValue: '{{total}} total • {{online}} online • {{offline}} offline',
+            })}
           />
         </ListItem>
       </List>
 
       <Typography variant="subtitle1" sx={{ marginTop: 3, paddingX: 2 }}>
-        <Title>Admin Actions</Title>
+        <Title>{t('adminUserAccountPanel.adminActions', 'Admin Actions')}</Title>
       </Typography>
       <List disablePadding>
         <ListItem sx={{ flexWrap: 'wrap', gap: 1 }}>
@@ -241,7 +250,7 @@ export const AdminUserAccountPanel: React.FC = () => {
             onClick={handleChangeEmail}
             disabled={!user.email}
           >
-            Change Email
+            {t('adminUserAccountPanel.changeEmail', 'Change Email')}
           </Button>
           {user.admin && (
             <Button
@@ -249,7 +258,7 @@ export const AdminUserAccountPanel: React.FC = () => {
               color="warning"
               onClick={() => setRemoveAdminConfirmOpen(true)}
             >
-              Remove Admin
+              {t('adminUserAccountPanel.removeAdmin', 'Remove Admin')}
             </Button>
           )}
           <Button
@@ -257,7 +266,7 @@ export const AdminUserAccountPanel: React.FC = () => {
             color="error"
             onClick={handleDeleteUser}
           >
-            Delete User
+            {t('adminUserAccountPanel.deleteUser', 'Delete User')}
           </Button>
         </ListItem>
       </List>
@@ -273,21 +282,32 @@ export const AdminUserAccountPanel: React.FC = () => {
         open={deleteConfirmOpen}
         onConfirm={handleConfirmDelete}
         onDeny={() => setDeleteConfirmOpen(false)}
-        title="Delete User"
-        action={deleting ? 'Deleting...' : 'Delete'}
+        title={t('adminUserAccountPanel.deleteUser', 'Delete User')}
+        action={deleting ? t('adminUserAccountPanel.deleting', 'Deleting...') : t('adminUserAccountPanel.delete', 'Delete')}
         disabled={deleting}
         color="error"
       >
         <Notice severity="error" gutterBottom fullWidth>
-          This action cannot be undone.
+          {t('common.actionCannotBeUndone', 'This action cannot be undone.')}
         </Notice>
         <Typography variant="body2" gutterBottom>
-          Are you sure you want to permanently delete user <strong>{user.email || user.id}</strong>?
+          {t('adminUserAccountPanel.confirmDeleteBefore', 'Are you sure you want to permanently delete user')}{' '}
+          <strong>{user.email || user.id}</strong>?
         </Typography>
         {deviceCount > 0 && (
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            This user's <strong>{deviceCount} device{deviceCount !== 1 ? 's' : ''}</strong> will be transferred to the holding
-            account and tagged with the user's email and the deletion date.
+            {t('adminUserAccountPanel.confirmDeleteDevicesBefore', "This user's")}{' '}
+            <strong>
+              {t('adminUserAccountPanel.deviceCount', {
+                count: deviceCount,
+                defaultValue_one: '{{count}} device',
+                defaultValue_other: '{{count}} devices',
+              })}
+            </strong>{' '}
+            {t(
+              'adminUserAccountPanel.confirmDeleteDevicesAfter',
+              "will be transferred to the holding account and tagged with the user's email and the deletion date."
+            )}
           </Typography>
         )}
       </Confirm>
@@ -296,16 +316,21 @@ export const AdminUserAccountPanel: React.FC = () => {
         open={removeAdminConfirmOpen}
         onConfirm={handleRemoveAdmin}
         onDeny={() => setRemoveAdminConfirmOpen(false)}
-        title="Remove Admin Privileges"
-        action={removingAdmin ? 'Removing...' : 'Remove Admin'}
+        title={t('adminUserAccountPanel.removeAdminPrivileges', 'Remove Admin Privileges')}
+        action={
+          removingAdmin
+            ? t('adminUserAccountPanel.removing', 'Removing...')
+            : t('adminUserAccountPanel.removeAdmin', 'Remove Admin')
+        }
         disabled={removingAdmin}
         color="warning"
       >
         <Typography variant="body2" gutterBottom>
-          Are you sure you want to remove admin privileges from <strong>{user.email || user.id}</strong>?
+          {t('adminUserAccountPanel.confirmRemoveAdminBefore', 'Are you sure you want to remove admin privileges from')}{' '}
+          <strong>{user.email || user.id}</strong>?
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          This user will no longer have access to the admin panel.
+          {t('adminUserAccountPanel.confirmRemoveAdminAfter', 'This user will no longer have access to the admin panel.')}
         </Typography>
       </Confirm>
     </Container>

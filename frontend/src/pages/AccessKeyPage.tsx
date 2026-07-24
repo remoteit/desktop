@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { State } from '../store'
 import { Typography, Divider } from '@mui/material'
 import { useSelector } from 'react-redux'
@@ -9,6 +10,7 @@ import { AccountAccessKey } from '../components/AccountAccessKey'
 import { Gutters } from '../components/Gutters'
 
 export const AccessKeyPage: React.FC = () => {
+  const { t } = useTranslation()
   const { apiKey } = useSelector((state: State) => ({
     apiKey: state.keys?.apiKey,
   }))
@@ -19,21 +21,21 @@ export const AccessKeyPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Access Keys</Title>
+            <Title>{t('accessKeyPage.title', 'Access Keys')}</Title>
           </Typography>
         </>
       }
     >
       <AccountAccessKey />
       <Divider variant="inset" />
-      <Typography variant="subtitle1">Developer</Typography>
+      <Typography variant="subtitle1">{t('accessKeyPage.developer', 'Developer')}</Typography>
       <Gutters bottom="xl">
         <Typography variant="body2" gutterBottom>
-          This is your unique Developer API key to use and access Remote.It APIs.
+          {t('accessKeyPage.description', 'This is your unique Developer API key to use and access Remote.It APIs.')}
           <br />
-          <em>Do not share it with anyone.</em>
+          <em>{t('accessKeyPage.doNotShare', 'Do not share it with anyone.')}</em>
         </Typography>
-        <CopyCodeBlock label="API Key" value={apiKey} hideCopyLabel />
+        <CopyCodeBlock label={t('accessKeyPage.apiKey', 'API Key')} value={apiKey} hideCopyLabel />
       </Gutters>
     </Container>
   )

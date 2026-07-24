@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from './Icon'
 import { Title } from './Title'
 import { ColorChip } from './ColorChip'
@@ -16,6 +17,7 @@ type Props = {
 }
 
 export const DeviceName: React.FC<Props> = ({ connection, service, device, inline, children }) => {
+  const { t } = useTranslation()
   const location = useLocation()
   const menu = location.pathname.match(REGEX_FIRST_PATH)
   const instance = service || device
@@ -33,9 +35,9 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
   return (
     <Title inline={inline}>
       {children}
-      {name || 'No device found'}
+      {name || t('deviceName.noDeviceFound', 'No device found')}
       {unlicensed && (
-        <Tooltip title="Unlicensed" placement="top" arrow>
+        <Tooltip title={t('deviceName.unlicensed', 'Unlicensed')} placement="top" arrow>
           <sup>
             <Icon name="exclamation-triangle" size="xxxs" type="solid" color="warning" fixedWidth />
           </sup>
@@ -43,11 +45,15 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
       )}
       {device?.newDevice && (
         <sup>
-          <ColorChip label="NEW" size="small" color="success" variant="contained" />
+          <ColorChip label={t('deviceName.new', 'NEW')} size="small" color="success" variant="contained" />
         </sup>
       )}
       {device?.shared && (
-        <Tooltip title={`Shared by ${device?.owner.email}`} placement="top" arrow>
+        <Tooltip
+          title={t('deviceName.sharedBy', { email: device?.owner.email, defaultValue: 'Shared by {{email}}' })}
+          placement="top"
+          arrow
+        >
           <sup>
             <Icon name="user-group" size="xxxs" type="solid" fixedWidth />
           </sup>

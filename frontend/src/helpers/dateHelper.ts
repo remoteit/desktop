@@ -128,6 +128,15 @@ export const TimeSeriesAvailableResolutions: Partial<ILookup<string, ITimeSeries
   // YEAR: 'Year',
 }
 
+// The graph type/resolution lookups above are module-level, so their display
+// labels resolve translation at access time (keyed by the lookup key under
+// `graphType.*` / `graphUnit.*`, hand-maintained in the catalogs), falling back
+// to the English label.
+export const timeSeriesTypeLabel = (type?: string): string =>
+  type ? i18n.t(`graphType.${type}`, { defaultValue: TimeSeriesTypeLookup[type] || type }) : ''
+export const timeSeriesResolutionLabel = (res?: string): string =>
+  res ? i18n.t(`graphUnit.${res}`, { defaultValue: TimeSeriesAvailableResolutions[res] || res }) : ''
+
 export const TimeSeriesLengths: ILookup<number[], ITimeSeriesResolution> = {
   SECOND: [60],
   MINUTE: [60],

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import {
   Dialog,
@@ -32,6 +33,7 @@ export const AddProductServiceDialog: React.FC<Props> = ({
   onClose,
   onServiceAdded,
 }) => {
+  const { t } = useTranslation()
   const applicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const [name, setName] = useState('')
   const [type, setType] = useState('')
@@ -64,16 +66,16 @@ export const AddProductServiceDialog: React.FC<Props> = ({
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      setError('Service name is required')
+      setError(t('addProductServiceDialog.nameRequired', 'Service name is required'))
       return
     }
     if (!type) {
-      setError('Service type is required')
+      setError(t('addProductServiceDialog.typeRequired', 'Service type is required'))
       return
     }
     const portNum = parseInt(port)
     if (isNaN(portNum) || portNum < 0 || portNum > 65535) {
-      setError('Port must be a number between 0 and 65535')
+      setError(t('addProductServiceDialog.portRange', 'Port must be a number between 0 and 65535'))
       return
     }
 
@@ -94,14 +96,14 @@ export const AddProductServiceDialog: React.FC<Props> = ({
       onServiceAdded(service)
       handleClose()
     } else {
-      setError('Failed to add service')
+      setError(t('addProductServiceDialog.addFailed', 'Failed to add service'))
     }
     setCreating(false)
   }
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add Service</DialogTitle>
+      <DialogTitle>{t('addProductServiceDialog.title', 'Add Service')}</DialogTitle>
       <DialogContent>
         {error && (
           <Notice severity="error" fullWidth gutterBottom>
@@ -110,7 +112,7 @@ export const AddProductServiceDialog: React.FC<Props> = ({
         )}
 
         <TextField
-          label="Service Name"
+          label={t('addProductServiceDialog.serviceName', 'Service Name')}
           value={name}
           onChange={e => setName(e.target.value)}
           fullWidth
@@ -121,23 +123,23 @@ export const AddProductServiceDialog: React.FC<Props> = ({
         />
 
         <FormControl fullWidth margin="normal" required>
-          <InputLabel>Service Type</InputLabel>
+          <InputLabel>{t('addProductServiceDialog.serviceType', 'Service Type')}</InputLabel>
           <Select
             value={type}
             onChange={e => handleTypeChange(e.target.value)}
-            label="Service Type"
+            label={t('addProductServiceDialog.serviceType', 'Service Type')}
             disabled={creating}
           >
-            {applicationTypes.map(t => (
-              <MenuItem key={t.id} value={String(t.id)}>
-                {t.name}
+            {applicationTypes.map(at => (
+              <MenuItem key={at.id} value={String(at.id)}>
+                {at.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
         <TextField
-          label="Port"
+          label={t('addProductServiceDialog.port', 'Port')}
           value={port}
           onChange={e => setPort(e.target.value)}
           fullWidth
@@ -156,22 +158,22 @@ export const AddProductServiceDialog: React.FC<Props> = ({
               disabled={creating}
             />
           }
-          label="Enabled"
+          label={t('addProductServiceDialog.enabled', 'Enabled')}
           sx={{ marginTop: 1 }}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={creating}>
-          Cancel
+          {t('common.cancel', 'Cancel')}
         </Button>
         <Button variant="contained" color="primary" onClick={handleCreate} disabled={creating}>
           {creating ? (
             <>
               <Icon name="spinner-third" spin size="sm" inline />
-              Adding...
+              {t('addProductServiceDialog.addingEllipsis', 'Adding...')}
             </>
           ) : (
-            'Add Service'
+            t('addProductServiceDialog.title', 'Add Service')
           )}
         </Button>
       </DialogActions>

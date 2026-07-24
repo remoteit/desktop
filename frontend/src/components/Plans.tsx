@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Notice } from './Notice'
 import { Overlay } from './Overlay'
 import { PlanCard } from './PlanCard'
@@ -21,6 +22,7 @@ type Props = {
 }
 
 export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans }) => {
+  const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
@@ -81,7 +83,7 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
           const loading = purchasing === plan.id
 
           let note = details.note
-          let caption = 'per month / per license'
+          let caption = t('plans.perMonthPerLicense', 'per month / per license')
           let planPrice: IPrice | undefined
           let planInterval: string
           let price: string = '-'
@@ -94,7 +96,7 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
               planInterval = 'MONTH'
               planPrice = plan.prices.find(p => p.interval === planInterval)
               price = currencyFormatter(planPrice?.currency, planPrice?.amount || 1, 0)
-              note = 'billed monthly'
+              note = t('plans.billedMonthly', 'billed monthly')
             }
           }
 
@@ -102,8 +104,16 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
             price =
               currencyFormatter(license.subscription.price.currency, license.subscription.total, 0) +
               ` / ${license.subscription.price.interval?.toLowerCase()}`
-            caption = `${license.quantity} license${(license.quantity || 0) > 1 ? 's' : ''}`
-            note = `${totals.users} users + ${totals.devices} devices`
+            caption = t('plans.licenseCount', {
+              count: license.quantity || 0,
+              defaultValue_one: '{{count}} license',
+              defaultValue_other: '{{count}} licenses',
+            })
+            note = t('plans.usersAndDevices', {
+              users: totals.users,
+              devices: totals.devices,
+              defaultValue: '{{users}} users + {{devices}} devices',
+            })
           }
 
           const result = plan.prices?.find(p => p.id === form.priceId)
@@ -120,7 +130,7 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
               caption={caption}
               note={note}
               disabled={selected && license?.custom}
-              button={selected ? 'Update' : 'Select'}
+              button={selected ? t('plans.update', 'Update') : t('plans.select', 'Select')}
               selected={selected}
               loading={loading}
               onSelect={() =>
@@ -142,11 +152,11 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
       <PlanGutters>
         <PlanCard
           wide
-          name="Personal"
+          name={t('plans.personal', 'Personal')}
           description={planDetails[PERSONAL_PLAN_ID].description}
           price="$0"
-          caption="Free Plan"
-          button={personal ? 'Current Plan' : 'Select'}
+          caption={t('plans.freePlan', 'Free Plan')}
+          button={personal ? t('plans.currentPlan', 'Current Plan') : t('plans.select', 'Select')}
           selected={personal}
           disabled={personal}
           onSelect={() =>
@@ -161,14 +171,19 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
         open={!!form.confirm}
         onConfirm={() => setForm({ ...form, confirm: false, checkout: true })}
         onDeny={() => setForm({ ...form, confirm: false })}
-        title="Downgrade Plan?"
-        action="Continue"
+        title={t('plans.downgradePlanTitle', 'Downgrade Plan?')}
+        action={t('plans.continue', 'Continue')}
         color="warning"
         maxWidth="xs"
       >
         <Notice severity="warning" fullWidth>
-          This plan will downgrade your service.
-          <em>You will lose access to some features and may lose access to some devices.</em>
+          {t('plans.downgradeNotice', 'This plan will downgrade your service.')}
+          <em>
+            {t(
+              'plans.downgradeNoticeDetail',
+              'You will lose access to some features and may lose access to some devices.'
+            )}
+          </em>
         </Notice>
       </Confirm>
     </>

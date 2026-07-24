@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { Typography, Divider } from '@mui/material'
 import { defaultNetwork, recentNetwork } from '../models/networks'
@@ -16,6 +17,7 @@ import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 export const ConnectionsPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const allConnections = useSelector(selectConnections)
   const sessions = useSelector(selectConnectionSessions)
@@ -32,7 +34,7 @@ export const ConnectionsPage: React.FC = () => {
       active[id] = {
         ...defaultNetwork(),
         id: 'other',
-        name: s.user?.email || 'Unknown',
+        name: s.user?.email || t('connectionsPage.unknown', 'Unknown'),
         icon,
         iconType,
         sessions: [],
@@ -51,9 +53,9 @@ export const ConnectionsPage: React.FC = () => {
 
   return (
     <Container bodyProps={{ verticalOverflow: true }} gutterBottom>
-      <SessionsList title="Connected" networks={active} />
+      <SessionsList title={t('connectionsPage.connected', 'Connected')} networks={active} />
       <StickyTitle loading={loading}>
-        <Title>Idle</Title>
+        <Title>{t('connectionsPage.idle', 'Idle')}</Title>
       </StickyTitle>
       {initialized ? (
         <>
@@ -62,8 +64,10 @@ export const ConnectionsPage: React.FC = () => {
               <Typography variant="h1" gutterBottom>
                 <Icon name="arrow-right-arrow-left" fontSize={50} type="light" color="grayLight" />
               </Typography>
-              <Typography variant="h3">You have no connections</Typography>
-              <Typography variant="caption">Begin by selecting a device's service from the Devices menu.</Typography>
+              <Typography variant="h3">{t('connectionsPage.noConnections', 'You have no connections')}</Typography>
+              <Typography variant="caption">
+                {t('connectionsPage.noConnectionsHint', "Begin by selecting a device's service from the Devices menu.")}
+              </Typography>
             </Gutters>
           )}
           {idle.map(n => (
@@ -78,7 +82,7 @@ export const ConnectionsPage: React.FC = () => {
           )}
         </>
       ) : (
-        <LoadingMessage message="Loading..." spinner={false} />
+        <LoadingMessage message={t('connectionsPage.loading', 'Loading...')} spinner={false} />
       )}
     </Container>
   )

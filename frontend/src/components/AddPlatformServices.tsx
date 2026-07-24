@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { Stack, StackProps } from '@mui/material'
@@ -11,6 +12,7 @@ const TEMP_DATE = new Date()
 type Props = StackProps & { button?: string; types: number[]; onChange: (tags: number[]) => void }
 
 export const AddPlatformServices: React.FC<Props> = ({ button, types, onChange, ...props }) => {
+  const { t } = useTranslation()
   const { allTypes, canEdit } = useSelector((state: State) => ({
     accountId: selectActiveAccountId(state),
     allTypes: state.applicationTypes.all,
@@ -31,9 +33,9 @@ export const AddPlatformServices: React.FC<Props> = ({ button, types, onChange, 
       {canEdit && (
         <TagEditor
           hideIcons
-          label="SERVICE"
+          label={t('addPlatformServices.label', 'SERVICE')}
           allowAdding={false}
-          placeholder="Add a service type..."
+          placeholder={t('addPlatformServices.placeholder', 'Add a service type...')}
           onSelect={tag => onChange([...types, tag.color])}
           tags={allTags}
           filter={selectedTags}

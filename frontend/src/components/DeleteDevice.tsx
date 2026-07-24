@@ -2,6 +2,7 @@ import React from 'react'
 import { emit } from '../services/Controller'
 import { Tooltip } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Dispatch, State } from '../store'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Typography } from '@mui/material'
@@ -21,18 +22,22 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
   const destroying = useSelector((state: State) => state.ui.destroying)
   const setupBusy = useSelector((state: State) => state.ui.setupBusy)
   const setupDeletingDevice = useSelector((state: State) => state.ui.setupDeletingDevice)
+  const { t } = useTranslation()
 
   let disabled: boolean = false
   let icon: string = 'trash'
-  let title: string = 'Delete Device'
+  let title: string = t('deleteDevice.title', 'Delete Device')
   let warning: React.ReactNode = (
     <>
       <Notice severity="error" gutterBottom fullWidth>
-        Deleting devices can't be undone so may require you to physically access the device if you wish to recover it.
+        {t(
+          'deleteDevice.warning',
+          "Deleting devices can't be undone so may require you to physically access the device if you wish to recover it."
+        )}
       </Notice>
       <Typography variant="body2">
-        We recommend uninstalling Remote.It before <br />
-        deleting devices.
+        {t('deleteDevice.uninstallRecommendation', 'We recommend uninstalling Remote.It before')} <br />
+        {t('deleteDevice.deletingDevices', 'deleting devices.')}
       </Typography>
     </>
   )
@@ -54,10 +59,10 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
 
   if (device.thisDevice && device.permissions.includes('MANAGE')) {
     disabled = false
-    title = 'Unregister Device'
+    title = t('deleteDevice.unregisterTitle', 'Unregister Device')
     warning = (
       <Notice severity="error" fullWidth>
-        You are about to permanently remove this device and all of its services.
+        {t('deleteDevice.unregisterWarning', 'You are about to permanently remove this device and all of its services.')}
       </Notice>
     )
   }
@@ -79,7 +84,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
     <Tooltip
       key="deviceActions"
       placement="left"
-      title="Device must be offline"
+      title={t('deleteDevice.mustBeOffline', 'Device must be offline')}
       open={device.state !== 'active' ? false : undefined}
       arrow
     >

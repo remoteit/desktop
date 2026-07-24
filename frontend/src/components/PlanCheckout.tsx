@@ -3,6 +3,7 @@ import { PERSONAL_PLAN_ID, deviceUserTotal } from '../models/plans'
 import { Box, Divider, List, ListItem, ListItemSecondaryAction, Typography, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { currencyFormatter } from '../helpers/utilHelper'
 import { QuantitySelector } from './QuantitySelector'
 import { spacing } from '../styling'
@@ -25,6 +26,7 @@ type Props = {
 }
 
 export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, onCancel, onSuccess }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const purchasing = useSelector((state: State) => state.plans.purchasing === form.planId)
   const selectedPlan = plans.find(plan => plan.id === form.planId)
@@ -61,11 +63,14 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
       <>
         <List sx={listSx}>
           <ListItem>
-            <Typography variant="h1">Personal plan</Typography>
+            <Typography variant="h1">{t('planCheckout.personalPlan', 'Personal plan')}</Typography>
           </ListItem>
           <ListItem>
             <Typography variant="body1">
-              Are you sure you want to switch to the Personal plan? This will cancel your subscription.
+              {t(
+                'planCheckout.switchToPersonalConfirm',
+                'Are you sure you want to switch to the Personal plan? This will cancel your subscription.'
+              )}
             </Typography>
           </ListItem>
         </List>
@@ -80,10 +85,10 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
               variant="contained"
               disabled={purchasing}
             >
-              {purchasing ? 'Processing...' : 'Downgrade'}
+              {purchasing ? t('planCheckout.processing', 'Processing...') : t('planCheckout.downgrade', 'Downgrade')}
             </Button>
             <Button onClick={onCancel} disabled={purchasing}>
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
           </ListItem>
         </List>
@@ -99,7 +104,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
       </List>
       <List sx={listSx}>
         <ListItem onClick={() => setNextInterval()}>
-          <Typography variant="h3">Interval</Typography>
+          <Typography variant="h3">{t('planCheckout.interval', 'Interval')}</Typography>
           <ListItemSecondaryAction>
             <Box
               sx={theme => ({
@@ -134,13 +139,13 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem onClick={() => setQuantity(form.quantity + 1)}>
-          <Typography variant="h3">Licenses</Typography>
+          <Typography variant="h3">{t('planCheckout.licenses', 'Licenses')}</Typography>
           <ListItemSecondaryAction>
             <QuantitySelector quantity={form.quantity} onChange={setQuantity} />
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem>
-          <Typography variant="h3">Users</Typography>
+          <Typography variant="h3">{t('planCheckout.users', 'Users')}</Typography>
           <ListItemSecondaryAction>
             <Typography variant="h3" display="flex" alignItems="center" color="grayDarker.main">
               {totals.users}
@@ -149,7 +154,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
           </ListItemSecondaryAction>
         </ListItem>
         <ListItem>
-          <Typography variant="h3">Devices</Typography>
+          <Typography variant="h3">{t('planCheckout.devices', 'Devices')}</Typography>
           <ListItemSecondaryAction>
             <Typography variant="h3" display="flex" color="grayDarker.main">
               {totals.devices}
@@ -161,7 +166,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
       <List sx={listSx}>
         <Divider />
         <ListItem>
-          <Typography variant="h3">Total</Typography>
+          <Typography variant="h3">{t('planCheckout.total', 'Total')}</Typography>
           <ListItemSecondaryAction>
             <Typography variant="h3">
               {selectedPrice?.amount ? (
@@ -171,7 +176,7 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
                   {selectedPrice?.interval?.toLowerCase()}
                 </>
               ) : (
-                <em>Free</em>
+                <em>{t('planCheckout.free', 'Free')}</em>
               )}
             </Typography>
           </ListItemSecondaryAction>
@@ -185,10 +190,10 @@ export const PlanCheckout: React.FC<Props> = ({ plans, form, license, onChange, 
             variant="contained"
             disabled={purchasing || unchanged() || !form.quantity}
           >
-            {purchasing ? 'Processing...' : 'Submit'}
+            {purchasing ? t('planCheckout.processing', 'Processing...') : t('planCheckout.submit', 'Submit')}
           </Button>
           <Button onClick={onCancel} disabled={purchasing}>
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </Button>
         </ListItem>
       </List>

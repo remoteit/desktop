@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
@@ -11,6 +12,7 @@ import { Avatar } from './Avatar'
 const AVATAR_SIZE = 28
 
 export const OrganizationSelectList: React.FC = () => {
+  const { t } = useTranslation()
   const history = useHistory()
   const { accounts, devices, tags, networks, logs, products } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, user } = useSelector((state: State) => ({
@@ -49,12 +51,12 @@ export const OrganizationSelectList: React.FC = () => {
   return (
     <>
       <ListSubheader disableGutters sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        Organizations
+        {t('organizationSelectList.organizations', 'Organizations')}
         <IconButton
           size="sm"
           icon="ellipsis-v"
           color="grayDark"
-          title="Membership Settings"
+          title={t('organizationSelectList.membershipSettings', 'Membership Settings')}
           to="/organization/memberships"
           buttonBaseSize="small"
         />
@@ -68,8 +70,8 @@ export const OrganizationSelectList: React.FC = () => {
         <ListItemIcon>
           <Avatar size={AVATAR_SIZE} email={user.email} />
         </ListItemIcon>
-        <ListItemText primary={ownOrg?.id ? ownOrg.name : 'Personal Account'} />
-        <Chip label="Owner" size="small" />
+        <ListItemText primary={ownOrg?.id ? ownOrg.name : t('organizationSelectList.personalAccount', 'Personal Account')} />
+        <Chip label={t('organizationSelectList.owner', 'Owner')} size="small" />
       </ListItemButton>
       {options.map(option => (
         <ListItemButton

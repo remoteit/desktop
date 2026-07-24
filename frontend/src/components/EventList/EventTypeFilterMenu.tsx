@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Divider, Menu } from '@mui/material'
 import { State } from '../../store'
 import { useSelector } from 'react-redux'
@@ -15,6 +16,7 @@ type Props = {
 }
 
 export const EventTypeFilterMenu: React.FC<Props> = ({ device, value, onChange }) => {
+  const { t } = useTranslation()
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const user = useSelector((state: State) => state.user)
   const selectedValues = value || []
@@ -46,7 +48,7 @@ export const EventTypeFilterMenu: React.FC<Props> = ({ device, value, onChange }
   return (
     <>
       <IconButton
-        title="Filter events"
+        title={t('eventTypeFilterMenu.filterEvents', 'Filter events')}
         name="filter"
         color="grayDarker"
         modified={isFiltered}
@@ -63,7 +65,7 @@ export const EventTypeFilterMenu: React.FC<Props> = ({ device, value, onChange }
         elevation={2}
       >
         <EventTypeFilterMenuItem
-          label="All"
+          label={t('eventTypeFilterMenu.all', 'All')}
           selected={!isFiltered}
           onClick={() => handleToggle(undefined)}
           icon={<Icon name="asterisk" size="md" color={!isFiltered ? 'primary' : 'gray'} />}

@@ -63,6 +63,19 @@ export const recentNetwork: INetwork = {
   icon: 'clock-rotate-left',
 }
 
+// Built-in/system network group names are English constants; translate them for
+// display (keys hand-maintained in the catalogs). User-named networks — anything
+// not in this map — pass through unchanged.
+const SYSTEM_NETWORK_KEYS: ILookup<string> = {
+  Active: 'network.active',
+  'Cloud Proxy': 'network.cloudProxy',
+  Recent: 'network.recent',
+  Local: 'network.local',
+  Personal: 'network.personal',
+}
+export const networkName = (name?: string): string =>
+  (name && SYSTEM_NETWORK_KEYS[name] ? i18n.t(SYSTEM_NETWORK_KEYS[name], { defaultValue: name }) : name) || ''
+
 export type addConnectionProps = {
   serviceId: string
   networkId: string

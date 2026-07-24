@@ -4,12 +4,14 @@ import { State, Dispatch } from '../../store'
 import { MAX_NAME_LENGTH } from '@common/constants'
 import { useSelector, useDispatch } from 'react-redux'
 import { safeHostname } from '@common/nameHelper'
+import { useTranslation } from 'react-i18next'
 import { InlineTextFieldSetting, InlineTextFieldSettingProps } from '../InlineTextFieldSetting'
 import { getDevices } from '../../selectors/devices'
 
 export const DeviceNameSetting: React.FC<InlineTextFieldSettingProps> = props => {
   const { device } = useContext(DeviceContext)
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
   const hostname = useSelector((state: State) => state.backend.environment.hostname)
   const nameBlacklist = useSelector(getDevices)
     .filter((device: IDevice) => !device.shared)
@@ -25,7 +27,7 @@ export const DeviceNameSetting: React.FC<InlineTextFieldSettingProps> = props =>
       required
       value={name}
       icon="i-cursor"
-      label="Device Name"
+      label={t('deviceNameSetting.label', 'Device Name')}
       disabled={!device.permissions.includes('MANAGE')}
       resetValue={defaultValue}
       maxLength={MAX_NAME_LENGTH}

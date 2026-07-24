@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
 import { useParams } from 'react-router-dom'
@@ -19,6 +20,7 @@ import { Icon } from '../components/Icon'
 const NAME_MAX_LENGTH = 64
 
 export const OrganizationRolePage: React.FC = () => {
+  const { t } = useTranslation()
   const { roleID } = useParams<{ roleID?: string }>()
   const dispatch = useDispatch<Dispatch>()
   const disabled = useSelector((state: State) => state.organization.updating)
@@ -47,15 +49,19 @@ export const OrganizationRolePage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <Title>{role.name || 'New Role'}</Title>
+          <Title>{role.name || t('organizationRolePage.newRole', 'New Role')}</Title>
           {!systemRole && role.id && (
             <DeleteButton
               warning={
                 <>
                   <Notice severity="error" fullWidth gutterBottom>
-                    You will be permanently deleting the role <i>{role.name}.</i>
+                    {t('organizationRolePage.deleteWarningBefore', 'You will be permanently deleting the role')}{' '}
+                    <i>{role.name}.</i>
                   </Notice>
-                  Any members with this role will lose access until they have been set to another role.
+                  {t(
+                    'organizationRolePage.deleteWarningAfter',
+                    'Any members with this role will lose access until they have been set to another role.'
+                  )}
                 </>
               }
               onDelete={async () => await dispatch.organization.removeRole(form)}
@@ -72,7 +78,7 @@ export const OrganizationRolePage: React.FC = () => {
       >
         {systemRole && (
           <Notice severity="info" gutterBottom>
-            System roles cannot be modified.
+            {t('organizationRolePage.systemRoleNotice', 'System roles cannot be modified.')}
           </Notice>
         )}
         <ListItem>
@@ -83,7 +89,7 @@ export const OrganizationRolePage: React.FC = () => {
             required
             fullWidth
             autoFocus
-            label="Name"
+            label={t('organizationRolePage.name', 'Name')}
             value={form.name}
             disabled={disabled || systemRole}
             variant="filled"
@@ -94,7 +100,7 @@ export const OrganizationRolePage: React.FC = () => {
           />
         </ListItem>
         <Typography variant="subtitle1" gutterBottom>
-          User Permissions
+          {t('organizationRolePage.userPermissions', 'User Permissions')}
         </Typography>
         <PermissionsList
           locked={systemRole}
@@ -104,7 +110,7 @@ export const OrganizationRolePage: React.FC = () => {
           onChange={handlePermissionChange}
         />
         <Typography variant="subtitle1" gutterBottom>
-          Device and Network Permissions
+          {t('organizationRolePage.deviceNetworkPermissions', 'Device and Network Permissions')}
         </Typography>
         <TagFilter icon form={form} onChange={changeForm} disabled={disabled} systemRole={systemRole} selectAll />
         {form.access !== 'NONE' && (
@@ -132,7 +138,11 @@ export const OrganizationRolePage: React.FC = () => {
               changeForm(form)
             }}
           >
-            {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
+            {saving
+              ? t('organizationRolePage.saving', 'Saving...')
+              : changed
+                ? t('organizationRolePage.save', 'Save')
+                : t('organizationRolePage.saved', 'Saved')}
           </Button>
         </Gutters>
       )}

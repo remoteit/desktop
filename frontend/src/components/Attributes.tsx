@@ -138,7 +138,7 @@ export const attributes: Attribute[] = [
     value: ({ device, connection }) => (
       <ListItemText
         primary={<DeviceName device={device} connection={connection} />}
-        secondary={device?.thisDevice ? 'This system' : undefined}
+        secondary={device?.thisDevice ? i18n.t('attributeValue.thisSystem', { defaultValue: 'This system' }) : undefined}
         sx={{ marginRight: 1, opacity: device?.state === 'active' ? 1 : 0.4 }}
       />
     ),
@@ -287,12 +287,12 @@ export const attributes: Attribute[] = [
       device?.configurable ? (
         <>
           <Icon name="badge-check" color="success" type="solid" />
-          &nbsp; Yes
+          &nbsp; {i18n.t('common.yes', { defaultValue: 'Yes' })}
         </>
       ) : (
         <>
           <Icon name="ban" color="danger" type="solid" />
-          &nbsp; No
+          &nbsp; {i18n.t('common.no', { defaultValue: 'No' })}
         </>
       ),
   }),
@@ -328,7 +328,7 @@ export const attributes: Attribute[] = [
         <Timestamp date={device?.lastReported} /> &nbsp;
         {device?.state === 'active' && (
           <Typography variant="caption" component="div">
-            since refresh
+            {i18n.t('attributeValue.sinceRefresh', { defaultValue: 'since refresh' })}
           </Typography>
         )}
       </>
@@ -543,21 +543,21 @@ export const attributes: Attribute[] = [
       if (!connection) return null
       return connection.enabled
         ? connection.connecting
-          ? 'Connecting...'
+          ? i18n.t('connectionType.connecting', { defaultValue: 'Connecting...' })
           : connection.public
           ? connection.connectLink
-            ? 'Persistent Public Endpoint'
+            ? i18n.t('connectionType.persistentPublic', { defaultValue: 'Persistent Public Endpoint' })
             : application?.reverseProxy
-            ? 'Public Reverse Proxy'
-            : 'Public Proxy'
+            ? i18n.t('connectionType.publicReverseProxy', { defaultValue: 'Public Reverse Proxy' })
+            : i18n.t('connectionType.publicProxy', { defaultValue: 'Public Proxy' })
           : !connection.connected && !session
-          ? 'Idle - Connect on demand'
+          ? i18n.t('connectionType.idle', { defaultValue: 'Idle - Connect on demand' })
           : session?.source === 'WEBSOCKET'
-          ? 'Peer to Peer WebSocket'
+          ? i18n.t('connectionType.p2pWebsocket', { defaultValue: 'Peer to Peer WebSocket' })
           : connection.isP2P || session?.isP2P
-          ? 'Peer to Peer'
-          : 'Local Proxy'
-        : 'Inactive'
+          ? i18n.t('connectionType.p2p', { defaultValue: 'Peer to Peer' })
+          : i18n.t('connectionType.localProxy', { defaultValue: 'Local Proxy' })
+        : i18n.t('connectionType.inactive', { defaultValue: 'Inactive' })
     },
   }),
   new ConnectionAttribute({
@@ -568,13 +568,13 @@ export const attributes: Attribute[] = [
         ? null
         : session?.isP2P
         ? session?.source === 'WEBSOCKET'
-          ? 'Peer to Peer WebSocket'
-          : 'Peer to Peer'
+          ? i18n.t('connectionType.p2pWebsocket', { defaultValue: 'Peer to Peer WebSocket' })
+          : i18n.t('connectionType.p2p', { defaultValue: 'Peer to Peer' })
         : session?.manufacturer === 'ANONYMOUS'
-        ? 'Public Reverse Proxy'
+        ? i18n.t('connectionType.publicReverseProxy', { defaultValue: 'Public Reverse Proxy' })
         : session?.manufacturer === 'KEY'
-        ? 'Service Key'
-        : 'Proxy',
+        ? i18n.t('connectionType.serviceKey', { defaultValue: 'Service Key' })
+        : i18n.t('connectionType.proxy', { defaultValue: 'Proxy' }),
   }),
   // new ConnectionAttribute({
   //   id: 'security',

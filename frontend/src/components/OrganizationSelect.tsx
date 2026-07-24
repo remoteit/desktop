@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
@@ -92,6 +93,7 @@ const homeSx = {
 }
 
 export const OrganizationSelect: React.FC = () => {
+  const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
@@ -152,7 +154,7 @@ export const OrganizationSelect: React.FC = () => {
   return (
     <>
       <Box sx={nameSx}>
-        <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
+        <Typography variant="h4">{activeOrg.name || t('organizationSelect.organizations', 'Organizations')}</Typography>
       </Box>
       <GuideBubble
         sidebar
@@ -164,10 +166,13 @@ export const OrganizationSelect: React.FC = () => {
         instructions={
           <>
             <Typography variant="h3" gutterBottom>
-              <b>Select an organization</b>
+              <b>{t('organizationSelect.guideTitle', 'Select an organization')}</b>
             </Typography>
             <Typography variant="body2" gutterBottom>
-              See devices, networks and logs that belong to this organization.
+              {t(
+                'organizationSelect.guideDescription',
+                'See devices, networks and logs that belong to this organization.'
+              )}
             </Typography>
           </>
         }
@@ -180,7 +185,16 @@ export const OrganizationSelect: React.FC = () => {
             badgeContent={mySessions}
           >
             <Tooltip
-              title={<Title primary={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'} count={mySessions} />}
+              title={
+                <Title
+                  primary={
+                    ownOrg?.id
+                      ? t('organizationSelect.ownerLabel', { name: ownOrg.name, defaultValue: '{{name}} - Owner' })
+                      : t('organizationSelect.personalAccount', 'Personal Account')
+                  }
+                  count={mySessions}
+                />
+              }
               placement="right"
               enterDelay={800}
               arrow
@@ -208,7 +222,16 @@ export const OrganizationSelect: React.FC = () => {
                 badgeContent={count}
               >
                 <Tooltip
-                  title={<Title primary={`${option.name} - ${option.roleName}`} count={count} />}
+                  title={
+                    <Title
+                      primary={t('organizationSelect.memberLabel', {
+                        name: option.name,
+                        role: option.roleName,
+                        defaultValue: '{{name}} - {{role}}',
+                      })}
+                      count={count}
+                    />
+                  }
                   placement="right"
                   enterDelay={800}
                   arrow
@@ -243,13 +266,18 @@ export const OrganizationSelect: React.FC = () => {
 }
 
 function Title({ primary, count }: { primary: string; count: number }) {
+  const { t } = useTranslation()
   return (
     <>
       {primary}
       {!!count && (
         <>
           <Divider />
-          {count} active connection{count > 1 ? 's' : ''}
+          {t('organizationSelect.activeConnectionsCount', {
+            count,
+            defaultValue_one: '{{count}} active connection',
+            defaultValue_other: '{{count}} active connections',
+          })}
         </>
       )}
     </>

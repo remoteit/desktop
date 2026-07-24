@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash.isequal'
+import { useTranslation } from 'react-i18next'
 import { getAllDevices } from '../selectors/devices'
 import { newConnection } from '../helpers/connectionHelper'
 import { useParams, useHistory } from 'react-router-dom'
@@ -15,6 +16,7 @@ import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 
 export const ConnectionDefaultsPage: React.FC = () => {
+  const { t } = useTranslation()
   let customConnectionSetting: ILookup<Set<string>> = {}
   let customConnectionNote: ILookup<ILookup<React.ReactNode>> = {}
 
@@ -43,18 +45,25 @@ export const ConnectionDefaultsPage: React.FC = () => {
   const data = connectionDefaults?.[id] || {}
   const changed = !isEqual(form, data)
   const app = getApplication(undefined, { ...form, enabled: false, id: '', typeID: id })
-  addCustomSettings(app.allCustomTokens, id, <>the application type defaults</>)
+  addCustomSettings(app.allCustomTokens, id, <>{t('connectionDefaultsPage.applicationTypeDefaults', 'the application type defaults')}</>)
 
-  applicationTypes.forEach(t => {
-    const a = getApplication(undefined, { ...DEFAULT_CONNECTION, typeID: t.id })
-    const el = <>application type {t.name}</>
-    addCustomSettings(a.allCustomTokens, t.id, el)
+  applicationTypes.forEach(applicationType => {
+    const a = getApplication(undefined, { ...DEFAULT_CONNECTION, typeID: applicationType.id })
+    const el = (
+      <>
+        {t('connectionDefaultsPage.applicationType', {
+          name: applicationType.name,
+          defaultValue: 'application type {{name}}',
+        })}
+      </>
+    )
+    addCustomSettings(a.allCustomTokens, applicationType.id, el)
   })
   connections.forEach(c => {
     const a = getApplication(undefined, c)
     const el = (
       <>
-        connection <Link to={`/connections/${c.id}`}>{c.name}</Link>
+        {t('connectionDefaultsPage.connection', 'connection')} <Link to={`/connections/${c.id}`}>{c.name}</Link>
       </>
     )
     addCustomSettings(a.allCustomTokens, c.typeID || 0, el)
@@ -64,7 +73,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
       const a = getApplication(service)
       const el = (
         <>
-          service
+          {t('connectionDefaultsPage.service', 'service')}
           <Link to={`/devices/${device.id}/${service.id}`}>
             <strong> {service.name}</strong> - {device.name}
           </Link>
@@ -90,16 +99,21 @@ export const ConnectionDefaultsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Connection Defaults</Title>
+            <Title>{t('connectionDefaultsPage.title', 'Connection Defaults')}</Title>
           </Typography>
           <Gutters bottom="lg" top={null}>
-            <Typography variant="caption">Defaults can be overridden by service specific default settings.</Typography>
+            <Typography variant="caption">
+              {t(
+                'connectionDefaultsPage.overrideHint',
+                'Defaults can be overridden by service specific default settings.'
+              )}
+            </Typography>
           </Gutters>
           <Gutters>
             <TextField
               select
               fullWidth
-              label="Service Type"
+              label={t('connectionDefaultsPage.serviceType', 'Service Type')}
               value={id || ''}
               variant="filled"
               onChange={e => history.push(`/settings/defaults/${e.target.value}`)}
@@ -140,10 +154,14 @@ export const ConnectionDefaultsPage: React.FC = () => {
             setSaving(false)
           }}
         >
-          {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
+          {saving
+            ? t('common.saving', 'Saving...')
+            : changed
+            ? t('common.save', 'Save')
+            : t('common.saved', 'Saved')}
         </Button>
         <Button disabled={saving} onClick={() => setForm({})}>
-          Reset
+          {t('connectionDefaultsPage.reset', 'Reset')}
         </Button>
       </Gutters>
     </Container>

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
@@ -10,6 +11,7 @@ import { Gutters } from '../../components/Gutters'
 type Props = { device?: IDevice }
 
 export const ServiceEditPage: React.FC<Props> = ({ device }) => {
+  const { t } = useTranslation()
   const { thisId } = useSelector((state: State) => state.backend)
   const { serviceID } = useParams<{ serviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
@@ -31,7 +33,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
 
   return (
     <Gutters size="md" bottom={null}>
-      <ListItemBack title="Service configuration" to="connect" />
+      <ListItemBack title={t('serviceEditPage.title', 'Service configuration')} to="connect" />
       <ServiceForm
         device={device}
         service={service}

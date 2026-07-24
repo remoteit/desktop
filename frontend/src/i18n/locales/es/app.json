@@ -1,4 +1,492 @@
 {
+  "accessAccordion": {
+    "addAccess": "Agregar acceso",
+    "guests": "Invitados",
+    "noUsers": "Sin usuarios",
+    "organizationMembers": "Miembros de la organización",
+    "subtitle": "Acceso"
+  },
+  "accessKeyPage": {
+    "apiKey": "Clave de API",
+    "description": "Esta es tu clave de API de desarrollador única para usar y acceder a las API de Remote.It.",
+    "developer": "Desarrollador",
+    "doNotShare": "No la compartas con nadie.",
+    "title": "Claves de acceso"
+  },
+  "accountAccessKey": {
+    "created": "Creado",
+    "description": "Las claves de acceso son necesarias para autenticarte con nuestra API. Tienes la opción de crear una clave nueva, eliminar una existente o deshabilitar una clave temporalmente. Es recomendable descargar y guardar tus claves en el directorio .remoteit de tu carpeta personal:",
+    "generateCredentials": "Generar credenciales",
+    "keyLimit": "Hay un límite de 2 claves de acceso. Guarda tus claves en un lugar seguro.",
+    "lastUsed": "Último uso",
+    "neverUsed": "Nunca usada",
+    "publicKey": "Clave pública",
+    "secretKeyWarning": "Si pierdes u olvidas tu clave secreta, no podrás recuperarla.",
+    "title": "Autenticación"
+  },
+  "addAdminDialog": {
+    "addAdmin": "Agregar administrador",
+    "adminAdded": "Administrador agregado",
+    "alreadyAdmin": "Este usuario ya es administrador.",
+    "confirmAdminPromotion": "Confirmar promoción a administrador",
+    "confirmationCode": "Código de confirmación",
+    "confirmationEmailNotice": "Se enviará un correo de confirmación a tu dirección de correo de administrador. Debes hacer clic en el enlace o introducir el código para completar la promoción.",
+    "confirmationEmailSent": "¡Correo de confirmación enviado! Revisa tu bandeja de entrada para ver el código.",
+    "confirmFailed": "No se pudo confirmar la promoción a administrador.",
+    "confirmInstructions": "Introduce el código de 6 dígitos del correo electrónico o haz clic en el enlace del correo para confirmar.",
+    "emailAddress": "Dirección de correo electrónico",
+    "enterCode": "Introduce el código de 6 dígitos",
+    "enterEmail": "Introduce una dirección de correo electrónico",
+    "invalidCodeRetry": "Código no válido o caducado. Inténtalo de nuevo.",
+    "isNowAdmin": "ahora es administrador.",
+    "noUserFound": "No se encontró ningún usuario con esa dirección de correo electrónico",
+    "promotingAfter": "a administrador.",
+    "promotingBefore": "Promoviendo a",
+    "promotionRequestFailed": "No se pudo solicitar la promoción a administrador.",
+    "search": "Buscar",
+    "searchDescription": "Busca un usuario por correo electrónico para promoverlo a administrador.",
+    "searchFailed": "No se pudo buscar el usuario",
+    "sendingEllipsis": "Enviando...",
+    "sendPromotionRequest": "Enviar solicitud de promoción"
+  },
+  "addFromNetwork": {
+    "scanForServices": "Buscar servicios",
+    "scanNetwork": "Escanear red"
+  },
+  "addPage": {
+    "addDevice": "Agregar un dispositivo",
+    "addInstance": "Agregar una instancia",
+    "addMany": "Agregar varios",
+    "alreadyShared": "Ya compartido",
+    "demoDevice": "Dispositivo de demostración",
+    "products": "Productos",
+    "provisionInBulk": "Aprovisionar en masa",
+    "title": "¿A qué quieres conectarte?",
+    "tryDevice": "Probar un dispositivo"
+  },
+  "addPlatformServices": {
+    "label": "SERVICIO",
+    "placeholder": "Agregar un tipo de servicio..."
+  },
+  "addProductServiceDialog": {
+    "addFailed": "No se pudo agregar el servicio",
+    "addingEllipsis": "Agregando...",
+    "enabled": "Habilitado",
+    "nameRequired": "El nombre del servicio es obligatorio",
+    "port": "Puerto",
+    "portRange": "El puerto debe ser un número entre 0 y 65535",
+    "serviceName": "Nombre del servicio",
+    "serviceType": "Tipo de servicio",
+    "title": "Agregar servicio",
+    "typeRequired": "El tipo de servicio es obligatorio"
+  },
+  "adminAdminDetailPanel": {
+    "actions": "Acciones",
+    "adminStatus": "Estado de administrador",
+    "backToAdmins": "Volver a administradores",
+    "created": "Creado",
+    "deviceCounts": "{{total}} en total • {{online}} en línea • {{offline}} sin conexión",
+    "deviceSummary": "Resumen de dispositivos",
+    "email": "Correo electrónico",
+    "lastLogin": "Último inicio de sesión",
+    "loading": "Cargando detalles del administrador...",
+    "notFound": "Administrador no encontrado",
+    "organization": "Organización",
+    "removeAdmin": "Quitar administrador",
+    "removeConfirmBody": "¿Seguro que deseas quitar los privilegios de administrador a",
+    "removeConfirmSubBody": "Este usuario ya no tendrá acceso al panel de administración.",
+    "removeConfirmTitle": "Quitar privilegios de administrador",
+    "removedSuccess": "Se quitaron los privilegios de administrador de {{email}}",
+    "removeFailed": "No se pudieron quitar los privilegios de administrador",
+    "removing": "Quitando...",
+    "systemAdmin": "Administrador del sistema",
+    "title": "Detalles del administrador",
+    "userDevices": "Dispositivos del usuario",
+    "userId": "ID de usuario"
+  },
+  "adminAdminsListPage": {
+    "addAdmin": "Agregar administrador",
+    "loading": "Cargando...",
+    "loadingAdmins": "Cargando administradores...",
+    "loadMore": "Cargar más",
+    "noAdminsFound": "No se encontraron administradores",
+    "searchAllFieldsTitle": "Buscar en todos los campos",
+    "searchByAll": "Buscar por correo electrónico, nombre o ID de usuario...",
+    "searchByEmail": "Buscar por dirección de correo electrónico...",
+    "searchByEmailTitle": "Buscar por correo electrónico",
+    "searchByUserId": "Buscar por ID de usuario (UUID)...",
+    "searchByUserIdTitle": "Buscar por ID de usuario"
+  },
+  "adminConfirmPage": {
+    "backToAdmins": "Volver a administradores",
+    "confirmAdminPromotion": "Confirmar promoción a administrador",
+    "confirmationFailed": "Confirmación fallida",
+    "confirmedMessage": "El usuario se promovió correctamente a administrador.",
+    "confirmedTitle": "Promoción a administrador confirmada",
+    "confirmingPromotion": "Confirmando la promoción a administrador...",
+    "confirmWithCode": "Confirmar con código",
+    "enterCode": "Introducir código",
+    "enterCodeDescription": "Introduce el código de 6 dígitos del correo de confirmación enviado a tu bandeja de entrada.",
+    "enterCodeTitle": "Introducir código de confirmación",
+    "invalidCodeLength": "Introduce un código válido de 6 dígitos.",
+    "invalidCodeRetry": "Código no válido o caducado. Inténtalo de nuevo.",
+    "linkInvalid": "El enlace de confirmación no es válido o ha caducado.",
+    "manualCodeHint": "Puedes intentar introducir manualmente el código de 6 dígitos de tu correo electrónico:",
+    "title": "Confirmación de promoción a administrador"
+  },
+  "adminEnterpriseLicensesListPage": {
+    "account": "Cuenta",
+    "accountEmail": "Correo electrónico de la cuenta",
+    "add": "Agregar",
+    "addCustomer": "Agregar cliente empresarial",
+    "addDialogTitle": "Agregar cliente empresarial",
+    "addedCustomer": "Se agregó el cliente empresarial {{email}}",
+    "addFailed": "No se pudo agregar el cliente empresarial",
+    "adding": "Agregando...",
+    "confirmRemoveAfter": "del plan de licencia empresarial?",
+    "confirmRemoveBefore": "¿Seguro que deseas quitar",
+    "created": "Creado",
+    "devices": "Dispositivos",
+    "loading": "Cargando clientes empresariales...",
+    "loadingShort": "Cargando...",
+    "loadMore_one": "Cargar más ({{count}} de {{total}})",
+    "loadMore_many": "Cargar más ({{count}} de {{total}})",
+    "loadMore_other": "Cargar más ({{count}} de {{total}})",
+    "members": "Miembros",
+    "noMatching": "No hay clientes empresariales coincidentes",
+    "noneFound": "No se encontraron clientes empresariales",
+    "remove": "Quitar",
+    "removeCustomer": "Quitar cliente empresarial",
+    "removedCustomer": "Se quitó el cliente empresarial {{email}}",
+    "removeDialogTitle": "Quitar cliente empresarial",
+    "removeFailed": "No se pudo quitar el cliente empresarial",
+    "removing": "Quitando...",
+    "searchPlaceholder": "Busca por correo electrónico o nombre y pulsa Intro..."
+  },
+  "adminNoticeAttributes": {
+    "bannerNoEndDate": "Los banners no se pueden cerrar; establece una fecha de finalización"
+  },
+  "adminNoticeDetailPanel": {
+    "backToNotices": "Volver a avisos",
+    "deleteNotice": "Eliminar aviso",
+    "deleteNoticeConfirm": "¿Eliminar aviso?",
+    "editNotice": "Editar aviso",
+    "loadingNotice": "Cargando aviso...",
+    "mayHaveBeenDeleted": "Puede que otra persona lo haya eliminado.",
+    "newNotice": "Nuevo aviso",
+    "noticeNotFound": "Aviso no encontrado",
+    "permanentlyDeleted": "\"{{title}}\" se eliminará de forma permanente. Esta acción no se puede deshacer."
+  },
+  "adminNoticeForm": {
+    "bannerPreview": "VISTA PREVIA DEL BANNER",
+    "bannersCannotBeDismissed": "Los banners no se pueden cerrar.",
+    "blankTargetsEveryStage": "Si se deja en blanco, se aplica a todas las etapas.",
+    "body": "Cuerpo",
+    "bodyHelperBannerBold": "Limítalo a una sola frase corta",
+    "bodyHelperBannerPost": "; se muestra en línea dentro de una barra de una sola línea, así que un texto largo o HTML en bloque se verá mal.",
+    "bodyHelperBannerPre": "Segunda línea más pequeña debajo del título del banner.",
+    "bodyHelperCard": "HTML que se muestra en la tarjeta de anuncio.",
+    "cancel": "Cancelar",
+    "cardPreview": "VISTA PREVIA DE LA TARJETA",
+    "enableNotice": "Habilitar aviso",
+    "enableNoticeHelper": "Al deshabilitarlo, el aviso se oculta para todos, sin importar las fechas configuradas.",
+    "from": "Desde",
+    "fromHelper": "Cuándo empieza a mostrarse el aviso. Si se deja en blanco, se muestra de inmediato.",
+    "image": "Imagen",
+    "imageHelper": "URL de una imagen de banner que se muestra en la parte superior de la tarjeta de anuncio. No se usa en los banners.",
+    "link": "Enlace",
+    "linkHelperBanner": "Agrega un botón \"Más información\" al banner.",
+    "linkHelperCard": "Enlace opcional.",
+    "max255Characters": "Máximo 255 caracteres.",
+    "noEndDateSet": "No se ha establecido fecha de finalización",
+    "noEndDateSetDetail": "Sin una fecha \"Hasta\", este banner permanecerá activo hasta que alguien lo deshabilite manualmente.",
+    "noticeIsDisabled": "El aviso está deshabilitado",
+    "noticeIsEnabled": "El aviso está habilitado",
+    "requiredMax255": "Obligatorio. Máximo 255 caracteres.",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "stage": "Etapa",
+    "stageHelperMid": "o una etapa personal",
+    "stageHelperPre": "Limita a una sola etapa de implementación de la API para probar antes de publicar. Debe coincidir exactamente con la etapa; una de",
+    "title": "Título",
+    "titleHelperBanner": "Primera línea en negrita del banner.",
+    "titleHelperCard": "Encabezado del aviso.",
+    "titlePlaceholder": "Título",
+    "type": "Tipo",
+    "typeHelperBanner": "Se muestra como una barra fija en la parte superior de la aplicación.",
+    "typeHelperCard": "Se muestra como una tarjeta de anuncio.",
+    "until": "Hasta",
+    "untilHelper": "Cuándo desaparece el aviso.",
+    "untilHelperBannerStrong": "Muy recomendable: el usuario no puede cerrar un banner."
+  },
+  "adminNoticesListPage": {
+    "loading": "Cargando avisos...",
+    "newNotice": "Nuevo aviso",
+    "noNotices": "Aún no hay avisos",
+    "noNoticesHint": "Crea uno para anunciar un mantenimiento, una interrupción o un lanzamiento.",
+    "title": "Avisos"
+  },
+  "adminPartnerDetailPanel": {
+    "activated": "Activado",
+    "activatedCount_one": "{{count}} dispositivo se ha reportado al menos una vez",
+    "activatedCount_many": "{{count}} dispositivos se han reportado al menos una vez",
+    "activatedCount_other": "{{count}} dispositivos han reportado al menos una vez",
+    "activeLast30": "Activo (últimos 30 días)",
+    "addAdmin": "Agregar administrador",
+    "addAdminDialogTitle": "Agregar administrador al partner",
+    "addAdminFailed": "No se pudo agregar el administrador.",
+    "addChild": "Agregar partner secundario",
+    "addChildDialogTitle": "Agregar partner secundario",
+    "addChildFailed": "No se pudo agregar el partner secundario.",
+    "adding": "Agregando...",
+    "addRegistrant": "Agregar registrante",
+    "addRegistrantDialogTitle": "Agregar registrante al partner",
+    "addRegistrantFailed": "No se pudo agregar el registrante. Es posible que ya tenga acceso a esta entidad.",
+    "admins_one": "Administradores ({{count}})",
+    "admins_many": "Administradores ({{count}})",
+    "admins_other": "Administradores ({{count}})",
+    "childPartners_one": "Partners secundarios ({{count}})",
+    "childPartners_many": "Socios secundarios ({{count}})",
+    "childPartners_other": "Partners secundarios ({{count}})",
+    "currentlyOnline": "En línea actualmente",
+    "deleteConfirm": "¿Eliminar este partner? Esta acción no se puede deshacer.",
+    "deleteFailed": "No se pudo eliminar el partner.",
+    "deletePartner": "Eliminar partner",
+    "deleteWithChildrenConfirm_one": "¿Eliminar este partner? Su {{count}} partner secundario pasará a ser un partner de nivel superior.",
+    "deleteWithChildrenConfirm_many": "¿Eliminar este socio? Sus {{count}} socios secundarios pasarán a ser socios de nivel superior.",
+    "deleteWithChildrenConfirm_other": "¿Eliminar este partner? Sus {{count}} partners secundarios pasarán a ser partners de nivel superior.",
+    "deviceCounts": "{{total}} en total • {{online}} en línea • {{active}} activos",
+    "devicesCount_one": "{{count}} dispositivo",
+    "devicesCount_many": "{{count}} dispositivos",
+    "devicesCount_other": "{{count}} dispositivos",
+    "deviceSummary": "Resumen de dispositivos",
+    "emailLabel": "Correo electrónico",
+    "exportDevices": "Exportar dispositivos a CSV",
+    "exportFailed": "No se pudieron exportar los dispositivos.",
+    "loading": "Cargando partner...",
+    "notFound": "Partner no encontrado",
+    "parentPartner": "Partner principal",
+    "registrants_one": "Registrantes ({{count}})",
+    "registrants_many": "Registrantes ({{count}})",
+    "registrants_other": "Registrantes ({{count}})",
+    "removeAdminConfirm": "¿Seguro que quieres eliminar a este administrador?",
+    "removeAdminFailed": "No se pudo eliminar al administrador.",
+    "removeChildConfirm": "¿Quitar este partner secundario? Pasará a ser un partner de nivel superior.",
+    "removeChildFailed": "No se pudo quitar el partner secundario.",
+    "removeRegistrantConfirm": "¿Seguro que quieres eliminar a este registrante?",
+    "removeRegistrantFailed": "No se pudo eliminar al registrante.",
+    "renamePartner": "Cambiar nombre del partner",
+    "selectPartner": "Seleccionar partner",
+    "totalDevices": "Total de dispositivos",
+    "updateNameFailed": "No se pudo actualizar el nombre del partner."
+  },
+  "adminPartnersListPage": {
+    "create": "Crear",
+    "createDialogTitle": "Crear nuevo partner",
+    "createFailed": "No se pudo crear el partner.",
+    "createPartner": "Crear partner",
+    "creating": "Creando...",
+    "loadingPartners": "Cargando partners...",
+    "noMatchingPartners": "No hay partners coincidentes",
+    "noPartnersFound": "No se encontraron partners",
+    "parentPartnerLabel": "Partner principal (opcional)",
+    "partnerNameLabel": "Nombre del partner",
+    "searchPlaceholder": "Buscar partners...",
+    "topLevel": "Ninguno (nivel superior)"
+  },
+  "adminSidebarNav": {
+    "admins": "Administradores",
+    "enterprise": "Empresa",
+    "notices": "Avisos",
+    "partners": "Partners",
+    "returnToApp": "Volver a la app",
+    "users": "Usuarios"
+  },
+  "adminUserAccountPanel": {
+    "accountDetails": "Detalles de la cuenta",
+    "adminActions": "Acciones de administrador",
+    "adminRemoved": "Privilegios de administrador eliminados",
+    "adminRemoveFailed": "No se pudieron eliminar los privilegios de administrador",
+    "adminStatus": "Estado de administrador",
+    "changeEmail": "Cambiar correo electrónico",
+    "confirmDeleteBefore": "¿Seguro que quieres eliminar permanentemente al usuario",
+    "confirmDeleteDevicesAfter": "se transferirán a la cuenta de retención y se etiquetarán con el correo electrónico del usuario y la fecha de eliminación.",
+    "confirmDeleteDevicesBefore": "Los dispositivos de este usuario",
+    "confirmRemoveAdminAfter": "Este usuario ya no tendrá acceso al panel de administración.",
+    "confirmRemoveAdminBefore": "¿Seguro que quieres quitar los privilegios de administrador a",
+    "created": "Creado",
+    "delete": "Eliminar",
+    "deleteUser": "Eliminar usuario",
+    "deleting": "Eliminando...",
+    "deviceCount_one": "{{count}} dispositivo",
+    "deviceCount_many": "{{count}} dispositivos",
+    "deviceCount_other": "{{count}} dispositivos",
+    "deviceSummary": "Resumen de dispositivos",
+    "deviceSummaryValue": "{{total}} en total • {{online}} en línea • {{offline}} sin conexión",
+    "email": "Correo electrónico",
+    "emailUpdated": "Correo electrónico actualizado correctamente",
+    "emailUpdateFailed": "No se pudo actualizar el correo electrónico",
+    "lastLogin": "Último inicio de sesión",
+    "loading": "Cargando cuenta...",
+    "notAvailable": "N/D",
+    "organization": "Organización",
+    "removeAdmin": "Eliminar administrador",
+    "removeAdminPrivileges": "Eliminar privilegios de administrador",
+    "removing": "Eliminando...",
+    "standardUser": "Usuario estándar",
+    "systemAdmin": "Administrador del sistema",
+    "userDeleted": "Usuario eliminado correctamente",
+    "userDeleteFailed": "No se pudo eliminar el usuario",
+    "userDevices": "Dispositivos del usuario",
+    "userId": "ID de usuario",
+    "userNotFound": "Usuario no encontrado"
+  },
+  "adminUserDetailPage": {
+    "devices": "Dispositivos",
+    "deviceSummary": "{{total}} en total • {{online}} en línea • {{offline}} sin conexión",
+    "loadingUser": "Cargando usuario...",
+    "userDevices": "Dispositivos del usuario",
+    "userNotFound": "Usuario no encontrado",
+    "viewAsUser": "Ver como usuario"
+  },
+  "adminUserDevicesPanel": {
+    "lastReported": "Último reporte",
+    "loading": "Cargando dispositivos...",
+    "name": "Nombre",
+    "noDevicesFound": "No se encontraron dispositivos",
+    "platform": "Plataforma",
+    "services": "Servicios",
+    "status": "Estado",
+    "userDevicesCount_one": "Dispositivos del usuario ({{count}})",
+    "userDevicesCount_many": "Dispositivos del usuario ({{count}})",
+    "userDevicesCount_other": "Dispositivos del usuario ({{count}})"
+  },
+  "adminUsersListPage": {
+    "loading": "Cargando...",
+    "loadingUsers": "Cargando usuarios...",
+    "loadMore": "Cargar más",
+    "noUsersFound": "No se encontraron usuarios",
+    "searchAllFieldsTitle": "Buscar en todos los campos",
+    "searchByAll": "Buscar por correo electrónico, nombre o ID de usuario...",
+    "searchByEmail": "Buscar por correo electrónico...",
+    "searchByEmailTitle": "Buscar por correo electrónico",
+    "searchByUserId": "Buscar por ID de usuario (UUID)...",
+    "searchByUserIdTitle": "Buscar por ID de usuario"
+  },
+  "agentReachEditor": {
+    "addTagPlaceholder": "Agregar etiqueta...",
+    "allDevices": "Todos los dispositivos",
+    "defaultAppName": "Esta app",
+    "instructions": "Activa las organizaciones a las que puede acceder. Agrega etiquetas para limitar una organización solo a los dispositivos coincidentes.",
+    "limitsSuffix_one": ", limitado a dispositivos etiquetados en una de ellas",
+    "limitsSuffix_many": ", limitado a dispositivos etiquetados en {{count}} de ellos",
+    "limitsSuffix_other": ", limitado a dispositivos etiquetados en {{count}} de ellas",
+    "matchAll": "Coincidencia: todas las etiquetas",
+    "matchAny": "Coincidencia: cualquier etiqueta",
+    "scopeAll": "todas las organizaciones a las que perteneces",
+    "scopeSome_one": "{{count}} de {{total}} organizaciones",
+    "scopeSome_many": "{{count}} de {{total}} organizaciones",
+    "scopeSome_other": "{{count}} de {{total}} organizaciones",
+    "summary": "{{name}} puede acceder a {{scope}}{{limits}}.",
+    "summaryNone": "{{name}} no puede acceder a ningún dispositivo.",
+    "summaryUnlimited": "{{name}} puede acceder a todos los dispositivos de todas las organizaciones a las que perteneces."
+  },
+  "announcementCard": {
+    "learnMore": "Más información",
+    "markRead": "Marcar como leído",
+    "new": "NUEVO",
+    "typeCommunication": "Anuncio",
+    "typeGeneric": "Aviso",
+    "typeRelease": "Notas de la versión",
+    "typeSecurity": "Aviso de seguridad",
+    "typeSystem": "Actualización del sistema"
+  },
+  "announcementsPage": {
+    "title": "Notificaciones"
+  },
+  "argumentDefinitionEditForm": {
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "description": "Descripción",
+    "descriptionHelper": "Texto de ayuda que se muestra al usuario al completar el valor",
+    "descriptionPlaceholder": "Descripción que se muestra al usuario",
+    "fileExtensions": "Extensiones de archivo",
+    "fileExtensionsHelper": "Extensiones de archivo separadas por comas para filtrar (opcional)",
+    "fileExtensionsPlaceholder": ".txt, .log, .csv",
+    "options": "Opciones",
+    "optionsHelper": "Lista de opciones separadas por comas para el menú desplegable",
+    "optionsPlaceholder": "Opción1, Opción2, Opción3",
+    "save": "Guardar",
+    "type": "Tipo",
+    "variableName": "Nombre de variable",
+    "variableNameHelper": "Nombre usado en el script (sin espacios)",
+    "variableNamePlaceholder": "p. ej., fileName, url, action"
+  },
+  "argumentDefinitionList": {
+    "add": "Agregar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "empty": "No hay argumentos definidos. Los argumentos permiten a los usuarios proporcionar valores de entrada al ejecutar el script.",
+    "optionsCount_one": "{{count}} opción",
+    "optionsCount_many": "{{count}} opciones",
+    "optionsCount_other": "{{count}} opciones",
+    "title": "Argumentos del script"
+  },
+  "argumentsValueForm": {
+    "allowedTypes": "Tipos permitidos: {{types}}",
+    "fileMissing": "⚠️ El archivo seleccionado anteriormente ya no está disponible",
+    "selectExistingFile": "Seleccionar archivo existente...",
+    "selectPlaceholder": "Seleccionar...",
+    "title": "Argumentos del script",
+    "unknownType": "Tipo desconocido: {{argumentType}}",
+    "uploadedStatus": "subido",
+    "uploadFile": "Subir archivo",
+    "uploadFileSubLabel": "Arrastra y suelta o haz clic"
+  },
+  "attributeValue": {
+    "sinceRefresh": "desde la actualización",
+    "thisSystem": "Este sistema"
+  },
+  "autoCloseToggle": {
+    "label": "Cierre automático",
+    "subLabel": "Ejecutar comando de limpieza al desconectar"
+  },
+  "autoLaunchToggle": {
+    "label": "Inicio automático",
+    "subLabel": "Iniciar cuando se establezca la conexión"
+  },
+  "billingPage": {
+    "title": "Facturación"
+  },
+  "changeEmailDialog": {
+    "cancel": "Cancelar",
+    "currentEmail": "Correo electrónico actual:",
+    "emailRequired": "El correo electrónico es obligatorio",
+    "invalidFormat": "Formato de correo electrónico no válido",
+    "mustBeDifferent": "El nuevo correo electrónico debe ser diferente del actual",
+    "newEmailLabel": "Nueva dirección de correo electrónico",
+    "title": "Cambiar correo electrónico del usuario",
+    "updateEmail": "Actualizar correo electrónico",
+    "updateFailed": "No se pudo actualizar el correo electrónico. Inténtalo de nuevo.",
+    "updating": "Actualizando..."
+  },
+  "changePassword": {
+    "currentPassword": "Contraseña actual",
+    "noticeAfter": "cerrará automáticamente tu sesión en otros dispositivos.",
+    "noticeBefore": "Cambiar tu contraseña",
+    "noticeEmphasis": "NO",
+    "noticeSignOut": "Puedes cerrar sesión manualmente en todos los dispositivos a continuación.",
+    "noticeTitle": "Aviso",
+    "title": "Cambiar contraseña"
+  },
+  "claimDevice": {
+    "claim": "Reclamar",
+    "claimCode": "Código de reclamo",
+    "claiming": "Reclamando",
+    "claimingForOrg": "Reclamando para {{name}}",
+    "claimingWarning": "Estás reclamando este dispositivo para una organización en lugar de para ti.",
+    "title": "Reclamar un dispositivo"
+  },
   "columns": {
     "access": "Invitados",
     "bind": "Dirección de enlace",
@@ -53,12 +541,326 @@
     "tags": "Etiquetas",
     "targetPlatform": "Plataforma",
     "unknown": "Desconocido",
-    "version": "Versión del daemon"
+    "version": "Versión del daemon",
+    "body": "Cuerpo",
+    "categoryA": "Categoría A",
+    "categoryB": "Categoría B",
+    "categoryC": "Categoría C",
+    "categoryD": "Categoría D",
+    "categoryE": "Categoría E",
+    "customerEmail": "Correo",
+    "customerPlan": "Plan",
+    "customerPrice": "Precio",
+    "customerQuantity": "Cantidad",
+    "customerReseller": "Representante",
+    "from": "Desde",
+    "partnerActivated": "Activado",
+    "partnerActive": "Activo",
+    "partnerDevicesTotal": "Dispositivos",
+    "partnerName": "Nombre",
+    "partnerOnline": "En línea",
+    "productCreated": "Creado",
+    "productCreatedDetail": "Creado",
+    "productIdDetail": "ID de producto",
+    "productName": "Nombre",
+    "productPlatform": "Plataforma",
+    "productPlatformDetail": "Plataforma",
+    "productServiceIdDetail": "ID de servicio",
+    "productServicePortDetail": "Puerto",
+    "productServices": "Servicios",
+    "productServicesDetail": "Servicios",
+    "productServiceStatusDetail": "Estado",
+    "productServiceTypeDetail": "Tipo de servicio",
+    "productUpdated": "Actualizado",
+    "productUpdatedDetail": "Actualizado",
+    "scriptCreated": "Creado",
+    "scriptDescription": "Descripción",
+    "scriptName": "Script",
+    "scriptUpdated": "Modificado",
+    "stage": "Etapa",
+    "statusA": "Estado A",
+    "statusB": "Estado B",
+    "statusC": "Estado C",
+    "statusD": "Estado D",
+    "statusE": "Estado E",
+    "title": "Título",
+    "type": "Tipo",
+    "until": "Hasta"
   },
   "common": {
+    "actionCannotBeUndone": "Esta acción no se puede deshacer.",
     "areYouSure": "¿Estás seguro?",
+    "cancel": "Cancelar",
+    "cannotBeUndone": "Esta acción no se puede deshacer.",
+    "clear": "Borrar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "confirmingEllipsis": "Confirmando...",
+    "delete": "Eliminar",
+    "disable": "Deshabilitar",
+    "done": "Listo",
+    "enable": "Habilitar",
+    "loading": "Cargando...",
+    "loadingEllipsis": "Cargando…",
+    "no": "No",
+    "notAvailable": "N/D",
+    "ok": "Aceptar",
+    "or": "o",
+    "remove": "Quitar",
     "save": "Guardar",
-    "saving": "Guardando"
+    "saved": "Guardado",
+    "saving": "Guardando",
+    "savingEllipsis": "Guardando...",
+    "yes": "Sí"
+  },
+  "connect": {
+    "connection": "Conexión",
+    "connectionConfiguration": "Configuración de la conexión",
+    "downloadDesktop": "Descargar la app de escritorio",
+    "persistentEndpointsBody": "Conexiones bajo demanda con endpoints persistentes, acceso remoto y comandos de inicio mejorados.",
+    "persistentEndpointsTitle": "¿Quieres endpoints privados persistentes?",
+    "service": "Servicio",
+    "serviceConfiguration": "Configuración del servicio"
+  },
+  "connectAdvanced": {
+    "advanced": "Avanzado",
+    "agentCommand": "Comando del agente",
+    "agentEndpoint": "Endpoint del agente",
+    "cliCommandLog": "Registro de comandos CLI",
+    "configTitle": "Configuración de la conexión",
+    "connectionDefaults": "Valores predeterminados de conexión",
+    "connectionTypeDefaults": "Valores predeterminados por tipo de conexión",
+    "debugging": "Depuración",
+    "empty": "Vacío",
+    "logs": "Registros",
+    "resetConnection": "Restablecer conexión"
+  },
+  "connectedAppDetailPage": {
+    "authorized": "Autorizado",
+    "details": "Detalles",
+    "deviceAccess": "Acceso a dispositivos",
+    "grantedWhenSignedIn": "Concedido cuando {{name}} inició sesión. Para cambiarlos, revoca el acceso y haz que vuelva a iniciar sesión.",
+    "lastActive": "Última actividad",
+    "noActivityYet": "Aún sin actividad",
+    "noDeviceAccess": "Sin acceso a dispositivos: puede confirmar tu identidad, pero no puede ver ni controlar ningún dispositivo.",
+    "noLongerAuthorized": "Esta aplicación ya no está autorizada.",
+    "permissions": "Permisos",
+    "requestAgain": "Puede solicitar acceso nuevamente al iniciar sesión.",
+    "revoke": "Revocar",
+    "revokeAccess": "Revocar acceso",
+    "revokeAccessConfirmTitle": "¿Revocar el acceso?",
+    "service": "Servicio",
+    "signOutBefore": "cerrará sesión. El nuevo acceso se bloquea de inmediato; cualquier sesión ya en curso finaliza dentro de",
+    "title": "Aplicación conectada"
+  },
+  "connectedApps": {
+    "empty": "Aún no has autorizado ninguna aplicación.",
+    "loading": "Cargando…",
+    "title": "Aplicaciones y agentes de IA"
+  },
+  "connectedAppsPage": {
+    "description": "Aplicaciones y agentes de IA con los que has iniciado sesión en tu cuenta de Remote.It. Selecciona uno para limitar a qué dispositivos puede acceder o para revocar su acceso.",
+    "title": "Aplicaciones conectadas"
+  },
+  "connectionDefaultsForm": {
+    "saved": "Guardado"
+  },
+  "connectionDefaultsPage": {
+    "applicationType": "tipo de aplicación {{name}}",
+    "applicationTypeDefaults": "los valores predeterminados del tipo de aplicación",
+    "connection": "conexión",
+    "overrideHint": "Los valores predeterminados pueden anularse con la configuración predeterminada específica del servicio.",
+    "reset": "Restablecer",
+    "service": "servicio",
+    "serviceType": "Tipo de servicio",
+    "title": "Valores predeterminados de conexión"
+  },
+  "connectionDetails": {
+    "cannotLaunch": "Para iniciar, cambia tu tipo de inicio a URL o descarga la app de escritorio",
+    "copyLabel": "Copiar {{target}}",
+    "guideCopyOrLaunchAfter": "configurado en la configuración de la conexión.",
+    "guideCopyOrLaunchBefore": "Copia el endpoint o inicia la aplicación según el",
+    "guideCreatedBrowser": "Se creó una conexión a este servicio.",
+    "guideCreatedDesktop": "Se generó un endpoint fijo.",
+    "guideLaunchMethod": "método de inicio",
+    "guideTitle": "Uso de una conexión",
+    "host": "Host",
+    "localEndpoint": "Endpoint local",
+    "port": "Puerto",
+    "publicEndpoint": "Endpoint público",
+    "share": "Compartir",
+    "unencrypted": "Conexión local sin cifrar",
+    "user": "Usuario"
+  },
+  "connectionLogSetting": {
+    "label": "Registro de conexión",
+    "showLog": "Mostrar registro"
+  },
+  "connectionOtherPage": {
+    "disconnect": "Desconectar"
+  },
+  "connectionsPage": {
+    "connected": "Conectado",
+    "idle": "Inactivo",
+    "loading": "Cargando...",
+    "noConnections": "No tienes conexiones",
+    "noConnectionsHint": "Comienza seleccionando el servicio de un dispositivo desde el menú Dispositivos.",
+    "unknown": "Desconocido"
+  },
+  "connectionSurvey": {
+    "bad": "Malo",
+    "giveFeedback": "Enviar comentarios",
+    "good": "Bueno",
+    "howWasConnection": "¿Cómo fue tu última conexión?",
+    "improveMessage": "Proporciona información adicional para que podamos mejorar tus futuras conexiones.",
+    "okay": "Regular",
+    "thankYou": "¡Gracias por tus comentarios!",
+    "whatHappened": "Cuéntanos qué pasó."
+  },
+  "connectionType": {
+    "connecting": "Conectando...",
+    "idle": "Inactivo: conectar bajo demanda",
+    "inactive": "Inactivo",
+    "localProxy": "Proxy local",
+    "p2p": "Punto a punto",
+    "p2pWebsocket": "WebSocket punto a punto",
+    "persistentPublic": "Endpoint público persistente",
+    "proxy": "Proxy",
+    "publicProxy": "Proxy público",
+    "publicReverseProxy": "Proxy inverso público",
+    "serviceKey": "Clave de servicio"
+  },
+  "connectLinkSetting": {
+    "authNone": "Ninguna",
+    "authPassword": "Contraseña",
+    "confirmBody": "Esto creará un endpoint público fijo al que cualquiera podrá conectarse.",
+    "confirmBodyWithPassword": "Esto creará un endpoint público fijo al que podrá conectarse cualquiera que tenga la contraseña.",
+    "disabledSubLabel": "Los endpoints públicos fijos solo están disponibles para servicios http(s).",
+    "enabledSubLabel": "Crea un endpoint público fijo al que cualquiera pueda conectarse",
+    "label": "URL pública persistente",
+    "makePublicAction": "Hacer público",
+    "noPasswordNotice": "Este endpoint no tiene protección con contraseña.",
+    "passwordLabel": "Contraseña",
+    "passwordProtectedNotice": "Este endpoint tiene protección con contraseña.",
+    "permissionSubLabel": "Requiere el permiso de dispositivo \"Administrar\"",
+    "webAuthenticationLabel": "Autenticación web"
+  },
+  "copyCodeBlock": {
+    "copy": "Copiar",
+    "copyCode": "Copiar código",
+    "copyCommand": "Copiar comando"
+  },
+  "createAccessKey": {
+    "accessKeyIdLabel": "ID de clave de acceso",
+    "creating": "Creando...",
+    "done": "Listo",
+    "download": "Descargar",
+    "readyNotice": "Tu nueva clave de acceso está lista para usarse",
+    "secretAccessKeyLabel": "Clave de acceso secreta",
+    "secretWarning": "No volverás a ver esta clave secreta. Descárgala y guárdala en el directorio .remoteit de tu carpeta de inicio.",
+    "title": "Credenciales"
+  },
+  "creditCard": {
+    "cardEndingIn": "{{brand}} terminada en {{last}}",
+    "expiredDate": "Vencida {{month}}/{{year}}",
+    "expiredNotice": "La tarjeta de crédito ha vencido.",
+    "expiredNoticeDetail": "Actualiza tu tarjeta para continuar con el servicio.",
+    "expiringDate": "Vence {{month}}/{{year}}",
+    "processing": "Procesando...",
+    "title": "Tarjeta de crédito",
+    "update": "Actualizar"
+  },
+  "customerAddPage": {
+    "add": "Agregar",
+    "adding": "Agregando...",
+    "cancel": "Cancelar",
+    "noticePrefix": "Los nuevos clientes se agregarán a tu cuenta de revendedor y recibirán un plan gratuito.",
+    "noticeSuffix": "Después podrás actualizarlos a un plan pago.",
+    "subtitle": "Agrega un usuario a tu cuenta de revendedor.",
+    "title": "Agregar clientes"
+  },
+  "customerPage": {
+    "license": "Licencia",
+    "removeWarning": "Estás eliminando al cliente \"{{email}}\" de {{orgName}}.",
+    "salesRep": "Representante de ventas",
+    "updatePlan": "Actualizar plan"
+  },
+  "customerPlansPage": {
+    "selectPlanFor": "Selecciona un plan para"
+  },
+  "deleteAccessKey": {
+    "confirmLabel": "Escribe DELETE para confirmar",
+    "confirmText": "¿Deseas eliminar la clave",
+    "title": "Eliminar clave de acceso",
+    "warning": "Esta acción es permanente y no se puede deshacer."
+  },
+  "deleteAccountSection": {
+    "confirmHelp": "Ayúdanos a mejorar contándonos por qué no funcionó.",
+    "confirmSorry": "¡Lamentamos que te vayas!",
+    "confirmTitle": "¿Por qué quieres eliminar tu cuenta?",
+    "contactMeLabel": "Acepto que alguien se ponga en contacto conmigo sobre mis comentarios.",
+    "deleteButton": "Eliminar mi cuenta",
+    "description": "Si ya no quieres o necesitas tu cuenta de Remote.It, puedes solicitar su eliminación. Una vez procesada la solicitud, toda la información de tu cuenta se eliminará de forma permanente.",
+    "otherReasonLabel": "Otro motivo",
+    "paidPlanDowngrade": "Cambia a un plan Personal para poder solicitar la eliminación de tu cuenta.",
+    "paidPlanNotice": "Tienes un plan de suscripción pago.",
+    "permanentWarning": "Entiendo que esto es permanente y que las cuentas y los dispositivos relacionados no se pueden recuperar.",
+    "reasonAnotherAccount": "Tengo otra cuenta",
+    "reasonConnectionQuality": "Problemas de calidad de conexión o rendimiento",
+    "reasonCost": "Costo del servicio",
+    "reasonCouldntConnect": "No pude conectarme",
+    "reasonCouldntGetOnline": "No pude poner mi dispositivo en línea",
+    "reasonInstallDifficult": "La instalación fue demasiado difícil",
+    "reasonNotExpected": "No era lo que esperaba",
+    "reasonNotUsing": "Ya no lo uso",
+    "reasonTooHard": "Es demasiado difícil de usar",
+    "reasonUnsupportedDevice": "Mi dispositivo no es compatible",
+    "reasonUsingSomethingElse": "Uso otra cosa",
+    "snackbar": "Se envió tu solicitud de eliminación de cuenta.",
+    "turnaround": "Las solicitudes de eliminación tardan de 3 a 5 días hábiles en completarse."
+  },
+  "deleteDevice": {
+    "deletingDevices": "eliminando dispositivos.",
+    "mustBeOffline": "El dispositivo debe estar sin conexión",
+    "title": "Eliminar dispositivo",
+    "uninstallRecommendation": "Te recomendamos desinstalar Remote.It antes de",
+    "unregisterTitle": "Anular registro del dispositivo",
+    "unregisterWarning": "Estás a punto de eliminar permanentemente este dispositivo y todos sus servicios.",
+    "warning": "Eliminar dispositivos no se puede deshacer, por lo que es posible que necesites acceso físico al dispositivo si deseas recuperarlo."
+  },
+  "deviceBulkTransferPage": {
+    "blockedCount_one": "{{count}} del dispositivo seleccionado no se puede transferir.",
+    "blockedCount_many": "{{count}} de los dispositivos seleccionados no se pueden transferir.",
+    "blockedCount_other": "{{count}} de los dispositivos seleccionados no se pueden transferir.",
+    "blockedNames": "Solo puedes transferir dispositivos que te pertenecen: {{names}}.",
+    "confirmOwnershipBefore": "Estás a punto de transferir la propiedad de",
+    "confirmOwnershipMiddle": "y todos sus servicios a",
+    "confirmWarning": "Perderás todo el acceso y control de estos dispositivos al realizar la transferencia.",
+    "deviceCount_one": "{{count}} dispositivo",
+    "deviceCount_many": "{{count}} dispositivos",
+    "deviceCount_other": "{{count}} dispositivos",
+    "goBack": "Volver",
+    "title": "Transferir dispositivos",
+    "transferInfo": "La transferencia del dispositivo suele completarse en unos segundos. Se enviará un correo electrónico a ti y al nuevo propietario cuando finalice el proceso.",
+    "transferringCount_one": "Estás transfiriendo {{count}} dispositivo a un nuevo propietario.",
+    "transferringCount_many": "Estás transfiriendo {{count}} dispositivos a un nuevo propietario.",
+    "transferringCount_other": "Estás transfiriendo {{count}} dispositivos a un nuevo propietario."
+  },
+  "deviceDescriptionSetting": {
+    "label": "Descripción del dispositivo"
+  },
+  "deviceGraphColumn": {
+    "title": "Gráfico del dispositivo"
+  },
+  "deviceHeaderMenu": {
+    "configure": "Configurar",
+    "details": "Detalles",
+    "logs": "Registros",
+    "shareAccess": "Compartir acceso",
+    "unknown": "Desconocido"
+  },
+  "deviceLabelSetting": {
+    "label": "Etiqueta del dispositivo"
   },
   "deviceList": {
     "addTag": "Añadir etiqueta",
@@ -82,6 +884,415 @@
     "selectToRestore": "Selecciona un dispositivo para restaurar.",
     "tagsLabel": "etiquetas"
   },
+  "deviceName": {
+    "new": "NUEVO",
+    "noDeviceFound": "No se encontró ningún dispositivo",
+    "sharedBy": "Compartido por {{email}}",
+    "unlicensed": "Sin licencia"
+  },
+  "deviceNameLocation": {
+    "rename": "Cambiar nombre",
+    "thisDevice": "Este dispositivo"
+  },
+  "deviceNameSetting": {
+    "label": "Nombre del dispositivo"
+  },
+  "deviceOptionMenu": {
+    "deviceDetails": "Detalles del dispositivo",
+    "deviceLink": "Enlace del dispositivo",
+    "makeProduct": "Crear producto",
+    "restoreDevice": "Restaurar dispositivo",
+    "serviceLink": "Enlace del servicio",
+    "shareAccess": "Compartir acceso",
+    "transferDevice": "Transferir dispositivo"
+  },
+  "devicePage": {
+    "availableServices": "Servicios disponibles",
+    "availableServicesDescription": "Aquí se muestran los servicios (aplicaciones) alojados por el dispositivo.",
+    "deviceNotFound": "Dispositivo no encontrado.",
+    "deviceOffline": "Dispositivo sin conexión",
+    "deviceUnlicensed": "Dispositivo sin licencia",
+    "registeringEllipsis": "Registrando...",
+    "restoreDevice": "Restaurar dispositivo",
+    "selectServiceInstruction": "Selecciona un servicio para configurarlo o para iniciar una conexión.",
+    "service": "Servicio"
+  },
+  "devicePresenceSetting": {
+    "label": "Dirección de presencia"
+  },
+  "devicesActionMenu": {
+    "confirmTitle": "Confirmar eliminación del dispositivo",
+    "delete": "Eliminar",
+    "deleteCount_one": "Eliminar {{count}} dispositivo",
+    "deleteCount_many": "Eliminar {{count}} dispositivos",
+    "deleteCount_other": "Eliminar {{count}} dispositivos",
+    "deleteWarning": "La eliminación es irreversible y es posible que necesites acceso al dispositivo para recuperarlo.",
+    "more": "Más",
+    "selectedCount_one": "{{count}} dispositivo seleccionado",
+    "selectedCount_many": "{{count}} dispositivos seleccionados",
+    "selectedCount_other": "{{count}} dispositivos seleccionados",
+    "transfer": "Transferir",
+    "uninstallHint": "Para obtener mejores resultados, desinstala el agente de Remote.It antes de eliminar."
+  },
+  "devicesApplicationsTabs": {
+    "allServices": "Todos los servicios",
+    "screenView": "ScreenView"
+  },
+  "deviceSetupItem": {
+    "alreadyCreated": "Ya creado",
+    "alreadyRegistered": "Este sistema ya está registrado con otro usuario. Deberás iniciar sesión como el propietario del dispositivo para administrarlo.",
+    "guideBody": "Puedes configurar el dispositivo que estás usando actualmente o seguir las sencillas instrucciones para configurar una de las plataformas más utilizadas.",
+    "guideTitle": "Selecciona un dispositivo",
+    "notYourSystem": "Este no es tu sistema.",
+    "restore": "restaurar",
+    "restoring": "Restaurando dispositivo...",
+    "thisSystem": "Este sistema"
+  },
+  "deviceTransferPage": {
+    "confirmTransferPrefix": "Estás a punto de transferir la propiedad de",
+    "confirmTransferSuffix": "y todos sus servicios a",
+    "loseAccessWarning": "Perderás todo el acceso y control de este dispositivo al realizar la transferencia.",
+    "title": "Transferir dispositivo",
+    "transferInfo": "La transferencia del dispositivo suele completarse en unos segundos. Se enviará un correo electrónico a ti y al nuevo propietario cuando finalice el proceso.",
+    "transferringTo": "Estás transfiriendo \"{{name}}\" a un nuevo propietario."
+  },
+  "eventMessage": {
+    "allowed": "permitido",
+    "and": "y",
+    "attemptedToLogIn": "intentó iniciar sesión",
+    "connectedTo": "se conectó a",
+    "deleted": "eliminado",
+    "deletedTarget": "{{id}} (eliminado)",
+    "deletedUser": "(eliminado)",
+    "deviceCount_one": "{{count}} dispositivo",
+    "deviceCount_many": "{{count}} dispositivos",
+    "deviceCount_other": "{{count}} dispositivos",
+    "disconnectedFrom": "se desconectó de",
+    "duration": "Duración",
+    "from": "de",
+    "licenseUpdated": "Tu licencia se actualizó",
+    "loggedIn": "inició sesión",
+    "mfaDisabled": "Autenticación multifactor (MFA) desactivada",
+    "mfaEnabled": "Autenticación multifactor (MFA) activada",
+    "on": "en",
+    "phoneNumberChanged": "Número de teléfono cambiado",
+    "received": "Recibido",
+    "removedSharingOf": "eliminó el uso compartido de",
+    "resetPassword": "restableció {{adjective}} contraseña",
+    "restricted": "restringido",
+    "script": "Script",
+    "scriptExecutionWith": "ejecución de script con",
+    "sent": "Enviado",
+    "shared": "compartido",
+    "status": {
+      "cancelled": "se canceló",
+      "failed": "falló",
+      "ready": "estaba listo para ejecutarse",
+      "running": "se ejecutó",
+      "success": "se ejecutó correctamente",
+      "unknown": "hizo algo extraño",
+      "waiting": "esperó para ejecutarse"
+    },
+    "their": "su",
+    "to": "a",
+    "transferred": "transferido",
+    "unknown": "Desconocido",
+    "unknownEventType": "Se produjo un tipo de evento desconocido {{type}}",
+    "wentOffline": "se desconectó",
+    "wentOnline": "se conectó",
+    "with": "con",
+    "you": "Tú",
+    "youLeftSharedDevice": "Abandonaste el dispositivo compartido",
+    "youLower": "tú",
+    "your": "tu"
+  },
+  "eventTypeFilterMenu": {
+    "all": "Todos",
+    "filterEvents": "Filtrar eventos"
+  },
+  "feedbackPage": {
+    "emailUsAt": "También puedes escribirnos a",
+    "featureRequestHint": "Si tienes una solicitud de función, indica por qué es importante para ti.",
+    "includedData": "Datos incluidos",
+    "intro": "Obtén ayuda o envíanos comentarios sobre cómo podemos mejorar Remote.It.",
+    "message": "Mensaje",
+    "send": "Enviar",
+    "subject": "Asunto",
+    "title": "Contacto"
+  },
+  "fileAddPage": {
+    "noPermission": "No tienes permiso para subir archivos",
+    "uploadFile": "Subir archivo",
+    "uploading": "Subiendo..."
+  },
+  "fileDeleteButton": {
+    "title": "Eliminar archivo",
+    "warning": "Esta acción no se puede deshacer."
+  },
+  "fileMetadataForm": {
+    "description": "Descripción",
+    "name": "Nombre",
+    "uploadFile": "Subir archivo"
+  },
+  "filesPage": {
+    "demoDescription": "Descubre lo fácil que es ejecutar un script con nuestro script de demostración.",
+    "demoScript": "Script de demostración",
+    "demoScriptDescription": "Script de demostración para mostrar cómo obtener datos y agregarlos a un dispositivo",
+    "demoScriptName": "Obtener nombre de host",
+    "moreExamples": "Para ver más ejemplos y una guía detallada,",
+    "needDevice": "¿Necesitas un dispositivo para hacer pruebas?",
+    "tryDocker": "¡Prueba un contenedor de Docker!",
+    "uploadFileNotice": "Sube un archivo para usarlo en tus scripts.",
+    "visitDocs": "visita nuestro sitio de documentación."
+  },
+  "fileUpload": {
+    "binaryScriptUploaded": "Script binario subido",
+    "dragAndDrop": "Arrastra y suelta o haz clic",
+    "loadingEllipsis": "cargando...",
+    "readError": "Error al leer el archivo",
+    "scriptLabel": "Script",
+    "selected": "seleccionado",
+    "selectFile": "Seleccionar archivo",
+    "upload": "Subir"
+  },
+  "globalSearch": {
+    "placeholder": "Buscar nombre de dispositivo o servicio"
+  },
+  "graphsPage": {
+    "deviceListAndDetails": "Lista y detalles de dispositivos",
+    "logsAvailable": "de registros están disponibles con tu plan.",
+    "serviceDetails": "Detalles del servicio",
+    "title": "Gráficos",
+    "updateToSeeMore": "Actualiza para ver más."
+  },
+  "guideStep": {
+    "exitGuide": "Salir de la guía",
+    "next": "siguiente",
+    "previous": "anterior",
+    "stepOf": "{{step}} de {{total}}"
+  },
+  "header": {
+    "back": "Atrás",
+    "deviceSearch": "Búsqueda de dispositivos",
+    "hideSelect": "Ocultar selección",
+    "products": "Productos",
+    "showSelect": "Mostrar selección"
+  },
+  "headerOverrideSetting": {
+    "description": "Una forma de especificar un nombre de host diferente en el encabezado host de una solicitud HTTP. Se puede usar en escenarios de balanceo de carga para enrutar solicitudes al servidor adecuado.",
+    "title": "Anulación del encabezado host"
+  },
+  "inlineFileFieldSetting": {
+    "reset": "Restablecer",
+    "selectApplication": "Seleccionar aplicación"
+  },
+  "inlineSetting": {
+    "cancel": "Cancelar",
+    "reset": "Restablecer",
+    "save": "Guardar"
+  },
+  "invoices": {
+    "amount": "Importe",
+    "date": "Fecha",
+    "empty": "No se encontraron facturas.",
+    "invoice": "Factura",
+    "loading": "Cargando facturas...",
+    "oneTime": "pago único",
+    "plan": "Plan",
+    "seeInvoice": "Ver factura",
+    "title": "Historial de facturación"
+  },
+  "jobAttributes": {
+    "fileDeleted": "Archivo eliminado",
+    "filter": "Filtro",
+    "guestScript": "script de invitado",
+    "match": "Coincidencia",
+    "name": "Nombre",
+    "none": "Ninguno",
+    "runBy": "Ejecutado por",
+    "targets": "Objetivos",
+    "time": "Hora",
+    "unknown": "Desconocido"
+  },
+  "jobDetailPage": {
+    "cancelRun": "Cancelar ejecución",
+    "deleteRun": "Eliminar ejecución",
+    "deleteRunWarning": "Esto eliminará permanentemente esta ejecución y todos sus resultados.",
+    "deviceResults": "RESULTADOS DEL DISPOSITIVO",
+    "devices": "Dispositivos",
+    "downloadLogsAllDevices": "Descargar registros de todos los dispositivos",
+    "downloadLogsThisDevice": "Descargar registros de este dispositivo",
+    "fileDeleted": "Archivo eliminado",
+    "guestScript": "Script de invitado",
+    "jobNotFound": "Trabajo no encontrado",
+    "newRun": "Nueva ejecución",
+    "noDevicesInRun": "No hay dispositivos en esta ejecución",
+    "noReturnValues": "Sin valores de retorno de este dispositivo"
+  },
+  "jobDeviceDetailPage": {
+    "back": "Atrás",
+    "deviceDetails": "Detalles del dispositivo",
+    "noReturnValues": "Sin valores de retorno de este dispositivo",
+    "unknown": "Desconocido"
+  },
+  "jobsPage": {
+    "runScriptToStart": "Ejecuta un script para empezar"
+  },
+  "lanSharePage": {
+    "allowUsersToConnect": "Permite que los usuarios se conecten a tu dispositivo remoto a través de tu dirección IP usando un puerto personalizado.",
+    "bindIpAddress": "Vincular dirección IP",
+    "cancel": "Cancelar",
+    "classARestrictionName": "Restricción de clase A",
+    "classARestrictionNote": "IP restringida a la red local",
+    "classBRestrictionName": "Restricción de clase B",
+    "classBRestrictionNote": "Restricción de IP más estricta en la red local",
+    "classCRestrictionName": "Restricción de clase C",
+    "classCRestrictionNote": "Restricción de IP concentrada en la red local",
+    "enableLanSharing": "Habilitar el uso compartido de LAN",
+    "invalidIp": "IP no válida",
+    "ipAddress": "Dirección IP",
+    "ipLatchingName": "Bloqueo de IP",
+    "ipLatchingNote": "Permite que cualquier dispositivo individual de la red local se conecte. La restricción de IP se establecerá en la dirección IP del primer dispositivo que se conecte.",
+    "localNetworkSecurity": "Seguridad de la red local",
+    "localNetworkSharing": "Uso compartido de la red local",
+    "mask": "Máscara {{value}}",
+    "noneName": "Ninguno",
+    "noneNote": "Disponible para todas las solicitudes entrantes.",
+    "save": "Guardar",
+    "settings": "Configuración",
+    "singleIpRestrictionName": "Restricción de IP única",
+    "singleIpRestrictionNote": "Permite que solo una dirección IP se conecte a este dispositivo en la red local.",
+    "yourLocalIpAddress": "Tu dirección IP local"
+  },
+  "launchTypeSelect": {
+    "label": "Método de inicio",
+    "none": "Ninguno"
+  },
+  "leaveDevice": {
+    "title": "Abandonar dispositivo",
+    "warning": "Este dispositivo tendrá que compartirse contigo de nuevo si deseas acceder a él otra vez."
+  },
+  "licensingNoticeDisplay": {
+    "canceledTitle": "Tu plan {{description}} de {{productName}} ha sido cancelado.",
+    "close": "Cerrar",
+    "exceededLimit_one": "Has superado tu límite en {{count}}.",
+    "exceededLimit_many": "Has superado tu límite en {{count}}.",
+    "exceededLimit_other": "Has superado tu límite en {{count}}.",
+    "expiredTitle": "Tu plan {{description}} de {{productName}} ha caducado.",
+    "incompleteTitle": "Tu plan {{description}} de {{productName}} está incompleto.",
+    "learnMore": "Más información.",
+    "pastDueTitle": "Tu plan {{description}} de {{productName}} está vencido.",
+    "planTitle": "Tu plan {{description}} de {{productName}}",
+    "please": "Por favor",
+    "pleaseCheck": "Por favor, verifica.",
+    "toContinueService": "para continuar con el servicio.",
+    "updatePaymentInformation": "actualiza tu información de pago ",
+    "updatePaymentMethod": "Actualiza tu método de pago.",
+    "upgrade": "Actualizar",
+    "upgradeLicense": "Actualiza tu licencia.",
+    "upgradeToProfessional": "Actualiza a un plan profesional para habilitar el acceso completo a la lista de dispositivos y todas las funciones.",
+    "willRenewOn": "se renovará el"
+  },
+  "licensingPage": {
+    "title": "Licencia"
+  },
+  "licensingSetting": {
+    "notSubscribed": "Sin suscripción",
+    "plan": "plan",
+    "renews": "Se renueva"
+  },
+  "limitSetting": {
+    "emailSupport": "Soporte por correo electrónico disponible",
+    "evaluationPeriod": "Los servicios reciben un período de evaluación de {{period}}",
+    "forumSupport": "Solo soporte en el foro",
+    "licensedDevices": "{{actual}} de {{value}} dispositivos con licencia",
+    "logHistory": "El historial de registros está disponible durante {{period}}",
+    "nonCommercialDevices": "{{actual}} de {{value}} dispositivos no comerciales",
+    "noSplash": "No se muestra pantalla de bienvenida en páginas web persistentes",
+    "overLimit_one": "Has superado tu límite de {{value}} dispositivos en {{over}} dispositivo",
+    "overLimit_many": "Ha superado su límite de {{value}} dispositivos en {{over}} dispositivos",
+    "overLimit_other": "Has superado tu límite de {{value}} dispositivos en {{over}} dispositivos",
+    "overLimitNonCommercial_one": "Has superado tu límite no comercial de {{value}} dispositivos en {{over}} dispositivo",
+    "overLimitNonCommercial_many": "Ha superado su límite no comercial de {{value}} dispositivos en {{over}} dispositivos",
+    "overLimitNonCommercial_other": "Has superado tu límite no comercial de {{value}} dispositivos en {{over}} dispositivos",
+    "rolesAvailable": "Los roles personalizados están disponibles",
+    "rolesUnavailable": "Los roles personalizados no están disponibles",
+    "samlAvailable": "El inicio de sesión SAML está disponible",
+    "samlUnavailable": "El inicio de sesión SAML no está disponible",
+    "servicesRegistered": "{{actual}} de {{value}} servicios registrados",
+    "splash": "Las páginas web persistentes mostrarán una pantalla de bienvenida",
+    "unlimitedDevices": "Dispositivos ilimitados",
+    "unlimitedNonCommercial": "Dispositivos no comerciales ilimitados",
+    "unlimitedServices": "Servicios ilimitados",
+    "userLicenses": "{{actual}} de {{value}} licencias de usuario utilizadas"
+  },
+  "limitsSetting": {
+    "licenseKey": "Clave de licencia"
+  },
+  "localhostScanForm": {
+    "footerNote": "Siempre puedes agregar servicios adicionales después del registro.",
+    "rescan": "Volver a escanear",
+    "scanning": "Escaneando...",
+    "title": "Selecciona los servicios encontrados para la configuración automática",
+    "typeAndPort": "{{type}} - {{port}}"
+  },
+  "logsPage": {
+    "title": "Registros"
+  },
+  "mfaConfigureApp": {
+    "code": "Código: {{code}}",
+    "generateNewCode": "Generar nuevo código QR",
+    "processing": "Procesando...",
+    "scanInstructions": "Escanea este código QR con tu aplicación de autenticación.",
+    "submit": "Enviar",
+    "verificationCodeLabel": "Código de verificación"
+  },
+  "mfaConfigureSms": {
+    "changePhoneNumber": "Cambiar tu número de teléfono de verificación",
+    "confirm": "Confirmar",
+    "confirming": "Confirmando...",
+    "didNotReceive": "¿No recibiste el código de verificación?",
+    "previouslySent": "Anteriormente se envió un código de verificación a tu dispositivo móvil.",
+    "previouslySentHint": "Un código solo es válido durante 24 horas. Solicita el código nuevamente si han pasado más de 24 horas desde que lo solicitaste.",
+    "resendCode": "Reenviar código de verificación",
+    "sent": "Se ha enviado un código de verificación a tu dispositivo móvil. {{phone}}",
+    "sentHint": "Este código solo es válido durante 24 horas.",
+    "verificationCode": "Código de verificación"
+  },
+  "mfaMethod": {
+    "onAuthenticatorApp": "ACTIVADO / Aplicación de autenticación",
+    "onSms": "ACTIVADO / SMS",
+    "recoveryCode": "Código de recuperación",
+    "recoveryCodeDescription": "El código de recuperación se utiliza para acceder a tu cuenta en caso de que no puedas recibir los códigos de autenticación de dos factores.",
+    "recoveryCodeWarning": "Trata tu código de recuperación con el mismo nivel de cuidado que tu contraseña.",
+    "turnOff": "Desactivar",
+    "verified": "Verificado"
+  },
+  "mfaPhoneForm": {
+    "disableWarning": "Actualizar el número de tu dispositivo móvil desactivará la autenticación de dos factores hasta que se verifique el número.",
+    "disclaimer": "Solo usaremos este número para la seguridad de tu cuenta. Pueden aplicarse tarifas de mensajes y datos.",
+    "enterTitle": "Ingresa tu número de móvil para que podamos enviarte el código de verificación",
+    "phoneLabel": "Teléfono",
+    "sending": "Enviando...",
+    "submit": "Enviar",
+    "updateTitle": "Actualiza el número de tu dispositivo móvil y envía el código de verificación.",
+    "verified": "Tu dispositivo móvil está verificado."
+  },
+  "mfaPreference": {
+    "description": "Agrega una capa adicional de seguridad a tu cuenta al requerir más que una simple contraseña para iniciar sesión.",
+    "googleSignInNotice": "Has iniciado sesión con tu cuenta de Google. Puedes habilitar la autenticación de dos factores en la configuración de tu cuenta de Google. Si también tienes usuario y contraseña de Remote.It, puedes iniciar sesión con esas credenciales y luego habilitar la autenticación de dos factores.",
+    "offDisabled": "DESACTIVADO / Autenticación de dos factores desactivada",
+    "title": "Autenticación de dos factores",
+    "turnOn": "Activar"
+  },
+  "mfaSelectMethod": {
+    "authenticatorApp": "Aplicación de autenticación",
+    "cancel": "Cancelar",
+    "chooseMethod": "Elige un método de verificación:",
+    "next": "Siguiente",
+    "smsNumber": "Número de SMS",
+    "verificationMethod": "Método de verificación"
+  },
   "nav": {
     "account": "Cuenta",
     "admin": "Admin",
@@ -102,7 +1313,7 @@
     "partnerStats": "Estadísticas de socios",
     "products": "Productos",
     "quit": "Salir",
-    "quitConfirm": "Salir no cerrará sus conexiones.",
+    "quitConfirm": "Salir no cerrará tus conexiones.",
     "scripting": "Scripts",
     "settings": "Configuración",
     "signOut": "Cerrar sesión",
@@ -114,6 +1325,105 @@
     "thisDevice": "Este dispositivo",
     "totalDevices": "Total de dispositivos",
     "totalNetworks": "Total de redes"
+  },
+  "networkAdd": {
+    "add": "Agregar",
+    "adding": "Agregando...",
+    "cancel": "Cancelar",
+    "guideInstructions": "Haz clic aquí después de ingresar el nombre de tu red.",
+    "name": "Nombre"
+  },
+  "networkAddPage": {
+    "title": "Nueva red"
+  },
+  "networkHeaderMenu": {
+    "deleteNetwork": "Eliminar red",
+    "deletingBody": "Esto eliminará esta red para ti y para todos los usuarios de la red.",
+    "deletingNoticePrefix": "Estás a punto de eliminar permanentemente:",
+    "details": "Detalles",
+    "leaveNetwork": "Abandonar red",
+    "leavingBody": "La red tendrá que compartirse contigo de nuevo si deseas acceder a ella otra vez.",
+    "leavingNoticePrefix": "Estás a punto de abandonar:",
+    "shareAccess": "Compartir acceso",
+    "unknownNetwork": "Red desconocida"
+  },
+  "networkPage": {
+    "addServicesHint": "Agrega servicios a esta red desde una página de servicio",
+    "connections": "Conexiones",
+    "emptyNetwork": "Red vacía",
+    "networkAdded": "¡Red agregada!",
+    "nextAddService": "A continuación, agrega un servicio. Búscalo en la página de dispositivos y utiliza el panel de red para agregarlo.",
+    "ownOrManageNote": "Nota: solo puedes agregar desde dispositivos que posees o administras.",
+    "settings": "Configuración",
+    "startAll": "Iniciar todo",
+    "stopAll": "Detener todo"
+  },
+  "networksAccordion": {
+    "addNetwork": "Agregar una red",
+    "connectToNetwork": "Conectar a la red",
+    "manageRequired": "Debes ser el propietario o administrador del dispositivo para modificar las redes de este servicio.",
+    "sharedRestricted": "No puedes modificar las redes de un dispositivo compartido contigo.",
+    "title": "Redes"
+  },
+  "networkServicesList": {
+    "countOf": "{{shown}} de {{total}}",
+    "showMore": "Mostrar más"
+  },
+  "networkSettings": {
+    "nameLabel": "Nombre de la red"
+  },
+  "networkSharePage": {
+    "grantingAccess": "Otorga acceso de conexión a todos los servicios de esta red.",
+    "share": "Compartir",
+    "shareTitle": "Compartir {{name}}",
+    "sharingEllipsis": "Compartiendo..."
+  },
+  "networksPage": {
+    "empty": "No tienes redes",
+    "emptyHint": "Agrega una red con el botón \"+\" de arriba.",
+    "guideBody": "Una red es un grupo personalizado de servicios organizados para facilitar el acceso y el uso compartido.",
+    "guideCtaAfter": "icono para empezar.",
+    "guideCtaBefore": "Selecciona el",
+    "guideTitle": "Bienvenido a redes",
+    "newNetwork": "Nueva red",
+    "sharedWithYou": "Compartido contigo",
+    "title": "Redes"
+  },
+  "notificationSettings": {
+    "custom": "Personalizado",
+    "email": "Correo electrónico",
+    "globalSettings": "Configuración global",
+    "systemNotification": "Notificación del sistema",
+    "title": "Notificaciones del dispositivo"
+  },
+  "onboardScanning": {
+    "addRemoteAccess": "agregar acceso remoto.",
+    "cancel": "cancelar",
+    "discoverableNote": "En el primer inicio, el dispositivo puede tardar hasta 2 minutos en aparecer, y estará visible durante 10 minutos después.",
+    "help": "Ayuda",
+    "noteBody": "Esta configuración es solo para Raspberry Pi habilitadas con Remote.It. Si ya tienes una Pi en línea",
+    "noteLabel": "Nota:",
+    "scan": "escanear",
+    "title": "Incorporación por Bluetooth",
+    "turnOnPi": "Enciende tu Pi ahora con la incorporación por Bluetooth de Remote.It."
+  },
+  "onboardWifi": {
+    "cellularConnected": "Conectado por red móvil",
+    "connectedAnotherWay": "Mi dispositivo está conectado de otra manera. Omitir este paso.",
+    "connecting": "Conectando...",
+    "connectInstructions": "Selecciona una red e ingresa su contraseña.",
+    "connectIntro": "Conecta tu Raspberry Pi ({{name}}) al WiFi.",
+    "ethernetConnected": "Conectado por Ethernet",
+    "network": "Red",
+    "noNetworksFound": "No se encontraron redes",
+    "password": "Contraseña",
+    "scanning": "Escaneando...",
+    "setWifi": "Configurar WiFi",
+    "skip": "Omitir",
+    "title": "Configuración de WiFi",
+    "updateWifi": "Actualizar WiFi",
+    "wifiConnected": "WiFi conectado",
+    "wifiNotConnected": "WiFi no conectado"
   },
   "options": {
     "advanced": "Avanzado",
@@ -175,6 +1485,628 @@
       "subLabel": "Da de baja este dispositivo, elimina por completo todos los datos guardados y desinstala el agente del sistema y las herramientas de línea de comandos. Haz esto antes de eliminar la aplicación de tu sistema. Solo puede hacerlo el propietario del dispositivo."
     }
   },
+  "organizationAddPage": {
+    "add": "Agregar",
+    "purchaseLicensesHint": "Compra licencias adicionales para otorgar a este usuario acceso completo.",
+    "roleAssignment": "Asignación de roles",
+    "title": "Agregar miembros de la organización",
+    "upgrade": "Actualizar"
+  },
+  "organizationColor": {
+    "theme": "Tema"
+  },
+  "organizationEmptyPage": {
+    "create": "Crear",
+    "createOrgLine1": "Crea una organización para",
+    "createOrgLine2": "compartir dispositivos automáticamente con tus miembros.",
+    "name": "Nombre"
+  },
+  "organizationGuestDetails": {
+    "devices": "Dispositivos",
+    "guestAccess": "Acceso de invitado",
+    "loading": "Cargando...",
+    "loadingFailed": "Error al cargar ({{id}})",
+    "networks": "Redes"
+  },
+  "organizationGuestsPage": {
+    "description": "Usuarios que tienen dispositivos compartidos directamente con ellos.",
+    "needManagePermission": "Ponte en contacto con el propietario de la organización para solicitar privilegios de administrador de dispositivos.",
+    "title": "Invitados"
+  },
+  "organizationLicensingPage": {
+    "title": "Licencia"
+  },
+  "organizationMemberDetails": {
+    "loading": "Cargando...",
+    "member": "Miembro",
+    "memberSince": "Miembro desde",
+    "networks": "Redes"
+  },
+  "organizationMembershipPage": {
+    "cannotBeUndone": "Esta acción no se puede deshacer.",
+    "contactOwnerHint": "Deberás ponerte en contacto con el propietario de la organización para que te vuelva a añadir.",
+    "editOrganization": "Editar organización",
+    "joined": "Fecha de ingreso",
+    "leaveAccount": "Abandonar cuenta",
+    "leaveOrganization": "Abandonar organización",
+    "noMemberships": "No hay membresías de organización",
+    "noMembershipsHint": "Las organizaciones pueden añadirte a su cuenta para darte acceso a los dispositivos que poseen.",
+    "owner": "Propietario",
+    "title": "Membresías de organización",
+    "yourOrganization": "Tu organización"
+  },
+  "organizationMembersPage": {
+    "addMember": "Añadir miembro",
+    "autoShareNotice": "A los miembros se les compartirán dispositivos automáticamente.",
+    "title": "Miembros",
+    "unlicensedLimit": "Los miembros sin licencia solo podrán conectarse a los primeros cinco dispositivos."
+  },
+  "organizationPage": {
+    "account": "Cuenta",
+    "customers": "Clientes",
+    "guests": "Invitados",
+    "license": "Licencia",
+    "members": "Miembros",
+    "needAdminPrivileges": "Necesitas privilegios de administrador para cambiar esta organización.",
+    "planTitle": "Plan {{description}}",
+    "roles": "Roles",
+    "settings": "Configuración",
+    "tags": "Etiquetas"
+  },
+  "organizationRolePage": {
+    "deleteWarningAfter": "Los miembros con este rol perderán el acceso hasta que se les asigne otro rol.",
+    "deleteWarningBefore": "Vas a eliminar permanentemente el rol",
+    "deviceNetworkPermissions": "Permisos de dispositivos y redes",
+    "name": "Nombre",
+    "newRole": "Nuevo rol",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "saving": "Guardando...",
+    "systemRoleNotice": "Los roles del sistema no se pueden modificar.",
+    "userPermissions": "Permisos de usuario"
+  },
+  "organizationRolesPage": {
+    "addRole": "Añadir rol",
+    "memberCount_one": "{{count}} miembro",
+    "memberCount_many": "{{count}} miembros",
+    "memberCount_other": "{{count}} miembros",
+    "none": "ninguno",
+    "role": "Rol",
+    "roles": "Roles",
+    "upgrade": "Mejorar",
+    "upgradeToBusiness": "Mejora tu plan a Business para añadir roles personalizados."
+  },
+  "organizationSAMLSettings": {
+    "checkDomain": "Comprobar dominio",
+    "checking": "Comprobando...",
+    "clientIdFieldLabel": "ID de cliente",
+    "clientIdLabel": "ID de cliente",
+    "clientSecretFieldLabel": "Secreto de cliente",
+    "dnsInstructions": "Añade el siguiente CNAME y valor a tus registros DNS para validar tu dominio:",
+    "domainLabel": "Dominio",
+    "enterDomain": "Introduce el nombre de dominio de tu organización.",
+    "identityProvider": "Proveedor de identidad",
+    "instructionsLink": "Instrucciones.",
+    "issuerFieldLabel": "Emisor",
+    "issuerLabel": "emisor",
+    "providerEnabled": "{{type}} habilitado",
+    "providerTypeLabel": "Tipo de proveedor",
+    "requireLogin": "Requerir inicio de sesión con {{type}}",
+    "requireLoginSubLabel": "Todos los miembros de la organización no podrán iniciar sesión con correo electrónico/contraseña ni con Google.",
+    "samlOidcSupported": "Se admiten tanto SAML como ODIC",
+    "setup": "Configuración",
+    "updating": "Actualizando...",
+    "uploadMetadata": "Sube tu archivo de metadatos para habilitar SAML",
+    "validateDomainNotice": "Valida tu nombre de dominio para usar un proveedor de identidad",
+    "verificationCNAME": "CNAME de verificación",
+    "verificationValue": "Valor de verificación",
+    "verified": "Verificado"
+  },
+  "organizationSamlUpload": {
+    "label": "Selecciona el archivo de metadatos SAML",
+    "subLabel": "Arrastra y suelta o haz clic"
+  },
+  "organizationSelect": {
+    "activeConnectionsCount_one": "{{count}} conexión activa",
+    "activeConnectionsCount_many": "{{count}} conexiones activas",
+    "activeConnectionsCount_other": "{{count}} conexiones activas",
+    "guideDescription": "Consulta los dispositivos, redes y registros que pertenecen a esta organización.",
+    "guideTitle": "Selecciona una organización",
+    "memberLabel": "{{name}} - {{role}}",
+    "organizations": "Organizaciones",
+    "ownerLabel": "{{name}} - Propietario",
+    "personalAccount": "Cuenta personal"
+  },
+  "organizationSelectList": {
+    "membershipSettings": "Configuración de membresía",
+    "organizations": "Organizaciones",
+    "owner": "Propietario",
+    "personalAccount": "Cuenta personal"
+  },
+  "organizationSettingsPage": {
+    "deleteOrganization": "Eliminar organización",
+    "general": "General",
+    "organizationName": "Nombre de la organización",
+    "permanentlyDeleting": "Vas a eliminar permanentemente",
+    "removeMembersWarning": "Esto eliminará a todos tus miembros y su acceso a tus dispositivos.",
+    "settings": "Configuración"
+  },
+  "partnerStatsDetailPanel": {
+    "activated": "Activado",
+    "activeLast30Days": "Activo (últimos 30 días)",
+    "admins_one": "Administradores ({{count}})",
+    "admins_many": "Administradores ({{count}})",
+    "admins_other": "Administradores ({{count}})",
+    "backToPartners": "Volver a socios",
+    "cancel": "Cancelar",
+    "childPartners_one": "Socios secundarios ({{count}})",
+    "childPartners_many": "Socios secundarios ({{count}})",
+    "childPartners_other": "Socios secundarios ({{count}})",
+    "currentlyOnline": "Actualmente en línea",
+    "devicesCount_one": "{{count}} dispositivo",
+    "devicesCount_many": "{{count}} dispositivos",
+    "devicesCount_other": "{{count}} dispositivos",
+    "devicesReportedOnce_one": "{{count}} dispositivo se ha reportado al menos una vez",
+    "devicesReportedOnce_many": "{{count}} dispositivos se han reportado al menos una vez",
+    "devicesReportedOnce_other": "{{count}} dispositivos se han reportado al menos una vez",
+    "deviceSummary": "Resumen de dispositivos",
+    "exportFailed": "Error al exportar los dispositivos.",
+    "exportToCsv": "Exportar dispositivos a CSV",
+    "loadingPartner": "Cargando socio...",
+    "parentPartner": "Socio principal",
+    "partnerNotFound": "Socio no encontrado",
+    "partnerSummary": "{{total}} en total • {{online}} en línea • {{active}} activos",
+    "registrants_one": "Registrantes ({{count}})",
+    "registrants_many": "Registrantes ({{count}})",
+    "registrants_other": "Registrantes ({{count}})",
+    "renamePartner": "Cambiar nombre del socio",
+    "save": "Guardar",
+    "totalDevices": "Total de dispositivos",
+    "updateNameFailed": "Error al actualizar el nombre del socio."
+  },
+  "partnerStatsListPage": {
+    "loading": "Cargando socios...",
+    "noAdminAccess": "No tienes acceso de administrador a ninguna entidad de socio.",
+    "noMatchingPartners": "No hay socios coincidentes",
+    "noPartnersFound": "No se encontraron socios",
+    "searchPlaceholder": "Buscar socios..."
+  },
+  "passwordStrengthInput": {
+    "confirmNewPassword": "Confirmar nueva contraseña",
+    "enterNewPassword": "Introduce la nueva contraseña",
+    "fair": "Aceptable",
+    "fixProblems": "Corrige los siguientes problemas",
+    "good": "Buena",
+    "helperText": "La contraseña debe tener entre 7 y 64 caracteres.",
+    "noMatch": "Las contraseñas no coinciden",
+    "strengthDescription": "Seguridad de la contraseña: {{strength}}",
+    "strong": "Segura",
+    "tooLong": "La contraseña no debe superar los {{maxLength}} caracteres.",
+    "tooShort": "La contraseña debe tener al menos {{minLength}} caracteres.",
+    "veryWeak": "Muy débil",
+    "weak": "Débil"
+  },
+  "planCheckout": {
+    "devices": "Dispositivos",
+    "downgrade": "Bajar de plan",
+    "free": "Gratis",
+    "interval": "Intervalo",
+    "licenses": "Licencias",
+    "personalPlan": "Plan personal",
+    "processing": "Procesando...",
+    "submit": "Enviar",
+    "switchToPersonalConfirm": "¿Seguro que quieres cambiar al plan personal? Esto cancelará tu suscripción.",
+    "total": "Total",
+    "users": "Usuarios"
+  },
+  "plans": {
+    "billedMonthly": "facturado mensualmente",
+    "continue": "Continuar",
+    "currentPlan": "Plan actual",
+    "downgradeNotice": "Este plan reducirá el nivel de tu servicio.",
+    "downgradeNoticeDetail": "Perderás el acceso a algunas funciones y es posible que pierdas el acceso a algunos dispositivos.",
+    "downgradePlanTitle": "¿Bajar de plan?",
+    "freePlan": "Plan gratuito",
+    "licenseCount_one": "{{count}} licencia",
+    "licenseCount_many": "{{count}} licencias",
+    "licenseCount_other": "{{count}} licencias",
+    "perMonthPerLicense": "por mes / por licencia",
+    "personal": "Personal",
+    "select": "Seleccionar",
+    "update": "Actualizar",
+    "usersAndDevices": "{{users}} usuarios + {{devices}} dispositivos"
+  },
+  "plansPage": {
+    "loading": "Cargando planes...",
+    "pricingNotice": "Los precios se muestran y se facturan en US$ con las tarjetas de crédito más populares.",
+    "removingResellerPrefix": "Estás eliminando a",
+    "removingResellerSuffix": "como tu revendedor. Esto eliminará tu plan actual y volverás al plan gratuito.",
+    "severWarning": "¡Esto pondrá fin a tu relación con el revendedor!",
+    "title": "Suscripciones"
+  },
+  "platformAddPage": {
+    "multiUse": "USO MÚLTIPLE",
+    "oneTimeUse": "USO ÚNICO",
+    "registerPermissionRequired": "Debes tener el permiso de registro para añadir un dispositivo a esta organización.",
+    "screenViewCodeHint": "O usa este código de registro para reclamar manualmente la aplicación ScreenView."
+  },
+  "portSetting": {
+    "localPort": "Puerto local"
+  },
+  "productAddPage": {
+    "createFailed": "Error al crear el producto",
+    "creating": "Creando...",
+    "nameRequired": "El nombre del producto es obligatorio",
+    "platform": "Plataforma",
+    "platformRequired": "La plataforma es obligatoria",
+    "productName": "Nombre del producto",
+    "title": "Crear producto"
+  },
+  "productOptionMenu": {
+    "cannotBeUndone": "Esta acción no se puede deshacer.",
+    "deleteConfirmPrefix": "¿Seguro que quieres eliminar permanentemente el producto",
+    "deleteConfirmSuffix": "y todos sus servicios?",
+    "deleteProduct": "Eliminar producto",
+    "transferProduct": "Transferir producto"
+  },
+  "productPage": {
+    "addService": "Añadir servicio",
+    "loadingProduct": "Cargando producto...",
+    "noServicesDefined": "No hay servicios definidos. Añade al menos un servicio a este producto.",
+    "platformId": "Plataforma {{id}}",
+    "productNotFound": "Producto no encontrado",
+    "productNotFoundHint": "Es posible que el producto se haya eliminado o que no tengas acceso a él.",
+    "service": "Servicio",
+    "unknown": "Desconocido"
+  },
+  "productsActionBar": {
+    "clearSelection": "Borrar selección",
+    "confirmAction_one": "Eliminar {{count}} producto",
+    "confirmAction_many": "Eliminar {{count}} productos",
+    "confirmAction_other": "Eliminar {{count}} productos",
+    "confirmBody_one": "¿Seguro que quieres eliminar {{count}} producto?",
+    "confirmBody_many": "¿Seguro que quieres eliminar {{count}} productos?",
+    "confirmBody_other": "¿Seguro que deseas eliminar {{count}} productos?",
+    "confirmTitle": "Confirmar eliminación del producto",
+    "deleteSelected": "Eliminar selección",
+    "selected": "Seleccionado"
+  },
+  "productServiceAddPage": {
+    "failedToAddService": "Error al añadir el servicio",
+    "newService": "Nuevo servicio",
+    "productNotFound": "Producto no encontrado"
+  },
+  "productServiceDetailPage": {
+    "actionCannotBeUndone": "Esta acción no se puede deshacer.",
+    "details": "Detalles",
+    "productNotFound": "Producto no encontrado",
+    "removeService": "Quitar servicio",
+    "removeServiceConfirmPrefix": "¿Seguro que deseas quitar el servicio",
+    "serviceMayHaveBeenRemoved": "Es posible que el servicio se haya eliminado.",
+    "serviceNotFound": "Servicio no encontrado"
+  },
+  "productTransferPage": {
+    "cancel": "Cancelar",
+    "confirmMiddle": "y todos sus servicios a",
+    "confirmPrefix": "Estás a punto de transferir la propiedad de",
+    "loseAccessWarning": "Perderás todo acceso y control sobre este producto una vez realizada la transferencia.",
+    "notFound": "Producto no encontrado",
+    "title": "Transferir producto",
+    "transfer": "Transferir",
+    "transferDescription": "La transferencia del producto suele completarse en unos segundos. El nuevo propietario obtendrá acceso completo al producto y a todos sus servicios.",
+    "transferring": "Transfiriendo...",
+    "transferringTo": "Estás transfiriendo \"{{name}}\" a un nuevo propietario."
+  },
+  "promptModal": {
+    "applicationPath": "Ruta de la aplicación",
+    "title": "Se encontró información faltante"
+  },
+  "publicSetting": {
+    "ipLatching": "IP Latching",
+    "label": "Seguridad",
+    "latchHelp": "La conexión se bloqueará en el primer dispositivo que se conecte con restricción de IP.",
+    "none": "Ninguno",
+    "openHelp": "Cualquier dispositivo podrá conectarse mientras la conexión esté activa."
+  },
+  "qualityDetails": {
+    "availability": "Disponibilidad:",
+    "availabilityCaption": "Tiempo medio en línea por día.",
+    "good": "Bueno",
+    "instability": "Inestabilidad:",
+    "instabilityCaption": "Número medio de desconexiones por día.",
+    "moderate": "Moderado",
+    "poor": "Deficiente",
+    "unknown": "Desconocido"
+  },
+  "raspberrypiOptionsPage": {
+    "addAccessDescription": "Obtén acceso remoto con una sola línea de código.",
+    "addAccessQuestion": "¿Ya tienes una Raspberry Pi configurada?",
+    "addAccessTitle": "Añadir acceso remoto",
+    "downloadDescription": "Descarga nuestra imagen de disco para una configuración headless sencilla con incorporación de WiFi por Bluetooth.",
+    "downloadQuestion": "¿Nuevo en Pi?",
+    "downloadTitle": "Descargar imagen de Pi",
+    "heading": "Configura tu Raspberry Pi para el acceso remoto",
+    "onboardDescription": "Configura el WiFi mediante Bluetooth y registra tu dispositivo para el acceso remoto.",
+    "onboardQuestion": "¿Tienes nuestra imagen personalizada de Pi?",
+    "onboardTitle": "Incorporar mediante Bluetooth"
+  },
+  "rentANodeForm": {
+    "addDns": "Añadir una dirección DNS pública",
+    "addIpv6": "Añadir una dirección IPv6 pública",
+    "all": "Todos",
+    "deviceName": "Nombre del dispositivo",
+    "dnsAccessHelp": "Podrás acceder a tu nodo en esta dirección.",
+    "invalidPhone": "Número de teléfono no válido",
+    "openPorts": "Puertos abiertos",
+    "openPortsHelp": "Introduce una lista de puertos separados por comas, o deja el campo en blanco para abrir todos los puertos.",
+    "phone": "Teléfono",
+    "processingNotice": "La solicitud de alquiler puede tardar hasta dos días hábiles en procesarse. Si tienes alguna pregunta, contáctanos en",
+    "sshPublicKey": "Clave pública SSH",
+    "submitRequest": "Enviar solicitud",
+    "submitting": "Enviando...",
+    "title": "Formulario de alquiler de nodo"
+  },
+  "rentANodeRequest": {
+    "availability": "Sujeto a disponibilidad",
+    "cores": "8 núcleos ARM",
+    "description": "Alquila un Symbiote Node desde la nube distribuida de Cachengo.",
+    "memory": "16 GB de memoria",
+    "os": "Ubuntu Linux",
+    "storage": "256 GB de almacenamiento"
+  },
+  "resellerPage": {
+    "addCustomer": "Añadir cliente",
+    "title": "Clientes"
+  },
+  "resellerSettings": {
+    "logoUrl": "URL del logotipo",
+    "reseller": "Distribuidor"
+  },
+  "restore": {
+    "body": "Intentaremos restaurar la configuración de este dispositivo. Ten en cuenta que es posible que los servicios con información de host personalizada no se restauren por completo.",
+    "restoringDevice": "Restaurando dispositivo...",
+    "title": "Restaurar dispositivo desde la nube"
+  },
+  "restoreModal": {
+    "generatingCommand": "Generando comando...",
+    "instructions": "Si perdiste o eliminaste este dispositivo, puedes restaurarlo ejecutando el siguiente comando en el dispositivo.",
+    "restoreCodeLabel": "Código de restauración",
+    "title": "Restaurar \"{{name}}\""
+  },
+  "roleAccessCounts": {
+    "counting": "Contando...",
+    "devicesCount_one": "{{count}} dispositivo",
+    "devicesCount_many": "{{count}} dispositivos",
+    "devicesCount_other": "{{count}} dispositivos",
+    "networksCount_one": "{{count}} red",
+    "networksCount_many": "{{count}} redes",
+    "networksCount_other": "{{count}} redes"
+  },
+  "routeSetting": {
+    "adaptiveDescription": "Elegirá la mejor ruta disponible, priorizando una conexión directa a este servicio.",
+    "adaptiveName": "Adaptativo",
+    "label": "Enrutamiento",
+    "p2pDescription": "Una conexión directa a este servicio.",
+    "p2pName": "Solo P2P",
+    "proxyDescription": "Una conexión proxy privada enrutada a través de la nube.",
+    "proxyName": "Solo proxy",
+    "publicDescription": "Una conexión proxy en la nube con una URL pública temporal.",
+    "publicName": "Proxy público"
+  },
+  "scanPage": {
+    "description": "Escanea tu sistema y red local en busca de puertos disponibles para alojar.",
+    "title": "Escaneo de red"
+  },
+  "scriptDeleteButton": {
+    "title": "Eliminar script",
+    "warning": "Esto no se puede deshacer."
+  },
+  "scriptEditPage": {
+    "addDemoScript": "Añadir script de demostración",
+    "addScript": "Añadir script",
+    "copied": "¡Copiado!",
+    "copyScript": "Copiar script",
+    "description": "Descripción",
+    "editScript": "Editar script",
+    "name": "Nombre",
+    "newRun": "Nueva ejecución",
+    "save": "Guardar",
+    "saveAndRun": "Guardar y ejecutar",
+    "saving": "Guardando...",
+    "unsavedChangesNote": "Los cambios no guardados no afectarán a la ejecución; se utiliza la última versión guardada."
+  },
+  "scriptingActionBar": {
+    "chooseScript": "Elige un script",
+    "clearSelection": "Borrar selección",
+    "devicesSelected_one": "dispositivo seleccionado",
+    "devicesSelected_many": "dispositivos seleccionados",
+    "devicesSelected_other": "dispositivos seleccionados"
+  },
+  "scriptingHeader": {
+    "add": "Añadir",
+    "adminRequired": "Se requieren permisos de administrador para subir",
+    "feedback": "Comentarios",
+    "upload": "Subir"
+  },
+  "scriptPage": {
+    "created": "Creado",
+    "deviceCount_one": "{{count}} dispositivo",
+    "deviceCount_many": "{{count}} dispositivos",
+    "deviceCount_other": "{{count}} dispositivos",
+    "edit": "Editar",
+    "newRun": "Nueva ejecución",
+    "noDevices": "Sin dispositivos",
+    "noRunsYet": "Aún no hay ejecuciones.",
+    "ready": "Listo",
+    "running": "En ejecución",
+    "runs": "Ejecuciones",
+    "updated": "Actualizado",
+    "viewAllRuns": "Ver todas las ejecuciones"
+  },
+  "scriptRunForm": {
+    "devices": "Dispositivos",
+    "moreCount_one": "+{{count}} más",
+    "moreCount_many": "+{{count}} más",
+    "moreCount_other": "+{{count}} más",
+    "noScriptData": "No se encontraron datos del script. Vuelve atrás y completa primero el formulario del script.",
+    "notAllowedOn": "No tienes permiso para ejecutar scripts en",
+    "removeDeviceCount_one": "Eliminar dispositivo",
+    "removeDeviceCount_many": "Eliminar dispositivos",
+    "removeDeviceCount_other": "Quitar dispositivos",
+    "running": "Ejecutando...",
+    "runNow": "Ejecutar ahora",
+    "saveHint": "Guardar crea una ejecución preparada con los dispositivos, la etiqueta y los valores de argumento seleccionados.",
+    "targetDevices": "Dispositivos de destino"
+  },
+  "scriptRunSummary": {
+    "all": "TODOS",
+    "arguments": "Argumentos",
+    "filter": "Filtro",
+    "match": "Coincidencia",
+    "missingFile": "Falta el archivo ({{value}})",
+    "noDevices": "Sin dispositivos",
+    "notSet": "No establecido",
+    "runConfiguration": "Configuración de ejecución",
+    "showLess": "Mostrar menos",
+    "showMore": "Mostrar más",
+    "showMoreCount_one": "Mostrar {{count}} más",
+    "showMoreCount_many": "Mostrar {{count}} más",
+    "showMoreCount_other": "Mostrar {{count}} más",
+    "targets": "Destinos"
+  },
+  "scriptsListHeader": {
+    "add": "Añadir",
+    "adminRequired": "Se requieren permisos de administrador",
+    "back": "Atrás",
+    "files": "Archivos",
+    "scripts": "Scripts",
+    "upload": "Subir"
+  },
+  "searchField": {
+    "clearSearch": "Borrar búsqueda",
+    "filtered": "Filtrado",
+    "placeholder": "Buscar dispositivos y servicios...",
+    "search": "Buscar",
+    "searchedOf": "Buscado / {{totalTitle}}",
+    "total": "Total",
+    "totalDevices": "{{totalTitle}} dispositivos"
+  },
+  "seatsSetting": {
+    "confirmAfter_one": "para {{count}} licencia de usuario.",
+    "confirmAfter_many": "para {{count}} licencias de usuario.",
+    "confirmAfter_other": "para {{count}} licencias de usuario.",
+    "confirmBefore": "Confirma que deseas cambiar tu facturación a",
+    "confirmTitle": "Confirmar cambio de facturación",
+    "devicesCount_one": "{{count}} dispositivo",
+    "devicesCount_many": "{{count}} dispositivos",
+    "devicesCount_other": "{{count}} dispositivos",
+    "label": "Licencias",
+    "usersCount_one": "{{count}} usuario",
+    "usersCount_many": "{{count}} usuarios",
+    "usersCount_other": "{{count}} usuarios",
+    "warning": "Esto cambiará tu facturación."
+  },
+  "serviceAddPage": {
+    "maxServices_one": "Desktop actualmente admite un máximo de {{count}} servicio.",
+    "maxServices_many": "Desktop actualmente admite un máximo de {{count}} servicios.",
+    "maxServices_other": "Desktop admite actualmente un máximo de {{count}} servicios.",
+    "newService": "Nuevo servicio"
+  },
+  "serviceAttributesForm": {
+    "addCustomTokens": "Añadir [tokens] personalizados",
+    "addCustomTokensDescription": "Puedes añadir [tokens] personalizados a las plantillas anteriores. Basta con encerrar una etiqueta entre corchetes para crear un [token] al que puedas asignar un valor predeterminado. Si no se completa, se te pedirá el token en el momento de la conexión.",
+    "applicationPath": "Ruta de la aplicación",
+    "autoLaunch": "Inicio automático",
+    "command": "Comando",
+    "customTokens": "Tokens personalizados",
+    "defaultAdaptiveRouting": "Enrutamiento adaptativo predeterminado",
+    "defaultTemplate": "Plantilla predeterminada",
+    "defaultTokens": "Tokens predeterminados",
+    "example": "Ejemplo",
+    "hostHeaderOverride": "Anulación de encabezado de host",
+    "hostHeaderOverrideCaption": "Una forma de especificar un nombre de host diferente en el encabezado de host de una solicitud HTTP. Se puede usar en escenarios de balanceo de carga para enrutar solicitudes al servidor adecuado.",
+    "launchMethod": "Método de inicio",
+    "localPort": "Puerto local",
+    "localPortAutoAssign": "El puerto se asignará automáticamente si no se establece.",
+    "localPortCaption": "Puerto local predeterminado que se usa cuando un sistema se conecta a este servicio.",
+    "noDefaultOverride": "Sin anulación predeterminada",
+    "routing": "Enrutamiento",
+    "routingDesktopOnly": "El enrutamiento solo está disponible en el escritorio.",
+    "tokenDefault": "{{token}} predeterminado",
+    "tokenFoundIn": "Este token se encontró en"
+  },
+  "serviceDefaultsPage": {
+    "defaults": "Valores predeterminados",
+    "description": "Configuración local predeterminada para cualquier conexión a este servicio.",
+    "title": "Configuración de conexión predeterminada"
+  },
+  "serviceEditPage": {
+    "title": "Configuración del servicio"
+  },
+  "serviceForm": {
+    "awsExample": "Ejemplo de AWS:",
+    "disableServiceHelp": "Deshabilitar tu servicio lo pondrá fuera de línea.",
+    "doubleCheckRunning": "Verifica que la aplicación host esté en ejecución.",
+    "enableService": "Habilitar servicio",
+    "noServiceFoundOn": "No se encontró ningún servicio en ejecución en {{host}}:{{port}}.",
+    "notRemoteConfigurable": "Este servicio no se puede configurar de forma remota.",
+    "optional": "Opcional",
+    "or": "o",
+    "retry": "Reintentar",
+    "serviceDescription": "Descripción del servicio",
+    "serviceDescriptionHelp": "Descripción del servicio o instrucciones de conexión.",
+    "serviceFoundOn": "Servicio encontrado en",
+    "serviceHost": "Host del servicio",
+    "serviceHostHelp": "Introduce una dirección IP de red local o un nombre de dominio completamente calificado para configurar esto como un servicio de salto a un sistema de tu red local.",
+    "serviceIsDisabled": "El servicio está deshabilitado",
+    "serviceIsEnabled": "El servicio está habilitado",
+    "serviceName": "Nombre del servicio",
+    "servicePort": "Puerto del servicio",
+    "servicePortHelp": "Puerto en el que se ejecuta el servicio de la aplicación. No lo cambies a menos que sepas que se ejecuta en un puerto personalizado.",
+    "serviceSetup": "Configuración del servicio",
+    "serviceUrl": "URL del servicio",
+    "serviceUrlHelp": "URL completa del servicio al que deseas conectarte. Ejemplo:",
+    "setupConnectionDefaults": "Configurar valores predeterminados de conexión",
+    "updatePackageHelp": "Actualiza su paquete de dispositivo a la última versión para poder configurarlo de forma remota."
+  },
+  "serviceGraphColumn": {
+    "title": "Gráfico del servicio"
+  },
+  "serviceHeaderMenu": {
+    "connectFromAnywhere": "Se puede conectar desde cualquier lugar usando Remote.It.",
+    "runningOnThisDevice": "Este servicio se está ejecutando en este dispositivo.",
+    "selectAnotherDevice": "Selecciona otro dispositivo en el menú de dispositivos para conectarte a él de forma remota.",
+    "shareAccess": "Compartir acceso",
+    "unknown": "desconocido"
+  },
+  "serviceKeySetting": {
+    "beta": "BETA",
+    "deleteAction": "Eliminar clave",
+    "deleteBodyPrefix": "Esta acción no se puede deshacer.",
+    "deleteBodySuffix": "Nadie que tenga esta clave podrá volver a conectarse.",
+    "deleteKeyTitle": "Eliminar clave",
+    "deleteTitle": "¿Eliminar la clave de servicio?",
+    "disableAction": "Deshabilitar",
+    "disableBody": "Nadie que tenga esta clave podrá volver a conectarse.",
+    "disabledSubLabel": "Genera una clave de servicio para autorizar conexiones a este servicio a través de nuestro SDK.",
+    "disableTitle": "¿Deshabilitar la clave de servicio?",
+    "enableAction": "Habilitar",
+    "enableBody": "Cualquiera que tenga esta clave podrá conectarse.",
+    "enabledSubLabel": "Tu clave de servicio ha sido generada. Usa la clave a continuación para autorizar conexiones a través de nuestro SDK. Mantenla segura y no la compartas públicamente. Puedes eliminarla para crear una nueva.",
+    "enableTitle": "¿Habilitar la clave de servicio?",
+    "generateAction": "Generar clave",
+    "generateBodyPrefix": "Estás generando una nueva clave de servicio.",
+    "generateBodySuffix": "Cualquiera que tenga esta clave podrá conectarse.",
+    "generateTitle": "¿Generar clave de servicio?",
+    "label": "Clave de servicio",
+    "nodePackage": "Obtener el paquete de Node.js",
+    "permissionSubLabel": "Requiere permiso de dispositivo \"Administrar\""
+  },
+  "serviceUsersPage": {
+    "addGuestAccess": "Agregar acceso de invitado",
+    "addOrgMember": "Agregar miembro de la organización",
+    "serviceAccess": "Acceso al servicio"
+  },
   "settings": {
     "accessKeys": "Claves de acceso",
     "accountDeletion": "Eliminación de cuenta",
@@ -208,5 +2140,306 @@
     "urlEndpoint": "Endpoint de URL",
     "visitWeb": "Visitar Remote.It en la web",
     "webhookHelp": "Usa una URL HTTPS pública. El endpoint debe aceptar POST y devolver 200 en un plazo de 5 segundos."
+  },
+  "settingsDisableNetworkItem": {
+    "description": "Esto permitirá el acceso de red a la interfaz de escritorio en los puertos 29999 y 29998, además de compartir a través de Remote.It",
+    "label": "Habilitar detección de red local",
+    "restartNotice": "Reinicia para que los cambios surtan efecto."
+  },
+  "setupDevice": {
+    "addDevice": "Agregar dispositivo",
+    "addDifferent": "agregar otro {{os}}",
+    "name": "Nombre",
+    "nameInUse": "Ese nombre de dispositivo ya está en uso.",
+    "setupFor": "Configura tu {{os}} para acceso remoto o"
+  },
+  "sharedAccessSetting": {
+    "label": "Deshabilitar el acceso compartido",
+    "subLabel": "Mientras esté activo, ningún otro usuario podrá conectarse a este dispositivo."
+  },
+  "shareDetails": {
+    "allowScripting": "Permitir scripting"
+  },
+  "sharedUsersLists": {
+    "addOrganizationMember": "Agregar un miembro de la organización",
+    "connected": "Conectado",
+    "createOrganization": "Crea tu organización",
+    "guests": "Invitados",
+    "noAccess": "Nadie tiene acceso a este servicio.",
+    "or": "o",
+    "organizationMembers": "Miembros de la organización",
+    "shareToGuest": "Compartir con un invitado"
+  },
+  "sharingForm": {
+    "allowScriptExecution": "Permitir la ejecución de scripts",
+    "allowScriptExecutionHelp": "Otorga al usuario la capacidad de ejecutar scripts en este dispositivo.",
+    "chooseServices": "Elige los servicios a los que deseas dar acceso.",
+    "services": "Servicios"
+  },
+  "statusChip": {
+    "connected": "Conectado",
+    "idle": "Inactivo",
+    "offline": "Sin conexión",
+    "offlineLabel": "Sin conexión ",
+    "online": "En línea",
+    "onlineLabel": "En línea ",
+    "public": "Público",
+    "unknown": "Desconocido",
+    "unlicensed": "Sin licencia"
+  },
+  "subdomainSetting": {
+    "subdomain": "Subdominio"
+  },
+  "tagEditor": {
+    "keyboardShortcut": "Atajo de teclado \"#\"",
+    "label": "ETIQUETA",
+    "placeholder": "Nueva etiqueta..."
+  },
+  "tagFilter": {
+    "accessLabel": "Acceso",
+    "all": "Todos",
+    "any": "Cualquiera",
+    "deviceCount_one": "{{count}} dispositivo",
+    "deviceCount_many": "{{count}} dispositivos",
+    "deviceCount_other": "{{count}} dispositivos",
+    "matchLabel": "Coincidencia:",
+    "noDevices": "Sin dispositivos",
+    "none": "Ninguno",
+    "savedDevices": "Dispositivos guardados",
+    "selectDevices": "Seleccionar dispositivos",
+    "selectedCount_one": "{{count}} seleccionado",
+    "selectedCount_many": "{{count}} seleccionados",
+    "selectedCount_other": "{{count}} seleccionados",
+    "selectedDevices": "Dispositivos seleccionados",
+    "tagged": "Etiquetado"
+  },
+  "tagsPage": {
+    "addTag": "Agregar etiqueta",
+    "allDevicesTagRemoved": "Esta etiqueta se eliminará de todos los dispositivos.",
+    "cannotBeUndone": "Esto no se puede deshacer.",
+    "deletingTag": "Estás eliminando la etiqueta",
+    "merge": "Combinar",
+    "mergeInstructionsAfter": "etiqueta.",
+    "mergeInstructionsBefore": "Vas a combinar todas las instancias de la",
+    "mergeInstructionsMid": "etiqueta con la",
+    "mergeTagsConfirmTitle": "¿Combinar etiquetas?",
+    "title": "Etiquetas"
+  },
+  "testPage": {
+    "addQueryHeader": "Agregar encabezado de consulta",
+    "addQueryHeaderPlaceholder": "Ejemplo: \"key:value\"",
+    "clearViewedAnnouncements": "Borrar anuncios vistos",
+    "clearViewedAnnouncementsHint": "Marca todos los anuncios cargados como no leídos para esta cuenta.",
+    "disableTestUI": "Deshabilitar la interfaz de prueba",
+    "disableTestUIHint": "Para volver a habilitar la interfaz alfa, debes seleccionar el menú de avatar mientras mantienes presionado alt-shift.",
+    "featureLabel": "{{name}} (predeterminado {{state}})",
+    "features": "Funciones",
+    "hideTestUIBackgrounds": "Ocultar fondos de la interfaz de prueba",
+    "licenseMessageCleared": "Mensaje de licencia borrado",
+    "licensingOptions": "Opciones de licencia",
+    "overrideDefaultAPIs": "Anular las API predeterminadas",
+    "overrideLicensesAndLimits": "Anular licencias y límites",
+    "reset": "Restablecer",
+    "resetFeatureOverrides": "Restablecer las anulaciones de funciones",
+    "setServiceLicenses": "Establecer licencias de servicio",
+    "setServiceLicensesHint": "Establecerá la licencia de todos los dispositivos en este orden: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY",
+    "showLatestAnnouncement": "Mostrar el último anuncio",
+    "showLatestAnnouncementHint": "Muestra una vista previa del último anuncio sin cambiar su estado de lectura.",
+    "switchGraphQLAPIs": "Cambiar las API de GraphQL",
+    "testOptions": "Opciones de prueba",
+    "title": "Configuración de prueba",
+    "webSocketURL": "URL de WebSocket"
+  },
+  "timeSeriesSelect": {
+    "graphLength": "Duración del gráfico",
+    "graphType": "Tipo de gráfico",
+    "graphUnit": "Unidad del gráfico",
+    "lengthValue_one": "{{count}} {{unit}}",
+    "lengthValue_many": "{{count}} {{unit}}s",
+    "lengthValue_other": "{{count}} {{unit}}s",
+    "overLimit": " (excede el límite)"
+  },
+  "transferForm": {
+    "cancel": "Cancelar",
+    "transfer": "Transferir",
+    "transferring": "Transfiriendo..."
+  },
+  "unauthorizedPage": {
+    "device": "dispositivo",
+    "deviceMayBeRemoved": "Es posible que el dispositivo haya sido eliminado ({{deviceID}})",
+    "gainAccessHint": "Para obtener acceso, pide al propietario del dispositivo que lo comparta contigo.",
+    "notAuthorized": "No tienes autorización para acceder a este {{name}}.",
+    "service": "servicio"
+  },
+  "updateNotice": {
+    "disableUpdates": "Deshabilitar actualizaciones",
+    "install": "Instalar",
+    "recommendLocalConnection": "Se recomienda tener una conexión local al actualizar.",
+    "restartWarning": "Reiniciar mientras estás conectado a través de una conexión Remote.It podría causar que la conexión se pierda de forma permanente.",
+    "updateAvailable": "Hay una actualización disponible (v{{version}})."
+  },
+  "updateSetting": {
+    "about": "Acerca de",
+    "autoUpdate": "Actualización automática",
+    "check": "Comprobar",
+    "checking": "Comprobando...",
+    "checkingForUpdates": "Buscando actualizaciones...",
+    "copyright": "© remot3.it inc.",
+    "downloading": "Descargando...",
+    "install": "Instalar",
+    "nextCheckIn": "Próxima comprobación en",
+    "preReleaseBuilds": "Actualizar a compilaciones preliminares",
+    "updateFailed": "La actualización falló",
+    "versionAvailable": "Versión {{version}} disponible"
+  },
+  "upgradeBanner": {
+    "accessPremium": "Accede a funciones premium y soporte",
+    "upgradePlan": "Mejorar plan"
+  },
+  "viewAsBanner": {
+    "exit": "Salir del modo de vista como",
+    "viewingAs": "Viendo como: {{email}}"
+  },
+  "graphType": {
+    "AVAILABILITY": "En línea %",
+    "CONNECT": "Eventos de conexión",
+    "CONNECT_DURATION": "Tiempo conectado",
+    "DISCONNECT": "Eventos de desconexión",
+    "OFFLINE": "Eventos sin conexión",
+    "ONLINE": "Eventos en línea",
+    "ONLINE_DURATION": "Tiempo en línea",
+    "USAGE": "Conectado %"
+  },
+  "graphUnit": {
+    "DAY": "Día",
+    "HOUR": "Hora",
+    "MONTH": "Mes",
+    "WEEK": "Semana"
+  },
+  "jobStatus": {
+    "CANCELLED": "Cancelado",
+    "FAILED": "Fallido",
+    "READY": "Listo",
+    "RUNNING": "En ejecución",
+    "SUCCESS": "Correcto",
+    "WAITING": "En espera"
+  },
+  "permission": {
+    "ADMIN": {
+      "description": "Gestionar etiquetas, scripts, miembros y registros de dispositivos de la organización. Ver registros.",
+      "name": "Administrar"
+    },
+    "CONNECT": {
+      "description": "Conectarse a los servicios del dispositivo",
+      "name": "Conectar"
+    },
+    "MANAGE": {
+      "description": "Editar, eliminar, transferir y compartir dispositivos y redes",
+      "name": "Gestionar"
+    },
+    "SCRIPTING": {
+      "description": "Ver y ejecutar scripts de dispositivos",
+      "name": "Script"
+    },
+    "VIEW": {
+      "description": "Ver dispositivos y su estado actual",
+      "name": "Ver"
+    }
+  },
+  "appType": {
+    "launch": {
+      "command": "Comando",
+      "terminal": "Terminal",
+      "script": "Script",
+      "copyCommand": "Copiar comando",
+      "browser": "Navegador"
+    },
+    "public": {
+      "title": "Público"
+    },
+    "unauthenticated": {
+      "title": "Sin autenticación"
+    },
+    "tcp": {
+      "use": "Úsalo para conexiones TCP personalizadas que no impliquen tráfico web, ya que carece de funciones de proxy inverso. Ideal para la comunicación directa entre aplicaciones."
+    },
+    "vnc": {
+      "use": "Ideal para el acceso de escritorio remoto a interfaces gráficas en computadoras o servidores. Úsalo cuando necesites controlar un dispositivo con escritorio gráfico de forma remota."
+    },
+    "ssh": {
+      "use": "Para acceso seguro por terminal y ejecución de comandos en servidores o dispositivos. Esencial para administradores de sistemas y desarrolladores.",
+      "help": "Se puede agregar cualquier atributo de configuración SSH"
+    },
+    "rdp": {
+      "use": "Para acceso de escritorio remoto a servidores o dispositivos Windows. Úsalo cuando necesites controlar un dispositivo con escritorio gráfico de forma remota."
+    },
+    "secureBrowser": {
+      "title": "Navegador seguro",
+      "use": "Esencial para cualquier aplicación web que maneje datos sensibles, o cualquier contenido que requiera comunicación segura a través de internet."
+    },
+    "browser": {
+      "title": "Navegador",
+      "use": "Úsalo para acceder a aplicaciones web que no admiten conexiones cifradas o para alojarlas. Ideal para entornos de desarrollo locales o redes internas donde la seguridad no es una preocupación."
+    },
+    "samba": {
+      "use": "Utilízalo para configurar el acceso compartido a archivos, impresoras y puertos serie dentro de una red Windows o entre distintos sistemas operativos compatibles con el protocolo SMB."
+    },
+    "nxwitness": {
+      "use": "Úsalo para conectarte a sistemas de gestión de video Nx Witness (VMS), adecuado para profesionales de seguridad que administran redes de cámaras IP."
+    },
+    "nextcloud": {
+      "use": "Selecciónalo para acceder de forma segura a hubs de Nextcloud, lo que permite compartir archivos, colaborar y comunicarse dentro de un entorno de nube privada y segura."
+    },
+    "openvpnTcp": {
+      "use": "Elígelo para un acceso VPN fiable y seguro mediante el protocolo TCP. Ideal para conexiones estables donde la integridad de los datos es crucial, aunque puede ser más lento que UDP."
+    },
+    "minecraft": {
+      "use": "Configúralo para alojar o conectarte a un servidor de Minecraft mediante TCP para el juego, lo que permite que los jugadores se unan a tu mundo de Minecraft."
+    },
+    "adminPanel": {
+      "title": "Panel de administración",
+      "use": "Panel de administración de Remote.It que se ejecuta en el dispositivo. Anteriormente se usaba para gestionar de forma remota la configuración de un dispositivo. Ahora la mayoría de los dispositivos se pueden gestionar desde la aplicación Remote.it o el portal web."
+    },
+    "terraria": {
+      "use": "Configúralo para alojar o conectarte a un servidor de juego de Terraria, lo que permite a los jugadores explorar, construir y vivir aventuras juntos en un mundo 2D único."
+    },
+    "redis": {
+      "use": "Selecciónalo para conectarte a servidores Redis, ideal para desarrolladores que trabajan con bases de datos de alto rendimiento para almacenamiento en caché y mensajería."
+    },
+    "mysql": {
+      "use": "Utilízalo para el acceso remoto a bases de datos MySQL. Ideal para desarrolladores y administradores de bases de datos que las gestionan de forma remota."
+    },
+    "postgresql": {
+      "use": "Utilízalo para el acceso remoto a bases de datos PostgreSQL, esencial para administradores de bases de datos y desarrolladores que necesitan gestionar datos de forma remota."
+    },
+    "dockerApi": {
+      "use": "Úsalo para la gestión remota de contenedores Docker. Ideal para desarrolladores y administradores de sistemas que necesitan controlar entornos Docker de forma remota."
+    },
+    "screenview": {
+      "use": "Úsalo para ver o controlar pantallas de forma remota a través de la aplicación ScreenView de Remote.It. Facilita el soporte, la colaboración y el acceso remoto."
+    },
+    "socks": {
+      "use": "Úsalo como servidor proxy para gestionar el tráfico de internet mediante el protocolo SOCKS. Proporciona comunicación segura y anónima, lo que permite a los usuarios evitar restricciones de internet y proteger su privacidad en línea.",
+      "disconnectDisplay": "Reinicia tu navegador para eliminar el proxy SOCKS al desconectar"
+    },
+    "udp": {
+      "use": "Selecciónalo para aplicaciones que requieren comunicación rápida y donde la fiabilidad es menos crítica, como streaming, videojuegos o transmisiones."
+    },
+    "openvpnUdp": {
+      "use": "Elígelo para un acceso VPN rápido y seguro mediante el protocolo UDP. Ideal para aplicaciones sensibles a la velocidad donde se acepta una pérdida de paquetes ocasional."
+    },
+    "wireguard": {
+      "use": "Elígelo para una conexión VPN moderna y segura que ofrece acceso rápido y seguro a redes privadas con facilidad de configuración y gestión."
+    },
+    "minecraftBedrock": {
+      "use": "Elígelo para servidores de Minecraft Bedrock Edition, que usan UDP para el juego en plataformas como móviles y consolas, lo que permite a los jugadores conectarse y jugar juntos."
+    }
+  },
+  "network": {
+    "active": "Activo",
+    "cloudProxy": "Proxy en la nube",
+    "local": "Local",
+    "personal": "Personal",
+    "recent": "Recientes"
   }
 }

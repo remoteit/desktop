@@ -1,6 +1,7 @@
 import { Box, Button, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { GridList } from '../../components/GridList'
@@ -22,6 +23,7 @@ type SearchType = 'all' | 'email' | 'userId'
 export const AdminAdminsListPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
+  const { t } = useTranslation()
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(adminAdminAttributes, a => a.required === true)
 
@@ -114,12 +116,12 @@ export const AdminAdminsListPage: React.FC = () => {
   const getPlaceholder = () => {
     switch (searchType) {
       case 'email':
-        return 'Search by email address...'
+        return t('adminAdminsListPage.searchByEmail', 'Search by email address...')
       case 'userId':
-        return 'Search by user ID (UUID)...'
+        return t('adminAdminsListPage.searchByUserId', 'Search by user ID (UUID)...')
       case 'all':
       default:
-        return 'Search by email, name, or user ID...'
+        return t('adminAdminsListPage.searchByAll', 'Search by email, name, or user ID...')
     }
   }
 
@@ -141,13 +143,13 @@ export const AdminAdminsListPage: React.FC = () => {
               onChange={handleSearchTypeChange}
               size="small"
             >
-              <ToggleButton value="email" title="Search by email">
+              <ToggleButton value="email" title={t('adminAdminsListPage.searchByEmailTitle', 'Search by email')}>
                 <Icon name="envelope" size="sm" />
               </ToggleButton>
-              <ToggleButton value="userId" title="Search by user ID">
+              <ToggleButton value="userId" title={t('adminAdminsListPage.searchByUserIdTitle', 'Search by user ID')}>
                 <Icon name="fingerprint" size="sm" />
               </ToggleButton>
-              <ToggleButton value="all" title="Search all fields">
+              <ToggleButton value="all" title={t('adminAdminsListPage.searchAllFieldsTitle', 'Search all fields')}>
                 <Icon name="search" size="sm" />
               </ToggleButton>
             </ToggleButtonGroup>
@@ -164,7 +166,7 @@ export const AdminAdminsListPage: React.FC = () => {
             />
             <IconButton
               icon="user-plus"
-              title="Add Admin"
+              title={t('adminAdminsListPage.addAdmin', 'Add Admin')}
               onClick={() => setAddDialogOpen(true)}
               size="md"
               color="primary"
@@ -174,12 +176,12 @@ export const AdminAdminsListPage: React.FC = () => {
       }
     >
       {loading && admins.length === 0 ? (
-        <LoadingMessage message="Loading admins..." />
+        <LoadingMessage message={t('adminAdminsListPage.loadingAdmins', 'Loading admins...')} />
       ) : admins.length === 0 ? (
         <Box sx={{ textAlign: 'center', padding: 4 }}>
           <Icon name="shield" size="xxl" color="grayLight" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            No admins found
+            {t('adminAdminsListPage.noAdminsFound', 'No admins found')}
           </Typography>
         </Box>
       ) : (
@@ -206,7 +208,7 @@ export const AdminAdminsListPage: React.FC = () => {
                 disabled={loading}
                 onClick={fetchMore}
               >
-                {loading ? 'Loading...' : 'Load More'}
+                {loading ? t('adminAdminsListPage.loading', 'Loading...') : t('adminAdminsListPage.loadMore', 'Load More')}
               </Button>
             </Box>
           )}

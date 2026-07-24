@@ -12,7 +12,9 @@ import {
   Typography,
 } from '@mui/material'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
+import i18n from '../../i18n'
 import { Attribute } from '../../components/Attributes'
 import { Confirm } from '../../components/Confirm'
 import { Container } from '../../components/Container'
@@ -37,32 +39,33 @@ class EnterpriseCustomerAttribute extends Attribute<EnterpriseCustomerAttributeO
 const enterpriseCustomerAttributes: EnterpriseCustomerAttribute[] = [
   new EnterpriseCustomerAttribute({
     id: 'email',
-    label: 'Account',
+    label: i18n.t('adminEnterpriseLicensesListPage.account', 'Account'),
     defaultWidth: 250,
     required: true,
     value: ({ customer }) => customer?.email || '-',
   }),
   new EnterpriseCustomerAttribute({
     id: 'devices',
-    label: 'Devices',
+    label: i18n.t('adminEnterpriseLicensesListPage.devices', 'Devices'),
     defaultWidth: 100,
     value: ({ customer }) => customer?.deviceCount ?? 0,
   }),
   new EnterpriseCustomerAttribute({
     id: 'members',
-    label: 'Members',
+    label: i18n.t('adminEnterpriseLicensesListPage.members', 'Members'),
     defaultWidth: 100,
     value: ({ customer }) => customer?.memberCount ?? 0,
   }),
   new EnterpriseCustomerAttribute({
     id: 'created',
-    label: 'Created',
+    label: i18n.t('adminEnterpriseLicensesListPage.created', 'Created'),
     defaultWidth: 150,
     value: ({ customer }) => (customer?.created ? new Date(customer.created).toLocaleDateString() : '-'),
   }),
 ]
 
 export const AdminEnterpriseLicensesListPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -89,7 +92,7 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
         value: ({ customer }) => (
           <IconButton
             size="small"
-            title="Remove enterprise customer"
+            title={t('adminEnterpriseLicensesListPage.removeCustomer', 'Remove enterprise customer')}
             onClick={e => {
               e.stopPropagation()
               if (customer) setRemoveTarget(customer)
@@ -138,10 +141,15 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
     if (result !== 'ERROR' && result?.data?.data?.addEnterpriseCustomer) {
       setAddDialogOpen(false)
       setNewCustomerEmail('')
-      dispatch.ui.set({ successMessage: `Added enterprise customer ${newCustomerEmail.trim()}` })
+      dispatch.ui.set({
+        successMessage: t('adminEnterpriseLicensesListPage.addedCustomer', {
+          email: newCustomerEmail.trim(),
+          defaultValue: 'Added enterprise customer {{email}}',
+        }),
+      })
       await dispatch.adminEnterpriseLicenses.fetch()
     } else {
-      dispatch.ui.set({ errorMessage: 'Failed to add enterprise customer' })
+      dispatch.ui.set({ errorMessage: t('adminEnterpriseLicensesListPage.addFailed', 'Failed to add enterprise customer') })
     }
   }
 
@@ -153,11 +161,18 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
     setRemoving(false)
 
     if (result !== 'ERROR' && result?.data?.data?.removeEnterpriseCustomer) {
-      dispatch.ui.set({ successMessage: `Removed enterprise customer ${removeTarget.email}` })
+      dispatch.ui.set({
+        successMessage: t('adminEnterpriseLicensesListPage.removedCustomer', {
+          email: removeTarget.email,
+          defaultValue: 'Removed enterprise customer {{email}}',
+        }),
+      })
       setRemoveTarget(null)
       await dispatch.adminEnterpriseLicenses.fetch()
     } else {
-      dispatch.ui.set({ errorMessage: 'Failed to remove enterprise customer' })
+      dispatch.ui.set({
+        errorMessage: t('adminEnterpriseLicensesListPage.removeFailed', 'Failed to remove enterprise customer'),
+      })
     }
   }
 
@@ -169,11 +184,18 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
       header={
         <Gutters>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button onClick={() => setAddDialogOpen(true)} size="small" children="Add Enterprise Customer" />
+            <Button
+              onClick={() => setAddDialogOpen(true)}
+              size="small"
+              children={t('adminEnterpriseLicensesListPage.addCustomer', 'Add Enterprise Customer')}
+            />
             <TextField
               fullWidth
               size="small"
-              placeholder="Search by email or name, then press Enter..."
+              placeholder={t(
+                'adminEnterpriseLicensesListPage.searchPlaceholder',
+                'Search by email or name, then press Enter...'
+              )}
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
               onKeyDown={handleSearchKeyDown}
@@ -190,12 +212,14 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
       }
     >
       {loading && customers.length === 0 ? (
-        <LoadingMessage message="Loading enterprise customers..." />
+        <LoadingMessage message={t('adminEnterpriseLicensesListPage.loading', 'Loading enterprise customers...')} />
       ) : customers.length === 0 ? (
         <Box sx={{ textAlign: 'center', padding: 4 }}>
           <Icon name="building" size="xxl" color="grayLight" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            {searchValue ? 'No matching enterprise customers' : 'No enterprise customers found'}
+            {searchValue
+              ? t('adminEnterpriseLicensesListPage.noMatching', 'No matching enterprise customers')
+              : t('adminEnterpriseLicensesListPage.noneFound', 'No enterprise customers found')}
           </Typography>
         </Box>
       ) : (
@@ -223,7 +247,13 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
           {hasMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
               <Button color="primary" disabled={loading} onClick={() => dispatch.adminEnterpriseLicenses.fetchMore(undefined)}>
-                {loading ? 'Loading...' : `Load More (${customers.length} of ${total})`}
+                {loading
+                  ? t('adminEnterpriseLicensesListPage.loadingShort', 'Loading...')
+                  : t('adminEnterpriseLicensesListPage.loadMore', {
+                      count: customers.length,
+                      total,
+                      defaultValue: 'Load More ({{count}} of {{total}})',
+                    })}
               </Button>
             </Box>
           )}
@@ -231,12 +261,12 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
       )}
 
       <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add Enterprise Customer</DialogTitle>
+        <DialogTitle>{t('adminEnterpriseLicensesListPage.addDialogTitle', 'Add Enterprise Customer')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Account Email"
+            label={t('adminEnterpriseLicensesListPage.accountEmail', 'Account Email')}
             type="email"
             fullWidth
             value={newCustomerEmail}
@@ -245,17 +275,21 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setAddDialogOpen(false)}>{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleAddCustomer} disabled={!newCustomerEmail.trim() || adding}>
-            {adding ? 'Adding...' : 'Add'}
+            {adding ? t('adminEnterpriseLicensesListPage.adding', 'Adding...') : t('adminEnterpriseLicensesListPage.add', 'Add')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Confirm
         open={!!removeTarget}
-        title="Remove Enterprise Customer"
-        action={removing ? 'Removing...' : 'Remove'}
+        title={t('adminEnterpriseLicensesListPage.removeDialogTitle', 'Remove Enterprise Customer')}
+        action={
+          removing
+            ? t('adminEnterpriseLicensesListPage.removing', 'Removing...')
+            : t('adminEnterpriseLicensesListPage.remove', 'Remove')
+        }
         color="error"
         disabled={removing}
         onConfirm={handleRemoveCustomer}
@@ -263,7 +297,9 @@ export const AdminEnterpriseLicensesListPage: React.FC = () => {
       >
         {removeTarget && (
           <>
-            Are you sure you want to remove <strong>{removeTarget.email}</strong> from the enterprise license plan?
+            {t('adminEnterpriseLicensesListPage.confirmRemoveBefore', 'Are you sure you want to remove')}{' '}
+            <strong>{removeTarget.email}</strong>{' '}
+            {t('adminEnterpriseLicensesListPage.confirmRemoveAfter', 'from the enterprise license plan?')}
           </>
         )}
       </Confirm>

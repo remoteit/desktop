@@ -1,11 +1,13 @@
 import React from 'react'
 import { List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { LicensingNotice } from './LicensingNotice'
 import { LicensingIcon } from './LicensingIcon'
 import { LimitsSetting } from './LimitsSetting'
 import { Timestamp } from './Timestamp'
 
 export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[] }> = ({ licenses, limits = [] }) => {
+  const { t } = useTranslation()
   if (!licenses.length) return null
   return (
     <>
@@ -20,17 +22,19 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
               primary={
                 <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
                   {license.plan.product.description}
-                  &nbsp;{license.plan.description} plan
+                  &nbsp;{license.plan.description} {t('licensingSetting.plan', 'plan')}
                 </Typography>
               }
               secondary={
-                !license.id
-                  ? 'Not subscribed'
-                  : license.expiration && (
-                      <>
-                        Renews <Timestamp date={license.expiration} variant="long" />
-                      </>
-                    )
+                !license.id ? (
+                  t('licensingSetting.notSubscribed', 'Not subscribed')
+                ) : (
+                  license.expiration && (
+                    <>
+                      {t('licensingSetting.renews', 'Renews')} <Timestamp date={license.expiration} variant="long" />
+                    </>
+                  )
+                )
               }
             />
           </ListItem>

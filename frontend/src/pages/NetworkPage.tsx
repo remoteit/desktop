@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { NoConnectionPage } from './NoConnectionPage'
 import { Typography, Button } from '@mui/material'
@@ -20,6 +21,7 @@ export const NetworkPage: React.FC = () => {
     orgName: selectOrganizationName(state, network?.owner.id),
     email: state.user.email,
   }))
+  const { t } = useTranslation()
 
   if (!network) return <NoConnectionPage />
   const empty = network.serviceIds.length === 0
@@ -31,12 +33,17 @@ export const NetworkPage: React.FC = () => {
       instructions={
         <>
           <Typography variant="body1" gutterBottom>
-            Network added!
+            {t('networkPage.networkAdded', 'Network added!')}
           </Typography>
           <Typography variant="body2">
-            Next add a service. Find one from the devices page and use the network panel to add.
+            {t(
+              'networkPage.nextAddService',
+              'Next add a service. Find one from the devices page and use the network panel to add.'
+            )}
           </Typography>
-          <Typography variant="caption">Note, you can only add from devices you own or manage.</Typography>
+          <Typography variant="caption">
+            {t('networkPage.ownOrManageNote', 'Note, you can only add from devices you own or manage.')}
+          </Typography>
         </>
       }
       placement="left"
@@ -46,10 +53,11 @@ export const NetworkPage: React.FC = () => {
       <NetworkHeaderMenu network={network} email={email}>
         {empty && (
           <Notice gutterTop>
-            Empty network <em>Add services to this network from a service page</em>
+            {t('networkPage.emptyNetwork', 'Empty network')}{' '}
+            <em>{t('networkPage.addServicesHint', 'Add services to this network from a service page')}</em>
           </Notice>
         )}
-        <Typography variant="subtitle1">Connections</Typography>
+        <Typography variant="subtitle1">{t('networkPage.connections', 'Connections')}</Typography>
         <Gutters bottom="xxl">
           <Button
             variant="contained"
@@ -57,7 +65,7 @@ export const NetworkPage: React.FC = () => {
             disabled={empty}
             onClick={() => dispatch.connections.queueEnable({ ...network, enabled: true })}
           >
-            Start All
+            {t('networkPage.startAll', 'Start All')}
           </Button>
           <Button
             variant="contained"
@@ -67,10 +75,10 @@ export const NetworkPage: React.FC = () => {
             onClick={() => dispatch.connections.queueEnable({ ...network, enabled: false })}
             sx={{ marginLeft: 1 }}
           >
-            Stop All
+            {t('networkPage.stopAll', 'Stop All')}
           </Button>
         </Gutters>
-        <Typography variant="subtitle1">Settings</Typography>
+        <Typography variant="subtitle1">{t('networkPage.settings', 'Settings')}</Typography>
         <NetworkSettings network={network} orgName={orgName} />
         <Gutters>
           <DataDisplay attributes={networkAttributes} instance={network} />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { IconButton } from '../IconButton'
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export const ClearButton: React.FC<Props> = ({ all, onClick, ...props }) => {
+  const { t } = useTranslation()
   const [deleting, setDeleting] = useState<boolean>(false)
 
   const handleClick = (event: React.MouseEvent) => {
@@ -21,7 +23,7 @@ export const ClearButton: React.FC<Props> = ({ all, onClick, ...props }) => {
 
   return all ? (
     <Button {...props} onClick={handleClick} color="inherit" size="small">
-      Clear
+      {t('common.clear', 'Clear')}
     </Button>
   ) : (
     <IconButton

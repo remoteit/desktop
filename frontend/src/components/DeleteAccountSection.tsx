@@ -2,6 +2,7 @@ import React from 'react'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { Typography, Box, Button, TextField, List } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { ListItemCheckbox } from '../components/ListItemCheckbox'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
@@ -10,19 +11,6 @@ import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 import { spacing } from '../styling'
 
-const REASONS = [
-  'My device isn’t supported',
-  'Installation was too difficult',
-  'Connection quality or performance issues',
-  'Couldn’t get my device online',
-  'Couldn’t connect',
-  'Cost of service',
-  'Have another account',
-  'Too hard to use',
-  'Not what I thought it was',
-  'Not using it anymore',
-  'Using something else',
-]
 interface DeleteAccountSectionProps {
   user?: IUser
   paidPlan?: boolean
@@ -40,6 +28,21 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
   const [reasons, setReasons] = React.useState<string[]>([])
   const [body, setBody] = React.useState<string>('')
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
+
+  const REASONS = [
+    t('deleteAccountSection.reasonUnsupportedDevice', 'My device isn’t supported'),
+    t('deleteAccountSection.reasonInstallDifficult', 'Installation was too difficult'),
+    t('deleteAccountSection.reasonConnectionQuality', 'Connection quality or performance issues'),
+    t('deleteAccountSection.reasonCouldntGetOnline', 'Couldn’t get my device online'),
+    t('deleteAccountSection.reasonCouldntConnect', 'Couldn’t connect'),
+    t('deleteAccountSection.reasonCost', 'Cost of service'),
+    t('deleteAccountSection.reasonAnotherAccount', 'Have another account'),
+    t('deleteAccountSection.reasonTooHard', 'Too hard to use'),
+    t('deleteAccountSection.reasonNotExpected', 'Not what I thought it was'),
+    t('deleteAccountSection.reasonNotUsing', 'Not using it anymore'),
+    t('deleteAccountSection.reasonUsingSomethingElse', 'Using something else'),
+  ]
 
   const handleDelete = () => setConfirm(true)
   const handleReason = (reason: string) => {
@@ -62,7 +65,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
         }),
         lastConnections: connections,
       },
-      snackbar: 'Your account delete request has been sent.',
+      snackbar: t('deleteAccountSection.snackbar', 'Your account delete request has been sent.'),
     })
     dispatch.feedback.sendFeedback()
     dispatch.ui.set({ deleteAccount: true })
@@ -72,17 +75,20 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
     <Gutters>
       {paidPlan ? (
         <Notice severity="info" fullWidth gutterBottom>
-          You have a paid subscription plan. <em>Please downgrade to Personal to request an account deletion.</em>
+          {t('deleteAccountSection.paidPlanNotice', 'You have a paid subscription plan.')}{' '}
+          <em>{t('deleteAccountSection.paidPlanDowngrade', 'Please downgrade to Personal to request an account deletion.')}</em>
         </Notice>
       ) : (
         <>
           <Typography variant="body2" color="GrayText" gutterBottom>
-            If you no longer want/need your Remote.It account, you can request an account deletion. Once your delete
-            request is processed, all your account information is removed permanently.
+            {t(
+              'deleteAccountSection.description',
+              'If you no longer want/need your Remote.It account, you can request an account deletion. Once your delete request is processed, all your account information is removed permanently.'
+            )}
           </Typography>
           <Box pb={2}>
             <Button color="error" size="small" variant="contained" disabled={deleteAccount} onClick={handleDelete}>
-              Delete my account
+              {t('deleteAccountSection.deleteButton', 'Delete my account')}
             </Button>
             <Confirm
               open={confirm}
@@ -106,15 +112,15 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
                     {/* Pleading Emoji */}
                     &#x1F97A;
                   </Box>
-                  Why do you want to delete your account?
+                  {t('deleteAccountSection.confirmTitle', 'Why do you want to delete your account?')}
                   <Typography variant="body2" marginTop={1}>
-                    <i>We are sorry to see you go! </i>
+                    <i>{t('deleteAccountSection.confirmSorry', 'We are sorry to see you go!')} </i>
                     <br />
-                    Please help us improve by telling us why it didn't work out.
+                    {t('deleteAccountSection.confirmHelp', "Please help us improve by telling us why it didn't work out.")}
                   </Typography>
                 </>
               }
-              action="Delete"
+              action={t('common.delete', 'Delete')}
               disabled={body.length < 2 && reasons.length < 1}
             >
               <List disablePadding>
@@ -136,23 +142,28 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
                 fullWidth
                 autoFocus
                 rows={3}
-                label="Other Reason"
+                label={t('deleteAccountSection.otherReasonLabel', 'Other Reason')}
                 variant="filled"
                 value={body}
                 onChange={e => setBody(e.target.value)}
               />
               <ListItemCheckbox
                 disableGutters
-                label="I'm open to having someone contact me about my feedback."
+                label={t('deleteAccountSection.contactMeLabel', "I'm open to having someone contact me about my feedback.")}
                 checked={contact}
                 onClick={checked => setContact(checked)}
               />
               <Notice severity="error" fullWidth gutterTop>
-                I understand that this is permanent and that accounts and related devices can not be recovered.
+                {t(
+                  'deleteAccountSection.permanentWarning',
+                  'I understand that this is permanent and that accounts and related devices can not be recovered.'
+                )}
               </Notice>
             </Confirm>
           </Box>
-          <Typography variant="caption">Deletion requests take 3 to 5 business days to complete.</Typography>
+          <Typography variant="caption">
+            {t('deleteAccountSection.turnaround', 'Deletion requests take 3 to 5 business days to complete.')}
+          </Typography>
         </>
       )}
     </Gutters>

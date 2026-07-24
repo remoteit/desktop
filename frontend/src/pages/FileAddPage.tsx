@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Typography } from '@mui/material'
 import { selectRole } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
@@ -10,6 +11,7 @@ import { FileEditorForm } from '../components/FileEditorForm'
 type Props = { center?: boolean }
 
 export const FileAddPage: React.FC<Props> = ({ center }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const role = useSelector(selectRole)
@@ -53,7 +55,7 @@ export const FileAddPage: React.FC<Props> = ({ center }) => {
     return (
       <Body center={center} inset gutterTop gutterBottom>
         <Typography variant="body2" color="error">
-          You do not have permission to upload files
+          {t('fileAddPage.noPermission', 'You do not have permission to upload files')}
         </Typography>
       </Body>
     )
@@ -62,9 +64,9 @@ export const FileAddPage: React.FC<Props> = ({ center }) => {
   return (
     <Body center={center} inset gutterTop gutterBottom>
       <FileEditorForm
-        title="Upload File"
+        title={t('fileAddPage.uploadFile', 'Upload File')}
         form={{ name: form.name, description: form.description }}
-        uploadLabel="Upload File"
+        uploadLabel={t('fileAddPage.uploadFile', 'Upload File')}
         uploadedFile={uploadedFile}
         onFormChange={changes => setForm(prev => ({ ...prev, ...changes }))}
         onUploadedFileChange={file => {
@@ -75,8 +77,8 @@ export const FileAddPage: React.FC<Props> = ({ center }) => {
           setUploadedFile(file)
           setForm(prev => ({ ...prev, name: file.name, file }))
         }}
-        actionLabel="Upload File"
-        actionLoadingLabel="Uploading..."
+        actionLabel={t('fileAddPage.uploadFile', 'Upload File')}
+        actionLoadingLabel={t('fileAddPage.uploading', 'Uploading...')}
         actionLoading={loading}
         actionDisabled={!uploadedFile || !form.name || loading}
         onSubmit={handleSubmit}

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
@@ -19,6 +20,7 @@ import { Icon } from '../components/Icon'
 import { ConveyorBeltBoxes } from '../assets/ConveyorBeltBoxes'
 
 export const AddPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const allApplicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const claiming = useSelector((state: State) => state.ui.claiming)
@@ -36,7 +38,7 @@ export const AddPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1" sx={{ marginRight: 4 }}>
-          <Title>What do you want to connect&nbsp;to?</Title>
+          <Title>{t('addPage.title', 'What do you want to connect to?')}</Title>
         </Typography>
       }
     >
@@ -85,7 +87,7 @@ export const AddPage: React.FC = () => {
       >
         <RentANodeAdd className="addList addSmall" />
         <List className="addList addSmall" dense disablePadding>
-          <ListSubheader disableGutters>Try a device</ListSubheader>
+          <ListSubheader disableGutters>{t('addPage.tryDevice', 'Try a device')}</ListSubheader>
           <ListItemButton
             disableGutters
             disabled={claiming}
@@ -97,14 +99,17 @@ export const AddPage: React.FC = () => {
             <ListItemIcon>
               <Icon name="remoteit" size="xxl" platformIcon fixedWidth />
             </ListItemIcon>
-            <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
+            <ListItemText
+              primary={t('addPage.demoDevice', 'Demo device')}
+              secondary={hasDemo && t('addPage.alreadyShared', 'Already shared')}
+            />
           </ListItemButton>
         </List>
         <AndroidSetup className="addList addSmall" />
         <DeviceSetupItem className="addList addSmall" />
         <BluetoothScan className="addList addSmall" />
         <List className="addList addIcons" dense disablePadding>
-          <ListSubheader disableGutters>Add an instance</ListSubheader>
+          <ListSubheader disableGutters>{t('addPage.addInstance', 'Add an instance')}</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
             return (
@@ -122,7 +127,7 @@ export const AddPage: React.FC = () => {
           })}
         </List>
         <List className="addList addIcons" dense disablePadding>
-          <ListSubheader disableGutters>Add a device</ListSubheader>
+          <ListSubheader disableGutters>{t('addPage.addDevice', 'Add a device')}</ListSubheader>
           {[
             'raspberrypi',
             'linux',
@@ -159,12 +164,15 @@ export const AddPage: React.FC = () => {
         </List>
         <ClaimDevice className="addList addSmall" />
         <List className="addList addSmall" dense disablePadding>
-          <ListSubheader disableGutters>Add many</ListSubheader>
+          <ListSubheader disableGutters>{t('addPage.addMany', 'Add many')}</ListSubheader>
           <ListItemButton disableGutters onClick={() => history.push('/products')}>
             <ListItemIcon>
               <ConveyorBeltBoxes style={{ height: '2.25rem', width: 'auto' }} />
             </ListItemIcon>
-            <ListItemText primary="Products" secondary="Provision in bulk" />
+            <ListItemText
+              primary={t('addPage.products', 'Products')}
+              secondary={t('addPage.provisionInBulk', 'Provision in bulk')}
+            />
           </ListItemButton>
         </List>
       </Stack>

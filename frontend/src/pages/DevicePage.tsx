@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { AddFromNetwork } from '../components/AddFromNetwork'
 import { Dispatch, State } from '../store'
@@ -29,6 +30,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 export const DevicePage: React.FC = () => {
+  const { t } = useTranslation()
   const { connections, device, user } = useContext(DeviceContext)
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
@@ -42,7 +44,7 @@ export const DevicePage: React.FC = () => {
   if (!device)
     return (
       <span>
-        <Notice severity="warning">Device not found.</Notice>
+        <Notice severity="warning">{t('devicePage.deviceNotFound', 'Device not found.')}</Notice>
       </span>
     )
 
@@ -73,7 +75,7 @@ export const DevicePage: React.FC = () => {
     >
       {device.license === 'UNLICENSED' ? (
         <Notice severity="warning" button={<PlanActionChip color="warning" sx={{ marginTop: 1.4 }} />} gutterTop>
-          Device unlicensed
+          {t('devicePage.deviceUnlicensed', 'Device unlicensed')}
         </Notice>
       ) : (
         device.state === 'inactive' && (
@@ -84,18 +86,18 @@ export const DevicePage: React.FC = () => {
               device.permissions.includes('MANAGE') && (
                 <IconButton
                   icon="wave-pulse"
-                  title="Restore Device"
+                  title={t('devicePage.restoreDevice', 'Restore Device')}
                   onClick={() => dispatch.ui.set({ showRestoreModal: true })}
                 />
               )
             }
           >
-            Device offline
+            {t('devicePage.deviceOffline', 'Device offline')}
           </Notice>
         )
       )}
       <Typography variant="subtitle1">
-        <Title>Service</Title>
+        <Title>{t('devicePage.service', 'Service')}</Title>
         <SortServices />
         <AddFromNetwork allowScanning={device.thisDevice} button />
         <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
@@ -104,7 +106,7 @@ export const DevicePage: React.FC = () => {
         {editable && <LicensingNotice instance={device} />}
         {editable && setupAddingService && (
           <ListItemLocation to="" disableIcon disabled dense>
-            <ListItemText primary="Registering..." />
+            <ListItemText primary={t('devicePage.registeringEllipsis', 'Registering...')} />
             <ListItemSecondaryAction>
               <CircularProgress color="primary" size={fontSizes.md} />
             </ListItemSecondaryAction>
@@ -118,13 +120,19 @@ export const DevicePage: React.FC = () => {
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
-                <b>Available services</b>
+                <b>{t('devicePage.availableServices', 'Available services')}</b>
               </Typography>
               <Typography variant="body2" gutterBottom>
-                The device's hosted services (applications) are listed here.
+                {t(
+                  'devicePage.availableServicesDescription',
+                  "The device's hosted services (applications) are listed here."
+                )}
               </Typography>
               <Typography variant="body2" gutterBottom>
-                Select a service to configure it or to start a connection.
+                {t(
+                  'devicePage.selectServiceInstruction',
+                  'Select a service to configure it or to start a connection.'
+                )}
               </Typography>
             </>
           }

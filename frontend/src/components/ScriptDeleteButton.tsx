@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dispatch } from '../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { selectPermissions } from '../selectors/organizations'
@@ -9,6 +10,7 @@ import { Notice } from './Notice'
 type Props = { device?: IDevice; service?: IService; user?: IUser }
 
 export const ScriptDeleteButton: React.FC<Props> = ({  }) => {
+  const { t } = useTranslation()
   const { fileID } = useParams<{ fileID?: string }>()
   const permissions = useSelector(selectPermissions)
   const dispatch = useDispatch<Dispatch>()
@@ -18,10 +20,10 @@ export const ScriptDeleteButton: React.FC<Props> = ({  }) => {
 
   return (
     <DeleteButton
-      title="Delete Script"
+      title={t('scriptDeleteButton.title', 'Delete Script')}
       warning={
         <Notice severity="error" fullWidth>
-          This can not be undone.
+          {t('scriptDeleteButton.warning', 'This can not be undone.')}
         </Notice>
       }
       onDelete={async () => {

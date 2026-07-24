@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import i18n from '../i18n'
 import { toLookup } from '../helpers/utilHelper'
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import { ReactiveTagNames } from './ReactiveTagNames'
@@ -100,7 +101,7 @@ export class JobAttribute extends Attribute {
 export const jobAttributes: JobAttribute[] = [
   new JobAttribute({
     id: 'jobName',
-    label: 'Name',
+    label: i18n.t('jobAttributes.name', 'Name'),
     required: true,
     defaultWidth: 350,
     value: ({ job, accountId }) => {
@@ -113,7 +114,7 @@ export const jobAttributes: JobAttribute[] = [
             {privateScript && (
               <Typography component="span" variant="caption" color="textSecondary">
                 {' '}
-                (guest script)
+                ({i18n.t('jobAttributes.guestScript', 'guest script')})
               </Typography>
             )}
           </Typography>
@@ -121,7 +122,7 @@ export const jobAttributes: JobAttribute[] = [
       }
       return (
         <Typography variant="body2" fontStyle="italic">
-          File Deleted&nbsp;
+          {i18n.t('jobAttributes.fileDeleted', 'File Deleted')}&nbsp;
         </Typography>
       )
     },
@@ -139,7 +140,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceNames',
-    label: 'Targets',
+    label: i18n.t('jobAttributes.targets', 'Targets'),
     defaultWidth: 200,
     value: ({ job }) => {
       const names = job?.jobDevices.map(jd => jd.device.name) || []
@@ -193,7 +194,7 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobUpdated',
-    label: 'Time',
+    label: i18n.t('jobAttributes.time', 'Time'),
     defaultWidth: 180,
     value: ({ job }) => {
       if (!job?.updated) return null
@@ -220,20 +221,24 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobTags',
-    label: 'Filter',
+    label: i18n.t('jobAttributes.filter', 'Filter'),
     defaultWidth: 100,
     value: ({ job }) =>
-      job?.tag.values.length ? <ReactiveTagNames tags={job.tag.values} /> : <Chip label="None" size="small" />,
+      job?.tag.values.length ? (
+        <ReactiveTagNames tags={job.tag.values} />
+      ) : (
+        <Chip label={i18n.t('jobAttributes.none', 'None')} size="small" />
+      ),
   }),
   new JobAttribute({
     id: 'jobMatches',
-    label: 'Match',
+    label: i18n.t('jobAttributes.match', 'Match'),
     defaultWidth: 100,
     value: ({ job }) => <Chip label={job?.tag.operator} size="small" />,
   }),
   new JobAttribute({
     id: 'jobRunBy',
-    label: 'Run By',
+    label: i18n.t('jobAttributes.runBy', 'Run By'),
     defaultWidth: 150,
     value: ({ job }) => (
       <Typography variant="body2" color="grayDarkest.main" noWrap>
@@ -246,5 +251,5 @@ export const jobAttributes: JobAttribute[] = [
 const attributeLookup = toLookup<Attribute>(jobAttributes, 'id')
 
 export function getJobAttribute(id: string): JobAttribute {
-  return attributeLookup[id] || new JobAttribute({ id: 'unknown', label: 'Unknown' })
+  return attributeLookup[id] || new JobAttribute({ id: 'unknown', label: i18n.t('jobAttributes.unknown', 'Unknown') })
 }

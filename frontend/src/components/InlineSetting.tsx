@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Box, ListItem, ListItemIcon, ListItemSecondaryAction, SxProps, Theme } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { FormDisplay, FormDisplayProps } from './FormDisplay'
 import { spacing, fontSizes } from '../styling'
 import { IconButton } from '../buttons/IconButton'
@@ -68,6 +69,7 @@ export const InlineSetting: React.FC<Props> = ({
 }) => {
   const [edit, setEdit] = useState<boolean>(false)
   const canceled = useRef<boolean>(false)
+  const { t } = useTranslation()
 
   function triggerEdit() {
     setEdit(true)
@@ -135,7 +137,7 @@ export const InlineSetting: React.FC<Props> = ({
           <ListItemSecondaryAction>
             {resetValue != null && (
               <IconButton
-                title="Reset"
+                title={t('inlineSetting.reset', 'Reset')}
                 icon="undo"
                 type="solid"
                 size="md"
@@ -148,7 +150,7 @@ export const InlineSetting: React.FC<Props> = ({
               />
             )}
             <IconButton
-              title="Cancel"
+              title={t('inlineSetting.cancel', 'Cancel')}
               icon="times"
               type="solid"
               size="md"
@@ -159,7 +161,7 @@ export const InlineSetting: React.FC<Props> = ({
               }}
             />
             <IconButton
-              title="Save"
+              title={t('inlineSetting.save', 'Save')}
               icon="check"
               color="primary"
               type="solid"

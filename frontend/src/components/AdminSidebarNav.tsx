@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
@@ -7,6 +8,7 @@ import { ListItemLocation } from './ListItemLocation'
 import { Icon } from './Icon'
 
 export const AdminSidebarNav: React.FC = () => {
+  const { t } = useTranslation()
   const history = useHistory()
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
   const currentPath = history.location.pathname
@@ -42,7 +44,7 @@ export const AdminSidebarNav: React.FC = () => {
         },
       }}
     >
-      <ListItemLocation dense title="Return to App" icon="person-to-portal" to="/devices" />
+      <ListItemLocation dense title={t('adminSidebarNav.returnToApp', 'Return to App')} icon="person-to-portal" to="/devices" />
 
       <ListItemButton
         dense
@@ -52,7 +54,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="users" size="md" />
         </ListItemIcon>
-        <ListItemText primary="Users" />
+        <ListItemText primary={t('adminSidebarNav.users', 'Users')} />
       </ListItemButton>
 
       <ListItemButton
@@ -63,7 +65,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="shield" size="md" />
         </ListItemIcon>
-        <ListItemText primary="Admins" />
+        <ListItemText primary={t('adminSidebarNav.admins', 'Admins')} />
       </ListItemButton>
 
       <ListItemButton
@@ -74,7 +76,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="handshake" size="md" />
         </ListItemIcon>
-        <ListItemText primary="Partners" />
+        <ListItemText primary={t('adminSidebarNav.partners', 'Partners')} />
       </ListItemButton>
 
       <ListItemButton
@@ -85,7 +87,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="building" size="md" />
         </ListItemIcon>
-        <ListItemText primary="Enterprise" />
+        <ListItemText primary={t('adminSidebarNav.enterprise', 'Enterprise')} />
       </ListItemButton>
 
       <ListItemButton
@@ -96,7 +98,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="bullhorn" size="md" />
         </ListItemIcon>
-        <ListItemText primary="Notices" />
+        <ListItemText primary={t('adminSidebarNav.notices', 'Notices')} />
       </ListItemButton>
     </List>
   )

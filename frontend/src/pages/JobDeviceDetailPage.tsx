@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { State } from '../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -20,6 +21,7 @@ type Props = {
 }
 
 export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
+  const { t } = useTranslation()
   const history = useHistory()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID))
@@ -43,14 +45,18 @@ export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
                 name="chevron-left"
                 onClick={() => history.push(`/script/${fileID}/${jobID || 'latest'}`)}
                 size="md"
-                title="Back"
+                title={t('jobDeviceDetailPage.back', 'Back')}
               />
             )}
             <Box marginRight={2}>
               <JobStatusIcon status={jobDevice?.status} size="xl" device padding={0} />
             </Box>
-            <Title>{jobDevice?.device?.name || 'Unknown'}</Title>
-            <IconButton name="router" to={`/devices/${jobDevice?.device.id}`} title="Device details" />
+            <Title>{jobDevice?.device?.name || t('jobDeviceDetailPage.unknown', 'Unknown')}</Title>
+            <IconButton
+              name="router"
+              to={`/devices/${jobDevice?.device.id}`}
+              title={t('jobDeviceDetailPage.deviceDetails', 'Device details')}
+            />
           </Typography>
           {jobDevice?.updated && (
             <Typography marginLeft={11} marginTop={2} gutterBottom variant="caption" component="p">
@@ -66,7 +72,7 @@ export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
             <DataDisplay attributes={attributes} />
           </Box>
         ) : (
-          <Notice fullWidth>No return values from this device</Notice>
+          <Notice fullWidth>{t('jobDeviceDetailPage.noReturnValues', 'No return values from this device')}</Notice>
         )}
       </Gutters>
     </Container>

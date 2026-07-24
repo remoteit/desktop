@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { selectOrganization } from '../selectors/organizations'
 import { Dispatch, State } from '../store'
@@ -12,6 +13,7 @@ import { Title } from '../components/Title'
 import { useHistory } from 'react-router-dom'
 
 export const CustomerAddPage = () => {
+  const { t } = useTranslation()
   const [emails, setEmails] = React.useState<string[]>([])
   const [adding, setAdding] = React.useState<boolean>(false)
   const organization = useSelector(selectOrganization)
@@ -36,7 +38,7 @@ export const CustomerAddPage = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Add Customers</Title>
+            <Title>{t('customerAddPage.title', 'Add Customers')}</Title>
           </Typography>
           <Gutters top={null}>
             <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />
@@ -46,16 +48,16 @@ export const CustomerAddPage = () => {
     >
       <Gutters top="xl">
         <Typography variant="body2" gutterBottom>
-          Add a user to your reseller account.
+          {t('customerAddPage.subtitle', 'Add a user to your reseller account.')}
         </Typography>
         <Notice fullWidth gutterBottom>
-          New customers will be added to your reseller account and given a free plan.
-          <em>You can upgrade them to a paid plan afterwards.</em>
+          {t('customerAddPage.noticePrefix', 'New customers will be added to your reseller account and given a free plan.')}
+          <em>{t('customerAddPage.noticeSuffix', 'You can upgrade them to a paid plan afterwards.')}</em>
         </Notice>
         <Button onClick={add} variant="contained" color="primary" disabled={!emails.length || adding}>
-          {adding ? 'Adding...' : 'Add'}
+          {adding ? t('customerAddPage.adding', 'Adding...') : t('customerAddPage.add', 'Add')}
         </Button>
-        <Button onClick={exit}>Cancel</Button>
+        <Button onClick={exit}>{t('customerAddPage.cancel', 'Cancel')}</Button>
       </Gutters>
     </Container>
   )

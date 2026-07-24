@@ -1,22 +1,23 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Dispatch } from '../store'
 import { dateDefaults } from './Duration/Duration'
 import { Tooltip, Card, CardContent, CardMedia, CardHeader, CardActions, Button, Typography } from '@mui/material'
-
-const types = {
-  GENERIC: 'Notice',
-  SYSTEM: 'System Update',
-  RELEASE: 'Release Note',
-  SECURITY: 'Security Notice',
-  COMMUNICATION: 'Announcement',
-}
 
 export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: number; hideMarkReadAction?: boolean }> = ({
   data,
   scrollPosition,
   hideMarkReadAction,
 }) => {
+  const { t } = useTranslation()
+  const types = {
+    GENERIC: t('announcementCard.typeGeneric', 'Notice'),
+    SYSTEM: t('announcementCard.typeSystem', 'System Update'),
+    RELEASE: t('announcementCard.typeRelease', 'Release Note'),
+    SECURITY: t('announcementCard.typeSecurity', 'Security Notice'),
+    COMMUNICATION: t('announcementCard.typeCommunication', 'Announcement'),
+  }
   const { announcements } = useDispatch<Dispatch>()
   const [read, setRead] = useState<boolean>(false)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -76,9 +77,9 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
         <Typography variant="h1" gutterBottom>
           {data.title}
           {unread && !hideMarkReadAction && (
-            <Tooltip title="Mark read">
+            <Tooltip title={t('announcementCard.markRead', 'Mark read')}>
               <Button onClick={handleRead} variant="contained" size="small" color="primary">
-                NEW
+                {t('announcementCard.new', 'NEW')}
               </Button>
             </Tooltip>
           )}
@@ -94,7 +95,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
       {data.link && (
         <CardActions>
           <Button color="primary" href={data.link} size="small" target="_blank">
-            Learn more
+            {t('announcementCard.learnMore', 'Learn more')}
           </Button>
         </CardActions>
       )}

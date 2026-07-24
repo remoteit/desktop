@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Button,
   Dialog,
@@ -27,6 +28,7 @@ type Props = {
 type Step = 'search' | 'confirm' | 'done'
 
 export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) => {
+  const { t } = useTranslation()
   const [step, setStep] = useState<Step>('search')
   const [email, setEmail] = useState('')
   const [searching, setSearching] = useState(false)
@@ -51,7 +53,7 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
 
   const handleSearch = async () => {
     if (!email.trim()) {
-      setError('Please enter an email address')
+      setError(t('addAdminDialog.enterEmail', 'Please enter an email address'))
       return
     }
 
@@ -66,10 +68,10 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
       if (users && users.length > 0) {
         setFoundUser(users[0])
       } else {
-        setError('No user found with that email address')
+        setError(t('addAdminDialog.noUserFound', 'No user found with that email address'))
       }
     } catch (err) {
-      setError('Failed to search for user')
+      setError(t('addAdminDialog.searchFailed', 'Failed to search for user'))
     } finally {
       setSearching(false)
     }
@@ -93,10 +95,10 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
       if (result !== 'ERROR') {
         setStep('confirm')
       } else {
-        setError('Failed to request admin promotion.')
+        setError(t('addAdminDialog.promotionRequestFailed', 'Failed to request admin promotion.'))
       }
     } catch (err) {
-      setError('Failed to request admin promotion.')
+      setError(t('addAdminDialog.promotionRequestFailed', 'Failed to request admin promotion.'))
     } finally {
       setPromoting(false)
     }
@@ -104,7 +106,7 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
 
   const handleConfirmCode = async () => {
     if (!confirmCode.trim()) {
-      setError('Please enter the 6-digit code')
+      setError(t('addAdminDialog.enterCode', 'Please enter the 6-digit code'))
       return
     }
 
@@ -117,10 +119,10 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
         setStep('done')
         onSuccess()
       } else {
-        setError('Invalid or expired code. Please try again.')
+        setError(t('addAdminDialog.invalidCodeRetry', 'Invalid or expired code. Please try again.'))
       }
     } catch (err) {
-      setError('Failed to confirm admin promotion.')
+      setError(t('addAdminDialog.confirmFailed', 'Failed to confirm admin promotion.'))
     } finally {
       setConfirming(false)
     }
@@ -136,13 +138,13 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
   const renderSearch = () => (
     <>
       <Typography variant="body2" color="textSecondary" gutterBottom>
-        Search for a user by email to promote them to admin.
+        {t('addAdminDialog.searchDescription', 'Search for a user by email to promote them to admin.')}
       </Typography>
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', marginTop: 2 }}>
         <TextField
           fullWidth
           autoFocus
-          label="Email Address"
+          label={t('addAdminDialog.emailAddress', 'Email Address')}
           type="email"
           value={email}
           onChange={e => {
@@ -156,7 +158,7 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
           disabled={searching || promoting}
         />
         <Button variant="outlined" onClick={handleSearch} disabled={searching || promoting || !email.trim()}>
-          {searching ? <CircularProgress size={20} /> : 'Search'}
+          {searching ? <CircularProgress size={20} /> : t('addAdminDialog.search', 'Search')}
         </Button>
       </Box>
 
@@ -171,13 +173,15 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
 
           {foundUser.admin ? (
             <Notice severity="warning" fullWidth sx={{ marginTop: 1 }}>
-              This user is already an admin.
+              {t('addAdminDialog.alreadyAdmin', 'This user is already an admin.')}
             </Notice>
           ) : (
             <>
               <Notice severity="info" fullWidth sx={{ marginTop: 1 }}>
-                A confirmation email will be sent to your admin email address. You must click the link or enter the
-                code to complete the promotion.
+                {t(
+                  'addAdminDialog.confirmationEmailNotice',
+                  'A confirmation email will be sent to your admin email address. You must click the link or enter the code to complete the promotion.'
+                )}
               </Notice>
               {error && (
                 <Notice severity="error" fullWidth sx={{ marginTop: 1 }}>
@@ -194,16 +198,20 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
   const renderConfirm = () => (
     <>
       <Notice severity="success" fullWidth>
-        Confirmation email sent! Check your inbox for the code.
+        {t('addAdminDialog.confirmationEmailSent', 'Confirmation email sent! Check your inbox for the code.')}
       </Notice>
       <Typography variant="body2" color="textSecondary" sx={{ marginTop: 2 }}>
-        Promoting <strong>{foundUser?.email}</strong> to admin.
-        Enter the 6-digit code from the email, or click the link in the email to confirm.
+        {t('addAdminDialog.promotingBefore', 'Promoting')} <strong>{foundUser?.email}</strong>{' '}
+        {t('addAdminDialog.promotingAfter', 'to admin.')}{' '}
+        {t(
+          'addAdminDialog.confirmInstructions',
+          'Enter the 6-digit code from the email, or click the link in the email to confirm.'
+        )}
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
         <TextField
           autoFocus
-          label="Confirmation Code"
+          label={t('addAdminDialog.confirmationCode', 'Confirmation Code')}
           value={confirmCode}
           onChange={e => {
             const val = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6)
@@ -231,10 +239,10 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
     <Box sx={{ textAlign: 'center', paddingY: 2 }}>
       <Icon name="check-circle" size="xxl" color="success" />
       <Typography variant="h2" sx={{ marginTop: 2 }}>
-        Admin Added
+        {t('addAdminDialog.adminAdded', 'Admin Added')}
       </Typography>
       <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
-        <strong>{foundUser?.email}</strong> is now an admin.
+        <strong>{foundUser?.email}</strong> {t('addAdminDialog.isNowAdmin', 'is now an admin.')}
       </Typography>
     </Box>
   )
@@ -242,9 +250,9 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {step === 'search' && 'Add Admin'}
-        {step === 'confirm' && 'Confirm Admin Promotion'}
-        {step === 'done' && 'Admin Added'}
+        {step === 'search' && t('addAdminDialog.addAdmin', 'Add Admin')}
+        {step === 'confirm' && t('addAdminDialog.confirmAdminPromotion', 'Confirm Admin Promotion')}
+        {step === 'done' && t('addAdminDialog.adminAdded', 'Admin Added')}
       </DialogTitle>
       <DialogContent>
         {step === 'search' && renderSearch()}
@@ -254,28 +262,30 @@ export const AddAdminDialog: React.FC<Props> = ({ open, onClose, onSuccess }) =>
       <DialogActions>
         {step === 'search' && (
           <>
-            <Button onClick={onClose}>Cancel</Button>
+            <Button onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
             {foundUser && !foundUser.admin && (
               <Button variant="contained" color="primary" onClick={handlePromote} disabled={promoting}>
-                {promoting ? 'Sending...' : 'Send Promotion Request'}
+                {promoting
+                  ? t('addAdminDialog.sendingEllipsis', 'Sending...')
+                  : t('addAdminDialog.sendPromotionRequest', 'Send Promotion Request')}
               </Button>
             )}
           </>
         )}
         {step === 'confirm' && (
           <>
-            <Button onClick={onClose}>Cancel</Button>
+            <Button onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
             <Button
               variant="contained"
               color="primary"
               onClick={handleConfirmCode}
               disabled={confirming || confirmCode.length < 6}
             >
-              {confirming ? 'Confirming...' : 'Confirm'}
+              {confirming ? t('common.confirmingEllipsis', 'Confirming...') : t('common.confirm', 'Confirm')}
             </Button>
           </>
         )}
-        {step === 'done' && <Button onClick={onClose}>Close</Button>}
+        {step === 'done' && <Button onClick={onClose}>{t('common.close', 'Close')}</Button>}
       </DialogActions>
     </Dialog>
   )
