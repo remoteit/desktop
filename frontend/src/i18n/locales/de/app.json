@@ -2389,5 +2389,12 @@
     "minecraftBedrock": {
       "use": "Wählen Sie diese Option für Minecraft Bedrock Edition-Server, die UDP für das Gameplay auf Plattformen wie Mobilgeräten und Konsolen verwenden, sodass Spieler sich verbinden und gemeinsam spielen können."
     }
+  },
+  "network": {
+    "active": "Aktiv",
+    "cloudProxy": "Cloud-Proxy",
+    "local": "Lokal",
+    "personal": "Persönlich",
+    "recent": "Kürzlich"
   }
 }

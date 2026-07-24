@@ -2344,5 +2344,12 @@
     "minecraftBedrock": {
       "use": "Minecraft Bedrock Editionサーバー向けに選択します。モバイルやコンソールなどのプラットフォームでのゲームプレイにUDPを使用し、プレイヤーが接続して一緒にプレイできるようにします。"
     }
+  },
+  "network": {
+    "active": "アクティブ",
+    "cloudProxy": "クラウドプロキシ",
+    "local": "ローカル",
+    "personal": "個人用",
+    "recent": "最近"
   }
 }

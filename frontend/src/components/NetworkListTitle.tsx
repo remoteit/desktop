@@ -1,5 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
+import { networkName } from '../models/networks'
 import { ListItemLocation } from './ListItemLocation'
 import { itemSx } from './ConnectionListItem'
 import { Avatar } from './Avatar'
@@ -72,7 +73,7 @@ export const NetworkListTitle: React.FC<Props> = ({
       onClick={noLink ? onClick : undefined}
       title={
         <Title>
-          {network?.name}
+          {networkName(network?.name)}
           {expanded ? '' : ' ...'}
         </Title>
       }

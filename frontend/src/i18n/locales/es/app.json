@@ -2434,5 +2434,12 @@
     "minecraftBedrock": {
       "use": "Elígelo para servidores de Minecraft Bedrock Edition, que usan UDP para el juego en plataformas como móviles y consolas, lo que permite a los jugadores conectarse y jugar juntos."
     }
+  },
+  "network": {
+    "active": "Activo",
+    "cloudProxy": "Proxy en la nube",
+    "local": "Local",
+    "personal": "Personal",
+    "recent": "Recientes"
   }
 }
