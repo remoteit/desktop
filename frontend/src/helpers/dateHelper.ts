@@ -11,6 +11,12 @@ export const getLocale = () => i18n.resolvedLanguage || window.navigator.languag
 export const humanizeDuration = (ms: number, options: HumanizerOptions = {}) =>
   humanize(ms, { language: getLocale(), fallbacks: ['en'], ...options })
 
+// Wrap a humanized duration as a localized relative-past phrase. Word order is
+// language-specific (en "3 days ago", de "vor 3 Tagen", ja "3日前", es "hace 3 días"),
+// so the ordering lives in the catalog rather than a hard-coded English suffix.
+export const relativeTime = (duration: string): string =>
+  i18n.t('duration.ago', { defaultValue: '{{duration}} ago', duration })
+
 export function isToday(dateToCheck: Date): boolean {
   const today = new Date().toLocaleDateString()
   const check = dateToCheck.toLocaleDateString()

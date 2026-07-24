@@ -53,7 +53,7 @@ export const ProfilePage: React.FC = () => {
         <Avatar email={user.email} size={125} />
         <Typography variant="caption">
           {t('settings.gravatarImported', 'Your profile picture is imported from the free service Gravatar.')}
-          <br /> {t('settings.gravatarEdit', 'To edit or add a profile image please visit')}
+          <br /> {t('settings.gravatarEdit', 'To edit or add a profile image please visit')}{' '}
           <Link href="https://gravatar.com">gravatar.com.</Link>
         </Typography>
       </Gutters>

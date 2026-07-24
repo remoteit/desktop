@@ -922,6 +922,9 @@
     "transferInfo": "デバイスの譲渡は通常数秒で完了します。処理が完了すると、あなたと新しい所有者にメールが送信されます。",
     "transferringTo": "「{{name}}」を新しい所有者に譲渡しています。"
   },
+  "duration": {
+    "ago": "{{duration}}前"
+  },
   "eventMessage": {
     "allowed": "許可されました",
     "and": "および",
