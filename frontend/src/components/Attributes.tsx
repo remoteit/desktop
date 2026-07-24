@@ -50,9 +50,11 @@ export class Attribute<TOptions = IDataOptions> {
   // the `columns.<id>` namespace. Non-string labels (React nodes) pass through
   // unchanged; a missing translation falls back to the original English label.
   get label(): string | React.ReactNode {
-    return typeof this._label === 'string'
-      ? i18n.t(`columns.${this.id}`, { defaultValue: this._label })
-      : this._label
+    // Non-string labels (React nodes) and intentionally-blank labels (e.g. an
+    // actions column) pass through untranslated — translating an empty default
+    // with returnEmptyString:false would otherwise leak the raw `columns.<id>` key.
+    if (typeof this._label !== 'string' || this._label === '') return this._label
+    return i18n.t(`columns.${this.id}`, { defaultValue: this._label })
   }
   set label(value: string | React.ReactNode) {
     this._label = value

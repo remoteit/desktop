@@ -10,7 +10,7 @@ import { validPort, isFileToken } from '../helpers/connectionHelper'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { TemplateSetting } from './TemplateSetting'
-import { ROUTES } from './RouteSetting'
+import { getRoutes } from './RouteSetting'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
 
@@ -38,6 +38,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   const app = useApplication(undefined, connection)
 
   customTokens = customTokens.length ? customTokens : app.allCustomTokens
+  const routes = getRoutes()
 
   return (
     <>
@@ -66,20 +67,20 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           value={routingLock || attributes.route || ''}
           disabled={!!routingLock || disabled}
           variant="filled"
-          placeholder={routingLock || attributes.route || ROUTES[0].key}
+          placeholder={routingLock || attributes.route || routes[0].key}
           onChange={event => onChange({ ...attributes, route: event.target.value as IRouteType })}
         >
           <MenuItem value="">
             <i>{t('serviceAttributesForm.noDefaultOverride', 'No default override')}</i>
           </MenuItem>
-          {ROUTES.map(route => (
+          {routes.map(route => (
             <MenuItem value={route.key} key={route.key}>
               {route.name}
             </MenuItem>
           ))}
         </TextField>
         <Typography variant="caption">
-          {routingMessage || ROUTES.find(route => route.key === attributes.route)?.description}
+          {routingMessage || routes.find(route => route.key === attributes.route)?.description}
           <i> {t('serviceAttributesForm.routingDesktopOnly', 'Routing is only available on desktop.')}</i>
           <b> {t('serviceAttributesForm.defaultAdaptiveRouting', 'Default adaptive routing')}</b>
         </Typography>

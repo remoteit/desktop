@@ -40,9 +40,11 @@ i18n
   .use(lazyBackend)
   .use(initReactI18next)
   .init({
-    // The resolved language is driven by redux (ui.setLanguage); 'en' here is a
-    // safe boot value overwritten before first paint.
-    lng: 'en',
+    // Resolve the language at boot from the OS/browser (navigator.language) so
+    // signed-out screens (Cognito sign-in, signup, MFA) follow the system locale
+    // immediately. The persisted per-account override is session-scoped and thus
+    // unavailable until sign-in, when ui.setLanguage re-applies it.
+    lng: resolveLanguage(),
     fallbackLng: 'en',
     ns: NAMESPACES as unknown as string[],
     defaultNS: 'app',

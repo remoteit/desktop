@@ -939,6 +939,9 @@
     "transferInfo": "Die Geräteübertragung dauert in der Regel nur wenige Sekunden. Sobald der Vorgang abgeschlossen ist, erhalten Sie und der neue Eigentümer eine E-Mail.",
     "transferringTo": "Sie übertragen „{{name}}“ an einen neuen Eigentümer."
   },
+  "duration": {
+    "ago": "vor {{duration}}"
+  },
   "eventMessage": {
     "allowed": "erlaubt",
     "and": "und",

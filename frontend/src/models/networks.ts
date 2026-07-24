@@ -63,18 +63,22 @@ export const recentNetwork: INetwork = {
   icon: 'clock-rotate-left',
 }
 
-// Built-in/system network group names are English constants; translate them for
-// display (keys hand-maintained in the catalogs). User-named networks — anything
-// not in this map — pass through unchanged.
+// Built-in/system networks are synthetic groups with reserved ids (never used by
+// real user networks); their English names are translated for display via
+// hand-maintained catalog keys. Gating on the reserved id — not the name — means a
+// user who names their own network "Local"/"Recent"/etc. is never relabeled.
+const SYSTEM_NETWORK_IDS = new Set([DEFAULT_ID, 'recent', 'public'])
 const SYSTEM_NETWORK_KEYS: ILookup<string> = {
   Active: 'network.active',
   'Cloud Proxy': 'network.cloudProxy',
   Recent: 'network.recent',
   Local: 'network.local',
-  Personal: 'network.personal',
 }
-export const networkName = (name?: string): string =>
-  (name && SYSTEM_NETWORK_KEYS[name] ? i18n.t(SYSTEM_NETWORK_KEYS[name], { defaultValue: name }) : name) || ''
+export const networkName = (network?: INetwork): string => {
+  if (!network) return ''
+  const key = SYSTEM_NETWORK_IDS.has(network.id) ? SYSTEM_NETWORK_KEYS[network.name] : undefined
+  return (key ? i18n.t(key, { defaultValue: network.name }) : network.name) || ''
+}
 
 export type addConnectionProps = {
   serviceId: string

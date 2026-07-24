@@ -22,6 +22,7 @@ import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
+import { getLocale } from '../helpers/dateHelper'
 import { spacing } from '../styling'
 import { getHasPartner } from '../models/partnerStats'
 
@@ -83,8 +84,8 @@ export const SidebarNav: React.FC = () => {
             {!!counts.active && !counts.memberships ? (
               <Tooltip
                 title={t('nav.connectionsTooltip', {
-                  connections: counts.connections.toLocaleString(),
-                  active: counts.active.toLocaleString(),
+                  connections: counts.connections.toLocaleString(getLocale()),
+                  active: counts.active.toLocaleString(getLocale()),
                   defaultValue: '{{connections}} Connections - {{active}} Connected',
                 })}
                 placement="top"
@@ -92,7 +93,7 @@ export const SidebarNav: React.FC = () => {
               >
                 <Chip
                   size="small"
-                  label={counts.active.toLocaleString()}
+                  label={counts.active.toLocaleString(getLocale())}
                   sx={{ fontWeight: 500 }}
                   variant="filled"
                   color="primary"
@@ -107,13 +108,13 @@ export const SidebarNav: React.FC = () => {
                 >
                   <Tooltip
                     title={t('nav.idleConnections', {
-                      connections: counts.connections.toLocaleString(),
+                      connections: counts.connections.toLocaleString(getLocale()),
                       defaultValue: '{{connections}} Idle Connections',
                     })}
                     placement="top"
                     arrow
                   >
-                    <Chip size="small" label={counts.connections.toLocaleString()} />
+                    <Chip size="small" label={counts.connections.toLocaleString(getLocale())} />
                   </Tooltip>
                 </Badge>
               )
@@ -122,7 +123,7 @@ export const SidebarNav: React.FC = () => {
           <ListItemLocation title={t('nav.devices', 'Devices')} icon="router" to="/devices" match="/devices" dense>
             {!!counts.devices && (
               <Tooltip title={t('nav.totalDevices', 'Total Devices')} placement="top" arrow>
-                <Chip size="small" label={counts.devices.toLocaleString()} />
+                <Chip size="small" label={counts.devices.toLocaleString(getLocale())} />
               </Tooltip>
             )}
           </ListItemLocation>
@@ -135,7 +136,7 @@ export const SidebarNav: React.FC = () => {
           >
             {!!counts.networks && (
               <Tooltip title={t('nav.totalNetworks', 'Total Networks')} placement="top" arrow>
-                <Chip size="small" label={counts.networks.toLocaleString()} />
+                <Chip size="small" label={counts.networks.toLocaleString(getLocale())} />
               </Tooltip>
             )}
           </ListItemLocation>

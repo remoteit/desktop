@@ -73,7 +73,7 @@ export const NetworkListTitle: React.FC<Props> = ({
       onClick={noLink ? onClick : undefined}
       title={
         <Title>
-          {networkName(network?.name)}
+          {networkName(network)}
           {expanded ? '' : ' ...'}
         </Title>
       }

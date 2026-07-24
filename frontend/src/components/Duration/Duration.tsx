@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useInterval } from '../../hooks/useInterval'
 import { HumanizerOptions } from 'humanize-duration'
-import { humanizeDuration as humanize } from '../../helpers/dateHelper'
+import { humanizeDuration as humanize, relativeTime, getLocale } from '../../helpers/dateHelper'
 
 export const dateDefaults: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -47,16 +47,18 @@ export const Duration: React.FC<Props> = ({
 
   const duration = Math.round((now - startTime) / 1000) * 1000
 
+  const withAgo = (text: string) => (ago ? relativeTime(text) : text)
+
   let display: string
   if (tiered) {
-    const locale = navigator.language
+    const locale = getLocale()
     const date = new Date(startTime)
     if (duration < aDay) {
       // hour:min — "3 hours, 25 minutes" (controlled by humanizeOptions)
-      display = humanize(duration, humanizeOptions) + (ago ? ' ago' : '')
+      display = withAgo(humanize(duration, humanizeOptions))
     } else if (duration < aMonth) {
       // day:hour — "5 days, 3 hours"
-      display = humanize(duration, { largest: 2, units: ['d', 'h'], round: true }) + (ago ? ' ago' : '')
+      display = withAgo(humanize(duration, { largest: 2, units: ['d', 'h'], round: true }))
     } else if (duration < aYear) {
       // month:day — "Feb 17"
       display = date.toLocaleString(locale, { month: 'short', day: 'numeric' })
@@ -67,8 +69,8 @@ export const Duration: React.FC<Props> = ({
   } else {
     display =
       duration > aDay
-        ? new Date(startTime).toLocaleString(navigator.language, dateOptions)
-        : humanize(duration, humanizeOptions) + (ago ? ' ago' : '')
+        ? new Date(startTime).toLocaleString(getLocale(), dateOptions)
+        : withAgo(humanize(duration, humanizeOptions))
   }
 
   return <>{display || '-'}</>

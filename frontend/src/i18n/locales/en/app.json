@@ -939,6 +939,9 @@
     "transferInfo": "Device transfer typically takes a few seconds to complete. An email will be sent to you and the new owner when the process is completed.",
     "transferringTo": "You are transferring \"{{name}}\" to a new owner."
   },
+  "duration": {
+    "ago": "{{duration}} ago"
+  },
   "eventMessage": {
     "allowed": "allowed",
     "and": "and",

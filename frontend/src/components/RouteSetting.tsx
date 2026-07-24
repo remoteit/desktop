@@ -7,7 +7,10 @@ import { useDispatch } from 'react-redux'
 import { newConnection, setConnection, getRoute, routeTypeToSettings } from '../helpers/connectionHelper'
 import { SelectSetting } from './SelectSetting'
 
-export const ROUTES: IRoute[] = [
+// Built at call time (not module load) so the labels resolve in the active
+// language and update when the user switches language, rather than being frozen
+// to whatever locale was loaded when this module was first imported.
+export const getRoutes = (): IRoute[] => [
   {
     key: 'failover',
     icon: 'code-branch',
@@ -47,12 +50,13 @@ export const RouteSetting: React.FC<{ service: IService; connection: IConnection
 
   if (!service) return null
 
+  const routes = getRoutes()
   const defaults = newConnection(service)
   const disabled =
     connection.connected || ['p2p', 'proxy'].includes(service.attributes.route || '') || connection.connectLink
   const connectionRoute = getRoute(connection)
   const defaultRoute = getRoute(defaults)
-  const route = ROUTES.find(r => r.key === connectionRoute)
+  const route = routes.find(r => r.key === connectionRoute)
 
   return (
     <SelectSetting
@@ -62,7 +66,7 @@ export const RouteSetting: React.FC<{ service: IService; connection: IConnection
       defaultValue={defaultRoute}
       label={t('routeSetting.label', 'Routing')}
       value={connectionRoute}
-      values={ROUTES.map(r => ({ key: r.key, name: r.name, description: r.description }))}
+      values={routes.map(r => ({ key: r.key, name: r.name, description: r.description }))}
       onChange={route => {
         setOpen(!open)
         const updated = {
