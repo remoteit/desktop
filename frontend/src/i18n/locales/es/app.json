@@ -1,6 +1,8 @@
 {
   "common": {
-    "areYouSure": "¿Estás seguro?"
+    "areYouSure": "¿Estás seguro?",
+    "save": "Guardar",
+    "saving": "Guardando"
   },
   "nav": {
     "account": "Cuenta",
@@ -94,5 +96,39 @@
       "label": "Desinstalar",
       "subLabel": "Da de baja este dispositivo, elimina por completo todos los datos guardados y desinstala el agente del sistema y las herramientas de línea de comandos. Haz esto antes de eliminar la aplicación de tu sistema. Solo puede hacerlo el propietario del dispositivo."
     }
+  },
+  "settings": {
+    "accessKeys": "Claves de acceso",
+    "accountDeletion": "Eliminación de cuenta",
+    "application": "Aplicación",
+    "billing": "Facturación",
+    "connectedApps": "Aplicaciones conectadas",
+    "connectionDefaults": "Valores predeterminados de conexión",
+    "docs": "Documentación",
+    "email": "Correo electrónico",
+    "emailLanguage": "Idioma del correo electrónico",
+    "graphs": "Gráficos",
+    "gravatarEdit": "Para editar o añadir una imagen de perfil, visita",
+    "gravatarImported": "Tu imagen de perfil se importa del servicio gratuito Gravatar.",
+    "invalidUrl": "Introduce una URL válida",
+    "license": "Licencia",
+    "memberSince": "Miembro desde",
+    "notificationMethod": "Método",
+    "notifications": "Notificaciones",
+    "notifyEmail": "Correo electrónico",
+    "notifySystem": "Notificación del sistema",
+    "notifyWebhook": "Webhook",
+    "profile": "Perfil",
+    "security": "Seguridad",
+    "signOutEverywhere": "Cerrar sesión en todas partes",
+    "signOutEverywhereButton": "Cerrar sesión en todas partes",
+    "signOutEverywhereDescription": "Esto cierra tu sesión de Remote.It en todos los lugares donde has iniciado sesión.",
+    "subscription": "Suscripción",
+    "tags": "Etiquetas",
+    "testSettings": "Configuración de prueba",
+    "title": "Configuración",
+    "urlEndpoint": "Endpoint de URL",
+    "visitWeb": "Visitar Remote.It en la web",
+    "webhookHelp": "Usa una URL HTTPS pública. El endpoint debe aceptar POST y devolver 200 en un plazo de 5 segundos."
   }
 }
