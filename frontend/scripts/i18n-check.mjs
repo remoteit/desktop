@@ -36,20 +36,58 @@ const report = msg => {
   console.error(`  ✗ ${msg}`)
 }
 
+// Plural keys (key_one, key_other, …) expand per-locale: Japanese has only
+// `other`, English/German/Spanish have `one`+`other`. So the set of concrete
+// keys legitimately differs between locales — compare by plural BASE plus each
+// locale's own CLDR categories, not by raw key equality.
+const PLURAL_SUFFIX = /^(.*)_(zero|one|two|few|many|other)$/
+const splitPlural = key => {
+  const m = key.match(PLURAL_SUFFIX)
+  return m ? { base: m[1], cat: m[2] } : { base: key, cat: null }
+}
+const categoriesFor = locale => new Set(new Intl.PluralRules(locale, { type: 'cardinal' }).resolvedOptions().pluralCategories)
+
 for (const ns of namespaces) {
   const source = flatten(load(SOURCE, ns))
-  const sourceKeys = new Set(Object.keys(source))
 
   for (const [key, value] of Object.entries(source)) {
     if (typeof value === 'string' && value.trim() === '') report(`[${SOURCE}/${ns}] empty English value: "${key}"`)
+  }
+
+  // Split English keys into plain keys and plural bases (a base is "plural" if
+  // English carries any plural form of it).
+  const sourcePlain = new Set()
+  const sourcePluralBases = new Set()
+  for (const key of Object.keys(source)) {
+    const { base, cat } = splitPlural(key)
+    if (cat) sourcePluralBases.add(base)
+    else sourcePlain.add(key)
   }
 
   for (const locale of locales) {
     if (locale === SOURCE) continue
     const target = flatten(load(locale, ns))
     const targetKeys = new Set(Object.keys(target))
-    for (const key of sourceKeys) if (!targetKeys.has(key)) report(`[${locale}/${ns}] missing key: "${key}"`)
-    for (const key of targetKeys) if (!sourceKeys.has(key)) report(`[${locale}/${ns}] dead key (not in ${SOURCE}): "${key}"`)
+    const cats = categoriesFor(locale)
+
+    // Plain keys must match one-for-one.
+    for (const key of sourcePlain) if (!targetKeys.has(key)) report(`[${locale}/${ns}] missing key: "${key}"`)
+
+    // Each English plural base must have exactly this locale's plural categories.
+    for (const base of sourcePluralBases)
+      for (const cat of cats)
+        if (!targetKeys.has(`${base}_${cat}`)) report(`[${locale}/${ns}] missing plural form: "${base}_${cat}"`)
+
+    // Dead keys: present here but not accounted for in English.
+    for (const key of targetKeys) {
+      const { base, cat } = splitPlural(key)
+      if (cat) {
+        if (!sourcePluralBases.has(base)) report(`[${locale}/${ns}] dead key (not in ${SOURCE}): "${key}"`)
+        else if (!cats.has(cat)) report(`[${locale}/${ns}] unexpected plural form for ${locale}: "${key}"`)
+      } else if (!sourcePlain.has(key)) {
+        report(`[${locale}/${ns}] dead key (not in ${SOURCE}): "${key}"`)
+      }
+    }
   }
 }
 

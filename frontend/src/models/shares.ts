@@ -3,6 +3,7 @@ import { graphQLUnShareDevice, graphQLShareDevice } from '../services/graphQLMut
 import { getAccess } from '../helpers/userHelper'
 import { getDevices } from '../selectors/devices'
 import { RootModel } from '.'
+import i18n from '../i18n'
 
 type ShareParams = { [key: string]: any }
 
@@ -62,7 +63,9 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         await dispatch.devices.fetchSingleFull({ id: deviceId })
         await dispatch.organization.fetch()
-        dispatch.ui.set({ successMessage: `${email} successfully removed.` })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:share.removed', { email, defaultValue: '{{email}} successfully removed.' }),
+        })
       }
       set({ deleting: false })
     },

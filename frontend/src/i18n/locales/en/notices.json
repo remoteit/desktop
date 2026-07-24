@@ -1,1 +1,99 @@
-{}
+{
+  "access": {
+    "noDevice": "You don't have access to that device. ({{id}})",
+    "noService": "You don't have access to that service. ({{id}})"
+  },
+  "auth": {
+    "emailModified": "Email modified successfully.",
+    "invalidFormat": "Invalid format.",
+    "loginFailed": "Login failed.",
+    "passwordChanged": "Password changed successfully."
+  },
+  "connection": {
+    "surveyFailed": "Connection survey submission failed. Please contact support."
+  },
+  "device": {
+    "cannotDeleteOnline": "You cannot delete an online device. Deselect \"{{name}}\" and try again.",
+    "cannotDeleteShared": "You cannot delete a shared device. Deselect or leave \"{{name}}\" and try again.",
+    "cannotTransferShared": "You cannot transfer a shared device. Deselect or leave \"{{name}}\" and try again.",
+    "deleted": "\"{{name}}\" was successfully deleted.",
+    "deletedCount_one": "{{count}} device was successfully deleted.",
+    "deletedCount_other": "{{count}} devices were successfully deleted.",
+    "idNotFound": "A device id could not be found. Deselect {{id}} and try again.",
+    "noPermissionDelete": "You do not have permission to delete a device. Deselect \"{{name}}\" and try again.",
+    "noPermissionTransfer": "You do not have permission to transfer a device. Deselect \"{{name}}\" and try again.",
+    "notFound": "Your device ({{code}}) could not be found.",
+    "registered": "'{{name}}' was successfully registered!",
+    "removed": "\"{{name}}\" was successfully removed.",
+    "restored": "Device restored successfully!",
+    "transferred": "\"{{name}}\" was successfully transferred to {{email}}.",
+    "transferredCount_one": "{{count}} device was successfully transferred to {{email}}.",
+    "transferredCount_other": "{{count}} devices were successfully transferred to {{email}}.",
+    "unregistered": "Device unregistered successfully!"
+  },
+  "feedback": {
+    "sendError": "Sending message encountered an error. Please try again."
+  },
+  "file": {
+    "deleteError": "Error deleting file",
+    "updateError": "Error updating file"
+  },
+  "job": {
+    "deleteError": "Error deleting job",
+    "loadLogsError": "Couldn’t load logs: {{message}}",
+    "noDeviceLogs": "No logs available for this device yet.",
+    "noLogs": "No logs available yet.",
+    "noRunLogs": "No logs are available for this run yet."
+  },
+  "mfa": {
+    "enabled": "Two-factor authentication enabled successfully.",
+    "enableError": "Two-factor authentication enabled error: {{error}}",
+    "invalidTotp": "Invalid TOTP Code. ({{error}})",
+    "phoneVerificationError": "Phone verification error: {{error}}",
+    "updatePhoneError": "Update phone error: {{error}}",
+    "verificationSent": "Verification sent."
+  },
+  "network": {
+    "addFailed": "Adding network failed. Please contact support.",
+    "removeConnectionFailed": "Failed to remove network connection ({{serviceId}}) from {{network}}. Please contact support."
+  },
+  "organization": {
+    "created": "Your organization has been created.",
+    "customerRemoveError": "There was a problem removing a customer. Please contact support if the issue persists",
+    "left": "You have successfully left the organization.",
+    "removed": "Your organization has been removed.",
+    "removedNamed": "Successfully removed “{{name}}”.",
+    "resellerReportError": "Failed to get reseller report URL",
+    "updateFailed": "{{type}} update failed, please validate your form data."
+  },
+  "plan": {
+    "cancelFailed": "Subscription cancellation failed, please contact support.",
+    "checkoutFailed": "Checkout failed, please contact support.",
+    "missingPrice": "Plan selection missing price",
+    "purchaseError": "Error purchasing license",
+    "subscriptionUpdatedOther": "{{email}}'s {{plan}} subscription updated.",
+    "subscriptionUpdatedYours": "Your {{plan}} subscription updated.",
+    "updateFailed": "Subscription update failed, please contact support."
+  },
+  "service": {
+    "linkRemoveError": "An error occurred when trying to remove the service link.",
+    "removed": "Service was successfully removed.",
+    "updateError": "Could not update service."
+  },
+  "share": {
+    "removed": "{{email}} successfully removed."
+  },
+  "tag": {
+    "added_one": "{{tag}} added to {{count}} device.",
+    "added_other": "{{tag}} added to {{count}} devices.",
+    "merged": "Tag merged into existing tag ‘{{name}}.’",
+    "renameError": "Your tag ({{name}}) could not be renamed."
+  },
+  "user": {
+    "languageChanged": "Language changed to {{language}}",
+    "leaveResellerError": "Failed to leave reseller"
+  },
+  "version": {
+    "unsupported": "This version of Desktop is no longer supported. It should auto update shortly."
+  }
+}

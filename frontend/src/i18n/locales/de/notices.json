@@ -1,1 +1,99 @@
-{}
+{
+  "access": {
+    "noDevice": "Sie haben keinen Zugriff auf dieses Gerät. ({{id}})",
+    "noService": "Sie haben keinen Zugriff auf diesen Dienst. ({{id}})"
+  },
+  "auth": {
+    "emailModified": "E-Mail-Adresse erfolgreich geändert.",
+    "invalidFormat": "Ungültiges Format.",
+    "loginFailed": "Anmeldung fehlgeschlagen.",
+    "passwordChanged": "Passwort erfolgreich geändert."
+  },
+  "connection": {
+    "surveyFailed": "Die Übermittlung der Verbindungsumfrage ist fehlgeschlagen. Bitte wenden Sie sich an den Support."
+  },
+  "device": {
+    "cannotDeleteOnline": "Ein Online-Gerät kann nicht gelöscht werden. Heben Sie die Auswahl von „{{name}}“ auf und versuchen Sie es erneut.",
+    "cannotDeleteShared": "Ein freigegebenes Gerät kann nicht gelöscht werden. Heben Sie die Auswahl von „{{name}}“ auf oder verlassen Sie die Freigabe und versuchen Sie es erneut.",
+    "cannotTransferShared": "Ein freigegebenes Gerät kann nicht übertragen werden. Heben Sie die Auswahl von „{{name}}“ auf oder verlassen Sie die Freigabe und versuchen Sie es erneut.",
+    "deleted": "„{{name}}“ wurde erfolgreich gelöscht.",
+    "deletedCount_one": "{{count}} Gerät wurde erfolgreich gelöscht.",
+    "deletedCount_other": "{{count}} Geräte wurden erfolgreich gelöscht.",
+    "idNotFound": "Eine Geräte-ID konnte nicht gefunden werden. Heben Sie die Auswahl von {{id}} auf und versuchen Sie es erneut.",
+    "noPermissionDelete": "Sie haben keine Berechtigung, ein Gerät zu löschen. Heben Sie die Auswahl von „{{name}}“ auf und versuchen Sie es erneut.",
+    "noPermissionTransfer": "Sie haben keine Berechtigung, ein Gerät zu übertragen. Heben Sie die Auswahl von „{{name}}“ auf und versuchen Sie es erneut.",
+    "notFound": "Ihr Gerät ({{code}}) konnte nicht gefunden werden.",
+    "registered": "„{{name}}“ wurde erfolgreich registriert!",
+    "removed": "„{{name}}“ wurde erfolgreich entfernt.",
+    "restored": "Gerät erfolgreich wiederhergestellt!",
+    "transferred": "„{{name}}“ wurde erfolgreich an {{email}} übertragen.",
+    "transferredCount_one": "{{count}} Gerät wurde erfolgreich an {{email}} übertragen.",
+    "transferredCount_other": "{{count}} Geräte wurden erfolgreich an {{email}} übertragen.",
+    "unregistered": "Geräteregistrierung erfolgreich aufgehoben!"
+  },
+  "feedback": {
+    "sendError": "Beim Senden der Nachricht ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+  },
+  "file": {
+    "deleteError": "Fehler beim Löschen der Datei",
+    "updateError": "Fehler beim Aktualisieren der Datei"
+  },
+  "job": {
+    "deleteError": "Fehler beim Löschen des Jobs",
+    "loadLogsError": "Protokolle konnten nicht geladen werden: {{message}}",
+    "noDeviceLogs": "Für dieses Gerät sind noch keine Protokolle verfügbar.",
+    "noLogs": "Es sind noch keine Protokolle verfügbar.",
+    "noRunLogs": "Für diesen Durchlauf sind noch keine Protokolle verfügbar."
+  },
+  "mfa": {
+    "enabled": "Zwei-Faktor-Authentifizierung erfolgreich aktiviert.",
+    "enableError": "Fehler beim Aktivieren der Zwei-Faktor-Authentifizierung: {{error}}",
+    "invalidTotp": "Ungültiger TOTP-Code. ({{error}})",
+    "phoneVerificationError": "Fehler bei der Telefonverifizierung: {{error}}",
+    "updatePhoneError": "Fehler beim Aktualisieren der Telefonnummer: {{error}}",
+    "verificationSent": "Bestätigung gesendet."
+  },
+  "network": {
+    "addFailed": "Hinzufügen des Netzwerks fehlgeschlagen. Bitte wenden Sie sich an den Support.",
+    "removeConnectionFailed": "Die Netzwerkverbindung ({{serviceId}}) konnte nicht von {{network}} entfernt werden. Bitte wenden Sie sich an den Support."
+  },
+  "organization": {
+    "created": "Ihre Organisation wurde erstellt.",
+    "customerRemoveError": "Beim Entfernen eines Kunden ist ein Problem aufgetreten. Bitte wenden Sie sich an den Support, falls das Problem weiterhin besteht",
+    "left": "Sie haben die Organisation erfolgreich verlassen.",
+    "removed": "Ihre Organisation wurde entfernt.",
+    "removedNamed": "„{{name}}“ wurde erfolgreich entfernt.",
+    "resellerReportError": "Die URL für den Reseller-Bericht konnte nicht abgerufen werden",
+    "updateFailed": "Aktualisierung von {{type}} fehlgeschlagen, bitte überprüfen Sie Ihre Formulardaten."
+  },
+  "plan": {
+    "cancelFailed": "Kündigung des Abonnements fehlgeschlagen, bitte wenden Sie sich an den Support.",
+    "checkoutFailed": "Bezahlvorgang fehlgeschlagen, bitte wenden Sie sich an den Support.",
+    "missingPrice": "Für die ausgewählte Preisstufe fehlt ein Preis",
+    "purchaseError": "Fehler beim Kauf der Lizenz",
+    "subscriptionUpdatedOther": "Das {{plan}}-Abonnement von {{email}} wurde aktualisiert.",
+    "subscriptionUpdatedYours": "Ihr {{plan}}-Abonnement wurde aktualisiert.",
+    "updateFailed": "Aktualisierung des Abonnements fehlgeschlagen, bitte wenden Sie sich an den Support."
+  },
+  "service": {
+    "linkRemoveError": "Beim Entfernen des Dienstlinks ist ein Fehler aufgetreten.",
+    "removed": "Dienst wurde erfolgreich entfernt.",
+    "updateError": "Dienst konnte nicht aktualisiert werden."
+  },
+  "share": {
+    "removed": "{{email}} wurde erfolgreich entfernt."
+  },
+  "tag": {
+    "added_one": "{{tag}} wurde zu {{count}} Gerät hinzugefügt.",
+    "added_other": "{{tag}} wurde zu {{count}} Geräten hinzugefügt.",
+    "merged": "Tag mit vorhandenem Tag ‚{{name}}‘ zusammengeführt.",
+    "renameError": "Ihr Tag ({{name}}) konnte nicht umbenannt werden."
+  },
+  "user": {
+    "languageChanged": "Sprache geändert zu {{language}}",
+    "leaveResellerError": "Verlassen des Resellers fehlgeschlagen"
+  },
+  "version": {
+    "unsupported": "Diese Version von Desktop wird nicht mehr unterstützt. Sie sollte in Kürze automatisch aktualisiert werden."
+  }
+}
