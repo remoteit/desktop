@@ -34,7 +34,7 @@ export function MFACode({
   onSignInSuccess,
   cognitoUser,
 }: MFACodeProps): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const [localCognitoUser, setAuthUser] = useState<CognitoUser | undefined>(cognitoUser)
   const [code, setCode] = useState<string>('')
   const [error, setError] = useState<string | null>(null)

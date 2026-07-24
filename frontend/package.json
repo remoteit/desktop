@@ -6,7 +6,9 @@
   "scripts": {
     "start": "vite --port 3003 --host 0.0.0.0 --open",
     "build": "cross-env NODE_OPTIONS='--max-old-space-size=4096' vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n:extract": "i18next -c i18next-parser.config.js",
+    "i18n:check": "node scripts/i18n-check.mjs"
   },
   "dependencies": {
     "@airbrake/browser": "^2.1.9",
@@ -45,6 +47,7 @@
     "humanize-duration": "^3.33.0",
     "i18next": "^22.5.0",
     "i18next-browser-languagedetector": "^7.0.1",
+    "i18next-resources-to-backend": "^1.2.1",
     "immer": "^9.0.21",
     "localforage": "^1.10.0",
     "lodash.debounce": "^4.0.8",
@@ -92,6 +95,7 @@
     "@types/validator": "^13.12.2",
     "@vitejs/plugin-react": "^4.3.2",
     "eslint": "^8.53.0",
+    "i18next-parser": "^9.4.0",
     "typescript": "^5.9.2",
     "vite": "^6.4.3"
   },

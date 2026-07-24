@@ -1,0 +1,25 @@
+{
+  "tray": {
+    "open": "{{appName}}を開く...",
+    "signOut": "サインアウト",
+    "quit": "終了",
+    "connections": "接続",
+    "noConnections": "接続なし",
+    "stopConnection": "接続を停止",
+    "removeFromNetwork": "ネットワークから削除",
+    "addToNetwork": "ネットワークに追加",
+    "offline": "オフライン",
+    "copyToClipboard": "クリップボードにコピー",
+    "launch": "起動",
+    "remove": "削除",
+    "andMore": "他{{count}}件...",
+    "signIn": "サインイン..."
+  },
+  "dialog": {
+    "failedToStartTitle": "{{appName}}を起動できませんでした",
+    "failedToStartMessage": "別のインスタンスがすでに実行されているため、アプリを起動できませんでした。他の{{appName}}プロセスを終了するか、コンピューターを再起動してください。",
+    "findApplicationTitle": "アプリケーションを検索",
+    "findApplicationMessage": "アプリケーションの場所を選択してください",
+    "findApplicationButton": "選択"
+  }
+}

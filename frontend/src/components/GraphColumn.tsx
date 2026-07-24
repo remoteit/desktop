@@ -2,7 +2,7 @@ import React from 'react'
 import { humanizeResolutionLookup, TimeSeriesTypeLookup } from '../helpers/dateHelper'
 import { IconButton } from '../buttons/IconButton'
 import { Box } from '@mui/material'
-import humanize from 'humanize-duration'
+import { humanizeDuration as humanize } from '../helpers/dateHelper'
 
 export const GraphColumn: React.FC<{ title: string; timeSeries?: ITimeSeries }> = ({ title, timeSeries }) => {
   if (!timeSeries) return <>{title}</>

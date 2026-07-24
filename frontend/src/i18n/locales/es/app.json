@@ -1,0 +1,65 @@
+{
+  "common": {
+    "areYouSure": "¿Estás seguro?"
+  },
+  "options": {
+    "advanced": "Avanzado",
+    "clearErrors": {
+      "label": "Borrar todos los errores de conexión",
+      "subLabel": "Las conexiones no se modificarán, pero se borrarán los mensajes de error guardados."
+    },
+    "disableDeepLinks": {
+      "confirm": "Reinicia la aplicación de escritorio para que los cambios surtan efecto. Es posible que también debas restablecer tu controlador de archivos predeterminado en Linux.",
+      "confirmTitle": "Reinicio necesario",
+      "label": "Deshabilitar el manejo de enlaces profundos",
+      "subLabel": "Puedes deshabilitar el manejo de enlaces profundos para solucionar un error en Linux por el cual la app de escritorio queda configurada para abrir archivos html."
+    },
+    "language": {
+      "label": "Idioma",
+      "system": "Igual que el sistema"
+    },
+    "namedConnections": {
+      "confirm": "Cambiar el manejo de certificados requerirá reiniciar todas las conexiones.",
+      "confirmTitle": "¿Continuar?",
+      "label": "Conexiones con nombre",
+      "subLabel": "Usa un certificado HTTPS de remote.it para gestionar y nombrar las conexiones locales"
+    },
+    "openAtLogin": "Abrir al iniciar sesión",
+    "reinstallAgent": {
+      "confirm": "Esto detendrá el agente del sistema e intentará reinstalarlo.",
+      "installing": "Instalando…",
+      "label": "Reinstalar agente del sistema",
+      "version": "Versión {{version}}"
+    },
+    "resetGuides": {
+      "label": "Restablecer guías interactivas",
+      "subLabel": "Vuelve a activar las burbujas de ayuda dentro de la app."
+    },
+    "showFullInterface": {
+      "confirm": "Las nuevas conexiones se realizarán desde {{device}} y no desde tu equipo local.",
+      "label": "Mostrar interfaz completa",
+      "subLabel": "Los dispositivos remotos solo muestran las opciones de configuración del destino. Actívalo para obtener acceso completo."
+    },
+    "showSupportFiles": {
+      "label": "Mostrar archivos de soporte",
+      "subLabel": "Mostrará las carpetas que contienen los registros de la aplicación y el archivo de configuración."
+    },
+    "sshConfig": {
+      "label": "Configuración SSH administrada",
+      "subLabel": "Permite que remote.it incluya su archivo de configuración SSH administrado para facilitar el acceso a tus dispositivos."
+    },
+    "theme": {
+      "dark": "Oscuro",
+      "label": "Tema",
+      "light": "Claro",
+      "system": "Igual que el sistema"
+    },
+    "thisDevice": "este dispositivo",
+    "title": "Aplicación",
+    "uninstall": {
+      "confirm": "Se eliminará este sistema como host, junto con tus conexiones y las utilidades de línea de comandos.",
+      "label": "Desinstalar",
+      "subLabel": "Da de baja este dispositivo, elimina por completo todos los datos guardados y desinstala el agente del sistema y las herramientas de línea de comandos. Haz esto antes de eliminar la aplicación de tu sistema. Solo puede hacerlo el propietario del dispositivo."
+    }
+  }
+}

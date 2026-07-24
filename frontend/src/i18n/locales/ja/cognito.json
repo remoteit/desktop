@@ -1,0 +1,125 @@
+{
+  "app-store-banner": {
+    "connect": "モバイルアプリを使えば、どこからでも接続できます。",
+    "unknown-os": "iOSおよびAndroidに対応しています。"
+  },
+  "CUSTOM CHALLENGE": "",
+  "global": {
+    "action": {
+      "continue": "続ける",
+      "continue-signup": "続けてサインイン"
+    },
+    "actions": {
+      "cancel": "キャンセル",
+      "signing-in": "サインインしています...",
+      "submit": "送信"
+    },
+    "user": {
+      "email": "メールアドレス",
+      "new-password-confirm-placeholder": "新しいパスワードを再入力してください",
+      "new-password-placeholder": "新しいパスワードを入力してください",
+      "password": "パスワード",
+      "password-confirm": "パスワードの確認",
+      "password-confirm-placeholder": "パスワードを再入力してください",
+      "password-current": "現在のパスワード",
+      "password-current-placeholder": "現在のパスワードを入力してください",
+      "password-placeholder": "パスワードを入力してください",
+      "username": "メールアドレスまたはユーザー名"
+    }
+  },
+  "pages": {
+    "account-recovery": {
+      "account-recovery-code": "モバイルデバイスで二要素認証コードを受け取れない場合は、\n            メールに送信される確認コードと、二要素認証を\n            有効にした際に提供されたリカバリーコードを\n            使用できます。",
+      "description": "ログインコードをメールに送信しました。以下にログインコードとリカバリーコードの両方を入力してください",
+      "email-recovery-code-placeholder": "ログインコードを入力",
+      "lost-recovery-code": "モバイルデバイスやリカバリーコードにアクセスできない場合は、認証設定のリセットをリクエストできます。セキュリティ上の理由により、リセットには1〜3営業日かかることがあります。",
+      "lost-recovery-code-button": "アカウントのリセットをリクエスト",
+      "lost-recovery-code-heading": "モバイルデバイスとリカバリーコードを紛失しましたか?",
+      "recovery-code-placeholder": "リカバリーコードを入力",
+      "start-recovery": "復旧を開始",
+      "title": "二要素認証によるアカウント復旧"
+    },
+    "auth": {
+      "create-account": {
+        "button-label": "アカウントを作成",
+        "button-loading": "作成中..."
+      }
+    },
+    "auth-mfa": {
+      "errors": {
+        "BACKUP_CODE_INVALID": "無効なバックアップコードです",
+        "EMAIL_CODE_INVALID": "無効なメールコードです"
+      },
+      "having-problems": "問題が発生していますか?",
+      "mfa-verification-sent": "確認コードをモバイルデバイス{{number}}に送信しました。このコードの有効期限は3分間です。",
+      "no-device-access": "二要素認証デバイスにアクセスできない場合",
+      "title": "SMSによる二要素認証",
+      "totp-mfa-verification": "認証アプリで生成されたワンタイムパスワードを入力してください。",
+      "verification-code-placeholder": "確認コードを入力"
+    },
+    "auth-mfa-totp": {
+      "invalid-code": "無効なコードです",
+      "title": "二要素認証"
+    },
+    "forgot-password": {
+      "email": "メールアドレス",
+      "reset-password": "パスワードをリセット",
+      "title": "パスワードをお忘れですか"
+    },
+    "forgot-password-verify": {
+      "password-error": {
+        "missing-lower": "パスワードには小文字を1文字含める必要があります。",
+        "missing-number": "パスワードには数字を含める必要があります。",
+        "missing-special-char": "パスワードには次の記号のいずれかを1つ以上含める必要があります ",
+        "missing-upper": "パスワードには大文字を1文字含める必要があります。",
+        "passwords-do-not-match": "パスワードが一致しません",
+        "too-long": "パスワードは{{max_length}}文字以内で入力してください。",
+        "too-short": "パスワードは{{min_length}}文字以上で入力してください。"
+      },
+      "password-rules": "パスワードは{{min_length}}〜{{max_length}}文字で、数字、大文字と小文字、そして次の記号のいずれかを1つ以上含める必要があります ",
+      "password-rules-reduced": "パスワードは{{min_length}}〜{{max_length}}文字である必要があります。",
+      "password-strength-html": "パスワードの強度: {{strength}}",
+      "password-strength-score": {
+        "0": "非常に弱い",
+        "1": "弱い",
+        "2": "普通",
+        "3": "良い",
+        "4": "強い"
+      },
+      "success-message": "パスワードがリセットされました。サインインしてください",
+      "title": "アカウントを確認",
+      "verification-link-message": "確認用のリンクをメールで送信しました。リンクをクリックした後、このページに戻ってください。その後「続ける」を押してサインインしてください。"
+    },
+    "password-reset": {
+      "cognito-reset-password-required": "セキュリティ上の理由により、パスワードは定期的に変更していただく必要があります。確認コードを{{email}}宛てに送信しましたので、メールをご確認のうえ、確認コードを入力してパスワードを更新してください。",
+      "signout-all-text": "現在のセッションは有効なままです。セキュリティ侵害が発生した場合は、すべての端末からサインアウトすることをお勧めします。すべての端末からサインアウトするには、app.remote.itにサインインし、アカウントページからサインアウトを行ってください。",
+      "update-button": "パスワードを更新",
+      "verification-code": "確認コード",
+      "verification-code-message": "確認コードを{{email}}宛てに送信しましたので、メールをご確認のうえ、確認コードを入力してパスワードを更新してください。"
+    },
+    "sign-in": {
+      "create-account": "アカウントをお持ちでないですか?",
+      "forgot-password": "パスワードをお忘れですか?",
+      "or": "または",
+      "saml-link": "SAMLログイン",
+      "sign-in": "サインイン",
+      "sign-up-link": "無料で登録!",
+      "signing-in": "サインイン中...",
+      "user-password-link": "ユーザー名/パスワードでログイン"
+    },
+    "sign-up": {
+      "title": "サインアップ"
+    },
+    "update-password": {
+      "reset-password": "パスワードを更新",
+      "title": "パスワードの更新"
+    },
+    "verify-account": {
+      "check-spam": "迷惑メールフォルダをご確認ください",
+      "resend-confirmation": "アカウント確認メールを再送信する",
+      "resent-notice": "確認メールを再送信しました。",
+      "sending": "送信中...",
+      "verification-received-message": "確認用リンクが届きませんか?"
+    }
+  }
+}

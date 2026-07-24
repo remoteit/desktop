@@ -16,7 +16,7 @@ export type SignUpVerifyProps = {
 export function SignUpVerify({ email, onResend, fullWidth }: SignUpVerifyProps): JSX.Element {
   const [sending, setSending] = React.useState(false)
   const dispatch = useDispatch<Dispatch>()
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
 
   return (
     <AuthLayout i18nKey="pages.forgot-password-verify.title" back fullWidth={fullWidth}>

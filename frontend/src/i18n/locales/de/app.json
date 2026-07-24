@@ -1,0 +1,65 @@
+{
+  "common": {
+    "areYouSure": "Sind Sie sicher?"
+  },
+  "options": {
+    "advanced": "Erweitert",
+    "clearErrors": {
+      "label": "Alle Verbindungsfehler löschen",
+      "subLabel": "Die Verbindungen bleiben unverändert, aber die gespeicherten Fehlermeldungen werden gelöscht."
+    },
+    "disableDeepLinks": {
+      "confirm": "Bitte starten Sie die Desktop-Anwendung neu, damit die Änderungen wirksam werden. Unter Linux müssen Sie möglicherweise auch Ihren Standard-Dateihandler zurücksetzen.",
+      "confirmTitle": "Neustart erforderlich",
+      "label": "Deep-Link-Verarbeitung deaktivieren",
+      "subLabel": "Sie können die Deep-Link-Verarbeitung deaktivieren, um einen Linux-Fehler zu beheben, bei dem die Desktop-App zum Öffnen von html-Dateitypen eingestellt wird."
+    },
+    "language": {
+      "label": "Sprache",
+      "system": "Wie das System"
+    },
+    "namedConnections": {
+      "confirm": "Eine Änderung der Zertifikatsverarbeitung erfordert einen Neustart aller Verbindungen.",
+      "confirmTitle": "Fortfahren?",
+      "label": "Benannte Verbindungen",
+      "subLabel": "Verwenden Sie ein remote.it-HTTPS-Zertifikat, um lokale Verbindungen zu verarbeiten und zu benennen"
+    },
+    "openAtLogin": "Bei Anmeldung öffnen",
+    "reinstallAgent": {
+      "confirm": "Der Systemagent wird gestoppt, und es wird versucht, ihn neu zu installieren.",
+      "installing": "Wird installiert …",
+      "label": "Systemagent neu installieren",
+      "version": "Version {{version}}"
+    },
+    "resetGuides": {
+      "label": "Interaktive Anleitungen zurücksetzen",
+      "subLabel": "Schaltet die Hilfe-Sprechblasen in der App wieder ein."
+    },
+    "showFullInterface": {
+      "confirm": "Neue Verbindungen erfolgen von {{device}} und nicht von Ihrem lokalen Rechner.",
+      "label": "Vollständige Oberfläche anzeigen",
+      "subLabel": "Remote-Geräte zeigen nur die Konfigurationsoptionen des Ziels an. Aktivieren Sie diese Option für vollen Zugriff."
+    },
+    "showSupportFiles": {
+      "label": "Support-Dateien anzeigen",
+      "subLabel": "Zeigt die Ordner an, die die Anwendungsprotokolle und die Konfigurationsdatei enthalten."
+    },
+    "sshConfig": {
+      "label": "Verwaltete SSH-Konfiguration",
+      "subLabel": "Erlauben Sie remote.it, seine verwaltete SSH-Konfigurationsdatei einzubinden, um leichter auf Ihre Geräte zuzugreifen."
+    },
+    "theme": {
+      "dark": "Dunkel",
+      "label": "Design",
+      "light": "Hell",
+      "system": "Wie das System"
+    },
+    "thisDevice": "dieses Gerät",
+    "title": "Anwendung",
+    "uninstall": {
+      "confirm": "Dieses System wird als Host entfernt, ebenso wie Ihre Verbindungen und die Kommandozeilen-Tools.",
+      "label": "Deinstallieren",
+      "subLabel": "Meldet dieses Gerät ab, entfernt vollständig alle gespeicherten Daten und deinstalliert den Systemagenten sowie die Kommandozeilen-Tools. Führen Sie dies aus, bevor Sie die Anwendung von Ihrem System entfernen. Kann nur vom Gerätebesitzer ausgeführt werden."
+    }
+  }
+}

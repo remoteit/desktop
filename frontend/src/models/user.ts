@@ -4,6 +4,7 @@ import { API_URL, DEVELOPER_KEY, LANGUAGES } from '../constants'
 import { graphQLNotificationSettings, graphQLSetAttributes, graphQLLeaveReseller } from '../services/graphQLMutation'
 import { graphQLUser } from '../services/graphQLRequest'
 import { RootModel } from '.'
+import { LanguageMode } from '../i18n'
 import { getToken } from '../services/remoteit'
 
 type IUserState = {
@@ -37,7 +38,12 @@ export default createModel<RootModel>()({
       const result = await graphQLUser(account)
       if (result === 'ERROR') return
       const data = await dispatch.user.parse(result)
-      if (data) dispatch.user.set(data)
+      if (data) {
+        dispatch.user.set(data)
+        // The account is the source of truth for the app-language override, so it
+        // wins across devices. Absent override (null/undefined) means follow the OS.
+        dispatch.ui.setLanguage((data.attributes?.language ?? 'system') as LanguageMode)
+      }
     },
     async parse(result: AxiosResponse<any> | undefined) {
       const data = result?.data?.data?.login?.account
@@ -60,6 +66,12 @@ export default createModel<RootModel>()({
     async setAttribute(attribute: ILookup<any>, state) {
       dispatch.user.set({ attributes: { ...state.user.attributes, ...attribute } })
       await graphQLSetAttributes(attribute)
+    },
+    // Persists the app-language override to the account (cloud) and applies it now.
+    // 'system' clears the override so the app follows the OS language everywhere.
+    async setAppLanguage(language: string) {
+      dispatch.user.setAttribute({ language: language === 'system' ? null : language })
+      dispatch.ui.setLanguage(language as LanguageMode)
     },
     async updateNotificationSettings(metadata: INotificationSetting) {
       const result = await graphQLNotificationSettings(metadata)

@@ -1,5 +1,15 @@
 import { DateTime, Duration } from 'luxon'
-import { Unit } from 'humanize-duration'
+import humanize, { Unit, HumanizerOptions } from 'humanize-duration'
+import i18n from '../i18n'
+
+// The active locale for all date/duration formatting. Driven by the app language
+// preference (ui.setLanguage), falling back to the OS/browser language.
+export const getLocale = () => i18n.resolvedLanguage || window.navigator.language || 'en'
+
+// Localized humanize-duration. Use this everywhere instead of importing
+// humanize-duration directly so durations ("3 days", "2 hours") translate.
+export const humanizeDuration = (ms: number, options: HumanizerOptions = {}) =>
+  humanize(ms, { language: getLocale(), fallbacks: ['en'], ...options })
 
 export function isToday(dateToCheck: Date): boolean {
   const today = new Date().toLocaleDateString()
@@ -9,7 +19,7 @@ export function isToday(dateToCheck: Date): boolean {
 }
 
 export const getDateFormatString = () => {
-  const formatObj = new Intl.DateTimeFormat(window.navigator.language).formatToParts(new Date())
+  const formatObj = new Intl.DateTimeFormat(getLocale()).formatToParts(new Date())
   return formatObj
     .map(obj => {
       switch (obj.type) {

@@ -21,7 +21,7 @@ export function AccountRecovery({
   email,
   fullWidth,
 }: AccountRecoveryProps): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [sentEmailVerifyRequest, setSentEmailVerifyRequest] = useState<boolean>(false)
@@ -164,7 +164,7 @@ export function AccountRecovery({
 }
 
 function SupportRecoveryRequest(): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   return (
     <Box>
       <Box my={2}>

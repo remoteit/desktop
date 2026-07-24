@@ -2,6 +2,7 @@ import electron, { Menu, dialog } from 'electron'
 import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
+import { t, setLanguage } from './i18n'
 import {
   EVENTS,
   PROTOCOL,
@@ -35,6 +36,7 @@ export default class ElectronApp {
     this.isMaximized = false
     this.autoUpdater = new AutoUpdater()
     this.protocol = PROTOCOL.substring(0, PROTOCOL.length - 3)
+    setLanguage(preferences.get().language)
 
     if (!this.app.requestSingleInstanceLock()) {
       Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
@@ -79,8 +81,8 @@ export default class ElectronApp {
     if (!this.quitSelected && !this.errorShown) {
       this.errorShown = true
       dialog.showErrorBox(
-        `${brand.appName} Failed to Start`,
-        `The app could not start because another instance is already running. Please close any other ${brand.appName} processes, or restart your computer.`
+        t('dialog.failedToStartTitle', { appName: brand.appName }),
+        t('dialog.failedToStartMessage', { appName: brand.appName })
       )
     }
 
@@ -166,9 +168,9 @@ export default class ElectronApp {
     if (!this.window) return
 
     const result = await dialog.showOpenDialog(this.window, {
-      title: 'Find application',
-      message: 'Select the application location',
-      buttonLabel: 'Select',
+      title: t('dialog.findApplicationTitle'),
+      message: t('dialog.findApplicationMessage'),
+      buttonLabel: t('dialog.findApplicationButton'),
     })
 
     let filePath = result?.filePaths[0]

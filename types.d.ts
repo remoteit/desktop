@@ -1018,6 +1018,7 @@ declare global {
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
     sshConfig?: boolean
+    language?: string // resolved language code (e.g. 'en', 'ja') for the Electron main process; never 'system'
   }
 
   type SegmentContext = {

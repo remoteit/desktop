@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useInterval } from '../../hooks/useInterval'
-import humanize, { HumanizerOptions } from 'humanize-duration'
+import { HumanizerOptions } from 'humanize-duration'
+import { humanizeDuration as humanize } from '../../helpers/dateHelper'
 
 export const dateDefaults: Intl.DateTimeFormatOptions = {
   year: 'numeric',
