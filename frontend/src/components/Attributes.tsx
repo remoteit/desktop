@@ -1,6 +1,7 @@
 import { IP_PRIVATE } from '@common/constants'
 import { Chip,ListItemText,Typography } from '@mui/material'
 import React from 'react'
+import i18n from '../i18n'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { lanShareRestriction,lanShared } from '../helpers/lanSharing'
 import { toLookup } from '../helpers/utilHelper'
@@ -29,8 +30,8 @@ import { Timestamp } from './Timestamp'
 
 export class Attribute<TOptions = IDataOptions> {
   id: string = ''
-  label: string | React.ReactNode = ''
-  help?: string
+  private _label: string | React.ReactNode = ''
+  private _help?: string
   required: boolean = false
   align?: 'left' | 'right' | 'center'
   defaultWidth: number = 150
@@ -43,6 +44,26 @@ export class Attribute<TOptions = IDataOptions> {
   query?: string // key to device query - fall back to id
   value: (options: TOptions) => React.ReactNode = options => options as React.ReactNode
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
+
+  // Column/attribute labels are defined once at module load, so they resolve
+  // their translation at access (render) time, keyed by the attribute id under
+  // the `columns.<id>` namespace. Non-string labels (React nodes) pass through
+  // unchanged; a missing translation falls back to the original English label.
+  get label(): string | React.ReactNode {
+    return typeof this._label === 'string'
+      ? i18n.t(`columns.${this.id}`, { defaultValue: this._label })
+      : this._label
+  }
+  set label(value: string | React.ReactNode) {
+    this._label = value
+  }
+
+  get help(): string | undefined {
+    return this._help ? i18n.t(`columns.${this.id}_help`, { defaultValue: this._help }) : this._help
+  }
+  set help(value: string | undefined) {
+    this._help = value
+  }
 
   constructor(options: {
     id: Attribute<TOptions>['id']
