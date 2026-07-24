@@ -1,4 +1,5 @@
 import structuredClone from '@ungap/structured-clone'
+import i18n from '../i18n'
 import { graphQLRegistration, graphQLRestoreDevice } from '../services/graphQLRequest'
 import {
   graphQLDeleteDevice,
@@ -235,7 +236,15 @@ export default createModel<RootModel>()({
       } else {
         if (!isService && state.ui.silent !== id)
           dispatch.ui.set({
-            noticeMessage: `You don't have access to that ${isService ? 'service' : 'device'}. (${id})`,
+            noticeMessage: isService
+              ? i18n.t('notices:access.noService', {
+                  id,
+                  defaultValue: "You don't have access to that service. ({{id}})",
+                })
+              : i18n.t('notices:access.noDevice', {
+                  id,
+                  defaultValue: "You don't have access to that device. ({{id}})",
+                }),
           })
         if (redirect) dispatch.ui.set({ redirect })
         if (gqlResponse !== 'ERROR') {
@@ -462,7 +471,7 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         await dispatch.devices.cleanupService(serviceId)
         dispatch.ui.set({
-          successMessage: `Service was successfully removed.`,
+          successMessage: i18n.t('notices:service.removed', { defaultValue: 'Service was successfully removed.' }),
         })
       }
 
@@ -483,7 +492,7 @@ export default createModel<RootModel>()({
       const result = await graphQLSetLink({ serviceId, enabled })
 
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.code) {
-        dispatch.ui.set({ errorMessage: 'Could not update service.' })
+        dispatch.ui.set({ errorMessage: i18n.t('notices:service.updateError', { defaultValue: 'Could not update service.' }) })
         return
       }
 
@@ -504,7 +513,11 @@ export default createModel<RootModel>()({
       const result = await graphQLRemoveLink(id)
 
       if (result === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'An error occurred when trying to remove the service link.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:service.linkRemoveError', {
+            defaultValue: 'An error occurred when trying to remove the service link.',
+          }),
+        })
         await dispatch.devices.fetchSingleFull({ id, isService: true })
       }
     },
@@ -526,10 +539,18 @@ export default createModel<RootModel>()({
           await dispatch.applicationTypes.fetch()
           dispatch.ui.set({
             redirect: redirect ? `/devices/${device.id}` : undefined,
-            successMessage: `'${device.name}' was successfully registered!`,
+            successMessage: i18n.t('notices:device.registered', {
+              name: device.name,
+              defaultValue: "'{{name}}' was successfully registered!",
+            }),
           })
         } else {
-          dispatch.ui.set({ noticeMessage: `Your device (${code}) could not be found.` })
+          dispatch.ui.set({
+            noticeMessage: i18n.t('notices:device.notFound', {
+              code,
+              defaultValue: 'Your device ({{code}}) could not be found.',
+            }),
+          })
         }
         dispatch.ui.set({ claiming: false })
       }
@@ -589,7 +610,10 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         await dispatch.devices.cleanup([device.id])
         dispatch.ui.set({
-          successMessage: `"${device.name}" was successfully deleted.`,
+          successMessage: i18n.t('notices:device.deleted', {
+            name: device.name,
+            defaultValue: '"{{name}}" was successfully deleted.',
+          }),
         })
       }
       dispatch.ui.set({ destroying: false })
@@ -603,25 +627,37 @@ export default createModel<RootModel>()({
         const device = selectDevice(state, undefined, id)
         if (!device) {
           dispatch.ui.set({
-            errorMessage: `A device id could not be found. Deselect ${id} and try again.`,
+            errorMessage: i18n.t('notices:device.idNotFound', {
+              id,
+              defaultValue: 'A device id could not be found. Deselect {{id}} and try again.',
+            }),
           })
           return
         }
         if (device.shared) {
           dispatch.ui.set({
-            errorMessage: `You cannot delete a shared device. Deselect or leave "${device.name}" and try again.`,
+            errorMessage: i18n.t('notices:device.cannotDeleteShared', {
+              name: device.name,
+              defaultValue: 'You cannot delete a shared device. Deselect or leave "{{name}}" and try again.',
+            }),
           })
           return
         }
         if (device.state !== 'inactive') {
           dispatch.ui.set({
-            errorMessage: `You cannot delete an online device. Deselect "${device.name}" and try again.`,
+            errorMessage: i18n.t('notices:device.cannotDeleteOnline', {
+              name: device.name,
+              defaultValue: 'You cannot delete an online device. Deselect "{{name}}" and try again.',
+            }),
           })
           return
         }
         if (!device.permissions.includes('MANAGE')) {
           dispatch.ui.set({
-            errorMessage: `You do not have permission to delete a device. Deselect "${device.name}" and try again.`,
+            errorMessage: i18n.t('notices:device.noPermissionDelete', {
+              name: device.name,
+              defaultValue: 'You do not have permission to delete a device. Deselect "{{name}}" and try again.',
+            }),
           })
           return
         }
@@ -633,7 +669,11 @@ export default createModel<RootModel>()({
         await dispatch.ui.set({ selected: [] })
         await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
-          successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully deleted.`,
+          successMessage: i18n.t('notices:device.deletedCount', {
+            count: deviceIds.length,
+            defaultValue_one: '{{count}} device was successfully deleted.',
+            defaultValue_other: '{{count}} devices were successfully deleted.',
+          }),
         })
       }
       dispatch.ui.set({ destroying: false })
@@ -649,7 +689,10 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         await dispatch.devices.cleanup([device.id])
         dispatch.ui.set({
-          successMessage: `"${device.name}" was successfully removed.`,
+          successMessage: i18n.t('notices:device.removed', {
+            name: device.name,
+            defaultValue: '"{{name}}" was successfully removed.',
+          }),
         })
       }
       dispatch.ui.set({ destroying: false })
@@ -667,7 +710,11 @@ export default createModel<RootModel>()({
         if (result !== 'ERROR') {
           await dispatch.devices.cleanup([data.device.id])
           dispatch.ui.set({
-            successMessage: `"${data.device.name}" was successfully transferred to ${data.email}.`,
+            successMessage: i18n.t('notices:device.transferred', {
+              name: data.device.name,
+              email: data.email,
+              defaultValue: '"{{name}}" was successfully transferred to {{email}}.',
+            }),
           })
         }
         dispatch.ui.set({ transferring: false })
@@ -683,19 +730,28 @@ export default createModel<RootModel>()({
         const device = selectDevice(state, undefined, id)
         if (!device) {
           dispatch.ui.set({
-            errorMessage: `A device id could not be found. Deselect ${id} and try again.`,
+            errorMessage: i18n.t('notices:device.idNotFound', {
+              id,
+              defaultValue: 'A device id could not be found. Deselect {{id}} and try again.',
+            }),
           })
           return false
         }
         if (device.shared) {
           dispatch.ui.set({
-            errorMessage: `You cannot transfer a shared device. Deselect or leave "${device.name}" and try again.`,
+            errorMessage: i18n.t('notices:device.cannotTransferShared', {
+              name: device.name,
+              defaultValue: 'You cannot transfer a shared device. Deselect or leave "{{name}}" and try again.',
+            }),
           })
           return false
         }
         if (!device.permissions.includes('MANAGE')) {
           dispatch.ui.set({
-            errorMessage: `You do not have permission to transfer a device. Deselect "${device.name}" and try again.`,
+            errorMessage: i18n.t('notices:device.noPermissionTransfer', {
+              name: device.name,
+              defaultValue: 'You do not have permission to transfer a device. Deselect "{{name}}" and try again.',
+            }),
           })
           return false
         }
@@ -708,7 +764,12 @@ export default createModel<RootModel>()({
         await dispatch.ui.set({ selected: [] })
         await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
-          successMessage: `${deviceIds.length} device${deviceIds.length > 1 ? 's were' : ' was'} successfully transferred to ${email}.`,
+          successMessage: i18n.t('notices:device.transferredCount', {
+            count: deviceIds.length,
+            email,
+            defaultValue_one: '{{count}} device was successfully transferred to {{email}}.',
+            defaultValue_other: '{{count}} devices were successfully transferred to {{email}}.',
+          }),
         })
       } else {
         // The transfer is not atomic server-side, so a failure may have still moved

@@ -1,1 +1,102 @@
-{}
+{
+  "access": {
+    "noDevice": "No tienes acceso a ese dispositivo. ({{id}})",
+    "noService": "No tienes acceso a ese servicio. ({{id}})"
+  },
+  "auth": {
+    "emailModified": "Correo electrónico modificado correctamente.",
+    "invalidFormat": "Formato no válido.",
+    "loginFailed": "Error al iniciar sesión.",
+    "passwordChanged": "Contraseña cambiada correctamente."
+  },
+  "connection": {
+    "surveyFailed": "No se pudo enviar la encuesta de conexión. Ponte en contacto con soporte."
+  },
+  "device": {
+    "cannotDeleteOnline": "No puedes eliminar un dispositivo en línea. Deselecciona “{{name}}” e inténtalo de nuevo.",
+    "cannotDeleteShared": "No puedes eliminar un dispositivo compartido. Deselecciona o abandona “{{name}}” e inténtalo de nuevo.",
+    "cannotTransferShared": "No puedes transferir un dispositivo compartido. Deselecciona o abandona “{{name}}” e inténtalo de nuevo.",
+    "deleted": "“{{name}}” se eliminó correctamente.",
+    "deletedCount_one": "{{count}} dispositivo se eliminó correctamente.",
+    "deletedCount_many": "{{count}} dispositivos se eliminaron correctamente.",
+    "deletedCount_other": "{{count}} dispositivos se eliminaron correctamente.",
+    "idNotFound": "No se pudo encontrar el ID del dispositivo. Deselecciona {{id}} e inténtalo de nuevo.",
+    "noPermissionDelete": "No tienes permiso para eliminar un dispositivo. Deselecciona “{{name}}” e inténtalo de nuevo.",
+    "noPermissionTransfer": "No tienes permiso para transferir un dispositivo. Deselecciona “{{name}}” e inténtalo de nuevo.",
+    "notFound": "No se pudo encontrar tu dispositivo ({{code}}).",
+    "registered": "¡“{{name}}” se registró correctamente!",
+    "removed": "“{{name}}” se quitó correctamente.",
+    "restored": "¡Dispositivo restaurado correctamente!",
+    "transferred": "“{{name}}” se transfirió correctamente a {{email}}.",
+    "transferredCount_one": "{{count}} dispositivo se transfirió correctamente a {{email}}.",
+    "transferredCount_many": "{{count}} dispositivos se transfirieron correctamente a {{email}}.",
+    "transferredCount_other": "{{count}} dispositivos se transfirieron correctamente a {{email}}.",
+    "unregistered": "¡Registro del dispositivo anulado correctamente!"
+  },
+  "feedback": {
+    "sendError": "Se produjo un error al enviar el mensaje. Inténtalo de nuevo."
+  },
+  "file": {
+    "deleteError": "Error al eliminar el archivo",
+    "updateError": "Error al actualizar el archivo"
+  },
+  "job": {
+    "deleteError": "Error al eliminar el trabajo",
+    "loadLogsError": "No se pudieron cargar los registros: {{message}}",
+    "noDeviceLogs": "Aún no hay registros disponibles para este dispositivo.",
+    "noLogs": "Aún no hay registros disponibles.",
+    "noRunLogs": "Aún no hay registros disponibles para esta ejecución."
+  },
+  "mfa": {
+    "enabled": "Autenticación de dos factores activada correctamente.",
+    "enableError": "Error al activar la autenticación de dos factores: {{error}}",
+    "invalidTotp": "Código TOTP no válido. ({{error}})",
+    "phoneVerificationError": "Error de verificación telefónica: {{error}}",
+    "updatePhoneError": "Error al actualizar el teléfono: {{error}}",
+    "verificationSent": "Verificación enviada."
+  },
+  "network": {
+    "addFailed": "No se pudo agregar la red. Ponte en contacto con soporte.",
+    "removeConnectionFailed": "No se pudo quitar la conexión de red ({{serviceId}}) de {{network}}. Ponte en contacto con soporte."
+  },
+  "organization": {
+    "created": "Tu organización se ha creado.",
+    "customerRemoveError": "Se produjo un problema al eliminar un cliente. Ponte en contacto con soporte si el problema persiste",
+    "left": "Has abandonado la organización correctamente.",
+    "removed": "Tu organización se ha eliminado.",
+    "removedNamed": "“{{name}}” se eliminó correctamente.",
+    "resellerReportError": "No se pudo obtener la URL del informe de revendedor",
+    "updateFailed": "Error al actualizar {{type}}; valida los datos de tu formulario."
+  },
+  "plan": {
+    "cancelFailed": "No se pudo cancelar la suscripción; ponte en contacto con soporte.",
+    "checkoutFailed": "Error en el pago; ponte en contacto con soporte.",
+    "missingPrice": "Falta el precio en la selección del plan",
+    "purchaseError": "Error al comprar la licencia",
+    "subscriptionUpdatedOther": "Se actualizó la suscripción {{plan}} de {{email}}.",
+    "subscriptionUpdatedYours": "Se actualizó tu suscripción {{plan}}.",
+    "updateFailed": "No se pudo actualizar la suscripción; ponte en contacto con soporte."
+  },
+  "service": {
+    "linkRemoveError": "Se produjo un error al intentar quitar el enlace del servicio.",
+    "removed": "El servicio se quitó correctamente.",
+    "updateError": "No se pudo actualizar el servicio."
+  },
+  "share": {
+    "removed": "{{email}} se eliminó correctamente."
+  },
+  "tag": {
+    "added_one": "{{tag}} se agregó a {{count}} dispositivo.",
+    "added_many": "{{tag}} se agregó a {{count}} dispositivos.",
+    "added_other": "{{tag}} se agregó a {{count}} dispositivos.",
+    "merged": "La etiqueta se combinó con la etiqueta existente ‘{{name}}.’",
+    "renameError": "No se pudo cambiar el nombre de tu etiqueta ({{name}})."
+  },
+  "user": {
+    "languageChanged": "Idioma cambiado a {{language}}",
+    "leaveResellerError": "No se pudo abandonar el revendedor"
+  },
+  "version": {
+    "unsupported": "Esta versión de Desktop ya no es compatible. Debería actualizarse automáticamente en breve."
+  }
+}

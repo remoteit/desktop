@@ -1,1 +1,96 @@
-{}
+{
+  "access": {
+    "noDevice": "そのデバイスへのアクセス権がありません。({{id}})",
+    "noService": "そのサービスへのアクセス権がありません。({{id}})"
+  },
+  "auth": {
+    "emailModified": "メールアドレスを変更しました。",
+    "invalidFormat": "形式が正しくありません。",
+    "loginFailed": "ログインに失敗しました。",
+    "passwordChanged": "パスワードを変更しました。"
+  },
+  "connection": {
+    "surveyFailed": "接続アンケートの送信に失敗しました。サポートにお問い合わせください。"
+  },
+  "device": {
+    "cannotDeleteOnline": "オンラインのデバイスは削除できません。「{{name}}」の選択を解除してもう一度お試しください。",
+    "cannotDeleteShared": "共有デバイスは削除できません。「{{name}}」の選択を解除するか、共有から退出してもう一度お試しください。",
+    "cannotTransferShared": "共有デバイスは譲渡できません。「{{name}}」の選択を解除するか、共有から退出してもう一度お試しください。",
+    "deleted": "「{{name}}」を削除しました。",
+    "deletedCount_other": "{{count}}台のデバイスを削除しました。",
+    "idNotFound": "デバイスIDが見つかりませんでした。{{id}} の選択を解除してもう一度お試しください。",
+    "noPermissionDelete": "デバイスを削除する権限がありません。「{{name}}」の選択を解除してもう一度お試しください。",
+    "noPermissionTransfer": "デバイスを譲渡する権限がありません。「{{name}}」の選択を解除してもう一度お試しください。",
+    "notFound": "デバイス({{code}})が見つかりませんでした。",
+    "registered": "「{{name}}」を登録しました!",
+    "removed": "「{{name}}」を削除しました。",
+    "restored": "デバイスを復元しました!",
+    "transferred": "「{{name}}」を{{email}}に譲渡しました。",
+    "transferredCount_other": "{{count}}台のデバイスを{{email}}に譲渡しました。",
+    "unregistered": "デバイスの登録を解除しました!"
+  },
+  "feedback": {
+    "sendError": "メッセージの送信中にエラーが発生しました。もう一度お試しください。"
+  },
+  "file": {
+    "deleteError": "ファイルの削除中にエラーが発生しました",
+    "updateError": "ファイルの更新中にエラーが発生しました"
+  },
+  "job": {
+    "deleteError": "ジョブの削除中にエラーが発生しました",
+    "loadLogsError": "ログを読み込めませんでした: {{message}}",
+    "noDeviceLogs": "このデバイスのログはまだありません。",
+    "noLogs": "ログはまだありません。",
+    "noRunLogs": "この実行のログはまだありません。"
+  },
+  "mfa": {
+    "enabled": "二段階認証を有効にしました。",
+    "enableError": "二段階認証の有効化中にエラーが発生しました: {{error}}",
+    "invalidTotp": "TOTPコードが無効です。({{error}})",
+    "phoneVerificationError": "電話番号の確認中にエラーが発生しました: {{error}}",
+    "updatePhoneError": "電話番号の更新中にエラーが発生しました: {{error}}",
+    "verificationSent": "確認コードを送信しました。"
+  },
+  "network": {
+    "addFailed": "ネットワークの追加に失敗しました。サポートにお問い合わせください。",
+    "removeConnectionFailed": "{{network}}からのネットワーク接続({{serviceId}})の削除に失敗しました。サポートにお問い合わせください。"
+  },
+  "organization": {
+    "created": "組織を作成しました。",
+    "customerRemoveError": "顧客の削除中に問題が発生しました。問題が解決しない場合はサポートにお問い合わせください",
+    "left": "組織を退出しました。",
+    "removed": "組織を削除しました。",
+    "removedNamed": "「{{name}}」を削除しました。",
+    "resellerReportError": "リセラーレポートのURLの取得に失敗しました",
+    "updateFailed": "{{type}}の更新に失敗しました。入力内容をご確認ください。"
+  },
+  "plan": {
+    "cancelFailed": "サブスクリプションの解約に失敗しました。サポートにお問い合わせください。",
+    "checkoutFailed": "お支払い手続きに失敗しました。サポートにお問い合わせください。",
+    "missingPrice": "選択したプランに価格が設定されていません",
+    "purchaseError": "ライセンスの購入中にエラーが発生しました",
+    "subscriptionUpdatedOther": "{{email}}の{{plan}}サブスクリプションを更新しました。",
+    "subscriptionUpdatedYours": "{{plan}}サブスクリプションを更新しました。",
+    "updateFailed": "サブスクリプションの更新に失敗しました。サポートにお問い合わせください。"
+  },
+  "service": {
+    "linkRemoveError": "サービスリンクの削除中にエラーが発生しました。",
+    "removed": "サービスを削除しました。",
+    "updateError": "サービスを更新できませんでした。"
+  },
+  "share": {
+    "removed": "{{email}}を削除しました。"
+  },
+  "tag": {
+    "added_other": "{{tag}}を{{count}}台のデバイスに追加しました。",
+    "merged": "タグを既存のタグ「{{name}}」に統合しました。",
+    "renameError": "タグ({{name}})の名前を変更できませんでした。"
+  },
+  "user": {
+    "languageChanged": "言語を{{language}}に変更しました",
+    "leaveResellerError": "リセラーからの退出に失敗しました"
+  },
+  "version": {
+    "unsupported": "このバージョンのDesktopはサポートされなくなりました。まもなく自動的に更新されます。"
+  }
+}

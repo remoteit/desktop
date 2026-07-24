@@ -29,6 +29,7 @@ import { selectById } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
+import i18n from '../i18n'
 
 type IConnectionsState = {
   all: IConnection[]
@@ -518,7 +519,11 @@ export default createModel<RootModel>()({
       if (!connection.sessionId) return
       const result = await graphQLSurvey(connection.id, connection.sessionId, rating)
       if (result === 'ERROR' || !result?.data?.data?.rateConnection) {
-        dispatch.ui.set({ errorMessage: 'Connection survey submission failed. Please contact support.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:connection.surveyFailed', {
+            defaultValue: 'Connection survey submission failed. Please contact support.',
+          }),
+        })
       }
     },
 

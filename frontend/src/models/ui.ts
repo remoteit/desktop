@@ -352,7 +352,9 @@ export default createModel<RootModel>()({
       if (!browser.isElectron) return
       const { preferences } = state.backend
       dispatch.ui.set({
-        errorMessage: 'This version of Desktop is no longer supported. It should auto update shortly.',
+        errorMessage: i18n.t('notices:version.unsupported', {
+          defaultValue: 'This version of Desktop is no longer supported. It should auto update shortly.',
+        }),
       })
       emit('preferences', { ...preferences, autoUpdate: true })
     },

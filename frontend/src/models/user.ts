@@ -4,7 +4,7 @@ import { API_URL, DEVELOPER_KEY, LANGUAGES } from '../constants'
 import { graphQLNotificationSettings, graphQLSetAttributes, graphQLLeaveReseller } from '../services/graphQLMutation'
 import { graphQLUser } from '../services/graphQLRequest'
 import { RootModel } from '.'
-import { LanguageMode } from '../i18n'
+import i18n, { LanguageMode } from '../i18n'
 import { getToken } from '../services/remoteit'
 
 type IUserState = {
@@ -57,7 +57,9 @@ export default createModel<RootModel>()({
     async leaveReseller() {
       const result = await graphQLLeaveReseller()
       if (result === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'Failed to leave reseller' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:user.leaveResellerError', { defaultValue: 'Failed to leave reseller' }),
+        })
         return
       }
       await dispatch.user.fetch()
@@ -91,7 +93,12 @@ export default createModel<RootModel>()({
           },
         }
       )
-      dispatch.ui.set({ successMessage: `Language changed to ${LANGUAGES[language]}` })
+      dispatch.ui.set({
+        successMessage: i18n.t('notices:user.languageChanged', {
+          language: LANGUAGES[language],
+          defaultValue: 'Language changed to {{language}}',
+        }),
+      })
       dispatch.user.set({ language })
     },
   }),

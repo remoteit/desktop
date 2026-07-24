@@ -19,6 +19,7 @@ import {
 } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
+import i18n from '../i18n'
 
 export const DEFAULT_ID = 'local'
 export const DEFAULT_NETWORK: INetwork = {
@@ -208,7 +209,11 @@ export default createModel<RootModel>()({
       if (props.networkId !== DEFAULT_ID) {
         const result = await graphQLSetConnection(props)
         if (result === 'ERROR' || !result?.data?.data?.addNetworkConnection) {
-          dispatch.ui.set({ errorMessage: `Adding network failed. Please contact support.` })
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:network.addFailed', {
+              defaultValue: 'Adding network failed. Please contact support.',
+            }),
+          })
           dispatch.networks.setNetwork(network)
           return
         }
@@ -233,7 +238,11 @@ export default createModel<RootModel>()({
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
           console.error('Failed to remove network connection', serviceId, network, result)
           dispatch.ui.set({
-            errorMessage: `Failed to remove network connection (${serviceId}) from ${network.name}. Please contact support.`,
+            errorMessage: i18n.t('notices:network.removeConnectionFailed', {
+              serviceId,
+              network: network.name,
+              defaultValue: 'Failed to remove network connection ({{serviceId}}) from {{network}}. Please contact support.',
+            }),
           })
           dispatch.networks.setNetwork(network)
           return

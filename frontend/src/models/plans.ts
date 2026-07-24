@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import { State } from '../store'
 import { Duration } from 'luxon'
 import { testData } from '../test/licensing'
@@ -176,7 +177,11 @@ export default createModel<RootModel>()({
       const result = await graphQLSubscribe(form)
 
       if (result === 'ERROR' || !result?.data?.data?.createSubscription) {
-        dispatch.ui.set({ errorMessage: 'Checkout failed, please contact support.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:plan.checkoutFailed', {
+            defaultValue: 'Checkout failed, please contact support.',
+          }),
+        })
         dispatch.plans.set({ purchasing: undefined })
         return
       }
@@ -185,14 +190,14 @@ export default createModel<RootModel>()({
       console.log('PURCHASE', checkout)
       if (checkout?.url) window.location.href = checkout.url
       else {
-        dispatch.ui.set({ errorMessage: 'Error purchasing license' })
+        dispatch.ui.set({ errorMessage: i18n.t('notices:plan.purchaseError', { defaultValue: 'Error purchasing license' }) })
         dispatch.plans.set({ purchasing: undefined })
       }
     },
 
     async updateSubscription(form: IPurchase) {
       if (!form.priceId) {
-        dispatch.ui.set({ errorMessage: 'Plan selection missing price' })
+        dispatch.ui.set({ errorMessage: i18n.t('notices:plan.missingPrice', { defaultValue: 'Plan selection missing price' }) })
         return
       }
       dispatch.plans.set({ purchasing: form.planId })
@@ -200,7 +205,11 @@ export default createModel<RootModel>()({
       if (result !== 'ERROR') {
         const success = result?.data?.data?.updateSubscription
         if (!success) {
-          dispatch.ui.set({ errorMessage: 'Subscription update failed, please contact support.' })
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:plan.updateFailed', {
+              defaultValue: 'Subscription update failed, please contact support.',
+            }),
+          })
         }
       }
       // event should come from ws and cause the update, otherwise:
@@ -213,7 +222,11 @@ export default createModel<RootModel>()({
       dispatch.plans.set({ purchasing: planId })
       const result = await graphQLUnsubscribe(licenseId)
       if (result === 'ERROR' || !result?.data?.data?.cancelSubscription) {
-        dispatch.ui.set({ errorMessage: 'Subscription cancellation failed, please contact support.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:plan.cancelFailed', {
+            defaultValue: 'Subscription cancellation failed, please contact support.',
+          }),
+        })
         dispatch.plans.set({ purchasing: undefined })
         return
       }
@@ -233,10 +246,22 @@ export default createModel<RootModel>()({
     },
 
     async updated(event: { owner?: IUserRef; planName?: string; quantity?: number }, state) {
-      const who = event.owner?.id === state.user.id ? 'Your' : `${event.owner?.email}'s`
+      const isOwnPlan = event.owner?.id === state.user.id
+      const planName = event.planName?.toLowerCase()
       await cloudSync.call([dispatch.plans.fetch, dispatch.organization.fetch, dispatch.devices.fetchList], true)
       dispatch.plans.set({ purchasing: undefined, updating: undefined })
-      dispatch.ui.set({ successMessage: `${who} ${event.planName?.toLowerCase()} subscription updated.` })
+      dispatch.ui.set({
+        successMessage: isOwnPlan
+          ? i18n.t('notices:plan.subscriptionUpdatedYours', {
+              plan: planName,
+              defaultValue: 'Your {{plan}} subscription updated.',
+            })
+          : i18n.t('notices:plan.subscriptionUpdatedOther', {
+              email: event.owner?.email,
+              plan: planName,
+              defaultValue: "{{email}}'s {{plan}} subscription updated.",
+            }),
+      })
     },
 
     async testServiceLicensing(_: void, state) {
