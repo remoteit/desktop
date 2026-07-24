@@ -18,8 +18,9 @@ export default {
   // and the parser can't see them statically. `npm run i18n:check` reports dead
   // keys so they can be removed deliberately.
   keepRemoved: true,
-  // English keeps the inline default text; other locales stay empty until translated.
-  defaultValue: (locale, _ns, _key, value) => (locale === 'en' ? value?.usageContext?.defaultValue ?? '' : ''),
+  // English keeps the inline default text (passed as the 4th arg); other locales
+  // stay empty until translated.
+  defaultValue: (locale, _ns, _key, value) => (locale === 'en' ? value ?? '' : ''),
   createOldCatalogs: false,
   lexers: {
     ts: ['JavascriptLexer'],

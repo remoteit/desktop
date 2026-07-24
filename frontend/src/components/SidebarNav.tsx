@@ -1,5 +1,6 @@
 import React from 'react'
 import browser from '../services/browser'
+import { useTranslation } from 'react-i18next'
 import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
@@ -50,14 +51,21 @@ export const SidebarNav: React.FC = () => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const dispatch = useDispatch<Dispatch>()
   const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
+  const { t } = useTranslation()
 
   const hasPartner = useSelector(getHasPartner)
 
   if (remoteUI)
     return (
       <List sx={listSx}>
-        <ListItemLocation title="This Device" to="/devices" match="/devices/:any?/:any?/:any?" icon="laptop" dense />
-        <ListItemLocation title="Logs" to="/logs" icon="file-alt" dense />
+        <ListItemLocation
+          title={t('nav.thisDevice', 'This Device')}
+          to="/devices"
+          match="/devices/:any?/:any?/:any?"
+          icon="laptop"
+          dense
+        />
+        <ListItemLocation title={t('nav.logs', 'Logs')} to="/logs" icon="file-alt" dense />
       </List>
     )
 
@@ -66,7 +74,7 @@ export const SidebarNav: React.FC = () => {
       {!mobile && (
         <>
           <ListItemLocation
-            title="Connections"
+            title={t('nav.connections', 'Connections')}
             icon="arrow-right-arrow-left"
             to={pathname('/connections')}
             match="/connections"
@@ -74,7 +82,11 @@ export const SidebarNav: React.FC = () => {
           >
             {!!counts.active && !counts.memberships ? (
               <Tooltip
-                title={`${counts.connections.toLocaleString()} Connections - ${counts.active.toLocaleString()} Connected`}
+                title={t('nav.connectionsTooltip', {
+                  connections: counts.connections.toLocaleString(),
+                  active: counts.active.toLocaleString(),
+                  defaultValue: '{{connections}} Connections - {{active}} Connected',
+                })}
                 placement="top"
                 arrow
               >
@@ -93,23 +105,36 @@ export const SidebarNav: React.FC = () => {
                   color="primary"
                   overlap="circular"
                 >
-                  <Tooltip title={`${counts.connections.toLocaleString()} Idle Connections`} placement="top" arrow>
+                  <Tooltip
+                    title={t('nav.idleConnections', {
+                      connections: counts.connections.toLocaleString(),
+                      defaultValue: '{{connections}} Idle Connections',
+                    })}
+                    placement="top"
+                    arrow
+                  >
                     <Chip size="small" label={counts.connections.toLocaleString()} />
                   </Tooltip>
                 </Badge>
               )
             )}
           </ListItemLocation>
-          <ListItemLocation title="Devices" icon="router" to="/devices" match="/devices" dense>
+          <ListItemLocation title={t('nav.devices', 'Devices')} icon="router" to="/devices" match="/devices" dense>
             {!!counts.devices && (
-              <Tooltip title="Total Devices" placement="top" arrow>
+              <Tooltip title={t('nav.totalDevices', 'Total Devices')} placement="top" arrow>
                 <Chip size="small" label={counts.devices.toLocaleString()} />
               </Tooltip>
             )}
           </ListItemLocation>
-          <ListItemLocation title="Networks" icon="chart-network" to={pathname('/networks')} match="/networks" dense>
+          <ListItemLocation
+            title={t('nav.networks', 'Networks')}
+            icon="chart-network"
+            to={pathname('/networks')}
+            match="/networks"
+            dense
+          >
             {!!counts.networks && (
-              <Tooltip title="Total Networks" placement="top" arrow>
+              <Tooltip title={t('nav.totalNetworks', 'Total Networks')} placement="top" arrow>
                 <Chip size="small" label={counts.networks.toLocaleString()} />
               </Tooltip>
             )}
@@ -117,24 +142,24 @@ export const SidebarNav: React.FC = () => {
         </>
       )}
       <ListItemLocation
-        title="Scripting"
+        title={t('nav.scripting', 'Scripting')}
         to={pathname('/scripts')}
         icon="scripting"
         match={['/script', '/scripts', '/runs']}
         dense
       />
-      <ListItemLocation title="Products" to="/products" match="/products" icon="conveyor-belt-boxes" dense />
-      <ListItemLocation title="Organization" to="/organization" icon="industry-alt" dense />
+      <ListItemLocation title={t('nav.products', 'Products')} to="/products" match="/products" icon="conveyor-belt-boxes" dense />
+      <ListItemLocation title={t('nav.organization', 'Organization')} to="/organization" icon="industry-alt" dense />
       {hasPartner && (
         <ListItemLocation
-          title="Partner Stats"
+          title={t('nav.partnerStats', 'Partner Stats')}
           to="/partner-stats"
           icon="chart-pie"
           dense
           onClick={() => dispatch.partnerStats.fetchIfEmpty()}
         />
       )}
-      <ListItemLocation title="Logs" to="/logs" icon="rectangle-history" dense exactMatch />
+      <ListItemLocation title={t('nav.logs', 'Logs')} to="/logs" icon="rectangle-history" dense exactMatch />
       <Box
         sx={theme => ({
           width: '100%',
@@ -149,7 +174,7 @@ export const SidebarNav: React.FC = () => {
           <Divider />
         </ResellerLogo>
         <ListItemLocation
-          title="Announcements"
+          title={t('nav.announcements', 'Announcements')}
           to="/announcements"
           icon="bullhorn"
           badge={counts.unreadAnnouncements}
@@ -157,16 +182,16 @@ export const SidebarNav: React.FC = () => {
         />
         {limits.support > 10 ? (
           <ListItemLocation
-            title="Contact"
+            title={t('nav.contact', 'Contact')}
             onClick={() => dispatch.feedback.reset()}
             to="/feedback"
             icon="envelope-open-text"
             dense
           />
         ) : (
-          <ListItemLink title="Support Forum" href="https://link.remote.it/forum" icon="comments" dense />
+          <ListItemLink title={t('nav.supportForum', 'Support Forum')} href="https://link.remote.it/forum" icon="comments" dense />
         )}
-        <ListItemLocation title="Settings" icon="sliders-h" to="/settings" match="/settings" dense />
+        <ListItemLocation title={t('nav.settings', 'Settings')} icon="sliders-h" to="/settings" match="/settings" dense />
       </Box>
     </List>
   )
