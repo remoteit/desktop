@@ -13,7 +13,7 @@ export const ChatOrgSelect: React.FC = () => {
   const organizations = useSelector((state: State) => state.organization.accounts)
 
   const options = memberships
-    .map(m => ({ id: m.account.id, name: organizations[m.account.id]?.name || '' }))
+    .map(m => ({ id: m.account.id, name: (organizations[m.account.id]?.name || m.name || '').trim() }))
     .filter(o => o.name)
     .sort((a, b) => a.name.localeCompare(b.name))
 
