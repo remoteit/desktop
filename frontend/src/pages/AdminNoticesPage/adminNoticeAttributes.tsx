@@ -53,7 +53,22 @@ export const noticeIcon = (type?: INoticeType) => (type && NOTICE_ICONS[type]) |
 
 const dateLabel = (date?: Date) => (date ? date.toLocaleString() : '—')
 
-const plainText = (html?: string) => html?.replace(/<[^>]*>/g, '').trim()
+// Extract readable text from a notice body for display in a list cell. NOT a sanitizer, and it
+// must never be used to produce HTML — the result is only ever rendered as a React text child,
+// which escapes it. A regex like /<[^>]*>/g looks equivalent but silently passes unterminated
+// tags ("<script src=x" survives it intact, flagged by CodeQL); DOMParser builds an inert
+// document instead, so scripts do not run and no markup can survive as markup.
+const plainText = (html?: string) => {
+  if (!html) return html
+  if (!html.includes('<')) return html.trim()
+
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+
+  // textContent would otherwise include the *source* inside these, spilling JS/CSS into the cell.
+  doc.body.querySelectorAll('script, style').forEach(el => el.remove())
+
+  return doc.body.textContent?.trim() || ''
+}
 
 export const adminNoticeAttributes: AdminNoticeAttribute[] = [
   new AdminNoticeAttribute({
