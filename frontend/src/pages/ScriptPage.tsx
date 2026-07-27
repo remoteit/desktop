@@ -3,6 +3,7 @@ import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
 import { Redirect, useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { List, Typography, Chip, Button } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -19,6 +20,7 @@ import { Icon } from '../components/Icon'
 const MAX_RUNS = 12
 
 export const ScriptPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID } = useParams<{ fileID?: string }>()
@@ -47,7 +49,11 @@ export const ScriptPage: React.FC = () => {
   const renderJobRow = (job: IJob) => {
     const deviceCount = job.jobDevices.length
     const deviceLabel =
-      deviceCount === 1 ? job.jobDevices[0].device.name : deviceCount === 0 ? 'No devices' : `${deviceCount} devices`
+      deviceCount === 1
+        ? job.jobDevices[0].device.name
+        : deviceCount === 0
+        ? t('scriptPage.noDevices', 'No devices')
+        : t('scriptPage.deviceCount', { count: deviceCount, defaultValue: '{{count}} devices' })
     const tagNames = job.tag?.values || []
     const to = job.status === 'READY' ? `/script/${file.id}/${job.id}/run` : `/script/${file.id}/${job.id}`
     const matchPath = job.status === 'READY' ? `/script/${file.id}/${job.id}/run` : `/script/${file.id}/${job.id}`
@@ -97,7 +103,7 @@ export const ScriptPage: React.FC = () => {
               sx={{ mr: 1 }}
               onClick={() => history.push(`/script/${fileID}/edit`)}
             >
-              Edit
+              {t('scriptPage.edit', 'Edit')}
             </Button>
           </Gutters>
           <List disablePadding sx={{ marginBottom: 2 }}>
@@ -115,9 +121,11 @@ export const ScriptPage: React.FC = () => {
               icon="calendar"
               subtitle={
                 <>
-                  Created <Duration startDate={new Date(file.created)} humanizeOptions={{ largest: 1 }} ago />
+                  {t('scriptPage.created', 'Created')}{' '}
+                  <Duration startDate={new Date(file.created)} humanizeOptions={{ largest: 1 }} ago />
                   <br />
-                  Updated <Duration startDate={new Date(file.updated)} humanizeOptions={{ largest: 1 }} ago />
+                  {t('scriptPage.updated', 'Updated')}{' '}
+                  <Duration startDate={new Date(file.updated)} humanizeOptions={{ largest: 1 }} ago />
                 </>
               }
             />
@@ -130,8 +138,13 @@ export const ScriptPage: React.FC = () => {
       {readyJobs.length > 0 && (
         <>
           <Typography variant="subtitle1">
-            <Title>Ready</Title>
-            <IconButton icon="plus" title="New Run" size="md" onClick={() => history.push(`/script/${fileID}/run`)} />
+            <Title>{t('scriptPage.ready', 'Ready')}</Title>
+            <IconButton
+              icon="plus"
+              title={t('scriptPage.newRun', 'New Run')}
+              size="md"
+              onClick={() => history.push(`/script/${fileID}/run`)}
+            />
           </Typography>
           <List>{readyJobs.map(renderJobRow)}</List>
         </>
@@ -141,7 +154,7 @@ export const ScriptPage: React.FC = () => {
       {runningJobs.length > 0 && (
         <>
           <Typography variant="subtitle1">
-            <Title>Running</Title>
+            <Title>{t('scriptPage.running', 'Running')}</Title>
           </Typography>
           <List>{runningJobs.map(renderJobRow)}</List>
         </>
@@ -149,11 +162,11 @@ export const ScriptPage: React.FC = () => {
 
       {/* ── Runs ── */}
       <Typography variant="subtitle1">
-        <Title>Runs</Title>
+        <Title>{t('scriptPage.runs', 'Runs')}</Title>
         {!readyJobs.length && (
           <IconButton
             icon="plus"
-            title="New Run"
+            title={t('scriptPage.newRun', 'New Run')}
             size="md"
             onClick={() => {
               history.push(`/script/${fileID}/run`)
@@ -171,12 +184,12 @@ export const ScriptPage: React.FC = () => {
               sx={{ display: 'block', mx: 'auto', mt: 1 }}
               onClick={() => history.push(`/runs/${fileID}`)}
             >
-              View all runs
+              {t('scriptPage.viewAllRuns', 'View all runs')}
             </Button>
           )}
         </>
       ) : (
-        <Notice sx={{ mx: 2 }}>No runs yet.</Notice>
+        <Notice sx={{ mx: 2 }}>{t('scriptPage.noRunsYet', 'No runs yet.')}</Notice>
       )}
     </Container>
   )

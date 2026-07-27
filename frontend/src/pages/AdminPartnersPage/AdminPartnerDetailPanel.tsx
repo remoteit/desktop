@@ -6,6 +6,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, FormControl, InputLabel,
   IconButton as MuiIconButton
 } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -54,6 +55,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
   const [newRegistrantEmail, setNewRegistrantEmail] = useState('')
   const [addingRegistrant, setAddingRegistrant] = useState(false)
   const [removingRegistrant, setRemovingRegistrant] = useState<string | null>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (partnerId) {
@@ -91,12 +93,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       setNewAdminEmail('')
       fetchPartner(true)
     } else {
-      alert('Failed to add admin.')
+      alert(t('adminPartnerDetailPanel.addAdminFailed', 'Failed to add admin.'))
     }
   }
 
   const handleRemoveAdmin = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this admin?')) return
+    if (!confirm(t('adminPartnerDetailPanel.removeAdminConfirm', 'Are you sure you want to remove this admin?'))) return
 
     setRemovingAdmin(userId)
     const result = await graphQLRemovePartnerAdmin(partnerId, userId)
@@ -105,7 +107,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (result !== 'ERROR') {
       fetchPartner(true)
     } else {
-      alert('Failed to remove admin.')
+      alert(t('adminPartnerDetailPanel.removeAdminFailed', 'Failed to remove admin.'))
     }
   }
 
@@ -121,12 +123,14 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       setNewRegistrantEmail('')
       fetchPartner(true)
     } else {
-      alert('Failed to add registrant. They may already have access to this entity.')
+      alert(
+        t('adminPartnerDetailPanel.addRegistrantFailed', 'Failed to add registrant. They may already have access to this entity.')
+      )
     }
   }
 
   const handleRemoveRegistrant = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this registrant?')) return
+    if (!confirm(t('adminPartnerDetailPanel.removeRegistrantConfirm', 'Are you sure you want to remove this registrant?'))) return
 
     setRemovingRegistrant(userId)
     const result = await graphQLRemovePartnerRegistrant(partnerId, userId)
@@ -135,7 +139,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (result !== 'ERROR') {
       fetchPartner(true)
     } else {
-      alert('Failed to remove registrant.')
+      alert(t('adminPartnerDetailPanel.removeRegistrantFailed', 'Failed to remove registrant.'))
     }
   }
 
@@ -167,12 +171,13 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       setSelectedChildId('')
       fetchPartner(true)
     } else {
-      alert('Failed to add child partner.')
+      alert(t('adminPartnerDetailPanel.addChildFailed', 'Failed to add child partner.'))
     }
   }
 
   const handleRemoveChild = async (childId: string) => {
-    if (!confirm('Remove this child partner? It will become a top-level partner.')) return
+    if (!confirm(t('adminPartnerDetailPanel.removeChildConfirm', 'Remove this child partner? It will become a top-level partner.')))
+      return
 
     setRemovingChild(childId)
     const result = await graphQLRemovePartnerChild(childId)
@@ -181,15 +186,19 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (result !== 'ERROR') {
       fetchPartner(true)
     } else {
-      alert('Failed to remove child partner.')
+      alert(t('adminPartnerDetailPanel.removeChildFailed', 'Failed to remove child partner.'))
     }
   }
 
   const handleDeletePartner = async () => {
     const childCount = children.length
-    const message = childCount > 0
-      ? `Delete this partner? Its ${childCount} child partner(s) will become top-level partners.`
-      : 'Delete this partner? This action cannot be undone.'
+    const message =
+      childCount > 0
+        ? t('adminPartnerDetailPanel.deleteWithChildrenConfirm', {
+            count: childCount,
+            defaultValue: 'Delete this partner? Its {{count}} child partner(s) will become top-level partners.',
+          })
+        : t('adminPartnerDetailPanel.deleteConfirm', 'Delete this partner? This action cannot be undone.')
 
     if (!confirm(message)) return
 
@@ -200,7 +209,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
     if (result !== 'ERROR') {
       history.push('/admin/partners')
     } else {
-      alert('Failed to delete partner.')
+      alert(t('adminPartnerDetailPanel.deleteFailed', 'Failed to delete partner.'))
     }
   }
 
@@ -213,7 +222,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       const url = result.data.data.exportPartnerDevices
       windowOpen(url)
     } else {
-      alert('Failed to export devices.')
+      alert(t('adminPartnerDetailPanel.exportFailed', 'Failed to export devices.'))
     }
   }
 
@@ -242,14 +251,14 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       fetchPartner(true)
       dispatch.adminPartners.fetch()
     } else {
-      alert('Failed to update partner name.')
+      alert(t('adminPartnerDetailPanel.updateNameFailed', 'Failed to update partner name.'))
     }
   }
 
   if (loading && !partner) {
     return (
       <Container gutterBottom>
-        <LoadingMessage message="Loading partner..." />
+        <LoadingMessage message={t('adminPartnerDetailPanel.loading', 'Loading partner...')} />
       </Container>
     )
   }
@@ -260,7 +269,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Partner not found
+            {t('adminPartnerDetailPanel.notFound', 'Partner not found')}
           </Typography>
         </Body>
       </Container>
@@ -281,7 +290,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <IconButton
                 icon="arrow-to-bottom"
-                title="Export devices to CSV"
+                title={t('adminPartnerDetailPanel.exportDevices', 'Export devices to CSV')}
                 onClick={handleExportDevices}
                 disabled={exporting}
                 spin={exporting}
@@ -289,7 +298,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
               />
               <IconButton
                 icon="trash"
-                title="Delete partner"
+                title={t('adminPartnerDetailPanel.deletePartner', 'Delete partner')}
                 onClick={handleDeletePartner}
                 disabled={deleting}
                 spin={deleting}
@@ -315,7 +324,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                 />
                 <IconButton
                   icon={savingName ? 'spinner-third' : 'check'}
-                  title="Save"
+                  title={t('common.save', 'Save')}
                   onClick={handleSaveName}
                   disabled={savingName || !editedName.trim()}
                   spin={savingName}
@@ -324,7 +333,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                 />
                 <IconButton
                   icon="times"
-                  title="Cancel"
+                  title={t('common.cancel', 'Cancel')}
                   onClick={handleCancelEditName}
                   disabled={savingName}
                   size="md"
@@ -337,7 +346,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                 </Typography>
                 <IconButton
                   icon="pen"
-                  title="Rename partner"
+                  title={t('adminPartnerDetailPanel.renamePartner', 'Rename partner')}
                   onClick={handleStartEditName}
                   size="sm"
                 />
@@ -359,7 +368,7 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       {partner.parent && (
         <>
           <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
-            <Title>Parent Partner</Title>
+            <Title>{t('adminPartnerDetailPanel.parentPartner', 'Parent Partner')}</Title>
           </Typography>
           <List disablePadding>
             <ListItemButton onClick={() => handleNavigateToPartner(partner.parent.id)}>
@@ -368,7 +377,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
               </ListItemIcon>
               <ListItemText
                 primary={partner.parent.name}
-                secondary={`${partner.parent.deviceCount || 0} total • ${partner.parent.online || 0} online • ${partner.parent.active || 0} active`}
+                secondary={t('adminPartnerDetailPanel.deviceCounts', {
+                  total: partner.parent.deviceCount || 0,
+                  online: partner.parent.online || 0,
+                  active: partner.parent.active || 0,
+                  defaultValue: '{{total}} total • {{online}} online • {{active}} active',
+                })}
               />
               <Icon name="chevron-right" size="md" color="grayLight" />
             </ListItemButton>
@@ -378,34 +392,45 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
       {/* Device Counts */}
       <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
-        <Title>Device Summary</Title>
+        <Title>{t('adminPartnerDetailPanel.deviceSummary', 'Device Summary')}</Title>
       </Typography>
       <List disablePadding>
         <ListItem>
           <ListItemText
-            primary="Total Devices"
+            primary={t('adminPartnerDetailPanel.totalDevices', 'Total Devices')}
             secondary={partner.deviceCount || 0}
           />
         </ListItem>
         <Divider component="li" />
         <ListItem>
           <ListItemText
-            primary="Activated"
-            secondary={`${partner.activated || 0} devices have reported at least once`}
+            primary={t('adminPartnerDetailPanel.activated', 'Activated')}
+            secondary={t('adminPartnerDetailPanel.activatedCount', {
+              count: partner.activated || 0,
+              defaultValue: '{{count}} devices have reported at least once',
+            })}
           />
         </ListItem>
         <Divider component="li" />
         <ListItem>
           <ListItemText
-            primary="Active (Last 30 Days)"
-            secondary={`${partner.active || 0} devices`}
+            primary={t('adminPartnerDetailPanel.activeLast30', 'Active (Last 30 Days)')}
+            secondary={t('adminPartnerDetailPanel.devicesCount', {
+              count: partner.active || 0,
+              defaultValue_one: '{{count}} device',
+              defaultValue_other: '{{count}} devices',
+            })}
           />
         </ListItem>
         <Divider component="li" />
         <ListItem>
           <ListItemText
-            primary="Currently Online"
-            secondary={`${partner.online || 0} devices`}
+            primary={t('adminPartnerDetailPanel.currentlyOnline', 'Currently Online')}
+            secondary={t('adminPartnerDetailPanel.devicesCount', {
+              count: partner.online || 0,
+              defaultValue_one: '{{count}} device',
+              defaultValue_other: '{{count}} devices',
+            })}
           />
         </ListItem>
       </List>
@@ -414,12 +439,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       <>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
           <Typography variant="subtitle1">
-            <Title>Child Partners ({children.length})</Title>
+            <Title>{t('adminPartnerDetailPanel.childPartners', { count: children.length, defaultValue: 'Child Partners ({{count}})' })}</Title>
           </Typography>
           <Button
             onClick={handleOpenAddChildDialog}
             size="small"
-            children="Add Child"
+            children={t('adminPartnerDetailPanel.addChild', 'Add Child')}
           />
         </Box>
         {children.length > 0 && (
@@ -447,7 +472,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary={child.name}
-                      secondary={`${child.deviceCount || 0} total • ${child.online || 0} online • ${child.active || 0} active`}
+                      secondary={t('adminPartnerDetailPanel.deviceCounts', {
+                        total: child.deviceCount || 0,
+                        online: child.online || 0,
+                        active: child.active || 0,
+                        defaultValue: '{{total}} total • {{online}} online • {{active}} active',
+                      })}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -461,12 +491,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       <>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
           <Typography variant="subtitle1">
-            <Title>Registrants ({registrants.length})</Title>
+            <Title>{t('adminPartnerDetailPanel.registrants', { count: registrants.length, defaultValue: 'Registrants ({{count}})' })}</Title>
           </Typography>
           <Button
             onClick={() => setAddRegistrantDialogOpen(true)}
             size="small"
-            children="Add Registrant"
+            children={t('adminPartnerDetailPanel.addRegistrant', 'Add Registrant')}
           />
         </Box>
         {registrants.length > 0 && (
@@ -494,7 +524,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary={user.email}
-                      secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
+                      secondary={t('adminPartnerDetailPanel.deviceCounts', {
+                        total: user.deviceCount || 0,
+                        online: user.online || 0,
+                        active: user.active || 0,
+                        defaultValue: '{{total}} total • {{online}} online • {{active}} active',
+                      })}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -508,12 +543,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
       <>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
           <Typography variant="subtitle1">
-            <Title>Admins ({admins.length})</Title>
+            <Title>{t('adminPartnerDetailPanel.admins', { count: admins.length, defaultValue: 'Admins ({{count}})' })}</Title>
           </Typography>
           <Button
             onClick={() => setAddAdminDialogOpen(true)}
             size="small"
-            children="Add Admin"
+            children={t('adminPartnerDetailPanel.addAdmin', 'Add Admin')}
           />
         </Box>
         {admins.length > 0 && (
@@ -541,7 +576,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary={user.email}
-                      secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
+                      secondary={t('adminPartnerDetailPanel.deviceCounts', {
+                        total: user.deviceCount || 0,
+                        online: user.online || 0,
+                        active: user.active || 0,
+                        defaultValue: '{{total}} total • {{online}} online • {{active}} active',
+                      })}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -553,12 +593,12 @@ export const AdminPartnerDetailPanel: React.FC = () => {
 
       {/* Add Admin Dialog */}
       <Dialog open={addAdminDialogOpen} onClose={() => setAddAdminDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add Admin to Partner</DialogTitle>
+        <DialogTitle>{t('adminPartnerDetailPanel.addAdminDialogTitle', 'Add Admin to Partner')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Email"
+            label={t('adminPartnerDetailPanel.emailLabel', 'Email')}
             type="email"
             fullWidth
             value={newAdminEmail}
@@ -567,21 +607,21 @@ export const AdminPartnerDetailPanel: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddAdminDialogOpen(false)} color="inherit">Cancel</Button>
+          <Button onClick={() => setAddAdminDialogOpen(false)} color="inherit">{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleAddAdmin} disabled={!newAdminEmail || addingAdmin}>
-            {addingAdmin ? 'Adding...' : 'Add Admin'}
+            {addingAdmin ? t('adminPartnerDetailPanel.adding', 'Adding...') : t('adminPartnerDetailPanel.addAdmin', 'Add Admin')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Add Registrant Dialog */}
       <Dialog open={addRegistrantDialogOpen} onClose={() => setAddRegistrantDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add Registrant to Partner</DialogTitle>
+        <DialogTitle>{t('adminPartnerDetailPanel.addRegistrantDialogTitle', 'Add Registrant to Partner')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Email"
+            label={t('adminPartnerDetailPanel.emailLabel', 'Email')}
             type="email"
             fullWidth
             value={newRegistrantEmail}
@@ -590,22 +630,24 @@ export const AdminPartnerDetailPanel: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddRegistrantDialogOpen(false)} color="inherit">Cancel</Button>
+          <Button onClick={() => setAddRegistrantDialogOpen(false)} color="inherit">{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleAddRegistrant} disabled={!newRegistrantEmail || addingRegistrant}>
-            {addingRegistrant ? 'Adding...' : 'Add Registrant'}
+            {addingRegistrant
+              ? t('adminPartnerDetailPanel.adding', 'Adding...')
+              : t('adminPartnerDetailPanel.addRegistrant', 'Add Registrant')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Add Child Dialog */}
       <Dialog open={addChildDialogOpen} onClose={() => setAddChildDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add Child Partner</DialogTitle>
+        <DialogTitle>{t('adminPartnerDetailPanel.addChildDialogTitle', 'Add Child Partner')}</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ marginTop: 2 }}>
-            <InputLabel>Select Partner</InputLabel>
+            <InputLabel>{t('adminPartnerDetailPanel.selectPartner', 'Select Partner')}</InputLabel>
             <Select
               value={selectedChildId}
-              label="Select Partner"
+              label={t('adminPartnerDetailPanel.selectPartner', 'Select Partner')}
               onChange={(e) => setSelectedChildId(e.target.value)}
             >
               {availablePartners.map((p: any) => (
@@ -615,9 +657,9 @@ export const AdminPartnerDetailPanel: React.FC = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddChildDialogOpen(false)} color="inherit">Cancel</Button>
+          <Button onClick={() => setAddChildDialogOpen(false)} color="inherit">{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleAddChild} disabled={!selectedChildId || addingChild}>
-            {addingChild ? 'Adding...' : 'Add Child'}
+            {addingChild ? t('adminPartnerDetailPanel.adding', 'Adding...') : t('adminPartnerDetailPanel.addChild', 'Add Child')}
           </Button>
         </DialogActions>
       </Dialog>

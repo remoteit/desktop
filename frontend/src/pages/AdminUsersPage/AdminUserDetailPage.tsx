@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Typography, List, ListItemText, Box, Divider } from '@mui/material'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -15,6 +16,7 @@ import browser from '../../services/browser'
 import { windowOpen } from '../../services/browser'
 
 export const AdminUserDetailPage: React.FC = () => {
+  const { t } = useTranslation()
   const { userId } = useParams<{ userId: string }>()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
@@ -36,7 +38,7 @@ export const AdminUserDetailPage: React.FC = () => {
   if (loading && !user) {
     return (
       <Container gutterBottom>
-        <LoadingMessage message="Loading user..." />
+        <LoadingMessage message={t('adminUserDetailPage.loadingUser', 'Loading user...')} />
       </Container>
     )
   }
@@ -47,7 +49,7 @@ export const AdminUserDetailPage: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            User not found
+            {t('adminUserDetailPage.userNotFound', 'User not found')}
           </Typography>
         </Body>
       </Container>
@@ -74,7 +76,7 @@ export const AdminUserDetailPage: React.FC = () => {
           <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
             <IconButton
               icon="eye"
-              title="View as User"
+              title={t('adminUserDetailPage.viewAsUser', 'View as User')}
               onClick={handleViewAsUser}
               size="md"
               color="primary"
@@ -93,7 +95,7 @@ export const AdminUserDetailPage: React.FC = () => {
       }
     >
       <Typography variant="subtitle1">
-        <Title>Devices</Title>
+        <Title>{t('adminUserDetailPage.devices', 'Devices')}</Title>
       </Typography>
       <List>
         <ListItemLocation
@@ -103,8 +105,13 @@ export const AdminUserDetailPage: React.FC = () => {
           icon={<Icon name="router" size="md" />}
         >
           <ListItemText
-            primary="User Devices"
-            secondary={`${deviceCount} total • ${deviceOnline} online • ${deviceCount - deviceOnline} offline`}
+            primary={t('adminUserDetailPage.userDevices', 'User Devices')}
+            secondary={t('adminUserDetailPage.deviceSummary', {
+              total: deviceCount,
+              online: deviceOnline,
+              offline: deviceCount - deviceOnline,
+              defaultValue: '{{total}} total • {{online}} online • {{offline}} offline',
+            })}
           />
         </ListItemLocation>
       </List>

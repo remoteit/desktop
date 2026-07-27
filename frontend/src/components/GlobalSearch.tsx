@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
 import debounce from 'lodash.debounce'
@@ -21,6 +22,7 @@ const highlightSx = (theme: Theme) => ({
 })
 
 export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
+  const { t } = useTranslation()
   const search = useSelector((state: State) => state.search.search)
   const userEmail = useSelector((state: State) => state.user.email)
   const fetching = useSelector((state: State) => state.search.fetching)
@@ -135,7 +137,7 @@ export const GlobalSearch: React.FC<Props> = ({ inputRef, onClose }) => {
             {...params}
             autoFocus
             hiddenLabel
-            placeholder="Search device or service name"
+            placeholder={t('globalSearch.placeholder', 'Search device or service name')}
             variant="filled"
             inputRef={inputRef}
             sx={{

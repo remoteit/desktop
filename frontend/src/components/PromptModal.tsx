@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { InlineFileFieldSetting } from './InlineFileFieldSetting'
 import { isFileToken } from '../helpers/connectionHelper'
 import { Application } from '@common/applications'
@@ -23,6 +24,7 @@ type Props = {
 }
 
 export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) => {
+  const { t } = useTranslation()
   const toLookup = () => app.missingTokens.reduce((obj, item) => ({ ...obj, [item]: '' }), {})
   const [tokens, setTokens] = useState<ILookup<string>>(toLookup())
   const [error, setError] = useState<string>()
@@ -52,7 +54,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
           if (!foundError) onSubmit(tokens)
         }}
       >
-        <DialogTitle>Missing info found</DialogTitle>
+        <DialogTitle>{t('promptModal.title', 'Missing info found')}</DialogTitle>
         <DialogContent>
           <Typography variant="h4">{app.preview(tokens)}</Typography>
           <List dense>
@@ -62,7 +64,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                   key={token}
                   token={token}
                   disableGutters
-                  label="Application path"
+                  label={t('promptModal.applicationPath', 'Application path')}
                   value={app.value(token)}
                   variant="filled"
                   onSave={value => update(token, value || '')}
@@ -85,10 +87,10 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} color="primary" type="button">
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </Button>
           <Button variant="contained" color="primary" type="submit">
-            Save
+            {t('common.save', 'Save')}
           </Button>
         </DialogActions>
       </form>

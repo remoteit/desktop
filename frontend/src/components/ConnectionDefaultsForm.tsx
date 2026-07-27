@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
 import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '@common/constants'
@@ -19,6 +20,7 @@ export type ServiceFormProps = {
 }
 
 export const ConnectionDefaultsForm: React.FC<ServiceFormProps> = ({ service, disabled, onSubmit, onCancel }) => {
+  const { t } = useTranslation()
   const { applicationTypes, saving, setupAdded } = useSelector((state: State) => ({
     applicationTypes: state.applicationTypes.all,
     saving: !!(state.ui.setupBusy || (state.ui.setupServiceBusy === service?.id && service?.id)),
@@ -77,9 +79,13 @@ export const ConnectionDefaultsForm: React.FC<ServiceFormProps> = ({ service, di
       </List>
       <Gutters>
         <Button type="submit" variant="contained" color="primary" disabled={disabled || !!error || !changed}>
-          {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
+          {saving
+            ? t('common.savingEllipsis', 'Saving...')
+            : changed
+              ? t('common.save', 'Save')
+              : t('connectionDefaultsForm.saved', 'Saved')}
         </Button>
-        {onCancel && <Button onClick={onCancel}>Cancel</Button>}
+        {onCancel && <Button onClick={onCancel}>{t('common.cancel', 'Cancel')}</Button>}
       </Gutters>
     </form>
   )

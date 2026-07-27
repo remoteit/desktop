@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useInterval } from '../hooks/useInterval'
-import humanize from 'humanize-duration'
+import { humanizeDuration as humanize } from '../helpers/dateHelper'
 
 type Props = {
   endTime?: number

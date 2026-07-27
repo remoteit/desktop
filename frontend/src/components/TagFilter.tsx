@@ -16,6 +16,7 @@ import {
   TextField,
 } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { RoleAccessCounts } from './RoleAccessCounts'
 import { selectTags } from '../selectors/tags'
 import { canEditTags } from '../models/tags'
@@ -40,7 +41,7 @@ type Props = ListItemProps & {
 
 export const TagFilter: React.FC<Props> = ({
   form,
-  name = 'Access',
+  name,
   disabled,
   systemRole,
   icon,
@@ -53,9 +54,11 @@ export const TagFilter: React.FC<Props> = ({
 }) => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
+  const { t } = useTranslation()
   const tags = useSelector(selectTags)
   const canEdit = useSelector(canEditTags)
-  const filteredTags = tags.filter(t => form.tag?.values.includes(t.name))
+  const filteredTags = tags.filter(tag => form.tag?.values.includes(tag.name))
+  const displayName = name ?? t('tagFilter.accessLabel', 'Access')
 
   // Handle empty states
   let formAccess = form.access
@@ -74,7 +77,7 @@ export const TagFilter: React.FC<Props> = ({
           select
           fullWidth
           disabled={disabled || systemRole}
-          label={name}
+          label={displayName}
           value={formAccess}
           variant="filled"
           onChange={event => {
@@ -85,21 +88,34 @@ export const TagFilter: React.FC<Props> = ({
             if (access === 'SELECTED') onSelectIds?.()
           }}
         >
-          <MenuItem value="NONE">None</MenuItem>
-          {selectAll && <MenuItem value="ALL">All</MenuItem>}
-          <MenuItem value="TAG">Tagged</MenuItem>
-          {selectDevices && <MenuItem value="SELECTED">{selectedIds?.length ? 'Selected' : 'Select'} Devices</MenuItem>}
-          {form.deviceIds?.length && <MenuItem value="CUSTOM">Saved Devices</MenuItem>}
+          <MenuItem value="NONE">{t('tagFilter.none', 'None')}</MenuItem>
+          {selectAll && <MenuItem value="ALL">{t('tagFilter.all', 'All')}</MenuItem>}
+          <MenuItem value="TAG">{t('tagFilter.tagged', 'Tagged')}</MenuItem>
+          {selectDevices && (
+            <MenuItem value="SELECTED">
+              {selectedIds?.length
+                ? t('tagFilter.selectedDevices', 'Selected Devices')
+                : t('tagFilter.selectDevices', 'Select Devices')}
+            </MenuItem>
+          )}
+          {form.deviceIds?.length && <MenuItem value="CUSTOM">{t('tagFilter.savedDevices', 'Saved Devices')}</MenuItem>}
         </TextField>
         <ListItemSecondaryAction sx={{ marginRight: selectDevices ? 2 : 0 }}>
           {formAccess === 'CUSTOM' && form.deviceIds?.length ? (
-            <Chip size="small" label={`${form.deviceIds.length} device${form.deviceIds.length > 1 ? 's' : ''}`} />
+            <Chip
+              size="small"
+              label={t('tagFilter.deviceCount', {
+                count: form.deviceIds.length,
+                defaultValue_one: '{{count}} device',
+                defaultValue_other: '{{count}} devices',
+              })}
+            />
           ) : formAccess === 'SELECTED' && selectedIds?.length ? (
             <ColorChip
               size="small"
               color="primary"
               variant="contained"
-              label={`${selectedIds.length} selected`}
+              label={t('tagFilter.selectedCount', { count: selectedIds.length, defaultValue: '{{count}} selected' })}
               onClick={() => onSelectIds?.()}
             />
           ) : formAccess === 'SELECTED' ? (
@@ -107,11 +123,11 @@ export const TagFilter: React.FC<Props> = ({
               size="small"
               color="primary"
               variant="contained"
-              label="Select Devices"
+              label={t('tagFilter.selectDevices', 'Select Devices')}
               onClick={() => onSelectIds?.()}
             />
           ) : formAccess === 'NONE' ? (
-            <Chip size="small" label="No devices" />
+            <Chip size="small" label={t('tagFilter.noDevices', 'No devices')} />
           ) : (
             <RoleAccessCounts role={form} />
           )}
@@ -152,7 +168,7 @@ export const TagFilter: React.FC<Props> = ({
             />
           </Box>
           <Stack flexDirection="row" alignItems="center" sx={{ whiteSpace: 'nowrap', marginLeft: 1 }}>
-            <Typography variant="caption">Match: &nbsp;</Typography>
+            <Typography variant="caption">{t('tagFilter.matchLabel', 'Match:')} &nbsp;</Typography>
             <TextField
               select
               hiddenLabel
@@ -166,10 +182,10 @@ export const TagFilter: React.FC<Props> = ({
               }}
             >
               <MenuItem dense value="ANY">
-                Any
+                {t('tagFilter.any', 'Any')}
               </MenuItem>
               <MenuItem dense value="ALL">
-                All
+                {t('tagFilter.all', 'All')}
               </MenuItem>
             </TextField>
           </Stack>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { TextField, MenuItem, Typography, Box, Stack } from '@mui/material'
 import { State, Dispatch } from '../store'
@@ -25,6 +26,7 @@ const findFileByIdOrVersionId = (files: IFile[], id: string): IFile | undefined 
 }
 
 export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values, onChange, disabled }) => {
+  const { t } = useTranslation()
   // Get ALL files (both scripts and non-scripts) for FileSelect type
   const accountId = useSelector(selectActiveAccountId)
   const files = useSelector((state: State) => state.files.all[accountId] || [])
@@ -51,7 +53,7 @@ export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values
   return (
     <Box>
       <Typography variant="subtitle2" marginTop={3} marginBottom={1}>
-        Script Arguments
+        {t('argumentsValueForm.title', 'Script Arguments')}
       </Typography>
       <Quote margin={null}>
         <Stack spacing={1}>
@@ -81,6 +83,7 @@ type ArgumentInputProps = {
 }
 
 const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange, disabled, files }) => {
+  const { t } = useTranslation()
   const { name, desc, argumentType, options } = argument
   const dispatch = useDispatch<Dispatch>()
 
@@ -113,7 +116,7 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
           variant="filled"
         >
           <MenuItem value="_none_" disabled>
-            <em>Select ...</em>
+            <em>{t('argumentsValueForm.selectPlaceholder', 'Select ...')}</em>
           </MenuItem>
           {options.map(option => (
             <MenuItem key={option} value={option}>
@@ -150,8 +153,12 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
 
       const fileHelperText = [
         desc,
-        options.length > 0 ? `Allowed types: ${options.join(', ')}` : '',
-        fileMissing ? '⚠️ Previously selected file is no longer available' : '',
+        options.length > 0
+          ? t('argumentsValueForm.allowedTypes', { types: options.join(', '), defaultValue: 'Allowed types: {{types}}' })
+          : '',
+        fileMissing
+          ? t('argumentsValueForm.fileMissing', '⚠️ Previously selected file is no longer available')
+          : '',
       ]
         .filter(Boolean)
         .join(' | ')
@@ -169,9 +176,9 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
           <FileUpload
             mode="file"
             attached
-            label="Upload file"
-            subLabel="Drag and drop or click"
-            selectionStatusLabel="uploaded"
+            label={t('argumentsValueForm.uploadFile', 'Upload file')}
+            subLabel={t('argumentsValueForm.uploadFileSubLabel', 'Drag and drop or click')}
+            selectionStatusLabel={t('argumentsValueForm.uploadedStatus', 'uploaded')}
             allowedExtensions={options}
             disabled={disabled}
             onChange={async file => {
@@ -203,7 +210,7 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
             }}
           >
             <MenuItem value="_none_" disabled>
-              <em>Select existing file ...</em>
+              <em>{t('argumentsValueForm.selectExistingFile', 'Select existing file ...')}</em>
             </MenuItem>
             {availableFiles.map(file => (
               <MenuItem key={file.id} value={getLatestVersionId(file)}>
@@ -222,7 +229,7 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
           value={value}
           onChange={e => onChange(e.target.value)}
           disabled={disabled}
-          helperText={desc || `Unknown type: ${argumentType}`}
+          helperText={desc || t('argumentsValueForm.unknownType', { argumentType, defaultValue: 'Unknown type: {{argumentType}}' })}
           variant="filled"
         />
       )

@@ -1,0 +1,25 @@
+{
+  "tray": {
+    "open": "Open {{appName}}...",
+    "signOut": "Sign out",
+    "quit": "Quit",
+    "connections": "Connections",
+    "noConnections": "No connections",
+    "stopConnection": "Stop connection",
+    "removeFromNetwork": "Remove from network",
+    "addToNetwork": "Add to network",
+    "offline": "Offline",
+    "copyToClipboard": "Copy to clipboard",
+    "launch": "Launch",
+    "remove": "Remove",
+    "andMore": "and {{count}} more...",
+    "signIn": "Sign in..."
+  },
+  "dialog": {
+    "failedToStartTitle": "{{appName}} Failed to Start",
+    "failedToStartMessage": "The app could not start because another instance is already running. Please close any other {{appName}} processes, or restart your computer.",
+    "findApplicationTitle": "Find application",
+    "findApplicationMessage": "Select the application location",
+    "findApplicationButton": "Select"
+  }
+}

@@ -5,6 +5,7 @@ import { ENTERPRISE_PLAN_ID, RESELLER_PLAN_ID } from '../models/plans'
 import { selectPlan, selectRemoteitPlans, selectRemoteitLicense } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { Typography, Divider } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { PlanEnterprise } from '../components/PlanEnterprise'
 import { PlanReseller } from '../components/PlanReseller'
@@ -23,11 +24,12 @@ export const PlansPage: React.FC = () => {
   const plans = useSelector((state: State) => selectRemoteitPlans(state))
   const plan = useSelector((state: State) => selectPlan(state, state.user.id))
   const user = useSelector(getUser)
+  const { t } = useTranslation()
 
   const isReseller = license?.plan.id === RESELLER_PLAN_ID
   const isEnterprise = license?.plan.id === ENTERPRISE_PLAN_ID
 
-  if (!initialized) return <LoadingMessage message="Loading plans..." />
+  if (!initialized) return <LoadingMessage message={t('plansPage.loading', 'Loading plans...')} />
 
   const removeReseller = async () => {
     await dispatch.user.leaveReseller()
@@ -40,17 +42,20 @@ export const PlansPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true, gutterTop: true }}
       header={
         <Typography variant="h1">
-          <Title>Subscriptions</Title>
+          <Title>{t('plansPage.title', 'Subscriptions')}</Title>
           {user.reseller && (
             <DeleteButton
-              title="Remove"
+              title={t('common.remove', 'Remove')}
               warning={
                 <>
                   <Notice severity="error" fullWidth gutterBottom>
-                    This will sever your reseller relationship!
+                    {t('plansPage.severWarning', 'This will sever your reseller relationship!')}
                   </Notice>
-                  You are removing <b>”{user.reseller.name}”</b> as your reseller. This will remove your current plan
-                  and return you to the free plan.
+                  {t('plansPage.removingResellerPrefix', 'You are removing')} <b>”{user.reseller.name}”</b>{' '}
+                  {t(
+                    'plansPage.removingResellerSuffix',
+                    'as your reseller. This will remove your current plan and return you to the free plan.'
+                  )}
                 </>
               }
               onDelete={removeReseller}
@@ -72,7 +77,7 @@ export const PlansPage: React.FC = () => {
               <Divider variant="inset" />
               <Gutters>
                 <Typography variant="caption">
-                  Pricing is represented and billed in US$ on most popular credit cards.
+                  {t('plansPage.pricingNotice', 'Pricing is represented and billed in US$ on most popular credit cards.')}
                 </Typography>
               </Gutters>
             </>

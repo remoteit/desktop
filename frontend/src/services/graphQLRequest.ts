@@ -967,3 +967,25 @@ export async function graphQLPartnerEntities(accountId?: string) {
     { accountId }
   )
 }
+
+export async function graphQLAllNotices() {
+  return await graphQLBasicRequest(
+    ` query AllNotices {
+        allNotices {
+          id
+          type
+          title
+          body
+          preview
+          image
+          link
+          stage
+          language
+          enabled
+          from
+          until
+          modified
+        }
+      }`
+  )
+}

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import useSafeArea from '../hooks/useSafeArea'
 import useCapacitor from '../hooks/useCapacitor'
@@ -31,8 +32,14 @@ import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
 import { ViewAsBanner } from './ViewAsBanner'
 import { AnnouncementDialog } from './AnnouncementDialog'
+import { AnnouncementBanner } from './AnnouncementBanner'
 
 export const App: React.FC = () => {
+  // Subscribe the whole app to i18next language changes and lazy-locale loads, so
+  // render-time translations resolved outside React (Attribute label getters,
+  // value functions, date/duration helpers) re-render when the language switches
+  // or a non-English catalog chunk finishes loading.
+  useTranslation()
   const { insets } = useSafeArea()
   const location = useLocation()
   const hideSplashScreen = useCapacitor()
@@ -110,6 +117,7 @@ export const App: React.FC = () => {
   return (
     <Page>
       <ViewAsBanner />
+      <AnnouncementBanner />
       <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
         <Box
           sx={{

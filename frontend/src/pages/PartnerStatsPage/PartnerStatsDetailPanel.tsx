@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
@@ -17,6 +18,7 @@ import { getPartnerStats } from '../../models/partnerStats'
 import { Dispatch } from '../../store'
 
 export const PartnerStatsDetailPanel: React.FC = () => {
+  const { t } = useTranslation()
   const { partnerId } = useParams<{ partnerId: string }>()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
@@ -51,7 +53,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
       const url = result.data.data.exportPartnerDevices
       windowOpen(url)
     } else {
-      alert('Failed to export devices.')
+      alert(t('partnerStatsDetailPanel.exportFailed', 'Failed to export devices.'))
     }
   }
 
@@ -79,7 +81,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
       setEditedName('')
       dispatch.partnerStats.fetch()
     } else {
-      alert('Failed to update partner name.')
+      alert(t('partnerStatsDetailPanel.updateNameFailed', 'Failed to update partner name.'))
     }
   }
 
@@ -91,7 +93,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
   if (loading && !partner) {
     return (
       <Container gutterBottom>
-        <LoadingMessage message="Loading partner..." />
+        <LoadingMessage message={t('partnerStatsDetailPanel.loadingPartner', 'Loading partner...')} />
       </Container>
     )
   }
@@ -102,7 +104,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Partner not found
+            {t('partnerStatsDetailPanel.partnerNotFound', 'Partner not found')}
           </Typography>
         </Body>
       </Container>
@@ -123,14 +125,14 @@ export const PartnerStatsDetailPanel: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton
                 icon="chevron-left"
-                title="Back to Partners"
+                title={t('partnerStatsDetailPanel.backToPartners', 'Back to Partners')}
                 onClick={handleBack}
                 size="md"
               />
             </Box>
             <IconButton
               icon="arrow-to-bottom"
-              title="Export devices to CSV"
+              title={t('partnerStatsDetailPanel.exportToCsv', 'Export devices to CSV')}
               onClick={handleExportDevices}
               disabled={exporting}
               spin={exporting}
@@ -154,7 +156,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
                 />
                 <IconButton
                   icon={savingName ? 'spinner-third' : 'check'}
-                  title="Save"
+                  title={t('partnerStatsDetailPanel.save', 'Save')}
                   onClick={handleSaveName}
                   disabled={savingName || !editedName.trim()}
                   spin={savingName}
@@ -163,7 +165,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
                 />
                 <IconButton
                   icon="times"
-                  title="Cancel"
+                  title={t('partnerStatsDetailPanel.cancel', 'Cancel')}
                   onClick={handleCancelEditName}
                   disabled={savingName}
                   size="md"
@@ -176,7 +178,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
                 </Typography>
                 <IconButton
                   icon="pen"
-                  title="Rename partner"
+                  title={t('partnerStatsDetailPanel.renamePartner', 'Rename partner')}
                   onClick={handleStartEditName}
                   size="sm"
                 />
@@ -197,7 +199,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
       {partner.parent && (
         <>
           <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
-            <Title>Parent Partner</Title>
+            <Title>{t('partnerStatsDetailPanel.parentPartner', 'Parent Partner')}</Title>
           </Typography>
           <List disablePadding>
             <ListItemButton onClick={() => handleNavigateToPartner(partner.parent!.id)}>
@@ -206,7 +208,12 @@ export const PartnerStatsDetailPanel: React.FC = () => {
               </ListItemIcon>
               <ListItemText
                 primary={partner.parent.name}
-                secondary={`${partner.parent.deviceCount || 0} total • ${partner.parent.online || 0} online • ${partner.parent.active || 0} active`}
+                secondary={t('partnerStatsDetailPanel.partnerSummary', {
+                  total: partner.parent.deviceCount || 0,
+                  online: partner.parent.online || 0,
+                  active: partner.parent.active || 0,
+                  defaultValue: '{{total}} total • {{online}} online • {{active}} active',
+                })}
               />
               <Icon name="chevron-right" size="md" color="grayLight" />
             </ListItemButton>
@@ -216,34 +223,45 @@ export const PartnerStatsDetailPanel: React.FC = () => {
 
       {/* Device Counts */}
       <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
-        <Title>Device Summary</Title>
+        <Title>{t('partnerStatsDetailPanel.deviceSummary', 'Device Summary')}</Title>
       </Typography>
       <List disablePadding>
         <ListItem>
           <ListItemText
-            primary="Total Devices"
+            primary={t('partnerStatsDetailPanel.totalDevices', 'Total Devices')}
             secondary={partner.deviceCount || 0}
           />
         </ListItem>
         <Divider component="li" />
         <ListItem>
           <ListItemText
-            primary="Activated"
-            secondary={`${partner.activated || 0} devices have reported at least once`}
+            primary={t('partnerStatsDetailPanel.activated', 'Activated')}
+            secondary={t('partnerStatsDetailPanel.devicesReportedOnce', {
+              count: partner.activated || 0,
+              defaultValue: '{{count}} devices have reported at least once',
+            })}
           />
         </ListItem>
         <Divider component="li" />
         <ListItem>
           <ListItemText
-            primary="Active (Last 30 Days)"
-            secondary={`${partner.active || 0} devices`}
+            primary={t('partnerStatsDetailPanel.activeLast30Days', 'Active (Last 30 Days)')}
+            secondary={t('partnerStatsDetailPanel.devicesCount', {
+              count: partner.active || 0,
+              defaultValue_one: '{{count}} device',
+              defaultValue_other: '{{count}} devices',
+            })}
           />
         </ListItem>
         <Divider component="li" />
         <ListItem>
           <ListItemText
-            primary="Currently Online"
-            secondary={`${partner.online || 0} devices`}
+            primary={t('partnerStatsDetailPanel.currentlyOnline', 'Currently Online')}
+            secondary={t('partnerStatsDetailPanel.devicesCount', {
+              count: partner.online || 0,
+              defaultValue_one: '{{count}} device',
+              defaultValue_other: '{{count}} devices',
+            })}
           />
         </ListItem>
       </List>
@@ -252,7 +270,9 @@ export const PartnerStatsDetailPanel: React.FC = () => {
       {children.length > 0 && (
         <>
           <Typography variant="subtitle1" sx={{ marginTop: 3 }}>
-            <Title>Child Partners ({children.length})</Title>
+            <Title>
+              {t('partnerStatsDetailPanel.childPartners', { count: children.length, defaultValue: 'Child Partners ({{count}})' })}
+            </Title>
           </Typography>
           <List disablePadding>
             {children.map((child: any, index: number) => (
@@ -264,7 +284,12 @@ export const PartnerStatsDetailPanel: React.FC = () => {
                   </ListItemIcon>
                   <ListItemText
                     primary={child.name}
-                    secondary={`${child.deviceCount || 0} total • ${child.online || 0} online • ${child.active || 0} active`}
+                    secondary={t('partnerStatsDetailPanel.partnerSummary', {
+                      total: child.deviceCount || 0,
+                      online: child.online || 0,
+                      active: child.active || 0,
+                      defaultValue: '{{total}} total • {{online}} online • {{active}} active',
+                    })}
                   />
                   <Icon name="chevron-right" size="md" color="grayLight" />
                 </ListItemButton>
@@ -278,7 +303,9 @@ export const PartnerStatsDetailPanel: React.FC = () => {
       <>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
           <Typography variant="subtitle1">
-            <Title>Registrants ({registrants.length})</Title>
+            <Title>
+              {t('partnerStatsDetailPanel.registrants', { count: registrants.length, defaultValue: 'Registrants ({{count}})' })}
+            </Title>
           </Typography>
         </Box>
         {registrants.length > 0 && (
@@ -292,7 +319,12 @@ export const PartnerStatsDetailPanel: React.FC = () => {
                   </ListItemIcon>
                   <ListItemText
                     primary={user.email}
-                    secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
+                    secondary={t('partnerStatsDetailPanel.partnerSummary', {
+                      total: user.deviceCount || 0,
+                      online: user.online || 0,
+                      active: user.active || 0,
+                      defaultValue: '{{total}} total • {{online}} online • {{active}} active',
+                    })}
                   />
                 </ListItem>
               </React.Fragment>
@@ -305,7 +337,9 @@ export const PartnerStatsDetailPanel: React.FC = () => {
       <>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
           <Typography variant="subtitle1">
-            <Title>Admins ({admins.length})</Title>
+            <Title>
+              {t('partnerStatsDetailPanel.admins', { count: admins.length, defaultValue: 'Admins ({{count}})' })}
+            </Title>
           </Typography>
         </Box>
         {admins.length > 0 && (
@@ -319,7 +353,12 @@ export const PartnerStatsDetailPanel: React.FC = () => {
                   </ListItemIcon>
                   <ListItemText
                     primary={user.email}
-                    secondary={`${user.deviceCount || 0} total • ${user.online || 0} online • ${user.active || 0} active`}
+                    secondary={t('partnerStatsDetailPanel.partnerSummary', {
+                      total: user.deviceCount || 0,
+                      online: user.online || 0,
+                      active: user.active || 0,
+                      defaultValue: '{{total}} total • {{online}} online • {{active}} active',
+                    })}
                   />
                 </ListItem>
               </React.Fragment>

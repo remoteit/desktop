@@ -9,6 +9,7 @@ import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
 import { getJobLogs, triggerBrowserDownload } from '../services/jobLogs'
 import { RootModel } from '.'
+import i18n from '../i18n'
 
 type ScriptsState = {
   initialized: boolean
@@ -156,16 +157,27 @@ export default createModel<RootModel>()({
     async downloadLogs({ jobId, jobDeviceId }: { jobId: string; jobDeviceId: string }) {
       const result = await getJobLogs(jobId)
       if (result.kind === 'error') {
-        dispatch.ui.set({ errorMessage: `Couldn’t load logs: ${result.message}` })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:job.loadLogsError', {
+            message: result.message,
+            defaultValue: 'Couldn’t load logs: {{message}}',
+          }),
+        })
         return false
       }
       if (result.kind === 'missing') {
-        dispatch.ui.set({ errorMessage: 'No logs available yet.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:job.noLogs', { defaultValue: 'No logs available yet.' }),
+        })
         return false
       }
       const entry = result.data.devices.find(d => d.jobDeviceId === jobDeviceId)
       if (!entry?.downloadUrl) {
-        dispatch.ui.set({ errorMessage: 'No logs available for this device yet.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:job.noDeviceLogs', {
+            defaultValue: 'No logs available for this device yet.',
+          }),
+        })
         return false
       }
       triggerBrowserDownload(entry.downloadUrl, entry.filename || 'logs.tar.gz')
@@ -174,11 +186,20 @@ export default createModel<RootModel>()({
     async downloadAllLogs({ jobId }: { jobId: string }) {
       const result = await getJobLogs(jobId)
       if (result.kind === 'error') {
-        dispatch.ui.set({ errorMessage: `Couldn’t load logs: ${result.message}` })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:job.loadLogsError', {
+            message: result.message,
+            defaultValue: 'Couldn’t load logs: {{message}}',
+          }),
+        })
         return false
       }
       if (result.kind === 'missing' || !result.data.downloadUrl) {
-        dispatch.ui.set({ errorMessage: 'No logs are available for this run yet.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:job.noRunLogs', {
+            defaultValue: 'No logs are available for this run yet.',
+          }),
+        })
         return false
       }
       triggerBrowserDownload(result.data.downloadUrl, result.data.filename || 'all-logs.zip')
@@ -192,7 +213,7 @@ export default createModel<RootModel>()({
     async delete({ jobId, fileId }: { jobId: string; fileId: string }, state) {
       const result = await graphQLDeleteJob(jobId)
       if (result === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'Error deleting job' })
+        dispatch.ui.set({ errorMessage: i18n.t('notices:job.deleteError', { defaultValue: 'Error deleting job' }) })
         return false
       }
       console.log('DELETED JOB', { result, jobId })

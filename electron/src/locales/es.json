@@ -1,0 +1,25 @@
+{
+  "tray": {
+    "open": "Abrir {{appName}}...",
+    "signOut": "Cerrar sesión",
+    "quit": "Salir",
+    "connections": "Conexiones",
+    "noConnections": "Sin conexiones",
+    "stopConnection": "Detener conexión",
+    "removeFromNetwork": "Quitar de la red",
+    "addToNetwork": "Agregar a la red",
+    "offline": "Sin conexión",
+    "copyToClipboard": "Copiar al portapapeles",
+    "launch": "Iniciar",
+    "remove": "Quitar",
+    "andMore": "y {{count}} más...",
+    "signIn": "Iniciar sesión..."
+  },
+  "dialog": {
+    "failedToStartTitle": "No se pudo iniciar {{appName}}",
+    "failedToStartMessage": "La aplicación no pudo iniciarse porque ya hay otra instancia en ejecución. Cierre cualquier otro proceso de {{appName}} o reinicie su equipo.",
+    "findApplicationTitle": "Buscar aplicación",
+    "findApplicationMessage": "Seleccione la ubicación de la aplicación",
+    "findApplicationButton": "Seleccionar"
+  }
+}

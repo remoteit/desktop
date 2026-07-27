@@ -1,6 +1,7 @@
 import { IP_PRIVATE } from '@common/constants'
 import { Chip,ListItemText,Typography } from '@mui/material'
 import React from 'react'
+import i18n from '../i18n'
 import { RestoreButton } from '../buttons/RestoreButton'
 import { lanShareRestriction,lanShared } from '../helpers/lanSharing'
 import { toLookup } from '../helpers/utilHelper'
@@ -29,8 +30,8 @@ import { Timestamp } from './Timestamp'
 
 export class Attribute<TOptions = IDataOptions> {
   id: string = ''
-  label: string | React.ReactNode = ''
-  help?: string
+  private _label: string | React.ReactNode = ''
+  private _help?: string
   required: boolean = false
   align?: 'left' | 'right' | 'center'
   defaultWidth: number = 150
@@ -43,6 +44,28 @@ export class Attribute<TOptions = IDataOptions> {
   query?: string // key to device query - fall back to id
   value: (options: TOptions) => React.ReactNode = options => options as React.ReactNode
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
+
+  // Column/attribute labels are defined once at module load, so they resolve
+  // their translation at access (render) time, keyed by the attribute id under
+  // the `columns.<id>` namespace. Non-string labels (React nodes) pass through
+  // unchanged; a missing translation falls back to the original English label.
+  get label(): string | React.ReactNode {
+    // Non-string labels (React nodes) and intentionally-blank labels (e.g. an
+    // actions column) pass through untranslated — translating an empty default
+    // with returnEmptyString:false would otherwise leak the raw `columns.<id>` key.
+    if (typeof this._label !== 'string' || this._label === '') return this._label
+    return i18n.t(`columns.${this.id}`, { defaultValue: this._label })
+  }
+  set label(value: string | React.ReactNode) {
+    this._label = value
+  }
+
+  get help(): string | undefined {
+    return this._help ? i18n.t(`columns.${this.id}_help`, { defaultValue: this._help }) : this._help
+  }
+  set help(value: string | undefined) {
+    this._help = value
+  }
 
   constructor(options: {
     id: Attribute<TOptions>['id']
@@ -117,7 +140,7 @@ export const attributes: Attribute[] = [
     value: ({ device, connection }) => (
       <ListItemText
         primary={<DeviceName device={device} connection={connection} />}
-        secondary={device?.thisDevice ? 'This system' : undefined}
+        secondary={device?.thisDevice ? i18n.t('attributeValue.thisSystem', { defaultValue: 'This system' }) : undefined}
         sx={{ marginRight: 1, opacity: device?.state === 'active' ? 1 : 0.4 }}
       />
     ),
@@ -266,12 +289,12 @@ export const attributes: Attribute[] = [
       device?.configurable ? (
         <>
           <Icon name="badge-check" color="success" type="solid" />
-          &nbsp; Yes
+          &nbsp; {i18n.t('common.yes', { defaultValue: 'Yes' })}
         </>
       ) : (
         <>
           <Icon name="ban" color="danger" type="solid" />
-          &nbsp; No
+          &nbsp; {i18n.t('common.no', { defaultValue: 'No' })}
         </>
       ),
   }),
@@ -307,7 +330,7 @@ export const attributes: Attribute[] = [
         <Timestamp date={device?.lastReported} /> &nbsp;
         {device?.state === 'active' && (
           <Typography variant="caption" component="div">
-            since refresh
+            {i18n.t('attributeValue.sinceRefresh', { defaultValue: 'since refresh' })}
           </Typography>
         )}
       </>
@@ -522,21 +545,21 @@ export const attributes: Attribute[] = [
       if (!connection) return null
       return connection.enabled
         ? connection.connecting
-          ? 'Connecting...'
+          ? i18n.t('connectionType.connecting', { defaultValue: 'Connecting...' })
           : connection.public
           ? connection.connectLink
-            ? 'Persistent Public Endpoint'
+            ? i18n.t('connectionType.persistentPublic', { defaultValue: 'Persistent Public Endpoint' })
             : application?.reverseProxy
-            ? 'Public Reverse Proxy'
-            : 'Public Proxy'
+            ? i18n.t('connectionType.publicReverseProxy', { defaultValue: 'Public Reverse Proxy' })
+            : i18n.t('connectionType.publicProxy', { defaultValue: 'Public Proxy' })
           : !connection.connected && !session
-          ? 'Idle - Connect on demand'
+          ? i18n.t('connectionType.idle', { defaultValue: 'Idle - Connect on demand' })
           : session?.source === 'WEBSOCKET'
-          ? 'Peer to Peer WebSocket'
+          ? i18n.t('connectionType.p2pWebsocket', { defaultValue: 'Peer to Peer WebSocket' })
           : connection.isP2P || session?.isP2P
-          ? 'Peer to Peer'
-          : 'Local Proxy'
-        : 'Inactive'
+          ? i18n.t('connectionType.p2p', { defaultValue: 'Peer to Peer' })
+          : i18n.t('connectionType.localProxy', { defaultValue: 'Local Proxy' })
+        : i18n.t('connectionType.inactive', { defaultValue: 'Inactive' })
     },
   }),
   new ConnectionAttribute({
@@ -547,13 +570,13 @@ export const attributes: Attribute[] = [
         ? null
         : session?.isP2P
         ? session?.source === 'WEBSOCKET'
-          ? 'Peer to Peer WebSocket'
-          : 'Peer to Peer'
+          ? i18n.t('connectionType.p2pWebsocket', { defaultValue: 'Peer to Peer WebSocket' })
+          : i18n.t('connectionType.p2p', { defaultValue: 'Peer to Peer' })
         : session?.manufacturer === 'ANONYMOUS'
-        ? 'Public Reverse Proxy'
+        ? i18n.t('connectionType.publicReverseProxy', { defaultValue: 'Public Reverse Proxy' })
         : session?.manufacturer === 'KEY'
-        ? 'Service Key'
-        : 'Proxy',
+        ? i18n.t('connectionType.serviceKey', { defaultValue: 'Service Key' })
+        : i18n.t('connectionType.proxy', { defaultValue: 'Proxy' }),
   }),
   // new ConnectionAttribute({
   //   id: 'security',

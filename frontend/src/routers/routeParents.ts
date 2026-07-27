@@ -118,6 +118,7 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/admin/users/:userId/devices', '/admin/users/:userId'],
   ['/admin/users/:userId', '/admin/users'],
   ['/admin/partners/:partnerId', '/admin/partners'],
+  ['/admin/notices/:noticeId', '/admin/notices'],
 
   // Onboard
   ['/onboard/:platform/scanning', '/onboard/:platform'],

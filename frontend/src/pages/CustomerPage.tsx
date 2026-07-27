@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useParams, Redirect, Link } from 'react-router-dom'
 import { selectCustomer, selectOrganization } from '../selectors/organizations'
 import { Typography, Button } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { LicensingSetting } from '../components/LicensingSetting'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { FormDisplay } from '../components/FormDisplay'
@@ -19,6 +20,7 @@ export const CustomerPage: React.FC = () => {
   const customer = useSelector((state: State) => selectCustomer(state, undefined, userID))
   const license = customer?.license
   const limits = customer?.limits
+  const { t } = useTranslation()
 
   if (!customer) return <Redirect to={{ pathname: '/organization/customer', state: { isRedirect: true } }} />
 
@@ -36,25 +38,29 @@ export const CustomerPage: React.FC = () => {
             {customer?.email}
           </Title>
           <DeleteButton
-            title="Remove"
-            warning={`You are removing the customer ”${customer.email}” from ${organization.name}.`}
+            title={t('common.remove', 'Remove')}
+            warning={t('customerPage.removeWarning', {
+              email: customer.email,
+              orgName: organization.name,
+              defaultValue: 'You are removing the customer ”{{email}}” from {{orgName}}.',
+            })}
             onDelete={removeCustomer}
           />
         </Typography>
       }
     >
       <Typography variant="subtitle1" marginRight={3}>
-        <Title>License</Title>
+        <Title>{t('customerPage.license', 'License')}</Title>
         <BillingUI>
           <Button to={`/organization/customer/${userID}/plans`} size="small" variant="contained" component={Link}>
-            Update Plan
+            {t('customerPage.updatePlan', 'Update Plan')}
           </Button>
         </BillingUI>
       </Typography>
       <LicensingSetting licenses={license ? [{ ...license, limits }] : []} />
       <FormDisplay
         icon={<Avatar email={customer?.reseller} size={28} />}
-        label="Sales Rep"
+        label={t('customerPage.salesRep', 'Sales Rep')}
         displayValue={customer?.reseller}
         displayOnly
       />

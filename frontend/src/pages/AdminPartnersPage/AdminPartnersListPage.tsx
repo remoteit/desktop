@@ -16,6 +16,7 @@ import {
 } from '@mui/material'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Attribute } from '../../components/Attributes'
 import { Container } from '../../components/Container'
@@ -83,6 +84,7 @@ export const AdminPartnersListPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(adminPartnerAttributes, a => a.required === true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -131,7 +133,7 @@ export const AdminPartnersListPage: React.FC = () => {
       // Navigate to new partner
       history.push(`/admin/partners/${result.data.data.createPartner.id}`)
     } else {
-      alert('Failed to create partner.')
+      alert(t('adminPartnersListPage.createFailed', 'Failed to create partner.'))
     }
   }
 
@@ -143,11 +145,15 @@ export const AdminPartnersListPage: React.FC = () => {
       header={
         <Gutters>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button onClick={() => setCreateDialogOpen(true)} size="small" children="Create Partner" />
+            <Button
+              onClick={() => setCreateDialogOpen(true)}
+              size="small"
+              children={t('adminPartnersListPage.createPartner', 'Create Partner')}
+            />
             <TextField
               fullWidth
               size="small"
-              placeholder="Search partners..."
+              placeholder={t('adminPartnersListPage.searchPlaceholder', 'Search partners...')}
               value={searchValue}
               onChange={e => dispatch.adminPartners.setSearchValue(e.target.value)}
               InputProps={{
@@ -163,12 +169,14 @@ export const AdminPartnersListPage: React.FC = () => {
       }
     >
       {loading && partners.length === 0 ? (
-        <LoadingMessage message="Loading partners..." />
+        <LoadingMessage message={t('adminPartnersListPage.loadingPartners', 'Loading partners...')} />
       ) : filteredPartners.length === 0 ? (
         <Box sx={{ textAlign: 'center', padding: 4 }}>
           <Icon name="handshake" size="xxl" color="grayLight" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            {searchValue ? 'No matching partners' : 'No partners found'}
+            {searchValue
+              ? t('adminPartnersListPage.noMatchingPartners', 'No matching partners')
+              : t('adminPartnersListPage.noPartnersFound', 'No partners found')}
           </Typography>
         </Box>
       ) : (
@@ -196,25 +204,25 @@ export const AdminPartnersListPage: React.FC = () => {
 
       {/* Create Partner Dialog */}
       <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Create New Partner</DialogTitle>
+        <DialogTitle>{t('adminPartnersListPage.createDialogTitle', 'Create New Partner')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Partner Name"
+            label={t('adminPartnersListPage.partnerNameLabel', 'Partner Name')}
             fullWidth
             value={newPartnerName}
             onChange={e => setNewPartnerName(e.target.value)}
             sx={{ marginTop: 2 }}
           />
           <FormControl fullWidth sx={{ marginTop: 2 }}>
-            <InputLabel>Parent Partner (Optional)</InputLabel>
+            <InputLabel>{t('adminPartnersListPage.parentPartnerLabel', 'Parent Partner (Optional)')}</InputLabel>
             <Select
               value={newPartnerParentId}
-              label="Parent Partner (Optional)"
+              label={t('adminPartnersListPage.parentPartnerLabel', 'Parent Partner (Optional)')}
               onChange={e => setNewPartnerParentId(e.target.value)}
             >
-              <MenuItem value="">None (Top-level)</MenuItem>
+              <MenuItem value="">{t('adminPartnersListPage.topLevel', 'None (Top-level)')}</MenuItem>
               {partners.map((p: AdminPartnerRow) => (
                 <MenuItem key={p.id} value={p.id}>
                   {p.name}
@@ -224,9 +232,9 @@ export const AdminPartnersListPage: React.FC = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setCreateDialogOpen(false)}>{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleCreatePartner} disabled={!newPartnerName.trim() || creating}>
-            {creating ? 'Creating...' : 'Create'}
+            {creating ? t('adminPartnersListPage.creating', 'Creating...') : t('adminPartnersListPage.create', 'Create')}
           </Button>
         </DialogActions>
       </Dialog>

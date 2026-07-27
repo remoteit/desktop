@@ -4,6 +4,12 @@ import { replaceHost } from './nameHelper'
 export const DEVICE_TYPE = 35
 export const KEY_APPS = new Set([5, 7, 8, 28, 48, 49])
 
+// Resolve a translation through the injected adaptor (the frontend wires this to
+// i18n.t); falls back to the English default when no adaptor/translator is set
+// (e.g. the Electron main process). Keys are hand-maintained in the catalogs
+// since this shared file lives outside the i18next-parser scan path.
+const t = (key: string, defaultValue: string): string => adaptor?.translate?.(key, defaultValue) ?? defaultValue
+
 class LaunchMethod {
   type: Exclude<IConnection['launchType'], undefined> = 'NONE'
   icon: string = ''
@@ -46,7 +52,7 @@ class CommandLaunchMethod extends LaunchMethod {
   setDefaults() {
     this.type = 'COMMAND'
     this.icon = 'code-simple'
-    this.name = 'Command'
+    this.name = t('appType.launch.command', 'Command')
     this.template = '[host]:[port]'
   }
 }
@@ -55,7 +61,7 @@ class TerminalLaunchMethod extends LaunchMethod {
   setDefaults() {
     this.type = 'TERMINAL'
     this.icon = 'terminal'
-    this.name = 'Terminal'
+    this.name = t('appType.launch.terminal', 'Terminal')
     this.template = '[host]:[port]'
   }
 }
@@ -64,7 +70,7 @@ class ScriptLaunchMethod extends LaunchMethod {
   setDefaults() {
     this.type = 'SCRIPT'
     this.icon = 'code-simple'
-    this.name = 'Script'
+    this.name = t('appType.launch.script', 'Script')
     this.template = ''
   }
 }
@@ -132,7 +138,7 @@ export class Application {
   }
 
   get commandTitle() {
-    return `${this.title} Command`
+    return `${this.title} ${t('appType.launch.command', 'Command')}`
   }
 
   get launchTitle() {
@@ -324,7 +330,7 @@ export function getApplication(service?: IService, connection?: IConnection, glo
   // Handle connect links
   if (app.connection?.connectLink && service?.link?.url) {
     const url = service.link.url
-    app.title = app.reverseProxy ? 'Public' : 'Unauthenticated'
+    app.title = app.reverseProxy ? t('appType.public.title', 'Public') : t('appType.unauthenticated.title', 'Unauthenticated')
     app.canShare = true
     app.launchMethods = [new UrlLaunchMethod({ template: url }), new CommandLaunchMethod({ template: url })]
     app.appLaunchType = app.reverseProxy ? 'URL' : 'NONE'
@@ -348,7 +354,10 @@ export function getApplicationType(typeId?: number) {
       return new Application({
         title: 'TCP',
         appLaunchType: 'URL',
-        use: 'Use for custom TCP connections not involving web traffic, as it lacks reverse proxy capabilities. Ideal for direct application-to-application communication.',
+        use: t(
+          'appType.tcp.use',
+          'Use for custom TCP connections not involving web traffic, as it lacks reverse proxy capabilities. Ideal for direct application-to-application communication.'
+        ),
       })
     case 4:
       const launchMethods = [new UrlLaunchMethod({ template: 'vnc://[username]@[host]:[port]', icon: 'desktop' })]
@@ -362,7 +371,10 @@ export function getApplicationType(typeId?: number) {
         )
       return new Application({
         title: 'VNC',
-        use: 'Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely.',
+        use: t(
+          'appType.vnc.use',
+          'Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely.'
+        ),
         appLaunchType: windows ? 'COMMAND' : 'URL',
         defaultTokenData: windows ? undefined : { app: 'VNC Viewer' },
         launchMethods,
@@ -370,7 +382,10 @@ export function getApplicationType(typeId?: number) {
     case 28:
       return new Application({
         title: 'SSH',
-        use: 'For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers.',
+        use: t(
+          'appType.ssh.use',
+          'For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers.'
+        ),
         autoLaunch: !(windows && portal),
         appLaunchType: portal && !windows ? 'URL' : 'TERMINAL',
         launchMethods: [
@@ -384,14 +399,17 @@ export function getApplicationType(typeId?: number) {
             sshConfig: sshConfig ? 'ssh [host]' : undefined,
           }),
         ],
-        helpMessage: sshConfig ? 'Any ssh config attribute may be added' : undefined,
+        helpMessage: sshConfig ? t('appType.ssh.help', 'Any ssh config attribute may be added') : undefined,
         sshConfig,
       })
     case 5:
       const rdpCommand = 'rdp://full%20address=s%3A[host]%3A[port]'
       return new Application({
         title: 'RDP',
-        use: 'For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely.',
+        use: t(
+          'appType.rdp.use',
+          'For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely.'
+        ),
         appLaunchType: ios || android ? 'URL' : 'COMMAND',
         defaultTokenData: windows ? undefined : { app: 'Microsoft Remote Desktop' },
         launchMethods: [
@@ -405,8 +423,11 @@ export function getApplicationType(typeId?: number) {
     case 10:
     case 33:
       return new Application({
-        title: 'Secure Browser',
-        use: 'Essential for any web application handling sensitive data, or any content requiring secure communication over the internet.',
+        title: t('appType.secureBrowser.title', 'Secure Browser'),
+        use: t(
+          'appType.secureBrowser.use',
+          'Essential for any web application handling sensitive data, or any content requiring secure communication over the internet.'
+        ),
         appLaunchType: 'URL',
         urlForm: true,
         autoLaunch: true,
@@ -414,8 +435,11 @@ export function getApplicationType(typeId?: number) {
     case 7:
     case 30:
       return new Application({
-        title: 'Browser',
-        use: 'Use for accessing or hosting web applications that do not support encrypted connections. Ideal for local development environments or internal networks where security is not a concern.',
+        title: t('appType.browser.title', 'Browser'),
+        use: t(
+          'appType.browser.use',
+          'Use for accessing or hosting web applications that do not support encrypted connections. Ideal for local development environments or internal networks where security is not a concern.'
+        ),
         appLaunchType: 'URL',
         urlForm: true,
         autoLaunch: true,
@@ -423,14 +447,17 @@ export function getApplicationType(typeId?: number) {
     case 34:
       return new Application({
         title: 'Samba',
-        use: 'Utilize for setting up shared access to files, printers, and serial ports within a Windows network or across different operating systems supporting SMB protocol.',
+        use: t(
+          'appType.samba.use',
+          'Utilize for setting up shared access to files, printers, and serial ports within a Windows network or across different operating systems supporting SMB protocol.'
+        ),
         localhost: true,
         appLaunchType: 'URL',
         launchMethods: [
           new UrlLaunchMethod({ template: 'smb://[host]:[port]', icon: 'folder' }),
           new CommandLaunchMethod({
             template: windows ? '\\\\[host]:[port]' : '[host]:[port]',
-            name: 'Copy command',
+            name: t('appType.launch.copyCommand', 'Copy command'),
             icon: 'clipboard',
           }),
         ],
@@ -438,7 +465,10 @@ export function getApplicationType(typeId?: number) {
     case 37:
       return new Application({
         title: 'NxWitness',
-        use: 'Use for connecting to Nx Witness Video Management Systems (VMS), suitable for security professionals managing IP camera networks.',
+        use: t(
+          'appType.nxwitness.use',
+          'Use for connecting to Nx Witness Video Management Systems (VMS), suitable for security professionals managing IP camera networks.'
+        ),
         appLaunchType: 'URL',
         urlForm: true,
         autoLaunch: true,
@@ -446,7 +476,10 @@ export function getApplicationType(typeId?: number) {
     case 38:
       return new Application({
         title: 'Nextcloud',
-        use: 'Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment.',
+        use: t(
+          'appType.nextcloud.use',
+          'Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment.'
+        ),
         appLaunchType: 'URL',
         urlForm: true,
         autoLaunch: true,
@@ -454,17 +487,26 @@ export function getApplicationType(typeId?: number) {
     case 39:
       return new Application({
         title: 'OpenVPN (TCP)',
-        use: 'Choose for reliable, secure VPN access using TCP protocol. Best for stable connections where data integrity is crucial, though potentially slower than UDP.',
+        use: t(
+          'appType.openvpnTcp.use',
+          'Choose for reliable, secure VPN access using TCP protocol. Best for stable connections where data integrity is crucial, though potentially slower than UDP.'
+        ),
       })
     case 41:
       return new Application({
         title: 'Minecraft',
-        use: 'Set up for hosting or connecting to a Minecraft server using TCP for gameplay, allowing players to join your Minecraft world.',
+        use: t(
+          'appType.minecraft.use',
+          'Set up for hosting or connecting to a Minecraft server using TCP for gameplay, allowing players to join your Minecraft world.'
+        ),
       })
     case 42:
       return new Application({
-        title: 'Admin Panel',
-        use: 'Remote.It admin panel running on the device. Previously used to remotely manage a device’s configuration. Now most devices can be managed from the Remote.it app or web portal.',
+        title: t('appType.adminPanel.title', 'Admin Panel'),
+        use: t(
+          'appType.adminPanel.use',
+          'Remote.It admin panel running on the device. Previously used to remotely manage a device’s configuration. Now most devices can be managed from the Remote.it app or web portal.'
+        ),
         appLaunchType: 'URL',
         urlForm: true,
         autoLaunch: true,
@@ -474,27 +516,42 @@ export function getApplicationType(typeId?: number) {
     case 43:
       return new Application({
         title: 'Terraria',
-        use: 'Set up for hosting or connecting to a Terraria game server, allowing players to explore, build, and adventure together in a unique 2D world.',
+        use: t(
+          'appType.terraria.use',
+          'Set up for hosting or connecting to a Terraria game server, allowing players to explore, build, and adventure together in a unique 2D world.'
+        ),
       })
     case 44:
       return new Application({
         title: 'Redis',
-        use: 'Select for connecting to Redis servers, ideal for developers working with high-performance databases for caching and messaging.',
+        use: t(
+          'appType.redis.use',
+          'Select for connecting to Redis servers, ideal for developers working with high-performance databases for caching and messaging.'
+        ),
       })
     case 45:
       return new Application({
         title: 'MySQL',
-        use: 'Utilize for remote access to MySQL databases. Ideal for developers and database administrators managing databases remotely.',
+        use: t(
+          'appType.mysql.use',
+          'Utilize for remote access to MySQL databases. Ideal for developers and database administrators managing databases remotely.'
+        ),
       })
     case 46:
       return new Application({
         title: 'PostgreSQL',
-        use: 'Utilize for remote access to PostgreSQL databases, essential for database administrators and developers needing to manage data remotely.',
+        use: t(
+          'appType.postgresql.use',
+          'Utilize for remote access to PostgreSQL databases, essential for database administrators and developers needing to manage data remotely.'
+        ),
       })
     case 47:
       return new Application({
         title: 'Docker API',
-        use: 'Use for remote management of Docker containers. Ideal for developers and system administrators who need to control Docker environments remotely.',
+        use: t(
+          'appType.dockerApi.use',
+          'Use for remote management of Docker containers. Ideal for developers and system administrators who need to control Docker environments remotely.'
+        ),
         appLaunchType: 'COMMAND',
         launchMethods: [
           new UrlLaunchMethod({ template: 'https://[host]:[port]' }),
@@ -506,7 +563,10 @@ export function getApplicationType(typeId?: number) {
     case 48:
       return new Application({
         title: 'ScreenView (Beta)',
-        use: 'Use for remote screen viewing or control via Remote.It’s ScreenView app. Facilitates support, collaboration and remote access.',
+        use: t(
+          'appType.screenview.use',
+          'Use for remote screen viewing or control via Remote.It’s ScreenView app. Facilitates support, collaboration and remote access.'
+        ),
         appLaunchType: 'URL',
         autoLaunch: true,
         visibility: (device?: IDevice) =>
@@ -515,19 +575,22 @@ export function getApplicationType(typeId?: number) {
     case 49:
       return new Application({
         title: 'SOCKS Proxy (Beta)',
-        use: 'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.',
+        use: t(
+          'appType.socks.use',
+          'Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy.'
+        ),
         defaultTokenData: windows ? undefined : { app: 'Google Chrome' },
         appLaunchType: portal ? 'NONE' : 'SCRIPT',
         autoClose: true,
         autoLaunch: true,
         launchMethods: [
           new ScriptLaunchMethod({
-            name: 'Browser',
+            name: t('appType.launch.browser', 'Browser'),
             template: windows
               ? 'socks.ps1 -path "[app]" -proxy "socks5://[host]:[port]"'
               : 'socks.sh "[app]" "socks5://[host]:[port]"',
             disconnect: windows ? 'socks.ps1 -path "[app]"' : 'socks.sh "[app]"',
-            disconnectDisplay: 'Restarts your browser to remove SOCKS Proxy on disconnect',
+            disconnectDisplay: t('appType.socks.disconnectDisplay', 'Restarts your browser to remove SOCKS Proxy on disconnect'),
           }),
           // new ScriptLaunchMethod({
           //   template:
@@ -542,22 +605,34 @@ export function getApplicationType(typeId?: number) {
     case 32769:
       return new Application({
         title: 'UDP',
-        use: 'Select for applications that require fast communication where reliability is less critical, such as streaming, gaming, or broadcasting.',
+        use: t(
+          'appType.udp.use',
+          'Select for applications that require fast communication where reliability is less critical, such as streaming, gaming, or broadcasting.'
+        ),
       })
     case 32772:
       return new Application({
         title: 'OpenVPN (UDP)',
-        use: 'Choose for fast, secure VPN access using UDP protocol. Best for speed-sensitive applications where occasional packet loss is acceptable.',
+        use: t(
+          'appType.openvpnUdp.use',
+          'Choose for fast, secure VPN access using UDP protocol. Best for speed-sensitive applications where occasional packet loss is acceptable.'
+        ),
       })
     case 32770:
       return new Application({
         title: 'WireGuard',
-        use: 'Choose for a modern, secure VPN connection, offering fast and secure access to private networks with ease of setup and management.',
+        use: t(
+          'appType.wireguard.use',
+          'Choose for a modern, secure VPN connection, offering fast and secure access to private networks with ease of setup and management.'
+        ),
       })
     case 32771:
       return new Application({
         title: 'Minecraft Bedrock',
-        use: 'Choose for Minecraft Bedrock Edition servers, using UDP for gameplay on platforms like mobile and consoles, enabling players to connect and play together.',
+        use: t(
+          'appType.minecraftBedrock.use',
+          'Choose for Minecraft Bedrock Edition servers, using UDP for gameplay on platforms like mobile and consoles, enabling players to connect and play together.'
+        ),
       })
     default:
       return new Application({})

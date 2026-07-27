@@ -62,6 +62,7 @@ import { AdminConfirmPage } from '../pages/AdminConfirmPage'
 import { AdminAdminsPage } from '../pages/AdminAdminsPage/AdminAdminsPage'
 import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { AdminEnterpriseLicensesListPage } from '../pages/AdminEnterpriseLicensesPage/AdminEnterpriseLicensesListPage'
+import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
@@ -409,37 +410,34 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       {/* Admin Routes */}
       <Route path="/admin">
         <AdminRouteGuard>
-          <Switch>
-            <Route path="/admin" exact>
-              <Redirect to="/admin/users" />
-            </Route>
-            <Route path="/admin/confirm">
-              <Panel layout={layout}>
+          {/* Panel (and its Header) wraps the whole admin section so every admin page gets the
+              global nav — rather than each route remembering to wrap itself. */}
+          <Panel layout={layout}>
+            <Switch>
+              <Route path="/admin" exact>
+                <Redirect to="/admin/users" />
+              </Route>
+              <Route path="/admin/confirm">
                 <AdminConfirmPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/admins/:adminId?">
-              <Panel layout={layout}>
+              </Route>
+              <Route path="/admin/admins/:adminId?">
                 <AdminAdminsPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/users/:userId?">
-              <Panel layout={layout}>
+              </Route>
+              <Route path="/admin/users/:userId?">
                 <AdminUsersWithDetailPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/partners/:partnerId?">
-              <Panel layout={layout}>
+              </Route>
+              <Route path="/admin/partners/:partnerId?">
                 <AdminPartnersPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/enterprise-licenses">
-              <Panel layout={layout}>
+              </Route>
+              <Route path="/admin/enterprise-licenses">
                 <AdminEnterpriseLicensesListPage />
-              </Panel>
-            </Route>
-            <Redirect to="/admin/users" />
-          </Switch>
+              </Route>
+              <Route path="/admin/notices/:noticeId?">
+                <AdminNoticesPage />
+              </Route>
+              <Redirect to="/admin/users" />
+            </Switch>
+          </Panel>
         </AdminRouteGuard>
       </Route>
       <Route path="/partner-stats/:partnerId?">

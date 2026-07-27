@@ -1,10 +1,12 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, IconButton } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { Icon } from './Icon'
 
 export const ViewAsBanner: React.FC = () => {
+  const { t } = useTranslation()
   const viewAsUser = useSelector((state: State) => state.ui.viewAsUser)
   const dispatch = useDispatch<Dispatch>()
 
@@ -34,7 +36,7 @@ export const ViewAsBanner: React.FC = () => {
       }}
     >
       <Typography variant="body2" sx={{ fontWeight: 500, flexGrow: 1, textAlign: 'center' }}>
-        Viewing as: {viewAsUser.email}
+        {t('viewAsBanner.viewingAs', { email: viewAsUser.email, defaultValue: 'Viewing as: {{email}}' })}
       </Typography>
       <IconButton
         onClick={handleExit}
@@ -45,7 +47,7 @@ export const ViewAsBanner: React.FC = () => {
             backgroundColor: 'rgba(133, 100, 4, 0.1)',
           },
         }}
-        title="Exit view-as mode"
+        title={t('viewAsBanner.exit', 'Exit view-as mode')}
       >
         <Icon name="times" size="sm" />
       </IconButton>

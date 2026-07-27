@@ -1,5 +1,21 @@
 import { DateTime, Duration } from 'luxon'
-import { Unit } from 'humanize-duration'
+import humanize, { Unit, HumanizerOptions } from 'humanize-duration'
+import i18n from '../i18n'
+
+// The active locale for all date/duration formatting. Driven by the app language
+// preference (ui.setLanguage), falling back to the OS/browser language.
+export const getLocale = () => i18n.resolvedLanguage || window.navigator.language || 'en'
+
+// Localized humanize-duration. Use this everywhere instead of importing
+// humanize-duration directly so durations ("3 days", "2 hours") translate.
+export const humanizeDuration = (ms: number, options: HumanizerOptions = {}) =>
+  humanize(ms, { language: getLocale(), fallbacks: ['en'], ...options })
+
+// Wrap a humanized duration as a localized relative-past phrase. Word order is
+// language-specific (en "3 days ago", de "vor 3 Tagen", ja "3日前", es "hace 3 días"),
+// so the ordering lives in the catalog rather than a hard-coded English suffix.
+export const relativeTime = (duration: string): string =>
+  i18n.t('duration.ago', { defaultValue: '{{duration}} ago', duration })
 
 export function isToday(dateToCheck: Date): boolean {
   const today = new Date().toLocaleDateString()
@@ -9,7 +25,7 @@ export function isToday(dateToCheck: Date): boolean {
 }
 
 export const getDateFormatString = () => {
-  const formatObj = new Intl.DateTimeFormat(window.navigator.language).formatToParts(new Date())
+  const formatObj = new Intl.DateTimeFormat(getLocale()).formatToParts(new Date())
   return formatObj
     .map(obj => {
       switch (obj.type) {
@@ -117,6 +133,15 @@ export const TimeSeriesAvailableResolutions: Partial<ILookup<string, ITimeSeries
   // QUARTER: 'Quarter',
   // YEAR: 'Year',
 }
+
+// The graph type/resolution lookups above are module-level, so their display
+// labels resolve translation at access time (keyed by the lookup key under
+// `graphType.*` / `graphUnit.*`, hand-maintained in the catalogs), falling back
+// to the English label.
+export const timeSeriesTypeLabel = (type?: string): string =>
+  type ? i18n.t(`graphType.${type}`, { defaultValue: TimeSeriesTypeLookup[type] || type }) : ''
+export const timeSeriesResolutionLabel = (res?: string): string =>
+  res ? i18n.t(`graphUnit.${res}`, { defaultValue: TimeSeriesAvailableResolutions[res] || res }) : ''
 
 export const TimeSeriesLengths: ILookup<number[], ITimeSeriesResolution> = {
   SECOND: [60],

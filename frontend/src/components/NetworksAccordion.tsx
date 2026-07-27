@@ -2,6 +2,7 @@ import React from 'react'
 import { NetworksJoined } from './NetworksJoined'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { selectNetworks, selectNetworkByService } from '../selectors/networks'
 import { Chip, Box, Tooltip } from '@mui/material'
 import { AccordionMenuItem } from './AccordionMenuItem'
@@ -23,11 +24,12 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, instance, service
   const allNetworks = useSelector(selectNetworks)
   const joinedNetworks = useSelector((state: State) => selectNetworkByService(state, connection.id))
   const accessibleNetworks = allNetworks.filter(n => n.owner.id === ownerId)
+  const { t } = useTranslation()
 
   return (
     <AccordionMenuItem
       gutters
-      subtitle="Networks"
+      subtitle={t('networksAccordion.title', 'Networks')}
       expanded={joinedNetworks.length ? expanded : false}
       onClick={onClick}
       disabled={!joinedNetworks.length}
@@ -43,7 +45,11 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, instance, service
                   label: n.name,
                   disabled: !!joinedNetworks.some(j => j.id === n.id),
                 }))}
-                title={!accessibleNetworks.length ? 'Add a network' : 'Connect to network'}
+                title={
+                  !accessibleNetworks.length
+                    ? t('networksAccordion.addNetwork', 'Add a network')
+                    : t('networksAccordion.connectToNetwork', 'Connect to network')
+                }
                 size="icon"
                 icon="plus"
                 onClick={networkId => {
@@ -63,8 +69,12 @@ export const NetworksAccordion: React.FC<Props> = ({ expanded, instance, service
               title={
                 <>
                   {!instance?.permissions.includes('MANAGE') &&
-                    'You must be the device owner or manager to modify the networks of this service.'}
-                  {instance?.shared && 'You can not modify the networks of a device shared to you.'}
+                    t(
+                      'networksAccordion.manageRequired',
+                      'You must be the device owner or manager to modify the networks of this service.'
+                    )}
+                  {instance?.shared &&
+                    t('networksAccordion.sharedRestricted', 'You can not modify the networks of a device shared to you.')}
                 </>
               }
               placement="left"

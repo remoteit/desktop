@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { selectById } from '../selectors/devices'
 import { Typography } from '@mui/material'
@@ -14,6 +15,7 @@ import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 
 export const ConnectionOtherPage: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const [stopping, setStopping] = useState<string>()
   const { serviceID, sessionID } = useParams<{ serviceID?: string; sessionID?: string }>()
@@ -46,7 +48,7 @@ export const ConnectionOtherPage: React.FC = () => {
             <Gutters top={null} bottom="lg">
               <DynamicButton
                 size="large"
-                title="Disconnect"
+                title={t('connectionOtherPage.disconnect', 'Disconnect')}
                 color="primary"
                 icon={thisStopping ? 'spinner-third' : 'pause'}
                 iconType="solid"

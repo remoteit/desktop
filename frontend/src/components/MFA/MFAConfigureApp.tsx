@@ -1,6 +1,7 @@
 import React from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Box, Button, TextField, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { spacing, radius } from '../../styling'
 
 type Props = {
@@ -26,6 +27,7 @@ export const MFAConfigureApp: React.FC<Props> = ({
   loading,
   cancel,
 }) => {
+  const { t } = useTranslation()
   return (
     <Box mt={3} display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'start', sm: 'end' }}>
       <Box sx={{ padding: `${spacing.md}px`, backgroundColor: 'alwaysWhite.main', borderRadius: `${radius.sm}px` }}>
@@ -33,11 +35,11 @@ export const MFAConfigureApp: React.FC<Props> = ({
       </Box>
       <Box ml={3}>
         <Typography variant="body1" gutterBottom>
-          Scan this QR Code with your Authenticator app.
+          {t('mfaConfigureApp.scanInstructions', 'Scan this QR Code with your Authenticator app.')}
         </Typography>
-        <Typography variant="h4">Code: {totpCode}</Typography>
+        <Typography variant="h4">{t('mfaConfigureApp.code', { code: totpCode, defaultValue: 'Code: {{code}}' })}</Typography>
         <Button color="primary" variant="contained" size="small" onClick={() => loadTotpCode()}>
-          Generate new QR Code
+          {t('mfaConfigureApp.generateNewCode', 'Generate new QR Code')}
         </Button>
         {!totpVerified && (
           <form onSubmit={sendVerifyTotp}>
@@ -48,7 +50,7 @@ export const MFAConfigureApp: React.FC<Props> = ({
                 autoCorrect="off"
                 autoCapitalize="none"
                 autoComplete="off"
-                label="Verification Code"
+                label={t('mfaConfigureApp.verificationCodeLabel', 'Verification Code')}
                 onChange={e => setTotpVerificationCode(e.currentTarget.value.trim())}
                 value={totpVerificationCode}
               />
@@ -59,9 +61,9 @@ export const MFAConfigureApp: React.FC<Props> = ({
                 color="primary"
                 type="submit"
               >
-                {loading ? 'Processing...' : 'Submit'}
+                {loading ? t('mfaConfigureApp.processing', 'Processing...') : t('mfaConfigureApp.submit', 'Submit')}
               </Button>
-              <Button onClick={cancel}>Cancel</Button>
+              <Button onClick={cancel}>{t('common.cancel', 'Cancel')}</Button>
             </Box>
           </form>
         )}

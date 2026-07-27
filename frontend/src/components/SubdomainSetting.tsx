@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { setConnection } from '../helpers/connectionHelper'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { MAX_CONNECTION_NAME_LENGTH } from '../constants'
@@ -7,6 +8,7 @@ export const SubdomainSetting: React.FC<{ service: IService; instance?: IInstanc
   service,
   connection,
 }) => {
+  const { t } = useTranslation()
   const resetValue = service.subdomain
   return (
     <InlineTextFieldSetting
@@ -14,7 +16,7 @@ export const SubdomainSetting: React.FC<{ service: IService; instance?: IInstanc
       modified={connection.name !== resetValue}
       icon="host"
       value={connection.name}
-      label="Subdomain"
+      label={t('subdomainSetting.subdomain', 'Subdomain')}
       resetValue={resetValue}
       disabled={connection.public}
       maxLength={MAX_CONNECTION_NAME_LENGTH}

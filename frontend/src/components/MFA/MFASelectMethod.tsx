@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Button, MenuItem, TextField, Typography } from '@mui/material'
 
 type Props = {
@@ -16,25 +17,26 @@ export const MFASelectMethod: React.FC<Props> = ({
   setShowEnableSelection,
   setShowMFASelection,
 }) => {
+  const { t } = useTranslation()
   return (
     <Box mt={2}>
       <Typography variant="h3" gutterBottom>
-        Choose a verification method:
+        {t('mfaSelectMethod.chooseMethod', 'Choose a verification method:')}
       </Typography>
       <TextField
         select
         fullWidth
         variant="filled"
-        label="Verification Method"
+        label={t('mfaSelectMethod.verificationMethod', 'Verification Method')}
         value={verificationMethod}
         onChange={e => changeVerificationMethod(e.target.value)}
       >
-        <MenuItem value="sms">SMS Number</MenuItem>
-        <MenuItem value="app">Authenticator app</MenuItem>
+        <MenuItem value="sms">{t('mfaSelectMethod.smsNumber', 'SMS Number')}</MenuItem>
+        <MenuItem value="app">{t('mfaSelectMethod.authenticatorApp', 'Authenticator app')}</MenuItem>
       </TextField>
       <Box mt={3}>
         <Button onClick={nextVerificationMethod} color="primary" variant="contained">
-          Next
+          {t('mfaSelectMethod.next', 'Next')}
         </Button>
         <Button
           onClick={() => {
@@ -42,7 +44,7 @@ export const MFASelectMethod: React.FC<Props> = ({
             setShowMFASelection(false)
           }}
         >
-          Cancel
+          {t('mfaSelectMethod.cancel', 'Cancel')}
         </Button>
       </Box>
     </Box>

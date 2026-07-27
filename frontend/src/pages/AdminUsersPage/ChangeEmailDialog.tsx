@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Button,
   Dialog,
@@ -17,6 +18,7 @@ type Props = {
 }
 
 export const ChangeEmailDialog: React.FC<Props> = ({ open, currentEmail, onSubmit, onClose }) => {
+  const { t } = useTranslation()
   const [newEmail, setNewEmail] = useState('')
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(false)
@@ -40,17 +42,17 @@ export const ChangeEmailDialog: React.FC<Props> = ({ open, currentEmail, onSubmi
 
     // Validate email
     if (!newEmail.trim()) {
-      setError('Email is required')
+      setError(t('changeEmailDialog.emailRequired', 'Email is required'))
       return
     }
 
     if (!validateEmail(newEmail)) {
-      setError('Invalid email format')
+      setError(t('changeEmailDialog.invalidFormat', 'Invalid email format'))
       return
     }
 
     if (newEmail.toLowerCase() === currentEmail.toLowerCase()) {
-      setError('New email must be different from current email')
+      setError(t('changeEmailDialog.mustBeDifferent', 'New email must be different from current email'))
       return
     }
 
@@ -61,7 +63,7 @@ export const ChangeEmailDialog: React.FC<Props> = ({ open, currentEmail, onSubmi
       await onSubmit(newEmail)
       onClose()
     } catch (err) {
-      setError('Failed to update email. Please try again.')
+      setError(t('changeEmailDialog.updateFailed', 'Failed to update email. Please try again.'))
     } finally {
       setLoading(false)
     }
@@ -70,16 +72,16 @@ export const ChangeEmailDialog: React.FC<Props> = ({ open, currentEmail, onSubmi
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <form onSubmit={handleSubmit}>
-        <DialogTitle>Change User Email</DialogTitle>
+        <DialogTitle>{t('changeEmailDialog.title', 'Change User Email')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            Current email: <strong>{currentEmail}</strong>
+            {t('changeEmailDialog.currentEmail', 'Current email:')} <strong>{currentEmail}</strong>
           </Typography>
           <TextField
             fullWidth
             autoFocus
             margin="normal"
-            label="New Email Address"
+            label={t('changeEmailDialog.newEmailLabel', 'New Email Address')}
             type="email"
             value={newEmail}
             onChange={(e) => {
@@ -94,10 +96,10 @@ export const ChangeEmailDialog: React.FC<Props> = ({ open, currentEmail, onSubmi
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={loading}>
-            Cancel
+            {t('changeEmailDialog.cancel', 'Cancel')}
           </Button>
           <Button type="submit" variant="contained" color="primary" disabled={loading}>
-            {loading ? 'Updating...' : 'Update Email'}
+            {loading ? t('changeEmailDialog.updating', 'Updating...') : t('changeEmailDialog.updateEmail', 'Update Email')}
           </Button>
         </DialogActions>
       </form>

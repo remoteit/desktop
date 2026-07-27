@@ -1,5 +1,6 @@
 import React from 'react'
 import structuredClone from '@ungap/structured-clone'
+import { useTranslation } from 'react-i18next'
 import { Typography, List, ListItem, Button, Chip, Stack } from '@mui/material'
 import { ArgumentsValueForm } from './ArgumentsValueForm'
 import { TagFilter } from './TagFilter'
@@ -42,19 +43,23 @@ export const ScriptRunForm: React.FC<Props> = ({
   onRun,
   onPrepare,
 }) => {
+  const { t } = useTranslation()
   return (
     <>
       {!hasValidEditSnapshot && (
         <Notice severity="warning" gutterBottom>
-          No script data found. Please go back and complete the script form first.
+          {t(
+            'scriptRunForm.noScriptData',
+            'No script data found. Please go back and complete the script form first.'
+          )}
         </Notice>
       )}
 
-      <Typography variant="subtitle2">Target Devices</Typography>
+      <Typography variant="subtitle2">{t('scriptRunForm.targetDevices', 'Target Devices')}</Typography>
       <List disablePadding>
         <TagFilter
           form={runForm}
-          name="Devices"
+          name={t('scriptRunForm.devices', 'Devices')}
           selectDevices
           disableGutters
           disabled={disabled}
@@ -71,7 +76,10 @@ export const ScriptRunForm: React.FC<Props> = ({
           ))}
           {resolvedDevices.length > 3 && (
             <Chip
-              label={`+${resolvedDevices.length - 3} more`}
+              label={t('scriptRunForm.moreCount', {
+                count: resolvedDevices.length - 3,
+                defaultValue: '+{{count}} more',
+              })}
               size="small"
               color="primary"
               onClick={onSelectDevices}
@@ -83,7 +91,7 @@ export const ScriptRunForm: React.FC<Props> = ({
 
       {unauthorized && (
         <Notice severity="error" solid fullWidth gutterTop>
-          You are not allowed to run scripts on
+          {t('scriptRunForm.notAllowedOn', 'You are not allowed to run scripts on')}
           <List disablePadding>
             {unauthorized.map(d => (
               <ListItem key={d.id} disableGutters>
@@ -92,7 +100,11 @@ export const ScriptRunForm: React.FC<Props> = ({
             ))}
           </List>
           <Button size="small" onClick={onClearUnauthorized} sx={{ color: 'alwaysWhite.main', bgcolor: 'shadow.main' }}>
-            Remove Device{unauthorized.length > 1 ? 's' : ''}
+            {t('scriptRunForm.removeDeviceCount', {
+              count: unauthorized.length,
+              defaultValue_one: 'Remove Device',
+              defaultValue_other: 'Remove Devices',
+            })}
           </Button>
         </Notice>
       )}
@@ -116,7 +128,7 @@ export const ScriptRunForm: React.FC<Props> = ({
               onClick={onRun}
               sx={{ flexGrow: 1 }}
             >
-              {running ? 'Running...' : 'Run Now'}
+              {running ? t('scriptRunForm.running', 'Running...') : t('scriptRunForm.runNow', 'Run Now')}
             </Button>
             <Button
               variant="contained"
@@ -124,11 +136,14 @@ export const ScriptRunForm: React.FC<Props> = ({
               disabled={!canRun || !hasValidEditSnapshot || !requiredArgsFilled || running || fetching}
               onClick={onPrepare}
             >
-              Save
+              {t('common.save', 'Save')}
             </Button>
           </Stack>
           <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-            Save creates a prepared run with the selected devices, tag, and argument values.
+            {t(
+              'scriptRunForm.saveHint',
+              'Save creates a prepared run with the selected devices, tag, and argument values.'
+            )}
           </Typography>
         </>
       )}

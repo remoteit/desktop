@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { ListItem, ListItemIcon, Box } from '@mui/material'
 import { ListItemCopy } from './ListItemCopy'
 import { LimitSetting } from './LimitSetting'
@@ -13,6 +14,7 @@ function sortLimits(a, b) {
 }
 
 export const LimitsSetting: React.FC<{ limits?: ILimit[]; id?: string }> = ({ limits = [], id }) => {
+  const { t } = useTranslation()
   if (!id && !limits?.length) return null
   return (
     <ListItem>
@@ -25,7 +27,7 @@ export const LimitsSetting: React.FC<{ limits?: ILimit[]; id?: string }> = ({ li
             ))}
           </Box>
         )}
-        {id && <ListItemCopy label="License Key" value={id} showBackground />}
+        {id && <ListItemCopy label={t('limitsSetting.licenseKey', 'License Key')} value={id} showBackground />}
       </Box>
     </ListItem>
   )
