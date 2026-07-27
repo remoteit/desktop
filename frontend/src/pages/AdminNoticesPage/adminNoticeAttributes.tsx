@@ -1,6 +1,5 @@
 import React from 'react'
 import { Box, Chip, Tooltip } from '@mui/material'
-import i18n from '../../i18n'
 import { Attribute } from '../../components/Attributes'
 import { Icon } from '../../components/Icon'
 import { isBannerType } from '../../helpers/noticeHelper'
@@ -83,11 +82,10 @@ export const adminNoticeAttributes: AdminNoticeAttribute[] = [
     value: ({ notice }: AdminNoticeAttributeOptions) => {
       if (!notice) return null
       const status = noticeStatus(notice)
-      const statusLabel = i18n.t(`adminNoticeAttributes.status.${status.toLowerCase()}`, { defaultValue: status })
       return status === 'Live' ? (
-        <Chip label={statusLabel} size="small" color="primary" />
+        <Chip label="Live" size="small" color="primary" />
       ) : (
-        <Chip label={statusLabel} size="small" variant="outlined" />
+        <Chip label={status} size="small" variant="outlined" />
       )
     },
   }),
@@ -119,12 +117,7 @@ export const adminNoticeAttributes: AdminNoticeAttribute[] = [
       // other rows use so an equal value looks equal; the icon carries the warning, not the text.
       if (isBannerType(notice.type) && !notice.until)
         return (
-          <Tooltip
-            title={i18n.t(
-              'adminNoticeAttributes.bannerNoEndDate',
-              'Banners cannot be dismissed — set an end date'
-            )}
-          >
+          <Tooltip title="Banners cannot be dismissed — set an end date">
             <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
               <Icon name="exclamation-triangle" size="sm" color="warning" />
               {dateLabel(undefined)}
