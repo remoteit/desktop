@@ -1,6 +1,5 @@
 import { Box,Button,Stack,TextField,ToggleButton,ToggleButtonGroup,Typography } from '@mui/material'
 import React,{ useEffect,useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useDispatch,useSelector } from 'react-redux'
 import { useHistory,useLocation } from 'react-router-dom'
 import { Container } from '../../components/Container'
@@ -16,7 +15,6 @@ import { adminUserAttributes } from './adminUserAttributes'
 type SearchType = 'all' | 'email' | 'userId'
 
 export const AdminUsersListPage: React.FC = () => {
-  const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
@@ -71,12 +69,12 @@ export const AdminUsersListPage: React.FC = () => {
   const getPlaceholder = () => {
     switch (searchType) {
       case 'email':
-        return t('adminUsersListPage.searchByEmail', 'Search by email address...')
+        return 'Search by email address...'
       case 'userId':
-        return t('adminUsersListPage.searchByUserId', 'Search by user ID (UUID)...')
+        return 'Search by user ID (UUID)...'
       case 'all':
       default:
-        return t('adminUsersListPage.searchByAll', 'Search by email, name, or user ID...')
+        return 'Search by email, name, or user ID...'
     }
   }
 
@@ -100,13 +98,13 @@ export const AdminUsersListPage: React.FC = () => {
               onChange={handleSearchTypeChange}
               size="small"
             >
-              <ToggleButton value="email" title={t('adminUsersListPage.searchByEmailTitle', 'Search by email')}>
+              <ToggleButton value="email" title="Search by email">
                 <Icon name="envelope" size="sm" />
               </ToggleButton>
-              <ToggleButton value="userId" title={t('adminUsersListPage.searchByUserIdTitle', 'Search by user ID')}>
+              <ToggleButton value="userId" title="Search by user ID">
                 <Icon name="fingerprint" size="sm" />
               </ToggleButton>
-              <ToggleButton value="all" title={t('adminUsersListPage.searchAllFieldsTitle', 'Search all fields')}>
+              <ToggleButton value="all" title="Search all fields">
                 <Icon name="search" size="sm" />
               </ToggleButton>
             </ToggleButtonGroup>
@@ -126,12 +124,12 @@ export const AdminUsersListPage: React.FC = () => {
       }
     >
       {loading && users.length === 0 ? (
-        <LoadingMessage message={t('adminUsersListPage.loadingUsers', 'Loading users...')} />
+        <LoadingMessage message="Loading users..." />
       ) : users.length === 0 ? (
         <Box sx={{ textAlign: 'center', padding: 4 }}>
           <Icon name="users" size="xxl" color="grayLight" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            {t('adminUsersListPage.noUsersFound', 'No users found')}
+            No users found
           </Typography>
         </Box>
       ) : (
@@ -158,7 +156,7 @@ export const AdminUsersListPage: React.FC = () => {
                 disabled={loading}
                 onClick={() => dispatch.adminUsers.fetchMore(undefined)}
               >
-                {loading ? t('adminUsersListPage.loading', 'Loading...') : t('adminUsersListPage.loadMore', 'Load More')}
+                {loading ? 'Loading...' : 'Load More'}
               </Button>
             </Box>
           )}

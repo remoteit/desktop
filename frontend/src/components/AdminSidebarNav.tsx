@@ -1,5 +1,4 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
@@ -8,7 +7,6 @@ import { ListItemLocation } from './ListItemLocation'
 import { Icon } from './Icon'
 
 export const AdminSidebarNav: React.FC = () => {
-  const { t } = useTranslation()
   const history = useHistory()
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
   const currentPath = history.location.pathname
@@ -44,7 +42,7 @@ export const AdminSidebarNav: React.FC = () => {
         },
       }}
     >
-      <ListItemLocation dense title={t('adminSidebarNav.returnToApp', 'Return to App')} icon="person-to-portal" to="/devices" />
+      <ListItemLocation dense title="Return to App" icon="person-to-portal" to="/devices" />
 
       <ListItemButton
         dense
@@ -54,7 +52,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="users" size="md" />
         </ListItemIcon>
-        <ListItemText primary={t('adminSidebarNav.users', 'Users')} />
+        <ListItemText primary="Users" />
       </ListItemButton>
 
       <ListItemButton
@@ -65,7 +63,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="shield" size="md" />
         </ListItemIcon>
-        <ListItemText primary={t('adminSidebarNav.admins', 'Admins')} />
+        <ListItemText primary="Admins" />
       </ListItemButton>
 
       <ListItemButton
@@ -76,7 +74,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="handshake" size="md" />
         </ListItemIcon>
-        <ListItemText primary={t('adminSidebarNav.partners', 'Partners')} />
+        <ListItemText primary="Partners" />
       </ListItemButton>
 
       <ListItemButton
@@ -87,18 +85,7 @@ export const AdminSidebarNav: React.FC = () => {
         <ListItemIcon>
           <Icon name="building" size="md" />
         </ListItemIcon>
-        <ListItemText primary={t('adminSidebarNav.enterprise', 'Enterprise')} />
-      </ListItemButton>
-
-      <ListItemButton
-        dense
-        selected={currentPath.includes('/admin/notices')}
-        onClick={() => handleNavClick('/admin/notices')}
-      >
-        <ListItemIcon>
-          <Icon name="bullhorn" size="md" />
-        </ListItemIcon>
-        <ListItemText primary={t('adminSidebarNav.notices', 'Notices')} />
+        <ListItemText primary="Enterprise" />
       </ListItemButton>
     </List>
   )

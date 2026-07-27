@@ -1,6 +1,5 @@
 import { Box,Typography } from '@mui/material'
 import React,{ useEffect,useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { Attribute } from '../../components/Attributes'
@@ -33,19 +32,20 @@ type AdminDeviceRow = {
 
 class AdminDeviceAttribute extends Attribute<AdminDeviceAttributeOptions> {
   type: Attribute['type'] = 'DEVICE'
+  translate = false // internal-only admin registry: render English, skip columns.* translation
 }
 
-const getAdminDeviceAttributes = (t: (key: string, defaultValue: string) => string): AdminDeviceAttribute[] => [
+const adminDeviceAttributes: AdminDeviceAttribute[] = [
   new AdminDeviceAttribute({
     id: 'adminDeviceName',
-    label: t('adminUserDevicesPanel.name', 'Name'),
+    label: 'Name',
     defaultWidth: 250,
     required: true,
     value: ({ device }: AdminDeviceAttributeOptions) => device?.name || device?.id,
   }),
   new AdminDeviceAttribute({
     id: 'adminDeviceStatus',
-    label: t('adminUserDevicesPanel.status', 'Status'),
+    label: 'Status',
     defaultWidth: 100,
     value: ({ device }: AdminDeviceAttributeOptions) => (
       <StatusChip device={{ state: device?.state, services: (device?.services as IService[]) || [] } as IDevice} />
@@ -53,19 +53,19 @@ const getAdminDeviceAttributes = (t: (key: string, defaultValue: string) => stri
   }),
   new AdminDeviceAttribute({
     id: 'adminDevicePlatform',
-    label: t('adminUserDevicesPanel.platform', 'Platform'),
+    label: 'Platform',
     defaultWidth: 150,
     value: ({ device }: AdminDeviceAttributeOptions) => TargetPlatform({ id: device?.platform, label: true }),
   }),
   new AdminDeviceAttribute({
     id: 'adminDeviceServices',
-    label: t('adminUserDevicesPanel.services', 'Services'),
+    label: 'Services',
     defaultWidth: 80,
     value: ({ device }: AdminDeviceAttributeOptions) => device?.services?.length || 0,
   }),
   new AdminDeviceAttribute({
     id: 'adminDeviceLastReported',
-    label: t('adminUserDevicesPanel.lastReported', 'Last Reported'),
+    label: 'Last Reported',
     defaultWidth: 150,
     value: ({ device }: AdminDeviceAttributeOptions) =>
       device?.lastReported ? <Timestamp date={new Date(device.lastReported)} /> : '-',
@@ -73,13 +73,11 @@ const getAdminDeviceAttributes = (t: (key: string, defaultValue: string) => stri
 ]
 
 export const AdminUserDevicesPanel: React.FC = () => {
-  const { t } = useTranslation()
   const { userId } = useParams<{ userId: string }>()
   const [devices, setDevices] = useState<AdminDeviceRow[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
-  const adminDeviceAttributes = getAdminDeviceAttributes(t)
   const [required, attributes] = removeObject(adminDeviceAttributes, a => a.required === true)
 
   useEffect(() => {
@@ -102,7 +100,7 @@ export const AdminUserDevicesPanel: React.FC = () => {
   if (loading) {
     return (
       <Container gutterBottom>
-        <LoadingMessage message={t('adminUserDevicesPanel.loading', 'Loading devices...')} />
+        <LoadingMessage message="Loading devices..." />
       </Container>
     )
   }
@@ -113,9 +111,7 @@ export const AdminUserDevicesPanel: React.FC = () => {
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
         <Typography variant="h2" sx={{ padding: 2 }}>
-          <Title>
-            {t('adminUserDevicesPanel.userDevicesCount', { count: total, defaultValue: 'User Devices ({{count}})' })}
-          </Title>
+          <Title>User Devices ({total})</Title>
         </Typography>
       }
     >
@@ -123,7 +119,7 @@ export const AdminUserDevicesPanel: React.FC = () => {
         <Body center>
           <Icon name="router" size="xxl" color="grayLight" />
           <Typography variant="h3" gutterBottom sx={{ marginTop: 2 }}>
-            {t('adminUserDevicesPanel.noDevicesFound', 'No devices found')}
+            No devices found
           </Typography>
         </Body>
       ) : (

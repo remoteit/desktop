@@ -41,6 +41,7 @@ export class Attribute<TOptions = IDataOptions> {
   copyable?: boolean // show copy icon on DataDisplay
   details: boolean = true // show on device details page
   column: boolean = true // show as device list column
+  translate: boolean = true // resolve label/help via the columns.<id> catalog; false for internal-only registries (e.g. admin)
   query?: string // key to device query - fall back to id
   value: (options: TOptions) => React.ReactNode = options => options as React.ReactNode
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
@@ -53,7 +54,9 @@ export class Attribute<TOptions = IDataOptions> {
     // Non-string labels (React nodes) and intentionally-blank labels (e.g. an
     // actions column) pass through untranslated — translating an empty default
     // with returnEmptyString:false would otherwise leak the raw `columns.<id>` key.
-    if (typeof this._label !== 'string' || this._label === '') return this._label
+    // Internal-only registries (translate: false, e.g. admin) also pass through so
+    // their generic ids (created, license, …) don't collide with device columns.
+    if (!this.translate || typeof this._label !== 'string' || this._label === '') return this._label
     return i18n.t(`columns.${this.id}`, { defaultValue: this._label })
   }
   set label(value: string | React.ReactNode) {
@@ -61,7 +64,7 @@ export class Attribute<TOptions = IDataOptions> {
   }
 
   get help(): string | undefined {
-    return this._help ? i18n.t(`columns.${this.id}_help`, { defaultValue: this._help }) : this._help
+    return this._help && this.translate ? i18n.t(`columns.${this.id}_help`, { defaultValue: this._help }) : this._help
   }
   set help(value: string | undefined) {
     this._help = value

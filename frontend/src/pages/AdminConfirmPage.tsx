@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useLocation, useHistory } from 'react-router-dom'
 import { Typography, Box, TextField, Button, CircularProgress } from '@mui/material'
 import { Container } from '../components/Container'
@@ -8,7 +7,6 @@ import { Notice } from '../components/Notice'
 import { graphQLConfirmAdminPromotion } from '../services/graphQLMutation'
 
 export const AdminConfirmPage: React.FC = () => {
-  const { t } = useTranslation()
   const location = useLocation()
   const history = useHistory()
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'manual'>('loading')
@@ -36,18 +34,18 @@ export const AdminConfirmPage: React.FC = () => {
         setStatus('success')
         window.dispatchEvent(new Event('refreshAdminData'))
       } else {
-        setErrorMessage(t('adminConfirmPage.linkInvalid', 'The confirmation link is invalid or has expired.'))
+        setErrorMessage('The confirmation link is invalid or has expired.')
         setStatus('error')
       }
     } catch (error) {
-      setErrorMessage(t('adminConfirmPage.linkInvalid', 'The confirmation link is invalid or has expired.'))
+      setErrorMessage('The confirmation link is invalid or has expired.')
       setStatus('error')
     }
   }
 
   const handleManualSubmit = async () => {
     if (!manualCode.trim() || manualCode.trim().length !== 6) {
-      setErrorMessage(t('adminConfirmPage.invalidCodeLength', 'Please enter a valid 6-digit code.'))
+      setErrorMessage('Please enter a valid 6-digit code.')
       return
     }
     setSubmitting(true)
@@ -58,10 +56,10 @@ export const AdminConfirmPage: React.FC = () => {
         setStatus('success')
         window.dispatchEvent(new Event('refreshAdminData'))
       } else {
-        setErrorMessage(t('adminConfirmPage.invalidCodeRetry', 'Invalid or expired code. Please try again.'))
+        setErrorMessage('Invalid or expired code. Please try again.')
       }
     } catch (error) {
-      setErrorMessage(t('adminConfirmPage.invalidCodeRetry', 'Invalid or expired code. Please try again.'))
+      setErrorMessage('Invalid or expired code. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -79,7 +77,7 @@ export const AdminConfirmPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Typography variant="h2" sx={{ padding: 2 }}>
-          {t('adminConfirmPage.title', 'Admin Promotion Confirmation')}
+          Admin Promotion Confirmation
         </Typography>
       }
     >
@@ -88,7 +86,7 @@ export const AdminConfirmPage: React.FC = () => {
           <Box sx={{ textAlign: 'center', padding: 4 }}>
             <CircularProgress />
             <Typography variant="body1" sx={{ marginTop: 2 }}>
-              {t('adminConfirmPage.confirmingPromotion', 'Confirming admin promotion...')}
+              Confirming admin promotion...
             </Typography>
           </Box>
         )}
@@ -97,10 +95,10 @@ export const AdminConfirmPage: React.FC = () => {
           <Box sx={{ textAlign: 'center', padding: 4 }}>
             <Icon name="check-circle" size="xxl" color="success" />
             <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-              {t('adminConfirmPage.confirmedTitle', 'Admin Promotion Confirmed')}
+              Admin Promotion Confirmed
             </Typography>
             <Typography variant="body1" color="textSecondary" gutterBottom>
-              {t('adminConfirmPage.confirmedMessage', 'The user has been successfully promoted to admin.')}
+              The user has been successfully promoted to admin.
             </Typography>
             <Button
               variant="contained"
@@ -108,7 +106,7 @@ export const AdminConfirmPage: React.FC = () => {
               onClick={() => history.push('/admin/admins')}
               sx={{ marginTop: 2 }}
             >
-              {t('adminConfirmPage.backToAdmins', 'Back to Admins')}
+              Back to Admins
             </Button>
           </Box>
         )}
@@ -117,17 +115,17 @@ export const AdminConfirmPage: React.FC = () => {
           <Box sx={{ textAlign: 'center', padding: 4 }}>
             <Icon name="exclamation-triangle" size="xxl" color="warning" />
             <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-              {t('adminConfirmPage.confirmationFailed', 'Confirmation Failed')}
+              Confirmation Failed
             </Typography>
             <Notice severity="error" gutterBottom fullWidth>
               {errorMessage}
             </Notice>
             <Typography variant="body2" color="textSecondary" gutterBottom sx={{ marginTop: 2 }}>
-              {t('adminConfirmPage.manualCodeHint', 'You can try entering the 6-digit code from your email manually:')}
+              You can try entering the 6-digit code from your email manually:
             </Typography>
             <TextField
               fullWidth
-              placeholder={t('adminConfirmPage.enterCode', 'Enter code')}
+              placeholder="Enter code"
               value={manualCode}
               onChange={e => setManualCode(e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6))}
               onKeyDown={handleKeyDown}
@@ -141,9 +139,7 @@ export const AdminConfirmPage: React.FC = () => {
               disabled={submitting || manualCode.length !== 6}
               fullWidth
             >
-              {submitting
-                ? t('common.confirmingEllipsis', 'Confirming...')
-                : t('adminConfirmPage.confirmWithCode', 'Confirm with Code')}
+              {submitting ? 'Confirming...' : 'Confirm with Code'}
             </Button>
           </Box>
         )}
@@ -152,13 +148,10 @@ export const AdminConfirmPage: React.FC = () => {
           <Box sx={{ textAlign: 'center', padding: 4 }}>
             <Icon name="shield" size="xxl" color="primary" />
             <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-              {t('adminConfirmPage.enterCodeTitle', 'Enter Confirmation Code')}
+              Enter Confirmation Code
             </Typography>
             <Typography variant="body1" color="textSecondary" gutterBottom>
-              {t(
-                'adminConfirmPage.enterCodeDescription',
-                'Enter the 6-digit code from the confirmation email sent to your inbox.'
-              )}
+              Enter the 6-digit code from the confirmation email sent to your inbox.
             </Typography>
             {errorMessage && (
               <Notice severity="error" gutterBottom fullWidth>
@@ -167,7 +160,7 @@ export const AdminConfirmPage: React.FC = () => {
             )}
             <TextField
               fullWidth
-              placeholder={t('adminConfirmPage.enterCode', 'Enter code')}
+              placeholder="Enter code"
               value={manualCode}
               onChange={e => setManualCode(e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6))}
               onKeyDown={handleKeyDown}
@@ -181,9 +174,7 @@ export const AdminConfirmPage: React.FC = () => {
               disabled={submitting || manualCode.length !== 6}
               fullWidth
             >
-              {submitting
-                ? t('common.confirmingEllipsis', 'Confirming...')
-                : t('adminConfirmPage.confirmAdminPromotion', 'Confirm Admin Promotion')}
+              {submitting ? 'Confirming...' : 'Confirm Admin Promotion'}
             </Button>
           </Box>
         )}

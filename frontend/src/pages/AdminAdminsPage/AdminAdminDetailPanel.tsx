@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Typography, List, ListItem, ListItemText, Box, Divider, Button } from '@mui/material'
-import { useTranslation } from 'react-i18next'
 import { Container } from '../../components/Container'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
@@ -29,7 +28,6 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
   const [loading, setLoading] = useState(true)
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false)
   const [removing, setRemoving] = useState(false)
-  const { t } = useTranslation()
 
   useEffect(() => {
     if (adminId) {
@@ -60,12 +58,7 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
     try {
       const result = await graphQLRemoveAdmin(adminId)
       if (result !== 'ERROR') {
-        dispatch.ui.set({
-          successMessage: t('adminAdminDetailPanel.removedSuccess', {
-            email: admin?.email,
-            defaultValue: 'Admin privileges removed from {{email}}',
-          }),
-        })
+        dispatch.ui.set({ successMessage: `Admin privileges removed from ${admin?.email}` })
         setRemoveConfirmOpen(false)
         dispatch.adminUsers.invalidateUserDetail(adminId)
         dispatch.adminUsers.fetch(undefined)
@@ -73,11 +66,11 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
         onAdminRemoved?.()
         window.dispatchEvent(new Event('refreshAdminData'))
       } else {
-        dispatch.ui.set({ errorMessage: t('adminAdminDetailPanel.removeFailed', 'Failed to remove admin privileges') })
+        dispatch.ui.set({ errorMessage: 'Failed to remove admin privileges' })
       }
     } catch (error) {
       console.error('Error removing admin:', error)
-      dispatch.ui.set({ errorMessage: t('adminAdminDetailPanel.removeFailed', 'Failed to remove admin privileges') })
+      dispatch.ui.set({ errorMessage: 'Failed to remove admin privileges' })
     } finally {
       setRemoving(false)
     }
@@ -86,7 +79,7 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
   if (loading) {
     return (
       <Container gutterBottom>
-        <LoadingMessage message={t('adminAdminDetailPanel.loading', 'Loading admin details...')} />
+        <LoadingMessage message="Loading admin details..." />
       </Container>
     )
   }
@@ -97,7 +90,7 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            {t('adminAdminDetailPanel.notFound', 'Admin not found')}
+            Admin not found
           </Typography>
         </Body>
       </Container>
@@ -118,7 +111,7 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
             <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
               <IconButton
                 icon="chevron-left"
-                title={t('adminAdminDetailPanel.backToAdmins', 'Back to Admins')}
+                title="Back to Admins"
                 onClick={() => history.push('/admin/admins')}
                 size="md"
                 color="grayDarker"
@@ -126,7 +119,7 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
             </Box>
           )}
           <Typography variant="h2" sx={{ padding: 2 }}>
-            <Title>{t('adminAdminDetailPanel.title', 'Admin Details')}</Title>
+            <Title>Admin Details</Title>
           </Typography>
         </Box>
       }
@@ -134,7 +127,7 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
       <List disablePadding>
         <ListItem>
           <ListItemText
-            primary={t('adminAdminDetailPanel.userId', 'User ID')}
+            primary="User ID"
             secondary={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography
@@ -152,18 +145,18 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
         <Divider component="li" />
 
         <ListItem>
-          <ListItemText primary={t('adminAdminDetailPanel.email', 'Email')} secondary={admin.email || t('common.notAvailable', 'N/A')} />
+          <ListItemText primary="Email" secondary={admin.email || 'N/A'} />
         </ListItem>
         <Divider component="li" />
 
         <ListItem>
           <ListItemText
-            primary={t('adminAdminDetailPanel.adminStatus', 'Admin Status')}
+            primary="Admin Status"
             secondary={
               <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
                 <Icon name="shield" size="sm" color="primary" />
                 <Typography variant="body2" component="span" color="primary">
-                  {t('adminAdminDetailPanel.systemAdmin', 'System Admin')}
+                  System Admin
                 </Typography>
               </Box>
             }
@@ -174,7 +167,7 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
         {admin.organization?.name && (
           <>
             <ListItem>
-              <ListItemText primary={t('adminAdminDetailPanel.organization', 'Organization')} secondary={admin.organization.name} />
+              <ListItemText primary="Organization" secondary={admin.organization.name} />
             </ListItem>
             <Divider component="li" />
           </>
@@ -182,39 +175,34 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
 
         <ListItem>
           <ListItemText
-            primary={t('adminAdminDetailPanel.created', 'Created')}
-            secondary={admin.created ? new Date(admin.created).toLocaleString() : t('common.notAvailable', 'N/A')}
+            primary="Created"
+            secondary={admin.created ? new Date(admin.created).toLocaleString() : 'N/A'}
           />
         </ListItem>
         <Divider component="li" />
 
         <ListItem>
           <ListItemText
-            primary={t('adminAdminDetailPanel.lastLogin', 'Last Login')}
-            secondary={admin.lastLogin ? new Date(admin.lastLogin).toLocaleString() : t('common.notAvailable', 'N/A')}
+            primary="Last Login"
+            secondary={admin.lastLogin ? new Date(admin.lastLogin).toLocaleString() : 'N/A'}
           />
         </ListItem>
       </List>
 
       <Typography variant="subtitle1" sx={{ marginTop: 3, paddingX: 2 }}>
-        <Title>{t('adminAdminDetailPanel.deviceSummary', 'Device Summary')}</Title>
+        <Title>Device Summary</Title>
       </Typography>
       <List disablePadding>
         <ListItem>
           <ListItemText
-            primary={t('adminAdminDetailPanel.userDevices', 'User Devices')}
-            secondary={t('adminAdminDetailPanel.deviceCounts', {
-              total: deviceCount,
-              online: deviceOnline,
-              offline: deviceOffline,
-              defaultValue: '{{total}} total \u2022 {{online}} online \u2022 {{offline}} offline',
-            })}
+            primary="User Devices"
+            secondary={`${deviceCount} total \u2022 ${deviceOnline} online \u2022 ${deviceOffline} offline`}
           />
         </ListItem>
       </List>
 
       <Typography variant="subtitle1" sx={{ marginTop: 3, paddingX: 2 }}>
-        <Title>{t('adminAdminDetailPanel.actions', 'Actions')}</Title>
+        <Title>Actions</Title>
       </Typography>
       <List disablePadding>
         <ListItem>
@@ -223,7 +211,7 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
             color="warning"
             onClick={() => setRemoveConfirmOpen(true)}
           >
-            {t('adminAdminDetailPanel.removeAdmin', 'Remove Admin')}
+            Remove Admin
           </Button>
         </ListItem>
       </List>
@@ -232,17 +220,16 @@ export const AdminAdminDetailPanel: React.FC<Props> = ({ showBackArrow, onAdminR
         open={removeConfirmOpen}
         onConfirm={handleRemoveAdmin}
         onDeny={() => setRemoveConfirmOpen(false)}
-        title={t('adminAdminDetailPanel.removeConfirmTitle', 'Remove Admin Privileges')}
-        action={removing ? t('adminAdminDetailPanel.removing', 'Removing...') : t('adminAdminDetailPanel.removeAdmin', 'Remove Admin')}
+        title="Remove Admin Privileges"
+        action={removing ? 'Removing...' : 'Remove Admin'}
         disabled={removing}
         color="warning"
       >
         <Typography variant="body2" gutterBottom>
-          {t('adminAdminDetailPanel.removeConfirmBody', 'Are you sure you want to remove admin privileges from')}{' '}
-          <strong>{admin.email || admin.id}</strong>?
+          Are you sure you want to remove admin privileges from <strong>{admin.email || admin.id}</strong>?
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          {t('adminAdminDetailPanel.removeConfirmSubBody', 'This user will no longer have access to the admin panel.')}
+          This user will no longer have access to the admin panel.
         </Typography>
       </Confirm>
     </Container>
