@@ -17,7 +17,7 @@
 import { getAgentSession, getAgentToken, setAgentSession, setAgentToken } from './agent'
 
 export const HYDRA_ISSUER = import.meta.env.VITE_HYDRA_ISSUER_URL || 'https://login.dev.remote.it'
-export const MCP_AUDIENCE = import.meta.env.VITE_MCP_AUDIENCE || 'https://mcp.evan.remote.it/mcp'
+export const MCP_AUDIENCE = import.meta.env.VITE_MCP_AUDIENCE || 'https://mcp.beta.remote.it/mcp'
 const SCOPE = 'openid offline email device:read device:write device:connect device:execute'
 const LIFESPAN = '30m' // access-token TTL override, verified accepted via DCR
 
