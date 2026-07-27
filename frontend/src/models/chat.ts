@@ -9,6 +9,7 @@ import {
   AgentEvent,
   AgentHealth,
   AgentMessageParam,
+  OrgSelection,
 } from '../services/agent'
 import { startAgentSignIn, handleAgentSignInCallback, ensureFreshAgentToken, agentSignOut } from '../services/hydra'
 
@@ -29,6 +30,8 @@ export type IChatState = {
   expanded: boolean
   messages: ChatTranscriptMessage[]
   conversationId: string
+  /** Org the agent is scoped to; null = uninitialized, user id = personal */
+  orgId: string | null
   streaming: boolean
   pendingConfirmation: { toolUseId: string; toolName: string; input: Record<string, unknown> } | null
   error: string | null
@@ -40,6 +43,7 @@ export const defaultChatState: IChatState = {
   expanded: false,
   messages: [],
   conversationId: '',
+  orgId: null,
   streaming: false,
   pendingConfirmation: null,
   error: null,
@@ -114,11 +118,19 @@ export default createModel<RootModel>()({
       dispatch.chat.addUserMessage(text)
       dispatch.chat.set({ conversationId, streaming: true, error: null })
       abortController = new AbortController()
+      const orgId = state.chat.orgId
+      let org: OrgSelection | undefined
+      if (orgId && orgId !== state.user.id) {
+        const name = state.organization.accounts[orgId]?.name
+        const isMember = state.accounts.membership.some(m => m.account.id === orgId)
+        if (name && isMember) org = { id: orgId, name }
+      }
       try {
         await ensureFreshAgentToken()
         await streamChat({
           conversationId,
           messages,
+          org,
           signal: abortController.signal,
           onEvent: event => dispatch.chat.applyEvent(event),
         })
@@ -130,6 +142,14 @@ export default createModel<RootModel>()({
       } finally {
         abortController = null
         dispatch.chat.set({ streaming: false })
+      }
+    },
+    /* Default the chat org to the app's active org when unset or no longer valid */
+    async syncOrg(_: void, state) {
+      const userId = state.user.id
+      const validIds = new Set([userId, ...state.accounts.membership.map(m => m.account.id)])
+      if (!state.chat.orgId || !validIds.has(state.chat.orgId)) {
+        dispatch.chat.set({ orgId: state.accounts.activeId || userId })
       }
     },
     async confirm(approved: boolean, state) {
