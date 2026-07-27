@@ -28,6 +28,7 @@ export const ChatOrgSelect: React.FC = () => {
         label="Organization"
         value={orgId || userId}
         onChange={event => dispatch.chat.set({ orgId: event.target.value })}
+        sx={{ '& .MuiSelect-select': { paddingY: '12px' } }}
       >
         <MenuItem value={userId}>Personal</MenuItem>
         {options.map(o => (

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Box } from '@mui/material'
 import { ChatTranscriptMessage } from '../../models/chat'
 import { ChatMessageItem } from './ChatMessageItem'
+import { scrollbarStyles } from './chatScrollbar'
 
 type Props = {
   messages: ChatTranscriptMessage[]
@@ -25,7 +26,7 @@ export const ChatMessages: React.FC<Props> = ({ messages, streaming, children })
         const el = ref.current
         if (el) setPinned(el.scrollHeight - el.scrollTop - el.clientHeight < 40)
       }}
-      sx={{ flexGrow: 1, overflowY: 'auto', paddingX: 2 }}
+      sx={[{ flexGrow: 1, overflowY: 'auto', paddingX: 2 }, scrollbarStyles]}
     >
       {messages.map((message, index) => (
         <ChatMessageItem key={index} message={message} />
