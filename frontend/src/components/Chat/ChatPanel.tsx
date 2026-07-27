@@ -7,6 +7,7 @@ import { IconButton } from '../../buttons/IconButton'
 import { ChatMessages } from './ChatMessages'
 import { ChatApproval } from './ChatApproval'
 import { ChatInput } from './ChatInput'
+import { ChatOrgSelect } from './ChatOrgSelect'
 import { Notice } from '../Notice'
 
 export const ChatPanel: React.FC = () => {
@@ -23,6 +24,7 @@ export const ChatPanel: React.FC = () => {
   useEffect(() => {
     if (chat.open) {
       dispatch.chat.resetTransient()
+      dispatch.chat.syncOrg()
       dispatch.chat.checkHealth()
     }
   }, [chat.open])
@@ -64,6 +66,7 @@ export const ChatPanel: React.FC = () => {
         <IconButton icon="plus" title="New Chat" onClick={() => dispatch.chat.clearConversation()} />
         <IconButton icon="times" title="Close" onClick={() => dispatch.chat.set({ open: false })} />
       </Box>
+      <ChatOrgSelect />
       {chat.health === 'unreachable' && (
         <Notice severity="warning" gutterTop>
           Agent unreachable — is the dev service running on :3001?
