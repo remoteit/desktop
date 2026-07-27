@@ -101,7 +101,8 @@ export class JobAttribute extends Attribute {
 export const jobAttributes: JobAttribute[] = [
   new JobAttribute({
     id: 'jobName',
-    label: i18n.t('jobAttributes.name', 'Name'),
+    label: 'Name',
+    labelKey: 'jobAttributes.name',
     required: true,
     defaultWidth: 350,
     value: ({ job, accountId }) => {
@@ -140,7 +141,8 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobDeviceNames',
-    label: i18n.t('jobAttributes.targets', 'Targets'),
+    label: 'Targets',
+    labelKey: 'jobAttributes.targets',
     defaultWidth: 200,
     value: ({ job }) => {
       const names = job?.jobDevices.map(jd => jd.device.name) || []
@@ -194,7 +196,8 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobUpdated',
-    label: i18n.t('jobAttributes.time', 'Time'),
+    label: 'Time',
+    labelKey: 'jobAttributes.time',
     defaultWidth: 180,
     value: ({ job }) => {
       if (!job?.updated) return null
@@ -221,7 +224,8 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobTags',
-    label: i18n.t('jobAttributes.filter', 'Filter'),
+    label: 'Filter',
+    labelKey: 'jobAttributes.filter',
     defaultWidth: 100,
     value: ({ job }) =>
       job?.tag.values.length ? (
@@ -232,13 +236,15 @@ export const jobAttributes: JobAttribute[] = [
   }),
   new JobAttribute({
     id: 'jobMatches',
-    label: i18n.t('jobAttributes.match', 'Match'),
+    label: 'Match',
+    labelKey: 'jobAttributes.match',
     defaultWidth: 100,
     value: ({ job }) => <Chip label={job?.tag.operator} size="small" />,
   }),
   new JobAttribute({
     id: 'jobRunBy',
-    label: i18n.t('jobAttributes.runBy', 'Run By'),
+    label: 'Run By',
+    labelKey: 'jobAttributes.runBy',
     defaultWidth: 150,
     value: ({ job }) => (
       <Typography variant="body2" color="grayDarkest.main" noWrap>
@@ -251,5 +257,5 @@ export const jobAttributes: JobAttribute[] = [
 const attributeLookup = toLookup<Attribute>(jobAttributes, 'id')
 
 export function getJobAttribute(id: string): JobAttribute {
-  return attributeLookup[id] || new JobAttribute({ id: 'unknown', label: i18n.t('jobAttributes.unknown', 'Unknown') })
+  return attributeLookup[id] || new JobAttribute({ id: 'unknown', label: 'Unknown', labelKey: 'jobAttributes.unknown' })
 }

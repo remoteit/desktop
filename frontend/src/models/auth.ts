@@ -283,6 +283,10 @@ export default createModel<RootModel>()({
       dispatch.adminPartners.reset()
       dispatch.adminEnterpriseLicenses.reset()
       dispatch.adminNotices.reset()
+      // ui.reset() only restores redux defaults; the live i18next/luxon locale must be
+      // re-resolved so signed-out screens follow the OS rather than the previous
+      // account's language override.
+      dispatch.ui.setLanguage('system')
 
       cloudSync.reset()
       dispatch.accounts.set({ activeId: undefined })

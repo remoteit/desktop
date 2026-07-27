@@ -42,6 +42,7 @@ export class Attribute<TOptions = IDataOptions> {
   details: boolean = true // show on device details page
   column: boolean = true // show as device list column
   translate: boolean = true // resolve label/help via the columns.<id> catalog; false for internal-only registries (e.g. admin)
+  labelKey?: string // override catalog key for the label - for registries that key outside columns.<id>
   query?: string // key to device query - fall back to id
   value: (options: TOptions) => React.ReactNode = options => options as React.ReactNode
   width = (columnWidths: ILookup<number>) => columnWidths[this.id] || this.defaultWidth
@@ -57,7 +58,7 @@ export class Attribute<TOptions = IDataOptions> {
     // Internal-only registries (translate: false, e.g. admin) also pass through so
     // their generic ids (created, license, …) don't collide with device columns.
     if (!this.translate || typeof this._label !== 'string' || this._label === '') return this._label
-    return i18n.t(`columns.${this.id}`, { defaultValue: this._label })
+    return i18n.t(this.labelKey || `columns.${this.id}`, { defaultValue: this._label })
   }
   set label(value: string | React.ReactNode) {
     this._label = value
@@ -83,6 +84,7 @@ export class Attribute<TOptions = IDataOptions> {
     copyable?: Attribute<TOptions>['copyable']
     details?: Attribute<TOptions>['details']
     query?: Attribute<TOptions>['query']
+    labelKey?: Attribute<TOptions>['labelKey']
     type?: Attribute<TOptions>['type']
     value?: Attribute<TOptions>['value']
   }) {
