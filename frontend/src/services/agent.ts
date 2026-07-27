@@ -65,18 +65,21 @@ export type AgentEvent =
 
 export type AgentMessageParam = { role: 'user' | 'assistant'; content: string }
 
+export type OrgSelection = { id: string; name: string }
+
 /* Stream one chat turn. Events arrive as SSE: `event: <type>\ndata: <json>\n\n` */
 export async function streamChat(options: {
   conversationId: string
   messages: AgentMessageParam[]
+  org?: OrgSelection
   signal?: AbortSignal
   onEvent: (event: AgentEvent) => void
 }): Promise<void> {
-  const { conversationId, messages, signal, onEvent } = options
+  const { conversationId, messages, org, signal, onEvent } = options
   const response = await fetch(`${AGENT_URL}/api/chat`, {
     method: 'POST',
     headers: agentHeaders(),
-    body: JSON.stringify({ conversationId, messages }),
+    body: JSON.stringify(org ? { conversationId, messages, org } : { conversationId, messages }),
     signal,
   })
   if (response.status === 401) throw new AgentAuthError()
