@@ -248,6 +248,23 @@ export default class ElectronApp {
     })
 
     this.window.webContents.setWindowOpenHandler(({ url }) => {
+      // The dev chat panel pops out into its own window (?chatPopout on our
+      // own origin); every other window.open goes to the system browser.
+      try {
+        const parsed = new URL(url)
+        if (parsed.origin === new URL(this.getStartUrl()).origin && parsed.searchParams.has('chatPopout')) {
+          return {
+            action: 'allow',
+            overrideBrowserWindowOptions: {
+              width: 520,
+              height: 780,
+              minWidth: 360,
+              minHeight: 500,
+              autoHideMenuBar: true,
+            },
+          }
+        }
+      } catch {}
       Logger.info('OPEN EXTERNAL URL', { url })
       electron.shell.openExternal(url)
       return { action: 'deny' }
