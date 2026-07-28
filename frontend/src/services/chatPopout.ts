@@ -58,6 +58,7 @@ const post = (message: PopoutMessage) => channel?.postMessage(message)
 let popoutWindow: Window | null = null
 let pollTimer: number | undefined
 let alivePending = false
+let missedPings = 0
 let suppressHandback = false
 
 /* ---------- main-window side ---------- */
@@ -69,9 +70,9 @@ export function openChatPopout(): boolean {
   return true
 }
 
-export function initChatPopoutMain(handlers: PopoutMainHandlers): void {
-  if (!channel) return
-  channel.addEventListener('message', (event: MessageEvent<PopoutMessage>) => {
+export function initChatPopoutMain(handlers: PopoutMainHandlers): () => void {
+  if (!channel) return () => {}
+  const listener = (event: MessageEvent<PopoutMessage>) => {
     switch (event.data.type) {
       case 'hello':
         post({ type: 'adopt', payload: handlers.getHandoff() })
@@ -84,9 +85,12 @@ export function initChatPopoutMain(handlers: PopoutMainHandlers): void {
         break
       case 'alive':
         alivePending = false
+        missedPings = 0
         break
     }
-  })
+  }
+  channel.addEventListener('message', listener)
+  return () => channel.removeEventListener('message', listener)
 }
 
 /* Ask whether a popout survives from a previous page load; corrects a stale
@@ -110,13 +114,19 @@ export function checkPopoutPresence(handlers: PopoutMainHandlers): void {
 
 export function broadcastChatSignout(): void {
   post({ type: 'signout' })
+  // The popout is being closed deliberately — a lagging poll must not
+  // race in afterward and force `open: true` into freshly-reset state.
+  stopPolling()
 }
 
 /* Crash net: a popout that dies without beforeunload still restores the
    dock. Uses the window handle when we have one (same page load), pings
-   otherwise (main was reloaded while popped out). */
+   otherwise (main was reloaded while popped out). Two consecutive missed
+   replies are required before declaring it lost, so one slow reply doesn't
+   false-positive. */
 function startPolling(handlers: PopoutMainHandlers) {
   if (pollTimer) return
+  missedPings = 0
   pollTimer = window.setInterval(() => {
     if (popoutWindow) {
       if (popoutWindow.closed) lost(handlers)
@@ -125,7 +135,10 @@ function startPolling(handlers: PopoutMainHandlers) {
     alivePending = true
     post({ type: 'ping' })
     window.setTimeout(() => {
-      if (alivePending && pollTimer) lost(handlers)
+      if (alivePending && pollTimer) {
+        missedPings += 1
+        if (missedPings >= 2) lost(handlers)
+      }
     }, PRESENCE_TIMEOUT)
   }, POLL_INTERVAL)
 }
@@ -134,6 +147,7 @@ function stopPolling() {
   if (pollTimer) window.clearInterval(pollTimer)
   pollTimer = undefined
   popoutWindow = null
+  missedPings = 0
 }
 
 function lost(handlers: PopoutMainHandlers) {
@@ -143,9 +157,9 @@ function lost(handlers: PopoutMainHandlers) {
 
 /* ---------- popout-window side ---------- */
 
-export function initChatPopoutWindow(handlers: PopoutWindowHandlers): void {
-  if (!channel) return
-  channel.addEventListener('message', (event: MessageEvent<PopoutMessage>) => {
+export function initChatPopoutWindow(handlers: PopoutWindowHandlers): () => void {
+  if (!channel) return () => {}
+  const messageListener = (event: MessageEvent<PopoutMessage>) => {
     switch (event.data.type) {
       case 'adopt':
         // Main's copy is authoritative at hand-off; until it arrives the
@@ -160,11 +174,17 @@ export function initChatPopoutWindow(handlers: PopoutWindowHandlers): void {
         handlers.onSignout()
         break
     }
-  })
-  window.addEventListener('beforeunload', () => {
+  }
+  const beforeUnloadListener = () => {
     if (!suppressHandback) post({ type: 'handback', payload: handlers.getHandoff() })
-  })
+  }
+  channel.addEventListener('message', messageListener)
+  window.addEventListener('beforeunload', beforeUnloadListener)
   post({ type: 'hello' })
+  return () => {
+    channel.removeEventListener('message', messageListener)
+    window.removeEventListener('beforeunload', beforeUnloadListener)
+  }
 }
 
 export function popIn(payload: ChatHandoff): void {

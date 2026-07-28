@@ -21,11 +21,12 @@ export const ChatWindow: React.FC = () => {
     dispatch.chat.resetTransient()
     dispatch.chat.syncOrg()
     dispatch.chat.checkHealth()
-    initChatPopoutWindow({
+    const unsubscribe = initChatPopoutWindow({
       adopt: payload => dispatch.chat.adoptTranscript(payload),
       getHandoff: currentHandoff,
       onSignout: () => window.close(),
     })
+    return unsubscribe
   }, [])
 
   return (

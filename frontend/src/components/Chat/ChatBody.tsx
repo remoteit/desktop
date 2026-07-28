@@ -7,6 +7,7 @@ import { ChatApproval } from './ChatApproval'
 import { ChatInput } from './ChatInput'
 import { ChatOrgSelect } from './ChatOrgSelect'
 import { Notice } from '../Notice'
+import { isChatPopout } from '../../services/chatPopout'
 
 /* Everything below the chat header — shared by the docked panel and the
    popout window */
@@ -26,15 +27,19 @@ export const ChatBody: React.FC = () => {
         <Notice severity="warning" gutterTop>
           <>
             The AI agent needs its own sign-in to act on your behalf.
-            <Button
-              fullWidth
-              size="small"
-              variant="contained"
-              onClick={() => dispatch.chat.signIn()}
-              sx={{ marginTop: 1 }}
-            >
-              Sign in with remote.it
-            </Button>
+            {isChatPopout ? (
+              ' Sign in from the main app window.'
+            ) : (
+              <Button
+                fullWidth
+                size="small"
+                variant="contained"
+                onClick={() => dispatch.chat.signIn()}
+                sx={{ marginTop: 1 }}
+              >
+                Sign in with remote.it
+              </Button>
+            )}
           </>
         </Notice>
       )}

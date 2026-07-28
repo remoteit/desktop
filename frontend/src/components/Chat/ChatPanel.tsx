@@ -34,12 +34,16 @@ export const ChatPanel: React.FC = () => {
         dispatch.chat.adoptTranscript(payload)
         dispatch.chat.set({ poppedOut: false, open: true })
       },
-      onPopoutOpened: () => dispatch.chat.set({ open: false, poppedOut: true }),
+      onPopoutOpened: () => {
+        dispatch.chat.stop()
+        dispatch.chat.set({ open: false, poppedOut: true })
+      },
       onPopoutLost: () => dispatch.chat.set({ poppedOut: false, open: true }),
       onPresence: present => dispatch.chat.set(present ? { poppedOut: true, open: false } : { poppedOut: false }),
     }
-    initChatPopoutMain(handlers)
+    const unsubscribe = initChatPopoutMain(handlers)
     checkPopoutPresence(handlers)
+    return unsubscribe
   }, [])
 
   useEffect(() => {
