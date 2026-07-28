@@ -1,10 +1,23 @@
 import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography } from '@mui/material'
-import { State, Dispatch } from '../../store'
+import { store, State, Dispatch } from '../../store'
 import { CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_EXPANDED } from '../../constants'
 import { IconButton } from '../../buttons/IconButton'
 import { ChatBody } from './ChatBody'
+import browser from '../../services/browser'
+import {
+  openChatPopout,
+  initChatPopoutMain,
+  checkPopoutPresence,
+  PopoutMainHandlers,
+  ChatHandoff,
+} from '../../services/chatPopout'
+
+const currentHandoff = (): ChatHandoff => {
+  const c = store.getState().chat
+  return { messages: c.messages, conversationId: c.conversationId, orgId: c.orgId }
+}
 
 export const ChatPanel: React.FC = () => {
   const chat = useSelector((state: State) => state.chat)
@@ -15,6 +28,18 @@ export const ChatPanel: React.FC = () => {
   // runs on mount regardless of whether the panel is open
   useEffect(() => {
     dispatch.chat.handleSignInCallback()
+    const handlers: PopoutMainHandlers = {
+      getHandoff: currentHandoff,
+      adopt: payload => {
+        dispatch.chat.adoptTranscript(payload)
+        dispatch.chat.set({ poppedOut: false, open: true })
+      },
+      onPopoutOpened: () => dispatch.chat.set({ open: false, poppedOut: true }),
+      onPopoutLost: () => dispatch.chat.set({ poppedOut: false, open: true }),
+      onPresence: present => dispatch.chat.set(present ? { poppedOut: true, open: false } : { poppedOut: false }),
+    }
+    initChatPopoutMain(handlers)
+    checkPopoutPresence(handlers)
   }, [])
 
   useEffect(() => {
@@ -58,6 +83,9 @@ export const ChatPanel: React.FC = () => {
             title={chat.expanded ? 'Collapse' : 'Expand'}
             onClick={() => dispatch.chat.set({ expanded: !chat.expanded })}
           />
+        )}
+        {!browser.isMobile && (
+          <IconButton icon="arrow-up-right-from-square" title="Pop out" onClick={() => openChatPopout()} />
         )}
         <IconButton icon="plus" title="New Chat" onClick={() => dispatch.chat.clearConversation()} />
         <IconButton icon="times" title="Close" onClick={() => dispatch.chat.set({ open: false })} />

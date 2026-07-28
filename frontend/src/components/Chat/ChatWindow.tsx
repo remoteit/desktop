@@ -1,9 +1,15 @@
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { Box, Typography } from '@mui/material'
-import { Dispatch } from '../../store'
+import { store, Dispatch } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { ChatBody } from './ChatBody'
+import { initChatPopoutWindow, popIn, ChatHandoff } from '../../services/chatPopout'
+
+const currentHandoff = (): ChatHandoff => {
+  const c = store.getState().chat
+  return { messages: c.messages, conversationId: c.conversationId, orgId: c.orgId }
+}
 
 /* Full-page chat for the popped-out window (?chatPopout boot flag). The
    window chrome provides close; pop-in wiring lands with the protocol. */
@@ -15,6 +21,11 @@ export const ChatWindow: React.FC = () => {
     dispatch.chat.resetTransient()
     dispatch.chat.syncOrg()
     dispatch.chat.checkHealth()
+    initChatPopoutWindow({
+      adopt: payload => dispatch.chat.adoptTranscript(payload),
+      getHandoff: currentHandoff,
+      onSignout: () => window.close(),
+    })
   }, [])
 
   return (
@@ -33,6 +44,14 @@ export const ChatWindow: React.FC = () => {
           New Chat
         </Typography>
         <IconButton icon="plus" title="New Chat" onClick={() => dispatch.chat.clearConversation()} />
+        <IconButton
+          icon="down-left-and-up-right-to-center"
+          title="Pop back in"
+          onClick={async () => {
+            await dispatch.chat.stop()
+            popIn(currentHandoff())
+          }}
+        />
       </Box>
       <ChatBody />
     </Box>
