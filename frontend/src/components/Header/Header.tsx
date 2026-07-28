@@ -28,6 +28,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
   const chatOpen = useSelector((state: State) => state.chat.open)
+  const chatPoppedOut = useSelector((state: State) => state.chat.poppedOut)
   const layout = useSelector((state: State) => state.ui.layout)
   const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
@@ -43,7 +44,13 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
 
   // Admin pages have two-level roots: /admin/users and /admin/partners (without IDs)
-  const adminRootPages = ['/admin/users', '/admin/admins', '/admin/partners', '/admin/enterprise-licenses', '/partner-stats']
+  const adminRootPages = [
+    '/admin/users',
+    '/admin/admins',
+    '/admin/partners',
+    '/admin/enterprise-licenses',
+    '/partner-stats',
+  ]
   const isAdminRootPage = adminRootPages.includes(location.pathname)
   const isRootMenu = menu === location.pathname || isAdminRootPage
 
@@ -73,7 +80,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
         {!isRootMenu && (
           <IconButton title="Back" onClick={navigateUp} icon="chevron-left" size="md" color="grayDarker" />
         )}
-        {MODE === 'development' && (
+        {MODE === 'development' && !chatPoppedOut && (
           <IconButton
             icon="robot"
             size="md"

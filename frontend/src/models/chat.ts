@@ -211,11 +211,14 @@ export default createModel<RootModel>()({
       }
     },
     /* Complete a sign-in redirect if this page load carries one */
-    async handleSignInCallback() {
+    async handleSignInCallback(_: void, state) {
       const result = await handleAgentSignInCallback()
       if (!result) return
-      if (result.ok) dispatch.chat.set({ error: null, open: true })
-      else dispatch.chat.set({ error: `Agent sign-in failed — ${result.error}`, open: true })
+      // Don't yank the dock open if the conversation currently lives in the
+      // popout window — the popout is the active surface, not the panel.
+      const openIfDocked = state.chat.poppedOut ? {} : { open: true }
+      if (result.ok) dispatch.chat.set({ error: null, ...openIfDocked })
+      else dispatch.chat.set({ error: `Agent sign-in failed — ${result.error}`, ...openIfDocked })
       await dispatch.chat.checkHealth()
     },
     // Dev fallback: token pasted from the ai-agent harness (devtools:
