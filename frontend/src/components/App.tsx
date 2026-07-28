@@ -31,12 +31,14 @@ import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
 import { ChatPanel } from './Chat/ChatPanel'
+import { ChatWindow } from './Chat/ChatWindow'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
 import { ViewAsBanner } from './ViewAsBanner'
 import { AnnouncementDialog } from './AnnouncementDialog'
 import { AnnouncementBanner } from './AnnouncementBanner'
+import { isChatPopout } from '../services/chatPopout'
 
 export const App: React.FC = () => {
   // Subscribe the whole app to i18next language changes and lazy-locale loads, so
@@ -133,22 +135,28 @@ export const App: React.FC = () => {
       <ViewAsBanner />
       <AnnouncementBanner />
       <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
-        <Box
-          sx={{
-            flexGrow: 1,
-            position: 'relative',
-            display: 'flex',
-            overflow: 'hidden',
-            flexDirection: 'row',
-            alignItems: 'start',
-            justifyContent: 'start',
-          }}
-        >
-          {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
-          <Router layout={layout} />
-          {MODE === 'development' && <ChatPanel />}
-        </Box>
-        {showBottomMenu && <BottomMenu layout={layout} />}
+        {MODE === 'development' && isChatPopout ? (
+          <ChatWindow />
+        ) : (
+          <>
+            <Box
+              sx={{
+                flexGrow: 1,
+                position: 'relative',
+                display: 'flex',
+                overflow: 'hidden',
+                flexDirection: 'row',
+                alignItems: 'start',
+                justifyContent: 'start',
+              }}
+            >
+              {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
+              <Router layout={layout} />
+              {MODE === 'development' && <ChatPanel />}
+            </Box>
+            {showBottomMenu && <BottomMenu layout={layout} />}
+          </>
+        )}
         <AnnouncementDialog />
       </PersistGate>
     </Page>
