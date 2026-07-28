@@ -12,6 +12,7 @@ import {
   OrgSelection,
 } from '../services/agent'
 import { startAgentSignIn, handleAgentSignInCallback, ensureFreshAgentToken, agentSignOut } from '../services/hydra'
+import { ChatHandoff, broadcastChatSignout } from '../services/chatPopout'
 
 export type ChatToolCall = {
   id: string
@@ -32,6 +33,8 @@ export type IChatState = {
   conversationId: string
   /** Org the agent is scoped to; null = uninitialized, user id = personal */
   orgId: string | null
+  /** Conversation currently lives in the popout window (main window only) */
+  poppedOut: boolean
   streaming: boolean
   pendingConfirmation: { toolUseId: string; toolName: string; input: Record<string, unknown> } | null
   error: string | null
@@ -44,6 +47,7 @@ export const defaultChatState: IChatState = {
   messages: [],
   conversationId: '',
   orgId: null,
+  poppedOut: false,
   streaming: false,
   pendingConfirmation: null,
   error: null,
@@ -130,7 +134,9 @@ export default createModel<RootModel>()({
         // present; fall back to the name carried on the membership itself so
         // org scope never silently degrades to personal.
         const name = (
-          state.organization.accounts[orgId]?.name || state.accounts.membership.find(m => m.account.id === orgId)?.name || ''
+          state.organization.accounts[orgId]?.name ||
+          state.accounts.membership.find(m => m.account.id === orgId)?.name ||
+          ''
         ).trim()
         const isMember = state.accounts.membership.some(m => m.account.id === orgId)
         if (name && isMember) org = { id: orgId, name }
@@ -222,6 +228,7 @@ export default createModel<RootModel>()({
     /* App sign-out tears the agent session down with it: revoke + clear the
        Hydra credentials and drop the transcript */
     async signOut() {
+      broadcastChatSignout()
       abortController?.abort()
       abortController = null
       dispatch.chat.reset()
@@ -246,6 +253,13 @@ export default createModel<RootModel>()({
       state.pendingConfirmation = null
       state.error = null
       state.health = 'unknown'
+      return state
+    },
+    /* Hand-off: replace the conversation with the other window's copy */
+    adoptTranscript(state: IChatState, payload: ChatHandoff) {
+      state.messages = payload.messages
+      state.conversationId = payload.conversationId
+      state.orgId = payload.orgId
       return state
     },
     clearConversation(state: IChatState) {
