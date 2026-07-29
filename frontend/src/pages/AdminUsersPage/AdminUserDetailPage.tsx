@@ -10,6 +10,7 @@ import { Body } from '../../components/Body'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
+import { PORTAL_URL } from '../../constants'
 import { Dispatch, State } from '../../store'
 import browser from '../../services/browser'
 import { windowOpen } from '../../services/browser'
@@ -59,7 +60,12 @@ export const AdminUserDetailPage: React.FC = () => {
 
   const handleViewAsUser = () => {
     const viewAs = `/devices?viewAs=${user.id},${encodeURIComponent(user.email || '')}`
-    if (browser.isElectron || browser.isMobile) {
+    // The desktop app shows local backend data, so view as has to run in the web portal
+    if (browser.isElectron) {
+      windowOpen(`${PORTAL_URL}/#${viewAs}`, '_blank', true)
+      return
+    }
+    if (browser.isMobile) {
       history.push(viewAs)
       return
     }
