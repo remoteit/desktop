@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { State, Dispatch } from '../../store'
 import { Box, Button, Typography, Divider } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { MFASelectMethod } from './MFASelectMethod'
 import { MFAConfigureApp } from './MFAConfigureApp'
 import { MFAConfigureSms } from './MFAConfigureSms'
@@ -10,6 +11,7 @@ import { MFAMethod } from './MFAMethod'
 import { Gutters } from '../Gutters'
 
 export const MFAPreference: React.FC = () => {
+  const { t } = useTranslation()
   const AWSUser = useSelector((state: State) => state.auth.AWSUser)
   const { mfaMethod, verificationCode, showMFASelection, showSMSConfig, backupCode } = useSelector(
     (state: State) => state.mfa
@@ -121,12 +123,13 @@ export const MFAPreference: React.FC = () => {
   if (AWSUser && AWSUser.authProvider === 'Google') {
     return (
       <>
-        <Typography variant="subtitle1">Two-factor Authentication</Typography>
+        <Typography variant="subtitle1">{t('mfaPreference.title', 'Two-factor Authentication')}</Typography>
         <Gutters bottom="xl">
           <Typography variant="body2">
-            You are signed in with your Google account. You can enable two-factor authentication in your Google account
-            settings. If you also have Remote.It login and password, you can sign in with those credentials and then
-            enable two-factor authentication.
+            {t(
+              'mfaPreference.googleSignInNotice',
+              'You are signed in with your Google account. You can enable two-factor authentication in your Google account settings. If you also have Remote.It login and password, you can sign in with those credentials and then enable two-factor authentication.'
+            )}
           </Typography>
         </Gutters>
       </>
@@ -137,10 +140,13 @@ export const MFAPreference: React.FC = () => {
     // let totp_code = await mfa.getTotpCode()
     return (
       <>
-        <Typography variant="subtitle1">Two-factor Authentication</Typography>
+        <Typography variant="subtitle1">{t('mfaPreference.title', 'Two-factor Authentication')}</Typography>
         <Gutters bottom="xl">
           <Typography variant="body2" gutterBottom>
-            Add an additional layer of security to your account by requiring more than just a password to sign in.
+            {t(
+              'mfaPreference.description',
+              'Add an additional layer of security to your account by requiring more than just a password to sign in.'
+            )}
           </Typography>
           <Divider />
           <MFAMethod
@@ -159,7 +165,7 @@ export const MFAPreference: React.FC = () => {
           {mfaMethod === 'NO_MFA' && showEnableSelection && (
             <Box mt={2}>
               <Box mb={2}>
-                <ColorChip label="OFF / Two-factor disabled" />
+                <ColorChip label={t('mfaPreference.offDisabled', 'OFF / Two-factor disabled')} />
               </Box>
               <Button
                 variant="contained"
@@ -170,7 +176,7 @@ export const MFAPreference: React.FC = () => {
                   setShowMFASelection(true)
                 }}
               >
-                Turn on
+                {t('mfaPreference.turnOn', 'Turn on')}
               </Button>
             </Box>
           )}

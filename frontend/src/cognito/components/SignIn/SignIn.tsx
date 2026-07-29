@@ -55,7 +55,7 @@ export function SignIn({
   if (errorMessage) {
     externalError = new Error(errorMessage)
   }
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const history = useHistory()
   const [username, setUsername] = React.useState<string>(email || rememberMe.username)
   const [password, setPassword] = React.useState<string>('')

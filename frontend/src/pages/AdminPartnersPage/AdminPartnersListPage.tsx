@@ -43,6 +43,7 @@ type AdminPartnerRow = {
 
 class AdminPartnerAttribute extends Attribute<AdminPartnerAttributeOptions> {
   type: Attribute['type'] = 'MASTER'
+  translate = false // internal-only admin registry: render English, skip columns.* translation
 }
 
 const adminPartnerAttributes: AdminPartnerAttribute[] = [

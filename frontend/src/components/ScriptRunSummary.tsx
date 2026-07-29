@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Button, Chip, Stack, Typography } from '@mui/material'
 import { Attribute } from './Attributes'
 import { DataDisplay } from './DataDisplay'
@@ -25,8 +26,9 @@ const DeviceChips: React.FC<{ names: string[]; maxVisibleDevices: number; collap
   maxVisibleDevices,
   collapsedVisibleDevices,
 }) => {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
-  if (!names.length) return <Chip label="No devices" size="small" />
+  if (!names.length) return <Chip label={t('scriptRunSummary.noDevices', 'No devices')} size="small" />
   const displayCount = expanded ? maxVisibleDevices : collapsedVisibleDevices
   const hiddenCount = Math.max(names.length - displayCount, 0)
 
@@ -44,7 +46,9 @@ const DeviceChips: React.FC<{ names: string[]; maxVisibleDevices: number; collap
           sx={{ mt: 0.5, px: 0, minWidth: 0 }}
           onClick={() => setExpanded(prev => !prev)}
         >
-          {expanded ? 'Show less' : `Show ${hiddenCount} more`}
+          {expanded
+            ? t('scriptRunSummary.showLess', 'Show less')
+            : t('scriptRunSummary.showMoreCount', { count: hiddenCount, defaultValue: 'Show {{count}} more' })}
         </Button>
       )}
     </Box>
@@ -65,6 +69,7 @@ const CollapsibleArgumentValue: React.FC<{ value: string; color?: 'textSecondary
   value,
   color,
 }) => {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const hasOverflow = value.length > ARGUMENT_COLLAPSE_THRESHOLD
 
@@ -95,7 +100,7 @@ const CollapsibleArgumentValue: React.FC<{ value: string; color?: 'textSecondary
           sx={{ mt: 0.5, px: 0, minWidth: 0 }}
           onClick={() => setExpanded(prev => !prev)}
         >
-          {expanded ? 'Show less' : 'Show more'}
+          {expanded ? t('scriptRunSummary.showLess', 'Show less') : t('scriptRunSummary.showMore', 'Show more')}
         </Button>
       )}
     </Box>
@@ -112,6 +117,7 @@ export const ScriptRunSummary: React.FC<Props> = ({
   collapsedVisibleDevices = 2,
   runConfigAction,
 }) => {
+  const { t } = useTranslation()
   const argumentMap = useMemo(() => {
     const result: Record<string, string> = {}
     argumentValues.forEach(arg => {
@@ -125,14 +131,14 @@ export const ScriptRunSummary: React.FC<Props> = ({
       .sort((a, b) => a.order - b.order)
       .map((arg, index) => {
         const rawValue = argumentMap[arg.name] || ''
-        let display = rawValue || 'Not set'
+        let display = rawValue || t('scriptRunSummary.notSet', 'Not set')
         let color: 'textSecondary' | 'warning.main' | undefined = rawValue ? undefined : 'textSecondary'
 
         if (arg.argumentType === 'FileSelect' && rawValue) {
           const file = findFileByIdOrVersionId(files, rawValue)
           if (file) display = file.name
           else {
-            display = `Missing file (${rawValue})`
+            display = t('scriptRunSummary.missingFile', { value: rawValue, defaultValue: 'Missing file ({{value}})' })
             color = 'warning.main'
           }
         }
@@ -151,7 +157,7 @@ export const ScriptRunSummary: React.FC<Props> = ({
   const runAttributes: Attribute[] = [
     new Attribute({
       id: 'run-targets',
-      label: 'Targets',
+      label: t('scriptRunSummary.targets', 'Targets'),
       value: () => (
         <DeviceChips
           names={deviceNames}
@@ -164,12 +170,12 @@ export const ScriptRunSummary: React.FC<Props> = ({
       ? [
           new Attribute({
             id: 'run-match',
-            label: 'Match',
-            value: () => <Chip label={tag?.operator || 'ALL'} size="small" />,
+            label: t('scriptRunSummary.match', 'Match'),
+            value: () => <Chip label={tag?.operator || t('scriptRunSummary.all', 'ALL')} size="small" />,
           }),
           new Attribute({
             id: 'run-filter',
-            label: 'Filter',
+            label: t('scriptRunSummary.filter', 'Filter'),
             value: () => <TagChips tags={tag?.values || []} />,
           }),
         ]
@@ -182,7 +188,7 @@ export const ScriptRunSummary: React.FC<Props> = ({
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
         <Typography variant="subtitle2" color="textSecondary" sx={{ flexGrow: 1, mb: 0 }}>
-          Run Configuration
+          {t('scriptRunSummary.runConfiguration', 'Run Configuration')}
         </Typography>
         {runConfigAction}
       </Box>
@@ -190,7 +196,7 @@ export const ScriptRunSummary: React.FC<Props> = ({
       {hasArguments && (
         <>
           <Typography variant="subtitle2" color="textSecondary" gutterBottom sx={{ mt: 2 }}>
-            Arguments
+            {t('scriptRunSummary.arguments', 'Arguments')}
           </Typography>
           <Box>
             <DataDisplay attributes={argumentRows} disablePadding />

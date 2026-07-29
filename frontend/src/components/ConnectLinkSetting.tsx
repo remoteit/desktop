@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { ListItemQuote } from './ListItemQuote'
@@ -19,6 +20,7 @@ type Props = {
 }
 
 export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, reverseProxy, disabled }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const [security, setSecurity] = useState<ISecurity>(connection.password ? 'PROTECTED' : 'OPEN')
   const canManage = permissions.includes('MANAGE')
@@ -33,7 +35,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
       <ListItemSetting
         icon="globe"
         disabled={disabled}
-        label="Persistent public url"
+        label={t('connectLinkSetting.label', 'Persistent public url')}
         subLabel={
           <Typography
             variant="caption"
@@ -42,9 +44,9 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
           >
             {canManage
               ? disabled
-                ? 'Fixed public endpoints are only available for http(s) services.'
-                : 'Create a fixed public endpoint for anyone to connect to'
-              : "Requires device 'Manage' permission"}
+                ? t('connectLinkSetting.disabledSubLabel', 'Fixed public endpoints are only available for http(s) services.')
+                : t('connectLinkSetting.enabledSubLabel', 'Create a fixed public endpoint for anyone to connect to')
+              : t('connectLinkSetting.permissionSubLabel', "Requires device 'Manage' permission")}
           </Typography>
         }
         toggle={!!connection.connectLink}
@@ -55,22 +57,29 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
         confirm={!connection.connectLink}
         confirmProps={{
           color: connection.password ? undefined : 'warning',
-          action: 'Make Public',
-          title: 'Are you sure?',
+          action: t('connectLinkSetting.makePublicAction', 'Make Public'),
+          title: t('common.areYouSure', 'Are you sure?'),
           children: (
             <>
               {connection.password ? (
                 <Notice severity="info" gutterBottom fullWidth>
-                  This endpoint has password protection.
+                  {t('connectLinkSetting.passwordProtectedNotice', 'This endpoint has password protection.')}
                 </Notice>
               ) : (
                 <Notice severity="warning" gutterBottom fullWidth>
-                  This endpoint has no password protection.
+                  {t('connectLinkSetting.noPasswordNotice', 'This endpoint has no password protection.')}
                 </Notice>
               )}
               <Typography variant="body2">
-                This will create a fixed public endpoint for anyone {connection.password && 'with the password'} to
-                connect to.
+                {connection.password
+                  ? t(
+                      'connectLinkSetting.confirmBodyWithPassword',
+                      'This will create a fixed public endpoint for anyone with the password to connect to.'
+                    )
+                  : t(
+                      'connectLinkSetting.confirmBody',
+                      'This will create a fixed public endpoint for anyone to connect to.'
+                    )}
               </Typography>
             </>
           ),
@@ -81,11 +90,11 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
           <SelectSetting
             hideIcon
             disabled={connection.updating || disabled}
-            label="Web Authentication"
+            label={t('connectLinkSetting.webAuthenticationLabel', 'Web Authentication')}
             value={security}
             values={[
-              { name: 'None', key: 'OPEN' },
-              { name: 'Password', key: 'PROTECTED' },
+              { name: t('connectLinkSetting.authNone', 'None'), key: 'OPEN' },
+              { name: t('connectLinkSetting.authPassword', 'Password'), key: 'PROTECTED' },
             ]}
             onChange={value => {
               setSecurity(value as ISecurity)
@@ -100,7 +109,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
               displayValue={connection.password?.replaceAll(/./g, '•')}
               modified={!!connection.password}
               value={connection.password || ''}
-              label="Password"
+              label={t('connectLinkSetting.passwordLabel', 'Password')}
               resetValue=""
               maxLength={MAX_PASSWORD_LENGTH}
               onSave={password => dispatch.connections.setConnectLink({ ...connection, password: password.toString() })}

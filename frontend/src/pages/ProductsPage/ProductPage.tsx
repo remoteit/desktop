@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Typography, List, Stack, ListItemText } from '@mui/material'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -18,6 +19,7 @@ import { spacing } from '../../styling'
 import { Gutters } from '../../components/Gutters'
 
 export const ProductPage: React.FC = () => {
+  const { t } = useTranslation()
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   const { all: products, fetching, initialized } = useSelector(getProductModel)
@@ -36,7 +38,7 @@ export const ProductPage: React.FC = () => {
   if (fetching && !initialized) {
     return (
       <Container gutterBottom>
-        <LoadingMessage message="Loading product..." />
+        <LoadingMessage message={t('productPage.loadingProduct', 'Loading product...')} />
       </Container>
     )
   }
@@ -47,10 +49,13 @@ export const ProductPage: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Product not found
+            {t('productPage.productNotFound', 'Product not found')}
           </Typography>
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            The product may have been deleted or you don't have access to it.
+            {t(
+              'productPage.productNotFoundHint',
+              "The product may have been deleted or you don't have access to it."
+            )}
           </Typography>
         </Body>
       </Container>
@@ -71,7 +76,8 @@ export const ProductPage: React.FC = () => {
             />
             <Stack flexWrap="wrap" flexDirection="row" marginLeft={9.5} marginRight={3}>
               <Typography variant="caption" color="grayDarker.main" gutterBottom sx={{ width: '100%' }}>
-                {product.platform?.name || `Platform ${product.platform?.id}`}
+                {product.platform?.name ||
+                  t('productPage.platformId', { id: product.platform?.id, defaultValue: 'Platform {{id}}' })}
               </Typography>
             </Stack>
             <Stack flexWrap="wrap" flexDirection="row" marginLeft={9.5} marginRight={3}>
@@ -82,10 +88,10 @@ export const ProductPage: React.FC = () => {
       }
     >
       <Typography variant="subtitle1">
-        <Title>Service</Title>
+        <Title>{t('productPage.service', 'Service')}</Title>
         <IconButton
           icon="plus"
-          title="Add Service"
+          title={t('productPage.addService', 'Add Service')}
           onClick={() => history.push(`/products/${product.id}/add`)}
           size="md"
         />
@@ -94,7 +100,7 @@ export const ProductPage: React.FC = () => {
       {product.services.length === 0 ? (
         <Gutters>
           <Notice severity="info" gutterTop fullWidth>
-            No services defined. Add at least one service to this product.
+            {t('productPage.noServicesDefined', 'No services defined. Add at least one service to this product.')}
           </Notice>
         </Gutters>
       ) : (
@@ -125,7 +131,7 @@ export const ProductPage: React.FC = () => {
               />
               <ColorChip
                 size="small"
-                label={service.type?.name || 'Unknown'}
+                label={service.type?.name || t('productPage.unknown', 'Unknown')}
                 color="grayDark"
                 variant="text"
                 sx={{ marginRight: 1 }}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useLocation, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
@@ -12,6 +13,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 export const NetworkSharePage = () => {
+  const { t } = useTranslation()
   const { networkID = '' } = useParams<{ networkID: string }>()
   const { network, contacts } = useSelector((state: State) => {
     const organization = selectOrganization(state)
@@ -39,7 +41,12 @@ export const NetworkSharePage = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Share {network.name || 'Network'}</Title>
+            <Title>
+              {t('networkSharePage.shareTitle', {
+                name: network.name || t('networkSharePage.network', 'Network'),
+                defaultValue: 'Share {{name}}',
+              })}
+            </Title>
           </Typography>
           <Gutters top={null}>
             <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />
@@ -49,14 +56,14 @@ export const NetworkSharePage = () => {
     >
       <Gutters>
         <Notice gutterTop fullWidth>
-          Granting connection access to all the services in this network.
+          {t('networkSharePage.grantingAccess', 'Granting connection access to all the services in this network.')}
         </Notice>
       </Gutters>
       <Gutters top="xl">
         <Button onClick={add} variant="contained" color="primary" disabled={!emails.length || loading}>
-          {loading ? 'Sharing...' : 'Share'}
+          {loading ? t('networkSharePage.sharingEllipsis', 'Sharing...') : t('networkSharePage.share', 'Share')}
         </Button>
-        <Button onClick={exit}>Cancel</Button>
+        <Button onClick={exit}>{t('common.cancel', 'Cancel')}</Button>
       </Gutters>
     </Container>
   )

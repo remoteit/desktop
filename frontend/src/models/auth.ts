@@ -27,6 +27,7 @@ import { RootModel } from '.'
 import sleep from '../helpers/sleep'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
+import i18n from '../i18n'
 
 export interface AWSUser {
   authProvider: string
@@ -108,7 +109,7 @@ export default createModel<RootModel>()({
         auth.signedIn()
       } else {
         console.warn('Login failed!', response)
-        dispatch.ui.set({ errorMessage: 'Login failed.' })
+        dispatch.ui.set({ errorMessage: i18n.t('notices:auth.loginFailed', { defaultValue: 'Login failed.' }) })
       }
     },
     async changePassword(passwordValues: IPasswordValue, state): Promise<boolean> {
@@ -117,7 +118,9 @@ export default createModel<RootModel>()({
 
       try {
         await state.auth.authService?.changePassword(existingPassword, newPassword)
-        dispatch.ui.set({ successMessage: 'Password changed successfully.' })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
+        })
         return true
       } catch (error: any) {
         const message =
@@ -149,9 +152,11 @@ export default createModel<RootModel>()({
           }
         )
         dispatch.auth.setAWSUserEmail(email)
-        dispatch.ui.set({ successMessage: `Email modified successfully.` })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:auth.emailModified', { defaultValue: 'Email modified successfully.' }),
+        })
       } else {
-        dispatch.ui.set({ errorMessage: `Invalid format.` })
+        dispatch.ui.set({ errorMessage: i18n.t('notices:auth.invalidFormat', { defaultValue: 'Invalid format.' }) })
       }
     },
     async forceRefreshToken(_: void, state) {
@@ -278,6 +283,10 @@ export default createModel<RootModel>()({
       dispatch.adminPartners.reset()
       dispatch.adminEnterpriseLicenses.reset()
       dispatch.adminNotices.reset()
+      // ui.reset() only restores redux defaults; the live i18next/luxon locale must be
+      // re-resolved so signed-out screens follow the OS rather than the previous
+      // account's language override.
+      dispatch.ui.setLanguage('system')
 
       cloudSync.reset()
       dispatch.accounts.set({ activeId: undefined })

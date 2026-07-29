@@ -18,7 +18,7 @@ export type SignUpProps = {
 }
 
 export function SignUp({ onSignUp, onResend, hideCaptcha, fullWidth }: SignUpProps): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const history = useHistory()
   const params = useParams<{ email?: string }>()
   const [error, setError] = useState<Error | null>(null)

@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { MAX_DESCRIPTION_LENGTH } from '../constants'
 import { useDispatch } from 'react-redux'
@@ -6,6 +7,7 @@ import { Dispatch } from '../store'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 
 export const DeviceDescriptionSetting: React.FC = () => {
+  const { t } = useTranslation()
   const { devices } = useDispatch<Dispatch>()
   const { device } = useContext(DeviceContext)
 
@@ -14,7 +16,7 @@ export const DeviceDescriptionSetting: React.FC = () => {
   return (
     <InlineTextFieldSetting
       icon="paragraph"
-      label="Device Description"
+      label={t('deviceDescriptionSetting.label', 'Device Description')}
       value={device.attributes.description}
       disabled={!device.permissions.includes('MANAGE')}
       resetValue={device.attributes.description}

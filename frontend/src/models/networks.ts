@@ -19,6 +19,7 @@ import {
 } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
+import i18n from '../i18n'
 
 export const DEFAULT_ID = 'local'
 export const DEFAULT_NETWORK: INetwork = {
@@ -60,6 +61,23 @@ export const recentNetwork: INetwork = {
   name: 'Recent',
   permissions: [],
   icon: 'clock-rotate-left',
+}
+
+// Built-in/system networks are synthetic groups with reserved ids (never used by
+// real user networks); their English names are translated for display via
+// hand-maintained catalog keys. Gating on the reserved id — not the name — means a
+// user who names their own network "Local"/"Recent"/etc. is never relabeled.
+const SYSTEM_NETWORK_IDS = new Set([DEFAULT_ID, 'recent', 'public'])
+const SYSTEM_NETWORK_KEYS: ILookup<string> = {
+  Active: 'network.active',
+  'Cloud Proxy': 'network.cloudProxy',
+  Recent: 'network.recent',
+  Local: 'network.local',
+}
+export const networkName = (network?: INetwork): string => {
+  if (!network) return ''
+  const key = SYSTEM_NETWORK_IDS.has(network.id) ? SYSTEM_NETWORK_KEYS[network.name] : undefined
+  return (key ? i18n.t(key, { defaultValue: network.name }) : network.name) || ''
 }
 
 export type addConnectionProps = {
@@ -208,7 +226,11 @@ export default createModel<RootModel>()({
       if (props.networkId !== DEFAULT_ID) {
         const result = await graphQLSetConnection(props)
         if (result === 'ERROR' || !result?.data?.data?.addNetworkConnection) {
-          dispatch.ui.set({ errorMessage: `Adding network failed. Please contact support.` })
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:network.addFailed', {
+              defaultValue: 'Adding network failed. Please contact support.',
+            }),
+          })
           dispatch.networks.setNetwork(network)
           return
         }
@@ -233,7 +255,11 @@ export default createModel<RootModel>()({
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
           console.error('Failed to remove network connection', serviceId, network, result)
           dispatch.ui.set({
-            errorMessage: `Failed to remove network connection (${serviceId}) from ${network.name}. Please contact support.`,
+            errorMessage: i18n.t('notices:network.removeConnectionFailed', {
+              serviceId,
+              network: network.name,
+              defaultValue: 'Failed to remove network connection ({{serviceId}}) from {{network}}. Please contact support.',
+            }),
           })
           dispatch.networks.setNetwork(network)
           return

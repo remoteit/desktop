@@ -16,7 +16,7 @@ export type AuthLayoutProps = {
 }
 
 export function AuthLayout({ children, i18nKey, showLogo, back, backLink, fullWidth }: AuthLayoutProps): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const history = useHistory()
 
   let logo: null | React.ReactElement = null

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { selectOrganization } from '../selectors/organizations'
 import { ConfirmButton } from '../buttons/ConfirmButton'
@@ -10,6 +11,7 @@ const CLAIM_CODE_LENGTH = 8
 type Props = { className?: string }
 
 export const ClaimDevice: React.FC<Props> = ({ className }) => {
+  const { t } = useTranslation()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { devices } = useDispatch<Dispatch>()
   const [code, setCode] = useState<string>('')
@@ -40,7 +42,7 @@ export const ClaimDevice: React.FC<Props> = ({ className }) => {
 
   return (
     <List className={className} dense disablePadding>
-      <ListSubheader disableGutters>Claim a device</ListSubheader>
+      <ListSubheader disableGutters>{t('claimDevice.title', 'Claim a device')}</ListSubheader>
       <ListItem sx={{ paddingTop: 3 }} disablePadding>
         <form
           style={{
@@ -53,7 +55,7 @@ export const ClaimDevice: React.FC<Props> = ({ className }) => {
           }}
         >
           <TextField
-            label="Claim Code"
+            label={t('claimDevice.claimCode', 'Claim Code')}
             value={code}
             variant="filled"
             disabled={claiming}
@@ -85,14 +87,20 @@ export const ClaimDevice: React.FC<Props> = ({ className }) => {
             size="chip"
             sx={{ marginRight: 0.375 }}
             variant={valid ? 'contained' : 'text'}
-            title={claiming ? 'Claiming' : 'Claim'}
+            title={claiming ? t('claimDevice.claiming', 'Claiming') : t('claimDevice.claim', 'Claim')}
             confirm={organization.id !== user.id}
             disabled={claiming || !valid}
             onClick={() => devices.claimDevice({ code, redirect: true })}
             confirmProps={{
-              title: `Claiming for ${organization.name}`,
-              action: 'Ok',
-              children: 'You are claiming this device for an organization instead of yourself.',
+              title: t('claimDevice.claimingForOrg', {
+                name: organization.name,
+                defaultValue: 'Claiming for {{name}}',
+              }),
+              action: t('common.ok', 'Ok'),
+              children: t(
+                'claimDevice.claimingWarning',
+                'You are claiming this device for an organization instead of yourself.'
+              ),
             }}
           />
         </form>

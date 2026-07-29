@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
 import { IDeviceProduct } from '../models/products'
@@ -11,6 +12,7 @@ import { dispatch } from '../store'
 type Props = { product?: IDeviceProduct }
 
 export const ProductOptionMenu: React.FC<Props> = ({ product }) => {
+  const { t } = useTranslation()
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const history = useHistory()
   const handleClick = (event: React.MouseEvent<Element>) => setAnchorEl(event.currentTarget as HTMLButtonElement)
@@ -35,12 +37,12 @@ export const ProductOptionMenu: React.FC<Props> = ({ product }) => {
           <ListItemIcon>
             <Icon name="arrow-turn-down-right" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Transfer Product" />
+          <ListItemText primary={t('productOptionMenu.transferProduct', 'Transfer Product')} />
         </MenuItem>
         <Divider />
         <DeleteButton
           menuItem
-          title="Delete Product"
+          title={t('productOptionMenu.deleteProduct', 'Delete Product')}
           onCancel={handleClose}
           onDelete={async () => {
             handleClose()
@@ -50,10 +52,11 @@ export const ProductOptionMenu: React.FC<Props> = ({ product }) => {
           warning={
             <>
               <Notice severity="error" gutterBottom fullWidth>
-                This action cannot be undone.
+                {t('productOptionMenu.cannotBeUndone', 'This action cannot be undone.')}
               </Notice>
               <Typography variant="body2">
-                Are you sure you want to permanently delete the product <b>{product.name}</b> and all its services?
+                {t('productOptionMenu.deleteConfirmPrefix', 'Are you sure you want to permanently delete the product')}{' '}
+                <b>{product.name}</b> {t('productOptionMenu.deleteConfirmSuffix', 'and all its services?')}
               </Typography>
             </>
           }

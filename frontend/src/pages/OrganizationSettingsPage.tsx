@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Redirect } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
@@ -13,6 +14,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 export const OrganizationSettingsPage: React.FC = () => {
+  const { t } = useTranslation()
   const organization = useSelector(selectOrganization)
   const permissions = useSelector(selectPermissions)
   const isOrgOwner = useSelector((state: State) => organization.id === state.user.id)
@@ -27,16 +29,20 @@ export const OrganizationSettingsPage: React.FC = () => {
       bodyProps={{ inset: false }}
       header={
         <Typography variant="h1">
-          <Title>Settings</Title>
+          <Title>{t('organizationSettingsPage.settings', 'Settings')}</Title>
           {isOrgOwner && (
             <DeleteButton
-              title="Delete Organization"
+              title={t('organizationSettingsPage.deleteOrganization', 'Delete Organization')}
               warning={
                 <>
                   <Notice severity="error" fullWidth gutterBottom>
-                    You will be permanently deleting <i>{organization.name}. </i>
+                    {t('organizationSettingsPage.permanentlyDeleting', 'You will be permanently deleting')}{' '}
+                    <i>{organization.name}. </i>
                   </Notice>
-                  This will remove all your members and their access to your devices.
+                  {t(
+                    'organizationSettingsPage.removeMembersWarning',
+                    'This will remove all your members and their access to your devices.'
+                  )}
                 </>
               }
               onDelete={async () => await dispatch.organization.removeOrganization()}
@@ -47,11 +53,11 @@ export const OrganizationSettingsPage: React.FC = () => {
     >
       <List>
         <ResellerSettings reseller={organization.reseller} />
-        <ListSubheader>General</ListSubheader>
+        <ListSubheader>{t('organizationSettingsPage.general', 'General')}</ListSubheader>
         <InlineTextFieldSetting
           icon="industry-alt"
           value={organization.name}
-          label="Organization Name"
+          label={t('organizationSettingsPage.organizationName', 'Organization Name')}
           resetValue={organization.name}
           onSave={name => dispatch.organization.setOrganization({ name: name.toString() })}
         />

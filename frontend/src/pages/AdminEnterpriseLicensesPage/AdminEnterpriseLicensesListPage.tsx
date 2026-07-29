@@ -32,6 +32,7 @@ type EnterpriseCustomerAttributeOptions = {
 
 class EnterpriseCustomerAttribute extends Attribute<EnterpriseCustomerAttributeOptions> {
   type: Attribute['type'] = 'MASTER'
+  translate = false // internal-only admin registry: render English, skip columns.* translation
 }
 
 const enterpriseCustomerAttributes: EnterpriseCustomerAttribute[] = [

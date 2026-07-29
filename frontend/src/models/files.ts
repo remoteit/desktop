@@ -8,6 +8,7 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 import { postFile } from '../services/post'
 import { get } from '../services/get'
+import i18n from '../i18n'
 
 type FilesState = {
   initialized: boolean
@@ -121,7 +122,7 @@ export default createModel<RootModel>()({
 
       const result = await graphQLDeleteFile(fileId)
       if (result === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'Error deleting file' })
+        dispatch.ui.set({ errorMessage: i18n.t('notices:file.deleteError', { defaultValue: 'Error deleting file' }) })
         return
       }
 
@@ -132,7 +133,7 @@ export default createModel<RootModel>()({
 
       const result = await graphQLModifyFile(params)
       if (result === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'Error updating file' })
+        dispatch.ui.set({ errorMessage: i18n.t('notices:file.updateError', { defaultValue: 'Error updating file' }) })
         return false
       }
 

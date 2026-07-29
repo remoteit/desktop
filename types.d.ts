@@ -151,6 +151,9 @@ declare global {
     getState: () => { environment: IEnvironment; preferences: IPreferences }
     getCloudData: (typeId?: number) => IApplicationType
     escapeRegex: (string: string) => string
+    // Translate a key with an English fallback. The frontend wires this to
+    // i18n.t; other platforms (Electron) may leave it undefined to get English.
+    translate?: (key: string, defaultValue: string) => string
   }
 
   interface InstallationInfo {
@@ -1018,6 +1021,7 @@ declare global {
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
     sshConfig?: boolean
+    language?: string // resolved language code (e.g. 'en', 'ja') for the Electron main process; never 'system'
   }
 
   type SegmentContext = {

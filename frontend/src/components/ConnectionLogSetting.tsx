@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { ListItemSetting } from './ListItemSetting'
 import { newConnection, setConnection } from '../helpers/connectionHelper'
 import { emit } from '../services/Controller'
@@ -7,6 +8,7 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
   service,
   connection,
 }) => {
+  const { t } = useTranslation()
   if (!service) return null
   if (!connection) connection = newConnection(service)
   const disabled = connection.connected || connection.public
@@ -14,13 +16,13 @@ export const ConnectionLogSetting: React.FC<{ service: IService; connection?: IC
 
   return (
     <ListItemSetting
-      label="Connection Logging"
+      label={t('connectionLogSetting.label', 'Connection Logging')}
       subLabel={log ? `${connection.id.replace(/:/g, '')}_<timestamp>.log` : undefined}
       modified={log}
       disabled={disabled}
       icon="file-alt"
       toggle={!!log}
-      button={log ? 'Show Log' : undefined}
+      button={log ? t('connectionLogSetting.showLog', 'Show Log') : undefined}
       onButtonClick={() => emit('showFolder', 'connections')}
       onClick={() =>
         connection &&

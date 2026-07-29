@@ -1,5 +1,6 @@
 import React from 'react'
 import { List, ListItem, TextField, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { FileUpload } from './FileUpload'
 
 type Props = {
@@ -18,18 +19,20 @@ export const FileMetadataForm: React.FC<Props> = ({
   disabled,
   requiredName = true,
   showUpload = true,
-  uploadLabel = 'Upload File',
+  uploadLabel,
   uploadedFile = null,
   onFormChange,
   onUploadedFileChange,
 }) => {
+  const { t } = useTranslation()
+  const resolvedUploadLabel = uploadLabel ?? t('fileMetadataForm.uploadFile', 'Upload File')
   return (
     <List disablePadding>
       <ListItem disableGutters>
         <TextField
           required={requiredName}
           fullWidth
-          label="Name"
+          label={t('fileMetadataForm.name', 'Name')}
           disabled={disabled}
           value={form.name}
           variant="filled"
@@ -40,7 +43,7 @@ export const FileMetadataForm: React.FC<Props> = ({
         <TextField
           fullWidth
           multiline
-          label="Description"
+          label={t('fileMetadataForm.description', 'Description')}
           disabled={disabled}
           value={form.description}
           variant="filled"
@@ -50,9 +53,14 @@ export const FileMetadataForm: React.FC<Props> = ({
       {showUpload && (
         <ListItem disableGutters sx={{ mt: 2, display: 'block' }}>
           <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-            {uploadLabel}
+            {resolvedUploadLabel}
           </Typography>
-          <FileUpload mode="file" label={uploadLabel} value={uploadedFile} onChange={onUploadedFileChange || (() => {})} />
+          <FileUpload
+            mode="file"
+            label={resolvedUploadLabel}
+            value={uploadedFile}
+            onChange={onUploadedFileChange || (() => {})}
+          />
         </ListItem>
       )}
     </List>

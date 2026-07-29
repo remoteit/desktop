@@ -11,7 +11,7 @@ export type Props = {
 }
 
 export function PasswordStrengthInput({ isNewPassword, onChange }: Props): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const [password, setPassword] = useState<string>('')
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)

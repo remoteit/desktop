@@ -3,6 +3,7 @@ import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { Box, TextField, IconButton, Tooltip, Typography } from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -11,13 +12,15 @@ export const SearchField: React.FC = () => {
     selectDeviceModelAttributes(state)
   )
   const { devices } = useDispatch<Dispatch>()
+  const { t } = useTranslation()
 
   // not compatible with DESK-648
   const disabled = Boolean(fetching || query.length < 2)
 
-
-  const totalTitle = filter ? 'Filtered' : 'Total'
-  const title = searched ? `Searched / ${totalTitle}` : `${totalTitle} Devices`
+  const totalTitle = filter ? t('searchField.filtered', 'Filtered') : t('searchField.total', 'Total')
+  const title = searched
+    ? t('searchField.searchedOf', { totalTitle, defaultValue: 'Searched / {{totalTitle}}' })
+    : t('searchField.totalDevices', { totalTitle, defaultValue: '{{totalTitle}} Devices' })
 
   return (
     <Box
@@ -41,7 +44,7 @@ export const SearchField: React.FC = () => {
           }
         }}
         onChange={e => devices.set({ query: e.target.value })}
-        placeholder="Search devices and services..."
+        placeholder={t('searchField.placeholder', 'Search devices and services...')}
       />
       <Box sx={{ position: 'absolute', right: `${spacing.lg}px` }}>
         <Tooltip title={title}>
@@ -50,7 +53,7 @@ export const SearchField: React.FC = () => {
           </Typography>
         </Tooltip>
         {(searched || query) && (
-          <Tooltip title="Clear search">
+          <Tooltip title={t('searchField.clearSearch', 'Clear search')}>
             <IconButton
               type="button"
               onClick={() => {
@@ -63,7 +66,7 @@ export const SearchField: React.FC = () => {
             </IconButton>
           </Tooltip>
         )}
-        <Tooltip title="Search">
+        <Tooltip title={t('searchField.search', 'Search')}>
           <span>
             <IconButton type="submit" disabled={disabled} size="large">
               <Icon name="search" size="md" type="regular" color={disabled ? 'gray' : 'grayDarker'} fixedWidth />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { useMediaQuery, Typography, Box, Stack, Divider, Theme, Chip } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectPermissions } from '../selectors/organizations'
@@ -21,6 +22,7 @@ export const PlatformAddPage: React.FC = () => {
   const [serviceTypes, setServiceTypes] = useState<number[]>(defaultServices)
   const [oneTimeUse, setOneTimeUse] = useState(false)
   const xs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
+  const { t } = useTranslation()
 
   return (
     <Body center>
@@ -55,7 +57,11 @@ export const PlatformAddPage: React.FC = () => {
               />
               <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }} marginTop={2} width="100%">
                 <Chip
-                  label={oneTimeUse ? 'ONE-TIME USE' : 'MULTI USE'}
+                  label={
+                    oneTimeUse
+                      ? t('platformAddPage.oneTimeUse', 'ONE-TIME USE')
+                      : t('platformAddPage.multiUse', 'MULTI USE')
+                  }
                   size="small"
                   color={oneTimeUse ? 'primary' : 'default'}
                   onClick={() => setOneTimeUse(!oneTimeUse)}
@@ -89,7 +95,12 @@ export const PlatformAddPage: React.FC = () => {
         >
           {!permissions.includes('MANAGE') ? (
             <Box>
-              <Notice>You must have the register permission to add a device to this organization.</Notice>
+              <Notice>
+                {t(
+                  'platformAddPage.registerPermissionRequired',
+                  'You must have the register permission to add a device to this organization.'
+                )}
+              </Notice>
             </Box>
           ) : platformObj.override ? (
             <platformObj.override platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} oneTimeUse={oneTimeUse} />
@@ -101,7 +112,10 @@ export const PlatformAddPage: React.FC = () => {
               {platformObj.hasScreenView && (
                 <>
                   <Typography variant="body2" color="textSecondary" paddingBottom={1}>
-                    Or use this registration code to manually claim the ScreenView app.
+                    {t(
+                      'platformAddPage.screenViewCodeHint',
+                      'Or use this registration code to manually claim the ScreenView app.'
+                    )}
                   </Typography>
                   <AddDevice
                     platform={platformObj}

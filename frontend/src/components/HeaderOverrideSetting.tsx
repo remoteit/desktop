@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Tooltip } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { isReverseProxy } from '../models/applicationTypes'
@@ -12,6 +13,7 @@ export const HeaderOverrideSetting: React.FC<{ service: IService; connection?: I
   service,
   connection,
 }) => {
+  const { t } = useTranslation()
   const reverseProxy = useSelector((state: State) => isReverseProxy(state, service.typeID))
   if (!reverseProxy) return null
   if (!connection) connection = newConnection(service)
@@ -35,9 +37,12 @@ export const HeaderOverrideSetting: React.FC<{ service: IService; connection?: I
       icon="bullseye"
       label={
         <>
-          Host header override
+          {t('headerOverrideSetting.title', 'Host header override')}
           <Tooltip
-            title="A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server."
+            title={t(
+              'headerOverrideSetting.description',
+              'A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server.'
+            )}
             placement="top"
             arrow
           >

@@ -11,7 +11,9 @@ import headless, {
   getApplication,
   Logger,
   brand,
+  preferences,
 } from './backend'
+import { t, setLanguage } from './i18n'
 
 const MAX_MENU_SIZE = 10
 const MAX_UPDATE_CHECKS = 16
@@ -37,11 +39,15 @@ export default class TrayMenu {
       })
     }
 
+    setLanguage(preferences.get().language)
     this.render()
 
     EventBus.on(User.EVENTS.signedIn, this.render)
     EventBus.on(User.EVENTS.signedOut, this.render)
     EventBus.on(ConnectionPool.EVENTS.pool, this.updatePool)
+    EventBus.on(EVENTS.preferences, ({ language }: IPreferences) => {
+      if (setLanguage(language)) this.render()
+    })
   }
 
   private render = () => {
@@ -59,7 +65,7 @@ export default class TrayMenu {
   private remoteitMenu() {
     return [
       {
-        label: `Open ${brand.appName}...`,
+        label: t('tray.open', { appName: brand.appName }),
         type: 'normal',
         click: () => this.handleOpen(),
       },
@@ -67,12 +73,12 @@ export default class TrayMenu {
         label: user.username,
         submenu: [
           {
-            label: 'Sign out',
+            label: t('tray.signOut'),
             type: 'normal',
             click: () => EventBus.emit(EVENTS.signOut),
           },
           {
-            label: 'Quit',
+            label: t('tray.quit'),
             type: 'normal',
             click: electron.app.quit,
           },
@@ -86,8 +92,8 @@ export default class TrayMenu {
   private connectionsMenu() {
     let menu = []
     const enabled = this.pool.filter(c => c.enabled)
-    if (enabled.length) menu.push({ label: 'Connections', enabled: false }, ...this.connectionsList(enabled))
-    return menu.length ? menu : [{ label: 'No connections', enabled: false }]
+    if (enabled.length) menu.push({ label: t('tray.connections'), enabled: false }, ...this.connectionsList(enabled))
+    return menu.length ? menu : [{ label: t('tray.noConnections'), enabled: false }]
   }
 
   private connectionsList(list: IConnection[]) {
@@ -104,23 +110,23 @@ export default class TrayMenu {
           submenu: [
             connection.enabled
               ? connection.connected
-                ? { label: 'Stop connection', click: () => this.disconnect(connection) }
-                : { label: 'Remove from network', click: () => this.remove(connection) }
+                ? { label: t('tray.stopConnection'), click: () => this.disconnect(connection) }
+                : { label: t('tray.removeFromNetwork'), click: () => this.remove(connection) }
               : connection.online
-              ? { label: 'Add to network', click: () => this.connect(connection) }
-              : { label: 'Offline', enabled: false },
+              ? { label: t('tray.addToNetwork'), click: () => this.connect(connection) }
+              : { label: t('tray.offline'), enabled: false },
             { type: 'separator' },
             { label: hostName(connection), enabled: false },
-            { label: 'Copy to clipboard', click: () => this.copy(connection) },
+            { label: t('tray.copyToClipboard'), click: () => this.copy(connection) },
             connection.online
-              ? { label: 'Launch', enabled: connection.enabled, click: () => this.launch(connection) }
-              : { label: 'Remove', click: () => EventBus.emit(EVENTS.clear, connection) },
+              ? { label: t('tray.launch'), enabled: connection.enabled, click: () => this.launch(connection) }
+              : { label: t('tray.remove'), click: () => EventBus.emit(EVENTS.clear, connection) },
           ],
         })
       }
       return result
     }, [])
-    if (more) menu.push({ label: `and ${more} more...`, click: () => this.handleOpen('connections') })
+    if (more) menu.push({ label: t('tray.andMore', { count: more }), click: () => this.handleOpen('connections') })
     return menu
   }
 
@@ -128,12 +134,12 @@ export default class TrayMenu {
     return [
       { label: brand.appName, enabled: false },
       {
-        label: 'Sign in...',
+        label: t('tray.signIn'),
         type: 'normal',
         click: () => this.handleOpen(),
       },
       {
-        label: 'Quit',
+        label: t('tray.quit'),
         type: 'normal',
         click: electron.app.quit,
       },

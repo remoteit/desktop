@@ -1,5 +1,6 @@
 import zxcvbn from 'zxcvbn'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from '../../constants'
 import { TextField } from '@mui/material'
 import { ProgressBar } from './ProgressBar'
@@ -10,6 +11,7 @@ export interface Props {
 }
 
 export function PasswordStrengthInput({ onChange }: Props) {
+  const { t } = useTranslation()
   const [password, setPassword] = useState<string>('')
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>('')
   const [valid, setValid] = useState<boolean>(false)
@@ -56,17 +58,17 @@ export function PasswordStrengthInput({ onChange }: Props) {
   const createPasswordStrengthLabel = (score: any) => {
     switch (score) {
       case 0:
-        return 'Very Weak'
+        return t('passwordStrengthInput.veryWeak', 'Very Weak')
       case 1:
-        return 'Weak'
+        return t('passwordStrengthInput.weak', 'Weak')
       case 2:
-        return 'Fair'
+        return t('passwordStrengthInput.fair', 'Fair')
       case 3:
-        return 'Good'
+        return t('passwordStrengthInput.good', 'Good')
       case 4:
-        return 'Strong'
+        return t('passwordStrengthInput.strong', 'Strong')
       default:
-        return 'Very Weak'
+        return t('passwordStrengthInput.veryWeak', 'Very Weak')
     }
   }
 
@@ -85,8 +87,8 @@ export function PasswordStrengthInput({ onChange }: Props) {
       <TextField
         variant="filled"
         type="password"
-        label="Enter new password"
-        helperText="Password must be 7-64 characters in length."
+        label={t('passwordStrengthInput.enterNewPassword', 'Enter new password')}
+        helperText={t('passwordStrengthInput.helperText', 'Password must be 7-64 characters in length.')}
         onChange={e => checkPassword(e)}
         fullWidth
       />
@@ -94,20 +96,39 @@ export function PasswordStrengthInput({ onChange }: Props) {
         fullWidth
         variant="filled"
         type="password"
-        label="Confirm new password"
+        label={t('passwordStrengthInput.confirmNewPassword', 'Confirm new password')}
         onChange={e => checkPasswordConfirmation(e)}
       />
       {((password !== '' && !valid) || (passwordConfirmation != '' && !hasMatch)) && (
         <Notice severity="warning" fullWidth>
-          Please fix the following problems
-          {tooShort && <em>The password must be at least {PASSWORD_MIN_LENGTH} characters long.</em>}
-          {tooLong && <em>The password must be no more than {PASSWORD_MAX_LENGTH} characters long.</em>}
-          {passwordConfirmation != '' && !hasMatch && <em>The passwords do not match</em>}
+          {t('passwordStrengthInput.fixProblems', 'Please fix the following problems')}
+          {tooShort && (
+            <em>
+              {t('passwordStrengthInput.tooShort', {
+                minLength: PASSWORD_MIN_LENGTH,
+                defaultValue: 'The password must be at least {{minLength}} characters long.',
+              })}
+            </em>
+          )}
+          {tooLong && (
+            <em>
+              {t('passwordStrengthInput.tooLong', {
+                maxLength: PASSWORD_MAX_LENGTH,
+                defaultValue: 'The password must be no more than {{maxLength}} characters long.',
+              })}
+            </em>
+          )}
+          {passwordConfirmation != '' && !hasMatch && (
+            <em>{t('passwordStrengthInput.noMatch', 'The passwords do not match')}</em>
+          )}
         </Notice>
       )}
       {valid && (
         <ProgressBar
-          description={`Password Strength: ${createPasswordStrengthLabel(checkTestedResult(password))}`}
+          description={t('passwordStrengthInput.strengthDescription', {
+            strength: createPasswordStrengthLabel(checkTestedResult(password)),
+            defaultValue: 'Password Strength: {{strength}}',
+          })}
           value={checkTestedResult(password) * 10}
         />
       )}
