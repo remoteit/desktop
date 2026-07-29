@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams, useHistory } from 'react-router-dom'
 import { Divider, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
@@ -23,6 +24,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
   const devicesSection = !!deviceID
   const deviceOnly = device && !service
 
@@ -68,18 +70,24 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               <ListItemIcon>
                 <Icon name="share" size="md" />
               </ListItemIcon>
-              <ListItemText primary="Share access" />
+              <ListItemText primary={t('deviceOptionMenu.shareAccess', 'Share access')} />
             </MenuItem>
           )}
         </MobileUI>
         {(!devicesSection || service) && (
-          <ListItemLocation title="Device Details" icon="router" to={`/devices/${device.id}/details`} menuItem dense />
+          <ListItemLocation
+            title={t('deviceOptionMenu.deviceDetails', 'Device Details')}
+            icon="router"
+            to={`/devices/${device.id}/details`}
+            menuItem
+            dense
+          />
         )}
         {service && (
           <CopyMenuItem
             key="link"
             icon="link"
-            title="Service Link"
+            title={t('deviceOptionMenu.serviceLink', 'Service Link')}
             value={`${PROTOCOL}devices/${device.id}/${service.id}`}
             onCopied={handleClose}
           />
@@ -88,7 +96,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
           <CopyMenuItem
             key="link"
             icon="link"
-            title="Device Link"
+            title={t('deviceOptionMenu.deviceLink', 'Device Link')}
             value={`${PROTOCOL}devices/${device.id}`}
             onCopied={handleClose}
           />
@@ -107,19 +115,19 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               <ListItemIcon>
                 <Icon name="wave-pulse" size="md" />
               </ListItemIcon>
-              <ListItemText primary="Restore Device" />
+              <ListItemText primary={t('deviceOptionMenu.restoreDevice', 'Restore Device')} />
             </MenuItem>,
             <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link} onClick={handleClose}>
               <ListItemIcon>
                 <Icon name="arrow-turn-down-right" size="md" />
               </ListItemIcon>
-              <ListItemText primary="Transfer Device" />
+              <ListItemText primary={t('deviceOptionMenu.transferDevice', 'Transfer Device')} />
             </MenuItem>,
             <MenuItem dense key="makeProduct" onClick={handleMakeProduct}>
               <ListItemIcon>
                 <Icon name="conveyor-belt-boxes" size="md" />
               </ListItemIcon>
-              <ListItemText primary="Make Product" />
+              <ListItemText primary={t('deviceOptionMenu.makeProduct', 'Make Product')} />
             </MenuItem>,
           ]}
         {device.permissions.includes('MANAGE') &&

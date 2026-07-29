@@ -32,6 +32,7 @@ type AdminDeviceRow = {
 
 class AdminDeviceAttribute extends Attribute<AdminDeviceAttributeOptions> {
   type: Attribute['type'] = 'DEVICE'
+  translate = false // internal-only admin registry: render English, skip columns.* translation
 }
 
 const adminDeviceAttributes: AdminDeviceAttribute[] = [

@@ -10,6 +10,7 @@ export type AdminNoticeAttributeOptions = {
 
 export class AdminNoticeAttribute extends Attribute<AdminNoticeAttributeOptions> {
   type: Attribute['type'] = 'MASTER'
+  translate = false // internal-only admin registry: render English, skip columns.* translation
 }
 
 export type NoticeStatus = 'Live' | 'Scheduled' | 'Expired' | 'Disabled'

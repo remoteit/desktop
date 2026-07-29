@@ -1,5 +1,6 @@
 import { MuiTelInput, matchIsValidTel } from 'mui-tel-input'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
 import { Typography, Button, Box } from '@mui/material'
@@ -11,6 +12,7 @@ export interface Props {
 }
 
 export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
+  const { t } = useTranslation()
   const AWSUser = useSelector((state: State) => state.auth.AWSUser)
   const mfaMethod = useSelector((state: State) => state.mfa.mfaMethod)
   const { mfa } = useDispatch<Dispatch>()
@@ -59,29 +61,32 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
         <>
           {mfaMethod === 'SMS_MFA' && (
             <Notice severity="warning" fullWidth>
-              Updating your mobile device number will disable two-factor authentication until the number is verified.
+              {t(
+                'mfaPhoneForm.disableWarning',
+                'Updating your mobile device number will disable two-factor authentication until the number is verified.'
+              )}
             </Notice>
           )}
           <Typography variant="h3" gutterBottom>
-            Update your mobile device number and send verification code.
+            {t('mfaPhoneForm.updateTitle', 'Update your mobile device number and send verification code.')}
           </Typography>
         </>
       )}
       {AWSUser && !AWSPhone && (
         <Typography variant="h3" gutterBottom>
-          Enter your mobile number so we can send you the verification code
+          {t('mfaPhoneForm.enterTitle', 'Enter your mobile number so we can send you the verification code')}
         </Typography>
       )}
       {AWSUser.phone_number_verified && AWSPhone === phone && (
         <Notice severity="success" fullWidth gutterBottom>
-          Your mobile device is verified.
+          {t('mfaPhoneForm.verified', 'Your mobile device is verified.')}
         </Notice>
       )}
       <form onSubmit={updateUsersPhone}>
         <Box mt={3}>
           <MuiTelInput
             required
-            label="Phone"
+            label={t('mfaPhoneForm.phoneLabel', 'Phone')}
             variant="filled"
             value={phone}
             defaultCountry="US"
@@ -93,14 +98,17 @@ export const MFAPhoneForm: React.FC<Props> = ({ onClose, onSuccess }) => {
         </Box>
         <Box mt={1}>
           <Typography variant="caption">
-            We will only use this number for account security. Message and data rates may apply.
+            {t(
+              'mfaPhoneForm.disclaimer',
+              'We will only use this number for account security. Message and data rates may apply.'
+            )}
           </Typography>
         </Box>
         <Box mt={3}>
           <Button disabled={!matchIsValidTel(phone)} variant="contained" type="submit" color="primary">
-            {loading ? 'Sending...' : 'Submit'}
+            {loading ? t('mfaPhoneForm.sending', 'Sending...') : t('mfaPhoneForm.submit', 'Submit')}
           </Button>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
         </Box>
       </form>
     </Box>

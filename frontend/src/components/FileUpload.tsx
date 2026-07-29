@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BINARY_DATA_TOKEN } from '../constants'
 import { Typography, TextField, Box, ButtonBase, Stack, Divider } from '@mui/material'
 import { useDropzone } from 'react-dropzone'
@@ -54,6 +55,7 @@ type TextProps = BaseProps & {
 type Props = ScriptProps | FileProps | TextProps
 
 export const FileUpload: React.FC<Props> = props => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const [uploadedFilename, setUploadedFilename] = useState<string>()
   const isScriptMode = props.mode === 'script'
@@ -146,7 +148,7 @@ export const FileUpload: React.FC<Props> = props => {
       }
       props.onChange(file)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'File reading has failed'
+      const message = error instanceof Error ? error.message : t('fileUpload.readError', 'File reading has failed')
       dispatch.ui.set({ errorMessage: message })
     }
   }
@@ -161,9 +163,10 @@ export const FileUpload: React.FC<Props> = props => {
   const canClear = isScriptMode ? !!uploadedFilename : !!props.value || !!uploadedFilename
   const showActions = !!props.topActions || canClear
 
-  const uploadLabel = props.label || (isTextMode ? 'Select File' : 'Upload')
-  const uploadSubLabel = props.subLabel || 'Drag and drop or click'
-  const selectionStatusLabel = props.selectionStatusLabel || 'selected'
+  const uploadLabel =
+    props.label || (isTextMode ? t('fileUpload.selectFile', 'Select File') : t('fileUpload.upload', 'Upload'))
+  const uploadSubLabel = props.subLabel || t('fileUpload.dragAndDrop', 'Drag and drop or click')
+  const selectionStatusLabel = props.selectionStatusLabel || t('fileUpload.selected', 'selected')
   const selectedFile = isFileMode ? props.value : undefined
 
   return (
@@ -206,8 +209,8 @@ export const FileUpload: React.FC<Props> = props => {
           fullWidth
           required
           disabled={props.disabled || props.loading}
-          label="Script"
-          value={props.loading ? 'loading...' : props.value?.toString() || ''}
+          label={t('fileUpload.scriptLabel', 'Script')}
+          value={props.loading ? t('fileUpload.loadingEllipsis', 'loading...') : props.value?.toString() || ''}
           variant="filled"
           InputLabelProps={{ shrink: true }}
           InputProps={{
@@ -225,8 +228,8 @@ export const FileUpload: React.FC<Props> = props => {
       )}
 
       {isScriptMode && isScriptBinary && (
-        <Notice onClose={clear} closeTitle="Clear" fullWidth>
-          Binary script uploaded
+        <Notice onClose={clear} closeTitle={t('common.clear', 'Clear')} fullWidth>
+          {t('fileUpload.binaryScriptUploaded', 'Binary script uploaded')}
           {uploadedFilename ? (
             <>
               : <strong>{uploadedFilename}</strong>
@@ -238,7 +241,9 @@ export const FileUpload: React.FC<Props> = props => {
       {showActions && (
         <Box sx={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 0.5 }}>
           {props.topActions?.(actionApi)}
-          {canClear && <IconButton name="times" title="Clear" color="grayDark" size="sm" onClick={clear} />}
+          {canClear && (
+            <IconButton name="times" title={t('common.clear', 'Clear')} color="grayDark" size="sm" onClick={clear} />
+          )}
         </Box>
       )}
     </Stack>

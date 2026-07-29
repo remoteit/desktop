@@ -1,0 +1,25 @@
+{
+  "tray": {
+    "open": "{{appName}} öffnen...",
+    "signOut": "Abmelden",
+    "quit": "Beenden",
+    "connections": "Verbindungen",
+    "noConnections": "Keine Verbindungen",
+    "stopConnection": "Verbindung trennen",
+    "removeFromNetwork": "Aus Netzwerk entfernen",
+    "addToNetwork": "Zum Netzwerk hinzufügen",
+    "offline": "Offline",
+    "copyToClipboard": "In Zwischenablage kopieren",
+    "launch": "Starten",
+    "remove": "Entfernen",
+    "andMore": "und {{count}} weitere...",
+    "signIn": "Anmelden..."
+  },
+  "dialog": {
+    "failedToStartTitle": "{{appName}} konnte nicht gestartet werden",
+    "failedToStartMessage": "Die App konnte nicht gestartet werden, da bereits eine andere Instanz läuft. Bitte schließen Sie alle anderen {{appName}}-Prozesse oder starten Sie Ihren Computer neu.",
+    "findApplicationTitle": "Anwendung suchen",
+    "findApplicationMessage": "Wählen Sie den Speicherort der Anwendung",
+    "findApplicationButton": "Auswählen"
+  }
+}

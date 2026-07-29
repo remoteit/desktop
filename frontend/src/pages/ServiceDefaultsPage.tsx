@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ListItemBack } from '../components/ListItemBack'
 import { AccordionMenuItem } from '../components/AccordionMenuItem'
@@ -10,6 +11,7 @@ import { Notice } from '../components/Notice'
 import { Gutters } from '../components/Gutters'
 
 export const ServiceDefaultsPage: React.FC = () => {
+  const { t } = useTranslation()
   const { device, service } = React.useContext(DeviceContext)
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
@@ -18,10 +20,12 @@ export const ServiceDefaultsPage: React.FC = () => {
 
   return (
     <Gutters size="md" bottom={null}>
-      <ListItemBack title="Default Connection settings" to="connect" />
-      <AccordionMenuItem gutters subtitle="Defaults" defaultExpanded disabled>
+      <ListItemBack title={t('serviceDefaultsPage.title', 'Default Connection settings')} to="connect" />
+      <AccordionMenuItem gutters subtitle={t('serviceDefaultsPage.defaults', 'Defaults')} defaultExpanded disabled>
         <Gutters>
-          <Notice fullWidth>Default local settings for any connections to this service.</Notice>
+          <Notice fullWidth>
+            {t('serviceDefaultsPage.description', 'Default local settings for any connections to this service.')}
+          </Notice>
         </Gutters>
         <ConnectionDefaultsForm
           service={service}

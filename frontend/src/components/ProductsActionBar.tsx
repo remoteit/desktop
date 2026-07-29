@@ -3,6 +3,7 @@ import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Typography, Collapse } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { dispatch } from '../store'
@@ -22,6 +23,7 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const history = useHistory()
   const location = useLocation()
+  const { t } = useTranslation()
 
   const clearSelectMode = () => {
     const newParams = new URLSearchParams(location.search)
@@ -65,30 +67,37 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
         <Title>
           <Typography variant="subtitle1">
             {selected.length}&nbsp;
-            {mobile ? <Icon name="check" inline /> : 'Selected'}
+            {mobile ? <Icon name="check" inline /> : t('productsActionBar.selected', 'Selected')}
           </Typography>
         </Title>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ConfirmIconButton
             icon="trash"
-            title="Delete selected"
+            title={t('productsActionBar.deleteSelected', 'Delete selected')}
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
             loading={deleting}
             onClick={handleDelete}
             confirmProps={{
-              title: 'Confirm Product Deletion',
+              title: t('productsActionBar.confirmTitle', 'Confirm Product Deletion'),
               color: 'error',
-              action: `Delete ${selected.length} product${selected.length === 1 ? '' : 's'}`,
+              action: t('productsActionBar.confirmAction', {
+                count: selected.length,
+                defaultValue_one: 'Delete {{count}} product',
+                defaultValue_other: 'Delete {{count}} products',
+              }),
               children: (
                 <>
                   <Notice severity="error" gutterBottom fullWidth>
-                    This action cannot be undone.
+                    {t('common.cannotBeUndone', 'This action cannot be undone.')}
                   </Notice>
                   <Typography variant="body2">
-                    Are you sure you want to delete {selected.length} product
-                    {selected.length === 1 ? '' : 's'}?
+                    {t('productsActionBar.confirmBody', {
+                      count: selected.length,
+                      defaultValue_one: 'Are you sure you want to delete {{count}} product?',
+                      defaultValue_other: 'Are you sure you want to delete {{count}} products?',
+                    })}
                   </Typography>
                 </>
               ),
@@ -97,7 +106,7 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
           />
           <IconButton
             icon="times"
-            title="Clear selection"
+            title={t('productsActionBar.clearSelection', 'Clear selection')}
             color="alwaysWhite"
             placement="bottom"
             onClick={() => {

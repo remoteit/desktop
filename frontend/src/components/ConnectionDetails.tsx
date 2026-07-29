@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import useResizeObserver from 'use-resize-observer'
 import { replaceHost } from '@common/nameHelper'
 import { Application } from '@common/applications'
@@ -42,6 +43,7 @@ type Props = {
 }
 
 export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, connection, session, children }) => {
+  const { t } = useTranslation()
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
@@ -76,10 +78,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   const disabled = !(connection?.enabled || session) || !connection?.online
   const canCopy = copyReady(connection)
   const endpoint = getEndpoint(name, port)
-  const endpointName = (connection?.public || connection?.connectLink ? 'Public' : 'Local') + ' Endpoint'
+  const endpointName = connection?.public || connection?.connectLink
+    ? t('connectionDetails.publicEndpoint', 'Public Endpoint')
+    : t('connectionDetails.localEndpoint', 'Local Endpoint')
   const secureReverseProxy = isSecureReverseProxy(app.string)
   const secureIcon = secureReverseProxy === false && (
-    <Tooltip title="Local connection unencrypted">
+    <Tooltip title={t('connectionDetails.unencrypted', 'Local connection unencrypted')}>
       <Icon name="triangle-exclamation" size="base" type="solid" inlineLeft />
     </Tooltip>
   )
@@ -107,7 +111,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   const nameDisplay = (
     <Box sx={hover === 'host' ? showSx : hideSx}>
       <Typography variant="h5" color="alwaysWhite.main">
-        Host
+        {t('connectionDetails.host', 'Host')}
       </Typography>
       <Typography variant="h3" sx={h3Sx}>
         {secureIcon}
@@ -124,7 +128,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   const portDisplay = (
     <Box sx={hover === 'port' ? showSx : hideSx}>
       <Typography variant="h5" color="alwaysWhite.main">
-        Port
+        {t('connectionDetails.port', 'Port')}
       </Typography>
       <Typography variant="h3" sx={h3Sx}>
         {secureIcon}
@@ -172,7 +176,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
           {!!showTitle ? (
             <Gutters size="md">
               <Typography variant="h5" color="alwaysWhite.main">
-                User
+                {t('connectionDetails.user', 'User')}
               </Typography>
               <Typography variant="h2">{showTitle}</Typography>
             </Gutters>
@@ -197,22 +201,22 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                 instructions={
                   <>
                     <Typography variant="h3" gutterBottom>
-                      <b>Using a connection</b>
+                      <b>{t('connectionDetails.guideTitle', 'Using a connection')}</b>
                     </Typography>
                     <DesktopUI hide>
                       <Typography variant="body2" gutterBottom>
-                        A connection was created to this service.
+                        {t('connectionDetails.guideCreatedBrowser', 'A connection was created to this service.')}
                       </Typography>
                     </DesktopUI>
                     <DesktopUI>
                       <Typography variant="body2" gutterBottom>
-                        A fixed endpoint has been generated.
+                        {t('connectionDetails.guideCreatedDesktop', 'A fixed endpoint has been generated.')}
                       </Typography>
                     </DesktopUI>
                     <Typography variant="body2" gutterBottom>
-                      Copy the endpoint or launch the application according to the
-                      <cite> launch method </cite>
-                      configured in the connection configuration.
+                      {t('connectionDetails.guideCopyOrLaunchBefore', 'Copy the endpoint or launch the application according to the')}
+                      <cite> {t('connectionDetails.guideLaunchMethod', 'launch method')} </cite>
+                      {t('connectionDetails.guideCopyOrLaunchAfter', 'configured in the connection configuration.')}
                     </Typography>
                   </>
                 }
@@ -225,7 +229,10 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                 >
                   <span>
                     <Typography variant="h5" color="alwaysWhite.main" sx={{ my: 0.5 }}>
-                      Copy {hover === 'launch' ? '' : hover === 'copy' ? app.contextTitle : hover}
+                      {t('connectionDetails.copyLabel', {
+                        target: hover === 'launch' ? '' : hover === 'copy' ? app.contextTitle : hover,
+                        defaultValue: 'Copy {{target}}',
+                      })}
                     </Typography>
                     {canCopy && (
                       <>
@@ -277,7 +284,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                       sx={{ display: 'inline-flex', alignItems: 'center', flexDirection: 'column' }}
                     >
                       <Typography variant="h5" color="alwaysWhite.main" sx={{ my: 0.5 }}>
-                        Share
+                        {t('connectionDetails.share', 'Share')}
                       </Typography>
                       <CopyIconButton
                         color="alwaysWhite"
@@ -303,7 +310,10 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                         />
                       ) : (
                         <IconButton
-                          title="To launch, change your launch type to URL or download the desktop app"
+                          title={t(
+                            'connectionDetails.cannotLaunch',
+                            'To launch, change your launch type to URL or download the desktop app'
+                          )}
                           name="ban"
                           type="regular"
                           color="alwaysWhite"

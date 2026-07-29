@@ -4,6 +4,7 @@ import { ZENDESK_URL } from '../constants'
 import { RootModel } from '.'
 import { apiError } from '../helpers/apiHelper'
 import { fullVersion } from '../helpers/versionHelper'
+import i18n from '../i18n'
 
 type FeedbackParams = { [key: string]: any }
 
@@ -43,7 +44,11 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ successMessage: snackbar || 'Thank you. Your message was sent!' })
         dispatch.feedback.reset()
       } catch (error) {
-        dispatch.ui.set({ errorMessage: 'Sending message encountered an error. Please try again.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:feedback.sendError', {
+            defaultValue: 'Sending message encountered an error. Please try again.',
+          }),
+        })
         await apiError(error)
       }
     },

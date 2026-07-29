@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '../components/Icon'
 import { Title } from '../components/Title'
 import { Notice } from '../components/Notice'
@@ -19,6 +20,7 @@ import { selectTags } from '../selectors/tags'
 import { useLabel } from '../hooks/useLabel'
 
 export const TagsPage: React.FC = () => {
+  const { t } = useTranslation()
   const getColor = useLabel()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
@@ -54,13 +56,13 @@ export const TagsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1" gutterBottom>
-            <Title>Tags</Title>
+            <Title>{t('tagsPage.title', 'Tags')}</Title>
             {canEdit && (
               <TagEditor
                 createOnly
                 button="plus"
                 tags={tags}
-                buttonProps={{ title: 'Add Tag', loading: creating, disabled: creating }}
+                buttonProps={{ title: t('tagsPage.addTag', 'Add Tag'), loading: creating, disabled: creating }}
                 onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
               />
             )}
@@ -90,14 +92,14 @@ export const TagsPage: React.FC = () => {
             warning={
               <>
                 <Notice severity="error" gutterBottom fullWidth>
-                  You are deleting the tag&nbsp;
+                  {t('tagsPage.deletingTag', 'You are deleting the tag')}&nbsp;
                   <i>
                     <b>{tag.name}</b>
                   </i>
                   <br />
-                  This cannot be undone.
+                  {t('tagsPage.cannotBeUndone', 'This cannot be undone.')}
                 </Notice>
-                All devices will have this tag removed from them.
+                {t('tagsPage.allDevicesTagRemoved', 'All devices will have this tag removed from them.')}
               </>
             }
             onDelete={() => dispatch.tags.delete({ tag, accountId })}
@@ -112,15 +114,16 @@ export const TagsPage: React.FC = () => {
           setConfirm(undefined)
         }}
         onDeny={() => setConfirm(undefined)}
-        title="Merge tags?"
-        action="Merge"
+        title={t('tagsPage.mergeTagsConfirmTitle', 'Merge tags?')}
+        action={t('tagsPage.merge', 'Merge')}
       >
         <Notice severity="warning" gutterBottom fullWidth>
-          This cannot be undone.
+          {t('tagsPage.cannotBeUndone', 'This cannot be undone.')}
         </Notice>
         <Typography variant="body2">
-          You are about merge all instances of the <i>{confirm?.tag.name}</i> tag into the
-          <b> {confirm?.name}</b> tag.
+          {t('tagsPage.mergeInstructionsBefore', 'You are about merge all instances of the')} <i>{confirm?.tag.name}</i>{' '}
+          {t('tagsPage.mergeInstructionsMid', 'tag into the')}
+          <b> {confirm?.name}</b> {t('tagsPage.mergeInstructionsAfter', 'tag.')}
         </Typography>
       </Confirm>
     </Container>

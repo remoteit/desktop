@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Body } from '../../components/Body'
 import { Container } from '../../components/Container'
 import { Typography } from '@mui/material'
@@ -8,7 +9,8 @@ import { ConnectionStateIcon } from '../../components/ConnectionStateIcon'
 type Props = { connection?: IConnection; device?: boolean }
 
 export const UnauthorizedPage: React.FC<Props> = ({ connection, device }) => {
-  const name = device ? 'device' : 'service'
+  const { t } = useTranslation()
+  const name = device ? t('unauthorizedPage.device', 'device') : t('unauthorizedPage.service', 'service')
   return (
     <Container
       header={
@@ -20,10 +22,21 @@ export const UnauthorizedPage: React.FC<Props> = ({ connection, device }) => {
     >
       <Body center>
         <Typography variant="body1" align="center">
-          You are not authorized to access this {name}. <br />
-          To gain access, please have the device owner share it with you.
+          {t('unauthorizedPage.notAuthorized', {
+            name,
+            defaultValue: 'You are not authorized to access this {{name}}.',
+          })}{' '}
+          <br />
+          {t('unauthorizedPage.gainAccessHint', 'To gain access, please have the device owner share it with you.')}
         </Typography>
-        {connection && <Typography variant="caption">Device may have been removed ({connection.deviceID})</Typography>}
+        {connection && (
+          <Typography variant="caption">
+            {t('unauthorizedPage.deviceMayBeRemoved', {
+              deviceID: connection.deviceID,
+              defaultValue: 'Device may have been removed ({{deviceID}})',
+            })}
+          </Typography>
+        )}
       </Body>
     </Container>
   )

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import browser, { getOs } from '../../services/browser'
 import { safeHostname } from '@common/nameHelper'
 import { getAllDevices, selectDeviceModelAttributes } from '../../selectors/devices'
@@ -27,6 +28,7 @@ import { Icon } from '../../components/Icon'
 type Props = { className?: string; onClick?: () => void }
 
 export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
+  const { t } = useTranslation()
   const history = useHistory()
   const registered = useSelector((state: State) => !!state.backend.thisId)
   const hostname = useSelector((state: State) => safeHostname(state.backend.environment.hostname, []))
@@ -44,7 +46,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
   if (restoring)
     return (
       <List className={className} dense disablePadding>
-        <Notice loading={true}>Restoring device...</Notice>
+        <Notice loading={true}>{t('deviceSetupItem.restoring', 'Restoring device...')}</Notice>
       </List>
     )
 
@@ -54,14 +56,14 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
 
   if (registered) {
     if (ownDevice) {
-      secondary = 'Already created'
+      secondary = t('deviceSetupItem.alreadyCreated', 'Already created')
     } else {
-      secondary = 'This is not your system.'
+      secondary = t('deviceSetupItem.notYourSystem', 'This is not your system.')
       disabled = true
     }
   } else if (canRestore) {
     action = {
-      label: 'restore',
+      label: t('deviceSetupItem.restore', 'restore'),
       onClick: event => {
         event.preventDefault()
         history.push('/devices/restore')
@@ -76,10 +78,13 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
     <DesktopUI>
       <List className={className} dense disablePadding>
         <ListSubheader disableGutters>
-          This system
+          {t('deviceSetupItem.thisSystem', 'This system')}
           {registered && !ownDevice && (
             <Tooltip
-              title="This system is already registered to another user. You'll need to log in as the device's owner to manage it."
+              title={t(
+                'deviceSetupItem.alreadyRegistered',
+                "This system is already registered to another user. You'll need to log in as the device's owner to manage it."
+              )}
               placement="bottom"
               arrow
             >
@@ -98,11 +103,13 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
-                <b>Select a device</b>
+                <b>{t('deviceSetupItem.guideTitle', 'Select a device')}</b>
               </Typography>
               <Typography variant="body2" gutterBottom>
-                You can setup the device you are currently using, or follow the simple instructions to setup one of the
-                commonly used platforms.
+                {t(
+                  'deviceSetupItem.guideBody',
+                  'You can setup the device you are currently using, or follow the simple instructions to setup one of the commonly used platforms.'
+                )}
               </Typography>
             </>
           }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../../store'
@@ -17,6 +18,7 @@ import { Title } from '../Title'
 import { Icon } from '../Icon'
 
 export const NotificationSettings: React.FC = () => {
+  const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
   const { devices } = useDispatch<Dispatch>()
   const globalNotificationEmail = useSelector((state: State) => state.user.notificationSettings?.emailNotifications)
@@ -97,7 +99,7 @@ export const NotificationSettings: React.FC = () => {
   const chipOverridden = (value: string = 'inapp') => {
     return (
       <Chip
-        label="Custom"
+        label={t('notificationSettings.custom', 'Custom')}
         size="small"
         deleteIcon={<IconButton icon="times" size="xs" buttonBaseSize="small" />}
         onDelete={() => onClose(value)}
@@ -113,9 +115,9 @@ export const NotificationSettings: React.FC = () => {
   return (
     <>
       <Typography variant="subtitle1">
-        <Title>Device Notifications</Title>
+        <Title>{t('notificationSettings.title', 'Device Notifications')}</Title>
         <IconButton
-          title="Global Settings"
+          title={t('notificationSettings.globalSettings', 'Global Settings')}
           to="/settings/notifications"
           icon="sliders-h"
           color="grayDark"
@@ -128,7 +130,7 @@ export const NotificationSettings: React.FC = () => {
           <ListItemIcon>
             <Icon name={inapp ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
-          <ListItemText primary="System notification" />
+          <ListItemText primary={t('notificationSettings.systemNotification', 'System notification')} />
           <ListItemSecondaryAction>
             {inAppOverridden && chipOverridden('inapp')}
             <Switch edge="end" color="primary" checked={inapp} onClick={handleInAppNotifications} />
@@ -138,7 +140,7 @@ export const NotificationSettings: React.FC = () => {
           <ListItemIcon>
             <Icon name={email ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
-          <ListItemText primary="Email" />
+          <ListItemText primary={t('notificationSettings.email', 'Email')} />
           <ListItemSecondaryAction>
             {emailOverridden && chipOverridden('email')}
             <Switch edge="end" color="primary" checked={email} onClick={handleEmailNotifications} />

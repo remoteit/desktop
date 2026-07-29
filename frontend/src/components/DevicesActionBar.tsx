@@ -3,6 +3,7 @@ import { MOBILE_WIDTH } from '../constants'
 import { Box, Divider, Typography, InputLabel } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { selectLimitsLookup, selectPermissions } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
@@ -32,6 +33,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const mobile = containerWidth < MOBILE_WIDTH
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
+  const { t } = useTranslation()
 
   const onCreate = async tag => await dispatch.tags.create({ tag, accountId })
 
@@ -79,7 +81,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
     >
       <IconButton
         icon="times"
-        title="Clear selection"
+        title={t('deviceList.clearSelection', 'Clear selection')}
         color="alwaysWhite"
         placement="bottom"
         onClick={() => {
@@ -90,18 +92,18 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
       <Title sx={{ flexGrow: 0 }}>
         <Typography variant="subtitle1">
           {selected.length}&nbsp;
-          {mobile ? <Icon name="check" inline /> : 'Selected'}
+          {mobile ? <Icon name="check" inline /> : t('deviceList.selected', 'Selected')}
         </Typography>
       </Title>
       <Box sx={{ flexGrow: 1 }} />
       {feature.tagging && canEdit && (
         <>
-          {!mobile && <InputLabel shrink>tags</InputLabel>}
+          {!mobile && <InputLabel shrink>{t('deviceList.tagsLabel', 'tags')}</InputLabel>}
           <TagEditor
             button="plus"
             tags={tags}
             buttonProps={{
-              title: 'Add Tag',
+              title: t('deviceList.addTag', 'Add Tag'),
               color: 'alwaysWhite',
               placement: 'bottom',
               loading: adding,
@@ -113,11 +115,11 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           />
           <TagEditor
             button="minus"
-            placeholder="Remove a tag..."
+            placeholder={t('deviceList.removeTagPlaceholder', 'Remove a tag...')}
             allowAdding={false}
             tags={getSelectedTags(devices, selected)}
             buttonProps={{
-              title: 'Remove Tag',
+              title: t('deviceList.removeTag', 'Remove Tag'),
               color: 'alwaysWhite',
               placement: 'bottom',
               loading: removing,
@@ -133,11 +135,11 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
       {permissions.includes('SCRIPTING') && !mobile && (
         <>
           <InputLabel shrink sx={{ ml: 2 }}>
-            script
+            {t('deviceList.scriptLabel', 'script')}
           </InputLabel>
           <IconButton
             icon="chevron-right"
-            title="Choose Script"
+            title={t('deviceList.chooseScript', 'Choose Script')}
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
@@ -145,7 +147,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           />
           <IconButton
             icon="plus"
-            title="New Script"
+            title={t('deviceList.newScript', 'New Script')}
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}

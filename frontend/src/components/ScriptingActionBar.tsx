@@ -1,5 +1,6 @@
 import { Stack,Typography,useMediaQuery } from '@mui/material'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch,useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { IconButton } from '../buttons/IconButton'
@@ -9,6 +10,7 @@ import { radius } from '../styling'
 import { Icon } from './Icon'
 
 export const ScriptingActionBar: React.FC = () => {
+  const { t } = useTranslation()
   const selected = useSelector((state: State) => state.ui.selected)
   const scriptForm = useSelector((state: State) => state.ui.scriptForm)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
@@ -31,16 +33,24 @@ export const ScriptingActionBar: React.FC = () => {
       pr={1}
     >
       <Typography variant="subtitle2" color="alwaysWhite.main" fontWeight={800}>
-        Choose a script
+        {t('scriptingActionBar.chooseScript', 'Choose a script')}
       </Typography>
       <Stack flexDirection="row" alignItems="center" gap={1}>
         <Typography variant="caption" color="alwaysWhite.main" height="1.5em">
           {selected.length}&nbsp;
-          {mobile ? <Icon name="check" inline /> : `device${selected.length > 1 ? 's' : ''} selected`}
+          {mobile ? (
+            <Icon name="check" inline />
+          ) : (
+            t('scriptingActionBar.devicesSelected', {
+              count: selected.length,
+              defaultValue_one: 'device selected',
+              defaultValue_other: 'devices selected',
+            })
+          )}
         </Typography>
         <IconButton
           icon="times"
-          title="Clear selection"
+          title={t('scriptingActionBar.clearSelection', 'Clear selection')}
           color="alwaysWhite"
           placement="bottom"
           onClick={() => {

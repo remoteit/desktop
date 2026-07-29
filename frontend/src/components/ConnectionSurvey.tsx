@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import sleep from '../helpers/sleep'
 import { setConnection } from '../helpers/connectionHelper'
 import { Typography, Collapse, Paper, Button, Theme } from '@mui/material'
@@ -62,6 +63,7 @@ type Props = {
 }
 
 export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => {
+  const { t } = useTranslation()
   const user = useSelector((state: State) => state.user)
   const dispatch = useDispatch<Dispatch>()
   const [rated, setRated] = useState<number | null>(null)
@@ -105,31 +107,36 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => 
       <Gutters bottom={null} size="md">
         {rated === 100 ? (
           <Paper elevation={0} sx={[layoutSx, surveySx]}>
-            <Typography variant="body2">Thank you for your feedback!</Typography>
+            <Typography variant="body2">
+              {t('connectionSurvey.thankYou', 'Thank you for your feedback!')}
+            </Typography>
           </Paper>
         ) : rated === 50 || rated === 0 ? (
           <Paper elevation={0} sx={layoutSx}>
             <IconButton size="sm" name="times" onClick={resetRating} />
             <Typography variant="subtitle2" gutterBottom>
-              Let us know what happened.
+              {t('connectionSurvey.whatHappened', 'Let us know what happened.')}
             </Typography>
             <Typography variant="body2" gutterBottom>
-              Please provide additional information so that we may improve your future connections.
+              {t(
+                'connectionSurvey.improveMessage',
+                'Please provide additional information so that we may improve your future connections.'
+              )}
             </Typography>
             <Typography variant="caption">
               <Button variant="contained" size="small" onClick={sendFeedback}>
-                Give Feedback
+                {t('connectionSurvey.giveFeedback', 'Give Feedback')}
               </Button>
               <Countdown endTime={Date.now() + FEEDBACK_DISMISS} />
             </Typography>
           </Paper>
         ) : (
           <Paper elevation={0} sx={[layoutSx, surveySx, highlight ? highlightSx : {}]}>
-            How was your last connection?
+            {t('connectionSurvey.howWasConnection', 'How was your last connection?')}
             <span>
               <IconButton
                 onClick={() => handleRating(100)}
-                title="Good"
+                title={t('connectionSurvey.good', 'Good')}
                 placement="top"
                 name="face-smile"
                 color="success"
@@ -137,7 +144,7 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => 
               />
               <IconButton
                 onClick={() => handleRating(50)}
-                title="Okay"
+                title={t('connectionSurvey.okay', 'Okay')}
                 placement="top"
                 name="face-confused"
                 color="warning"
@@ -145,7 +152,7 @@ export const ConnectionSurvey: React.FC<Props> = ({ connection, highlight }) => 
               />
               <IconButton
                 onClick={() => handleRating(0)}
-                title="Bad"
+                title={t('connectionSurvey.bad', 'Bad')}
                 placement="top"
                 name="face-frown-slight"
                 color="danger"

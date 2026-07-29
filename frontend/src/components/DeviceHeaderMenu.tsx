@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { Box, Typography } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
@@ -12,6 +13,7 @@ import { Gutters } from './Gutters'
 import { Title } from './Title'
 
 export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNode }> = ({ header, children }) => {
+  const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
 
   if (!device) return <LoadingMessage />
@@ -23,13 +25,13 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
       header={
         <>
           <Typography variant="h1" sx={{ alignItems: 'center', width: '100%', gap: 1 }}>
-            <Title>{device.name || 'Unknown'}</Title>
+            <Title>{device.name || t('deviceHeaderMenu.unknown', 'Unknown')}</Title>
             <Box display="flex" alignItems="center">
               <MobileUI hide>
                 <ShareButton
                   to={`/devices/${device.id}/share`}
                   hide={!device.permissions.includes('MANAGE')}
-                  title="Share access"
+                  title={t('deviceHeaderMenu.shareAccess', 'Share access')}
                 />
               </MobileUI>
             </Box>
@@ -43,7 +45,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
           )}
           <ListHorizontal dense>
             <ListItemLocation
-              title="Details"
+              title={t('deviceHeaderMenu.details', 'Details')}
               icon="info-circle"
               iconColor="grayDarker"
               to={`/devices/${device.id}/details`}
@@ -52,7 +54,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               dense
             />
             <ListItemLocation
-              title="Configure"
+              title={t('deviceHeaderMenu.configure', 'Configure')}
               icon="sliders"
               iconColor="grayDarker"
               to={`/devices/${device.id}/edit`}
@@ -60,7 +62,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
             />
             <UsersTab instance={device} to={`/devices/${device.id}/users`} />
             <ListItemLocation
-              title="Logs"
+              title={t('deviceHeaderMenu.logs', 'Logs')}
               icon="file-alt"
               iconColor="grayDarker"
               to={`/devices/${device.id}/logs`}

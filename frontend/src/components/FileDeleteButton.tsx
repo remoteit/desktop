@@ -3,6 +3,7 @@ import { Dispatch } from '../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { selectPermissions } from '../selectors/organizations'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Notice } from './Notice'
 
@@ -11,15 +12,16 @@ export const FileDeleteButton: React.FC = () => {
   const permissions = useSelector(selectPermissions)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
+  const { t } = useTranslation()
 
   if (!permissions.includes('ADMIN') || !fileID) return null
 
   return (
     <DeleteButton
-      title="Delete File"
+      title={t('fileDeleteButton.title', 'Delete File')}
       warning={
         <Notice severity="error" fullWidth>
-          This can not be undone.
+          {t('fileDeleteButton.warning', 'This can not be undone.')}
         </Notice>
       }
       onDelete={async () => {

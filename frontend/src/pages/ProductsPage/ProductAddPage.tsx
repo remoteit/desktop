@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { Typography, Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 import { Container } from '../../components/Container'
@@ -17,6 +18,7 @@ interface IPlatformType {
 }
 
 export const ProductAddPage: React.FC = () => {
+  const { t } = useTranslation()
   const history = useHistory()
   const [name, setName] = useState('')
   const [platform, setPlatform] = useState('')
@@ -36,11 +38,11 @@ export const ProductAddPage: React.FC = () => {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      setError('Product name is required')
+      setError(t('productAddPage.nameRequired', 'Product name is required'))
       return
     }
     if (!platform) {
-      setError('Platform is required')
+      setError(t('productAddPage.platformRequired', 'Platform is required'))
       return
     }
 
@@ -55,7 +57,7 @@ export const ProductAddPage: React.FC = () => {
     if (product) {
       history.push(`/products/${product.id}`)
     } else {
-      setError('Failed to create product')
+      setError(t('productAddPage.createFailed', 'Failed to create product'))
       setCreating(false)
     }
   }
@@ -67,7 +69,7 @@ export const ProductAddPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Typography variant="h1">
-          <Title>Create Product</Title>
+          <Title>{t('productAddPage.title', 'Create Product')}</Title>
         </Typography>
       }
     >
@@ -80,7 +82,7 @@ export const ProductAddPage: React.FC = () => {
 
         <TextField
           variant="filled"
-          label="Product Name"
+          label={t('productAddPage.productName', 'Product Name')}
           value={name}
           onChange={e => setName(e.target.value)}
           fullWidth
@@ -91,11 +93,11 @@ export const ProductAddPage: React.FC = () => {
         />
 
         <FormControl variant="filled" fullWidth margin="normal" required>
-          <InputLabel>Platform</InputLabel>
+          <InputLabel>{t('productAddPage.platform', 'Platform')}</InputLabel>
           <Select
             value={platform}
             onChange={e => setPlatform(e.target.value)}
-            label="Platform"
+            label={t('productAddPage.platform', 'Platform')}
             disabled={creating || platformTypes.length === 0}
           >
             {platformTypes
@@ -110,16 +112,16 @@ export const ProductAddPage: React.FC = () => {
 
         <Gutters top="lg" size={null}>
           <Button onClick={() => history.push('/products')} disabled={creating}>
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </Button>
           <Button variant="contained" color="primary" onClick={handleCreate} disabled={creating}>
             {creating ? (
               <>
                 <Icon name="spinner-third" spin size="sm" inline />
-                Creating...
+                {t('productAddPage.creating', 'Creating...')}
               </>
             ) : (
-              'Create Product'
+              t('productAddPage.title', 'Create Product')
             )}
           </Button>
         </Gutters>

@@ -11,6 +11,7 @@ export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https:
 export const GRAPHQL_API = env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
 export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
+export const PORTAL_URL = env.VITE_PORTAL_URL || brand.package?.homepage || 'https://app.remote.it'
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 export const PROTOCOL = env.PROTOCOL || `${brand.name}://`

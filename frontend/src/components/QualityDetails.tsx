@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from './Icon'
 import { Quote } from './Quote'
 import { Percent } from './Percent'
@@ -6,22 +7,23 @@ import { Round } from './Round'
 import { Typography, Divider, Box } from '@mui/material'
 
 export const QualityDetails: React.FC<{ device?: IDevice; small?: boolean }> = ({ device, small }) => {
-  let title: string = 'Unknown'
+  const { t } = useTranslation()
+  let title: string = t('qualityDetails.unknown', 'Unknown')
   let color: Color = 'gray'
 
   if (!device) return null
 
   switch (device.quality) {
     case 'GOOD':
-      title = 'Good'
+      title = t('qualityDetails.good', 'Good')
       color = 'success'
       break
     case 'MODERATE':
-      title = 'Moderate'
+      title = t('qualityDetails.moderate', 'Moderate')
       color = 'warning'
       break
     case 'POOR':
-      title = 'Poor'
+      title = t('qualityDetails.poor', 'Poor')
       color = 'danger'
       break
   }
@@ -39,15 +41,17 @@ export const QualityDetails: React.FC<{ device?: IDevice; small?: boolean }> = (
       <Quote>
         <Divider orientation="vertical" />
         <Typography variant="body2">
-          Availability: <Percent value={device.availability} />
+          {t('qualityDetails.availability', 'Availability:')} <Percent value={device.availability} />
         </Typography>
-        <Typography variant="caption">Average time online per day.</Typography>
+        <Typography variant="caption">{t('qualityDetails.availabilityCaption', 'Average time online per day.')}</Typography>
         <br />
         <br />
         <Typography variant="body2">
-          Instability: <Round value={device.instability} />
+          {t('qualityDetails.instability', 'Instability:')} <Round value={device.instability} />
         </Typography>
-        <Typography variant="caption">Average number of disconnects per day.</Typography>
+        <Typography variant="caption">
+          {t('qualityDetails.instabilityCaption', 'Average number of disconnects per day.')}
+        </Typography>
       </Quote>
     </Box>
   )

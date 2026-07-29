@@ -1,5 +1,6 @@
 import React from 'react'
 import isEqual from 'lodash.isequal'
+import { useTranslation } from 'react-i18next'
 import { Dispatch } from '../store'
 import { defaultState } from '../models/devices'
 import { useSelector, useDispatch } from 'react-redux'
@@ -12,13 +13,14 @@ import { Icon } from './Icon'
 const SCREEN_VIEW_ID = 48
 
 export const DevicesApplicationsTabs: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const allTypes = [...useSelector(selectApplicationTypesGrouped)]
   const { applicationTypes } = useSelector(selectDeviceModelAttributes)
 
   if (!allTypes.length) return null
 
-  let selection = allTypes.findIndex(t => isEqual(applicationTypes, t.ids))
+  let selection = allTypes.findIndex(type => isEqual(applicationTypes, type.ids))
 
   const update = async (updated?: number[]) => {
     await dispatch.devices.set({ applicationTypes: updated, from: defaultState.from })
@@ -32,7 +34,7 @@ export const DevicesApplicationsTabs: React.FC = () => {
       TabIndicatorProps={{ sx: { display: 'none' } }}
       sx={{ marginX: 3, marginY: 1 }}
     >
-      <MasterTab label="All Services" onClick={() => update(undefined)} />
+      <MasterTab label={t('devicesApplicationsTabs.allServices', 'All Services')} onClick={() => update(undefined)} />
       {allTypes.map(app => {
         return app.ids.includes(SCREEN_VIEW_ID) ? (
           <Tab
@@ -40,7 +42,7 @@ export const DevicesApplicationsTabs: React.FC = () => {
             label={
               <Stack flexDirection="row" alignItems="center">
                 <Icon name="android-screenview" size="xxs" platformIcon currentColor />
-                &nbsp; ScreenView
+                &nbsp; {t('devicesApplicationsTabs.screenView', 'ScreenView')}
               </Stack>
             }
             onClick={() => update([SCREEN_VIEW_ID])}
