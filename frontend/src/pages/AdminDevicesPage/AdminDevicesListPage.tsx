@@ -1,7 +1,7 @@
 import { Box, Button, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { Container } from '../../components/Container'
 import { GridList } from '../../components/GridList'
 import { Gutters } from '../../components/Gutters'
@@ -15,6 +15,7 @@ import { adminDeviceAttributes } from './adminDeviceAttributes'
 
 export const AdminDevicesListPage: React.FC = () => {
   const history = useHistory()
+  const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const [searchInput, setSearchInput] = useState('')
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
@@ -81,10 +82,9 @@ export const AdminDevicesListPage: React.FC = () => {
     }
   }
 
-  const handleDeviceClick = (ownerId?: string) => {
-    if (!ownerId) return
-    const route = `/admin/users/${ownerId}`
-    dispatch.ui.setDefaultSelected({ key: '/admin/users', value: route, accountId: 'admin' })
+  const handleDeviceClick = (deviceId: string) => {
+    const route = `/admin/devices/${deviceId}`
+    dispatch.ui.setDefaultSelected({ key: '/admin/devices', value: route, accountId: 'admin' })
     history.push(route)
   }
 
@@ -148,7 +148,8 @@ export const AdminDevicesListPage: React.FC = () => {
               device={device}
               required={required}
               attributes={attributes}
-              onClick={() => handleDeviceClick(device.owner?.id)}
+              active={location.pathname.includes(`/admin/devices/${device.id}`)}
+              onClick={() => handleDeviceClick(device.id)}
             />
           ))}
           {hasMore && (

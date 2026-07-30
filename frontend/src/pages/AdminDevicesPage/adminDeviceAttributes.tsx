@@ -7,6 +7,7 @@ export type AdminDeviceAttributeOptions = {
 
 export class AdminDeviceAttribute extends Attribute<AdminDeviceAttributeOptions> {
   type: Attribute['type'] = 'MASTER'
+  translate = false // internal-only admin registry: render English, skip columns.* translation
 }
 
 export const adminDeviceAttributes: AdminDeviceAttribute[] = [
