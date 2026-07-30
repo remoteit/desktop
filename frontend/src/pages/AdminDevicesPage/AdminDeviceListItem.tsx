@@ -9,17 +9,19 @@ interface Props {
   device: AdminDevice
   required?: AdminDeviceAttribute
   attributes: AdminDeviceAttribute[]
+  active?: boolean
   onClick: () => void
 }
 
-export const AdminDeviceListItem: React.FC<Props> = ({ device, required, attributes, onClick }) => {
-  const active = device.state === 'active'
+export const AdminDeviceListItem: React.FC<Props> = ({ device, required, attributes, active, onClick }) => {
+  const online = device.state === 'active'
 
   return (
     <GridListItem
       onClick={onClick}
+      selected={active}
       disableGutters
-      icon={<Icon name="router" size="md" color={active ? 'primary' : 'grayDark'} />}
+      icon={<Icon name="router" size="md" color={online ? 'primary' : 'grayDark'} />}
       required={required?.value({ device })}
     >
       {attributes.map(attribute => (

@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import type { RootModel } from '.'
-import { graphQLAdminDevices } from '../services/graphQLRequest'
+import { graphQLAdminDevice, graphQLAdminDevices } from '../services/graphQLRequest'
 
 export interface AdminDevice {
   id: string
@@ -28,6 +28,7 @@ interface AdminDevicesState {
   pageSize: number
   searchValue: string
   searchType: AdminDeviceSearchType
+  detailCache: { [deviceId: string]: AdminDevice }
 }
 
 const initialState: AdminDevicesState = {
@@ -39,6 +40,7 @@ const initialState: AdminDevicesState = {
   pageSize: 50,
   searchValue: '',
   searchType: 'name',
+  detailCache: {},
 }
 
 function searchFilters(searchValue: string, searchType: AdminDeviceSearchType) {
@@ -92,6 +94,18 @@ export const adminDevices = createModel<RootModel>()({
       searchType: payload.searchType,
       page: 1, // Reset to first page on new search
     }),
+    cacheDeviceDetail: (state, payload: { deviceId: string; device: AdminDevice }) => {
+      // Merge so the sparse list row (name/state/owner) doesn't clobber detail-only fields
+      // already cached (services, endpoint, access, ...).
+      const existing = state.detailCache[payload.deviceId]
+      return {
+        ...state,
+        detailCache: {
+          ...state.detailCache,
+          [payload.deviceId]: existing ? { ...existing, ...payload.device } : payload.device,
+        },
+      }
+    },
     reset: () => initialState,
   },
   effects: dispatch => ({
@@ -143,6 +157,23 @@ export const adminDevices = createModel<RootModel>()({
       if (rootState.adminDevices.devices.length === 0) {
         await dispatch.adminDevices.fetch(undefined)
       }
+    },
+    async fetchDeviceDetail(payload: string | { deviceId: string; force?: boolean }, rootState) {
+      const { deviceId, force } = typeof payload === 'string' ? { deviceId: payload, force: false } : payload
+
+      // Serve from cache unless a forced refresh is requested; on force we keep the existing
+      // entry visible and overwrite it when fresh data lands (cacheDeviceDetail merges).
+      const cached = rootState.adminDevices.detailCache[deviceId]
+      if (cached?.services && !force) return cached
+
+      const result = await graphQLAdminDevice(deviceId)
+      const device = result !== 'ERROR' ? result?.data?.data?.admin?.devices?.items?.[0] : undefined
+
+      if (device) {
+        dispatch.adminDevices.cacheDeviceDetail({ deviceId, device })
+        return device
+      }
+      return cached || null
     },
   }),
 })

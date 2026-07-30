@@ -1036,3 +1036,64 @@ export async function graphQLAdminDevices(
     }
   )
 }
+
+export async function graphQLAdminDevice(deviceId: string) {
+  return await graphQLBasicRequest(
+    ` query AdminDevice($deviceId: String) {
+        admin {
+          devices(from: 0, size: 1, deviceId: $deviceId) {
+            items {
+              id
+              name
+              state
+              platform
+              version
+              hardwareId
+              license
+              created
+              lastReported
+              configurable
+              scriptable
+              owner {
+                id
+                email
+              }
+              endpoint {
+                externalAddress
+                internalAddress
+                availability
+                quality
+                onlineSince
+                offlineSince
+                geo {
+                  connectionType
+                  countryName
+                  stateName
+                  city
+                  isp
+                }
+              }
+              access {
+                user {
+                  id
+                  email
+                }
+                scripting
+              }
+              services {
+                id
+                name
+                state
+                port
+                type
+                application
+                license
+                lastReported
+              }
+            }
+          }
+        }
+      }`,
+    { deviceId }
+  )
+}
