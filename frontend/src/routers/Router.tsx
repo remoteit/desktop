@@ -58,6 +58,7 @@ import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { AdminUsersWithDetailPage } from '../pages/AdminUsersPage/AdminUsersWithDetailPage'
+import { AdminDevicesListPage } from '../pages/AdminDevicesPage/AdminDevicesListPage'
 import { AdminConfirmPage } from '../pages/AdminConfirmPage'
 import { AdminAdminsPage } from '../pages/AdminAdminsPage/AdminAdminsPage'
 import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
@@ -434,6 +435,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
               <Route path="/admin/notices/:noticeId?">
                 <AdminNoticesPage />
+              </Route>
+              <Route path="/admin/devices">
+                <AdminDevicesListPage />
               </Route>
               <Redirect to="/admin/users" />
             </Switch>
