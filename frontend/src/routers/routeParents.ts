@@ -119,6 +119,7 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/admin/users/:userId', '/admin/users'],
   ['/admin/partners/:partnerId', '/admin/partners'],
   ['/admin/notices/:noticeId', '/admin/notices'],
+  ['/admin/devices/:deviceId', '/admin/devices'],
 
   // Onboard
   ['/onboard/:platform/scanning', '/onboard/:platform'],
@@ -139,6 +140,10 @@ const ROUTE_PARENTS: [string, string][] = [
  * sections the left panel is a menu, so the parent list only exists in the
  * secondary panel — UP must follow ROUTE_PARENTS one level at a time.
  */
-export const MENU_SECTIONS = ['/account', '/organization', '/settings']
+// Sections whose left panel is a menu rather than the section's own list, so UP has to follow
+// the ROUTE_PARENTS map instead of falling back to the section root. /admin qualifies: its
+// sidebar is a menu and /admin redirects to /admin/users, so the fallback would land every
+// admin sub-page on the users list regardless of which page it came from.
+export const MENU_SECTIONS = ['/account', '/organization', '/settings', '/admin']
 
 export default ROUTE_PARENTS
