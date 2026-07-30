@@ -989,3 +989,50 @@ export async function graphQLAllNotices() {
       }`
   )
 }
+
+export async function graphQLAdminDevices(
+  options: { from?: number; size?: number },
+  filters?: {
+    search?: string
+    name?: string
+    nameContains?: string
+    deviceId?: string
+    email?: string
+    accountId?: string
+    hardwareId?: string
+  },
+  sort?: string
+) {
+  return await graphQLBasicRequest(
+    ` query AdminDevices($from: Int, $size: Int, $search: String, $name: String, $nameContains: String, $deviceId: String, $email: String, $accountId: String, $hardwareId: String, $sort: String) {
+        admin {
+          devices(from: $from, size: $size, search: $search, name: $name, nameContains: $nameContains, deviceId: $deviceId, email: $email, accountId: $accountId, hardwareId: $hardwareId, sort: $sort) {
+            items {
+              id
+              name
+              state
+              created
+              owner {
+                id
+                email
+              }
+            }
+            total
+            hasMore
+          }
+        }
+      }`,
+    {
+      from: options.from,
+      size: options.size,
+      search: filters?.search,
+      name: filters?.name,
+      nameContains: filters?.nameContains,
+      deviceId: filters?.deviceId,
+      email: filters?.email,
+      accountId: filters?.accountId,
+      hardwareId: filters?.hardwareId,
+      sort,
+    }
+  )
+}
