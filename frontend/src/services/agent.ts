@@ -3,9 +3,11 @@
  * the client holds the transcript and resends it each turn.
  */
 
-// Dev: relative path served by the vite proxy (same-origin, CSP-clean).
-// Staging/prod: set VITE_AGENT_URL to the deployed agent service domain.
-export const AGENT_URL = import.meta.env.VITE_AGENT_URL || '/agent'
+// Dev: relative path served by the vite proxy (same-origin, CSP-clean) —
+// always, even when VITE_AGENT_URL is set, so dev stays on the proxy and
+// out of CORS. Builds have no proxy: VITE_AGENT_URL names the deployed
+// agent domain (https — the app's CSP only allows https: connections).
+export const AGENT_URL = import.meta.env.DEV ? '/agent' : import.meta.env.VITE_AGENT_URL || '/agent'
 
 // Hydra credentials for the agent service (AUTH_MODE=hydra), written by the
 // in-app sign-in flow (services/hydra.ts) — or a token pasted from the
