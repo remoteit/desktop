@@ -1540,6 +1540,20 @@
     "onboardQuestion": "¿Tienes nuestra imagen personalizada de Pi?",
     "onboardTitle": "Incorporar mediante Bluetooth"
   },
+  "refreshButton": {
+    "account": "Actualizar cuenta",
+    "application": "Actualizar aplicación",
+    "connections": "Actualizar conexiones",
+    "device": "Actualizar {{name}}",
+    "deviceLogs": "Actualizar registros de {{name}}",
+    "devices": "Actualizar dispositivos",
+    "logs": "Actualizar registros",
+    "networks": "Actualizar redes",
+    "partnerStats": "Actualizar estadísticas de socios",
+    "products": "Actualizar productos",
+    "script": "Actualizar script",
+    "scripts": "Actualizar scripts"
+  },
   "rentANodeForm": {
     "addDns": "Añadir una dirección DNS pública",
     "addIpv6": "Añadir una dirección IPv6 pública",
