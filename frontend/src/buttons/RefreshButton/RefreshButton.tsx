@@ -30,6 +30,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const networkPage = useRouteMatch('/networks')
   const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
   const devicesPage = useRouteMatch('/devices')
+  const addDevicePage = useRouteMatch(['/add', '/onboard'])
   const productsPage = useRouteMatch('/products')
   const accountPage = useRouteMatch('/account')
   const partnerStatsPage = useRouteMatch('/partner-stats')
@@ -88,6 +89,15 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
         await dispatch.devices.set({ from: 0 })
         await dispatch.devices.fetchList()
       }
+    })
+
+    // add device pages and sub pages - refresh the device list so a newly
+    // registered device shows up without leaving the add flow
+  } else if (addDevicePage) {
+    title = 'Refresh devices'
+    methods.push(async () => {
+      await dispatch.devices.set({ from: 0 })
+      await dispatch.devices.fetchList()
     })
 
     // products pages
