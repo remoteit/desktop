@@ -136,6 +136,10 @@ class CloudController {
   }
 
   authenticate = async () => {
+    // Capture the socket before awaiting the token: signing out mid-flight replaces
+    // it, and sending this subscribe on the successor would double up its
+    // subscription - every device event would then be processed twice.
+    const socket = this.socket
     const message = JSON.stringify({
       action: 'subscribe',
       // Opt in to bulk-frame delivery on the server. The notify Lambda
@@ -266,7 +270,11 @@ class CloudController {
         }
       }`,
     })
-    this.socket?.send(message)
+    if (socket !== this.socket) {
+      this.log('STALE AUTHENTICATE - SOCKET REPLACED')
+      return
+    }
+    socket?.send(message)
   }
 
   onMessage = response => {
