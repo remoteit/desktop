@@ -2,11 +2,19 @@ import { dispatch } from '../store'
 import { EventEmitter } from 'events'
 
 class Network extends EventEmitter {
-  // connect, disconnect, change events are emitted
+  // connect, active, disconnect, change events are emitted
+  //
+  // connect - connectivity is back, so anything holding a socket should re-open it.
+  //   Fires whether or not the window has focus: a backgrounded app that waits for
+  //   focus sits with dead sockets, and the cloud socket in particular has no other
+  //   way back (close() drops its listeners, so it can't self-retry).
+  // active - connectivity is back AND the window has focus. For the expensive work
+  //   (a full cloud sync) that's only worth doing when someone is looking at it.
 
   tickDuration = 60 * 1000 // 1 minute
   sleepDuration = 10 * this.tickDuration // 10 minutes
   shouldConnect: boolean = false
+  shouldSync: boolean = false
   interval?: NodeJS.Timeout
   then = 0
 
@@ -40,6 +48,7 @@ class Network extends EventEmitter {
   awake = () => {
     this.log('WAKE')
     this.shouldConnect = true
+    this.shouldSync = true
     this.connect()
   }
 
@@ -54,6 +63,7 @@ class Network extends EventEmitter {
       offline: { title: 'Disconnected', message: 'Internet access is required.', severity: 'warning' },
     })
     this.shouldConnect = true
+    this.shouldSync = true
     this.emit('disconnect')
   }
 
@@ -61,14 +71,26 @@ class Network extends EventEmitter {
     if (!navigator.onLine) return
     this.log('NETWORK ONLINE')
     dispatch.ui.set({ offline: undefined })
+    // the browser only fires this on a transition, so it's the definitive
+    // "connectivity restored" signal - don't depend on a matching offline event
+    // having set these, it may have been consumed or missed
+    this.shouldConnect = true
+    this.shouldSync = true
     this.connect()
   }
 
   connect = () => {
-    if (this.shouldConnect && this.isActive()) {
+    // sockets come back as soon as there is a network, focused or not
+    if (this.shouldConnect && navigator.onLine) {
       this.shouldConnect = false
       this.log('CONNECT')
       this.emit('connect')
+    }
+    // re-syncing everything is expensive, so it waits for the window to be in front
+    if (this.shouldSync && this.isActive()) {
+      this.shouldSync = false
+      this.log('ACTIVE')
+      this.emit('active')
     }
   }
 

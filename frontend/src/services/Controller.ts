@@ -23,9 +23,8 @@ class Controller extends EventEmitter {
     network.on('connect', this.onNetworkConnect)
     // Deliberately no 'disconnect' listener. This socket talks to the backend on
     // 127.0.0.1, which stays reachable when internet access drops - closing it
-    // would blind the UI to local connection state for no reason, and reopening
-    // depends on network's 'connect', which is gated on window focus. Losing the
-    // local backend instead surfaces through socket.io's own reconnection.
+    // would blind the UI to local connection state for no reason. Losing the local
+    // backend is a different failure, and socket.io's own reconnection covers it.
   }
 
   log(...args) {
