@@ -21,7 +21,11 @@ class Controller extends EventEmitter {
     this.onNetworkConnect()
     if (!navigator.onLine) network.offline()
     network.on('connect', this.onNetworkConnect)
-    network.on('disconnect', this.close)
+    // Deliberately no 'disconnect' listener. This socket talks to the backend on
+    // 127.0.0.1, which stays reachable when internet access drops - closing it
+    // would blind the UI to local connection state for no reason, and reopening
+    // depends on network's 'connect', which is gated on window focus. Losing the
+    // local backend instead surfaces through socket.io's own reconnection.
   }
 
   log(...args) {
@@ -33,7 +37,12 @@ class Controller extends EventEmitter {
     const { ui, auth } = store.dispatch
 
     if (!navigator.onLine) return
-    if (state.auth.backendAuthenticated) {
+    // Signed in is the condition for re-opening, not backendAuthenticated: a
+    // dropped socket clears that flag (auth.disconnect), so keying off it meant
+    // waking from sleep took the auth.init() branch, which no-ops once a user is
+    // in state - the re-connect nudge never actually ran. auth isn't persisted,
+    // so at startup this is still false and initial sign in is unaffected.
+    if (state.auth.authenticated) {
       this.log('-- ONLINE AUTHORIZED RE-CONNECT')
       this.open()
     } else {
@@ -48,6 +57,16 @@ class Controller extends EventEmitter {
     this.handlers = getEventHandlers()
 
     if (!browser.hasBackend) return
+
+    // Re-auth (token refresh, or signing back in) calls this again. Drop the
+    // previous socket first - listeners are removed before closing so its
+    // disconnect handler doesn't fire, and its handlers can't double dispatch
+    // every backend event onto the new connection's.
+    if (this.socket) {
+      this.log('REPLACING LOCAL SOCKET')
+      this.socket.removeAllListeners()
+      this.socket.close()
+    }
 
     this.socket = io(this.url, {
       transports: ['websocket'],
@@ -96,7 +115,9 @@ class Controller extends EventEmitter {
     }
   }
 
-  close() {
+  // arrow so `this` survives if it's ever passed as a callback - as an unbound
+  // method an emitter calls it with itself as `this` and it closes nothing
+  close = () => {
     this.log('CLOSE LOCAL SOCKET')
     this.socket?.close()
   }
