@@ -47,7 +47,11 @@ class Controller extends EventEmitter {
     } else {
       this.log('1- ONLINE AUTHORIZE AND CONNECT')
       ui.set({ errorMessage: '' })
-      auth.init()
+      // This is the app's only entry into auth.init, so it has to run whether or
+      // not the window has focus - a window launched in the background still has
+      // to sign in. Unfocused, though, nobody asked for this and nobody is
+      // watching, so a failed session check shouldn't leave a toast waiting.
+      auth.init({ silent: !document.hasFocus() })
     }
   }
 
@@ -101,6 +105,10 @@ class Controller extends EventEmitter {
 
   // Retry open with delay, force skips delay
   open(retry?: boolean, force?: boolean) {
+    // Nothing to open without a local backend (portal/mobile) - setupConnection
+    // never made a socket there, so this would only schedule a timeout to clear
+    // the offline notice as a side effect.
+    if (!browser.hasBackend) return
     if (force || (navigator.onLine && !this.socket?.connected && !this.retrying)) {
       this.retrying = setTimeout(
         () => {
