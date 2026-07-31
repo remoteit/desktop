@@ -39,6 +39,7 @@ class CloudController {
   init() {
     if (this.initialized) {
       console.warn('CLOUD CONTROLLER ALREADY INITIALIZED')
+      this.connect() // no-op if the socket is still up, recovers it if it was closed
       return
     }
     this.connect()
@@ -74,6 +75,9 @@ class CloudController {
   startPing() {
     if (this.timer) clearInterval(this.timer)
     this.log('START PING', this.pingInterval)
+    // reset the pong clock so a stale timestamp from a previous connection
+    // doesn't make the first ping of this one look unanswered
+    this.pongReceived = Date.now()
     this.timer = setInterval(this.ping, this.pingInterval)
   }
 
@@ -104,6 +108,21 @@ class CloudController {
     this.socket?.removeEventListener('error', this.onError)
     this.socket?.close()
     delete this.socket
+  }
+
+  /**
+   * Tear down for sign out. Unlike close(), which only drops the socket and
+   * expects a network event to bring it back, this clears initialized and the
+   * network listeners so the next signedIn() can init() from scratch.
+   */
+  reset = () => {
+    this.log('RESET')
+    this.close()
+    if (this.timer) clearInterval(this.timer)
+    this.timer = undefined
+    network.off('connect', this.reconnect)
+    network.off('disconnect', this.close)
+    this.initialized = false
   }
 
   onClose = event => this.log('CLOSED', event)

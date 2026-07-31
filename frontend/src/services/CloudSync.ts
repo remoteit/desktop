@@ -12,15 +12,19 @@ class CloudSync {
   init() {
     if (this.initialized) return
     this.initialized = true
-    network.on('connect', async () => {
-      await dispatch.devices.expire()
-      this.all()
-    })
+    network.on('connect', this.onNetworkConnect)
   }
 
   reset() {
     this.initialized = false
-    network.off('connect', this.all)
+    network.off('connect', this.onNetworkConnect)
+  }
+
+  // named so reset() can actually remove it — an inline closure left a listener
+  // behind on every sign out, stacking a full sync per sign in cycle
+  onNetworkConnect = async () => {
+    await dispatch.devices.expire()
+    this.all()
   }
 
   async call(methods: Methods, parallel?: boolean, spinner: boolean = true) {

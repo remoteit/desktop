@@ -294,7 +294,7 @@ export default createModel<RootModel>()({
       window.location.hash = ''
       zendesk.endChat()
       emit('user/sign-out-complete')
-      cloudController.close()
+      cloudController.reset()
       Controller.close()
     },
     async globalSignOut() {
