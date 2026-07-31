@@ -246,8 +246,13 @@ export default createModel<RootModel>()({
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
-      if (state.auth.backendAuthenticated) emit('user/sign-out')
-      else await dispatch.auth.signedOut()
+      // emit returns false when the local socket isn't connected, and
+      // backendAuthenticated can still be true at that moment - the flag is only
+      // cleared once the socket's disconnect event lands. Without checking the
+      // return value, sign out in that window did nothing at all: no purge, no
+      // teardown, no redirect, and the user stayed signed in with no feedback.
+      if (state.auth.backendAuthenticated && emit('user/sign-out')) return
+      await dispatch.auth.signedOut()
     },
     /**
      * Gets called when the backend signs the user out
