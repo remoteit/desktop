@@ -4,12 +4,13 @@ import { IconButton } from '../../buttons/IconButton'
 
 type Props = {
   disabled: boolean
+  placeholder?: string
   streaming: boolean
   onSend: (text: string) => void
   onStop: () => void
 }
 
-export const ChatInput: React.FC<Props> = ({ disabled, streaming, onSend, onStop }) => {
+export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, onSend, onStop }) => {
   const [text, setText] = useState('')
   const submit = () => {
     const trimmed = text.trim()
@@ -34,7 +35,7 @@ export const ChatInput: React.FC<Props> = ({ disabled, streaming, onSend, onStop
           fullWidth
           multiline
           maxRows={6}
-          placeholder={disabled ? 'Waiting for approval…' : ''}
+          placeholder={disabled ? placeholder : ''}
           value={text}
           disabled={disabled}
           sx={{ fontSize: 14, paddingY: 0.75 }}
