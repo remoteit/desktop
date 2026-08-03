@@ -36,12 +36,17 @@ class Controller extends EventEmitter {
     const { ui, auth } = store.dispatch
 
     if (!navigator.onLine) return
-    // Signed in is the condition for re-opening, not backendAuthenticated: a
-    // dropped socket clears that flag (auth.disconnect), so keying off it meant
-    // waking from sleep took the auth.init() branch, which no-ops once a user is
-    // in state - the re-connect nudge never actually ran. auth isn't persisted,
-    // so at startup this is still false and initial sign in is unaffected.
-    if (state.auth.authenticated) {
+    // Keyed off the user, not backendAuthenticated or authenticated:
+    //  - backendAuthenticated is cleared by a dropped socket (auth.disconnect), so
+    //    waking from sleep took the auth.init() branch, which no-ops once a user
+    //    is in state - the re-connect nudge never actually ran.
+    //  - authenticated is set before fetchUser, so it stays true when graphQLLogin
+    //    fails, leaving no user and no socket. Reopening nothing would strand that
+    //    sign in until a reload; it needs the auth.init() retry instead.
+    // A user means sign in completed and setupConnection made a socket to reopen.
+    // auth isn't persisted, so this is false at startup and initial sign in still
+    // takes the else branch.
+    if (state.auth.user) {
       this.log('-- ONLINE AUTHORIZED RE-CONNECT')
       this.open()
     } else {
