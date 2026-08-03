@@ -6,6 +6,7 @@ import { useGuests } from '../hooks/useGuests'
 import { LoadingMessage } from './LoadingMessage'
 import { Pagination } from '@mui/lab'
 import { Gutters } from './Gutters'
+import { alphaSort } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
@@ -15,7 +16,7 @@ export const OrganizationGuestList: React.FC = () => {
   const perPage = 20
   const pageCount = Math.ceil(guests.length / perPage)
   const start = (page - 1) * perPage
-  const pageGuests = [...guests].sort(alphaEmailSort).slice(start, start + perPage)
+  const pageGuests = [...guests].sort((a, b) => alphaSort(a.email, b.email)).slice(start, start + perPage)
 
   if (!guestsLoaded) return <LoadingMessage />
 
@@ -70,8 +71,3 @@ export const OrganizationGuestList: React.FC = () => {
   )
 }
 
-function alphaEmailSort(a, b) {
-  const aa = a.email.toLowerCase()
-  const bb = b.email.toLowerCase()
-  return aa > bb ? 1 : aa < bb ? -1 : 0
-}

@@ -3,6 +3,7 @@ import { selectDeviceModelAttributes } from '../selectors/devices'
 import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
+import { byName } from '../helpers/utilHelper'
 import { Icon } from './Icon'
 
 export function getSortOptions(key: ISortServiceType) {
@@ -13,14 +14,12 @@ export function getSortOptions(key: ISortServiceType) {
 const optionSortServices: IOptionServiceSort = {
   ATOZ: {
     name: 'Alpha A-Z',
-    sortService: (a: IService, b: IService) =>
-      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 0,
+    sortService: byName,
     icon: 'sort-alpha-down',
   },
   ZTOA: {
     name: 'Alpha Z-A',
-    sortService: (a: IService, b: IService) =>
-      a.name.toLowerCase() < b.name.toLowerCase() ? 1 : a.name.toLowerCase() > b.name.toLowerCase() ? -1 : 0,
+    sortService: (a: IService, b: IService) => byName(b, a),
     icon: 'sort-alpha-up',
   },
   NEWEST: {

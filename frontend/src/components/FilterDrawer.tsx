@@ -9,6 +9,7 @@ import { TagFilterToggle } from './TagFilterToggle'
 import { FilterSelector } from './FilterSelector'
 import { AccordionMenu } from './AccordionMenu'
 import { selectTags } from '../selectors/tags'
+import { byName } from '../helpers/utilHelper'
 import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
 
@@ -135,7 +136,7 @@ export const FilterDrawer: React.FC = () => {
                 filterList={platformFilter.concat(
                   Object.keys(platforms.nameLookup)
                     .map(p => ({ value: parseInt(p), name: platforms.nameLookup[p] }))
-                    .sort((a, b) => (a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1))
+                    .sort(byName)
                 )}
               />
             ),

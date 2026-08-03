@@ -13,13 +13,14 @@ import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Network } from '../components/Network'
 import { Gutters } from '../components/Gutters'
+import { byName } from '../helpers/utilHelper'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 export const NetworksPage: React.FC = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
-  const all = [...useSelector(selectNetworks)].sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1))
+  const all = [...useSelector(selectNetworks)].sort(byName)
   const initialized = useSelector((state: State) => state.networks.initialized)
   const permissions = useSelector(selectPermissions)
   const loading = useSelector(selectDeviceModelAttributes).fetching

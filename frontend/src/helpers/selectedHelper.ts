@@ -1,5 +1,6 @@
 import structuredClone from '@ungap/structured-clone'
 import { getDevices } from '../selectors/devices'
+import { byName } from './utilHelper'
 import { State } from '../store'
 
 export function eachSelectedDevice(state: State, selected: IDevice['id'][], callback: (device: IDevice) => void) {
@@ -17,5 +18,5 @@ export function getSelectedTags(devices?: IDevice[], selected?: IDevice['id'][])
       })
     }
   })
-  return result.sort((a, b) => a.name.localeCompare(b.name))
+  return result.sort(byName)
 }
