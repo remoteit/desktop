@@ -9,6 +9,7 @@ import { selectMembersWithAccess } from '../selectors/organizations'
 import { selectOrganization } from '../selectors/organizations'
 import { ShareButton } from '../buttons/ShareButton'
 import { IconButton } from '../buttons/IconButton'
+import { alphaSort } from '../helpers/utilHelper'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
@@ -93,4 +94,4 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
   )
 }
 
-const sort = (users: IUser[]) => users.sort((a, b) => (a.email > b.email ? 1 : b.email > a.email ? -1 : 0))
+const sort = (users: IUser[]) => users.sort((a, b) => alphaSort(a.email, b.email))

@@ -2,6 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectAvailableUsers } from '../selectors/organizations'
 import { OrganizationMember } from '../components/OrganizationMember'
+import { alphaSort } from '../helpers/utilHelper'
 import { IOrganizationState } from '../models/organization'
 import { List } from '@mui/material'
 
@@ -9,7 +10,7 @@ type Props = { organization?: IOrganizationState; owner?: IOrganizationMember; e
 
 export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, enterprise }) => {
   const freeUsers = useSelector(selectAvailableUsers)
-  const members = organization?.members ? [...organization.members].sort(alphaEmailSort) : []
+  const members = organization?.members ? [...organization.members].sort((a, b) => alphaSort(a.user.email, b.user.email)) : []
   return (
     <List>
       {owner && (
@@ -35,8 +36,3 @@ export const OrganizationMemberList: React.FC<Props> = ({ organization, owner, e
   )
 }
 
-function alphaEmailSort(a, b) {
-  const aa = a.user.email.toLowerCase()
-  const bb = b.user.email.toLowerCase()
-  return aa > bb ? 1 : aa < bb ? -1 : 0
-}

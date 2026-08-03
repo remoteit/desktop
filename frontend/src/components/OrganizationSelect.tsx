@@ -10,6 +10,7 @@ import { selectAllConnectionSessions } from '../selectors/connections'
 import { selectOrganization } from '../selectors/organizations'
 import { GuideBubble } from './GuideBubble'
 import { fontSizes } from '../styling'
+import { byName } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
@@ -146,7 +147,7 @@ export const OrganizationSelect: React.FC = () => {
     }
   }
 
-  options.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
+  options.sort(byName)
   if (!options.length) return null
 
   const mySessions = sessions.filter(s => s.target.accountId === ownOrg?.id).length

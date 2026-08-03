@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect'
 import { State } from '../store'
 import { selectOrganization } from './organizations'
+import { alphaSort } from '../helpers/utilHelper'
 import { isUserAccount } from './accounts'
 
 const getContacts = (state: State) => state.contacts.all
@@ -24,6 +25,6 @@ export const selectContacts = createSelector(
         seen.add(key)
         return true
       })
-      .sort((a, b) => a.email.localeCompare(b.email, undefined, { sensitivity: 'base' }))
+      .sort((a, b) => alphaSort(a.email, b.email))
   }
 )
