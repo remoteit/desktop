@@ -85,6 +85,9 @@ export const REGEX_SCHEME = /^(.*?):\/\//
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const MOBILE_LAUNCH_DATE = new Date('2023-12-20')
 export const FRONTEND_RETRY_DELAY = 20000
+// How long sign out waits for the local backend to come back before giving up and
+// tearing down the frontend on its own. Short: it's a localhost socket.
+export const SIGN_OUT_BACKEND_TIMEOUT = 3000
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250

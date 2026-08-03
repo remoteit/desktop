@@ -120,6 +120,28 @@ class Controller extends EventEmitter {
     this.socket?.emit(event, ...args)
     return true
   }
+
+  // Force an immediate reopen and resolve once the backend has authenticated the
+  // new connection, false if it doesn't come back within timeout. socket.io's own
+  // retry waits FRONTEND_RETRY_DELAY, far too long to hold a sign out on.
+  reconnectNow = (timeout: number): Promise<boolean> =>
+    new Promise(resolve => {
+      const socket = this.socket
+      if (!browser.hasBackend || !socket) return resolve(false)
+
+      let timer: NodeJS.Timeout | undefined
+      const finish = (result: boolean) => {
+        if (timer) clearTimeout(timer)
+        socket.off('authenticated', onAuthenticated)
+        this.log('RECONNECT NOW', result ? 'AUTHENTICATED' : 'TIMED OUT')
+        resolve(result)
+      }
+      const onAuthenticated = () => finish(true)
+
+      socket.on('authenticated', onAuthenticated)
+      timer = setTimeout(() => finish(false), timeout)
+      this.open(false, true)
+    })
 }
 
 type EventHandlers = { [event: string]: (data?: any) => any }
