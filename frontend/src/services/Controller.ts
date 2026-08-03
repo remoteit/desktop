@@ -131,7 +131,7 @@ class Controller extends EventEmitter {
 
       let timer: NodeJS.Timeout | undefined
       const finish = (result: boolean) => {
-        if (timer) clearTimeout(timer)
+        clearTimeout(timer)
         socket.off('authenticated', onAuthenticated)
         this.log('RECONNECT NOW', result ? 'AUTHENTICATED' : 'TIMED OUT')
         resolve(result)
