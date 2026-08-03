@@ -155,14 +155,19 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
     return lookup
   }, [script?.job?.jobDevices])
 
-  // Resolve device names for the current run form
+  // Resolve device names for the current run form, ordered by the device list so the run
+  // follows whatever sort the user has chosen. Derived rather than stored, so changing the
+  // sort after selecting reorders these too. Devices no longer in the list go last.
   const resolvedDevices: { id: string; name: string }[] = useMemo(() => {
     const ids = runForm.access === 'SELECTED' ? selectedIds : runForm.access === 'CUSTOM' ? runForm.deviceIds : []
-    return ids.map(id => {
-      if (jobDeviceNames[id]) return { id, name: jobDeviceNames[id] }
-      const device = devices.find(d => d.id === id) || allDevices.find(d => d.id === id)
-      return { id, name: device?.name || id.slice(0, 8) + '…' }
-    })
+    const order = new Map(devices.map((device, index) => [device.id, index]))
+    return ids
+      .map(id => {
+        if (jobDeviceNames[id]) return { id, name: jobDeviceNames[id] }
+        const device = devices.find(d => d.id === id) || allDevices.find(d => d.id === id)
+        return { id, name: device?.name || id.slice(0, 8) + '…' }
+      })
+      .sort((a, b) => (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity))
   }, [runForm.access, runForm.deviceIds, selectedIds, jobDeviceNames, devices, allDevices])
 
   const uploadScript = async (): Promise<string | undefined> => {
@@ -175,7 +180,7 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
   const handleRun = async () => {
     setRunning(true)
     const form = { ...runForm }
-    if (runForm.access === 'SELECTED') form.deviceIds = selectedIds
+    if (runForm.access === 'SELECTED' || runForm.access === 'CUSTOM') form.deviceIds = resolvedDevices.map(d => d.id)
     if (isNew) {
       const newFileId = await uploadScript()
       if (newFileId) { form.fileId = newFileId; await dispatch.jobs.saveRun(form) }
@@ -190,7 +195,7 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
   const handlePrepare = async () => {
     setRunning(true)
     const form = { ...runForm }
-    if (runForm.access === 'SELECTED') form.deviceIds = selectedIds
+    if (runForm.access === 'SELECTED' || runForm.access === 'CUSTOM') form.deviceIds = resolvedDevices.map(d => d.id)
     if (isNew) {
       const newFileId = await uploadScript()
       if (newFileId) { form.fileId = newFileId; await dispatch.jobs.save(form) }
