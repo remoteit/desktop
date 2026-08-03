@@ -36,13 +36,11 @@ class CloudController {
   pongReceived: number = Date.now()
   timer?: NodeJS.Timeout
 
+  // Idempotent: connect() is a no-op when the socket is up, so a second signedIn()
+  // recovers a closed socket rather than returning early and leaving it dead.
   init() {
-    if (this.initialized) {
-      console.warn('CLOUD CONTROLLER ALREADY INITIALIZED')
-      this.connect() // no-op if the socket is still up, recovers it if it was closed
-      return
-    }
     this.connect()
+    if (this.initialized) return
     network.on('connect', this.reconnect)
     network.on('disconnect', this.close)
     this.initialized = true

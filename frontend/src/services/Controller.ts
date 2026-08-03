@@ -54,9 +54,9 @@ class Controller extends EventEmitter {
       ui.set({ errorMessage: '' })
       // This is the app's only entry into auth.init, so it has to run whether or
       // not the window has focus - a window launched in the background still has
-      // to sign in. Unfocused, though, nobody asked for this and nobody is
+      // to sign in. Unattended, though, nobody asked for this and nobody is
       // watching, so a failed session check shouldn't leave a toast waiting.
-      auth.init({ silent: !document.hasFocus() })
+      auth.init({ silent: !network.isActive() })
     }
   }
 
@@ -115,6 +115,9 @@ class Controller extends EventEmitter {
     // the offline notice as a side effect.
     if (!browser.hasBackend) return
     if (force || (navigator.onLine && !this.socket?.connected && !this.retrying)) {
+      // force skips the !retrying guard above, so drop any pending retry rather
+      // than orphan its timer - it would fire up to FRONTEND_RETRY_DELAY later
+      clearTimeout(this.retrying)
       this.retrying = setTimeout(
         () => {
           this.log('Retrying local socket.io connection')
@@ -127,8 +130,7 @@ class Controller extends EventEmitter {
     }
   }
 
-  // arrow so `this` survives if it's ever passed as a callback - as an unbound
-  // method an emitter calls it with itself as `this` and it closes nothing
+  // arrow so it stays bound if passed as a callback
   close = () => {
     this.log('CLOSE LOCAL SOCKET')
     this.socket?.close()

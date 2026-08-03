@@ -48,7 +48,6 @@ class Network extends EventEmitter {
   awake = () => {
     this.log('WAKE')
     this.shouldConnect = true
-    this.shouldSync = true
     this.connect()
   }
 
@@ -63,7 +62,6 @@ class Network extends EventEmitter {
       offline: { title: 'Disconnected', message: 'Internet access is required.', severity: 'warning' },
     })
     this.shouldConnect = true
-    this.shouldSync = true
     this.emit('disconnect')
   }
 
@@ -73,20 +71,18 @@ class Network extends EventEmitter {
     dispatch.ui.set({ offline: undefined })
     // the browser only fires this on a transition, so it's the definitive
     // "connectivity restored" signal - don't depend on a matching offline event
-    // having set these, it may have been consumed or missed
+    // having set this, it may have been consumed or missed
     this.shouldConnect = true
-    this.shouldSync = true
     this.connect()
   }
 
   connect = () => {
-    // sockets come back as soon as there is a network, focused or not
     if (this.shouldConnect && navigator.onLine) {
       this.shouldConnect = false
+      this.shouldSync = true // every reconnect owes a sync, paid once in front
       this.log('CONNECT')
       this.emit('connect')
     }
-    // re-syncing everything is expensive, so it waits for the window to be in front
     if (this.shouldSync && this.isActive()) {
       this.shouldSync = false
       this.log('ACTIVE')

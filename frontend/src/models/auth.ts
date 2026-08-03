@@ -85,7 +85,7 @@ export default createModel<RootModel>()({
     // silent suppresses the session-error toast for machine-triggered runs (a
     // network reconnect), where the user didn't ask for this and may not even be
     // looking at the app. See Controller.onNetworkConnect.
-    async init(options: { silent?: boolean }, state) {
+    async init(options: { silent?: boolean } = {}, state) {
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
@@ -94,7 +94,7 @@ export default createModel<RootModel>()({
         console.log('AUTH INIT', { authService })
         await sleep(500)
         await dispatch.auth.set({ authService })
-        await dispatch.auth.checkSession({ refreshToken: true, silent: options?.silent })
+        await dispatch.auth.checkSession({ refreshToken: true, silent: options.silent })
       }
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')

@@ -85,8 +85,10 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
       await dispatch.logs.fetch({ deviceId: device?.id })
     })
 
-    // device pages
-  } else if (devicesPage) {
+    // device pages, and the add device pages and sub pages - those carry no
+    // deviceID, so they take the list branch and a newly registered device shows
+    // up without leaving the add flow
+  } else if (devicesPage || addDevicePage) {
     title = device
       ? t('refreshButton.device', { name: device.name, defaultValue: 'Refresh {{name}}' })
       : t('refreshButton.devices', 'Refresh devices')
@@ -97,15 +99,6 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
         await dispatch.devices.set({ from: 0 })
         await dispatch.devices.fetchList()
       }
-    })
-
-    // add device pages and sub pages - refresh the device list so a newly
-    // registered device shows up without leaving the add flow
-  } else if (addDevicePage) {
-    title = t('refreshButton.devices', 'Refresh devices')
-    methods.push(async () => {
-      await dispatch.devices.set({ from: 0 })
-      await dispatch.devices.fetchList()
     })
 
     // products pages
