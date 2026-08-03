@@ -7,6 +7,7 @@ import { ListItemButton, ListSubheader, ListItemIcon, ListItemText, Chip } from 
 import { getOwnOrganization } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
+import { byName } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 
 const AVATAR_SIZE = 28
@@ -45,7 +46,7 @@ export const OrganizationSelectList: React.FC = () => {
     }
   }
 
-  options.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
+  options.sort(byName)
   if (!options.length) return null
 
   return (
