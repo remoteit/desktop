@@ -24,12 +24,19 @@ export function mergeSelectedIds(selected: string[], idsToAdd: string[]) {
   return [...new Set([...selected, ...idsToAdd])]
 }
 
-// Keeps the selection in name order from the first click, so it never reorders downstream.
+// Reused across comparisons — localeCompare with options builds a new collator on every call.
+const nameCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+
+// Devices are selected in click order, so re-sort by name on each change to keep the
+// selection ordered. Ids with no loaded device sort last rather than interleaving by raw id.
 export function sortSelectedIds(selected: string[], devices: IDevice[]) {
   const names = new Map(devices.map(device => [device.id, device.name]))
-  return [...selected].sort((a, b) =>
-    (names.get(a) || a).localeCompare(names.get(b) || b, undefined, { numeric: true, sensitivity: 'base' })
-  )
+  return [...selected].sort((a, b) => {
+    const nameA = names.get(a)
+    const nameB = names.get(b)
+    if (!nameA || !nameB) return nameA ? -1 : nameB ? 1 : 0
+    return nameCollator.compare(nameA, nameB)
+  })
 }
 
 export function removeSelectedIds(selected: string[], idsToRemove: string[]) {
