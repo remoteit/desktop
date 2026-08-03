@@ -1496,6 +1496,20 @@
     "onboardQuestion": "カスタムPiイメージをお持ちですか?",
     "onboardTitle": "Bluetooth経由でオンボード"
   },
+  "refreshButton": {
+    "account": "アカウントを更新",
+    "application": "アプリケーションを更新",
+    "connections": "コネクトを更新",
+    "device": "{{name}} を更新",
+    "deviceLogs": "{{name}} のログを更新",
+    "devices": "デバイスを更新",
+    "logs": "ログを更新",
+    "networks": "ネットワークを更新",
+    "partnerStats": "パートナー統計を更新",
+    "products": "プロダクトを更新",
+    "script": "スクリプトを更新",
+    "scripts": "スクリプトを更新"
+  },
   "rentANodeForm": {
     "addDns": "公開DNSアドレスを追加",
     "addIpv6": "公開IPv6アドレスを追加",

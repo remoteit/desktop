@@ -1564,6 +1564,20 @@
     "onboardQuestion": "Have our custom Pi image?",
     "onboardTitle": "Onboard via Bluetooth"
   },
+  "refreshButton": {
+    "account": "Refresh account",
+    "application": "Refresh application",
+    "connections": "Refresh connections",
+    "device": "Refresh {{name}}",
+    "deviceLogs": "Refresh {{name}} logs",
+    "devices": "Refresh devices",
+    "logs": "Refresh logs",
+    "networks": "Refresh networks",
+    "partnerStats": "Refresh partner stats",
+    "products": "Refresh products",
+    "script": "Refresh script",
+    "scripts": "Refresh scripts"
+  },
   "rentANodeForm": {
     "addDns": "Add a public DNS address",
     "addIpv6": "Add a public IPv6 address",

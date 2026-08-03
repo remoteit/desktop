@@ -1518,6 +1518,20 @@
     "onboardQuestion": "Haben Sie unser individuelles Pi-Image?",
     "onboardTitle": "Onboarding über Bluetooth"
   },
+  "refreshButton": {
+    "account": "Konto aktualisieren",
+    "application": "Anwendung aktualisieren",
+    "connections": "Verbindungen aktualisieren",
+    "device": "{{name}} aktualisieren",
+    "deviceLogs": "Protokolle von {{name}} aktualisieren",
+    "devices": "Geräte aktualisieren",
+    "logs": "Protokolle aktualisieren",
+    "networks": "Netzwerke aktualisieren",
+    "partnerStats": "Partnerstatistiken aktualisieren",
+    "products": "Produkte aktualisieren",
+    "script": "Skript aktualisieren",
+    "scripts": "Skripte aktualisieren"
+  },
   "rentANodeForm": {
     "addDns": "Öffentliche DNS-Adresse hinzufügen",
     "addIpv6": "Öffentliche IPv6-Adresse hinzufügen",

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import network from '../../services/Network'
 import cloudController from '../../services/cloudController'
 import cloudSync from '../../services/CloudSync'
@@ -13,6 +14,7 @@ import { GuideBubble } from '../../components/GuideBubble'
 import { Typography } from '@mui/material'
 
 export const RefreshButton: React.FC<ButtonProps> = props => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const { deviceID, fileID, jobID, userId, partnerId } = useParams<{
     deviceID?: string
@@ -30,6 +32,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const networkPage = useRouteMatch('/networks')
   const logsPage = useRouteMatch(['/logs', '/devices/:deviceID/logs'])
   const devicesPage = useRouteMatch('/devices')
+  const addDevicePage = useRouteMatch(['/add', '/onboard'])
   const productsPage = useRouteMatch('/products')
   const accountPage = useRouteMatch('/account')
   const partnerStatsPage = useRouteMatch('/partner-stats')
@@ -41,29 +44,31 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const runsPage = useRouteMatch<{ fileID?: string }>('/runs/:fileID?')
   const scriptPage = useRouteMatch('/script')
 
-  let title = 'Refresh application'
+  // The /admin section is deliberately English-only, so its titles below stay
+  // untranslated - see the admin pages, none of which use useTranslation.
+  let title = t('refreshButton.application', 'Refresh application')
   let methods: Methods = []
 
   // connection pages
   if (connectionPage) {
-    title = 'Refresh connections'
+    title = t('refreshButton.connections', 'Refresh connections')
     methods.push(dispatch.connections.fetch)
 
     // network pages
   } else if (networkPage) {
-    title = 'Refresh networks'
+    title = t('refreshButton.networks', 'Refresh networks')
     methods.push(dispatch.networks.fetchAll)
 
     // scripting pages
   } else if (scriptingPage) {
-    title = 'Refresh scripts'
+    title = t('refreshButton.scripts', 'Refresh scripts')
     methods.push(dispatch.files.fetch)
     const runsFileID = runsPage?.params.fileID
     methods.push(async () => await dispatch.jobs.fetch({ fileID: runsFileID }))
 
     // script pages
   } else if (scriptPage) {
-    title = 'Refresh script'
+    title = t('refreshButton.script', 'Refresh script')
     if (fileID) methods.push(async () => await dispatch.files.fetchSingle({ fileId: fileID }))
     if (jobID && jobID.length >= VALID_JOB_ID_LENGTH)
       methods.push(async () => await dispatch.jobs.fetchSingle({ jobId: jobID }))
@@ -71,16 +76,22 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
     // log pages
   } else if (logsPage) {
-    title = device ? `Refresh ${device.name} logs` : 'Refresh logs'
+    title = device
+      ? t('refreshButton.deviceLogs', { name: device.name, defaultValue: 'Refresh {{name}} logs' })
+      : t('refreshButton.logs', 'Refresh logs')
     methods.push(async () => {
       if (device) await dispatch.devices.fetchSingleFull({ id: device.id })
       await dispatch.logs.set({ after: undefined, maxDate: undefined })
       await dispatch.logs.fetch({ deviceId: device?.id })
     })
 
-    // device pages
-  } else if (devicesPage) {
-    title = device ? `Refresh ${device.name}` : 'Refresh devices'
+    // device pages, and the add device pages and sub pages - those carry no
+    // deviceID, so they take the list branch and a newly registered device shows
+    // up without leaving the add flow
+  } else if (devicesPage || addDevicePage) {
+    title = device
+      ? t('refreshButton.device', { name: device.name, defaultValue: 'Refresh {{name}}' })
+      : t('refreshButton.devices', 'Refresh devices')
     methods.push(async () => {
       if (device) {
         await dispatch.devices.fetchSingleFull({ id: device.id })
@@ -92,17 +103,17 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
 
     // products pages
   } else if (productsPage) {
-    title = 'Refresh products'
+    title = t('refreshButton.products', 'Refresh products')
     methods.push(dispatch.products.fetch)
 
     // account section (any /account/* page) — refresh the connected apps the section owns
   } else if (accountPage) {
-    title = 'Refresh account'
+    title = t('refreshButton.account', 'Refresh account')
     methods.push(dispatch.agents.fetch)
 
     // partner stats pages
   } else if (partnerStatsPage) {
-    title = 'Refresh partner stats'
+    title = t('refreshButton.partnerStats', 'Refresh partner stats')
     methods.push(dispatch.partnerStats.fetch)
 
     // admin users pages

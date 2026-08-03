@@ -82,7 +82,10 @@ const authServiceConfig = (): ConfigInterface => ({
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async init(_: void, state) {
+    // silent suppresses the session-error toast for machine-triggered runs (a
+    // network reconnect), where the user didn't ask for this and may not even be
+    // looking at the app. See Controller.onNetworkConnect.
+    async init(options: { silent?: boolean } = {}, state) {
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
@@ -91,7 +94,7 @@ export default createModel<RootModel>()({
         console.log('AUTH INIT', { authService })
         await sleep(500)
         await dispatch.auth.set({ authService })
-        await dispatch.auth.checkSession({ refreshToken: true })
+        await dispatch.auth.checkSession({ refreshToken: true, silent: options.silent })
       }
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')
@@ -163,15 +166,16 @@ export default createModel<RootModel>()({
       if (!state.auth.authService) return
       await state.auth.authService.forceTokenRefresh()
     },
-    async checkSession(options: { refreshToken: boolean }, state) {
+    async checkSession(options: { refreshToken: boolean; silent?: boolean }, state) {
       if (!state.auth.authService) return
       try {
-        const result = await state.auth.authService.checkSignIn(options)
+        const result = await state.auth.authService.checkSignIn({ refreshToken: options.refreshToken })
         if (result.cognitoUser) {
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
           console.error('SESSION ERROR', result.error, result)
-          if (result.error?.message) dispatch.ui.set({ errorMessage: result.error.message })
+          // still logged above - silent only withholds the user-facing toast
+          if (result.error?.message && !options.silent) dispatch.ui.set({ errorMessage: result.error.message })
         }
       } catch (error) {
         console.error('Check sign in error', error)
@@ -294,7 +298,7 @@ export default createModel<RootModel>()({
       window.location.hash = ''
       zendesk.endChat()
       emit('user/sign-out-complete')
-      cloudController.close()
+      cloudController.reset()
       Controller.close()
     },
     async globalSignOut() {
