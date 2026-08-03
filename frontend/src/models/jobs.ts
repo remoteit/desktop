@@ -134,26 +134,6 @@ export default createModel<RootModel>()({
       console.log('STARTED JOB', { result, jobId })
       dispatch.ui.set({ redirect: `/script/${fileId}/latest` })
     },
-    async runAgain(script: IScript) {
-      const deviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
-      const tagValues = script?.job?.tag?.values || []
-      // Convert job arguments to argument values format
-      const argumentValues: IArgumentValue[] = script?.job?.arguments?.map(arg => ({
-        name: arg.name,
-        value: arg.value || '',
-      })) || []
-      await dispatch.jobs.saveRun({
-        deviceIds,
-        jobId: script.job?.id || '',
-        fileId: script.id,
-        name: script.name || '',
-        description: script.shortDesc || '',
-        executable: script.executable,
-        tag: script.job?.tag,
-        access: tagValues.length ? 'TAG' : deviceIds.length ? 'CUSTOM' : 'NONE',
-        argumentValues,
-      })
-    },
     async downloadLogs({ jobId, jobDeviceId }: { jobId: string; jobDeviceId: string }) {
       const result = await getJobLogs(jobId)
       if (result.kind === 'error') {
