@@ -6,7 +6,6 @@ import {
   getSelectableDeviceIds,
   mergeSelectedIds,
   removeSelectedIds,
-  sortSelectedIds,
 } from '../helpers/selectionRange'
 
 type UseSelectParams = {
@@ -29,7 +28,7 @@ export const useSelect = ({ deviceId, selectMode }: UseSelectParams) => {
     const ids = range.length ? range : [deviceId]
     const nextSelected = isSelected ? removeSelectedIds(selected, ids) : mergeSelectedIds(selected, ids)
 
-    dispatch.ui.set({ selected: sortSelectedIds(nextSelected, visibleDevices), selectionAnchor: deviceId })
+    dispatch.ui.set({ selected: nextSelected, selectionAnchor: deviceId })
   }
 
   return { isSelected, isAnchorRow, handleSelect }
