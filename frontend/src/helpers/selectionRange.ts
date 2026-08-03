@@ -24,6 +24,14 @@ export function mergeSelectedIds(selected: string[], idsToAdd: string[]) {
   return [...new Set([...selected, ...idsToAdd])]
 }
 
+// Keeps the selection in name order from the first click, so it never reorders downstream.
+export function sortSelectedIds(selected: string[], devices: IDevice[]) {
+  const names = new Map(devices.map(device => [device.id, device.name]))
+  return [...selected].sort((a, b) =>
+    (names.get(a) || a).localeCompare(names.get(b) || b, undefined, { numeric: true, sensitivity: 'base' })
+  )
+}
+
 export function removeSelectedIds(selected: string[], idsToRemove: string[]) {
   const remove = new Set(idsToRemove)
   return selected.filter(id => !remove.has(id))

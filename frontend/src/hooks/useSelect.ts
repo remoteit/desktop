@@ -1,7 +1,13 @@
 import { useDispatch, useSelector, useStore } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { selectVisibleDevices } from '../selectors/devices'
-import { getInclusiveIdRange, getSelectableDeviceIds, mergeSelectedIds, removeSelectedIds } from '../helpers/selectionRange'
+import {
+  getInclusiveIdRange,
+  getSelectableDeviceIds,
+  mergeSelectedIds,
+  removeSelectedIds,
+  sortSelectedIds,
+} from '../helpers/selectionRange'
 
 type UseSelectParams = {
   deviceId: string
@@ -25,7 +31,7 @@ export const useSelect = ({ deviceId, selectMode }: UseSelectParams) => {
 
     if (range.length) {
       const rangeSelected = isSelected ? removeSelectedIds(nextSelected, range) : mergeSelectedIds(nextSelected, range)
-      dispatch.ui.set({ selected: rangeSelected })
+      dispatch.ui.set({ selected: sortSelectedIds(rangeSelected, visibleDevices) })
       dispatch.ui.set({ selectionAnchor: deviceId })
       return
     }
@@ -37,7 +43,7 @@ export const useSelect = ({ deviceId, selectMode }: UseSelectParams) => {
       nextSelected.push(deviceId)
     }
 
-    dispatch.ui.set({ selected: nextSelected })
+    dispatch.ui.set({ selected: sortSelectedIds(nextSelected, visibleDevices) })
     dispatch.ui.set({ selectionAnchor: deviceId })
   }
 

@@ -2,6 +2,7 @@ import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Checkbox } from '@mui/material'
+import { sortSelectedIds } from '../helpers/selectionRange'
 import { Icon } from './Icon'
 
 type Props = { select?: boolean; devices: IDevice[] }
@@ -16,7 +17,7 @@ export const DeviceListHeaderCheckbox: React.FC<Props> = ({ select, devices }) =
   const onClick = event => {
     event.stopPropagation()
     if (indeterminate || selected.length === 0) {
-      dispatch.ui.set({ selected: devices.map(d => d.id) })
+      dispatch.ui.set({ selected: sortSelectedIds(devices.map(d => d.id), devices) })
     } else {
       dispatch.ui.set({ selected: [], selectionAnchor: undefined })
     }
