@@ -21,7 +21,10 @@ class Controller extends EventEmitter {
     this.onNetworkConnect()
     if (!navigator.onLine) network.offline()
     network.on('connect', this.onNetworkConnect)
-    network.on('disconnect', this.close)
+    // Deliberately no 'disconnect' listener. This socket talks to the backend on
+    // 127.0.0.1, which stays reachable when internet access drops - closing it
+    // would blind the UI to local connection state for no reason. Losing the local
+    // backend is a different failure, and socket.io's own reconnection covers it.
   }
 
   log(...args) {
@@ -33,13 +36,27 @@ class Controller extends EventEmitter {
     const { ui, auth } = store.dispatch
 
     if (!navigator.onLine) return
-    if (state.auth.backendAuthenticated) {
+    // Keyed off the user, not backendAuthenticated or authenticated:
+    //  - backendAuthenticated is cleared by a dropped socket (auth.disconnect), so
+    //    waking from sleep took the auth.init() branch, which no-ops once a user
+    //    is in state - the re-connect nudge never actually ran.
+    //  - authenticated is set before fetchUser, so it stays true when graphQLLogin
+    //    fails, leaving no user and no socket. Reopening nothing would strand that
+    //    sign in until a reload; it needs the auth.init() retry instead.
+    // A user means sign in completed and setupConnection made a socket to reopen.
+    // auth isn't persisted, so this is false at startup and initial sign in still
+    // takes the else branch.
+    if (state.auth.user) {
       this.log('-- ONLINE AUTHORIZED RE-CONNECT')
       this.open()
     } else {
       this.log('1- ONLINE AUTHORIZE AND CONNECT')
       ui.set({ errorMessage: '' })
-      auth.init()
+      // This is the app's only entry into auth.init, so it has to run whether or
+      // not the window has focus - a window launched in the background still has
+      // to sign in. Unattended, though, nobody asked for this and nobody is
+      // watching, so a failed session check shouldn't leave a toast waiting.
+      auth.init({ silent: !network.isActive() })
     }
   }
 
@@ -48,6 +65,16 @@ class Controller extends EventEmitter {
     this.handlers = getEventHandlers()
 
     if (!browser.hasBackend) return
+
+    // Re-auth (token refresh, or signing back in) calls this again. Drop the
+    // previous socket first - listeners are removed before closing so its
+    // disconnect handler doesn't fire, and its handlers can't double dispatch
+    // every backend event onto the new connection's.
+    if (this.socket) {
+      this.log('REPLACING LOCAL SOCKET')
+      this.socket.removeAllListeners()
+      this.socket.close()
+    }
 
     this.socket = io(this.url, {
       transports: ['websocket'],
@@ -83,7 +110,14 @@ class Controller extends EventEmitter {
 
   // Retry open with delay, force skips delay
   open(retry?: boolean, force?: boolean) {
+    // Nothing to open without a local backend (portal/mobile) - setupConnection
+    // never made a socket there, so this would only schedule a timeout to clear
+    // the offline notice as a side effect.
+    if (!browser.hasBackend) return
     if (force || (navigator.onLine && !this.socket?.connected && !this.retrying)) {
+      // force skips the !retrying guard above, so drop any pending retry rather
+      // than orphan its timer - it would fire up to FRONTEND_RETRY_DELAY later
+      clearTimeout(this.retrying)
       this.retrying = setTimeout(
         () => {
           this.log('Retrying local socket.io connection')
@@ -96,7 +130,8 @@ class Controller extends EventEmitter {
     }
   }
 
-  close() {
+  // arrow so it stays bound if passed as a callback
+  close = () => {
     this.log('CLOSE LOCAL SOCKET')
     this.socket?.close()
   }
@@ -120,6 +155,28 @@ class Controller extends EventEmitter {
     this.socket?.emit(event, ...args)
     return true
   }
+
+  // Force an immediate reopen and resolve once the backend has authenticated the
+  // new connection, false if it doesn't come back within timeout. socket.io's own
+  // retry waits FRONTEND_RETRY_DELAY, far too long to hold a sign out on.
+  reconnectNow = (timeout: number): Promise<boolean> =>
+    new Promise(resolve => {
+      const socket = this.socket
+      if (!browser.hasBackend || !socket) return resolve(false)
+
+      let timer: NodeJS.Timeout | undefined
+      const finish = (result: boolean) => {
+        clearTimeout(timer)
+        socket.off('authenticated', onAuthenticated)
+        this.log('RECONNECT NOW', result ? 'AUTHENTICATED' : 'TIMED OUT')
+        resolve(result)
+      }
+      const onAuthenticated = () => finish(true)
+
+      socket.on('authenticated', onAuthenticated)
+      timer = setTimeout(() => finish(false), timeout)
+      this.open(false, true)
+    })
 }
 
 type EventHandlers = { [event: string]: (data?: any) => any }

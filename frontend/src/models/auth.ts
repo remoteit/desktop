@@ -16,6 +16,7 @@ import {
   SIGNOUT_REDIRECT_URL,
   API_URL,
   DEVELOPER_KEY,
+  SIGN_OUT_BACKEND_TIMEOUT,
 } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
@@ -82,7 +83,10 @@ const authServiceConfig = (): ConfigInterface => ({
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async init(_: void, state) {
+    // silent suppresses the session-error toast for machine-triggered runs (a
+    // network reconnect), where the user didn't ask for this and may not even be
+    // looking at the app. See Controller.onNetworkConnect.
+    async init(options: { silent?: boolean } = {}, state) {
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
@@ -91,7 +95,7 @@ export default createModel<RootModel>()({
         console.log('AUTH INIT', { authService })
         await sleep(500)
         await dispatch.auth.set({ authService })
-        await dispatch.auth.checkSession({ refreshToken: true })
+        await dispatch.auth.checkSession({ refreshToken: true, silent: options.silent })
       }
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')
@@ -163,15 +167,16 @@ export default createModel<RootModel>()({
       if (!state.auth.authService) return
       await state.auth.authService.forceTokenRefresh()
     },
-    async checkSession(options: { refreshToken: boolean }, state) {
+    async checkSession(options: { refreshToken: boolean; silent?: boolean }, state) {
       if (!state.auth.authService) return
       try {
-        const result = await state.auth.authService.checkSignIn(options)
+        const result = await state.auth.authService.checkSignIn({ refreshToken: options.refreshToken })
         if (result.cognitoUser) {
           await dispatch.auth.handleSignInSuccess(result.cognitoUser)
         } else {
           console.error('SESSION ERROR', result.error, result)
-          if (result.error?.message) dispatch.ui.set({ errorMessage: result.error.message })
+          // still logged above - silent only withholds the user-facing toast
+          if (result.error?.message && !options.silent) dispatch.ui.set({ errorMessage: result.error.message })
         }
       } catch (error) {
         console.error('Check sign in error', error)
@@ -246,8 +251,23 @@ export default createModel<RootModel>()({
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
-      if (state.auth.backendAuthenticated) emit('user/sign-out')
-      else await dispatch.auth.signedOut()
+      // emit returns false when the local socket isn't connected, and
+      // backendAuthenticated can still be true at that moment - the flag is only
+      // cleared once the socket's disconnect event lands. Without checking the
+      // return value, sign out in that window did nothing at all: no purge, no
+      // teardown, no redirect, and the user stayed signed in with no feedback.
+      if (state.auth.backendAuthenticated) {
+        if (emit('user/sign-out')) return
+        // Don't tear down behind the backend's back if it's only momentarily
+        // unreachable. It owns cli.signOut() and the connection pool, and a
+        // frontend-only sign out leaves the CLI admin registered - which makes
+        // the helper reject a different account until someone runs a manual
+        // 'remoteit signout'. Force the socket back rather than wait out
+        // socket.io's 20s retry, then send it for real.
+        if ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && emit('user/sign-out')) return
+        console.warn('SIGN OUT: local backend unreachable, signing the app out only')
+      }
+      await dispatch.auth.signedOut()
     },
     /**
      * Gets called when the backend signs the user out
@@ -294,7 +314,7 @@ export default createModel<RootModel>()({
       window.location.hash = ''
       zendesk.endChat()
       emit('user/sign-out-complete')
-      cloudController.close()
+      cloudController.reset()
       Controller.close()
     },
     async globalSignOut() {
