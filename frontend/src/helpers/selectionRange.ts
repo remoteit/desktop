@@ -24,14 +24,6 @@ export function mergeSelectedIds(selected: string[], idsToAdd: string[]) {
   return [...new Set([...selected, ...idsToAdd])]
 }
 
-// Devices are selected in click order, so re-order on each change to follow the list the user
-// is looking at — which respects whatever sort they've chosen. Ids no longer in the list (a
-// selection outliving a filter change) keep their relative order at the end.
-export function sortSelectedIds(selected: string[], devices: IDevice[]) {
-  const order = new Map(devices.map((device, index) => [device.id, index]))
-  return [...selected].sort((a, b) => (order.get(a) ?? Infinity) - (order.get(b) ?? Infinity))
-}
-
 export function removeSelectedIds(selected: string[], idsToRemove: string[]) {
   const remove = new Set(idsToRemove)
   return selected.filter(id => !remove.has(id))
