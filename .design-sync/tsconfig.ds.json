@@ -1,0 +1,33 @@
+/*
+  tsconfig used ONLY by the design-sync converter (cfg.tsconfig). esbuild reads
+  compilerOptions.paths and turns each entry into a bundle alias.
+
+  @common/* mirrors the app's real vite alias (frontend/vite.config.ts).
+
+  The @fortawesome entries redirect the four icon PACK barrels to curated shims
+  in ./icons. Icon.tsx does `library.add(fal, fab, far, fas)`, which pulls every
+  icon in three 45 MB Pro packs and produced a 15.9 MB bundle — past the 12 MB
+  upload limit. The shims register the icons the product actually uses plus a
+  common-UI set. Keys are exact (no trailing *), so the single-icon subpath
+  imports inside the shims still resolve to the real packages.
+
+  Do NOT add "//" string keys to this file. The converter strips // line
+  comments with a regex before JSON.parse; a "//" key gets mangled, the parse
+  throws, and the paths plugin is silently dropped — the aliases just stop
+  working with no error. Block comments like this one are stripped safely.
+*/
+{
+  "compilerOptions": {
+    "baseUrl": "../",
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@common/*": ["common/src/*"],
+      "@fortawesome/pro-light-svg-icons": [".design-sync/icons/fal"],
+      "@fortawesome/pro-regular-svg-icons": [".design-sync/icons/far"],
+      "@fortawesome/pro-solid-svg-icons": [".design-sync/icons/fas"],
+      "@fortawesome/free-brands-svg-icons": [".design-sync/icons/fab"]
+    }
+  }
+}

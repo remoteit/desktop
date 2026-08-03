@@ -1,0 +1,197 @@
+{
+  "projectId": "2b368496-be1b-45aa-a706-f41dfab8dddb",
+  "shape": "package",
+  "pkg": "remoteit-desktop-frontend",
+  "globalName": "RemoteItProduct",
+  "srcDir": "frontend/src",
+  "tsconfig": ".design-sync/tsconfig.ds.json",
+  "guidelinesGlob": [],
+  "provider": {
+    "component": "DesignSystemProvider"
+  },
+  "componentSrcMap": {
+    "Container": "frontend/src/components/Container/Container.tsx",
+    "Gutters": "frontend/src/components/Gutters.tsx",
+    "Columns": "frontend/src/components/Columns/Columns.tsx",
+    "GridList": "frontend/src/components/GridList.tsx",
+    "GridListItem": "frontend/src/components/GridListItem.tsx",
+    "GridListHeaderTitle": "frontend/src/components/GridListHeaderTitle.tsx",
+    "ListHorizontal": "frontend/src/components/ListHorizontal.tsx",
+    "Icon": "frontend/src/components/Icon.tsx",
+    "Avatar": "frontend/src/components/Avatar/Avatar.tsx",
+    "Notice": "frontend/src/components/Notice.tsx",
+    "DataDisplay": "frontend/src/components/DataDisplay/DataDisplay.tsx",
+    "Attribute": null,
+    "Timestamp": "frontend/src/components/Timestamp.tsx",
+    "Percent": "frontend/src/components/Percent.tsx",
+    "Round": "frontend/src/components/Round.tsx",
+    "ColorChip": "frontend/src/components/ColorChip.tsx",
+    "LicenseChip": "frontend/src/components/LicenseChip.tsx",
+    "ProductStatusChip": "frontend/src/components/ProductStatusChip.tsx",
+    "ServiceMiniState": "frontend/src/components/ServiceMiniState.tsx",
+    "JobStatusIcon": "frontend/src/components/JobStatusIcon.tsx",
+    "PortScanIcon": "frontend/src/components/PortScanIcon.tsx",
+    "LicensingIcon": "frontend/src/components/LicensingIcon.tsx",
+    "ExpandIcon": "frontend/src/components/ExpandIcon.tsx",
+    "ArrowIcon": "frontend/src/components/ArrowIcon.tsx",
+    "ServiceLinkIcon": "frontend/src/components/ServiceLinkIcon.tsx",
+    "EventIcon": "frontend/src/components/EventList/EventIcon.tsx",
+    "InitiatorPlatform": "frontend/src/components/InitiatorPlatform.tsx",
+    "ListItemSetting": "frontend/src/components/ListItemSetting/ListItemSetting.tsx",
+    "ListItemCheckbox": "frontend/src/components/ListItemCheckbox/ListItemCheckbox.tsx",
+    "ListItemSelect": "frontend/src/components/ListItemSelect.tsx",
+    "SelectSetting": "frontend/src/components/SelectSetting.tsx",
+    "InlineTextFieldSetting": "frontend/src/components/InlineTextFieldSetting.tsx",
+    "InlineSelectSetting": "frontend/src/components/InlineSelectSetting/InlineSelectSetting.tsx",
+    "QuantitySelector": "frontend/src/components/QuantitySelector.tsx",
+    "TimeoutSetting": "frontend/src/components/TimeoutSetting.tsx",
+    "FormDisplay": "frontend/src/components/FormDisplay.tsx",
+    "DatePicker": "frontend/src/components/DatePicker/DatePicker.tsx",
+    "TagAutocomplete": "frontend/src/components/TagAutocomplete.tsx",
+    "Tags": "frontend/src/components/Tags.tsx",
+    "DynamicButton": "frontend/src/buttons/DynamicButton.tsx",
+    "DeleteButton": "frontend/src/buttons/DeleteButton.tsx",
+    "ConfirmButton": "frontend/src/buttons/ConfirmButton.tsx",
+    "ConfirmIconButton": "frontend/src/buttons/ConfirmIconButton.tsx",
+    "ListItemButton": "frontend/src/buttons/ListItemButton.tsx",
+    "ErrorButton": "frontend/src/buttons/ErrorButton/ErrorButton.tsx",
+    "ShareButton": "frontend/src/buttons/ShareButton.tsx",
+    "BarGraph": "frontend/src/components/BarGraph.tsx",
+    "TimeSeries": "frontend/src/components/TimeSeries.tsx",
+    "GraphColumn": "frontend/src/components/GraphColumn.tsx",
+    "LoadingMessage": "frontend/src/components/LoadingMessage/LoadingMessage.tsx",
+    "LoadMore": "frontend/src/components/LoadMore/LoadMore.tsx",
+    "PlanCard": "frontend/src/components/PlanCard.tsx",
+    "ConnectionChecklist": "frontend/src/components/ConnectionChecklist.tsx",
+    "SessionsTooltip": "frontend/src/components/SessionsTooltip/SessionsTooltip.tsx",
+    "AgentAvatar": "frontend/src/components/ConnectedApps/AgentAvatar.tsx",
+    "AgentListItem": "frontend/src/components/ConnectedApps/AgentListItem.tsx",
+    "EventTypeIconStack": "frontend/src/components/EventList/EventTypeIconStack.tsx",
+    "NetworkListTitle": "frontend/src/components/NetworkListTitle.tsx",
+    "ConnectionName": "frontend/src/components/ConnectionName.tsx",
+    "FilterSelector": "frontend/src/components/FilterSelector.tsx",
+    "ResellerLogo": "frontend/src/components/ResellerLogo.tsx"
+  },
+  "dtsPropsFor": {
+    "Container": "header?: React.ReactNode;\ndrawer?: React.ReactNode;\nfooter?: React.ReactNode;\nintegrated?: boolean;\nbodyProps?: BodyProps;\nbodyRef?: React.RefObject<HTMLDivElement>;\ngutterBottom?: boolean;\nbackgroundColor?: Color;\nclassName?: string;\nchildren?: React.ReactNode;",
+    "Gutters": "/** Also accepts: Omit<BoxProps, 'inset' | 'size' | 'bottom' | 'top' | 'center'> */\ninset?: Sizes | 'icon' | null;\nsize?: Sizes | null;\nbottom?: Sizes | null;\ntop?: Sizes | null;\ncenter?: boolean;\nclassName?: string;\nchildren?: React.ReactNode;",
+    "Columns": "count?: 1 | 2;\ninset?: boolean;\ncenter?: boolean;",
+    "GridList": "/** Also accepts: ListProps */\nattributes: Attribute<TOptions>[];\nrequired?: Attribute<TOptions>;\ncolumnWidths: ILookup<number>;\nmobile?: boolean;\nfetching?: boolean;\nrowHeight?: number;\nrowShrink?: number;\nheaderIcon?: React.ReactNode | boolean;\nheaderContextData?: THeaderContext;\nheaderContextProvider?: React.Provider<THeaderContext>;",
+    "GridListItem": "/** Also accepts: ListItemButtonProps */\ndata?: any;\nicon?: React.ReactNode;\nrequired?: React.ReactNode;\nmobile?: boolean;\nstickyCenter?: boolean;",
+    "GridListHeaderTitle": "attribute: Attribute<TOptions>;\nsticky?: boolean;\nonMouseDown: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>, attribute: Attribute<TOptions>) => void;\nchildren?: React.ReactNode;",
+    "ListHorizontal": "/** Also accepts: ListProps */\nsize?: 'large' | 'small';\nhideIcons?: boolean;",
+    "Icon": "name?: string;\ncolor?: Color | string;\nplatformIcon?: boolean;\nplatform?: number;\nclassName?: string;\ntitle?: string;\nfixedWidth?: boolean;\nfontSize?: number;\nonClick?: (event: React.MouseEvent) => void;\nsize?: Sizes;\nstyles?: React.CSSProperties;\nrotate?: number;\nspin?: boolean;\nscale?: number;\ntype?: IconType;\ninline?: boolean;\ninlineLeft?: boolean;\nmodified?: boolean;\ncurrentColor?: boolean;",
+    "Avatar": "email?: string;\nsize?: number;\nbutton?: boolean;\ntooltip?: boolean;\ninline?: boolean;\ntitle?: string;\nactive?: boolean;\nborder?: number;\nfallback?: string;\nmarginRight?: number;\nchildren?: React.ReactNode;",
+    "Notice": "severity?: 'info' | 'warning' | 'error' | 'success';\nbutton?: React.ReactNode;\ngutterTop?: boolean;\ngutterBottom?: boolean;\nfullWidth?: boolean;\nloading?: boolean;\nsolid?: boolean;\ninvert?: boolean;\nonClose?: () => void;\ncloseTitle?: string;\niconOverride?: React.ReactNode;\nclassName?: string;\nsx?: SxProps<Theme>;\nchildren?: React.ReactNode;",
+    "DataDisplay": "/** Also accepts: IDataOptions */\nattributes: Attribute[];\nlimits?: ILookup<boolean>;\ndisablePadding?: boolean;\nwidth?: number;",
+    "Timestamp": "time?: number;\ndate?: Date;\nvariant?: FormatProp;",
+    "Percent": "value: number;",
+    "Round": "value: number;",
+    "ColorChip": "/** Also accepts: Omit<ChipProps, 'variant' | 'color'> */\ncolor?: Color;\nvariant?: 'outlined' | 'contained' | 'text';\ninline?: boolean;",
+    "LicenseChip": "license?: ILicenseTypes;",
+    "ProductStatusChip": "/** Also accepts: Omit<ColorChipProps, 'label' | 'color' | 'variant' | 'icon'> */\nstatus?: IDeviceProduct['status'];",
+    "ServiceMiniState": "connection?: IConnection;\nservice?: IService;\nonClick?: (IContextMenu: any) => void;\nclassName?: string;",
+    "JobStatusIcon": "/** Also accepts: IconProps */\nstatus?: IJobStatus;\nsize?: Sizes;\ndevice?: boolean;\nshowTooltip?: boolean;\npadding?: number;",
+    "PortScanIcon": "state?: IPortScan;\nport?: number;\nhost?: string;",
+    "LicensingIcon": "license: ILicense;",
+    "ExpandIcon": "/** Also accepts: IconProps */\nopen?: boolean;",
+    "ArrowIcon": "name?: string;\ncolor?: Color | string;\nplatformIcon?: boolean;\nplatform?: number;\nclassName?: string;\ntitle?: string;\nfixedWidth?: boolean;\nfontSize?: number;\nonClick?: (event: React.MouseEvent) => void;\nsize?: Sizes;\nstyles?: React.CSSProperties;\nrotate?: number;\nspin?: boolean;\nscale?: number;\ntype?: IconType;\ninline?: boolean;\ninlineLeft?: boolean;\nmodified?: boolean;\ncurrentColor?: boolean;",
+    "ServiceLinkIcon": "/** Also accepts: IconProps */\nservice?: IService;",
+    "EventIcon": "item: IEvent;\nloggedInUser: IUser;",
+    "InitiatorPlatform": "id?: number;\nuser?: boolean;\nthisDevice?: boolean;",
+    "ListItemSetting": "icon?: React.ReactNode;\niconColor?: IconProps['color'];\niconType?: IconProps['type'];\nhideIcon?: boolean;\nlabel?: React.ReactNode;\nsubLabel?: React.ReactNode;\nsize?: 'small' | 'medium';\nbutton?: React.ReactNode;\ntoggle?: boolean;\ntooltip?: string;\ndisabled?: boolean;\nconfirm?: boolean;\nconfirmProps?: Omit<ConfirmProps, 'open' | 'onConfirm' | 'onDeny'>;\nquote?: boolean;\nmodified?: boolean;\ndisableGutters?: boolean;\ncontent?: React.ReactNode;\nsecondaryContent?: React.ReactNode;\nsecondaryContentWidth?: string | number;\nonClick?: () => void;\nonButtonClick?: () => void;",
+    "ListItemCheckbox": "/** Also accepts: Omit<ListItemButtonProps, 'onClick'> */\nlabel: string | React.ReactNode;\nsubLabel?: string | React.ReactNode;\nheight?: number;\nchecked?: boolean;\nindeterminate?: boolean;\nonClick: (checked: boolean) => void;",
+    "ListItemSelect": "icon?: string;\nlabel: React.ReactNode;\nsubLabel?: React.ReactNode;\nvalue?: string | number;\noptions: {\nlabel: string;\nvalue?: string;\n}[];\nonChange: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;\ndisabled?: boolean;",
+    "SelectSetting": "/** Also accepts: Omit<TextFieldProps, 'onChange'> */\nlabel?: string;\nvalue?: string | number;\nvalues: ISelect[];\nicon?: string;\nmodified?: boolean;\nhideIcon?: boolean;\nhelpMessage?: string;\ndefaultValue?: string | number;\ndisableGutters?: boolean;\nonChange?: (value: string) => void;",
+    "InlineTextFieldSetting": "value?: string | number;\nlabel?: React.ReactNode;\nicon?: React.ReactNode;\nplaceholder?: TextFieldProps['placeholder'];\nactionIcon?: React.ReactNode;\ndisplayValue?: string | number;\nfilter?: RegExp;\ncolor?: string;\nrequired?: boolean;\ndisabled?: boolean;\nresetValue?: string | number;\nmaxLength?: number;\nhideIcon?: boolean;\nwarning?: React.ReactNode;\nmodified?: boolean;\ndisableGutters?: boolean;\nautoCorrect?: boolean;\nmultiline?: boolean;\ntype?: InputProps['type'];\ndebug?: boolean;\nfieldProps?: TextFieldProps;\nDisplayComponent?: React.ReactElement<FormDisplayProps>;\nonError?: (value: string | undefined) => void;\nonSave?: (value: string | number) => void;\nonDelete?: () => void;",
+    "InlineSelectSetting": "label: string;\nvalue: string | number;\nvalues: ISelect[];\nicon?: JSX.Element | string;\ndisplayValue?: string | number;\ndisabled?: boolean;\nresetValue?: string | number;\nmodified?: boolean;\nonSave: (value: string | number) => void;",
+    "QuantitySelector": "quantity: number;\nonChange: (quantity: number) => void;",
+    "TimeoutSetting": "service: IService;\nconnection?: IConnection;",
+    "FormDisplay": "label?: React.ReactNode;\nicon?: React.ReactNode;\nvalue?: string | number | React.ReactNode;\nactionIcon?: React.ReactNode;\ndisplayValue?: string | number | React.ReactNode;\ndisabled?: boolean;\nloading?: boolean;\ncolor?: string;\nwarning?: React.ReactNode;\nhideIcon?: boolean;\nmodified?: boolean;\ndisableGutters?: boolean;\ndisplayOnly?: boolean;\nhideEmpty?: boolean;\nonDelete?: () => void;\nonClick?: () => void;",
+    "DatePicker": "minDay?: Date;\nselectedDate?: Date;\nonChange?: (date: Date | null) => void;",
+    "TagAutocomplete": "open: boolean;\nitems: ITag[];\nfilter?: ITag[];\ntargetEl: Element | null;\nplaceholder: string;\nallowAdding?: boolean;\ncreateOnly?: boolean;\nindicator?: string;\nhideIcons?: boolean;\nInputProps?: TextFieldProps['InputProps'];\nonItemColor?: (value: ITag) => string;\nonSelect?: (action: 'add' | 'new', value: ITag) => void;\nonChange?: (value?: string) => void;\nonClose?: () => void;",
+    "Tags": "/** Also accepts: BoxProps */\ntags: ITag[];\nsmall?: boolean;\nmax?: number;\nshowEmpty?: boolean;\nhideLabels?: boolean;\nonClick?: (tag: ITag) => void;\nonDelete?: (tag: ITag) => void;",
+    "DynamicButton": "/** Also accepts: Omit<ButtonProps, 'color' | 'size'> */\ntitle?: string;\nicon?: string | React.ReactNode;\niconType?: IconProps['type'];\ncolor?: Color;\nsize?: 'icon' | 'chip' | 'medium' | 'small' | 'large';\niconSize?: IconProps['size'];\nloading?: boolean;",
+    "DeleteButton": "title?: string;\nwarning?: React.ReactNode;\nicon?: string;\ndisabled?: boolean;\ndestroying?: boolean;\nmenuItem?: boolean;\nonDelete: () => void;\nonCancel?: () => void;",
+    "ConfirmButton": "/** Also accepts: DynamicButtonProps */\nconfirm?: boolean;\nconfirmProps?: Omit<ConfirmProps, 'open' | 'onConfirm' | 'onDeny'>;",
+    "ConfirmIconButton": "to?: string;\ntitle?: React.ReactNode;\nforceTitle?: boolean;\nicon?: string;\nname?: string;\nsx?: import(\"@mui/system\").SxProps<import(\"@mui/material\").Theme>;\ndisabled?: boolean;\nhideDisableFade?: boolean;\niconInlineLeft?: boolean;\nbuttonBaseSize?: \"small\" | \"medium\" | \"large\";\nvariant?: \"text\" | \"contained\" | \"outlined\";\nshiftDown?: boolean;\nloading?: boolean;\nsubmit?: boolean;\nhide?: boolean;\nplacement?: import(\"@mui/material\").TooltipProps[\"placement\"];\nchildren?: React.ReactNode;\nonMouseEnter?: (e: React.MouseEvent) => void;\nonMouseLeave?: (e: React.MouseEvent) => void;\nonMouseDown?: (e: React.MouseEvent) => void;\nonClick?: (e: React.MouseEvent) => void;\nconfirm?: boolean;\nconfirmProps?: Omit<ConfirmProps, \"open\" | \"onConfirm\" | \"onDeny\">;",
+    "ListItemButton": "title: string;\nvalue?: string;\nlabel?: string;\ndense?: boolean;\nicon: React.ReactNode | null;\niconColor?: Color;\ngutterBottom?: boolean;\nfullWidth?: boolean;\ninvertBackground?: boolean;\nshowBackground?: boolean;\nalwaysWhite?: boolean;\naction?: React.ReactNode;\nonClick: (event?: any) => void;",
+    "ErrorButton": "connection?: IConnection;\nonClick?: () => void;\nvisible: boolean;",
+    "ShareButton": "/** Also accepts: Omit<IconProps, 'title'> */\nto?: string;\ntitle?: React.ReactNode;\nforceTitle?: boolean;\nicon?: string;\nname?: string;\nsx?: SxProps<Theme>;\ndisabled?: boolean;\nhideDisableFade?: boolean;\niconInlineLeft?: boolean;\nbuttonBaseSize?: 'small' | 'medium' | 'large';\nvariant?: VariantType;\nshiftDown?: boolean;\nloading?: boolean;\nsubmit?: boolean;\nhide?: boolean;\nplacement?: TooltipProps['placement'];\nchildren?: React.ReactNode;\nonMouseEnter?: (e: React.MouseEvent) => void;\nonMouseLeave?: (e: React.MouseEvent) => void;\nonMouseDown?: (e: React.MouseEvent) => void;\nonClick?: (e: React.MouseEvent) => void;",
+    "BarGraph": "/** Also accepts: React.HTMLAttributes<HTMLOrSVGElement> */\ndata: ITimeSeries;\nwidth?: number;\nheight?: number;\nmax?: number;\nmin?: number;\ncolor?: Color;\nonHover?: (value?: [Date, number]) => void;",
+    "TimeSeries": "/** Also accepts: Omit<BarGraphProps, 'data'> */\ntimeSeries?: ITimeSeries;\nonline?: boolean;\nvariant?: 'large' | 'small';",
+    "GraphColumn": "title: string;\ntimeSeries?: ITimeSeries;",
+    "LoadingMessage": "message?: React.ReactNode;\nspinner?: boolean;\nlogo?: React.ReactNode;\ninline?: boolean;\ninvert?: boolean;\nchildren?: React.ReactNode;",
+    "LoadMore": "from: number;\nsize: number;\ncount: number;\nfetching: boolean;\nonLoadMore: () => void;",
+    "PlanCard": "name: string | React.ReactNode;\ndescription: string;\nprice?: string;\ncaption: React.ReactNode;\nnote?: string;\nfeatures?: string[];\nbutton: string;\npromoted?: boolean;\ndisabled?: boolean;\nselected?: boolean;\nloading?: boolean;\nwide?: boolean;\nonSelect?: () => void;",
+    "ConnectionChecklist": "connection?: IConnection;",
+    "SessionsTooltip": "service?: IService;\nplacement?: TooltipProps['placement'];\nsessions?: ISession[];\nlabel?: boolean;\nsecondaryLabel?: string;\nopen?: boolean;\narrow?: boolean;\ndisabled?: boolean;\nchildren?: React.ReactNode;",
+    "AgentAvatar": "agent: IAuthorizedAgent;\nsize?: number;\ninline?: boolean;",
+    "AgentListItem": "agent: IAuthorizedAgent;",
+    "EventTypeIconStack": "items: IEvent[];\nuser: IUser;\nselected?: boolean;\nspacing?: number;",
+    "NetworkListTitle": "network?: INetwork;\nexpanded?: boolean;\nnoLink?: boolean;\nenabled?: boolean;\nonClick?: (event: React.MouseEvent) => void;\nchildren?: React.ReactNode;",
+    "ConnectionName": "name?: string;\nport?: number;\ncolor?: string;",
+    "FilterSelector": "value: string | number | string[] | number[];\nicon: string;\nfilterList: {\nvalue: string | number;\nname: string;\ncolor?: string;\n}[];\nchildren?: React.ReactNode;\nonSelect: (value: any) => void;",
+    "ResellerLogo": "/** Also accepts: BoxProps */\nreseller?: IResellerRef | null;\nsize?: 'small' | 'medium';"
+  },
+  "buildCmd": "npx tsc -p frontend/tsconfig.json --emitDeclarationOnly --declaration --noEmit false --outDir ds-types --skipLibCheck || true; node .design-sync/gen-icons.mjs && node .design-sync/gen-props.mjs",
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "DeleteButton": {
+      "cardMode": "column"
+    },
+    "EventIcon": {
+      "cardMode": "column"
+    },
+    "Columns": {
+      "cardMode": "column"
+    },
+    "Container": {
+      "cardMode": "column"
+    },
+    "GraphColumn": {
+      "cardMode": "column"
+    },
+    "GridList": {
+      "cardMode": "column"
+    },
+    "GridListHeaderTitle": {
+      "cardMode": "column"
+    },
+    "GridListItem": {
+      "cardMode": "column"
+    },
+    "Gutters": {
+      "cardMode": "column"
+    },
+    "InitiatorPlatform": {
+      "cardMode": "column"
+    },
+    "JobStatusIcon": {
+      "cardMode": "column"
+    },
+    "LicenseChip": {
+      "cardMode": "column"
+    },
+    "LicensingIcon": {
+      "cardMode": "column"
+    },
+    "ListHorizontal": {
+      "cardMode": "column"
+    },
+    "LoadMore": {
+      "cardMode": "column"
+    },
+    "ProductStatusChip": {
+      "cardMode": "column"
+    },
+    "SessionsTooltip": {
+      "cardMode": "single",
+      "primaryStory": "ActiveUsers"
+    },
+    "TagAutocomplete": {
+      "cardMode": "single",
+      "primaryStory": "AllTags"
+    }
+  }
+}

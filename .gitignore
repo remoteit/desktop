@@ -39,3 +39,11 @@ logs/code_signing_tool.log
 /frontend/public/brand
 /electron/src/images
 /electron/src/icons
+
+# design-sync (staged scripts, build output, emitted types, machine state)
+.ds-sync/
+ds-bundle/
+ds-types/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
