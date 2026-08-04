@@ -24,11 +24,10 @@ export const ChatOrgSelect: React.FC = () => {
       <TextField
         select
         fullWidth
-        size="small"
+        variant="filled"
         label="Organization"
         value={orgId || userId}
         onChange={event => dispatch.chat.set({ orgId: event.target.value })}
-        sx={{ '& .MuiSelect-select': { paddingY: '14px' } }}
       >
         <MenuItem value={userId}>Personal</MenuItem>
         {options.map(o => (
