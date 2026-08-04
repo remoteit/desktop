@@ -11,19 +11,22 @@ import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { isChatPopout } from '../../services/chatPopout'
 
+const UNAVAILABLE_MESSAGE = 'Mycal is temporarily unavailable. Check your internet connection or try again in a few minutes.'
+
 /* Everything below the chat header — shared by the docked panel and the
    popout window */
 export const ChatBody: React.FC = () => {
   const chat = useSelector((state: State) => state.chat)
   const dispatch = useDispatch<Dispatch>()
   const signedOut = chat.health === 'unauthorized'
+  const unreachable = chat.health === 'unreachable'
 
   return (
     <>
       <ChatOrgSelect />
-      {chat.health === 'unreachable' && (
+      {unreachable && !!chat.messages.length && (
         <Notice severity="warning" gutterTop>
-          Agent unreachable — is the dev service running on :3001?
+          {UNAVAILABLE_MESSAGE}
         </Notice>
       )}
       {signedOut ? (
@@ -38,6 +41,13 @@ export const ChatBody: React.FC = () => {
               Sign in with remote.it
             </Button>
           )}
+        </Body>
+      ) : unreachable && !chat.messages.length ? (
+        <Body center>
+          <Icon name="robot" size="xxxl" color="grayDark" />
+          <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
+            {UNAVAILABLE_MESSAGE}
+          </Typography>
         </Body>
       ) : (
         <ChatMessages messages={chat.messages} streaming={chat.streaming}>
@@ -56,7 +66,7 @@ export const ChatBody: React.FC = () => {
         </ChatMessages>
       )}
       <ChatInput
-        disabled={!!chat.pendingConfirmation || signedOut}
+        disabled={!!chat.pendingConfirmation || signedOut || unreachable}
         placeholder={chat.pendingConfirmation ? 'Waiting for approval…' : ''}
         streaming={chat.streaming}
         onSend={text => dispatch.chat.send(text)}
