@@ -133,7 +133,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
                 <HeaderDeviceOptionMenu />
               </Route>
             )}
-            <Route path="/products" exact>
+            <Route path={['/products', '/products/select']} exact>
               <ProductsHeaderButtons />
             </Route>
           </>

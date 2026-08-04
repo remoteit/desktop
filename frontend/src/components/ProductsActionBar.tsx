@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Typography, Collapse } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { IconButton } from '../buttons/IconButton'
@@ -22,15 +22,9 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
   const [deleting, setDeleting] = useState(false)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const history = useHistory()
-  const location = useLocation()
   const { t } = useTranslation()
 
-  const clearSelectMode = () => {
-    const newParams = new URLSearchParams(location.search)
-    newParams.delete('select')
-    const search = newParams.toString()
-    history.push(`${location.pathname}${search ? `?${search}` : ''}`)
-  }
+  const clearSelectMode = () => history.push('/products')
 
   const handleDelete = async () => {
     setDeleting(true)

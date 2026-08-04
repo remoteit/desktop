@@ -1405,6 +1405,7 @@
     "localPort": "ローカルポート"
   },
   "productAddPage": {
+    "adminRequired": "",
     "createFailed": "プロダクトの作成に失敗しました",
     "creating": "作成中...",
     "nameRequired": "プロダクト名は必須です",
@@ -1438,9 +1439,13 @@
     "deleteSelected": "選択項目を削除",
     "selected": "選択済み"
   },
+  "productsHeaderButtons": {
+    "adminRequired": ""
+  },
   "productsPage": {
     "createFirst": "",
     "emptyHelp": "",
+    "emptyHelpReadOnly": "",
     "loading": ""
   },
   "productServiceAddPage": {

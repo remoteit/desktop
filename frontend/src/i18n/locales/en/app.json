@@ -1471,6 +1471,7 @@
     "localPort": "Local Port"
   },
   "productAddPage": {
+    "adminRequired": "You must have the admin permission to create a product.",
     "createFailed": "Failed to create product",
     "creating": "Creating...",
     "nameRequired": "Product name is required",
@@ -1506,9 +1507,13 @@
     "deleteSelected": "Delete selected",
     "selected": "Selected"
   },
+  "productsHeaderButtons": {
+    "adminRequired": "Admin permissions required"
+  },
   "productsPage": {
     "createFirst": "Create your first product",
     "emptyHelp": "Products are used for bulk device registration and management.",
+    "emptyHelpReadOnly": "Products are used for bulk device registration and management. You must have the admin permission to create one.",
     "loading": "Loading products..."
   },
   "productServiceAddPage": {

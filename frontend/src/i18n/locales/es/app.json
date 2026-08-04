@@ -1445,6 +1445,7 @@
     "localPort": "Puerto local"
   },
   "productAddPage": {
+    "adminRequired": "",
     "createFailed": "Error al crear el producto",
     "creating": "Creando...",
     "nameRequired": "El nombre del producto es obligatorio",
@@ -1482,9 +1483,13 @@
     "deleteSelected": "Eliminar selección",
     "selected": "Seleccionado"
   },
+  "productsHeaderButtons": {
+    "adminRequired": ""
+  },
   "productsPage": {
     "createFirst": "",
     "emptyHelp": "",
+    "emptyHelpReadOnly": "",
     "loading": ""
   },
   "productServiceAddPage": {

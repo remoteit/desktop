@@ -1425,6 +1425,7 @@
     "localPort": "Lokaler Port"
   },
   "productAddPage": {
+    "adminRequired": "",
     "createFailed": "Erstellen des Produkts fehlgeschlagen",
     "creating": "Wird erstellt...",
     "nameRequired": "Produktname ist erforderlich",
@@ -1460,9 +1461,13 @@
     "deleteSelected": "Auswahl löschen",
     "selected": "Ausgewählt"
   },
+  "productsHeaderButtons": {
+    "adminRequired": ""
+  },
   "productsPage": {
     "createFirst": "",
     "emptyHelp": "",
+    "emptyHelpReadOnly": "",
     "loading": ""
   },
   "productServiceAddPage": {

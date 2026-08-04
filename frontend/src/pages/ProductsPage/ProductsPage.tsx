@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Typography, Button, Box } from '@mui/material'
@@ -13,14 +13,13 @@ import { productAttributes } from '../../components/ProductAttributes'
 import { removeObject } from '../../helpers/utilHelper'
 import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
+import { selectPermissions } from '../../selectors/organizations'
 
-export const ProductsPage: React.FC = () => {
+export const ProductsPage: React.FC<{ select?: boolean }> = ({ select }) => {
   const history = useHistory()
-  const location = useLocation()
   const { t } = useTranslation()
   const { productId } = useParams<{ productId?: string }>()
-  const searchParams = new URLSearchParams(location.search)
-  const select = searchParams.get('select') === 'true'
+  const admin = useSelector(selectPermissions).includes('ADMIN')
   const productModel = useSelector(getProductModel)
   const products = productModel.all || []
   const fetching = productModel.fetching || false
@@ -63,11 +62,19 @@ export const ProductsPage: React.FC = () => {
           <LoadingMessage message={t('productsPage.loading', 'Loading products...')} />
         ) : products.length === 0 ? (
           <Body center>
-            <Button variant="contained" color="primary" size="medium" onClick={() => history.push('/products/add')}>
-              <Icon name="plus" type="solid" inlineLeft /> {t('productsPage.createFirst', 'Create your first product')}
-            </Button>
+            {admin && (
+              <Button variant="contained" color="primary" size="medium" onClick={() => history.push('/products/add')}>
+                <Icon name="plus" type="solid" inlineLeft />{' '}
+                {t('productsPage.createFirst', 'Create your first product')}
+              </Button>
+            )}
             <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
-              {t('productsPage.emptyHelp', 'Products are used for bulk device registration and management.')}
+              {admin
+                ? t('productsPage.emptyHelp', 'Products are used for bulk device registration and management.')
+                : t(
+                    'productsPage.emptyHelpReadOnly',
+                    'Products are used for bulk device registration and management. You must have the admin permission to create one.'
+                  )}
             </Typography>
           </Body>
         ) : (
