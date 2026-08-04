@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
@@ -25,12 +25,15 @@ export default defineConfig(({ mode }) => ({
     alias: { '@common': path.resolve(__dirname, '../common/src') },
   },
   server: {
-    // Dev-only: same-origin path to the local ai-agent service, so the app's
-    // CSP ('self') passes without loosening. Staging/prod set VITE_AGENT_URL
-    // to the deployed agent domain instead — this proxy does not exist in builds.
+    // Dev-only: same-origin path to the ai-agent service, so the app's CSP
+    // ('self') passes without loosening. Defaults to the local dev service;
+    // set AGENT_PROXY_TARGET in frontend/.env to point at a deployed agent
+    // (e.g. http://dev-ai-agent.remote.it — its ALB is HTTP-only for now, so
+    // the same-origin proxy also sidesteps the CSP https:-only rule).
+    // Staging/prod builds set VITE_AGENT_URL instead — no proxy in builds.
     proxy: {
       '/agent': {
-        target: 'http://localhost:3001',
+        target: loadEnv(mode, __dirname, '').AGENT_PROXY_TARGET || 'http://localhost:3001',
         changeOrigin: true,
         rewrite: p => p.replace(/^\/agent/, ''),
       },
