@@ -12,6 +12,7 @@ import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
 import { getProductsSelected } from '../selectors/products'
+import { selectPermissions } from '../selectors/organizations'
 
 type Props = {
   select?: boolean
@@ -19,6 +20,7 @@ type Props = {
 
 export const ProductsActionBar: React.FC<Props> = ({ select }) => {
   const selected = useSelector(getProductsSelected)
+  const admin = useSelector(selectPermissions).includes('ADMIN')
   const [deleting, setDeleting] = useState(false)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const history = useHistory()
@@ -67,10 +69,14 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ConfirmIconButton
             icon="trash"
-            title={t('productsActionBar.deleteSelected', 'Delete selected')}
+            title={
+              admin
+                ? t('productsActionBar.deleteSelected', 'Delete selected')
+                : t('productsActionBar.adminRequired', 'Admin permissions required')
+            }
             color="alwaysWhite"
             placement="bottom"
-            disabled={!selected.length}
+            disabled={!admin || !selected.length}
             loading={deleting}
             onClick={handleDelete}
             confirmProps={{
@@ -113,4 +119,3 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
     </Collapse>
   )
 }
-

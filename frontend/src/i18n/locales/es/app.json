@@ -1455,6 +1455,7 @@
     "title": "Crear producto"
   },
   "productOptionMenu": {
+    "adminRequired": "",
     "cannotBeUndone": "Esta acción no se puede deshacer.",
     "deleteConfirmPrefix": "¿Seguro que quieres eliminar permanentemente el producto",
     "deleteConfirmSuffix": "y todos sus servicios?",
@@ -1472,6 +1473,7 @@
     "unknown": "Desconocido"
   },
   "productsActionBar": {
+    "adminRequired": "",
     "clearSelection": "Borrar selección",
     "confirmAction_one": "Eliminar {{count}} producto",
     "confirmAction_many": "Eliminar {{count}} productos",

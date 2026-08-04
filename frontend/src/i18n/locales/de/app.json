@@ -1435,6 +1435,7 @@
     "title": "Produkt erstellen"
   },
   "productOptionMenu": {
+    "adminRequired": "",
     "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteConfirmPrefix": "Möchten Sie das Produkt wirklich dauerhaft löschen",
     "deleteConfirmSuffix": "und alle zugehörigen Dienste?",
@@ -1452,6 +1453,7 @@
     "unknown": "Unbekannt"
   },
   "productsActionBar": {
+    "adminRequired": "",
     "clearSelection": "Auswahl aufheben",
     "confirmAction_one": "{{count}} Produkt löschen",
     "confirmAction_other": "{{count}} Produkte löschen",

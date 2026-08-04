@@ -1481,6 +1481,7 @@
     "title": "Create Product"
   },
   "productOptionMenu": {
+    "adminRequired": "Admin permissions required",
     "cannotBeUndone": "This action cannot be undone.",
     "deleteConfirmPrefix": "Are you sure you want to permanently delete the product",
     "deleteConfirmSuffix": "and all its services?",
@@ -1498,6 +1499,7 @@
     "unknown": "Unknown"
   },
   "productsActionBar": {
+    "adminRequired": "Admin permissions required",
     "clearSelection": "Clear selection",
     "confirmAction_one": "Delete {{count}} product",
     "confirmAction_other": "Delete {{count}} products",

@@ -1415,6 +1415,7 @@
     "title": "プロダクトを作成"
   },
   "productOptionMenu": {
+    "adminRequired": "",
     "cannotBeUndone": "この操作は元に戻せません。",
     "deleteConfirmPrefix": "次のプロダクト",
     "deleteConfirmSuffix": "とそのすべてのサービスを完全に削除してもよろしいですか？",
@@ -1432,6 +1433,7 @@
     "unknown": "不明"
   },
   "productsActionBar": {
+    "adminRequired": "",
     "clearSelection": "選択を解除",
     "confirmAction_other": "{{count}}件のプロダクトを削除",
     "confirmBody_other": "{{count}}件のプロダクトを削除してもよろしいですか?",
