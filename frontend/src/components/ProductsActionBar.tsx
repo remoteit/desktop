@@ -76,6 +76,7 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
             }
             color="alwaysWhite"
             placement="bottom"
+            forceTitle
             disabled={!admin || !selected.length}
             loading={deleting}
             onClick={handleDelete}

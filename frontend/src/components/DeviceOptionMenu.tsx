@@ -47,6 +47,17 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
     if (product) history.push(`/products/${product.id}/details`)
   }
 
+  // Only wrapped in a tooltip when disabled — MenuList arrow-key traversal skips a
+  // span-wrapped item, so an enabled one has to stay a direct child of the Menu.
+  const makeProductItem = (
+    <MenuItem dense key="makeProduct" disabled={!admin} onClick={handleMakeProduct}>
+      <ListItemIcon>
+        <Icon name="conveyor-belt-boxes" size="md" />
+      </ListItemIcon>
+      <ListItemText primary={t('deviceOptionMenu.makeProduct', 'Make Product')} />
+    </MenuItem>
+  )
+
   return (
     <>
       <MobileUI hide>{!devicesSection && <InfoButton device={device} service={service} />}</MobileUI>
@@ -125,21 +136,18 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               </ListItemIcon>
               <ListItemText primary={t('deviceOptionMenu.transferDevice', 'Transfer Device')} />
             </MenuItem>,
-            <Tooltip
-              key="makeProduct"
-              placement="left"
-              title={admin ? '' : t('deviceOptionMenu.adminRequired', 'Admin permissions required')}
-              arrow
-            >
-              <span>
-                <MenuItem dense disabled={!admin} onClick={handleMakeProduct}>
-                  <ListItemIcon>
-                    <Icon name="conveyor-belt-boxes" size="md" />
-                  </ListItemIcon>
-                  <ListItemText primary={t('deviceOptionMenu.makeProduct', 'Make Product')} />
-                </MenuItem>
-              </span>
-            </Tooltip>,
+            admin ? (
+              makeProductItem
+            ) : (
+              <Tooltip
+                key="makeProduct"
+                placement="left"
+                title={t('deviceOptionMenu.adminRequired', 'Admin permissions required')}
+                arrow
+              >
+                <span>{makeProductItem}</span>
+              </Tooltip>
+            ),
           ]}
         {device.permissions.includes('MANAGE') &&
           devicesSection &&

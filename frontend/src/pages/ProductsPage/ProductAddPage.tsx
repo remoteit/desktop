@@ -91,7 +91,10 @@ export const ProductAddPage: React.FC = () => {
           </Notice>
         )}
 
-        <form onSubmit={handleCreate}>
+        {/* noValidate so the checks in handleCreate report through the Notice above —
+            the Select's native input is visually hidden, so browser validation on it
+            blocks submit and anchors its bubble to an invisible control. */}
+        <form onSubmit={handleCreate} noValidate>
           <TextField
             variant="filled"
             label={t('productAddPage.productName', 'Product Name')}
