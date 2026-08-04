@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Typography, Collapse } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { IconButton } from '../buttons/IconButton'
@@ -12,6 +12,7 @@ import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
 import { getProductsSelected } from '../selectors/products'
+import { selectPermissions } from '../selectors/organizations'
 
 type Props = {
   select?: boolean
@@ -19,18 +20,13 @@ type Props = {
 
 export const ProductsActionBar: React.FC<Props> = ({ select }) => {
   const selected = useSelector(getProductsSelected)
+  const admin = useSelector(selectPermissions).includes('ADMIN')
   const [deleting, setDeleting] = useState(false)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const history = useHistory()
-  const location = useLocation()
   const { t } = useTranslation()
 
-  const clearSelectMode = () => {
-    const newParams = new URLSearchParams(location.search)
-    newParams.delete('select')
-    const search = newParams.toString()
-    history.push(`${location.pathname}${search ? `?${search}` : ''}`)
-  }
+  const clearSelectMode = () => history.push('/products')
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -73,10 +69,15 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ConfirmIconButton
             icon="trash"
-            title={t('productsActionBar.deleteSelected', 'Delete selected')}
+            title={
+              admin
+                ? t('productsActionBar.deleteSelected', 'Delete selected')
+                : t('productsActionBar.adminRequired', 'Admin permissions required')
+            }
             color="alwaysWhite"
             placement="bottom"
-            disabled={!selected.length}
+            forceTitle
+            disabled={!admin || !selected.length}
             loading={deleting}
             onClick={handleDelete}
             confirmProps={{
@@ -119,4 +120,3 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
     </Collapse>
   )
 }
-

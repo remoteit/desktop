@@ -605,6 +605,7 @@
     "label": "Nombre del dispositivo"
   },
   "deviceOptionMenu": {
+    "adminRequired": "",
     "deviceDetails": "Detalles del dispositivo",
     "deviceLink": "Enlace del dispositivo",
     "makeProduct": "Crear producto",
@@ -783,6 +784,7 @@
   },
   "header": {
     "back": "Atrás",
+    "create": "",
     "deviceSearch": "Búsqueda de dispositivos",
     "hideSelect": "Ocultar selección",
     "products": "Productos",
@@ -1444,6 +1446,7 @@
     "localPort": "Puerto local"
   },
   "productAddPage": {
+    "adminRequired": "",
     "createFailed": "Error al crear el producto",
     "creating": "Creando...",
     "nameRequired": "El nombre del producto es obligatorio",
@@ -1453,6 +1456,7 @@
     "title": "Crear producto"
   },
   "productOptionMenu": {
+    "adminRequired": "",
     "cannotBeUndone": "Esta acción no se puede deshacer.",
     "deleteConfirmPrefix": "¿Seguro que quieres eliminar permanentemente el producto",
     "deleteConfirmSuffix": "y todos sus servicios?",
@@ -1470,6 +1474,7 @@
     "unknown": "Desconocido"
   },
   "productsActionBar": {
+    "adminRequired": "",
     "clearSelection": "Borrar selección",
     "confirmAction_one": "Eliminar {{count}} producto",
     "confirmAction_many": "Eliminar {{count}} productos",
@@ -1480,6 +1485,15 @@
     "confirmTitle": "Confirmar eliminación del producto",
     "deleteSelected": "Eliminar selección",
     "selected": "Seleccionado"
+  },
+  "productsHeaderButtons": {
+    "adminRequired": ""
+  },
+  "productsPage": {
+    "createFirst": "",
+    "emptyHelp": "",
+    "emptyHelpReadOnly": "",
+    "loading": ""
   },
   "productServiceAddPage": {
     "failedToAddService": "Error al añadir el servicio",

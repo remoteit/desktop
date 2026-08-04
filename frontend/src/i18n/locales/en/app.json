@@ -599,6 +599,7 @@
     "label": "Device Name"
   },
   "deviceOptionMenu": {
+    "adminRequired": "Admin permissions required",
     "deviceDetails": "Device Details",
     "deviceLink": "Device Link",
     "makeProduct": "Make Product",
@@ -790,6 +791,7 @@
   },
   "header": {
     "back": "Back",
+    "create": "Create",
     "deviceSearch": "Device Search",
     "hideSelect": "Hide Select",
     "products": "Products",
@@ -1470,6 +1472,7 @@
     "localPort": "Local Port"
   },
   "productAddPage": {
+    "adminRequired": "You must have the admin permission to create a product.",
     "createFailed": "Failed to create product",
     "creating": "Creating...",
     "nameRequired": "Product name is required",
@@ -1479,6 +1482,7 @@
     "title": "Create Product"
   },
   "productOptionMenu": {
+    "adminRequired": "Admin permissions required",
     "cannotBeUndone": "This action cannot be undone.",
     "deleteConfirmPrefix": "Are you sure you want to permanently delete the product",
     "deleteConfirmSuffix": "and all its services?",
@@ -1496,6 +1500,7 @@
     "unknown": "Unknown"
   },
   "productsActionBar": {
+    "adminRequired": "Admin permissions required",
     "clearSelection": "Clear selection",
     "confirmAction_one": "Delete {{count}} product",
     "confirmAction_other": "Delete {{count}} products",
@@ -1504,6 +1509,15 @@
     "confirmTitle": "Confirm Product Deletion",
     "deleteSelected": "Delete selected",
     "selected": "Selected"
+  },
+  "productsHeaderButtons": {
+    "adminRequired": "Admin permissions required"
+  },
+  "productsPage": {
+    "createFirst": "Create your first product",
+    "emptyHelp": "Products are used for bulk device registration and management.",
+    "emptyHelpReadOnly": "Products are used for bulk device registration and management. You must have the admin permission to create one.",
+    "loading": "Loading products..."
   },
   "productServiceAddPage": {
     "failedToAddService": "Failed to add service",

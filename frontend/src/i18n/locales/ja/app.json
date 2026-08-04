@@ -593,6 +593,7 @@
     "label": "デバイス名"
   },
   "deviceOptionMenu": {
+    "adminRequired": "",
     "deviceDetails": "デバイスの詳細",
     "deviceLink": "デバイスリンク",
     "makeProduct": "プロダクトを作成",
@@ -765,6 +766,7 @@
   },
   "header": {
     "back": "戻る",
+    "create": "",
     "deviceSearch": "デバイス検索",
     "hideSelect": "選択を隠す",
     "products": "プロダクト",
@@ -1404,6 +1406,7 @@
     "localPort": "ローカルポート"
   },
   "productAddPage": {
+    "adminRequired": "",
     "createFailed": "プロダクトの作成に失敗しました",
     "creating": "作成中...",
     "nameRequired": "プロダクト名は必須です",
@@ -1413,6 +1416,7 @@
     "title": "プロダクトを作成"
   },
   "productOptionMenu": {
+    "adminRequired": "",
     "cannotBeUndone": "この操作は元に戻せません。",
     "deleteConfirmPrefix": "次のプロダクト",
     "deleteConfirmSuffix": "とそのすべてのサービスを完全に削除してもよろしいですか？",
@@ -1430,12 +1434,22 @@
     "unknown": "不明"
   },
   "productsActionBar": {
+    "adminRequired": "",
     "clearSelection": "選択を解除",
     "confirmAction_other": "{{count}}件のプロダクトを削除",
     "confirmBody_other": "{{count}}件のプロダクトを削除してもよろしいですか?",
     "confirmTitle": "プロダクトの削除を確認",
     "deleteSelected": "選択項目を削除",
     "selected": "選択済み"
+  },
+  "productsHeaderButtons": {
+    "adminRequired": ""
+  },
+  "productsPage": {
+    "createFirst": "",
+    "emptyHelp": "",
+    "emptyHelpReadOnly": "",
+    "loading": ""
   },
   "productServiceAddPage": {
     "failedToAddService": "サービスの追加に失敗しました",

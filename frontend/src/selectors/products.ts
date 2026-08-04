@@ -23,6 +23,8 @@ export const getProducts = createSelector(
   (products, activeAccountId): IDeviceProduct[] => getProductModelFn(products, activeAccountId).all || []
 )
 
+export const getHasProducts = createSelector([getProducts], products => products.length > 0)
+
 export const getProductsFetching = createSelector(
   [getProductModel],
   productModel => productModel.fetching
