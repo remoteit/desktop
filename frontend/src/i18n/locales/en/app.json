@@ -599,6 +599,7 @@
     "label": "Device Name"
   },
   "deviceOptionMenu": {
+    "adminRequired": "Admin permissions required",
     "deviceDetails": "Device Details",
     "deviceLink": "Device Link",
     "makeProduct": "Make Product",

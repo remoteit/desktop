@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useHistory } from 'react-router-dom'
-import { Divider, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import { Divider, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
+import { selectPermissions } from '../selectors/organizations'
 import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { ListItemLocation } from './ListItemLocation'
 import { CopyMenuItem } from './CopyMenuItem'
@@ -24,6 +25,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
   const dispatch = useDispatch<Dispatch>()
+  const admin = useSelector(selectPermissions).includes('ADMIN')
   const { t } = useTranslation()
   const devicesSection = !!deviceID
   const deviceOnly = device && !service
@@ -123,12 +125,21 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               </ListItemIcon>
               <ListItemText primary={t('deviceOptionMenu.transferDevice', 'Transfer Device')} />
             </MenuItem>,
-            <MenuItem dense key="makeProduct" onClick={handleMakeProduct}>
-              <ListItemIcon>
-                <Icon name="conveyor-belt-boxes" size="md" />
-              </ListItemIcon>
-              <ListItemText primary={t('deviceOptionMenu.makeProduct', 'Make Product')} />
-            </MenuItem>,
+            <Tooltip
+              key="makeProduct"
+              placement="left"
+              title={admin ? '' : t('deviceOptionMenu.adminRequired', 'Admin permissions required')}
+              arrow
+            >
+              <span>
+                <MenuItem dense disabled={!admin} onClick={handleMakeProduct}>
+                  <ListItemIcon>
+                    <Icon name="conveyor-belt-boxes" size="md" />
+                  </ListItemIcon>
+                  <ListItemText primary={t('deviceOptionMenu.makeProduct', 'Make Product')} />
+                </MenuItem>
+              </span>
+            </Tooltip>,
           ]}
         {device.permissions.includes('MANAGE') &&
           devicesSection &&
@@ -140,7 +151,13 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
           service &&
           devicesSection && [
             <Divider key="divider" />,
-            <DeleteServiceMenuItem key="deleteService" device={device} service={service} onClick={handleClose} onCancel={handleClose} />,
+            <DeleteServiceMenuItem
+              key="deleteService"
+              device={device}
+              service={service}
+              onClick={handleClose}
+              onCancel={handleClose}
+            />,
           ]}
         <LeaveDevice key="leaveDevice" device={device} menuItem />
       </Menu>

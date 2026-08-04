@@ -605,6 +605,7 @@
     "label": "Nombre del dispositivo"
   },
   "deviceOptionMenu": {
+    "adminRequired": "",
     "deviceDetails": "Detalles del dispositivo",
     "deviceLink": "Enlace del dispositivo",
     "makeProduct": "Crear producto",

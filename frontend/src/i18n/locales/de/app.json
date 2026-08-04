@@ -599,6 +599,7 @@
     "label": "Gerätename"
   },
   "deviceOptionMenu": {
+    "adminRequired": "",
     "deviceDetails": "Gerätedetails",
     "deviceLink": "Gerätelink",
     "makeProduct": "Produkt erstellen",

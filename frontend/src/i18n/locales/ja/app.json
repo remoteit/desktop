@@ -593,6 +593,7 @@
     "label": "デバイス名"
   },
   "deviceOptionMenu": {
+    "adminRequired": "",
     "deviceDetails": "デバイスの詳細",
     "deviceLink": "デバイスリンク",
     "makeProduct": "プロダクトを作成",
