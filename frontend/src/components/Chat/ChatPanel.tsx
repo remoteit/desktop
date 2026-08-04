@@ -22,6 +22,7 @@ const currentHandoff = (): ChatHandoff => {
 export const ChatPanel: React.FC = () => {
   const chat = useSelector((state: State) => state.chat)
   const singlePanel = useSelector((state: State) => state.ui.layout.singlePanel)
+  const activeId = useSelector((state: State) => state.accounts.activeId)
   const dispatch = useDispatch<Dispatch>()
 
   // Completes a Hydra sign-in redirect if this page load carries ?code —
@@ -49,10 +50,14 @@ export const ChatPanel: React.FC = () => {
   useEffect(() => {
     if (chat.open) {
       dispatch.chat.resetTransient()
-      dispatch.chat.syncOrg()
       dispatch.chat.checkHealth()
     }
   }, [chat.open])
+
+  // The chat follows the app's active org from the sidebar selector
+  useEffect(() => {
+    dispatch.chat.syncOrg()
+  }, [activeId])
 
   if (!chat.open) return null
 

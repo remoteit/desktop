@@ -111,11 +111,6 @@ function toMessageParams(messages: ChatTranscriptMessage[]): AgentMessageParam[]
 }
 
 let abortController: AbortController | null = null
-// orgId is redux-persisted but must not survive a reload (spec: "not
-// persisted"); on the first syncOrg after load, force-adopt the app's active
-// org regardless of what was rehydrated. After that, intra-session
-// divergence (the user picking a different org in the panel) is left alone.
-let orgSynced = false
 
 export default createModel<RootModel>()({
   state: { ...defaultChatState },
@@ -160,20 +155,11 @@ export default createModel<RootModel>()({
         dispatch.chat.set({ streaming: false })
       }
     },
-    /* Default the chat org to the app's active org when unset or no longer valid.
-       orgId is not persisted across reloads: the first sync after load always
-       adopts the app's active org, discarding whatever was rehydrated. */
+    /* The chat follows the app's active org (the sidebar selector) — the main
+       window mirrors it here whenever it changes. The popout window never
+       calls this: it keeps the org handed off with the conversation. */
     async syncOrg(_: void, state) {
-      const userId = state.user.id
-      if (!orgSynced) {
-        orgSynced = true
-        dispatch.chat.set({ orgId: state.accounts.activeId || userId })
-        return
-      }
-      const validIds = new Set([userId, ...state.accounts.membership.map(m => m.account.id)])
-      if (!state.chat.orgId || !validIds.has(state.chat.orgId)) {
-        dispatch.chat.set({ orgId: state.accounts.activeId || userId })
-      }
+      dispatch.chat.set({ orgId: state.accounts.activeId || state.user.id })
     },
     async confirm(approved: boolean, state) {
       const pending = state.chat.pendingConfirmation
