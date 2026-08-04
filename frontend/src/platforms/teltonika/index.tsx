@@ -19,4 +19,9 @@ platforms.register({
   name: 'Teltonika',
   component: Component,
   types: { 1281: 'Teltonika' },
+  installation: {
+    command: true,
+    qualifier: 'For Teltonika routers and gateways',
+    link: 'https://link.remote.it/support/streamline-install',
+  },
 })

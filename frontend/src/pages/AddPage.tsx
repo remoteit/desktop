@@ -143,6 +143,7 @@ export const AddPage: React.FC = () => {
             'axis',
             'advantech',
             'idy',
+            'teltonika',
             'ubuntu',
             'windows',
             'mac',
