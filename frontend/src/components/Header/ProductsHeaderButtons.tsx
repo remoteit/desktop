@@ -1,41 +1,35 @@
 import React from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Button } from '@mui/material'
 import { IconButton } from '../../buttons/IconButton'
-import { getProducts } from '../../selectors/products'
+import { getHasProducts } from '../../selectors/products'
 import { Icon } from '../Icon'
 
 export const ProductsHeaderButtons: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
-  const hasProducts = useSelector(getProducts).length > 0
+  const hasProducts = useSelector(getHasProducts)
+  const { t } = useTranslation()
 
   const searchParams = new URLSearchParams(location.search)
   const isSelectMode = searchParams.get('select') === 'true'
 
-  const toggleSelect = () => {
-    const newParams = new URLSearchParams(location.search)
-    if (isSelectMode) {
-      newParams.delete('select')
-    } else {
-      newParams.set('select', 'true')
-    }
-    const search = newParams.toString()
-    history.push(`${location.pathname}${search ? `?${search}` : ''}`)
-  }
+  // Same params with `select` flipped — the destination the toggle navigates to.
+  isSelectMode ? searchParams.delete('select') : searchParams.set('select', 'true')
+  const search = searchParams.toString()
 
   return (
     <>
-      {hasProducts && (
-        <IconButton
-          onClick={toggleSelect}
-          icon="check-square"
-          type={isSelectMode ? 'solid' : 'regular'}
-          color={isSelectMode ? 'primary' : undefined}
-          title={isSelectMode ? 'Hide Select' : 'Show Select'}
-        />
-      )}
+      <IconButton
+        hide={!hasProducts}
+        to={`${location.pathname}${search ? `?${search}` : ''}`}
+        icon="check-square"
+        type={isSelectMode ? 'solid' : 'regular'}
+        color={isSelectMode ? 'primary' : undefined}
+        title={isSelectMode ? t('header.hideSelect', 'Hide Select') : t('header.showSelect', 'Show Select')}
+      />
       <Button
         size="small"
         variant="contained"
@@ -43,7 +37,7 @@ export const ProductsHeaderButtons: React.FC = () => {
         onClick={() => history.push('/products/add')}
         startIcon={<Icon name="plus" />}
       >
-        Create
+        {t('header.create', 'Create')}
       </Button>
     </>
   )

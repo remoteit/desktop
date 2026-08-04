@@ -783,6 +783,7 @@
   },
   "header": {
     "back": "Atrás",
+    "create": "",
     "deviceSearch": "Búsqueda de dispositivos",
     "hideSelect": "Ocultar selección",
     "products": "Productos",
@@ -1480,6 +1481,11 @@
     "confirmTitle": "Confirmar eliminación del producto",
     "deleteSelected": "Eliminar selección",
     "selected": "Seleccionado"
+  },
+  "productsPage": {
+    "createFirst": "",
+    "emptyHelp": "",
+    "loading": ""
   },
   "productServiceAddPage": {
     "failedToAddService": "Error al añadir el servicio",

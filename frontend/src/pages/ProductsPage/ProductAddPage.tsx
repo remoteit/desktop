@@ -31,7 +31,8 @@ export const ProductAddPage: React.FC = () => {
     const fetchPlatforms = async () => {
       const response = await graphQLPlatformTypes()
       if (response !== 'ERROR' && !graphQLGetErrors(response)) {
-        setPlatformTypes(response?.data?.data?.platformTypes || [])
+        const types: IPlatformType[] = response?.data?.data?.platformTypes || []
+        setPlatformTypes(types.filter(p => p.visible).sort(byName))
       }
     }
     fetchPlatforms()
@@ -101,14 +102,11 @@ export const ProductAddPage: React.FC = () => {
             label={t('productAddPage.platform', 'Platform')}
             disabled={creating || platformTypes.length === 0}
           >
-            {platformTypes
-              .filter(p => p.visible)
-              .sort(byName)
-              .map(p => (
-                <MenuItem key={p.id} value={String(p.id)}>
-                  {p.name}
-                </MenuItem>
-              ))}
+            {platformTypes.map(p => (
+              <MenuItem key={p.id} value={String(p.id)}>
+                {p.name}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 

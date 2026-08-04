@@ -774,6 +774,7 @@
   },
   "header": {
     "back": "Zurück",
+    "create": "",
     "deviceSearch": "Gerätesuche",
     "hideSelect": "Auswahl ausblenden",
     "products": "Produkte",
@@ -1458,6 +1459,11 @@
     "confirmTitle": "Produktlöschung bestätigen",
     "deleteSelected": "Auswahl löschen",
     "selected": "Ausgewählt"
+  },
+  "productsPage": {
+    "createFirst": "",
+    "emptyHelp": "",
+    "loading": ""
   },
   "productServiceAddPage": {
     "failedToAddService": "Dienst konnte nicht hinzugefügt werden",

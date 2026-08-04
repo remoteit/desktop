@@ -790,6 +790,7 @@
   },
   "header": {
     "back": "Back",
+    "create": "Create",
     "deviceSearch": "Device Search",
     "hideSelect": "Hide Select",
     "products": "Products",
@@ -1504,6 +1505,11 @@
     "confirmTitle": "Confirm Product Deletion",
     "deleteSelected": "Delete selected",
     "selected": "Selected"
+  },
+  "productsPage": {
+    "createFirst": "Create your first product",
+    "emptyHelp": "Products are used for bulk device registration and management.",
+    "loading": "Loading products..."
   },
   "productServiceAddPage": {
     "failedToAddService": "Failed to add service",

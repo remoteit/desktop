@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Typography, Button, Box } from '@mui/material'
 import { Container } from '../../components/Container'
@@ -16,6 +17,7 @@ import { getProductModel } from '../../selectors/products'
 export const ProductsPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
+  const { t } = useTranslation()
   const { productId } = useParams<{ productId?: string }>()
   const searchParams = new URLSearchParams(location.search)
   const select = searchParams.get('select') === 'true'
@@ -58,25 +60,15 @@ export const ProductsPage: React.FC = () => {
         bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       >
         {fetching && !initialized ? (
-          <LoadingMessage message="Loading products..." />
+          <LoadingMessage message={t('productsPage.loading', 'Loading products...')} />
         ) : products.length === 0 ? (
           <Body center>
-            <Icon name="conveyor-belt-boxes" size="xxl" color="grayLight" />
-            <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-              No products
-            </Typography>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
-              Products are used for bulk device registration and management.
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ marginTop: 2 }}
-              onClick={() => history.push('/products/add')}
-            >
-              <Icon name="plus" size="sm" inlineLeft />
-              Create your first product
+            <Button variant="contained" color="primary" size="medium" onClick={() => history.push('/products/add')}>
+              <Icon name="plus" type="solid" inlineLeft /> {t('productsPage.createFirst', 'Create your first product')}
             </Button>
+            <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
+              {t('productsPage.emptyHelp', 'Products are used for bulk device registration and management.')}
+            </Typography>
           </Body>
         ) : (
           <ProductList

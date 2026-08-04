@@ -765,6 +765,7 @@
   },
   "header": {
     "back": "戻る",
+    "create": "",
     "deviceSearch": "デバイス検索",
     "hideSelect": "選択を隠す",
     "products": "プロダクト",
@@ -1436,6 +1437,11 @@
     "confirmTitle": "プロダクトの削除を確認",
     "deleteSelected": "選択項目を削除",
     "selected": "選択済み"
+  },
+  "productsPage": {
+    "createFirst": "",
+    "emptyHelp": "",
+    "loading": ""
   },
   "productServiceAddPage": {
     "failedToAddService": "サービスの追加に失敗しました",
