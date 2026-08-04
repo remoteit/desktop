@@ -19,7 +19,8 @@ export const ChatWindow: React.FC = () => {
   useEffect(() => {
     document.title = 'remote.it chat'
     dispatch.chat.resetTransient()
-    dispatch.chat.syncOrg()
+    // No syncOrg here: the popout keeps the org handed off with the
+    // conversation (it has no sidebar to change it with)
     dispatch.chat.checkHealth()
     const unsubscribe = initChatPopoutWindow({
       adopt: payload => dispatch.chat.adoptTranscript(payload),
