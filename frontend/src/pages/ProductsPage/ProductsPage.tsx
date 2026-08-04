@@ -61,7 +61,7 @@ export const ProductsPage: React.FC = () => {
           <LoadingMessage message="Loading products..." />
         ) : products.length === 0 ? (
           <Body center>
-            <Icon name="box-open" size="xxl" color="grayLight" />
+            <Icon name="conveyor-belt-boxes" size="xxl" color="grayLight" />
             <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
               No products
             </Typography>

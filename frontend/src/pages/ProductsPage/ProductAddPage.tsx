@@ -10,6 +10,7 @@ import { Gutters } from '../../components/Gutters'
 import { dispatch } from '../../store'
 import { graphQLPlatformTypes } from '../../services/graphQLDeviceProducts'
 import { graphQLGetErrors } from '../../services/graphQL'
+import { byName } from '../../helpers/utilHelper'
 
 interface IPlatformType {
   id: number
@@ -102,6 +103,7 @@ export const ProductAddPage: React.FC = () => {
           >
             {platformTypes
               .filter(p => p.visible)
+              .sort(byName)
               .map(p => (
                 <MenuItem key={p.id} value={String(p.id)}>
                   {p.name}
@@ -117,7 +119,7 @@ export const ProductAddPage: React.FC = () => {
           <Button variant="contained" color="primary" onClick={handleCreate} disabled={creating}>
             {creating ? (
               <>
-                <Icon name="spinner-third" spin size="sm" inline />
+                <Icon name="spinner-third" spin size="sm" inlineLeft />
                 {t('productAddPage.creating', 'Creating...')}
               </>
             ) : (
