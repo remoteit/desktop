@@ -2,12 +2,18 @@
  * Client for the ai-agent service (REST + SSE). The service is stateless:
  * the client holds the transcript and resends it each turn.
  */
+import { store } from '../store'
 
-// Dev: relative path served by the vite proxy (same-origin, CSP-clean) —
-// always, even when VITE_AGENT_URL is set, so dev stays on the proxy and
-// out of CORS. Builds have no proxy: VITE_AGENT_URL names the deployed
-// agent domain (https — the app's CSP only allows https: connections).
-export const AGENT_URL = import.meta.env.DEV ? '/agent' : import.meta.env.VITE_AGENT_URL || '/agent'
+/* Base URL for the agent service, resolved per request. The Test UI override
+   wins (Test Settings → Override agent service; https only — the app's CSP
+   blocks plain http). Otherwise dev rides the vite proxy (same-origin,
+   CSP-clean) even when VITE_AGENT_URL is set, staying out of CORS; builds
+   have no proxy and use the deployed agent domain from VITE_AGENT_URL. */
+export function agentURL(): string {
+  const { switchAgent, agentURL: override } = store.getState().ui.apis
+  if (switchAgent && override?.startsWith('https://')) return override.replace(/\/+$/, '')
+  return import.meta.env.DEV ? '/agent' : import.meta.env.VITE_AGENT_URL || '/agent'
+}
 
 // Hydra credentials for the agent service (AUTH_MODE=hydra), written by the
 // in-app sign-in flow (services/hydra.ts) — or a token pasted from the
@@ -78,7 +84,7 @@ export async function streamChat(options: {
   onEvent: (event: AgentEvent) => void
 }): Promise<void> {
   const { conversationId, messages, org, signal, onEvent } = options
-  const response = await fetch(`${AGENT_URL}/api/chat`, {
+  const response = await fetch(`${agentURL()}/api/chat`, {
     method: 'POST',
     headers: agentHeaders(),
     body: JSON.stringify(org ? { conversationId, messages, org } : { conversationId, messages }),
@@ -115,7 +121,7 @@ export async function confirmTool(options: {
   toolUseId: string
   approved: boolean
 }): Promise<void> {
-  const response = await fetch(`${AGENT_URL}/api/chat/confirm`, {
+  const response = await fetch(`${agentURL()}/api/chat/confirm`, {
     method: 'POST',
     headers: agentHeaders(),
     body: JSON.stringify(options),
@@ -128,7 +134,7 @@ export type AgentHealth = 'ok' | 'unauthorized' | 'unreachable'
 
 export async function agentHealth(): Promise<AgentHealth> {
   try {
-    const response = await fetch(`${AGENT_URL}/api/health`, { headers: agentHeaders(false) })
+    const response = await fetch(`${agentURL()}/api/health`, { headers: agentHeaders(false) })
     if (response.status === 401) return 'unauthorized'
     if (!response.ok) return 'unreachable'
     const body = (await response.json()) as { ok?: boolean }
