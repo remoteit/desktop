@@ -15,6 +15,7 @@
  * process.
  */
 import { getAgentSession, getAgentToken, setAgentSession, setAgentToken } from './agent'
+import { store } from '../store'
 
 export const HYDRA_ISSUER = import.meta.env.VITE_HYDRA_ISSUER_URL || 'https://login.dev.remote.it'
 export const MCP_AUDIENCE = import.meta.env.VITE_MCP_AUDIENCE || 'https://mcp.beta.remote.it/mcp'
@@ -35,8 +36,7 @@ const FLOW_KEY = 'agentOauthFlow'
 // started an agent sign-in (flow state present), so a genuine Cognito
 // callback is left untouched.
 const bootParams = new URLSearchParams(window.location.search)
-const isAgentCallback =
-  !!window.sessionStorage.getItem(FLOW_KEY) && (bootParams.has('code') || bootParams.has('error'))
+const isAgentCallback = !!window.sessionStorage.getItem(FLOW_KEY) && (bootParams.has('code') || bootParams.has('error'))
 if (isAgentCallback) {
   // Strip immediately: hides the single-use code from Amplify's listener and
   // from any reload. The hash route is preserved.
@@ -66,7 +66,15 @@ type StoredClient = { client_id: string; key: string }
 
 // One public client per (issuer, origin, scope, audience) — the cache key
 // busts when the requested grant changes, like the demo SPA.
-const clientCacheKey = (): string => `${HYDRA_ISSUER}|${window.location.origin}|${SCOPE}|${MCP_AUDIENCE}`
+/* Effective audience for agent tokens: the Test UI override wins (Test
+   Settings → Override agent service) so tokens match the deployment the
+   tester pointed the chat at; changing it busts the client cache below. */
+const mcpAudience = (): string => {
+  const { switchAgent, mcpAudience: override } = store.getState().ui.apis
+  return (switchAgent && override?.trim()) || MCP_AUDIENCE
+}
+
+const clientCacheKey = (): string => `${HYDRA_ISSUER}|${window.location.origin}|${SCOPE}|${mcpAudience()}`
 
 async function ensureClient(): Promise<string> {
   try {
@@ -135,7 +143,7 @@ export async function startAgentSignIn(): Promise<void> {
   auth.searchParams.set('code_challenge', await sha256(verifier))
   auth.searchParams.set('code_challenge_method', 'S256')
   // RFC 8707: binds the access token's audience to the MCP resource
-  auth.searchParams.set('resource', MCP_AUDIENCE)
+  auth.searchParams.set('resource', mcpAudience())
   window.location.assign(auth.toString())
 }
 
