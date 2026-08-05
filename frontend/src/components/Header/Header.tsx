@@ -1,4 +1,5 @@
-import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH, MODE } from '../../constants'
+import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
+import { useChatEnabled } from '../../hooks/useChatEnabled'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
@@ -31,6 +32,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const permissions = useSelector(selectPermissions)
   const chatOpen = useSelector((state: State) => state.chat.open)
   const chatPoppedOut = useSelector((state: State) => state.chat.poppedOut)
+  const chatEnabled = useChatEnabled()
   const layout = useSelector((state: State) => state.ui.layout)
   const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
@@ -90,7 +92,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             color="grayDarker"
           />
         )}
-        {MODE === 'development' && !chatPoppedOut && (
+        {chatEnabled && !chatPoppedOut && (
           <IconButton
             icon="robot"
             size="md"
