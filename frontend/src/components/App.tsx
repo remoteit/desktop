@@ -18,7 +18,6 @@ import {
   SHOW_TRIPLE_PANEL_WIDTH,
   CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_EXPANDED,
-  MODE,
 } from '../constants'
 import { State, Dispatch } from '../store'
 import { useMediaQuery, Box } from '@mui/material'
@@ -30,6 +29,7 @@ import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
 import { ChatPanel } from './Chat/ChatPanel'
+import { useChatEnabled } from '../hooks/useChatEnabled'
 import { ChatWindow } from './Chat/ChatWindow'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
@@ -48,6 +48,7 @@ export const App: React.FC = () => {
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const chatOpen = useSelector((state: State) => state.chat.open)
+  const chatEnabled = useChatEnabled()
   const chatExpanded = useSelector((state: State) => state.chat.expanded)
   const reseller = useSelector(selectResellerRef)
   const dispatch = useDispatch<Dispatch>()
@@ -58,11 +59,7 @@ export const App: React.FC = () => {
   // The open chat column reserves layout space the same way the sidebar does,
   // so Panel/DoublePanel/TriplePanel all reflow and clamp their resize math to it
   const chatPanelWidth =
-    MODE === 'development' && chatOpen && !singlePanel
-      ? chatExpanded
-        ? CHAT_PANEL_WIDTH_EXPANDED
-        : CHAT_PANEL_WIDTH
-      : 0
+    chatEnabled && chatOpen && !singlePanel ? (chatExpanded ? CHAT_PANEL_WIDTH_EXPANDED : CHAT_PANEL_WIDTH) : 0
   const sidePanelWidth = (hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)) + chatPanelWidth
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
   const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
@@ -126,7 +123,7 @@ export const App: React.FC = () => {
     <Page>
       <ViewAsBanner />
       <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
-        {MODE === 'development' && isChatPopout ? (
+        {chatEnabled && isChatPopout ? (
           <ChatWindow />
         ) : (
           <>
@@ -143,7 +140,7 @@ export const App: React.FC = () => {
             >
               {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
               <Router layout={layout} />
-              {MODE === 'development' && <ChatPanel />}
+              {chatEnabled && <ChatPanel />}
             </Box>
             {showBottomMenu && <BottomMenu layout={layout} />}
           </>

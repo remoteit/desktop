@@ -121,7 +121,7 @@ export const TestPage: React.FC = () => {
         <ListItemSetting
           hideIcon
           label="Override agent service"
-          subLabel="Point the Mycal chat at a deployed agent (https only). Sign in to the agent again after changing these."
+          subLabel="Point the Mycal chat at a deployed agent (https only). dev-ai-agent pairs with audience https://mcp.demo.remote.it/mcp. Sign in to the agent again after changing these."
           onClick={() => setAgentPreference('switchAgent', !apis.switchAgent)}
           toggle={!!apis.switchAgent}
         />
