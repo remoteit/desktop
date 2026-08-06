@@ -19,6 +19,10 @@ import { store } from '../store'
 
 export const HYDRA_ISSUER = import.meta.env.VITE_HYDRA_ISSUER_URL || 'https://login.dev.remote.it'
 export const MCP_AUDIENCE = import.meta.env.VITE_MCP_AUDIENCE || 'https://mcp.beta.remote.it/mcp'
+
+// What the Test UI override requests until a tester edits it — the audience
+// the dev agent deployment expects, which is not the default one
+export const MCP_AUDIENCE_DEFAULT = 'https://mcp.demo.remote.it/mcp'
 const SCOPE = 'openid offline email device:read device:write device:connect device:execute'
 const LIFESPAN = '30m' // access-token TTL override, verified accepted via DCR
 
@@ -75,7 +79,7 @@ type StoredClient = { client_id: string; key: string }
    tester pointed the chat at; changing it busts the client cache below. */
 const mcpAudience = (): string => {
   const { switchAgent, mcpAudience: override } = store.getState().ui.apis
-  return (switchAgent && override?.trim()) || MCP_AUDIENCE
+  return switchAgent ? override?.trim() || MCP_AUDIENCE_DEFAULT : MCP_AUDIENCE
 }
 
 const clientCacheKey = (): string => `${HYDRA_ISSUER}|${window.location.origin}|${SCOPE}|${mcpAudience()}`

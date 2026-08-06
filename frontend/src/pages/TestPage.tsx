@@ -13,7 +13,8 @@ import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
-import { MCP_AUDIENCE } from '../services/hydra'
+import { MCP_AUDIENCE_DEFAULT } from '../services/hydra'
+import { AGENT_URL_DEFAULT } from '../services/agent'
 
 export const TestPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -121,7 +122,7 @@ export const TestPage: React.FC = () => {
         <ListItemSetting
           hideIcon
           label="Override agent service"
-          subLabel="Point the Mycal chat at a deployed agent (https only). dev-ai-agent pairs with audience https://mcp.demo.remote.it/mcp. Sign in to the agent again after changing these."
+          subLabel="Point the Mycal chat at a deployed agent (https only). Defaults to the dev agent and the audience it expects. Sign in to the agent again after changing these."
           onClick={() => setAgentPreference('switchAgent', !apis.switchAgent)}
           toggle={!!apis.switchAgent}
         />
@@ -129,20 +130,19 @@ export const TestPage: React.FC = () => {
           <Quote margin={null} indent="listItem" noInset>
             <List disablePadding>
               <InlineTextFieldSetting
-                value={apis.agentURL || ''}
+                value={apis.agentURL || AGENT_URL_DEFAULT}
                 label="Agent service URL"
-                placeholder="https://dev-ai-agent.remote.it"
                 disabled={!apis.switchAgent}
-                resetValue=""
+                resetValue={AGENT_URL_DEFAULT}
                 maxLength={200}
                 onSave={url => setAgentPreference('agentURL', url.toString().trim())}
                 hideIcon
               />
               <InlineTextFieldSetting
-                value={apis.mcpAudience || MCP_AUDIENCE}
+                value={apis.mcpAudience || MCP_AUDIENCE_DEFAULT}
                 label="Agent MCP audience"
                 disabled={!apis.switchAgent}
-                resetValue={MCP_AUDIENCE}
+                resetValue={MCP_AUDIENCE_DEFAULT}
                 maxLength={200}
                 onSave={value => setAgentPreference('mcpAudience', value.toString().trim())}
                 hideIcon

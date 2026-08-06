@@ -4,6 +4,9 @@
  */
 import { store } from '../store'
 
+// Where the Test UI override points until a tester edits it
+export const AGENT_URL_DEFAULT = 'https://dev-ai-agent.remote.it'
+
 /* Base URL for the agent service, resolved per request. The Test UI override
    wins (Test Settings → Override agent service; https only — the app's CSP
    blocks plain http). Otherwise dev rides the vite proxy (same-origin,
@@ -11,7 +14,8 @@ import { store } from '../store'
    have no proxy and use the deployed agent domain from VITE_AGENT_URL. */
 export function agentURL(): string {
   const { switchAgent, agentURL: override } = store.getState().ui.apis
-  if (switchAgent && override?.startsWith('https://')) return override.replace(/\/+$/, '')
+  const url = override?.trim() || AGENT_URL_DEFAULT
+  if (switchAgent && url.startsWith('https://')) return url.replace(/\/+$/, '')
   return import.meta.env.DEV ? '/agent' : import.meta.env.VITE_AGENT_URL || '/agent'
 }
 
