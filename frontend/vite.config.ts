@@ -28,8 +28,9 @@ export default defineConfig(({ mode }) => ({
     // Dev-only: same-origin path to the ai-agent service, so the app's CSP
     // ('self') passes without loosening. Defaults to the local dev service;
     // set AGENT_PROXY_TARGET in frontend/.env to point at a deployed agent
-    // (e.g. http://dev-ai-agent.remote.it — its ALB is HTTP-only for now, so
-    // the same-origin proxy also sidesteps the CSP https:-only rule).
+    // (e.g. https://dev-ai-agent.remote.it). Deployed agents now terminate
+    // TLS and send permissive CORS, so Test Settings → Override agent service
+    // can also reach them directly, without this proxy.
     // Staging/prod builds set VITE_AGENT_URL instead — no proxy in builds.
     proxy: {
       '/agent': {
