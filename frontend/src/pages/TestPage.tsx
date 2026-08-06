@@ -13,8 +13,8 @@ import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
-import { MCP_AUDIENCE_DEFAULT } from '../services/hydra'
-import { AGENT_URL_DEFAULT } from '../services/agent'
+import { MCP_AUDIENCE, MCP_AUDIENCE_DEFAULT } from '../services/hydra'
+import { agentURL, AGENT_URL_DEFAULT } from '../services/agent'
 
 export const TestPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -130,7 +130,7 @@ export const TestPage: React.FC = () => {
           <Quote margin={null} indent="listItem" noInset>
             <List disablePadding>
               <InlineTextFieldSetting
-                value={apis.agentURL || AGENT_URL_DEFAULT}
+                value={apis.switchAgent ? apis.agentURL || AGENT_URL_DEFAULT : agentURL()}
                 label="Agent service URL"
                 disabled={!apis.switchAgent}
                 resetValue={AGENT_URL_DEFAULT}
@@ -139,7 +139,7 @@ export const TestPage: React.FC = () => {
                 hideIcon
               />
               <InlineTextFieldSetting
-                value={apis.mcpAudience || MCP_AUDIENCE_DEFAULT}
+                value={apis.switchAgent ? apis.mcpAudience || MCP_AUDIENCE_DEFAULT : MCP_AUDIENCE}
                 label="Agent MCP audience"
                 disabled={!apis.switchAgent}
                 resetValue={MCP_AUDIENCE_DEFAULT}
