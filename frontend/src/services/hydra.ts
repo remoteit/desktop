@@ -22,12 +22,12 @@ export const MCP_AUDIENCE = import.meta.env.VITE_MCP_AUDIENCE || 'https://mcp.be
 const SCOPE = 'openid offline email device:read device:write device:connect device:execute'
 const LIFESPAN = '30m' // access-token TTL override, verified accepted via DCR
 
-// OAuth fetches (DCR register, token exchange, revoke): dev goes through the
-// same-origin vite proxy (server.proxy['/hydra']); builds have no proxy and
-// call the issuer directly — Hydra's public CORS allows any origin and the
-// app CSP permits https:. The login redirect is a top-level navigation to
-// the issuer either way. App (Cognito) sign-in is a separate stack.
-const OAUTH_API = import.meta.env.DEV ? '/hydra' : HYDRA_ISSUER
+// OAuth fetches (DCR register, token exchange, revoke) always use the
+// same-origin /hydra path: the vite proxy serves it in dev, and the Amplify
+// rewrite rule serves it on deployed previews (login.dev.remote.it does not
+// answer CORS preflights, so direct browser calls are blocked). The login
+// redirect is a top-level navigation to the issuer and needs neither.
+const OAUTH_API = '/hydra'
 
 const CLIENT_KEY = 'agentOauthClient'
 const FLOW_KEY = 'agentOauthFlow'
