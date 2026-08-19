@@ -1,4 +1,5 @@
 import electron, { Menu, dialog } from 'electron'
+import { CHAT_POPOUT_PARAM, CHAT_POPOUT_SIZE } from '@common/constants'
 import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
@@ -252,22 +253,33 @@ export default class ElectronApp {
       // own origin); every other window.open goes to the system browser.
       try {
         const parsed = new URL(url)
-        if (parsed.origin === new URL(this.getStartUrl()).origin && parsed.searchParams.has('chatPopout')) {
+        if (parsed.origin === new URL(this.getStartUrl()).origin && parsed.searchParams.has(CHAT_POPOUT_PARAM)) {
           return {
             action: 'allow',
-            overrideBrowserWindowOptions: {
-              width: 520,
-              height: 780,
-              minWidth: 360,
-              minHeight: 500,
-              autoHideMenuBar: true,
-            },
+            overrideBrowserWindowOptions: { ...CHAT_POPOUT_SIZE, autoHideMenuBar: true },
           }
         }
       } catch {}
-      Logger.info('OPEN EXTERNAL URL', { url })
-      electron.shell.openExternal(url)
+      this.openExternal(url)
       return { action: 'deny' }
+    })
+
+    // The allowed chat popout is a real child window: give it the same
+    // external-URL discipline as the main window, or window.open /
+    // target=_blank / link navigation inside it spawns unguarded native
+    // windows on remote content instead of the system browser
+    this.window.webContents.on('did-create-window', child => {
+      child.webContents.setWindowOpenHandler(({ url }) => {
+        this.openExternal(url)
+        return { action: 'deny' }
+      })
+      child.webContents.on('will-navigate', (event, url) => {
+        try {
+          if (new URL(url).origin === new URL(this.getStartUrl()).origin) return
+        } catch {}
+        event.preventDefault()
+        this.openExternal(url)
+      })
     })
 
     this.window.webContents.on('will-navigate', (event, url) => {
@@ -293,6 +305,13 @@ export default class ElectronApp {
     })
 
     this.logWebErrors()
+  }
+
+  /* The external-URL discipline: everything leaving the renderer opens in
+     the system browser, logged */
+  private openExternal(url: string) {
+    Logger.info('OPEN EXTERNAL URL', { url })
+    electron.shell.openExternal(url)
   }
 
   private validateWindowState(state?: IPreferences['windowState']): IPreferences['windowState'] {
