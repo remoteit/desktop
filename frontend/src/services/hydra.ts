@@ -23,6 +23,7 @@ import {
   decodeAgentSession,
   decodeAgentToken,
 } from './agent'
+import { encryptString, decryptString } from './secureStorage'
 import { store } from '../store'
 
 export const HYDRA_ISSUER = import.meta.env.VITE_HYDRA_ISSUER_URL || 'https://login.dev.remote.it'
@@ -51,8 +52,11 @@ const FLOW_KEY = 'agentOauthFlow'
 // started — a Cognito callback (same origin, same param names) never matches,
 // so even a stale flow key left by an abandoned agent sign-in can't hijack it.
 const bootParams = new URLSearchParams(window.location.search)
-type AgentFlow = { verifier: string; state: string; clientId: string }
-let bootFlow: AgentFlow | null = null
+// The flow record keeps `state` readable (it is public — it rides the URL)
+// so this synchronous gate can run before Amplify boots; the verifier and
+// client id live encrypted in `data` and are only decrypted in the handler.
+type StoredFlow = { state?: string; data?: string }
+let bootFlow: StoredFlow | null = null
 try {
   bootFlow = JSON.parse(window.sessionStorage.getItem(FLOW_KEY) || 'null')
 } catch {}
@@ -167,7 +171,10 @@ export async function startAgentSignIn(): Promise<void> {
   const clientId = await ensureClient()
   const verifier = randomString(32)
   const state = randomString(16)
-  window.sessionStorage.setItem(FLOW_KEY, JSON.stringify({ verifier, state, clientId }))
+  // The PKCE verifier (and client id) are encrypted at rest; only `state`
+  // stays plaintext for the synchronous boot-time callback gate
+  const data = await encryptString(JSON.stringify({ verifier, clientId }))
+  window.sessionStorage.setItem(FLOW_KEY, JSON.stringify({ state, data }))
 
   const auth = new URL(`${HYDRA_ISSUER}/oauth2/auth`)
   auth.searchParams.set('response_type', 'code')
@@ -196,7 +203,7 @@ export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?
   // Consume the flow before any branch can return — a leftover key would stay
   // armed and claim a later, unrelated OAuth callback on this origin. The
   // state match is already guaranteed by the isAgentCallback gate above.
-  const flow = bootFlow
+  const stored = bootFlow
   window.sessionStorage.removeItem(FLOW_KEY)
 
   if (error) {
@@ -206,6 +213,11 @@ export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?
     return { ok: false, error: `${error}: ${bootParams.get('error_description') || ''}` }
   }
 
+  let flow: { verifier: string; clientId: string } | null = null
+  try {
+    const json = stored?.data ? await decryptString(stored.data) : null
+    flow = json ? JSON.parse(json) : null
+  } catch {}
   if (!flow) return { ok: false, error: 'Sign-in expired — try again.' }
 
   try {
