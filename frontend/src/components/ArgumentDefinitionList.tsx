@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { List, ListItem, ListItemIcon, ListItemText, Button, Stack, Typography } from '@mui/material'
 import { Icon } from './Icon'
 import { IconButton } from '../buttons/IconButton'
@@ -40,13 +41,14 @@ export const ArgumentDefinitionList: React.FC<Props> = ({
   onDragEnd,
   renderItemEditor,
 }) => {
+  const { t } = useTranslation()
   return (
     <>
       <Stack direction="row" alignItems="center" mb={1}>
-        <Typography variant="subtitle2">Script Arguments</Typography>
+        <Typography variant="subtitle2">{t('argumentDefinitionList.title', 'Script Arguments')}</Typography>
         {!disabled && editing !== 'new' && (
           <Button size="small" startIcon={<Icon name="plus" size="sm" />} onClick={onStartNew} sx={{ ml: 'auto' }}>
-            Add
+            {t('argumentDefinitionList.add', 'Add')}
           </Button>
         )}
       </Stack>
@@ -83,14 +85,20 @@ export const ArgumentDefinitionList: React.FC<Props> = ({
                   <>
                     {argumentTypes.find(t => t.value === def.type)?.label || def.type}
                     {def.desc && ` - ${def.desc}`}
-                    {def.options?.length ? ` (${def.options.length} options)` : ''}
+                    {def.options?.length
+                      ? ` (${t('argumentDefinitionList.optionsCount', {
+                          count: def.options.length,
+                          defaultValue_one: '{{count}} option',
+                          defaultValue_other: '{{count}} options',
+                        })})`
+                      : ''}
                   </>
                 }
               />
               {!disabled && (
                 <span className="hidden">
                   <IconButton
-                    title={editing === index ? 'Cancel' : 'Edit'}
+                    title={editing === index ? t('argumentDefinitionList.cancel', 'Cancel') : t('argumentDefinitionList.edit', 'Edit')}
                     icon={editing === index ? 'close' : 'pencil'}
                     onClick={() => onToggleEdit(index)}
                   />
@@ -104,7 +112,10 @@ export const ArgumentDefinitionList: React.FC<Props> = ({
 
       {definitions.length === 0 && editing !== 'new' && (
         <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-          No arguments defined. Arguments allow users to provide input values when running the script.
+          {t(
+            'argumentDefinitionList.empty',
+            'No arguments defined. Arguments allow users to provide input values when running the script.'
+          )}
         </Typography>
       )}
     </>

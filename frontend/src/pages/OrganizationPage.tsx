@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -20,6 +21,7 @@ import { Avatar } from '../components/Avatar'
 import { Title } from '../components/Title'
 
 export const OrganizationPage: React.FC = () => {
+  const { t } = useTranslation()
   const { userID = '', deviceID = '' } = useParams<{ userID: string; deviceID: string }>()
   const user = useSelector((state: State) => state.user)
   const initialized = useSelector((state: State) => state.organization.initialized)
@@ -45,7 +47,12 @@ export const OrganizationPage: React.FC = () => {
             <Box width="100%">
               {license && (
                 <Typography variant="subtitle2">
-                  <Title>{license?.plan.description} Plan</Title>
+                  <Title>
+                    {t('organizationPage.planTitle', {
+                      description: license?.plan.description,
+                      defaultValue: '{{description}} Plan',
+                    })}
+                  </Title>
                   <PlanActionChip />
                 </Typography>
               )}
@@ -59,12 +66,12 @@ export const OrganizationPage: React.FC = () => {
     >
       {!admin && (
         <Notice severity="info" gutterTop>
-          You need admin privileges to change this organization.
+          {t('organizationPage.needAdminPrivileges', 'You need admin privileges to change this organization.')}
         </Notice>
       )}
       <List>
         <ListItemLocation
-          title="Members"
+          title={t('organizationPage.members', 'Members')}
           to="/organization/members"
           icon="users"
           match={[
@@ -79,10 +86,16 @@ export const OrganizationPage: React.FC = () => {
           dense
         />
         {organization.reseller && (
-          <ListItemLocation title="Customers" to="/organization/customer" icon="address-book" showDisabled dense />
+          <ListItemLocation
+            title={t('organizationPage.customers', 'Customers')}
+            to="/organization/customer"
+            icon="address-book"
+            showDisabled
+            dense
+          />
         )}
         <ListItemLocation
-          title="Guests"
+          title={t('organizationPage.guests', 'Guests')}
           to="/organization/guests"
           icon="user-circle"
           disabled={!manager}
@@ -90,14 +103,14 @@ export const OrganizationPage: React.FC = () => {
           dense
         />
         <ListItemLocation
-          title="Account"
+          title={t('organizationPage.account', 'Account')}
           to={`/organization/account/${user.id}`}
           match={['/organization/account']}
           icon="user"
           dense
         />
         <ListItemLocation
-          title="Roles"
+          title={t('organizationPage.roles', 'Roles')}
           icon="user-shield"
           to="/organization/roles"
           disabled={!admin}
@@ -105,7 +118,7 @@ export const OrganizationPage: React.FC = () => {
           dense
         />
         <ListItemLocation
-          title="Tags"
+          title={t('organizationPage.tags', 'Tags')}
           to="/organization/tags"
           icon="tag"
           disabled={!limits.tagging || !admin}
@@ -113,7 +126,7 @@ export const OrganizationPage: React.FC = () => {
           dense
         />
         <ListItemLocation
-          title="License"
+          title={t('organizationPage.license', 'License')}
           to="/organization/licensing"
           icon="id-badge"
           disabled={!license}
@@ -122,7 +135,7 @@ export const OrganizationPage: React.FC = () => {
           dense
         />
         <ListItemLocation
-          title="Settings"
+          title={t('organizationPage.settings', 'Settings')}
           icon="sliders-h"
           to="/organization/settings"
           disabled={!admin}

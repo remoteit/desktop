@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import {
   Typography,
   Stack,
@@ -25,6 +26,7 @@ type Props = {
 }
 
 export const OnboardWifi: React.FC<Props> = ({ next }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   let { device, message, severity, ssid, scan, wlan, eth, cel, networks } = useSelector(
     (state: State) => state.bluetooth
@@ -75,17 +77,20 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
   const options = networks.map(n => n.ssid)
   const hasConnection = wlan === 'CONNECTED' || eth === 'CONNECTED' || cel === 'CONNECTED'
 
-  if (!options.length) options.push('No networks found')
+  if (!options.length) options.push(t('onboardWifi.noNetworksFound', 'No networks found'))
 
   return (
     <Box marginX={2}>
       <Stack flexDirection="row" alignItems="center" marginY={2}>
-        <Typography variant="h2">WiFi Setup</Typography>
+        <Typography variant="h2">{t('onboardWifi.title', 'WiFi Setup')}</Typography>
       </Stack>
       <Typography variant="body2" gutterBottom>
-        Connect your Raspberry Pi ({device?.name?.replace('Remote.It Onboard', '').trim() || 'unknown'}) to WiFi.
+        {t('onboardWifi.connectIntro', {
+          name: device?.name?.replace('Remote.It Onboard', '').trim() || t('onboardWifi.unknown', 'unknown'),
+          defaultValue: 'Connect your Raspberry Pi ({{name}}) to WiFi.',
+        })}
         <br />
-        Select a network and enter its password.
+        {t('onboardWifi.connectInstructions', 'Select a network and enter its password.')}
       </Typography>
       <OnboardMessage message={message} severity={severity} />
       <form onSubmit={onSubmit} autoComplete="off">
@@ -103,7 +108,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
             includeInputInList
             disabled={disabled}
             options={options}
-            value={scan === 'SCANNING' ? 'Scanning...' : form.ssid}
+            value={scan === 'SCANNING' ? t('onboardWifi.scanning', 'Scanning...') : form.ssid}
             sx={{ marginBottom: 1 }}
             componentsProps={{
               popupIndicator: {
@@ -133,7 +138,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
               <TextField
                 {...params}
                 variant="filled"
-                label="Network"
+                label={t('onboardWifi.network', 'Network')}
                 type="text"
                 name="network"
                 autoComplete="off"
@@ -162,7 +167,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
           <TextField
             fullWidth
             type={showPassword ? 'text' : 'password'}
-            label="Password"
+            label={t('onboardWifi.password', 'Password')}
             value={form.pwd}
             variant="filled"
             disabled={disabled}
@@ -191,11 +196,13 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
           ) : (
             <>
               <Button variant="contained" disabled={!form.pwd || disabled} type="submit" sx={{ flexShrink: 0 }}>
-                {wlan === 'CONNECTED' ? 'Update WiFi' : 'Set WiFi'}
+                {wlan === 'CONNECTED'
+                  ? t('onboardWifi.updateWifi', 'Update WiFi')
+                  : t('onboardWifi.setWifi', 'Set WiFi')}
               </Button>
               {hasConnection && (
                 <Button onClick={next} sx={{ marginLeft: 1 }}>
-                  Skip
+                  {t('onboardWifi.skip', 'Skip')}
                 </Button>
               )}
             </>
@@ -206,14 +213,30 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
               color={wlan === 'CONNECTED' ? 'primary' : undefined}
               variant={wlan === 'CONNECTED' ? 'contained' : 'text'}
               label={
-                wlan === 'CONNECTED' ? 'WiFi Connected' : wlan === 'CONNECTING' ? 'Connecting...' : 'Wifi Not Connected'
+                wlan === 'CONNECTED'
+                  ? t('onboardWifi.wifiConnected', 'WiFi Connected')
+                  : wlan === 'CONNECTING'
+                  ? t('onboardWifi.connecting', 'Connecting...')
+                  : t('onboardWifi.wifiNotConnected', 'Wifi Not Connected')
               }
             />
             {eth === 'CONNECTED' && (
-              <ColorChip variant="text" color="primary" label="Ethernet Connected" size="small" sx={{ mt: 0.5 }} />
+              <ColorChip
+                variant="text"
+                color="primary"
+                label={t('onboardWifi.ethernetConnected', 'Ethernet Connected')}
+                size="small"
+                sx={{ mt: 0.5 }}
+              />
             )}
             {cel === 'CONNECTED' && (
-              <ColorChip variant="text" color="primary" label="Cellular Connected" size="small" sx={{ mt: 0.5 }} />
+              <ColorChip
+                variant="text"
+                color="primary"
+                label={t('onboardWifi.cellularConnected', 'Cellular Connected')}
+                size="small"
+                sx={{ mt: 0.5 }}
+              />
             )}
           </Box>
         </Stack>
@@ -221,7 +244,7 @@ export const OnboardWifi: React.FC<Props> = ({ next }) => {
       <Box paddingTop={6} minHeight={70}>
         {!hasConnection && (
           <Link variant="caption" color="gray.main" onClick={next}>
-            My device is connected another way. Skip this step.
+            {t('onboardWifi.connectedAnotherWay', 'My device is connected another way. Skip this step.')}
           </Link>
         )}
       </Box>

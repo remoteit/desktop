@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Typography, List, Stack, ListItemText } from '@mui/material'
 import { Container } from '../../components/Container'
 import { ListItemLocation } from '../../components/ListItemLocation'
@@ -10,32 +11,34 @@ import { Body } from '../../components/Body'
 import { Notice } from '../../components/Notice'
 import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
-import { ProductStatusChip } from '../../components/ProductStatusChip'
 import { ColorChip } from '../../components/ColorChip'
+import { ProductTagEditor } from '../../components/ProductTagEditor'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 import { spacing } from '../../styling'
 import { Gutters } from '../../components/Gutters'
 
 export const ProductPage: React.FC = () => {
+  const { t } = useTranslation()
   const { productId } = useParams<{ productId: string }>()
   const history = useHistory()
   const { all: products, fetching, initialized } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
 
-  const isLocked = product?.status === 'LOCKED'
-
-  // Refresh product data when loading
   useEffect(() => {
     if (productId) {
       dispatch.products.fetchSingle(productId)
     }
   }, [productId])
 
+  useEffect(() => {
+    dispatch.tags.fetchIfEmpty()
+  }, [])
+
   if (fetching && !initialized) {
     return (
       <Container gutterBottom>
-        <LoadingMessage message="Loading product..." />
+        <LoadingMessage message={t('productPage.loadingProduct', 'Loading product...')} />
       </Container>
     )
   }
@@ -46,10 +49,13 @@ export const ProductPage: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Product not found
+            {t('productPage.productNotFound', 'Product not found')}
           </Typography>
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            The product may have been deleted or you don't have access to it.
+            {t(
+              'productPage.productNotFoundHint',
+              "The product may have been deleted or you don't have access to it."
+            )}
           </Typography>
         </Body>
       </Container>
@@ -66,38 +72,35 @@ export const ProductPage: React.FC = () => {
               to={`/products/${product.id}/details`}
               match={`/products/${product.id}/details`}
               icon={<Icon platform={product.platform?.id} platformIcon size="lg" color="grayDark" />}
-              title={
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ marginRight: 1 }}>
-                  <Title>{product.name}</Title>
-                  <ProductStatusChip status={product.status} />
-                </Stack>
-              }
+              title={<Title>{product.name}</Title>}
             />
             <Stack flexWrap="wrap" flexDirection="row" marginLeft={9.5} marginRight={3}>
-              <Typography variant="caption" color="grayDarker.main" gutterBottom>
-                {product.platform?.name || `Platform ${product.platform?.id}`}
+              <Typography variant="caption" color="grayDarker.main" gutterBottom sx={{ width: '100%' }}>
+                {product.platform?.name ||
+                  t('productPage.platformId', { id: product.platform?.id, defaultValue: 'Platform {{id}}' })}
               </Typography>
+            </Stack>
+            <Stack flexWrap="wrap" flexDirection="row" marginLeft={9.5} marginRight={3}>
+              <ProductTagEditor product={product} />
             </Stack>
           </List>
         </>
       }
     >
       <Typography variant="subtitle1">
-        <Title>Service</Title>
-        {!isLocked && (
-          <IconButton
-            icon="plus"
-            title="Add Service"
-            onClick={() => history.push(`/products/${product.id}/add`)}
-            size="md"
-          />
-        )}
+        <Title>{t('productPage.service', 'Service')}</Title>
+        <IconButton
+          icon="plus"
+          title={t('productPage.addService', 'Add Service')}
+          onClick={() => history.push(`/products/${product.id}/add`)}
+          size="md"
+        />
       </Typography>
 
       {product.services.length === 0 ? (
         <Gutters>
           <Notice severity="info" gutterTop fullWidth>
-            No services defined. Add at least one service before locking the product.
+            {t('productPage.noServicesDefined', 'No services defined. Add at least one service to this product.')}
           </Notice>
         </Gutters>
       ) : (
@@ -128,7 +131,7 @@ export const ProductPage: React.FC = () => {
               />
               <ColorChip
                 size="small"
-                label={service.type?.name || 'Unknown'}
+                label={service.type?.name || t('productPage.unknown', 'Unknown')}
                 color="grayDark"
                 variant="text"
                 sx={{ marginRight: 1 }}

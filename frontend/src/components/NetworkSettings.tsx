@@ -2,11 +2,13 @@ import React from 'react'
 import { List } from '@mui/material'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { MAX_NAME_LENGTH } from '@common/constants'
 
 export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> = ({ network }) => {
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
   const disabled = !network.permissions.includes('MANAGE')
 
   return (
@@ -16,7 +18,7 @@ export const NetworkSettings: React.FC<{ network: INetwork; orgName: string }> =
         disabled={disabled}
         icon="i-cursor"
         value={network.name}
-        label="Network Name"
+        label={t('networkSettings.nameLabel', 'Network Name')}
         maxLength={MAX_NAME_LENGTH}
         onSave={name => dispatch.networks.updateNetwork({ ...network, name: name.toString() })}
       />

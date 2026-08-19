@@ -1,12 +1,10 @@
 import React from 'react'
 import { Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { EmptyMessage } from '../components/EmptyMessage'
 
 export const NoConnectionPage: React.FC = () => {
-  const css = useStyles()
   return (
-    <Box className={css.container}>
+    <Box sx={{ display: 'flex', justifyContent: 'center', paddingTop: '5vw' }}>
       <EmptyMessage
         message={
           <>
@@ -20,10 +18,3 @@ export const NoConnectionPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    paddingTop: '5vw',
-  },
-})

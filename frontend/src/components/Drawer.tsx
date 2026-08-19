@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import browser from '../services/browser'
-import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { ClickAwayListener, Box } from '@mui/material'
@@ -13,7 +12,6 @@ export const Drawer: React.FC<{ menu: string; children?: React.ReactNode }> = ({
   const open = useSelector((state: State) => state.ui.drawerMenu === menu)
   const { ui } = useDispatch<Dispatch>()
   const width = open ? WIDTH : 0
-  const css = useStyles()
 
   useEffect(() => {
     if (!browser.isElectron) return
@@ -54,12 +52,9 @@ export const Drawer: React.FC<{ menu: string; children?: React.ReactNode }> = ({
           '& > *': { minWidth: width },
         }}
       >
-        <Body className={css.body}>{children}</Body>
+        <Body sx={{ maxHeight: '100%' }}>{children}</Body>
       </Box>
     </ClickAwayListener>
   )
 }
 
-const useStyles = makeStyles({
-  body: { maxHeight: '100%' },
-})

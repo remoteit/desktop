@@ -1,16 +1,16 @@
 import React from 'react'
-import classnames from 'classnames'
-import { makeStyles } from '@mui/styles'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem } from '@mui/material'
+import { useMediaQuery, Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem, Theme } from '@mui/material'
 import { getOwnOrganization, defaultState } from '../models/organization'
 import { selectAllConnectionSessions } from '../selectors/connections'
 import { selectOrganization } from '../selectors/organizations'
 import { GuideBubble } from './GuideBubble'
 import { fontSizes } from '../styling'
+import { byName } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
@@ -20,8 +20,81 @@ const CLEAR_ID_BASE: Record<string, string> = {
   '/file': '/files',
 }
 
+const nameSx = (theme: Theme) => ({
+  transform: 'rotate(270deg)',
+  transformOrigin: 'center',
+  whiteSpace: 'nowrap',
+  position: 'relative' as const,
+  height: '2em',
+  '& > .MuiTypography-root': {
+    position: 'absolute',
+    right: 0,
+    color: theme.palette.grayDarkest.main,
+    letterSpacing: '0.15em',
+    fontSize: fontSizes.base,
+    textTransform: 'uppercase',
+  },
+})
+
+const listSx = (theme: Theme) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: theme.palette.grayLighter.main,
+  boxShadow: `0 0 10px 10px ${theme.palette.grayLighter.main}`,
+  marginBottom: 3,
+  '& > *': { display: 'flex', justifyContent: 'center', borderRadius: '50%', height: 51, padding: 0 },
+})
+
+const badgeSx = {
+  '& .MuiBadge-badge': {
+    fontWeight: 700,
+    marginTop: '3px',
+    marginLeft: '1px',
+    color: 'alwaysWhite.main',
+    backgroundColor: 'primary.main',
+  },
+}
+
+const buttonContainerSx = { width: 42 }
+
+const buttonSx = (theme: Theme) => ({
+  borderRadius: '50%',
+  border: `2px solid ${theme.palette.grayLighter.main}`,
+  transition: 'border-color 0.5s',
+  width: 42,
+  height: 42,
+  '&:hover': { borderColor: theme.palette.primaryLight.main },
+})
+
+const activeSx = (theme: Theme) => ({
+  borderColor: theme.palette.primary.main,
+  boxShadow: `0 0 10px ${theme.palette.primaryLight.main}`,
+  '& > *': { border: `2px solid ${theme.palette.grayLightest.main}` },
+  '& > .MuiBox-root': { backgroundColor: theme.palette.grayLightest.main },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    right: -16,
+    borderTop: '6px solid transparent',
+    borderRight: `8px solid ${theme.palette.primary.main}`,
+    borderBottom: '6px solid transparent',
+  },
+})
+
+const homeSx = {
+  width: 42,
+  height: 38,
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'white.main',
+}
+
 export const OrganizationSelect: React.FC = () => {
-  const css = useStyles()
+  const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
@@ -74,15 +147,15 @@ export const OrganizationSelect: React.FC = () => {
     }
   }
 
-  options.sort((a, b) => (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1))
+  options.sort(byName)
   if (!options.length) return null
 
   const mySessions = sessions.filter(s => s.target.accountId === ownOrg?.id).length
 
   return (
     <>
-      <Box className={css.name}>
-        <Typography variant="h4">{activeOrg.name || 'Organizations'}</Typography>
+      <Box sx={nameSx}>
+        <Typography variant="h4">{activeOrg.name || t('organizationSelect.organizations', 'Organizations')}</Typography>
       </Box>
       <GuideBubble
         sidebar
@@ -94,33 +167,45 @@ export const OrganizationSelect: React.FC = () => {
         instructions={
           <>
             <Typography variant="h3" gutterBottom>
-              <b>Select an organization</b>
+              <b>{t('organizationSelect.guideTitle', 'Select an organization')}</b>
             </Typography>
             <Typography variant="body2" gutterBottom>
-              See devices, networks and logs that belong to this organization.
+              {t(
+                'organizationSelect.guideDescription',
+                'See devices, networks and logs that belong to this organization.'
+              )}
             </Typography>
           </>
         }
       >
-        <List dense className={css.list} disablePadding>
+        <List dense sx={listSx} disablePadding>
           <Badge
             overlap="circular"
-            classes={{ badge: css.badge }}
+            sx={badgeSx}
             anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
             badgeContent={mySessions}
           >
             <Tooltip
-              title={<Title primary={ownOrg?.id ? `${ownOrg.name} - Owner` : 'Personal Account'} count={mySessions} />}
+              title={
+                <Title
+                  primary={
+                    ownOrg?.id
+                      ? t('organizationSelect.ownerLabel', { name: ownOrg.name, defaultValue: '{{name}} - Owner' })
+                      : t('organizationSelect.personalAccount', 'Personal Account')
+                  }
+                  count={mySessions}
+                />
+              }
               placement="right"
               enterDelay={800}
               arrow
             >
-              <ListItem disableGutters className={css.buttonContainer}>
+              <ListItem disableGutters sx={buttonContainerSx}>
                 <ButtonBase
-                  className={classnames(css.button, ownOrgId === activeOrg.id && css.active)}
+                  sx={[buttonSx, ownOrgId === activeOrg.id ? activeSx : {}]}
                   onClick={() => onSelect(ownOrgId || userId)}
                 >
-                  <Box className={css.home}>
+                  <Box sx={homeSx}>
                     <Icon size="md" name="house" color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'} />
                   </Box>
                 </ButtonBase>
@@ -133,12 +218,21 @@ export const OrganizationSelect: React.FC = () => {
               <Badge
                 key={option.id}
                 overlap="circular"
-                classes={{ badge: css.badge }}
+                sx={badgeSx}
                 anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
                 badgeContent={count}
               >
                 <Tooltip
-                  title={<Title primary={`${option.name} - ${option.roleName}`} count={count} />}
+                  title={
+                    <Title
+                      primary={t('organizationSelect.memberLabel', {
+                        name: option.name,
+                        role: option.roleName,
+                        defaultValue: '{{name}} - {{role}}',
+                      })}
+                      count={count}
+                    />
+                  }
                   placement="right"
                   enterDelay={800}
                   arrow
@@ -147,7 +241,7 @@ export const OrganizationSelect: React.FC = () => {
                     <ButtonBase
                       disabled={option.disabled}
                       onClick={() => onSelect(option.id)}
-                      className={classnames(css.button, option.id === activeOrg.id && css.active)}
+                      sx={[buttonSx, option.id === activeOrg.id ? activeSx : {}]}
                     >
                       <Avatar email={option.email} fallback={option.name} size={38} border={2} />
                     </ButtonBase>
@@ -156,9 +250,9 @@ export const OrganizationSelect: React.FC = () => {
               </Badge>
             )
           })}
-          {/* <ListItem disableGutters className={css.buttonContainer}>
+          {/* <ListItem disableGutters sx={buttonContainerSx}>
             <IconButton
-              className={css.button}
+              sx={buttonSx}
               title="Memberships"
               icon="ellipsis-h"
               to="/organization/memberships"
@@ -173,95 +267,21 @@ export const OrganizationSelect: React.FC = () => {
 }
 
 function Title({ primary, count }: { primary: string; count: number }) {
+  const { t } = useTranslation()
   return (
     <>
       {primary}
       {!!count && (
         <>
           <Divider />
-          {count} active connection{count > 1 ? 's' : ''}
+          {t('organizationSelect.activeConnectionsCount', {
+            count,
+            defaultValue_one: '{{count}} active connection',
+            defaultValue_other: '{{count}} active connections',
+          })}
         </>
       )}
     </>
   )
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: palette.grayLighter.main,
-    boxShadow: `0 0 10px 10px ${palette.grayLighter.main}`,
-    marginBottom: spacing(3),
-    '& > *': {
-      display: 'flex',
-      justifyContent: 'center',
-      borderRadius: '50%',
-      height: 51,
-      padding: 0,
-    },
-  },
-  buttonContainer: {
-    width: 42,
-  },
-  button: {
-    borderRadius: '50%',
-    border: `2px solid ${palette.grayLighter.main}`,
-    transition: 'border-color 0.5s',
-    width: 42,
-    height: 42,
-    '&:hover': { borderColor: palette.primaryLight.main },
-  },
-  active: {
-    borderColor: palette.primary.main,
-    boxShadow: `0 0 10px ${palette.primaryLight.main}`,
-    '& > *': { border: `2px solid ${palette.grayLightest.main}` },
-    '& > .MuiBox-root': { backgroundColor: palette.grayLightest.main },
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      right: -16,
-      borderTop: '6px solid transparent',
-      borderRight: `8px solid ${palette.primary.main}`,
-      borderBottom: '6px solid transparent',
-    },
-  },
-  home: {
-    width: 42,
-    height: 38,
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: palette.white.main,
-  },
-  badge: {
-    fontWeight: 700,
-    marginTop: 3,
-    marginLeft: 1,
-    color: palette.alwaysWhite.main,
-    backgroundColor: palette.primary.main,
-  },
-  name: {
-    transform: 'rotate(270deg)',
-    transformOrigin: 'center',
-    whiteSpace: 'nowrap',
-    position: 'relative',
-    height: '2em',
-    '& > *': {
-      position: 'absolute',
-      right: 0,
-      color: palette.grayDarkest.main,
-      letterSpacing: '0.15em',
-      fontSize: fontSizes.base,
-      textTransform: 'uppercase',
-    },
-  },
-  // fade: {
-  //   // opacity: 0.5,
-  //   transition: 'opacity 0.4s',
-  //   '&:hover': { opacity: 1 },
-  // },
-}))

@@ -57,6 +57,17 @@ export const AdminSidebarNav: React.FC = () => {
 
       <ListItemButton
         dense
+        selected={currentPath.includes('/admin/devices')}
+        onClick={() => handleNavClick('/admin/devices')}
+      >
+        <ListItemIcon>
+          <Icon name="router" size="md" />
+        </ListItemIcon>
+        <ListItemText primary="Devices" />
+      </ListItemButton>
+
+      <ListItemButton
+        dense
         selected={currentPath.includes('/admin/admins')}
         onClick={() => handleNavClick('/admin/admins')}
       >
@@ -86,6 +97,17 @@ export const AdminSidebarNav: React.FC = () => {
           <Icon name="building" size="md" />
         </ListItemIcon>
         <ListItemText primary="Enterprise" />
+      </ListItemButton>
+
+      <ListItemButton
+        dense
+        selected={currentPath.includes('/admin/notices')}
+        onClick={() => handleNavClick('/admin/notices')}
+      >
+        <ListItemIcon>
+          <Icon name="bullhorn" size="md" />
+        </ListItemIcon>
+        <ListItemText primary="Notices" />
       </ListItemButton>
     </List>
   )

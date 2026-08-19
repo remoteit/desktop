@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MAX_NAME_LENGTH } from '@common/constants'
 import { useHistory } from 'react-router-dom'
 import { TextField, Button } from '@mui/material'
@@ -10,6 +11,7 @@ import { Gutters } from './Gutters'
 import sleep from '../helpers/sleep'
 
 export const NetworkAdd: React.FC = () => {
+  const { t } = useTranslation()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const [name, setName] = useState<string>('')
@@ -38,7 +40,7 @@ export const NetworkAdd: React.FC = () => {
           required
           fullWidth
           autoFocus
-          label="Name"
+          label={t('networkAdd.name', 'Name')}
           value={name}
           disabled={adding}
           variant="filled"
@@ -54,12 +56,12 @@ export const NetworkAdd: React.FC = () => {
         <GuideStep
           step={2}
           guide="network"
-          instructions="Click here after entering your network name."
+          instructions={t('networkAdd.guideInstructions', 'Click here after entering your network name.')}
           placement="top-end"
           highlight
         >
           <Button color="primary" disabled={name.length < 2 || adding} variant="contained" type="submit">
-            {adding ? 'Adding...' : 'Add'}
+            {adding ? t('networkAdd.adding', 'Adding...') : t('networkAdd.add', 'Add')}
           </Button>
         </GuideStep>
         <Button
@@ -68,7 +70,7 @@ export const NetworkAdd: React.FC = () => {
             reset()
           }}
         >
-          Cancel
+          {t('networkAdd.cancel', 'Cancel')}
         </Button>
       </Gutters>
     </form>

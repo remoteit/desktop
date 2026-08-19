@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { DeviceContext } from '../services/Context'
@@ -16,6 +17,7 @@ type Props = {
 }
 
 export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
+  const { t } = useTranslation()
   const { service, instance } = useContext(DeviceContext)
   const connected = useSelector((state: State) =>
     selectSessionUsers(state, undefined, service ? service.id : instance?.id)
@@ -30,28 +32,43 @@ export const AccessAccordion: React.FC<Props> = ({ expanded, onClick }) => {
   return (
     <AccordionMenuItem
       gutters
-      subtitle="Access"
+      subtitle={t('accessAccordion.subtitle', 'Access')}
       expanded={expanded}
       onClick={onClick}
       disabled={!total}
       elevation={0}
       action={
         <Box display="flex" alignItems="center">
-          {!total && <Typography variant="caption">No&nbsp;users</Typography>}
+          {!total && (
+            <Typography variant="caption">{t('accessAccordion.noUsers', 'No users')}</Typography>
+          )}
           {!!connected && <Chip size="small" color="primary" label={connected} sx={{ marginLeft: 2 }} />} &nbsp;
           {!!total && !expanded && <Chip size="small" label={total} />}
-          <ShareButton to="share" icon="plus" size="base" title="Add access" buttonBaseSize="small" inline fixedWidth />
+          <ShareButton
+            to="share"
+            icon="plus"
+            size="base"
+            title={t('accessAccordion.addAccess', 'Add access')}
+            buttonBaseSize="small"
+            inline
+            fixedWidth
+          />
         </Box>
       }
     >
       {!!guests.length && (
-        <ListItemLocation icon="user-circle" title="Guests" to="users" dense>
+        <ListItemLocation icon="user-circle" title={t('accessAccordion.guests', 'Guests')} to="users" dense>
           <Chip size="small" label={guests.length} />
           <Icon name="angle-right" inlineLeft inline fixedWidth />
         </ListItemLocation>
       )}
       {!!members.length && (
-        <ListItemLocation icon="users" title="Organization members" to="users" dense>
+        <ListItemLocation
+          icon="users"
+          title={t('accessAccordion.organizationMembers', 'Organization members')}
+          to="users"
+          dense
+        >
           <Chip size="small" label={members.length} />
           <Icon name="angle-right" inlineLeft inline fixedWidth />
         </ListItemLocation>

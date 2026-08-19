@@ -1,8 +1,8 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { windowOpen } from '../services/browser'
-import { makeStyles } from '@mui/styles'
 import { Box, Stack, Paper, PaperProps, Typography } from '@mui/material'
-import { spacing, fontSizes } from '../styling'
+import { spacing, fontSizes, toSxArray } from '../styling'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 
@@ -24,15 +24,22 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
   link,
   hideCopyLabel,
   onCopy,
+  sx,
   ...props
 }) => {
-  const css = useStyles()
-
+  const { t } = useTranslation()
   if (code === value) code = undefined
   if (!value) return null
 
   return (
-    <Paper elevation={0} className={css.paper} {...props}>
+    <Paper
+      elevation={0}
+      sx={[
+        { display: 'flex', backgroundColor: 'grayLightest.main', minWidth: 200 },
+        ...toSxArray(sx),
+      ]}
+      {...props}
+    >
       <Stack
         flexGrow={1}
         justifyContent="center"
@@ -42,15 +49,39 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
         paddingLeft={3}
       >
         {label && <Typography variant="h5">{label}</Typography>}
-        <Typography className={css.key} variant="h4">
+        <Typography
+          sx={{
+            fontSize: fontSizes.sm,
+            color: 'grayDarker.main',
+            marginTop: '2px',
+            marginBottom: '2px',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'anywhere',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+          variant="h4"
+        >
           {display || value}
         </Typography>
       </Stack>
       {(code || value) && (
-        <Box className={css.icons}>
+        <Box
+          sx={theme => ({
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: `${spacing.xs}px`,
+            borderLeft: `1px solid ${theme.palette.grayLighter.main}`,
+            '& .MuiTypography-root': { marginBottom: `${spacing.xxs}px` },
+            '& span': { marginRight: `${spacing.xs}px`, marginLeft: `${spacing.xs}px` },
+            '& span + span': { marginTop: `${-spacing.xs}px` },
+          })}
+        >
           {!hideCopyLabel && (
             <Typography variant="h5" marginTop={1}>
-              Copy
+              {t('copyCodeBlock.copy', 'Copy')}
             </Typography>
           )}
           {value && (
@@ -61,7 +92,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
               variant="text"
               icon={code ? 'command' : 'clone'}
               type="regular"
-              title={code ? 'Copy command' : 'Copy'}
+              title={code ? t('copyCodeBlock.copyCommand', 'Copy command') : t('copyCodeBlock.copy', 'Copy')}
               onCopy={onCopy}
             />
           )}
@@ -73,7 +104,7 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
               variant="text"
               type="regular"
               icon={code === value ? 'copy' : 'barcode'}
-              title="Copy code"
+              title={t('copyCodeBlock.copyCode', 'Copy code')}
               onCopy={onCopy}
             />
           )}
@@ -87,43 +118,9 @@ export const CopyCodeBlock: React.FC<CopyCodeBlockProps> = ({
           color="primary"
           variant="contained"
           onClick={() => windowOpen(link, '_blank', true)}
-          className={css.button}
+          sx={{ width: 64, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
         />
       )}
     </Paper>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  icons: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xs,
-    borderLeft: `1px solid ${palette.grayLighter.main}`,
-    '& .MuiTypography-root': { marginBottom: spacing.xxs },
-    '& span': { marginRight: spacing.xs, marginLeft: spacing.xs },
-    '& span + span': { marginTop: -spacing.xs },
-  },
-  paper: {
-    display: 'flex',
-    backgroundColor: palette.grayLightest.main,
-    minWidth: 200,
-  },
-  button: {
-    width: 64,
-    borderTopLeftRadius: 0,
-    borderBottomLeftRadius: 0,
-  },
-  key: {
-    fontSize: fontSizes.sm,
-    color: palette.grayDarker.main,
-    marginTop: 2,
-    marginBottom: 2,
-    whiteSpace: 'pre-wrap',
-    overflowWrap: 'anywhere',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-}))

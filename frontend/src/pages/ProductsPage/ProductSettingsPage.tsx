@@ -1,69 +1,41 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Typography, List } from '@mui/material'
-import { Icon } from '../../components/Icon'
+import { Typography } from '@mui/material'
 import { CopyCodeBlock } from '../../components/CopyCodeBlock'
-import { Body } from '../../components/Body'
 import { Gutters } from '../../components/Gutters'
 import { DataDisplay } from '../../components/DataDisplay'
 import { Container } from '../../components/Container'
 import { ProductHeaderMenu } from '../../components/ProductHeaderMenu'
 import { productDetailAttributes } from '../../components/ProductAttributes'
-import { ListItemSetting } from '../../components/ListItemSetting'
-import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
+import { dispatch } from '../../store'
 
 export const ProductSettingsPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
   const { all: products } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
-  const [updating, setUpdating] = useState(false)
 
-  const isLocked = product?.status === 'LOCKED'
   const registrationCommand = product?.registrationCommand
 
-  const handleLockToggle = async () => {
-    if (!product || isLocked) return
-    setUpdating(true)
-    await dispatch.products.updateSettings({
-      id: product.id,
-      input: { lock: true },
-    })
-    setUpdating(false)
-  }
+  useEffect(() => {
+    if (productId) dispatch.products.fetchSingle(productId)
+  }, [productId])
 
   if (!product) {
     return (
       <Container gutterBottom>
-        <Body center>
-          <Icon name="exclamation-triangle" size="xxl" color="warning" />
-          <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Product not found
-          </Typography>
-        </Body>
+        <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
+          Product not found
+        </Typography>
       </Container>
     )
   }
 
   return (
     <ProductHeaderMenu product={product}>
-      <List>
-        <ListItemSetting
-          icon="lock"
-          label="Lock Product"
-          subLabel={
-            isLocked
-              ? 'This product is locked and cannot be unlocked.'
-              : 'Lock the product to enable bulk registration. Once locked, it cannot be unlocked.'
-          }
-          toggle={isLocked}
-          disabled={updating || isLocked}
-          onClick={handleLockToggle}
-        />
-      </List>
       <Gutters>
-        {isLocked && product.registrationCode && (
+        {product.registrationCode && (
           <>
             <Typography variant="subtitle2" color="textSecondary" gutterBottom>
               {registrationCommand ? 'Registration Command' : 'Registration Code'}

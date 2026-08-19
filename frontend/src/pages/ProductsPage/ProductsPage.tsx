@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Typography, Button, Box } from '@mui/material'
 import { Container } from '../../components/Container'
@@ -12,13 +13,13 @@ import { productAttributes } from '../../components/ProductAttributes'
 import { removeObject } from '../../helpers/utilHelper'
 import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
+import { selectPermissions } from '../../selectors/organizations'
 
-export const ProductsPage: React.FC = () => {
+export const ProductsPage: React.FC<{ select?: boolean }> = ({ select }) => {
   const history = useHistory()
-  const location = useLocation()
+  const { t } = useTranslation()
   const { productId } = useParams<{ productId?: string }>()
-  const searchParams = new URLSearchParams(location.search)
-  const select = searchParams.get('select') === 'true'
+  const admin = useSelector(selectPermissions).includes('ADMIN')
   const productModel = useSelector(getProductModel)
   const products = productModel.all || []
   const fetching = productModel.fetching || false
@@ -57,41 +58,39 @@ export const ProductsPage: React.FC = () => {
         gutterBottom
         bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       >
-      {fetching && !initialized ? (
-        <LoadingMessage message="Loading products..." />
-      ) : products.length === 0 ? (
-        <Body center>
-          <Icon name="box-open" size="xxl" color="grayLight" />
-          <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            No products
-          </Typography>
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            Products are used for bulk device registration and management.
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ marginTop: 2 }}
-            onClick={() => history.push('/products/add')}
-          >
-            <Icon name="plus" size="sm" inline />
-            Create your first product
-          </Button>
-        </Body>
-      ) : (
-        <ProductList
-          attributes={attributes}
-          required={required}
-          products={products}
-          columnWidths={columnWidths}
-          fetching={fetching}
-          select={select}
-          selected={selected}
-          activeProductId={productId}
-          onSelect={handleSelect}
-          onSelectAll={handleSelectAll}
-        />
-      )}
+        {fetching && !initialized ? (
+          <LoadingMessage message={t('productsPage.loading', 'Loading products...')} />
+        ) : products.length === 0 ? (
+          <Body center>
+            {admin && (
+              <Button variant="contained" color="primary" size="medium" onClick={() => history.push('/products/add')}>
+                <Icon name="plus" type="solid" inlineLeft />{' '}
+                {t('productsPage.createFirst', 'Create your first product')}
+              </Button>
+            )}
+            <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
+              {admin
+                ? t('productsPage.emptyHelp', 'Products are used for bulk device registration and management.')
+                : t(
+                    'productsPage.emptyHelpReadOnly',
+                    'Products are used for bulk device registration and management. You must have the admin permission to create one.'
+                  )}
+            </Typography>
+          </Body>
+        ) : (
+          <ProductList
+            attributes={attributes}
+            required={required}
+            products={products}
+            columnWidths={columnWidths}
+            fetching={fetching}
+            select={select}
+            selected={selected}
+            activeProductId={productId}
+            onSelect={handleSelect}
+            onSelectAll={handleSelectAll}
+          />
+        )}
       </Container>
     </Box>
   )

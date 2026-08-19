@@ -1,5 +1,19 @@
 import { REGEX_VALID_IP } from '../constants'
 
+// One comparator behind every alphabetical sort in the UI, so "alphabetical" means the same
+// thing everywhere: numeric so device2 sorts before device10, base sensitivity so case and
+// accents don't split otherwise equal names. Held as a collator because localeCompare with an
+// options object builds a new one on every call.
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+
+export function alphaSort(a: string = '', b: string = '') {
+  return collator.compare(a, b)
+}
+
+export function byName<T extends { name?: string }>(a: T, b: T) {
+  return alphaSort(a.name, b.name)
+}
+
 export function toLookup<T>(array: T[], key: string): ILookup<T> {
   return array.reduce((obj, item) => ({ ...obj, [item[key]]: item }), {})
 }

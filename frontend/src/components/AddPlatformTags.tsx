@@ -8,7 +8,7 @@ import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
 
-type Props = StackProps & { button?: string; tags: string[]; onChange: (tags: string[]) => void }
+type Props = Omit<StackProps, 'onChange'> & { button?: string; tags: string[]; onChange: (tags: string[]) => void }
 
 export const AddPlatformTags: React.FC<Props> = ({ button, tags, onChange, ...props }) => {
   const { allTags, accountId, canEdit } = useSelector((state: State) => ({

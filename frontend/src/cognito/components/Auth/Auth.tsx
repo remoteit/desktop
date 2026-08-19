@@ -166,6 +166,7 @@ function Routes({
               email={email}
               fullWidth={fullWidth}
               onSignIn={handleSignIn2}
+              onSignInSuccess={onSignInSuccess}
               onVerifyRecoveryCode={onVerifyRecoveryCode}
             />
           )}

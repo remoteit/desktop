@@ -1,6 +1,6 @@
 import { useHistory, useLocation, matchPath, generatePath } from 'react-router-dom'
 import { REGEX_FIRST_PATH } from '../constants'
-import ROUTE_PARENTS from '../routers/routeParents'
+import ROUTE_PARENTS, { MENU_SECTIONS } from '../routers/routeParents'
 
 /**
  * Given a pathname, returns the semantic parent route.
@@ -24,16 +24,18 @@ export function getParentRoute(pathname: string): string {
  *
  * @param panels - Number of visible panels (1, 2, or 3).
  *   Single panel (1): navigates to the semantic parent via ROUTE_PARENTS map.
- *   Multi panel (2+): navigates to the section root (e.g. /devices, /scripts).
+ *   Multi panel (2+): navigates to the section root (e.g. /devices, /scripts),
+ *   since the root list is already visible in the left panel — except in
+ *   MENU_SECTIONS, where the left panel is a menu and UP follows the map.
  */
 export default function useNavigationUp(panels: number = 1) {
   const history = useHistory()
   const location = useLocation()
 
   return () => {
-    const parentPath = panels === 1
-      ? getParentRoute(location.pathname)
-      : location.pathname.match(REGEX_FIRST_PATH)?.[0] || '/'
+    const section = location.pathname.match(REGEX_FIRST_PATH)?.[0] || '/'
+    const parentPath =
+      panels === 1 || MENU_SECTIONS.includes(section) ? getParentRoute(location.pathname) : section
     history.push(parentPath)
   }
 }

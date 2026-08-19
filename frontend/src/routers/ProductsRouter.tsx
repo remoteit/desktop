@@ -37,8 +37,8 @@ export const ProductsRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const location = useLocation()
   const locationParts = location.pathname.split('/')
 
-  // Use single panel mode for base /products route
-  if (locationParts[2] === undefined) {
+  // Use single panel mode for the products list, in or out of select mode
+  if (locationParts[2] === undefined || locationParts[2] === 'select') {
     layout = { ...layout, singlePanel: true }
   }
 
@@ -51,6 +51,12 @@ export const ProductsRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           secondary={<ProductAddPage />}
           layout={layout}
         />
+      </Route>
+      {/* Products list in select mode — must precede /products/:productId so "select" isn't read as an id */}
+      <Route path="/products/select" exact>
+        <Panel layout={layout}>
+          <ProductsPage select />
+        </Panel>
       </Route>
       {/* Product detail: primary=product overview, secondary=service/settings detail, tertiary=products list (triple only) */}
       <Route path="/products/:productId">

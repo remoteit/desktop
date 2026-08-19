@@ -1,7 +1,5 @@
 import React from 'react'
-import classnames from 'classnames'
 import { spacing, Sizes } from '../styling'
-import { makeStyles } from '@mui/styles'
 import { Box } from '@mui/material'
 
 type Props = {
@@ -13,23 +11,23 @@ type Props = {
 }
 
 export const Quote: React.FC<Props> = ({ margin = 'lg', indent, noInset, className, children }) => {
-  const css = useStyles({ margin, noInset, indent })
-  return <Box className={classnames(css.quote, className)}>{children}</Box>
+  let marginLeft: number | undefined
+  if (indent === 'listItem') marginLeft = 27
+  if (indent === 'checkbox') marginLeft = 14
+  return (
+    <Box
+      className={className}
+      sx={theme => ({
+        width: `calc(100% - ${marginLeft}px)`,
+        position: 'relative',
+        marginTop: margin ? `${spacing[margin]}px` : undefined,
+        marginBottom: margin ? `${spacing[margin]}px` : undefined,
+        paddingLeft: noInset ? undefined : `${spacing.lg}px`,
+        borderLeft: `1px solid ${theme.palette.grayLighter.main}`,
+        marginLeft: marginLeft !== undefined ? `${marginLeft}px` : undefined,
+      })}
+    >
+      {children}
+    </Box>
+  )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  quote: ({ margin, noInset, indent }: Props) => {
-    let marginLeft
-    if (indent === 'listItem') marginLeft = 27
-    if (indent === 'checkbox') marginLeft = 14
-    return {
-      width: `calc(100% - ${marginLeft}px)`,
-      position: 'relative',
-      marginTop: margin ? spacing[margin] : undefined,
-      marginBottom: margin ? spacing[margin] : undefined,
-      paddingLeft: noInset ? undefined : spacing.lg,
-      borderLeft: `1px solid ${palette.grayLighter.main}`,
-      marginLeft,
-    }
-  },
-}))

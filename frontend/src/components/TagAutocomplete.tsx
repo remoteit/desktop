@@ -1,7 +1,6 @@
 import React from 'react'
 import reactStringReplace from 'react-string-replace'
 import escapeRegexp from 'escape-string-regexp'
-import { makeStyles } from '@mui/styles'
 import {
   Box,
   MenuItem,
@@ -53,7 +52,6 @@ export const TagAutocomplete: React.FC<Props> = ({
   InputProps = {},
 }) => {
   const [inputValue, setInputValue] = React.useState<string>('')
-  const css = useStyles()
   const matched = tagsInclude(items, inputValue)
   items = createOnly ? [] : items.filter(i => !tagsInclude(filter, i.name))
   const exists = tagsInclude(filter, inputValue)
@@ -105,7 +103,40 @@ export const TagAutocomplete: React.FC<Props> = ({
         },
       ]}
     >
-      <Paper elevation={1} className={css.inputContainer}>
+      <Paper
+        elevation={1}
+        sx={theme => ({
+          minWidth: 200,
+          backgroundColor: 'grayLightest.main',
+          // Out-specify MUI's .hasClearIcon endAdornment padding-right (0,3,0) so the caller's
+          // "#" endAdornment sits flush right, matching the pre-migration makeStyles behavior.
+          '& .MuiAutocomplete-root .MuiAutocomplete-inputRoot.MuiFilledInput-root': { padding: 0 },
+          // The Autocomplete popup renders as a sibling of .MuiAutocomplete-root (not a descendant),
+          // so these popup selectors must be scoped to this wrapping Paper, not the Autocomplete's own sx.
+          '& .MuiAutocomplete-popper': { width: '100%', position: 'relative' },
+          '& .MuiAutocomplete-paper': { borderTopLeftRadius: 0, borderTopRightRadius: 0, boxShadow: 'none' },
+          '& .MuiAutocomplete-listbox': {
+            paddingTop: `${spacing.xxs}px`,
+            paddingBottom: `${spacing.xxs}px`,
+            backgroundColor: theme.palette.grayLightest.main,
+          },
+          '& .MuiAutocomplete-noOptions': { display: 'none' },
+          '& .MuiAutocomplete-option': {
+            borderRadius: `${radius.sm}px`,
+            marginLeft: `${spacing.xs}px`,
+            marginRight: `${spacing.xs}px`,
+            marginBottom: '1px',
+            paddingLeft: '2px',
+            paddingRight: '2px',
+            minHeight: 20,
+            color: theme.palette.grayDarker.main,
+            '&.Mui-focused': { backgroundColor: theme.palette.primaryHighlight.main },
+            '&.Mui-selected': { backgroundColor: theme.palette.primaryHighlight.main },
+            '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
+            '& .MuiListItemIcon-root': { minWidth: 40 },
+          },
+        })}
+      >
         <Autocomplete
           open
           fullWidth
@@ -115,13 +146,6 @@ export const TagAutocomplete: React.FC<Props> = ({
           options={options}
           includeInputInList
           inputValue={inputValue}
-          classes={{
-            listbox: css.listbox,
-            option: css.option,
-            popper: css.popper,
-            paper: css.popperPaper,
-            noOptions: css.empty,
-          }}
           onClose={onClose}
           onChange={(_event, value) => {
             if (!value || !onSelect || disabled) return
@@ -156,9 +180,9 @@ export const TagAutocomplete: React.FC<Props> = ({
                   option.name,
                   new RegExp(`(${escapeRegexp(inputValue)})`, 'i'),
                   (match, i) => (
-                    <span key={i} className={css.spanItem}>
+                    <Box component="span" key={i} sx={{ color: 'primary.main', fontWeight: 500 }}>
                       {match}
-                    </span>
+                    </Box>
                   )
                 )}
               />
@@ -169,7 +193,15 @@ export const TagAutocomplete: React.FC<Props> = ({
               {...params}
               autoFocus
               variant="filled"
-              className={css.input}
+              sx={theme => ({
+                margin: 0,
+                padding: `${spacing.xs}px ${spacing.xs}px 0`,
+                '& .MuiFilledInput-input.MuiAutocomplete-input': {
+                  padding: `${spacing.xs}px ${spacing.sm}px`,
+                  fontSize: fontSizes.base,
+                  color: theme.palette.grayDarkest.main,
+                },
+              })}
               InputProps={{ ...params.InputProps, ...InputProps }}
               placeholder={placeholder}
             />
@@ -188,56 +220,3 @@ export const BoxComponent: React.FC<BoxProps> = ({ className, children, placemen
   </Box>
 )
 
-const useStyles = makeStyles(({ palette }) => ({
-  inputContainer: {
-    minWidth: 200,
-    backgroundColor: palette.grayLightest.main,
-    '& .MuiAutocomplete-root .MuiFilledInput-root': { padding: 0 },
-  },
-  input: {
-    margin: 0,
-    padding: `${spacing.xs}px ${spacing.xs}px 0`,
-    '& .MuiFilledInput-input.MuiAutocomplete-input': {
-      padding: `${spacing.xs}px ${spacing.sm}px`,
-      fontSize: fontSizes.base,
-      color: palette.grayDarkest.main,
-    },
-  },
-  popper: {
-    width: '100%',
-    position: 'relative',
-  },
-  popperPaper: {
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    boxShadow: 'none',
-  },
-  listbox: {
-    paddingTop: spacing.xxs,
-    paddingBottom: spacing.xxs,
-    backgroundColor: palette.grayLightest.main,
-  },
-  empty: {
-    display: 'none',
-  },
-  spanItem: {
-    color: palette.primary.main,
-    fontWeight: 500,
-  },
-  option: {
-    '&.MuiAutocomplete-option': {
-      borderRadius: radius.sm,
-      marginLeft: spacing.xs,
-      marginRight: spacing.xs,
-      marginBottom: 1,
-      paddingLeft: 2,
-      paddingRight: 2,
-      minHeight: 20,
-      color: palette.grayDarker.main,
-      '&.Mui-focused': { backgroundColor: palette.primaryHighlight.main },
-      '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
-      '& .MuiListItemText-primary': { fontSize: fontSizes.sm },
-      '& .MuiListItemIcon-root': { minWidth: 40 },
-    },
-  },
-}))

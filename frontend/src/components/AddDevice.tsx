@@ -12,14 +12,16 @@ type Props = {
   tags?: string[]
   redirect?: string
   minimal?: boolean
+  oneTimeUse?: boolean
 }
 
-export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redirect, minimal }) => {
+export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redirect, minimal, oneTimeUse }) => {
   const { registrationCode, registrationCommand, redirectUrl, fetching } = useAutoRegistration({
     platform,
     tags,
     serviceTypes,
     redirect,
+    oneTimeUse,
   })
   const codeOnly = platform.installation?.command === '[CODE]'
 

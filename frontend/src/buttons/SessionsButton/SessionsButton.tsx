@@ -1,7 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useHistory } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
 import { IconButton, Typography } from '@mui/material'
 import { selectSessionsByService } from '../../models/sessions'
 import { State } from '../../store'
@@ -15,7 +14,6 @@ interface Props {
 
 export const SessionsButton: React.FC<Props> = ({ service }) => {
   const sessions = useSelector((state: State) => selectSessionsByService(state, service?.id))
-  const css = useStyles()
   const history = useHistory()
   const location = useLocation()
 
@@ -29,15 +27,14 @@ export const SessionsButton: React.FC<Props> = ({ service }) => {
         size="large"
       >
         <Icon name="user" size="md" />
-        <Typography className={css.label} variant="caption" color="textPrimary">
+        <Typography
+          sx={{ marginLeft: `${spacing.xs}px`, color: 'primary.main' }}
+          variant="caption"
+          color="textPrimary"
+        >
           {sessions.length}
         </Typography>
       </IconButton>
     </SessionsTooltip>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  button: { padding: spacing.sm },
-  label: { marginLeft: spacing.xs, color: palette.primary.main },
-}))

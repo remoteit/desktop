@@ -84,10 +84,12 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/settings/options', '/settings'],
 
   // Organization
-  ['/organization/roles/:roleID', '/organization/roles'],
+  // Roles land back at the org root: /organization/roles has no standalone view — it redirects
+  // to the first role — so stepping "up" to it would just bounce back here.
+  ['/organization/roles/:roleID', '/organization'],
   ['/organization/customer/add', '/organization'],
   ['/organization/customer/:userID/plans', '/organization/customer/:userID'],
-  ['/organization/customer/:userID', '/organization'],
+  ['/organization/customer/:userID', '/organization/customer'],
   ['/organization/customer', '/organization'],
   ['/organization/add', '/organization'],
   ['/organization/settings', '/organization'],
@@ -95,8 +97,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/organization/tags', '/organization'],
   ['/organization/guests/:userID/:deviceID', '/organization/guests/:userID'],
   ['/organization/members/:userID/:deviceID', '/organization/members/:userID'],
-  ['/organization/guests/:userID', '/organization'],
-  ['/organization/members/:userID', '/organization'],
+  ['/organization/guests/:userID', '/organization/guests'],
+  ['/organization/members/:userID', '/organization/members'],
   ['/organization/account/:userID', '/organization'],
   ['/organization/guests', '/organization'],
   ['/organization/memberships', '/organization'],
@@ -107,6 +109,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/account/billing', '/account'],
   ['/account/license', '/account'],
   ['/account/accessKey', '/account'],
+  ['/account/connected', '/account'],
+  ['/account/connected/:clientId', '/account/connected'],
   ['/account/overview', '/account'],
 
   // Admin
@@ -114,6 +118,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/admin/users/:userId/devices', '/admin/users/:userId'],
   ['/admin/users/:userId', '/admin/users'],
   ['/admin/partners/:partnerId', '/admin/partners'],
+  ['/admin/notices/:noticeId', '/admin/notices'],
+  ['/admin/devices/:deviceId', '/admin/devices'],
 
   // Onboard
   ['/onboard/:platform/scanning', '/onboard/:platform'],
@@ -126,5 +132,18 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/add/:platform/:redirect', '/add'],
   ['/add/:platform', '/add'],
 ]
+
+/**
+ * Sections whose primary panel is a static menu rather than a list.
+ * In multi-panel layouts, UP normally jumps to the section root because the
+ * root list is already visible in the left panel (e.g. /devices). In these
+ * sections the left panel is a menu, so the parent list only exists in the
+ * secondary panel — UP must follow ROUTE_PARENTS one level at a time.
+ */
+// Sections whose left panel is a menu rather than the section's own list, so UP has to follow
+// the ROUTE_PARENTS map instead of falling back to the section root. /admin qualifies: its
+// sidebar is a menu and /admin redirects to /admin/users, so the fallback would land every
+// admin sub-page on the users list regardless of which page it came from.
+export const MENU_SECTIONS = ['/account', '/organization', '/settings', '/admin']
 
 export default ROUTE_PARENTS

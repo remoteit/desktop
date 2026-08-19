@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { AdminPartnersListPage } from './AdminPartnersListPage'
 import { AdminPartnerDetailPanel } from './AdminPartnerDetailPanel'
 import { State, Dispatch } from '../../store'
@@ -13,12 +12,42 @@ const MIN_WIDTH = 250
 const TWO_PANEL_WIDTH = 700
 const DEFAULT_LEFT_WIDTH = 350
 
+const panelSx = {
+  height: '100%',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  flexShrink: 0,
+} as const
+
+const handleSx = (theme: import('@mui/material').Theme) => ({
+  zIndex: 8,
+  position: 'absolute',
+  height: '100%',
+  marginLeft: '-5px',
+  padding: '0 3px',
+  cursor: 'col-resize',
+  '& > div': {
+    width: '1px',
+    marginLeft: '1px',
+    marginRight: '1px',
+    height: '100%',
+    backgroundColor: theme.palette.grayLighter.main,
+    transition: 'background-color 100ms 200ms, width 100ms 200ms, margin 100ms 200ms',
+  },
+  '&:hover > div, & .active': {
+    width: '3px',
+    marginLeft: 0,
+    marginRight: 0,
+    backgroundColor: theme.palette.primary.main,
+  },
+})
+
 export const AdminPartnersPage: React.FC = () => {
   const { partnerId } = useParams<{ partnerId?: string }>()
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
   const hasRestoredRef = useRef(false)
@@ -55,16 +84,16 @@ export const AdminPartnersPage: React.FC = () => {
   const showRight = hasPartnerSelected
 
   return (
-    <Box className={css.wrapper} ref={containerRef}>
-      <Box className={css.container}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }} ref={containerRef}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
         {showLeft && (
           <>
             <Box
-              className={css.panel}
+              sx={panelSx}
               style={{
                 width: hasPartnerSelected ? leftPanel.width : undefined,
                 minWidth: hasPartnerSelected ? leftPanel.width : undefined,
-                flex: hasPartnerSelected ? undefined : 1
+                flex: hasPartnerSelected ? undefined : 1,
               }}
               ref={leftPanel.panelRef}
             >
@@ -72,8 +101,8 @@ export const AdminPartnersPage: React.FC = () => {
             </Box>
 
             {hasPartnerSelected && (
-              <Box className={css.anchor}>
-                <Box className={css.handle} onMouseDown={leftPanel.onDown}>
+              <Box sx={{ position: 'relative', height: '100%' }}>
+                <Box sx={handleSx} onMouseDown={leftPanel.onDown}>
                   <Box className={leftPanel.grab ? 'active' : undefined} />
                 </Box>
               </Box>
@@ -82,7 +111,16 @@ export const AdminPartnersPage: React.FC = () => {
         )}
 
         {showRight && (
-          <Box className={css.rightPanel}>
+          <Box
+            sx={{
+              flex: 1,
+              height: '100%',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: MIN_WIDTH,
+            }}
+          >
             <AdminPartnerDetailPanel />
           </Box>
         )}
@@ -90,59 +128,3 @@ export const AdminPartnersPage: React.FC = () => {
     </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'row',
-    flex: 1,
-    overflow: 'hidden',
-  },
-  panel: {
-    height: '100%',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    flexShrink: 0,
-  },
-  rightPanel: {
-    flex: 1,
-    height: '100%',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: MIN_WIDTH,
-  },
-  anchor: {
-    position: 'relative',
-    height: '100%',
-  },
-  handle: {
-    zIndex: 8,
-    position: 'absolute',
-    height: '100%',
-    marginLeft: -5,
-    padding: '0 3px',
-    cursor: 'col-resize',
-    '& > div': {
-      width: 1,
-      marginLeft: 1,
-      marginRight: 1,
-      height: '100%',
-      backgroundColor: palette.grayLighter.main,
-      transition: 'background-color 100ms 200ms, width 100ms 200ms, margin 100ms 200ms',
-    },
-    '&:hover > div, & .active': {
-      width: 3,
-      marginLeft: 0,
-      marginRight: 0,
-      backgroundColor: palette.primary.main,
-    },
-  },
-}))

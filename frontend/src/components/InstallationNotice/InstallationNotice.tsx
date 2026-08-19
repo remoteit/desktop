@@ -2,13 +2,14 @@ import React, { useEffect } from 'react'
 import heartbeat from '../../services/Heartbeat'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
-import { Button, Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { Box, Button, Typography } from '@mui/material'
 import { spacing } from '../../styling'
 import { Notice } from '../Notice'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { Logo } from '@common/brand/Logo'
+
+const spaceSx = { marginBottom: `${spacing.xl}px` }
 
 export const InstallationNotice: React.FC = () => {
   const { connected, error, installing, reason } = useSelector((state: State) => ({
@@ -18,7 +19,6 @@ export const InstallationNotice: React.FC = () => {
     reason: state.binaries.reason,
   }))
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
 
   useEffect(() => {
     heartbeat.checkAll = true
@@ -32,10 +32,12 @@ export const InstallationNotice: React.FC = () => {
 
   return (
     <Body center>
-      <Typography className={css.welcome} variant="caption" align="center">
+      <Typography sx={{ marginBottom: `${spacing.md}px`, letterSpacing: 3 }} variant="caption" align="center">
         Welcome to
       </Typography>
-      <Logo className={css.space} />
+      <Box sx={spaceSx}>
+        <Logo />
+      </Box>
       {isError && (
         <Notice onClose={() => dispatch.binaries.clearError()}>
           {error === 'User did not grant permission.'
@@ -43,12 +45,12 @@ export const InstallationNotice: React.FC = () => {
             : JSON.stringify(error)}
         </Notice>
       )}
-      <Typography className={css.space} variant="h3" align="center">
+      <Typography sx={spaceSx} variant="h3" align="center">
         We need to install our system agent
         <br /> in order to maintain background connections.
       </Typography>
       <Button
-        className={css.space}
+        sx={spaceSx}
         variant="contained"
         color="primary"
         size="large"
@@ -67,7 +69,7 @@ export const InstallationNotice: React.FC = () => {
           </>
         )}
       </Button>
-      <Typography className={css.space} variant="caption" align="center">
+      <Typography sx={spaceSx} variant="caption" align="center">
         <Icon name="info-circle" type="regular" size="xs" inlineLeft />
         You will be prompted for permission to continue the installation.
         <br />
@@ -86,7 +88,3 @@ export const InstallationNotice: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles({
-  welcome: { marginBottom: spacing.md, letterSpacing: 3 },
-  space: { marginBottom: spacing.xl },
-})

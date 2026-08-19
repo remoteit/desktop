@@ -30,6 +30,8 @@ export async function graphQLDeviceProducts(options?: {
                 status
                 registrationCode
                 registrationCommand
+                tags
+                source
                 created
                 updated
                 services {
@@ -64,6 +66,8 @@ export async function graphQLDeviceProduct(id: string, accountId?: string) {
                 status
                 registrationCode
                 registrationCommand
+                tags
+                source
                 created
                 updated
                 services {
@@ -179,5 +183,69 @@ export async function graphQLTransferDeviceProduct(productId: string, email: str
         transferDeviceProduct(productId: $productId, email: $email)
       }`,
     { productId, email }
+  )
+}
+
+export async function graphQLCreateDeviceProductFromRegistration(props: {
+  platform: number
+  tags?: string[]
+  services: { application: number; name?: string; port?: number; enabled?: boolean }[]
+  accountId?: string
+  name?: string
+}) {
+  const { accountId, ...input } = props
+  return await graphQLBasicRequest(
+    ` mutation CreateDeviceProductFromRegistration($accountId: String, $input: CreateDeviceProductFromRegistrationInput!) {
+        createDeviceProductFromRegistration(accountId: $accountId, input: $input) {
+          id
+          name
+          platform { id name }
+          status
+          tags
+          source
+          registrationCode
+          registrationCommand
+          created
+          updated
+          services {
+            id
+            name
+            type { id name }
+            port
+            enabled
+          }
+        }
+      }`,
+    { accountId, input }
+  )
+}
+
+export async function graphQLUpdateDeviceProduct(
+  id: string,
+  input: { name?: string; platform?: number; tags?: string[] }
+) {
+  return await graphQLBasicRequest(
+    ` mutation UpdateDeviceProduct($id: ID!, $input: UpdateDeviceProductInput!) {
+        updateDeviceProduct(id: $id, input: $input) {
+          id
+          name
+          platform { id name }
+          status
+          tags
+          source
+          registrationCode
+          registrationCommand
+          created
+          updated
+          services {
+            id
+            name
+            type { id name }
+            port
+            enabled
+          }
+        }
+      }`,
+    { id, input }
   )
 }

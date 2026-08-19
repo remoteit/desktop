@@ -2,6 +2,7 @@ import React from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Link } from './Link'
 import { IconButton } from '../buttons/IconButton'
 
@@ -14,6 +15,7 @@ export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { scanEnabled } = useSelector((state: State) => state.ui)
   const history = useHistory()
+  const { t } = useTranslation()
 
   if (!allowScanning || !scanEnabled) return null
 
@@ -21,10 +23,10 @@ export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
     <IconButton
       icon="radar"
       size="md"
-      title="Scan for Services"
+      title={t('addFromNetwork.scanForServices', 'Scan for Services')}
       onClick={() => history.push(`/devices/${deviceID}/add/scan`)}
     />
   ) : (
-    <Link to={`/devices/${deviceID}/add/scan`}>Scan&nbsp;network</Link>
+    <Link to={`/devices/${deviceID}/add/scan`}>{t('addFromNetwork.scanNetwork', 'Scan network')}</Link>
   )
 }

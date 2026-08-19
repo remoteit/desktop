@@ -3,7 +3,7 @@ import browser from '../services/browser'
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
 import { parse as urlParse } from 'url'
-import { pickTruthy } from '../helpers/utilHelper'
+import { alphaSort, pickTruthy } from '../helpers/utilHelper'
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
 import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
 import {
@@ -29,6 +29,7 @@ import { selectById } from '../selectors/devices'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
+import i18n from '../i18n'
 
 type IConnectionsState = {
   all: IConnection[]
@@ -518,7 +519,11 @@ export default createModel<RootModel>()({
       if (!connection.sessionId) return
       const result = await graphQLSurvey(connection.id, connection.sessionId, rating)
       if (result === 'ERROR' || !result?.data?.data?.rateConnection) {
-        dispatch.ui.set({ errorMessage: 'Connection survey submission failed. Please contact support.' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:connection.surveyFailed', {
+            defaultValue: 'Connection survey submission failed. Please contact support.',
+          }),
+        })
       }
     },
 
@@ -565,7 +570,7 @@ export default createModel<RootModel>()({
     },
 
     async setAll(all: IConnection[]) {
-      all.sort((a, b) => nameSort(a.name || '', b.name || ''))
+      all.sort((a, b) => alphaSort(a.name, b.name))
       dispatch.connections.set({ all: [...all] }) // to ensure we trigger update
     },
   }),
@@ -588,6 +593,3 @@ export default createModel<RootModel>()({
   },
 })
 
-function nameSort(a: string, b: string) {
-  return a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0
-}

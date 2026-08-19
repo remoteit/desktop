@@ -55,7 +55,7 @@ export const Avatar: React.FC<Props> = React.memo(
             fontFamily: 'Roboto Mono',
             backgroundColor: labelLookup[color].color,
             border: `${border}px solid ${theme.palette.white.main}`,
-            marginRight: inline ? `${spacing.sm}px` : marginRight,
+            marginRight: inline ? `${spacing.sm}px` : marginRight ? `${marginRight}px` : undefined,
           })}
         >
           <div>{fallback}</div>

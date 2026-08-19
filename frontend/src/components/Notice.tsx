@@ -1,10 +1,17 @@
 import React from 'react'
 import { Icon } from './Icon'
 import { IconButton } from '../buttons/IconButton'
-import { spacing, fontSizes } from '../styling'
+import { spacing, fontSizes, toSxArray } from '../styling'
 import { alpha, SxProps, Theme, Paper, Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
-import classnames from 'classnames'
+
+const severityColors = { info: 'calm', error: 'error', warning: 'warning', success: 'success' } as const
+
+const severitySx = (theme: Theme, severity: 'info' | 'warning' | 'error' | 'success', solid?: boolean) => {
+  const color = theme.palette[severityColors[severity]].main
+  return solid
+    ? { color: theme.palette.alwaysWhite.main, backgroundColor: color }
+    : { color, backgroundColor: alpha(color, 0.1) }
+}
 
 export type NoticeProps = {
   severity?: 'info' | 'warning' | 'error' | 'success'
@@ -39,7 +46,6 @@ export const Notice: React.FC<NoticeProps> = ({
   sx,
   children,
 }) => {
-  const css = useStyles({ fullWidth, gutterBottom, gutterTop })
   let iconName: string
   let iconColor: string = severity
 
@@ -65,9 +71,33 @@ export const Notice: React.FC<NoticeProps> = ({
 
   return (
     <Paper
-      sx={sx}
       elevation={0}
-      className={classnames(className, css.notice, css[solid ? severity + 'Solid' : severity])}
+      className={className}
+      sx={[
+        {
+          flexGrow: 1,
+          alignItems: 'flex-start',
+          marginLeft: fullWidth ? 0 : `${spacing.md}px`,
+          marginRight: fullWidth ? 0 : `${spacing.md}px`,
+          marginBottom: gutterBottom ? `${spacing.md}px` : 0,
+          marginTop: gutterTop ? `${spacing.md}px` : 0,
+          padding: `${spacing.xs}px ${spacing.md}px`,
+          display: 'flex',
+          position: 'relative',
+          '& > svg': {
+            marginLeft: `${spacing.xxs}px`,
+            marginRight: `${spacing.md}px`,
+            width: 21,
+            paddingTop: `${spacing.sm}px`,
+            paddingBottom: `${spacing.sm}px`,
+          },
+          '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
+          '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
+          '& .MuiButton-root': { marginTop: '5px' },
+        },
+        (theme: Theme) => severitySx(theme, severity, solid),
+        ...toSxArray(sx),
+      ]}
     >
       {icon}
       <Box
@@ -97,35 +127,3 @@ export const Notice: React.FC<NoticeProps> = ({
     </Paper>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  info: { color: palette.calm.main, backgroundColor: alpha(palette.calm.main, 0.1) },
-  error: { color: palette.error.main, backgroundColor: alpha(palette.error.main, 0.1) },
-  warning: { color: palette.warning.main, backgroundColor: alpha(palette.warning.main, 0.1) },
-  success: { color: palette.success.main, backgroundColor: alpha(palette.success.main, 0.1) },
-  infoSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.calm.main },
-  errorSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.error.main },
-  warningSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.warning.main },
-  successSolid: { color: palette.alwaysWhite.main, backgroundColor: palette.success.main },
-  notice: ({ fullWidth, gutterBottom, gutterTop }: NoticeProps) => ({
-    flexGrow: 1,
-    alignItems: 'flex-start',
-    marginLeft: fullWidth ? 0 : spacing.md,
-    marginRight: fullWidth ? 0 : spacing.md,
-    marginBottom: gutterBottom ? spacing.md : 0,
-    marginTop: gutterTop ? spacing.md : 0,
-    padding: `${spacing.xs}px ${spacing.md}px`,
-    display: 'flex',
-    position: 'relative',
-    '& > svg': {
-      marginLeft: spacing.xxs,
-      marginRight: spacing.md,
-      width: 21,
-      paddingTop: spacing.sm,
-      paddingBottom: spacing.sm,
-    },
-    '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
-    '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
-    '& .MuiButton-root': { marginTop: 5 },
-  }),
-}))

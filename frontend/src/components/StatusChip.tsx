@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ColorChip } from './ColorChip'
 import { Duration } from './Duration'
 import { Badge, Tooltip } from '@mui/material'
@@ -21,6 +22,7 @@ function badgeState(device?: IDevice) {
 }
 
 export const StatusChip: React.FC<Props> = ({ device, service, connections }) => {
+  const { t } = useTranslation()
   const [badge, setBadge] = useState(badgeState(device))
   const instance = device || service
 
@@ -41,19 +43,19 @@ export const StatusChip: React.FC<Props> = ({ device, service, connections }) =>
 
   const Chip =
     instance?.license === 'UNLICENSED' ? (
-      <ColorChip label="Unlicensed" size="small" color="warning" />
+      <ColorChip label={t('statusChip.unlicensed', 'Unlicensed')} size="small" color="warning" />
     ) : instance?.state === 'inactive' ? (
-      <ColorChip label="Offline" size="small" color="gray" />
+      <ColorChip label={t('statusChip.offline', 'Offline')} size="small" color="gray" />
     ) : connections?.some(c => c.connected) ? (
-      <ColorChip label="Connected" size="small" color="primary" variant="contained" />
+      <ColorChip label={t('statusChip.connected', 'Connected')} size="small" color="primary" variant="contained" />
     ) : device?.services.some(s => s.link?.enabled && s.link?.web) || (service?.link?.enabled && service?.link?.web) ? (
-      <ColorChip label="Public" size="small" color="primary" />
+      <ColorChip label={t('statusChip.public', 'Public')} size="small" color="primary" />
     ) : connections?.some(c => c.enabled && c.online) ? (
-      <ColorChip label="Idle" size="small" color="primary" />
+      <ColorChip label={t('statusChip.idle', 'Idle')} size="small" color="primary" />
     ) : instance?.state === 'active' ? (
-      <ColorChip label="Online" size="small" color="success" />
+      <ColorChip label={t('statusChip.online', 'Online')} size="small" color="success" />
     ) : (
-      <ColorChip label="Unknown" size="small" color="gray" />
+      <ColorChip label={t('statusChip.unknown', 'Unknown')} size="small" color="gray" />
     )
 
   return badge.dropped || badge.activated ? (
@@ -62,7 +64,7 @@ export const StatusChip: React.FC<Props> = ({ device, service, connections }) =>
       placement="top"
       title={
         <>
-          {badge.dropped ? 'Offline ' : 'Online '}
+          {badge.dropped ? t('statusChip.offlineLabel', 'Offline ') : t('statusChip.onlineLabel', 'Online ')}
           <Duration
             startTime={badge.dropped ? device?.offlineSince : device?.onlineSince}
             humanizeOptions={{ largest: 1 }}

@@ -1,7 +1,6 @@
 import { Chip, Typography } from '@mui/material'
 import React from 'react'
 import { Attribute } from './Attributes'
-import { ProductStatusChip } from './ProductStatusChip'
 import { Timestamp } from './Timestamp'
 
 export class ProductAttribute extends Attribute<IDataOptions> {
@@ -35,12 +34,6 @@ export const productAttributes: ProductAttribute[] = [
         {product?.platform?.name || product?.platform?.id}
       </Typography>
     ),
-  }),
-  new ProductAttribute({
-    id: 'productStatus',
-    label: 'Status',
-    defaultWidth: 100,
-    value: ({ product }: IDataOptions) => <ProductStatusChip status={product?.status} />,
   }),
   new ProductAttribute({
     id: 'productServices',
@@ -81,11 +74,6 @@ export const productDetailAttributes: ProductDetailAttribute[] = [
     id: 'productPlatformDetail',
     label: 'Platform',
     value: ({ product }: IDataOptions) => product?.platform?.name || product?.platform?.id,
-  }),
-  new ProductDetailAttribute({
-    id: 'productStatusDetail',
-    label: 'Status',
-    value: ({ product }: IDataOptions) => <ProductStatusChip status={product?.status} />,
   }),
   new ProductDetailAttribute({
     id: 'productServicesDetail',

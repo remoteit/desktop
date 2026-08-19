@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { Chip, BoxProps, Typography } from '@mui/material'
+import { byName } from '../helpers/utilHelper'
 import { Tag } from './Tag'
 
 export type TagProps = BoxProps & {
@@ -14,7 +15,7 @@ export type TagProps = BoxProps & {
 
 export const Tags: React.FC<TagProps> = ({ tags, small, max = 1, showEmpty, hideLabels, onClick, onDelete }) => {
   const dot = tags.length > max && small
-  const sortedTags = useMemo(() => [...tags].sort(nameSort), [tags])
+  const sortedTags = useMemo(() => [...tags].sort(byName), [tags])
 
   if (!tags.length && showEmpty)
     return (
@@ -37,6 +38,3 @@ export const Tags: React.FC<TagProps> = ({ tags, small, max = 1, showEmpty, hide
   return <>{dot ? <Chip size="small" label={tagElements} /> : tagElements}</>
 }
 
-function nameSort(a: ITag, b: ITag) {
-  return a.name.localeCompare(b.name)
-}

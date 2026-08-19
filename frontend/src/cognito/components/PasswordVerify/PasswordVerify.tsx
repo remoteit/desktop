@@ -14,7 +14,7 @@ export type PasswordVerifyProps = {
 }
 
 export function PasswordVerify({ onVerifyPasswordChange, email, fullWidth }: PasswordVerifyProps): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const history = useHistory()
   const location = useLocation()
   const [error, setError] = useState<string | null>(null)

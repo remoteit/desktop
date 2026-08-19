@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import {
   Typography,
@@ -35,12 +36,13 @@ export const OrganizationMembershipPage: React.FC = () => {
     email: state.user.email || '',
   }))
   const { accounts } = useDispatch<Dispatch>()
+  const { t } = useTranslation()
 
   return (
     <Container
       header={
         <Typography variant="h1">
-          <Title>Organization Memberships</Title>
+          <Title>{t('organizationMembershipPage.title', 'Organization Memberships')}</Title>
         </Typography>
       }
     >
@@ -52,13 +54,20 @@ export const OrganizationMembershipPage: React.FC = () => {
                 <ListItemIcon>
                   <Avatar email={email} title={organization.name} size={AVATAR_SIZE} />
                 </ListItemIcon>
-                <ListItemText primary={organization.name} secondary="Your organization" />
+                <ListItemText
+                  primary={organization.name}
+                  secondary={t('organizationMembershipPage.yourOrganization', 'Your organization')}
+                />
                 <ListItemSecondaryAction>
                   <Chip label={organization.roles.find(r => r.id === 'OWNER')?.name} size="small" />
                   <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
                     <LicenseChip license={license?.valid ? 'LICENSED' : 'UNLICENSED'} />
                   </Box>
-                  <IconButton icon="pencil" title="Edit Organization" to="/organization" />
+                  <IconButton
+                    icon="pencil"
+                    title={t('organizationMembershipPage.editOrganization', 'Edit Organization')}
+                    to="/organization"
+                  />
                 </ListItemSecondaryAction>
               </ListItem>
               <Divider variant="inset" />
@@ -73,8 +82,9 @@ export const OrganizationMembershipPage: React.FC = () => {
                 primary={m.name}
                 secondary={
                   <>
-                    Owner <b>{m.account.email}</b>
-                    &nbsp; - Joined <Duration startTime={m.created.getTime()} ago />
+                    {t('organizationMembershipPage.owner', 'Owner')} <b>{m.account.email}</b>
+                    &nbsp; - {t('organizationMembershipPage.joined', 'Joined')}{' '}
+                    <Duration startTime={m.created.getTime()} ago />
                   </>
                 }
               />
@@ -86,15 +96,20 @@ export const OrganizationMembershipPage: React.FC = () => {
                 <ConfirmIconButton
                   confirm
                   icon="sign-out"
-                  title="Leave Account"
+                  title={t('organizationMembershipPage.leaveAccount', 'Leave Account')}
                   confirmProps={{
                     color: 'error',
-                    action: 'Leave Organization',
-                    title: 'Are you sure?',
+                    action: t('organizationMembershipPage.leaveOrganization', 'Leave Organization'),
+                    title: t('common.areYouSure', 'Are you sure?'),
                     children: (
                       <Notice severity="error" gutterBottom fullWidth>
-                        This action cannot be undone.
-                        <em>You would need to contact the Organization owner to be re-added.</em>
+                        {t('organizationMembershipPage.cannotBeUndone', 'This action cannot be undone.')}
+                        <em>
+                          {t(
+                            'organizationMembershipPage.contactOwnerHint',
+                            'You would need to contact the Organization owner to be re-added.'
+                          )}
+                        </em>
                       </Notice>
                     ),
                   }}
@@ -107,10 +122,13 @@ export const OrganizationMembershipPage: React.FC = () => {
       ) : (
         <Body center>
           <Typography variant="h2" gutterBottom>
-            No Organization Memberships
+            {t('organizationMembershipPage.noMemberships', 'No Organization Memberships')}
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Organizations can add you to their account to provide access to the devices they own.
+            {t(
+              'organizationMembershipPage.noMembershipsHint',
+              'Organizations can add you to their account to provide access to the devices they own.'
+            )}
           </Typography>
         </Body>
       )}

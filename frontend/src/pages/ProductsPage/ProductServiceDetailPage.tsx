@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
@@ -15,13 +16,12 @@ import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 
 export const ProductServiceDetailPage: React.FC = () => {
+  const { t } = useTranslation()
   const { productId, serviceId } = useParams<{ productId: string; serviceId: string }>()
   const history = useHistory()
   const { all: products } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
   const service = product?.services.find(s => s.id === serviceId)
-
-  const isLocked = product?.status === 'LOCKED'
 
   const handleDelete = async () => {
     if (!product || !service) return
@@ -40,7 +40,7 @@ export const ProductServiceDetailPage: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Product not found
+            {t('productServiceDetailPage.productNotFound', 'Product not found')}
           </Typography>
         </Body>
       </Container>
@@ -53,10 +53,10 @@ export const ProductServiceDetailPage: React.FC = () => {
         <Body center>
           <Icon name="exclamation-triangle" size="xxl" color="warning" />
           <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            Service not found
+            {t('productServiceDetailPage.serviceNotFound', 'Service not found')}
           </Typography>
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            The service may have been removed.
+            {t('productServiceDetailPage.serviceMayHaveBeenRemoved', 'The service may have been removed.')}
           </Typography>
         </Body>
       </Container>
@@ -67,25 +67,24 @@ export const ProductServiceDetailPage: React.FC = () => {
     <ProductServiceHeaderMenu
       product={product}
       service={service}
-      locked={isLocked}
       action={
-        !isLocked && (
-          <DeleteButton
-            title="Remove Service"
-            icon="trash"
-            onDelete={handleDelete}
-            warning={
-              <Notice severity="error" fullWidth>
-                Are you sure you want to remove the service <b>{service.name}</b>? This action cannot be undone.
-              </Notice>
-            }
-          />
-        )
+        <DeleteButton
+          title={t('productServiceDetailPage.removeService', 'Remove Service')}
+          icon="trash"
+          onDelete={handleDelete}
+          warning={
+            <Notice severity="error" fullWidth>
+              {t('productServiceDetailPage.removeServiceConfirmPrefix', 'Are you sure you want to remove the service')}{' '}
+              <b>{service.name}</b>?{' '}
+              {t('productServiceDetailPage.actionCannotBeUndone', 'This action cannot be undone.')}
+            </Notice>
+          }
+        />
       }
     >
       <Gutters>
         <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-          Details
+          {t('productServiceDetailPage.details', 'Details')}
         </Typography>
         <DataDisplay product={product} productService={service} attributes={productServiceDetailAttributes} />
       </Gutters>

@@ -1,5 +1,4 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { Divider } from '@mui/material'
 import { ListItemSetting } from './ListItemSetting'
 import { spacing } from '../styling'
@@ -10,7 +9,6 @@ type Props = {
 }
 
 export const TagFilterToggle: React.FC<Props> = ({ tag, onUpdate }) => {
-  const css = useStyles()
   const matchAny = tag?.operator !== 'ALL'
   return (
     <>
@@ -28,15 +26,7 @@ export const TagFilterToggle: React.FC<Props> = ({ tag, onUpdate }) => {
           })
         }
       />
-      <Divider className={css.divider} />
+      <Divider sx={{ marginBottom: `${spacing.sm}px`, marginRight: `${spacing.lg}px`, marginLeft: '70px' }} />
     </>
   )
 }
-
-const useStyles = makeStyles({
-  divider: {
-    marginBottom: spacing.sm,
-    marginRight: spacing.lg,
-    marginLeft: 70,
-  },
-})

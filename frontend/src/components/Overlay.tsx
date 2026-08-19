@@ -1,26 +1,28 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
+import { Box } from '@mui/material'
 import { spacing } from '../styling'
 
 export const Overlay: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-  const css = useStyles()
-  return <section className={css.overlay}>{children}</section>
+  return (
+    <Box
+      component="section"
+      sx={theme => ({
+        backgroundColor: theme.palette.white.main,
+        padding: `${spacing.md}px`,
+        paddingBottom: '10%',
+        position: 'fixed',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        display: 'flex',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1,
+      })}
+    >
+      {children}
+    </Box>
+  )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  overlay: {
-    backgroundColor: palette.white.main,
-    padding: spacing.md,
-    paddingBottom: '10%',
-    position: 'fixed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
-    display: 'flex',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-  },
-}))

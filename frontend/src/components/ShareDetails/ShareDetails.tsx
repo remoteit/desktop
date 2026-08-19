@@ -1,8 +1,8 @@
 import React from 'react'
 import { getAccess } from '../../helpers/userHelper'
 import { ListItemSecondaryAction, Tooltip } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { ServiceIndicators } from '../ServiceIndicators'
-import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Icon } from '../Icon'
 
@@ -12,15 +12,16 @@ type Props = {
 }
 
 export const ShareDetails: React.FC<Props> = ({ user, device }) => {
-  const css = useStyles()
-
+  const { t } = useTranslation()
   if (!device) return null
 
   const { services, scripting } = getAccess(device, user.email)
   return (
-    <ListItemSecondaryAction className={css.indicators}>
+    <ListItemSecondaryAction
+      sx={{ display: 'flex', alignItems: 'center', '& svg': { marginRight: `${spacing.sm}px` } }}
+    >
       {scripting && (
-        <Tooltip title="Allow scripting" arrow placement="top">
+        <Tooltip title={t('shareDetails.allowScripting', 'Allow scripting')} arrow placement="top">
           <span>
             <Icon name="scroll" size="sm" type="regular" color="grayDark" />
           </span>
@@ -30,11 +31,3 @@ export const ShareDetails: React.FC<Props> = ({ user, device }) => {
     </ListItemSecondaryAction>
   )
 }
-
-const useStyles = makeStyles({
-  indicators: {
-    display: 'flex',
-    alignItems: 'center',
-    '& svg': { marginRight: spacing.sm },
-  },
-})

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dispatch, State } from '../store'
 import { ENTERPRISE_PLAN_ID } from '../models/plans'
 import { selectAvailableUsers } from '../selectors/organizations'
@@ -16,6 +17,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
 export const OrganizationAddPage = () => {
+  const { t } = useTranslation()
   const organization = useSelector(selectOrganization)
   const allContacts = useSelector((state: State) => state.contacts.all)
   const freeUsers = useSelector(selectAvailableUsers)
@@ -51,7 +53,7 @@ export const OrganizationAddPage = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Add Organization Members</Title>
+            <Title>{t('organizationAddPage.title', 'Add Organization Members')}</Title>
           </Typography>
           <Gutters top={null}>
             <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />
@@ -59,7 +61,7 @@ export const OrganizationAddPage = () => {
         </>
       }
     >
-      <Typography variant="subtitle1">Role Assignment</Typography>
+      <Typography variant="subtitle1">{t('organizationAddPage.roleAssignment', 'Role Assignment')}</Typography>
       <Gutters>
         <Box display="flex">
           <Box marginRight={2} minWidth={150}>
@@ -82,14 +84,17 @@ export const OrganizationAddPage = () => {
                       size="small"
                       variant="contained"
                       color="warning"
-                      label="Upgrade"
+                      label={t('organizationAddPage.upgrade', 'Upgrade')}
                     />
                   </Link>
                 </BillingUI>
               }
               fullWidth
             >
-              Purchase additional licenses to grant this user full access.
+              {t(
+                'organizationAddPage.purchaseLicensesHint',
+                'Purchase additional licenses to grant this user full access.'
+              )}
               <br />
             </Notice>
           )}
@@ -97,9 +102,9 @@ export const OrganizationAddPage = () => {
       </Gutters>
       <Gutters top="xl">
         <Button onClick={add} variant="contained" color="primary" disabled={!emails.length}>
-          Add
+          {t('organizationAddPage.add', 'Add')}
         </Button>
-        <Button onClick={exit}>Cancel</Button>
+        <Button onClick={exit}>{t('common.cancel', 'Cancel')}</Button>
       </Gutters>
     </Container>
   )

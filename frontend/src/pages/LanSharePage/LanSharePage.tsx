@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button, List, Typography, TextField, MenuItem, Box } from '@mui/material'
 import { REGEX_IP_SAFE, REGEX_VALID_HOSTNAME } from '../../constants'
 import { IP_OPEN, IP_LATCH, IP_PRIVATE } from '@common/constants'
@@ -6,11 +7,17 @@ import { ListItemSetting } from '../../components/ListItemSetting'
 import { setConnection } from '../../helpers/connectionHelper'
 import { selectConnection } from '../../selectors/connections'
 import { selectById } from '../../selectors/devices'
-import { makeStyles } from '@mui/styles'
 import { AccordionMenuItem } from '../../components/AccordionMenuItem'
 import { ListItemBack } from '../../components/ListItemBack'
 import { Gutters } from '../../components/Gutters'
 import { spacing } from '../../styling'
+
+const containerSx = {
+  paddingLeft: `${spacing.xl}px`,
+  margin: `${spacing.sm}px ${spacing.xxl}px ${spacing.lg}px`,
+  '& > p': { marginBottom: `${spacing.md}px` },
+  '& > div': { marginBottom: `${spacing.sm}px` },
+}
 import { State } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -20,6 +27,7 @@ import { Quote } from '../../components/Quote'
 type Selections = { value: string | Function; name: string; note: string; id: number }
 
 export const LanSharePage: React.FC = () => {
+  const { t } = useTranslation()
   const { serviceID = '' } = useParams<{ serviceID: string }>()
   const { service, lanIp, connection } = useSelector((state: State) => {
     const [service] = selectById(state, undefined, serviceID)
@@ -34,12 +42,12 @@ export const LanSharePage: React.FC = () => {
 
   // prettier-ignore
   const selections: Selections[] = [
-    { id: 0, value: IP_LATCH, name: 'IP Latching', note: 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.' },
-    { id: 1, value: maskIPClass(lanIp, 'A'), name: 'Class-A Restriction', note: 'IP restricted to the local network' },
-    { id: 2, value: maskIPClass(lanIp, 'B'), name: 'Class-B Restriction', note: 'Narrowly IP restrict on the local network' },
-    { id: 3, value: maskIPClass(lanIp, 'C'), name: 'Class-C Restriction', note: 'Focused IP restriction on the local network' },
-    { id: 4, value: () => address, name: 'Single IP Restriction', note: 'Only allow a single IP address to connect to this device on the local network.' },
-    { id: 5, value: IP_OPEN, name: 'None', note: 'Available to all incoming requests.' },
+    { id: 0, value: IP_LATCH, name: t('lanSharePage.ipLatchingName', 'IP Latching'), note: t('lanSharePage.ipLatchingNote', 'Allow any single device on the local network to connect. IP restriction will be set to the IP address of the first device that connects.') },
+    { id: 1, value: maskIPClass(lanIp, 'A'), name: t('lanSharePage.classARestrictionName', 'Class-A Restriction'), note: t('lanSharePage.classARestrictionNote', 'IP restricted to the local network') },
+    { id: 2, value: maskIPClass(lanIp, 'B'), name: t('lanSharePage.classBRestrictionName', 'Class-B Restriction'), note: t('lanSharePage.classBRestrictionNote', 'Narrowly IP restrict on the local network') },
+    { id: 3, value: maskIPClass(lanIp, 'C'), name: t('lanSharePage.classCRestrictionName', 'Class-C Restriction'), note: t('lanSharePage.classCRestrictionNote', 'Focused IP restriction on the local network') },
+    { id: 4, value: () => address, name: t('lanSharePage.singleIpRestrictionName', 'Single IP Restriction'), note: t('lanSharePage.singleIpRestrictionNote', 'Only allow a single IP address to connect to this device on the local network.') },
+    { id: 5, value: IP_OPEN, name: t('lanSharePage.noneName', 'None'), note: t('lanSharePage.noneNote', 'Available to all incoming requests.') },
   ]
 
   const [enabledLocalSharing, setEnabledLocalSharing] = useState<boolean>(connection.ip !== IP_PRIVATE)
@@ -52,7 +60,6 @@ export const LanSharePage: React.FC = () => {
   const [address, setAddress] = useState<string>(restriction || '192.168.')
   const selected = selections[selection] || {}
   const history = useHistory()
-  const css = useStyles()
   const [error, setError] = useState<string>()
   const [disabled, setDisabled] = useState(true)
 
@@ -96,7 +103,7 @@ export const LanSharePage: React.FC = () => {
     setCurrentIp(value)
 
     if (!REGEX_VALID_HOSTNAME.test(value)) {
-      setError('invalid IP')
+      setError(t('lanSharePage.invalidIp', 'invalid IP'))
       setDisabled(true)
     } else {
       setError('')
@@ -114,32 +121,35 @@ export const LanSharePage: React.FC = () => {
   return (
     <Gutters size="md" bottom={null}>
       <Box display="flex">
-        <ListItemBack title="Local Network Sharing" to="connect" />
+        <ListItemBack title={t('lanSharePage.localNetworkSharing', 'Local Network Sharing')} to="connect" />
       </Box>
-      <AccordionMenuItem gutters subtitle="Settings" defaultExpanded disabled>
+      <AccordionMenuItem gutters subtitle={t('lanSharePage.settings', 'Settings')} defaultExpanded disabled>
         <List>
           <ListItemSetting
             icon="network-wired"
             toggle={enabledLocalSharing}
             onClick={handleEnableLocalSharing}
-            label="Enable LAN sharing"
+            label={t('lanSharePage.enableLanSharing', 'Enable LAN sharing')}
           />
         </List>
 
-        <div className={css.container}>
+        <Box sx={containerSx}>
           <div>
-            <Typography variant="caption">Your local IP address</Typography>
+            <Typography variant="caption">{t('lanSharePage.yourLocalIpAddress', 'Your local IP address')}</Typography>
             <Typography variant="h3">{lanIp}</Typography>
           </div>
           <Typography variant="body2" color="textSecondary">
-            Allow users to connect to your remote device through your IP address using a custom port.
+            {t(
+              'lanSharePage.allowUsersToConnect',
+              'Allow users to connect to your remote device through your IP address using a custom port.'
+            )}
           </Typography>
           {enabledLocalSharing && (
             <>
               <TextField
-                className={css.textField}
+                sx={{ minWidth: 300 }}
                 multiline={currentIp.toString().length > 30}
-                label="Bind IP Address"
+                label={t('lanSharePage.bindIpAddress', 'Bind IP Address')}
                 error={!!error}
                 defaultValue={currentIp}
                 variant="filled"
@@ -149,9 +159,9 @@ export const LanSharePage: React.FC = () => {
               <br />
               <TextField
                 select
-                className={css.textField}
+                sx={{ minWidth: 300 }}
                 variant="filled"
-                label="Local Network Security"
+                label={t('lanSharePage.localNetworkSecurity', 'Local Network Security')}
                 value={selection.toString()}
                 onChange={handleLocalNetworkSecurity}
               >
@@ -163,47 +173,35 @@ export const LanSharePage: React.FC = () => {
               </TextField>
               <Typography variant="body2" color="textSecondary">
                 {selected.note} <br />
-                <span className={css.mask}>
-                  Mask {getSelectionValue()}
-                  {getSelectionMask()}
-                </span>
+                <Box component="span" sx={{ fontStyle: 'italic' }}>
+                  {t('lanSharePage.mask', {
+                    value: `${getSelectionValue()}${getSelectionMask()}`,
+                    defaultValue: 'Mask {{value}}',
+                  })}
+                </Box>
               </Typography>
               {typeof selected.value === 'function' && (
                 <Quote>
                   <TextField
-                    className={css.textField}
+                    sx={{ minWidth: 300 }}
                     value={address}
                     variant="filled"
-                    label="IP address"
+                    label={t('lanSharePage.ipAddress', 'IP address')}
                     onChange={event => setAddress(event.target.value.replace(REGEX_IP_SAFE, ''))}
                   />
                 </Quote>
               )}
             </>
           )}
-        </div>
-        <div className={css.container}>
+        </Box>
+        <Box sx={containerSx}>
           <Button onClick={save} variant="contained" color="primary" disabled={disabled}>
-            Save
+            {t('lanSharePage.save', 'Save')}
           </Button>
-          <Button onClick={() => history.goBack()}>Cancel</Button>
-        </div>
+          <Button onClick={() => history.goBack()}>{t('lanSharePage.cancel', 'Cancel')}</Button>
+        </Box>
       </AccordionMenuItem>
     </Gutters>
   )
 }
 
-const useStyles = makeStyles({
-  container: {
-    paddingLeft: spacing.xl,
-    margin: `${spacing.sm}px ${spacing.xxl}px ${spacing.lg}px`,
-    '& > p': { marginBottom: spacing.md },
-    '& > div': { marginBottom: spacing.sm },
-  },
-  textField: {
-    minWidth: 300,
-  },
-  mask: {
-    fontStyle: 'italic',
-  },
-})

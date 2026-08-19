@@ -7,6 +7,7 @@ import { scriptAttributes } from '../components/FileAttributes'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectScripts, selectFiles } from '../selectors/scripting'
 import { Typography, Button, Stack } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { initialForm } from '../models/files'
 import { selectRole } from '../selectors/organizations'
@@ -30,6 +31,7 @@ export const FilesPage: React.FC<Props> = ({ scripts }) => {
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const files = useSelector(scripts ? selectScripts : selectFiles)
   const role = useSelector(selectRole)
+  const { t } = useTranslation()
 
   const handleDemo = async () => {
     setLoading(true)
@@ -38,8 +40,8 @@ export const FilesPage: React.FC<Props> = ({ scripts }) => {
       scriptForm: {
         ...role,
         ...initialForm,
-        name: 'Get Hostname',
-        description: 'Demo script to illustrate how to get data and add it to a device',
+        name: t('filesPage.demoScriptName', 'Get Hostname'),
+        description: t('filesPage.demoScriptDescription', 'Demo script to illustrate how to get data and add it to a device'),
         access: 'SELECTED',
         script,
       },
@@ -55,24 +57,27 @@ export const FilesPage: React.FC<Props> = ({ scripts }) => {
       {scripts ? (
         <>
           <Button onClick={handleDemo} variant="contained" color="primary" size="medium">
-            <Icon name={loading ? 'spinner-third' : 'plus'} type="solid" spin={loading} inlineLeft /> Demo Script
+            <Icon name={loading ? 'spinner-third' : 'plus'} type="solid" spin={loading} inlineLeft />{' '}
+            {t('filesPage.demoScript', 'Demo Script')}
           </Button>
           <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
-            See how easy it is to run a script with our demo script.
+            {t('filesPage.demoDescription', 'See how easy it is to run a script with our demo script.')}
             <br />
-            For more examples and detailed guidance,
-            <Link href="https://link.remote.it/desktop/help/device-scripting">visit our documentation site.</Link>
+            {t('filesPage.moreExamples', 'For more examples and detailed guidance,')}
+            <Link href="https://link.remote.it/desktop/help/device-scripting">
+              {t('filesPage.visitDocs', 'visit our documentation site.')}
+            </Link>
           </Typography>
           <Typography variant="body2" align="center" color="grayDark.main" sx={{ maxWidth: 500, paddingX: 3 }}>
-            Need a device to test with?
+            {t('filesPage.needDevice', 'Need a device to test with?')}
             <Link to="/add/docker" noUnderline sx={{ paddingTop: 0, paddingBottom: 0 }}>
-              <Icon name="docker" size="md" platformIcon /> Try a docker container!
+              <Icon name="docker" size="md" platformIcon /> {t('filesPage.tryDocker', 'Try a docker container!')}
             </Link>
           </Typography>
         </>
       ) : (
         <Stack alignItems="center">
-          <Notice gutterBottom>Upload a file for use in your scripts.</Notice>
+          <Notice gutterBottom>{t('filesPage.uploadFileNotice', 'Upload a file for use in your scripts.')}</Notice>
         </Stack>
       )}
     </Body>

@@ -1,9 +1,10 @@
 import React from 'react'
 import { LANGUAGES } from '../constants'
+import { SUPPORTED_LANGUAGES } from '../i18n'
 import { Dispatch, State } from '../store'
-import { makeStyles } from '@mui/styles'
 import { isPersonal } from '../models/plans'
 import { Typography, List } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { DeleteAccountSection } from '../components/DeleteAccountSection'
 import { SelectSetting } from '../components/SelectSetting'
@@ -24,7 +25,7 @@ export const ProfilePage: React.FC = () => {
     deleteAccount: state.ui.deleteAccount,
   }))
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
+  const { t } = useTranslation()
 
   if (!user) return null
 
@@ -34,29 +35,49 @@ export const ProfilePage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Profile</Title>
+            <Title>{t('settings.profile', 'Profile')}</Title>
           </Typography>
         </>
       }
     >
-      <Gutters top="xl" className={css.profile}>
+      <Gutters
+        top="xl"
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          maxWidth: 500,
+          '& .MuiAvatar-root': { marginRight: `${spacing.xl}px` },
+        }}
+      >
         <Avatar email={user.email} size={125} />
         <Typography variant="caption">
-          Your profile picture is imported from the free service Gravatar.
-          <br /> To edit or add a profile image please visit<Link href="https://gravatar.com">gravatar.com.</Link>
+          {t('settings.gravatarImported', 'Your profile picture is imported from the free service Gravatar.')}
+          <br /> {t('settings.gravatarEdit', 'To edit or add a profile image please visit')}{' '}
+          <Link href="https://gravatar.com">gravatar.com.</Link>
         </Typography>
       </Gutters>
       <List>
-        <FormDisplay icon={<Icon name="at" />} label="Email" displayValue={user.email} displayOnly />
+        <FormDisplay icon={<Icon name="at" />} label={t('settings.email', 'Email')} displayValue={user.email} displayOnly />
         <FormDisplay
           icon={<Icon name="calendar-star" />}
-          label="Member since"
+          label={t('settings.memberSince', 'Member since')}
           displayValue={<Timestamp date={user.created} />}
           displayOnly
         />
         <SelectSetting
           icon="language"
-          label="Email Language"
+          label={t('options.language.label', 'Language')}
+          value={user?.attributes?.language || 'system'}
+          values={[
+            { key: 'system', name: t('options.language.system', 'Same as system') },
+            ...SUPPORTED_LANGUAGES.map(l => ({ key: l.value, name: l.label })),
+          ]}
+          onChange={value => dispatch.user.setAppLanguage(value)}
+        />
+        <SelectSetting
+          icon="envelope"
+          label={t('settings.emailLanguage', 'Email Language')}
           value={user?.language}
           values={[
             { key: 'en', name: LANGUAGES.en },
@@ -65,18 +86,9 @@ export const ProfilePage: React.FC = () => {
           onChange={value => dispatch.user.changeLanguage(value)}
         />
       </List>
-      <Typography variant="subtitle1">Account deletion</Typography>
+      <Typography variant="subtitle1">{t('settings.accountDeletion', 'Account deletion')}</Typography>
       <DeleteAccountSection user={user} paidPlan={paidPlan} deleteAccount={deleteAccount} />
     </Container>
   )
 }
 
-const useStyles = makeStyles(({ }) => ({
-  profile: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    maxWidth: 500,
-    '& .MuiAvatar-root': { marginRight: spacing.xl },
-  },
-}))

@@ -1,0 +1,23 @@
+import React from 'react'
+import { useSelector } from 'react-redux'
+import { State } from '../store'
+
+// FontAwesome Pro 7 "conveyor-belt-boxes" (duotone solid), recolored to match
+// the platform icons (e.g. Synology) with a two-tone gray fill.
+export const ConveyorBeltBoxes: React.FC<React.SVGProps<SVGSVGElement>> = props => {
+  const darkMode = useSelector((state: State) => state.ui.themeDark)
+  const light = darkMode ? '#444' : '#bbb'
+  const dark = '#808080'
+  return (
+    <svg viewBox="0 0 640 640" version="1.1" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        fill={light}
+        d="M0 480C0 533 43 576 96 576L544 576C597 576 640 533 640 480C640 427 597 384 544 384L96 384C43 384 0 427 0 480zM160 480C160 497.7 145.7 512 128 512C110.3 512 96 497.7 96 480C96 462.3 110.3 448 128 448C145.7 448 160 462.3 160 480zM352 480C352 497.7 337.7 512 320 512C302.3 512 288 497.7 288 480C288 462.3 302.3 448 320 448C337.7 448 352 462.3 352 480zM544 480C544 497.7 529.7 512 512 512C494.3 512 480 497.7 480 480C480 462.3 494.3 448 512 448C529.7 448 544 462.3 544 480z"
+      />
+      <path
+        fill={dark}
+        d="M64 112C64 85.5 85.5 64 112 64L272 64C298.5 64 320 85.5 320 112L320 272C320 298.5 298.5 320 272 320L112 320C85.5 320 64 298.5 64 272L64 112zM96 480C96 462.3 110.3 448 128 448C145.7 448 160 462.3 160 480C160 497.7 145.7 512 128 512C110.3 512 96 497.7 96 480zM288 480C288 462.3 302.3 448 320 448C337.7 448 352 462.3 352 480C352 497.7 337.7 512 320 512C302.3 512 288 497.7 288 480zM512 448C529.7 448 544 462.3 544 480C544 497.7 529.7 512 512 512C494.3 512 480 497.7 480 480C480 462.3 494.3 448 512 448zM432 128L528 128C554.5 128 576 149.5 576 176L576 272C576 298.5 554.5 320 528 320L432 320C405.5 320 384 298.5 384 272L384 176C384 149.5 405.5 128 432 128z"
+      />
+    </svg>
+  )
+}

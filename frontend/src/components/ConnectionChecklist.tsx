@@ -1,5 +1,4 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { checklist } from '../helpers/checklistHelper'
 import { Box, Tooltip, Typography } from '@mui/material'
 import { Icon } from './Icon'
@@ -7,8 +6,6 @@ import { Icon } from './Icon'
 type Props = { connection?: IConnection }
 
 export const ConnectionChecklist: React.FC<Props> = ({ connection }) => {
-  const css = useStyles({})
-
   if (!connection?.checkpoint || connection.public || connection.connectLink) return null
 
   const keys = Object.keys(checklist)
@@ -18,7 +15,19 @@ export const ConnectionChecklist: React.FC<Props> = ({ connection }) => {
     <Tooltip
       arrow
       placement="left-start"
-      classes={{ tooltip: css.tooltip }}
+      slotProps={{
+        tooltip: {
+          sx: {
+            paddingLeft: 2,
+            paddingRight: 2.5,
+            paddingTop: 1.5,
+            paddingBottom: 1.5,
+            boxShadow: 1,
+            backgroundColor: 'grayLightest.main',
+            '& .MuiTooltip-arrow': { color: 'grayLightest.main' },
+          },
+        },
+      }}
       title={keys.map(
         key =>
           !checklist[key].hide?.(connection) && (
@@ -40,15 +49,3 @@ export const ConnectionChecklist: React.FC<Props> = ({ connection }) => {
     </Tooltip>
   )
 }
-
-const useStyles = makeStyles(({ palette, spacing, shadows }) => ({
-  tooltip: {
-    paddingLeft: spacing(2),
-    paddingRight: spacing(2.5),
-    paddingTop: spacing(1.5),
-    paddingBottom: spacing(1.5),
-    boxShadow: shadows[1],
-    backgroundColor: palette.grayLightest.main,
-    '& .MuiTooltip-arrow': { color: palette.grayLightest.main },
-  },
-}))

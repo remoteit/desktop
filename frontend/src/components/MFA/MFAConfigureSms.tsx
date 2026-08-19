@@ -4,6 +4,7 @@ import { Notice } from '../Notice'
 import { MFAPhoneForm } from './MFAPhoneForm'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../../store'
 
 type Props = {
@@ -31,6 +32,7 @@ export const MFAConfigureSms: React.FC<Props> = ({
   const { showPhone, showVerificationCode } = useSelector((state: State) => state.mfa)
   const AWSUser = useSelector((state: State) => state.auth.AWSUser)
   const AWSPhone = AWSUser.phone_number || ''
+  const { t } = useTranslation()
   return (
     <>
       {showPhone && (
@@ -48,16 +50,21 @@ export const MFAConfigureSms: React.FC<Props> = ({
             <Notice severity="success" gutterTop fullWidth>
               {hasOldSentVerification ? (
                 <>
-                  A verification code had previously been sent to your mobile device.{' '}
+                  {t(
+                    'mfaConfigureSms.previouslySent',
+                    'A verification code had previously been sent to your mobile device.'
+                  )}{' '}
                   <em>
-                    A code is only valid for 24 hours. Please request the code again if it has been over 24 hours since
-                    requested.
+                    {t(
+                      'mfaConfigureSms.previouslySentHint',
+                      'A code is only valid for 24 hours. Please request the code again if it has been over 24 hours since requested.'
+                    )}
                   </em>
                 </>
               ) : (
                 <>
-                  A verification code has been sent to your mobile device. {AWSPhone}
-                  <em>This code is only valid for 24 hours.</em>
+                  {t('mfaConfigureSms.sent', { phone: AWSPhone, defaultValue: 'A verification code has been sent to your mobile device. {{phone}}' })}
+                  <em>{t('mfaConfigureSms.sentHint', 'This code is only valid for 24 hours.')}</em>
                 </>
               )}
             </Notice>
@@ -67,7 +74,7 @@ export const MFAConfigureSms: React.FC<Props> = ({
                 autoCapitalize="none"
                 autoComplete="off"
                 required
-                label="Verification Code"
+                label={t('mfaConfigureSms.verificationCode', 'Verification Code')}
                 variant="filled"
                 onChange={e => mfa.set({ verificationCode: e.currentTarget.value.trim() })}
                 value={verificationCode}
@@ -79,21 +86,22 @@ export const MFAConfigureSms: React.FC<Props> = ({
                 color="primary"
                 type="submit"
               >
-                {loading ? 'Confirming...' : 'Confirm'}
+                {loading ? t('mfaConfigureSms.confirming', 'Confirming...') : t('mfaConfigureSms.confirm', 'Confirm')}
               </Button>
-              <Button onClick={cancelEditPhone}>Cancel</Button>
+              <Button onClick={cancelEditPhone}>{t('common.cancel', 'Cancel')}</Button>
             </Box>
           </form>
           <Typography variant="caption">
-            Didn't receive the verification code?
-            <Link onClick={resendCode}>Resend Verification Code</Link> or
+            {t('mfaConfigureSms.didNotReceive', "Didn't receive the verification code?")}
+            <Link onClick={resendCode}>{t('mfaConfigureSms.resendCode', 'Resend Verification Code')}</Link>{' '}
+            {t('common.or', 'or')}
             <Link
               onClick={() => {
                 mfa.set({ showPhone: true, showVerificationCode: false })
                 setCancelShowVerificationCode(true)
               }}
             >
-              Change your verification phone number
+              {t('mfaConfigureSms.changePhoneNumber', 'Change your verification phone number')}
             </Link>
           </Typography>
         </>

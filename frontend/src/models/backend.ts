@@ -3,6 +3,7 @@ import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import sleep from '../helpers/sleep'
+import i18n from '../i18n'
 
 export const NOTICE_VERSION_ID = 'notice-version'
 
@@ -106,7 +107,9 @@ export default createModel<RootModel>()({
           ui.set({
             setupBusy: false,
             setupDeletingDevice: false,
-            successMessage: 'Device unregistered successfully!',
+            successMessage: i18n.t('notices:device.unregistered', {
+              defaultValue: 'Device unregistered successfully!',
+            }),
           })
 
           // restored
@@ -114,7 +117,9 @@ export default createModel<RootModel>()({
           devices.fetchList()
           ui.set({
             restoring: false,
-            successMessage: 'Device restored successfully!',
+            successMessage: i18n.t('notices:device.restored', {
+              defaultValue: 'Device restored successfully!',
+            }),
           })
         }
       }
@@ -123,16 +128,17 @@ export default createModel<RootModel>()({
     },
     async registerDevice({ services, name, accountId }: { services: IService[]; name: string; accountId: string }) {
       dispatch.ui.set({ setupRegisteringDevice: true })
-      const code = await dispatch.devices.createRegistration({
-        name,
-        accountId,
-        services: services.map(t => ({
-          name: t.name,
-          application: t.typeID,
-          port: t.port,
-          host: t.host,
-        })),
-      })
+      const { registrationCode: code } =
+        (await dispatch.devices.createRegistration({
+          name,
+          accountId,
+          services: services.map(t => ({
+            name: t.name,
+            application: t.typeID,
+            port: t.port,
+            host: t.host,
+          })),
+        })) || {}
       emit('registration', code)
     },
     async setUpdateNotice(updateVersion: string | undefined, state) {

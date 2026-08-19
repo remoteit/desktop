@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button, List, Typography, Box } from '@mui/material'
 import { DeleteAccessKey } from './DeleteAccessKey'
 import { CreateAccessKey } from './CreateAccessKey'
@@ -13,6 +14,7 @@ import { Notice } from '../Notice'
 import { Icon } from '../Icon'
 
 export const AccountAccessKey: React.FC = () => {
+  const { t } = useTranslation()
   const [showDialog, setShowDialog] = useState(false)
   const { accessKeys, secretKey, key, updating } = useSelector((state: State) => state.keys)
   const dispatch = useDispatch<Dispatch>()
@@ -30,16 +32,17 @@ export const AccountAccessKey: React.FC = () => {
 
   return (
     <>
-      <Typography variant="subtitle1">Authentication</Typography>
+      <Typography variant="subtitle1">{t('accountAccessKey.title', 'Authentication')}</Typography>
       <Gutters>
         <Notice severity="warning" fullWidth gutterBottom>
-          If you lose or forget your secret key, you cannot retrieve it.
-          <em> There is a limit of 2 access keys. Keep your keys safe.</em>
+          {t('accountAccessKey.secretKeyWarning', 'If you lose or forget your secret key, you cannot retrieve it.')}
+          <em> {t('accountAccessKey.keyLimit', 'There is a limit of 2 access keys. Keep your keys safe.')}</em>
         </Notice>
         <Typography variant="body2" gutterBottom>
-          Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an
-          existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit
-          directory of your home folder:
+          {t(
+            'accountAccessKey.description',
+            "Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit directory of your home folder:"
+          )}
         </Typography>
         <CodeBlock>~/.remoteit/credentials</CodeBlock>
         <Box textAlign="right" marginBottom={4}>
@@ -53,7 +56,7 @@ export const AccountAccessKey: React.FC = () => {
               setShowDialog(true)
             }}
           >
-            Generate Credentials
+            {t('accountAccessKey.generateCredentials', 'Generate Credentials')}
           </Button>
         </Box>
       </Gutters>
@@ -62,7 +65,7 @@ export const AccountAccessKey: React.FC = () => {
           {accessKeys?.map((k, index) => (
             <Box marginBottom={4}>
               <CopyCodeBlock
-                label="Public Key"
+                label={t('accountAccessKey.publicKey', 'Public Key')}
                 value={k.key}
                 hideCopyLabel
                 sx={{ '& .MuiTypography-root': { opacity: k.enabled ? 1 : 0.5 } }}
@@ -83,13 +86,13 @@ export const AccountAccessKey: React.FC = () => {
                 }
                 subLabel={
                   <>
-                    Created <Timestamp date={k.created} variant="long" /> &nbsp;/ &nbsp;
+                    {t('accountAccessKey.created', 'Created')} <Timestamp date={k.created} variant="long" /> &nbsp;/ &nbsp;
                     {k.lastUsed ? (
                       <>
-                        Last used <Timestamp date={k.lastUsed} variant="long" />
+                        {t('accountAccessKey.lastUsed', 'Last used')} <Timestamp date={k.lastUsed} variant="long" />
                       </>
                     ) : (
-                      'Never used'
+                      t('accountAccessKey.neverUsed', 'Never used')
                     )}
                   </>
                 }

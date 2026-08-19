@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react'
 import { Switch, Route, useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { AdminUsersListPage } from './AdminUsersListPage'
 import { AdminUserDetailPage } from './AdminUserDetailPage'
 import { AdminUserAccountPanel } from './AdminUserAccountPanel'
@@ -16,12 +15,42 @@ const THREE_PANEL_WIDTH = 961
 const DEFAULT_LEFT_WIDTH = 300
 const DEFAULT_RIGHT_WIDTH = 350
 
+const panelSx = {
+  height: '100%',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  flexShrink: 0,
+} as const
+
+const handleSx = (theme: import('@mui/material').Theme) => ({
+  zIndex: 8,
+  position: 'absolute',
+  height: '100%',
+  marginLeft: '-5px',
+  padding: '0 3px',
+  cursor: 'col-resize',
+  '& > div': {
+    width: '1px',
+    marginLeft: '1px',
+    marginRight: '1px',
+    height: '100%',
+    backgroundColor: theme.palette.grayLighter.main,
+    transition: 'background-color 100ms 200ms, width 100ms 200ms, margin 100ms 200ms',
+  },
+  '&:hover > div, & .active': {
+    width: '3px',
+    marginLeft: 0,
+    marginRight: 0,
+    backgroundColor: theme.palette.primary.main,
+  },
+})
+
 export const AdminUsersWithDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>()
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
   const layout = useSelector((state: State) => state.ui.layout)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
   const hasRestoredRef = useRef(false)
@@ -65,16 +94,16 @@ export const AdminUsersWithDetailPage: React.FC = () => {
   const showRight = hasUserSelected && maxPanels >= 1
 
   return (
-    <Box className={css.wrapper} ref={containerRef}>
-      <Box className={css.container}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }} ref={containerRef}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
         {showLeft && (
           <>
             <Box
-              className={css.panel}
+              sx={panelSx}
               style={{
                 width: hasUserSelected ? leftPanel.width : undefined,
                 minWidth: hasUserSelected ? leftPanel.width : undefined,
-                flex: hasUserSelected ? undefined : 1
+                flex: hasUserSelected ? undefined : 1,
               }}
               ref={leftPanel.panelRef}
             >
@@ -82,8 +111,8 @@ export const AdminUsersWithDetailPage: React.FC = () => {
             </Box>
 
             {hasUserSelected && (
-              <Box className={css.anchor}>
-                <Box className={css.handle} onMouseDown={leftPanel.onDown}>
+              <Box sx={{ position: 'relative', height: '100%' }}>
+                <Box sx={handleSx} onMouseDown={leftPanel.onDown}>
                   <Box className={leftPanel.grab ? 'active' : undefined} />
                 </Box>
               </Box>
@@ -93,12 +122,23 @@ export const AdminUsersWithDetailPage: React.FC = () => {
 
         {showMiddle && (
           <>
-            <Box className={css.middlePanel}>
+            <Box
+              sx={{
+                flex: 1,
+                height: '100%',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                minWidth: MIN_WIDTH,
+                paddingLeft: '8px',
+                paddingRight: '8px',
+              }}
+            >
               <AdminUserDetailPage />
             </Box>
 
-            <Box className={css.anchor}>
-              <Box className={css.handle} onMouseDown={rightPanel.onDown}>
+            <Box sx={{ position: 'relative', height: '100%' }}>
+              <Box sx={handleSx} onMouseDown={rightPanel.onDown}>
                 <Box className={rightPanel.grab ? 'active' : undefined} />
               </Box>
             </Box>
@@ -107,7 +147,7 @@ export const AdminUsersWithDetailPage: React.FC = () => {
 
         {showRight && (
           <Box
-            className={css.rightPanel}
+            sx={[panelSx, { flex: 1 }]}
             style={showMiddle ? { width: rightPanel.width, minWidth: rightPanel.width } : undefined}
           >
             <Switch>
@@ -128,68 +168,3 @@ export const AdminUsersWithDetailPage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'row',
-    flex: 1,
-    overflow: 'hidden',
-  },
-  panel: {
-    height: '100%',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    flexShrink: 0,
-  },
-  middlePanel: {
-    flex: 1,
-    height: '100%',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: MIN_WIDTH,
-    paddingLeft: 8,
-    paddingRight: 8,
-  },
-  rightPanel: {
-    height: '100%',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    flexShrink: 0,
-    flex: 1,
-  },
-  anchor: {
-    position: 'relative',
-    height: '100%',
-  },
-  handle: {
-    zIndex: 8,
-    position: 'absolute',
-    height: '100%',
-    marginLeft: -5,
-    padding: '0 3px',
-    cursor: 'col-resize',
-    '& > div': {
-      width: 1,
-      marginLeft: 1,
-      marginRight: 1,
-      height: '100%',
-      backgroundColor: palette.grayLighter.main,
-      transition: 'background-color 100ms 200ms, width 100ms 200ms, margin 100ms 200ms',
-    },
-    '&:hover > div, & .active': {
-      width: 3,
-      marginLeft: 0,
-      marginRight: 0,
-      backgroundColor: palette.primary.main,
-    },
-  },
-}))

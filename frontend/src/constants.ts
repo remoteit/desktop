@@ -11,6 +11,7 @@ export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https:
 export const GRAPHQL_API = env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
 export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
+export const PORTAL_URL = env.VITE_PORTAL_URL || brand.package?.homepage || 'https://app.remote.it'
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
@@ -84,6 +85,9 @@ export const REGEX_SCHEME = /^(.*?):\/\//
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
 export const MOBILE_LAUNCH_DATE = new Date('2023-12-20')
 export const FRONTEND_RETRY_DELAY = 20000
+// How long sign out waits for the local backend to come back before giving up and
+// tearing down the frontend on its own. Short: it's a localhost socket.
+export const SIGN_OUT_BACKEND_TIMEOUT = 3000
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250

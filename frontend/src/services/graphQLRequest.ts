@@ -159,17 +159,20 @@ export async function graphQLRegistration(props: {
   platform?: number
   services: IServiceRegistration[]
   accountId: string
+  oneTimeUse?: boolean
+  code?: string
+  unique?: boolean
 }) {
   return await graphQLBasicRequest(
-    ` query Registration($accountId: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!]) {
+    ` query Registration($accountId: String, $name: String, $platform: Int, $tags: [String!], $services: [ServiceInput!], $oneTimeUse: Boolean, $code: String, $unique: Boolean) {
         login {
           account(id: $accountId) {
-            registrationCode(name: $name, platform: $platform, tags: $tags, services: $services)
-            registrationCommand(name: $name, platform: $platform, tags: $tags, services: $services)
+            registrationCode(name: $name, platform: $platform, tags: $tags, services: $services, oneTimeUse: $oneTimeUse, code: $code, unique: $unique)
+            registrationCommand(name: $name, platform: $platform, tags: $tags, services: $services, oneTimeUse: $oneTimeUse, code: $code, unique: $unique)
           }
         }
       }`,
-    props
+    { ...props, unique: props.unique ?? true }
   )
 }
 
@@ -962,5 +965,135 @@ export async function graphQLPartnerEntities(accountId?: string) {
       }
     }`,
     { accountId }
+  )
+}
+
+export async function graphQLAllNotices() {
+  return await graphQLBasicRequest(
+    ` query AllNotices {
+        allNotices {
+          id
+          type
+          title
+          body
+          preview
+          image
+          link
+          stage
+          language
+          enabled
+          from
+          until
+          modified
+        }
+      }`
+  )
+}
+
+export async function graphQLAdminDevices(
+  options: { from?: number; size?: number },
+  filters?: {
+    search?: string
+    name?: string
+    nameContains?: string
+    deviceId?: string
+    email?: string
+    accountId?: string
+    hardwareId?: string
+  },
+  sort?: string
+) {
+  return await graphQLBasicRequest(
+    ` query AdminDevices($from: Int, $size: Int, $search: String, $name: String, $nameContains: String, $deviceId: String, $email: String, $accountId: String, $hardwareId: String, $sort: String) {
+        admin {
+          devices(from: $from, size: $size, search: $search, name: $name, nameContains: $nameContains, deviceId: $deviceId, email: $email, accountId: $accountId, hardwareId: $hardwareId, sort: $sort) {
+            items {
+              id
+              name
+              state
+              created
+              owner {
+                id
+                email
+              }
+            }
+            total
+            hasMore
+          }
+        }
+      }`,
+    {
+      from: options.from,
+      size: options.size,
+      search: filters?.search,
+      name: filters?.name,
+      nameContains: filters?.nameContains,
+      deviceId: filters?.deviceId,
+      email: filters?.email,
+      accountId: filters?.accountId,
+      hardwareId: filters?.hardwareId,
+      sort,
+    }
+  )
+}
+
+export async function graphQLAdminDevice(deviceId: string) {
+  return await graphQLBasicRequest(
+    ` query AdminDevice($deviceId: String) {
+        admin {
+          devices(from: 0, size: 1, deviceId: $deviceId) {
+            items {
+              id
+              name
+              state
+              platform
+              version
+              hardwareId
+              license
+              created
+              lastReported
+              configurable
+              scriptable
+              owner {
+                id
+                email
+              }
+              endpoint {
+                externalAddress
+                internalAddress
+                availability
+                quality
+                onlineSince
+                offlineSince
+                geo {
+                  connectionType
+                  countryName
+                  stateName
+                  city
+                  isp
+                }
+              }
+              access {
+                user {
+                  id
+                  email
+                }
+                scripting
+              }
+              services {
+                id
+                name
+                state
+                port
+                type
+                application
+                license
+                lastReported
+              }
+            }
+          }
+        }
+      }`,
+    { deviceId }
   )
 }

@@ -3,11 +3,11 @@ import browser from '../services/browser'
 import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { Snackbar, Button } from '@mui/material'
+import { Snackbar, Button, SxProps, Theme } from '@mui/material'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
-export const ConnectionNotice: React.FC<{ className: string }> = ({ className }) => {
+export const ConnectionNotice: React.FC<{ sx?: SxProps<Theme> }> = ({ sx }) => {
   const { queueCount, queueEnabling, queueFinished, queueConnection } = useSelector((state: State) => state.connections)
   const { connections } = useDispatch<Dispatch>()
   const history = useHistory()
@@ -22,7 +22,7 @@ export const ConnectionNotice: React.FC<{ className: string }> = ({ className })
   return (
     <Snackbar
       key="connection"
-      className={className}
+      sx={sx}
       open={queueFinished && !!queueCount}
       onClose={clearConnectionsMessage}
       autoHideDuration={20000}

@@ -3,6 +3,7 @@ import { AUTH_API_URL, DEVELOPER_KEY } from '../constants'
 import { getToken } from '../services/remoteit'
 import { RootModel } from '.'
 import axios from 'axios'
+import i18n from '../i18n'
 
 export type IMfa = {
   mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA'
@@ -71,12 +72,21 @@ export default createModel<RootModel>()({
         )
         dispatch.mfa.set({ mfaMethod: response.data.MfaPref, backupCode: response.data.backupCode })
         if (response.data.MfaPref !== 'NO_MFA') {
-          dispatch.ui.set({ successMessage: 'Two-factor authentication enabled successfully.' })
+          dispatch.ui.set({
+            successMessage: i18n.t('notices:mfa.enabled', {
+              defaultValue: 'Two-factor authentication enabled successfully.',
+            }),
+          })
         }
         console.log('SET MFA PREFERENCE', response)
       } catch (error) {
         if (error instanceof Error) {
-          dispatch.ui.set({ errorMessage: `Two-factor authentication enabled error: ${error.message}` })
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:mfa.enableError', {
+              error: error.message,
+              defaultValue: 'Two-factor authentication enabled error: {{error}}',
+            }),
+          })
         }
       }
     },
@@ -87,12 +97,19 @@ export default createModel<RootModel>()({
         await dispatch.mfa.getAWSUser()
         await state.auth.authService?.verifyCurrentUserAttribute('phone_number')
         await dispatch.mfa.setMFAPreference('NO_MFA')
-        dispatch.ui.set({ successMessage: 'Verification sent.' })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:mfa.verificationSent', { defaultValue: 'Verification sent.' }),
+        })
         return true
       } catch (error) {
         console.error(error)
         if (error instanceof Error) {
-          dispatch.ui.set({ errorMessage: ' Update phone error: ' + error.message })
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:mfa.updatePhoneError', {
+              error: error.message,
+              defaultValue: 'Update phone error: {{error}}',
+            }),
+          })
         }
       }
     },
@@ -105,7 +122,12 @@ export default createModel<RootModel>()({
       } catch (error) {
         console.error(error)
         if (error instanceof Error) {
-          dispatch.ui.set({ errorMessage: 'Phone verification error: ' + error.message })
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:mfa.phoneVerificationError', {
+              error: error.message,
+              defaultValue: 'Phone verification error: {{error}}',
+            }),
+          })
         }
       }
     },
@@ -120,7 +142,12 @@ export default createModel<RootModel>()({
       } catch (error) {
         console.error(error)
         if (error instanceof Error) {
-          dispatch.ui.set({ errorMessage: `Invalid TOTP Code. (${error.message})` })
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:mfa.invalidTotp', {
+              error: error.message,
+              defaultValue: 'Invalid TOTP Code. ({{error}})',
+            }),
+          })
         }
         return
       }

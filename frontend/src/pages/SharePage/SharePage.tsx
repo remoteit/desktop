@@ -1,12 +1,12 @@
 import React, { useEffect, useContext } from 'react'
-import { makeStyles } from '@mui/styles'
 import { DeviceContext } from '../../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
 import { useParams, useHistory } from 'react-router-dom'
 import { Typography, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { spacing, fontSizes } from '../../styling'
-import { selectOrganization } from '../../selectors/organizations'
+import { selectContacts } from '../../selectors/contacts'
+import { useGuests } from '../../hooks/useGuests'
 import { ContactSelector } from '../../components/ContactSelector'
 import { SharingForm } from '../../components/SharingForm'
 import { getAccess } from '../../helpers/userHelper'
@@ -20,14 +20,14 @@ export const SharePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const { device, service } = useContext(DeviceContext)
   const { userID = '' } = useParams<{ userID?: string }>()
-  const contacts = useSelector((state: State) => state.contacts.all)
-  const guests = device ? device.access : (useSelector(selectOrganization).guests as IUserRef[])
+  const contacts = useSelector(selectContacts)
+  const { guests: orgGuests } = useGuests()
+  const guests = device ? device.access : (orgGuests as IUserRef[])
   const deleting = useSelector((state: State) => state.shares.deleting)
   const users = useSelector((state: State) => state.shares.currentDevice?.users || [])
   const guest = guests.find(g => g.id === userID)
   const email = guest?.email || ''
   const history = useHistory()
-  const css = useStyles()
 
   useEffect(() => {
     ;(async () => {
@@ -66,7 +66,7 @@ export const SharePage: React.FC = () => {
               {email}
             </Title>
             {deleting ? (
-              <CircularProgress className={css.loading} size={fontSizes.md} />
+              <CircularProgress sx={{ color: 'danger.main', margin: `${spacing.sm}px` }} size={fontSizes.md} />
             ) : (
               <Tooltip title={`Remove ${email}`}>
                 <IconButton onClick={handleUnshare} disabled={deleting} size="large">
@@ -93,6 +93,3 @@ export const SharePage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  loading: { color: palette.danger.main, margin: spacing.sm },
-}))

@@ -1,8 +1,7 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { Box, ListItemText, ListItemIcon } from '@mui/material'
+import { Box, ListItemText, ListItemIcon, SxProps, Theme } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { TargetPlatform } from './TargetPlatform'
 import { ConnectionName } from './ConnectionName'
@@ -40,7 +39,6 @@ export const ConnectionListItem: React.FC<Props> = ({
   const error = !!connection?.error
   const color = offline ? 'gray' : error ? 'error' : connected ? 'primary' : 'grayDarkest'
   const borderColor = error ? 'error' : connected ? 'primary' : 'grayDark'
-  const css = useStyles()
 
   let icon: React.ReactNode | null = null
   if (connected) icon = <Icon color={color} name={error ? 'exclamation-triangle' : 'play'} size="sm" type="solid" />
@@ -50,7 +48,7 @@ export const ConnectionListItem: React.FC<Props> = ({
   return (
     <ListItemLocation
       dense
-      className={css.item}
+      sx={itemSx}
       to={to}
       match={match}
       onClick={() =>
@@ -60,7 +58,9 @@ export const ConnectionListItem: React.FC<Props> = ({
         })
       }
     >
-      <ListItemIcon className={css.connectIcon}>
+      <ListItemIcon
+        sx={{ position: 'relative', '& > svg': { position: 'absolute', right: 2, transform: 'translate(0px, -55%)' } }}
+      >
         <Box
           sx={theme => ({
             borderColor: enabled ? theme.palette.primary.main : theme.palette[borderColor]?.main,
@@ -78,7 +78,7 @@ export const ConnectionListItem: React.FC<Props> = ({
         />
         {icon}
       </ListItemIcon>
-      <ListItemIcon className={css.platform}>
+      <ListItemIcon sx={{ minWidth: 48, '& > span': { flexGrow: 1, textAlign: 'center' } }}>
         <TargetPlatform id={platform} size="md" tooltip />
       </ListItemIcon>
       <ListItemText primary={<ConnectionName name={name} port={connection?.port} color={color} />} />
@@ -87,31 +87,9 @@ export const ConnectionListItem: React.FC<Props> = ({
   )
 }
 
-export const useStyles = makeStyles(({ palette }) => ({
-  hover: {
-    position: 'absolute',
-    marginTop: -1,
-  },
-  name: {
-    opacity: 0.8,
-  },
-  item: {
-    marginTop: 0,
-    marginBottom: 0,
-    marginRight: spacing.xs,
-    '& .MuiChip-root': { marginBottom: 0 },
-  },
-  connectIcon: {
-    position: 'relative',
-    '& > svg': { position: 'absolute', right: 2, transform: 'translate(0px, -55%)' },
-  },
-  platform: {
-    minWidth: 48,
-    '& > span': { flexGrow: 1, textAlign: 'center' },
-  },
-  mergeIcon: {
-    zIndex: 2,
-    backgroundImage: `radial-gradient(${palette.white.main}, transparent)`,
-  },
-  icon: { marginTop: spacing.xxs, marginRight: spacing.md, marginLeft: spacing.sm },
-}))
+export const itemSx: SxProps<Theme> = {
+  marginTop: 0,
+  marginBottom: 0,
+  marginRight: `${spacing.xs}px`,
+  '& .MuiChip-root': { marginBottom: 0 },
+}

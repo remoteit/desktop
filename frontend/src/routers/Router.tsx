@@ -18,6 +18,7 @@ import { ClaimPage } from '../pages/ClaimPage'
 import { TestPage } from '../pages/TestPage'
 import { AddPage } from '../pages/AddPage'
 import { DevicesPage } from '../pages/DevicesPage'
+import { DeviceBulkTransferPage } from '../pages/DeviceTransferPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
 import { ResellerPage } from '../pages/ResellerPage'
@@ -53,12 +54,16 @@ import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
+import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
+import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { AdminUsersWithDetailPage } from '../pages/AdminUsersPage/AdminUsersWithDetailPage'
+import { AdminDevicesWithDetailPage } from '../pages/AdminDevicesPage/AdminDevicesWithDetailPage'
 import { AdminConfirmPage } from '../pages/AdminConfirmPage'
 import { AdminAdminsPage } from '../pages/AdminAdminsPage/AdminAdminsPage'
 import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { AdminEnterpriseLicensesListPage } from '../pages/AdminEnterpriseLicensesPage/AdminEnterpriseLicensesListPage'
+import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
@@ -202,6 +207,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         <Panel layout={layout}>
           <DevicesPage select />
         </Panel>
+      </Route>
+      <Route path="/devices/transfer">
+        <DynamicPanel layout={layout} primary={<DevicesPage select />} secondary={<DeviceBulkTransferPage />} />
       </Route>
       <Route path="/devices" exact>
         {remoteUI ? (
@@ -385,6 +393,12 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/account/accessKey">
                 <AccessKeyPage />
               </Route>
+              <Route path="/account/connected/:clientId">
+                <ConnectedAppDetailPage />
+              </Route>
+              <Route path="/account/connected">
+                <ConnectedAppsPage />
+              </Route>
               <Route path={['/account', '/account/overview']}>
                 <ProfilePage />
               </Route>
@@ -397,37 +411,37 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       {/* Admin Routes */}
       <Route path="/admin">
         <AdminRouteGuard>
-          <Switch>
-            <Route path="/admin" exact>
-              <Redirect to="/admin/users" />
-            </Route>
-            <Route path="/admin/confirm">
-              <Panel layout={layout}>
+          {/* Panel (and its Header) wraps the whole admin section so every admin page gets the
+              global nav — rather than each route remembering to wrap itself. */}
+          <Panel layout={layout}>
+            <Switch>
+              <Route path="/admin" exact>
+                <Redirect to="/admin/users" />
+              </Route>
+              <Route path="/admin/confirm">
                 <AdminConfirmPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/admins/:adminId?">
-              <Panel layout={layout}>
+              </Route>
+              <Route path="/admin/admins/:adminId?">
                 <AdminAdminsPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/users/:userId?">
-              <Panel layout={layout}>
+              </Route>
+              <Route path="/admin/users/:userId?">
                 <AdminUsersWithDetailPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/partners/:partnerId?">
-              <Panel layout={layout}>
+              </Route>
+              <Route path="/admin/partners/:partnerId?">
                 <AdminPartnersPage />
-              </Panel>
-            </Route>
-            <Route path="/admin/enterprise-licenses">
-              <Panel layout={layout}>
+              </Route>
+              <Route path="/admin/enterprise-licenses">
                 <AdminEnterpriseLicensesListPage />
-              </Panel>
-            </Route>
-            <Redirect to="/admin/users" />
-          </Switch>
+              </Route>
+              <Route path="/admin/notices/:noticeId?">
+                <AdminNoticesPage />
+              </Route>
+              <Route path="/admin/devices/:deviceId?">
+                <AdminDevicesWithDetailPage />
+              </Route>
+              <Redirect to="/admin/users" />
+            </Switch>
+          </Panel>
         </AdminRouteGuard>
       </Route>
       <Route path="/partner-stats/:partnerId?">

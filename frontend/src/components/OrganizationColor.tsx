@@ -1,5 +1,6 @@
 import Color from 'color'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { REGEX_TAG_SAFE } from '../constants'
 import { ColorSelect } from '../components/ColorSelect'
 import { Dispatch, State } from '../store'
@@ -11,6 +12,7 @@ import { useLabel } from '../hooks/useLabel'
 import { radius } from '../styling'
 
 export const OrganizationTheme: React.FC<{ color?: string }> = ({ color }) => {
+  const { t } = useTranslation()
   const [open, setOpen] = useState<boolean>(!!color)
   // const organization = useSelector(selectOrganization)
   const dispatch = useDispatch<Dispatch>()
@@ -34,7 +36,13 @@ export const OrganizationTheme: React.FC<{ color?: string }> = ({ color }) => {
   const sx = { width: '16%', flexGrow: 1, height: 50 }
 
   return (
-    <AccordionMenuItem subtitle="Theme" onClick={() => setOpen(!open)} onClear={onReset} expanded={open} gutters>
+    <AccordionMenuItem
+      subtitle={t('organizationColor.theme', 'Theme')}
+      onClick={() => setOpen(!open)}
+      onClear={onReset}
+      expanded={open}
+      gutters
+    >
       <List>
         <Stack
           marginX={5}
