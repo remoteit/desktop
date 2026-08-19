@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, ButtonBase, Collapse, Typography, CircularProgress } from '@mui/material'
 import { ChatToolCall } from '../../models/chat'
 import { Icon } from '../Icon'
 
 export const ChatToolCalls: React.FC<{ toolCalls: ChatToolCall[] }> = ({ toolCalls }) => {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   if (!toolCalls.length) return null
   const running = toolCalls.some(c => c.status === 'running')
@@ -16,7 +18,11 @@ export const ChatToolCalls: React.FC<{ toolCalls: ChatToolCall[] }> = ({ toolCal
           <Icon name={open ? 'chevron-down' : 'chevron-right'} size="xxs" inlineLeft />
         )}
         <Typography variant="caption">
-          Used {toolCalls.length} tool{toolCalls.length === 1 ? '' : 's'}
+          {t('chat.toolsUsed', {
+            count: toolCalls.length,
+            defaultValue_one: 'Used {{count}} tool',
+            defaultValue_other: 'Used {{count}} tools',
+          })}
         </Typography>
       </ButtonBase>
       <Collapse in={open}>

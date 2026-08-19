@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Button, Typography } from '@mui/material'
 import { State, Dispatch } from '../../store'
@@ -11,65 +12,72 @@ import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { isChatPopout } from '../../services/chatPopout'
 
-const UNAVAILABLE_MESSAGE =
-  'Mycal is temporarily unavailable. Check your internet connection or try again in a few minutes.'
-
 /* Everything below the chat header — shared by the docked panel and the
    popout window */
 export const ChatBody: React.FC = () => {
-  const chat = useSelector((state: State) => state.chat)
+  const { t } = useTranslation()
+  const messages = useSelector((state: State) => state.chat.messages)
+  const streaming = useSelector((state: State) => state.chat.streaming)
+  const health = useSelector((state: State) => state.chat.health)
+  const pendingConfirmation = useSelector((state: State) => state.chat.pendingConfirmation)
+  const error = useSelector((state: State) => state.chat.error)
   const dispatch = useDispatch<Dispatch>()
-  const signedOut = chat.health === 'unauthorized'
-  const unreachable = chat.health === 'unreachable'
+  const signedOut = health === 'unauthorized'
+  const unreachable = health === 'unreachable'
+  // Literal default: the i18next parser can't extract a value passed as a variable
+  const unavailableMessage = t(
+    'chat.unavailable',
+    'Mycal is temporarily unavailable. Check your internet connection or try again in a few minutes.'
+  )
 
   return (
     <>
       <ChatOrgLabel />
-      {unreachable && !!chat.messages.length && (
+      {unreachable && !!messages.length && (
         <Notice severity="warning" gutterTop>
-          {UNAVAILABLE_MESSAGE}
+          {unavailableMessage}
         </Notice>
       )}
       {signedOut ? (
         <Body center>
           <Icon name="robot" size="xxxl" color="grayDark" />
           <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
-            The AI agent needs its own sign-in to act on your behalf.
-            {isChatPopout && ' Sign in from the main app window.'}
+            {t('chat.signInNeeded', 'The AI agent needs its own sign-in to act on your behalf.')}
+            {isChatPopout && ` ${t('chat.signInFromMain', 'Sign in from the main app window.')}`}
           </Typography>
           {!isChatPopout && (
             <Button variant="contained" size="medium" onClick={() => dispatch.chat.signIn()}>
-              Sign in with remote.it
+              {t('chat.signIn', 'Sign in with remote.it')}
             </Button>
           )}
         </Body>
-      ) : unreachable && !chat.messages.length ? (
+      ) : unreachable && !messages.length ? (
         <Body center>
           <Icon name="robot" size="xxxl" color="grayDark" />
           <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
-            {UNAVAILABLE_MESSAGE}
+            {unavailableMessage}
           </Typography>
         </Body>
       ) : (
-        <ChatMessages messages={chat.messages} streaming={chat.streaming}>
-          {chat.pendingConfirmation && (
+        <ChatMessages messages={messages} streaming={streaming}>
+          {pendingConfirmation && (
             <ChatApproval
-              toolName={chat.pendingConfirmation.toolName}
-              input={chat.pendingConfirmation.input}
+              toolName={pendingConfirmation.toolName}
+              input={pendingConfirmation.input}
               onRespond={approved => dispatch.chat.confirm(approved)}
             />
           )}
-          {chat.error && (
+          {error && (
             <Notice severity="error" onClose={() => dispatch.chat.set({ error: null })}>
-              {chat.error}
+              {error}
             </Notice>
           )}
         </ChatMessages>
       )}
       <ChatInput
-        disabled={!!chat.pendingConfirmation || signedOut || unreachable}
-        placeholder={chat.pendingConfirmation ? 'Waiting for approval…' : ''}
-        streaming={chat.streaming}
+        disabled={!!pendingConfirmation || signedOut || unreachable}
+        placeholder={pendingConfirmation ? t('chat.waitingApproval', 'Waiting for approval…') : ''}
+        streaming={streaming}
         onSend={text => dispatch.chat.send(text)}
         onStop={() => dispatch.chat.stop()}
       />

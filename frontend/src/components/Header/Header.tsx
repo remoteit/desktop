@@ -98,7 +98,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             size="md"
             type={chatOpen ? 'solid' : undefined}
             color={chatOpen ? 'primary' : 'grayDarker'}
-            title="AI Agent"
+            title={t('header.aiAgent', 'AI Agent')}
             onClick={() => dispatch.chat.set({ open: !chatOpen })}
           />
         )}

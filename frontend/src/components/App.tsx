@@ -12,13 +12,9 @@ import { useSelector, useDispatch } from 'react-redux'
 import {
   HIDE_SIDEBAR_WIDTH,
   HIDE_TWO_PANEL_WIDTH,
-  SIDEBAR_WIDTH,
   MOBILE_WIDTH,
-  ORGANIZATION_BAR_WIDTH,
   REGEX_FIRST_PATH,
   SHOW_TRIPLE_PANEL_WIDTH,
-  CHAT_PANEL_WIDTH,
-  CHAT_PANEL_WIDTH_EXPANDED,
 } from '../constants'
 import { State, Dispatch } from '../store'
 import { useMediaQuery, Box } from '@mui/material'
@@ -29,9 +25,7 @@ import { SidebarMenu } from './SidebarMenu'
 import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
-import { ChatPanel } from './Chat/ChatPanel'
-import { useChatEnabled } from '../hooks/useChatEnabled'
-import { ChatWindow } from './Chat/ChatWindow'
+import { useChatEnabled, useChatDocked, useChatWidth, useSidebarWidth } from '../hooks/useChatEnabled'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
@@ -39,6 +33,11 @@ import { ViewAsBanner } from './ViewAsBanner'
 import { AnnouncementDialog } from './AnnouncementDialog'
 import { AnnouncementBanner } from './AnnouncementBanner'
 import { isChatPopout } from '../services/chatPopout'
+
+// Lazy: keeps the chat surface (and its react-markdown dependency tree) out
+// of the startup bundle — the feature is dev/Test-UI gated
+const ChatPanel = React.lazy(() => import('./Chat/ChatPanel').then(m => ({ default: m.ChatPanel })))
+const ChatWindow = React.lazy(() => import('./Chat/ChatWindow').then(m => ({ default: m.ChatWindow })))
 
 export const App: React.FC = () => {
   // Subscribe the whole app to i18next language changes and lazy-locale loads, so
@@ -55,20 +54,20 @@ export const App: React.FC = () => {
   const installed = useSelector((state: State) => state.binaries.installed)
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
-  const chatOpen = useSelector((state: State) => state.chat.open)
   const chatEnabled = useChatEnabled()
-  const chatExpanded = useSelector((state: State) => state.chat.expanded)
+  const chatDocked = useChatDocked()
+  const chatWidth = useChatWidth()
+  const sidebarWidth = useSidebarWidth()
   const reseller = useSelector(selectResellerRef)
   const dispatch = useDispatch<Dispatch>()
   const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
   const triplePanel = useMediaQuery(`(min-width:${SHOW_TRIPLE_PANEL_WIDTH}px)`)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
-  // The open chat column reserves layout space the same way the sidebar does,
-  // so Panel/DoublePanel/TriplePanel all reflow and clamp their resize math to it
-  const chatPanelWidth =
-    chatEnabled && chatOpen && !singlePanel ? (chatExpanded ? CHAT_PANEL_WIDTH_EXPANDED : CHAT_PANEL_WIDTH) : 0
-  const sidePanelWidth = (hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)) + chatPanelWidth
+  // The docked chat column reserves layout space the same way the sidebar
+  // does; useChatDocked only docks when the panels still fit beside it —
+  // otherwise the chat renders as an overlay and reserves nothing
+  const sidePanelWidth = sidebarWidth + (chatDocked ? chatWidth : 0)
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
   const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
   const needsUserHydration = authenticated && !user
@@ -132,8 +131,13 @@ export const App: React.FC = () => {
       <ViewAsBanner />
       <AnnouncementBanner />
       <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
-        {chatEnabled && isChatPopout ? (
-          <ChatWindow />
+        {/* isChatPopout is a boot constant — the window only exists because
+            chat opened it, so no feature-flag gate (chatEnabled depends on
+            async-restored testUI and would flash the full app in the popup) */}
+        {isChatPopout ? (
+          <React.Suspense fallback={null}>
+            <ChatWindow />
+          </React.Suspense>
         ) : (
           <>
             <Box
@@ -149,7 +153,11 @@ export const App: React.FC = () => {
             >
               {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
               <Router layout={layout} />
-              {chatEnabled && <ChatPanel />}
+              {chatEnabled && (
+                <React.Suspense fallback={null}>
+                  <ChatPanel />
+                </React.Suspense>
+              )}
             </Box>
             {showBottomMenu && <BottomMenu layout={layout} />}
           </>

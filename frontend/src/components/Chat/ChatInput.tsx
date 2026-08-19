@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, InputBase } from '@mui/material'
+import { fontSizes, radius } from '../../styling'
 import { IconButton } from '../../buttons/IconButton'
 
 type Props = {
@@ -11,6 +13,7 @@ type Props = {
 }
 
 export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, onSend, onStop }) => {
+  const { t } = useTranslation()
   const [text, setText] = useState('')
   const submit = () => {
     const trimmed = text.trim()
@@ -25,7 +28,7 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
           display: 'flex',
           alignItems: 'flex-end',
           bgcolor: 'grayLightest.main',
-          borderRadius: '14px',
+          borderRadius: `${radius.lg}px`,
           paddingY: 0.5,
           paddingLeft: 2,
           paddingRight: 0.5,
@@ -35,25 +38,27 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
           fullWidth
           multiline
           maxRows={6}
-          placeholder={disabled ? placeholder : ''}
+          placeholder={placeholder}
           value={text}
           disabled={disabled}
-          sx={{ fontSize: 14, paddingY: 0.75 }}
+          sx={{ fontSize: fontSizes.base, paddingY: 0.75 }}
           onChange={event => setText(event.target.value)}
           onKeyDown={event => {
-            if (event.key === 'Enter' && !event.shiftKey) {
+            // isComposing: Enter is confirming an IME candidate (ja/zh/ko),
+            // not submitting — sending here would post half-composed text
+            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
               event.preventDefault()
               submit()
             }
           }}
         />
         {streaming ? (
-          <IconButton icon="stop" title="Stop" color="grayDark" onClick={onStop} />
+          <IconButton icon="stop" title={t('chat.stop', 'Stop')} color="grayDark" onClick={onStop} />
         ) : (
           <IconButton
             icon="arrow-turn-down"
             rotate={90}
-            title="Send"
+            title={t('chat.send', 'Send')}
             color="grayDark"
             disabled={disabled || !text.trim()}
             hideDisableFade

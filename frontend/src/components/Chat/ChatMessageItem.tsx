@@ -1,12 +1,26 @@
 import React from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
+import { fontSizes } from '../../styling'
 import { ChatTranscriptMessage } from '../../models/chat'
 import { ChatToolCalls } from './ChatToolCalls'
 import { scrollbarStyles } from './chatScrollbar'
 
-export const ChatMessageItem: React.FC<{ message: ChatTranscriptMessage }> = ({ message }) => {
+// Links open in a new tab: a bare anchor is a top-level navigation, which in
+// Electron replaces the app window with the external site (will-navigate only
+// guards auth.remote.it); target=_blank routes through setWindowOpenHandler →
+// shell.openExternal instead
+const markdownComponents = {
+  a: ({ node, ...props }: any) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+}
+
+// Memoized: immer keeps unchanged message refs stable, so during streaming
+// only the tail message re-renders instead of re-parsing every message's
+// markdown on each delta
+export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({ message }) => {
+  const { t } = useTranslation()
   if (message.role === 'user')
     return (
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginY: 1 }}>
@@ -25,7 +39,7 @@ export const ChatMessageItem: React.FC<{ message: ChatTranscriptMessage }> = ({ 
         sx={[
           theme => ({ '& pre, & table': scrollbarStyles(theme) }),
           {
-            fontSize: 14,
+            fontSize: fontSizes.base,
             lineHeight: 1.5,
             wordBreak: 'break-word',
             '& p': { marginY: 0.75 },
@@ -35,7 +49,7 @@ export const ChatMessageItem: React.FC<{ message: ChatTranscriptMessage }> = ({ 
             '& a': { color: 'primary.main' },
             '& code': {
               fontFamily: "'Roboto Mono', monospace",
-              fontSize: 12,
+              fontSize: fontSizes.sm,
               bgcolor: 'grayLightest.main',
               borderRadius: 1,
               paddingX: 0.5,
@@ -52,7 +66,7 @@ export const ChatMessageItem: React.FC<{ message: ChatTranscriptMessage }> = ({ 
               display: 'block',
               overflowX: 'auto',
               borderCollapse: 'collapse',
-              fontSize: 12,
+              fontSize: fontSizes.sm,
               marginY: 1,
             },
             '& th, & td': {
@@ -73,13 +87,17 @@ export const ChatMessageItem: React.FC<{ message: ChatTranscriptMessage }> = ({ 
           },
         ]}
       >
-        <Markdown remarkPlugins={[remarkGfm]}>{message.text}</Markdown>
+        <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          {message.text}
+        </Markdown>
       </Box>
       {message.interrupted && (
         <Typography variant="caption" color="warning.main">
-          Interrupted
+          {t('chat.interrupted', 'Interrupted')}
         </Typography>
       )}
     </Box>
   )
-}
+})
+
+ChatMessageItem.displayName = 'ChatMessageItem'

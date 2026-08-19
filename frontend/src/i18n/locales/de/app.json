@@ -183,6 +183,31 @@
     "noticeTitle": "Hinweis",
     "title": "Passwort ändern"
   },
+  "chat": {
+    "approve": "Genehmigen",
+    "close": "Schließen",
+    "collapse": "Verkleinern",
+    "currentOrg": "Aktuelle Organisation",
+    "deny": "Ablehnen",
+    "expand": "Vergrößern",
+    "interrupted": "Unterbrochen",
+    "newChat": "Neuer Chat",
+    "organization": "Organisation",
+    "personal": "Persönlich",
+    "popIn": "Wieder andocken",
+    "popOut": "In eigenem Fenster öffnen",
+    "send": "Senden",
+    "signIn": "Mit remote.it anmelden",
+    "signInFromMain": "Melden Sie sich im Hauptfenster der App an.",
+    "signInNeeded": "Der KI-Agent benötigt eine eigene Anmeldung, um in Ihrem Namen zu handeln.",
+    "stop": "Stopp",
+    "toolRequest": "Der Agent möchte <tool>{{tool}}</tool> ausführen",
+    "toolsUsed_one": "{{count}} Tool verwendet",
+    "toolsUsed_other": "{{count}} Tools verwendet",
+    "unavailable": "Mycal ist vorübergehend nicht verfügbar. Überprüfen Sie Ihre Internetverbindung oder versuchen Sie es in einigen Minuten erneut.",
+    "waitingApproval": "Warten auf Genehmigung…",
+    "windowTitle": "remote.it Chat"
+  },
   "claimDevice": {
     "claim": "Beanspruchen",
     "claimCode": "Anspruchscode",
@@ -774,6 +799,7 @@
     "stepOf": "{{step}} von {{total}}"
   },
   "header": {
+    "aiAgent": "KI-Agent",
     "back": "Zurück",
     "create": "",
     "deviceSearch": "Gerätesuche",
@@ -1931,6 +1957,8 @@
   "testPage": {
     "addQueryHeader": "Abfrage-Header hinzufügen",
     "addQueryHeaderPlaceholder": "Beispiel: \"key:value\"",
+    "agentURL": "Agentendienst-URL",
+    "agentURLInvalid": "Die Agentendienst-URL muss mit https:// beginnen",
     "clearViewedAnnouncements": "Angesehene Ankündigungen löschen",
     "clearViewedAnnouncementsHint": "Markiert alle geladenen Ankündigungen für dieses Konto als ungelesen.",
     "disableTestUI": "Test-UI deaktivieren",
@@ -1940,6 +1968,9 @@
     "hideTestUIBackgrounds": "Test-UI-Hintergründe ausblenden",
     "licenseMessageCleared": "Lizenzmeldung gelöscht",
     "licensingOptions": "Lizenzierungsoptionen",
+    "mcpAudience": "Agent-MCP-Audience",
+    "overrideAgent": "Agentendienst überschreiben",
+    "overrideAgentSub": "Richtet den Mycal-Chat auf einen bereitgestellten Agenten (nur https). dev-ai-agent gehört zur Audience https://mcp.demo.remote.it/mcp. Melden Sie sich nach Änderungen erneut beim Agenten an.",
     "overrideDefaultAPIs": "Standard-APIs überschreiben",
     "overrideLicensesAndLimits": "Lizenzen und Limits überschreiben",
     "reset": "Zurücksetzen",

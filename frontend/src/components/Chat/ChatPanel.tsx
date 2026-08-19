@@ -1,65 +1,30 @@
-import React, { useEffect } from 'react'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box, Typography } from '@mui/material'
-import { store, State, Dispatch } from '../../store'
-import { CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_EXPANDED } from '../../constants'
+import { Box } from '@mui/material'
+import { State, Dispatch } from '../../store'
+import { useChatDocked, useChatWidth } from '../../hooks/useChatEnabled'
+import { useChatMainSync } from '../../hooks/useChatSync'
 import { IconButton } from '../../buttons/IconButton'
+import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
 import browser from '../../services/browser'
-import {
-  openChatPopout,
-  initChatPopoutMain,
-  checkPopoutPresence,
-  PopoutMainHandlers,
-  ChatHandoff,
-} from '../../services/chatPopout'
 
-const currentHandoff = (): ChatHandoff => {
-  const c = store.getState().chat
-  return { messages: c.messages, conversationId: c.conversationId, orgId: c.orgId }
-}
-
+/* Display-only: lifecycle, popout protocol, and org mirroring live in
+   useChatMainSync; user actions dispatch chat model effects */
 export const ChatPanel: React.FC = () => {
-  const chat = useSelector((state: State) => state.chat)
-  const singlePanel = useSelector((state: State) => state.ui.layout.singlePanel)
-  const activeId = useSelector((state: State) => state.accounts.activeId)
+  const { t } = useTranslation()
+  const open = useSelector((state: State) => state.chat.open)
+  const expanded = useSelector((state: State) => state.chat.expanded)
+  const insets = useSelector((state: State) => state.ui.layout.insets)
+  const showBottomMenu = useSelector((state: State) => state.ui.layout.showBottomMenu)
+  const docked = useChatDocked()
+  const chatWidth = useChatWidth()
   const dispatch = useDispatch<Dispatch>()
 
-  // Completes a Hydra sign-in redirect if this page load carries ?code —
-  // runs on mount regardless of whether the panel is open
-  useEffect(() => {
-    dispatch.chat.handleSignInCallback()
-    const handlers: PopoutMainHandlers = {
-      getHandoff: currentHandoff,
-      adopt: payload => {
-        dispatch.chat.adoptTranscript(payload)
-        dispatch.chat.set({ poppedOut: false, open: true })
-      },
-      onPopoutOpened: () => {
-        dispatch.chat.stop()
-        dispatch.chat.set({ open: false, poppedOut: true })
-      },
-      onPopoutLost: () => dispatch.chat.set({ poppedOut: false, open: true }),
-      onPresence: present => dispatch.chat.set(present ? { poppedOut: true, open: false } : { poppedOut: false }),
-    }
-    const unsubscribe = initChatPopoutMain(handlers)
-    checkPopoutPresence(handlers)
-    return unsubscribe
-  }, [])
+  useChatMainSync()
 
-  useEffect(() => {
-    if (chat.open) {
-      dispatch.chat.resetTransient()
-      dispatch.chat.checkHealth()
-    }
-  }, [chat.open])
-
-  // The chat follows the app's active org from the sidebar selector
-  useEffect(() => {
-    dispatch.chat.syncOrg()
-  }, [activeId])
-
-  if (!chat.open) return null
+  if (!open) return null
 
   return (
     <Box
@@ -67,38 +32,44 @@ export const ChatPanel: React.FC = () => {
         display: 'flex',
         flexFlow: 'column',
         flexShrink: 0,
-        // Docked column beside the panels; full-screen overlay below the
-        // single-panel breakpoint, matching how pages collapse
-        ...(singlePanel
-          ? { position: 'absolute', inset: 0, width: '100%', zIndex: 15 }
-          : {
+        // Docked column beside the panels when it fits; full-screen overlay
+        // otherwise, matching how pages collapse on small windows
+        ...(docked
+          ? {
               position: 'relative',
               height: '100%',
-              width: chat.expanded ? CHAT_PANEL_WIDTH_EXPANDED : CHAT_PANEL_WIDTH,
-            }),
+              width: chatWidth,
+            }
+          : { position: 'absolute', inset: 0, width: '100%', zIndex: 15, paddingLeft: insets?.leftPx }),
+        // Match the page panels' safe-area handling (Panel.tsx): keep the
+        // header clear of the notch and the input clear of the home
+        // indicator on mobile; the bottom menu carries its own inset
+        paddingTop: insets?.topPx,
+        paddingRight: insets?.rightPx,
         bgcolor: 'white.main',
-        borderLeft: singlePanel ? 0 : 1,
+        borderLeft: docked ? 1 : 0,
         borderColor: 'grayLighter.main',
-        paddingBottom: 1,
+        paddingBottom: showBottomMenu ? 1 : insets?.bottomPx || 1,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', paddingX: 2, paddingY: 1 }}>
-        <Typography variant="subtitle1" sx={{ flexGrow: 1, padding: 0, margin: 0, minHeight: 0 }}>
-          Mycal
-        </Typography>
-        {!singlePanel && (
+      <ChatHeader>
+        {docked && (
           <IconButton
             icon="arrows-left-right"
-            title={chat.expanded ? 'Collapse' : 'Expand'}
-            onClick={() => dispatch.chat.set({ expanded: !chat.expanded })}
+            title={expanded ? t('chat.collapse', 'Collapse') : t('chat.expand', 'Expand')}
+            onClick={() => dispatch.chat.set({ expanded: !expanded })}
           />
         )}
         {!browser.isMobile && (
-          <IconButton icon="arrow-up-right-from-square" title="Pop out" onClick={() => openChatPopout()} />
+          <IconButton
+            icon="arrow-up-right-from-square"
+            title={t('chat.popOut', 'Pop out')}
+            onClick={() => dispatch.chat.popOut()}
+          />
         )}
-        <IconButton icon="plus" title="New Chat" onClick={() => dispatch.chat.clearConversation()} />
-        <IconButton icon="times" title="Close" onClick={() => dispatch.chat.set({ open: false })} />
-      </Box>
+        <NewChatButton />
+        <IconButton icon="times" title={t('chat.close', 'Close')} onClick={() => dispatch.chat.set({ open: false })} />
+      </ChatHeader>
       <ChatBody />
     </Box>
   )

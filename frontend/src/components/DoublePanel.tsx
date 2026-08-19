@@ -29,7 +29,9 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
   const getMaxWidth = useCallback(
     () => {
       const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
-      return fullWidth - secondaryMinWidth - sidePanelWidth
+      // Never below the minimum: a max < min makes usePanelDrag oscillate and
+      // emit negative widths when reserved chrome exceeds the window
+      return Math.max(MIN_WIDTH, fullWidth - secondaryMinWidth - sidePanelWidth)
     },
     [secondaryMinWidth, sidePanelWidth]
   )
