@@ -14,7 +14,15 @@
  * OAuth front's CORS allow-list, or the exchange moved to the Electron main
  * process.
  */
-import { getAgentSession, getAgentToken, setAgentSession, setAgentToken } from './agent'
+import {
+  getAgentSession,
+  getAgentToken,
+  setAgentSession,
+  setAgentToken,
+  takeAgentCredentials,
+  decodeAgentSession,
+  decodeAgentToken,
+} from './agent'
 import { store } from '../store'
 
 export const HYDRA_ISSUER = import.meta.env.VITE_HYDRA_ISSUER_URL || 'https://login.dev.remote.it'
@@ -139,10 +147,13 @@ async function tokenRequest(params: Record<string, string>): Promise<{
   return JSON.parse(text)
 }
 
-function storeTokens(clientId: string, tokens: { access_token: string; refresh_token?: string; expires_in?: number }) {
-  setAgentToken(tokens.access_token)
-  setAgentSession({
-    refresh_token: tokens.refresh_token || getAgentSession()?.refresh_token || '',
+async function storeTokens(
+  clientId: string,
+  tokens: { access_token: string; refresh_token?: string; expires_in?: number }
+) {
+  await setAgentToken(tokens.access_token)
+  await setAgentSession({
+    refresh_token: tokens.refresh_token || (await getAgentSession())?.refresh_token || '',
     // Missing expires_in falls back to the requested LIFESPAN — an expires_at
     // of "now" would make every subsequent call fire a refresh grant
     expires_at: Date.now() + (tokens.expires_in ?? 1800) * 1000,
@@ -205,7 +216,7 @@ export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?
       client_id: flow.clientId,
       code_verifier: flow.verifier,
     })
-    storeTokens(flow.clientId, tokens)
+    await storeTokens(flow.clientId, tokens)
     return { ok: true }
   } catch (err) {
     return { ok: false, error: (err as Error).message }
@@ -217,10 +228,11 @@ export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?
    refresh chain dies server-side too. The DCR client registration is kept —
    it belongs to the app origin, not the user. */
 export async function agentSignOut(): Promise<void> {
-  const session = getAgentSession()
-  const token = getAgentToken()
-  setAgentToken(null)
-  setAgentSession(null)
+  // Clear synchronously first — a signOut-triggered reload must never find
+  // credentials still stored; the raw values are decoded after for revoke
+  const raw = takeAgentCredentials()
+  const session = await decodeAgentSession(raw.session)
+  const token = await decodeAgentToken(raw.token)
   const revoke = (value: string, clientId: string) =>
     fetch(`${OAUTH_API}/oauth2/revoke`, {
       method: 'POST',
@@ -245,10 +257,13 @@ let refreshPromise: Promise<void> | null = null
    Hydra's reuse detection and revokes the whole chain. */
 export async function ensureFreshAgentToken(): Promise<void> {
   if (refreshPromise) return refreshPromise
-  const session = getAgentSession()
+  const session = await getAgentSession()
   if (!session?.refresh_token) return
-  const fresh = getAgentToken() && Date.now() < session.expires_at - 60_000
+  const fresh = (await getAgentToken()) && Date.now() < session.expires_at - 60_000
   if (fresh) return
+  // Re-check after the async reads above: another caller may have started a
+  // refresh while we were reading — join it instead of racing a second grant
+  if (refreshPromise) return refreshPromise
   refreshPromise = (async () => {
     try {
       const tokens = await tokenRequest({
