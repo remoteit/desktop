@@ -4,7 +4,6 @@ import {
   streamChat,
   confirmTool,
   agentHealth,
-  setAgentToken,
   AgentAuthError,
   AgentEvent,
   AgentHealth,
@@ -12,7 +11,17 @@ import {
   OrgSelection,
 } from '../services/agent'
 import { startAgentSignIn, handleAgentSignInCallback, ensureFreshAgentToken, agentSignOut } from '../services/hydra'
-import { ChatHandoff, broadcastChatSignout } from '../services/chatPopout'
+import {
+  ChatHandoff,
+  broadcastChatSignout,
+  openChatPopout,
+  popIn as closePopoutWithHandback,
+} from '../services/chatPopout'
+// Value import is deref'd only inside effects, so the store/model cycle is
+// safe (same pattern as services/hydra.ts)
+import { store } from '../store'
+import type { State } from '../store'
+import i18n from '../i18n'
 
 export type ChatToolCall = {
   id: string
@@ -92,7 +101,9 @@ function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
       // The backend prefixes auth failures so the client knows a retry is
       // pointless until the token is refreshed (e.g. it expired mid-turn).
       if (event.message.startsWith('reauth_required')) {
-        state.error = 'Agent session expired — sign in again to continue.'
+        state.error = i18n.t('notices:chat.sessionExpired', {
+          defaultValue: 'Agent session expired — sign in again to continue.',
+        })
         state.health = 'unauthorized'
       } else {
         state.error = event.message
@@ -110,6 +121,30 @@ function toMessageParams(messages: ChatTranscriptMessage[]): AgentMessageParam[]
   return messages.filter(m => m.text.trim().length > 0).map(m => ({ role: m.role, content: m.text }))
 }
 
+/* Single source of truth for the org the chat is scoped to (null = personal).
+   Membership decides the scope, so the Current Org label and the org sent
+   with each turn can never disagree; the name falls back to the membership
+   record when organization.accounts hasn't loaded. */
+export function resolveChatOrg(state: State): OrgSelection | null {
+  const orgId = state.chat.orgId
+  if (!orgId || orgId === state.user.id) return null
+  const membership = state.accounts.membership.find(m => m.account.id === orgId)
+  if (!membership) return null
+  const name = (state.organization.accounts[orgId]?.name || membership.name || '').trim()
+  return { id: orgId, name }
+}
+
+/* The handoff payload the main window and popout exchange — one definition so
+   the two sides can never serialize different field sets */
+export const toChatHandoff = (chat: IChatState): ChatHandoff => ({
+  messages: chat.messages,
+  conversationId: chat.conversationId,
+  orgId: chat.orgId,
+})
+
+const authRequiredError = () =>
+  i18n.t('notices:chat.authRequired', { defaultValue: 'Agent authentication required — sign in to continue.' })
+
 let abortController: AbortController | null = null
 
 export default createModel<RootModel>()({
@@ -122,19 +157,21 @@ export default createModel<RootModel>()({
       dispatch.chat.addUserMessage(text)
       dispatch.chat.set({ conversationId, streaming: true, error: null })
       abortController = new AbortController()
-      const orgId = state.chat.orgId
-      let org: OrgSelection | undefined
-      if (orgId && orgId !== state.user.id) {
-        // organization.accounts can be unloaded while the membership is
-        // present; fall back to the name carried on the membership itself so
-        // org scope never silently degrades to personal.
-        const name = (
-          state.organization.accounts[orgId]?.name ||
-          state.accounts.membership.find(m => m.account.id === orgId)?.name ||
-          ''
-        ).trim()
-        const isMember = state.accounts.membership.some(m => m.account.id === orgId)
-        if (name && isMember) org = { id: orgId, name }
+      // Same resolution the Current Org label renders, so the scope shown is
+      // always the scope sent — membership decides, name falls back
+      const resolved = resolveChatOrg(state)
+      const org = resolved ? { ...resolved, name: resolved.name || 'Organization' } : undefined
+      // Coalesce text deltas: one dispatch per ~50ms window instead of one
+      // per SSE chunk, so streaming doesn't re-render the app per token
+      let deltaBuffer = ''
+      let flushTimer: number | null = null
+      const flushDeltas = () => {
+        if (flushTimer !== null) window.clearTimeout(flushTimer)
+        flushTimer = null
+        if (deltaBuffer) {
+          dispatch.chat.applyEvent({ type: 'text_delta', text: deltaBuffer })
+          deltaBuffer = ''
+        }
       }
       try {
         await ensureFreshAgentToken()
@@ -143,14 +180,24 @@ export default createModel<RootModel>()({
           messages,
           org,
           signal: abortController.signal,
-          onEvent: event => dispatch.chat.applyEvent(event),
+          onEvent: event => {
+            if (event.type === 'text_delta') {
+              deltaBuffer += event.text
+              if (flushTimer === null) flushTimer = window.setTimeout(flushDeltas, 50)
+            } else {
+              // Buffered text must land before the next non-text event
+              flushDeltas()
+              dispatch.chat.applyEvent(event)
+            }
+          },
         })
       } catch (error) {
-        if (error instanceof AgentAuthError)
-          dispatch.chat.set({ error: 'Agent authentication required — sign in to continue.', health: 'unauthorized' })
+        flushDeltas()
+        if (error instanceof AgentAuthError) dispatch.chat.set({ error: authRequiredError(), health: 'unauthorized' })
         else if ((error as Error).name !== 'AbortError')
           dispatch.chat.applyEvent({ type: 'error', message: (error as Error).message })
       } finally {
+        flushDeltas()
         abortController = null
         dispatch.chat.set({ streaming: false })
       }
@@ -164,6 +211,9 @@ export default createModel<RootModel>()({
     async confirm(approved: boolean, state) {
       const pending = state.chat.pendingConfirmation
       if (!pending) return
+      // Clear synchronously so a double click (or an Approve chased by a
+      // Deny) can't post a second, contradictory decision while in flight
+      dispatch.chat.set({ pendingConfirmation: null })
       try {
         await ensureFreshAgentToken()
         await confirmTool({
@@ -171,17 +221,33 @@ export default createModel<RootModel>()({
           toolUseId: pending.toolUseId,
           approved,
         })
-        dispatch.chat.set({ pendingConfirmation: null })
       } catch (error) {
+        // Restore the card so the decision isn't lost with the error
         if (error instanceof AgentAuthError)
-          dispatch.chat.set({ error: 'Agent authentication required — sign in to continue.', health: 'unauthorized' })
-        else dispatch.chat.set({ error: (error as Error).message })
+          dispatch.chat.set({ pendingConfirmation: pending, error: authRequiredError(), health: 'unauthorized' })
+        else dispatch.chat.set({ pendingConfirmation: pending, error: (error as Error).message })
       }
     },
     async stop() {
       abortController?.abort()
       abortController = null
       dispatch.chat.set({ streaming: false, pendingConfirmation: null })
+    },
+    /* Move the conversation to its own window; the dock hides when the popout
+       says hello. A blocked popup is surfaced instead of silently ignored. */
+    async popOut() {
+      if (!openChatPopout())
+        dispatch.chat.set({
+          error: i18n.t('notices:chat.popupBlocked', {
+            defaultValue: 'Pop out was blocked — allow popups for this site and try again.',
+          }),
+        })
+    },
+    /* Hand the conversation back to the main window and close this popout.
+       Reads the handoff after stop() so the final flushed text is included. */
+    async popIn() {
+      await dispatch.chat.stop()
+      closePopoutWithHandback(toChatHandoff(store.getState().chat))
     },
     async checkHealth() {
       await ensureFreshAgentToken()
@@ -204,23 +270,24 @@ export default createModel<RootModel>()({
       // popout window — the popout is the active surface, not the panel.
       const openIfDocked = state.chat.poppedOut ? {} : { open: true }
       if (result.ok) dispatch.chat.set({ error: null, ...openIfDocked })
-      else dispatch.chat.set({ error: `Agent sign-in failed — ${result.error}`, ...openIfDocked })
-      await dispatch.chat.checkHealth()
-    },
-    // Dev fallback: token pasted from the ai-agent harness (devtools:
-    // localStorage.agentToken). The sign-in flow is the normal writer.
-    async setToken(token: string) {
-      setAgentToken(token)
-      dispatch.chat.set({ error: null })
+      else
+        dispatch.chat.set({
+          error: i18n.t('notices:chat.signInFailed', {
+            defaultValue: 'Agent sign-in failed — {{error}}',
+            error: result.error,
+          }),
+          ...openIfDocked,
+        })
       await dispatch.chat.checkHealth()
     },
     /* App sign-out tears the agent session down with it: revoke + clear the
-       Hydra credentials and drop the transcript */
+       Hydra credentials. The transcript reset is dispatched by auth.signedOut
+       alongside the other model resets — dispatching it here would land in the
+       purge-to-reload window and re-persist the pre-signout state. */
     async signOut() {
       broadcastChatSignout()
       abortController?.abort()
       abortController = null
-      dispatch.chat.reset()
       await agentSignOut()
     },
   }),

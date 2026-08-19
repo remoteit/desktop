@@ -4,14 +4,18 @@
  */
 import { store } from '../store'
 
+/* The override must be https — the app's CSP blocks plain http. Shared with
+   the Test Settings validation so what saves is exactly what engages. */
+export const isSecureAgentURL = (url: string): boolean => /^https:\/\//i.test(url)
+
 /* Base URL for the agent service, resolved per request. The Test UI override
-   wins (Test Settings → Override agent service; https only — the app's CSP
-   blocks plain http). Otherwise dev rides the vite proxy (same-origin,
-   CSP-clean) even when VITE_AGENT_URL is set, staying out of CORS; builds
-   have no proxy and use the deployed agent domain from VITE_AGENT_URL. */
+   wins (Test Settings → Override agent service). Otherwise dev rides the vite
+   proxy (same-origin, CSP-clean) even when VITE_AGENT_URL is set, staying out
+   of CORS; builds have no proxy and use the deployed agent domain from
+   VITE_AGENT_URL. */
 export function agentURL(): string {
   const { switchAgent, agentURL: override } = store.getState().ui.apis
-  if (switchAgent && override?.startsWith('https://')) return override.replace(/\/+$/, '')
+  if (switchAgent && override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
   return import.meta.env.DEV ? '/agent' : import.meta.env.VITE_AGENT_URL || '/agent'
 }
 

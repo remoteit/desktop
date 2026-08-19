@@ -39,8 +39,17 @@ const FLOW_KEY = 'agentOauthFlow'
 // grab them before Amplify boots — and only claim them when this tab actually
 // started an agent sign-in (flow state present), so a genuine Cognito
 // callback is left untouched.
+// The callback is claimed only when its `state` matches the flow this tab
+// started — a Cognito callback (same origin, same param names) never matches,
+// so even a stale flow key left by an abandoned agent sign-in can't hijack it.
 const bootParams = new URLSearchParams(window.location.search)
-const isAgentCallback = !!window.sessionStorage.getItem(FLOW_KEY) && (bootParams.has('code') || bootParams.has('error'))
+type AgentFlow = { verifier: string; state: string; clientId: string }
+let bootFlow: AgentFlow | null = null
+try {
+  bootFlow = JSON.parse(window.sessionStorage.getItem(FLOW_KEY) || 'null')
+} catch {}
+const isAgentCallback =
+  !!bootFlow?.state && bootParams.get('state') === bootFlow.state && (bootParams.has('code') || bootParams.has('error'))
 if (isAgentCallback) {
   // Strip immediately: hides the single-use code from Amplify's listener and
   // from any reload. The hash route is preserved.
@@ -106,6 +115,15 @@ async function ensureClient(): Promise<string> {
   return client_id
 }
 
+/* Token-endpoint rejection with the HTTP status attached, so callers can
+   distinguish a definitive denial from a transient failure structurally
+   instead of parsing the message */
+class TokenRequestError extends Error {
+  constructor(public status: number, message: string) {
+    super(message)
+  }
+}
+
 async function tokenRequest(params: Record<string, string>): Promise<{
   access_token: string
   refresh_token?: string
@@ -117,7 +135,7 @@ async function tokenRequest(params: Record<string, string>): Promise<{
     body: new URLSearchParams(params),
   })
   const text = await response.text()
-  if (!response.ok) throw new Error(`Agent token exchange failed (${response.status}): ${text}`)
+  if (!response.ok) throw new TokenRequestError(response.status, `Agent token exchange failed (${response.status}): ${text}`)
   return JSON.parse(text)
 }
 
@@ -125,7 +143,9 @@ function storeTokens(clientId: string, tokens: { access_token: string; refresh_t
   setAgentToken(tokens.access_token)
   setAgentSession({
     refresh_token: tokens.refresh_token || getAgentSession()?.refresh_token || '',
-    expires_at: Date.now() + (tokens.expires_in ?? 0) * 1000,
+    // Missing expires_in falls back to the requested LIFESPAN — an expires_at
+    // of "now" would make every subsequent call fire a refresh grant
+    expires_at: Date.now() + (tokens.expires_in ?? 1800) * 1000,
     client_id: clientId,
   })
 }
@@ -162,6 +182,12 @@ export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?
   const code = bootParams.get('code')
   const error = bootParams.get('error')
 
+  // Consume the flow before any branch can return — a leftover key would stay
+  // armed and claim a later, unrelated OAuth callback on this origin. The
+  // state match is already guaranteed by the isAgentCallback gate above.
+  const flow = bootFlow
+  window.sessionStorage.removeItem(FLOW_KEY)
+
   if (error) {
     // A client cached from before a scope/resource change can be rejected at
     // authorize (e.g. invalid_target); drop it so the next attempt re-registers.
@@ -169,13 +195,7 @@ export async function handleAgentSignInCallback(): Promise<{ ok: boolean; error?
     return { ok: false, error: `${error}: ${bootParams.get('error_description') || ''}` }
   }
 
-  const flow = JSON.parse(window.sessionStorage.getItem(FLOW_KEY) || 'null') as {
-    verifier: string
-    state: string
-    clientId: string
-  } | null
-  window.sessionStorage.removeItem(FLOW_KEY)
-  if (!flow || bootParams.get('state') !== flow.state) return { ok: false, error: 'Sign-in expired — try again.' }
+  if (!flow) return { ok: false, error: 'Sign-in expired — try again.' }
 
   try {
     const tokens = await tokenRequest({
@@ -216,23 +236,36 @@ export async function agentSignOut(): Promise<void> {
   }
 }
 
+let refreshPromise: Promise<void> | null = null
+
 /* Refresh the access token when it is missing or close to expiry. Silent
-   no-op when there is nothing to refresh (e.g. a hand-pasted token). */
+   no-op when there is nothing to refresh (e.g. a hand-pasted token).
+   Single-flight: concurrent callers (panel-open health check racing a send)
+   share one request — presenting a rotating refresh token twice trips
+   Hydra's reuse detection and revokes the whole chain. */
 export async function ensureFreshAgentToken(): Promise<void> {
+  if (refreshPromise) return refreshPromise
   const session = getAgentSession()
   if (!session?.refresh_token) return
   const fresh = getAgentToken() && Date.now() < session.expires_at - 60_000
   if (fresh) return
-  try {
-    const tokens = await tokenRequest({
-      grant_type: 'refresh_token',
-      refresh_token: session.refresh_token,
-      client_id: session.client_id,
-    })
-    storeTokens(session.client_id, tokens)
-  } catch {
-    // Refresh chain dead (revoked or reuse-detection) — clear so the UI
-    // falls back to the sign-in prompt on the next 401.
-    setAgentSession(null)
-  }
+  refreshPromise = (async () => {
+    try {
+      const tokens = await tokenRequest({
+        grant_type: 'refresh_token',
+        refresh_token: session.refresh_token,
+        client_id: session.client_id,
+      })
+      storeTokens(session.client_id, tokens)
+    } catch (error) {
+      // Only a definitive rejection means the chain is dead (revoked or
+      // reuse-detection) — then clear so the UI falls back to the sign-in
+      // prompt. A transient network/proxy failure keeps the session so a
+      // later call can retry instead of forcing a full re-sign-in.
+      if (error instanceof TokenRequestError && [400, 401, 403].includes(error.status)) setAgentSession(null)
+    } finally {
+      refreshPromise = null
+    }
+  })()
+  return refreshPromise
 }
