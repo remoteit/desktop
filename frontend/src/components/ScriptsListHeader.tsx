@@ -2,7 +2,7 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Typography, Tooltip, useMediaQuery } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { useTranslation } from 'react-i18next'
 import { selectPermissions } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
 import { RefreshButton } from '../buttons/RefreshButton'
@@ -21,17 +21,27 @@ type Props = {
 export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }) => {
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const permissions = useSelector(selectPermissions)
+  const { t } = useTranslation()
 
-  const title = scripts ? 'Scripts' : 'Files'
+  const title = scripts ? t('scriptsListHeader.scripts', 'Scripts') : t('scriptsListHeader.files', 'Files')
   const addPath = scripts ? '/scripts/add' : '/files/add'
-  const addLabel = scripts ? 'Add' : 'Upload'
+  const addLabel = scripts ? t('scriptsListHeader.add', 'Add') : t('scriptsListHeader.upload', 'Upload')
 
   return (
-    <Box className={css.header}>
-      <Box className={css.left}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: 45,
+        paddingLeft: `${spacing.md}px`,
+        paddingRight: `${spacing.md}px`,
+        marginTop: `${spacing.sm}px`,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
         {sidebarHidden && (
           <IconButton
             name="bars"
@@ -43,21 +53,21 @@ export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }
         {showBack && (
           <IconButton
             icon="chevron-left"
-            title="Back"
+            title={t('scriptsListHeader.back', 'Back')}
             onClick={onBack}
             size="md"
           />
         )}
         <RefreshButton size="md" color="grayDarker" />
         {sidebarHidden && (
-          <Typography variant="h2" className={css.title}>
+          <Typography variant="h2">
             <Title>{title}</Title>
           </Typography>
         )}
       </Box>
-      <Box className={css.right}>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Tooltip
-          title={permissions.includes('ADMIN') ? '' : 'Admin permissions required'}
+          title={permissions.includes('ADMIN') ? '' : t('scriptsListHeader.adminRequired', 'Admin permissions required')}
           placement="top"
           arrow
         >
@@ -78,24 +88,3 @@ export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }
     </Box>
   )
 }
-
-const useStyles = makeStyles(({ }) => ({
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 45,
-    paddingLeft: spacing.md,
-    paddingRight: spacing.md,
-    marginTop: spacing.sm,
-  },
-  left: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  right: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  title: {},
-}))

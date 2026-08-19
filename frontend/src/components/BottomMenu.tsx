@@ -1,5 +1,6 @@
 import React from 'react'
 import { REGEX_FIRST_PATH } from '../constants'
+import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Box, BottomNavigation, BottomNavigationAction, Badge } from '@mui/material'
 import { useCounts } from '../hooks/useCounts'
@@ -13,6 +14,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
   const location = useLocation()
   const history = useHistory()
   const counts = useCounts()
+  const { t } = useTranslation()
 
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || '/devices'
 
@@ -30,7 +32,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
     >
       <BottomNavigation value={menu} onChange={(_, value) => history.push(value)}>
         <BottomNavigationAction
-          label="Connections"
+          label={t('nav.connections', 'Connections')}
           icon={
             <Badge badgeContent={counts.active} color="primary">
               <Icon size="md" name="arrow-right-arrow-left" />
@@ -38,8 +40,8 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
           }
           value="/connections"
         />
-        <BottomNavigationAction label="Devices" icon={<Icon size="md" name="router" />} value="/devices" />
-        <BottomNavigationAction label="Networks" icon={<Icon size="md" name="chart-network" />} value="/networks" />
+        <BottomNavigationAction label={t('nav.devices', 'Devices')} icon={<Icon size="md" name="router" />} value="/devices" />
+        <BottomNavigationAction label={t('nav.networks', 'Networks')} icon={<Icon size="md" name="chart-network" />} value="/networks" />
       </BottomNavigation>
     </Box>
   )

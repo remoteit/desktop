@@ -4,22 +4,24 @@ import { useTranslation } from 'react-i18next'
 import { AuthLayout } from '../AuthLayout'
 import { Notice } from '../../../components/Notice'
 import { Icon } from '../../../components/Icon'
-import { VerifyRecoveryCodeFunc, SignInFunc } from '../../types'
+import { VerifyRecoveryCodeFunc, SignInFunc, SignInSuccessFunc } from '../../types'
 
 export type AccountRecoveryProps = {
   onVerifyRecoveryCode: VerifyRecoveryCodeFunc
   onSignIn: SignInFunc
+  onSignInSuccess: SignInSuccessFunc
   email: string
   fullWidth?: boolean
 }
 
 export function AccountRecovery({
   onSignIn,
+  onSignInSuccess,
   onVerifyRecoveryCode,
   email,
   fullWidth,
 }: AccountRecoveryProps): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [sentEmailVerifyRequest, setSentEmailVerifyRequest] = useState<boolean>(false)
@@ -64,8 +66,10 @@ export function AccountRecovery({
       const result = await onVerifyRecoveryCode(emailVerificationCode, recoveryCode)
       if (result.error) {
         setError(result.error.message)
+      } else if (result.cognitoUser) {
+        onSignInSuccess(result.cognitoUser)
       } else {
-        window.location.href = '/#devices'
+        setError('Account recovery did not complete, please try again or contact support.')
       }
     } catch (e) {
       setError(t(`pages.auth-mfa.errors.${e.code}`))
@@ -160,7 +164,7 @@ export function AccountRecovery({
 }
 
 function SupportRecoveryRequest(): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('cognito')
   return (
     <Box>
       <Box my={2}>

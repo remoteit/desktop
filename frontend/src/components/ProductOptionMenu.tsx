@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
+import { useSelector } from 'react-redux'
+import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
 import { IDeviceProduct } from '../models/products'
 import { IconButton } from '../buttons/IconButton'
+import { selectPermissions } from '../selectors/organizations'
 import { Icon } from './Icon'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Notice } from './Notice'
@@ -11,12 +14,39 @@ import { dispatch } from '../store'
 type Props = { product?: IDeviceProduct }
 
 export const ProductOptionMenu: React.FC<Props> = ({ product }) => {
+  const { t } = useTranslation()
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const history = useHistory()
+  const admin = useSelector(selectPermissions).includes('ADMIN')
   const handleClick = (event: React.MouseEvent<Element>) => setAnchorEl(event.currentTarget as HTMLButtonElement)
   const handleClose = () => setAnchorEl(null)
 
   if (!product) return null
+
+  const deleteButton = (
+    <DeleteButton
+      menuItem
+      disabled={!admin}
+      title={t('productOptionMenu.deleteProduct', 'Delete Product')}
+      onCancel={handleClose}
+      onDelete={async () => {
+        handleClose()
+        const success = await dispatch.products.delete(product.id)
+        if (success) history.push('/products')
+      }}
+      warning={
+        <>
+          <Notice severity="error" gutterBottom fullWidth>
+            {t('productOptionMenu.cannotBeUndone', 'This action cannot be undone.')}
+          </Notice>
+          <Typography variant="body2">
+            {t('productOptionMenu.deleteConfirmPrefix', 'Are you sure you want to permanently delete the product')}{' '}
+            <b>{product.name}</b> {t('productOptionMenu.deleteConfirmSuffix', 'and all its services?')}
+          </Typography>
+        </>
+      }
+    />
+  )
 
   return (
     <>
@@ -35,29 +65,16 @@ export const ProductOptionMenu: React.FC<Props> = ({ product }) => {
           <ListItemIcon>
             <Icon name="arrow-turn-down-right" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Transfer Product" />
+          <ListItemText primary={t('productOptionMenu.transferProduct', 'Transfer Product')} />
         </MenuItem>
         <Divider />
-        <DeleteButton
-          menuItem
-          title="Delete Product"
-          onCancel={handleClose}
-          onDelete={async () => {
-            handleClose()
-            const success = await dispatch.products.delete(product.id)
-            if (success) history.push('/products')
-          }}
-          warning={
-            <>
-              <Notice severity="error" gutterBottom fullWidth>
-                This action cannot be undone.
-              </Notice>
-              <Typography variant="body2">
-                Are you sure you want to permanently delete the product <b>{product.name}</b> and all its services?
-              </Typography>
-            </>
-          }
-        />
+        {admin ? (
+          deleteButton
+        ) : (
+          <Tooltip placement="left" title={t('productOptionMenu.adminRequired', 'Admin permissions required')} arrow>
+            <span>{deleteButton}</span>
+          </Tooltip>
+        )}
       </Menu>
     </>
   )

@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react'
-import { makeStyles } from '@mui/styles'
 import {
   Tooltip,
   ListItem,
@@ -16,7 +15,7 @@ import { spacing } from '../../styling'
 import { Quote } from '../Quote'
 
 type Props = {
-  icon?: string
+  icon?: React.ReactNode
   iconColor?: IconProps['color']
   iconType?: IconProps['type']
   hideIcon?: boolean
@@ -71,7 +70,6 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
     const iconRef = useRef<HTMLDivElement>(null)
     const showToggle = toggle !== undefined
     const showButton = button !== undefined
-    const css = useStyles()
 
     secondaryContentWidth = secondaryContentWidth || (showButton || showToggle || secondaryContent ? '60px' : undefined)
 
@@ -100,30 +98,27 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
       </>
     )
 
-    const TooltipWrapper = ({ children }) =>
-      tooltip ? (
-        <Tooltip title={tooltip} placement="top" open={showTip} arrow>
-          {children}
-        </Tooltip>
-      ) : (
-        children
-      )
+    // Defining a wrapper component inside render would remount its subtree (and refetch any
+    // avatar image) every render, so wrap the icon node with a plain conditional instead.
+    const iconNode = (
+      <ListItemIcon sx={hideIcon ? { minWidth: `${spacing.sm}px` } : undefined}>
+        {typeof icon === 'string' ? (
+          <Icon ref={iconRef} name={icon} color={iconColor} size="md" modified={modified} type={iconType} fixedWidth />
+        ) : (
+          icon
+        )}
+      </ListItemIcon>
+    )
 
     const ListItemContents = (
       <>
-        <TooltipWrapper>
-          <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>
-            <Icon
-              ref={iconRef}
-              name={icon}
-              color={iconColor}
-              size="md"
-              modified={modified}
-              type={iconType}
-              fixedWidth
-            />
-          </ListItemIcon>
-        </TooltipWrapper>
+        {tooltip ? (
+          <Tooltip title={tooltip} placement="top" open={showTip} arrow>
+            {iconNode}
+          </Tooltip>
+        ) : (
+          iconNode
+        )}
         {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
         <ListItemSecondaryAction>
           {secondaryContent}
@@ -168,5 +163,3 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
     )
   }
 )
-
-const useStyles = makeStyles({ hideIcon: { minWidth: spacing.sm } })

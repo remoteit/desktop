@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Divider, List, Typography, Box } from '@mui/material'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { ServiceCheckboxes } from './ServiceCheckboxes'
@@ -21,6 +22,7 @@ export interface SharingAccess {
 }
 
 export function SharingForm({ device, user }: { device: IDevice; user?: IUser }): JSX.Element {
+  const { t } = useTranslation()
   const users = useSelector((state: State) => state.shares.currentDevice?.users)
   const scriptIndeterminate = useSelector((state: State) => !!state.shares.currentDevice?.scriptIndeterminate)
   const selectedServices = useSelector((state: State) => state.shares.currentDevice?.selectedServices || [])
@@ -72,12 +74,12 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
           <Typography variant="h3">
             {device.name}
             <Typography variant="caption" component="p">
-              Choose the services you'd like to provide access to.
+              {t('sharingForm.chooseServices', "Choose the services you'd like to provide access to.")}
             </Typography>
           </Typography>
         </Box>
       </Gutters>
-      <Typography variant="subtitle1">Services</Typography>
+      <Typography variant="subtitle1">{t('sharingForm.services', 'Services')}</Typography>
       <ServiceCheckboxes
         onChange={handleChangeServices}
         services={device.services.map(s => ({ label: s.name, value: s.id }))}
@@ -87,8 +89,11 @@ export function SharingForm({ device, user }: { device: IDevice; user?: IUser })
       <Divider variant="inset" />
       <List>
         <ListItemCheckbox
-          label="Allow script execution"
-          subLabel="Give the user the ability to run scripts on this device."
+          label={t('sharingForm.allowScriptExecution', 'Allow script execution')}
+          subLabel={t(
+            'sharingForm.allowScriptExecutionHelp',
+            'Give the user the ability to run scripts on this device.'
+          )}
           disabled={saving}
           checked={script}
           indeterminate={scriptIndeterminate}

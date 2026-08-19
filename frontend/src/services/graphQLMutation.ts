@@ -333,12 +333,12 @@ export async function graphQLRemoveApp(props: { deviceIds: string[]; application
   )
 }
 
-export async function graphQLReadNotice(id: string) {
+export async function graphQLReadNotice(id: string, value: boolean = true) {
   return await graphQLBasicRequest(
-    ` mutation ReadNotice($id: String!) {
-        readNotice(id: $id)
+    ` mutation ReadNotice($id: String!, $value: Boolean!) {
+        readNotice(id: $id, value: $value)
       }`,
-    { id }
+    { id, value }
   )
 }
 
@@ -723,5 +723,34 @@ export async function graphQLAdminDeleteUser(id: string, force: boolean = false)
         adminDeleteUser(id: $id, force: $force)
       }`,
     { id, force }
+  )
+}
+
+const NOTICE_FIELDS = ` id type title body preview image link stage language enabled from until modified `
+
+export async function graphQLCreateNotice(notice: INoticeInput) {
+  return await graphQLBasicRequest(
+    ` mutation CreateNotice($notice: NoticeInput!) {
+        createNotice(notice: $notice) {${NOTICE_FIELDS}}
+      }`,
+    { notice }
+  )
+}
+
+export async function graphQLUpdateNotice(id: string, notice: INoticeInput) {
+  return await graphQLBasicRequest(
+    ` mutation UpdateNotice($id: String!, $notice: NoticeInput!) {
+        updateNotice(id: $id, notice: $notice) {${NOTICE_FIELDS}}
+      }`,
+    { id, notice }
+  )
+}
+
+export async function graphQLDeleteNotice(id: string) {
+  return await graphQLBasicRequest(
+    ` mutation DeleteNotice($id: String!) {
+        deleteNotice(id: $id)
+      }`,
+    { id }
   )
 }

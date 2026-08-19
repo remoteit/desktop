@@ -1,22 +1,20 @@
 import React from 'react'
+import { Box } from '@mui/material'
 import { Icon } from '../../components/Icon'
-import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 
 export const NextButton: React.FC = () => {
-  const css = useStyles()
   return (
-    <span className={css.styles}>
+    <Box
+      component="span"
+      sx={{
+        paddingLeft: `${spacing.md}px`,
+        paddingRight: `${spacing.md}px`,
+        position: 'absolute',
+        right: `${spacing.md}px`,
+      }}
+    >
       <Icon name="chevron-right" size="md" fixedWidth />
-    </span>
+    </Box>
   )
 }
-
-const useStyles = makeStyles({
-  styles: {
-    paddingLeft: spacing.md,
-    paddingRight: spacing.md,
-    position: 'absolute',
-    right: spacing.md,
-  },
-})

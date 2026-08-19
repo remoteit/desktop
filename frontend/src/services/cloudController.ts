@@ -36,12 +36,11 @@ class CloudController {
   pongReceived: number = Date.now()
   timer?: NodeJS.Timeout
 
+  // Idempotent: connect() is a no-op when the socket is up, so a second signedIn()
+  // recovers a closed socket rather than returning early and leaving it dead.
   init() {
-    if (this.initialized) {
-      console.warn('CLOUD CONTROLLER ALREADY INITIALIZED')
-      return
-    }
     this.connect()
+    if (this.initialized) return
     network.on('connect', this.reconnect)
     network.on('disconnect', this.close)
     this.initialized = true
@@ -74,6 +73,9 @@ class CloudController {
   startPing() {
     if (this.timer) clearInterval(this.timer)
     this.log('START PING', this.pingInterval)
+    // reset the pong clock so a stale timestamp from a previous connection
+    // doesn't make the first ping of this one look unanswered
+    this.pongReceived = Date.now()
     this.timer = setInterval(this.ping, this.pingInterval)
   }
 
@@ -106,6 +108,21 @@ class CloudController {
     delete this.socket
   }
 
+  /**
+   * Tear down for sign out. Unlike close(), which only drops the socket and
+   * expects a network event to bring it back, this clears initialized and the
+   * network listeners so the next signedIn() can init() from scratch.
+   */
+  reset = () => {
+    this.log('RESET')
+    this.close()
+    if (this.timer) clearInterval(this.timer)
+    this.timer = undefined
+    network.off('connect', this.reconnect)
+    network.off('disconnect', this.close)
+    this.initialized = false
+  }
+
   onClose = event => this.log('CLOSED', event)
 
   onError = error => this.log('ERROR', error)
@@ -117,6 +134,10 @@ class CloudController {
   }
 
   authenticate = async () => {
+    // Capture the socket before awaiting the token: signing out mid-flight replaces
+    // it, and sending this subscribe on the successor would double up its
+    // subscription - every device event would then be processed twice.
+    const socket = this.socket
     const message = JSON.stringify({
       action: 'subscribe',
       // Opt in to bulk-frame delivery on the server. The notify Lambda
@@ -247,7 +268,11 @@ class CloudController {
         }
       }`,
     })
-    this.socket?.send(message)
+    if (socket !== this.socket) {
+      this.log('STALE AUTHENTICATE - SOCKET REPLACED')
+      return
+    }
+    socket?.send(message)
   }
 
   onMessage = response => {

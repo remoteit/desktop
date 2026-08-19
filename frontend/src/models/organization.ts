@@ -18,6 +18,7 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 import { State } from '../store'
+import i18n from '../i18n'
 
 export const PERMISSION: ILookup<{
   name: string
@@ -172,7 +173,12 @@ export default createModel<RootModel>()({
       await dispatch.organization.setActive({ ...params, id: organization.id || state.auth.user?.id })
       const result = await graphQLSetOrganization({ ...params, accountId: organization.id })
       if (result !== 'ERROR') {
-        if (!organization.id) dispatch.ui.set({ successMessage: 'Your organization has been created.' })
+        if (!organization.id)
+          dispatch.ui.set({
+            successMessage: i18n.t('notices:organization.created', {
+              defaultValue: 'Your organization has been created.',
+            }),
+          })
       }
       await dispatch.organization.fetch()
     },
@@ -186,7 +192,10 @@ export default createModel<RootModel>()({
         })
       } else {
         dispatch.ui.set({
-          errorMessage: `${params.type} update failed, please validate your form data.`,
+          errorMessage: i18n.t('notices:organization.updateFailed', {
+            type: params.type,
+            defaultValue: '{{type}} update failed, please validate your form data.',
+          }),
         })
       }
       await dispatch.organization.fetch()
@@ -230,7 +239,12 @@ export default createModel<RootModel>()({
         dispatch.organization.setActive({
           members: organization.members.filter(m => m.user.email !== member.user.email),
         })
-        dispatch.ui.set({ successMessage: `Successfully removed “${member.user?.email}”.` })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:organization.removedNamed', {
+            name: member.user?.email,
+            defaultValue: 'Successfully removed “{{name}}”.',
+          }),
+        })
       }
     },
 
@@ -238,7 +252,11 @@ export default createModel<RootModel>()({
       const result = await graphQLRemoveOrganization()
       if (result !== 'ERROR') {
         dispatch.organization.clearActive()
-        dispatch.ui.set({ successMessage: `Your organization has been removed.` })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:organization.removed', {
+            defaultValue: 'Your organization has been removed.',
+          }),
+        })
       }
     },
 
@@ -290,7 +308,12 @@ export default createModel<RootModel>()({
         return
       }
 
-      dispatch.ui.set({ successMessage: `Successfully removed “${role.name}”.` })
+      dispatch.ui.set({
+        successMessage: i18n.t('notices:organization.removedNamed', {
+          name: role.name,
+          defaultValue: 'Successfully removed “{{name}}”.',
+        }),
+      })
       dispatch.organization.setActive({ roles })
     },
 
@@ -334,7 +357,9 @@ export default createModel<RootModel>()({
 
       if (!result?.data?.data?.removeCustomer) {
         dispatch.ui.set({
-          errorMessage: 'There was a problem removing a customer. Please contact support if the issue persists',
+          errorMessage: i18n.t('notices:organization.customerRemoveError', {
+            defaultValue: 'There was a problem removing a customer. Please contact support if the issue persists',
+          }),
         })
         return
       }
@@ -354,7 +379,11 @@ export default createModel<RootModel>()({
       const response = await graphQLGetResellerReportUrl(accountId)
       console.log('RESPONSE', response)
       if (response === 'ERROR') {
-        dispatch.ui.set({ errorMessage: 'Failed to get reseller report URL' })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:organization.resellerReportError', {
+            defaultValue: 'Failed to get reseller report URL',
+          }),
+        })
         return
       }
       const result = response?.data?.data?.login?.account?.organization?.reseller

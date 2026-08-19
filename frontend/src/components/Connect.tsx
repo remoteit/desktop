@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { List, Button, Collapse, Divider } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -28,6 +29,7 @@ import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ variant = 'connection' }) => {
+  const { t } = useTranslation()
   const location = useLocation<{
     autoConnect?: boolean
     autoLaunch?: boolean
@@ -76,7 +78,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
         {variant === 'connection' && (
           <AccordionMenuItem
             gutters
-            subtitle="Connection"
+            subtitle={t('connect.connection', 'Connection')}
             expanded={accordion.config}
             onClick={() => dispatch.ui.accordion({ config: !accordion.config })}
             action={<ConnectionMenu connection={connection} service={service} />}
@@ -84,7 +86,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
             <List disablePadding>
               <ListItemLocation
                 icon="sliders"
-                title="Connection configuration"
+                title={t('connect.connectionConfiguration', 'Connection configuration')}
                 disabled={!!connection.connectLink}
                 to="advanced"
                 showDisabled
@@ -114,9 +116,12 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
                     severity="info"
                     onClose={() => dispatch.ui.setPersistent({ showDesktopNotice: false })}
                   >
-                    <strong>Want Persistent Private Endpoints?</strong>
+                    <strong>{t('connect.persistentEndpointsTitle', 'Want Persistent Private Endpoints?')}</strong>
                     <em>
-                      On demand connections with persistent endpoints, remote access, and improved launch commands.
+                      {t(
+                        'connect.persistentEndpointsBody',
+                        'On demand connections with persistent endpoints, remote access, and improved launch commands.'
+                      )}
                     </em>
                     <Button
                       size="small"
@@ -125,7 +130,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
                       sx={{ marginTop: 1, marginBottom: 1 }}
                       onClick={() => windowOpen('https://link.remote.it/download/desktop')}
                     >
-                      Download Desktop
+                      {t('connect.downloadDesktop', 'Download Desktop')}
                     </Button>
                   </Notice>
                 )}
@@ -133,10 +138,15 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
             </List>
           </AccordionMenuItem>
         )}
-        <AccordionMenuItem gutters subtitle="Service" defaultExpanded>
+        <AccordionMenuItem gutters subtitle={t('connect.service', 'Service')} defaultExpanded>
           {device?.permissions.includes('MANAGE') && (
             <>
-              <ListItemLocation icon="sliders" title="Service configuration" to="edit" dense>
+              <ListItemLocation
+                icon="sliders"
+                title={t('connect.serviceConfiguration', 'Service configuration')}
+                to="edit"
+                dense
+              >
                 <Icon name="angle-right" inlineLeft fixedWidth />
               </ListItemLocation>
               <Divider variant="inset" sx={{ marginTop: 1 }} />

@@ -19,6 +19,7 @@ export type AdminUserRow = {
 
 export class AdminUserAttribute extends Attribute<AdminUserAttributeOptions> {
   type: Attribute['type'] = 'MASTER'
+  translate = false // internal-only admin registry: render English, skip columns.* translation
 }
 
 export const adminUserAttributes: AdminUserAttribute[] = [

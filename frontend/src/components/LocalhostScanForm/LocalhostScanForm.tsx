@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DEFAULT_SERVICE, REGEX_NAME_SAFE } from '@common/constants'
 import { List, Chip, Typography } from '@mui/material'
 import { getType, findType } from '../../models/applicationTypes'
@@ -7,7 +8,6 @@ import { State, Dispatch } from '../../store'
 import { ListItemCheckbox } from '../ListItemCheckbox'
 import { LoadingMessage } from '../LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
-import { makeStyles } from '@mui/styles'
 import { spacing } from '../../styling'
 import { Title } from '../Title'
 import { emit } from '../../services/Controller'
@@ -17,7 +17,7 @@ type Props = {
 }
 
 export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
-  const css = useStyles()
+  const { t } = useTranslation()
   const { ui } = useDispatch<Dispatch>()
   const [state, setState] = useState<boolean[]>([])
   const { applicationTypes, timestamp, loading, scanTimestamp, scanData } = useSelector((state: State) => {
@@ -64,13 +64,20 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
     }
   }, [scanTimestamp, timestamp, loading])
 
-  if (!scanData) return <LoadingMessage message="Scanning..." />
+  if (!scanData) return <LoadingMessage message={t('localhostScanForm.scanning', 'Scanning...')} />
 
   return (
     <>
-      <Typography className={css.body} variant="body2" color="textSecondary">
-        <Title>Select any found services to auto setup</Title>
-        <IconButton icon="radar" color="gray" loading={loading} onClick={scan} title="Rescan" size="lg" />
+      <Typography sx={{ display: 'flex', alignItems: 'center' }} variant="body2" color="textSecondary">
+        <Title>{t('localhostScanForm.title', 'Select any found services to auto setup')}</Title>
+        <IconButton
+          icon="radar"
+          color="gray"
+          loading={loading}
+          onClick={scan}
+          title={t('localhostScanForm.rescan', 'Rescan')}
+          size="lg"
+        />
       </Typography>
       <List>
         {scanData.map((row, key) => (
@@ -87,20 +94,22 @@ export const LocalhostScanForm: React.FC<Props> = ({ onSelect }) => {
             }}
           >
             <Chip
-              className={css.chip}
-              label={findType(applicationTypes, row.typeID).name + ' - ' + row.port}
+              sx={{ marginRight: `${spacing.md}px` }}
+              label={t('localhostScanForm.typeAndPort', {
+                type: findType(applicationTypes, row.typeID).name,
+                port: row.port,
+                defaultValue: '{{type}} - {{port}}',
+              })}
               size="small"
             />
           </ListItemCheckbox>
         ))}
       </List>
       <br />
-      <Typography variant="caption">You can always add additional services after registration.</Typography>
+      <Typography variant="caption">
+        {t('localhostScanForm.footerNote', 'You can always add additional services after registration.')}
+      </Typography>
     </>
   )
 }
 
-const useStyles = makeStyles({
-  chip: { marginRight: spacing.md },
-  body: { display: 'flex', alignItems: 'center' },
-})

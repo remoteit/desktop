@@ -151,6 +151,9 @@ declare global {
     getState: () => { environment: IEnvironment; preferences: IPreferences }
     getCloudData: (typeId?: number) => IApplicationType
     escapeRegex: (string: string) => string
+    // Translate a key with an English fallback. The frontend wires this to
+    // i18n.t; other platforms (Electron) may leave it undefined to get English.
+    translate?: (key: string, defaultValue: string) => string
   }
 
   interface InstallationInfo {
@@ -813,6 +816,34 @@ declare global {
     lastUsed: Date
   }
 
+  // A surface an agent's token is valid for: the raw resource URL + the friendly catalog label.
+  type IAgentAudience = {
+    url: string
+    label: string
+  }
+
+  // An OAuth app / AI agent the user has authorized (a Hydra consent), from graphql's
+  // login.connectedApps façade (list + reach + lastActive pre-merged). null reach = full reach.
+  type IAuthorizedAgent = {
+    clientId: string
+    clientName?: string
+    logoUri?: string
+    capabilities: string[] // device:read / device:write / … scopes granted
+    audience: IAgentAudience[] // surfaces the token is valid for (url + friendly label)
+    grantedAt?: string
+    expiresAt?: string
+    reach?: IAccountReach[] | null // per-account reach limit; null/absent = no limit (all devices)
+    lastActive?: string // last API request seen (merged from graphql login.agentActivity)
+  }
+
+  // One account an agent may reach, limited to the given tags (owned by that account; null = all
+  // its devices) matched by the operator.
+  type IAccountReach = {
+    account: string // account id
+    tags: string[] | null
+    operator: ITagOperator // 'ANY' | 'ALL'
+  }
+
   type IRouteType = 'failover' | 'p2p' | 'proxy' | 'public'
 
   interface IEvent {
@@ -990,6 +1021,7 @@ declare global {
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
     sshConfig?: boolean
+    language?: string // resolved language code (e.g. 'en', 'ja') for the Electron main process; never 'system'
   }
 
   type SegmentContext = {

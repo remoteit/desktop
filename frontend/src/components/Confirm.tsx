@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { TransitionProps } from '@mui/material/transitions'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 export type ConfirmProps = {
   title?: React.ReactNode
@@ -25,7 +26,7 @@ export type ConfirmProps = {
 
 export const Confirm: React.FC<ConfirmProps> = ({
   title,
-  action = 'Ok',
+  action,
   open,
   onConfirm,
   onDeny,
@@ -33,29 +34,32 @@ export const Confirm: React.FC<ConfirmProps> = ({
   color = 'primary',
   disabled,
   children,
-}) => (
-  <Dialog
-    open={open}
-    maxWidth={maxWidth}
-    TransitionComponent={Transition}
-    transitionDuration={200}
-    onClose={onDeny || onConfirm}
-    fullWidth
-  >
-    <DialogTitle>{title}</DialogTitle>
-    <DialogContent>{children}</DialogContent>
-    <DialogActions>
-      {onDeny && (
-        <Button color="primary" onClick={onDeny}>
-          Cancel
+}) => {
+  const { t } = useTranslation()
+  return (
+    <Dialog
+      open={open}
+      maxWidth={maxWidth}
+      TransitionComponent={Transition}
+      transitionDuration={200}
+      onClose={onDeny || onConfirm}
+      fullWidth
+    >
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent>{children}</DialogContent>
+      <DialogActions>
+        {onDeny && (
+          <Button color="primary" onClick={onDeny}>
+            {t('common.cancel', 'Cancel')}
+          </Button>
+        )}
+        <Button autoFocus variant="contained" color={color} disabled={disabled} onClick={onConfirm}>
+          &nbsp; {action ?? t('common.ok', 'Ok')} &nbsp;
         </Button>
-      )}
-      <Button autoFocus variant="contained" color={color} disabled={disabled} onClick={onConfirm}>
-        &nbsp; {action} &nbsp;
-      </Button>
-    </DialogActions>
-  </Dialog>
-)
+      </DialogActions>
+    </Dialog>
+  )
+}
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & { children: React.ReactElement },

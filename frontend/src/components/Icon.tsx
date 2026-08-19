@@ -2,7 +2,7 @@ import React from 'react'
 import { useTheme, Badge } from '@mui/material'
 import { PlatformIcon } from './PlatformIcon'
 import { fontSizes, spacing, Sizes } from '../styling'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome'
 import { library, IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { fal } from '@fortawesome/pro-light-svg-icons'
@@ -132,7 +132,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
         icon={[fontType, name as IconName]}
         spin={spin}
         fixedWidth={fixedWidth}
-        style={styles}
+        style={styles as FontAwesomeIconProps['style']}
       />
     )
 

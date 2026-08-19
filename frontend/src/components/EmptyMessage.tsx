@@ -1,6 +1,5 @@
 import React from 'react'
 import { Typography, Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
@@ -9,22 +8,19 @@ type Props = {
 }
 
 export const EmptyMessage: React.FC<Props> = ({ message }) => {
-  const css = useStyles()
   return (
-    <Box className={css.box}>
-      <Icon name="mouse-pointer" type="solid" size="lg" className={css.icon} />
+    <Box
+      sx={{
+        backgroundColor: 'grayLightest.main',
+        borderRadius: `${spacing.md}px`,
+        padding: `${spacing.xl}px`,
+        '& svg': { marginBottom: `${spacing.md}px` },
+      }}
+    >
+      <Icon name="mouse-pointer" type="solid" size="lg" />
       <Typography variant="body2" color="grayDark.main">
         {message}
       </Typography>
     </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  box: {
-    backgroundColor: palette.grayLightest.main,
-    borderRadius: spacing.md,
-    padding: spacing.xl,
-  },
-  icon: { marginBottom: spacing.md },
-}))

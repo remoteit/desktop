@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
@@ -76,7 +77,11 @@ export default createModel<RootModel>()({
       const result = await graphQLLeaveMembership(id)
       if (result !== 'ERROR') {
         dispatch.accounts.set({ membership: membership.filter(m => m.account.id !== id), activeId: state.user.id })
-        dispatch.ui.set({ successMessage: 'You have successfully left the organization.' })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:organization.left', {
+            defaultValue: 'You have successfully left the organization.',
+          }),
+        })
       }
     },
     async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }) {

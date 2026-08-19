@@ -1,4 +1,5 @@
 import structuredClone from '@ungap/structured-clone'
+import i18n from '../i18n'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
@@ -112,7 +113,12 @@ export default createModel<RootModel>()({
       const result = await graphQLAddDeviceTag(add, tag.name, selectActiveAccountId(state))
       if (result !== 'ERROR')
         dispatch.ui.set({
-          successMessage: `${tag.name} added to ${add.length} device${add.length === 1 ? '' : 's'}.`,
+          successMessage: i18n.t('notices:tag.added', {
+            tag: tag.name,
+            count: add.length,
+            defaultValue_one: '{{tag}} added to {{count}} device.',
+            defaultValue_other: '{{tag}} added to {{count}} devices.',
+          }),
         })
       dispatch.tags.set({ adding: false })
     },
@@ -187,12 +193,22 @@ export default createModel<RootModel>()({
         const result = await graphQLMergeTag(tag.name, name, accountId)
         if (result === 'ERROR') return
         tags.splice(index, 1)
-        dispatch.ui.set({ noticeMessage: `Tag merged into existing tag ‘${name}.’` })
+        dispatch.ui.set({
+          noticeMessage: i18n.t('notices:tag.merged', {
+            name,
+            defaultValue: 'Tag merged into existing tag ‘{{name}}.’',
+          }),
+        })
       } else {
         // rename
         const result = await graphQLRenameTag(tag.name, name, accountId)
         if (result === 'ERROR' || !result?.data?.data?.renameTag) {
-          dispatch.ui.set({ errorMessage: `Your tag (${name}) could not be renamed.` })
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:tag.renameError', {
+              name,
+              defaultValue: 'Your tag ({{name}}) could not be renamed.',
+            }),
+          })
           return
         }
         tags[index].name = name

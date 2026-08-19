@@ -1,9 +1,9 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { Box, Divider, Typography, InputLabel } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { selectLimitsLookup, selectPermissions } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
@@ -33,15 +33,55 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const mobile = containerWidth < MOBILE_WIDTH
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
-  const css = useStyles()
+  const { t } = useTranslation()
 
   const onCreate = async tag => await dispatch.tags.create({ tag, accountId })
 
   return (
-    <Box className={css.actions} ref={containerRef}>
+    <Box
+      ref={containerRef}
+      sx={theme => ({
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderTop: `1px solid ${theme.palette.white.main}`,
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: theme.palette.primary.main,
+        borderRadius: `${radius.lg}px`,
+        marginLeft: `${spacing.sm}px`,
+        marginRight: `${spacing.sm}px`,
+        marginBottom: `${spacing.xs}px`,
+        paddingLeft: `${spacing.sm}px`,
+        paddingRight: `${spacing.sm}px`,
+        zIndex: 10,
+        '& .MuiTypography-subtitle1': {
+          marginTop: `${spacing.xs}px`,
+          marginBottom: `${spacing.xs}px`,
+          paddingLeft: `${spacing.sm}px`,
+          fontWeight: 800,
+          color: theme.palette.alwaysWhite.main,
+        },
+        '& .MuiInputLabel-root': {
+          color: theme.palette.alwaysWhite.main,
+          marginRight: `${spacing.xs}px`,
+          transform: 'translate(0, 3px) scale(0.75)',
+        },
+        '& > div + div': {
+          marginLeft: `${-spacing.xs}px`,
+        },
+        '& .MuiDivider-root': {
+          height: '1.5em',
+          backgroundColor: theme.palette.alwaysWhite.main,
+          marginLeft: `${spacing.sm}px`,
+          marginRight: `${spacing.sm}px`,
+          opacity: 0.3,
+        },
+      })}
+    >
       <IconButton
         icon="times"
-        title="Clear selection"
+        title={t('deviceList.clearSelection', 'Clear selection')}
         color="alwaysWhite"
         placement="bottom"
         onClick={() => {
@@ -52,18 +92,18 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
       <Title sx={{ flexGrow: 0 }}>
         <Typography variant="subtitle1">
           {selected.length}&nbsp;
-          {mobile ? <Icon name="check" inline /> : 'Selected'}
+          {mobile ? <Icon name="check" inline /> : t('deviceList.selected', 'Selected')}
         </Typography>
       </Title>
       <Box sx={{ flexGrow: 1 }} />
       {feature.tagging && canEdit && (
         <>
-          {mobile || <InputLabel shrink>tags</InputLabel>}
+          {!mobile && <InputLabel shrink>{t('deviceList.tagsLabel', 'tags')}</InputLabel>}
           <TagEditor
             button="plus"
             tags={tags}
             buttonProps={{
-              title: 'Add Tag',
+              title: t('deviceList.addTag', 'Add Tag'),
               color: 'alwaysWhite',
               placement: 'bottom',
               loading: adding,
@@ -75,11 +115,11 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           />
           <TagEditor
             button="minus"
-            placeholder="Remove a tag..."
+            placeholder={t('deviceList.removeTagPlaceholder', 'Remove a tag...')}
             allowAdding={false}
             tags={getSelectedTags(devices, selected)}
             buttonProps={{
-              title: 'Remove Tag',
+              title: t('deviceList.removeTag', 'Remove Tag'),
               color: 'alwaysWhite',
               placement: 'bottom',
               loading: removing,
@@ -95,11 +135,11 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
       {permissions.includes('SCRIPTING') && !mobile && (
         <>
           <InputLabel shrink sx={{ ml: 2 }}>
-            script
+            {t('deviceList.scriptLabel', 'script')}
           </InputLabel>
           <IconButton
             icon="chevron-right"
-            title="Choose Script"
+            title={t('deviceList.chooseScript', 'Choose Script')}
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
@@ -107,7 +147,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           />
           <IconButton
             icon="plus"
-            title="New Script"
+            title={t('deviceList.newScript', 'New Script')}
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
@@ -120,44 +160,3 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
     </Box>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  actions: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTop: `1px solid ${palette.white.main}`,
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: palette.primary.main,
-    borderRadius: radius.lg,
-    marginLeft: spacing.sm,
-    marginRight: spacing.sm,
-    marginBottom: spacing.xs,
-    paddingLeft: spacing.sm,
-    paddingRight: spacing.sm,
-    zIndex: 10,
-    '& .MuiTypography-subtitle1': {
-      marginTop: spacing.xs,
-      marginBottom: spacing.xs,
-      paddingLeft: spacing.sm,
-      fontWeight: 800,
-      color: palette.alwaysWhite.main,
-    },
-    '& .MuiInputLabel-root': {
-      color: palette.alwaysWhite.main,
-      marginRight: spacing.xs,
-      transform: 'translate(0, 3px) scale(0.75)',
-    },
-    '& > div + div': {
-      marginLeft: -spacing.xs,
-    },
-    '& .MuiDivider-root': {
-      height: '1.5em',
-      backgroundColor: palette.alwaysWhite.main,
-      marginLeft: spacing.sm,
-      marginRight: spacing.sm,
-      opacity: 0.3,
-    },
-  },
-}))

@@ -1,5 +1,4 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { List, ListItem } from '@mui/material'
 import { spacing } from '../styling'
 import { Quote } from './Quote'
@@ -9,19 +8,13 @@ type Props = {
 }
 
 export const ListItemQuote: React.FC<Props> = ({ children }) => {
-  const css = useStyles()
   return (
-    <ListItem className={css.group} dense disablePadding>
+    <ListItem sx={{ marginBottom: `${spacing.sm}px` }} dense disablePadding>
       <Quote margin={null} noInset indent="listItem">
-        <List className={css.indent} disablePadding>
+        <List sx={{ marginRight: `${-spacing.md}px`, marginTop: `${spacing.xs}px` }} disablePadding>
           {children}
         </List>
       </Quote>
     </ListItem>
   )
 }
-
-const useStyles = makeStyles({
-  indent: { marginRight: -spacing.md, marginTop: spacing.xs },
-  group: { marginBottom: spacing.sm },
-})

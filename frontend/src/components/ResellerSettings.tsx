@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dispatch } from '../store'
 import { Stack, List, ListSubheader, Paper } from '@mui/material'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
@@ -7,17 +8,18 @@ import { useDispatch } from 'react-redux'
 import { lightColors, darkColors, radius } from '../styling'
 
 export const ResellerSettings: React.FC<{ reseller?: IReseller | null }> = ({ reseller }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
 
   if (!reseller) return null
 
   return (
     <List>
-      <ListSubheader>Reseller</ListSubheader>
+      <ListSubheader>{t('resellerSettings.reseller', 'Reseller')}</ListSubheader>
       <InlineTextFieldSetting
         icon="at"
         value={reseller.logoUrl}
-        label="Logo URL"
+        label={t('resellerSettings.logoUrl', 'Logo URL')}
         resetValue={reseller.logoUrl}
         onSave={value => dispatch.organization.setReseller({ logoUrl: value.toString() })}
       />

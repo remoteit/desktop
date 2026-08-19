@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import useResizeObserver from 'use-resize-observer'
-import { makeStyles } from '@mui/styles'
 import { replaceHost } from '@common/nameHelper'
 import { Application } from '@common/applications'
-import { Typography, Tooltip, Collapse, Paper, Box, alpha } from '@mui/material'
+import { Typography, Tooltip, Collapse, Paper, Box, alpha, Theme } from '@mui/material'
 import { copyReady, getEndpoint, isSecureReverseProxy } from '../helpers/connectionHelper'
 import { LaunchQuickSelect } from './LaunchQuickSelect'
 import { CopyIconButton } from '../buttons/CopyIconButton'
@@ -15,6 +15,24 @@ import { Gutters } from './Gutters'
 import { spacing } from '../styling'
 import { Icon } from './Icon'
 
+const showSx = { opacity: 1, position: 'absolute' } as const
+const hideSx = { opacity: 0, position: 'absolute', pointerEvents: 'none' } as const
+const inactiveSx = (theme: Theme) => ({ color: alpha(theme.palette.alwaysWhite.main, 0.25) })
+const h3Sx = {
+  wordBreak: 'break-word',
+  overflow: 'hidden',
+  fontWeight: 500,
+  lineHeight: '1.33em',
+  textOverflow: 'ellipsis',
+  display: '-webkit-box',
+  transition: 'height 200ms',
+  marginTop: `${spacing.xs}px`,
+  marginBottom: `${spacing.xxs}px`,
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+  '& span': { wordBreak: 'break-word' },
+} as const
+
 type Props = {
   showTitle?: string
   show?: boolean
@@ -25,6 +43,7 @@ type Props = {
 }
 
 export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, connection, session, children }) => {
+  const { t } = useTranslation()
   const basicRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
   const launchRef = useRef<HTMLDivElement>(null)
@@ -32,7 +51,6 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   const [hover, setHover] = useState<'host' | 'port' | 'endpoint' | 'launch' | 'copy' | undefined>()
   const [copied, setCopied] = useState<string | undefined>()
   const [displayHeight, setDisplayHeight] = useState<number>(33)
-  const css = useStyles()
 
   const measure = () => {
     const height = Math.max(
@@ -60,22 +78,24 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   const disabled = !(connection?.enabled || session) || !connection?.online
   const canCopy = copyReady(connection)
   const endpoint = getEndpoint(name, port)
-  const endpointName = (connection?.public || connection?.connectLink ? 'Public' : 'Local') + ' Endpoint'
+  const endpointName = connection?.public || connection?.connectLink
+    ? t('connectionDetails.publicEndpoint', 'Public Endpoint')
+    : t('connectionDetails.localEndpoint', 'Local Endpoint')
   const secureReverseProxy = isSecureReverseProxy(app.string)
   const secureIcon = secureReverseProxy === false && (
-    <Tooltip title="Local connection unencrypted">
+    <Tooltip title={t('connectionDetails.unencrypted', 'Local connection unencrypted')}>
       <Icon name="triangle-exclamation" size="base" type="solid" inlineLeft />
     </Tooltip>
   )
 
   const basicDisplay = (
-    <div ref={basicRef} className={hover ? css.hide : css.show}>
+    <Box ref={basicRef} sx={hover ? hideSx : showSx}>
       <Typography variant="h5" color="alwaysWhite.main">
         {endpointName} {copied}
       </Typography>
       <Typography
         variant="h3"
-        className={css.h3}
+        sx={h3Sx}
         onClick={() => {
           if (!canCopy) return
           buttonRef.current?.click()
@@ -85,67 +105,78 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
         {secureIcon}
         {endpoint}
       </Typography>
-    </div>
+    </Box>
   )
 
   const nameDisplay = (
-    <div className={hover === 'host' ? css.show : css.hide}>
+    <Box sx={hover === 'host' ? showSx : hideSx}>
       <Typography variant="h5" color="alwaysWhite.main">
-        Host
+        {t('connectionDetails.host', 'Host')}
       </Typography>
-      <Typography variant="h3" className={css.h3}>
+      <Typography variant="h3" sx={h3Sx}>
         {secureIcon}
         {name && <span>{name}</span>}
-        {port && <span className={css.inactive}>:{port}</span>}
+        {port && (
+          <Box component="span" sx={inactiveSx}>
+            :{port}
+          </Box>
+        )}
       </Typography>
-    </div>
+    </Box>
   )
 
   const portDisplay = (
-    <div className={hover === 'port' ? css.show : css.hide}>
+    <Box sx={hover === 'port' ? showSx : hideSx}>
       <Typography variant="h5" color="alwaysWhite.main">
-        Port
+        {t('connectionDetails.port', 'Port')}
       </Typography>
-      <Typography variant="h3" className={css.h3}>
+      <Typography variant="h3" sx={h3Sx}>
         {secureIcon}
-        <span className={css.inactive}>{name}:</span>
+        <Box component="span" sx={inactiveSx}>
+          {name}:
+        </Box>
         <span>{port}</span>
       </Typography>
-    </div>
+    </Box>
   )
 
   const copyDisplay = (
-    <div ref={copyRef} className={hover === 'endpoint' ? css.show : css.hide}>
+    <Box ref={copyRef} sx={hover === 'endpoint' ? showSx : hideSx}>
       <Typography variant="h5" color="alwaysWhite.main">
         {endpointName}
       </Typography>
-      <Typography variant="h3" className={css.h3}>
+      <Typography variant="h3" sx={h3Sx}>
         {secureIcon}
         <span>{endpoint}</span>
       </Typography>
-    </div>
+    </Box>
   )
 
   const launchDisplay = (
-    <div ref={launchRef} className={hover === 'launch' || hover === 'copy' ? css.show : css.hide}>
+    <Box ref={launchRef} sx={hover === 'launch' || hover === 'copy' ? showSx : hideSx}>
       <Typography variant="h5" color="alwaysWhite.main">
         {app.contextTitle}
       </Typography>
-      <Typography variant="h3" className={css.h3}>
+      <Typography variant="h3" sx={h3Sx}>
         {secureIcon}
         <span>{app.sshConfigString}</span>
       </Typography>
-    </div>
+    </Box>
   )
 
   return (
     <Collapse in={show}>
-      <Paper className={css.paper} elevation={0}>
-        <Box className={css.address} sx={{ bgcolor: disabled ? 'gray.main' : 'primary.main' }}>
+      <Paper sx={{ marginTop: `${spacing.md}px`, overflow: 'hidden' }} elevation={0}>
+        <Box
+          sx={[
+            { color: 'alwaysWhite.main', padding: `${spacing.xs}px`, '& label': { color: 'alwaysWhite.main' } },
+            { bgcolor: disabled ? 'gray.main' : 'primary.main' },
+          ]}
+        >
           {!!showTitle ? (
             <Gutters size="md">
               <Typography variant="h5" color="alwaysWhite.main">
-                User
+                {t('connectionDetails.user', 'User')}
               </Typography>
               <Typography variant="h2">{showTitle}</Typography>
             </Gutters>
@@ -170,30 +201,38 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                 instructions={
                   <>
                     <Typography variant="h3" gutterBottom>
-                      <b>Using a connection</b>
+                      <b>{t('connectionDetails.guideTitle', 'Using a connection')}</b>
                     </Typography>
                     <DesktopUI hide>
                       <Typography variant="body2" gutterBottom>
-                        A connection was created to this service.
+                        {t('connectionDetails.guideCreatedBrowser', 'A connection was created to this service.')}
                       </Typography>
                     </DesktopUI>
                     <DesktopUI>
                       <Typography variant="body2" gutterBottom>
-                        A fixed endpoint has been generated.
+                        {t('connectionDetails.guideCreatedDesktop', 'A fixed endpoint has been generated.')}
                       </Typography>
                     </DesktopUI>
                     <Typography variant="body2" gutterBottom>
-                      Copy the endpoint or launch the application according to the
-                      <cite> launch method </cite>
-                      configured in the connection configuration.
+                      {t('connectionDetails.guideCopyOrLaunchBefore', 'Copy the endpoint or launch the application according to the')}
+                      <cite> {t('connectionDetails.guideLaunchMethod', 'launch method')} </cite>
+                      {t('connectionDetails.guideCopyOrLaunchAfter', 'configured in the connection configuration.')}
                     </Typography>
                   </>
                 }
               >
-                <Gutters size="md" top="sm" bottom="xs" className={css.buttons}>
+                <Gutters
+                  size="md"
+                  top="sm"
+                  bottom="xs"
+                  sx={{ display: 'flex', justifyContent: 'space-between', '& > :first-of-type': { flexGrow: 1 } }}
+                >
                   <span>
                     <Typography variant="h5" color="alwaysWhite.main" sx={{ my: 0.5 }}>
-                      Copy {hover === 'launch' ? '' : hover === 'copy' ? app.contextTitle : hover}
+                      {t('connectionDetails.copyLabel', {
+                        target: hover === 'launch' ? '' : hover === 'copy' ? app.contextTitle : hover,
+                        defaultValue: 'Copy {{target}}',
+                      })}
                     </Typography>
                     {canCopy && (
                       <>
@@ -240,9 +279,12 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                     )}
                   </span>
                   {app.canShare && (
-                    <span className={css.share}>
+                    <Box
+                      component="span"
+                      sx={{ display: 'inline-flex', alignItems: 'center', flexDirection: 'column' }}
+                    >
                       <Typography variant="h5" color="alwaysWhite.main" sx={{ my: 0.5 }}>
-                        Share
+                        {t('connectionDetails.share', 'Share')}
                       </Typography>
                       <CopyIconButton
                         color="alwaysWhite"
@@ -252,10 +294,10 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                         onMouseEnter={() => setHover('launch')}
                         onMouseLeave={() => setHover(undefined)}
                       />
-                    </span>
+                    </Box>
                   )}
                   {app.launchType !== 'NONE' && (
-                    <span className={css.marginLeft}>
+                    <Box component="span" sx={{ marginLeft: `${spacing.md}px` }}>
                       <LaunchQuickSelect app={app} disabled={disabled} />
                       {app.canLaunch ? (
                         <LaunchButton
@@ -268,7 +310,10 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                         />
                       ) : (
                         <IconButton
-                          title="To launch, change your launch type to URL or download the desktop app"
+                          title={t(
+                            'connectionDetails.cannotLaunch',
+                            'To launch, change your launch type to URL or download the desktop app'
+                          )}
                           name="ban"
                           type="regular"
                           color="alwaysWhite"
@@ -276,7 +321,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                           fixedWidth
                         />
                       )}
-                    </span>
+                    </Box>
                   )}
                 </Gutters>
               </GuideBubble>
@@ -288,54 +333,3 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
     </Collapse>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  show: {
-    opacity: 1,
-    position: 'absolute',
-  },
-  hide: {
-    opacity: 0,
-    position: 'absolute',
-    pointerEvents: 'none',
-  },
-  inactive: {
-    color: alpha(palette.alwaysWhite.main, 0.25),
-  },
-  h3: {
-    wordBreak: 'break-word',
-    overflow: 'hidden',
-    fontWeight: 500,
-    lineHeight: '1.33em',
-    textOverflow: 'ellipsis',
-    display: '-webkit-box',
-    transition: 'height 200ms',
-    marginTop: spacing.xs,
-    marginBottom: spacing.xxs,
-    '-webkit-line-clamp': 2,
-    '-webkit-box-orient': 'vertical',
-    '& span': { wordBreak: 'break-word' },
-  },
-  address: {
-    color: palette.alwaysWhite.main,
-    padding: spacing.xs,
-    '& label': { color: palette.alwaysWhite.main },
-  },
-  paper: {
-    marginTop: spacing.md,
-    overflow: 'hidden',
-  },
-  buttons: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    '& > :first-of-type': { flexGrow: 1 },
-  },
-  share: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    flexDirection: 'column',
-  },
-  marginLeft: {
-    marginLeft: spacing.md,
-  },
-}))

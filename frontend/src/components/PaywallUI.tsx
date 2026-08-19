@@ -34,15 +34,3 @@ export const PaywallUI: React.FC<Props> = ({
     </Tooltip>
   )
 }
-
-// const useStyles = makeStyles(({ palette }) => ({
-//   limited: {
-//     background: `repeating-linear-gradient(
-//       45deg,
-//       transparent,
-//       transparent 10px,
-//       ${palette.warningHighlight.main} 10px,
-//       ${palette.warningHighlight.main} 20px
-//     )`,
-//   },
-// }))

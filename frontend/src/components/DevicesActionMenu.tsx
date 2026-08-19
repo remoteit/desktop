@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { Menu, MenuItem, ListSubheader, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
@@ -9,6 +10,7 @@ import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 export const DevicesActionMenu: React.FC = () => {
+  const { t } = useTranslation()
   const selected = useSelector((state: State) => state.ui.selected)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
@@ -16,13 +18,22 @@ export const DevicesActionMenu: React.FC = () => {
   const [confirm, setConfirm] = useState<boolean>(false)
 
   const handleClose = () => setAnchorEl(null)
-  const count = `${selected.length} device${selected.length === 1 ? '' : 's'}`
+  const selectedLabel = t('devicesActionMenu.selectedCount', {
+    count: selected.length,
+    defaultValue_one: '{{count}} device selected',
+    defaultValue_other: '{{count}} devices selected',
+  })
+  const deleteLabel = t('devicesActionMenu.deleteCount', {
+    count: selected.length,
+    defaultValue_one: 'Delete {{count}} device',
+    defaultValue_other: 'Delete {{count}} devices',
+  })
 
   return (
     <>
       <IconButton
         icon="ellipsis-v"
-        title="More"
+        title={t('devicesActionMenu.more', 'More')}
         color="alwaysWhite"
         placement="bottom"
         disabled={!selected.length}
@@ -38,12 +49,12 @@ export const DevicesActionMenu: React.FC = () => {
         autoFocus={false}
         elevation={2}
       >
-        <ListSubheader sx={{ backgroundColor: 'transparent' }}>{count} selected</ListSubheader>
+        <ListSubheader sx={{ backgroundColor: 'transparent' }}>{selectedLabel}</ListSubheader>
         <MenuItem dense to="/devices/transfer" component={Link} onClick={handleClose}>
           <ListItemIcon>
             <Icon name="arrow-turn-down-right" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Transfer" />
+          <ListItemText primary={t('devicesActionMenu.transfer', 'Transfer')} />
         </MenuItem>
         <MenuItem
           dense
@@ -55,13 +66,13 @@ export const DevicesActionMenu: React.FC = () => {
           <ListItemIcon>
             <Icon name="trash" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Delete" />
+          <ListItemText primary={t('devicesActionMenu.delete', 'Delete')} />
         </MenuItem>
       </Menu>
       <Confirm
         open={confirm}
-        title="Confirm Device Deletion"
-        action={`Delete ${count}`}
+        title={t('devicesActionMenu.confirmTitle', 'Confirm Device Deletion')}
+        action={deleteLabel}
         color="error"
         onConfirm={async () => {
           setConfirm(false)
@@ -71,9 +82,11 @@ export const DevicesActionMenu: React.FC = () => {
         onDeny={() => setConfirm(false)}
       >
         <Notice severity="error" gutterBottom fullWidth>
-          Deletion is irreversible and may require device access for recovery.
+          {t('devicesActionMenu.deleteWarning', 'Deletion is irreversible and may require device access for recovery.')}
         </Notice>
-        <Typography variant="body2">Uninstall the Remote.It agent before deletion for best results.</Typography>
+        <Typography variant="body2">
+          {t('devicesActionMenu.uninstallHint', 'Uninstall the Remote.It agent before deletion for best results.')}
+        </Typography>
       </Confirm>
     </>
   )

@@ -1,16 +1,17 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Redirect } from 'react-router-dom'
 import { useHistory } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
 import { Dispatch, State } from '../store'
 import { selectOrganization } from '../selectors/organizations'
-import { TextField, Typography, Button } from '@mui/material'
+import { Box, TextField, Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { spacing } from '../styling'
 import { Gutters } from '../components/Gutters'
 import { Body } from '../components/Body'
 
 export const OrganizationEmptyPage: React.FC = () => {
+  const { t } = useTranslation()
   const { username, hasOrganization } = useSelector((state: State) => ({
     username: (state.auth.user?.email || '').split('@')[0],
     hasOrganization: selectOrganization(state)?.id && state.organization.initialized,
@@ -18,19 +19,27 @@ export const OrganizationEmptyPage: React.FC = () => {
   const [name, setName] = React.useState<string>(`${username}'s org`)
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
 
   if (hasOrganization) return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
   return (
     <Body center>
       <Typography variant="body2" align="center" color="textSecondary">
-        Create an organization to <br />
-        automatically share devices to your members.
+        {t('organizationEmptyPage.createOrgLine1', 'Create an organization to')} <br />
+        {t('organizationEmptyPage.createOrgLine2', 'automatically share devices to your members.')}
       </Typography>
       <Gutters bottom="xxl">
-        <form
-          className={css.form}
+        <Box
+          component="form"
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            '& .MuiTextField-root': { width: 260, margin: `${spacing.xs}px` },
+          }}
           onSubmit={async event => {
             event.preventDefault()
             await dispatch.organization.setOrganization({ name })
@@ -39,32 +48,18 @@ export const OrganizationEmptyPage: React.FC = () => {
         >
           <TextField
             autoFocus
-            label="Name"
+            label={t('organizationEmptyPage.name', 'Name')}
             variant="filled"
             value={name}
             placeholder={name}
             onChange={event => setName(event.target.value.toString())}
           />
           <Button variant="contained" color="primary" type="submit" size="large">
-            Create
+            {t('organizationEmptyPage.create', 'Create')}
           </Button>
-        </form>
+        </Box>
       </Gutters>
     </Body>
   )
 }
 
-const useStyles = makeStyles({
-  form: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    '& .MuiTextField-root': {
-      width: 260,
-      margin: spacing.xs,
-    },
-  },
-})

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
+import { useTranslation } from 'react-i18next'
 import { MAX_DESCRIPTION_LENGTH } from '../constants'
 import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '@common/constants'
-import { Typography, TextField, List, ListItem, Button } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { Typography, TextField, List, ListItem, Button, Theme } from '@mui/material'
 import { useURLForm } from '../hooks/useURLForm'
 import { AddFromNetwork } from './AddFromNetwork'
 import { useApplication } from '../hooks/useApplication'
@@ -51,6 +51,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const { t } = useTranslation()
   const { ui } = useDispatch<Dispatch>()
   const applicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const saving = useSelector(
@@ -84,7 +85,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const [urlField, setUrlField, urlError] = useURLForm(form, setForm, application.urlForm)
   const appType = findType(applicationTypes, form?.typeID)
   const changed = !isEqual(form, defaultForm)
-  const css = useStyles()
 
   disabled = disabled || saving
 
@@ -115,7 +115,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
         setDefaultForm(newForm)
       }}
     >
-      <AccordionMenuItem gutters subtitle="Service Setup" defaultExpanded>
+      <AccordionMenuItem gutters subtitle={t('serviceForm.serviceSetup', 'Service Setup')} defaultExpanded>
         <List>
           {editable && (
             <>
@@ -160,34 +160,38 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                           color="primary"
                           onClick={() => portScan({ port: form.port, host: form.host })}
                         >
-                          Retry
+                          {t('serviceForm.retry', 'Retry')}
                         </Button>
                       )
                     }
                   >
                     {portReachable === 'REACHABLE' ? (
                       <>
-                        Service found on&nbsp;
+                        {t('serviceForm.serviceFoundOn', 'Service found on')}&nbsp;
                         <b>
                           {form.host}:{form.port}
                         </b>
                       </>
                     ) : (
                       <>
-                        No service found running on {form.host}:{form.port}.
+                        {t('serviceForm.noServiceFoundOn', {
+                          host: form.host,
+                          port: form.port,
+                          defaultValue: 'No service found running on {{host}}:{{port}}.',
+                        })}
                         <AddFromNetwork allowScanning={thisDevice} />
-                        <em>Double check that the host application running.</em>
+                        <em>{t('serviceForm.doubleCheckRunning', 'Double check that the host application running.')}</em>
                       </>
                     )}
                   </Notice>
                 </ListItem>
               )}
               {application.urlForm ? (
-                <ListItem className={css.field}>
+                <ListItem sx={fieldSx}>
                   <TextField
                     required
                     value={urlField}
-                    label="Service URL"
+                    label={t('serviceForm.serviceUrl', 'Service URL')}
                     variant="filled"
                     error={!!urlError}
                     disabled={disabled}
@@ -204,17 +208,17 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                     }}
                   />
                   <Typography variant="caption">
-                    Full URL of the service you want to connect to. Example: <b>https://localhost:8001/api/dashboard</b>{' '}
-                    or
+                    {t('serviceForm.serviceUrlHelp', 'Full URL of the service you want to connect to. Example:')}{' '}
+                    <b>https://localhost:8001/api/dashboard</b> {t('serviceForm.or', 'or')}
                     <b> http://192.168.1.68/ui/login</b>.
                   </Typography>
                 </ListItem>
               ) : (
                 <>
-                  <ListItem className={css.field}>
+                  <ListItem sx={fieldSx}>
                     <TextField
                       required
-                      label="Service Host"
+                      label={t('serviceForm.serviceHost', 'Service Host')}
                       value={form.host || ''}
                       disabled={disabled}
                       variant="filled"
@@ -230,17 +234,19 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                       }}
                     />
                     <Typography variant="caption">
-                      Enter a local network IP address or fully qualified domain name to configure this as a jump
-                      service to a system on your local network.
+                      {t(
+                        'serviceForm.serviceHostHelp',
+                        'Enter a local network IP address or fully qualified domain name to configure this as a jump service to a system on your local network.'
+                      )}
                       <br />
-                      <i>AWS example:</i>
+                      <i>{t('serviceForm.awsExample', 'AWS example:')}</i>
                       <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
                     </Typography>
                   </ListItem>
-                  <ListItem className={css.field}>
+                  <ListItem sx={fieldSx}>
                     <TextField
                       required
-                      label="Service Port"
+                      label={t('serviceForm.servicePort', 'Service Port')}
                       value={form.port || ''}
                       disabled={disabled}
                       variant="filled"
@@ -255,17 +261,19 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                       }}
                     />
                     <Typography variant="caption">
-                      Port the application's service is running on. Do not change this unless you know it is running on
-                      a custom port.
+                      {t(
+                        'serviceForm.servicePortHelp',
+                        "Port the application's service is running on. Do not change this unless you know it is running on a custom port."
+                      )}
                     </Typography>
                   </ListItem>
                 </>
               )}
             </>
           )}
-          <ListItem className={css.field}>
+          <ListItem sx={fieldSx}>
             <TextField
-              label="Service Name"
+              label={t('serviceForm.serviceName', 'Service Name')}
               value={form.name || ''}
               disabled={disabled}
               error={!!error}
@@ -281,10 +289,10 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
             />
           </ListItem>
           {!compact && (
-            <ListItem className={css.field}>
+            <ListItem sx={fieldSx}>
               <TextField
                 multiline
-                label="Service Description"
+                label={t('serviceForm.serviceDescription', 'Service Description')}
                 value={form.attributes.description || ''}
                 disabled={disabled}
                 variant="filled"
@@ -296,21 +304,22 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 }}
               />
               <Typography variant="caption">
-                Service description or connection instructions.
-                <i>Optional</i>
+                {t('serviceForm.serviceDescriptionHelp', 'Service description or connection instructions.')}
+                <i>{t('serviceForm.optional', 'Optional')}</i>
               </Typography>
             </ListItem>
           )}
           {editable ? (
             <ListItemCheckbox
               checked={form.enabled}
-              label="Enable service"
+              label={t('serviceForm.enableService', 'Enable service')}
               subLabel={
                 <>
-                  Disabling your service will take it offline.&nbsp;
+                  {t('serviceForm.disableServiceHelp', 'Disabling your service will take it offline.')}&nbsp;
                   <i>
-                    Service is
-                    {form.enabled ? ' enabled' : ' disabled'}
+                    {form.enabled
+                      ? t('serviceForm.serviceIsEnabled', 'Service is enabled')
+                      : t('serviceForm.serviceIsDisabled', 'Service is disabled')}
                   </i>
                 </>
               }
@@ -320,15 +329,20 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           ) : (
             <ListItem>
               <Notice>
-                This service isn't remote configurable.
-                <em>Update it's device package to the latest version to be able to remote configure it.</em>
+                {t('serviceForm.notRemoteConfigurable', "This service isn't remote configurable.")}
+                <em>
+                  {t(
+                    'serviceForm.updatePackageHelp',
+                    "Update it's device package to the latest version to be able to remote configure it."
+                  )}
+                </em>
               </Notice>
             </ListItem>
           )}
         </List>
       </AccordionMenuItem>
       {!compact && (
-        <AccordionMenuItem subtitle="Setup connection defaults" gutters>
+        <AccordionMenuItem subtitle={t('serviceForm.setupConnectionDefaults', 'Setup connection defaults')} gutters>
           <List>
             <ServiceAttributesForm
               connection={{
@@ -354,34 +368,34 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           color="primary"
           disabled={disabled || !!error || !changed /*  || fieldError */}
         >
-          {saving ? 'Saving...' : changed ? 'Save' : 'Saved'}
+          {saving
+            ? t('common.saving', 'Saving...')
+            : changed
+            ? t('common.save', 'Save')
+            : t('common.saved', 'Saved')}
         </Button>
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={onCancel}>{t('common.cancel', 'Cancel')}</Button>
         {/* <Pre form={form} /> */}
       </Gutters>
     </form>
   )
 }
 
-export const useStyles = makeStyles(({ breakpoints }) => ({
-  field: {
-    paddingRight: spacing.lg,
-    paddingLeft: spacing.md,
-    alignItems: 'flex-start',
-    '& > *': {
-      width: '50%',
-      maxWidth: 400,
-    },
-    '& > span.MuiTypography-root': {
-      width: `calc(50% - ${spacing.lg}px)`,
-      marginLeft: spacing.lg,
-    },
+export const fieldSx = (theme: Theme) => ({
+  paddingRight: `${spacing.lg}px`,
+  paddingLeft: `${spacing.md}px`,
+  alignItems: 'flex-start',
+  '& > *': {
+    width: '50%',
+    maxWidth: 400,
   },
-  [breakpoints.down('sm')]: {
-    field: {
-      flexDirection: 'column',
-      '& > *': { width: '100%' },
-      '& > span.MuiTypography-root': { margin: spacing.xs, width: '100%', marginBottom: spacing.md },
-    },
+  '& > span.MuiTypography-root': {
+    width: `calc(50% - ${spacing.lg}px)`,
+    marginLeft: `${spacing.lg}px`,
   },
-}))
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    '& > *': { width: '100%' },
+    '& > span.MuiTypography-root': { margin: `${spacing.xs}px`, width: '100%', marginBottom: `${spacing.md}px` },
+  },
+})

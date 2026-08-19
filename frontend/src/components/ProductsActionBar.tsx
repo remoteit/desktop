@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/styles'
 import { MOBILE_WIDTH } from '../constants'
 import { useMediaQuery, Box, Typography, Collapse } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { dispatch } from '../store'
@@ -12,6 +12,7 @@ import { Title } from './Title'
 import { Icon } from './Icon'
 import { spacing, radius } from '../styling'
 import { getProductsSelected } from '../selectors/products'
+import { selectPermissions } from '../selectors/organizations'
 
 type Props = {
   select?: boolean
@@ -19,18 +20,13 @@ type Props = {
 
 export const ProductsActionBar: React.FC<Props> = ({ select }) => {
   const selected = useSelector(getProductsSelected)
+  const admin = useSelector(selectPermissions).includes('ADMIN')
   const [deleting, setDeleting] = useState(false)
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const history = useHistory()
-  const location = useLocation()
-  const css = useStyles()
+  const { t } = useTranslation()
 
-  const clearSelectMode = () => {
-    const newParams = new URLSearchParams(location.search)
-    newParams.delete('select')
-    const search = newParams.toString()
-    history.push(`${location.pathname}${search ? `?${search}` : ''}`)
-  }
+  const clearSelectMode = () => history.push('/products')
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -41,34 +37,68 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
 
   return (
     <Collapse in={!!(select || selected.length)} mountOnEnter unmountOnExit>
-      <Box className={css.actions}>
+      <Box
+        sx={theme => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderTop: `1px solid ${theme.palette.white.main}`,
+          position: 'relative',
+          overflow: 'hidden',
+          backgroundColor: theme.palette.primary.main,
+          borderRadius: `${radius.lg}px`,
+          marginLeft: `${spacing.sm}px`,
+          marginRight: `${spacing.sm}px`,
+          marginBottom: `${spacing.xs}px`,
+          paddingRight: `${spacing.sm}px`,
+          zIndex: 10,
+          '& .MuiTypography-subtitle1': {
+            marginTop: `${spacing.xs}px`,
+            marginBottom: `${spacing.xs}px`,
+            fontWeight: 800,
+            color: theme.palette.alwaysWhite.main,
+          },
+        })}
+      >
         <Title>
           <Typography variant="subtitle1">
             {selected.length}&nbsp;
-            {mobile ? <Icon name="check" inline /> : 'Selected'}
+            {mobile ? <Icon name="check" inline /> : t('productsActionBar.selected', 'Selected')}
           </Typography>
         </Title>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ConfirmIconButton
             icon="trash"
-            title="Delete selected"
+            title={
+              admin
+                ? t('productsActionBar.deleteSelected', 'Delete selected')
+                : t('productsActionBar.adminRequired', 'Admin permissions required')
+            }
             color="alwaysWhite"
             placement="bottom"
-            disabled={!selected.length}
+            forceTitle
+            disabled={!admin || !selected.length}
             loading={deleting}
             onClick={handleDelete}
             confirmProps={{
-              title: 'Confirm Product Deletion',
+              title: t('productsActionBar.confirmTitle', 'Confirm Product Deletion'),
               color: 'error',
-              action: `Delete ${selected.length} product${selected.length === 1 ? '' : 's'}`,
+              action: t('productsActionBar.confirmAction', {
+                count: selected.length,
+                defaultValue_one: 'Delete {{count}} product',
+                defaultValue_other: 'Delete {{count}} products',
+              }),
               children: (
                 <>
                   <Notice severity="error" gutterBottom fullWidth>
-                    This action cannot be undone.
+                    {t('common.cannotBeUndone', 'This action cannot be undone.')}
                   </Notice>
                   <Typography variant="body2">
-                    Are you sure you want to delete {selected.length} product
-                    {selected.length === 1 ? '' : 's'}?
+                    {t('productsActionBar.confirmBody', {
+                      count: selected.length,
+                      defaultValue_one: 'Are you sure you want to delete {{count}} product?',
+                      defaultValue_other: 'Are you sure you want to delete {{count}} products?',
+                    })}
                   </Typography>
                 </>
               ),
@@ -77,7 +107,7 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
           />
           <IconButton
             icon="times"
-            title="Clear selection"
+            title={t('productsActionBar.clearSelection', 'Clear selection')}
             color="alwaysWhite"
             placement="bottom"
             onClick={() => {
@@ -90,28 +120,3 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
     </Collapse>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  actions: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTop: `1px solid ${palette.white.main}`,
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: palette.primary.main,
-    borderRadius: radius.lg,
-    marginLeft: spacing.sm,
-    marginRight: spacing.sm,
-    marginBottom: spacing.xs,
-    paddingRight: spacing.sm,
-    zIndex: 10,
-    '& .MuiTypography-subtitle1': {
-      marginTop: spacing.xs,
-      marginBottom: spacing.xs,
-      fontWeight: 800,
-      color: palette.alwaysWhite.main,
-    },
-  },
-}))
-

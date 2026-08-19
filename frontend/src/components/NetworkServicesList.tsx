@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { ListItem, ListItemIcon, Typography, Button } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { NetworkListItem } from './NetworkListItem'
 import { ClearButton } from '../buttons/ClearButton'
@@ -27,6 +28,7 @@ export const NetworkServicesList: React.FC<NetworkServicesListProps> = ({
   initialDisplayCount = 10,
   incrementCount = 10,
 }) => {
+  const { t } = useTranslation()
   const [displayCount, setDisplayCount] = useState(initialDisplayCount)
   const hasMore = displayCount < serviceIds.length
   const displayedServices = serviceIds.slice(0, displayCount)
@@ -66,10 +68,14 @@ export const NetworkServicesList: React.FC<NetworkServicesListProps> = ({
             variant="text"
             onClick={() => setDisplayCount(prev => Math.min(prev + incrementCount, serviceIds.length))}
           >
-            Show more
+            {t('networkServicesList.showMore', 'Show more')}
           </Button>
           <Typography variant="caption" flexGrow={1} textAlign="right" marginRight={2} color="gray.main">
-            {displayCount} of {serviceIds.length}
+            {t('networkServicesList.countOf', {
+              shown: displayCount,
+              total: serviceIds.length,
+              defaultValue: '{{shown}} of {{total}}',
+            })}
           </Typography>
         </ListItem>
       )}

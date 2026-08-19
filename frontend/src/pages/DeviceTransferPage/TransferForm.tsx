@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Typography, Button } from '@mui/material'
 import { ContactSelector } from '../../components/ContactSelector'
 import { useHistory } from 'react-router-dom'
@@ -27,6 +28,7 @@ export const TransferForm: React.FC<Props> = ({
   confirmContent,
   onTransfer,
 }) => {
+  const { t } = useTranslation()
   const history = useHistory()
   const [open, setOpen] = useState<boolean>(false)
   const [email, setEmail] = useState<string | undefined>()
@@ -59,10 +61,10 @@ export const TransferForm: React.FC<Props> = ({
           disabled={!email || disabled || transferring}
           variant="contained"
         >
-          {transferring ? 'Transferring...' : 'Transfer'}
+          {transferring ? t('transferForm.transferring', 'Transferring...') : t('transferForm.transfer', 'Transfer')}
         </Button>
         <Button disabled={transferring} onClick={() => history.goBack()}>
-          Cancel
+          {t('transferForm.cancel', 'Cancel')}
         </Button>
       </Gutters>
       <Confirm
@@ -73,8 +75,8 @@ export const TransferForm: React.FC<Props> = ({
         }}
         onDeny={() => setOpen(false)}
         color="error"
-        title="Are you sure?"
-        action="Transfer"
+        title={t('common.areYouSure', 'Are you sure?')}
+        action={t('transferForm.transfer', 'Transfer')}
       >
         {email && confirmContent(email)}
       </Confirm>

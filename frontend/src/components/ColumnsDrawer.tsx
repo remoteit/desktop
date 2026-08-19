@@ -1,5 +1,4 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { ListSubheader, List, ListItemText, ListItemButton, ListItemIcon, Button } from '@mui/material'
@@ -13,7 +12,6 @@ export const ColumnsDrawer: React.FC = () => {
   const attributes = useSelector(selectAllActiveAttributes).filter(a => a.column)
   const selected = useSelector((state: State) => state.ui.columns)
   const { ui, devices } = useDispatch<Dispatch>()
-  const css = useStyles()
 
   const add = name => {
     ui.setPersistent({ columns: [...selected, name] })
@@ -36,7 +34,15 @@ export const ColumnsDrawer: React.FC = () => {
 
   return (
     <Drawer menu="COLUMNS">
-      <List dense className={css.list}>
+      <List
+        dense
+        sx={{
+          padding: 0,
+          marginBottom: `${spacing.lg}px`,
+          textTransform: 'capitalize',
+          '& .MuiListSubheader-root': { display: 'flex', justifyContent: 'space-between', paddingRight: 0 },
+        }}
+      >
         <ListSubheader>
           Columns
           <Button size="small" color="primary" onClick={onReset}>
@@ -65,12 +71,3 @@ export const ColumnsDrawer: React.FC = () => {
     </Drawer>
   )
 }
-
-const useStyles = makeStyles({
-  list: {
-    padding: 0,
-    marginBottom: spacing.lg,
-    textTransform: 'capitalize',
-    '& .MuiListSubheader-root': { display: 'flex', justifyContent: 'space-between', paddingRight: 0 },
-  },
-})

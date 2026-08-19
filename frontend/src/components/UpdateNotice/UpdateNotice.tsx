@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../../store'
-import { Snackbar, Button } from '@mui/material'
+import { Snackbar, Button, SxProps, Theme } from '@mui/material'
 import { selectUpdateNotice } from '../../selectors/ui'
 import { Confirm } from '../Confirm'
 import { Notice } from '../Notice'
 import browser from '../../services/browser'
 
-export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => {
+export const UpdateNotice: React.FC<{ sx?: SxProps<Theme> }> = ({ sx }) => {
+  const { t } = useTranslation()
   const updateReady = useSelector((state: State) => selectUpdateNotice(state))
   const [confirm, setConfirm] = useState<boolean>(false)
   const [open, setOpen] = useState<boolean>(!!updateReady)
@@ -39,7 +41,7 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
     <>
       <Snackbar
         open={open}
-        className={className}
+        sx={sx}
         message={
           <Notice
             invert
@@ -50,14 +52,14 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
             fullWidth
             button={[
               <Button key="disable" size="small" color="primary" onClick={handleDisable}>
-                Disable Updates
+                {t('updateNotice.disableUpdates', 'Disable Updates')}
               </Button>,
               <Button key="restart" variant="contained" color="primary" size="small" onClick={handleClick}>
-                Install
+                {t('updateNotice.install', 'Install')}
               </Button>,
             ]}
           >
-            An update is available (v{updateReady}).
+            {t('updateNotice.updateAvailable', { version: updateReady, defaultValue: 'An update is available (v{{version}}).' })}
           </Notice>
         }
       />
@@ -66,13 +68,16 @@ export const UpdateNotice: React.FC<{ className: string }> = ({ className }) => 
           open={confirm}
           onConfirm={handleConfirm}
           onDeny={() => setConfirm(false)}
-          title="Are you sure?"
-          action="Install"
+          title={t('common.areYouSure', 'Are you sure?')}
+          action={t('updateNotice.install', 'Install')}
         >
           <Notice severity="warning" fullWidth gutterBottom>
-            Restarting while connected over a Remote.It connection could cause the connection to be permanently lost.
+            {t(
+              'updateNotice.restartWarning',
+              'Restarting while connected over a Remote.It connection could cause the connection to be permanently lost.'
+            )}
           </Notice>
-          It is recommended to have a local connection when updating.
+          {t('updateNotice.recommendLocalConnection', 'It is recommended to have a local connection when updating.')}
         </Confirm>
       )}
     </>

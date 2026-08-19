@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { State } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { MuiTelInput, matchIsValidTel } from 'mui-tel-input'
 import { selectOrganization } from '../selectors/organizations'
 import { Typography, List, ListItem, TextField, Button, Collapse, FormHelperText } from '@mui/material'
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
+  const { t } = useTranslation()
   const history = useHistory()
   const user = useSelector((state: State) => state.user)
   const organization = useSelector(selectOrganization)
@@ -69,14 +71,14 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
     <form onSubmit={handleSubmit}>
       <List disablePadding>
         <Typography variant="h3" color="textPrimary" my={2}>
-          Node Rental Form
+          {t('rentANodeForm.title', 'Node Rental Form')}
         </Typography>
         <Body maxHeight="400px" verticalOverflow>
           <ListItem disableGutters>
             <TextField
               required
               fullWidth
-              label="Device Name"
+              label={t('rentANodeForm.deviceName', 'Device Name')}
               value={form.deviceName}
               variant="filled"
               error={!!error.deviceName}
@@ -94,7 +96,7 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
             <MuiTelInput
               required
               fullWidth
-              label="Phone"
+              label={t('rentANodeForm.phone', 'Phone')}
               variant="filled"
               value={form.phone}
               defaultCountry="US"
@@ -103,7 +105,10 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
               InputLabelProps={{ shrink: true }}
               sx={{ '& .MuiInputBase-input': { paddingLeft: 0 } }}
               onChange={phone => {
-                setError({ ...error, phone: matchIsValidTel(phone) ? undefined : 'Invalid phone number' })
+                setError({
+                  ...error,
+                  phone: matchIsValidTel(phone) ? undefined : t('rentANodeForm.invalidPhone', 'Invalid phone number'),
+                })
                 setForm({ ...form, phone })
               }}
             />
@@ -114,7 +119,7 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
               multiline
               fullWidth
               maxRows={3}
-              label="SSH Public Key"
+              label={t('rentANodeForm.sshPublicKey', 'SSH Public Key')}
               value={form.sshPublicKey}
               variant="filled"
               InputLabelProps={{ shrink: true }}
@@ -124,7 +129,7 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
           </ListItem>
           <ListItemCheckbox
             disableGutters
-            label="Add a public IPv6 address"
+            label={t('rentANodeForm.addIpv6', 'Add a public IPv6 address')}
             checked={form.useIpv6}
             onClick={checked => setForm({ ...form, useIpv6: checked })}
           />
@@ -132,19 +137,22 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
             <Quote margin={null} indent="listItem">
               <TextField
                 fullWidth
-                label="Open Ports"
+                label={t('rentANodeForm.openPorts', 'Open Ports')}
                 value={form.openPorts}
                 variant="filled"
-                placeholder="All"
+                placeholder={t('rentANodeForm.all', 'All')}
                 InputLabelProps={{ shrink: true }}
                 onChange={event => setForm({ ...form, openPorts: event.target.value })}
-                helperText="Please enter a comma separated list of ports, or leave blank to open all ports."
+                helperText={t(
+                  'rentANodeForm.openPortsHelp',
+                  'Please enter a comma separated list of ports, or leave blank to open all ports.'
+                )}
               />
             </Quote>
           </Collapse>
           <ListItemCheckbox
             disableGutters
-            label="Add a public DNS address"
+            label={t('rentANodeForm.addDns', 'Add a public DNS address')}
             checked={form.useDns}
             onClick={checked => setForm({ ...form, useDns: checked })}
           />
@@ -152,14 +160,17 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
             <Quote margin={null} indent="listItem">
               <CopyCodeBlock value={getDnsWebAccess()} hideCopyLabel />
               <FormHelperText sx={{ marginLeft: 2 }}>
-                You will be able to access your node at this address.
+                {t('rentANodeForm.dnsAccessHelp', 'You will be able to access your node at this address.')}
               </FormHelperText>
             </Quote>
           </Collapse>
           <ListItem disableGutters>
             <Typography variant="body2" color="textSecondary" my={3}>
-              Please allow up to two business days for your rental request to be processed. If you have any questions
-              please contact us at <a href="mailto:support@cachengo.com">support@cachengo.com</a>
+              {t(
+                'rentANodeForm.processingNotice',
+                'Please allow up to two business days for your rental request to be processed. If you have any questions please contact us at'
+              )}{' '}
+              <a href="mailto:support@cachengo.com">support@cachengo.com</a>
             </Typography>
           </ListItem>
         </Body>
@@ -170,7 +181,7 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
         color="primary"
         disabled={!!error.deviceName || !!error.phone || !form.deviceName || !form.sshPublicKey}
       >
-        {submitting ? 'Submitting...' : 'Submit Request'}
+        {submitting ? t('rentANodeForm.submitting', 'Submitting...') : t('rentANodeForm.submitRequest', 'Submit Request')}
       </Button>
     </form>
   )

@@ -1,22 +1,22 @@
 import React, { useState } from 'react'
-import { useStyles } from './SharedUsersPaginatedList'
+import { paginationSx, centerSx } from './SharedUsersPaginatedList'
 import { List, ListSubheader, ListItemSecondaryAction, Box, Chip } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { useGuests } from '../hooks/useGuests'
 import { LoadingMessage } from './LoadingMessage'
 import { Pagination } from '@mui/lab'
 import { Gutters } from './Gutters'
+import { alphaSort } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
 export const OrganizationGuestList: React.FC = () => {
-  const css = useStyles()
   const [page, setPage] = useState<number>(1)
   const { guests, guestsLoaded } = useGuests()
   const perPage = 20
   const pageCount = Math.ceil(guests.length / perPage)
   const start = (page - 1) * perPage
-  const pageGuests = [...guests].sort(alphaEmailSort).slice(start, start + perPage)
+  const pageGuests = [...guests].sort((a, b) => alphaSort(a.email, b.email)).slice(start, start + perPage)
 
   if (!guestsLoaded) return <LoadingMessage />
 
@@ -63,16 +63,11 @@ export const OrganizationGuestList: React.FC = () => {
         ))}
       </List>
       {guests.length > perPage && (
-        <Gutters className={css.center}>
-          <Pagination className={css.pagination} count={pageCount} onChange={(_e, page) => setPage(page)} size="small" />
+        <Gutters sx={centerSx}>
+          <Pagination sx={paginationSx} count={pageCount} onChange={(_e, page) => setPage(page)} size="small" />
         </Gutters>
       )}
     </>
   )
 }
 
-function alphaEmailSort(a, b) {
-  const aa = a.email.toLowerCase()
-  const bb = b.email.toLowerCase()
-  return aa > bb ? 1 : aa < bb ? -1 : 0
-}

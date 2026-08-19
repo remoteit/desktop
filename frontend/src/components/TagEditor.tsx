@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { makeStyles } from '@mui/styles'
+import { useTranslation } from 'react-i18next'
 import { Chip, Tooltip } from '@mui/material'
 import { TagAutocomplete } from './TagAutocomplete'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
@@ -25,8 +25,8 @@ type Props = {
 export const TagEditor: React.FC<Props> = ({
   tags = [],
   filter = [],
-  label = 'TAG',
-  placeholder = 'New tag...',
+  label,
+  placeholder,
   allowAdding = true,
   hideIcons,
   createOnly,
@@ -37,12 +37,14 @@ export const TagEditor: React.FC<Props> = ({
   onCreate,
   onSelect,
 }) => {
+  const { t } = useTranslation()
+  const resolvedLabel = label ?? t('tagEditor.label', 'TAG')
+  const resolvedPlaceholder = placeholder ?? t('tagEditor.placeholder', 'New tag...')
   const getColor = useLabel()
   const [open, setOpen] = React.useState<boolean>(false)
   const [creating, setCreating] = React.useState<boolean>(false)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const chipRef = React.useRef<HTMLDivElement>(null)
-  const css = useStyles()
 
   const handleOpen = () => setOpen(!open)
   const handleClose = () => setOpen(false)
@@ -78,10 +80,10 @@ export const TagEditor: React.FC<Props> = ({
           label={
             <>
               <Icon name={creating ? 'spinner-third' : 'plus'} spin={creating} size="sm" inlineLeft />
-              {label}
+              {resolvedLabel}
             </>
           }
-          className={css.chip}
+          sx={{ fontWeight: 500, letterSpacing: 1, color: 'grayDarker.main' }}
           size="small"
           onClick={handleOpen}
           ref={chipRef}
@@ -94,14 +96,14 @@ export const TagEditor: React.FC<Props> = ({
         hideIcons={hideIcons}
         filter={filter}
         createOnly={createOnly}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         targetEl={buttonRef.current || chipRef.current}
         onItemColor={tag => getColor(tag.color)}
         onClose={handleClose}
         allowAdding={allowAdding}
         InputProps={{
           endAdornment: keyboardShortcut && (
-            <Tooltip title="Keyboard shortcut '#'" placement="top" arrow>
+            <Tooltip title={t('tagEditor.keyboardShortcut', "Keyboard shortcut '#'")} placement="top" arrow>
               <Chip label="#" size="small" />
             </Tooltip>
           ),
@@ -119,6 +121,3 @@ export const TagEditor: React.FC<Props> = ({
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  chip: { fontWeight: 500, letterSpacing: 1, color: palette.grayDarker.main },
-}))

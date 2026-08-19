@@ -4,6 +4,7 @@ import { removeDeviceName } from '@common/nameHelper'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { selectDeviceModelAttributes } from '../selectors/devices'
+import { alphaSort } from '../helpers/utilHelper'
 import { RootModel } from '.'
 
 type ISearchState = ILookup<any> & {
@@ -156,10 +157,6 @@ export default createModel<RootModel>()({
 })
 
 export function sortSearch(search: ISearch[]): ISearch[] {
-  const sorted = search.sort((a, b) => {
-    if (a.nodeName.toLowerCase() > b.nodeName.toLowerCase()) return 1
-    if (a.nodeName.toLowerCase() < b.nodeName.toLowerCase()) return -1
-    return 0
-  })
+  const sorted = search.sort((a, b) => alphaSort(a.nodeName, b.nodeName))
   return sorted || []
 }

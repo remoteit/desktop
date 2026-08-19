@@ -1,5 +1,4 @@
 import React, { useEffect, useContext } from 'react'
-import { makeStyles } from '@mui/styles'
 import { DeviceContext } from '../../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
@@ -29,7 +28,6 @@ export const SharePage: React.FC = () => {
   const guest = guests.find(g => g.id === userID)
   const email = guest?.email || ''
   const history = useHistory()
-  const css = useStyles()
 
   useEffect(() => {
     ;(async () => {
@@ -68,7 +66,7 @@ export const SharePage: React.FC = () => {
               {email}
             </Title>
             {deleting ? (
-              <CircularProgress className={css.loading} size={fontSizes.md} />
+              <CircularProgress sx={{ color: 'danger.main', margin: `${spacing.sm}px` }} size={fontSizes.md} />
             ) : (
               <Tooltip title={`Remove ${email}`}>
                 <IconButton onClick={handleUnshare} disabled={deleting} size="large">
@@ -95,6 +93,3 @@ export const SharePage: React.FC = () => {
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  loading: { color: palette.danger.main, margin: spacing.sm },
-}))

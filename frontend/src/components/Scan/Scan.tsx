@@ -1,7 +1,6 @@
 import React, { useEffect, useCallback, useMemo } from 'react'
 import { DEFAULT_INTERFACE } from '../../models/ui'
-import { makeStyles } from '@mui/styles'
-import { Button, TextField, MenuItem } from '@mui/material'
+import { Box, Button, TextField, MenuItem } from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { spacing, fontSizes } from '../../styling'
@@ -19,7 +18,6 @@ type Props = {
 }
 
 export const Scan: React.FC<Props> = ({ data, interfaces, services, privateIP }) => {
-  const css = useStyles()
   const { ui } = useDispatch<Dispatch>()
   const { scanLoading, scanTimestamp, scanInterface } = useSelector((state: State) => state.ui)
 
@@ -67,7 +65,25 @@ export const Scan: React.FC<Props> = ({ data, interfaces, services, privateIP })
     <Container
       gutterBottom
       header={
-        <Gutters className={css.controls}>
+        <Gutters
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: 0,
+            '& > div': { flexGrow: 1 },
+            '& .MuiCircularProgress-root': { marginLeft: `${spacing.md}px` },
+            '& .MuiButton-contained': { marginRight: 0 },
+            '& .MuiFormControl-root': { width: 250 },
+            '& .MuiTypography-root': {
+              textAlign: 'right',
+              marginRight: `${spacing.md}px`,
+              marginLeft: `${spacing.md}px`,
+              maxWidth: 150,
+            },
+            '& samp': { fontSize: fontSizes.sm, fontFamily: 'Roboto Mono', color: 'grayDark.main' },
+          }}
+        >
           <div>
             <TextField
               select
@@ -108,32 +124,13 @@ export const Scan: React.FC<Props> = ({ data, interfaces, services, privateIP })
         interfaceType={interfaceType()}
         privateIP={privateIP}
       />
-      <section className={css.loading}>{noResults && 'No results'}</section>
+      <Box
+        component="section"
+        sx={{ alignItems: 'center', flexDirection: 'column', color: 'grayLighter.main', fontSize: fontSizes.xl }}
+      >
+        {noResults && 'No results'}
+      </Box>
     </Container>
   )
 }
 
-const useStyles = makeStyles(({ palette }) => ({
-  loading: {
-    alignItems: 'center',
-    flexDirection: 'column',
-    color: palette.grayLighter.main,
-    fontSize: fontSizes.xl,
-  },
-  controls: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 0,
-    '& > div': { flexGrow: 1 },
-    '& .MuiCircularProgress-root': { marginLeft: spacing.md },
-    '& .MuiButton-contained': { marginRight: 0 },
-    '& .MuiFormControl-root': { width: 250 },
-    '& .MuiTypography-root': { textAlign: 'right', marginRight: spacing.md, marginLeft: spacing.md, maxWidth: 150 },
-    '& samp': {
-      fontSize: fontSizes.sm,
-      fontFamily: 'Roboto Mono',
-      color: palette.grayDark.main,
-    },
-  },
-}))

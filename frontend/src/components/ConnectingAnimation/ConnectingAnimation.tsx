@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 import { useInterval } from '../../hooks/useInterval'
-import { makeStyles } from '@mui/styles'
 
 export const ConnectingAnimation: React.FC<{ word: string }> = ({ word, ...props }) => {
-  const css = useStyles()
   const [display, setDisplay] = useState<string>('')
   const [count, setCount] = useState<number>(0)
 
@@ -20,13 +18,5 @@ export const ConnectingAnimation: React.FC<{ word: string }> = ({ word, ...props
     setDisplay(shuffle)
   }, 30)
 
-  return (
-    <div className={css.display} {...props}>
-      {display}
-    </div>
-  )
+  return <div {...props}>{display}</div>
 }
-
-const useStyles = makeStyles({
-  display: {},
-})

@@ -343,10 +343,12 @@ export class AuthService {
       // Update the local copy of the Cognito user
       this.cognitoUser = newUser
 
-      // If only a the email verification code was provided,
-      // we assume that the user does not have two-factor setup
-      // and thus does not need the secondary challenge.
-      // if (recoveryCode) {
+      // A rejected email code leaves the EMAIL_CODE challenge pending. Stop here
+      // so the recovery code below isn't consumed as another email code attempt.
+      if (newUser.challengeName === 'CUSTOM_CHALLENGE' && newUser.challengeParam?.challengeType === 'EMAIL_CODE') {
+        return { error: new Error('Email verification code is invalid, please double check and try again!') }
+      }
+
       newUser = await this.cognitoAuth.sendCustomChallengeAnswer(this.cognitoUser, recoveryCode)
 
       // Update the local copy of the Cognito user
@@ -357,6 +359,12 @@ export class AuthService {
 
     if (this.cognitoUser.challengeName === 'CUSTOM_CHALLENGE') {
       return { error: new Error('Backup code is invalid, please double check and try again!') }
+    }
+
+    // The custom auth flow can end without issuing tokens. Treat that as a
+    // failure so the user isn't redirected into an unauthenticated app.
+    if (!this.cognitoUser.signInUserSession) {
+      return { error: new Error('Account recovery did not complete, please try again or contact support.') }
     }
 
     // Now get the Remote.It specific account information and

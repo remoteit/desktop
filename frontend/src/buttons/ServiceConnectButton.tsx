@@ -7,16 +7,13 @@ import { DeviceContext } from '../services/Context'
 import { ComboButton } from './ComboButton'
 import { GuideBubble } from '../components/GuideBubble'
 import { ErrorButton } from '../buttons/ErrorButton'
-import { makeStyles } from '@mui/styles'
 import { DesktopUI } from '../components/DesktopUI'
 import { Gutters } from '../components/Gutters'
-import { spacing } from '../styling'
 
 export const ServiceConnectButton: React.FC = () => {
   const { device, service, connection, instance } = useContext(DeviceContext)
   const [showError, setShowError] = useState<boolean>(true)
   const dispatch = useDispatch<Dispatch>()
-  const css = useStyles()
 
   return (
     <Collapse in={!connection.connectLink} timeout={800}>
@@ -56,7 +53,11 @@ export const ServiceConnectButton: React.FC = () => {
             </>
           }
         >
-          <Gutters size="md" className={css.gutters} bottom={null}>
+          <Gutters
+            size="md"
+            sx={{ display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }}
+            bottom={null}
+          >
             <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
             <ComboButton
               size="large"
@@ -74,13 +75,3 @@ export const ServiceConnectButton: React.FC = () => {
     </Collapse>
   )
 }
-
-const useStyles = makeStyles({
-  actions: {
-    marginRight: spacing.md,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gutters: { display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } },
-})

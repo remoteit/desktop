@@ -1,5 +1,4 @@
 import { Box } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import React from 'react'
 import { GridListItem } from '../../components/GridListItem'
 import { Icon } from '../../components/Icon'
@@ -14,8 +13,6 @@ interface Props {
 }
 
 export const AdminAdminListItem: React.FC<Props> = ({ admin, required, attributes, active, onClick }) => {
-  const css = useStyles()
-
   return (
     <GridListItem
       onClick={onClick}
@@ -26,19 +23,11 @@ export const AdminAdminListItem: React.FC<Props> = ({ admin, required, attribute
     >
       {attributes.map(attribute => (
         <Box key={attribute.id} className="attribute">
-          <div className={css.truncate}>{attribute.value({ admin })}</div>
+          <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}>
+            {attribute.value({ admin })}
+          </Box>
         </Box>
       ))}
     </GridListItem>
   )
 }
-
-const useStyles = makeStyles(() => ({
-  truncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-    flex: 1,
-  },
-}))

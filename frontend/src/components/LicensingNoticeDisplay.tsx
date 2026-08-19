@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Dispatch, State } from '../store'
 import { ListItem, Button, Tooltip, IconButton } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, serviceLimit, fullWidth }) => {
+  const { t } = useTranslation()
   const informed = useSelector((state: State) => state.plans.informed)
   const { plans } = useDispatch<Dispatch>()
 
@@ -26,18 +28,24 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
   const onClose = () => plans.set({ informed: true })
 
   let notice: React.ReactNode | null = null
-  const title = `Your ${license?.plan.description} plan of ${license?.plan.product.name}`
+  const description = license?.plan.description
+  const productName = license?.plan.product.name
+  const title = t('licensingNoticeDisplay.planTitle', {
+    description,
+    productName,
+    defaultValue: 'Your {{description}} plan of {{productName}}',
+  })
 
   const UpgradeButton = (
     <>
       <BillingUI>
         <Link to="/account/plans">
           <Button color="primary" variant="contained" size="small">
-            Upgrade
+            {t('licensingNoticeDisplay.upgrade', 'Upgrade')}
           </Button>
         </Link>
       </BillingUI>
-      <Tooltip title="Close">
+      <Tooltip title={t('licensingNoticeDisplay.close', 'Close')}>
         <IconButton onClick={onClose}>
           <Icon name="times" size="md" color="primary" />
         </IconButton>
@@ -50,11 +58,15 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
     case 'EXPIRED':
       notice = (
         <Notice severity="warning" button={UpgradeButton}>
-          {title} has expired.
+          {t('licensingNoticeDisplay.expiredTitle', {
+            description,
+            productName,
+            defaultValue: 'Your {{description}} plan of {{productName}} has expired.',
+          })}
           <em>
-            Please upgrade your license.{' '}
+            {t('licensingNoticeDisplay.upgradeLicense', 'Please upgrade your license.')}{' '}
             <BillingUI>
-              <Link to="/account/plans">Learn more.</Link>
+              <Link to="/account/plans">{t('licensingNoticeDisplay.learnMore', 'Learn more.')}</Link>
             </BillingUI>
           </em>
         </Notice>
@@ -63,11 +75,15 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
     case 'PAST_DUE':
       notice = (
         <Notice severity="error">
-          {title} is past due.
+          {t('licensingNoticeDisplay.pastDueTitle', {
+            description,
+            productName,
+            defaultValue: 'Your {{description}} plan of {{productName}} is past due.',
+          })}
           <em>
-            Please update your payment method.{' '}
+            {t('licensingNoticeDisplay.updatePaymentMethod', 'Please update your payment method.')}{' '}
             <BillingUI>
-              <Link to="/account/plans">Learn more.</Link>
+              <Link to="/account/plans">{t('licensingNoticeDisplay.learnMore', 'Learn more.')}</Link>
             </BillingUI>
           </em>
         </Notice>
@@ -77,13 +93,19 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
     case 'INCOMPLETE':
       notice = (
         <Notice severity="warning">
-          {title} is incomplete.
+          {t('licensingNoticeDisplay.incompleteTitle', {
+            description,
+            productName,
+            defaultValue: 'Your {{description}} plan of {{productName}} is incomplete.',
+          })}
           <em>
-            Please{' '}
+            {t('licensingNoticeDisplay.please', 'Please')}{' '}
             <BillingUI>
-              <Link to="/account/plans">update your payment information </Link>
+              <Link to="/account/plans">
+                {t('licensingNoticeDisplay.updatePaymentInformation', 'update your payment information ')}
+              </Link>
             </BillingUI>{' '}
-            to continue service.
+            {t('licensingNoticeDisplay.toContinueService', 'to continue service.')}
           </em>
         </Notice>
       )
@@ -91,11 +113,15 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
     case 'CANCELED':
       notice = (
         <Notice severity="warning" button={UpgradeButton}>
-          {title} has been canceled.
+          {t('licensingNoticeDisplay.canceledTitle', {
+            description,
+            productName,
+            defaultValue: 'Your {{description}} plan of {{productName}} has been canceled.',
+          })}
           <em>
-            Please check.{' '}
+            {t('licensingNoticeDisplay.pleaseCheck', 'Please check.')}{' '}
             <BillingUI>
-              <Link to="/account/plans">Learn more.</Link>
+              <Link to="/account/plans">{t('licensingNoticeDisplay.learnMore', 'Learn more.')}</Link>
             </BillingUI>
           </em>
         </Notice>
@@ -106,9 +132,12 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
         <Notice severity="warning" button={UpgradeButton}>
           {title} <LicensingTitle count={serviceLimit?.value} />
           <em>
-            You have exceeded your limit by {serviceLimit?.actual - serviceLimit?.value}.{' '}
+            {t('licensingNoticeDisplay.exceededLimit', {
+              count: (serviceLimit?.actual ?? 0) - (serviceLimit?.value ?? 0),
+              defaultValue: 'You have exceeded your limit by {{count}}.',
+            })}{' '}
             <BillingUI>
-              <Link to="/account/plans">Learn more.</Link>
+              <Link to="/account/plans">{t('licensingNoticeDisplay.learnMore', 'Learn more.')}</Link>
             </BillingUI>
           </em>
         </Notice>
@@ -118,7 +147,8 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
       if (license?.expiration)
         notice = (
           <Notice severity="info" button={UpgradeButton}>
-            {title} will renew on {/* replace with countdown */}
+            {title} {t('licensingNoticeDisplay.willRenewOn', 'will renew on')}{' '}
+            {/* replace with countdown */}
             <Timestamp variant="long" date={license?.expiration} />.
           </Notice>
         )
@@ -127,7 +157,10 @@ export const LicensingNoticeDisplay: React.FC<Props> = ({ noticeType, license, s
       if (license?.plan?.id === PERSONAL_PLAN_ID)
         notice = (
           <Notice button={UpgradeButton}>
-            Upgrade to a professional plan to enable full device list access and features.
+            {t(
+              'licensingNoticeDisplay.upgradeToProfessional',
+              'Upgrade to a professional plan to enable full device list access and features.'
+            )}
           </Notice>
         )
       break

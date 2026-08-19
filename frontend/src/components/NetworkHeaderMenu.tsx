@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Typography } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -19,6 +20,7 @@ export const NetworkHeaderMenu: React.FC<{
   email: string
   children?: React.ReactNode | React.ReactNode[]
 }> = ({ network, email, children }) => {
+  const { t } = useTranslation()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
 
@@ -29,20 +31,23 @@ export const NetworkHeaderMenu: React.FC<{
       header={
         <>
           <Typography variant="h1">
-            <Title>{network.name || 'Unknown Network'}</Title>
+            <Title>{network.name || t('networkHeaderMenu.unknownNetwork', 'Unknown Network')}</Title>
             {network.shared ? (
               <ConfirmIconButton
                 confirm
-                title="Leave network"
+                title={t('networkHeaderMenu.leaveNetwork', 'Leave network')}
                 icon="arrow-right-from-bracket"
                 size="md"
                 confirmProps={{
                   children: (
                     <>
                       <Notice severity="error" fullWidth gutterBottom>
-                        You will be leaving <i>{network.name}. </i>
+                        {t('networkHeaderMenu.leavingNoticePrefix', 'You will be leaving')} <i>{network.name}. </i>
                       </Notice>
-                      The network will have to be re-shared to you if you wish to access it again.
+                      {t(
+                        'networkHeaderMenu.leavingBody',
+                        'The network will have to be re-shared to you if you wish to access it again.'
+                      )}
                     </>
                   ),
                 }}
@@ -54,15 +59,18 @@ export const NetworkHeaderMenu: React.FC<{
             ) : (
               network.permissions.includes('MANAGE') && (
                 <>
-                  <ShareButton to={`/networks/${network.id}/share`} title="Share access" />
+                  <ShareButton to={`/networks/${network.id}/share`} title={t('networkHeaderMenu.shareAccess', 'Share access')} />
                   <DeleteButton
-                    title="Delete Network"
+                    title={t('networkHeaderMenu.deleteNetwork', 'Delete Network')}
                     warning={
                       <>
                         <Notice severity="error" fullWidth gutterBottom>
-                          You will be permanently deleting <i>{network.name}. </i>
+                          {t('networkHeaderMenu.deletingNoticePrefix', 'You will be permanently deleting')} <i>{network.name}. </i>
                         </Notice>
-                        This will remove this network for you and all of the network's users.
+                        {t(
+                          'networkHeaderMenu.deletingBody',
+                          "This will remove this network for you and all of the network's users."
+                        )}
                       </>
                     }
                     onDelete={async () => {
@@ -77,7 +85,7 @@ export const NetworkHeaderMenu: React.FC<{
           <NetworkTagEditor network={network} />
           <ListHorizontal dense>
             <ListItemLocation
-              title="Details"
+              title={t('networkHeaderMenu.details', 'Details')}
               icon="circle-info"
               iconColor="grayDarker"
               to={`/networks/${network.id}`}

@@ -7,9 +7,10 @@ import {
   ListItemSecondaryAction,
   InputLabel,
 } from '@mui/material'
+import { Box } from '@mui/material'
 import { EditButton } from '../buttons/EditButton'
 import { DeleteButton } from '../buttons/DeleteButton'
-import { useStyles } from './InlineSetting'
+import { hideIconSx, actionSx, viewSx } from './InlineSetting'
 import { Title } from './Title'
 import { Icon } from './Icon'
 
@@ -50,11 +51,9 @@ export const FormDisplay: React.FC<FormDisplayProps> = ({
   onDelete,
   onClick,
 }) => {
-  const css = useStyles()
-
   if (hideEmpty && !value) return null
   if (typeof icon === 'string') icon = <Icon name={icon} size="md" modified={modified} fixedWidth />
-  icon = <ListItemIcon className={hideIcon ? css.hideIcon : undefined}>{icon}</ListItemIcon>
+  icon = <ListItemIcon sx={hideIcon ? hideIconSx : undefined}>{icon}</ListItemIcon>
 
   const content = (
     <>
@@ -79,19 +78,18 @@ export const FormDisplay: React.FC<FormDisplayProps> = ({
 
   return (
     <>
-      {actionIcon && <span className={css.action}> {actionIcon}</span>}
+      {actionIcon && (
+        <Box component="span" sx={actionSx}>
+          {' '}
+          {actionIcon}
+        </Box>
+      )}
       {displayOnly ? (
-        <ListItem className={css.view} disableGutters={disableGutters} dense>
+        <ListItem sx={viewSx} disableGutters={disableGutters} dense>
           {content}
         </ListItem>
       ) : (
-        <ListItemButton
-          className={css.view}
-          onClick={onClick}
-          disabled={disabled}
-          disableGutters={disableGutters}
-          dense
-        >
+        <ListItemButton sx={viewSx} onClick={onClick} disabled={disabled} disableGutters={disableGutters} dense>
           {content}
         </ListItemButton>
       )}

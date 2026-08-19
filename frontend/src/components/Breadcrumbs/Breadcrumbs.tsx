@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { makeStyles } from '@mui/styles'
 import { Typography } from '@mui/material'
 import { State } from '../../store'
 import { getAllDevices, findById } from '../../selectors/devices'
@@ -22,7 +21,6 @@ const pageNameMap: { [path: string]: string } = {
 }
 
 export const Breadcrumbs: React.FC = () => {
-  const css = useStyles()
   const location = useLocation()
   const { devices, networks } = useSelector((state: State) => ({
     devices: getAllDevices(state),
@@ -61,7 +59,27 @@ export const Breadcrumbs: React.FC = () => {
   if (!crumbs.join()) return null
 
   return (
-    <Typography className={css.header}>
+    <Typography
+      sx={theme => ({
+        marginTop: `${spacing.sm}px`,
+        marginLeft: `${spacing.lg}px`,
+        marginBottom: `${-spacing.xs}px`,
+        color: theme.palette.gray.main,
+        position: 'relative',
+        zIndex: 2,
+        '& .MuiTypography-root': { marginLeft: 0 },
+        '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
+        '& .MuiLink-root': {
+          fontFamily: 'Roboto Mono',
+          textDecoration: 'none',
+          fontSize: fontSizes.xxs,
+          color: theme.palette.grayDark.main,
+          padding: `${spacing.md}px ${spacing.xs}px`,
+          marginLeft: `${spacing.xxs}px`,
+          marginRight: `${spacing.xxs}px`,
+        },
+      })}
+    >
       {crumbs.reduce((result: any[], crumb, index) => {
         const crumbPath = (breadcrumb += `/${crumb}`)
         if (index > 0) result.push(<Icon key={crumbPath + 'Icon'} name="angle-left" size="sm" fixedWidth />)
@@ -75,25 +93,3 @@ export const Breadcrumbs: React.FC = () => {
     </Typography>
   )
 }
-
-const useStyles = makeStyles(({ palette }) => ({
-  header: {
-    marginTop: spacing.sm,
-    marginLeft: spacing.lg,
-    marginBottom: -spacing.xs,
-    color: palette.gray.main,
-    position: 'relative',
-    zIndex: 2,
-    '& .MuiTypography-root': { marginLeft: 0 },
-    '& .MuiIconButton-root': { margin: `0 ${spacing.xxs}px` },
-    '& .MuiLink-root': {
-      fontFamily: 'Roboto Mono',
-      textDecoration: 'none',
-      fontSize: fontSizes.xxs,
-      color: palette.grayDark.main,
-      padding: `${spacing.md}px ${spacing.xs}px`,
-      marginLeft: spacing.xxs,
-      marginRight: spacing.xxs,
-    },
-  },
-}))

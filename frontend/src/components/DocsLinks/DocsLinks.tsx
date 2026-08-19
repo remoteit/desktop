@@ -1,14 +1,21 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
-import { Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { spacing } from '../../styling'
 import { Icon } from '../../components/Icon'
 import { Link } from '../../components/Link'
 
 export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
-  const css = useStyles()
   return (
-    <section className={css.links}>
+    <Box
+      component="section"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginBottom: `${spacing.xl}px`,
+        '& svg': { paddingLeft: '5px', marginLeft: '3px' },
+      }}
+    >
       <Typography variant="body2" align="center" gutterBottom>
         See how to:
       </Typography>
@@ -20,16 +27,6 @@ export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
         Connect to this device from anywhere
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>
-    </section>
+    </Box>
   )
 }
-
-const useStyles = makeStyles({
-  links: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    '& svg': { paddingLeft: 5, marginLeft: 3 },
-  },
-})

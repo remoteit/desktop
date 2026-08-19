@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react'
-import { makeStyles } from '@mui/styles'
 import { useHistory } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
@@ -29,6 +29,7 @@ export const AvatarMenu: React.FC = () => {
   const enterTimer = useRef<number>()
   const leaveTimer = useRef<number>()
   const dispatch = useDispatch<Dispatch>()
+  const { t } = useTranslation()
   const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
   const user = useSelector((state: State) => state.auth.user)
   const remoteUI = useSelector(isRemoteUI)
@@ -38,7 +39,6 @@ export const AvatarMenu: React.FC = () => {
   const activeUser = useSelector(selectActiveUser)
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
 
-  const css = useStyles()
   const handleOpen = () => {
     window.addEventListener('keydown', checkAltMenu)
     setOpen(true)
@@ -79,7 +79,22 @@ export const AvatarMenu: React.FC = () => {
       <Menu
         open={open}
         anchorEl={buttonRef.current}
-        className={css.menu}
+        sx={{
+          '& .MuiPaper-root': {
+            overflow: 'visible',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: -AVATAR_SIZE - AVATAR_BORDER,
+              width: AVATAR_SIZE + AVATAR_BORDER,
+              height: AVATAR_SIZE + AVATAR_BORDER,
+              cursor: 'pointer',
+            },
+          },
+          '& .MuiList-root': {
+            backgroundColor: 'transparent',
+          },
+        }}
         onClose={handleClose}
         slotProps={{ paper: { onMouseEnter: handleEnter, onMouseLeave: handleLeave } }}
         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
@@ -91,7 +106,7 @@ export const AvatarMenu: React.FC = () => {
       >
         <ListItemLocation
           dense
-          title="Account"
+          title={t('nav.account', 'Account')}
           subtitle={user?.email}
           icon="user"
           to="/account"
@@ -99,14 +114,14 @@ export const AvatarMenu: React.FC = () => {
           onClick={handleClose}
         />
         <ListItemLink
-          title="Support"
+          title={t('nav.support', 'Support')}
           icon="life-ring"
           href="https://link.remote.it/documentation-desktop/overview"
           dense
         />
-        <ListItemLink title="APIs" icon="books" href="https://link.remote.it/docs/api" dense />
+        <ListItemLink title={t('nav.apis', 'APIs')} icon="books" href="https://link.remote.it/docs/api" dense />
         <ListItemLocation
-          title="Bug Report"
+          title={t('nav.bugReport', 'Bug Report')}
           icon="spider"
           iconType="solid"
           to="/feedback"
@@ -120,16 +135,25 @@ export const AvatarMenu: React.FC = () => {
           dense
         />
         {userAdmin && (
-          <ListItemLocation dense title="Admin" icon="person-to-portal" to="/admin/users" onClick={handleClose} />
+          <ListItemLocation
+            dense
+            title={t('nav.admin', 'Admin')}
+            icon="person-to-portal"
+            to="/admin/users"
+            onClick={handleClose}
+          />
         )}
         {(altMenu || testUI) && (
           <ListItemSetting
             confirm={!testUI}
-            label={(testUI ? '' : 'Enable ') + 'Test UI'}
+            label={testUI ? t('nav.testUI', 'Test UI') : t('nav.enableTestUI', 'Enable Test UI')}
             icon="vial"
             confirmProps={{
-              title: 'Are you sure?',
-              children: 'Enabling alpha features may be unstable. It is only intended for testing and development.',
+              title: t('common.areYouSure', 'Are you sure?'),
+              children: t(
+                'nav.testUIConfirm',
+                'Enabling alpha features may be unstable. It is only intended for testing and development.'
+              ),
             }}
             onClick={() => {
               dispatch.ui.setPersistent({ testUI: 'HIGHLIGHT' })
@@ -142,39 +166,43 @@ export const AvatarMenu: React.FC = () => {
         <DesktopUI>
           <ListItemSetting
             confirm
-            label="Lock application"
+            label={t('nav.lockApplication', 'Lock application')}
             icon="lock"
             onClick={() => emit('user/lock')}
             confirmProps={{
-              title: 'Are you sure?',
-              children:
-                'Locking the app will leave all active connections and hosted services running and prevent others from signing in.',
+              title: t('common.areYouSure', 'Are you sure?'),
+              children: t(
+                'nav.lockConfirm',
+                'Locking the app will leave all active connections and hosted services running and prevent others from signing in.'
+              ),
             }}
           />
         </DesktopUI>
         <ListItemSetting
           confirm={backendAuthenticated}
-          label="Sign out"
+          label={t('nav.signOut', 'Sign out')}
           icon="sign-out"
           onClick={async () => {
             await dispatch.auth.signOut()
             history.replace('/sign-in')
           }}
           confirmProps={{
-            children:
-              'Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.',
+            children: t(
+              'nav.signOutConfirm',
+              'Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.'
+            ),
           }}
         />
         {remoteUI || (
           <DesktopUI>
             <ListItemSetting
               confirm
-              label="Quit"
+              label={t('nav.quit', 'Quit')}
               icon="power-off"
               onClick={() => emit('user/quit')}
               confirmProps={{
-                title: 'Are you sure?',
-                children: 'Quitting will not close your connections.',
+                title: t('common.areYouSure', 'Are you sure?'),
+                children: t('nav.quitConfirm', 'Quitting will not close your connections.'),
               }}
             />
           </DesktopUI>
@@ -183,22 +211,3 @@ export const AvatarMenu: React.FC = () => {
     </>
   )
 }
-
-const useStyles = makeStyles(({  }) => ({
-  menu: {
-    '& .MuiPaper-root': {
-      overflow: 'visible',
-      '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: -AVATAR_SIZE - AVATAR_BORDER,
-        width: AVATAR_SIZE + AVATAR_BORDER,
-        height: AVATAR_SIZE + AVATAR_BORDER,
-        cursor: 'pointer',
-      },
-    },
-    '& .MuiList-root': {
-      backgroundColor: 'transparent',
-    },
-  },
-}))

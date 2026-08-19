@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
-import classnames from 'classnames'
-import { makeStyles } from '@mui/styles'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
@@ -21,7 +20,7 @@ import { Icon } from '../components/Icon'
 import { ConveyorBeltBoxes } from '../assets/ConveyorBeltBoxes'
 
 export const AddPage: React.FC = () => {
-  const css = useStyles()
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const allApplicationTypes = useSelector((state: State) => state.applicationTypes.all)
   const claiming = useSelector((state: State) => state.ui.claiming)
@@ -39,14 +38,56 @@ export const AddPage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1" sx={{ marginRight: 4 }}>
-          <Title>What do you want to connect&nbsp;to?</Title>
+          <Title>{t('addPage.title', 'What do you want to connect to?')}</Title>
         </Typography>
       }
     >
-      <Stack flexWrap="wrap" alignItems="flex-start" flexDirection="row" width="100%" paddingX={{ xs: 1, sm: 4 }}>
-        <RentANodeAdd className={classnames(css.list, css.smallList)} />
-        <List className={classnames(css.list, css.smallList)} dense disablePadding>
-          <ListSubheader disableGutters>Try a device</ListSubheader>
+      <Stack
+        flexWrap="wrap"
+        alignItems="flex-start"
+        flexDirection="row"
+        width="100%"
+        paddingX={{ xs: 1, sm: 4 }}
+        sx={theme => ({
+          '& .addList': {
+            minWidth: 175,
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            marginTop: `${spacing.md}px`,
+            paddingRight: `${spacing.xs}px`,
+            paddingLeft: `${spacing.md}px`,
+            '& .MuiListItemButton-root': {
+              display: 'block',
+              paddingLeft: `${spacing.md}px`,
+              paddingTop: `${spacing.lg}px`,
+              paddingRight: `${spacing.md}px`,
+              flexGrow: 'initial',
+            },
+            '& .MuiListItemText-root': { marginTop: `${spacing.sm}px`, marginBottom: `${spacing.sm}px` },
+            '& .MuiListItemSecondaryAction-root': { right: `${spacing.xs}px`, top: 45 },
+            '& .MuiListSubheader-root': {
+              width: '100%',
+              borderBottom: `1px solid ${theme.palette.grayLight.main}`,
+              marginBottom: `${spacing.xs}px`,
+            },
+          },
+          '& .addSmall': {
+            width: '50%',
+            [theme.breakpoints.up('sm')]: { width: 200 },
+          },
+          '& .addIcons': {
+            '& .MuiListItemButton-root, & .MuiListItem-root': { width: 140, minWidth: 140, minHeight: 100, margin: '1px' },
+            [theme.breakpoints.down('sm')]: {
+              '& .MuiListItemButton-root, & .MuiListItem-root': { width: 110, minWidth: 110 },
+            },
+          },
+        })}
+      >
+        <RentANodeAdd className="addList addSmall" />
+        <List className="addList addSmall" dense disablePadding>
+          <ListSubheader disableGutters>{t('addPage.tryDevice', 'Try a device')}</ListSubheader>
           <ListItemButton
             disableGutters
             disabled={claiming}
@@ -58,14 +99,17 @@ export const AddPage: React.FC = () => {
             <ListItemIcon>
               <Icon name="remoteit" size="xxl" platformIcon fixedWidth />
             </ListItemIcon>
-            <ListItemText primary="Demo device" secondary={hasDemo && 'Already shared'} />
+            <ListItemText
+              primary={t('addPage.demoDevice', 'Demo device')}
+              secondary={hasDemo && t('addPage.alreadyShared', 'Already shared')}
+            />
           </ListItemButton>
         </List>
-        <AndroidSetup className={classnames(css.list, css.smallList)} />
-        <DeviceSetupItem className={classnames(css.list, css.smallList)} />
-        <BluetoothScan className={classnames(css.list, css.smallList)} />
-        <List className={classnames(css.list, css.icons)} dense disablePadding>
-          <ListSubheader disableGutters>Add an instance</ListSubheader>
+        <AndroidSetup className="addList addSmall" />
+        <DeviceSetupItem className="addList addSmall" />
+        <BluetoothScan className="addList addSmall" />
+        <List className="addList addIcons" dense disablePadding>
+          <ListSubheader disableGutters>{t('addPage.addInstance', 'Add an instance')}</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
             const platform = platforms.get(p)
             return (
@@ -82,8 +126,8 @@ export const AddPage: React.FC = () => {
             )
           })}
         </List>
-        <List className={classnames(css.list, css.icons)} dense disablePadding>
-          <ListSubheader disableGutters>Add a device</ListSubheader>
+        <List className="addList addIcons" dense disablePadding>
+          <ListSubheader disableGutters>{t('addPage.addDevice', 'Add a device')}</ListSubheader>
           {[
             'raspberrypi',
             'linux',
@@ -99,6 +143,7 @@ export const AddPage: React.FC = () => {
             'axis',
             'advantech',
             'idy',
+            'teltonika',
             'ubuntu',
             'windows',
             'mac',
@@ -118,14 +163,17 @@ export const AddPage: React.FC = () => {
             )
           })}
         </List>
-        <ClaimDevice className={classnames(css.list, css.smallList)} />
-        <List className={classnames(css.list, css.smallList)} dense disablePadding>
-          <ListSubheader disableGutters>Add many</ListSubheader>
+        <ClaimDevice className="addList addSmall" />
+        <List className="addList addSmall" dense disablePadding>
+          <ListSubheader disableGutters>{t('addPage.addMany', 'Add many')}</ListSubheader>
           <ListItemButton disableGutters onClick={() => history.push('/products')}>
             <ListItemIcon>
               <ConveyorBeltBoxes style={{ height: '2.25rem', width: 'auto' }} />
             </ListItemIcon>
-            <ListItemText primary="Products" secondary="Provision in bulk" />
+            <ListItemText
+              primary={t('addPage.products', 'Products')}
+              secondary={t('addPage.provisionInBulk', 'Provision in bulk')}
+            />
           </ListItemButton>
         </List>
       </Stack>
@@ -133,48 +181,3 @@ export const AddPage: React.FC = () => {
   )
 }
 
-export const useStyles = makeStyles(({ palette, breakpoints }) => ({
-  list: {
-    minWidth: 175,
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    marginTop: spacing.md,
-    paddingRight: spacing.xs,
-    paddingLeft: spacing.md,
-    '& .MuiListItemButton-root': {
-      display: 'block',
-      paddingLeft: spacing.md,
-      paddingTop: spacing.lg,
-      paddingRight: spacing.md,
-      flexGrow: 'initial',
-    },
-    '& .MuiListItemText-root': { marginTop: spacing.sm, marginBottom: spacing.sm },
-    '& .MuiListItemSecondaryAction-root': { right: spacing.xs, top: 45 },
-    '& .MuiListSubheader-root': {
-      width: '100%',
-      borderBottom: `1px solid ${palette.grayLight.main}`,
-      marginBottom: spacing.xs,
-    },
-  },
-  icons: {
-    '& .MuiListItemButton-root, & .MuiListItem-root': {
-      width: 140,
-      minWidth: 140,
-      minHeight: 100,
-      margin: 1,
-    },
-    [breakpoints.down('sm')]: {
-      '& .MuiListItemButton-root, & .MuiListItem-root': {
-        width: 110,
-        minWidth: 110,
-      },
-    },
-  },
-  smallList: {
-    width: '50%',
-    [breakpoints.up('sm')]: { width: 200 },
-    // [breakpoints.up('md')]: { width: 200 },
-  },
-}))

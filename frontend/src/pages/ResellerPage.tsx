@@ -3,6 +3,7 @@ import { Dispatch } from '../store'
 import { Redirect } from 'react-router-dom'
 import { Typography, Box } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
 import { CSVDownloadButton } from '../buttons/CSVDownloadButton'
 import { CustomerList } from '../components/CustomerList'
@@ -15,6 +16,7 @@ export const ResellerPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const organization = useSelector(selectOrganization)
   const reseller = useSelector(selectOrganizationReseller)
+  const { t } = useTranslation()
 
   if (!reseller) return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
 
@@ -25,11 +27,11 @@ export const ResellerPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Customers</Title>
+            <Title>{t('resellerPage.title', 'Customers')}</Title>
             <CSVDownloadButton fetchUrl={dispatch.organization.resellerReportUrl} />
             {organization?.id && (
               <IconButton
-                title="Add customer"
+                title={t('resellerPage.addCustomer', 'Add customer')}
                 icon="user-plus"
                 to="/organization/customer/add"
                 size="md"

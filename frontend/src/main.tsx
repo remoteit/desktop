@@ -13,6 +13,7 @@ import { Provider } from 'react-redux'
 import { Layout } from './components/Layout'
 import heartbeat from './services/Heartbeat'
 import analytics from './services/analytics'
+import './i18n'
 import './initializeCommon'
 import './services/Controller'
 

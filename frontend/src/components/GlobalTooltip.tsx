@@ -1,35 +1,24 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
-import { makeStyles } from '@mui/styles'
 import { Tooltip } from '@mui/material'
 
 export const GlobalTooltip: React.FC = () => {
   const props = useSelector((state: State) => state.ui.globalTooltip)
-  const css = useStyles({ color: props?.color })
 
   if (!props) return null
 
-  const { el, title } = props
+  const { el, title, color } = props
   return (
     <Tooltip
       open={!!props}
-      classes={{ tooltip: css.tooltip }}
+      slotProps={{ tooltip: { sx: { backgroundColor: color, '& .MuiTooltip-arrow': { color } } } }}
       title={title}
       PopperProps={{ anchorEl: el }}
       placement="top"
       arrow
     >
-      <span className={css.tooltip} />
+      <span />
     </Tooltip>
   )
 }
-
-const useStyles = makeStyles({
-  tooltip: ({ color }: any) => ({
-    backgroundColor: color,
-    '& .MuiTooltip-arrow': {
-      color,
-    },
-  }),
-})

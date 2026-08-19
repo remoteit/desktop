@@ -1,22 +1,22 @@
 import React from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { List, ListItemSecondaryAction, Typography, Chip, Box, Button } from '@mui/material'
 import { selectPermissions, selectLimitsLookup, selectOrganization } from '../selectors/organizations'
 import { State } from '../store'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { useSelector } from 'react-redux'
-import { ListItemBack } from '../components/ListItemBack'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { BillingUI } from '../components/BillingUI'
-import { MobileUI } from '../components/MobileUI'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
 export const OrganizationRolesPage: React.FC = () => {
+  const { t } = useTranslation()
   const history = useHistory()
-  const { name, roles, members, limits, permissions } = useSelector((state: State) => ({
+  const { roles, members, limits, permissions } = useSelector((state: State) => ({
     ...selectOrganization(state),
     limits: selectLimitsLookup(state),
     permissions: selectPermissions(state),
@@ -31,19 +31,14 @@ export const OrganizationRolesPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>Roles</Title>
+            <Title>{t('organizationRolesPage.roles', 'Roles')}</Title>
           </Typography>
-          <MobileUI hide>
-            <List sx={{ paddingTop: 0 }}>
-              <ListItemBack title={name} to="/organization" disableGutters={false} />
-            </List>
-          </MobileUI>
         </>
       }
     >
       {!limits.roles && (
         <Notice severity="info" gutterTop>
-          Upgrade your plan to Business to add custom roles.
+          {t('organizationRolesPage.upgradeToBusiness', 'Upgrade your plan to Business to add custom roles.')}
           <BillingUI>
             <Button
               variant="contained"
@@ -51,14 +46,21 @@ export const OrganizationRolesPage: React.FC = () => {
               onClick={() => history.push('/account/plans')}
               sx={{ display: 'block', marginTop: 1, marginBottom: 1 }}
             >
-              Upgrade
+              {t('organizationRolesPage.upgrade', 'Upgrade')}
             </Button>
           </BillingUI>
         </Notice>
       )}
       <Typography variant="subtitle1">
-        <Title>Role</Title>
-        {limits.roles && <IconButton icon="plus" to="/organization/roles/add" title="Add role" size="md" />}
+        <Title>{t('organizationRolesPage.role', 'Role')}</Title>
+        {limits.roles && (
+          <IconButton
+            icon="plus"
+            to="/organization/roles/add"
+            title={t('organizationRolesPage.addRole', 'Add role')}
+            size="md"
+          />
+        )}
       </Typography>
       <List>
         {roles.map(r => {
@@ -80,7 +82,15 @@ export const OrganizationRolesPage: React.FC = () => {
             >
               <ListItemSecondaryAction>
                 <Chip
-                  label={count ? `${count} member${count === 1 ? '' : 's'}` : 'none'}
+                  label={
+                    count
+                      ? t('organizationRolesPage.memberCount', {
+                          count,
+                          defaultValue_one: '{{count}} member',
+                          defaultValue_other: '{{count}} members',
+                        })
+                      : t('organizationRolesPage.none', 'none')
+                  }
                   size="small"
                   onClick={() => history.push('/organization/members')}
                 />
