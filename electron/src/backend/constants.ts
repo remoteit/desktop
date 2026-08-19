@@ -1,5 +1,10 @@
 import os from 'os'
 import path from 'path'
+import * as dotenv from 'dotenv'
+// Load .env BEFORE reading it: index.ts calls dotenv.config() too, but import hoisting
+// runs every module body (including this one) first — reading process.env at module load
+// saw only the shell env, so .env-only settings (the OAUTH_* block) never landed.
+dotenv.config()
 const env = process.env
 
 //General

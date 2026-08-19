@@ -13,7 +13,6 @@ import {
   Logger,
   oidc,
 } from './backend'
-import { Oidc } from './backend/Oidc'
 import { OAUTH_ISSUER } from './backend/constants'
 
 const URL_REGEX = new RegExp('^https?://')
@@ -102,7 +101,7 @@ export default class ElectronApp {
     // Hand the backend OIDC store the OS keychain (safeStorage needs a ready app), and
     // route its browser launches through the shell — the flow itself lives backend-side.
     oidc.useSafeStorage(electron.safeStorage)
-    EventBus.on(Oidc.EVENTS.openUrl, ({ url }: { url: string }) => {
+    oidc.useOpener(url => {
       Logger.info('OIDC OPEN SYSTEM BROWSER')
       electron.shell.openExternal(url)
     })

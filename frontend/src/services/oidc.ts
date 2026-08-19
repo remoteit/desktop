@@ -23,11 +23,12 @@ export type OidcState = { configured: boolean; signedIn: boolean; claims: OidcCl
 
 let cached: { token: string; exp: number } | undefined
 
-// Same dev/packaged split Controller.init uses: the dev server runs on :3003, the
-// packaged renderer is served BY the backend so relative URLs land home.
+// Same dev/packaged split Controller.init uses: the dev server runs on :3003 (vite
+// answers on localhost AND 127.0.0.1 — match both), the packaged renderer is served BY
+// the backend so relative URLs land home.
 const base = () => {
   const { host } = window.location
-  return host === `${IP_PRIVATE}:3003` ? `http://${IP_PRIVATE}:${PORT}` : ''
+  return /^(localhost|127\.0\.0\.1):3003$/.test(host) ? `http://${IP_PRIVATE}:${PORT}` : ''
 }
 
 const json = async (path: string, init?: RequestInit) => {

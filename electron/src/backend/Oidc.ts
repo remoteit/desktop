@@ -1,5 +1,6 @@
 import http from 'http'
 import crypto from 'crypto'
+import { exec } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import EventBus from './EventBus'
@@ -67,6 +68,10 @@ export class Oidc {
   private pending?: PendingFlow
   private discovery?: Discovery
   private refreshing?: Promise<void>
+  // Injected by ElectronApp (shell.openExternal). EventBus can't signal "handled": the
+  // Controller's EventRelay subscribes to EVERY event to forward it, so listener-counting
+  // always looks handled even when nothing opens a browser.
+  private opener?: (url: string) => void
   // Electron safeStorage, injected by ElectronApp once the app is ready. Until then (or
   // headless) the store falls back to a 0600 plain file with a loud log line.
   private cipher?: { encryptString(s: string): Buffer; decryptString(b: Buffer): string; isEncryptionAvailable(): boolean }
@@ -81,6 +86,10 @@ export class Oidc {
 
   get claims(): any {
     return decodeJwt(this.tokens?.id_token)
+  }
+
+  useOpener(opener: (url: string) => void) {
+    this.opener = opener
   }
 
   useSafeStorage(cipher: Oidc['cipher']) {
@@ -150,7 +159,20 @@ export class Oidc {
     }
     for (const [k, v] of Object.entries(params)) authorize.searchParams.set(k, v)
     Logger.info('OIDC START', { mode: OAUTH_REDIRECT_MODE, redirectUri: flow.redirectUri })
-    EventBus.emit(Oidc.EVENTS.openUrl, { url: authorize.toString() })
+    this.openInBrowser(authorize.toString())
+  }
+
+  /** ElectronApp injects shell.openExternal; HEADLESS dev (backend under plain node,
+   * web frontend on vite) has none, so the OS opener runs. The event still fires for
+   * observers, but never decides whether a browser opens. */
+  private openInBrowser(url: string) {
+    EventBus.emit(Oidc.EVENTS.openUrl, { url })
+    if (this.opener) return this.opener(url)
+    const opener = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start ""' : 'xdg-open'
+    Logger.info('OIDC OPENING BROWSER (headless)', { opener })
+    exec(`${opener} '${url.replace(/'/g, '')}'`, error => {
+      if (error) Logger.warn('OIDC HEADLESS BROWSER OPEN FAILED', { error })
+    })
   }
 
   /** Deep-link delivery (scheme mode): ElectronApp forwards remoteit://authCallback?… here. */
@@ -255,7 +277,7 @@ export class Oidc {
       const url = new URL(d.end_session_endpoint)
       url.searchParams.set('id_token_hint', idToken)
       url.searchParams.set('post_logout_redirect_uri', PROTOCOL + 'signoutCallback')
-      EventBus.emit(Oidc.EVENTS.openUrl, { url: url.toString() })
+      this.openInBrowser(url.toString())
     }
   }
 
