@@ -32,9 +32,12 @@ export default class PortScanner {
 
       // Check if binding to port causes an exception
       server.once('error', (err: ServerError) => {
-        if (err.code && (err.code === 'EADDRINUSE' || err.code === 'EACCES')) {
-          resolve(false)
-        }
+        // Any listen error means the port is unusable, so always settle the promise here.
+        // EADDRNOTAVAIL and ENOTFOUND show up when the host doesn't resolve to a local
+        // address, and leaving those pending stalls every caller of findFreePortInRange.
+        if (err.code !== 'EADDRINUSE' && err.code !== 'EACCES')
+          Logger.warn('PORT CHECK FAILED', { port, host, code: err.code, error: err.message })
+        resolve(false)
       })
 
       // Listen for connection and resolve "true" if no errors
