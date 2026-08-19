@@ -11,7 +11,10 @@ import {
   preferences,
   EventBus,
   Logger,
+  oidc,
 } from './backend'
+import { Oidc } from './backend/Oidc'
+import { OAUTH_ISSUER } from './backend/constants'
 
 const URL_REGEX = new RegExp('^https?://')
 const IP_PRIVATE = '127.0.0.1'
@@ -96,6 +99,13 @@ export default class ElectronApp {
    * Some APIs can only be used after this event occurs.
    */
   private handleAppReady = () => {
+    // Hand the backend OIDC store the OS keychain (safeStorage needs a ready app), and
+    // route its browser launches through the shell — the flow itself lives backend-side.
+    oidc.useSafeStorage(electron.safeStorage)
+    EventBus.on(Oidc.EVENTS.openUrl, ({ url }: { url: string }) => {
+      Logger.info('OIDC OPEN SYSTEM BROWSER')
+      electron.shell.openExternal(url)
+    })
     this.setDeepLink(process.argv.pop())
     this.createSystemTray()
     this.createMainWindow()
@@ -202,8 +212,12 @@ export default class ElectronApp {
     }
 
     if (url.includes('authCallback')) {
-      this.authCallback = true
-      Logger.info('SET AUTH CALLBACK')
+      // The backend OIDC client owns the code exchange (scheme-mode delivery); the old
+      // lane that reloaded the window with ?code= died with the Cognito stack.
+      Logger.info('OIDC AUTH CALLBACK DEEP LINK')
+      oidc.handleCallbackUrl(url)
+      this.deepLinkUrl = undefined
+      return
     }
 
     const match = URL_REGEX.exec(url)
@@ -254,7 +268,10 @@ export default class ElectronApp {
     })
 
     this.window.webContents.on('will-navigate', (event, url) => {
-      if (url.includes('auth.remote.it')) {
+      // Auth journeys belong in the SYSTEM browser (its password manager, its session),
+      // never inside this window. Keyed on the configured issuer, not a hard-coded host.
+      const authOrigin = OAUTH_ISSUER && url.startsWith(OAUTH_ISSUER)
+      if (authOrigin || url.includes('auth.remote.it')) {
         Logger.info('AUTH NAVIGATION DETECTED')
         event.preventDefault()
         electron.shell.openExternal(url)

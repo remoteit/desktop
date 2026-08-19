@@ -1,32 +1,15 @@
-import { store } from '../store'
+import { oidcAccessToken } from './oidc'
 
+/**
+ * The single token choke point every authenticated call flows through. The token is a
+ * Permitteer access token minted by the BACKEND process (which owns refresh + storage);
+ * this keeps the old contract — resolves to 'Bearer …' or '' (callers no-op on empty).
+ */
 export async function getToken(): Promise<string> {
-  const { auth } = store.dispatch
-
-  try {
-    const currentSession = await store.getState().auth.authService?.currentCognitoSession()
-    if (!currentSession) throw new Error('No current cognito session')
-    const token = 'Bearer ' + currentSession?.getAccessToken().getJwtToken()
-    return token
-  } catch (error) {
-    console.error('GET TOKEN ERROR', error.message, error.code, error)
-    if (error.code && error.code == 'NotAuthorizedException') {
-      auth.signInError('Session Expired')
-    }
-    return ''
-  }
+  const token = await oidcAccessToken()
+  return token ? 'Bearer ' + token : ''
 }
 
 export async function hasCredentials() {
-  const { auth } = store.dispatch
-  try {
-    await store.getState().auth.authService?.currentCognitoSession()
-    return true
-  } catch (error) {
-    console.error('HAS CREDENTIALS ERROR', error.message, error)
-    if (error.code && error.code == 'NotAuthorizedException') {
-      auth.signInError('Session Expired')
-    }
-    return false
-  }
+  return !!(await oidcAccessToken())
 }

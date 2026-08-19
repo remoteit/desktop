@@ -5,27 +5,13 @@ import network from '../services/Network'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import {
-  CLIENT_ID,
-  MOBILE_CLIENT_ID,
-  CALLBACK_URL,
-  AUTH_API_URL,
-  COGNITO_USER_POOL_ID,
-  COGNITO_AUTH_DOMAIN,
-  REDIRECT_URL,
-  SIGNOUT_REDIRECT_URL,
-  API_URL,
-  DEVELOPER_KEY,
-  SIGN_OUT_BACKEND_TIMEOUT,
-} from '../constants'
+import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { CognitoUser } from '../cognito/types'
-import { AuthService, ConfigInterface } from '../cognito/auth'
+import { oidcState, oidcStart, oidcSignOut, waitForSignIn, invalidateOidcToken, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import sleep from '../helpers/sleep'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
 import i18n from '../i18n'
@@ -47,7 +33,7 @@ export interface AuthState {
   authenticated: boolean
   backendAuthenticated: boolean
   signInError?: string
-  authService?: AuthService
+  signingIn?: boolean
   user?: IUser
   mfaMethod: string
   AWSUser: AWSUser
@@ -58,47 +44,48 @@ const defaultState: AuthState = {
   authenticated: false,
   backendAuthenticated: false,
   signInError: undefined,
+  signingIn: false,
   user: undefined,
-  authService: undefined,
   mfaMethod: '',
   AWSUser: { authProvider: '' },
 }
 
-const authServiceConfig = (): ConfigInterface => ({
-  cognitoClientID: browser.isMobile ? MOBILE_CLIENT_ID : CLIENT_ID,
-  cognitoUserPoolID: COGNITO_USER_POOL_ID,
-  cognitoAuthDomain: COGNITO_AUTH_DOMAIN,
-  checkSamlURL: AUTH_API_URL + '/checkSaml',
-  cognitoRegion: 'US-WEST-2',
-  redirectURL:
-    browser.isPortal || browser.isElectron || browser.isMobile ? window.origin : window.origin + '/v1/callback/',
-  callbackURL: browser.isPortal ? window.origin : browser.isElectron || browser.isMobile ? REDIRECT_URL : CALLBACK_URL,
-  signoutCallbackURL: browser.isPortal
-    ? window.origin
-    : browser.isElectron || browser.isMobile
-      ? SIGNOUT_REDIRECT_URL
-      : CALLBACK_URL,
-})
-
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    // silent suppresses the session-error toast for machine-triggered runs (a
-    // network reconnect), where the user didn't ask for this and may not even be
-    // looking at the app. See Controller.onNetworkConnect.
+    // The BACKEND owns the OIDC session (permitteer docs/remoteit-desktop-login.md):
+    // init just asks it whether one exists. silent suppresses the session-error toast
+    // for machine-triggered runs (a network reconnect). See Controller.onNetworkConnect.
     async init(options: { silent?: boolean } = {}, state) {
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
-        console.log('AUTH SERVICE CONFIG', authServiceConfig())
-        const authService = new AuthService(authServiceConfig())
-        console.log('AUTH INIT', { authService })
-        await sleep(500)
-        await dispatch.auth.set({ authService })
-        await dispatch.auth.checkSession({ refreshToken: true, silent: options.silent })
+        try {
+          const oidc = await oidcState()
+          if (oidc.signedIn) await dispatch.auth.handleSignInSuccess(oidc.claims ?? {})
+          else if (!oidc.configured) console.error('OAUTH_ISSUER is not configured in the backend')
+        } catch (error) {
+          console.error('AUTH INIT: backend oidc lane unreachable', error)
+          if (!options.silent) dispatch.ui.set({ errorMessage: 'Could not reach the local service.' })
+        }
       }
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')
+    },
+    // Start the browser sign-in journey and wait for the backend to complete it. The
+    // whole login UX (email-first, org SSO, MFA, signup, forgot) lives at the AS.
+    async signIn(_: void) {
+      dispatch.auth.set({ signingIn: true, signInError: undefined })
+      try {
+        await oidcStart()
+        const oidc = await waitForSignIn()
+        await dispatch.auth.handleSignInSuccess(oidc.claims ?? {})
+      } catch (error: any) {
+        console.error('SIGN IN FAILED', error)
+        dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
+      } finally {
+        dispatch.auth.set({ signingIn: false })
+      }
     },
     async fetchUser(_: void) {
       const { auth } = dispatch
@@ -116,28 +103,11 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: i18n.t('notices:auth.loginFailed', { defaultValue: 'Login failed.' }) })
       }
     },
-    async changePassword(passwordValues: IPasswordValue, state): Promise<boolean> {
-      const existingPassword = passwordValues.currentPassword
-      const newPassword = passwordValues.password
-
-      try {
-        await state.auth.authService?.changePassword(existingPassword, newPassword)
-        dispatch.ui.set({
-          successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
-        })
-        return true
-      } catch (error: any) {
-        const message =
-          error.code === 'NotAuthorizedException'
-            ? 'Current password is incorrect.'
-            : error.code === 'InvalidPasswordException'
-              ? error.message || 'New password does not meet the requirements.'
-              : error.code === 'LimitExceededException'
-                ? 'Too many attempts. Please try again later.'
-                : error.message || 'An unexpected error occurred. Please try again.'
-        dispatch.ui.set({ errorMessage: message })
-        return false
-      }
+    // Native credential management returns with the Passport self-API (plan Phase 2b) —
+    // the Cognito path this rode died with the Cognito stack.
+    async changePassword(_: IPasswordValue): Promise<boolean> {
+      dispatch.ui.set({ errorMessage: 'Password changes are moving to the new sign-in — available shortly.' })
+      return false
     },
     /* TODO validate and hook changeEmail up */
     async changeEmail(email: string) {
@@ -163,32 +133,37 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: i18n.t('notices:auth.invalidFormat', { defaultValue: 'Invalid format.' }) })
       }
     },
-    async forceRefreshToken(_: void, state) {
-      if (!state.auth.authService) return
-      await state.auth.authService.forceTokenRefresh()
+    async forceRefreshToken(_: void) {
+      invalidateOidcToken()
+      await getToken()
     },
+    // The 401 recovery path (services/post.ts): drop the renderer cache and let the
+    // backend refresh on the next token fetch. If the backend says the session is gone
+    // (refresh family revoked / AS session expired), sign the app out.
     async checkSession(options: { refreshToken: boolean; silent?: boolean }, state) {
-      if (!state.auth.authService) return
+      invalidateOidcToken()
       try {
-        const result = await state.auth.authService.checkSignIn({ refreshToken: options.refreshToken })
-        if (result.cognitoUser) {
-          await dispatch.auth.handleSignInSuccess(result.cognitoUser)
-        } else {
-          console.error('SESSION ERROR', result.error, result)
-          // still logged above - silent only withholds the user-facing toast
-          if (result.error?.message && !options.silent) dispatch.ui.set({ errorMessage: result.error.message })
+        const oidc = await oidcState()
+        if (!oidc.signedIn && state.auth.authenticated) {
+          console.error('SESSION ERROR: backend session gone')
+          if (!options.silent) dispatch.ui.set({ errorMessage: 'Session expired.' })
+          await dispatch.auth.signedOut()
         }
       } catch (error) {
         console.error('Check sign in error', error)
       }
     },
-    async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
-      if (cognitoUser?.username) {
-        await dispatch.auth.set({ authenticated: true })
-        await dispatch.auth.fetchUser()
-        await dispatch.mfa.getAWSUser()
-        console.log('AUTHENTICATED SUCCESS')
-      }
+    async handleSignInSuccess(claims: OidcClaims): Promise<void> {
+      await dispatch.auth.set({
+        authenticated: true,
+        AWSUser: {
+          authProvider: Array.isArray(claims.amr) ? claims.amr.join(' ') : String(claims.idp ?? ''),
+          email: claims.email,
+          email_verified: claims.email_verified,
+        },
+      })
+      await dispatch.auth.fetchUser()
+      console.log('AUTHENTICATED SUCCESS')
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {
@@ -272,10 +247,12 @@ export default createModel<RootModel>()({
     /**
      * Gets called when the backend signs the user out
      */
-    async signedOut(_: void, state) {
+    async signedOut(_: void) {
       await persistor.purge()
-      // purge has to happen before signOut because signOut can trigger a reload
-      await state.auth.authService?.signOut()
+      // End the AS session too (RP-initiated logout; the backend clears its token store
+      // and opens the browser to revoke the named session). Best-effort — a dead local
+      // lane must not block the app-side teardown.
+      await oidcSignOut().catch(error => console.warn('OIDC SIGN OUT FAILED', error))
       await dispatch.auth.set({ user: undefined })
       dispatch.user.reset()
       dispatch.organization.reset()
@@ -318,11 +295,9 @@ export default createModel<RootModel>()({
       Controller.close()
     },
     async globalSignOut() {
-      const Authorization = await getToken()
-      const response = await axios.get(`${AUTH_API_URL}/globalSignout`, {
-        headers: { Authorization },
-      })
-      console.log(`globalSignOut: `, response)
+      // Pilot: signs this session out at the AS (RP-initiated logout). Every-device
+      // sign-out maps to the AS's /logout/all and rides Phase 2b with the rest of the
+      // security surface.
       dispatch.auth.signOut()
     },
   }),
