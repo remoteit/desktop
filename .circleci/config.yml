@@ -3,7 +3,7 @@ jobs: # a collection of steps
   build: # runs not using Workflows must have a `build` job as entry point
     working_directory: ~/mern-starter # directory where steps will run
     docker: # run the steps with Docker
-    - image: cimg/node:22.3.0  # Updated to use Node 22.3.0 next-gen image
+    - image: cimg/node:22.23.2  # electron-builder 26.15+ requires a Node with require(esm): >=20.19 or >=22.12
     steps: # a collection of executable commands
       - checkout # special step to check out source code to working directory
       - run:
