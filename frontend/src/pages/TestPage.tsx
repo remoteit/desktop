@@ -14,6 +14,8 @@ import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
+import { isSecureAgentURL } from '../services/agent'
+import { MCP_AUDIENCE } from '../services/hydra'
 
 export const TestPage: React.FC = () => {
   const { t } = useTranslation()
@@ -29,6 +31,12 @@ export const TestPage: React.FC = () => {
   async function setAPIPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
     emit('preferences', { ...preferences, [key]: value })
+  }
+
+  // Agent overrides are browser-only (the chat never touches the desktop
+  // backend), so no preference emit
+  async function setAgentPreference(key: string, value: string | boolean) {
+    await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
   }
 
   return (
@@ -129,6 +137,52 @@ export const TestPage: React.FC = () => {
                   setAPIPreference('webSocketURL', url)
                   emit('binaries/install')
                 }}
+                hideIcon
+              />
+            </List>
+          </Quote>
+        </ListItem>
+        <ListItemSetting
+          hideIcon
+          label={t('testPage.overrideAgent', 'Override agent service')}
+          subLabel={t(
+            'testPage.overrideAgentSub',
+            'Point the Mycal chat at a deployed agent (https only). dev-ai-agent pairs with audience https://mcp.demo.remote.it/mcp. Sign in to the agent again after changing these.'
+          )}
+          onClick={() => setAgentPreference('switchAgent', !apis.switchAgent)}
+          toggle={!!apis.switchAgent}
+        />
+        <ListItem>
+          <Quote margin={null} indent="listItem" noInset>
+            <List disablePadding>
+              <InlineTextFieldSetting
+                value={apis.agentURL || ''}
+                label={t('testPage.agentURL', 'Agent service URL')}
+                placeholder="https://dev-ai-agent.remote.it"
+                disabled={!apis.switchAgent}
+                resetValue=""
+                maxLength={200}
+                onSave={url => {
+                  const value = url.toString().trim()
+                  // Reject rather than store a value agentURL() would silently
+                  // ignore while the audience override still applies
+                  if (value && !isSecureAgentURL(value)) {
+                    dispatch.ui.set({
+                      errorMessage: t('testPage.agentURLInvalid', 'Agent service URL must start with https://'),
+                    })
+                    return
+                  }
+                  setAgentPreference('agentURL', value)
+                }}
+                hideIcon
+              />
+              <InlineTextFieldSetting
+                value={apis.mcpAudience || MCP_AUDIENCE}
+                label={t('testPage.mcpAudience', 'Agent MCP audience')}
+                disabled={!apis.switchAgent}
+                resetValue={MCP_AUDIENCE}
+                maxLength={200}
+                onSave={value => setAgentPreference('mcpAudience', value.toString().trim())}
                 hideIcon
               />
             </List>

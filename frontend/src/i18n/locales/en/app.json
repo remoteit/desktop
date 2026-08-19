@@ -183,6 +183,31 @@
     "noticeTitle": "Notice",
     "title": "Change Password"
   },
+  "chat": {
+    "approve": "Approve",
+    "close": "Close",
+    "collapse": "Collapse",
+    "currentOrg": "Current Org",
+    "deny": "Deny",
+    "expand": "Expand",
+    "interrupted": "Interrupted",
+    "newChat": "New Chat",
+    "organization": "Organization",
+    "personal": "Personal",
+    "popIn": "Pop back in",
+    "popOut": "Pop out",
+    "send": "Send",
+    "signIn": "Sign in with remote.it",
+    "signInFromMain": "Sign in from the main app window.",
+    "signInNeeded": "The AI agent needs its own sign-in to act on your behalf.",
+    "stop": "Stop",
+    "toolRequest": "The agent wants to run <tool>{{tool}}</tool>",
+    "toolsUsed_one": "Used {{count}} tool",
+    "toolsUsed_other": "Used {{count}} tools",
+    "unavailable": "Mycal is temporarily unavailable. Check your internet connection or try again in a few minutes.",
+    "waitingApproval": "Waiting for approval…",
+    "windowTitle": "remote.it chat"
+  },
   "claimDevice": {
     "claim": "Claim",
     "claimCode": "Claim Code",
@@ -790,6 +815,7 @@
     "stepOf": "{{step}} of {{total}}"
   },
   "header": {
+    "aiAgent": "AI Agent",
     "back": "Back",
     "create": "Create",
     "deviceSearch": "Device Search",
@@ -1977,6 +2003,8 @@
   "testPage": {
     "addQueryHeader": "Add query header",
     "addQueryHeaderPlaceholder": "Example: \"key:value\"",
+    "agentURL": "Agent service URL",
+    "agentURLInvalid": "Agent service URL must start with https://",
     "clearViewedAnnouncements": "Clear viewed announcements",
     "clearViewedAnnouncementsHint": "Marks all loaded announcements unread for this account.",
     "disableTestUI": "Disable Test UI",
@@ -1986,6 +2014,9 @@
     "hideTestUIBackgrounds": "Hide test UI backgrounds",
     "licenseMessageCleared": "License message cleared",
     "licensingOptions": "Licensing Options",
+    "mcpAudience": "Agent MCP audience",
+    "overrideAgent": "Override agent service",
+    "overrideAgentSub": "Point the Mycal chat at a deployed agent (https only). dev-ai-agent pairs with audience https://mcp.demo.remote.it/mcp. Sign in to the agent again after changing these.",
     "overrideDefaultAPIs": "Override default APIs",
     "overrideLicensesAndLimits": "Override licenses and limits",
     "reset": "Reset",

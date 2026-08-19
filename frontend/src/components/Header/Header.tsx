@@ -1,4 +1,5 @@
 import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
+import { useChatEnabled } from '../../hooks/useChatEnabled'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
@@ -29,6 +30,9 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const { t } = useTranslation()
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
+  const chatOpen = useSelector((state: State) => state.chat.open)
+  const chatPoppedOut = useSelector((state: State) => state.chat.poppedOut)
+  const chatEnabled = useChatEnabled()
   const layout = useSelector((state: State) => state.ui.layout)
   const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
@@ -44,7 +48,15 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
 
   // Admin pages have two-level roots: /admin/users and /admin/partners (without IDs)
-  const adminRootPages = ['/admin/users', '/admin/admins', '/admin/partners', '/admin/enterprise-licenses', '/admin/devices', '/admin/notices', '/partner-stats']
+  const adminRootPages = [
+    '/admin/users',
+    '/admin/admins',
+    '/admin/partners',
+    '/admin/enterprise-licenses',
+    '/admin/devices',
+    '/admin/notices',
+    '/partner-stats',
+  ]
   const isAdminRootPage = adminRootPages.includes(location.pathname)
   const isRootMenu = menu === location.pathname || isAdminRootPage
 
@@ -78,6 +90,16 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             icon="chevron-left"
             size="md"
             color="grayDarker"
+          />
+        )}
+        {chatEnabled && !chatPoppedOut && (
+          <IconButton
+            icon="robot"
+            size="md"
+            type={chatOpen ? 'solid' : undefined}
+            color={chatOpen ? 'primary' : 'grayDarker'}
+            title={t('header.aiAgent', 'AI Agent')}
+            onClick={() => dispatch.chat.set({ open: !chatOpen })}
           />
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}

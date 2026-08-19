@@ -1,8 +1,10 @@
 import { numericVersion } from './helpers/versionHelper'
 import { models, RootModel } from './models'
+import { defaultChatState, IChatState } from './models/chat'
+import { isChatPopout } from './services/chatPopout'
 import { createLogger, ReduxLoggerOptions } from 'redux-logger'
 import { init, RematchDispatch, RematchRootState } from '@rematch/core'
-import { PersistConfig } from 'redux-persist'
+import { createTransform, PersistConfig } from 'redux-persist'
 import persistPlugin, { getPersistor } from '@rematch/persist'
 import DateTransform from './helpers/DateTransform'
 import immerPlugin from '@rematch/immer'
@@ -12,29 +14,50 @@ const loggerConfig: ReduxLoggerOptions = {
   predicate: () => !!(window as any).stateLogging,
 }
 
+// Persist only the durable chat fields — streaming/pendingConfirmation/error/
+// health are runtime-only and must never survive a reload
+const chatTransform = createTransform(
+  (inbound: IChatState) => ({
+    messages: inbound.messages,
+    conversationId: inbound.conversationId,
+    orgId: inbound.orgId,
+    open: inbound.open,
+    expanded: inbound.expanded,
+    poppedOut: inbound.poppedOut,
+  }),
+  (outbound: Partial<IChatState>) => ({ ...defaultChatState, ...outbound }),
+  { whitelist: ['chat'] }
+)
+
 const persistConfig: PersistConfig<RootModel> = {
   key: 'app',
   version: numericVersion(),
   storage: localForage,
-  whitelist: [
-    'accounts',
-    'announcements',
-    'applicationTypes',
-    'connections',
-    'contacts',
-    'devices',
-    'files',
-    'jobs',
-    'networks',
-    'organization',
-    'plans',
-    'products',
-    'sessions',
-    'tags',
-    'user',
-  ],
+  // The chat popout window is a second full app instance on the same storage
+  // key; it adopts its transcript over the BroadcastChannel handoff and must
+  // never write, or the two windows clobber each other (last-writer-wins)
+  whitelist: isChatPopout
+    ? []
+    : [
+        'accounts',
+        'announcements',
+        'applicationTypes',
+        'chat',
+        'connections',
+        'contacts',
+        'devices',
+        'files',
+        'jobs',
+        'networks',
+        'organization',
+        'plans',
+        'products',
+        'sessions',
+        'tags',
+        'user',
+      ],
   throttle: 1000,
-  transforms: [DateTransform],
+  transforms: [DateTransform, chatTransform],
 }
 
 export const store = init<RootModel>({

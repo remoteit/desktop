@@ -9,6 +9,12 @@
     "loginFailed": "Login failed.",
     "passwordChanged": "Password changed successfully."
   },
+  "chat": {
+    "authRequired": "Agent authentication required — sign in to continue.",
+    "popupBlocked": "Pop out was blocked — allow popups for this site and try again.",
+    "sessionExpired": "Agent session expired — sign in again to continue.",
+    "signInFailed": "Agent sign-in failed — {{error}}"
+  },
   "connection": {
     "surveyFailed": "Connection survey submission failed. Please contact support."
   },

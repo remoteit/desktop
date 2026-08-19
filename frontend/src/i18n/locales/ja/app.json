@@ -180,6 +180,30 @@
     "noticeTitle": "注意",
     "title": "パスワードを変更"
   },
+  "chat": {
+    "approve": "承認",
+    "close": "閉じる",
+    "collapse": "縮小",
+    "currentOrg": "現在の組織",
+    "deny": "拒否",
+    "expand": "拡大",
+    "interrupted": "中断されました",
+    "newChat": "新しいチャット",
+    "organization": "組織",
+    "personal": "個人",
+    "popIn": "元に戻す",
+    "popOut": "別ウィンドウで開く",
+    "send": "送信",
+    "signIn": "remote.it でサインイン",
+    "signInFromMain": "メインのアプリウィンドウからサインインしてください。",
+    "signInNeeded": "AI エージェントがユーザーに代わって操作を行うには、専用のサインインが必要です。",
+    "stop": "停止",
+    "toolRequest": "エージェントが <tool>{{tool}}</tool> の実行を求めています",
+    "toolsUsed_other": "{{count}} 個のツールを使用",
+    "unavailable": "Mycal は一時的に利用できません。インターネット接続を確認するか、しばらくしてからもう一度お試しください。",
+    "waitingApproval": "承認を待っています…",
+    "windowTitle": "remote.it チャット"
+  },
   "claimDevice": {
     "claim": "登録",
     "claimCode": "登録コード",
@@ -765,6 +789,7 @@
     "stepOf": "{{total}}件中{{step}}件目"
   },
   "header": {
+    "aiAgent": "AI エージェント",
     "back": "戻る",
     "create": "",
     "deviceSearch": "デバイス検索",
@@ -1896,6 +1921,8 @@
   "testPage": {
     "addQueryHeader": "クエリヘッダーを追加",
     "addQueryHeaderPlaceholder": "例: \"key:value\"",
+    "agentURL": "エージェントサービス URL",
+    "agentURLInvalid": "エージェントサービス URL は https:// で始まる必要があります",
     "clearViewedAnnouncements": "閲覧済みのお知らせをクリア",
     "clearViewedAnnouncementsHint": "このアカウントで読み込まれたすべてのお知らせを未読としてマークします。",
     "disableTestUI": "テストUIを無効にする",
@@ -1905,6 +1932,9 @@
     "hideTestUIBackgrounds": "テストUIの背景を非表示にする",
     "licenseMessageCleared": "ライセンスメッセージがクリアされました",
     "licensingOptions": "ライセンスオプション",
+    "mcpAudience": "エージェント MCP オーディエンス",
+    "overrideAgent": "エージェントサービスを上書き",
+    "overrideAgentSub": "Mycal チャットをデプロイ済みエージェントに向けます（https のみ）。dev-ai-agent はオーディエンス https://mcp.demo.remote.it/mcp とペアです。変更後はエージェントに再サインインしてください。",
     "overrideDefaultAPIs": "デフォルトのAPIをオーバーライド",
     "overrideLicensesAndLimits": "ライセンスと制限をオーバーライド",
     "reset": "リセット",

@@ -273,10 +273,18 @@ export default createModel<RootModel>()({
      * Gets called when the backend signs the user out
      */
     async signedOut(_: void, state) {
+      // Agent (Hydra) session goes with the app session — clears stored
+      // tokens synchronously, revoke is fire-and-forget so sign-out never
+      // blocks on it. Runs before the purge (and the transcript reset joins
+      // the model resets below) so nothing dispatches between purge and a
+      // signOut-triggered reload — a store write there makes redux-persist
+      // re-save the pre-signout state for the next user of the machine.
+      dispatch.chat.signOut()
       await persistor.purge()
       // purge has to happen before signOut because signOut can trigger a reload
       await state.auth.authService?.signOut()
       await dispatch.auth.set({ user: undefined })
+      dispatch.chat.reset()
       dispatch.user.reset()
       dispatch.organization.reset()
       dispatch.networks.reset()
