@@ -66,8 +66,15 @@ export default createModel<RootModel>()({
           // the desktop deep-link reload); otherwise restore a stored session.
           const claims = await oidcCompleteFromUrl()
           if (claims) await dispatch.auth.handleSignInSuccess(claims)
-          else if (oidcSignedIn()) await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
-          else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
+          else if (oidcSignedIn()) {
+            // Stored tokens are a CLAIM of a session, not proof of one: the AS may have
+            // revoked it (sign-out elsewhere, admin action, family revocation). Force one
+            // token mint — a dead refresh family clears itself and we boot signed OUT
+            // instead of rendering an authenticated shell over a corpse.
+            const alive = await getToken()
+            if (alive) await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
+            else invalidateOidcToken()
+          } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
           console.error('AUTH INIT: sign-in completion failed', error)
           if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
