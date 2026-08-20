@@ -52,7 +52,7 @@ export const PasskeysSettings: React.FC = () => {
           challenge: b64uToBuf(options.challenge),
           user: { ...options.user, id: b64uToBuf(options.user.id) },
           excludeCredentials: (options.excludeCredentials ?? []).map((c: any) => ({ ...c, id: b64uToBuf(c.id) })),
-        } as PublicKeyCredentialCreationOptions,
+        } as unknown as PublicKeyCredentialCreationOptions,
       })) as PublicKeyCredential
       const response = cred.response as AuthenticatorAttestationResponse
       const name = t('passkeys.defaultName', 'This device')
