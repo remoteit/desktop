@@ -139,7 +139,7 @@ export default createModel<RootModel>()({
       const pending = state.auth.passwordChallenge
       if (!pending) return false
       const { selfChallenge } = await import('../services/passportSelf')
-      const r = await selfChallenge(pending.challenge, code)
+      const r = await selfChallenge(pending.challenge, { code })
       if (r.status === 'ok') {
         dispatch.auth.set({ passwordChallenge: undefined })
         dispatch.ui.set({ successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }) })

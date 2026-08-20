@@ -10,11 +10,15 @@ import { OAUTH_PASSPORT_RESOURCE } from '../constants'
  */
 
 export type SelfContinuation = {
-  status?: 'ok' | 'mfa' | 'confirm'
+  status?: 'ok' | 'mfa' | 'confirm' | 'select'
   challenge?: string
   hint?: string
   secret?: string
   otpauth?: string
+  delivery?: 'sms'
+  options?: string[]
+  methods?: string[]
+  preferred?: string
   recovery_codes?: string[]
   error?: string
   error_description?: string
@@ -32,10 +36,19 @@ const call = async (path: string, body?: Record<string, string>): Promise<SelfCo
   return { ...parsed, httpStatus: response.status }
 }
 
+export type MfaMethod = 'totp' | 'sms'
+export type MfaStanding = { methods: MfaMethod[]; preferred?: MfaMethod; available: MfaMethod[] }
+
 export const selfMe = () => call('')
+export const selfMfaStanding = () => call('/mfa') as Promise<MfaStanding & { httpStatus: number }>
 export const selfChangePassword = (current_password: string, new_password: string) =>
   call('/password', { current_password, new_password })
-export const selfChallenge = (challenge: string, code: string) => call('/challenge', { challenge, code })
-export const selfMfaEnroll = (password: string) => call('/mfa/enroll', { password })
+/** Answer a pending challenge: a code — or, for a factor CHOICE (select), the method. */
+export const selfChallenge = (challenge: string, answer: { code?: string; choice?: MfaMethod }) =>
+  call('/challenge', { challenge, ...answer })
+export const selfMfaEnroll = (password: string, method: MfaMethod = 'totp', phone?: string) =>
+  call('/mfa/enroll', { password, method, ...(phone ? { phone } : {}) })
 export const selfMfaConfirm = (challenge: string, code: string) => call('/mfa/confirm', { challenge, code })
-export const selfMfaDisable = (password: string) => call('/mfa/disable', { password })
+export const selfMfaPrefer = (password: string, method: MfaMethod) => call('/mfa/prefer', { password, method })
+export const selfMfaDisable = (password: string, method?: MfaMethod) =>
+  call('/mfa/disable', { password, ...(method ? { method } : {}) })
