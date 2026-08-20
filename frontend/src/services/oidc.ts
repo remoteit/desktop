@@ -165,24 +165,25 @@ async function refresh(resource: string): Promise<string> {
   }
 }
 
-/** RP-initiated logout: clear locally FIRST, then send the browser to end the AS
- * session (web departs; desktop bounces to the system browser and the window stays). */
-export async function oidcSignOut(): Promise<void> {
+/** The RP-initiated-logout URL for the CURRENT session, or undefined when there is
+ * nothing to end. Built BEFORE local teardown clears the id_token — the caller decides
+ * when to navigate (EXPLICIT sign-out only; failure paths never end the AS session). */
+export async function oidcEndSessionUrl(): Promise<string | undefined> {
   const idToken = stored()?.id_token
-  clearLocal()
-  if (!idToken) return
+  if (!idToken) return undefined
   try {
     const d = await discover()
-    if (!d.end_session_endpoint) return
+    if (!d.end_session_endpoint) return undefined
     const url = new URL(d.end_session_endpoint)
     url.searchParams.set('id_token_hint', idToken)
     url.searchParams.set(
       'post_logout_redirect_uri',
       browser.isElectron ? PROTOCOL + 'signoutCallback' : window.location.origin + '/signoutCallback'
     )
-    window.location.assign(url.toString())
+    return url.toString()
   } catch (error) {
-    console.warn('OIDC SIGN OUT (AS side) FAILED', error)
+    console.warn('OIDC END-SESSION URL FAILED', error)
+    return undefined
   }
 }
 

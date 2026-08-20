@@ -255,23 +255,32 @@ export default createModel<RootModel>()({
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
+      // EXPLICIT sign-out ends the AS session too (RP-initiated logout) — the user asked
+      // to leave. Build the end-session URL BEFORE any teardown clears the id_token;
+      // failure-driven teardown (signedOut via the error paths) stays local-only.
+      const { oidcEndSessionUrl } = await import('../services/oidc')
+      const endSession = await oidcEndSessionUrl().catch(() => undefined)
+      const leave = () => {
+        if (endSession) window.location.assign(endSession)
+      }
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
       // return value, sign out in that window did nothing at all: no purge, no
       // teardown, no redirect, and the user stayed signed in with no feedback.
       if (state.auth.backendAuthenticated) {
-        if (emit('user/sign-out')) return
+        if (emit('user/sign-out')) { leave(); return }
         // Don't tear down behind the backend's back if it's only momentarily
         // unreachable. It owns cli.signOut() and the connection pool, and a
         // frontend-only sign out leaves the CLI admin registered - which makes
         // the helper reject a different account until someone runs a manual
         // 'remoteit signout'. Force the socket back rather than wait out
         // socket.io's 20s retry, then send it for real.
-        if ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && emit('user/sign-out')) return
+        if ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && emit('user/sign-out')) { leave(); return }
         console.warn('SIGN OUT: local backend unreachable, signing the app out only')
       }
       await dispatch.auth.signedOut()
+      leave()
     },
     /**
      * Gets called when the backend signs the user out

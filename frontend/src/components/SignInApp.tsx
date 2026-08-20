@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Box, Button, Typography, CircularProgress } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
+import browser from '../services/browser'
 import brand from '@common/brand/config'
 
 /**
@@ -13,6 +14,26 @@ import brand from '@common/brand/config'
 export function SignInApp() {
   const { signInError, signingIn } = useSelector((state: State) => state.auth)
   const { auth } = useDispatch<Dispatch>()
+
+  // On the WEB there is nothing to show a signed-out user — the AS login page IS the
+  // sign-in surface, so leave for it immediately (once per landing; an error return
+  // stays here so a cancel at the AS can't loop). Desktop keeps the launcher: its
+  // window must show something while the SYSTEM browser hosts the journey.
+  const autoStart = !browser.isElectron && !signingIn && !signInError
+  useEffect(() => {
+    if (autoStart) auth.signIn()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart])
+
+  if (autoStart || (!browser.isElectron && signingIn))
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={12}>
+        <CircularProgress size={28} />
+        <Typography variant="body2" color="textSecondary">
+          Taking you to sign in…
+        </Typography>
+      </Box>
+    )
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={8} paddingX={4}>
