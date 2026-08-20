@@ -34,6 +34,7 @@ export interface AuthState {
   backendAuthenticated: boolean
   signInError?: string
   signingIn?: boolean
+  passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
   mfaMethod: string
   AWSUser: AWSUser
@@ -103,10 +104,43 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: i18n.t('notices:auth.loginFailed', { defaultValue: 'Login failed.' }) })
       }
     },
-    // Native credential management returns with the Passport self-API (plan Phase 2b) —
-    // the Cognito path this rode died with the Cognito stack.
-    async changePassword(_: IPasswordValue): Promise<boolean> {
-      dispatch.ui.set({ errorMessage: 'Password changes are moving to the new sign-in — available shortly.' })
+    // Native password change over the Passport self-API (Phase 2b): the current password
+    // is the proof of possession; accounts whose store challenges (pool MFA) get a code
+    // continuation the ChangePassword form renders.
+    async changePassword(passwordValues: IPasswordValue): Promise<boolean> {
+      const { selfChangePassword } = await import('../services/passportSelf')
+      const r = await selfChangePassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
+      if (r.status === 'ok') {
+        dispatch.auth.set({ passwordChallenge: undefined })
+        dispatch.ui.set({ successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }) })
+        return true
+      }
+      if (r.status === 'mfa' && r.challenge) {
+        dispatch.auth.set({ passwordChallenge: { challenge: r.challenge, hint: r.hint } })
+        return false
+      }
+      dispatch.ui.set({
+        errorMessage:
+          r.error === 'invalid_password' ? 'Current password is incorrect.'
+          : r.error === 'weak_password' ? r.error_description || 'New password does not meet the requirements.'
+          : r.error_description || 'An unexpected error occurred. Please try again.',
+      })
+      return false
+    },
+    /** Answer the store's second-factor challenge raised by changePassword. */
+    async completePasswordChallenge(code: string, state): Promise<boolean> {
+      const pending = state.auth.passwordChallenge
+      if (!pending) return false
+      const { selfChallenge } = await import('../services/passportSelf')
+      const r = await selfChallenge(pending.challenge, code)
+      if (r.status === 'ok') {
+        dispatch.auth.set({ passwordChallenge: undefined })
+        dispatch.ui.set({ successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }) })
+        return true
+      }
+      // invalid_code re-arms the SAME step under a fresh handle — a typo never restarts.
+      dispatch.auth.set({ passwordChallenge: r.challenge ? { challenge: r.challenge, hint: pending.hint } : undefined })
+      dispatch.ui.set({ errorMessage: r.challenge ? 'That code didn’t match — try again.' : 'The request expired — start over.' })
       return false
     },
     /* TODO validate and hook changeEmail up */

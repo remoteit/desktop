@@ -5,7 +5,7 @@ import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { Gutters } from '../components/Gutters'
 import { ChangePassword } from '../components/ChangePassword'
-import { MFAPreference } from '../components/MFA/MFAPreference'
+import { MFASettings } from '../components/MFA/MFASettings'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 
@@ -22,7 +22,7 @@ export const SecurityPage: React.FC = () => {
     >
       <ChangePassword />
       <Divider variant="inset" />
-      <MFAPreference />
+      <MFASettings />
       <Divider variant="inset" />
       <GlobalSignOut />
     </Container>

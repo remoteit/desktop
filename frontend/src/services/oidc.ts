@@ -86,6 +86,13 @@ export async function oidcStart(): Promise<void> {
     code_challenge: b64u(new Uint8Array(digest)),
     code_challenge_method: 'S256',
     scope: 'openid email full',
+    // First-party clients declare their own details (no consent screen — skipConsent):
+    // the passport-audience token minted later via refresh carries this slice, gating the
+    // native security settings (credentials.write); the graphql audience stays pure
+    // scope-`full` (an uncovered resource yields audience-only tokens).
+    authorization_details: JSON.stringify([
+      { type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
+    ]),
     state: flow.state,
     nonce: flow.nonce,
   }
