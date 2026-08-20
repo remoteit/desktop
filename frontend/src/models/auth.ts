@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcState, oidcStart, oidcSignOut, waitForSignIn, invalidateOidcToken, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcSignOut, oidcCompleteFromUrl, invalidateOidcToken, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -61,30 +61,30 @@ export default createModel<RootModel>()({
       console.log('AUTH INIT START', { user })
       if (!user) {
         try {
-          const oidc = await oidcState()
-          if (oidc.signedIn) await dispatch.auth.handleSignInSuccess(oidc.claims ?? {})
-          else if (!oidc.configured) console.error('OAUTH_ISSUER is not configured in the backend')
-        } catch (error) {
-          console.error('AUTH INIT: backend oidc lane unreachable', error)
-          if (!options.silent) dispatch.ui.set({ errorMessage: 'Could not reach the local service.' })
+          // A boot with ?code&state in the URL IS the sign-in completing (web return, or
+          // the desktop deep-link reload); otherwise restore a stored session.
+          const claims = await oidcCompleteFromUrl()
+          if (claims) await dispatch.auth.handleSignInSuccess(claims)
+          else if (oidcSignedIn()) await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
+          else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
+        } catch (error: any) {
+          console.error('AUTH INIT: sign-in completion failed', error)
+          if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
         }
       }
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')
     },
-    // Start the browser sign-in journey and wait for the backend to complete it. The
-    // whole login UX (email-first, org SSO, MFA, signup, forgot) lives at the AS.
+    // Leave for the AS (the whole login UX — email-first, org SSO, MFA, signup, forgot —
+    // lives there). On web the page departs; on desktop the window shows the waiting
+    // panel until the deep link reloads it with the code.
     async signIn(_: void) {
       dispatch.auth.set({ signingIn: true, signInError: undefined })
       try {
         await oidcStart()
-        const oidc = await waitForSignIn()
-        await dispatch.auth.handleSignInSuccess(oidc.claims ?? {})
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
-        dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
-      } finally {
-        dispatch.auth.set({ signingIn: false })
+        dispatch.auth.set({ signingIn: false, signInError: error?.message || 'Sign in failed, please try again.' })
       }
     },
     async fetchUser(_: void) {
@@ -142,15 +142,10 @@ export default createModel<RootModel>()({
     // (refresh family revoked / AS session expired), sign the app out.
     async checkSession(options: { refreshToken: boolean; silent?: boolean }, state) {
       invalidateOidcToken()
-      try {
-        const oidc = await oidcState()
-        if (!oidc.signedIn && state.auth.authenticated) {
-          console.error('SESSION ERROR: backend session gone')
-          if (!options.silent) dispatch.ui.set({ errorMessage: 'Session expired.' })
-          await dispatch.auth.signedOut()
-        }
-      } catch (error) {
-        console.error('Check sign in error', error)
+      if (!oidcSignedIn() && state.auth.authenticated) {
+        console.error('SESSION ERROR: session gone (refresh family dead or signed out)')
+        if (!options.silent) dispatch.ui.set({ errorMessage: 'Session expired.' })
+        await dispatch.auth.signedOut()
       }
     },
     async handleSignInSuccess(claims: OidcClaims): Promise<void> {
@@ -249,9 +244,9 @@ export default createModel<RootModel>()({
      */
     async signedOut(_: void) {
       await persistor.purge()
-      // End the AS session too (RP-initiated logout; the backend clears its token store
-      // and opens the browser to revoke the named session). Best-effort — a dead local
-      // lane must not block the app-side teardown.
+      // End the AS session too (RP-initiated logout): local tokens clear first inside,
+      // then the browser leaves for end_session (web departs; desktop bounces to the
+      // system browser). Best-effort — AS unreachability must not block local teardown.
       await oidcSignOut().catch(error => console.warn('OIDC SIGN OUT FAILED', error))
       await dispatch.auth.set({ user: undefined })
       dispatch.user.reset()

@@ -17,7 +17,6 @@ import Binary from './Binary'
 import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
-import { Oidc } from './Oidc'
 import launch from './launch'
 
 const DEFAULT_SOCKETS_LENGTH = 3
@@ -35,7 +34,6 @@ class Controller {
 
     let eventNames = [
       ...Object.values(User.EVENTS),
-      ...Object.values(Oidc.EVENTS),
       ...Object.values(Binary.EVENTS),
       ...Object.values(ConnectionPool.EVENTS),
       ...Object.values(lan.EVENTS),

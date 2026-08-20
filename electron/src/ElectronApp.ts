@@ -11,7 +11,6 @@ import {
   preferences,
   EventBus,
   Logger,
-  oidc,
 } from './backend'
 import { OAUTH_ISSUER } from './backend/constants'
 
@@ -98,13 +97,6 @@ export default class ElectronApp {
    * Some APIs can only be used after this event occurs.
    */
   private handleAppReady = () => {
-    // Hand the backend OIDC store the OS keychain (safeStorage needs a ready app), and
-    // route its browser launches through the shell — the flow itself lives backend-side.
-    oidc.useSafeStorage(electron.safeStorage)
-    oidc.useOpener(url => {
-      Logger.info('OIDC OPEN SYSTEM BROWSER')
-      electron.shell.openExternal(url)
-    })
     this.setDeepLink(process.argv.pop())
     this.createSystemTray()
     this.createMainWindow()
@@ -211,12 +203,10 @@ export default class ElectronApp {
     }
 
     if (url.includes('authCallback')) {
-      // The backend OIDC client owns the code exchange (scheme-mode delivery); the old
-      // lane that reloaded the window with ?code= died with the Cognito stack.
-      Logger.info('OIDC AUTH CALLBACK DEEP LINK')
-      oidc.handleCallbackUrl(url)
-      this.deepLinkUrl = undefined
-      return
+      // The RENDERER owns the exchange (D8): reload the window with the callback query —
+      // the app boots with ?code&state exactly like the web return.
+      this.authCallback = true
+      Logger.info('SET AUTH CALLBACK')
     }
 
     const match = URL_REGEX.exec(url)

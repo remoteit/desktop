@@ -17,21 +17,10 @@ export const REDIRECT_URL = env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
 export const API_URL = env.API_URL || 'https://api.remote.it/apv/v27'
 
-// OIDC sign-in against Permitteer (docs: permitteer docs/remoteit-desktop-login.md).
-// The backend process OWNS the flow — PKCE, code capture, token exchange, rotating
-// refresh, keychain persistence; the renderer only ever receives short-lived access
-// tokens over the local socket. OAUTH_ISSUER unset = the module refuses to start
-// (this branch line has no Cognito fallback — D2, no dual stack).
+// The Permitteer issuer origin (D8: sign-in is RENDERER-owned — the backend never
+// touches auth). The main process only needs this to bounce issuer-origin navigations
+// out to the system browser (ElectronApp will-navigate).
 export const OAUTH_ISSUER = env.OAUTH_ISSUER || ''
-export const OAUTH_CLIENT_ID = env.OAUTH_CLIENT_ID || 'remoteit_desktop'
-// The API audience tokens are minted for. LESSON (plan Phase 0): `resource` must ride
-// the TOKEN/refresh request — the identity lane defaults `aud` to the issuer otherwise.
-export const OAUTH_GRAPHQL_RESOURCE = env.OAUTH_GRAPHQL_RESOURCE || 'https://graphql.dev.remote.it/graphql'
-// 'loopback' = one-shot 127.0.0.1 listener (the LOCAL DEV lane — an unpackaged Electron
-// can't reliably claim the custom scheme); 'scheme' = remoteit://authCallback deep link
-// (packaged builds). Both URIs are registered on the client; the AS matches loopback
-// ports ephemerally.
-export const OAUTH_REDIRECT_MODE = (env.OAUTH_REDIRECT_MODE as 'scheme' | 'loopback') || 'loopback'
 
 // Airbrake error reporting
 export const AIRBRAKE_PROJECT_ID = 223457

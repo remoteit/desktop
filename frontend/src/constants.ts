@@ -2,6 +2,12 @@ import brand from '@common/brand/config'
 const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
+// Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
+// web and desktop; the backend never touches auth.
+export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''
+export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
+export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://graphql.dev.remote.it/graphql'
+
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
 export const GRAPHQL_API = env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'

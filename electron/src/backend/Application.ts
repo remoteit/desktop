@@ -1,5 +1,4 @@
 import Controller from './Controller'
-import oidc from './Oidc'
 import binaryInstaller from './binaryInstaller'
 import electronInterface from './electronInterface'
 import ConnectionPool from './ConnectionPool'
@@ -18,9 +17,6 @@ export default class Application {
 
   async constructorSync() {
     await environment.setElevatedState()
-    // Restore any stored OIDC session before the renderer can ask for tokens (plain-file
-    // read here; re-persisted encrypted when ElectronApp injects safeStorage).
-    await oidc.load()
     await binaryInstaller.init()
     server.start()
     if (server.io) new Controller(server.io, this.pool)

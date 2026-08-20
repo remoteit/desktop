@@ -7,7 +7,6 @@ import fs from 'fs'
 import path from 'path'
 import https from 'https'
 import user from './User'
-import oidc from './Oidc'
 import cors from 'cors'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
@@ -46,29 +45,6 @@ class Server {
     this.app.use('/v1/callback', express.static(WEB_DIR))
     this.app.use('/authCallback', express.static(WEB_DIR))
     this.app.use('/', router)
-
-    // The OIDC control lane rides plain LOCAL HTTP, not the socket: the socket only
-    // exists after sign-in (its handshake needs the authhash sign-in produces), while
-    // these endpoints are what PRODUCE the sign-in. Renderer-only by intent; the
-    // exposure is the same 127.0.0.1 surface the SPA itself is served from, and no
-    // endpoint ever returns a refresh token.
-    router.get('/oidc/state', (request, response) => {
-      response.json({ configured: oidc.configured, signedIn: oidc.signedIn, claims: oidc.claims ?? null })
-    })
-    router.post('/oidc/start', async (request, response) => {
-      await oidc.start()
-      response.json({ ok: true })
-    })
-    router.post('/oidc/token', async (request, response) => {
-      const resource = typeof request.query.resource === 'string' ? request.query.resource : undefined
-      const token = await oidc.getAccessToken(resource)
-      if (!token) return response.status(401).json({ error: 'not signed in' })
-      response.json(token)
-    })
-    router.post('/oidc/sign-out', async (request, response) => {
-      await oidc.signOut()
-      response.json({ ok: true })
-    })
 
     router.get('/system', async (request, response) => {
       const system = await systemInfo()
