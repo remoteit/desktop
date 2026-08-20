@@ -106,6 +106,8 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' } = 
     // scope-`full` (an uncovered resource yields audience-only tokens).
     authorization_details: JSON.stringify([
       { type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
+      // Connected Apps rides the AS's own account API (plan D6) — list + revoke only.
+      { type: 'permitteer_account', actions: ['apps.read', 'apps.write'] },
     ]),
     state: flow.state,
     nonce: flow.nonce,

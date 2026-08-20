@@ -13,8 +13,7 @@ import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 import { Timestamp } from '../components/Timestamp'
 import { AgentAvatar } from '../components/ConnectedApps/AgentAvatar'
-import { AgentReachEditor } from '../components/ConnectedApps/AgentReachEditor'
-import { capabilityLabel, accessWindow } from '../components/ConnectedApps/helpers'
+import { enabledActions, revokeWindow } from '../components/ConnectedApps/helpers'
 import { spacing } from '../styling'
 
 export const ConnectedAppDetailPage: React.FC = () => {
@@ -25,10 +24,9 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
 
   const agent = useSelector((state: State) => state.agents.agents.find(a => a.clientId === decoded))
-  const ttl = useSelector((state: State) => state.agents.accessTokenTtlSeconds)
   const fetching = useSelector((state: State) => state.agents.fetching)
   const init = useSelector((state: State) => state.agents.init)
-  const revoking = useSelector((state: State) => state.agents.updating === decoded)
+  const revoking = useSelector((state: State) => state.agents.updating === agent?.id)
 
   useEffect(() => {
     dispatch.agents.init()
@@ -61,7 +59,9 @@ export const ConnectedAppDetailPage: React.FC = () => {
     )
   }
 
-  const name = agent.clientName || agent.clientId
+  const name = agent.app || agent.clientId
+  const actions = enabledActions(agent)
+  const reach = agent.revokeReach
 
   return (
     <Container
@@ -87,8 +87,18 @@ export const ConnectedAppDetailPage: React.FC = () => {
               children: (
                 <>
                   <Notice severity="error" gutterBottom fullWidth>
-                    <b>{name}</b> {t('connectedAppDetailPage.signOutBefore', 'will be signed out. New access is blocked immediately; any session already in progress ends within')}{' '}
-                    <b>{accessWindow(ttl)}</b>.
+                    <b>{name}</b>{' '}
+                    {t('connectedAppDetailPage.signOutBefore', 'will be signed out and can no longer get new access.')}
+                    {reach?.delayed?.length ? (
+                      <>
+                        {' '}
+                        {t('connectedAppDetailPage.delayedReach', {
+                          apis: reach.delayed.join(', '),
+                          window: revokeWindow(reach.delayMinutes),
+                          defaultValue: 'Access already in progress at {{apis}} ends within {{window}}.',
+                        })}
+                      </>
+                    ) : null}
                   </Notice>
                   <Typography variant="body2">
                     {t('connectedAppDetailPage.requestAgain', 'It can request access again by signing in.')}
@@ -97,7 +107,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
               ),
             }}
             onClick={async () => {
-              await dispatch.agents.revoke(agent.clientId)
+              await dispatch.agents.revoke(agent.id)
               back()
             }}
           />
@@ -106,23 +116,29 @@ export const ConnectedAppDetailPage: React.FC = () => {
     >
       <Typography variant="subtitle1">{t('connectedAppDetailPage.permissions', 'Permissions')}</Typography>
       <Gutters top={null}>
-        {agent.capabilities.length ? (
+        {actions.length ? (
           <>
             <Typography variant="caption" display="block" sx={{ marginBottom: 1.5 }}>
               {t('connectedAppDetailPage.grantedWhenSignedIn', {
                 name,
-                defaultValue: 'Granted when {{name}} signed in. To change them, revoke access and have it sign in again.',
+                defaultValue: 'Granted when {{name}} signed in. Manage or trim them from your account page.',
               })}
             </Typography>
-            {agent.capabilities.map(scope => (
-              <Chip key={scope} size="small" label={capabilityLabel(scope)} sx={{ mr: 1, mb: 0.5 }} />
+            {actions.map(action => (
+              <Chip
+                key={action.key}
+                size="small"
+                label={action.limit ? `${action.label} (${action.limit})` : action.label}
+                title={action.description || undefined}
+                sx={{ mr: 1, mb: 0.5 }}
+              />
             ))}
           </>
         ) : (
           <Typography variant="body2" color="textSecondary">
             {t(
-              'connectedAppDetailPage.noDeviceAccess',
-              'No device access — it can confirm your identity, but cannot see or control any devices.'
+              'connectedAppDetailPage.signInOnly',
+              'Sign-in only — it can confirm your identity, but was granted nothing else.'
             )}
           </Typography>
         )}
@@ -130,50 +146,40 @@ export const ConnectedAppDetailPage: React.FC = () => {
 
       <Typography variant="subtitle1">{t('connectedAppDetailPage.details', 'Details')}</Typography>
       <List>
-        {agent.audience.length > 0 && (
-          <FormDisplay
-            icon="cloud"
-            label={t('connectedAppDetailPage.service', 'Service')}
-            displayValue={agent.audience.map(a => (
-              <span key={a.url} style={{ display: 'block' }}>
-                {a.label}
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  component="span"
-                  sx={{ display: 'block', wordBreak: 'break-all' }}
-                >
-                  {a.url}
-                </Typography>
-              </span>
-            ))}
-            displayOnly
-          />
-        )}
-        {agent.grantedAt && (
+        {agent.givenAt && (
           <FormDisplay
             icon="calendar-star"
             label={t('connectedAppDetailPage.authorized', 'Authorized')}
-            displayValue={<Timestamp date={new Date(agent.grantedAt)} variant="long" />}
+            displayValue={<Timestamp date={new Date(agent.givenAt)} variant="long" />}
             displayOnly
           />
         )}
         <FormDisplay
           icon="clock"
-          label={t('connectedAppDetailPage.lastActive', 'Last active')}
+          label={t('connectedAppDetailPage.lastUsed', 'Last used')}
           displayValue={
-            agent.lastActive ? (
-              <Timestamp date={new Date(agent.lastActive)} variant="long" />
+            agent.lastUsedAt ? (
+              <Timestamp date={new Date(agent.lastUsedAt)} variant="long" />
             ) : (
               t('connectedAppDetailPage.noActivityYet', 'No activity yet')
             )
           }
           displayOnly
         />
+        {agent.links?.map(link => (
+          <FormDisplay
+            key={link.url}
+            icon="arrow-up-right-from-square"
+            label={link.name}
+            displayValue={
+              <a href={link.url} target="_blank" rel="noopener noreferrer">
+                {link.url}
+              </a>
+            }
+            displayOnly
+          />
+        ))}
       </List>
-
-      <Typography variant="subtitle1">{t('connectedAppDetailPage.deviceAccess', 'Device access')}</Typography>
-      <AgentReachEditor agent={agent} />
     </Container>
   )
 }
