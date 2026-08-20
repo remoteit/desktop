@@ -41,7 +41,7 @@ export function SignInApp() {
         Sign in to {brand.appName}
       </Typography>
       <Typography variant="body2" color="textSecondary" textAlign="center">
-        We'll open your browser to sign you in — your saved passwords and accounts are already there.
+        We'll open your browser to sign you in with Remote.It Single Sign-On.
       </Typography>
       {signingIn ? (
         <Box display="flex" flexDirection="column" alignItems="center" gap={1} marginTop={2}>
