@@ -1,4 +1,5 @@
 import electron, { Menu, dialog } from 'electron'
+import { execFile } from 'child_process'
 import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
@@ -192,6 +193,24 @@ export default class ElectronApp {
     }
   }
 
+  /** The auth journey gets a NEW browser window. Plain openExternal fronts the browser
+   * on whatever tab it already had — a flash of unrelated content before the sign-in
+   * page. Chromium-family and Firefox take a new-window flag; Safari and unknown
+   * browsers would need Apple-Events permission for the same, so they keep the plain
+   * open. Regular external links (setWindowOpenHandler, deep-linked URLs) deliberately
+   * stay on openExternal — normal tab behavior is right for them. */
+  private openAuthWindow(url: string) {
+    const name = environment.isMac ? this.app.getApplicationNameForProtocol('https://') : ''
+    const flag = /chrome|chromium|edge|brave|vivaldi|opera/i.test(name) ? '--new-window' : /firefox/i.test(name) ? '-new-window' : ''
+    if (!flag) {
+      electron.shell.openExternal(url)
+      return
+    }
+    execFile('open', ['-na', name, '--args', flag, url], error => {
+      if (error) electron.shell.openExternal(url)
+    })
+  }
+
   private setDeepLink(url?: string) {
     if (!url) return
     const scheme = this.protocol + '://'
@@ -268,7 +287,7 @@ export default class ElectronApp {
       if (external) {
         Logger.info('EXTERNAL NAVIGATION -> SYSTEM BROWSER', { url })
         event.preventDefault()
-        electron.shell.openExternal(url)
+        this.openAuthWindow(url)
       }
     })
 
