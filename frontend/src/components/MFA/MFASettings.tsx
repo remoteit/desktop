@@ -6,6 +6,7 @@ import { Gutters } from '../Gutters'
 import {
   selfMe, selfMfaEnroll, selfMfaConfirm, selfMfaDisable, selfChallenge, SelfContinuation,
 } from '../../services/passportSelf'
+import { OAUTH_PASSPORT_RESOURCE } from '../../constants'
 
 /**
  * Two-factor settings over the Passport self-API (Phase 2b) — replaces the Cognito-era
@@ -16,6 +17,7 @@ import {
 
 type Step =
   | { at: 'loading' }
+  | { at: 'none' } // no credential account here: the user signs in federated (e.g. Google)
   | { at: 'view'; enabled: boolean }
   | { at: 'password'; mode: 'enroll' | 'disable'; error?: string }
   | { at: 'relay'; mode: 'enroll' | 'disable'; challenge: string; hint?: string; error?: string }
@@ -30,7 +32,11 @@ export const MFASettings: React.FC = () => {
   const [busy, setBusy] = useState(false)
 
   const refresh = async () => {
-    const me = (await selfMe()) as SelfContinuation & { mfaEnabled?: boolean }
+    const me = (await selfMe()) as SelfContinuation & { mfaEnabled?: boolean; httpStatus: number }
+    // 403 = the verified identity has NO credential account at the IdP: a federated-only
+    // user (Google). Their password and second factor live at their provider — say so,
+    // and point at the flow that creates a Remote.It credential if they want one.
+    if (me.httpStatus === 403) return setStep({ at: 'none' })
     setStep({ at: 'view', enabled: !!me.mfaEnabled })
   }
   useEffect(() => {
@@ -83,6 +89,29 @@ export const MFASettings: React.FC = () => {
   )
 
   if (step.at === 'loading') return title
+
+  if (step.at === 'none')
+    return (
+      <>
+        {title}
+        <Gutters bottom="xl">
+          <Typography variant="body2" color="textSecondary" gutterBottom>
+            {t(
+              'mfa.federated',
+              'You sign in with an identity provider (like Google), so your password and two-factor are managed there. To add a Remote.It password — usable alongside your provider — set one up first.'
+            )}
+          </Typography>
+          <Button
+            variant="contained"
+            size="small"
+            href={`${new URL(OAUTH_PASSPORT_RESOURCE).origin}/forgot`}
+            target="_blank"
+          >
+            {t('mfa.setPassword', 'Set a Password')}
+          </Button>
+        </Gutters>
+      </>
+    )
 
   if (step.at === 'view')
     return (
