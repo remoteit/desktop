@@ -829,7 +829,7 @@ declare global {
     updatedAt?: string
     lastUsedAt?: string | null
     scopes: string[]
-    groups: { domain?: string; resourceLabel?: string; actions: IGrantAction[] }[]
+    groups: { typeLabel?: string; resourceLabel?: string; actions: IGrantAction[] }[]
     links: { name: string; url: string }[]
     revokeReach: { immediate: string[]; delayed: string[]; delayMinutes: number }
   }

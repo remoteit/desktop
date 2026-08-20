@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
-import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
+import { ConfirmButton } from '../buttons/ConfirmButton'
 import { FormDisplay } from '../components/FormDisplay'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
@@ -72,45 +72,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
             <AgentAvatar agent={agent} size={spacing.xl} inline />
             {name}
           </Title>
-          <ConfirmIconButton
-            confirm
-            icon="trash"
-            size="md"
-            title={t('connectedAppDetailPage.revokeAccess', 'Revoke access')}
-            color={revoking ? 'danger' : undefined}
-            loading={revoking}
-            disabled={revoking}
-            confirmProps={{
-              title: t('connectedAppDetailPage.revokeAccessConfirmTitle', 'Revoke access?'),
-              action: t('connectedAppDetailPage.revoke', 'Revoke'),
-              color: 'error',
-              children: (
-                <>
-                  <Notice severity="error" gutterBottom fullWidth>
-                    <b>{name}</b>{' '}
-                    {t('connectedAppDetailPage.signOutBefore', 'will be signed out and can no longer get new access.')}
-                    {reach?.delayed?.length ? (
-                      <>
-                        {' '}
-                        {t('connectedAppDetailPage.delayedReach', {
-                          apis: reach.delayed.join(', '),
-                          window: revokeWindow(reach.delayMinutes),
-                          defaultValue: 'Access already in progress at {{apis}} ends within {{window}}.',
-                        })}
-                      </>
-                    ) : null}
-                  </Notice>
-                  <Typography variant="body2">
-                    {t('connectedAppDetailPage.requestAgain', 'It can request access again by signing in.')}
-                  </Typography>
-                </>
-              ),
-            }}
-            onClick={async () => {
-              await dispatch.agents.revoke(agent.id)
-              back()
-            }}
-          />
         </Typography>
       }
     >
@@ -121,18 +82,32 @@ export const ConnectedAppDetailPage: React.FC = () => {
             <Typography variant="caption" display="block" sx={{ marginBottom: 1.5 }}>
               {t('connectedAppDetailPage.grantedWhenSignedIn', {
                 name,
-                defaultValue: 'Granted when {{name}} signed in. Manage or trim them from your account page.',
+                defaultValue: 'Granted when {{name}} signed in — grouped by what they apply to.',
               })}
             </Typography>
-            {actions.map(action => (
-              <Chip
-                key={action.key}
-                size="small"
-                label={action.limit ? `${action.label} (${action.limit})` : action.label}
-                title={action.description || undefined}
-                sx={{ mr: 1, mb: 0.5 }}
-              />
-            ))}
+            {(agent.groups ?? []).map((group, i) => {
+              const enabled = group.actions.filter(a => a.enabled)
+              if (!enabled.length) return null
+              const where =
+                group.resourceLabel && group.resourceLabel !== '(all resources)' ? ` — ${group.resourceLabel}` : ''
+              return (
+                <React.Fragment key={i}>
+                  <Typography variant="overline" display="block" sx={{ marginTop: i ? 1.5 : 0 }}>
+                    {group.typeLabel}
+                    {where}
+                  </Typography>
+                  {enabled.map(action => (
+                    <Chip
+                      key={action.key}
+                      size="small"
+                      label={action.limit ? `${action.label} (${action.limit})` : action.label}
+                      title={action.description || undefined}
+                      sx={{ mr: 1, mb: 0.5 }}
+                    />
+                  ))}
+                </React.Fragment>
+              )
+            })}
           </>
         ) : (
           <Typography variant="body2" color="textSecondary">
@@ -180,6 +155,54 @@ export const ConnectedAppDetailPage: React.FC = () => {
           />
         ))}
       </List>
+
+      <Typography variant="subtitle1">{t('connectedAppDetailPage.revokeSection', 'Revoke access')}</Typography>
+      <Gutters top={null}>
+        <Typography variant="body2" color="textSecondary" sx={{ marginBottom: 1.5 }}>
+          {t('connectedAppDetailPage.revokeExplain', {
+            name,
+            defaultValue: 'Signs {{name}} out of your account and blocks it from getting new access. It can request access again by signing in.',
+          })}
+        </Typography>
+        <ConfirmButton
+          confirm
+          title={t('connectedAppDetailPage.revokeAccess', 'Revoke access')}
+          color="danger"
+          size="small"
+          loading={revoking}
+          disabled={revoking}
+          confirmProps={{
+            title: t('connectedAppDetailPage.revokeAccessConfirmTitle', 'Revoke access?'),
+            action: t('connectedAppDetailPage.revoke', 'Revoke'),
+            color: 'error',
+            children: (
+              <>
+                <Notice severity="error" gutterBottom fullWidth>
+                  <b>{name}</b>{' '}
+                  {t('connectedAppDetailPage.signOutBefore', 'will be signed out and can no longer get new access.')}
+                  {reach?.delayed?.length ? (
+                    <>
+                      {' '}
+                      {t('connectedAppDetailPage.delayedReach', {
+                        apis: reach.delayed.join(', '),
+                        window: revokeWindow(reach.delayMinutes),
+                        defaultValue: 'Access already in progress at {{apis}} ends within {{window}}.',
+                      })}
+                    </>
+                  ) : null}
+                </Notice>
+                <Typography variant="body2">
+                  {t('connectedAppDetailPage.requestAgain', 'It can request access again by signing in.')}
+                </Typography>
+              </>
+            ),
+          }}
+          onClick={async () => {
+            await dispatch.agents.revoke(agent.id)
+            back()
+          }}
+        />
+      </Gutters>
     </Container>
   )
 }

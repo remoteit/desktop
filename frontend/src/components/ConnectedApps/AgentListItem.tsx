@@ -9,6 +9,8 @@ import { spacing } from '../../styling'
 // actions live on the detail page it links to.
 export const AgentListItem: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) => {
   const name = agent.app || agent.clientId
+  // The areas this grant reaches — the same names the detail page headers use.
+  const areas = [...new Set((agent.groups ?? []).map(g => g.typeLabel).filter(Boolean))] as string[]
 
   return (
     <ListItemLocation to={`/account/connected/${encodeURIComponent(agent.clientId)}`} dense>
@@ -18,13 +20,16 @@ export const AgentListItem: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) 
       <ListItemText
         primary={name}
         secondary={
-          agent.lastUsedAt ? (
-            <>
-              Last used <Timestamp date={new Date(agent.lastUsedAt)} variant="short" />
-            </>
-          ) : (
-            'Not used yet'
-          )
+          <>
+            {areas.length ? `${areas.join(', ')} · ` : ''}
+            {agent.lastUsedAt ? (
+              <>
+                Last used <Timestamp date={new Date(agent.lastUsedAt)} variant="short" />
+              </>
+            ) : (
+              'Not used yet'
+            )}
+          </>
         }
       />
     </ListItemLocation>
