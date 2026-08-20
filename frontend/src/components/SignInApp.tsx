@@ -12,20 +12,20 @@ import brand from '@common/brand/config'
  * the flow; this panel starts it and waits.
  */
 export function SignInApp() {
-  const { signInError, signingIn, signingOut } = useSelector((state: State) => state.auth)
+  const { signInError, signingIn } = useSelector((state: State) => state.auth)
   const { auth } = useDispatch<Dispatch>()
 
   // On the WEB there is nothing to show a signed-out user — the AS login page IS the
   // sign-in surface, so leave for it immediately (once per landing; an error return
   // stays here so a cancel at the AS can't loop). Desktop keeps the launcher: its
   // window must show something while the SYSTEM browser hosts the journey.
-  const autoStart = !browser.isElectron && !signingIn && !signInError && !signingOut
+  const autoStart = !browser.isElectron && !signingIn && !signInError
   useEffect(() => {
     if (autoStart) auth.signIn()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart])
 
-  if (autoStart || (!browser.isElectron && (signingIn || signingOut)))
+  if (autoStart || (!browser.isElectron && signingIn))
     return (
       <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={12}>
         <CircularProgress size={28} />

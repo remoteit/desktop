@@ -32,6 +32,11 @@ const TOKENS_KEY = 'oidc.tokens'
 // must show the LOGIN PAGE (prompt=login), never silently SSO into another account's
 // live session in the multi-account cookie.
 let promptLogin = false
+/** The NEXT authorize must land on the login page (no silent SSO into another chip) —
+ * set by the silent sign-out just before the app re-enters the sign-in flow. */
+export function oidcRequireLoginPrompt() {
+  promptLogin = true
+}
 if (window.location.pathname === '/signoutCallback') {
   promptLogin = true
   window.history.replaceState({}, '', window.location.origin + '/')
@@ -42,7 +47,7 @@ type Stored = { refresh_token: string; id_token?: string }
 
 let access: { [resource: string]: { token: string; exp: number } } = {}
 let refreshing: Promise<string> | undefined
-let discovery: { authorization_endpoint: string; token_endpoint: string; end_session_endpoint?: string } | undefined
+let discovery: { authorization_endpoint: string; token_endpoint: string; end_session_endpoint?: string; end_session_api_endpoint?: string } | undefined
 
 const b64u = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
@@ -178,25 +183,25 @@ async function refresh(resource: string): Promise<string> {
   }
 }
 
-/** The RP-initiated-logout URL for the CURRENT session, or undefined when there is
- * nothing to end. Built BEFORE local teardown clears the id_token — the caller decides
- * when to navigate (EXPLICIT sign-out only; failure paths never end the AS session). */
-export async function oidcEndSessionUrl(): Promise<string | undefined> {
+/** SILENT AS logout (EXPLICIT sign-out only — failure paths never end the AS session):
+ * the same RP-initiated logout, over fetch. Same trust (the id_token hint), no
+ * navigation — the parade of redirect hops was the only thing the front-channel bought
+ * us. Best-effort: an unreachable AS must not block local teardown; the session gate
+ * kills the tokens lazily anyway. */
+export async function oidcEndSessionSilently(): Promise<void> {
   const idToken = stored()?.id_token
-  if (!idToken) return undefined
+  if (!idToken) return
   try {
     const d = await discover()
-    if (!d.end_session_endpoint) return undefined
-    const url = new URL(d.end_session_endpoint)
-    url.searchParams.set('id_token_hint', idToken)
-    url.searchParams.set(
-      'post_logout_redirect_uri',
-      browser.isElectron ? PROTOCOL + 'signoutCallback' : window.location.origin + '/signoutCallback'
-    )
-    return url.toString()
+    if (!d.end_session_api_endpoint) return
+    const response = await fetch(d.end_session_api_endpoint, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id_token_hint: idToken }),
+    })
+    if (!response.ok && response.status !== 204) console.warn('OIDC SILENT LOGOUT', response.status)
   } catch (error) {
-    console.warn('OIDC END-SESSION URL FAILED', error)
-    return undefined
+    console.warn('OIDC SILENT LOGOUT FAILED', error)
   }
 }
 
