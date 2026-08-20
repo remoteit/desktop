@@ -206,8 +206,16 @@ export default class ElectronApp {
       electron.shell.openExternal(url)
       return
     }
-    execFile('open', ['-na', name, '--args', flag, url], error => {
-      if (error) electron.shell.openExternal(url)
+    // Two-step: create the window WITHOUT focus (-g), let the page load and paint out of
+    // sight, then front the browser — the user lands on a finished sign-in page instead
+    // of watching a window be born. The delay is a heuristic; there is no cross-process
+    // signal for the browser's paint.
+    execFile('open', ['-g', '-na', name, '--args', flag, url], error => {
+      if (error) {
+        electron.shell.openExternal(url)
+        return
+      }
+      setTimeout(() => execFile('open', ['-a', name], () => {}), 900)
     })
   }
 
