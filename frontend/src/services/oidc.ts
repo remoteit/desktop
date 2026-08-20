@@ -86,7 +86,7 @@ const redirectUri = () =>
 
 /** Leave for the AS. On web the page departs; on desktop the main process bounces the
  * issuer origin to the system browser and the window stays on the waiting panel. */
-export async function oidcStart(): Promise<void> {
+export async function oidcStart(opts: { prompt?: 'login' | 'select_account' } = {}): Promise<void> {
   const d = await discover()
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
@@ -110,7 +110,9 @@ export async function oidcStart(): Promise<void> {
     state: flow.state,
     nonce: flow.nonce,
   }
-  if (promptLogin) {
+  if (opts.prompt) {
+    params.prompt = opts.prompt
+  } else if (promptLogin) {
     params.prompt = 'login'
     promptLogin = false
   }
@@ -143,6 +145,14 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   })
   const claims = decodeJwt(body.id_token)
   if (claims?.nonce !== flow.nonce) throw new Error('Sign-in nonce mismatch — try again.')
+  const previous = stored()?.refresh_token
+  if (previous && previous !== body.refresh_token) {
+    fetch(`${OAUTH_ISSUER}/revoke`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ token: previous, token_type_hint: 'refresh_token', client_id: OAUTH_CLIENT_ID }),
+    }).catch(() => {})
+  }
   persist({ refresh_token: body.refresh_token, id_token: body.id_token })
   const at = decodeJwt(body.access_token)
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0 }

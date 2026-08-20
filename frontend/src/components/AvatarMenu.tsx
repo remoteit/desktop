@@ -179,6 +179,14 @@ export const AvatarMenu: React.FC = () => {
           />
         </DesktopUI>
         <ListItemSetting
+          label={t('nav.switchAccount', 'Switch account')}
+          icon="users"
+          onClick={async () => {
+            handleClose()
+            await dispatch.auth.switchAccount()
+          }}
+        />
+        <ListItemSetting
           confirm={backendAuthenticated}
           label={t('nav.signOut', 'Sign out')}
           icon="sign-out"

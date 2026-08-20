@@ -86,6 +86,16 @@ export default createModel<RootModel>()({
     // Leave for the AS (the whole login UX — email-first, org SSO, MFA, signup, forgot —
     // lives there). On web the page departs; on desktop the window shows the waiting
     // panel until the deep link reloads it with the code.
+    /** Account switch: re-run authorize with select_account — the AS chooser shows the
+     * real session chips; nothing is torn down locally, so a canceled chooser costs
+     * nothing. Completion replaces the session like any sign-in (old family revoked). */
+    async switchAccount(_: void) {
+      try {
+        await oidcStart({ prompt: 'select_account' })
+      } catch (error) {
+        dispatch.auth.set({ signInError: error?.message || 'Could not open the account chooser.' })
+      }
+    },
     async signIn(_: void) {
       dispatch.auth.set({ signingIn: true, signInError: undefined })
       try {
