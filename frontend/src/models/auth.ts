@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcSignOut, oidcCompleteFromUrl, invalidateOidcToken, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -244,10 +244,10 @@ export default createModel<RootModel>()({
      */
     async signedOut(_: void) {
       await persistor.purge()
-      // End the AS session too (RP-initiated logout): local tokens clear first inside,
-      // then the browser leaves for end_session (web departs; desktop bounces to the
-      // system browser). Best-effort — AS unreachability must not block local teardown.
-      await oidcSignOut().catch(error => console.warn('OIDC SIGN OUT FAILED', error))
+      // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
+      // signing out of the app must not sign the user out of login.* (their browser
+      // session is theirs; an explicit "sign out everywhere" action can come later).
+      oidcClearLocal()
       await dispatch.auth.set({ user: undefined })
       dispatch.user.reset()
       dispatch.organization.reset()

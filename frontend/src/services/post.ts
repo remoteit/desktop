@@ -75,12 +75,13 @@ export async function apiError(error: unknown) {
     }
 
     if (error.response?.status === 401 || error.response?.status === 403) {
-      if (errorCount > 10) {
-        auth.signOut()
-      }
-      console.log('Incrementing error count: ', errorCount)
+      // Migration reality: legacy endpoints and edge path-allowlists answer 401/403 with
+      // the session perfectly alive. NEVER tear down from here — checkSession consults
+      // the OIDC truth (a dead refresh family) and only then signs out LOCALLY; nothing
+      // on a failure path may end the AS session. Log the URL: it names the offender.
+      console.warn('AUTH-SHAPED API ERROR', { url: error.config?.url, status: error.response?.status })
       await sleep(1000 * errorCount * errorCount)
-      auth.checkSession({ refreshToken: true })
+      auth.checkSession({ refreshToken: true, silent: true })
     }
   }
 

@@ -183,6 +183,14 @@ export function invalidateOidcToken() {
   access = {}
 }
 
+/** Local-only teardown: clears this app's tokens and NOTHING else. App sign-out never
+ * ends the AS session (user directive — the browser session at the AS belongs to the
+ * user, not to this app's error handling). `oidcSignOut` (RP-initiated end_session)
+ * remains for a future explicit "sign out everywhere" action only. */
+export function oidcClearLocal() {
+  clearLocal()
+}
+
 function clearLocal() {
   access = {}
   localStorage.removeItem(TOKENS_KEY)
