@@ -10,13 +10,14 @@ import { OAUTH_PASSPORT_RESOURCE } from '../constants'
  */
 
 export type SelfContinuation = {
-  status?: 'ok' | 'mfa' | 'confirm' | 'select'
+  status?: 'ok' | 'mfa' | 'confirm' | 'select' | 'register'
   challenge?: string
   hint?: string
   secret?: string
   otpauth?: string
   delivery?: 'sms'
-  options?: string[]
+  options?: string[] | Record<string, any>
+  name?: string
   methods?: string[]
   preferred?: string
   recovery_codes?: string[]
@@ -52,3 +53,7 @@ export const selfMfaConfirm = (challenge: string, code: string) => call('/mfa/co
 export const selfMfaPrefer = (password: string, method: MfaMethod) => call('/mfa/prefer', { password, method })
 export const selfMfaDisable = (password: string, method?: MfaMethod) =>
   call('/mfa/disable', { password, ...(method ? { method } : {}) })
+export const selfPasskeyRegister = (password: string) => call('/passkeys/register', { password })
+export const selfPasskeyConfirm = (challenge: string, attestation: { attestationObject: string; clientDataJSON: string }, name: string) =>
+  call('/passkeys/confirm', { challenge, ...attestation, name })
+export const selfPasskeyDelete = (password: string, id: string) => call('/passkeys/delete', { password, id })
