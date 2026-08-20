@@ -34,6 +34,7 @@ export interface AuthState {
   backendAuthenticated: boolean
   signInError?: string
   signingIn?: boolean
+  signingOut?: boolean
   passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
   mfaMethod: string
@@ -267,6 +268,10 @@ export default createModel<RootModel>()({
       // failure-driven teardown (signedOut via the error paths) stays local-only.
       const { oidcEndSessionUrl } = await import('../services/oidc')
       const endSession = await oidcEndSessionUrl().catch(() => undefined)
+      // Gate the sign-in panel's auto-start while the sign-out journey is in flight:
+      // its authorize assign RACED the end_session assign and won, so the AS was never
+      // told — a live session then SSO'd straight back over the "sign-out".
+      if (endSession) dispatch.auth.set({ signingOut: true })
       const leave = () => {
         if (endSession) window.location.assign(endSession)
       }

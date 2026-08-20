@@ -28,6 +28,15 @@ export type OidcClaims = {
 const FLOW_KEY = 'oidc.flow'
 const TOKENS_KEY = 'oidc.tokens'
 
+// A boot on /signoutCallback is the RETURN from an explicit sign-out: the next authorize
+// must show the LOGIN PAGE (prompt=login), never silently SSO into another account's
+// live session in the multi-account cookie.
+let promptLogin = false
+if (window.location.pathname === '/signoutCallback') {
+  promptLogin = true
+  window.history.replaceState({}, '', window.location.origin + '/')
+}
+
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
 type Stored = { refresh_token: string; id_token?: string }
 
@@ -95,6 +104,10 @@ export async function oidcStart(): Promise<void> {
     ]),
     state: flow.state,
     nonce: flow.nonce,
+  }
+  if (promptLogin) {
+    params.prompt = 'login'
+    promptLogin = false
   }
   for (const key in params) url.searchParams.set(key, params[key])
   window.location.assign(url.toString())
