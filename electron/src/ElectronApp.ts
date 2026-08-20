@@ -12,7 +12,6 @@ import {
   EventBus,
   Logger,
 } from './backend'
-import { OAUTH_ISSUER } from './backend/constants'
 
 const URL_REGEX = new RegExp('^https?://')
 const IP_PRIVATE = '127.0.0.1'
@@ -257,11 +256,17 @@ export default class ElectronApp {
     })
 
     this.window.webContents.on('will-navigate', (event, url) => {
-      // Auth journeys belong in the SYSTEM browser (its password manager, its session),
-      // never inside this window. Keyed on the configured issuer, not a hard-coded host.
-      const authOrigin = OAUTH_ISSUER && url.startsWith(OAUTH_ISSUER)
-      if (authOrigin || url.includes('auth.remote.it')) {
-        Logger.info('AUTH NAVIGATION DETECTED')
+      // This window hosts exactly ONE origin: the app's own UI. Any other navigation —
+      // the auth journey above all — belongs in the SYSTEM browser, where the user's
+      // password manager, passkeys and single sign-on session live. Keyed on origin,
+      // not configuration: the packaged main process has no .env, so an issuer-based
+      // match fails CLOSED into this window; an origin rule fails open to the browser.
+      let external = false
+      try {
+        external = new URL(url).origin !== new URL(this.getStartUrl()).origin
+      } catch {}
+      if (external) {
+        Logger.info('EXTERNAL NAVIGATION -> SYSTEM BROWSER', { url })
         event.preventDefault()
         electron.shell.openExternal(url)
       }

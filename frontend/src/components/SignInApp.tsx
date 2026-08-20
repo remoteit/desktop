@@ -41,7 +41,7 @@ export function SignInApp() {
         Sign in to {brand.appName}
       </Typography>
       <Typography variant="body2" color="textSecondary" textAlign="center">
-        Sign-in opens in your browser — password managers, single sign-on, and multi-account switching all work there.
+        We'll open your browser to sign you in — your saved passwords and accounts are already there.
       </Typography>
       {signingIn ? (
         <Box display="flex" flexDirection="column" alignItems="center" gap={1} marginTop={2}>
