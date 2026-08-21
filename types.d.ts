@@ -840,6 +840,7 @@ declare global {
   type IGrantAction = {
     key: string
     label: string
+    piece?: string | null // consent's <piece> grammar (devices.connect → "Devices")
     description: string | null
     limit: string | null
     enabled: boolean

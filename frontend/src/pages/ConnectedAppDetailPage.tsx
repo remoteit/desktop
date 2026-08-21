@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
-import { Chip, List, Typography } from '@mui/material'
+import { Box, Chip, List, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Container } from '../components/Container'
@@ -90,6 +90,21 @@ export const ConnectedAppDetailPage: React.FC = () => {
               if (!enabled.length) return null
               const where =
                 group.resourceLabel && group.resourceLabel !== '(all resources)' ? ` — ${group.resourceLabel}` : ''
+              // Consent's grammar: one row per <piece>, verbs as chips; a limit every
+              // action shares reads once under the group instead of on every chip.
+              const limits = [...new Set(enabled.map(a => a.limit).filter(Boolean))]
+              const sharedLimit = limits.length === 1 && enabled.every(a => a.limit === limits[0]) ? limits[0] : null
+              const pieces = [...new Set(enabled.map(a => a.piece ?? null))]
+              const chips = (actions: IGrantAction[]) =>
+                actions.map(action => (
+                  <Chip
+                    key={action.key}
+                    size="small"
+                    label={!sharedLimit && action.limit ? `${action.label} (${action.limit})` : action.label}
+                    title={action.description || undefined}
+                    sx={{ mr: 1, mb: 0.5 }}
+                  />
+                ))
               return (
                 <React.Fragment key={i}>
                   <Typography variant="overline" display="block" sx={{ marginTop: i ? 1.5 : 0 }}>
@@ -101,15 +116,23 @@ export const ConnectedAppDetailPage: React.FC = () => {
                       </Typography>
                     ) : null}
                   </Typography>
-                  {enabled.map(action => (
-                    <Chip
-                      key={action.key}
-                      size="small"
-                      label={action.limit ? `${action.label} (${action.limit})` : action.label}
-                      title={action.description || undefined}
-                      sx={{ mr: 1, mb: 0.5 }}
-                    />
-                  ))}
+                  {pieces.length > 1 ? (
+                    pieces.map(piece => (
+                      <Box key={piece ?? 'general'} sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, marginBottom: 0.5 }}>
+                        <Typography variant="caption" color="textSecondary" sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                          {piece ?? 'General'}
+                        </Typography>
+                        <Box>{chips(enabled.filter(a => (a.piece ?? null) === piece))}</Box>
+                      </Box>
+                    ))
+                  ) : (
+                    chips(enabled)
+                  )}
+                  {sharedLimit ? (
+                    <Typography variant="caption" color="textSecondary" display="block" sx={{ marginBottom: 0.5 }}>
+                      {sharedLimit}
+                    </Typography>
+                  ) : null}
                 </React.Fragment>
               )
             })}
