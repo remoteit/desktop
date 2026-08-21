@@ -45,7 +45,7 @@ if (window.location.pathname === '/signoutCallback') {
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
 type Stored = { refresh_token: string; id_token?: string }
 
-let access: { [resource: string]: { token: string; exp: number } } = {}
+let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
 let refreshing: Promise<string> | undefined
 let discovery: { authorization_endpoint: string; token_endpoint: string; end_session_endpoint?: string; end_session_api_endpoint?: string } | undefined
 
@@ -157,7 +157,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   }
   persist({ refresh_token: body.refresh_token, id_token: body.id_token })
   const at = decodeJwt(body.access_token)
-  access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0 }
+  access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims
 }
 
@@ -184,7 +184,7 @@ async function refresh(resource: string): Promise<string> {
     // Rotated — persist the successor FIRST, before anything can race another mint.
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
     const at = decodeJwt(body.access_token)
-    access[resource] = { token: body.access_token, exp: at?.exp ?? 0 }
+    access[resource] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
     return body.access_token
   } catch (error: any) {
     console.error('OIDC REFRESH FAILED', error?.message)
@@ -230,6 +230,7 @@ export function oidcClearLocal() {
 }
 
 function clearLocal() {
+  void clearDpopKey()
   access = {}
   localStorage.removeItem(TOKENS_KEY)
 }
@@ -245,11 +246,108 @@ function cleanUrl() {
   window.history.replaceState({}, '', url.toString())
 }
 
+// --- DPoP (plan D9): sender-constrained tokens --------------------------------------
+// The key is generated NON-EXTRACTABLE and lives as a CryptoKey in IndexedDB: an XSS can
+// use it while running in-page, but can never exfiltrate it — which is the entire browser
+// story. Every /token call carries a proof once a key exists (per-mint opt-in binding for
+// the desktop client; the portal client REQUIRES it), and bound audiences present with
+// the DPoP scheme + an ath proof. No WebCrypto/IndexedDB → no proof → the AS decides
+// (desktop falls back to bearer; the portal client refuses, loudly).
+const DPOP_DB = 'remoteit-oidc'
+const DPOP_STORE = 'keys'
+let dpopPair: Promise<CryptoKeyPair | null> | undefined
+
+function idb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open(DPOP_DB, 1)
+    open.onupgradeneeded = () => open.result.createObjectStore(DPOP_STORE)
+    open.onsuccess = () => resolve(open.result)
+    open.onerror = () => reject(open.error)
+  })
+}
+async function idbReq<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => IDBRequest): Promise<T> {
+  const db = await idb()
+  return new Promise((resolve, reject) => {
+    const req = fn(db.transaction(DPOP_STORE, mode).objectStore(DPOP_STORE))
+    req.onsuccess = () => resolve(req.result as T)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+async function dpopKey(): Promise<CryptoKeyPair | null> {
+  if (typeof crypto === 'undefined' || !crypto.subtle || typeof indexedDB === 'undefined') return null
+  if (!dpopPair)
+    dpopPair = (async () => {
+      try {
+        const existing = await idbReq<CryptoKeyPair | undefined>('readonly', s => s.get('dpop'))
+        if (existing?.privateKey) return existing
+        const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign'])
+        await idbReq('readwrite', s => s.put(pair, 'dpop'))
+        return pair
+      } catch {
+        return null
+      }
+    })()
+  return dpopPair
+}
+
+/** Explicit sign-out rotates the key with the tokens (key loss ≡ session loss anyway). */
+async function clearDpopKey(): Promise<void> {
+  dpopPair = undefined
+  try {
+    await idbReq('readwrite', s => s.delete('dpop'))
+  } catch {
+    /* no store, nothing to clear */
+  }
+}
+
+const dpopB64u = (bytes: ArrayBuffer | Uint8Array) => {
+  const a = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
+  let out = ''
+  for (let i = 0; i < a.length; i++) out += String.fromCharCode(a[i])
+  return btoa(out).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+const utf8 = (s: string) => new TextEncoder().encode(s)
+
+async function dpopProof(htm: string, htu: string, accessToken?: string): Promise<string | null> {
+  const pair = await dpopKey()
+  if (!pair) return null
+  const jwk = (await crypto.subtle.exportKey('jwk', pair.publicKey)) as { kty: string; crv?: string; x?: string; y?: string }
+  const u = new URL(htu)
+  const header = dpopB64u(utf8(JSON.stringify({ alg: 'ES256', typ: 'dpop+jwt', jwk: { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y } })))
+  const payload = dpopB64u(
+    utf8(
+      JSON.stringify({
+        htm,
+        htu: u.origin + u.pathname,
+        iat: Math.floor(Date.now() / 1000),
+        jti: crypto.randomUUID(),
+        ...(accessToken ? { ath: dpopB64u(await crypto.subtle.digest('SHA-256', utf8(accessToken))) } : {}),
+      })
+    )
+  )
+  const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, pair.privateKey, utf8(`${header}.${payload}`))
+  return `${header}.${payload}.${dpopB64u(sig)}`
+}
+
+/** Auth headers for an API call: the DPoP scheme + an ath proof when this audience's
+ * token came back bound, plain Bearer otherwise. {} when signed out. */
+export async function oidcAuthHeaders(method: string, url: string, resource: string = OAUTH_GRAPHQL_RESOURCE): Promise<Record<string, string>> {
+  const token = await oidcAccessToken(resource)
+  if (!token) return {}
+  if (access[resource]?.type === 'DPoP') {
+    const proof = await dpopProof(method, url, token)
+    if (proof) return { authorization: `DPoP ${token}`, DPoP: proof }
+  }
+  return { authorization: `Bearer ${token}` }
+}
+
 async function tokenRequest(params: { [key: string]: string }): Promise<any> {
   const d = await discover()
+  const proof = await dpopProof('POST', d.token_endpoint)
   const response = await fetch(d.token_endpoint, {
     method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    headers: { 'content-type': 'application/x-www-form-urlencoded', ...(proof ? { DPoP: proof } : {}) },
     body: new URLSearchParams({ client_id: OAUTH_CLIENT_ID, ...params }),
   })
   const body: any = await response.json().catch(() => ({}))

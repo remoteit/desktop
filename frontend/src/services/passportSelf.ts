@@ -1,4 +1,4 @@
-import { oidcAccessToken } from './oidc'
+import { oidcAuthHeaders } from './oidc'
 import { OAUTH_PASSPORT_RESOURCE } from '../constants'
 
 /**
@@ -26,11 +26,14 @@ export type SelfContinuation = {
 }
 
 const call = async (path: string, body?: Record<string, string>): Promise<SelfContinuation & { httpStatus: number }> => {
-  const token = await oidcAccessToken(OAUTH_PASSPORT_RESOURCE)
-  if (!token) return { httpStatus: 401, error: 'unauthorized' }
-  const response = await fetch(OAUTH_PASSPORT_RESOURCE + path, {
-    method: body ? 'POST' : 'GET',
-    headers: { authorization: 'Bearer ' + token, ...(body ? { 'content-type': 'application/json' } : {}) },
+  const url = OAUTH_PASSPORT_RESOURCE + path
+  const method = body ? 'POST' : 'GET'
+  // Scheme-aware (plan D9): a DPoP-bound token presents as `DPoP` + an ath proof.
+  const auth = await oidcAuthHeaders(method, url, OAUTH_PASSPORT_RESOURCE)
+  if (!auth.authorization) return { httpStatus: 401, error: 'unauthorized' }
+  const response = await fetch(url, {
+    method,
+    headers: { ...auth, ...(body ? { 'content-type': 'application/json' } : {}) },
     ...(body ? { body: JSON.stringify(body) } : {}),
   })
   const parsed = (await response.json().catch(() => ({}))) as SelfContinuation

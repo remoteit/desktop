@@ -3,7 +3,7 @@
  * the unit, and revoking it kills every refresh token minted from it. No graphql gateway:
  * the deleted Hydra façade is not coming back, and the AS view already carries names,
  * logos, per-action detail and honest revocation reach. */
-import { oidcAccessToken } from './oidc'
+import { oidcAuthHeaders } from './oidc'
 import { OAUTH_ISSUER } from '../constants'
 
 const RESOURCE = `${OAUTH_ISSUER}/account/api`
@@ -11,11 +11,14 @@ const RESOURCE = `${OAUTH_ISSUER}/account/api`
 export type AccountApiResult<T = any> = { status: number; body?: T }
 
 async function call<T = any>(path: string, init: RequestInit = {}): Promise<AccountApiResult<T>> {
-  const token = await oidcAccessToken(RESOURCE)
-  if (!token) return { status: 401 }
-  const response = await fetch(`${RESOURCE}${path}`, {
+  const url = `${RESOURCE}${path}`
+  // Scheme-aware (plan D9): a DPoP-bound token presents as `DPoP` + an ath proof; an
+  // unbound one stays Bearer. The AS decides which we hold.
+  const auth = await oidcAuthHeaders(init.method ?? 'GET', url, RESOURCE)
+  if (!auth.authorization) return { status: 401 }
+  const response = await fetch(url, {
     ...init,
-    headers: { authorization: `Bearer ${token}`, ...(init.headers || {}) },
+    headers: { ...auth, ...(init.headers || {}) },
   })
   let body: T | undefined
   try {
