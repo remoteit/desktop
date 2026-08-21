@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
-import { Box, Chip, List, Typography } from '@mui/material'
+import { Box, Button, Chip, List, Typography } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Container } from '../components/Container'
@@ -14,6 +14,7 @@ import { Icon } from '../components/Icon'
 import { Timestamp } from '../components/Timestamp'
 import { AgentAvatar } from '../components/ConnectedApps/AgentAvatar'
 import { enabledActions, revokeWindow } from '../components/ConnectedApps/helpers'
+import { updateAccountApp } from '../services/permitteerAccount'
 import { spacing } from '../styling'
 
 export const ConnectedAppDetailPage: React.FC = () => {
@@ -27,6 +28,13 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const fetching = useSelector((state: State) => state.agents.fetching)
   const init = useSelector((state: State) => state.agents.init)
   const revoking = useSelector((state: State) => state.agents.updating === agent?.id)
+
+  // Editor state: null = pristine (mirror the server); a Set = the user's pending choice.
+  // The PATCH is the console editor's own: unlisted ceiling actions disable but stay
+  // listed, so anything unticked here can be re-ticked later.
+  const [keepEdit, setKeepEdit] = useState<Set<string> | null>(null)
+  const [scopeEdit, setScopeEdit] = useState<Set<string> | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     dispatch.agents.init()
@@ -62,6 +70,32 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const name = agent.app || agent.clientId
   const actions = enabledActions(agent)
   const reach = agent.revokeReach
+  const allActions = (agent.groups ?? []).flatMap(g => g.actions)
+  const kept = keepEdit ?? new Set(allActions.filter(a => a.enabled).map(a => a.key))
+  const scopesKept = scopeEdit ?? new Set(agent.scopes ?? [])
+  const dirty =
+    (keepEdit !== null && (keepEdit.size !== actions.length || actions.some(a => !keepEdit.has(a.key)))) ||
+    (scopeEdit !== null && (scopeEdit.size !== (agent.scopes ?? []).length || (agent.scopes ?? []).some(sc => !scopeEdit.has(sc))))
+  const toggleAction = (key: string) => {
+    if (!agent.active || saving) return
+    const next = new Set(kept)
+    next.has(key) ? next.delete(key) : next.add(key)
+    setKeepEdit(next)
+  }
+  const toggleScope = (sc: string) => {
+    if (!agent.active || saving) return
+    const next = new Set(scopesKept)
+    next.has(sc) ? next.delete(sc) : next.add(sc)
+    setScopeEdit(next)
+  }
+  const save = async () => {
+    setSaving(true)
+    await updateAccountApp(agent.id, [...kept], [...scopesKept])
+    await dispatch.agents.fetch()
+    setKeepEdit(null)
+    setScopeEdit(null)
+    setSaving(false)
+  }
 
   return (
     <Container
@@ -82,34 +116,40 @@ export const ConnectedAppDetailPage: React.FC = () => {
     >
       <Typography variant="subtitle1">{t('connectedAppDetailPage.permissions', 'Permissions')}</Typography>
       <Gutters top={null}>
-        {actions.length ? (
+        {allActions.length ? (
           <>
             <Typography variant="caption" display="block" sx={{ marginBottom: 1.5 }}>
-              {t('connectedAppDetailPage.grantedWhenSignedIn', {
+              {t('connectedAppDetailPage.editHint', {
                 name,
-                defaultValue: 'Granted when {{name}} signed in — grouped by what they apply to.',
+                defaultValue: 'Granted when {{name}} signed in. Tap a permission to disable it — it stays listed so you can re-enable it later.',
               })}
             </Typography>
             {(agent.groups ?? []).map((group, i) => {
-              const enabled = group.actions.filter(a => a.enabled)
-              if (!enabled.length) return null
+              if (!group.actions.length) return null
               const where =
                 group.resourceLabel && group.resourceLabel !== '(all resources)' ? ` — ${group.resourceLabel}` : ''
-              // Consent's grammar: one row per <piece>, verbs as chips; a limit every
-              // action shares reads once under the group instead of on every chip.
-              const limits = [...new Set(enabled.map(a => a.limit).filter(Boolean))]
-              const sharedLimit = limits.length === 1 && enabled.every(a => a.limit === limits[0]) ? limits[0] : null
-              const pieces = [...new Set(enabled.map(a => a.piece ?? null))]
+              // Consent's grammar: one row per <piece>, verbs as toggle chips; a limit
+              // every action shares reads once under the group instead of on every chip.
+              const limits = [...new Set(group.actions.map(a => a.limit).filter(Boolean))]
+              const sharedLimit = limits.length === 1 && group.actions.every(a => a.limit === limits[0]) ? limits[0] : null
+              const pieces = [...new Set(group.actions.map(a => a.piece ?? null))]
               const chips = (actions: IGrantAction[]) =>
-                actions.map(action => (
-                  <Chip
-                    key={action.key}
-                    size="small"
-                    label={!sharedLimit && action.limit ? `${action.label} (${action.limit})` : action.label}
-                    title={action.description || undefined}
-                    sx={{ mr: 1, mb: 0.5 }}
-                  />
-                ))
+                actions.map(action => {
+                  const on = kept.has(action.key)
+                  return (
+                    <Chip
+                      key={action.key}
+                      size="small"
+                      clickable={agent.active}
+                      color={on ? 'primary' : undefined}
+                      variant={on ? 'filled' : 'outlined'}
+                      onClick={() => toggleAction(action.key)}
+                      label={!sharedLimit && action.limit ? `${action.label} (${action.limit})` : action.label}
+                      title={action.description || undefined}
+                      sx={{ mr: 1, mb: 0.5, opacity: on ? 1 : 0.6 }}
+                    />
+                  )
+                })
               return (
                 <React.Fragment key={i}>
                   <Typography variant="overline" display="block" sx={{ marginTop: i ? 1.5 : 0 }}>
@@ -127,12 +167,25 @@ export const ConnectedAppDetailPage: React.FC = () => {
                         <Typography variant="caption" color="textSecondary" sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
                           {piece ?? 'General'}
                         </Typography>
-                        <Box>{chips(enabled.filter(a => (a.piece ?? null) === piece))}</Box>
+                        <Box>{chips(group.actions.filter(a => (a.piece ?? null) === piece))}</Box>
                       </Box>
                     ))
                   ) : (
-                    chips(enabled)
+                    chips(group.actions)
                   )}
+                  {group.reach ? (
+                    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, marginBottom: 0.5 }}>
+                      <Typography variant="caption" color="textSecondary" sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                        {t('connectedAppDetailPage.accounts', 'Accounts')}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {group.reach.all
+                          ? t('connectedAppDetailPage.allAccounts', 'All accounts, including ones added later')
+                          : group.reach.accounts.map(a => (a.filter ? `${a.id} (${a.filter})` : a.id)).join(' · ') ||
+                            t('connectedAppDetailPage.noAccounts', 'None')}
+                      </Typography>
+                    </Box>
+                  ) : null}
                   {sharedLimit ? (
                     <Typography variant="caption" color="textSecondary" display="block" sx={{ marginBottom: 0.5 }}>
                       {sharedLimit}
@@ -141,6 +194,38 @@ export const ConnectedAppDetailPage: React.FC = () => {
                 </React.Fragment>
               )
             })}
+            {(agent.scopes ?? []).length ? (
+              <>
+                <Typography variant="overline" display="block" sx={{ marginTop: 1.5 }}>
+                  {t('connectedAppDetailPage.signInScopes', 'Sign-in scopes')}
+                </Typography>
+                {(agent.scopes ?? []).map(sc => {
+                  const on = scopesKept.has(sc)
+                  return (
+                    <Chip
+                      key={sc}
+                      size="small"
+                      clickable={agent.active}
+                      color={on ? 'primary' : undefined}
+                      variant={on ? 'filled' : 'outlined'}
+                      onClick={() => toggleScope(sc)}
+                      label={sc}
+                      sx={{ mr: 1, mb: 0.5, opacity: on ? 1 : 0.6 }}
+                    />
+                  )
+                })}
+              </>
+            ) : null}
+            {dirty ? (
+              <Box sx={{ marginTop: 1.5 }}>
+                <Button variant="contained" size="small" disabled={saving} onClick={save}>
+                  {saving ? t('common.saving', 'Saving…') : t('connectedAppDetailPage.save', 'Save changes')}
+                </Button>
+                <Button size="small" sx={{ marginLeft: 1 }} disabled={saving} onClick={() => { setKeepEdit(null); setScopeEdit(null) }}>
+                  {t('common.cancel', 'Cancel')}
+                </Button>
+              </Box>
+            ) : null}
           </>
         ) : null}
         {(agent.scopeGroups ?? []).map((group, i) => (
@@ -159,7 +244,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
             ))}
           </React.Fragment>
         ))}
-        {!actions.length && !(agent.scopeGroups ?? []).length && (
+        {!allActions.length && !(agent.scopeGroups ?? []).length && (
           <Typography variant="body2" color="textSecondary">
             {t(
               'connectedAppDetailPage.signInOnly',

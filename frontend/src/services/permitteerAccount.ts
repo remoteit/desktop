@@ -35,3 +35,14 @@ export async function accountApps(): Promise<AccountApiResult<{ items: IAuthoriz
 export async function revokeAccountApp(grantId: string): Promise<AccountApiResult> {
   return await call(`/apps/${encodeURIComponent(grantId)}`, { method: 'DELETE' })
 }
+
+/** Trim or re-enable a grant's permissions — the console editor's own PATCH: `keep` names
+ * the action keys that stay enabled (unlisted ceiling actions disable, stay listed, and
+ * can be re-enabled later), `keepScope` the sign-in scopes that survive. */
+export async function updateAccountApp(grantId: string, keep: string[], keepScope: string[]): Promise<AccountApiResult> {
+  return await call(`/apps/${encodeURIComponent(grantId)}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ keep, keepScope }),
+  })
+}
