@@ -99,7 +99,13 @@ export default createModel<RootModel>()({
     async signIn(_: void) {
       dispatch.auth.set({ signingIn: true, signInError: undefined })
       try {
-        await oidcStart()
+        // Desktop sign-in always offers the CHOOSER (prompt=select_account): a live chip
+        // in the browser would otherwise silently SSO whoever was last signed in, and a
+        // button that says "Sign in" should let the person pick. This also covers the
+        // post-signout rule (never silently reuse a chip) — a deliberate selection is
+        // not silent. Web keeps the plain path: its auto-start SSO is the point there,
+        // and its signout-return lane still forces prompt=login.
+        await oidcStart(browser.isElectron ? { prompt: 'select_account' } : {})
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
         dispatch.auth.set({ signingIn: false, signInError: error?.message || 'Sign in failed, please try again.' })
