@@ -110,6 +110,9 @@ export const ConnectedAppDetailPage: React.FC = () => {
                 {agent.appOrigin}
               </Typography>
             ) : null}
+            {!agent.active ? (
+              <Chip size="small" label={t('connectedAppDetailPage.revoked', 'revoked')} sx={{ marginLeft: 1.5, verticalAlign: 'middle' }} />
+            ) : null}
           </Title>
         </Typography>
       }
@@ -119,10 +122,15 @@ export const ConnectedAppDetailPage: React.FC = () => {
         {allActions.length ? (
           <>
             <Typography variant="caption" display="block" sx={{ marginBottom: 1.5 }}>
-              {t('connectedAppDetailPage.editHint', {
-                name,
-                defaultValue: 'Granted when {{name}} signed in. Tap a permission to disable it — it stays listed so you can re-enable it later.',
-              })}
+              {agent.active
+                ? t('connectedAppDetailPage.editHint', {
+                    name,
+                    defaultValue: 'Granted when {{name}} signed in. Tap a permission to disable it — it stays listed so you can re-enable it later.',
+                  })
+                : t('connectedAppDetailPage.revokedHint', {
+                    name,
+                    defaultValue: 'This access was revoked — shown for the record. {{name}} can request access again by signing in.',
+                  })}
             </Typography>
             {(agent.groups ?? []).map((group, i) => {
               if (!group.actions.length) return null
@@ -141,7 +149,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
                       key={action.key}
                       size="small"
                       clickable={agent.active}
-                      color={on ? 'primary' : undefined}
+                      color={on && agent.active ? 'primary' : undefined}
                       variant={on ? 'filled' : 'outlined'}
                       onClick={() => toggleAction(action.key)}
                       label={!sharedLimit && action.limit ? `${action.label} (${action.limit})` : action.label}
@@ -206,7 +214,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
                       key={sc}
                       size="small"
                       clickable={agent.active}
-                      color={on ? 'primary' : undefined}
+                      color={on && agent.active ? 'primary' : undefined}
                       variant={on ? 'filled' : 'outlined'}
                       onClick={() => toggleScope(sc)}
                       label={sc}
@@ -291,6 +299,8 @@ export const ConnectedAppDetailPage: React.FC = () => {
         ))}
       </List>
 
+      {agent.active ? (
+      <>
       <Typography variant="subtitle1">{t('connectedAppDetailPage.revokeSection', 'Revoke access')}</Typography>
       <Gutters top={null}>
         <Typography variant="body2" color="textSecondary" sx={{ marginBottom: 1.5 }}>
@@ -338,6 +348,8 @@ export const ConnectedAppDetailPage: React.FC = () => {
           }}
         />
       </Gutters>
+      </>
+      ) : null}
     </Container>
   )
 }

@@ -26,6 +26,7 @@ export const AgentListItem: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) 
         primary={name}
         secondary={
           <>
+            {!agent.active ? 'Revoked · ' : ''}
             {areas.length ? `${areas.join(', ')} · ` : ''}
             {agent.lastUsedAt ? (
               <>
