@@ -109,7 +109,24 @@ export const ConnectedAppDetailPage: React.FC = () => {
               )
             })}
           </>
-        ) : (
+        ) : null}
+        {(agent.scopeGroups ?? []).map((group, i) => (
+          <React.Fragment key={group.api}>
+            <Typography variant="overline" display="block" sx={{ marginTop: actions.length || i ? 1.5 : 0 }}>
+              {group.api}
+            </Typography>
+            {group.actions.map(action => (
+              <Chip
+                key={action.key}
+                size="small"
+                label={action.label}
+                title={action.description || undefined}
+                sx={{ mr: 1, mb: 0.5 }}
+              />
+            ))}
+          </React.Fragment>
+        ))}
+        {!actions.length && !(agent.scopeGroups ?? []).length && (
           <Typography variant="body2" color="textSecondary">
             {t(
               'connectedAppDetailPage.signInOnly',

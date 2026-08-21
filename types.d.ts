@@ -830,6 +830,9 @@ declare global {
     lastUsedAt?: string | null
     scopes: string[]
     groups: { typeLabel?: string; resourceLabel?: string; actions: IGrantAction[] }[]
+    // The SCOPE lane, read-only: APIs the client may bind whose granted scopes they declare
+    // (a first-party app's device access lives here, never in the detail groups).
+    scopeGroups?: { api: string; actions: { key: string; label: string; description: string | null }[] }[]
     links: { name: string; url: string }[]
     revokeReach: { immediate: string[]; delayed: string[]; delayMinutes: number }
   }

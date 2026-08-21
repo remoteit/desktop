@@ -10,7 +10,12 @@ import { spacing } from '../../styling'
 export const AgentListItem: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) => {
   const name = agent.app || agent.clientId
   // The areas this grant reaches — the same names the detail page headers use.
-  const areas = [...new Set((agent.groups ?? []).map(g => g.typeLabel).filter(Boolean))] as string[]
+  const areas = [
+    ...new Set([
+      ...(agent.groups ?? []).map(g => g.typeLabel),
+      ...(agent.scopeGroups ?? []).map(g => g.api),
+    ].filter(Boolean)),
+  ] as string[]
 
   return (
     <ListItemLocation to={`/account/connected/${encodeURIComponent(agent.clientId)}`} dense>
