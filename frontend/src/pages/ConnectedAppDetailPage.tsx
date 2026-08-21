@@ -71,6 +71,11 @@ export const ConnectedAppDetailPage: React.FC = () => {
           <Title>
             <AgentAvatar agent={agent} size={spacing.xl} inline />
             {name}
+            {agent.appOrigin ? (
+              <Typography component="span" variant="body2" color="textSecondary" sx={{ marginLeft: 1.5 }}>
+                {agent.appOrigin}
+              </Typography>
+            ) : null}
           </Title>
         </Typography>
       }

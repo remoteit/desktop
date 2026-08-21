@@ -824,6 +824,7 @@ declare global {
     clientId: string
     app: string // display name from the client's branding
     logo: string | null
+    appOrigin?: string | null // the client's VERIFIABLE origin (claude.ai) — null for first-party
     active: boolean
     givenAt?: string
     updatedAt?: string
