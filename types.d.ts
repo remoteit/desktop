@@ -835,8 +835,15 @@ declare global {
       resourceLabel?: string
       api?: string | null
       apiHost?: string | null
-      // consent's ACCOUNTS section replayed from the grant (ids only — names were picker data)
-      reach?: { all: boolean; accounts: { id: string; filter: string | null }[] } | null
+      // consent's ACCOUNTS section replayed from the grant — ACTIVE selection plus the
+      // consented ceiling (the edit bound) and the RS's labeled account list when it answers
+      reach?: {
+        all: boolean
+        accounts: { id: string; filter: string | null }[]
+        ceilingAll: boolean
+        ceilingIds: string[]
+        options: { id: string; label: string }[] | null
+      } | null
       actions: IGrantAction[]
     }[]
     // The SCOPE lane, read-only: APIs the client may bind whose granted scopes they declare

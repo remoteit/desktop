@@ -34,6 +34,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
   // listed, so anything unticked here can be re-ticked later.
   const [keepEdit, setKeepEdit] = useState<Set<string> | null>(null)
   const [scopeEdit, setScopeEdit] = useState<Set<string> | null>(null)
+  const [reachEdit, setReachEdit] = useState<{ all: boolean; ids: Set<string> } | null>(null)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -73,9 +74,18 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const allActions = (agent.groups ?? []).flatMap(g => g.actions)
   const kept = keepEdit ?? new Set(allActions.filter(a => a.enabled).map(a => a.key))
   const scopesKept = scopeEdit ?? new Set(agent.scopes ?? [])
+  // The grant's reach (one scope constraint per grant; every scoped group carries the same)
+  const reachGroup = (agent.groups ?? []).find(gr => gr.reach)?.reach ?? null
+  const reachNow = reachEdit ?? (reachGroup ? { all: reachGroup.all, ids: new Set(reachGroup.accounts.map(a => a.id)) } : null)
+  const reachDirty =
+    reachEdit !== null && reachGroup !== null &&
+    (reachEdit.all !== reachGroup.all ||
+      reachEdit.ids.size !== reachGroup.accounts.length ||
+      reachGroup.accounts.some(a => !reachEdit.ids.has(a.id)))
   const dirty =
     (keepEdit !== null && (keepEdit.size !== actions.length || actions.some(a => !keepEdit.has(a.key)))) ||
-    (scopeEdit !== null && (scopeEdit.size !== (agent.scopes ?? []).length || (agent.scopes ?? []).some(sc => !scopeEdit.has(sc))))
+    (scopeEdit !== null && (scopeEdit.size !== (agent.scopes ?? []).length || (agent.scopes ?? []).some(sc => !scopeEdit.has(sc)))) ||
+    reachDirty
   const toggleAction = (key: string) => {
     if (!agent.active || saving) return
     const next = new Set(kept)
@@ -88,12 +98,29 @@ export const ConnectedAppDetailPage: React.FC = () => {
     next.has(sc) ? next.delete(sc) : next.add(sc)
     setScopeEdit(next)
   }
+  const toggleReachAll = () => {
+    if (!agent.active || saving || !reachNow || !reachGroup?.ceilingAll) return
+    setReachEdit({ all: !reachNow.all, ids: new Set(reachNow.ids) })
+  }
+  const toggleReachId = (id: string) => {
+    if (!agent.active || saving || !reachNow || reachNow.all) return
+    if (!reachGroup?.ceilingAll && !reachGroup?.ceilingIds.includes(id)) return
+    const ids = new Set(reachNow.ids)
+    ids.has(id) ? ids.delete(id) : ids.add(id)
+    setReachEdit({ all: false, ids })
+  }
   const save = async () => {
     setSaving(true)
-    await updateAccountApp(agent.id, [...kept], [...scopesKept])
+    await updateAccountApp(
+      agent.id,
+      [...kept],
+      [...scopesKept],
+      reachDirty && reachNow ? (reachNow.all ? { all: true } : { accounts: [...reachNow.ids] }) : undefined
+    )
     await dispatch.agents.fetch()
     setKeepEdit(null)
     setScopeEdit(null)
+    setReachEdit(null)
     setSaving(false)
   }
 
@@ -181,17 +208,45 @@ export const ConnectedAppDetailPage: React.FC = () => {
                   ) : (
                     chips(group.actions)
                   )}
-                  {group.reach ? (
+                  {group.reach && reachNow ? (
                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, marginBottom: 0.5 }}>
                       <Typography variant="caption" color="textSecondary" sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
                         {t('connectedAppDetailPage.accounts', 'Accounts')}
                       </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        {group.reach.all
-                          ? t('connectedAppDetailPage.allAccounts', 'All accounts, including ones added later')
-                          : group.reach.accounts.map(a => (a.filter ? `${a.id} (${a.filter})` : a.id)).join(' · ') ||
-                            t('connectedAppDetailPage.noAccounts', 'None')}
-                      </Typography>
+                      <Box>
+                        {group.reach.ceilingAll ? (
+                          <Chip
+                            size="small"
+                            clickable={agent.active}
+                            color={reachNow.all && agent.active ? 'primary' : undefined}
+                            variant={reachNow.all ? 'filled' : 'outlined'}
+                            onClick={toggleReachAll}
+                            label={t('connectedAppDetailPage.allAccounts', 'All accounts, including ones added later')}
+                            sx={{ mr: 1, mb: 0.5, opacity: reachNow.all ? 1 : 0.6 }}
+                          />
+                        ) : null}
+                        {[...new Set([
+                          ...(group.reach.options ?? []).map(o => o.id),
+                          ...group.reach.accounts.map(a => a.id),
+                          ...(!group.reach.ceilingAll ? group.reach.ceilingIds : []),
+                        ])].map(id => {
+                          const label = (group.reach!.options ?? []).find(o => o.id === id)?.label ?? id
+                          const on = reachNow.all || reachNow.ids.has(id)
+                          const editable = agent.active && !reachNow.all && (group.reach!.ceilingAll || group.reach!.ceilingIds.includes(id))
+                          return (
+                            <Chip
+                              key={id}
+                              size="small"
+                              clickable={editable}
+                              color={on && agent.active && !reachNow.all ? 'primary' : undefined}
+                              variant={on ? 'filled' : 'outlined'}
+                              onClick={() => toggleReachId(id)}
+                              label={label}
+                              sx={{ mr: 1, mb: 0.5, opacity: on ? (reachNow.all ? 0.7 : 1) : 0.6 }}
+                            />
+                          )
+                        })}
+                      </Box>
                     </Box>
                   ) : null}
                   {sharedLimit ? (
