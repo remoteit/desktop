@@ -100,7 +100,18 @@ export const ConnectedAppDetailPage: React.FC = () => {
   }
   const toggleReachAll = () => {
     if (!agent.active || saving || !reachNow || !reachGroup?.ceilingAll) return
-    setReachEdit({ all: !reachNow.all, ids: new Set(reachNow.ids) })
+    if (reachNow.all) {
+      // Leaving all-mode keeps today's accounts selected — deselecting "all, including
+      // ones added later" narrows from full coverage, it doesn't strip everything.
+      const known = new Set([
+        ...(reachGroup.options ?? []).map(o => o.id),
+        ...reachGroup.accounts.map(a => a.id),
+        ...reachNow.ids,
+      ])
+      setReachEdit({ all: false, ids: known })
+    } else {
+      setReachEdit({ all: true, ids: new Set(reachNow.ids) })
+    }
   }
   const toggleReachId = (id: string) => {
     if (!agent.active || saving || !reachNow || reachNow.all) return
