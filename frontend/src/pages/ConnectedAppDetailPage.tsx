@@ -95,6 +95,11 @@ export const ConnectedAppDetailPage: React.FC = () => {
                   <Typography variant="overline" display="block" sx={{ marginTop: i ? 1.5 : 0 }}>
                     {group.typeLabel}
                     {where}
+                    {group.apiHost ? (
+                      <Typography component="span" variant="caption" color="textSecondary" sx={{ textTransform: 'none', marginLeft: 1 }}>
+                        {group.apiHost}
+                      </Typography>
+                    ) : null}
                   </Typography>
                   {enabled.map(action => (
                     <Chip
