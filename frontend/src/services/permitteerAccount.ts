@@ -10,6 +10,14 @@ const RESOURCE = `${OAUTH_ISSUER}/account/api`
 
 export type AccountApiResult<T = any> = { status: number; body?: T }
 
+/** The legal token targets for THIS client — the AS's allowlist joined to registry names
+ *  (D10). The stage picker and the mint-time guardrail read the SAME source, so they can
+ *  never disagree; adding a stage to the tf allowlist puts it here on the next fetch. */
+export async function bindableResources(): Promise<Array<{ identifier: string; name: string }>> {
+  const r = await call<Array<{ identifier: string; name: string }>>('/bindable-resources')
+  return r.status === 200 && Array.isArray(r.body) ? r.body : []
+}
+
 async function call<T = any>(path: string, init: RequestInit = {}): Promise<AccountApiResult<T>> {
   const url = `${RESOURCE}${path}`
   // Scheme-aware (plan D9): a DPoP-bound token presents as `DPoP` + an ath proof; an
