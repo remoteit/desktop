@@ -125,7 +125,7 @@ export function oidcGrantStale(): boolean {
   }
 }
 
-export async function oidcStart(opts: { prompt?: 'login' | 'select_account' } = {}): Promise<void> {
+export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; loginHint?: string } = {}): Promise<void> {
   const d = await discover()
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
@@ -147,6 +147,10 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' } = 
     state: flow.state,
     nonce: flow.nonce,
   }
+  // Naming WHO is signing in turns a step-up into "confirm it's you" rather than an account
+  // chooser — without it, prompt=login lands on the picker and choosing your own account
+  // simply returns you to the same page, which reads as a loop.
+  if (opts.loginHint) params.login_hint = opts.loginHint
   if (opts.prompt) {
     params.prompt = opts.prompt
   } else if (promptLogin) {

@@ -14,7 +14,7 @@ import { Icon } from '../components/Icon'
 import { Timestamp } from '../components/Timestamp'
 import { AgentAvatar } from '../components/ConnectedApps/AgentAvatar'
 import { enabledActions, revokeWindow } from '../components/ConnectedApps/helpers'
-import { oidcStart } from '../services/oidc'
+import { oidcStart, oidcClaims } from '../services/oidc'
 import { updateAccountApp } from '../services/permitteerAccount'
 import { spacing } from '../styling'
 
@@ -165,7 +165,9 @@ export const ConnectedAppDetailPage: React.FC = () => {
     // still pending, rather than reporting a failure they cannot act on.
     if (r.status === 403 && (r.body as any)?.error === 'reauthentication_required') {
       setSaving(false)
-      await oidcStart({ prompt: 'login' })
+      // Name the account so the AS asks "is it you" instead of "who are you" — this is a
+      // step-up on the session we already hold, never an invitation to switch accounts.
+      await oidcStart({ prompt: 'login', loginHint: oidcClaims()?.email })
       return
     }
     if (r.status >= 400) {
