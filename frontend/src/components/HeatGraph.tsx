@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Box, useTheme } from '@mui/material'
-import { heatmapGrid, timeSeriesMax, trimInProgressDay } from '../helpers/dateHelper'
+import { heatmapGrid, timeSeriesMax } from '../helpers/dateHelper'
 import * as d3 from 'd3'
 
 export type HeatColor = 'primary' | 'success' | 'gray'
@@ -77,10 +77,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
       .range([lightest, ...ramp])
       .interpolate(d3.interpolateRgb)
       .clamp(true)
-    // The day in progress is windowed off here rather than in the adaptor, so
-    // the series everything else draws — the bars, and the daily fold behind
-    // the style toggle — still carries today.
-    return heatmapGrid(trimInProgressDay(data), rows, days).columns.map(column =>
+    return heatmapGrid(data, rows, days).columns.map(column =>
       column.cells.map(
         cell => cell && { ...cell, fill: cell.value > 0 ? scale(cell.value) : theme.palette.grayLighter.main }
       )

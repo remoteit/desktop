@@ -237,14 +237,14 @@ const resolutionSeconds = (resolution: ITimeSeriesResolution) => Duration.fromOb
 export const heatmapRows = (resolution: ITimeSeriesResolution) =>
   Math.max(Math.round(resolutionSeconds('DAY') / resolutionSeconds(resolution)), 1)
 
-// What to actually ask the API for. Only a grid discards anything, so only a
-// grid fetches spare periods: one day for the one in progress, which it windows
-// off, and a second because a DST fall-back day is 25 hours and `length` whole
-// days can need an hour more than `length * rows`. Bars keep every bucket the
-// span asks for, the last one included — see trimInProgressDay.
+// What to actually ask the API for. A grid asks for one day more than it draws,
+// because its window ends at the hour in progress rather than on a local day
+// boundary — so the oldest day it reaches is a partial one, and heatmapGrid
+// keeps only the newest `days` columns. Nothing else over-fetches: bars draw
+// every bucket of the span asked for, the one in progress included.
 export const timeSeriesRequest = (options: ITimeSeriesOptions): ITimeSeriesOptions => {
   const rows = options.style === 'heatmap' ? heatmapRows(options.resolution) : 1
-  return { ...options, length: rows > 1 ? (options.length + 2) * rows : options.length }
+  return { ...options, length: rows > 1 ? (options.length + 1) * rows : options.length }
 }
 
 // The GraphQL variables a list query resolves to. The list draws day buckets
@@ -254,28 +254,6 @@ export const timeSeriesRequest = (options: ITimeSeriesOptions): ITimeSeriesOptio
 export const listTimeSeriesKey = (options: ITimeSeriesOptions) => {
   const { type, resolution, length } = timeSeriesRequest(listTimeSeriesOptions(options))
   return `${type}-${resolution}-${length}`
-}
-
-// Drop the day still in progress, for the grid that needs whole ones. A heat
-// map draws a column per day, and a partial column reads as a device that went
-// dark at noon rather than as a day that is not over — dropping only its latest
-// bucket would leave the same short column, and in the midnight hour it would
-// discard a complete day instead.
-//
-// Bars are deliberately left alone. A short last bar is "so far today", which
-// is what a reader of a time series expects, and dropping it hides activity
-// that has only happened today — which is the usual case for connections: the
-// graph went blank right after connecting, because the only non-zero bucket in
-// the whole window was the one in progress.
-export const trimInProgressDay = (data: ITimeSeries): ITimeSeries => {
-  const last = data.time[data.time.length - 1]
-  if (!last) return data
-  const lastDay = localDayKey(last)
-  // The first bucket of today — never negative, since lastDay came from a
-  // bucket in the list. Zero means no day is complete, which windows off to an
-  // empty grid rather than drawing a part-day as a whole column.
-  const keep = data.time.findIndex(time => localDayKey(time) === lastDay)
-  return { ...data, end: data.time[keep] ?? data.end, time: data.time.slice(0, keep), data: data.data.slice(0, keep) }
 }
 
 // Local calendar day, as a value that can key a lookup. Plain Date getters
