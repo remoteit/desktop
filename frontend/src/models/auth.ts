@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantShortfall, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -72,8 +72,10 @@ export default createModel<RootModel>()({
             // token mint — a dead refresh family clears itself and we boot signed OUT
             // instead of rendering an authenticated shell over a corpse.
             const alive = await getToken()
-            if (alive) await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
-            else invalidateOidcToken()
+            if (alive) {
+              await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
+              await dispatch.auth.healGrant()
+            } else invalidateOidcToken()
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
           console.error('AUTH INIT: sign-in completion failed', error)
@@ -82,6 +84,36 @@ export default createModel<RootModel>()({
       }
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')
+    },
+    /** A build that declares MORE than the standing grant carries (a slice added in a deploy,
+     *  against an install that has not signed in since) heals itself: only a fresh authorize
+     *  merges the new slice in, and for this first-party skipConsent client that shows no
+     *  consent screen — a redirect chain back to the app. Without it the person hits an
+     *  unexplained 403 in whichever feature needed the slice, and the only cure they could
+     *  find is signing out and in again.
+     *
+     *  ONE attempt per app session. If the re-authorize comes back still short — a client
+     *  whose declaration outruns what the AS will grant it — a second try would return here
+     *  and loop the person through the browser forever. Same loop-breaker the console's
+     *  renew marker uses. */
+    async healGrant() {
+      const ATTEMPTED = 'oidc.regrant'
+      try {
+        const missing = await oidcGrantShortfall()
+        if (!missing.length) {
+          window.sessionStorage.removeItem(ATTEMPTED)
+          return
+        }
+        if (window.sessionStorage.getItem(ATTEMPTED)) {
+          console.warn('AUTH: grant still short after re-authorizing; not retrying', { missing })
+          return
+        }
+        console.log('AUTH: grant is missing declared access — re-authorizing', { missing })
+        window.sessionStorage.setItem(ATTEMPTED, '1')
+        await oidcStart({})
+      } catch (error) {
+        console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
+      }
     },
     // Leave for the AS (the whole login UX — email-first, org SSO, MFA, signup, forgot —
     // lives there). On web the page departs; on desktop the window shows the waiting

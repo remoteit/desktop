@@ -1,5 +1,5 @@
 import browser from './browser'
-import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, PROTOCOL } from '../constants'
+import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, OAUTH_PASSPORT_RESOURCE, PROTOCOL } from '../constants'
 
 /**
  * The renderer-owned OIDC client (permitteer docs/remoteit-desktop-login.md, D8):
@@ -86,6 +86,44 @@ const redirectUri = () =>
 
 /** Leave for the AS. On web the page departs; on desktop the main process bounces the
  * issuer origin to the system browser and the window stays on the waiting panel. */
+/** What this build asks for, per audience. ONE source of truth: the authorize request is
+ *  built from it AND the boot check measures tokens against it, so a slice added in a deploy
+ *  cannot end up requested-but-never-checked (or checked-but-never-requested).
+ *  `passport_account` gates the native security settings; `permitteer_account` is Connected
+ *  Apps against the AS's own account API (plan D6) — list + revoke. The graphql audience
+ *  stays pure scope-`full` and carries no details, so it is not listed here. */
+const DECLARED: Array<{ resource: string; type: string; actions: string[] }> = [
+  { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
+  { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write'] },
+]
+
+/** Declared actions the standing grant does NOT carry. A deploy that adds a slice leaves
+ *  already-signed-in installs short: their grant was written from the OLD request, and no
+ *  refresh can widen it — refresh re-reads the grant, it never adds to it. Only a fresh
+ *  authorize merges the new slice in (silently, for a skipConsent first-party client).
+ *
+ *  Measured from the tokens themselves rather than a local version marker, so it is true by
+ *  construction: whatever the AS actually minted is what we compare. Any mint failure yields
+ *  NOTHING missing — a network blip must not trigger a sign-in journey. */
+export async function oidcGrantShortfall(): Promise<string[]> {
+  const missing: string[] = []
+  for (const decl of DECLARED) {
+    let held: string[] = []
+    try {
+      const token = await oidcAccessToken(decl.resource)
+      if (!token) return []
+      const details = decodeJwt(token)?.authorization_details
+      held = Array.isArray(details)
+        ? details.filter((d: any) => d?.type === decl.type).flatMap((d: any) => d?.actions ?? [])
+        : []
+    } catch {
+      return []
+    }
+    for (const action of decl.actions) if (!held.includes(action)) missing.push(`${decl.type}:${action}`)
+  }
+  return missing
+}
+
 export async function oidcStart(opts: { prompt?: 'login' | 'select_account' } = {}): Promise<void> {
   const d = await discover()
   const verifier = randomB64u(48)
@@ -104,11 +142,7 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' } = 
     // the passport-audience token minted later via refresh carries this slice, gating the
     // native security settings (credentials.write); the graphql audience stays pure
     // scope-`full` (an uncovered resource yields audience-only tokens).
-    authorization_details: JSON.stringify([
-      { type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
-      // Connected Apps rides the AS's own account API (plan D6) — list + revoke only.
-      { type: 'permitteer_account', actions: ['apps.read', 'apps.write'] },
-    ]),
+    authorization_details: JSON.stringify(DECLARED.map(d => ({ type: d.type, actions: d.actions }))),
     state: flow.state,
     nonce: flow.nonce,
   }
