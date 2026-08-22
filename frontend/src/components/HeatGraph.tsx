@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Box, useTheme } from '@mui/material'
 import { heatmapGrid, timeSeriesMax } from '../helpers/dateHelper'
 import * as d3 from 'd3'
@@ -50,6 +50,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
   ...props
 }) => {
   const theme = useTheme()
+  const [hovered, setHovered] = useState<[number, number]>()
   const grid = useMemo(() => heatmapGrid(data, rows, days), [data, rows, days])
 
   const scale = useMemo(() => {
@@ -80,13 +81,16 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
       component="svg"
       width={width}
       height={height}
-      sx={theme => ({
-        backgroundColor: theme.palette.white.main,
-        '& .cell:hover': { stroke: theme.palette.grayDarkest.main },
-      })}
+      sx={{ backgroundColor: theme.palette.white.main }}
       // Clearing on the way out of the grid rather than out of each cell, so
       // crossing between cells never blanks the readout.
-      onMouseLeave={onHover && (() => onHover(undefined))}
+      onMouseLeave={
+        onHover &&
+        (() => {
+          setHovered(undefined)
+          onHover(undefined)
+        })
+      }
       {...props}
     >
       {grid.columns.map((column, x) =>
@@ -94,7 +98,6 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
           cell === undefined ? null : (
             <rect
               key={`${column.key}-${y}`}
-              className={onHover ? 'cell' : undefined}
               x={x * cellWidth}
               y={y * cellHeight}
               width={cellWidth}
@@ -106,10 +109,33 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
               // but still belongs to a cell for hit testing.
               stroke={theme.palette.white.main}
               strokeWidth={1}
-              onMouseOver={onHover && (() => onHover([cell.date, cell.value]))}
+              onMouseOver={
+                onHover &&
+                (() => {
+                  setHovered([x, y])
+                  onHover([cell.date, cell.value])
+                })
+              }
             />
           )
         )
+      )}
+      {/* Drawn after the grid rather than as a :hover stroke on the cell —
+          cells are painted left to right and top to bottom, so the neighbours
+          below and to the right would cover the outer half of the outline and
+          leave only its top and left edges showing. Inset by half a pixel so
+          all four edges land inside the cell. */}
+      {hovered && (
+        <rect
+          x={hovered[0] * cellWidth + 0.5}
+          y={hovered[1] * cellHeight + 0.5}
+          width={Math.max(cellWidth - 1, 1)}
+          height={Math.max(cellHeight - 1, 1)}
+          fill="none"
+          stroke={theme.palette.grayDarkest.main}
+          strokeWidth={1}
+          pointerEvents="none"
+        />
       )}
     </Box>
   )
