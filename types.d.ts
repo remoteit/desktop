@@ -444,10 +444,20 @@ declare global {
     type: ITimeSeriesType
     resolution: ITimeSeriesResolution
     length: number
+    style?: ITimeSeriesStyle
     timezone?: string
   }
 
   type ITimeSeriesResolution = 'SECOND' | 'MINUTE' | 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR'
+
+  // How the buckets are drawn. 'bar' is one bar per bucket; 'heatmap' folds
+  // sub-day buckets into a day (column) by hour-of-day (row) grid.
+  type ITimeSeriesStyle = 'bar' | 'heatmap'
+
+  type ITimeSeriesGrid = {
+    rows: number
+    columns: { key: string; date: Date; values: (number | undefined)[] }[]
+  }
 
   type ITimeSeriesType =
     | 'AVAILABILITY' // Online Percentage

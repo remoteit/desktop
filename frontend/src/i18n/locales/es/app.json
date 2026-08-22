@@ -1990,6 +1990,7 @@
   },
   "timeSeriesSelect": {
     "graphLength": "Duración del gráfico",
+    "graphStyle": "Estilo del gráfico",
     "graphType": "Tipo de gráfico",
     "graphUnit": "Unidad del gráfico",
     "lengthValue_one": "{{count}} {{unit}}",
@@ -2037,6 +2038,10 @@
   "viewAsBanner": {
     "exit": "Salir del modo de vista como",
     "viewingAs": "Viendo como: {{email}}"
+  },
+  "graphStyle": {
+    "bar": "Barras",
+    "heatmap": "Mapa de calor"
   },
   "graphType": {
     "AVAILABILITY": "En línea %",

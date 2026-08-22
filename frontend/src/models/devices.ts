@@ -26,7 +26,7 @@ import {
   graphQLPreloadDevices,
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
-import { selectTimeSeries } from '../selectors/ui'
+import { selectListTimeSeries, selectTimeSeries } from '../selectors/ui'
 import {
   getAllDevices,
   getDeviceModel,
@@ -110,7 +110,7 @@ export default createModel<RootModel>()({
       const { set, graphQLListProcessor } = dispatch.devices
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
       const { query, owner, filter, append, searched } = deviceModel
-      const { deviceTimeSeries, serviceTimeSeries } = selectTimeSeries(state)
+      const { deviceTimeSeries, serviceTimeSeries } = selectListTimeSeries(state)
 
       const options: gqlOptions = {
         accountId,
@@ -160,7 +160,7 @@ export default createModel<RootModel>()({
         ids,
         accountId,
         columns: selectActiveColumns(state, accountId),
-        ...selectTimeSeries(state),
+        ...selectListTimeSeries(state),
       })
 
       if (gqlResponse === 'ERROR') return []

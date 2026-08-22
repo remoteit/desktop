@@ -206,7 +206,7 @@ export const attributes: Attribute[] = [
         onClick={event => event.stopPropagation()}
         sx={{ position: 'relative', zIndex: 3, paddingTop: 1 }}
       >
-        <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} />
+        <TimeSeries timeSeries={device?.timeSeries} online={device?.state === 'active'} variant="device" />
       </Link>
     ),
   }),
@@ -220,7 +220,7 @@ export const attributes: Attribute[] = [
         onClick={event => event.stopPropagation()}
         sx={{ position: 'relative', zIndex: 3, paddingTop: 1 }}
       >
-        <TimeSeries timeSeries={service?.timeSeries} online={service?.state === 'active'} />
+        <TimeSeries timeSeries={service?.timeSeries} online={service?.state === 'active'} variant="service" />
       </Link>
     ),
   }),

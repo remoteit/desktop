@@ -54,14 +54,13 @@ export const getMaxDuration = (unit: ITimeSeriesResolution) => {
   return Duration.fromObject({ [resolutionMaxLookup[unit]]: 1 })
 }
 
-export const findLongestLength = (limitDuration: Duration, resolution: string) => {
-  const lengths: number[] = []
-  TimeSeriesLengths[resolution].forEach(length => {
-    if (limitDuration.valueOf() >= Duration.fromObject({ [resolution]: length }).valueOf()) {
-      lengths.push(length)
-    }
-  })
-  return lengths[lengths.length - 1]
+// The longest span the plan's log limit actually covers. `lengths` defaults to
+// the choices for the resolution, but a heat map passes its own day counts.
+export const findLongestLength = (limitDuration: Duration, resolution: string, lengths?: number[]) => {
+  const allowed = (lengths ?? TimeSeriesLengths[resolution]).filter(
+    length => limitDuration.valueOf() >= Duration.fromObject({ [resolution]: length }).valueOf()
+  )
+  return allowed[allowed.length - 1]
 }
 
 export const connectionTypes = ['USAGE', 'CONNECT_DURATION', 'CONNECT', 'DISCONNECT']
@@ -71,12 +70,14 @@ export const defaultDeviceTimeSeries: ITimeSeriesOptions = {
   type: 'ONLINE_DURATION',
   resolution: 'DAY',
   length: 7,
+  style: 'bar',
 }
 
 export const defaultServiceTimeSeries: ITimeSeriesOptions = {
   type: 'CONNECT_DURATION',
   resolution: 'DAY',
   length: 7,
+  style: 'bar',
 }
 
 export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
@@ -153,6 +154,102 @@ export const TimeSeriesLengths: ILookup<number[], ITimeSeriesResolution> = {
   QUARTER: [4],
   YEAR: [1],
 }
+
+export const TimeSeriesAvailableStyles: ILookup<string, ITimeSeriesStyle> = {
+  bar: 'Bar',
+  heatmap: 'Heat map',
+}
+
+export const timeSeriesStyleLabel = (style?: string): string =>
+  style ? i18n.t(`graphStyle.${style}`, { defaultValue: TimeSeriesAvailableStyles[style] || style }) : ''
+
+// A heat map is a day (column) by time-of-day (row) grid, so it only has
+// something to show at sub-day resolutions. MINUTE joins this list if it is
+// ever enabled in TimeSeriesAvailableResolutions.
+export const TimeSeriesHeatmapResolutions: Partial<ILookup<string, ITimeSeriesResolution>> = {
+  HOUR: 'Hour',
+}
+
+export const defaultHeatmapResolution: ITimeSeriesResolution = 'HOUR'
+
+// Heat map spans are chosen in days — the number of columns — and converted to
+// a bucket count for the API by heatmapLength().
+export const TimeSeriesHeatmapDays = [7, 14, 30]
+
+export const resolutionSeconds: ILookup<number, ITimeSeriesResolution> = {
+  SECOND: 1,
+  MINUTE: 60,
+  HOUR: 3600,
+  DAY: 86400,
+  WEEK: 604800,
+  MONTH: 2592000,
+  QUARTER: 7776000,
+  YEAR: 31536000,
+}
+
+export const heatmapRows = (resolution: ITimeSeriesResolution) =>
+  Math.max(Math.round(resolutionSeconds.DAY / resolutionSeconds[resolution]), 1)
+
+export const heatmapLength = (days: number, resolution: ITimeSeriesResolution) => days * heatmapRows(resolution)
+
+export const heatmapDays = (length: number, resolution: ITimeSeriesResolution) =>
+  Math.max(Math.round(length / heatmapRows(resolution)), 1)
+
+// Heat cells are colored on an absolute scale so two devices are directly
+// comparable — a full bucket is 100% for a percentage type and the bucket's own
+// duration for a time type. Event counts have no ceiling, so they auto-scale.
+export const timeSeriesFullScale = (type: ITimeSeriesType, resolution: ITimeSeriesResolution): number | undefined => {
+  const { unit, scale } = TimeSeriesTypeScale[type]
+  if (unit === '%') return scale
+  if (unit === 'time') return resolutionSeconds[resolution]
+  return undefined
+}
+
+// Fold a series into day columns for the heat map. `rows` is the number of cells
+// per column — 24 for hour buckets, or 1 to collapse each day into a single
+// strip cell, which is what the list column does so it stays one row tall no
+// matter which resolution the details page last fetched.
+export const heatmapGrid = (data: ITimeSeries, rows: number): ITimeSeriesGrid => {
+  const average = TimeSeriesTypeScale[data.type]?.unit === '%'
+  const keys: string[] = []
+  const buckets: ILookup<number[][]> = {}
+
+  data.time.forEach((time, i) => {
+    const date = DateTime.fromJSDate(time)
+    const key = date.toISODate() ?? ''
+    if (!buckets[key]) {
+      keys.push(key)
+      buckets[key] = Array.from({ length: rows }, () => [] as number[])
+    }
+    // Rows are clock position within the local day, so a cell always means the
+    // same time of day. The hour a DST jump skips stays empty and the hour it
+    // repeats collects both buckets.
+    const clock = date.hour * 3600 + date.minute * 60 + date.second
+    const row = rows === 1 ? 0 : Math.min(Math.floor((clock / 86400) * rows), rows - 1)
+    buckets[key][row].push(data.data[i] ?? 0)
+  })
+
+  return {
+    rows,
+    columns: keys.map(key => ({
+      key,
+      date: DateTime.fromISO(key).toJSDate(),
+      values: buckets[key].map(values => {
+        if (!values.length) return undefined
+        const total = values.reduce((sum, value) => sum + value, 0)
+        return average ? total / values.length : total
+      }),
+    })),
+  }
+}
+
+// The device/service list renders a single row strip, so it never needs the
+// sub-day buckets a heat map details view asks for — without this a 30 day heat
+// map would pull 720 points for every device in the list query.
+export const listTimeSeriesOptions = (options: ITimeSeriesOptions): ITimeSeriesOptions =>
+  options.style === 'heatmap'
+    ? { ...options, resolution: 'DAY', length: heatmapDays(options.length, options.resolution) }
+    : options
 
 export const resolutionMaxLookup: ILookup<string, ITimeSeriesResolution> = {
   SECOND: 'minutes',

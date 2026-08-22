@@ -26,7 +26,12 @@ export const GraphItem: React.FC<Props> = ({ service, device }) => {
           </Title>
           <IconButton name="sliders" color="grayDarker" title="configure" to="/settings/graphs" />
         </Typography>
-        <TimeSeries timeSeries={instance.timeSeries} online={instance.state === 'active'} variant="large" />
+        <TimeSeries
+          timeSeries={instance.timeSeries}
+          online={instance.state === 'active'}
+          variant={variant}
+          size="large"
+        />
       </Gutters>
     </Collapse>
   )

@@ -1955,6 +1955,7 @@
   },
   "timeSeriesSelect": {
     "graphLength": "Diagrammlänge",
+    "graphStyle": "Diagrammstil",
     "graphType": "Diagrammtyp",
     "graphUnit": "Diagrammeinheit",
     "lengthValue_one": "{{count}} {{unit}}",
@@ -2001,6 +2002,10 @@
   "viewAsBanner": {
     "exit": "Ansichtsmodus verlassen",
     "viewingAs": "Anzeige als: {{email}}"
+  },
+  "graphStyle": {
+    "bar": "Balken",
+    "heatmap": "Heatmap"
   },
   "graphType": {
     "AVAILABILITY": "Online %",
