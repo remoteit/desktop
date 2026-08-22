@@ -147,8 +147,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
         t('connectedAppDetailPage.confirmExtend', {
           name,
           list: adding.join(', '),
-          defaultValue:
-            'Give {{name}} access it does not have yet?\n\nAdding: {{list}}\n\nYou may be asked to sign in again to confirm it is you.',
+          defaultValue: 'Give {{name}} access it does not have yet?\n\nAdding: {{list}}',
         })
       )
       if (!ok) return
