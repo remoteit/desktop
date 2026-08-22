@@ -55,29 +55,43 @@ export const getMaxDuration = (unit: ITimeSeriesResolution) => {
   return Duration.fromObject({ [resolutionMaxLookup[unit]]: 1 })
 }
 
-// The longest span the plan's log limit actually covers.
+// The unit `length` counts. A heat map's length is a number of day columns
+// while its resolution sets the rows within each day; every other style counts
+// buckets of its own resolution.
+export const timeSeriesLengthUnit = (options: ITimeSeriesOptions): ITimeSeriesResolution =>
+  options.style === 'heatmap' ? 'DAY' : options.resolution
+
+// The longest span the plan's log limit actually covers. Falls back to the
+// shortest choice rather than nothing when the limit is missing or unparsable —
+// it is absent until the account loads, and timeSeriesRequest() would carry an
+// undefined length through to the query as NaN.
 export const findLongestLength = (limitDuration: Duration, resolution: string) => {
-  const allowed = TimeSeriesLengths[resolution].filter(
+  const lengths = TimeSeriesLengths[resolution]
+  const allowed = lengths.filter(
     length => limitDuration.valueOf() >= Duration.fromObject({ [resolution]: length }).valueOf()
   )
-  return allowed[allowed.length - 1]
+  return allowed[allowed.length - 1] ?? lengths[0]
 }
 
 export const connectionTypes = ['USAGE', 'CONNECT_DURATION', 'CONNECT', 'DISCONNECT']
 export const secondResolutions = ['SECOND', 'MINUTE', 'HOUR']
 
+// Heat maps by default: an absolute color scale makes a device that is only up
+// two hours a day read as pale at a glance, where a bar graph auto-scales to
+// the device's own peak and hides it. The list column costs the same either
+// way — listTimeSeriesOptions collapses a heat map back to one bucket per day.
 export const defaultDeviceTimeSeries: ITimeSeriesOptions = {
   type: 'ONLINE_DURATION',
-  resolution: 'DAY',
+  resolution: 'HOUR',
   length: 7,
-  style: 'bar',
+  style: 'heatmap',
 }
 
 export const defaultServiceTimeSeries: ITimeSeriesOptions = {
   type: 'CONNECT_DURATION',
-  resolution: 'DAY',
+  resolution: 'HOUR',
   length: 7,
-  style: 'bar',
+  style: 'heatmap',
 }
 
 export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {

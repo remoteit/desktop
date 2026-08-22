@@ -6,6 +6,7 @@ import {
   TimeSeriesHeatmapResolutions,
   TimeSeriesLengths,
   findLongestLength,
+  timeSeriesLengthUnit,
   timeSeriesStyleLabel,
   timeSeriesTypeLabel,
   timeSeriesResolutionLabel,
@@ -28,10 +29,8 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
   const overLimitLabel = t('timeSeriesSelect.overLimit', ' (over limit)')
   const heatmap = timeSeriesOptions.style === 'heatmap'
 
-  // A heat map is always a grid of days, so its length is picked in days while
-  // its resolution sets the rows within each day.
   const resolutions = heatmap ? TimeSeriesHeatmapResolutions : Object.keys(TimeSeriesAvailableResolutions)
-  const lengthUnit = heatmap ? 'DAY' : timeSeriesOptions.resolution
+  const lengthUnit = timeSeriesLengthUnit(timeSeriesOptions)
   const lengths = TimeSeriesLengths[lengthUnit]
 
   return (
@@ -56,7 +55,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         icon="timer"
         label={t('timeSeriesSelect.graphUnit', 'Graph unit')}
         value={timeSeriesOptions.resolution}
-        defaultValue={heatmap ? undefined : defaults.resolution}
+        defaultValue={defaults.resolution}
         values={resolutions.map(key => {
           const disabled = limitDuration.valueOf() < Duration.fromObject({ [key]: TimeSeriesLengths[key][0] }).valueOf()
           return {
@@ -77,7 +76,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         icon="ruler"
         label={t('timeSeriesSelect.graphLength', 'Graph length')}
         value={timeSeriesOptions.length}
-        defaultValue={heatmap ? undefined : defaults.length}
+        defaultValue={defaults.length}
         values={lengths.map(key => {
           const disabled = limitDuration.valueOf() < Duration.fromObject({ [lengthUnit]: key }).valueOf()
           return {
@@ -119,6 +118,6 @@ const withStyle = (
     ...options,
     style,
     resolution: style === 'heatmap' ? TimeSeriesHeatmapResolutions[0] : 'DAY',
-    length: findLongestLength(limitDuration, 'DAY') ?? TimeSeriesLengths.DAY[0],
+    length: findLongestLength(limitDuration, 'DAY'),
   }
 }
