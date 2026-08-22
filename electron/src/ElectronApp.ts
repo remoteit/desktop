@@ -193,30 +193,82 @@ export default class ElectronApp {
     }
   }
 
+  /** The new-window flag for a browser named by app name (mac) or executable (Windows).
+   * Empty for Safari and anything unrecognized — those keep the plain open. */
+  private newWindowFlag(browser: string) {
+    return /chrome|chromium|edge|brave|vivaldi|opera/i.test(browser)
+      ? '--new-window'
+      : /firefox/i.test(browser)
+      ? '-new-window'
+      : ''
+  }
+
+  /** The default browser's EXECUTABLE on Windows, via the registry association chain:
+   * the user's https choice names a ProgId, and that ProgId's shell-open command holds
+   * the real path. Yields '' on anything unexpected — a missing UserChoice (no explicit
+   * default set), an unparsable command, a non-exe target — and every caller treats ''
+   * as "use the plain open". Two hops rather than getApplicationNameForProtocol because
+   * that returns a DISPLAY name here ("Google Chrome"), which is not launchable. */
+  private windowsDefaultBrowser(done: (exe: string) => void) {
+    const association =
+      'HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice'
+    execFile('reg', ['query', association, '/v', 'ProgId'], (error, stdout) => {
+      const progId = error ? undefined : /ProgId\s+REG_SZ\s+(\S+)/i.exec(stdout)?.[1]
+      if (!progId) return done('')
+      execFile('reg', ['query', `HKCR\\${progId}\\shell\\open\\command`, '/ve'], (commandError, commandOut) => {
+        const command = commandError ? undefined : /REG_SZ\s+(.+)/i.exec(commandOut)?.[1]?.trim()
+        if (!command) return done('')
+        // Either `"C:\...\chrome.exe" --single-argument %1` or a bare path plus switches.
+        const exe = command.startsWith('"') ? command.slice(1, command.indexOf('"', 1)) : command.split(/\s+/)[0]
+        done(/\.exe$/i.test(exe) ? exe : '')
+      })
+    })
+  }
+
   /** The auth journey gets a NEW browser window. Plain openExternal fronts the browser
    * on whatever tab it already had — a flash of unrelated content before the sign-in
    * page. Chromium-family and Firefox take a new-window flag; Safari and unknown
    * browsers would need Apple-Events permission for the same, so they keep the plain
    * open. Regular external links (setWindowOpenHandler, deep-linked URLs) deliberately
-   * stay on openExternal — normal tab behavior is right for them. */
+   * stay on openExternal — normal tab behavior is right for them.
+   *
+   * EVERY path falls back to openExternal, which is the pre-polish behavior and always
+   * correct — so an unrecognized browser, a registry shape we don't expect, or a failed
+   * spawn costs the nicety, never the sign-in. Linux stays on the plain open: its
+   * default-browser lookup varies by desktop environment for the same modest gain. */
   private openAuthWindow(url: string) {
-    const name = environment.isMac ? this.app.getApplicationNameForProtocol('https://') : ''
-    const flag = /chrome|chromium|edge|brave|vivaldi|opera/i.test(name) ? '--new-window' : /firefox/i.test(name) ? '-new-window' : ''
-    if (!flag) {
-      electron.shell.openExternal(url)
+    const openPlainly = () => electron.shell.openExternal(url)
+
+    if (environment.isMac) {
+      const name = this.app.getApplicationNameForProtocol('https://')
+      const flag = this.newWindowFlag(name)
+      if (!flag) return openPlainly()
+      // Two-step: create the window WITHOUT focus (-g), let the page load and paint out of
+      // sight, then front the browser — the user lands on a finished sign-in page instead
+      // of watching a window be born. The delay is a heuristic; there is no cross-process
+      // signal for the browser's paint.
+      execFile('open', ['-g', '-na', name, '--args', flag, url], error => {
+        if (error) return openPlainly()
+        setTimeout(() => execFile('open', ['-a', name], () => {}), 900)
+      })
       return
     }
-    // Two-step: create the window WITHOUT focus (-g), let the page load and paint out of
-    // sight, then front the browser — the user lands on a finished sign-in page instead
-    // of watching a window be born. The delay is a heuristic; there is no cross-process
-    // signal for the browser's paint.
-    execFile('open', ['-g', '-na', name, '--args', flag, url], error => {
-      if (error) {
-        electron.shell.openExternal(url)
-        return
-      }
-      setTimeout(() => execFile('open', ['-a', name], () => {}), 900)
-    })
+
+    if (environment.isWindows) {
+      this.windowsDefaultBrowser(exe => {
+        // Match the FILE NAME, not the full path — a user folder called "Edge" should not
+        // decide which flag we pass. No background-then-front counterpart here: Windows
+        // governs foreground activation itself, so the window simply appears.
+        const flag = exe ? this.newWindowFlag(path.basename(exe)) : ''
+        if (!flag) return openPlainly()
+        execFile(exe, [flag, url], error => {
+          if (error) openPlainly()
+        })
+      })
+      return
+    }
+
+    openPlainly()
   }
 
   private setDeepLink(url?: string) {
