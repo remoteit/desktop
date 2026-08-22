@@ -64,18 +64,17 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
     return <BarGraph {...props} data={bars} color={color} max={timeSeriesFullScale(bars.type, bars.resolution)} />
 
   const max = timeSeriesMax(bars.data)
-  // A heat map needs sub-day buckets to have a grid to draw. Day resolution can
-  // reach the details view — a list fetch writes over a loaded device's hourly
-  // series — and one row is a strip, so it gets a strip's height and no hour
-  // axis rather than a single 168px band. While loading there is no data to go
-  // on, so the grid is laid out at the size it is about to be.
+  // Rows come from the request while loading, since there is no data to read
+  // them off yet, and the grid is laid out at the size it is about to be. Day
+  // resolution reaching the details view — a list fetch writes over a loaded
+  // device's hourly series — is what timeSeriesLoading catches, so by here a
+  // heat map always has its 24 rows.
   const rows = heatmapRows(shape.resolution)
-  const grid = heatmap && (loading || rows > 1)
-  const height = grid ? HEATMAP_HEIGHT : 40
+  const height = heatmap ? HEATMAP_HEIGHT : 40
 
   // Both styles wear the same chrome — a left axis, the graph, a span caption
   // and the hover readout — so only these two pieces differ.
-  const axis = grid
+  const axis = heatmap
     ? [0, 6, 12, 18].map(hour => (
         <Typography
           key={hour}
@@ -93,8 +92,6 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
           {hourLabel(hour)}
         </Typography>
       ))
-    : heatmap
-    ? null
     : [max, 0].map((value, i) => (
         <Typography key={i} variant="caption" textAlign="right">
           {formatValue(timeSeries.type, value, true)}
@@ -124,9 +121,9 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
         width={60}
         minWidth={60}
         marginRight={1}
-        marginBottom={grid ? 0 : 3}
-        height={grid ? HEATMAP_HEIGHT : 45}
-        position={grid ? 'relative' : 'static'}
+        marginBottom={heatmap ? 0 : 3}
+        height={heatmap ? HEATMAP_HEIGHT : 45}
+        position={heatmap ? 'relative' : 'static'}
         justifyContent="space-between"
       >
         {axis}
@@ -135,7 +132,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
         <Stack spacing={0.5} marginRight={2}>
           {graph}
           <Typography variant="caption" textAlign="center">
-            Last&nbsp;{timeSeriesSpanLabel(heatmap ? timeSeries : bars)}
+            Last&nbsp;{timeSeriesSpanLabel(heatmap ? timeSeries : bars, heatmap ? days : undefined)}
           </Typography>
         </Stack>
         {/* Always laid out, only hidden — appearing on hover would reflow the

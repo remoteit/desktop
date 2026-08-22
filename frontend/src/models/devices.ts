@@ -27,10 +27,11 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { selectTimeSeries } from '../selectors/ui'
-import { timeSeriesLoading } from '../helpers/dateHelper'
+import { listTimeSeriesKey, timeSeriesLoading } from '../helpers/dateHelper'
 import {
   getAllDevices,
   getDeviceModel,
+  getDevices,
   selectDevice,
   selectById,
   selectActiveColumns,
@@ -157,17 +158,18 @@ export default createModel<RootModel>()({
 
     async fetchDevices({ ids, hidden, accountId }: { ids: string[]; hidden?: boolean; accountId?: string }, state) {
       accountId = accountId || selectActiveAccountId(state)
+      const timeSeries = selectTimeSeries(state)
       const gqlResponse = await graphQLPreloadDevices({
         ids,
         accountId,
         columns: selectActiveColumns(state, accountId),
-        ...selectTimeSeries(state),
+        ...timeSeries,
       })
 
       if (gqlResponse === 'ERROR') return []
 
       const result = gqlResponse?.data?.data?.login?.account?.device
-      const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden })
+      const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden, ...timeSeries })
       if (devices.length) {
         await dispatch.accounts.mergeDevices({ devices, accountId })
         await dispatch.connections.updateConnectionState({ devices, accountId })
@@ -207,7 +209,14 @@ export default createModel<RootModel>()({
       const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries)
       if (gqlResponse !== 'ERROR') {
         const gqlData = gqlResponse?.data?.data?.login || {}
-        result = graphQLDeviceAdaptor({ gqlDevices: gqlData.device, accountId, hidden, loaded: true })[0]
+        result = graphQLDeviceAdaptor({
+          gqlDevices: gqlData.device,
+          accountId,
+          hidden,
+          loaded: true,
+          deviceTimeSeries,
+          serviceTimeSeries,
+        })[0]
       }
 
       if (result) {
@@ -327,15 +336,27 @@ export default createModel<RootModel>()({
       await dispatch.devices.rootSet(rootState)
     },
 
-    // One place that knows what changing a graph setting costs: the list query
-    // carries the length, so it always has to go again, while the loaded devices
-    // only do when the series they hold can't answer the new options — a heat
-    // map's hourly buckets already fold down into daily bars.
+    // One place that knows what changing a graph setting costs.
     async setTimeSeries({ variant, options }: { variant: 'device' | 'service'; options: ITimeSeriesOptions }, state) {
-      const devices = getDeviceModel(state, selectActiveAccountId(state)).all
+      const previous = selectTimeSeries(state)[`${variant}TimeSeries`]
+      const devices = getDevices(state)
       await dispatch.ui.setPersistent({ [`${variant}TimeSeries`]: options })
-      if (devices.some(device => timeSeriesLoading(device.timeSeries, options))) await dispatch.devices.clearLoaded()
-      await dispatch.devices.fetchList()
+
+      // The list column draws day buckets whatever style the details view is
+      // set to, so switching style over the same span resolves to the query the
+      // list already ran. Refetching would return the data it holds and drop
+      // every device back to unloaded on the way through mergeDevice.
+      if (listTimeSeriesKey(previous) !== listTimeSeriesKey(options)) return await dispatch.devices.fetchList()
+
+      // Then only the details view can be short of data: its hourly buckets
+      // fold down into daily bars, but daily ones can't fill an hour-of-day
+      // grid. Each variant has to be judged by its own series — a device's
+      // hourly heat map says nothing about whether its services have one.
+      const series =
+        variant === 'service'
+          ? devices.flatMap(device => device.services.map(service => service.timeSeries))
+          : devices.map(device => device.timeSeries)
+      if (series.some(timeSeries => timeSeriesLoading(timeSeries, options))) await dispatch.devices.clearLoaded()
     },
 
     async clearLoaded(_: void, state) {
@@ -356,6 +377,8 @@ export default createModel<RootModel>()({
         gqlDevices,
         accountId: options.accountId,
         serviceLoaded: !!options.applicationTypes?.length,
+        deviceTimeSeries: options.deviceTimeSeries,
+        serviceTimeSeries: options.serviceTimeSeries,
       })
       return { devices, total }
     },

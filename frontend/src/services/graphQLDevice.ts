@@ -1,5 +1,4 @@
 import { selectDeviceColumns } from '../selectors/devices'
-import { selectTimeSeries } from '../selectors/ui'
 import { graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '@common/nameHelper'
 import { getTimeZone, listTimeSeriesOptions, timeSeriesRequest, trimIncomplete } from '../helpers/dateHelper'
@@ -321,16 +320,22 @@ export function graphQLDeviceAdaptor({
   hidden,
   loaded,
   serviceLoaded,
+  deviceTimeSeries,
+  serviceTimeSeries,
 }: {
   gqlDevices: any[]
   accountId: string
   hidden?: boolean
   loaded?: boolean
   serviceLoaded?: boolean
+  // The options the response was fetched with, so the series is stamped with
+  // what was asked for rather than with whatever the settings say by the time
+  // it lands — they can differ for the length of a round trip.
+  deviceTimeSeries?: ITimeSeriesOptions
+  serviceTimeSeries?: ITimeSeriesOptions
 }): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
-  const { deviceTimeSeries, serviceTimeSeries } = selectTimeSeries(state)
   const thisId = state.backend.thisId
   let customAttributes = new Set<string>()
   let data: IDevice[] = gqlDevices?.map((d: any): IDevice => {

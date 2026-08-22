@@ -55,8 +55,10 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
   const [hovered, setHovered] = useState<[number, number]>()
 
   // Colors resolve once per series rather than once per pointer move — hovering
-  // re-renders this component, and there can be 720 cells to paint.
+  // re-renders this component, and there can be 720 cells to paint. While
+  // loading none of them are drawn, so none are built either.
   const cells = useMemo(() => {
+    if (loading) return []
     const ramp = ((theme.palette.mode === 'dark' && DARK_MODE_RAMPS[color]) || RAMPS[color]).map(
       c => theme.palette[c].main
     )
@@ -80,14 +82,17 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
         cell => cell && { ...cell, fill: cell.value > 0 ? scale(cell.value) : theme.palette.grayLighter.main }
       )
     )
-  }, [data, rows, days, color, max, theme])
+  }, [data, rows, days, color, max, theme, loading])
 
-  const cellWidth = width / Math.max(cells.length, 1)
+  // Sized from the span being drawn rather than from the cells that happen to
+  // exist, so the loading grid is laid out at the size the real one will be and
+  // the columns don't jump when the data lands. heatmapGrid pads to match.
+  const cellWidth = width / Math.max(days, 1)
   const cellHeight = height / rows
 
   const lines = useMemo(
-    () => gridLines(cells.length, rows, cellWidth, cellHeight, width, height),
-    [cells.length, rows, cellWidth, cellHeight, width, height]
+    () => gridLines(days, rows, cellWidth, cellHeight, width, height),
+    [days, rows, cellWidth, cellHeight, width, height]
   )
 
   // One handler on the grid instead of one per cell, which also means the gaps
@@ -99,6 +104,9 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
     const x = Math.floor((event.clientX - box.left) / cellWidth)
     const y = Math.floor((event.clientY - box.top) / cellHeight)
     const cell = cells[x]?.[y]
+    // Mousemove fires far faster than the pointer crosses cells, and every
+    // re-render reconciles the whole grid — so only report a real change.
+    if (cell ? hovered?.[0] === x && hovered?.[1] === y : !hovered) return
     setHovered(cell ? [x, y] : undefined)
     onHover(cell ? [cell.date, cell.value, cell.fill] : undefined)
   }

@@ -99,15 +99,21 @@ export const getMaxDuration = (unit: ITimeSeriesResolution) => {
 export const timeSeriesLengthUnit = (options: ITimeSeriesOptions): ITimeSeriesResolution =>
   options.style === 'heatmap' ? 'DAY' : options.resolution
 
-// The longest span the plan's log limit actually covers. Falls back to the
-// shortest choice rather than nothing when the limit is missing or unparsable —
-// it is absent until the account loads, and timeSeriesRequest() would carry an
-// undefined length through to the query as NaN.
+// Whether a span fits inside the plan's log limit. An unknown limit — it is
+// absent until the organization loads, and unparsable durations come back
+// invalid rather than throwing — restricts nothing, so the settings page offers
+// every span instead of greying all of them out until the account arrives.
 export const withinLogLimit = (limitDuration: Duration, unit: string, length: number) =>
-  limitDuration.valueOf() >= Duration.fromObject({ [unit]: length }).valueOf()
+  !limitDuration.isValid || limitDuration.valueOf() >= Duration.fromObject({ [unit]: length }).valueOf()
 
+// The longest span the log limit covers. Until the limit is known it picks the
+// shortest instead of the longest: asking for more history than the plan holds
+// is the direction that fails, and the length is corrected as soon as the
+// organization lands. Never undefined — timeSeriesRequest() would carry that
+// through to the query as NaN.
 export const findLongestLength = (limitDuration: Duration, resolution: string) => {
   const lengths = TimeSeriesLengths[resolution]
+  if (!limitDuration.isValid) return lengths[0]
   const allowed = lengths.filter(length => withinLogLimit(limitDuration, resolution, length))
   return allowed[allowed.length - 1] ?? lengths[0]
 }
@@ -235,11 +241,22 @@ export const heatmapRows = (resolution: ITimeSeriesResolution) =>
 // so every graph fetches one period beyond the span it shows and drops it in
 // trimIncomplete() — otherwise the last bar is always short by however much of
 // the period has yet to run, and a heat map's first column opens partway
-// through a day.
-export const timeSeriesRequest = (options: ITimeSeriesOptions): ITimeSeriesOptions => ({
-  ...options,
-  length: (options.length + 1) * (options.style === 'heatmap' ? heatmapRows(options.resolution) : 1),
-})
+// through a day. A grid of sub-day rows fetches a second spare day on top: a
+// DST fall-back day is 25 hours, so `length` whole days can need an hour more
+// than `length * rows` and the oldest column would come up one cell short.
+export const timeSeriesRequest = (options: ITimeSeriesOptions): ITimeSeriesOptions => {
+  const rows = options.style === 'heatmap' ? heatmapRows(options.resolution) : 1
+  return { ...options, length: (options.length + (rows > 1 ? 2 : 1)) * rows }
+}
+
+// The GraphQL variables a list query resolves to. The list draws day buckets
+// whatever style the details view is set to, so switching style over the same
+// span lands on the same query — which is how devices.setTimeSeries knows a
+// refetch would return the data it already has.
+export const listTimeSeriesKey = (options: ITimeSeriesOptions) => {
+  const { type, resolution, length } = timeSeriesRequest(listTimeSeriesOptions(options))
+  return `${type}-${resolution}-${length}`
+}
 
 // Drop the period still in progress, at the boundary where the payload is
 // normalized so no consumer has to know the request ran long. A heat map draws
@@ -271,18 +288,23 @@ export const timeSeriesFullScale = (type: ITimeSeriesType, resolution: ITimeSeri
   return undefined
 }
 
-export const timeSeriesMax = (data: number[]) => Math.max(...data, 0.1)
+// Reduced rather than spread through Math.max: a comparison skips a null or
+// undefined bucket the way d3.max does, where spreading one in returns NaN and
+// takes the whole scale with it.
+export const timeSeriesMax = (data: number[]) => data.reduce((max, value) => (value > max ? value : max), 0.1)
 
 // "Last 30 days" — the span a graph is showing, in its own largest unit. A heat
 // map counts the day columns it draws rather than measuring the fetched window,
 // which still carries the partial day the grid windows off and would round up.
-export const timeSeriesSpanLabel = (data: ITimeSeries) => {
-  const heatmap = data.style === 'heatmap' && !!data.days
-  const span = heatmap ? Duration.fromObject({ days: data.days }).toMillis() : data.end.getTime() - data.start.getTime()
+// `days` defaults to the series' own stamp; a view mid-load passes the span it
+// is drawing so the caption describes the grid on screen rather than the data
+// being replaced.
+export const timeSeriesSpanLabel = (data: ITimeSeries, days = data.style === 'heatmap' ? data.days : undefined) => {
+  const span = days ? Duration.fromObject({ days }).toMillis() : data.end.getTime() - data.start.getTime()
   return humanizeDuration(span, {
     largest: 1,
     round: true,
-    units: [heatmap ? 'd' : humanizeResolutionLookup[data.resolution || 'DAY']],
+    units: [days ? 'd' : humanizeResolutionLookup[data.resolution || 'DAY']],
   })
 }
 
@@ -310,15 +332,25 @@ export const heatmapGrid = (data: ITimeSeries, rows: number, days: number): ITim
     buckets[key][row].push({ date: time, value: data.data[i] ?? 0 })
   })
 
+  const windowed = days > 0 ? keys.slice(-days) : keys
+  // Always `days` columns, padded in front so the newest day stays at the right
+  // edge. A device with less history than the span then draws its days at the
+  // grid's own cell size against an empty month, rather than stretching a
+  // handful of fat columns across the full width as if it had a month of them.
+  const padding = days > 0 ? Math.max(days - windowed.length, 0) : 0
+
   return {
-    columns: (days > 0 ? keys.slice(-days) : keys).map(key => ({
-      key,
-      cells: buckets[key].map(cells => {
-        if (!cells.length) return undefined
-        const total = cells.reduce((sum, cell) => sum + cell.value, 0)
-        return { date: cells[0].date, value: average ? total / cells.length : total }
-      }),
-    })),
+    columns: [
+      ...Array.from({ length: padding }, (_, i) => ({ key: `empty-${i}`, cells: new Array(rows).fill(undefined) })),
+      ...windowed.map(key => ({
+        key,
+        cells: buckets[key].map(cells => {
+          if (!cells.length) return undefined
+          const total = cells.reduce((sum, cell) => sum + cell.value, 0)
+          return { date: cells[0].date, value: average ? total / cells.length : total }
+        }),
+      })),
+    ],
   }
 }
 
