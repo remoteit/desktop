@@ -170,7 +170,10 @@ export const TestPage: React.FC = () => {
             hideIcon
           />
         </PortalUI>
+      </List>
 
+      <Typography variant="subtitle1">{t('testPage.apiTarget', 'API Target')}</Typography>
+      <List>
         {stagePairs.map(pair => (
           <ListItemRadio
             key={pair.stage}

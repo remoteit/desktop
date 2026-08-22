@@ -1977,6 +1977,7 @@
   "testPage": {
     "addQueryHeader": "Add query header",
     "addQueryHeaderPlaceholder": "Example: \"key:value\"",
+    "apiTarget": "API Target",
     "clearViewedAnnouncements": "Clear viewed announcements",
     "clearViewedAnnouncementsHint": "Marks all loaded announcements unread for this account.",
     "customAPITarget": "Custom",
