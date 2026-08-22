@@ -138,7 +138,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
         </Stack>
         {/* Always laid out, only hidden — appearing on hover would reflow the
             graph and everything under it as the row wraps. */}
-        <Box marginBottom={3} flexGrow={1} minWidth={150} sx={{ visibility: display ? 'visible' : 'hidden' }}>
+        <Box marginBottom={3} flexGrow={1} minWidth={120} sx={{ visibility: display ? 'visible' : 'hidden' }}>
           {/* Rendered whenever the graph is a heat map, not only while hovering,
               so the readout keeps its height and nothing below it moves. */}
           {heatmap && (
