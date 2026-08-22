@@ -302,6 +302,24 @@ export const heatmapGrid = (data: ITimeSeries, rows: number, days: number): ITim
   }
 }
 
+// Collapse a series to one bucket per local day. The list column asks for daily
+// buckets, but a device whose details page has been opened holds the hourly ones
+// that view needed, and drawing 744 bars into a 100px column is neither readable
+// nor cheap.
+export const toDailySeries = (data: ITimeSeries, days: number): ITimeSeries => {
+  const cells = heatmapGrid(data, 1, days)
+    .columns.map(column => column.cells[0])
+    .filter((cell): cell is ITimeSeriesCell => !!cell)
+  if (!cells.length) return data
+  return {
+    ...data,
+    resolution: 'DAY',
+    start: cells[0].date,
+    time: cells.map(cell => cell.date),
+    data: cells.map(cell => cell.value),
+  }
+}
+
 // The device/service list renders a single row strip, so it never needs the
 // sub-day buckets a heat map details view asks for — without this a 30 day heat
 // map would pull 720 points for every device in the list query.

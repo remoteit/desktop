@@ -9,6 +9,7 @@ import {
   timeSeriesFullScale,
   timeSeriesMax,
   timeSeriesSpanLabel,
+  toDailySeries,
 } from '../helpers/dateHelper'
 import { BarGraph, BarGraphProps } from './BarGraph'
 import { HeatGraph, HeatColor } from './HeatGraph'
@@ -40,15 +41,20 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
   // a scale off, so auto-scaling made a device that is barely ever up draw the
   // same as one that is always up. Event counts have no ceiling and still scale
   // to themselves.
-  if (size === 'small')
+  if (size === 'small') {
+    // A heat map's details view leaves hourly buckets on the device; the column
+    // only ever asked for one per day, so fold them back down rather than
+    // drawing a bar per hour.
+    const bars = heatmap && timeSeries.resolution !== 'DAY' ? toDailySeries(timeSeries, days) : timeSeries
     return (
       <BarGraph
         {...props}
-        data={timeSeries}
+        data={bars}
         color={color}
-        max={timeSeriesFullScale(timeSeries.type, timeSeries.resolution) ?? timeSeriesMax(timeSeries.data)}
+        max={timeSeriesFullScale(bars.type, bars.resolution) ?? timeSeriesMax(bars.data)}
       />
     )
+  }
 
   const max = timeSeriesMax(timeSeries.data)
   // A heat map needs sub-day buckets to have a grid to draw. Day resolution can
@@ -132,19 +138,23 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
             Last&nbsp;{timeSeriesSpanLabel(timeSeries)}
           </Typography>
         </Stack>
-        {display && (
-          <Box marginBottom={3} flexGrow={1} minWidth={150}>
-            <Typography variant="caption">
+        {/* Always laid out, only hidden — appearing on hover would reflow the
+            graph and everything under it as the row wraps. */}
+        <Box marginBottom={3} flexGrow={1} minWidth={150} sx={{ visibility: display ? 'visible' : 'hidden' }}>
+          <Typography variant="caption">
+            {display ? (
               <Timestamp
                 date={display[0]}
                 variant={secondResolutions.includes(timeSeries.resolution) ? 'minutes' : 'short'}
               />
-            </Typography>
-            <Typography variant="caption" color={`${color}.main`} component="div" fontWeight={500}>
-              {formatValue(timeSeries.type, display[1])}
-            </Typography>
-          </Box>
-        )}
+            ) : (
+              '\u00a0'
+            )}
+          </Typography>
+          <Typography variant="caption" color={`${color}.main`} component="div" fontWeight={500}>
+            {display ? formatValue(timeSeries.type, display[1]) : '\u00a0'}
+          </Typography>
+        </Box>
       </Stack>
     </Stack>
   )

@@ -7,8 +7,11 @@ export type HeatColor = 'primary' | 'success' | 'gray'
 
 // Light to dark stops for each color the graphs use, so a cell's depth reads as
 // "more of this" rather than as a different thing.
+// Each ramp starts one step in from the palette's background tints — those are
+// surface colors, and a cell holding real data should never be mistaken for an
+// empty one.
 const RAMPS: Record<HeatColor, [Color, Color, Color]> = {
-  primary: ['primaryLighter', 'primaryLight', 'primaryDark'],
+  primary: ['primaryLight', 'primary', 'primaryDark'],
   success: ['successLight', 'success', 'successDark'],
   // Ends at the body text color, not at a disabled gray — an offline device's
   // history is still history, and the pale end of a disabled ramp is invisible
@@ -21,7 +24,7 @@ const RAMPS: Record<HeatColor, [Color, Color, Color]> = {
 // primaryDark is the deepest blue in light mode but is darker than primaryLight
 // in dark mode — so there the brightest step takes the top instead.
 const DARK_MODE_RAMPS: Partial<Record<HeatColor, [Color, Color, Color]>> = {
-  primary: ['primaryLighter', 'primaryLight', 'primary'],
+  primary: ['primaryDark', 'primaryLight', 'primary'],
 }
 
 export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
