@@ -282,13 +282,22 @@ export const trimIncomplete = (data: ITimeSeries): ITimeSeries => {
 // Settings.defaultZone) and this runs once per bucket, up to 744 of them.
 const localDayKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 
+// Resolutions whose buckets are the same length every time, so a nominal
+// conversion to seconds is the real ceiling rather than an average. A calendar
+// month is 28 to 31 days, and a quarter and a year vary with it — luxon counts
+// a month as 30 days, which would leave an always-online device short every
+// February and push all seven 31 day months past the top of the scale.
+const fixedLengthResolutions: ITimeSeriesResolution[] = ['SECOND', 'MINUTE', 'HOUR', 'DAY', 'WEEK']
+
 // Heat cells are colored on an absolute scale so two devices are directly
 // comparable — a full bucket is 100% for a percentage type and the bucket's own
-// duration for a time type. Event counts have no ceiling, so they auto-scale.
+// duration for a time type. Types with no ceiling (event counts) and buckets
+// with no fixed length fall back to the series' own peak, which is what a graph
+// without an absolute scale has always done.
 export const timeSeriesFullScale = (type: ITimeSeriesType, resolution: ITimeSeriesResolution): number | undefined => {
   const { unit, scale } = TimeSeriesTypeScale[type]
   if (unit === '%') return scale
-  if (unit === 'time') return resolutionSeconds(resolution)
+  if (unit === 'time' && fixedLengthResolutions.includes(resolution)) return resolutionSeconds(resolution)
   return undefined
 }
 
