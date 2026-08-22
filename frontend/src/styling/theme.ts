@@ -23,6 +23,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
     primary: { main: colors.primary, dark: colors.primaryDark },
     calm: { main: colors.calm },
     error: { main: colors.danger },
+    primaryDark: { main: colors.primaryDark },
     primaryLight: { main: colors.primaryLight },
     primaryLighter: { main: colors.primaryLighter },
     primaryHighlight: { main: colors.primaryHighlight },

@@ -16,6 +16,14 @@ const RAMPS: Record<HeatColor, [Color, Color, Color]> = {
   gray: ['gray', 'grayDarker', 'grayDarkest'],
 }
 
+// The success and gray steps swap between light and dark mode, so their ramp
+// already points from "least" to "most" in both. The primary ones do not —
+// primaryDark is the deepest blue in light mode but is darker than primaryLight
+// in dark mode — so there the brightest step takes the top instead.
+const DARK_MODE_RAMPS: Partial<Record<HeatColor, [Color, Color, Color]>> = {
+  primary: ['primaryLighter', 'primaryLight', 'primary'],
+}
+
 export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
   data: ITimeSeries
   rows: number
@@ -42,7 +50,8 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
   const grid = useMemo(() => heatmapGrid(data, rows, days), [data, rows, days])
 
   const scale = useMemo(() => {
-    const ramp = RAMPS[color].map(c => theme.palette[c].main)
+    const stops = (theme.palette.mode === 'dark' && DARK_MODE_RAMPS[color]) || RAMPS[color]
+    const ramp = stops.map(c => theme.palette[c].main)
     // The palette's lightest step is still saturated enough that a barely used
     // hour and a half used one read the same, so the ramp starts from a tint of
     // it mixed toward the surface — which also keeps it correct in dark mode.
