@@ -100,8 +100,9 @@ export const findLongestLength = (limitDuration: Duration, resolution: string) =
 export const connectionTypes = ['USAGE', 'CONNECT_DURATION', 'CONNECT', 'DISCONNECT']
 export const secondResolutions = ['SECOND', 'MINUTE', 'HOUR']
 
-// Heat maps by default: an absolute color scale makes a device that is only up
-// two hours a day read as pale at a glance, where a bar graph auto-scales to
+// A device is online or it isn't, around the clock, so the hour-of-day grid has
+// something to say about it: an absolute color scale makes a device that is only
+// up two hours a day read as pale at a glance, where a bar graph auto-scales to
 // the device's own peak and hides it. The list column costs the same either
 // way — listTimeSeriesOptions collapses a heat map back to one bucket per day.
 export const defaultDeviceTimeSeries: ITimeSeriesOptions = {
@@ -111,11 +112,14 @@ export const defaultDeviceTimeSeries: ITimeSeriesOptions = {
   style: 'heatmap',
 }
 
+// Connections are occasional rather than continuous, so most cells in a service
+// heat map are empty and the daily bars read better. Still switchable per the
+// graph style setting.
 export const defaultServiceTimeSeries: ITimeSeriesOptions = {
   type: 'CONNECT_DURATION',
-  resolution: 'HOUR',
+  resolution: 'DAY',
   length: 7,
-  style: 'heatmap',
+  style: 'bar',
 }
 
 export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
