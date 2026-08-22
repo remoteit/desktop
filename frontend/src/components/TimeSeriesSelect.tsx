@@ -5,8 +5,8 @@ import {
   TimeSeriesAvailableStyles,
   TimeSeriesHeatmapResolutions,
   TimeSeriesLengths,
-  findLongestLength,
   timeSeriesLengthUnit,
+  timeSeriesWithStyle,
   timeSeriesStyleLabel,
   timeSeriesTypeLabel,
   timeSeriesResolutionLabel,
@@ -49,7 +49,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         value={timeSeriesOptions.style ?? 'bar'}
         defaultValue={defaults.style}
         values={Object.keys(TimeSeriesAvailableStyles).map(key => ({ key, name: timeSeriesStyleLabel(key) }))}
-        onChange={value => onChange?.(withStyle(timeSeriesOptions, value as ITimeSeriesStyle, limitDuration))}
+        onChange={value => onChange?.(timeSeriesWithStyle(timeSeriesOptions, value as ITimeSeriesStyle, limitDuration))}
       />
       <SelectSetting
         icon="timer"
@@ -104,24 +104,4 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
       />
     </List>
   )
-}
-
-// Switching style re-scopes resolution and length, since a bar graph counts
-// buckets of its own resolution and a heat map counts days. Either way it lands
-// on the longest span the plan's log limit allows rather than silently asking
-// for more than it has.
-const withStyle = (
-  options: ITimeSeriesOptions,
-  style: ITimeSeriesStyle,
-  limitDuration: Duration
-): ITimeSeriesOptions => {
-  // Settings saved before graph style existed have no style at all, and they
-  // are bar graphs — picking Bar on one of those should leave it alone.
-  if (style === (options.style ?? 'bar')) return options
-  return {
-    ...options,
-    style,
-    resolution: style === 'heatmap' ? TimeSeriesHeatmapResolutions[0] : 'DAY',
-    length: findLongestLength(limitDuration, 'DAY'),
-  }
 }

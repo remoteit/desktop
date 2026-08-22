@@ -324,6 +324,26 @@ export const toDailySeries = (data: ITimeSeries, days: number): ITimeSeries => {
   }
 }
 
+// Switching style re-scopes resolution and length, since a bar graph counts
+// buckets of its own resolution and a heat map counts days. Either way it lands
+// on the longest span the plan's log limit allows rather than silently asking
+// for more than it has.
+export const timeSeriesWithStyle = (
+  options: ITimeSeriesOptions,
+  style: ITimeSeriesStyle,
+  limitDuration: Duration
+): ITimeSeriesOptions => {
+  // Settings saved before graph style existed have no style at all, and they
+  // are bar graphs — picking Bar on one of those should leave it alone.
+  if (style === (options.style ?? 'bar')) return options
+  return {
+    ...options,
+    style,
+    resolution: style === 'heatmap' ? TimeSeriesHeatmapResolutions[0] : 'DAY',
+    length: findLongestLength(limitDuration, 'DAY'),
+  }
+}
+
 // The device/service list renders a single row strip, so it never needs the
 // sub-day buckets a heat map details view asks for — without this a 30 day heat
 // map would pull 720 points for every device in the list query.
