@@ -681,8 +681,8 @@ declare global {
     jobId?: string
     tag?: ITagFilter
     file?: File
-    argumentDefinitions?: IArgumentDefinition[] // For script creation/edit
-    argumentValues?: IArgumentValue[] // For running scripts
+    argumentDefinitions?: IArgumentDefinition[]  // For script creation/edit
+    argumentValues?: IArgumentValue[]            // For running scripts
   }
 
   type IJob = {

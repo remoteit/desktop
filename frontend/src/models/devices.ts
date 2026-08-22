@@ -27,6 +27,7 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { selectTimeSeries } from '../selectors/ui'
+import { timeSeriesLoading } from '../helpers/dateHelper'
 import {
   getAllDevices,
   getDeviceModel,
@@ -324,6 +325,17 @@ export default createModel<RootModel>()({
 
       console.log('EXPIRE DEVICES CACHE', expired)
       await dispatch.devices.rootSet(rootState)
+    },
+
+    // One place that knows what changing a graph setting costs: the list query
+    // carries the length, so it always has to go again, while the loaded devices
+    // only do when the series they hold can't answer the new options — a heat
+    // map's hourly buckets already fold down into daily bars.
+    async setTimeSeries({ variant, options }: { variant: 'device' | 'service'; options: ITimeSeriesOptions }, state) {
+      const devices = getDeviceModel(state, selectActiveAccountId(state)).all
+      await dispatch.ui.setPersistent({ [`${variant}TimeSeries`]: options })
+      if (devices.some(device => timeSeriesLoading(device.timeSeries, options))) await dispatch.devices.clearLoaded()
+      await dispatch.devices.fetchList()
     },
 
     async clearLoaded(_: void, state) {

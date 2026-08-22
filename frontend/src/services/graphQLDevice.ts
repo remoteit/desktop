@@ -480,17 +480,14 @@ function processAttributes(response: any): ILookup<any> {
 function processTimeSeries(response: any, options?: ITimeSeriesOptions): ITimeSeries | undefined {
   if (!response.timeSeries) return
   const timeSeries = response.timeSeries
-  return trimIncomplete(
-    {
-      ...timeSeries,
-      style: options?.style,
-      // Only a heat map counts its length in days; a bar graph's length is a
-      // bucket count in its own resolution, so it gets no day stamp.
-      days: options?.style === 'heatmap' ? options.length : undefined,
-      start: new Date(timeSeries.start),
-      end: new Date(timeSeries.end),
-      time: timeSeries.time.map((t: any) => new Date(t)),
-    },
-    options?.style
-  )
+  return trimIncomplete({
+    ...timeSeries,
+    style: options?.style,
+    // Only a heat map counts its length in days; a bar graph's length is a
+    // bucket count in its own resolution, so it gets no day stamp.
+    days: options?.style === 'heatmap' ? options.length : undefined,
+    start: new Date(timeSeries.start),
+    end: new Date(timeSeries.end),
+    time: timeSeries.time.map((t: any) => new Date(t)),
+  })
 }

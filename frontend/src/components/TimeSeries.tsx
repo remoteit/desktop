@@ -3,6 +3,8 @@ import {
   TimeSeriesTypeScale,
   connectionTypes,
   heatmapRows,
+  isHeatmapSeries,
+  timeSeriesLoading,
   hourLabel,
   humanizeDuration as humanize,
   secondResolutions,
@@ -27,53 +29,40 @@ type Props = Omit<BarGraphProps, 'data' | 'min'> & {
   size?: 'large' | 'small'
   // The options being asked for, which lead the ones the series was fetched
   // with: hourly buckets can always be folded into daily ones, so switching to
-  // bars needs no new data. `loading` covers the other direction, where they
-  // can't, and the grid then takes its shape from these rather than from a
-  // series that cannot describe it.
+  // bars needs no new data. The other direction can't, which is what makes a
+  // series "loading" — see timeSeriesLoading.
   options?: ITimeSeriesOptions
-  loading?: boolean
 }
 
-export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', options, loading, ...props }) => {
+export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', options, ...props }) => {
   const [display, setDisplay] = React.useState<[Date, number, string?]>()
 
-  if (!timeSeries) return null
+  // Hourly buckets only exist because a heat map asked for them, so those are
+  // the ones safe to fold — a bar graph set to Hour wants its hours kept. Held
+  // across renders so BarGraph's own memo isn't invalidated on every hover.
+  const bars = React.useMemo(
+    () => (isHeatmapSeries(timeSeries) ? toDailySeries(timeSeries!, timeSeries!.days ?? 1) : timeSeries),
+    [timeSeries]
+  )
+
+  if (!timeSeries || !bars) return null
 
   const color: HeatColor = connectionTypes.includes(timeSeries.type) ? 'primary' : online ? 'success' : 'gray'
-  const fetchedAsHeatmap = timeSeries.style === 'heatmap'
   const heatmap = (options?.style ?? timeSeries.style) === 'heatmap'
+  const loading = !!options && timeSeriesLoading(timeSeries, options)
   // Loading means the series can't describe the grid it is about to become, so
   // the shape comes from the request instead and nothing moves when it lands.
   const shape = loading && options ? options : { resolution: timeSeries.resolution, length: timeSeries.days ?? 1 }
   const days = shape.length
 
-  // Hourly buckets only exist because a heat map asked for them, so those are
-  // the ones safe to fold — a bar graph set to Hour wants its hours kept.
-  const daily = () =>
-    fetchedAsHeatmap && heatmapRows(timeSeries.resolution) > 1 ? toDailySeries(timeSeries, days) : timeSeries
+  // The list is always bars, whatever style the details view is set to, and the
+  // column has no axis to read a scale off — so they use the absolute ceiling
+  // for the bucket rather than each device's own peak, which made a device that
+  // is barely ever up draw the same as one that is always up. Event counts have
+  // no ceiling and fall back to BarGraph's own per-series default.
+  if (size === 'small')
+    return <BarGraph {...props} data={bars} color={color} max={timeSeriesFullScale(bars.type, bars.resolution)} />
 
-  // The list is always bars, whatever style the details view is set to, and they
-  // are scaled to the absolute ceiling for the bucket — a full day of uptime, or
-  // 100% — rather than to each device's own peak. The column has no axis to read
-  // a scale off, so auto-scaling made a device that is barely ever up draw the
-  // same as one that is always up. Event counts have no ceiling and still scale
-  // to themselves.
-  if (size === 'small') {
-    // A heat map's details view leaves hourly buckets on the device; the column
-    // only ever asked for one per day, so fold them back down rather than
-    // drawing a bar per hour.
-    const bars = daily()
-    return (
-      <BarGraph
-        {...props}
-        data={bars}
-        color={color}
-        max={timeSeriesFullScale(bars.type, bars.resolution) ?? timeSeriesMax(bars.data)}
-      />
-    )
-  }
-
-  const bars = daily()
   const max = timeSeriesMax(bars.data)
   // A heat map needs sub-day buckets to have a grid to draw. Day resolution can
   // reach the details view — a list fetch writes over a loaded device's hourly
@@ -167,7 +156,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
             {display ? (
               <Timestamp
                 date={display[0]}
-                variant={secondResolutions.includes(bars.resolution) ? 'minutes' : 'short'}
+                variant={secondResolutions.includes(heatmap ? shape.resolution : bars.resolution) ? 'minutes' : 'short'}
               />
             ) : (
               '\u00a0'

@@ -6,6 +6,7 @@ import {
   TimeSeriesHeatmapResolutions,
   TimeSeriesLengths,
   timeSeriesLengthUnit,
+  withinLogLimit,
   timeSeriesWithStyle,
   timeSeriesStyleLabel,
   timeSeriesTypeLabel,
@@ -59,9 +60,8 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         values={resolutions.map(key => {
           // A heat map's shortest span is a number of days, not of `key`, so the
           // limit is measured in whichever unit that resolution's length counts.
-          const unit = heatmap ? 'DAY' : key
-          const disabled =
-            limitDuration.valueOf() < Duration.fromObject({ [unit]: TimeSeriesLengths[unit][0] }).valueOf()
+          const unit = timeSeriesLengthUnit({ ...timeSeriesOptions, resolution: key as ITimeSeriesResolution })
+          const disabled = !withinLogLimit(limitDuration, unit, TimeSeriesLengths[unit][0])
           return {
             key,
             name: timeSeriesResolutionLabel(key) + (disabled ? overLimitLabel : ''),
@@ -72,7 +72,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
           onChange?.({
             ...timeSeriesOptions,
             resolution: value as ITimeSeriesResolution,
-            length: heatmap ? timeSeriesOptions.length : TimeSeriesLengths[value][0],
+            length: TimeSeriesLengths[value][0],
           })
         }
       />
@@ -82,7 +82,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         value={timeSeriesOptions.length}
         defaultValue={defaults.length}
         values={lengths.map(key => {
-          const disabled = limitDuration.valueOf() < Duration.fromObject({ [lengthUnit]: key }).valueOf()
+          const disabled = !withinLogLimit(limitDuration, lengthUnit, key)
           return {
             key,
             name:
@@ -95,12 +95,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
             disabled,
           }
         })}
-        onChange={value =>
-          onChange?.({
-            ...timeSeriesOptions,
-            length: +value,
-          })
-        }
+        onChange={value => onChange?.({ ...timeSeriesOptions, length: +value })}
       />
     </List>
   )

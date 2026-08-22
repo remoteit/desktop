@@ -60,15 +60,29 @@ const getClockLocale = () => {
 // A friendlier hour axis than 00:00/06:00/12:00/18:00 wherever a 12 hour clock
 // is the norm. Midnight and noon get words because "12am" and "12pm" are the
 // two labels people reliably misread.
-export const hourLabel = (hour: number): string => {
+// Building an Intl.DateTimeFormat costs orders of magnitude more than using one,
+// and only four hours in one locale are ever asked for.
+const clockFormats: ILookup<{ hour12: boolean; format: Intl.DateTimeFormat }> = {}
+const getClockFormat = () => {
   const locale = getClockLocale()
+  if (!clockFormats[locale]) {
+    const hour12 = !!new Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hour12
+    const shape: Intl.DateTimeFormatOptions = hour12
+      ? { hour: 'numeric' }
+      : { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
+    clockFormats[locale] = { hour12, format: new Intl.DateTimeFormat(locale, shape) }
+  }
+  return clockFormats[locale]
+}
+
+export const hourLabel = (hour: number): string => {
+  const { hour12, format } = getClockFormat()
   const date = new Date(2000, 0, 1, hour)
-  if (!new Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hour12)
-    return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date)
+  if (!hour12) return format.format(date)
   if (hour === 0) return i18n.t('time.midnight', 'midnight')
   if (hour === 12) return i18n.t('time.noon', 'noon')
   // "6 PM" -> "6pm"; the locale supplies the day period, this only tightens it
-  return new Intl.DateTimeFormat(locale, { hour: 'numeric' }).format(date).replace(/\s/g, '').toLowerCase()
+  return format.format(date).replace(/\s/g, '').toLowerCase()
 }
 
 export const getStart = (resolution: ITimeSeriesResolution) => {
@@ -89,11 +103,12 @@ export const timeSeriesLengthUnit = (options: ITimeSeriesOptions): ITimeSeriesRe
 // shortest choice rather than nothing when the limit is missing or unparsable —
 // it is absent until the account loads, and timeSeriesRequest() would carry an
 // undefined length through to the query as NaN.
+export const withinLogLimit = (limitDuration: Duration, unit: string, length: number) =>
+  limitDuration.valueOf() >= Duration.fromObject({ [unit]: length }).valueOf()
+
 export const findLongestLength = (limitDuration: Duration, resolution: string) => {
   const lengths = TimeSeriesLengths[resolution]
-  const allowed = lengths.filter(
-    length => limitDuration.valueOf() >= Duration.fromObject({ [resolution]: length }).valueOf()
-  )
+  const allowed = lengths.filter(length => withinLogLimit(limitDuration, resolution, length))
   return allowed[allowed.length - 1] ?? lengths[0]
 }
 
@@ -231,11 +246,12 @@ export const timeSeriesRequest = (options: ITimeSeriesOptions): ITimeSeriesOptio
 // a column per day, so the whole day in progress goes — dropping only its
 // latest bucket would leave a short column, and in the midnight hour it would
 // discard a complete day instead.
-export const trimIncomplete = (data: ITimeSeries, style?: ITimeSeriesStyle): ITimeSeries => {
+export const trimIncomplete = (data: ITimeSeries): ITimeSeries => {
   const last = data.time[data.time.length - 1]
   if (!last) return data
   const lastDay = localDayKey(last)
-  const keep = style === 'heatmap' ? data.time.findIndex(time => localDayKey(time) === lastDay) : data.time.length - 1
+  const keep =
+    data.style === 'heatmap' ? data.time.findIndex(time => localDayKey(time) === lastDay) : data.time.length - 1
   if (keep < 1) return data
   return { ...data, end: data.time[keep], time: data.time.slice(0, keep), data: data.data.slice(0, keep) }
 }
@@ -347,8 +363,12 @@ export const timeSeriesWithStyle = (
 // A series carries the options it was fetched with, so changing the setting
 // leaves the previous one on screen until the refetch lands. The heat map is the
 // case that shows: daily buckets cannot fill an hour-of-day grid.
+// Whether a series has the sub-day buckets a heat map grid needs. Its negation
+// is what "still loading" means for a heat map, so both read from here.
+export const isHeatmapSeries = (data?: ITimeSeries) => data?.style === 'heatmap' && heatmapRows(data.resolution) > 1
+
 export const timeSeriesLoading = (data: ITimeSeries | undefined, options: ITimeSeriesOptions) =>
-  options.style === 'heatmap' && (!data || data.style !== 'heatmap' || heatmapRows(data.resolution) < 2)
+  options.style === 'heatmap' && !isHeatmapSeries(data)
 
 // The device/service list renders a single row strip, so it never needs the
 // sub-day buckets a heat map details view asks for — without this a 30 day heat
