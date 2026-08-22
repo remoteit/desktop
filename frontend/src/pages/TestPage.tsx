@@ -63,8 +63,31 @@ export const TestPage: React.FC = () => {
     return [...pairs.values()].filter(pair => pair.graphql)
   }, [targets])
 
+  // Which radio is lit. The override flag is DERIVED from the choice — selecting the stage
+  // this build ships with is the same thing the old "Override default APIs" switch expressed,
+  // so the switch is gone and `switchApi` (still read by the Electron backend to configure
+  // the CLI binary) is set from here. `customMode` is held locally because a hand-typed URL
+  // may coincide with a registered stage, and the choice should not silently jump to it.
+  const currentGraphql = apis.switchApi && apis.apiGraphqlURL ? apis.apiGraphqlURL : OAUTH_GRAPHQL_RESOURCE
+  const [customMode, setCustomMode] = useState<boolean | undefined>(undefined)
+  const customSelected =
+    customMode ?? (!!apis.switchApi && stagePairs.length > 0 && !stagePairs.some(p => p.graphql === currentGraphql))
+
+  async function selectCustom() {
+    setMintError('')
+    setCustomMode(true)
+    const values = {
+      switchApi: true,
+      apiGraphqlURL: apis.apiGraphqlURL || getApiURL() || '',
+      webSocketURL: apis.webSocketURL || getWebSocketURL() || '',
+    }
+    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
+    emit('preferences', { ...preferences, ...values })
+  }
+
   async function selectStage(pair: StagePair) {
     setMintError('')
+    setCustomMode(false)
     const isDefault = pair.graphql === OAUTH_GRAPHQL_RESOURCE
     const values = {
       switchApi: !isDefault,
@@ -148,43 +171,37 @@ export const TestPage: React.FC = () => {
           />
         </PortalUI>
 
-        <ListItemSetting
-          hideIcon
-          label={t('testPage.overrideDefaultAPIs', 'Override default APIs')}
-          onClick={() => {
-            setAPIPreference('switchApi', !apis.switchApi)
-            emit('binaries/install')
-          }}
-          toggle={!!apis.switchApi}
+        {stagePairs.map(pair => (
+          <ListItemRadio
+            key={pair.stage}
+            label={pair.name}
+            subLabel={pair.ws ? `${pair.graphql} + events` : pair.graphql}
+            checked={!customSelected && currentGraphql === pair.graphql}
+            onClick={() => selectStage(pair)}
+          />
+        ))}
+        <ListItemRadio
+          label={t('testPage.customAPITarget', 'Custom')}
+          subLabel={t('testPage.customAPITargetHint', 'Point at a URL the authorization server has not registered.')}
+          checked={customSelected}
+          onClick={selectCustom}
         />
+        {!!mintError && (
+          <ListItem>
+            <Typography variant="caption" color="error">
+              {t('testPage.mintError', 'This target was refused at token mint: {{error}}', {
+                error: mintError,
+              })}
+            </Typography>
+          </ListItem>
+        )}
         <ListItem>
           <Quote margin={null} indent="listItem" noInset>
             <List disablePadding>
-              {stagePairs.map(pair => (
-                <ListItemRadio
-                  key={pair.stage}
-                  label={pair.name}
-                  subLabel={pair.ws ? `${pair.graphql} + events` : pair.graphql}
-                  checked={
-                    (apis.switchApi && apis.apiGraphqlURL ? apis.apiGraphqlURL : OAUTH_GRAPHQL_RESOURCE) ===
-                    pair.graphql
-                  }
-                  onClick={() => selectStage(pair)}
-                />
-              ))}
-              {!!mintError && (
-                <ListItem>
-                  <Typography variant="caption" color="error">
-                    {t('testPage.mintError', 'This target was refused at token mint: {{error}}', {
-                      error: mintError,
-                    })}
-                  </Typography>
-                </ListItem>
-              )}
               <InlineTextFieldSetting
                 value={getApiURL()}
                 label={t('testPage.customGraphQLURL', 'Custom GraphQL URL (advanced)')}
-                disabled={!apis.switchApi}
+                disabled={!customSelected}
                 resetValue={getApiURL()}
                 maxLength={200}
                 onSave={async result => {
@@ -192,7 +209,7 @@ export const TestPage: React.FC = () => {
                   setMintError('')
                   await setAPIPreference('apiGraphqlURL', url)
                   try {
-                    if (apis.switchApi) await oidcAccessToken(url)
+                    await oidcAccessToken(url)
                   } catch (error) {
                     setMintError(error instanceof Error ? error.message : String(error))
                   }
@@ -204,7 +221,7 @@ export const TestPage: React.FC = () => {
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
                 label={t('testPage.customWebSocketURL', 'Custom WebSocket URL (advanced)')}
-                disabled={!apis.switchApi}
+                disabled={!customSelected}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
                 onSave={url => {

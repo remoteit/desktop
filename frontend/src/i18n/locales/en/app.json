@@ -1979,6 +1979,8 @@
     "addQueryHeaderPlaceholder": "Example: \"key:value\"",
     "clearViewedAnnouncements": "Clear viewed announcements",
     "clearViewedAnnouncementsHint": "Marks all loaded announcements unread for this account.",
+    "customAPITarget": "Custom",
+    "customAPITargetHint": "Point at a URL the authorization server has not registered.",
     "customGraphQLURL": "Custom GraphQL URL (advanced)",
     "customWebSocketURL": "Custom WebSocket URL (advanced)",
     "disableTestUI": "Disable Test UI",
