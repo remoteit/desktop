@@ -27,7 +27,7 @@ import {
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
 import { selectTimeSeries } from '../selectors/ui'
-import { listTimeSeriesKey, timeSeriesLoading } from '../helpers/dateHelper'
+import { listTimeSeriesKey, timeSeriesLoading, timeSeriesWithStyle } from '../helpers/dateHelper'
 import {
   getAllDevices,
   getDeviceModel,
@@ -39,6 +39,8 @@ import {
   deviceMatchesFilters,
 } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
+import { selectLimit } from '../selectors/organizations'
+import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
@@ -334,6 +336,18 @@ export default createModel<RootModel>()({
 
       console.log('EXPIRE DEVICES CACHE', expired)
       await dispatch.devices.rootSet(rootState)
+    },
+
+    // Switching style re-scopes resolution and length against the plan's log
+    // limit, so a caller doesn't have to reach into billing state just to flip a
+    // chart between bars and a heat map.
+    async setTimeSeriesStyle({ variant, style }: { variant: 'device' | 'service'; style: ITimeSeriesStyle }, state) {
+      const options = selectTimeSeries(state)[`${variant}TimeSeries`]
+      const logLimit = selectLimit(state, undefined, 'log-limit')
+      await dispatch.devices.setTimeSeries({
+        variant,
+        options: timeSeriesWithStyle(options, style, Duration.fromISO(logLimit?.value)),
+      })
     },
 
     // One place that knows what changing a graph setting costs.

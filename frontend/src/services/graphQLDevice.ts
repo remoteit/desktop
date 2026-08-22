@@ -169,8 +169,8 @@ const DEVICE_TIME_SERIES_PARAMS =
 const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
-// Both series always go through timeSeriesRequest, so every query asks for the
-// extra period processTimeSeries trims back off. `list` scopes a heat map down
+// Both series always go through timeSeriesRequest, so a grid query asks for the
+// spare day heatmapGrid windows off. `list` scopes a heat map down
 // to one bucket per day, which is all a list row's strip draws — it belongs to
 // the query rather than to its callers, so a list query can't accidentally ask
 // for the details view's 720 points per device.

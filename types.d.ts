@@ -461,10 +461,6 @@ declare global {
 
   type ITimeSeriesCell = { date: Date; value: number }
 
-  type ITimeSeriesGrid = {
-    columns: { key: string; cells: (ITimeSeriesCell | undefined)[] }[]
-  }
-
   type ITimeSeriesType =
     | 'AVAILABILITY' // Online Percentage
     | 'ONLINE_DURATION' // Online Duration (in seconds)

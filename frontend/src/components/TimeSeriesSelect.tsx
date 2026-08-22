@@ -68,13 +68,12 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
             disabled,
           }
         })}
-        onChange={value =>
-          onChange?.({
-            ...timeSeriesOptions,
-            resolution: value as ITimeSeriesResolution,
-            length: TimeSeriesLengths[value][0],
-          })
-        }
+        onChange={value => {
+          // The new length is counted in whatever unit the new resolution makes
+          // `length` mean — days for a heat map, the resolution itself for bars.
+          const next = { ...timeSeriesOptions, resolution: value as ITimeSeriesResolution }
+          onChange?.({ ...next, length: TimeSeriesLengths[timeSeriesLengthUnit(next)][0] })
+        }}
       />
       <SelectSetting
         icon="ruler"

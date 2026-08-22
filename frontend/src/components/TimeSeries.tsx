@@ -13,78 +13,88 @@ import {
   timeSeriesSpanLabel,
   toDailySeries,
 } from '../helpers/dateHelper'
-import { BarGraph, BarGraphProps } from './BarGraph'
-import { HeatGraph, HeatColor } from './HeatGraph'
+import { BarGraph } from './BarGraph'
+import { HeatGraph, HeatColor, HEATMAP_CELL, useHeatCells } from './HeatGraph'
 import { Typography, Stack, Box } from '@mui/material'
 import { Timestamp } from './Timestamp'
 import { radius } from '../styling'
 
-// Cells are square, so one size sets both axes: the hour rows give the height
-// and the day columns give the width. A shorter span then draws a narrower
-// graph rather than stretching its days into wide rectangles.
-const HEATMAP_CELL = 7
+const heatColor = (type?: ITimeSeriesType, online?: boolean): HeatColor =>
+  type && connectionTypes.includes(type) ? 'primary' : online ? 'success' : 'gray'
 
-type Props = Omit<BarGraphProps, 'data' | 'min'> & {
-  timeSeries?: ITimeSeries
-  online?: boolean
-  size?: 'large' | 'small'
-  // The options being asked for, which lead the ones the series was fetched
-  // with: hourly buckets can always be folded into daily ones, so switching to
-  // bars needs no new data. The other direction can't, which is what makes a
-  // series "loading" — see timeSeriesLoading.
-  options?: ITimeSeriesOptions
-}
-
-export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', options, ...props }) => {
-  const [display, setDisplay] = React.useState<[Date, number, string?]>()
-
-  // Hourly buckets only exist because a heat map asked for them, so those are
-  // the ones safe to fold — a bar graph set to Hour wants its hours kept. Held
-  // across renders so BarGraph's own memo isn't invalidated on every hover.
-  const bars = React.useMemo(
+// Hourly buckets only exist because a heat map asked for them, so those are the
+// ones safe to fold — a bar graph set to Hour wants its hours kept. Held across
+// renders so BarGraph's own memo isn't invalidated on every hover.
+const useDailyBars = (timeSeries?: ITimeSeries) =>
+  React.useMemo(
     () => (isHeatmapSeries(timeSeries) ? toDailySeries(timeSeries!, timeSeries!.days ?? 1) : timeSeries),
     [timeSeries]
   )
 
-  if (!timeSeries || !bars) return null
+// The list column: a bare strip of bars, whatever style the details view is set
+// to. It has no axis to read a scale off, so it uses the absolute ceiling for
+// the bucket rather than each device's own peak — which made a device that is
+// barely ever up draw the same as one that is always up. Event counts have no
+// ceiling and fall back to BarGraph's own per-series default.
+export const TimeSeries: React.FC<{ timeSeries?: ITimeSeries; online?: boolean }> = ({ timeSeries, online }) => {
+  const bars = useDailyBars(timeSeries)
+  if (!bars) return null
+  return (
+    <BarGraph data={bars} color={heatColor(bars.type, online)} max={timeSeriesFullScale(bars.type, bars.resolution)} />
+  )
+}
 
-  const color: HeatColor = connectionTypes.includes(timeSeries.type) ? 'primary' : online ? 'success' : 'gray'
-  const heatmap = (options?.style ?? timeSeries.style) === 'heatmap'
-  const loading = !!options && timeSeriesLoading(timeSeries, options)
+// 24 rows of hour cells, so the labels are fractions of a day whatever the row
+// count works out to.
+const HOUR_LABELS = [0, 6, 12, 18]
+
+type DetailProps = {
+  timeSeries?: ITimeSeries
+  online?: boolean
+  // The options being asked for, which lead the ones the series was fetched
+  // with: hourly buckets can always be folded into daily ones, so switching to
+  // bars needs no new data. The other direction can't, which is what makes a
+  // series "loading" — see timeSeriesLoading.
+  options: ITimeSeriesOptions
+}
+
+export const TimeSeriesDetail: React.FC<DetailProps> = ({ timeSeries, online, options }) => {
+  // A heat map reports the cell position and the value is read back out of the
+  // same `cells` the grid drew, so the readout cannot describe a series that has
+  // since been replaced. Bars have no such array, so they report the value.
+  const [hoveredCell, setHoveredCell] = React.useState<[number, number]>()
+  const [hoveredBar, setHoveredBar] = React.useState<[Date, number]>()
+  const bars = useDailyBars(timeSeries)
+
+  const heatmap = options.style === 'heatmap'
+  const loading = timeSeriesLoading(timeSeries, options)
   // Loading means the series can't describe the grid it is about to become, so
   // the shape comes from the request instead and nothing moves when it lands.
-  const shape = loading && options ? options : { resolution: timeSeries.resolution, length: timeSeries.days ?? 1 }
+  const shape = loading ? options : { resolution: timeSeries?.resolution ?? 'DAY', length: timeSeries?.days ?? 1 }
   const days = shape.length
+  const rows = heatmapRows(shape.resolution)
+  const color = heatColor(timeSeries?.type, online)
 
-  // The list is always bars, whatever style the details view is set to, and the
-  // column has no axis to read a scale off — so they use the absolute ceiling
-  // for the bucket rather than each device's own peak, which made a device that
-  // is barely ever up draw the same as one that is always up. Event counts have
-  // no ceiling and fall back to BarGraph's own per-series default.
-  if (size === 'small')
-    return <BarGraph {...props} data={bars} color={color} max={timeSeriesFullScale(bars.type, bars.resolution)} />
+  const cells = useHeatCells(timeSeries, rows, days, color, !heatmap || loading)
+
+  if (!timeSeries || !bars) return null
 
   const max = timeSeriesMax(bars.data)
-  // Rows come from the request while loading, since there is no data to read
-  // them off yet, and the grid is laid out at the size it is about to be. Day
-  // resolution reaching the details view — a list fetch writes over a loaded
-  // device's hourly series — is what timeSeriesLoading catches, so by here a
-  // heat map always has its 24 rows.
-  const rows = heatmapRows(shape.resolution)
-  const height = heatmap ? rows * HEATMAP_CELL : 40
+  const height = rows * HEATMAP_CELL
+  const cell = heatmap ? hoveredCell && cells[hoveredCell[0]]?.[hoveredCell[1]] : undefined
+  const readout = heatmap
+    ? cell && { date: cell.date, value: cell.value, fill: cell.fill }
+    : hoveredBar && { date: hoveredBar[0], value: hoveredBar[1], fill: undefined }
 
-  // Both styles wear the same chrome — a left axis, the graph, a span caption
-  // and the hover readout — so only these two pieces differ.
   const axis = heatmap
-    ? [0, 6, 12, 18].map(hour => (
+    ? HOUR_LABELS.map(hour => (
         <Typography
           key={hour}
           variant="caption"
           sx={{
             position: 'absolute',
             right: 0,
-            // centered on the band of cells covering that hour, whatever the
-            // row count works out to
+            // centered on the band of cells covering that hour
             top: ((hour + 0.5) / 24) * height,
             transform: 'translateY(-50%)',
             lineHeight: 1,
@@ -98,23 +108,6 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
           {formatValue(timeSeries.type, value, true)}
         </Typography>
       ))
-
-  const graph = heatmap ? (
-    <HeatGraph
-      {...props}
-      data={timeSeries}
-      rows={rows}
-      days={days}
-      color={color}
-      max={timeSeriesFullScale(timeSeries.type, timeSeries.resolution)}
-      loading={loading}
-      width={days * HEATMAP_CELL}
-      height={height}
-      onHover={setDisplay}
-    />
-  ) : (
-    <BarGraph {...props} data={bars} color={color} height={40} width={200} max={max} min={0} onHover={setDisplay} />
-  )
 
   return (
     <Stack direction="row" flexWrap="nowrap">
@@ -131,14 +124,18 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
       </Stack>
       <Stack direction="row" flexWrap="wrap">
         <Stack spacing={0.5} marginRight={2}>
-          {graph}
+          {heatmap ? (
+            <HeatGraph cells={cells} rows={rows} days={days} loading={loading} onHover={setHoveredCell} />
+          ) : (
+            <BarGraph data={bars} color={color} height={40} width={200} max={max} onHover={setHoveredBar} />
+          )}
           <Typography variant="caption" textAlign="center">
             Last&nbsp;{timeSeriesSpanLabel(heatmap ? timeSeries : bars, heatmap ? days : undefined)}
           </Typography>
         </Stack>
         {/* Always laid out, only hidden — appearing on hover would reflow the
             graph and everything under it as the row wraps. */}
-        <Box marginBottom={3} flexGrow={1} minWidth={120} sx={{ visibility: display ? 'visible' : 'hidden' }}>
+        <Box marginBottom={3} flexGrow={1} minWidth={120} sx={{ visibility: readout ? 'visible' : 'hidden' }}>
           {/* Rendered whenever the graph is a heat map, not only while hovering,
               so the readout keeps its height and nothing below it moves. */}
           {heatmap && (
@@ -147,21 +144,21 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
               height={50}
               marginBottom={1}
               borderRadius={`${radius.sm}px`}
-              sx={{ backgroundColor: display?.[2] }}
+              sx={{ backgroundColor: readout?.fill }}
             />
           )}
           <Typography variant="caption">
-            {display ? (
+            {readout ? (
               <Timestamp
-                date={display[0]}
+                date={readout.date}
                 variant={secondResolutions.includes(heatmap ? shape.resolution : bars.resolution) ? 'minutes' : 'short'}
               />
             ) : (
-              '\u00a0'
+              ' '
             )}
           </Typography>
           <Typography variant="caption" color={`${color}.main`} component="div" fontWeight={500}>
-            {display ? formatValue(timeSeries.type, display[1]) : '\u00a0'}
+            {readout ? formatValue(timeSeries.type, readout.value) : ' '}
           </Typography>
         </Box>
       </Stack>

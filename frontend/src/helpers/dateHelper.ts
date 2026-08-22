@@ -154,17 +154,6 @@ export const humanizeResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
   YEAR: 'y',
 }
 
-export const humanizeMaxResolutionLookup: ILookup<Unit, ITimeSeriesResolution> = {
-  SECOND: 'm',
-  MINUTE: 'h',
-  HOUR: 'd',
-  DAY: 'w',
-  WEEK: 'mo',
-  MONTH: 'y',
-  QUARTER: 'y',
-  YEAR: 'y',
-}
-
 export const TimeSeriesTypeScale: ILookup<ITimeSeriesScale, ITimeSeriesType> = {
   AVAILABILITY: { unit: '%', scale: 100 },
   ONLINE_DURATION: { unit: 'time', scale: 1 },
@@ -300,13 +289,15 @@ export const timeSeriesSpanLabel = (data: ITimeSeries, days = data.style === 'he
   })
 }
 
-// Fold a series into day columns for the heat map. `rows` is the number of cells
-// per column — 24 for hour buckets, or 1 to collapse each day into a single
-// strip cell, which is what the list column does so it stays one row tall no
-// matter which resolution the details page last fetched. `days` is how many
-// columns to keep, dropping the partial day the request opened in the middle of.
-export const heatmapGrid = (data: ITimeSeries, rows: number, days: number): ITimeSeriesGrid => {
+// Fold a series into day columns for the heat map — the newest `days` of them,
+// as `[column][row]`. `rows` is the number of cells per column: 24 for hour
+// buckets, or 1 to collapse each day into a single strip cell, which is what
+// the list column does so it stays one row tall no matter which resolution the
+// details page last fetched. Dropping the older columns is what discards the
+// partial day the request opened in the middle of.
+export const heatmapGrid = (data: ITimeSeries, rows: number, days: number): (ITimeSeriesCell | undefined)[][] => {
   const average = TimeSeriesTypeScale[data.type]?.unit === '%'
+  const dayLength = resolutionSeconds('DAY')
   const keys: string[] = []
   const buckets: ILookup<ITimeSeriesCell[][]> = {}
 
@@ -320,30 +311,17 @@ export const heatmapGrid = (data: ITimeSeries, rows: number, days: number): ITim
     // same time of day. The hour a DST jump skips stays empty and the hour it
     // repeats collects both buckets.
     const clock = time.getHours() * 3600 + time.getMinutes() * 60 + time.getSeconds()
-    const row = Math.min(Math.floor((clock / 86400) * rows), rows - 1)
+    const row = Math.min(Math.floor((clock / dayLength) * rows), rows - 1)
     buckets[key][row].push({ date: time, value: data.data[i] ?? 0 })
   })
 
-  const windowed = days > 0 ? keys.slice(-days) : keys
-  // Always `days` columns, padded in front so the newest day stays at the right
-  // edge. A device with less history than the span then draws its days at the
-  // grid's own cell size against an empty month, rather than stretching a
-  // handful of fat columns across the full width as if it had a month of them.
-  const padding = days > 0 ? Math.max(days - windowed.length, 0) : 0
-
-  return {
-    columns: [
-      ...Array.from({ length: padding }, (_, i) => ({ key: `empty-${i}`, cells: new Array(rows).fill(undefined) })),
-      ...windowed.map(key => ({
-        key,
-        cells: buckets[key].map(cells => {
-          if (!cells.length) return undefined
-          const total = cells.reduce((sum, cell) => sum + cell.value, 0)
-          return { date: cells[0].date, value: average ? total / cells.length : total }
-        }),
-      })),
-    ],
-  }
+  return keys.slice(-days).map(key =>
+    buckets[key].map(cells => {
+      if (!cells.length) return undefined
+      const total = cells.reduce((sum, cell) => sum + cell.value, 0)
+      return { date: cells[0].date, value: average ? total / cells.length : total }
+    })
+  )
 }
 
 // Collapse a series to one bucket per local day. The list column asks for daily
@@ -352,7 +330,7 @@ export const heatmapGrid = (data: ITimeSeries, rows: number, days: number): ITim
 // nor cheap.
 export const toDailySeries = (data: ITimeSeries, days: number): ITimeSeries => {
   const cells = heatmapGrid(data, 1, days)
-    .columns.map(column => column.cells[0])
+    .map(column => column[0])
     .filter((cell): cell is ITimeSeriesCell => !!cell)
   if (!cells.length) return data
   return {

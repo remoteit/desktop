@@ -1,12 +1,10 @@
 import React from 'react'
-import { Duration } from 'luxon'
 import { Typography, Collapse } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { timeSeriesStyleLabel, timeSeriesTypeLabel, timeSeriesWithStyle } from '../helpers/dateHelper'
+import { timeSeriesStyleLabel, timeSeriesTypeLabel } from '../helpers/dateHelper'
 import { selectTimeSeries } from '../selectors/ui'
-import { selectLimit } from '../selectors/organizations'
 import { Dispatch, State } from '../store'
-import { TimeSeries } from './TimeSeries'
+import { TimeSeriesDetail } from './TimeSeries'
 import { IconButton } from '../buttons/IconButton'
 import { Gutters } from './Gutters'
 import { Title } from './Title'
@@ -21,7 +19,6 @@ export const GraphItem: React.FC<Props> = ({ service, device }) => {
   const variant = service ? 'service' : 'device'
   const instance = service || device
   const options = useSelector((state: State) => selectTimeSeries(state)[`${variant}TimeSeries`])
-  const logLimit = useSelector((state: State) => selectLimit(state, undefined, 'log-limit'))
   const next: ITimeSeriesStyle = options.style === 'heatmap' ? 'bar' : 'heatmap'
 
   if (!instance) return null
@@ -38,21 +35,11 @@ export const GraphItem: React.FC<Props> = ({ service, device }) => {
             name={next === 'heatmap' ? 'table-cells' : 'chart-column'}
             color="grayDarker"
             title={timeSeriesStyleLabel(next)}
-            onClick={() =>
-              dispatch.devices.setTimeSeries({
-                variant,
-                options: timeSeriesWithStyle(options, next, Duration.fromISO(logLimit?.value)),
-              })
-            }
+            onClick={() => dispatch.devices.setTimeSeriesStyle({ variant, style: next })}
           />
           <IconButton name="sliders" color="grayDarker" title="configure" to="/settings/graphs" />
         </Typography>
-        <TimeSeries
-          timeSeries={instance.timeSeries}
-          online={instance.state === 'active'}
-          size="large"
-          options={options}
-        />
+        <TimeSeriesDetail timeSeries={instance.timeSeries} online={instance.state === 'active'} options={options} />
       </Gutters>
     </Collapse>
   )
