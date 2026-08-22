@@ -11,6 +11,7 @@ import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
+import { ListItemRadio } from '../components/ListItemRadio'
 import { Container } from '../components/Container'
 import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
@@ -160,12 +161,11 @@ export const TestPage: React.FC = () => {
           <Quote margin={null} indent="listItem" noInset>
             <List disablePadding>
               {stagePairs.map(pair => (
-                <ListItemSetting
-                  hideIcon
+                <ListItemRadio
                   key={pair.stage}
                   label={pair.name}
                   subLabel={pair.ws ? `${pair.graphql} + events` : pair.graphql}
-                  toggle={
+                  checked={
                     (apis.switchApi && apis.apiGraphqlURL ? apis.apiGraphqlURL : OAUTH_GRAPHQL_RESOURCE) ===
                     pair.graphql
                   }
