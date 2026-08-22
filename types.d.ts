@@ -438,16 +438,28 @@ declare global {
     end: Date
     time: Date[]
     data: number[]
+    // Stamped on by the adaptor from the options the series was fetched with, so
+    // a view draws what it was handed rather than reading current settings that
+    // may have changed since.
+    style?: ITimeSeriesStyle
+    days?: number
   }
 
   type ITimeSeriesOptions = {
     type: ITimeSeriesType
     resolution: ITimeSeriesResolution
     length: number
+    style?: ITimeSeriesStyle
     timezone?: string
   }
 
   type ITimeSeriesResolution = 'SECOND' | 'MINUTE' | 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR'
+
+  // How the buckets are drawn. 'bar' is one bar per bucket; 'heatmap' folds
+  // sub-day buckets into a day (column) by hour-of-day (row) grid.
+  type ITimeSeriesStyle = 'bar' | 'heatmap'
+
+  type ITimeSeriesCell = { date: Date; value: number }
 
   type ITimeSeriesType =
     | 'AVAILABILITY' // Online Percentage

@@ -37,20 +37,14 @@ export const GraphsPage: React.FC = () => {
         timeSeriesOptions={deviceTimeSeries}
         logLimit={logLimit?.value}
         defaults={timeSeriesDefaults.deviceTimeSeries}
-        onChange={async value => {
-          await dispatch.ui.setPersistent({ deviceTimeSeries: value })
-          await dispatch.devices.fetchList()
-        }}
+        onChange={value => dispatch.devices.setTimeSeries({ variant: 'device', options: value })}
       />
       <Typography variant="subtitle1">{t('graphsPage.serviceDetails', 'Service details')}</Typography>
       <TimeSeriesSelect
         timeSeriesOptions={serviceTimeSeries}
         logLimit={logLimit?.value}
         defaults={timeSeriesDefaults.serviceTimeSeries}
-        onChange={async value => {
-          await dispatch.ui.setPersistent({ serviceTimeSeries: value })
-          await dispatch.devices.clearLoaded()
-        }}
+        onChange={value => dispatch.devices.setTimeSeries({ variant: 'service', options: value })}
       />
     </Container>
   )
