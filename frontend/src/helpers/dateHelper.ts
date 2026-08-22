@@ -267,10 +267,14 @@ export const trimIncomplete = (data: ITimeSeries): ITimeSeries => {
   const last = data.time[data.time.length - 1]
   if (!last) return data
   const lastDay = localDayKey(last)
+  // The first bucket of the period in progress — never negative, since lastDay
+  // came from a bucket that is in the list. Zero means nothing is complete yet,
+  // which trims to an empty series rather than passing a part-period off as a
+  // whole one; the API zero-fills its window back past a device's creation, so
+  // in practice there is always a period to keep.
   const keep =
     data.style === 'heatmap' ? data.time.findIndex(time => localDayKey(time) === lastDay) : data.time.length - 1
-  if (keep < 1) return data
-  return { ...data, end: data.time[keep], time: data.time.slice(0, keep), data: data.data.slice(0, keep) }
+  return { ...data, end: data.time[keep] ?? data.end, time: data.time.slice(0, keep), data: data.data.slice(0, keep) }
 }
 
 // Local calendar day, as a value that can key a lookup. Plain Date getters
