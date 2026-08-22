@@ -130,17 +130,17 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
       {/* Drawn after the grid rather than as a :hover stroke on the cell —
           cells are painted left to right and top to bottom, so the neighbours
           below and to the right would cover the outer half of the outline and
-          leave only its top and left edges showing. Inset by half a pixel so
+          leave only its top and left edges showing. Inset by half its width so
           all four edges land inside the cell. */}
       {hovered && (
         <rect
-          x={hovered[0] * cellWidth + 0.5}
-          y={hovered[1] * cellHeight + 0.5}
-          width={Math.max(cellWidth - 1, 1)}
-          height={Math.max(cellHeight - 1, 1)}
+          x={hovered[0] * cellWidth + 1}
+          y={hovered[1] * cellHeight + 1}
+          width={Math.max(cellWidth - 2, 1)}
+          height={Math.max(cellHeight - 2, 1)}
           fill="none"
-          stroke={theme.palette.grayDarkest.main}
-          strokeWidth={1}
+          stroke={theme.palette.primary.main}
+          strokeWidth={2}
           pointerEvents="none"
         />
       )}
