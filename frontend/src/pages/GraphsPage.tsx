@@ -39,6 +39,9 @@ export const GraphsPage: React.FC = () => {
         defaults={timeSeriesDefaults.deviceTimeSeries}
         onChange={async value => {
           await dispatch.ui.setPersistent({ deviceTimeSeries: value })
+          // Devices carry the options they were fetched with, so a loaded one
+          // keeps drawing the old graph until it is fetched again.
+          await dispatch.devices.clearLoaded()
           await dispatch.devices.fetchList()
         }}
       />

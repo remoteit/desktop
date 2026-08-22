@@ -330,7 +330,7 @@ export function graphQLDeviceAdaptor({
 }): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
-  const { deviceTimeSeries } = selectTimeSeries(state)
+  const { deviceTimeSeries, serviceTimeSeries } = selectTimeSeries(state)
   const thisId = state.backend.thisId
   let customAttributes = new Set<string>()
   let data: IDevice[] = gqlDevices?.map((d: any): IDevice => {
@@ -362,7 +362,7 @@ export function graphQLDeviceAdaptor({
       permissions: d.permissions || [],
       attributes: processDeviceAttributes(d, customAttributes),
       tags: d.tags?.map(t => ({ ...t, created: new Date(t.created) })) || [],
-      services: graphQLServiceAdaptor(d, loaded || serviceLoaded),
+      services: graphQLServiceAdaptor(d, loaded || serviceLoaded, serviceTimeSeries),
       presenceAddress: d.presenceAddress,
       notificationSettings: d.notificationSettings,
       supportedAppInstalls: d.supportedAppInstalls?.map(i => i.id) || [],
@@ -383,8 +383,11 @@ export function graphQLDeviceAdaptor({
   return data
 }
 
-export function graphQLServiceAdaptor(device: any, loaded?: boolean): IService[] {
-  const { serviceTimeSeries } = selectTimeSeries(store.getState())
+export function graphQLServiceAdaptor(
+  device: any,
+  loaded?: boolean,
+  serviceTimeSeries?: ITimeSeriesOptions
+): IService[] {
   return (
     device.services?.map(
       (s: any): IService => ({
@@ -481,7 +484,9 @@ function processTimeSeries(response: any, options?: ITimeSeriesOptions): ITimeSe
     {
       ...timeSeries,
       style: options?.style,
-      days: options?.length,
+      // Only a heat map counts its length in days; a bar graph's length is a
+      // bucket count in its own resolution, so it gets no day stamp.
+      days: options?.style === 'heatmap' ? options.length : undefined,
       start: new Date(timeSeries.start),
       end: new Date(timeSeries.end),
       time: timeSeries.time.map((t: any) => new Date(t)),

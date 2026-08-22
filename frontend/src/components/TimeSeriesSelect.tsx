@@ -57,7 +57,11 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         value={timeSeriesOptions.resolution}
         defaultValue={defaults.resolution}
         values={resolutions.map(key => {
-          const disabled = limitDuration.valueOf() < Duration.fromObject({ [key]: TimeSeriesLengths[key][0] }).valueOf()
+          // A heat map's shortest span is a number of days, not of `key`, so the
+          // limit is measured in whichever unit that resolution's length counts.
+          const unit = heatmap ? 'DAY' : key
+          const disabled =
+            limitDuration.valueOf() < Duration.fromObject({ [unit]: TimeSeriesLengths[unit][0] }).valueOf()
           return {
             key,
             name: timeSeriesResolutionLabel(key) + (disabled ? overLimitLabel : ''),

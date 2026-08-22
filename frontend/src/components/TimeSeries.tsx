@@ -18,7 +18,7 @@ import { Timestamp } from './Timestamp'
 const HEATMAP_HEIGHT = 168
 const HEATMAP_WIDTH = 240
 
-type Props = Omit<BarGraphProps, 'data'> & {
+type Props = Omit<BarGraphProps, 'data' | 'min'> & {
   timeSeries?: ITimeSeries
   online?: boolean
   size?: 'large' | 'small'
@@ -51,10 +51,17 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
     )
 
   const max = timeSeriesMax(timeSeries.data)
+  // A heat map needs sub-day buckets to have a grid to draw. Day resolution can
+  // reach the details view — a list fetch writes over a loaded device's hourly
+  // series — and one row is a strip, so it gets a strip's height and no hour
+  // axis rather than a single 168px band.
+  const rows = heatmapRows(timeSeries.resolution)
+  const grid = heatmap && rows > 1
+  const height = grid ? HEATMAP_HEIGHT : 40
 
   // Both styles wear the same chrome — a left axis, the graph, a span caption
   // and the hover readout — so only these two pieces differ.
-  const axis = heatmap
+  const axis = grid
     ? [0, 6, 12, 18].map(hour => (
         <Typography
           key={hour}
@@ -72,6 +79,8 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
           {hour.toString().padStart(2, '0')}:00
         </Typography>
       ))
+    : heatmap
+    ? null
     : [max, 0].map((value, i) => (
         <Typography key={i} variant="caption" textAlign="right">
           {formatValue(timeSeries.type, value, true)}
@@ -82,12 +91,12 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
     <HeatGraph
       {...props}
       data={timeSeries}
-      rows={heatmapRows(timeSeries.resolution)}
+      rows={rows}
       days={days}
       color={color}
       max={timeSeriesFullScale(timeSeries.type, timeSeries.resolution)}
       width={HEATMAP_WIDTH}
-      height={HEATMAP_HEIGHT}
+      height={height}
       onHover={setDisplay}
     />
   ) : (
@@ -109,9 +118,9 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
         width={60}
         minWidth={60}
         marginRight={1}
-        marginBottom={heatmap ? 0 : 3}
-        height={heatmap ? HEATMAP_HEIGHT : 45}
-        position={heatmap ? 'relative' : 'static'}
+        marginBottom={grid ? 0 : 3}
+        height={grid ? HEATMAP_HEIGHT : 45}
+        position={grid ? 'relative' : 'static'}
         justifyContent="space-between"
       >
         {axis}

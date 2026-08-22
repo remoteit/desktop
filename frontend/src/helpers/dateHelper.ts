@@ -1,6 +1,5 @@
 import { DateTime, Duration } from 'luxon'
 import humanize, { Unit, HumanizerOptions } from 'humanize-duration'
-import * as d3 from 'd3'
 import i18n from '../i18n'
 
 // The active locale for all date/duration formatting. Driven by the app language
@@ -227,7 +226,7 @@ export const timeSeriesFullScale = (type: ITimeSeriesType, resolution: ITimeSeri
   return undefined
 }
 
-export const timeSeriesMax = (data: number[]) => Math.max(d3.max(data) ?? 0, 0.1)
+export const timeSeriesMax = (data: number[]) => Math.max(...data, 0.1)
 
 // "Last 30 days" — the span a graph is showing, in its own largest unit. A heat
 // map counts the day columns it draws rather than measuring the fetched window,
@@ -267,7 +266,7 @@ export const heatmapGrid = (data: ITimeSeries, rows: number, days: number): ITim
   })
 
   return {
-    columns: keys.slice(-days).map(key => ({
+    columns: (days > 0 ? keys.slice(-days) : keys).map(key => ({
       key,
       cells: buckets[key].map(cells => {
         if (!cells.length) return undefined
