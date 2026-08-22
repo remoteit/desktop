@@ -2,7 +2,7 @@ import React from 'react'
 import { Duration } from 'luxon'
 import { Typography, Collapse } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { timeSeriesStyleLabel, timeSeriesWithStyle } from '../helpers/dateHelper'
+import { timeSeriesLoading, timeSeriesStyleLabel, timeSeriesWithStyle } from '../helpers/dateHelper'
 import { selectTimeSeries } from '../selectors/ui'
 import { selectLimit } from '../selectors/organizations'
 import { Dispatch, State } from '../store'
@@ -29,14 +29,15 @@ export const GraphItem: React.FC<Props> = ({ service, device }) => {
 
   // Sets the same preference the graph settings page does rather than a
   // temporary override, so the choice sticks and there is only one place the
-  // style can come from. The series carries the options it was fetched with, so
-  // the loaded devices have to go back for data at the new resolution.
+  // style can come from. Only the heat map needs data the other style hasn't
+  // got — its hourly buckets fold into daily ones for free — so that is the one
+  // direction that has to go back to the API. The list is unaffected either
+  // way: it draws a daily strip whichever style is set.
   const onToggle = async () => {
     await dispatch.ui.setPersistent({
       [`${variant}TimeSeries`]: timeSeriesWithStyle(options, next, Duration.fromISO(logLimit?.value)),
     })
-    await dispatch.devices.clearLoaded()
-    if (variant === 'device') await dispatch.devices.fetchList()
+    if (next === 'heatmap') await dispatch.devices.clearLoaded()
   }
 
   return (
@@ -54,7 +55,13 @@ export const GraphItem: React.FC<Props> = ({ service, device }) => {
           />
           <IconButton name="sliders" color="grayDarker" title="configure" to="/settings/graphs" />
         </Typography>
-        <TimeSeries timeSeries={instance.timeSeries} online={instance.state === 'active'} size="large" />
+        <TimeSeries
+          timeSeries={instance.timeSeries}
+          online={instance.state === 'active'}
+          size="large"
+          options={options}
+          loading={timeSeriesLoading(instance.timeSeries, options)}
+        />
       </Gutters>
     </Collapse>
   )

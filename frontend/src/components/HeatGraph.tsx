@@ -32,6 +32,7 @@ export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
   rows: number
   days: number
   color: HeatColor
+  loading?: boolean
   width?: number
   height?: number
   max?: number
@@ -45,6 +46,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
   rows,
   days,
   color,
+  loading,
   width = 100,
   height = 18,
   max,
@@ -84,7 +86,11 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
       component="svg"
       width={width}
       height={height}
-      sx={{ backgroundColor: theme.palette.white.main }}
+      sx={{
+        backgroundColor: theme.palette.white.main,
+        '@keyframes heatGraphPulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.4 } },
+        '& .loading': { animation: 'heatGraphPulse 1.6s ease-in-out infinite' },
+      }}
       // Clearing on the way out of the grid rather than out of each cell, so
       // crossing between cells never blanks the readout.
       onMouseLeave={
@@ -96,27 +102,34 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
       }
       {...props}
     >
-      {grid.columns.map((column, x) =>
-        column.cells.map((cell, y) =>
-          cell === undefined ? null : (
-            <rect
-              key={`${column.key}-${y}`}
-              x={x * cellWidth}
-              y={y * cellHeight}
-              width={cellWidth}
-              height={cellHeight}
-              fill={fillOf(cell)}
-              onMouseOver={
-                onHover &&
-                (() => {
-                  setHovered([x, y])
-                  onHover([cell.date, cell.value, fillOf(cell)])
-                })
-              }
-            />
-          )
-        )
+      {/* One rect rather than a grid of them — the lines drawn over it give the
+          same grid of empty cells, at whatever size the real one will be, so
+          nothing moves when the data lands. */}
+      {loading && (
+        <rect className="loading" x={0} y={0} width={width} height={height} fill={theme.palette.grayLight.main} />
       )}
+      {!loading &&
+        grid.columns.map((column, x) =>
+          column.cells.map((cell, y) =>
+            cell === undefined ? null : (
+              <rect
+                key={`${column.key}-${y}`}
+                x={x * cellWidth}
+                y={y * cellHeight}
+                width={cellWidth}
+                height={cellHeight}
+                fill={fillOf(cell)}
+                onMouseOver={
+                  onHover &&
+                  (() => {
+                    setHovered([x, y])
+                    onHover([cell.date, cell.value, fillOf(cell)])
+                  })
+                }
+              />
+            )
+          )
+        )}
       {/* Cells butt up against each other so the pointer is always over one of
           them, and the lines between them are drawn once on top rather than as
           a stroke on each cell — two neighbours both stroke their shared edge,
@@ -135,7 +148,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
           below and to the right would cover the outer half of the outline and
           leave only its top and left edges showing. Inset by half its width so
           all four edges land inside the cell. */}
-      {hovered && (
+      {!loading && hovered && (
         <rect
           x={hovered[0] * cellWidth + 1}
           y={hovered[1] * cellHeight + 1}

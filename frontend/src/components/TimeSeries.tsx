@@ -25,16 +25,32 @@ type Props = Omit<BarGraphProps, 'data' | 'min'> & {
   timeSeries?: ITimeSeries
   online?: boolean
   size?: 'large' | 'small'
+  // The options being asked for, which lead the ones the series was fetched
+  // with: hourly buckets can always be folded into daily ones, so switching to
+  // bars needs no new data. `loading` covers the other direction, where they
+  // can't, and the grid then takes its shape from these rather than from a
+  // series that cannot describe it.
+  options?: ITimeSeriesOptions
+  loading?: boolean
 }
 
-export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', ...props }) => {
+export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', options, loading, ...props }) => {
   const [display, setDisplay] = React.useState<[Date, number, string?]>()
 
   if (!timeSeries) return null
 
   const color: HeatColor = connectionTypes.includes(timeSeries.type) ? 'primary' : online ? 'success' : 'gray'
-  const heatmap = timeSeries.style === 'heatmap'
-  const days = timeSeries.days ?? 1
+  const fetchedAsHeatmap = timeSeries.style === 'heatmap'
+  const heatmap = (options?.style ?? timeSeries.style) === 'heatmap'
+  // Loading means the series can't describe the grid it is about to become, so
+  // the shape comes from the request instead and nothing moves when it lands.
+  const shape = loading && options ? options : { resolution: timeSeries.resolution, length: timeSeries.days ?? 1 }
+  const days = shape.length
+
+  // Hourly buckets only exist because a heat map asked for them, so those are
+  // the ones safe to fold — a bar graph set to Hour wants its hours kept.
+  const daily = () =>
+    fetchedAsHeatmap && heatmapRows(timeSeries.resolution) > 1 ? toDailySeries(timeSeries, days) : timeSeries
 
   // The list is always bars, whatever style the details view is set to, and they
   // are scaled to the absolute ceiling for the bucket — a full day of uptime, or
@@ -46,7 +62,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
     // A heat map's details view leaves hourly buckets on the device; the column
     // only ever asked for one per day, so fold them back down rather than
     // drawing a bar per hour.
-    const bars = heatmap && timeSeries.resolution !== 'DAY' ? toDailySeries(timeSeries, days) : timeSeries
+    const bars = daily()
     return (
       <BarGraph
         {...props}
@@ -57,13 +73,15 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
     )
   }
 
-  const max = timeSeriesMax(timeSeries.data)
+  const bars = daily()
+  const max = timeSeriesMax(bars.data)
   // A heat map needs sub-day buckets to have a grid to draw. Day resolution can
   // reach the details view — a list fetch writes over a loaded device's hourly
   // series — and one row is a strip, so it gets a strip's height and no hour
-  // axis rather than a single 168px band.
-  const rows = heatmapRows(timeSeries.resolution)
-  const grid = heatmap && rows > 1
+  // axis rather than a single 168px band. While loading there is no data to go
+  // on, so the grid is laid out at the size it is about to be.
+  const rows = heatmapRows(shape.resolution)
+  const grid = heatmap && (loading || rows > 1)
   const height = grid ? HEATMAP_HEIGHT : 40
 
   // Both styles wear the same chrome — a left axis, the graph, a span caption
@@ -102,21 +120,13 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
       days={days}
       color={color}
       max={timeSeriesFullScale(timeSeries.type, timeSeries.resolution)}
+      loading={loading}
       width={HEATMAP_WIDTH}
       height={height}
       onHover={setDisplay}
     />
   ) : (
-    <BarGraph
-      {...props}
-      data={timeSeries}
-      color={color}
-      height={40}
-      width={200}
-      max={max}
-      min={0}
-      onHover={setDisplay}
-    />
+    <BarGraph {...props} data={bars} color={color} height={40} width={200} max={max} min={0} onHover={setDisplay} />
   )
 
   return (
@@ -136,7 +146,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
         <Stack spacing={0.5} marginRight={2}>
           {graph}
           <Typography variant="caption" textAlign="center">
-            Last&nbsp;{timeSeriesSpanLabel(timeSeries)}
+            Last&nbsp;{timeSeriesSpanLabel(heatmap ? timeSeries : bars)}
           </Typography>
         </Stack>
         {/* Always laid out, only hidden — appearing on hover would reflow the
@@ -157,7 +167,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
             {display ? (
               <Timestamp
                 date={display[0]}
-                variant={secondResolutions.includes(timeSeries.resolution) ? 'minutes' : 'short'}
+                variant={secondResolutions.includes(bars.resolution) ? 'minutes' : 'short'}
               />
             ) : (
               '\u00a0'

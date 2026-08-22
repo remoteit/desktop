@@ -344,6 +344,12 @@ export const timeSeriesWithStyle = (
   }
 }
 
+// A series carries the options it was fetched with, so changing the setting
+// leaves the previous one on screen until the refetch lands. The heat map is the
+// case that shows: daily buckets cannot fill an hour-of-day grid.
+export const timeSeriesLoading = (data: ITimeSeries | undefined, options: ITimeSeriesOptions) =>
+  options.style === 'heatmap' && (!data || data.style !== 'heatmap' || heatmapRows(data.resolution) < 2)
+
 // The device/service list renders a single row strip, so it never needs the
 // sub-day buckets a heat map details view asks for — without this a 30 day heat
 // map would pull 720 points for every device in the list query.
