@@ -27,6 +27,8 @@ export type OidcClaims = {
 
 const FLOW_KEY = 'oidc.flow'
 const TOKENS_KEY = 'oidc.tokens'
+// What the grant behind those tokens was last written from (see oidcGrantStale).
+const DECLARATION_KEY = 'oidc.declaration'
 
 // A boot on /signoutCallback is the RETURN from an explicit sign-out: the next authorize
 // must show the LOGIN PAGE (prompt=login), never silently SSO into another account's
@@ -97,31 +99,30 @@ const DECLARED: Array<{ resource: string; type: string; actions: string[] }> = [
   { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write'] },
 ]
 
-/** Declared actions the standing grant does NOT carry. A deploy that adds a slice leaves
- *  already-signed-in installs short: their grant was written from the OLD request, and no
- *  refresh can widen it — refresh re-reads the grant, it never adds to it. Only a fresh
- *  authorize merges the new slice in (silently, for a skipConsent first-party client).
+/** A stable fingerprint of what this build asks for. Order-insensitive, so reshuffling the
+ *  list is not a change; adding, dropping or renaming an action is. */
+const declarationFingerprint = () =>
+  DECLARED.map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}`)
+    .sort()
+    .join('|')
+
+/** Does the standing grant predate what this build asks for? A deploy that adds a slice
+ *  leaves already-signed-in installs short: their grant was written from the OLD request, and
+ *  no refresh can widen it — refresh re-reads the grant, it never adds to it. Only a fresh
+ *  authorize merges the new slice in, silently for a skipConsent first-party client.
  *
- *  Measured from the tokens themselves rather than a local version marker, so it is true by
- *  construction: whatever the AS actually minted is what we compare. Any mint failure yields
- *  NOTHING missing — a network blip must not trigger a sign-in journey. */
-export async function oidcGrantShortfall(): Promise<string[]> {
-  const missing: string[] = []
-  for (const decl of DECLARED) {
-    let held: string[] = []
-    try {
-      const token = await oidcAccessToken(decl.resource)
-      if (!token) return []
-      const details = decodeJwt(token)?.authorization_details
-      held = Array.isArray(details)
-        ? details.filter((d: any) => d?.type === decl.type).flatMap((d: any) => d?.actions ?? [])
-        : []
-    } catch {
-      return []
-    }
-    for (const action of decl.actions) if (!held.includes(action)) missing.push(`${decl.type}:${action}`)
+ *  Answered from a fingerprint stamped at the last completed authorize — the one moment we
+ *  know the grant was written from a particular declaration — so the check costs nothing and
+ *  cannot mistake a network problem for a missing permission. It is a CLAIM rather than
+ *  proof, which is acceptable only because being wrong costs one silent re-authorize: an
+ *  install with no stamp (cleared storage, or signed in before this existed) heals once and
+ *  then matches. What it deliberately cannot see is a grant narrowed on the server. */
+export function oidcGrantStale(): boolean {
+  try {
+    return localStorage.getItem(DECLARATION_KEY) !== declarationFingerprint()
+  } catch {
+    return false
   }
-  return missing
 }
 
 export async function oidcStart(opts: { prompt?: 'login' | 'select_account' } = {}): Promise<void> {
@@ -190,6 +191,9 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     }).catch(() => {})
   }
   persist({ refresh_token: body.refresh_token, id_token: body.id_token })
+  // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
+  // is merged from exactly that — so the grant now covers this build. Stamp it.
+  try { localStorage.setItem(DECLARATION_KEY, declarationFingerprint()) } catch { /* non-fatal */ }
   const at = decodeJwt(body.access_token)
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims
@@ -267,6 +271,7 @@ function clearLocal() {
   void clearDpopKey()
   access = {}
   localStorage.removeItem(TOKENS_KEY)
+  localStorage.removeItem(DECLARATION_KEY)
 }
 
 function persist(tokens: Stored) {

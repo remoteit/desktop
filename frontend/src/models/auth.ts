@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantShortfall, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -99,16 +99,15 @@ export default createModel<RootModel>()({
     async healGrant() {
       const ATTEMPTED = 'oidc.regrant'
       try {
-        const missing = await oidcGrantShortfall()
-        if (!missing.length) {
+        if (!oidcGrantStale()) {
           window.sessionStorage.removeItem(ATTEMPTED)
           return
         }
         if (window.sessionStorage.getItem(ATTEMPTED)) {
-          console.warn('AUTH: grant still short after re-authorizing; not retrying', { missing })
+          console.warn('AUTH: grant still stale after re-authorizing; not retrying this session')
           return
         }
-        console.log('AUTH: grant is missing declared access — re-authorizing', { missing })
+        console.log('AUTH: grant predates this build’s declaration — re-authorizing')
         window.sessionStorage.setItem(ATTEMPTED, '1')
         await oidcStart({})
       } catch (error) {
