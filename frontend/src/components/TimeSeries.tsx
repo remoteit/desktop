@@ -15,6 +15,7 @@ import { BarGraph, BarGraphProps } from './BarGraph'
 import { HeatGraph, HeatColor } from './HeatGraph'
 import { Typography, Stack, Box } from '@mui/material'
 import { Timestamp } from './Timestamp'
+import { radius } from '../styling'
 
 // 7px per hour row over 24 rows, wide enough for a month of day columns.
 const HEATMAP_HEIGHT = 168
@@ -27,7 +28,7 @@ type Props = Omit<BarGraphProps, 'data' | 'min'> & {
 }
 
 export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', ...props }) => {
-  const [display, setDisplay] = React.useState<[Date, number]>()
+  const [display, setDisplay] = React.useState<[Date, number, string?]>()
 
   if (!timeSeries) return null
 
@@ -141,6 +142,17 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
         {/* Always laid out, only hidden — appearing on hover would reflow the
             graph and everything under it as the row wraps. */}
         <Box marginBottom={3} flexGrow={1} minWidth={150} sx={{ visibility: display ? 'visible' : 'hidden' }}>
+          {/* Rendered whenever the graph is a heat map, not only while hovering,
+              so the readout keeps its height and nothing below it moves. */}
+          {heatmap && (
+            <Box
+              width={50}
+              height={50}
+              marginBottom={1}
+              borderRadius={`${radius.sm}px`}
+              sx={{ backgroundColor: display?.[2] }}
+            />
+          )}
           <Typography variant="caption">
             {display ? (
               <Timestamp

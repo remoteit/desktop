@@ -35,7 +35,9 @@ export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
   width?: number
   height?: number
   max?: number
-  onHover?: (value?: [Date, number]) => void
+  // The fill goes up with the value so the readout can show a large swatch of
+  // the exact color the cell is drawn in.
+  onHover?: (value?: [Date, number, string]) => void
 }
 
 export const HeatGraph: React.FC<HeatGraphProps> = ({
@@ -75,6 +77,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
 
   const cellWidth = width / Math.max(grid.columns.length, 1)
   const cellHeight = height / rows
+  const fillOf = (cell: ITimeSeriesCell) => (cell.value > 0 ? scale(cell.value) : theme.palette.grayLighter.main)
 
   return (
     <Box
@@ -102,12 +105,12 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
               y={y * cellHeight}
               width={cellWidth}
               height={cellHeight}
-              fill={cell.value > 0 ? scale(cell.value) : theme.palette.grayLighter.main}
+              fill={fillOf(cell)}
               onMouseOver={
                 onHover &&
                 (() => {
                   setHovered([x, y])
-                  onHover([cell.date, cell.value])
+                  onHover([cell.date, cell.value, fillOf(cell)])
                 })
               }
             />
