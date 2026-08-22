@@ -3,10 +3,8 @@ import {
   TimeSeriesTypeLookup,
   TimeSeriesAvailableResolutions,
   TimeSeriesAvailableStyles,
-  TimeSeriesHeatmapDays,
   TimeSeriesHeatmapResolutions,
   TimeSeriesLengths,
-  defaultHeatmapResolution,
   findLongestLength,
   timeSeriesStyleLabel,
   timeSeriesTypeLabel,
@@ -30,11 +28,11 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
   const overLimitLabel = t('timeSeriesSelect.overLimit', ' (over limit)')
   const heatmap = timeSeriesOptions.style === 'heatmap'
 
-  // A heat map is always a grid of days, so its length is picked in days and
+  // A heat map is always a grid of days, so its length is picked in days while
   // its resolution sets the rows within each day.
-  const resolutions = heatmap ? TimeSeriesHeatmapResolutions : TimeSeriesAvailableResolutions
+  const resolutions = heatmap ? TimeSeriesHeatmapResolutions : Object.keys(TimeSeriesAvailableResolutions)
   const lengthUnit = heatmap ? 'DAY' : timeSeriesOptions.resolution
-  const lengths = heatmap ? TimeSeriesHeatmapDays : TimeSeriesLengths[timeSeriesOptions.resolution]
+  const lengths = TimeSeriesLengths[lengthUnit]
 
   return (
     <List>
@@ -59,7 +57,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         label={t('timeSeriesSelect.graphUnit', 'Graph unit')}
         value={timeSeriesOptions.resolution}
         defaultValue={heatmap ? undefined : defaults.resolution}
-        values={Object.keys(resolutions).map(key => {
+        values={resolutions.map(key => {
           const disabled = limitDuration.valueOf() < Duration.fromObject({ [key]: TimeSeriesLengths[key][0] }).valueOf()
           return {
             key,
@@ -106,8 +104,9 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
 }
 
 // Switching style re-scopes resolution and length, since a bar graph counts
-// buckets and a heat map counts days. Both directions land on the longest span
-// the plan's log limit allows rather than silently asking for more than it has.
+// buckets of its own resolution and a heat map counts days. Either way it lands
+// on the longest span the plan's log limit allows rather than silently asking
+// for more than it has.
 const withStyle = (
   options: ITimeSeriesOptions,
   style: ITimeSeriesStyle,
@@ -116,18 +115,10 @@ const withStyle = (
   // Settings saved before graph style existed have no style at all, and they
   // are bar graphs — picking Bar on one of those should leave it alone.
   if (style === (options.style ?? 'bar')) return options
-  if (style === 'bar')
-    return {
-      ...options,
-      style,
-      resolution: 'DAY',
-      length: findLongestLength(limitDuration, 'DAY') ?? TimeSeriesLengths.DAY[0],
-    }
-
   return {
     ...options,
     style,
-    resolution: defaultHeatmapResolution,
-    length: findLongestLength(limitDuration, 'DAY', TimeSeriesHeatmapDays) ?? TimeSeriesHeatmapDays[0],
+    resolution: style === 'heatmap' ? TimeSeriesHeatmapResolutions[0] : 'DAY',
+    length: findLongestLength(limitDuration, 'DAY') ?? TimeSeriesLengths.DAY[0],
   }
 }

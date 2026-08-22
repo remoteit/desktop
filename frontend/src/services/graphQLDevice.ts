@@ -1,7 +1,8 @@
 import { selectDeviceColumns } from '../selectors/devices'
+import { selectTimeSeries } from '../selectors/ui'
 import { graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '@common/nameHelper'
-import { getTimeZone, timeSeriesRequest } from '../helpers/dateHelper'
+import { getTimeZone, listTimeSeriesOptions, timeSeriesRequest, trimIncomplete } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
@@ -170,10 +171,15 @@ const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
 // Both series always go through timeSeriesRequest, so every query asks for the
-// extra period the graphs trim back off.
-const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesOptions) => {
-  const deviceTS = device && timeSeriesRequest(device)
-  const serviceTS = service && timeSeriesRequest(service)
+// extra period processTimeSeries trims back off. `list` scopes a heat map down
+// to one bucket per day, which is all a list row's strip draws — it belongs to
+// the query rather than to its callers, so a list query can't accidentally ask
+// for the details view's 720 points per device.
+const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesOptions, list?: boolean) => {
+  const scope = (options?: ITimeSeriesOptions) =>
+    options && timeSeriesRequest(list ? listTimeSeriesOptions(options) : options)
+  const deviceTS = scope(device)
+  const serviceTS = scope(service)
   return {
     deviceTSLength: deviceTS?.length,
     deviceTSType: deviceTS?.type,
@@ -213,7 +219,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       accountId: params.accountId,
       platform: params.platform,
       name: params.name?.trim() || undefined,
-      ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries),
+      ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
     }
   )
 }
@@ -241,7 +247,7 @@ export async function graphQLPreloadDevices(params: {
       }`,
     {
       ...params,
-      ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries),
+      ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
     }
   )
 }
@@ -324,6 +330,7 @@ export function graphQLDeviceAdaptor({
 }): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
+  const { deviceTimeSeries } = selectTimeSeries(state)
   const thisId = state.backend.thisId
   let customAttributes = new Set<string>()
   let data: IDevice[] = gqlDevices?.map((d: any): IDevice => {
@@ -359,7 +366,7 @@ export function graphQLDeviceAdaptor({
       presenceAddress: d.presenceAddress,
       notificationSettings: d.notificationSettings,
       supportedAppInstalls: d.supportedAppInstalls?.map(i => i.id) || [],
-      timeSeries: processTimeSeries(d),
+      timeSeries: processTimeSeries(d, deviceTimeSeries),
       access:
         d.access?.map((a: any) => ({
           id: a.user?.id,
@@ -377,6 +384,7 @@ export function graphQLDeviceAdaptor({
 }
 
 export function graphQLServiceAdaptor(device: any, loaded?: boolean): IService[] {
+  const { serviceTimeSeries } = selectTimeSeries(store.getState())
   return (
     device.services?.map(
       (s: any): IService => ({
@@ -398,7 +406,7 @@ export function graphQLServiceAdaptor(device: any, loaded?: boolean): IService[]
         host: s.host,
         protocol: s.protocol,
         presenceAddress: s.presenceAddress,
-        timeSeries: processTimeSeries(s),
+        timeSeries: processTimeSeries(s, serviceTimeSeries),
         link: s.link && {
           ...s.link,
           web: s.link?.url.startsWith('http'),
@@ -466,13 +474,18 @@ function processAttributes(response: any): ILookup<any> {
   return result
 }
 
-function processTimeSeries(response: any): ITimeSeries | undefined {
+function processTimeSeries(response: any, options?: ITimeSeriesOptions): ITimeSeries | undefined {
   if (!response.timeSeries) return
   const timeSeries = response.timeSeries
-  return {
-    ...timeSeries,
-    start: new Date(timeSeries.start),
-    end: new Date(timeSeries.end),
-    time: timeSeries.time.map((t: any) => new Date(t)),
-  }
+  return trimIncomplete(
+    {
+      ...timeSeries,
+      style: options?.style,
+      days: options?.length,
+      start: new Date(timeSeries.start),
+      end: new Date(timeSeries.end),
+      time: timeSeries.time.map((t: any) => new Date(t)),
+    },
+    options?.style
+  )
 }

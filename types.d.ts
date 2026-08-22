@@ -438,6 +438,11 @@ declare global {
     end: Date
     time: Date[]
     data: number[]
+    // Stamped on by the adaptor from the options the series was fetched with, so
+    // a view draws what it was handed rather than reading current settings that
+    // may have changed since.
+    style?: ITimeSeriesStyle
+    days?: number
   }
 
   type ITimeSeriesOptions = {
@@ -454,9 +459,10 @@ declare global {
   // sub-day buckets into a day (column) by hour-of-day (row) grid.
   type ITimeSeriesStyle = 'bar' | 'heatmap'
 
+  type ITimeSeriesCell = { date: Date; value: number }
+
   type ITimeSeriesGrid = {
-    rows: number
-    columns: { key: string; date: Date; values: (number | undefined)[] }[]
+    columns: { key: string; cells: (ITimeSeriesCell | undefined)[] }[]
   }
 
   type ITimeSeriesType =
@@ -675,8 +681,8 @@ declare global {
     jobId?: string
     tag?: ITagFilter
     file?: File
-    argumentDefinitions?: IArgumentDefinition[]  // For script creation/edit
-    argumentValues?: IArgumentValue[]            // For running scripts
+    argumentDefinitions?: IArgumentDefinition[] // For script creation/edit
+    argumentValues?: IArgumentValue[] // For running scripts
   }
 
   type IJob = {

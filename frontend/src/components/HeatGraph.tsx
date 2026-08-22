@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react'
 import { Box, useTheme } from '@mui/material'
-import { heatmapGrid } from '../helpers/dateHelper'
+import { heatmapGrid, timeSeriesMax } from '../helpers/dateHelper'
 import * as d3 from 'd3'
+
+export type HeatColor = 'primary' | 'success' | 'gray'
 
 // Light to dark stops for each color the graphs use, so a cell's depth reads as
 // "more of this" rather than as a different thing.
-const RAMPS: ILookup<[Color, Color, Color]> = {
+const RAMPS: Record<HeatColor, [Color, Color, Color]> = {
   primary: ['primaryLighter', 'primaryLight', 'primaryDark'],
   success: ['successLight', 'success', 'successDark'],
   gray: ['grayLight', 'gray', 'grayDarker'],
@@ -13,23 +15,23 @@ const RAMPS: ILookup<[Color, Color, Color]> = {
 
 export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
   data: ITimeSeries
-  rows?: number
-  days?: number
+  rows: number
+  days: number
+  color: HeatColor
   width?: number
   height?: number
   max?: number
-  color?: Color
   onHover?: (value?: [Date, number]) => void
 }
 
 export const HeatGraph: React.FC<HeatGraphProps> = ({
   data,
-  rows = 24,
+  rows,
   days,
+  color,
   width = 100,
   height = 18,
   max,
-  color = 'grayDark',
   onHover,
   ...props
 }) => {
@@ -37,7 +39,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
   const grid = useMemo(() => heatmapGrid(data, rows, days), [data, rows, days])
 
   const scale = useMemo(() => {
-    const ramp = (RAMPS[color] ?? RAMPS.gray).map(c => theme.palette[c].main)
+    const ramp = RAMPS[color].map(c => theme.palette[c].main)
     // The palette's lightest step is still saturated enough that a barely used
     // hour and a half used one read the same, so the ramp starts from a tint of
     // it mixed toward the surface — which also keeps it correct in dark mode.
@@ -46,7 +48,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
     const lightest = d3.interpolateRgb(theme.palette.white.main, ramp[0])(0.3)
     // Fall back to the series' own peak when the type has no ceiling (event
     // counts), otherwise every cell would sit at the bottom of the ramp.
-    const top = max ?? Math.max(d3.max(data.data) ?? 0, 0.1)
+    const top = max ?? timeSeriesMax(data.data)
     return d3
       .scaleLinear<string>()
       .domain([0, top / 3, (top * 2) / 3, top])
@@ -70,8 +72,8 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
       {...props}
     >
       {grid.columns.map((column, x) =>
-        column.values.map((value, y) =>
-          value === undefined ? null : (
+        column.cells.map((cell, y) =>
+          cell === undefined ? null : (
             <rect
               key={`${column.key}-${y}`}
               className={onHover ? 'cell' : undefined}
@@ -79,8 +81,8 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
               y={y * cellHeight}
               width={Math.max(cellWidth - 1, 1)}
               height={Math.max(cellHeight - 1, 1)}
-              fill={value > 0 ? scale(value) : theme.palette.grayLighter.main}
-              onMouseOver={onHover && (() => onHover([hourOf(column.date, y, rows), value]))}
+              fill={cell.value > 0 ? scale(cell.value) : theme.palette.grayLighter.main}
+              onMouseOver={onHover && (() => onHover([cell.date, cell.value]))}
               onMouseOut={onHover && (() => onHover(undefined))}
             />
           )
@@ -89,7 +91,3 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
     </Box>
   )
 }
-
-// The date a cell stands for — its column's day plus the row's offset into that
-// day, so the tooltip can name the hour the cell covers.
-const hourOf = (date: Date, row: number, rows: number) => new Date(date.getTime() + (row * 86400000) / rows)

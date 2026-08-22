@@ -1,5 +1,6 @@
 import { DateTime, Duration } from 'luxon'
 import humanize, { Unit, HumanizerOptions } from 'humanize-duration'
+import * as d3 from 'd3'
 import i18n from '../i18n'
 
 // The active locale for all date/duration formatting. Driven by the app language
@@ -54,10 +55,9 @@ export const getMaxDuration = (unit: ITimeSeriesResolution) => {
   return Duration.fromObject({ [resolutionMaxLookup[unit]]: 1 })
 }
 
-// The longest span the plan's log limit actually covers. `lengths` defaults to
-// the choices for the resolution, but a heat map passes its own day counts.
-export const findLongestLength = (limitDuration: Duration, resolution: string, lengths?: number[]) => {
-  const allowed = (lengths ?? TimeSeriesLengths[resolution]).filter(
+// The longest span the plan's log limit actually covers.
+export const findLongestLength = (limitDuration: Duration, resolution: string) => {
+  const allowed = TimeSeriesLengths[resolution].filter(
     length => limitDuration.valueOf() >= Duration.fromObject({ [resolution]: length }).valueOf()
   )
   return allowed[allowed.length - 1]
@@ -165,45 +165,43 @@ export const timeSeriesStyleLabel = (style?: string): string =>
 
 // A heat map is a day (column) by time-of-day (row) grid, so it only has
 // something to show at sub-day resolutions. MINUTE joins this list if it is
-// ever enabled in TimeSeriesAvailableResolutions.
-export const TimeSeriesHeatmapResolutions: Partial<ILookup<string, ITimeSeriesResolution>> = {
-  HOUR: 'Hour',
-}
+// ever enabled in TimeSeriesAvailableResolutions. Its span is picked in days,
+// which is what TimeSeriesLengths.DAY already offers.
+export const TimeSeriesHeatmapResolutions: ITimeSeriesResolution[] = ['HOUR']
 
-export const defaultHeatmapResolution: ITimeSeriesResolution = 'HOUR'
-
-// Heat map spans are picked in days — the number of columns in the grid.
-export const TimeSeriesHeatmapDays = [7, 14, 30]
-
-export const resolutionSeconds: ILookup<number, ITimeSeriesResolution> = {
-  SECOND: 1,
-  MINUTE: 60,
-  HOUR: 3600,
-  DAY: 86400,
-  WEEK: 604800,
-  MONTH: 2592000,
-  QUARTER: 7776000,
-  YEAR: 31536000,
-}
+const resolutionSeconds = (resolution: ITimeSeriesResolution) => Duration.fromObject({ [resolution]: 1 }).as('seconds')
 
 export const heatmapRows = (resolution: ITimeSeriesResolution) =>
-  Math.max(Math.round(resolutionSeconds.DAY / resolutionSeconds[resolution]), 1)
+  Math.max(Math.round(resolutionSeconds('DAY') / resolutionSeconds(resolution)), 1)
 
 // What to actually ask the API for. Its window ends at the bucket in progress,
-// so every graph fetches one period beyond the span it shows and drops it —
-// otherwise the last bar is always short by however much of the period is left
-// to run, and a heat map's first column opens partway through a day.
+// so every graph fetches one period beyond the span it shows and drops it in
+// trimIncomplete() — otherwise the last bar is always short by however much of
+// the period has yet to run, and a heat map's first column opens partway
+// through a day.
 export const timeSeriesRequest = (options: ITimeSeriesOptions): ITimeSeriesOptions => ({
   ...options,
   length: (options.length + 1) * (options.style === 'heatmap' ? heatmapRows(options.resolution) : 1),
 })
 
-// Drop that trailing in-progress bucket. Heat maps do their own trimming in
-// heatmapGrid(), which has to work a whole column at a time.
-export const trimIncomplete = (data: ITimeSeries): ITimeSeries =>
-  data.time.length < 2
-    ? data
-    : { ...data, end: data.time[data.time.length - 1], time: data.time.slice(0, -1), data: data.data.slice(0, -1) }
+// Drop the period still in progress, at the boundary where the payload is
+// normalized so no consumer has to know the request ran long. A heat map draws
+// a column per day, so the whole day in progress goes — dropping only its
+// latest bucket would leave a short column, and in the midnight hour it would
+// discard a complete day instead.
+export const trimIncomplete = (data: ITimeSeries, style?: ITimeSeriesStyle): ITimeSeries => {
+  const last = data.time[data.time.length - 1]
+  if (!last) return data
+  const lastDay = localDayKey(last)
+  const keep = style === 'heatmap' ? data.time.findIndex(time => localDayKey(time) === lastDay) : data.time.length - 1
+  if (keep < 1) return data
+  return { ...data, end: data.time[keep], time: data.time.slice(0, keep), data: data.data.slice(0, keep) }
+}
+
+// Local calendar day, as a value that can key a lookup. Plain Date getters
+// rather than luxon: they read the same system zone (nothing sets
+// Settings.defaultZone) and this runs once per bucket, up to 744 of them.
+const localDayKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 
 // Heat cells are colored on an absolute scale so two devices are directly
 // comparable — a full bucket is 100% for a percentage type and the bucket's own
@@ -211,47 +209,56 @@ export const trimIncomplete = (data: ITimeSeries): ITimeSeries =>
 export const timeSeriesFullScale = (type: ITimeSeriesType, resolution: ITimeSeriesResolution): number | undefined => {
   const { unit, scale } = TimeSeriesTypeScale[type]
   if (unit === '%') return scale
-  if (unit === 'time') return resolutionSeconds[resolution]
+  if (unit === 'time') return resolutionSeconds(resolution)
   return undefined
+}
+
+export const timeSeriesMax = (data: number[]) => Math.max(d3.max(data) ?? 0, 0.1)
+
+// "Last 30 days" — the span a graph is showing, in its own largest unit. A heat
+// map counts the day columns it draws rather than measuring the fetched window,
+// which still carries the partial day the grid windows off and would round up.
+export const timeSeriesSpanLabel = (data: ITimeSeries) => {
+  const heatmap = data.style === 'heatmap' && !!data.days
+  const span = heatmap ? Duration.fromObject({ days: data.days }).toMillis() : data.end.getTime() - data.start.getTime()
+  return humanizeDuration(span, {
+    largest: 1,
+    round: true,
+    units: [heatmap ? 'd' : humanizeResolutionLookup[data.resolution || 'DAY']],
+  })
 }
 
 // Fold a series into day columns for the heat map. `rows` is the number of cells
 // per column — 24 for hour buckets, or 1 to collapse each day into a single
 // strip cell, which is what the list column does so it stays one row tall no
 // matter which resolution the details page last fetched. `days` is how many
-// columns to keep: the day in progress goes, then the partial day the request
-// opened in the middle of, leaving that many whole days.
-export const heatmapGrid = (data: ITimeSeries, rows: number, days?: number): ITimeSeriesGrid => {
+// columns to keep, dropping the partial day the request opened in the middle of.
+export const heatmapGrid = (data: ITimeSeries, rows: number, days: number): ITimeSeriesGrid => {
   const average = TimeSeriesTypeScale[data.type]?.unit === '%'
   const keys: string[] = []
-  const buckets: ILookup<number[][]> = {}
+  const buckets: ILookup<ITimeSeriesCell[][]> = {}
 
   data.time.forEach((time, i) => {
-    const date = DateTime.fromJSDate(time)
-    const key = date.toISODate() ?? ''
+    const key = localDayKey(time)
     if (!buckets[key]) {
       keys.push(key)
-      buckets[key] = Array.from({ length: rows }, () => [] as number[])
+      buckets[key] = Array.from({ length: rows }, () => [] as ITimeSeriesCell[])
     }
     // Rows are clock position within the local day, so a cell always means the
     // same time of day. The hour a DST jump skips stays empty and the hour it
     // repeats collects both buckets.
-    const clock = date.hour * 3600 + date.minute * 60 + date.second
-    const row = rows === 1 ? 0 : Math.min(Math.floor((clock / 86400) * rows), rows - 1)
-    buckets[key][row].push(data.data[i] ?? 0)
+    const clock = time.getHours() * 3600 + time.getMinutes() * 60 + time.getSeconds()
+    const row = Math.min(Math.floor((clock / 86400) * rows), rows - 1)
+    buckets[key][row].push({ date: time, value: data.data[i] ?? 0 })
   })
 
-  const whole = keys.slice(0, -1)
-
   return {
-    rows,
-    columns: (days ? whole.slice(-days) : whole).map(key => ({
+    columns: keys.slice(-days).map(key => ({
       key,
-      date: DateTime.fromISO(key).toJSDate(),
-      values: buckets[key].map(values => {
-        if (!values.length) return undefined
-        const total = values.reduce((sum, value) => sum + value, 0)
-        return average ? total / values.length : total
+      cells: buckets[key].map(cells => {
+        if (!cells.length) return undefined
+        const total = cells.reduce((sum, cell) => sum + cell.value, 0)
+        return { date: cells[0].date, value: average ? total / cells.length : total }
       }),
     })),
   }

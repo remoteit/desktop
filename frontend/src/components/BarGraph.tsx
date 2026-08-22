@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { Box, useTheme } from '@mui/material'
+import { timeSeriesMax } from '../helpers/dateHelper'
 import * as d3 from 'd3'
 
 export type BarGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
@@ -16,7 +17,7 @@ export const BarGraph: React.FC<BarGraphProps> = ({
   data,
   width = 100,
   height = 18,
-  max = Math.max(d3.max(data.data) ?? 0, 0.1),
+  max = timeSeriesMax(data.data),
   min = 0,
   color = 'grayDark',
   onHover,

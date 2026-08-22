@@ -1,11 +1,6 @@
 import { Duration } from 'luxon'
 import { createSelector } from 'reselect'
-import {
-  findLongestLength,
-  listTimeSeriesOptions,
-  defaultDeviceTimeSeries,
-  defaultServiceTimeSeries,
-} from '../helpers/dateHelper'
+import { findLongestLength, defaultDeviceTimeSeries, defaultServiceTimeSeries } from '../helpers/dateHelper'
 import {
   getDefaultSelected,
   getThemeDark,
@@ -57,13 +52,6 @@ export const selectTimeSeries = createSelector(
     }
   }
 )
-
-// What the list query should ask for. The list only draws a one row strip, so a
-// heat map's sub-day buckets are pulled for the details view alone.
-export const selectListTimeSeries = createSelector([selectTimeSeries], timeSeries => ({
-  deviceTimeSeries: listTimeSeriesOptions(timeSeries.deviceTimeSeries),
-  serviceTimeSeries: listTimeSeriesOptions(timeSeries.serviceTimeSeries),
-}))
 
 
 export const selectIsAdminRouteMode = createSelector(

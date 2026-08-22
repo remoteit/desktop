@@ -1,22 +1,18 @@
 import React from 'react'
 import {
   TimeSeriesTypeScale,
-  humanizeResolutionLookup,
   connectionTypes,
   heatmapRows,
+  humanizeDuration as humanize,
   secondResolutions,
   timeSeriesFullScale,
-  trimIncomplete,
+  timeSeriesMax,
+  timeSeriesSpanLabel,
 } from '../helpers/dateHelper'
 import { BarGraph, BarGraphProps } from './BarGraph'
-import { HeatGraph } from './HeatGraph'
+import { HeatGraph, HeatColor } from './HeatGraph'
 import { Typography, Stack, Box } from '@mui/material'
 import { Timestamp } from './Timestamp'
-import { humanizeDuration as humanize } from '../helpers/dateHelper'
-import { selectTimeSeries } from '../selectors/ui'
-import { useSelector } from 'react-redux'
-import { State } from '../store'
-import * as d3 from 'd3'
 
 // 7px per hour row over 24 rows, wide enough for a month of day columns.
 const HEATMAP_HEIGHT = 168
@@ -26,115 +22,105 @@ type Props = Omit<BarGraphProps, 'data'> & {
   timeSeries?: ITimeSeries
   online?: boolean
   size?: 'large' | 'small'
-  variant?: 'device' | 'service'
 }
 
-export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', variant = 'device', ...props }) => {
+export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', ...props }) => {
   const [display, setDisplay] = React.useState<[Date, number]>()
-  const options = useSelector((state: State) => selectTimeSeries(state)[`${variant}TimeSeries`])
 
   if (!timeSeries) return null
 
-  const color = connectionTypes.includes(timeSeries.type) ? 'primary' : online ? 'success' : 'gray'
+  const color: HeatColor = connectionTypes.includes(timeSeries.type) ? 'primary' : online ? 'success' : 'gray'
+  const heatmap = timeSeries.style === 'heatmap'
+  const days = timeSeries.days ?? 1
 
-  if (options.style === 'heatmap') {
-    // The list strip is always one row per day — the details page may have left
-    // hourly buckets in the store for this device, and they would be unreadable
-    // squeezed into the column's height.
-    const rows = size === 'small' ? 1 : heatmapRows(timeSeries.resolution)
-    const scale = timeSeriesFullScale(timeSeries.type, rows === 1 ? 'DAY' : timeSeries.resolution)
-
-    if (size === 'small')
-      return <HeatGraph {...props} data={timeSeries} rows={1} days={options.length} color={color} max={scale} />
-
-    return (
-      <Stack direction="row" flexWrap="nowrap">
-        <Box width={60} minWidth={60} marginRight={1} height={HEATMAP_HEIGHT} position="relative">
-          {[0, 6, 12, 18].map(hour => (
-            <Typography
-              key={hour}
-              variant="caption"
-              sx={{
-                position: 'absolute',
-                right: 0,
-                // centered on the band of cells covering that hour, whatever
-                // the row count works out to
-                top: ((hour + 0.5) / 24) * HEATMAP_HEIGHT,
-                transform: 'translateY(-50%)',
-                lineHeight: 1,
-              }}
-            >
-              {hour.toString().padStart(2, '0')}:00
-            </Typography>
-          ))}
-        </Box>
-        <Stack direction="row" flexWrap="wrap">
-          <Stack spacing={0.5} marginRight={2}>
-            <HeatGraph
-              {...props}
-              data={timeSeries}
-              rows={rows}
-              days={options.length}
-              color={color}
-              max={scale}
-              width={HEATMAP_WIDTH}
-              height={HEATMAP_HEIGHT}
-              onHover={setDisplay}
-            />
-            <Typography variant="caption" textAlign="center">
-              Last&nbsp;
-              {humanize(options.length * 86400000, { largest: 1, round: true, units: ['d'] })}
-            </Typography>
-          </Stack>
-          {display && (
-            <Box marginBottom={3} flexGrow={1} minWidth={150}>
-              <Typography variant="caption">
-                <Timestamp date={display[0]} variant="minutes" />
-              </Typography>
-              <Typography variant="caption" color={`${color}.main`} component="div" fontWeight={500}>
-                {formatValue(timeSeries.type, display[1])}
-              </Typography>
-            </Box>
-          )}
-        </Stack>
-      </Stack>
+  if (size === 'small')
+    return heatmap ? (
+      // The list strip is always one row per day — a device whose details page
+      // has been opened holds hourly buckets, and they would be unreadable
+      // squeezed into the column's height.
+      <HeatGraph
+        {...props}
+        data={timeSeries}
+        rows={1}
+        days={days}
+        color={color}
+        max={timeSeriesFullScale(timeSeries.type, 'DAY')}
+      />
+    ) : (
+      <BarGraph {...props} data={timeSeries} color={color} max={timeSeriesMax(timeSeries.data)} />
     )
-  }
 
-  const bars = trimIncomplete(timeSeries)
-  const max = Math.max(d3.max(bars.data) ?? 0, 0.1)
-  const min = 0
+  const max = timeSeriesMax(timeSeries.data)
 
-  if (size === 'small') return <BarGraph {...props} data={bars} color={color} max={max} />
+  // Both styles wear the same chrome — a left axis, the graph, a span caption
+  // and the hover readout — so only these two pieces differ.
+  const axis = heatmap
+    ? [0, 6, 12, 18].map(hour => (
+        <Typography
+          key={hour}
+          variant="caption"
+          sx={{
+            position: 'absolute',
+            right: 0,
+            // centered on the band of cells covering that hour, whatever the
+            // row count works out to
+            top: ((hour + 0.5) / 24) * HEATMAP_HEIGHT,
+            transform: 'translateY(-50%)',
+            lineHeight: 1,
+          }}
+        >
+          {hour.toString().padStart(2, '0')}:00
+        </Typography>
+      ))
+    : [max, 0].map((value, i) => (
+        <Typography key={i} variant="caption" textAlign="right">
+          {formatValue(timeSeries.type, value, true)}
+        </Typography>
+      ))
+
+  const graph = heatmap ? (
+    <HeatGraph
+      {...props}
+      data={timeSeries}
+      rows={heatmapRows(timeSeries.resolution)}
+      days={days}
+      color={color}
+      max={timeSeriesFullScale(timeSeries.type, timeSeries.resolution)}
+      width={HEATMAP_WIDTH}
+      height={HEATMAP_HEIGHT}
+      onHover={setDisplay}
+    />
+  ) : (
+    <BarGraph
+      {...props}
+      data={timeSeries}
+      color={color}
+      height={40}
+      width={200}
+      max={max}
+      min={0}
+      onHover={setDisplay}
+    />
+  )
 
   return (
     <Stack direction="row" flexWrap="nowrap">
-      <Stack width={60} minWidth={60} marginBottom={3} marginRight={1} height={45} justifyContent="space-between">
-        {[max, min].map((value, i) => (
-          <Typography key={i} variant="caption" textAlign="right">
-            {formatValue(timeSeries.type, value, true)}
-          </Typography>
-        ))}
+      <Stack
+        width={60}
+        minWidth={60}
+        marginRight={1}
+        marginBottom={heatmap ? 0 : 3}
+        height={heatmap ? HEATMAP_HEIGHT : 45}
+        position={heatmap ? 'relative' : 'static'}
+        justifyContent="space-between"
+      >
+        {axis}
       </Stack>
       <Stack direction="row" flexWrap="wrap">
         <Stack spacing={0.5} marginRight={2}>
-          <BarGraph
-            {...props}
-            data={bars}
-            color={color}
-            height={40}
-            width={200}
-            max={max}
-            min={min}
-            onHover={setDisplay}
-          />
+          {graph}
           <Typography variant="caption" textAlign="center">
-            Last&nbsp;
-            {humanize(bars.end.getTime() - bars.start.getTime(), {
-              largest: 1,
-              round: true,
-              units: [humanizeResolutionLookup[bars.resolution || 'DAY']],
-            })}
+            Last&nbsp;{timeSeriesSpanLabel(timeSeries)}
           </Typography>
         </Stack>
         {display && (
