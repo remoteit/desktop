@@ -841,6 +841,9 @@ declare global {
         all: boolean
         accounts: { id: string; filter: string | null }[]
         ceilingAll: boolean
+      // "All accounts" is still on offer (consent would have offered it), even if this grant
+      // never took it — so the editor can present it as an addition.
+      offerAll?: boolean
         ceilingIds: string[]
         options: { id: string; label: string }[] | null
       } | null

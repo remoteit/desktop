@@ -101,7 +101,8 @@ export const ConnectedAppDetailPage: React.FC = () => {
     setScopeEdit(next)
   }
   const toggleReachAll = () => {
-    if (!agent.active || saving || !reachNow || !reachGroup?.ceilingAll) return
+    // Offered wherever consent would have offered it, not only where it was accepted then.
+    if (!agent.active || saving || !reachNow || !(reachGroup?.ceilingAll || reachGroup?.offerAll)) return
     if (reachNow.all) {
       // Leaving all-mode keeps today's accounts selected — deselecting "all, including
       // ones added later" narrows from full coverage, it doesn't strip everything.
@@ -130,6 +131,9 @@ export const ConnectedAppDetailPage: React.FC = () => {
   // these are the only choices that create it, so they are named before they are made.
   const adding = [
     ...allActions.filter(a => a.offered && kept.has(a.key)).map(a => a.label),
+    ...(reachGroup && reachNow?.all && !reachGroup.ceilingAll
+      ? [t('connectedAppDetailPage.allAccountsPlain', 'every account, including ones you join later')]
+      : []),
     ...(reachGroup && reachNow && !reachNow.all
       ? [...reachNow.ids]
           .filter(id => !reachGroup.ceilingAll && !reachGroup.ceilingIds.includes(id))
@@ -276,15 +280,19 @@ export const ConnectedAppDetailPage: React.FC = () => {
                         {t('connectedAppDetailPage.accounts', 'Accounts')}
                       </Typography>
                       <Box>
-                        {group.reach.ceilingAll ? (
+                        {group.reach.ceilingAll || group.reach.offerAll ? (
                           <Chip
                             size="small"
                             clickable={agent.active}
                             color={reachNow.all && agent.active ? 'primary' : undefined}
                             variant={reachNow.all ? 'filled' : 'outlined'}
                             onClick={toggleReachAll}
-                            label={t('connectedAppDetailPage.allAccounts', 'All accounts, including ones added later')}
-                            sx={{ mr: 1, mb: 0.5, opacity: reachNow.all ? 1 : 0.6 }}
+                            label={
+                              group.reach.ceilingAll
+                                ? t('connectedAppDetailPage.allAccounts', 'All accounts, including ones added later')
+                                : t('connectedAppDetailPage.allAccountsAdd', 'All accounts, including ones added later — add')
+                            }
+                            sx={{ mr: 1, mb: 0.5, opacity: reachNow.all ? 1 : 0.6, ...(group.reach.ceilingAll ? {} : { borderStyle: 'dashed' }) }}
                           />
                         ) : null}
                         {[...new Set([
