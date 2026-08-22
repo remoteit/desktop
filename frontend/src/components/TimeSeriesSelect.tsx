@@ -45,7 +45,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         onChange={value => onChange?.({ ...timeSeriesOptions, type: value as ITimeSeriesType })}
       />
       <SelectSetting
-        icon="grid-2"
+        icon="table-cells"
         label={t('timeSeriesSelect.graphStyle', 'Graph style')}
         value={timeSeriesOptions.style ?? 'bar'}
         defaultValue={defaults.style}

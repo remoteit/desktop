@@ -35,7 +35,7 @@ export const GraphItem: React.FC<Props> = ({ service, device }) => {
               temporary override, so the choice sticks and the style has only one
               source. */}
           <IconButton
-            name={next === 'heatmap' ? 'grid-2' : 'chart-column'}
+            name={next === 'heatmap' ? 'table-cells' : 'chart-column'}
             color="grayDarker"
             title={timeSeriesStyleLabel(next)}
             onClick={() =>
