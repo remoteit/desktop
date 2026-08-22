@@ -1,7 +1,7 @@
 import { selectDeviceColumns } from '../selectors/devices'
 import { graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '@common/nameHelper'
-import { getTimeZone } from '../helpers/dateHelper'
+import { getTimeZone, timeSeriesRequest } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
@@ -169,6 +169,21 @@ const DEVICE_TIME_SERIES_PARAMS =
 const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
+// Both series always go through timeSeriesRequest, so every query asks for the
+// extra period the graphs trim back off.
+const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesOptions) => {
+  const deviceTS = device && timeSeriesRequest(device)
+  const serviceTS = service && timeSeriesRequest(service)
+  return {
+    deviceTSLength: deviceTS?.length,
+    deviceTSType: deviceTS?.type,
+    deviceTSResolution: deviceTS?.resolution,
+    serviceTSLength: serviceTS?.length,
+    serviceTSType: serviceTS?.type,
+    serviceTSResolution: serviceTS?.resolution,
+  }
+}
+
 export async function graphQLFetchDeviceList(params: gqlOptions) {
   return await graphQLBasicRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
@@ -198,12 +213,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       accountId: params.accountId,
       platform: params.platform,
       name: params.name?.trim() || undefined,
-      deviceTSLength: params.deviceTimeSeries?.length,
-      deviceTSType: params.deviceTimeSeries?.type,
-      deviceTSResolution: params.deviceTimeSeries?.resolution,
-      serviceTSLength: params.serviceTimeSeries?.length,
-      serviceTSType: params.serviceTimeSeries?.type,
-      serviceTSResolution: params.serviceTimeSeries?.resolution,
+      ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries),
     }
   )
 }
@@ -231,12 +241,7 @@ export async function graphQLPreloadDevices(params: {
       }`,
     {
       ...params,
-      deviceTSLength: params.deviceTimeSeries?.length,
-      deviceTSType: params.deviceTimeSeries?.type,
-      deviceTSResolution: params.deviceTimeSeries?.resolution,
-      serviceTSLength: params.serviceTimeSeries?.length,
-      serviceTSType: params.serviceTimeSeries?.type,
-      serviceTSResolution: params.serviceTimeSeries?.resolution,
+      ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries),
     }
   )
 }
@@ -279,12 +284,7 @@ export async function graphQLFetchFullDevice(
     {
       id,
       accountId,
-      deviceTSLength: deviceTimeSeries?.length,
-      deviceTSType: deviceTimeSeries?.type,
-      deviceTSResolution: deviceTimeSeries?.resolution,
-      serviceTSLength: serviceTimeSeries?.length,
-      serviceTSType: serviceTimeSeries?.type,
-      serviceTSResolution: serviceTimeSeries?.resolution,
+      ...timeSeriesVariables(deviceTimeSeries, serviceTimeSeries),
     }
   )
 }

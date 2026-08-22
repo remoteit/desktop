@@ -14,6 +14,7 @@ const RAMPS: ILookup<[Color, Color, Color]> = {
 export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
   data: ITimeSeries
   rows?: number
+  days?: number
   width?: number
   height?: number
   max?: number
@@ -24,6 +25,7 @@ export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
 export const HeatGraph: React.FC<HeatGraphProps> = ({
   data,
   rows = 24,
+  days,
   width = 100,
   height = 18,
   max,
@@ -32,7 +34,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
   ...props
 }) => {
   const theme = useTheme()
-  const grid = useMemo(() => heatmapGrid(data, rows), [data, rows])
+  const grid = useMemo(() => heatmapGrid(data, rows, days), [data, rows, days])
 
   const scale = useMemo(() => {
     const ramp = (RAMPS[color] ?? RAMPS.gray).map(c => theme.palette[c].main)

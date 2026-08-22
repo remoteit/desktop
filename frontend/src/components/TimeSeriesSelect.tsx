@@ -8,8 +8,6 @@ import {
   TimeSeriesLengths,
   defaultHeatmapResolution,
   findLongestLength,
-  heatmapDays,
-  heatmapLength,
   timeSeriesStyleLabel,
   timeSeriesTypeLabel,
   timeSeriesResolutionLabel,
@@ -37,9 +35,6 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
   const resolutions = heatmap ? TimeSeriesHeatmapResolutions : TimeSeriesAvailableResolutions
   const lengthUnit = heatmap ? 'DAY' : timeSeriesOptions.resolution
   const lengths = heatmap ? TimeSeriesHeatmapDays : TimeSeriesLengths[timeSeriesOptions.resolution]
-  const length = heatmap
-    ? heatmapDays(timeSeriesOptions.length, timeSeriesOptions.resolution)
-    : timeSeriesOptions.length
 
   return (
     <List>
@@ -76,14 +71,14 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
           onChange?.({
             ...timeSeriesOptions,
             resolution: value as ITimeSeriesResolution,
-            length: heatmap ? heatmapLength(length, value as ITimeSeriesResolution) : TimeSeriesLengths[value][0],
+            length: heatmap ? timeSeriesOptions.length : TimeSeriesLengths[value][0],
           })
         }
       />
       <SelectSetting
         icon="ruler"
         label={t('timeSeriesSelect.graphLength', 'Graph length')}
-        value={length}
+        value={timeSeriesOptions.length}
         defaultValue={heatmap ? undefined : defaults.length}
         values={lengths.map(key => {
           const disabled = limitDuration.valueOf() < Duration.fromObject({ [lengthUnit]: key }).valueOf()
@@ -102,7 +97,7 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         onChange={value =>
           onChange?.({
             ...timeSeriesOptions,
-            length: heatmap ? heatmapLength(+value, timeSeriesOptions.resolution) : +value,
+            length: +value,
           })
         }
       />
@@ -129,11 +124,10 @@ const withStyle = (
       length: findLongestLength(limitDuration, 'DAY') ?? TimeSeriesLengths.DAY[0],
     }
 
-  const days = findLongestLength(limitDuration, 'DAY', TimeSeriesHeatmapDays) ?? TimeSeriesHeatmapDays[0]
   return {
     ...options,
     style,
     resolution: defaultHeatmapResolution,
-    length: heatmapLength(days, defaultHeatmapResolution),
+    length: findLongestLength(limitDuration, 'DAY', TimeSeriesHeatmapDays) ?? TimeSeriesHeatmapDays[0],
   }
 }

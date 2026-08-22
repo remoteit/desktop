@@ -172,8 +172,7 @@ export const TimeSeriesHeatmapResolutions: Partial<ILookup<string, ITimeSeriesRe
 
 export const defaultHeatmapResolution: ITimeSeriesResolution = 'HOUR'
 
-// Heat map spans are chosen in days — the number of columns — and converted to
-// a bucket count for the API by heatmapLength().
+// Heat map spans are picked in days — the number of columns in the grid.
 export const TimeSeriesHeatmapDays = [7, 14, 30]
 
 export const resolutionSeconds: ILookup<number, ITimeSeriesResolution> = {
@@ -190,10 +189,21 @@ export const resolutionSeconds: ILookup<number, ITimeSeriesResolution> = {
 export const heatmapRows = (resolution: ITimeSeriesResolution) =>
   Math.max(Math.round(resolutionSeconds.DAY / resolutionSeconds[resolution]), 1)
 
-export const heatmapLength = (days: number, resolution: ITimeSeriesResolution) => days * heatmapRows(resolution)
+// What to actually ask the API for. Its window ends at the bucket in progress,
+// so every graph fetches one period beyond the span it shows and drops it —
+// otherwise the last bar is always short by however much of the period is left
+// to run, and a heat map's first column opens partway through a day.
+export const timeSeriesRequest = (options: ITimeSeriesOptions): ITimeSeriesOptions => ({
+  ...options,
+  length: (options.length + 1) * (options.style === 'heatmap' ? heatmapRows(options.resolution) : 1),
+})
 
-export const heatmapDays = (length: number, resolution: ITimeSeriesResolution) =>
-  Math.max(Math.round(length / heatmapRows(resolution)), 1)
+// Drop that trailing in-progress bucket. Heat maps do their own trimming in
+// heatmapGrid(), which has to work a whole column at a time.
+export const trimIncomplete = (data: ITimeSeries): ITimeSeries =>
+  data.time.length < 2
+    ? data
+    : { ...data, end: data.time[data.time.length - 1], time: data.time.slice(0, -1), data: data.data.slice(0, -1) }
 
 // Heat cells are colored on an absolute scale so two devices are directly
 // comparable — a full bucket is 100% for a percentage type and the bucket's own
@@ -208,8 +218,10 @@ export const timeSeriesFullScale = (type: ITimeSeriesType, resolution: ITimeSeri
 // Fold a series into day columns for the heat map. `rows` is the number of cells
 // per column — 24 for hour buckets, or 1 to collapse each day into a single
 // strip cell, which is what the list column does so it stays one row tall no
-// matter which resolution the details page last fetched.
-export const heatmapGrid = (data: ITimeSeries, rows: number): ITimeSeriesGrid => {
+// matter which resolution the details page last fetched. `days` is how many
+// columns to keep: the day in progress goes, then the partial day the request
+// opened in the middle of, leaving that many whole days.
+export const heatmapGrid = (data: ITimeSeries, rows: number, days?: number): ITimeSeriesGrid => {
   const average = TimeSeriesTypeScale[data.type]?.unit === '%'
   const keys: string[] = []
   const buckets: ILookup<number[][]> = {}
@@ -229,9 +241,11 @@ export const heatmapGrid = (data: ITimeSeries, rows: number): ITimeSeriesGrid =>
     buckets[key][row].push(data.data[i] ?? 0)
   })
 
+  const whole = keys.slice(0, -1)
+
   return {
     rows,
-    columns: keys.map(key => ({
+    columns: (days ? whole.slice(-days) : whole).map(key => ({
       key,
       date: DateTime.fromISO(key).toJSDate(),
       values: buckets[key].map(values => {
@@ -247,9 +261,7 @@ export const heatmapGrid = (data: ITimeSeries, rows: number): ITimeSeriesGrid =>
 // sub-day buckets a heat map details view asks for — without this a 30 day heat
 // map would pull 720 points for every device in the list query.
 export const listTimeSeriesOptions = (options: ITimeSeriesOptions): ITimeSeriesOptions =>
-  options.style === 'heatmap'
-    ? { ...options, resolution: 'DAY', length: heatmapDays(options.length, options.resolution) }
-    : options
+  options.style === 'heatmap' ? { ...options, resolution: 'DAY' } : options
 
 export const resolutionMaxLookup: ILookup<string, ITimeSeriesResolution> = {
   SECOND: 'minutes',

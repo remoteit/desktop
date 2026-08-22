@@ -6,6 +6,7 @@ import {
   heatmapRows,
   secondResolutions,
   timeSeriesFullScale,
+  trimIncomplete,
 } from '../helpers/dateHelper'
 import { BarGraph, BarGraphProps } from './BarGraph'
 import { HeatGraph } from './HeatGraph'
@@ -30,22 +31,21 @@ type Props = Omit<BarGraphProps, 'data'> & {
 
 export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small', variant = 'device', ...props }) => {
   const [display, setDisplay] = React.useState<[Date, number]>()
-  const style = useSelector((state: State) => selectTimeSeries(state)[`${variant}TimeSeries`].style)
+  const options = useSelector((state: State) => selectTimeSeries(state)[`${variant}TimeSeries`])
 
   if (!timeSeries) return null
 
   const color = connectionTypes.includes(timeSeries.type) ? 'primary' : online ? 'success' : 'gray'
-  const max = Math.max(d3.max(timeSeries.data) ?? 0, 0.1)
-  const min = 0
 
-  if (style === 'heatmap') {
+  if (options.style === 'heatmap') {
     // The list strip is always one row per day — the details page may have left
     // hourly buckets in the store for this device, and they would be unreadable
     // squeezed into the column's height.
     const rows = size === 'small' ? 1 : heatmapRows(timeSeries.resolution)
     const scale = timeSeriesFullScale(timeSeries.type, rows === 1 ? 'DAY' : timeSeries.resolution)
 
-    if (size === 'small') return <HeatGraph {...props} data={timeSeries} rows={1} color={color} max={scale} />
+    if (size === 'small')
+      return <HeatGraph {...props} data={timeSeries} rows={1} days={options.length} color={color} max={scale} />
 
     return (
       <Stack direction="row" flexWrap="nowrap">
@@ -74,6 +74,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
               {...props}
               data={timeSeries}
               rows={rows}
+              days={options.length}
               color={color}
               max={scale}
               width={HEATMAP_WIDTH}
@@ -82,11 +83,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
             />
             <Typography variant="caption" textAlign="center">
               Last&nbsp;
-              {humanize(timeSeries.end.getTime() - timeSeries.start.getTime(), {
-                largest: 1,
-                round: true,
-                units: ['d'],
-              })}
+              {humanize(options.length * 86400000, { largest: 1, round: true, units: ['d'] })}
             </Typography>
           </Stack>
           {display && (
@@ -104,7 +101,11 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
     )
   }
 
-  if (size === 'small') return <BarGraph {...props} data={timeSeries} color={color} max={max} />
+  const bars = trimIncomplete(timeSeries)
+  const max = Math.max(d3.max(bars.data) ?? 0, 0.1)
+  const min = 0
+
+  if (size === 'small') return <BarGraph {...props} data={bars} color={color} max={max} />
 
   return (
     <Stack direction="row" flexWrap="nowrap">
@@ -119,7 +120,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
         <Stack spacing={0.5} marginRight={2}>
           <BarGraph
             {...props}
-            data={timeSeries}
+            data={bars}
             color={color}
             height={40}
             width={200}
@@ -129,10 +130,10 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
           />
           <Typography variant="caption" textAlign="center">
             Last&nbsp;
-            {humanize(timeSeries.end.getTime() - timeSeries.start.getTime(), {
+            {humanize(bars.end.getTime() - bars.start.getTime(), {
               largest: 1,
               round: true,
-              units: [humanizeResolutionLookup[timeSeries.resolution || 'DAY']],
+              units: [humanizeResolutionLookup[bars.resolution || 'DAY']],
             })}
           </Typography>
         </Stack>
