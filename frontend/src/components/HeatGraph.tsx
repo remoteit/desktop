@@ -103,12 +103,6 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
               width={cellWidth}
               height={cellHeight}
               fill={cell.value > 0 ? scale(cell.value) : theme.palette.grayLighter.main}
-              // Cells butt up against each other so the pointer is always over
-              // one of them; the gap between them is a surface-colored stroke
-              // straddling the shared edge, which looks the same as a real gap
-              // but still belongs to a cell for hit testing.
-              stroke={theme.palette.white.main}
-              strokeWidth={1}
               onMouseOver={
                 onHover &&
                 (() => {
@@ -120,6 +114,19 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
           )
         )
       )}
+      {/* Cells butt up against each other so the pointer is always over one of
+          them, and the lines between them are drawn once on top rather than as
+          a stroke on each cell — two neighbours both stroke their shared edge,
+          so a semi-transparent one would come out heavier on one side than the
+          other. */}
+      <path
+        d={gridLines(grid.columns.length, rows, cellWidth, cellHeight, width, height)}
+        fill="none"
+        stroke={theme.palette.white.main}
+        strokeOpacity={0.5}
+        strokeWidth={1}
+        pointerEvents="none"
+      />
       {/* Drawn after the grid rather than as a :hover stroke on the cell —
           cells are painted left to right and top to bottom, so the neighbours
           below and to the right would cover the outer half of the outline and
@@ -139,4 +146,20 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
       )}
     </Box>
   )
+}
+
+// The lines between cells, as one path — a vertical at every column boundary
+// and a horizontal at every row boundary, skipping the outer edges.
+const gridLines = (
+  columns: number,
+  rows: number,
+  cellWidth: number,
+  cellHeight: number,
+  width: number,
+  height: number
+) => {
+  let d = ''
+  for (let x = 1; x < columns; x++) d += `M${x * cellWidth} 0V${height}`
+  for (let y = 1; y < rows; y++) d += `M0 ${y * cellHeight}H${width}`
+  return d
 }
