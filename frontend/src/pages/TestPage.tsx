@@ -183,7 +183,7 @@ export const TestPage: React.FC = () => {
               )}
               <InlineTextFieldSetting
                 value={getApiURL()}
-                label={t('testPage.switchGraphQLAPIs', 'Custom GraphQL URL (advanced)')}
+                label={t('testPage.customGraphQLURL', 'Custom GraphQL URL (advanced)')}
                 disabled={!apis.switchApi}
                 resetValue={getApiURL()}
                 maxLength={200}
@@ -203,7 +203,7 @@ export const TestPage: React.FC = () => {
               />
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
-                label={t('testPage.webSocketURL', 'Custom WebSocket URL (advanced)')}
+                label={t('testPage.customWebSocketURL', 'Custom WebSocket URL (advanced)')}
                 disabled={!apis.switchApi}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
