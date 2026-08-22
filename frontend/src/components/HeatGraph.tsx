@@ -170,7 +170,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
           a stroke on each cell — two neighbours both stroke their shared edge,
           so a semi-transparent one would come out heavier on one side than the
           other. */}
-      <path d={lines} fill="none" stroke={theme.palette.white.main} strokeOpacity={0.5} strokeWidth={1} />
+      <path d={lines} fill="none" stroke={theme.palette.white.main} strokeOpacity={0.2} strokeWidth={1} />
       {/* Drawn after the grid rather than as a :hover stroke on the cell —
           cells are painted left to right and top to bottom, so the neighbours
           below and to the right would cover the outer half of the outline and

@@ -19,9 +19,10 @@ import { Typography, Stack, Box } from '@mui/material'
 import { Timestamp } from './Timestamp'
 import { radius } from '../styling'
 
-// 7px per hour row over 24 rows, wide enough for a month of day columns.
-const HEATMAP_HEIGHT = 168
-const HEATMAP_WIDTH = 240
+// Cells are square, so one size sets both axes: the hour rows give the height
+// and the day columns give the width. A shorter span then draws a narrower
+// graph rather than stretching its days into wide rectangles.
+const HEATMAP_CELL = 7
 
 type Props = Omit<BarGraphProps, 'data' | 'min'> & {
   timeSeries?: ITimeSeries
@@ -70,7 +71,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
   // device's hourly series — is what timeSeriesLoading catches, so by here a
   // heat map always has its 24 rows.
   const rows = heatmapRows(shape.resolution)
-  const height = heatmap ? HEATMAP_HEIGHT : 40
+  const height = heatmap ? rows * HEATMAP_CELL : 40
 
   // Both styles wear the same chrome — a left axis, the graph, a span caption
   // and the hover readout — so only these two pieces differ.
@@ -84,7 +85,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
             right: 0,
             // centered on the band of cells covering that hour, whatever the
             // row count works out to
-            top: ((hour + 0.5) / 24) * HEATMAP_HEIGHT,
+            top: ((hour + 0.5) / 24) * height,
             transform: 'translateY(-50%)',
             lineHeight: 1,
           }}
@@ -107,7 +108,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
       color={color}
       max={timeSeriesFullScale(timeSeries.type, timeSeries.resolution)}
       loading={loading}
-      width={HEATMAP_WIDTH}
+      width={days * HEATMAP_CELL}
       height={height}
       onHover={setDisplay}
     />
@@ -122,7 +123,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
         minWidth={60}
         marginRight={1}
         marginBottom={heatmap ? 0 : 3}
-        height={heatmap ? HEATMAP_HEIGHT : 45}
+        height={heatmap ? height : 45}
         position={heatmap ? 'relative' : 'static'}
         justifyContent="space-between"
       >
