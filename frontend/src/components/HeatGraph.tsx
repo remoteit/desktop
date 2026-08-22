@@ -82,8 +82,11 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
       height={height}
       sx={theme => ({
         backgroundColor: theme.palette.white.main,
-        '& .cell:hover': { stroke: theme.palette.grayDarkest.main, strokeWidth: 1 },
+        '& .cell:hover': { stroke: theme.palette.grayDarkest.main },
       })}
+      // Clearing on the way out of the grid rather than out of each cell, so
+      // crossing between cells never blanks the readout.
+      onMouseLeave={onHover && (() => onHover(undefined))}
       {...props}
     >
       {grid.columns.map((column, x) =>
@@ -94,11 +97,16 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
               className={onHover ? 'cell' : undefined}
               x={x * cellWidth}
               y={y * cellHeight}
-              width={Math.max(cellWidth - 1, 1)}
-              height={Math.max(cellHeight - 1, 1)}
+              width={cellWidth}
+              height={cellHeight}
               fill={cell.value > 0 ? scale(cell.value) : theme.palette.grayLighter.main}
+              // Cells butt up against each other so the pointer is always over
+              // one of them; the gap between them is a surface-colored stroke
+              // straddling the shared edge, which looks the same as a real gap
+              // but still belongs to a cell for hit testing.
+              stroke={theme.palette.white.main}
+              strokeWidth={1}
               onMouseOver={onHover && (() => onHover([cell.date, cell.value]))}
-              onMouseOut={onHover && (() => onHover(undefined))}
             />
           )
         )
