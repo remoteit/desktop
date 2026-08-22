@@ -1,7 +1,7 @@
 import { selectDeviceColumns } from '../selectors/devices'
 import { graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '@common/nameHelper'
-import { getTimeZone, listTimeSeriesOptions, timeSeriesRequest, trimIncomplete } from '../helpers/dateHelper'
+import { getTimeZone, listTimeSeriesOptions, timeSeriesRequest } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
@@ -485,7 +485,7 @@ function processAttributes(response: any): ILookup<any> {
 function processTimeSeries(response: any, options?: ITimeSeriesOptions): ITimeSeries | undefined {
   if (!response.timeSeries) return
   const timeSeries = response.timeSeries
-  return trimIncomplete({
+  return {
     ...timeSeries,
     style: options?.style,
     // Only a heat map counts its length in days; a bar graph's length is a
@@ -494,5 +494,5 @@ function processTimeSeries(response: any, options?: ITimeSeriesOptions): ITimeSe
     start: new Date(timeSeries.start),
     end: new Date(timeSeries.end),
     time: timeSeries.time.map((t: any) => new Date(t)),
-  })
+  }
 }
