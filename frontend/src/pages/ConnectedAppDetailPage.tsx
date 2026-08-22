@@ -14,6 +14,7 @@ import { Icon } from '../components/Icon'
 import { Timestamp } from '../components/Timestamp'
 import { AgentAvatar } from '../components/ConnectedApps/AgentAvatar'
 import { enabledActions, revokeWindow } from '../components/ConnectedApps/helpers'
+import { oidcStart } from '../services/oidc'
 import { updateAccountApp } from '../services/permitteerAccount'
 import { spacing } from '../styling'
 
@@ -36,6 +37,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
   const [scopeEdit, setScopeEdit] = useState<Set<string> | null>(null)
   const [reachEdit, setReachEdit] = useState<{ all: boolean; ids: Set<string> } | null>(null)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     dispatch.agents.init()
@@ -115,19 +117,59 @@ export const ConnectedAppDetailPage: React.FC = () => {
   }
   const toggleReachId = (id: string) => {
     if (!agent.active || saving || !reachNow || reachNow.all) return
-    if (!reachGroup?.ceilingAll && !reachGroup?.ceilingIds.includes(id)) return
+    // An account outside this consent is selectable now: the app asked for account-scoped
+    // access and never named accounts, so choosing a different subset of your OWN accounts
+    // adds no capability it did not request. The server bounds it by what you may actually
+    // delegate today and asks for a recent sign-in before it lands.
     const ids = new Set(reachNow.ids)
     ids.has(id) ? ids.delete(id) : ids.add(id)
     setReachEdit({ all: false, ids })
   }
+  // What this save would ADD beyond what was consented — an offered permission being taken
+  // up, or an account this grant never reached. Everything else on this page removes access;
+  // these are the only choices that create it, so they are named before they are made.
+  const adding = [
+    ...allActions.filter(a => a.offered && kept.has(a.key)).map(a => a.label),
+    ...(reachGroup && reachNow && !reachNow.all
+      ? [...reachNow.ids]
+          .filter(id => !reachGroup.ceilingAll && !reachGroup.ceilingIds.includes(id))
+          .map(id => (reachGroup.options ?? []).find(o => o.id === id)?.label ?? id)
+      : []),
+  ]
+
   const save = async () => {
+    if (adding.length) {
+      const ok = window.confirm(
+        t('connectedAppDetailPage.confirmExtend', {
+          name,
+          list: adding.join(', '),
+          defaultValue:
+            'Give {{name}} access it does not have yet?\n\nAdding: {{list}}\n\nYou may be asked to sign in again to confirm it is you.',
+        })
+      )
+      if (!ok) return
+    }
     setSaving(true)
-    await updateAccountApp(
+    const r = await updateAccountApp(
       agent.id,
       [...kept],
       [...scopesKept],
       reachDirty && reachNow ? (reachNow.all ? { all: true } : { accounts: [...reachNow.ids] }) : undefined
     )
+    // The step-up: the session is live but not RECENT, and giving an app more than was
+    // approved needs proof it is you. Send them back through the login page with the choice
+    // still pending, rather than reporting a failure they cannot act on.
+    if (r.status === 403 && (r.body as any)?.error === 'reauthentication_required') {
+      setSaving(false)
+      await oidcStart({ prompt: 'login' })
+      return
+    }
+    if (r.status >= 400) {
+      setSaving(false)
+      setError((r.body as any)?.error_description || t('connectedAppDetailPage.saveFailed', 'That change could not be saved.'))
+      return
+    }
+    setError(null)
     await dispatch.agents.fetch()
     setKeepEdit(null)
     setScopeEdit(null)
@@ -182,6 +224,11 @@ export const ConnectedAppDetailPage: React.FC = () => {
               const chips = (actions: IGrantAction[]) =>
                 actions.map(action => {
                   const on = kept.has(action.key)
+                  // Three states: granted-and-on, granted-but-off, and ASKED FOR but never
+                  // granted. The third is selectable because the app did request it and you
+                  // did see it at consent — turning it on adds nothing it never asked for.
+                  const offered = !!action.offered
+                  const base = !sharedLimit && action.limit ? `${action.label} (${action.limit})` : action.label
                   return (
                     <Chip
                       key={action.key}
@@ -190,9 +237,13 @@ export const ConnectedAppDetailPage: React.FC = () => {
                       color={on && agent.active ? 'primary' : undefined}
                       variant={on ? 'filled' : 'outlined'}
                       onClick={() => toggleAction(action.key)}
-                      label={!sharedLimit && action.limit ? `${action.label} (${action.limit})` : action.label}
-                      title={action.description || undefined}
-                      sx={{ mr: 1, mb: 0.5, opacity: on ? 1 : 0.6 }}
+                      label={offered ? t('connectedAppDetailPage.notGranted', { label: base, defaultValue: '{{label}} — not granted' }) : base}
+                      title={
+                        offered
+                          ? t('connectedAppDetailPage.notGrantedHint', 'This app asked for this and you did not grant it. You can turn it on here.')
+                          : action.description || undefined
+                      }
+                      sx={{ mr: 1, mb: 0.5, opacity: on ? 1 : 0.6, ...(offered ? { borderStyle: 'dashed' } : {}) }}
                     />
                   )
                 })
@@ -243,7 +294,10 @@ export const ConnectedAppDetailPage: React.FC = () => {
                         ])].map(id => {
                           const label = (group.reach!.options ?? []).find(o => o.id === id)?.label ?? id
                           const on = reachNow.all || reachNow.ids.has(id)
-                          const editable = agent.active && !reachNow.all && (group.reach!.ceilingAll || group.reach!.ceilingIds.includes(id))
+                          const editable = agent.active && !reachNow.all
+                          // Outside what was consented: still offerable, but say so — turning
+                          // it on shares that account with this app for the first time.
+                          const adding = !group.reach!.ceilingAll && !group.reach!.ceilingIds.includes(id)
                           return (
                             <Chip
                               key={id}
@@ -252,8 +306,8 @@ export const ConnectedAppDetailPage: React.FC = () => {
                               color={on && agent.active && !reachNow.all ? 'primary' : undefined}
                               variant={on ? 'filled' : 'outlined'}
                               onClick={() => toggleReachId(id)}
-                              label={label}
-                              sx={{ mr: 1, mb: 0.5, opacity: on ? (reachNow.all ? 0.7 : 1) : 0.6 }}
+                              label={adding ? t('connectedAppDetailPage.addAccount', { label, defaultValue: '{{label}} — add' }) : label}
+                              sx={{ mr: 1, mb: 0.5, opacity: on ? (reachNow.all ? 0.7 : 1) : 0.6, ...(adding ? { borderStyle: 'dashed' } : {}) }}
                             />
                           )
                         })}
@@ -290,12 +344,30 @@ export const ConnectedAppDetailPage: React.FC = () => {
                 })}
               </>
             ) : null}
+            {error ? (
+              <Notice severity="error" fullWidth gutterTop>
+                {error}
+              </Notice>
+            ) : null}
             {dirty ? (
               <Box sx={{ marginTop: 1.5 }}>
+                {adding.length ? (
+                  <Typography variant="caption" color="textSecondary" display="block" sx={{ marginBottom: 0.75 }}>
+                    {t('connectedAppDetailPage.willAdd', {
+                      list: adding.join(', '),
+                      defaultValue: 'This gives the app access it does not have yet: {{list}}',
+                    })}
+                  </Typography>
+                ) : null}
                 <Button variant="contained" size="small" disabled={saving} onClick={save}>
                   {saving ? t('common.saving', 'Saving…') : t('connectedAppDetailPage.save', 'Save changes')}
                 </Button>
-                <Button size="small" sx={{ marginLeft: 1 }} disabled={saving} onClick={() => { setKeepEdit(null); setScopeEdit(null) }}>
+                <Button
+                  size="small"
+                  sx={{ marginLeft: 1 }}
+                  disabled={saving}
+                  onClick={() => { setKeepEdit(null); setScopeEdit(null); setReachEdit(null); setError(null) }}
+                >
                   {t('common.cancel', 'Cancel')}
                 </Button>
               </Box>

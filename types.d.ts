@@ -860,6 +860,9 @@ declare global {
     description: string | null
     limit: string | null
     enabled: boolean
+    // Asked for by the app at consent but never granted. Listed so it can be taken up here
+    // without the app running authorize again — it asked, and you saw it.
+    offered?: boolean
     orgLimited: boolean
   }
 
