@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Box, useTheme } from '@mui/material'
 import { heatmapGrid, timeSeriesMax } from '../helpers/dateHelper'
 import * as d3 from 'd3'
@@ -115,6 +115,19 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({
     setHovered(undefined)
     onHover?.(undefined)
   }
+
+  // The readout is captured from the cell under the pointer, so rebuilding the
+  // cells leaves it describing a series that is no longer drawn. Waiting for the
+  // next move would not fix it — the pointer may be still, and moving inside the
+  // same cell is exactly what onMove skips — so it is re-read here instead, and
+  // dropped when the grid it pointed into has gone.
+  useEffect(() => {
+    if (!hovered || !onHover) return
+    const cell = cells[hovered[0]]?.[hovered[1]]
+    if (cell) onHover([cell.date, cell.value, cell.fill])
+    else clear()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cells])
 
   return (
     <Box

@@ -392,15 +392,25 @@ export const timeSeriesWithStyle = (
   }
 }
 
-// A series carries the options it was fetched with, so changing the setting
-// leaves the previous one on screen until the refetch lands. The heat map is the
-// case that shows: daily buckets cannot fill an hour-of-day grid.
-// Whether a series has the sub-day buckets a heat map grid needs. Its negation
-// is what "still loading" means for a heat map, so both read from here.
+// Whether a series has the sub-day buckets a heat map grid needs.
 export const isHeatmapSeries = (data?: ITimeSeries) => data?.style === 'heatmap' && heatmapRows(data.resolution) > 1
 
-export const timeSeriesLoading = (data: ITimeSeries | undefined, options: ITimeSeriesOptions) =>
-  options.style === 'heatmap' && !isHeatmapSeries(data)
+// A series answers only for the options it was fetched with, so changing a
+// setting leaves the previous one on screen until the refetch lands — and
+// nothing sequences those refetches, so a slow response for a superseded
+// setting can be the one that arrives last. Every dimension the series records
+// is compared rather than only the grid it can fill:
+//   - a different type is the previous graph drawn under the new title
+//   - a heat map needs sub-day buckets to have rows at all
+//   - and needs them over the span being drawn, or the grid reflows on arrival
+// Missing data is only "loading" for a heat map: a caller with none at all
+// draws nothing either way, and answering true would refetch on every toggle
+// for anyone whose list has the graph column switched off.
+export const timeSeriesLoading = (data: ITimeSeries | undefined, options: ITimeSeriesOptions) => {
+  if (data && data.type !== options.type) return true
+  if (options.style !== 'heatmap') return false
+  return !isHeatmapSeries(data) || data?.days !== options.length
+}
 
 // The device/service list renders a single row strip, so it never needs the
 // sub-day buckets a heat map details view asks for — without this a 30 day heat
