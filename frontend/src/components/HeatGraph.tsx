@@ -10,7 +10,10 @@ export type HeatColor = 'primary' | 'success' | 'gray'
 const RAMPS: Record<HeatColor, [Color, Color, Color]> = {
   primary: ['primaryLighter', 'primaryLight', 'primaryDark'],
   success: ['successLight', 'success', 'successDark'],
-  gray: ['grayLight', 'gray', 'grayDarker'],
+  // Ends at the body text color, not at a disabled gray — an offline device's
+  // history is still history, and the pale end of a disabled ramp is invisible
+  // against the surface for exactly the low-availability devices worth spotting.
+  gray: ['gray', 'grayDarker', 'grayDarkest'],
 }
 
 export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
