@@ -46,6 +46,31 @@ export const getTimeZone = () => {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
 
+// Whether to write 6pm or 18:00 is regional, not a matter of language — en-GB
+// writes 18:00 where en-US writes 6pm. So when the OS locale is a region of the
+// app's language, let it decide; otherwise the app language speaks for itself.
+// One locale drives both the choice and the formatting, which keeps a 24 hour
+// language from being forced into a 12 hour shape it has no words for.
+const getClockLocale = () => {
+  const app = getLocale()
+  const os = window.navigator.language
+  return os && os.split('-')[0] === app.split('-')[0] ? os : app
+}
+
+// A friendlier hour axis than 00:00/06:00/12:00/18:00 wherever a 12 hour clock
+// is the norm. Midnight and noon get words because "12am" and "12pm" are the
+// two labels people reliably misread.
+export const hourLabel = (hour: number): string => {
+  const locale = getClockLocale()
+  const date = new Date(2000, 0, 1, hour)
+  if (!new Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hour12)
+    return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date)
+  if (hour === 0) return i18n.t('time.midnight', 'midnight')
+  if (hour === 12) return i18n.t('time.noon', 'noon')
+  // "6 PM" -> "6pm"; the locale supplies the day period, this only tightens it
+  return new Intl.DateTimeFormat(locale, { hour: 'numeric' }).format(date).replace(/\s/g, '').toLowerCase()
+}
+
 export const getStart = (resolution: ITimeSeriesResolution) => {
   return DateTime.local().minus(getMaxDuration(resolution)).toJSDate()
 }

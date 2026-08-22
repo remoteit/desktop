@@ -2003,6 +2003,10 @@
     "title": "Test Settings",
     "webSocketURL": "WebSocket URL"
   },
+  "time": {
+    "midnight": "midnight",
+    "noon": "noon"
+  },
   "timeSeriesSelect": {
     "graphLength": "Graph length",
     "graphStyle": "Graph style",

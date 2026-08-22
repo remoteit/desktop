@@ -1988,6 +1988,10 @@
     "title": "Configuración de prueba",
     "webSocketURL": "URL de WebSocket"
   },
+  "time": {
+    "midnight": "medianoche",
+    "noon": "mediodía"
+  },
   "timeSeriesSelect": {
     "graphLength": "Duración del gráfico",
     "graphStyle": "Estilo del gráfico",

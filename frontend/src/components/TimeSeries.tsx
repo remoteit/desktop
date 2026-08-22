@@ -3,6 +3,7 @@ import {
   TimeSeriesTypeScale,
   connectionTypes,
   heatmapRows,
+  hourLabel,
   humanizeDuration as humanize,
   secondResolutions,
   timeSeriesFullScale,
@@ -33,21 +34,20 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
   const heatmap = timeSeries.style === 'heatmap'
   const days = timeSeries.days ?? 1
 
+  // The list is always bars, whatever style the details view is set to, and they
+  // are scaled to the absolute ceiling for the bucket — a full day of uptime, or
+  // 100% — rather than to each device's own peak. The column has no axis to read
+  // a scale off, so auto-scaling made a device that is barely ever up draw the
+  // same as one that is always up. Event counts have no ceiling and still scale
+  // to themselves.
   if (size === 'small')
-    return heatmap ? (
-      // The list strip is always one row per day — a device whose details page
-      // has been opened holds hourly buckets, and they would be unreadable
-      // squeezed into the column's height.
-      <HeatGraph
+    return (
+      <BarGraph
         {...props}
         data={timeSeries}
-        rows={1}
-        days={days}
         color={color}
-        max={timeSeriesFullScale(timeSeries.type, 'DAY')}
+        max={timeSeriesFullScale(timeSeries.type, timeSeries.resolution) ?? timeSeriesMax(timeSeries.data)}
       />
-    ) : (
-      <BarGraph {...props} data={timeSeries} color={color} max={timeSeriesMax(timeSeries.data)} />
     )
 
   const max = timeSeriesMax(timeSeries.data)
@@ -76,7 +76,7 @@ export const TimeSeries: React.FC<Props> = ({ timeSeries, online, size = 'small'
             lineHeight: 1,
           }}
         >
-          {hour.toString().padStart(2, '0')}:00
+          {hourLabel(hour)}
         </Typography>
       ))
     : heatmap

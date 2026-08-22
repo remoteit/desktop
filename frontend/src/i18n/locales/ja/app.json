@@ -1918,6 +1918,10 @@
     "title": "テスト設定",
     "webSocketURL": "WebSocket URL"
   },
+  "time": {
+    "midnight": "深夜0時",
+    "noon": "正午"
+  },
   "timeSeriesSelect": {
     "graphLength": "グラフの長さ",
     "graphStyle": "グラフのスタイル",

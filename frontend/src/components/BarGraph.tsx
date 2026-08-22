@@ -35,7 +35,10 @@ export const BarGraph: React.FC<BarGraphProps> = ({
     return data.data.map((d, i) => ({
       x: xScale(data.time[i].toISOString()) ?? 0,
       y: yScale(d),
-      width: xScale.bandwidth(),
+      // A 1px gap between bars, but never a zero or negative width — an hourly
+      // series can land in a list column narrower than it has buckets.
+      width: Math.max(xScale.bandwidth() - 1, 0.5),
+      hitWidth: xScale.bandwidth(),
       height: height - yScale(d),
     }))
   }, [data, width, height, min, max])
@@ -56,14 +59,14 @@ export const BarGraph: React.FC<BarGraphProps> = ({
       {...props}
     >
       {bars.map((bar, i) => [
-        <rect key={i} x={bar.x} y={bar.y} width={bar.width - 1} height={bar.height} fill={theme.palette[color].main} />,
+        <rect key={i} x={bar.x} y={bar.y} width={bar.width} height={bar.height} fill={theme.palette[color].main} />,
         onHover && (
           <rect
             key={`${i}-bg`}
             className="bar"
             x={bar.x}
             y={0}
-            width={bar.width}
+            width={bar.hitWidth}
             height={height}
             onMouseOver={() => onHover([data.time[i], data.data[i]])}
             onMouseOut={() => onHover(undefined)}

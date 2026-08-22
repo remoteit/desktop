@@ -1953,6 +1953,10 @@
     "title": "Testeinstellungen",
     "webSocketURL": "WebSocket-URL"
   },
+  "time": {
+    "midnight": "Mitternacht",
+    "noon": "Mittag"
+  },
   "timeSeriesSelect": {
     "graphLength": "Diagrammlänge",
     "graphStyle": "Diagrammstil",
