@@ -22,20 +22,17 @@ import { radius } from '../styling'
 const heatColor = (type?: ITimeSeriesType, online?: boolean): HeatColor =>
   type && connectionTypes.includes(type) ? 'primary' : online ? 'success' : 'gray'
 
-// Hourly buckets only exist because a heat map asked for them, so those are the
-// ones safe to fold — a bar graph set to Hour wants its hours kept. Held across
-// renders so BarGraph's own memo isn't invalidated on every hover.
+// Only fold hourly buckets a heat map asked for — a bar graph set to Hour wants
+// its hours kept. Memoized so BarGraph's own memo survives a hover.
 const useDailyBars = (timeSeries?: ITimeSeries) =>
   React.useMemo(
     () => (isHeatmapSeries(timeSeries) ? toDailySeries(timeSeries!, timeSeries!.days ?? 1) : timeSeries),
     [timeSeries]
   )
 
-// The list column: a bare strip of bars, whatever style the details view is set
-// to. It has no axis to read a scale off, so it uses the absolute ceiling for
-// the bucket rather than each device's own peak — which made a device that is
-// barely ever up draw the same as one that is always up. Event counts have no
-// ceiling and fall back to BarGraph's own per-series default.
+// The list column: a bare strip of bars whatever style the details view uses.
+// It has no axis to read a scale off, so it uses the bucket's absolute ceiling
+// — a device barely ever up otherwise draws the same as one always up.
 export const TimeSeries: React.FC<{ timeSeries?: ITimeSeries; online?: boolean }> = ({ timeSeries, online }) => {
   const bars = useDailyBars(timeSeries)
   if (!bars) return null
@@ -44,32 +41,27 @@ export const TimeSeries: React.FC<{ timeSeries?: ITimeSeries; online?: boolean }
   )
 }
 
-// 24 rows of hour cells, so the labels are fractions of a day whatever the row
-// count works out to.
 const HOUR_LABELS = [0, 6, 12, 18]
 
 type DetailProps = {
   timeSeries?: ITimeSeries
   online?: boolean
   // The options being asked for, which lead the ones the series was fetched
-  // with: hourly buckets can always be folded into daily ones, so switching to
-  // bars needs no new data. The other direction can't, which is what makes a
-  // series "loading" — see timeSeriesLoading.
+  // with — see timeSeriesLoading.
   options: ITimeSeriesOptions
 }
 
 export const TimeSeriesDetail: React.FC<DetailProps> = ({ timeSeries, online, options }) => {
-  // A heat map reports the cell position and the value is read back out of the
-  // same `cells` the grid drew, so the readout cannot describe a series that has
-  // since been replaced. Bars have no such array, so they report the value.
+  // A heat map reports position and the value is read back out of `cells`, so
+  // the readout stays current. Bars have no such array and report the value.
   const [hoveredCell, setHoveredCell] = React.useState<[number, number]>()
   const [hoveredBar, setHoveredBar] = React.useState<[Date, number]>()
   const bars = useDailyBars(timeSeries)
 
   const heatmap = options.style === 'heatmap'
   const loading = timeSeriesLoading(timeSeries, options)
-  // Loading means the series can't describe the grid it is about to become, so
-  // the shape comes from the request instead and nothing moves when it lands.
+  // While loading the series can't describe the grid it is about to become, so
+  // the shape comes from the request and nothing moves when it lands.
   const shape = loading ? options : { resolution: timeSeries?.resolution ?? 'DAY', length: timeSeries?.days ?? 1 }
   const days = shape.length
   const rows = heatmapRows(shape.resolution)
@@ -94,7 +86,6 @@ export const TimeSeriesDetail: React.FC<DetailProps> = ({ timeSeries, online, op
           sx={{
             position: 'absolute',
             right: 0,
-            // centered on the band of cells covering that hour
             top: ((hour + 0.5) / 24) * height,
             transform: 'translateY(-50%)',
             lineHeight: 1,

@@ -338,9 +338,8 @@ export default createModel<RootModel>()({
       await dispatch.devices.rootSet(rootState)
     },
 
-    // Switching style re-scopes resolution and length against the plan's log
-    // limit, so a caller doesn't have to reach into billing state just to flip a
-    // chart between bars and a heat map.
+    // Re-scopes against the plan's log limit here, so a caller doesn't reach
+    // into billing state just to flip a chart between bars and a heat map.
     async setTimeSeriesStyle({ variant, style }: { variant: 'device' | 'service'; style: ITimeSeriesStyle }, state) {
       const options = selectTimeSeries(state)[`${variant}TimeSeries`]
       const logLimit = selectLimit(state, undefined, 'log-limit')
@@ -350,22 +349,18 @@ export default createModel<RootModel>()({
       })
     },
 
-    // One place that knows what changing a graph setting costs.
     async setTimeSeries({ variant, options }: { variant: 'device' | 'service'; options: ITimeSeriesOptions }, state) {
       const previous = selectTimeSeries(state)[`${variant}TimeSeries`]
       const devices = getDevices(state)
       await dispatch.ui.setPersistent({ [`${variant}TimeSeries`]: options })
 
-      // The list column draws day buckets whatever style the details view is
-      // set to, so switching style over the same span resolves to the query the
-      // list already ran. Refetching would return the data it holds and drop
-      // every device back to unloaded on the way through mergeDevice.
+      // A style change over the same span resolves to the query the list already
+      // ran; refetching would drop every device back to unloaded for nothing.
       if (listTimeSeriesKey(previous) !== listTimeSeriesKey(options)) return await dispatch.devices.fetchList()
 
-      // Then only the details view can be short of data: its hourly buckets
-      // fold down into daily bars, but daily ones can't fill an hour-of-day
-      // grid. Each variant has to be judged by its own series — a device's
-      // hourly heat map says nothing about whether its services have one.
+      // Only the details view can then be short: hourly buckets fold down into
+      // daily bars, but not the reverse. Each variant judges its own series —
+      // a device's hourly heat map says nothing about its services'.
       const series =
         variant === 'service'
           ? devices.flatMap(device => device.services.map(service => service.timeSeries))

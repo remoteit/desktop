@@ -438,9 +438,8 @@ declare global {
     end: Date
     time: Date[]
     data: number[]
-    // Stamped on by the adaptor from the options the series was fetched with, so
-    // a view draws what it was handed rather than reading current settings that
-    // may have changed since.
+    // Stamped by the adaptor from the options this was fetched with, so a view
+    // draws what it was handed rather than settings that may have moved on.
     style?: ITimeSeriesStyle
     days?: number
   }

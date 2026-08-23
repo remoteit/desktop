@@ -9,22 +9,17 @@ import * as d3 from 'd3'
 
 export type HeatColor = 'primary' | 'success' | 'gray'
 
-// Light to dark stops for each color the graphs use, so a cell's depth reads as
-// "more of this" rather than as a different thing. Each starts one step in from
-// the palette's background tints — those are surface colors, and a cell holding
-// real data should never be mistaken for an empty one.
+// Light to dark stops, so a cell's depth reads as "more of this". Each starts
+// one step in from the palette's background tints — those are surface colors,
+// and a cell holding real data must not be mistaken for an empty one.
 const RAMPS: Record<HeatColor, [Color, Color, Color]> = {
   primary: ['primaryLight', 'primary', 'primaryDark'],
   success: ['successLight', 'success', 'successDark'],
-  // Ends at the body text color, not at a disabled gray — an offline device's
-  // history is still history.
   gray: ['gray', 'grayDarker', 'grayDarkest'],
 }
 
-// The success and gray steps swap between light and dark mode, so their ramp
-// already points from "least" to "most" in both. The primary ones do not —
-// primaryDark is the deepest blue in light mode but is darker than primaryLight
-// in dark mode — so there the brightest step takes the top instead.
+// success and gray swap their steps between modes, so those ramps already point
+// least-to-most in both. primary does not, so dark mode reorders it.
 const DARK_MODE_RAMPS: Partial<Record<HeatColor, [Color, Color, Color]>> = {
   primary: ['primaryDark', 'primaryLight', 'primary'],
 }
@@ -42,21 +37,17 @@ export type HeatGraphProps = React.HTMLAttributes<HTMLOrSVGElement> & {
   rows: number
   days: number
   loading?: boolean
-  // Reports the cell under the pointer by position. The caller reads the value
-  // out of the same `cells` it passed in, so the readout cannot drift from what
-  // is drawn.
+  // By position: the caller reads the value out of the same `cells` it passed
+  // in, so the readout cannot drift from what is drawn.
   onHover?: (cell?: [number, number]) => void
 }
 
 export type HeatCell = ITimeSeriesCell & { fill: string }
 
-// The cells a heat map draws, owned by the view that also renders the readout
-// so both read the same array — a copy of the hovered cell held elsewhere goes
-// stale the moment the series is replaced.
-//
-// Two memos rather than one: bucketing a 744 point series is the expensive
-// half and depends only on the data, while the fill depends on the palette. A
-// device going online flips the color and must not re-fold the series.
+// Owned by the view that also renders the readout, so both read the same array
+// and the readout cannot go stale when the series is replaced. Two memos: the
+// fold depends only on the data, the fill only on the palette, and a device
+// going online flips the color without re-folding 744 points.
 export const useHeatCells = (
   data: ITimeSeries | undefined,
   rows: number,
@@ -71,14 +62,12 @@ export const useHeatCells = (
     const ramp = ((theme.palette.mode === 'dark' && DARK_MODE_RAMPS[color]) || RAMPS[color]).map(
       c => theme.palette[c].main
     )
-    // The palette's lightest step is still saturated enough that a barely used
-    // hour and a half used one read the same, so the ramp starts from a tint of
-    // it mixed toward the surface — which also keeps it correct in dark mode.
-    // Interpolating in RGB rather than HCL, which leaves the sRGB gamut on the
-    // way out of white and clips back to a color brighter than the ramp itself.
+    // The palette's lightest step is saturated enough that a barely used hour and
+    // a half used one read alike, so the ramp starts from a tint of it. In RGB
+    // rather than HCL, which leaves the sRGB gamut on the way out of white and
+    // clips back to a color brighter than the ramp itself.
     const lightest = d3.interpolateRgb(theme.palette.white.main, ramp[0])(0.3)
-    // Fall back to the series' own peak when the type has no ceiling (event
-    // counts), otherwise every cell would sit at the bottom of the ramp.
+    // Falls back to the series' own peak when the type has no ceiling.
     const top = (data && timeSeriesFullScale(data.type, data.resolution)) ?? timeSeriesMax(data?.data ?? [])
     const scale = d3
       .scaleLinear<string>()
@@ -96,16 +85,14 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({ cells, rows, days, loading
   const theme = useTheme()
   const [hovered, setHovered] = useState<[number, number]>()
 
-  // Sized from the span being drawn rather than from the cells that happen to
-  // exist, so the loading grid is laid out at the size the real one will be and
-  // the columns don't jump when the data lands.
+  // From the span being drawn, not the cells that exist, so the loading grid is
+  // laid out at the size the real one will be.
   const width = days * HEATMAP_CELL
   const height = rows * HEATMAP_CELL
   const lines = useMemo(() => gridLines(days, rows), [days, rows])
 
-  // One handler on the grid instead of one per cell, which also means the gaps
-  // a DST-skipped hour leaves behave like any other empty cell rather than
-  // holding the last reading open.
+  // One handler on the grid rather than one per cell, so a DST-skipped hour's
+  // gap behaves like any other empty cell instead of holding the last reading.
   const onMove = (event: React.MouseEvent<SVGElement>) => {
     if (!onHover) return
     // d3.pointer rather than subtracting getBoundingClientRect, so the mapping
@@ -114,8 +101,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({ cells, rows, days, loading
     const x = Math.floor(px / HEATMAP_CELL)
     const y = Math.floor(py / HEATMAP_CELL)
     const cell = cells[x]?.[y]
-    // Mousemove fires far faster than the pointer crosses cells, and every
-    // re-render reconciles the whole grid — so only report a real change.
+    // Mousemove fires far faster than the pointer crosses cells.
     if (cell ? hovered?.[0] === x && hovered?.[1] === y : !hovered) return
     setHovered(cell ? [x, y] : undefined)
     onHover(cell ? [x, y] : undefined)
@@ -126,8 +112,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({ cells, rows, days, loading
     onHover?.(undefined)
   }
 
-  // Held across renders so a hover — which re-renders this component — does not
-  // rebuild and re-diff up to 720 elements whose pixels did not change.
+  // Held across renders so a hover does not re-diff 720 unchanged elements.
   const rects = useMemo(
     () =>
       loading
@@ -160,24 +145,16 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({ cells, rows, days, loading
       onMouseLeave={onHover && clear}
       {...props}
     >
-      {/* One rect rather than a grid of them — the lines drawn over it give the
-          same grid of empty cells, at whatever size the real one will be, so
-          nothing moves when the data lands. */}
+      {/* One rect — the lines drawn over it supply the empty grid. */}
       {loading && (
         <rect className="loading" x={0} y={0} width={width} height={height} fill={theme.palette.grayLight.main} />
       )}
       {rects}
-      {/* Cells butt up against each other so the pointer is always over one of
-          them, and the lines between them are drawn once on top rather than as
-          a stroke on each cell — two neighbours both stroke their shared edge,
-          so a semi-transparent one would come out heavier on one side than the
-          other. */}
+      {/* Drawn once on top rather than as a stroke per cell: neighbours both
+          stroke their shared edge, so a semi-transparent one would double up. */}
       <path d={lines} fill="none" stroke={theme.palette.white.main} strokeOpacity={0.2} strokeWidth={1} />
-      {/* Drawn after the grid rather than as a :hover stroke on the cell —
-          cells are painted left to right and top to bottom, so the neighbours
-          below and to the right would cover the outer half of the outline and
-          leave only its top and left edges showing. Inset by half its width so
-          all four edges land inside the cell. */}
+      {/* After the grid, not a :hover stroke: later cells would paint over the
+          outer half and leave only the top and left edges. Inset to fit. */}
       {!loading && hovered && (
         <rect
           x={hovered[0] * HEATMAP_CELL + 1}
@@ -193,8 +170,7 @@ export const HeatGraph: React.FC<HeatGraphProps> = ({ cells, rows, days, loading
   )
 }
 
-// The lines between cells, as one path — a vertical at every column boundary
-// and a horizontal at every row boundary, skipping the outer edges.
+// One path for every cell boundary, skipping the outer edges.
 const gridLines = (columns: number, rows: number) => {
   const width = columns * HEATMAP_CELL
   const height = rows * HEATMAP_CELL

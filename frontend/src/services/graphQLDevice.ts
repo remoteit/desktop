@@ -169,11 +169,9 @@ const DEVICE_TIME_SERIES_PARAMS =
 const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
-// Both series always go through timeSeriesRequest, so a grid query asks for the
-// spare day heatmapGrid windows off. `list` scopes a heat map down
-// to one bucket per day, which is all a list row's strip draws — it belongs to
-// the query rather than to its callers, so a list query can't accidentally ask
-// for the details view's 720 points per device.
+// `list` scopes a heat map down to the one bucket per day a list strip draws.
+// It lives here rather than at the call sites so a list query cannot accidentally
+// ask for the details view's 720 points per device.
 const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesOptions, list?: boolean) => {
   const scope = (options?: ITimeSeriesOptions) =>
     options && timeSeriesRequest(list ? listTimeSeriesOptions(options) : options)
@@ -328,9 +326,8 @@ export function graphQLDeviceAdaptor({
   hidden?: boolean
   loaded?: boolean
   serviceLoaded?: boolean
-  // The options the response was fetched with, so the series is stamped with
-  // what was asked for rather than with whatever the settings say by the time
-  // it lands — they can differ for the length of a round trip.
+  // The options the response was fetched with, not whatever the settings say by
+  // the time it lands — they differ for the length of a round trip.
   deviceTimeSeries?: ITimeSeriesOptions
   serviceTimeSeries?: ITimeSeriesOptions
 }): IDevice[] {
@@ -488,8 +485,6 @@ function processTimeSeries(response: any, options?: ITimeSeriesOptions): ITimeSe
   return {
     ...timeSeries,
     style: options?.style,
-    // Only a heat map counts its length in days; a bar graph's length is a
-    // bucket count in its own resolution, so it gets no day stamp.
     days: options?.style === 'heatmap' ? options.length : undefined,
     start: new Date(timeSeries.start),
     end: new Date(timeSeries.end),
