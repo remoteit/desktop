@@ -235,12 +235,17 @@ const localDayKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${
 // February and push all seven 31-day months past the top of the scale.
 const fixedLengthResolutions: ITimeSeriesResolution[] = ['SECOND', 'MINUTE', 'HOUR', 'DAY', 'WEEK']
 
-// An absolute scale so two devices are directly comparable. Types with no
-// ceiling (event counts) and buckets with no fixed length auto-scale instead.
+// An absolute scale so two devices are directly comparable. A percentage always
+// has one. A duration only does when the metric could plausibly fill the period:
+// a device is either online or not, so "24h out of 24h" is a real maximum, but
+// connections are occasional and every device would sit at the bottom of the
+// scale looking alike. Event counts and variable-length buckets have no ceiling
+// either, so all of those auto-scale to the series' own peak.
 export const timeSeriesFullScale = (type: ITimeSeriesType, resolution: ITimeSeriesResolution): number | undefined => {
   const { unit, scale } = TimeSeriesTypeScale[type]
   if (unit === '%') return scale
-  if (unit === 'time' && fixedLengthResolutions.includes(resolution)) return resolutionSeconds(resolution)
+  if (unit === 'time' && !connectionTypes.includes(type) && fixedLengthResolutions.includes(resolution))
+    return resolutionSeconds(resolution)
   return undefined
 }
 
