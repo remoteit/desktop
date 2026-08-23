@@ -63,10 +63,11 @@ export const useHeatCells = (
       c => theme.palette[c].main
     )
     // The palette's lightest step is saturated enough that a barely used hour and
-    // a half used one read alike, so the ramp starts from a tint of it. In RGB
-    // rather than HCL, which leaves the sRGB gamut on the way out of white and
-    // clips back to a color brighter than the ramp itself.
-    const lightest = d3.interpolateRgb(theme.palette.white.main, ramp[0])(0.3)
+    // a half used one read alike, so the ramp starts from a tint of it — but not
+    // so pale that the faintest cell matches an empty one, or a brief connection
+    // would look like none. In RGB rather than HCL, which leaves the sRGB gamut
+    // on the way out of white and clips back to a color brighter than the ramp.
+    const lightest = d3.interpolateRgb(theme.palette.white.main, ramp[0])(0.6)
     // Falls back to the series' own peak when the type has no ceiling.
     const top = (data && timeSeriesFullScale(data.type, data.resolution)) ?? timeSeriesMax(data?.data ?? [])
     const scale = d3
