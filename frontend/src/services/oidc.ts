@@ -44,6 +44,20 @@ if (window.location.pathname === '/signoutCallback') {
   window.history.replaceState({}, '', window.location.origin + '/')
 }
 
+// A boot carrying ?support_session=1 is a SUPPORT-SESSION LAUNCH (permitteer's
+// /impersonate/launch, docs/remoteit-desktop-login.md Phase 4d): an operator just became
+// someone else in the AS's cookie, and THIS app's stored tokens still belong to the
+// operator — shadow auth that would silently show the wrong account, which is exactly what
+// the first live test did. Drop local state and let the ordinary signed-out boot run its
+// authorize: the silent SSO lands on the ACTIVE session, which the launch just made the
+// impersonated one. Deliberately NOT prompt=login — inheriting that session is the point.
+if (new URLSearchParams(window.location.search).has('support_session')) {
+  clearLocal()
+  const clean = new URL(window.location.href)
+  clean.searchParams.delete('support_session')
+  window.history.replaceState({}, '', clean.toString())
+}
+
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
 type Stored = { refresh_token: string; id_token?: string }
 
