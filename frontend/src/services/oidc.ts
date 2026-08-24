@@ -52,7 +52,15 @@ if (window.location.pathname === '/signoutCallback') {
 // authorize: the silent SSO lands on the ACTIVE session, which the launch just made the
 // impersonated one. Deliberately NOT prompt=login — inheriting that session is the point.
 if (new URLSearchParams(window.location.search).has('support_session')) {
-  clearLocal()
+  // Inline removals, NOT clearLocal(): this runs at module evaluation, and clearLocal
+  // touches `let access` declared BELOW — a TDZ ReferenceError here killed the whole
+  // bundle on dev (eternal splash, param never stripped). Only the hoisted consts above
+  // are safe to reach from module scope. The DPoP key stays: it is the APP's key, and the
+  // impersonated session's tokens bind to it exactly as any other boot's would.
+  try {
+    localStorage.removeItem(TOKENS_KEY)
+    localStorage.removeItem(DECLARATION_KEY)
+  } catch { /* a blocked storage API must not kill the boot */ }
   const clean = new URL(window.location.href)
   clean.searchParams.delete('support_session')
   window.history.replaceState({}, '', clean.toString())
