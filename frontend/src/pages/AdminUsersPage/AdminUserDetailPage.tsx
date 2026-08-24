@@ -62,8 +62,10 @@ export const AdminUserDetailPage: React.FC = () => {
     // `delegate` scope is minted), so the eye button deep-links to the operator console's
     // user page, whose "open <app> as user" mints the launch behind its own gates:
     // kill-switch, operator roster, an MFA-carrying sign-in fresher than ten minutes.
-    // The subject id IS the r3 user id on this lane (the authorizer maps sub → userId 1:1).
-    windowOpen(`${OAUTH_ISSUER}/admin/console/users/${user.id}`, '_blank', true)
+    // The EMAIL is the key both worlds share: permitteer subjects are sub_<hex>, not r3
+    // GUIDs — the authorizer joins them by email — and the console resolves an unknown
+    // deep-link id through its user search (one match opens; else honestly unknown).
+    windowOpen(`${OAUTH_ISSUER}/admin/console/users/${encodeURIComponent(user.email || user.id)}`, '_blank', true)
   }
 
   return (
