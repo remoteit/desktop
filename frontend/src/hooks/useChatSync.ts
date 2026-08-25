@@ -23,7 +23,6 @@ export const useChatMainSync = (): void => {
     dispatch.chat.resetTransient()
     // Completes a Hydra sign-in redirect if this page load carries ?code —
     // runs on mount regardless of whether the panel is open
-    dispatch.chat.handleSignInCallback()
     const handlers: PopoutMainHandlers = {
       getHandoff: currentHandoff,
       adopt: payload => {

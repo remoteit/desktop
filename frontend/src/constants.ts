@@ -8,6 +8,13 @@ export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''
 export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
 export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://graphql.dev.remote.it/graphql'
 export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.dev.remote.it/account/api'
+// The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
+// tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail
+// delegated onward to the service actor — which is what makes those tokens exchangeable.
+export const OAUTH_AGENT_RESOURCE = env.VITE_OAUTH_AGENT_RESOURCE || 'https://agent.dev.remote.it'
+export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || 'https://mcp.dev.remote.it/mcp'
+export const OAUTH_MCP_DETAIL = env.VITE_OAUTH_MCP_DETAIL || 'remoteit_mcp_dev'
+export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'

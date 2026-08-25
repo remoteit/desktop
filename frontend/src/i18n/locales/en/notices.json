@@ -12,7 +12,7 @@
   "chat": {
     "authRequired": "Agent authentication required — sign in to continue.",
     "popupBlocked": "Pop out was blocked — allow popups for this site and try again.",
-    "sessionExpired": "Agent session expired — sign in again to continue.",
+    "sessionExpired": "The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.",
     "signInFailed": "Agent sign-in failed — {{error}}"
   },
   "connection": {

@@ -1,5 +1,5 @@
 import browser from './browser'
-import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, OAUTH_PASSPORT_RESOURCE, PROTOCOL } from '../constants'
+import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, OAUTH_PASSPORT_RESOURCE, OAUTH_MCP_RESOURCE, OAUTH_MCP_DETAIL, OAUTH_AGENT_ACTOR, PROTOCOL } from '../constants'
 
 /**
  * The renderer-owned OIDC client (permitteer docs/remoteit-desktop-login.md, D8):
@@ -119,15 +119,21 @@ const redirectUri = () =>
  *  `passport_account` gates the native security settings; `permitteer_account` is Connected
  *  Apps against the AS's own account API (plan D6) — list + revoke. The graphql audience
  *  stays pure scope-`full` and carries no details, so it is not listed here. */
-const DECLARED: Array<{ resource: string; type: string; actions: string[] }> = [
+const DECLARED: Array<{ resource: string; type: string; actions: string[]; actor?: string }> = [
   { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
   { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write'] },
+  // The AI agent's slice (remoteit-ai-agent.md D5): the stage's MCP detail, delegated
+  // ONWARD to the agent service — `actor` is what stamps may_act into this session's
+  // tokens, which is the exchange's precondition. The slice partitions from any plain
+  // request of the same type, and the grant row it mints is the revocable object the
+  // account console shows.
+  { resource: OAUTH_MCP_RESOURCE, type: OAUTH_MCP_DETAIL, actions: ['device:read', 'device:write', 'device:connect', 'device:execute'], actor: OAUTH_AGENT_ACTOR },
 ]
 
 /** A stable fingerprint of what this build asks for. Order-insensitive, so reshuffling the
  *  list is not a change; adding, dropping or renaming an action is. */
 const declarationFingerprint = () =>
-  DECLARED.map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}`)
+  DECLARED.map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}${d.actor ? `@${d.actor}` : ''}`)
     .sort()
     .join('|')
 
@@ -168,7 +174,7 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; log
     // the passport-audience token minted later via refresh carries this slice, gating the
     // native security settings (credentials.write); the graphql audience stays pure
     // scope-`full` (an uncovered resource yields audience-only tokens).
-    authorization_details: JSON.stringify(DECLARED.map(d => ({ type: d.type, actions: d.actions }))),
+    authorization_details: JSON.stringify(DECLARED.map(d => ({ type: d.type, actions: d.actions, ...(d.actor ? { actor: d.actor } : {}) }))),
     state: flow.state,
     nonce: flow.nonce,
   }

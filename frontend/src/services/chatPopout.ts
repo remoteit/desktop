@@ -13,7 +13,7 @@ import { CHAT_POPOUT_PARAM, CHAT_POPOUT_SIZE } from '@common/constants'
 const OWNER_KEY = 'chatPopoutOwner'
 
 // Captured at module-evaluation time, before any routing can touch the URL
-// (same pattern as the hydra ?code capture in services/hydra.ts)
+
 const bootQuery = new URLSearchParams(window.location.search)
 export const isChatPopout = bootQuery.has(CHAT_POPOUT_PARAM)
 // The popout's identity — the flag's value ties it to the one tab that opened

@@ -18,7 +18,6 @@ import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 import { isSecureAgentURL } from '../services/agent'
-import { MCP_AUDIENCE } from '../services/hydra'
 
 export const TestPage: React.FC = () => {
   const { t } = useTranslation()
@@ -249,7 +248,7 @@ export const TestPage: React.FC = () => {
           label={t('testPage.overrideAgent', 'Override agent service')}
           subLabel={t(
             'testPage.overrideAgentSub',
-            'Point the Mycal chat at a deployed agent (https only). dev-ai-agent pairs with audience https://mcp.demo.remote.it/mcp. Sign in to the agent again after changing these.'
+            'Point the Mycal chat at a deployed agent (https only). Auth rides your app session either way — the token is minted for the agent audience, so the target must trust this stage.'
           )}
           onClick={() => setAgentPreference('switchAgent', !apis.switchAgent)}
           toggle={!!apis.switchAgent}
@@ -276,15 +275,6 @@ export const TestPage: React.FC = () => {
                   }
                   setAgentPreference('agentURL', value)
                 }}
-                hideIcon
-              />
-              <InlineTextFieldSetting
-                value={apis.mcpAudience || MCP_AUDIENCE}
-                label={t('testPage.mcpAudience', 'Agent MCP audience')}
-                disabled={!apis.switchAgent}
-                resetValue={MCP_AUDIENCE}
-                maxLength={200}
-                onSave={value => setAgentPreference('mcpAudience', value.toString().trim())}
                 hideIcon
               />
             </List>

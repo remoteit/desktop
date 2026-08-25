@@ -1,9 +1,16 @@
 /**
  * Client for the ai-agent service (REST + SSE). The service is stateless:
  * the client holds the transcript and resends it each turn.
+ *
+ * Auth rides the FIRST-PARTY session (permitteer docs/remoteit-ai-agent.md D2): every
+ * request carries an agent-audience token from the oidc machinery plus a DPoP proof —
+ * signed over the CANONICAL resource URL (audience + path), which is what the agent's
+ * edge checks regardless of the proxy or override actually transporting the request.
+ * No agent-specific credentials exist anywhere anymore.
  */
 import { store } from '../store'
-import { encryptString, decryptString, isEncrypted } from './secureStorage'
+import { oidcAuthHeaders } from './oidc'
+import { OAUTH_AGENT_RESOURCE } from '../constants'
 
 /* The override must be https — the app's CSP blocks plain http. Shared with
    the Test Settings validation so what saves is exactly what engages. */
@@ -20,67 +27,6 @@ export function agentURL(): string {
   return import.meta.env.DEV ? '/agent' : import.meta.env.VITE_AGENT_URL || '/agent'
 }
 
-// Hydra credentials for the agent service (AUTH_MODE=hydra), written by the
-// in-app sign-in flow (services/hydra.ts) — or a token pasted from the
-// ai-agent dev harness as a fallback. Stored in localStorage (shared with the
-// popout window) encrypted at rest via secureStorage.
-const AGENT_TOKEN_KEY = 'agentToken'
-const AGENT_SESSION_KEY = 'agentSession'
-
-export type AgentSession = {
-  refresh_token: string
-  expires_at: number
-  client_id: string
-}
-
-/* Tokens are encrypted at rest (secureStorage) so localStorage never holds
-   them in clear text. Reads fall back to plaintext for a token pasted from
-   the ai-agent dev harness and for values stored before encryption landed —
-   the next write re-encrypts. */
-
-export async function decodeAgentToken(raw: string | null): Promise<string | null> {
-  if (!raw) return null
-  return isEncrypted(raw) ? await decryptString(raw) : raw
-}
-
-export async function decodeAgentSession(raw: string | null): Promise<AgentSession | null> {
-  if (!raw) return null
-  try {
-    const json = isEncrypted(raw) ? await decryptString(raw) : raw
-    return json ? (JSON.parse(json) as AgentSession) : null
-  } catch {
-    return null
-  }
-}
-
-export const getAgentToken = (): Promise<string | null> =>
-  decodeAgentToken(window.localStorage.getItem(AGENT_TOKEN_KEY))
-
-export async function setAgentToken(token: string | null): Promise<void> {
-  if (token?.trim())
-    window.localStorage.setItem(AGENT_TOKEN_KEY, await encryptString(token.trim().replace(/^Bearer\s+/i, '')))
-  else window.localStorage.removeItem(AGENT_TOKEN_KEY)
-}
-
-export const getAgentSession = (): Promise<AgentSession | null> =>
-  decodeAgentSession(window.localStorage.getItem(AGENT_SESSION_KEY))
-
-export async function setAgentSession(session: AgentSession | null): Promise<void> {
-  if (session) window.localStorage.setItem(AGENT_SESSION_KEY, await encryptString(JSON.stringify(session)))
-  else window.localStorage.removeItem(AGENT_SESSION_KEY)
-}
-
-/* Synchronous read-and-clear for sign-out: the stored credentials must be
-   gone before any await gives a signOut-triggered reload a chance to
-   interrupt; the raw values are returned so revoke can still decode them */
-export function takeAgentCredentials(): { token: string | null; session: string | null } {
-  const token = window.localStorage.getItem(AGENT_TOKEN_KEY)
-  const session = window.localStorage.getItem(AGENT_SESSION_KEY)
-  window.localStorage.removeItem(AGENT_TOKEN_KEY)
-  window.localStorage.removeItem(AGENT_SESSION_KEY)
-  return { token, session }
-}
-
 /* The agent rejected our credential (401 reauth_required) — sign in again */
 export class AgentAuthError extends Error {
   constructor() {
@@ -88,11 +34,11 @@ export class AgentAuthError extends Error {
   }
 }
 
-async function agentHeaders(json = true): Promise<Record<string, string>> {
-  const headers: Record<string, string> = json ? { 'Content-Type': 'application/json' } : {}
-  const token = await getAgentToken()
-  if (token) headers.Authorization = `Bearer ${token}`
-  return headers
+async function agentHeaders(method: string, path: string, json = true): Promise<Record<string, string>> {
+  return {
+    ...(json ? { 'Content-Type': 'application/json' } : {}),
+    ...(await oidcAuthHeaders(method, `${OAUTH_AGENT_RESOURCE}${path}`, OAUTH_AGENT_RESOURCE)),
+  }
 }
 
 export type AgentEvent =
@@ -118,7 +64,7 @@ export async function streamChat(options: {
   const { conversationId, messages, org, signal, onEvent } = options
   const response = await fetch(`${agentURL()}/api/chat`, {
     method: 'POST',
-    headers: await agentHeaders(),
+    headers: await agentHeaders('POST', '/api/chat'),
     body: JSON.stringify(org ? { conversationId, messages, org } : { conversationId, messages }),
     signal,
   })
@@ -155,7 +101,7 @@ export async function confirmTool(options: {
 }): Promise<void> {
   const response = await fetch(`${agentURL()}/api/chat/confirm`, {
     method: 'POST',
-    headers: await agentHeaders(),
+    headers: await agentHeaders('POST', '/api/chat/confirm'),
     body: JSON.stringify(options),
   })
   if (response.status === 401) throw new AgentAuthError()
@@ -166,7 +112,7 @@ export type AgentHealth = 'ok' | 'unauthorized' | 'unreachable'
 
 export async function agentHealth(): Promise<AgentHealth> {
   try {
-    const response = await fetch(`${agentURL()}/api/health`, { headers: await agentHeaders(false) })
+    const response = await fetch(`${agentURL()}/api/health`, { headers: await agentHeaders('GET', '/api/health', false) })
     if (response.status === 401) return 'unauthorized'
     if (!response.ok) return 'unreachable'
     const body = (await response.json()) as { ok?: boolean }

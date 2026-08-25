@@ -10,15 +10,13 @@ import {
   AgentMessageParam,
   OrgSelection,
 } from '../services/agent'
-import { startAgentSignIn, handleAgentSignInCallback, ensureFreshAgentToken, agentSignOut } from '../services/hydra'
 import {
   ChatHandoff,
   broadcastChatSignout,
   openChatPopout,
   popIn as closePopoutWithHandback,
 } from '../services/chatPopout'
-// Value import is deref'd only inside effects, so the store/model cycle is
-// safe (same pattern as services/hydra.ts)
+// Value import is deref'd only inside effects, so the store/model cycle is safe
 import { store } from '../store'
 import type { State } from '../store'
 import i18n from '../i18n'
@@ -102,7 +100,7 @@ function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
       // pointless until the token is refreshed (e.g. it expired mid-turn).
       if (event.message.startsWith('reauth_required')) {
         state.error = i18n.t('notices:chat.sessionExpired', {
-          defaultValue: 'Agent session expired — sign in again to continue.',
+          defaultValue: 'The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.',
         })
         state.health = 'unauthorized'
       } else {
@@ -143,7 +141,7 @@ export const toChatHandoff = (chat: IChatState): ChatHandoff => ({
 })
 
 const authRequiredError = () =>
-  i18n.t('notices:chat.authRequired', { defaultValue: 'Agent authentication required — sign in to continue.' })
+  i18n.t('notices:chat.authRequired', { defaultValue: 'The agent refused this session\u2019s credentials — refresh permissions to continue.' })
 
 let abortController: AbortController | null = null
 
@@ -174,7 +172,6 @@ export default createModel<RootModel>()({
         }
       }
       try {
-        await ensureFreshAgentToken()
         await streamChat({
           conversationId,
           messages,
@@ -215,7 +212,6 @@ export default createModel<RootModel>()({
       // Deny) can't post a second, contradictory decision while in flight
       dispatch.chat.set({ pendingConfirmation: null })
       try {
-        await ensureFreshAgentToken()
         await confirmTool({
           conversationId: state.chat.conversationId,
           toolUseId: pending.toolUseId,
@@ -250,45 +246,24 @@ export default createModel<RootModel>()({
       closePopoutWithHandback(toChatHandoff(store.getState().chat))
     },
     async checkHealth() {
-      await ensureFreshAgentToken()
       dispatch.chat.set({ health: await agentHealth() })
     },
-    /* Full-page redirect to the Hydra login (registers a client first if
-       needed); handleSignInCallback picks up the return after reload */
+    /* The chat has no sign-in of its own anymore — it rides the app session
+       (permitteer docs/remoteit-ai-agent.md D2). An unauthorized chat while the
+       app works means the standing grant predates this build's agent slice, so
+       the fix is the grant heal: one silent re-authorize that merges it in. */
     async signIn() {
-      try {
-        await startAgentSignIn()
-      } catch (error) {
-        dispatch.chat.set({ error: (error as Error).message })
-      }
-    },
-    /* Complete a sign-in redirect if this page load carries one */
-    async handleSignInCallback(_: void, state) {
-      const result = await handleAgentSignInCallback()
-      if (!result) return
-      // Don't yank the dock open if the conversation currently lives in the
-      // popout window — the popout is the active surface, not the panel.
-      const openIfDocked = state.chat.poppedOut ? {} : { open: true }
-      if (result.ok) dispatch.chat.set({ error: null, ...openIfDocked })
-      else
-        dispatch.chat.set({
-          error: i18n.t('notices:chat.signInFailed', {
-            defaultValue: 'Agent sign-in failed — {{error}}',
-            error: result.error,
-          }),
-          ...openIfDocked,
-        })
+      await dispatch.auth.healGrant()
       await dispatch.chat.checkHealth()
     },
-    /* App sign-out tears the agent session down with it: revoke + clear the
-       Hydra credentials. The transcript reset is dispatched by auth.signedOut
-       alongside the other model resets — dispatching it here would land in the
+    /* App sign-out: nothing agent-specific to revoke — the session's end IS the
+       chat's end. The transcript reset is dispatched by auth.signedOut alongside
+       the other model resets — dispatching it here would land in the
        purge-to-reload window and re-persist the pre-signout state. */
     async signOut() {
       broadcastChatSignout()
       abortController?.abort()
       abortController = null
-      await agentSignOut()
     },
   }),
   reducers: {

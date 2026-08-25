@@ -42,12 +42,12 @@ export const ChatBody: React.FC = () => {
         <Body center>
           <Icon name="robot" size="xxxl" color="grayDark" />
           <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
-            {t('chat.signInNeeded', 'The AI agent needs its own sign-in to act on your behalf.')}
-            {isChatPopout && ` ${t('chat.signInFromMain', 'Sign in from the main app window.')}`}
+            {t('chat.signInNeeded', 'The AI agent needs permissions your session doesn\u2019t carry yet.')}
+            {isChatPopout && ` ${t('chat.signInFromMain', 'Refresh permissions from the main app window.')}`}
           </Typography>
           {!isChatPopout && (
             <Button variant="contained" size="medium" onClick={() => dispatch.chat.signIn()}>
-              {t('chat.signIn', 'Sign in with remote.it')}
+              {t('chat.signIn', 'Refresh permissions')}
             </Button>
           )}
         </Body>

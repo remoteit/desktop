@@ -52,7 +52,6 @@ export type UIState = {
     // Test UI: point the Mycal chat at a deployed agent (https only)
     switchAgent?: boolean
     agentURL?: string
-    mcpAudience?: string
   }
   layout: ILayout
   silent: string | null
