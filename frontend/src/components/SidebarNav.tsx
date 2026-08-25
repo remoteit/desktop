@@ -186,7 +186,7 @@ export const SidebarNav: React.FC = () => {
             title={t('nav.feedback', 'Feedback')}
             onClick={() => dispatch.feedback.reset()}
             to="/feedback"
-            icon="comment-smile"
+            icon="message"
             dense
           />
         ) : (
