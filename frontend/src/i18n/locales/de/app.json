@@ -720,7 +720,7 @@
     "message": "Nachricht",
     "send": "Senden",
     "subject": "Betreff",
-    "title": "Kontakt"
+    "title": "Feedback"
   },
   "fileAddPage": {
     "noPermission": "Sie haben keine Berechtigung, Dateien hochzuladen",
@@ -1001,9 +1001,9 @@
     "bugReport": "Fehlerbericht",
     "connections": "Verbindungen",
     "connectionsTooltip": "{{connections}} Verbindungen – {{active}} verbunden",
-    "contact": "Kontakt",
     "devices": "Geräte",
     "enableTestUI": "Test-UI aktivieren",
+    "feedback": "Feedback",
     "idleConnections": "{{connections}} inaktive Verbindungen",
     "lockApplication": "Anwendung sperren",
     "lockConfirm": "Wenn Sie die App sperren, bleiben alle aktiven Verbindungen und gehosteten Dienste weiterhin aktiv, und andere Benutzer können sich nicht anmelden.",

@@ -720,7 +720,7 @@
     "message": "Message",
     "send": "Send",
     "subject": "Subject",
-    "title": "Contact"
+    "title": "Feedback"
   },
   "fileAddPage": {
     "noPermission": "You do not have permission to upload files",
@@ -1025,9 +1025,9 @@
     "bugReport": "Bug Report",
     "connections": "Connections",
     "connectionsTooltip": "{{connections}} Connections - {{active}} Connected",
-    "contact": "Contact",
     "devices": "Devices",
     "enableTestUI": "Enable Test UI",
+    "feedback": "Feedback",
     "idleConnections": "{{connections}} Idle Connections",
     "lockApplication": "Lock application",
     "lockConfirm": "Locking the app will leave all active connections and hosted services running and prevent others from signing in.",

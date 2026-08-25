@@ -711,7 +711,7 @@
     "message": "メッセージ",
     "send": "送信",
     "subject": "件名",
-    "title": "お問い合わせ"
+    "title": "フィードバック"
   },
   "fileAddPage": {
     "noPermission": "ファイルをアップロードする権限がありません",
@@ -989,9 +989,9 @@
     "bugReport": "バグ報告",
     "connections": "コネクト",
     "connectionsTooltip": "接続 {{connections}} 件 - 接続中 {{active}} 件",
-    "contact": "お問い合わせ",
     "devices": "デバイス",
     "enableTestUI": "テストUIを有効にする",
+    "feedback": "フィードバック",
     "idleConnections": "アイドル接続 {{connections}} 件",
     "lockApplication": "アプリケーションをロック",
     "lockConfirm": "アプリをロックすると、アクティブな接続とホストされているサービスはすべて実行されたままになり、他のユーザーはサインインできなくなります。",

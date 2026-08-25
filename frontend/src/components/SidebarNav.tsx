@@ -183,10 +183,10 @@ export const SidebarNav: React.FC = () => {
         />
         {limits.support > 10 ? (
           <ListItemLocation
-            title={t('nav.contact', 'Contact')}
+            title={t('nav.feedback', 'Feedback')}
             onClick={() => dispatch.feedback.reset()}
             to="/feedback"
-            icon="envelope-open-text"
+            icon="message"
             dense
           />
         ) : (

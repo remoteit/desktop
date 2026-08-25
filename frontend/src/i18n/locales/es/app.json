@@ -729,7 +729,7 @@
     "message": "Mensaje",
     "send": "Enviar",
     "subject": "Asunto",
-    "title": "Contacto"
+    "title": "Comentarios"
   },
   "fileAddPage": {
     "noPermission": "No tienes permiso para subir archivos",
@@ -1013,9 +1013,9 @@
     "bugReport": "Informe de errores",
     "connections": "Conexiones",
     "connectionsTooltip": "{{connections}} Conexiones - {{active}} Conectadas",
-    "contact": "Contacto",
     "devices": "Dispositivos",
     "enableTestUI": "Activar UI de prueba",
+    "feedback": "Comentarios",
     "idleConnections": "{{connections}} Conexiones inactivas",
     "lockApplication": "Bloquear aplicación",
     "lockConfirm": "Al bloquear la aplicación, todas las conexiones activas y los servicios alojados seguirán en ejecución, y no se permitirá que otros usuarios inicien sesión.",
