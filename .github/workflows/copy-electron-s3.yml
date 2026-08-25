@@ -21,7 +21,69 @@ defaults:
 
 jobs:
 
+  # Gate the free-text dispatch input BEFORE anything is written to the bucket.
+  # A malformed tag like "v3.47.0-evil/child" would otherwise be uploaded into a
+  # nested prefix and only rejected afterwards, leaving junk behind. This is the
+  # single place the tag shape is defined; `point-latest` keys off its output.
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      stable: ${{ steps.tag.outputs.stable }}
+    steps:
+      - name: Validate the dispatch inputs
+        id: tag
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          BUCKET: ${{ secrets.AWS_BUCKET }}
+          S3_PATH: ${{ github.event.inputs.s3_path }}
+          TAG: ${{ github.event.inputs.tag }}
+        run: |
+          set -euo pipefail
+
+          # Tag shape. Anchored at both ends: an unanchored tail is what lets a
+          # path separator through and turns the tag into a nested prefix.
+          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            stable=true
+          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.]+$ ]]; then
+            stable=false
+          else
+            echo "::error::TAG '$TAG' is not a version tag (expected vN.N.N or vN.N.N-prerelease)"
+            exit 1
+          fi
+
+          # Prefix shape. s3_path builds both the upload destination and the
+          # routing-rule key, so it gets the same treatment as the tag.
+          prefix="${S3_PATH%/}"
+          if [[ ! "$prefix" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*(/[A-Za-z0-9._-]+)*$ ]]; then
+            echo "::error::S3_PATH '$S3_PATH' is not a plain bucket prefix (expected e.g. 'desktop/')"
+            exit 1
+          fi
+
+          # A stable dispatch exists to become /latest, so if its prefix has no
+          # routing rule it cannot succeed. Failing here rather than in
+          # `point-latest` is the difference between rejecting a mistyped prefix
+          # and rejecting it only after a full release has been uploaded into it.
+          # Assigning first means an API failure aborts on its own error instead
+          # of being reported as a missing rule.
+          if [ "$stable" = true ]; then
+            website=$(aws s3api get-bucket-website --bucket "$BUCKET")
+            if ! jq -e --arg from "$prefix/latest" \
+                 'any(.RoutingRules[]?; .Condition.KeyPrefixEquals == $from)' \
+                 <<< "$website" > /dev/null; then
+              echo "::error::no routing rule with KeyPrefixEquals '$prefix/latest' on $BUCKET."
+              echo "::error::Check the s3_path input, or add the rule under Static website hosting → Redirection rules."
+              exit 1
+            fi
+            echo "$TAG is a stable release — $prefix/latest will be repointed"
+          else
+            echo "::notice::$TAG is a pre-release — assets upload, $prefix/latest stays put"
+          fi
+
+          echo "stable=$stable" >> "$GITHUB_OUTPUT"
+
   release-s3:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Download release assets to workspace
@@ -54,11 +116,52 @@ jobs:
           aws_bucket: ${{ secrets.AWS_BUCKET }}
           destination_dir: ${{ github.event.inputs.s3_path }}/${{ github.event.inputs.tag }}/
 
-      # Repoint the /latest aliases at this release — previously a manual step in
-      # the AWS console. downloads.remote.it serves these as 302s (S3 website
-      # redirects); the marketing site's daily catalog refresh reads the redirect
-      # target to discover the current version, so this step is what makes a
-      # release show up on remote.it/download automatically.
+  # Repoint the /latest alias at this release — previously a manual step in the
+  # AWS console. The marketing site's catalog refresh reads the redirect target
+  # to discover the current version, so this job is what makes a release show up
+  # on remote.it/download automatically.
+  #
+  # HOW THE ALIAS ACTUALLY WORKS — this is not obvious and the bucket gives you
+  # no hint. There is no `latest` folder and there are no redirect objects.
+  # `downloads.remote.it/desktop/latest/...` is served by a routing rule in the
+  # bucket's STATIC WEBSITE CONFIG (S3 → Properties → Static website hosting →
+  # Redirection rules):
+  #
+  #   KeyPrefixEquals: desktop/latest → ReplaceKeyPrefixWith: desktop/v3.46.1
+  #
+  # Two consequences that decide the implementation below:
+  #
+  #   1. The rule's Condition is KeyPrefixEquals only, with no
+  #      HttpErrorCodeReturnedEquals, so S3 applies it to every matching request
+  #      BEFORE resolving the object. Anything written to `desktop/latest/*` is
+  #      shadowed and never served — which is why this edits the rule instead of
+  #      writing redirect objects.
+  #   2. It is a prefix rewrite, so the one rule already covers every asset plus
+  #      the electron-updater manifests that ship inside the versioned folder
+  #      (`desktop/latest/latest.yml` → `desktop/<tag>/latest.yml`). Nothing
+  #      needs to be copied to the prefix root.
+  #
+  # Needs s3:GetBucketWebsite + s3:PutBucketWebsite on the release creds.
+  point-latest:
+    needs: [validate, release-s3]
+    # Pre-releases upload but never become /latest — the bucket has plenty of
+    # vN.N.N-alpha.N folders that were never the public download.
+    if: needs.validate.outputs.stable == 'true'
+    runs-on: ubuntu-latest
+    # Every product's /latest alias lives in ONE shared bucket website config, so
+    # this read-modify-write must not run twice at once — an overlapping run can
+    # base its write on a stale snapshot and silently restore the old target.
+    #
+    # The lock is scoped to this job, not the workflow, on purpose: Actions keeps
+    # only one *pending* run per group, so a third overlapping dispatch cancels
+    # the queued one. Confined here that costs an alias bump (and shows up as a
+    # cancelled run); on the whole workflow it would have killed that release's
+    # upload instead. It also only covers this repo, which is why the step still
+    # reads back what it wrote.
+    concurrency:
+      group: downloads-bucket-website
+      cancel-in-progress: false
+    steps:
       - name: Point /latest at this release
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
@@ -70,21 +173,70 @@ jobs:
           set -euo pipefail
           # Strip a trailing slash so key joins stay clean (input is "desktop/")
           prefix="${S3_PATH%/}"
+          from="$prefix/latest"
+          to="$prefix/$TAG"
 
-          # desktop/latest/<file> → /desktop/<tag>/<file> for every asset
-          for f in release-assets/*; do
-            n=$(basename "$f")
-            aws s3api put-object --bucket "$BUCKET" --key "$prefix/latest/$n" \
-              --website-redirect-location "/$prefix/$TAG/$n"
+          # `validate` already gated the shape and the job `if:` already excluded
+          # pre-releases. Re-assert anyway: this line is the last thing standing
+          # between a bad dispatch input and the public download alias.
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::TAG '$TAG' is not a stable version tag — refusing to repoint $from"
+            exit 1
+          fi
+
+          # Never point the alias at an empty or missing prefix. Assign first so
+          # a failed list aborts on its own error: swallowing the status here
+          # would report an S3 throttle as "the upload never ran" and send
+          # whoever is on the release to a job that actually succeeded.
+          listing=$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix "$to/" \
+                      --max-keys 1 --query 'Contents[0].Key' --output text)
+          if [ -z "$listing" ] || [ "$listing" = "None" ]; then
+            echo "::error::no objects under s3://$BUCKET/$to/ — did the upload step run?"
+            exit 1
+          fi
+
+          # Read-modify-write of shared bucket config: two releases running at
+          # once could clobber each other, and S3 has no conditional put for the
+          # website config, so write then read back and retry if we lost a race.
+          for attempt in 1 2 3; do
+            aws s3api get-bucket-website --bucket "$BUCKET" > website.json
+
+            # Creating a rule is a deliberate one-time act (a new product line,
+            # or a test prefix that should probably not have an alias at all),
+            # so a missing rule is an error rather than a silent insert.
+            if ! jq -e --arg from "$from" \
+                 'any(.RoutingRules[]?; .Condition.KeyPrefixEquals == $from)' \
+                 website.json > /dev/null; then
+              echo "::error::no routing rule with KeyPrefixEquals '$from' on $BUCKET."
+              echo "::error::Add it once under Static website hosting → Redirection rules, then re-run."
+              exit 1
+            fi
+
+            # Rewrite just this rule's target; pass through only the keys
+            # put-bucket-website accepts, and leave every other rule untouched.
+            jq --arg from "$from" --arg to "$to" '
+              {IndexDocument, ErrorDocument, RoutingRules}
+              | with_entries(select(.value != null))
+              | .RoutingRules |= map(
+                  if .Condition.KeyPrefixEquals == $from
+                  then .Redirect.ReplaceKeyPrefixWith = $to
+                  else . end)
+            ' website.json > website.new.json
+
+            aws s3api put-bucket-website --bucket "$BUCKET" \
+              --website-configuration "file://website.new.json"
+
+            actual=$(aws s3api get-bucket-website --bucket "$BUCKET" \
+              | jq -r --arg from "$from" \
+                  '.RoutingRules[] | select(.Condition.KeyPrefixEquals == $from)
+                                   | .Redirect.ReplaceKeyPrefixWith')
+
+            if [ "$actual" = "$to" ]; then
+              echo "$from → $to"
+              exit 0
+            fi
+            echo "::warning::attempt $attempt: rule reads '$actual', expected '$to' — retrying"
           done
 
-          # Updater manifests live version-named at the prefix root, with
-          # latest*.yml redirect aliases (mirrors the existing bucket layout:
-          # desktop/latest.yml → /desktop/v3.46.1.yml)
-          for yml in latest.yml latest-mac.yml; do
-            [ -f "release-assets/$yml" ] || continue
-            versioned="$TAG${yml#latest}"   # latest.yml → v1.2.3.yml, latest-mac.yml → v1.2.3-mac.yml
-            aws s3 cp "release-assets/$yml" "s3://$BUCKET/$prefix/$versioned"
-            aws s3api put-object --bucket "$BUCKET" --key "$prefix/$yml" \
-              --website-redirect-location "/$prefix/$versioned"
-          done
+          echo "::error::failed to repoint $from after 3 attempts (concurrent release?)"
+          exit 1
