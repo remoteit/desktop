@@ -14,7 +14,14 @@ const currentHandoff = () => toChatHandoff(store.getState().chat)
 export const useChatMainSync = (): void => {
   const open = useSelector((state: State) => state.chat.open)
   const activeId = useSelector((state: State) => state.accounts.activeId)
+  const userId = useSelector((state: State) => state.user.id)
   const dispatch = useDispatch<Dispatch>()
+
+  // Reset the chat when the signed-in identity changes (a different account) — declared
+  // first so a persisted chat from a previous account is dropped before anything loads it.
+  useEffect(() => {
+    dispatch.chat.syncIdentity(userId)
+  }, [userId])
 
   useEffect(() => {
     // Mount-only: streaming state must not survive a reload, but reopening
@@ -61,7 +68,12 @@ export const useChatMainSync = (): void => {
    display-only. */
 export const useChatPopoutSync = (): void => {
   const { t } = useTranslation()
+  const userId = useSelector((state: State) => state.user.id)
   const dispatch = useDispatch<Dispatch>()
+
+  useEffect(() => {
+    dispatch.chat.syncIdentity(userId)
+  }, [userId])
 
   useEffect(() => {
     document.title = t('chat.windowTitle', 'remote.it chat')

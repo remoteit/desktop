@@ -51,6 +51,8 @@ export type IChatState = {
   title: string
   conversations: ConversationSummary[]
   usage: Usage | null
+  /** The signed-in user id this chat belongs to — reset the chat when it changes. */
+  ownerId: string
   /** Org the agent is scoped to; null = uninitialized, user id = personal */
   orgId: string | null
   /** Conversation currently lives in the popout window (main window only) */
@@ -70,6 +72,7 @@ export const defaultChatState: IChatState = {
   title: '',
   conversations: [],
   usage: null,
+  ownerId: '',
   orgId: null,
   poppedOut: false,
   streaming: false,
@@ -320,6 +323,17 @@ export default createModel<RootModel>()({
       await dispatch.chat.checkHealth()
     },
     /* The history picker's list — refreshed on mount, after a turn, and after a delete. */
+    /* Reset the chat when the signed-in IDENTITY changes (not an org switch — that keeps
+       your account). The conversations, transcript, and usage all belong to the permitteer
+       subject the agent scopes by; a persisted chat from a previous account must not carry
+       over (posting to it 404s, and its history isn't yours). Same identity → no-op. */
+    async syncIdentity(userId: string, state) {
+      if (!userId || state.chat.ownerId === userId) return
+      dispatch.chat.clearConversation()
+      dispatch.chat.set({ ownerId: userId, conversations: [], usage: null })
+      dispatch.chat.loadConversations()
+      dispatch.chat.loadUsage()
+    },
     /* The usage meter (docs/usage-limits.md D6) — refreshed on mount, after each turn, and
        on open. Silent on failure; the last-known meter stands. */
     async loadUsage() {
