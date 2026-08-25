@@ -65,7 +65,7 @@ export const AdminUserDetailPage: React.FC = () => {
     // The EMAIL is the key both worlds share: permitteer subjects are sub_<hex>, not r3
     // GUIDs — the authorizer joins them by email — and the console resolves an unknown
     // deep-link id through its user search (one match opens; else honestly unknown).
-    windowOpen(`${OAUTH_ISSUER}/admin/console/users/${encodeURIComponent(user.email || user.id)}`, '_blank', true)
+    windowOpen(`${OAUTH_ISSUER}/admin/console/users/${encodeURIComponent(user.email || user.id)}?launch=remoteit_portal`, '_blank', true)
   }
 
   return (
