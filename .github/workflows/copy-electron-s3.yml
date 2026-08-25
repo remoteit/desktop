@@ -21,7 +21,36 @@ defaults:
 
 jobs:
 
+  # Gate the free-text dispatch input BEFORE anything is written to the bucket.
+  # A malformed tag like "v3.47.0-evil/child" would otherwise be uploaded into a
+  # nested prefix and only rejected afterwards, leaving junk behind. This is the
+  # single place the tag shape is defined; `point-latest` keys off its output.
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      stable: ${{ steps.tag.outputs.stable }}
+    steps:
+      - name: Validate the release tag
+        id: tag
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+        run: |
+          set -euo pipefail
+          # Anchored at both ends: an unanchored tail is what lets a path
+          # separator through and turns the tag into a nested prefix.
+          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "stable=true" >> "$GITHUB_OUTPUT"
+            echo "$TAG is a stable release — /latest will be repointed"
+          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.]+$ ]]; then
+            echo "stable=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::$TAG is a pre-release — assets upload, /latest stays put"
+          else
+            echo "::error::TAG '$TAG' is not a version tag (expected vN.N.N or vN.N.N-prerelease)"
+            exit 1
+          fi
+
   release-s3:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Download release assets to workspace
@@ -81,7 +110,10 @@ jobs:
   #
   # Needs s3:GetBucketWebsite + s3:PutBucketWebsite on the release creds.
   point-latest:
-    needs: release-s3
+    needs: [validate, release-s3]
+    # Pre-releases upload but never become /latest — the bucket has plenty of
+    # vN.N.N-alpha.N folders that were never the public download.
+    if: needs.validate.outputs.stable == 'true'
     runs-on: ubuntu-latest
     # Every product's /latest alias lives in ONE shared bucket website config, so
     # this read-modify-write must not run twice at once — an overlapping run can
@@ -111,19 +143,11 @@ jobs:
           from="$prefix/latest"
           to="$prefix/$TAG"
 
-          # The tag is free text on workflow_dispatch and this repoints a public
-          # download alias, so be strict about what may move it. Both arms are
-          # anchored at each end — an unanchored tail would let "v3.47.0/path" or
-          # "v3.47.0-rc1/path" through and point the alias at a subfolder.
-          # Pre-releases upload but must not become /latest; the bucket has
-          # plenty of vN.N.N-alpha.N folders that were never the public download.
-          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            :
-          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.]+$ ]]; then
-            echo "::notice::$TAG is a pre-release — assets uploaded, leaving $from unchanged"
-            exit 0
-          else
-            echo "::error::TAG '$TAG' is not a version tag (expected vN.N.N) — refusing to repoint $from"
+          # `validate` already gated the shape and the job `if:` already excluded
+          # pre-releases. Re-assert anyway: this line is the last thing standing
+          # between a bad dispatch input and the public download alias.
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::TAG '$TAG' is not a stable version tag — refusing to repoint $from"
             exit 1
           fi
 
