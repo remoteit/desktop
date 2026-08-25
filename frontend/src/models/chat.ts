@@ -7,7 +7,10 @@ import {
   fetchConversation,
   listConversations,
   deleteConversation,
+  fetchUsage,
+  UsageLimitError,
   type ConversationSummary,
+  type Usage,
   agentHealth,
   AgentAuthError,
   AgentEvent,
@@ -47,6 +50,7 @@ export type IChatState = {
   turnId: string
   title: string
   conversations: ConversationSummary[]
+  usage: Usage | null
   /** Org the agent is scoped to; null = uninitialized, user id = personal */
   orgId: string | null
   /** Conversation currently lives in the popout window (main window only) */
@@ -65,6 +69,7 @@ export const defaultChatState: IChatState = {
   turnId: '',
   title: '',
   conversations: [],
+  usage: null,
   orgId: null,
   poppedOut: false,
   streaming: false,
@@ -153,6 +158,21 @@ export const toChatHandoff = (chat: IChatState): ChatHandoff => ({
 const authRequiredError = () =>
   i18n.t('notices:chat.authRequired', { defaultValue: 'The agent refused this session\u2019s credentials — refresh permissions to continue.' })
 
+/* A short, human reset time: a time-of-day within a day, else weekday + time. */
+export const formatReset = (iso: string | null): string => {
+  if (!iso) return ''
+  const at = new Date(iso)
+  const soon = at.getTime() - Date.now() < 24 * 60 * 60 * 1000
+  return soon
+    ? at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    : at.toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+}
+
+const usageLimitMessage = (e: UsageLimitError): string => {
+  const when = formatReset(e.resetsAt)
+  return when ? i18n.t('notices:chat.usageReset', { defaultValue: '{{msg}} Resets {{when}}.', msg: e.message, when }) : e.message
+}
+
 let abortController: AbortController | null = null
 
 export default createModel<RootModel>()({
@@ -209,6 +229,7 @@ export default createModel<RootModel>()({
       } catch (error) {
         flushDeltas()
         if (error instanceof AgentAuthError) dispatch.chat.set({ error: authRequiredError(), health: 'unauthorized' })
+        else if (error instanceof UsageLimitError) dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
         else if ((error as Error).name !== 'AbortError')
           dispatch.chat.applyEvent({ type: 'error', message: (error as Error).message })
       } finally {
@@ -216,8 +237,9 @@ export default createModel<RootModel>()({
         abortController = null
         dispatch.chat.set({ streaming: false })
         // A finished turn may have created (and titled) a new conversation — refresh the
-        // picker so it appears without a manual reload.
+        // picker; and the spend just moved, so refresh the usage meter too.
         dispatch.chat.loadConversations()
+        dispatch.chat.loadUsage()
       }
     },
     /* The chat follows the app's active org (the sidebar selector) — the main
@@ -298,6 +320,12 @@ export default createModel<RootModel>()({
       await dispatch.chat.checkHealth()
     },
     /* The history picker's list — refreshed on mount, after a turn, and after a delete. */
+    /* The usage meter (docs/usage-limits.md D6) — refreshed on mount, after each turn, and
+       on open. Silent on failure; the last-known meter stands. */
+    async loadUsage() {
+      const usage = await fetchUsage()
+      if (usage) dispatch.chat.set({ usage })
+    },
     async loadConversations() {
       try {
         dispatch.chat.set({ conversations: await listConversations() })

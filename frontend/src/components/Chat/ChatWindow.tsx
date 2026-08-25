@@ -6,6 +6,7 @@ import { Dispatch } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { useChatPopoutSync } from '../../hooks/useChatSync'
 import { ChatHeader, NewChatButton, HistoryButton } from './ChatHeader'
+import { ChatUsage } from './ChatUsage'
 import { ChatBody } from './ChatBody'
 
 /* Full-page chat for the popped-out window (?chatPopout boot flag). Display
@@ -29,6 +30,7 @@ export const ChatWindow: React.FC = () => {
       }}
     >
       <ChatHeader>
+        <ChatUsage />
         <HistoryButton />
         <NewChatButton />
         <IconButton

@@ -25,6 +25,7 @@ export const useChatMainSync = (): void => {
     // while this window was away (plan D6/D11), and load the conversation history.
     dispatch.chat.syncTranscript()
     dispatch.chat.loadConversations()
+    dispatch.chat.loadUsage()
     // Completes a Hydra sign-in redirect if this page load carries ?code —
     // runs on mount regardless of whether the panel is open
     const handlers: PopoutMainHandlers = {
@@ -69,6 +70,7 @@ export const useChatPopoutSync = (): void => {
     // while this window was away (plan D6/D11), and load the conversation history.
     dispatch.chat.syncTranscript()
     dispatch.chat.loadConversations()
+    dispatch.chat.loadUsage()
     // No syncOrg here: the popout keeps the org handed off with the
     // conversation (it has no sidebar to change it with)
     dispatch.chat.checkHealth()
