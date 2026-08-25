@@ -6,6 +6,7 @@ import { State, Dispatch } from '../../store'
 import { ChatMessages } from './ChatMessages'
 import { ChatApproval } from './ChatApproval'
 import { ChatInput } from './ChatInput'
+import { ChatIntro } from './ChatIntro'
 import { ChatOrgLabel } from './ChatOrgLabel'
 import { Notice } from '../Notice'
 import { Body } from '../Body'
@@ -58,6 +59,8 @@ export const ChatBody: React.FC = () => {
             {unavailableMessage}
           </Typography>
         </Body>
+      ) : !messages.length && !pendingConfirmation && !error ? (
+        <ChatIntro />
       ) : (
         <ChatMessages messages={messages} streaming={streaming}>
           {pendingConfirmation && (
@@ -76,7 +79,11 @@ export const ChatBody: React.FC = () => {
       )}
       <ChatInput
         disabled={!!pendingConfirmation || signedOut || unreachable}
-        placeholder={pendingConfirmation ? t('chat.waitingApproval', 'Waiting for approval…') : ''}
+        placeholder={
+          pendingConfirmation
+            ? t('chat.waitingApproval', 'Waiting for approval…')
+            : t('chat.inputPlaceholder', 'Message Remote.It AI…')
+        }
         streaming={streaming}
         onSend={text => dispatch.chat.send(text)}
         onStop={() => dispatch.chat.stop()}

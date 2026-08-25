@@ -10,11 +10,17 @@ import { Icon } from '../Icon'
    window-specific buttons render as children in each caller's order */
 export const ChatHeader: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation()
+  const sessionName = useSelector((state: State) => state.chat.title)
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', paddingX: 2, paddingY: 1 }}>
-      <Typography variant="subtitle1" sx={{ flexGrow: 1, padding: 0, margin: 0, minHeight: 0 }}>
-        {t('chat.title', 'Remote.It AI')}
-      </Typography>
+      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+        <Typography variant="subtitle1" sx={{ padding: 0, margin: 0, minHeight: 0, lineHeight: 1.2 }}>
+          {t('chat.title', 'Remote.It AI')}
+        </Typography>
+        <Typography variant="caption" color="grayDark.main" noWrap sx={{ display: 'block', maxWidth: '100%' }}>
+          {sessionName || t('chat.newSession', 'New chat')}
+        </Typography>
+      </Box>
       {children}
     </Box>
   )

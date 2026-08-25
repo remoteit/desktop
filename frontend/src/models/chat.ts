@@ -43,6 +43,7 @@ export type IChatState = {
   messages: ChatTranscriptMessage[]
   conversationId: string
   turnId: string
+  title: string
   conversations: ConversationSummary[]
   /** Org the agent is scoped to; null = uninitialized, user id = personal */
   orgId: string | null
@@ -60,6 +61,7 @@ export const defaultChatState: IChatState = {
   messages: [],
   conversationId: '',
   turnId: '',
+  title: '',
   conversations: [],
   orgId: null,
   poppedOut: false,
@@ -142,6 +144,7 @@ export function resolveChatOrg(state: State): OrgSelection | null {
 export const toChatHandoff = (chat: IChatState): ChatHandoff => ({
   messages: chat.messages,
   conversationId: chat.conversationId,
+  title: chat.title,
   orgId: chat.orgId,
 })
 
@@ -157,7 +160,14 @@ export default createModel<RootModel>()({
       if (state.chat.streaming || state.chat.pendingConfirmation) return
       const conversationId = state.chat.conversationId || crypto.randomUUID()
       dispatch.chat.addUserMessage(text)
-      dispatch.chat.set({ conversationId, streaming: true, error: null })
+      dispatch.chat.set({
+        conversationId,
+        streaming: true,
+        error: null,
+        // Name a fresh session by its first message immediately; the server sets the same
+        // title, and loadConversations reconciles after the turn.
+        ...(state.chat.title ? {} : { title: text.replace(/\s+/g, ' ').trim().slice(0, 80) }),
+      })
       abortController = new AbortController()
       // Same resolution the Current Org label renders, so the scope shown is
       // always the scope sent — membership decides, name falls back
@@ -307,6 +317,7 @@ export default createModel<RootModel>()({
       dispatch.chat.set({
         conversationId: id,
         turnId: '',
+        title: remote.title || '',
         streaming: false,
         pendingConfirmation: null,
         error: null,
@@ -360,12 +371,15 @@ export default createModel<RootModel>()({
     adoptTranscript(state: IChatState, payload: ChatHandoff) {
       state.messages = payload.messages
       state.conversationId = payload.conversationId
+      state.title = payload.title
       state.orgId = payload.orgId
       return state
     },
     clearConversation(state: IChatState) {
       state.messages = []
       state.conversationId = ''
+      state.turnId = ''
+      state.title = ''
       state.streaming = false
       state.pendingConfirmation = null
       state.error = null

@@ -28,6 +28,7 @@ const ownerId = (): string | null => window.sessionStorage.getItem(OWNER_KEY)
 export type ChatHandoff = {
   messages: ChatTranscriptMessage[]
   conversationId: string
+  title: string
   orgId: string | null
 }
 
