@@ -7,7 +7,6 @@ import {
   AgentAuthError,
   AgentEvent,
   AgentHealth,
-  AgentMessageParam,
   OrgSelection,
 } from '../services/agent'
 import {
@@ -38,6 +37,7 @@ export type IChatState = {
   expanded: boolean
   messages: ChatTranscriptMessage[]
   conversationId: string
+  turnId: string
   /** Org the agent is scoped to; null = uninitialized, user id = personal */
   orgId: string | null
   /** Conversation currently lives in the popout window (main window only) */
@@ -53,6 +53,7 @@ export const defaultChatState: IChatState = {
   expanded: false,
   messages: [],
   conversationId: '',
+  turnId: '',
   orgId: null,
   poppedOut: false,
   streaming: false,
@@ -115,9 +116,6 @@ function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
 }
 
 /* The agent service is stateless: resend the transcript as role/content pairs each turn */
-function toMessageParams(messages: ChatTranscriptMessage[]): AgentMessageParam[] {
-  return messages.filter(m => m.text.trim().length > 0).map(m => ({ role: m.role, content: m.text }))
-}
 
 /* Single source of truth for the org the chat is scoped to (null = personal).
    Membership decides the scope, so the Current Org label and the org sent
@@ -151,7 +149,6 @@ export default createModel<RootModel>()({
     async send(text: string, state) {
       if (state.chat.streaming || state.chat.pendingConfirmation) return
       const conversationId = state.chat.conversationId || crypto.randomUUID()
-      const messages = toMessageParams([...state.chat.messages, { role: 'user', text }])
       dispatch.chat.addUserMessage(text)
       dispatch.chat.set({ conversationId, streaming: true, error: null })
       abortController = new AbortController()
@@ -174,11 +171,13 @@ export default createModel<RootModel>()({
       try {
         await streamChat({
           conversationId,
-          messages,
+          text,
           org,
           signal: abortController.signal,
           onEvent: event => {
-            if (event.type === 'text_delta') {
+            if (event.type === 'turn') {
+              dispatch.chat.set({ turnId: event.turnId })
+            } else if (event.type === 'text_delta') {
               deltaBuffer += event.text
               if (flushTimer === null) flushTimer = window.setTimeout(flushDeltas, 50)
             } else {
@@ -213,7 +212,7 @@ export default createModel<RootModel>()({
       dispatch.chat.set({ pendingConfirmation: null })
       try {
         await confirmTool({
-          conversationId: state.chat.conversationId,
+          turnId: state.chat.turnId,
           toolUseId: pending.toolUseId,
           approved,
         })

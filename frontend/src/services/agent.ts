@@ -1,6 +1,8 @@
 /**
- * Client for the ai-agent service (REST + SSE). The service is stateless:
- * the client holds the transcript and resends it each turn.
+ * Client for the ai-agent service (REST + SSE). Conversations are SERVER-side resources
+ * now (permitteer docs/remoteit-ai-agent.md D11/Phase 5): each turn sends only the NEW
+ * message; the server owns the durable transcript and journals every turn, so this
+ * client's copy is a display cache, not the record.
  *
  * Auth rides the FIRST-PARTY session (permitteer docs/remoteit-ai-agent.md D2): every
  * request carries an agent-audience token from the oidc machinery plus a DPoP proof —
@@ -42,6 +44,7 @@ async function agentHeaders(method: string, path: string, json = true): Promise<
 }
 
 export type AgentEvent =
+  | { type: 'turn'; turnId: string }
   | { type: 'text_delta'; text: string }
   | { type: 'tool_call_start'; id: string; name: string; input: Record<string, unknown> }
   | { type: 'tool_call_result'; id: string; name: string; result: string; isError: boolean; durationMs: number }
@@ -53,19 +56,21 @@ export type AgentMessageParam = { role: 'user' | 'assistant'; content: string }
 
 export type OrgSelection = { id: string; name: string }
 
-/* Stream one chat turn. Events arrive as SSE: `event: <type>\ndata: <json>\n\n` */
+/* Stream one chat turn: the NEW message only. Events arrive as SSE, opening with
+   `turn {turnId}` — the id confirm() addresses. */
 export async function streamChat(options: {
   conversationId: string
-  messages: AgentMessageParam[]
+  text: string
   org?: OrgSelection
   signal?: AbortSignal
   onEvent: (event: AgentEvent) => void
 }): Promise<void> {
-  const { conversationId, messages, org, signal, onEvent } = options
-  const response = await fetch(`${agentURL()}/api/chat`, {
+  const { conversationId, text, org, signal, onEvent } = options
+  const path = `/api/conversations/${encodeURIComponent(conversationId)}/messages`
+  const response = await fetch(`${agentURL()}${path}`, {
     method: 'POST',
-    headers: await agentHeaders('POST', '/api/chat'),
-    body: JSON.stringify(org ? { conversationId, messages, org } : { conversationId, messages }),
+    headers: await agentHeaders('POST', path),
+    body: JSON.stringify(org ? { text, org } : { text }),
     signal,
   })
   if (response.status === 401) throw new AgentAuthError()
@@ -93,16 +98,17 @@ export async function streamChat(options: {
   }
 }
 
-/* Approve or deny a write tool the agent paused on */
+/* Approve or deny a write tool the agent paused on — addressed to the TURN */
 export async function confirmTool(options: {
-  conversationId: string
+  turnId: string
   toolUseId: string
   approved: boolean
 }): Promise<void> {
-  const response = await fetch(`${agentURL()}/api/chat/confirm`, {
+  const path = `/api/turns/${encodeURIComponent(options.turnId)}/confirm`
+  const response = await fetch(`${agentURL()}${path}`, {
     method: 'POST',
-    headers: await agentHeaders('POST', '/api/chat/confirm'),
-    body: JSON.stringify(options),
+    headers: await agentHeaders('POST', path),
+    body: JSON.stringify({ toolUseId: options.toolUseId, approved: options.approved }),
   })
   if (response.status === 401) throw new AgentAuthError()
   if (!response.ok) throw new Error(`Confirm failed (${response.status})`)
