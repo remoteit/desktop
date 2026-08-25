@@ -44,26 +44,25 @@ if (window.location.pathname === '/signoutCallback') {
   window.history.replaceState({}, '', window.location.origin + '/')
 }
 
-// A boot carrying ?support_session=1 is a SUPPORT-SESSION LAUNCH (permitteer's
-// /impersonate/launch, docs/remoteit-desktop-login.md Phase 4d): an operator just became
-// someone else in the AS's cookie, and THIS app's stored tokens still belong to the
-// operator — shadow auth that would silently show the wrong account, which is exactly what
-// the first live test did. Drop local state and let the ordinary signed-out boot run its
-// authorize: the silent SSO lands on the ACTIVE session, which the launch just made the
-// impersonated one. Deliberately NOT prompt=login — inheriting that session is the point.
+// A support TAB keeps its tokens in sessionStorage — per-tab — never in the shared
+// localStorage. The first cut CLEARED localStorage instead, and localStorage is
+// origin-wide: the support tab's impersonated tokens replaced the operator's own, so
+// refreshing their normally-signed-in tab silently became the support session. Isolation
+// beats clearing on both counts: the operator's tabs keep their tokens untouched, and the
+// support tab boots token-less into the silent authorize that inherits the impersonated
+// session. The flag itself lives in sessionStorage, so it dies with the tab.
+// (Module-scope discipline: touch only hoisted consts and the storage APIs here — the
+// first cut's clearLocal() call hit a temporal dead zone and killed the whole bundle.)
+const SUPPORT_FLAG = 'oidc.support'
 if (new URLSearchParams(window.location.search).has('support_session')) {
-  // Inline removals, NOT clearLocal(): this runs at module evaluation, and clearLocal
-  // touches `let access` declared BELOW — a TDZ ReferenceError here killed the whole
-  // bundle on dev (eternal splash, param never stripped). Only the hoisted consts above
-  // are safe to reach from module scope. The DPoP key stays: it is the APP's key, and the
-  // impersonated session's tokens bind to it exactly as any other boot's would.
-  try {
-    localStorage.removeItem(TOKENS_KEY)
-    localStorage.removeItem(DECLARATION_KEY)
-  } catch { /* a blocked storage API must not kill the boot */ }
+  try { sessionStorage.setItem(SUPPORT_FLAG, '1') } catch { /* a blocked storage API must not kill the boot */ }
   const clean = new URL(window.location.href)
   clean.searchParams.delete('support_session')
   window.history.replaceState({}, '', clean.toString())
+}
+/** The token store for THIS TAB: tab-scoped for a support session, shared otherwise. */
+const tokenStore = (): Storage => {
+  try { return sessionStorage.getItem(SUPPORT_FLAG) ? window.sessionStorage : window.localStorage } catch { return window.localStorage }
 }
 
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
@@ -86,7 +85,7 @@ const decodeJwt = (jwt?: string): any => {
 
 const stored = (): Stored | undefined => {
   try {
-    const raw = localStorage.getItem(TOKENS_KEY)
+    const raw = tokenStore().getItem(TOKENS_KEY)
     return raw ? JSON.parse(raw) : undefined
   } catch {
     return undefined
@@ -145,7 +144,7 @@ const declarationFingerprint = () =>
  *  then matches. What it deliberately cannot see is a grant narrowed on the server. */
 export function oidcGrantStale(): boolean {
   try {
-    return localStorage.getItem(DECLARATION_KEY) !== declarationFingerprint()
+    return tokenStore().getItem(DECLARATION_KEY) !== declarationFingerprint()
   } catch {
     return false
   }
@@ -223,7 +222,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   persist({ refresh_token: body.refresh_token, id_token: body.id_token })
   // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
   // is merged from exactly that — so the grant now covers this build. Stamp it.
-  try { localStorage.setItem(DECLARATION_KEY, declarationFingerprint()) } catch { /* non-fatal */ }
+  try { tokenStore().setItem(DECLARATION_KEY, declarationFingerprint()) } catch { /* non-fatal */ }
   const at = decodeJwt(body.access_token)
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims
@@ -300,12 +299,12 @@ export function oidcClearLocal() {
 function clearLocal() {
   void clearDpopKey()
   access = {}
-  localStorage.removeItem(TOKENS_KEY)
-  localStorage.removeItem(DECLARATION_KEY)
+  tokenStore().removeItem(TOKENS_KEY)
+  tokenStore().removeItem(DECLARATION_KEY)
 }
 
 function persist(tokens: Stored) {
-  localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens))
+  tokenStore().setItem(TOKENS_KEY, JSON.stringify(tokens))
 }
 
 function cleanUrl() {
