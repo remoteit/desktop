@@ -127,3 +127,40 @@ export async function agentHealth(): Promise<AgentHealth> {
     return 'unreachable'
   }
 }
+
+/* The server-side transcript (D11) — the durable copy this client's display caches. */
+export async function fetchConversation(
+  conversationId: string,
+): Promise<{ messages: Array<{ role: string; content: string }> } | null> {
+  const path = `/api/conversations/${encodeURIComponent(conversationId)}`
+  const response = await fetch(`${agentURL()}${path}`, { headers: await agentHeaders('GET', path, false) })
+  if (!response.ok) return null
+  return (await response.json()) as { messages: Array<{ role: string; content: string }> }
+}
+
+// --- Background work (permitteer docs/remoteit-ai-agent.md D6/Phase 6) -----------------
+
+/* Where the enrollment ceremony starts — a top-level navigation to the agent, which
+   redirects into the AS consent screen. Who enrolled is the AS's answer at the
+   callback, so this URL needs no token. */
+export const backgroundConnectUrl = (): string => `${agentURL()}/oauth/connect`
+
+export async function backgroundStatus(): Promise<boolean> {
+  try {
+    const response = await fetch(`${agentURL()}/api/enrollment`, { headers: await agentHeaders('GET', '/api/enrollment', false) })
+    if (!response.ok) return false
+    return ((await response.json()) as { enrolled?: boolean }).enrolled === true
+  } catch {
+    return false
+  }
+}
+
+/* Best-effort: revokes the agent's stored grant at the AS and empties its vault.
+   Called from Background-work settings and from explicit sign-out (plan D8). */
+export async function backgroundDisable(): Promise<void> {
+  try {
+    await fetch(`${agentURL()}/api/enrollment`, { method: 'DELETE', headers: await agentHeaders('DELETE', '/api/enrollment', false) })
+  } catch {
+    /* best-effort by design */
+  }
+}

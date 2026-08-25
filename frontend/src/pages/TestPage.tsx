@@ -17,7 +17,8 @@ import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
-import { isSecureAgentURL } from '../services/agent'
+import { isSecureAgentURL, backgroundConnectUrl, backgroundStatus, backgroundDisable } from '../services/agent'
+import { windowOpen } from '../services/browser'
 
 export const TestPage: React.FC = () => {
   const { t } = useTranslation()
@@ -39,6 +40,26 @@ export const TestPage: React.FC = () => {
   // backend), so no preference emit
   async function setAgentPreference(key: string, value: string | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
+  }
+
+  // Background work (permitteer docs/remoteit-ai-agent.md D6): the agent's own, narrower
+  // grant — enrollment is a browser ceremony at the AS; this page only reads/ends it.
+  const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
+  useEffect(() => {
+    backgroundStatus().then(setBackgroundEnrolled)
+  }, [])
+  async function connectBackground() {
+    await windowOpen(backgroundConnectUrl(), '_blank', true)
+    // The ceremony finishes in the browser — poll briefly for the verdict.
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 2000))
+      if (await backgroundStatus()) break
+    }
+    setBackgroundEnrolled(await backgroundStatus())
+  }
+  async function disableBackground() {
+    await backgroundDisable()
+    setBackgroundEnrolled(await backgroundStatus())
   }
 
   // --- the stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c) ----
@@ -280,6 +301,19 @@ export const TestPage: React.FC = () => {
             </List>
           </Quote>
         </ListItem>
+        <ListItemSetting
+          hideIcon
+          label={t('testPage.backgroundWork', 'Background work')}
+          subLabel={
+            backgroundEnrolled === undefined
+              ? t('testPage.backgroundWorkUnknown', 'Checking…')
+              : backgroundEnrolled
+                ? t('testPage.backgroundWorkOn', 'Enabled — while you\u2019re away the agent can look and watch, not touch. Turns you start can finish without you.')
+                : t('testPage.backgroundWorkOff', 'Off — the agent only works while you\u2019re here. Enabling grants it a separate, narrower permission you can revoke any time.')
+          }
+          toggle={!!backgroundEnrolled}
+          onClick={() => (backgroundEnrolled ? disableBackground() : connectBackground())}
+        />
       </List>
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>
       <List>

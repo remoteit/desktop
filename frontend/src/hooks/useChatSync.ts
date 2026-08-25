@@ -8,7 +8,7 @@ import { initChatPopoutMain, initChatPopoutWindow, checkPopoutPresence, PopoutMa
 const currentHandoff = () => toChatHandoff(store.getState().chat)
 
 /* Main-window chat lifecycle — everything ChatPanel needs to happen but that
-   isn't display: completing a Hydra sign-in redirect, wiring the popout
+   isn't display: adopting the server's transcript on mount, wiring the popout
    handoff protocol, re-checking agent health when the dock opens, and
    mirroring the app's active org. */
 export const useChatMainSync = (): void => {
@@ -21,6 +21,9 @@ export const useChatMainSync = (): void => {
     // the panel must not reset a still-running stream (closing the panel
     // deliberately leaves the stream running)
     dispatch.chat.resetTransient()
+    // The server owns the transcript: catch up on anything a background turn finished
+    // while this window was away (plan D6/D11).
+    dispatch.chat.syncTranscript()
     // Completes a Hydra sign-in redirect if this page load carries ?code —
     // runs on mount regardless of whether the panel is open
     const handlers: PopoutMainHandlers = {
@@ -61,6 +64,9 @@ export const useChatPopoutSync = (): void => {
   useEffect(() => {
     document.title = t('chat.windowTitle', 'remote.it chat')
     dispatch.chat.resetTransient()
+    // The server owns the transcript: catch up on anything a background turn finished
+    // while this window was away (plan D6/D11).
+    dispatch.chat.syncTranscript()
     // No syncOrg here: the popout keeps the org handed off with the
     // conversation (it has no sidebar to change it with)
     dispatch.chat.checkHealth()

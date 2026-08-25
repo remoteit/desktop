@@ -3,6 +3,8 @@ import { RootModel } from '.'
 import {
   streamChat,
   confirmTool,
+  backgroundDisable,
+  fetchConversation,
   agentHealth,
   AgentAuthError,
   AgentEvent,
@@ -247,6 +249,26 @@ export default createModel<RootModel>()({
     async checkHealth() {
       dispatch.chat.set({ health: await agentHealth() })
     },
+    /* The server owns the transcript now (D11) — adopt its copy when it knows more than
+       we do, which is exactly how a background turn's result appears after a reopen. */
+    async syncTranscript(_: void, state) {
+      const id = state.chat.conversationId
+      if (!id || state.chat.streaming) return
+      try {
+        const remote = await fetchConversation(id)
+        if (remote && remote.messages.length > state.chat.messages.length) {
+          dispatch.chat.set({
+            messages: remote.messages.map(m =>
+              m.role === 'assistant'
+                ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
+                : { role: 'user' as const, text: m.content },
+            ),
+          })
+        }
+      } catch {
+        /* offline or deleted — the local display cache stands */
+      }
+    },
     /* The chat has no sign-in of its own anymore — it rides the app session
        (permitteer docs/remoteit-ai-agent.md D2). An unauthorized chat while the
        app works means the standing grant predates this build's agent slice, so
@@ -263,6 +285,9 @@ export default createModel<RootModel>()({
       broadcastChatSignout()
       abortController?.abort()
       abortController = null
+      // Explicit sign-out ends the background relationship too (plan D8): best-effort
+      // revoke of the agent's stored grant, before the session tokens vanish.
+      void backgroundDisable()
     },
   }),
   reducers: {
