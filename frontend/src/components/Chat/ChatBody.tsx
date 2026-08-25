@@ -31,6 +31,14 @@ export const ChatBody: React.FC = () => {
     'Remote.It AI is temporarily unavailable. Check your internet connection or try again in a few minutes.'
   )
 
+  // "Working" indicator: a turn is in flight but nothing else is moving — before the first
+  // token, and between a tool finishing and the next output. A running tool shows its own
+  // spinner and streaming text is its own motion, so suppress the dots while either is live.
+  const tail = messages[messages.length - 1]
+  const tailIsStreamingText = tail?.role === 'assistant' && tail.text.length > 0
+  const toolRunning = tail?.role === 'assistant' && tail.toolCalls.some(c => c.status === 'running')
+  const typing = streaming && !tailIsStreamingText && !toolRunning
+
   return (
     <>
       <ChatOrgLabel />
@@ -62,7 +70,7 @@ export const ChatBody: React.FC = () => {
       ) : !messages.length && !pendingConfirmation && !error ? (
         <ChatIntro />
       ) : (
-        <ChatMessages messages={messages} streaming={streaming}>
+        <ChatMessages messages={messages} streaming={streaming} typing={typing}>
           {pendingConfirmation && (
             <ChatApproval
               toolName={pendingConfirmation.toolName}
