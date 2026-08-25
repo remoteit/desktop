@@ -27,7 +27,7 @@ export const ChatBody: React.FC = () => {
   // Literal default: the i18next parser can't extract a value passed as a variable
   const unavailableMessage = t(
     'chat.unavailable',
-    'Mycal is temporarily unavailable. Check your internet connection or try again in a few minutes.'
+    'Remote.It AI is temporarily unavailable. Check your internet connection or try again in a few minutes.'
   )
 
   return (

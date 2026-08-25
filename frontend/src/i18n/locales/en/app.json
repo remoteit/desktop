@@ -204,7 +204,8 @@
     "toolRequest": "The agent wants to run <tool>{{tool}}</tool>",
     "toolsUsed_one": "Used {{count}} tool",
     "toolsUsed_other": "Used {{count}} tools",
-    "unavailable": "Mycal is temporarily unavailable. Check your internet connection or try again in a few minutes.",
+    "title": "Remote.It AI",
+    "unavailable": "Remote.It AI is temporarily unavailable. Check your internet connection or try again in a few minutes.",
     "waitingApproval": "Waiting for approval…",
     "windowTitle": "remote.it chat"
   },
@@ -2025,7 +2026,7 @@
     "licensingOptions": "Licensing Options",
     "mintError": "This target was refused at token mint: {{error}}",
     "overrideAgent": "Override agent service",
-    "overrideAgentSub": "Point the Mycal chat at a deployed agent (https only). Auth rides your app session either way — the token is minted for the agent audience, so the target must trust this stage.",
+    "overrideAgentSub": "Point the Remote.It AI chat at a deployed agent (https only). Auth rides your app session either way — the token is minted for the agent audience, so the target must trust this stage.",
     "overrideDefaultAPIs": "Override default APIs",
     "overrideLicensesAndLimits": "Override licenses and limits",
     "reset": "Reset",

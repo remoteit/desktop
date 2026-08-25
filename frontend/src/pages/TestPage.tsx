@@ -269,7 +269,7 @@ export const TestPage: React.FC = () => {
           label={t('testPage.overrideAgent', 'Override agent service')}
           subLabel={t(
             'testPage.overrideAgentSub',
-            'Point the Mycal chat at a deployed agent (https only). Auth rides your app session either way — the token is minted for the agent audience, so the target must trust this stage.'
+            'Point the Remote.It AI chat at a deployed agent (https only). Auth rides your app session either way — the token is minted for the agent audience, so the target must trust this stage.'
           )}
           onClick={() => setAgentPreference('switchAgent', !apis.switchAgent)}
           toggle={!!apis.switchAgent}

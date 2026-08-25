@@ -2,6 +2,10 @@ import brand from '@common/brand/config'
 const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
+// The AI portal (app.ai.remote.it) shows the Remote.It AI chat unconditionally: it IS the
+// AI surface. Set per-deployment via the Amplify branch env so the general app keeps the
+// soft-launch (Test UI) even if this branch's code merges elsewhere.
+export const CHAT_ALWAYS_ON = env.VITE_CHAT_ALWAYS_ON === 'true'
 // Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
 // web and desktop; the backend never touches auth.
 export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''

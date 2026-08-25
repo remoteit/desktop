@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { State } from '../store'
 import {
   MODE,
+  CHAT_ALWAYS_ON,
   CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_EXPANDED,
   HIDE_TWO_PANEL_WIDTH,
@@ -11,11 +12,12 @@ import {
   ORGANIZATION_BAR_WIDTH,
 } from '../constants'
 
-/* Mycal is always on in local dev builds; in deployed builds it soft-launches
+/* The Remote.It AI chat is always on in local dev builds and on the dedicated AI portal
+   (CHAT_ALWAYS_ON, set for app.ai.remote.it); in every other deployed build it soft-launches
    behind the hidden Test UI (shift+option on the avatar menu → Test UI). */
 export const useChatEnabled = (): boolean => {
   const testUI = useSelector((state: State) => state.ui.testUI)
-  return MODE === 'development' || !!testUI
+  return MODE === 'development' || CHAT_ALWAYS_ON || !!testUI
 }
 
 /* Width the docked chat column occupies — single source for the fits-check

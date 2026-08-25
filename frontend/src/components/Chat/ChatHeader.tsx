@@ -7,14 +7,17 @@ import { IconButton } from '../../buttons/IconButton'
 
 /* Title row shared by the docked panel and the popout window — the
    window-specific buttons render as children in each caller's order */
-export const ChatHeader: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', paddingX: 2, paddingY: 1 }}>
-    <Typography variant="subtitle1" sx={{ flexGrow: 1, padding: 0, margin: 0, minHeight: 0 }}>
-      Mycal
-    </Typography>
-    {children}
-  </Box>
-)
+export const ChatHeader: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation()
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', paddingX: 2, paddingY: 1 }}>
+      <Typography variant="subtitle1" sx={{ flexGrow: 1, padding: 0, margin: 0, minHeight: 0 }}>
+        {t('chat.title', 'Remote.It AI')}
+      </Typography>
+      {children}
+    </Box>
+  )
+}
 
 export const NewChatButton: React.FC = () => {
   const { t } = useTranslation()
