@@ -30,24 +30,57 @@ jobs:
     outputs:
       stable: ${{ steps.tag.outputs.stable }}
     steps:
-      - name: Validate the release tag
+      - name: Validate the dispatch inputs
         id: tag
         env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          BUCKET: ${{ secrets.AWS_BUCKET }}
+          S3_PATH: ${{ github.event.inputs.s3_path }}
           TAG: ${{ github.event.inputs.tag }}
         run: |
           set -euo pipefail
-          # Anchored at both ends: an unanchored tail is what lets a path
-          # separator through and turns the tag into a nested prefix.
+
+          # Tag shape. Anchored at both ends: an unanchored tail is what lets a
+          # path separator through and turns the tag into a nested prefix.
           if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "stable=true" >> "$GITHUB_OUTPUT"
-            echo "$TAG is a stable release — /latest will be repointed"
+            stable=true
           elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.]+$ ]]; then
-            echo "stable=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::$TAG is a pre-release — assets upload, /latest stays put"
+            stable=false
           else
             echo "::error::TAG '$TAG' is not a version tag (expected vN.N.N or vN.N.N-prerelease)"
             exit 1
           fi
+
+          # Prefix shape. s3_path builds both the upload destination and the
+          # routing-rule key, so it gets the same treatment as the tag.
+          prefix="${S3_PATH%/}"
+          if [[ ! "$prefix" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*(/[A-Za-z0-9._-]+)*$ ]]; then
+            echo "::error::S3_PATH '$S3_PATH' is not a plain bucket prefix (expected e.g. 'desktop/')"
+            exit 1
+          fi
+
+          # A stable dispatch exists to become /latest, so if its prefix has no
+          # routing rule it cannot succeed. Failing here rather than in
+          # `point-latest` is the difference between rejecting a mistyped prefix
+          # and rejecting it only after a full release has been uploaded into it.
+          # Assigning first means an API failure aborts on its own error instead
+          # of being reported as a missing rule.
+          if [ "$stable" = true ]; then
+            website=$(aws s3api get-bucket-website --bucket "$BUCKET")
+            if ! jq -e --arg from "$prefix/latest" \
+                 'any(.RoutingRules[]?; .Condition.KeyPrefixEquals == $from)' \
+                 <<< "$website" > /dev/null; then
+              echo "::error::no routing rule with KeyPrefixEquals '$prefix/latest' on $BUCKET."
+              echo "::error::Check the s3_path input, or add the rule under Static website hosting → Redirection rules."
+              exit 1
+            fi
+            echo "$TAG is a stable release — $prefix/latest will be repointed"
+          else
+            echo "::notice::$TAG is a pre-release — assets upload, $prefix/latest stays put"
+          fi
+
+          echo "stable=$stable" >> "$GITHUB_OUTPUT"
 
   release-s3:
     needs: validate
@@ -151,10 +184,13 @@ jobs:
             exit 1
           fi
 
-          # Never point the alias at an empty or missing prefix.
-          if [ -z "$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix "$to/" \
-                       --max-keys 1 --query 'Contents[0].Key' --output text 2>/dev/null \
-                     | grep -v '^None$' || true)" ]; then
+          # Never point the alias at an empty or missing prefix. Assign first so
+          # a failed list aborts on its own error: swallowing the status here
+          # would report an S3 throttle as "the upload never ran" and send
+          # whoever is on the release to a job that actually succeeded.
+          listing=$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix "$to/" \
+                      --max-keys 1 --query 'Contents[0].Key' --output text)
+          if [ -z "$listing" ] || [ "$listing" = "None" ]; then
             echo "::error::no objects under s3://$BUCKET/$to/ — did the upload step run?"
             exit 1
           fi
