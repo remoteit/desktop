@@ -1,7 +1,7 @@
 import { selectDeviceColumns } from '../selectors/devices'
 import { graphQLBasicRequest } from './graphQL'
 import { removeDeviceName } from '@common/nameHelper'
-import { getTimeZone } from '../helpers/dateHelper'
+import { getTimeZone, listTimeSeriesOptions, timeSeriesRequest } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
 
@@ -169,6 +169,24 @@ const DEVICE_TIME_SERIES_PARAMS =
 const SERVICE_TIME_SERIES_PARAMS =
   ', $serviceTSType: TimeSeriesType!, $serviceTSResolution: TimeSeriesResolution!, $serviceTSLength: Int'
 
+// `list` scopes a heat map down to the one bucket per day a list strip draws.
+// It lives here rather than at the call sites so a list query cannot accidentally
+// ask for the details view's 720 points per device.
+const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesOptions, list?: boolean) => {
+  const scope = (options?: ITimeSeriesOptions) =>
+    options && timeSeriesRequest(list ? listTimeSeriesOptions(options) : options)
+  const deviceTS = scope(device)
+  const serviceTS = scope(service)
+  return {
+    deviceTSLength: deviceTS?.length,
+    deviceTSType: deviceTS?.type,
+    deviceTSResolution: deviceTS?.resolution,
+    serviceTSLength: serviceTS?.length,
+    serviceTSType: serviceTS?.type,
+    serviceTSResolution: serviceTS?.resolution,
+  }
+}
+
 export async function graphQLFetchDeviceList(params: gqlOptions) {
   return await graphQLBasicRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
@@ -198,12 +216,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       accountId: params.accountId,
       platform: params.platform,
       name: params.name?.trim() || undefined,
-      deviceTSLength: params.deviceTimeSeries?.length,
-      deviceTSType: params.deviceTimeSeries?.type,
-      deviceTSResolution: params.deviceTimeSeries?.resolution,
-      serviceTSLength: params.serviceTimeSeries?.length,
-      serviceTSType: params.serviceTimeSeries?.type,
-      serviceTSResolution: params.serviceTimeSeries?.resolution,
+      ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
     }
   )
 }
@@ -231,12 +244,7 @@ export async function graphQLPreloadDevices(params: {
       }`,
     {
       ...params,
-      deviceTSLength: params.deviceTimeSeries?.length,
-      deviceTSType: params.deviceTimeSeries?.type,
-      deviceTSResolution: params.deviceTimeSeries?.resolution,
-      serviceTSLength: params.serviceTimeSeries?.length,
-      serviceTSType: params.serviceTimeSeries?.type,
-      serviceTSResolution: params.serviceTimeSeries?.resolution,
+      ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
     }
   )
 }
@@ -279,12 +287,7 @@ export async function graphQLFetchFullDevice(
     {
       id,
       accountId,
-      deviceTSLength: deviceTimeSeries?.length,
-      deviceTSType: deviceTimeSeries?.type,
-      deviceTSResolution: deviceTimeSeries?.resolution,
-      serviceTSLength: serviceTimeSeries?.length,
-      serviceTSType: serviceTimeSeries?.type,
-      serviceTSResolution: serviceTimeSeries?.resolution,
+      ...timeSeriesVariables(deviceTimeSeries, serviceTimeSeries),
     }
   )
 }
@@ -315,12 +318,18 @@ export function graphQLDeviceAdaptor({
   hidden,
   loaded,
   serviceLoaded,
+  deviceTimeSeries,
+  serviceTimeSeries,
 }: {
   gqlDevices: any[]
   accountId: string
   hidden?: boolean
   loaded?: boolean
   serviceLoaded?: boolean
+  // The options the response was fetched with, not whatever the settings say by
+  // the time it lands — they differ for the length of a round trip.
+  deviceTimeSeries?: ITimeSeriesOptions
+  serviceTimeSeries?: ITimeSeriesOptions
 }): IDevice[] {
   if (!gqlDevices || !gqlDevices.length) return []
   const state = store.getState()
@@ -355,11 +364,11 @@ export function graphQLDeviceAdaptor({
       permissions: d.permissions || [],
       attributes: processDeviceAttributes(d, customAttributes),
       tags: d.tags?.map(t => ({ ...t, created: new Date(t.created) })) || [],
-      services: graphQLServiceAdaptor(d, loaded || serviceLoaded),
+      services: graphQLServiceAdaptor(d, loaded || serviceLoaded, serviceTimeSeries),
       presenceAddress: d.presenceAddress,
       notificationSettings: d.notificationSettings,
       supportedAppInstalls: d.supportedAppInstalls?.map(i => i.id) || [],
-      timeSeries: processTimeSeries(d),
+      timeSeries: processTimeSeries(d, deviceTimeSeries),
       access:
         d.access?.map((a: any) => ({
           id: a.user?.id,
@@ -376,7 +385,11 @@ export function graphQLDeviceAdaptor({
   return data
 }
 
-export function graphQLServiceAdaptor(device: any, loaded?: boolean): IService[] {
+export function graphQLServiceAdaptor(
+  device: any,
+  loaded?: boolean,
+  serviceTimeSeries?: ITimeSeriesOptions
+): IService[] {
   return (
     device.services?.map(
       (s: any): IService => ({
@@ -398,7 +411,7 @@ export function graphQLServiceAdaptor(device: any, loaded?: boolean): IService[]
         host: s.host,
         protocol: s.protocol,
         presenceAddress: s.presenceAddress,
-        timeSeries: processTimeSeries(s),
+        timeSeries: processTimeSeries(s, serviceTimeSeries),
         link: s.link && {
           ...s.link,
           web: s.link?.url.startsWith('http'),
@@ -466,11 +479,13 @@ function processAttributes(response: any): ILookup<any> {
   return result
 }
 
-function processTimeSeries(response: any): ITimeSeries | undefined {
+function processTimeSeries(response: any, options?: ITimeSeriesOptions): ITimeSeries | undefined {
   if (!response.timeSeries) return
   const timeSeries = response.timeSeries
   return {
     ...timeSeries,
+    style: options?.style,
+    days: options?.style === 'heatmap' ? options.length : undefined,
     start: new Date(timeSeries.start),
     end: new Date(timeSeries.end),
     time: timeSeries.time.map((t: any) => new Date(t)),

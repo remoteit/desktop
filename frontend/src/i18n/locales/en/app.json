@@ -767,6 +767,10 @@
     "title": "Graphs",
     "updateToSeeMore": "Update to see more."
   },
+  "graphStyle": {
+    "bar": "Bar",
+    "heatmap": "Heat map"
+  },
   "graphType": {
     "AVAILABILITY": "Online %",
     "CONNECT": "Connect events",
@@ -1999,8 +2003,13 @@
     "title": "Test Settings",
     "webSocketURL": "WebSocket URL"
   },
+  "time": {
+    "midnight": "midnight",
+    "noon": "noon"
+  },
   "timeSeriesSelect": {
     "graphLength": "Graph length",
+    "graphStyle": "Graph style",
     "graphType": "Graph type",
     "graphUnit": "Graph unit",
     "lengthValue_one": "{{count}} {{unit}}",

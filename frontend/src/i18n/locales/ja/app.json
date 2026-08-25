@@ -1918,8 +1918,13 @@
     "title": "テスト設定",
     "webSocketURL": "WebSocket URL"
   },
+  "time": {
+    "midnight": "深夜0時",
+    "noon": "正午"
+  },
   "timeSeriesSelect": {
     "graphLength": "グラフの長さ",
+    "graphStyle": "グラフのスタイル",
     "graphType": "グラフの種類",
     "graphUnit": "グラフの単位",
     "lengthValue_other": "{{count}}{{unit}}",
@@ -1965,6 +1970,10 @@
   "viewAsBanner": {
     "exit": "表示モードを終了",
     "viewingAs": "表示中: {{email}}"
+  },
+  "graphStyle": {
+    "bar": "棒グラフ",
+    "heatmap": "ヒートマップ"
   },
   "graphType": {
     "AVAILABILITY": "オンライン%",
