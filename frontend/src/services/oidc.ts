@@ -96,6 +96,10 @@ const stored = (): Stored | undefined => {
 export const oidcConfigured = () => !!OAUTH_ISSUER
 export const oidcSignedIn = () => !!stored()?.refresh_token
 export const oidcClaims = (): OidcClaims | undefined => decodeJwt(stored()?.id_token)
+/** The support-session marker: permitteer stamps `act` (the OPERATOR acting as this
+ *  subject) into every token of an impersonated session, the id_token included — the
+ *  app-readable artifact. Null on an ordinary session. */
+export const oidcActor = (): { sub: string } | null => decodeJwt(stored()?.id_token)?.act ?? null
 
 async function discover() {
   if (discovery) return discovery
