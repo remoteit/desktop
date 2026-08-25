@@ -1,14 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import cloudSync from '../services/CloudSync'
-import { TEST_HEADER } from '../constants'
+import { TEST_HEADER, OAUTH_GRAPHQL_RESOURCE } from '../constants'
 import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getApiURL, getWebSocketURL } from '../helpers/apiHelper'
+import { bindableResources } from '../services/permitteerAccount'
+import { oidcAccessToken } from '../services/oidc'
 import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
+import { ListItemRadio } from '../components/ListItemRadio'
 import { Container } from '../components/Container'
 import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
@@ -37,6 +40,80 @@ export const TestPage: React.FC = () => {
   // backend), so no preference emit
   async function setAgentPreference(key: string, value: string | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
+  }
+
+  // --- the stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c) ----
+  // The options come FROM the AS: the client's own allowlist joined to registry names, so the
+  // picker and the mint-time guardrail can never disagree. Identifiers group into stage pairs
+  // (graphql + events); one selection sets BOTH URLs and mints BOTH audiences immediately, so
+  // an illegal target fails here with a legible error, never as ambient 403s an hour later.
+  const [targets, setTargets] = useState<Array<{ identifier: string; name: string }>>([])
+  const [mintError, setMintError] = useState<string>('')
+  useEffect(() => {
+    bindableResources().then(setTargets)
+  }, [])
+
+  type StagePair = { stage: string; name: string; graphql?: string; ws?: string }
+  const stagePairs: StagePair[] = React.useMemo(() => {
+    const pairs = new Map<string, StagePair>()
+    for (const target of targets) {
+      const gql = target.identifier.match(/^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/)
+      const ws = target.identifier.match(/^wss:\/\/ws(?:\.([a-z0-9-]+))?\.remote\.it\/v1$/)
+      if (!gql && !ws) continue // passport / account-api entries are not switch targets
+      const stage = (gql?.[1] ?? ws?.[1]) || 'prod'
+      const pair = pairs.get(stage) || { stage, name: stage }
+      if (gql) {
+        pair.graphql = target.identifier
+        pair.name = target.name
+      } else pair.ws = target.identifier
+      pairs.set(stage, pair)
+    }
+    return [...pairs.values()].filter(pair => pair.graphql)
+  }, [targets])
+
+  // Which radio is lit. The override flag is DERIVED from the choice — selecting the stage
+  // this build ships with is the same thing the old "Override default APIs" switch expressed,
+  // so the switch is gone and `switchApi` (still read by the Electron backend to configure
+  // the CLI binary) is set from here. `customMode` is held locally because a hand-typed URL
+  // may coincide with a registered stage, and the choice should not silently jump to it.
+  const currentGraphql = apis.switchApi && apis.apiGraphqlURL ? apis.apiGraphqlURL : OAUTH_GRAPHQL_RESOURCE
+  const [customMode, setCustomMode] = useState<boolean | undefined>(undefined)
+  const customSelected =
+    customMode ?? (!!apis.switchApi && stagePairs.length > 0 && !stagePairs.some(p => p.graphql === currentGraphql))
+
+  async function selectCustom() {
+    setMintError('')
+    setCustomMode(true)
+    const values = {
+      switchApi: true,
+      apiGraphqlURL: apis.apiGraphqlURL || getApiURL() || '',
+      webSocketURL: apis.webSocketURL || getWebSocketURL() || '',
+    }
+    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
+    emit('preferences', { ...preferences, ...values })
+  }
+
+  async function selectStage(pair: StagePair) {
+    setMintError('')
+    setCustomMode(false)
+    const isDefault = pair.graphql === OAUTH_GRAPHQL_RESOURCE
+    const values = {
+      switchApi: !isDefault,
+      apiGraphqlURL: pair.graphql!,
+      ...(pair.ws ? { webSocketURL: pair.ws } : {}),
+    }
+    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
+    emit('preferences', { ...preferences, ...values })
+    try {
+      if (!isDefault) {
+        await oidcAccessToken(pair.graphql!)
+        if (pair.ws) await oidcAccessToken(pair.ws)
+      }
+      emit('binaries/install')
+      cloudSync.all()
+    } catch (error) {
+      setMintError(error instanceof Error ? error.message : String(error))
+    }
   }
 
   return (
@@ -101,27 +178,52 @@ export const TestPage: React.FC = () => {
             hideIcon
           />
         </PortalUI>
+      </List>
 
-        <ListItemSetting
-          hideIcon
-          label={t('testPage.overrideDefaultAPIs', 'Override default APIs')}
-          onClick={() => {
-            setAPIPreference('switchApi', !apis.switchApi)
-            emit('binaries/install')
-          }}
-          toggle={!!apis.switchApi}
+      <Typography variant="subtitle1">{t('testPage.apiTarget', 'API Target')}</Typography>
+      <List>
+        {stagePairs.map(pair => (
+          <ListItemRadio
+            key={pair.stage}
+            label={pair.name}
+            subLabel={pair.ws ? `${pair.graphql} + events` : pair.graphql}
+            checked={!customSelected && currentGraphql === pair.graphql}
+            onClick={() => selectStage(pair)}
+          />
+        ))}
+        <ListItemRadio
+          label={t('testPage.customAPITarget', 'Custom')}
+          subLabel={t('testPage.customAPITargetHint', 'Point at a URL the authorization server has not registered.')}
+          checked={customSelected}
+          onClick={selectCustom}
         />
+        {!!mintError && (
+          <ListItem>
+            <Typography variant="caption" color="error">
+              {t('testPage.mintError', 'This target was refused at token mint: {{error}}', {
+                error: mintError,
+              })}
+            </Typography>
+          </ListItem>
+        )}
         <ListItem>
           <Quote margin={null} indent="listItem" noInset>
             <List disablePadding>
               <InlineTextFieldSetting
                 value={getApiURL()}
-                label={t('testPage.switchGraphQLAPIs', 'Switch GraphQL APIs')}
-                disabled={!apis.switchApi}
+                label={t('testPage.customGraphQLURL', 'Custom GraphQL URL (advanced)')}
+                disabled={!customSelected}
                 resetValue={getApiURL()}
                 maxLength={200}
-                onSave={url => {
-                  setAPIPreference('apiGraphqlURL', url)
+                onSave={async result => {
+                  const url = result.toString()
+                  setMintError('')
+                  await setAPIPreference('apiGraphqlURL', url)
+                  try {
+                    await oidcAccessToken(url)
+                  } catch (error) {
+                    setMintError(error instanceof Error ? error.message : String(error))
+                  }
                   emit('binaries/install')
                   cloudSync.all()
                 }}
@@ -129,8 +231,8 @@ export const TestPage: React.FC = () => {
               />
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
-                label={t('testPage.webSocketURL', 'WebSocket URL')}
-                disabled={!apis.switchApi}
+                label={t('testPage.customWebSocketURL', 'Custom WebSocket URL (advanced)')}
+                disabled={!customSelected}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
                 onSave={url => {

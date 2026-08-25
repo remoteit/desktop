@@ -4,13 +4,22 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, IconButton } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { Icon } from './Icon'
+import { oidcActor } from '../services/oidc'
 
 export const ViewAsBanner: React.FC = () => {
   const { t } = useTranslation()
   const viewAsUser = useSelector((state: State) => state.ui.viewAsUser)
+  const user = useSelector((state: State) => state.auth.user)
   const dispatch = useDispatch<Dispatch>()
 
-  if (!viewAsUser) return null
+  // Two lanes light this banner. The legacy header lane sets ui.viewAsUser. A SUPPORT
+  // SESSION (permitteer impersonation) needs no app state at all: the id_token itself says
+  // the identity is acted (`act` names the operator), so the banner reads the token — the
+  // one signal that cannot drift from what the session actually is.
+  const actor = oidcActor()
+  const supportSession = !viewAsUser && !!actor && !!user
+  if (!viewAsUser && !supportSession) return null
+  const email = viewAsUser?.email || user?.email || ''
 
   const handleExit = () => {
     // Clear from sessionStorage
@@ -36,7 +45,9 @@ export const ViewAsBanner: React.FC = () => {
       }}
     >
       <Typography variant="body2" sx={{ fontWeight: 500, flexGrow: 1, textAlign: 'center' }}>
-        {t('viewAsBanner.viewingAs', { email: viewAsUser.email, defaultValue: 'Viewing as: {{email}}' })}
+        {supportSession
+          ? t('viewAsBanner.supportSession', { email, defaultValue: 'Support session — viewing as {{email}}. Tokens are stamped with your identity; the user can see and end this session.' })
+          : t('viewAsBanner.viewingAs', { email, defaultValue: 'Viewing as: {{email}}' })}
       </Typography>
       <IconButton
         onClick={handleExit}

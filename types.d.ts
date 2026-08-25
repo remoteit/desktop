@@ -816,32 +816,57 @@ declare global {
     lastUsed: Date
   }
 
-  // A surface an agent's token is valid for: the raw resource URL + the friendly catalog label.
-  type IAgentAudience = {
-    url: string
-    label: string
-  }
-
-  // An OAuth app / AI agent the user has authorized (a Hydra consent), from graphql's
-  // login.connectedApps façade (list + reach + lastActive pre-merged). null reach = full reach.
+  // A connected app as the AS's account API reports it (GET {issuer}/account/api/apps).
+  // The GRANT is the unit — one row per authorized app, and revoking the id kills every
+  // refresh token minted from it. Shape mirrors the AS view verbatim (no reshaping layer).
   type IAuthorizedAgent = {
+    id: string // grant id — the revocation handle
     clientId: string
-    clientName?: string
-    logoUri?: string
-    capabilities: string[] // device:read / device:write / … scopes granted
-    audience: IAgentAudience[] // surfaces the token is valid for (url + friendly label)
-    grantedAt?: string
-    expiresAt?: string
-    reach?: IAccountReach[] | null // per-account reach limit; null/absent = no limit (all devices)
-    lastActive?: string // last API request seen (merged from graphql login.agentActivity)
+    app: string // display name from the client's branding
+    logo: string | null
+    appOrigin?: string | null // the client's VERIFIABLE origin (claude.ai) — null for first-party
+    active: boolean
+    givenAt?: string
+    updatedAt?: string
+    lastUsedAt?: string | null
+    scopes: string[]
+    groups: {
+      typeLabel?: string
+      resourceLabel?: string
+      api?: string | null
+      apiHost?: string | null
+      // consent's ACCOUNTS section replayed from the grant — ACTIVE selection plus the
+      // consented ceiling (the edit bound) and the RS's labeled account list when it answers
+      reach?: {
+        all: boolean
+        accounts: { id: string; filter: string | null }[]
+        ceilingAll: boolean
+      // "All accounts" is still on offer (consent would have offered it), even if this grant
+      // never took it — so the editor can present it as an addition.
+      offerAll?: boolean
+        ceilingIds: string[]
+        options: { id: string; label: string }[] | null
+      } | null
+      actions: IGrantAction[]
+    }[]
+    // The SCOPE lane, read-only: APIs the client may bind whose granted scopes they declare
+    // (a first-party app's device access lives here, never in the detail groups).
+    scopeGroups?: { api: string; actions: { key: string; label: string; description: string | null }[] }[]
+    links: { name: string; url: string }[]
+    revokeReach: { immediate: string[]; delayed: string[]; delayMinutes: number }
   }
 
-  // One account an agent may reach, limited to the given tags (owned by that account; null = all
-  // its devices) matched by the operator.
-  type IAccountReach = {
-    account: string // account id
-    tags: string[] | null
-    operator: ITagOperator // 'ANY' | 'ALL'
+  type IGrantAction = {
+    key: string
+    label: string
+    piece?: string | null // consent's <piece> grammar (devices.connect → "Devices")
+    description: string | null
+    limit: string | null
+    enabled: boolean
+    // Asked for by the app at consent but never granted. Listed so it can be taken up here
+    // without the app running authorize again — it asked, and you saw it.
+    offered?: boolean
+    orgLimited: boolean
   }
 
   type IRouteType = 'failover' | 'p2p' | 'proxy' | 'public'

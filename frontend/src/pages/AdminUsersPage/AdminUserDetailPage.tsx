@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Typography, List, ListItemText, Box, Divider } from '@mui/material'
 import { Container } from '../../components/Container'
@@ -10,14 +10,12 @@ import { Body } from '../../components/Body'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
-import { PORTAL_URL } from '../../constants'
+import { OAUTH_ISSUER } from '../../constants'
 import { Dispatch, State } from '../../store'
-import browser from '../../services/browser'
 import { windowOpen } from '../../services/browser'
 
 export const AdminUserDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
-  const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const user = useSelector((state: State) => state.adminUsers.detailCache[userId])
   const [loading, setLoading] = useState(!user)
@@ -59,17 +57,15 @@ export const AdminUserDetailPage: React.FC = () => {
   const deviceOnline = user.info?.devices?.online || 0
 
   const handleViewAsUser = () => {
-    const viewAs = `/devices?viewAs=${user.id},${encodeURIComponent(user.email || '')}`
-    // The desktop app shows local backend data, so view as has to run in the web portal
-    if (browser.isElectron) {
-      windowOpen(`${PORTAL_URL}/#${viewAs}`, '_blank', true)
-      return
-    }
-    if (browser.isMobile) {
-      history.push(viewAs)
-      return
-    }
-    windowOpen(`${window.location.href.split('#')[0]}#${viewAs}`, '_blank')
+    // Permitteer lane: view-as is a SUPPORT SESSION, not a header (docs/remoteit-desktop-
+    // login.md Phase 4d). The X-R3-User lane is deliberately dead for these tokens (no
+    // `delegate` scope is minted), so the eye button deep-links to the operator console's
+    // user page, whose "open <app> as user" mints the launch behind its own gates:
+    // kill-switch, operator roster, an MFA-carrying sign-in fresher than ten minutes.
+    // The EMAIL is the key both worlds share: permitteer subjects are sub_<hex>, not r3
+    // GUIDs — the authorizer joins them by email — and the console resolves an unknown
+    // deep-link id through its user search (one match opens; else honestly unknown).
+    windowOpen(`${OAUTH_ISSUER}/admin/console/users/${encodeURIComponent(user.email || user.id)}?launch=remoteit_portal`, '_blank', true)
   }
 
   return (

@@ -5,27 +5,13 @@ import network from '../services/Network'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import {
-  CLIENT_ID,
-  MOBILE_CLIENT_ID,
-  CALLBACK_URL,
-  AUTH_API_URL,
-  COGNITO_USER_POOL_ID,
-  COGNITO_AUTH_DOMAIN,
-  REDIRECT_URL,
-  SIGNOUT_REDIRECT_URL,
-  API_URL,
-  DEVELOPER_KEY,
-  SIGN_OUT_BACKEND_TIMEOUT,
-} from '../constants'
+import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { CognitoUser } from '../cognito/types'
-import { AuthService, ConfigInterface } from '../cognito/auth'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import sleep from '../helpers/sleep'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
 import i18n from '../i18n'
@@ -47,7 +33,8 @@ export interface AuthState {
   authenticated: boolean
   backendAuthenticated: boolean
   signInError?: string
-  authService?: AuthService
+  signingIn?: boolean
+  passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
   mfaMethod: string
   AWSUser: AWSUser
@@ -58,47 +45,102 @@ const defaultState: AuthState = {
   authenticated: false,
   backendAuthenticated: false,
   signInError: undefined,
+  signingIn: false,
   user: undefined,
-  authService: undefined,
   mfaMethod: '',
   AWSUser: { authProvider: '' },
 }
 
-const authServiceConfig = (): ConfigInterface => ({
-  cognitoClientID: browser.isMobile ? MOBILE_CLIENT_ID : CLIENT_ID,
-  cognitoUserPoolID: COGNITO_USER_POOL_ID,
-  cognitoAuthDomain: COGNITO_AUTH_DOMAIN,
-  checkSamlURL: AUTH_API_URL + '/checkSaml',
-  cognitoRegion: 'US-WEST-2',
-  redirectURL:
-    browser.isPortal || browser.isElectron || browser.isMobile ? window.origin : window.origin + '/v1/callback/',
-  callbackURL: browser.isPortal ? window.origin : browser.isElectron || browser.isMobile ? REDIRECT_URL : CALLBACK_URL,
-  signoutCallbackURL: browser.isPortal
-    ? window.origin
-    : browser.isElectron || browser.isMobile
-      ? SIGNOUT_REDIRECT_URL
-      : CALLBACK_URL,
-})
-
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    // silent suppresses the session-error toast for machine-triggered runs (a
-    // network reconnect), where the user didn't ask for this and may not even be
-    // looking at the app. See Controller.onNetworkConnect.
+    // The BACKEND owns the OIDC session (permitteer docs/remoteit-desktop-login.md):
+    // init just asks it whether one exists. silent suppresses the session-error toast
+    // for machine-triggered runs (a network reconnect). See Controller.onNetworkConnect.
     async init(options: { silent?: boolean } = {}, state) {
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
-        console.log('AUTH SERVICE CONFIG', authServiceConfig())
-        const authService = new AuthService(authServiceConfig())
-        console.log('AUTH INIT', { authService })
-        await sleep(500)
-        await dispatch.auth.set({ authService })
-        await dispatch.auth.checkSession({ refreshToken: true, silent: options.silent })
+        try {
+          // A boot with ?code&state in the URL IS the sign-in completing (web return, or
+          // the desktop deep-link reload); otherwise restore a stored session.
+          const claims = await oidcCompleteFromUrl()
+          if (claims) await dispatch.auth.handleSignInSuccess(claims)
+          else if (oidcSignedIn()) {
+            // Stored tokens are a CLAIM of a session, not proof of one: the AS may have
+            // revoked it (sign-out elsewhere, admin action, family revocation). Force one
+            // token mint — a dead refresh family clears itself and we boot signed OUT
+            // instead of rendering an authenticated shell over a corpse.
+            const alive = await getToken()
+            if (alive) {
+              await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
+              await dispatch.auth.healGrant()
+            } else invalidateOidcToken()
+          } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
+        } catch (error: any) {
+          console.error('AUTH INIT: sign-in completion failed', error)
+          if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
+        }
       }
       dispatch.auth.set({ initialized: true })
       console.log('AUTH INIT END')
+    },
+    /** A build that declares MORE than the standing grant carries (a slice added in a deploy,
+     *  against an install that has not signed in since) heals itself: only a fresh authorize
+     *  merges the new slice in, and for this first-party skipConsent client that shows no
+     *  consent screen — a redirect chain back to the app. Without it the person hits an
+     *  unexplained 403 in whichever feature needed the slice, and the only cure they could
+     *  find is signing out and in again.
+     *
+     *  ONE attempt per app session. If the re-authorize comes back still short — a client
+     *  whose declaration outruns what the AS will grant it — a second try would return here
+     *  and loop the person through the browser forever. Same loop-breaker the console's
+     *  renew marker uses. */
+    async healGrant() {
+      const ATTEMPTED = 'oidc.regrant'
+      try {
+        if (!oidcGrantStale()) {
+          window.sessionStorage.removeItem(ATTEMPTED)
+          return
+        }
+        if (window.sessionStorage.getItem(ATTEMPTED)) {
+          console.warn('AUTH: grant still stale after re-authorizing; not retrying this session')
+          return
+        }
+        console.log('AUTH: grant predates this build’s declaration — re-authorizing')
+        window.sessionStorage.setItem(ATTEMPTED, '1')
+        await oidcStart({})
+      } catch (error) {
+        console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
+      }
+    },
+    // Leave for the AS (the whole login UX — email-first, org SSO, MFA, signup, forgot —
+    // lives there). On web the page departs; on desktop the window shows the waiting
+    // panel until the deep link reloads it with the code.
+    /** Account switch: re-run authorize with select_account — the AS chooser shows the
+     * real session chips; nothing is torn down locally, so a canceled chooser costs
+     * nothing. Completion replaces the session like any sign-in (old family revoked). */
+    async switchAccount(_: void) {
+      try {
+        await oidcStart({ prompt: 'select_account' })
+      } catch (error) {
+        dispatch.auth.set({ signInError: error?.message || 'Could not open the account chooser.' })
+      }
+    },
+    async signIn(_: void) {
+      dispatch.auth.set({ signingIn: true, signInError: undefined })
+      try {
+        // Desktop sign-in always offers the CHOOSER (prompt=select_account): a live chip
+        // in the browser would otherwise silently SSO whoever was last signed in, and a
+        // button that says "Sign in" should let the person pick. This also covers the
+        // post-signout rule (never silently reuse a chip) — a deliberate selection is
+        // not silent. Web keeps the plain path: its auto-start SSO is the point there,
+        // and its signout-return lane still forces prompt=login.
+        await oidcStart(browser.isElectron ? { prompt: 'select_account' } : {})
+      } catch (error: any) {
+        console.error('SIGN IN FAILED', error)
+        dispatch.auth.set({ signingIn: false, signInError: error?.message || 'Sign in failed, please try again.' })
+      }
     },
     async fetchUser(_: void) {
       const { auth } = dispatch
@@ -116,28 +158,44 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: i18n.t('notices:auth.loginFailed', { defaultValue: 'Login failed.' }) })
       }
     },
-    async changePassword(passwordValues: IPasswordValue, state): Promise<boolean> {
-      const existingPassword = passwordValues.currentPassword
-      const newPassword = passwordValues.password
-
-      try {
-        await state.auth.authService?.changePassword(existingPassword, newPassword)
-        dispatch.ui.set({
-          successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
-        })
+    // Native password change over the Passport self-API (Phase 2b): the current password
+    // is the proof of possession; accounts whose store challenges (pool MFA) get a code
+    // continuation the ChangePassword form renders.
+    async changePassword(passwordValues: IPasswordValue): Promise<boolean> {
+      const { selfChangePassword } = await import('../services/passportSelf')
+      const r = await selfChangePassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
+      if (r.status === 'ok') {
+        dispatch.auth.set({ passwordChallenge: undefined })
+        dispatch.ui.set({ successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }) })
         return true
-      } catch (error: any) {
-        const message =
-          error.code === 'NotAuthorizedException'
-            ? 'Current password is incorrect.'
-            : error.code === 'InvalidPasswordException'
-              ? error.message || 'New password does not meet the requirements.'
-              : error.code === 'LimitExceededException'
-                ? 'Too many attempts. Please try again later.'
-                : error.message || 'An unexpected error occurred. Please try again.'
-        dispatch.ui.set({ errorMessage: message })
+      }
+      if (r.status === 'mfa' && r.challenge) {
+        dispatch.auth.set({ passwordChallenge: { challenge: r.challenge, hint: r.hint } })
         return false
       }
+      dispatch.ui.set({
+        errorMessage:
+          r.error === 'invalid_password' ? 'Current password is incorrect.'
+          : r.error === 'weak_password' ? r.error_description || 'New password does not meet the requirements.'
+          : r.error_description || 'An unexpected error occurred. Please try again.',
+      })
+      return false
+    },
+    /** Answer the store's second-factor challenge raised by changePassword. */
+    async completePasswordChallenge(code: string, state): Promise<boolean> {
+      const pending = state.auth.passwordChallenge
+      if (!pending) return false
+      const { selfChallenge } = await import('../services/passportSelf')
+      const r = await selfChallenge(pending.challenge, { code })
+      if (r.status === 'ok') {
+        dispatch.auth.set({ passwordChallenge: undefined })
+        dispatch.ui.set({ successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }) })
+        return true
+      }
+      // invalid_code re-arms the SAME step under a fresh handle — a typo never restarts.
+      dispatch.auth.set({ passwordChallenge: r.challenge ? { challenge: r.challenge, hint: pending.hint } : undefined })
+      dispatch.ui.set({ errorMessage: r.challenge ? 'That code didn’t match — try again.' : 'The request expired — start over.' })
+      return false
     },
     /* TODO validate and hook changeEmail up */
     async changeEmail(email: string) {
@@ -163,32 +221,32 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: i18n.t('notices:auth.invalidFormat', { defaultValue: 'Invalid format.' }) })
       }
     },
-    async forceRefreshToken(_: void, state) {
-      if (!state.auth.authService) return
-      await state.auth.authService.forceTokenRefresh()
+    async forceRefreshToken(_: void) {
+      invalidateOidcToken()
+      await getToken()
     },
+    // The 401 recovery path (services/post.ts): drop the renderer cache and let the
+    // backend refresh on the next token fetch. If the backend says the session is gone
+    // (refresh family revoked / AS session expired), sign the app out.
     async checkSession(options: { refreshToken: boolean; silent?: boolean }, state) {
-      if (!state.auth.authService) return
-      try {
-        const result = await state.auth.authService.checkSignIn({ refreshToken: options.refreshToken })
-        if (result.cognitoUser) {
-          await dispatch.auth.handleSignInSuccess(result.cognitoUser)
-        } else {
-          console.error('SESSION ERROR', result.error, result)
-          // still logged above - silent only withholds the user-facing toast
-          if (result.error?.message && !options.silent) dispatch.ui.set({ errorMessage: result.error.message })
-        }
-      } catch (error) {
-        console.error('Check sign in error', error)
+      invalidateOidcToken()
+      if (!oidcSignedIn() && state.auth.authenticated) {
+        console.error('SESSION ERROR: session gone (refresh family dead or signed out)')
+        if (!options.silent) dispatch.ui.set({ errorMessage: 'Session expired.' })
+        await dispatch.auth.signedOut()
       }
     },
-    async handleSignInSuccess(cognitoUser: CognitoUser): Promise<void> {
-      if (cognitoUser?.username) {
-        await dispatch.auth.set({ authenticated: true })
-        await dispatch.auth.fetchUser()
-        await dispatch.mfa.getAWSUser()
-        console.log('AUTHENTICATED SUCCESS')
-      }
+    async handleSignInSuccess(claims: OidcClaims): Promise<void> {
+      await dispatch.auth.set({
+        authenticated: true,
+        AWSUser: {
+          authProvider: Array.isArray(claims.amr) ? claims.amr.join(' ') : String(claims.idp ?? ''),
+          email: claims.email,
+          email_verified: claims.email_verified,
+        },
+      })
+      await dispatch.auth.fetchUser()
+      console.log('AUTHENTICATED SUCCESS')
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {
@@ -251,6 +309,14 @@ export default createModel<RootModel>()({
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
+      // EXPLICIT sign-out ends the AS session too — SILENTLY (fetch, before teardown
+      // clears the id_token): no end_session redirect parade, no navigation race with
+      // the sign-in auto-start. The next authorize carries prompt=login so the user
+      // lands on the LOGIN PAGE, never a silent SSO into another chip's live session.
+      // Failure-driven teardown (signedOut via the error paths) stays local-only.
+      const { oidcEndSessionSilently, oidcRequireLoginPrompt } = await import('../services/oidc')
+      await oidcEndSessionSilently()
+      oidcRequireLoginPrompt()
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
@@ -272,17 +338,21 @@ export default createModel<RootModel>()({
     /**
      * Gets called when the backend signs the user out
      */
-    async signedOut(_: void, state) {
+    async signedOut(_: void) {
       // Agent (Hydra) session goes with the app session — clears stored
       // tokens synchronously, revoke is fire-and-forget so sign-out never
       // blocks on it. Runs before the purge (and the transcript reset joins
       // the model resets below) so nothing dispatches between purge and a
       // signOut-triggered reload — a store write there makes redux-persist
       // re-save the pre-signout state for the next user of the machine.
+      // (The DCR agent session retires with the permitteer chat lane —
+      // remoteit-ai-agent.md Phase 4; until then both sign-outs run.)
       dispatch.chat.signOut()
       await persistor.purge()
-      // purge has to happen before signOut because signOut can trigger a reload
-      await state.auth.authService?.signOut()
+      // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
+      // signing out of the app must not sign the user out of login.* (their browser
+      // session is theirs; an explicit "sign out everywhere" action can come later).
+      oidcClearLocal()
       await dispatch.auth.set({ user: undefined })
       dispatch.chat.reset()
       dispatch.user.reset()
@@ -326,11 +396,9 @@ export default createModel<RootModel>()({
       Controller.close()
     },
     async globalSignOut() {
-      const Authorization = await getToken()
-      const response = await axios.get(`${AUTH_API_URL}/globalSignout`, {
-        headers: { Authorization },
-      })
-      console.log(`globalSignOut: `, response)
+      // Pilot: signs this session out at the AS (RP-initiated logout). Every-device
+      // sign-out maps to the AS's /logout/all and rides Phase 2b with the rest of the
+      // security surface.
       dispatch.auth.signOut()
     },
   }),

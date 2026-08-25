@@ -2,10 +2,13 @@ import brand from '@common/brand/config'
 const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
-export const CLIENT_ID = env.VITE_CLIENT_ID
-export const MOBILE_CLIENT_ID = env.VITE_MOBILE_CLIENT_ID
-export const COGNITO_USER_POOL_ID = env.VITE_COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
-export const COGNITO_AUTH_DOMAIN = env.VITE_COGNITO_AUTH_DOMAIN || 'auth.remote.it'
+// Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
+// web and desktop; the backend never touches auth.
+export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''
+export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
+export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://graphql.dev.remote.it/graphql'
+export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.dev.remote.it/account/api'
+
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
 export const GRAPHQL_API = env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
@@ -15,12 +18,6 @@ export const PORTAL_URL = env.VITE_PORTAL_URL || brand.package?.homepage || 'htt
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
-export const REDIRECT_URL = env.VITE_REDIRECT_URL || PROTOCOL + 'authCallback'
-export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
-export const CALLBACK_URL =
-  env.VITE_CALLBACK_URL || env.MODE === 'development'
-    ? env.VITE_DEV_CALLBACK_URL || 'https://dev-auth.internal.remote.it/v1/callback/'
-    : env.VITE_PROD_CALLBACK_URL || 'https://auth.api.remote.it/v1/callback/'
 
 export const WEBSOCKET_URL = env.VITE_WEBSOCKET_URL
 export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL

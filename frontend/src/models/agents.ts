@@ -1,18 +1,15 @@
 import { createModel } from '@rematch/core'
-import {
-  graphQLGetConnectedApps,
-  graphQLRevokeAgent,
-  graphQLSetAgentScope,
-  graphQLClearAgentScope,
-} from '../services/graphQLAgents'
+import { accountApps, revokeAccountApp } from '../services/permitteerAccount'
 import { RootModel } from '.'
 
 type IAgentsState = {
   init: boolean
   fetching: boolean
-  updating?: string // the clientId currently being revoked (drives the revoke button spinner)
+  updating?: string // the grant id currently being revoked (drives the revoke button spinner)
   agents: IAuthorizedAgent[]
-  accessTokenTtlSeconds: number // how long a revoked agent's in-flight token still works
+  // The session's token predates the connected-apps permission slice: one fresh sign-in
+  // (silent SSO — the AS session is alive) re-mints the grant with it. Drives the notice.
+  needsReauth: boolean
 }
 
 const defaultState: IAgentsState = {
@@ -20,7 +17,7 @@ const defaultState: IAgentsState = {
   fetching: false,
   updating: undefined,
   agents: [],
-  accessTokenTtlSeconds: 300,
+  needsReauth: false,
 }
 
 export default createModel<RootModel>()({
@@ -34,15 +31,15 @@ export default createModel<RootModel>()({
     async fetch() {
       dispatch.agents.set({ fetching: true })
       try {
-        // One call: graphql's Connected Apps façade returns the agent list (it queries the Hydra
-        // front on our behalf) already merged with reach + last-active.
-        const result = await graphQLGetConnectedApps()
-        if (result && result !== 'ERROR') {
-          const connectedApps = result.data?.data?.login?.connectedApps
-          dispatch.agents.set({
-            agents: connectedApps?.agents || [],
-            accessTokenTtlSeconds: connectedApps?.accessTokenTtlSeconds || 300,
-          })
+        // Direct to the AS's account API (desktop-login plan D6): the grant list IS the
+        // connected apps list — names, logos, per-action detail and revocation reach
+        // included. Only apps that were actually granted appear; first-party skip-consent
+        // surfaces (this app itself) rightly do not list themselves.
+        const result = await accountApps()
+        if (result.status === 200 && result.body) {
+          dispatch.agents.set({ agents: result.body.items ?? [], needsReauth: false })
+        } else if (result.status === 401 || result.status === 403) {
+          dispatch.agents.set({ needsReauth: true })
         }
       } catch (error) {
         console.error('CONNECTED APPS: fetch failed', error)
@@ -50,38 +47,16 @@ export default createModel<RootModel>()({
         dispatch.agents.set({ fetching: false })
       }
     },
-    async revoke(clientId: string) {
-      dispatch.agents.set({ updating: clientId })
-      await graphQLRevokeAgent(clientId)
+    async revoke(grantId: string) {
+      dispatch.agents.set({ updating: grantId })
+      await revokeAccountApp(grantId)
       await dispatch.agents.fetch()
       dispatch.agents.set({ updating: undefined })
-    },
-    // Optimistic: the mutation is a full replacement, so on success the local value IS the
-    // server value — no refetch, and no `updating` flag (the UI updates instantly). On error,
-    // revert to the previous reach (the graphql layer has already surfaced the error).
-    // Known edge: with rapid toggles, a request that fails *after* a later one succeeds reverts
-    // to its own stale `previous`, briefly diverging from the server until the next fetch
-    // reconciles it. Accepted — a failure interleaved with rapid edits is rare and self-heals.
-    async setLimit(params: { clientId: string; accounts: IAccountReach[] | null }, globalState) {
-      const previous = globalState.agents.agents.find(a => a.clientId === params.clientId)?.reach ?? null
-      dispatch.agents.setReach({ clientId: params.clientId, reach: params.accounts })
-      const result = await graphQLSetAgentScope(params.clientId, params.accounts)
-      if (result === 'ERROR') dispatch.agents.setReach({ clientId: params.clientId, reach: previous })
-    },
-    async clearLimit(clientId: string, globalState) {
-      const previous = globalState.agents.agents.find(a => a.clientId === clientId)?.reach ?? null
-      dispatch.agents.setReach({ clientId, reach: null })
-      const result = await graphQLClearAgentScope(clientId)
-      if (result === 'ERROR') dispatch.agents.setReach({ clientId, reach: previous })
     },
   }),
   reducers: {
     reset(state: IAgentsState) {
       state = { ...defaultState }
-      return state
-    },
-    setReach(state: IAgentsState, params: { clientId: string; reach: IAccountReach[] | null }) {
-      state.agents = state.agents.map(a => (a.clientId === params.clientId ? { ...a, reach: params.reach } : a))
       return state
     },
     set(state: IAgentsState, params: Partial<IAgentsState>) {
