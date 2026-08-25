@@ -6,6 +6,10 @@ interface UsePanelDragOptions {
   getMaxWidth: () => number
   onPersist?: (width: number) => void
   layoutDep?: unknown
+  /** Which edge the panel is fixed to. A right-anchored panel (the chat
+   *  column) grows when the handle is dragged LEFT, so the pointer delta
+   *  is inverted. Defaults to left, matching the content panels. */
+  anchor?: 'left' | 'right'
 }
 
 /**
@@ -20,7 +24,7 @@ interface UsePanelDragOptions {
  * @param options.layoutDep - Dependency to trigger re-measurement (e.g., layout object)
  */
 export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions) {
-  const { panelRef, minWidth, getMaxWidth, onPersist, layoutDep } = options
+  const { panelRef, minWidth, getMaxWidth, onPersist, layoutDep, anchor = 'left' } = options
 
   const handleRef = useRef<number>(initialWidth)
   const moveRef = useRef<number>(0)
@@ -36,13 +40,14 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
   const onMove = useCallback(
     (event: MouseEvent) => {
       const maxWidth = getMaxWidth()
-      handleRef.current += event.clientX - moveRef.current
+      const delta = event.clientX - moveRef.current
+      handleRef.current += anchor === 'right' ? -delta : delta
       moveRef.current = event.clientX
       if (handleRef.current > minWidth && handleRef.current < maxWidth) {
         setWidth(handleRef.current)
       }
     },
-    [minWidth, getMaxWidth]
+    [minWidth, getMaxWidth, anchor]
   )
 
   const onUp = useCallback(

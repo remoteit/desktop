@@ -23,6 +23,7 @@ import {
 // Value import is deref'd only inside effects, so the store/model cycle is safe
 import { store } from '../store'
 import type { State } from '../store'
+import { CHAT_PANEL_WIDTH } from '../constants'
 import i18n from '../i18n'
 
 export type ChatToolCall = {
@@ -39,7 +40,8 @@ export type ChatTranscriptMessage =
 
 export type IChatState = {
   open: boolean
-  expanded: boolean
+  /** Docked column width in px — drag-resized, persisted */
+  width: number
   messages: ChatTranscriptMessage[]
   conversationId: string
   turnId: string
@@ -57,7 +59,7 @@ export type IChatState = {
 
 export const defaultChatState: IChatState = {
   open: false,
-  expanded: false,
+  width: CHAT_PANEL_WIDTH,
   messages: [],
   conversationId: '',
   turnId: '',

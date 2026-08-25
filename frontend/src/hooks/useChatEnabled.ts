@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useMediaQuery } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
@@ -5,7 +6,7 @@ import {
   MODE,
   CHAT_ALWAYS_ON,
   CHAT_PANEL_WIDTH,
-  CHAT_PANEL_WIDTH_EXPANDED,
+  CHAT_PANEL_WIDTH_MIN,
   HIDE_TWO_PANEL_WIDTH,
   HIDE_SIDEBAR_WIDTH,
   SIDEBAR_WIDTH,
@@ -20,11 +21,37 @@ export const useChatEnabled = (): boolean => {
   return MODE === 'development' || CHAT_ALWAYS_ON || !!testUI
 }
 
-/* Width the docked chat column occupies — single source for the fits-check
-   below, App's reserved layout width, and ChatPanel's rendered width */
+/* Viewport width, tracked for the chat column's fit math — the content
+   panels measure on the same event (see DoublePanel's resize listener) */
+const useViewportWidth = (): number => {
+  const [width, setWidth] = useState(() => window.innerWidth)
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+  return width
+}
+
+/* The widest the chat column may be dragged: what is left once the sidebar
+   chrome and the two content panels keep their minimums. Bounding the drag
+   here is also what keeps the column docked — a wider chat would fail the
+   fit-check below and snap to a full-screen overlay mid-drag. */
+export const useChatMaxWidth = (): number => {
+  const viewport = useViewportWidth()
+  const sidebarWidth = useSidebarWidth()
+  return Math.max(CHAT_PANEL_WIDTH_MIN, viewport - sidebarWidth - HIDE_TWO_PANEL_WIDTH)
+}
+
+/* Width the docked chat column occupies — single source for the fit-check
+   below, App's reserved layout width, and ChatPanel's rendered width. The
+   stored width is clamped to what fits, so a column dragged wide on a large
+   display still docks (narrower) on a small one instead of sticking as an
+   overlay the user has no handle to resize. */
 export const useChatWidth = (): number => {
-  const expanded = useSelector((state: State) => state.chat.expanded)
-  return expanded ? CHAT_PANEL_WIDTH_EXPANDED : CHAT_PANEL_WIDTH
+  const stored = useSelector((state: State) => state.chat.width)
+  const max = useChatMaxWidth()
+  return Math.min(Math.max(stored || CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_MIN), max)
 }
 
 /* Width of the left chrome (sidebar + org bar) the layout reserves —
