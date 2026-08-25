@@ -22,8 +22,9 @@ export const useChatMainSync = (): void => {
     // deliberately leaves the stream running)
     dispatch.chat.resetTransient()
     // The server owns the transcript: catch up on anything a background turn finished
-    // while this window was away (plan D6/D11).
+    // while this window was away (plan D6/D11), and load the conversation history.
     dispatch.chat.syncTranscript()
+    dispatch.chat.loadConversations()
     // Completes a Hydra sign-in redirect if this page load carries ?code —
     // runs on mount regardless of whether the panel is open
     const handlers: PopoutMainHandlers = {
@@ -65,8 +66,9 @@ export const useChatPopoutSync = (): void => {
     document.title = t('chat.windowTitle', 'remote.it chat')
     dispatch.chat.resetTransient()
     // The server owns the transcript: catch up on anything a background turn finished
-    // while this window was away (plan D6/D11).
+    // while this window was away (plan D6/D11), and load the conversation history.
     dispatch.chat.syncTranscript()
+    dispatch.chat.loadConversations()
     // No syncOrg here: the popout keeps the org handed off with the
     // conversation (it has no sidebar to change it with)
     dispatch.chat.checkHealth()

@@ -128,14 +128,30 @@ export async function agentHealth(): Promise<AgentHealth> {
   }
 }
 
+export type ConversationSummary = { id: string; title: string | null; createdAt: string; updatedAt: string }
+
+/* The user's conversations, newest first (D11) — the history picker's source. */
+export async function listConversations(): Promise<ConversationSummary[]> {
+  const response = await fetch(`${agentURL()}/api/conversations`, { headers: await agentHeaders('GET', '/api/conversations', false) })
+  if (!response.ok) return []
+  return ((await response.json()) as { conversations: ConversationSummary[] }).conversations
+}
+
 /* The server-side transcript (D11) — the durable copy this client's display caches. */
 export async function fetchConversation(
   conversationId: string,
-): Promise<{ messages: Array<{ role: string; content: string }> } | null> {
+): Promise<{ title: string | null; messages: Array<{ role: string; content: string }> } | null> {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}`
   const response = await fetch(`${agentURL()}${path}`, { headers: await agentHeaders('GET', path, false) })
   if (!response.ok) return null
-  return (await response.json()) as { messages: Array<{ role: string; content: string }> }
+  return (await response.json()) as { title: string | null; messages: Array<{ role: string; content: string }> }
+}
+
+/* The delete that actually deletes (D9): messages, turns, journal all cascade server-side. */
+export async function deleteConversation(conversationId: string): Promise<boolean> {
+  const path = `/api/conversations/${encodeURIComponent(conversationId)}`
+  const response = await fetch(`${agentURL()}${path}`, { method: 'DELETE', headers: await agentHeaders('DELETE', path, false) })
+  return response.ok
 }
 
 // --- Background work (permitteer docs/remoteit-ai-agent.md D6/Phase 6) -----------------

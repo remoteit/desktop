@@ -6,7 +6,7 @@ import { State, Dispatch } from '../../store'
 import { useChatDocked, useChatWidth } from '../../hooks/useChatEnabled'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { IconButton } from '../../buttons/IconButton'
-import { ChatHeader, NewChatButton } from './ChatHeader'
+import { ChatHeader, NewChatButton, HistoryButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
 import browser from '../../services/browser'
 
@@ -67,6 +67,7 @@ export const ChatPanel: React.FC = () => {
             onClick={() => dispatch.chat.popOut()}
           />
         )}
+        <HistoryButton />
         <NewChatButton />
         <IconButton icon="times" title={t('chat.close', 'Close')} onClick={() => dispatch.chat.set({ open: false })} />
       </ChatHeader>

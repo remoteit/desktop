@@ -5,6 +5,9 @@ import {
   confirmTool,
   backgroundDisable,
   fetchConversation,
+  listConversations,
+  deleteConversation,
+  type ConversationSummary,
   agentHealth,
   AgentAuthError,
   AgentEvent,
@@ -40,6 +43,7 @@ export type IChatState = {
   messages: ChatTranscriptMessage[]
   conversationId: string
   turnId: string
+  conversations: ConversationSummary[]
   /** Org the agent is scoped to; null = uninitialized, user id = personal */
   orgId: string | null
   /** Conversation currently lives in the popout window (main window only) */
@@ -56,6 +60,7 @@ export const defaultChatState: IChatState = {
   messages: [],
   conversationId: '',
   turnId: '',
+  conversations: [],
   orgId: null,
   poppedOut: false,
   streaming: false,
@@ -198,6 +203,9 @@ export default createModel<RootModel>()({
         flushDeltas()
         abortController = null
         dispatch.chat.set({ streaming: false })
+        // A finished turn may have created (and titled) a new conversation — refresh the
+        // picker so it appears without a manual reload.
+        dispatch.chat.loadConversations()
       }
     },
     /* The chat follows the app's active org (the sidebar selector) — the main
@@ -276,6 +284,44 @@ export default createModel<RootModel>()({
     async signIn() {
       await dispatch.auth.healGrant()
       await dispatch.chat.checkHealth()
+    },
+    /* The history picker's list — refreshed on mount, after a turn, and after a delete. */
+    async loadConversations() {
+      try {
+        dispatch.chat.set({ conversations: await listConversations() })
+      } catch {
+        /* offline — leave the last-known list */
+      }
+    },
+    /* Switch the panel to an existing conversation: adopt its server transcript, reset the
+       live turn state so nothing from the previous thread bleeds across. */
+    async openConversation(id: string, state) {
+      if (state.chat.streaming) dispatch.chat.stop()
+      const remote = await fetchConversation(id)
+      if (!remote) {
+        // Vanished (deleted elsewhere) — drop it from the list and start fresh.
+        dispatch.chat.clearConversation()
+        await dispatch.chat.loadConversations()
+        return
+      }
+      dispatch.chat.set({
+        conversationId: id,
+        turnId: '',
+        streaming: false,
+        pendingConfirmation: null,
+        error: null,
+        messages: remote.messages.map(m =>
+          m.role === 'assistant'
+            ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
+            : { role: 'user' as const, text: m.content },
+        ),
+      })
+    },
+    /* Delete a conversation for real (D9). If it's the one on screen, clear to a new chat. */
+    async removeConversation(id: string, state) {
+      await deleteConversation(id)
+      if (state.chat.conversationId === id) dispatch.chat.clearConversation()
+      await dispatch.chat.loadConversations()
     },
     /* App sign-out: nothing agent-specific to revoke — the session's end IS the
        chat's end. The transcript reset is dispatched by auth.signedOut alongside
