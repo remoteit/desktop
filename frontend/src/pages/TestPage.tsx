@@ -29,9 +29,20 @@ export const TestPage: React.FC = () => {
   const limitsOverride = useSelector(selectLimitsLookup)
   const limits = useSelector(selectLimits)
 
+  /* The backend replaces its WHOLE preferences object with what we send, and our copy
+     starts out as `{ version: '', cliVersion: '' }` until the backend pushes its own
+     (Controller 'preferences'). Emitting before then would persist that near-empty
+     default over autoUpdate / openAtLogin / language. `version` only ever arrives from
+     the backend, so it doubles as "preferences have landed". Returns false when the
+     backend did not get the change — emit() is also a silent no-op with no socket. */
+  function emitPreferences(values: Partial<IPreferences>): boolean {
+    if (!preferences.version) return false
+    return emit('preferences', { ...preferences, ...values })
+  }
+
   async function setAPIPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
-    emit('preferences', { ...preferences, [key]: value })
+    emitPreferences({ [key]: value })
   }
 
   // Agent overrides are browser-only (the chat never touches the desktop
@@ -125,7 +136,7 @@ export const TestPage: React.FC = () => {
       ...(pair.ws ? { webSocketURL: pair.ws } : {}),
     }
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
-    emit('preferences', { ...preferences, ...values })
+    emitPreferences(values)
     if (!(await mintCheck(pair.graphql!, ...(pair.ws ? [pair.ws] : [])))) return
     emit('binaries/install')
     cloudSync.all()
@@ -145,7 +156,7 @@ export const TestPage: React.FC = () => {
         }
       : { switchApi: false }
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values, switchAgent: on } })
-    emit('preferences', { ...preferences, ...values })
+    emitPreferences(values)
     emit('binaries/install')
     cloudSync.all()
   }
@@ -169,7 +180,7 @@ export const TestPage: React.FC = () => {
           )}
           onClick={() => {
             dispatch.ui.setPersistent({ testUI: undefined })
-            emit('preferences', { ...preferences, allowPrerelease: false, switchApi: false })
+            emitPreferences({ allowPrerelease: false, switchApi: false })
           }}
         />
         <ListItemSetting
