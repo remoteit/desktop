@@ -237,7 +237,11 @@ export const TestPage: React.FC = () => {
                   label={pair.name}
                   subLabel={pair.graphql}
                   disabled={!customSelected}
-                  checked={customSelected && getApiURL() === pair.graphql}
+                  // Lit only when the WHOLE pair still matches — editing either URL by hand
+                  // drops the light, so a half-custom target can never read as a stage.
+                  checked={
+                    customSelected && getApiURL() === pair.graphql && (!pair.ws || getWebSocketURL() === pair.ws)
+                  }
                   onClick={() => selectStage(pair)}
                 />
               ))}
