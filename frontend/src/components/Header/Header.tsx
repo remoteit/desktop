@@ -95,7 +95,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
         {chatEnabled && !chatPoppedOut && (
           <IconButton
             icon="remote-ai"
-            size="md"
+            size="lg"
             color={chatOpen ? 'primary' : 'grayDarker'}
             title={t('header.aiAgent', 'AI Agent')}
             onClick={() => dispatch.chat.set({ open: !chatOpen })}
