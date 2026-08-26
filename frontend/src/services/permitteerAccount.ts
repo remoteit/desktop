@@ -12,10 +12,14 @@ export type AccountApiResult<T = any> = { status: number; body?: T }
 
 /** The legal token targets for THIS client — the AS's allowlist joined to registry names
  *  (D10). The stage picker and the mint-time guardrail read the SAME source, so they can
- *  never disagree; adding a stage to the tf allowlist puts it here on the next fetch. */
-export async function bindableResources(): Promise<Array<{ identifier: string; name: string }>> {
+ *  never disagree; adding a stage to the tf allowlist puts it here on the next fetch.
+ *
+ *  Returns the status alongside the list: collapsing every failure into `[]` made a
+ *  refused token and a genuinely empty allowlist render identically (an empty picker,
+ *  no error), which is exactly how this went unnoticed. */
+export async function bindableResources(): Promise<{ status: number; resources: Array<{ identifier: string; name: string }> }> {
   const r = await call<Array<{ identifier: string; name: string }>>('/bindable-resources')
-  return r.status === 200 && Array.isArray(r.body) ? r.body : []
+  return { status: r.status, resources: r.status === 200 && Array.isArray(r.body) ? r.body : [] }
 }
 
 async function call<T = any>(path: string, init: RequestInit = {}): Promise<AccountApiResult<T>> {
