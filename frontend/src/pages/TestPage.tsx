@@ -101,16 +101,24 @@ export const TestPage: React.FC = () => {
   const customSelected =
     customMode ?? (!!apis.switchApi && stagePairs.length > 0 && !stagePairs.some(p => p.graphql === currentGraphql))
 
-  async function selectCustom() {
+  /* One switch owns the whole custom target — GraphQL, WebSocket and the agent service.
+     Off returns every one of them to the stage the build ships with. switchAgent is
+     browser-only, so it rides the ui state and never the backend preferences emit. */
+  async function toggleCustom() {
     setMintError('')
-    setCustomMode(true)
-    const values = {
-      switchApi: true,
-      apiGraphqlURL: apis.apiGraphqlURL || getApiURL() || '',
-      webSocketURL: apis.webSocketURL || getWebSocketURL() || '',
-    }
-    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
+    const on = !customSelected
+    setCustomMode(on)
+    const values = on
+      ? {
+          switchApi: true,
+          apiGraphqlURL: apis.apiGraphqlURL || getApiURL() || '',
+          webSocketURL: apis.webSocketURL || getWebSocketURL() || '',
+        }
+      : { switchApi: false }
+    await dispatch.ui.setPersistent({ apis: { ...apis, ...values, switchAgent: on } })
     emit('preferences', { ...preferences, ...values })
+    emit('binaries/install')
+    cloudSync.all()
   }
 
   async function selectStage(pair: StagePair) {
@@ -122,7 +130,7 @@ export const TestPage: React.FC = () => {
       apiGraphqlURL: pair.graphql!,
       ...(pair.ws ? { webSocketURL: pair.ws } : {}),
     }
-    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
+    await dispatch.ui.setPersistent({ apis: { ...apis, ...values, switchAgent: false } })
     emit('preferences', { ...preferences, ...values })
     try {
       if (!isDefault) {
@@ -211,11 +219,12 @@ export const TestPage: React.FC = () => {
             onClick={() => selectStage(pair)}
           />
         ))}
-        <ListItemRadio
+        <ListItemSetting
+          hideIcon
           label={t('testPage.customAPITarget', 'Custom')}
           subLabel={t('testPage.customAPITargetHint', 'Point at a URL the authorization server has not registered.')}
-          checked={customSelected}
-          onClick={selectCustom}
+          toggle={customSelected}
+          onClick={toggleCustom}
         />
         {!!mintError && (
           <ListItem>
@@ -231,7 +240,7 @@ export const TestPage: React.FC = () => {
             <List disablePadding>
               <InlineTextFieldSetting
                 value={getApiURL()}
-                label={t('testPage.customGraphQLURL', 'Custom GraphQL URL (advanced)')}
+                label={t('testPage.customGraphQLURL', 'GraphQL URL')}
                 disabled={!customSelected}
                 resetValue={getApiURL()}
                 maxLength={200}
@@ -251,7 +260,7 @@ export const TestPage: React.FC = () => {
               />
               <InlineTextFieldSetting
                 value={getWebSocketURL()}
-                label={t('testPage.customWebSocketURL', 'Custom WebSocket URL (advanced)')}
+                label={t('testPage.customWebSocketURL', 'WebSocket URL')}
                 disabled={!customSelected}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
@@ -261,27 +270,11 @@ export const TestPage: React.FC = () => {
                 }}
                 hideIcon
               />
-            </List>
-          </Quote>
-        </ListItem>
-        <ListItemSetting
-          hideIcon
-          label={t('testPage.overrideAgent', 'Override agent service')}
-          subLabel={t(
-            'testPage.overrideAgentSub',
-            'Point the Remote.It AI chat at a deployed agent (https only). Auth rides your app session either way — the token is minted for the agent audience, so the target must trust this stage.'
-          )}
-          onClick={() => setAgentPreference('switchAgent', !apis.switchAgent)}
-          toggle={!!apis.switchAgent}
-        />
-        <ListItem>
-          <Quote margin={null} indent="listItem" noInset>
-            <List disablePadding>
               <InlineTextFieldSetting
                 value={apis.agentURL || ''}
                 label={t('testPage.agentURL', 'Agent service URL')}
-                placeholder="https://dev-ai-agent.remote.it"
-                disabled={!apis.switchAgent}
+                placeholder="https://agent.dev.remote.it"
+                disabled={!customSelected}
                 resetValue=""
                 maxLength={200}
                 onSave={url => {
