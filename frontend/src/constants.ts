@@ -22,16 +22,25 @@ export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
-export const GRAPHQL_API = env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
-export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
+// The access token's audience IS the GraphQL URL, so the data plane defaults to the
+// resource we mint for rather than to a fixed stage — otherwise an install that sets only
+// the OIDC vars calls one stage with another stage's token and 401s with nothing in the UI
+// explaining why. Set VITE_GRAPHQL_API (or pick a stage in Test Settings) to override.
+export const GRAPHQL_API = env.VITE_GRAPHQL_API || OAUTH_GRAPHQL_RESOURCE
+export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || GRAPHQL_API
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const PORTAL_URL = env.VITE_PORTAL_URL || brand.package?.homepage || 'https://app.remote.it'
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
 
-export const WEBSOCKET_URL = env.VITE_WEBSOCKET_URL
-export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL
+// Pairs with the GraphQL stage above (graphql.dev…/graphql <-> wss://ws.dev…/v1), the same
+// pairing Test Settings' stage picker applies. Previously these had NO fallback: dropping
+// the env var left the socket URL undefined, which breaks the app before the UI that could
+// fix it is reachable.
+const graphqlStage = GRAPHQL_API.match(/^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/)?.[1]
+export const WEBSOCKET_URL = env.VITE_WEBSOCKET_URL || `wss://ws${graphqlStage ? `.${graphqlStage}` : ''}.remote.it/v1`
+export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL || WEBSOCKET_URL
 export const PORT = env.VITE_PORT || 29999
 export const PASSWORD_MIN_LENGTH = env.PASSWORD_MIN_LENGTH ? Number(env.PASSWORD_MIN_LENGTH) : 7
 export const PASSWORD_MAX_LENGTH = env.PASSWORD_MAX_LENGTH ? Number(env.PASSWORD_MAX_LENGTH) : 64
