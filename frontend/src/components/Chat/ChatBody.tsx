@@ -49,7 +49,7 @@ export const ChatBody: React.FC = () => {
       )}
       {signedOut ? (
         <Body center>
-          <Icon name="robot" size="xxxl" color="grayDark" />
+          <Icon name="remote-ai" size="xxxl" color="grayDark" />
           <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
             {t('chat.signInNeeded', 'The AI agent needs permissions your session doesn\u2019t carry yet.')}
             {isChatPopout && ` ${t('chat.signInFromMain', 'Refresh permissions from the main app window.')}`}
@@ -62,7 +62,7 @@ export const ChatBody: React.FC = () => {
         </Body>
       ) : unreachable && !messages.length ? (
         <Body center>
-          <Icon name="robot" size="xxxl" color="grayDark" />
+          <Icon name="remote-ai" size="xxxl" color="grayDark" />
           <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
             {unavailableMessage}
           </Typography>
