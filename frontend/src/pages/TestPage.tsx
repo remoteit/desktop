@@ -128,6 +128,19 @@ export const TestPage: React.FC = () => {
           subLabel={t('testPage.clearViewedAnnouncementsHint', 'Marks all loaded announcements unread for this account.')}
           onClick={() => dispatch.announcements.clearRead()}
         />
+        <ListItemSetting
+          hideIcon
+          label={t('testPage.backgroundWork', 'AI background work')}
+          subLabel={
+            backgroundEnrolled === undefined
+              ? t('testPage.backgroundWorkUnknown', 'Checking…')
+              : backgroundEnrolled
+                ? t('testPage.backgroundWorkOn', 'The agent can read and watch while you are away.')
+                : t('testPage.backgroundWorkOff', 'The agent only works while you are here.')
+          }
+          toggle={!!backgroundEnrolled}
+          onClick={() => (backgroundEnrolled ? disableBackground() : connectBackground())}
+        />
       </List>
 
       <Typography variant="subtitle1">{t('testPage.apiTarget', 'API Target')}</Typography>
@@ -206,19 +219,6 @@ export const TestPage: React.FC = () => {
             </List>
           </Quote>
         </ListItem>
-        <ListItemSetting
-          hideIcon
-          label={t('testPage.backgroundWork', 'Background work')}
-          subLabel={
-            backgroundEnrolled === undefined
-              ? t('testPage.backgroundWorkUnknown', 'Checking…')
-              : backgroundEnrolled
-                ? t('testPage.backgroundWorkOn', 'Enabled — while you\u2019re away the agent can look and watch, not touch. Turns you start can finish without you.')
-                : t('testPage.backgroundWorkOff', 'Off — the agent only works while you\u2019re here. Enabling grants it a separate, narrower permission you can revoke any time.')
-          }
-          toggle={!!backgroundEnrolled}
-          onClick={() => (backgroundEnrolled ? disableBackground() : connectBackground())}
-        />
       </List>
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>
       <List>
