@@ -33,13 +33,19 @@ export const ChatPanel: React.FC = () => {
   useChatMainSync()
 
   // Drag-to-resize, same mechanism as the content panels — anchored right, so
-  // pulling the handle left widens the chat. The width persists on release.
+  // pulling the handle left widens the chat. Unlike those panels the width has
+  // to publish on every frame, not just on release: App reserves this column's
+  // width in the layout and DoublePanel sizes the content area from it, so a
+  // width held back until mouseup leaves the content on a stale minWidth that
+  // will not shrink — the column then overflows the window until it snaps.
   const getMaxWidth = useCallback(() => maxWidth, [maxWidth])
+  const setWidth = useCallback((width: number) => dispatch.chat.set({ width }), [dispatch])
   const drag = usePanelDrag(chatWidth, {
     panelRef,
     minWidth: CHAT_PANEL_WIDTH_MIN,
     getMaxWidth,
-    onPersist: width => dispatch.chat.set({ width }),
+    onChange: setWidth,
+    onPersist: setWidth,
     layoutDep: layout,
     anchor: 'right',
   })

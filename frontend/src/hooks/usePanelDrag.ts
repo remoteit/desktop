@@ -5,6 +5,12 @@ interface UsePanelDragOptions {
   minWidth: number
   getMaxWidth: () => number
   onPersist?: (width: number) => void
+  /** Called on every drag frame. Panels whose siblings size themselves from
+   *  shared state (the chat column: App reserves its width, DoublePanel sizes
+   *  the content from that) must publish the width DURING the drag, or those
+   *  siblings keep a stale minWidth, refuse to shrink, and the panel overflows
+   *  until mouseup snaps it back. */
+  onChange?: (width: number) => void
   layoutDep?: unknown
   /** Which edge the panel is fixed to. A right-anchored panel (the chat
    *  column) grows when the handle is dragged LEFT, so the pointer delta
@@ -24,7 +30,7 @@ interface UsePanelDragOptions {
  * @param options.layoutDep - Dependency to trigger re-measurement (e.g., layout object)
  */
 export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions) {
-  const { panelRef, minWidth, getMaxWidth, onPersist, layoutDep, anchor = 'left' } = options
+  const { panelRef, minWidth, getMaxWidth, onPersist, onChange, layoutDep, anchor = 'left' } = options
 
   const handleRef = useRef<number>(initialWidth)
   const moveRef = useRef<number>(0)
@@ -41,13 +47,15 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
     (event: MouseEvent) => {
       const maxWidth = getMaxWidth()
       const delta = event.clientX - moveRef.current
-      handleRef.current += anchor === 'right' ? -delta : delta
       moveRef.current = event.clientX
-      if (handleRef.current > minWidth && handleRef.current < maxWidth) {
-        setWidth(handleRef.current)
-      }
+      // CLAMP the accumulator rather than ignoring out-of-range values: letting
+      // it run past the limit meant a drag beyond the edge had to retrace the
+      // whole overshoot before the panel moved again, which reads as sticking.
+      handleRef.current = Math.min(Math.max(handleRef.current + (anchor === 'right' ? -delta : delta), minWidth), maxWidth)
+      setWidth(handleRef.current)
+      onChange?.(handleRef.current)
     },
-    [minWidth, getMaxWidth, anchor]
+    [minWidth, getMaxWidth, anchor, onChange]
   )
 
   const onUp = useCallback(
