@@ -69,7 +69,11 @@ type Flow = { verifier: string; state: string; nonce: string; redirectUri: strin
 type Stored = { refresh_token: string; id_token?: string }
 
 let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
-let refreshing: Promise<string> | undefined
+let minting: Promise<unknown> = Promise.resolve()
+/* Why the last mint for an audience failed. refresh() reports a refusal by returning
+   '' so callers can degrade quietly, which loses the AS's reason — keep it here so a
+   settings screen can say "not covered by this grant" instead of just "refused". */
+let mintErrors: { [resource: string]: string } = {}
 let discovery: { authorization_endpoint: string; token_endpoint: string; end_session_endpoint?: string; end_session_api_endpoint?: string } | undefined
 
 const b64u = (bytes: Uint8Array) =>
@@ -234,15 +238,22 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   return claims
 }
 
-/** Current access token for the graphql audience ('' when signed out). Refreshes
- * single-flight — the rotating single-use refresh makes a concurrent second refresh
- * token REUSE, which revokes the whole family. */
+/** Current access token for `resource` ('' when signed out). Mints are SERIALIZED, not
+ * shared: the rotating single-use refresh makes a concurrent second refresh a token
+ * REUSE, which revokes the whole family — but a single shared promise handed a queued
+ * caller whichever audience happened to be minting, so an agent-audience token would go
+ * out to the account API and come back 401. Queue instead, and re-read the cache after
+ * the wait so N callers for one audience still cost one refresh. */
 export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE): Promise<string> {
-  const cached = access[resource]
-  const now = Math.floor(Date.now() / 1000)
-  if (cached && cached.exp - now > 30) return cached.token
-  if (!refreshing) refreshing = refresh(resource).finally(() => (refreshing = undefined))
-  return refreshing
+  const fresh = () => {
+    const cached = access[resource]
+    return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined
+  }
+  const hit = fresh()
+  if (hit) return hit
+  const next = minting.then(() => fresh() ?? refresh(resource))
+  minting = next.catch(() => {})
+  return next
 }
 
 async function refresh(resource: string): Promise<string> {
@@ -258,9 +269,11 @@ async function refresh(resource: string): Promise<string> {
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
     const at = decodeJwt(body.access_token)
     access[resource] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
+    delete mintErrors[resource]
     return body.access_token
   } catch (error: any) {
     console.error('OIDC REFRESH FAILED', error?.message)
+    mintErrors[resource] = error?.message || 'token request failed'
     // A dead grant (revoked / expired session / family revoked on reuse) ends the
     // session; transient network errors keep it and the next call retries.
     if (error?.oauthError === 'invalid_grant') clearLocal()
@@ -290,8 +303,12 @@ export async function oidcEndSessionSilently(): Promise<void> {
   }
 }
 
+/** Why the last mint for this audience was refused, if it was. */
+export const oidcMintError = (resource: string): string | undefined => mintErrors[resource]
+
 export function invalidateOidcToken() {
   access = {}
+  mintErrors = {}
 }
 
 /** Local-only teardown: clears this app's tokens and NOTHING else. App sign-out never
