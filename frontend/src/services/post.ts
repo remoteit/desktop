@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getApiURL, getTestHeader } from '../helpers/apiHelper'
+import { getApiURL } from '../helpers/apiHelper'
 import { getToken } from './remoteit'
 import { store } from '../store'
 import network from './Network'
@@ -20,7 +20,7 @@ export async function post(data: ILookup<any, string> = {}, path: string = '') {
     return
   }
   
-  const headers: any = { Authorization: token, ...getTestHeader() }
+  const headers: any = { Authorization: token }
   
   // Add x-r3-user header if in view-as mode
   const viewAsUser = store.getState().ui.viewAsUser

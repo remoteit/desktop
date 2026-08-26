@@ -1,4 +1,4 @@
-import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, TEST_HEADER, OAUTH_GRAPHQL_RESOURCE } from '../constants'
+import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, OAUTH_GRAPHQL_RESOURCE } from '../constants'
 import { graphQLRentANode } from '../services/graphQLMutation'
 import { version } from './versionHelper'
 import { store } from '../store'
@@ -43,14 +43,6 @@ export function getWebSocketURL(): string | undefined {
   const apis = store.getState().ui.apis
   const defaultURL = version.includes('alpha') || version.includes('beta') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
   return apis?.webSocketURL && apis?.switchApi ? apis.webSocketURL : defaultURL
-}
-
-export function getTestHeader(): { [key: string]: string } {
-  const testHeader = window.localStorage.getItem(TEST_HEADER)
-  if (!testHeader) return {}
-  const parts = testHeader.split(':')
-  console.log('USING TEST HEADER', { [parts[0].trim()]: parts[1].trim() })
-  return { [parts[0].trim()]: parts[1].trim() }
 }
 
 export async function apiError(error: unknown) {

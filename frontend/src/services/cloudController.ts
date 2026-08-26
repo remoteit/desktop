@@ -6,7 +6,7 @@ import { selectJob } from '../selectors/scripting'
 import { AxiosResponse } from 'axios'
 import { isReverseProxy } from '../models/applicationTypes'
 import { getAccountIds, accountFromDevice } from '../models/accounts'
-import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
+import { getWebSocketURL } from '../helpers/apiHelper'
 import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
 import { oidcAccessToken } from './oidc'
@@ -166,7 +166,6 @@ class CloudController {
       headers: {
         authorization: await wsAuthorization(),
         'User-Agent': `remoteit/${version} ${agent()}`,
-        ...getTestHeader(),
       },
       query: `
       {

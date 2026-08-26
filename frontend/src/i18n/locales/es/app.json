@@ -1991,8 +1991,6 @@
     "title": "Etiquetas"
   },
   "testPage": {
-    "addQueryHeader": "Agregar encabezado de consulta",
-    "addQueryHeaderPlaceholder": "Ejemplo: \"key:value\"",
     "agentURL": "URL del servicio del agente",
     "agentURLInvalid": "La URL del servicio del agente debe empezar por https://",
     "clearViewedAnnouncements": "Borrar anuncios vistos",
@@ -2005,8 +2003,6 @@
     "licenseMessageCleared": "Mensaje de licencia borrado",
     "licensingOptions": "Opciones de licencia",
     "mcpAudience": "Audiencia MCP del agente",
-    "overrideAgent": "Anular servicio del agente",
-    "overrideAgentSub": "Apunta el chat de Mycal a un agente desplegado (solo https). dev-ai-agent se empareja con la audiencia https://mcp.demo.remote.it/mcp. Vuelva a iniciar sesión en el agente después de cambiar estos valores.",
     "overrideDefaultAPIs": "Anular las API predeterminadas",
     "overrideLicensesAndLimits": "Anular licencias y límites",
     "reset": "Restablecer",

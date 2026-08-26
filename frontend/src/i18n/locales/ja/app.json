@@ -1919,8 +1919,6 @@
     "title": "タグ"
   },
   "testPage": {
-    "addQueryHeader": "クエリヘッダーを追加",
-    "addQueryHeaderPlaceholder": "例: \"key:value\"",
     "agentURL": "エージェントサービス URL",
     "agentURLInvalid": "エージェントサービス URL は https:// で始まる必要があります",
     "clearViewedAnnouncements": "閲覧済みのお知らせをクリア",
@@ -1933,8 +1931,6 @@
     "licenseMessageCleared": "ライセンスメッセージがクリアされました",
     "licensingOptions": "ライセンスオプション",
     "mcpAudience": "エージェント MCP オーディエンス",
-    "overrideAgent": "エージェントサービスを上書き",
-    "overrideAgentSub": "Mycal チャットをデプロイ済みエージェントに向けます（https のみ）。dev-ai-agent はオーディエンス https://mcp.demo.remote.it/mcp とペアです。変更後はエージェントに再サインインしてください。",
     "overrideDefaultAPIs": "デフォルトのAPIをオーバーライド",
     "overrideLicensesAndLimits": "ライセンスと制限をオーバーライド",
     "reset": "リセット",

@@ -57,7 +57,6 @@ export const BT_UUIDS = {
 
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
-export const TEST_HEADER = 'test-header'
 
 //Airbrake
 export const AIRBRAKE_ID = parseInt(env.VITE_AIRBRAKE_ID || '', 10)

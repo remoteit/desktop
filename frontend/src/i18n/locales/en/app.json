@@ -2021,8 +2021,6 @@
     "title": "Tags"
   },
   "testPage": {
-    "addQueryHeader": "Add query header",
-    "addQueryHeaderPlaceholder": "Example: \"key:value\"",
     "agentURL": "Agent service URL",
     "agentURLInvalid": "Agent service URL must start with https://",
     "apiTarget": "API Target",
@@ -2032,8 +2030,6 @@
     "backgroundWorkUnknown": "Checking…",
     "clearViewedAnnouncements": "Clear viewed announcements",
     "clearViewedAnnouncementsHint": "Marks all loaded announcements unread for this account.",
-    "customAPITarget": "Custom",
-    "customAPITargetHint": "Point at a URL the authorization server has not registered.",
     "customGraphQLURL": "GraphQL URL",
     "customWebSocketURL": "WebSocket URL",
     "disableTestUI": "Disable Test UI",
@@ -2044,8 +2040,6 @@
     "licenseMessageCleared": "License message cleared",
     "licensingOptions": "Licensing Options",
     "mintError": "This target was refused at token mint: {{error}}",
-    "overrideAgent": "Override agent service",
-    "overrideAgentSub": "Point the Remote.It AI chat at a deployed agent (https only). Auth rides your app session either way — the token is minted for the agent audience, so the target must trust this stage.",
     "overrideDefaultAPIs": "Override default APIs",
     "overrideLicensesAndLimits": "Override licenses and limits",
     "reset": "Reset",
