@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import cloudSync from '../services/CloudSync'
+import { OAUTH_AGENT_RESOURCE } from '../constants'
 import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getApiURL, getWebSocketURL } from '../helpers/apiHelper'
@@ -196,11 +197,10 @@ export const TestPage: React.FC = () => {
                 hideIcon
               />
               <InlineTextFieldSetting
-                value={apis.agentURL || ''}
+                value={apis.agentURL || OAUTH_AGENT_RESOURCE}
                 label={t('testPage.agentURL', 'Agent service URL')}
-                placeholder="https://agent.dev.remote.it"
                 disabled={!customSelected}
-                resetValue=""
+                resetValue={OAUTH_AGENT_RESOURCE}
                 maxLength={200}
                 onSave={url => {
                   const value = url.toString().trim()
