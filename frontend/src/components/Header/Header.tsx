@@ -80,7 +80,13 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
         )}
         {(layout.hideSidebar || browser.isMobile) && (
           <Route path="/add" exact>
-            <IconButton title={t('header.back', 'Back')} to="/devices" icon="chevron-left" size="md" color="grayDarker" />
+            <IconButton
+              title={t('header.back', 'Back')}
+              to="/devices"
+              icon="chevron-left"
+              size="md"
+              color="grayDarker"
+            />
           </Route>
         )}
         {!isRootMenu && (
@@ -94,6 +100,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
         )}
         {chatEnabled && !chatPoppedOut && (
           <IconButton
+            fixedWidth
             icon="remote-ai"
             size="lg"
             color={chatOpen ? 'primary' : 'grayDarker'}
