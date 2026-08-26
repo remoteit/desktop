@@ -43,6 +43,8 @@ export type ChatTranscriptMessage =
 
 export type IChatState = {
   open: boolean
+  /** Maximized over the content area (the left nav stays); toggled by the header expand button */
+  expanded: boolean
   /** Docked column width in px — drag-resized, persisted */
   width: number
   messages: ChatTranscriptMessage[]
@@ -64,7 +66,8 @@ export type IChatState = {
 }
 
 export const defaultChatState: IChatState = {
-  open: false,
+  open: true,
+  expanded: false,
   width: CHAT_PANEL_WIDTH,
   messages: [],
   conversationId: '',

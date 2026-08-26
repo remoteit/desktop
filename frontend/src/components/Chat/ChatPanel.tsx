@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box } from '@mui/material'
 import { State, Dispatch } from '../../store'
-import { CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_EXPANDED, CHAT_PANEL_WIDTH_MIN } from '../../constants'
-import { useChatDocked, useChatWidth, useChatMaxWidth } from '../../hooks/useChatEnabled'
+import { CHAT_PANEL_WIDTH_MIN } from '../../constants'
+import { useChatDocked, useChatWidth, useChatMaxWidth, useSidebarWidth } from '../../hooks/useChatEnabled'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
 import { PanelHandle } from '../PanelHandle'
@@ -19,12 +19,14 @@ import browser from '../../services/browser'
 export const ChatPanel: React.FC = () => {
   const { t } = useTranslation()
   const open = useSelector((state: State) => state.chat.open)
+  const expanded = useSelector((state: State) => state.chat.expanded)
   const insets = useSelector((state: State) => state.ui.layout.insets)
   const showBottomMenu = useSelector((state: State) => state.ui.layout.showBottomMenu)
   const layout = useSelector((state: State) => state.ui.layout)
   const docked = useChatDocked()
   const chatWidth = useChatWidth()
   const maxWidth = useChatMaxWidth()
+  const sidebarWidth = useSidebarWidth()
   const panelRef = useRef<HTMLDivElement>(null)
   const dispatch = useDispatch<Dispatch>()
 
@@ -41,8 +43,6 @@ export const ChatPanel: React.FC = () => {
     layoutDep: layout,
     anchor: 'right',
   })
-  const expanded = chatWidth >= CHAT_PANEL_WIDTH_EXPANDED
-
   if (!open) return null
 
   return (
@@ -51,22 +51,32 @@ export const ChatPanel: React.FC = () => {
         display: 'flex',
         flexFlow: 'column',
         flexShrink: 0,
-        // Docked column beside the panels when it fits; full-screen overlay
-        // otherwise, matching how pages collapse on small windows
+        // Docked column beside the panels when it fits; otherwise an overlay
+        // over the CONTENT area — expanded (maximized) or on a small window.
+        // The overlay's left edge stops at the sidebar chrome so it never
+        // covers the left nav; when the sidebar is hidden it spans the window
         ...(docked
           ? {
               position: 'relative',
               height: '100%',
               width: drag.width,
             }
-          : { position: 'absolute', inset: 0, width: '100%', zIndex: 15, paddingLeft: insets?.leftPx }),
+          : {
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              right: 0,
+              left: sidebarWidth,
+              zIndex: 15,
+              paddingLeft: sidebarWidth ? undefined : insets?.leftPx,
+            }),
         // Match the page panels' safe-area handling (Panel.tsx): keep the
         // header clear of the notch and the input clear of the home
         // indicator on mobile; the bottom menu carries its own inset
         paddingTop: insets?.topPx,
         paddingRight: insets?.rightPx,
         bgcolor: 'white.main',
-        borderLeft: docked ? 1 : 0,
+        borderLeft: docked || sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
         paddingBottom: showBottomMenu ? 1 : insets?.bottomPx || 1,
       }}
@@ -74,15 +84,11 @@ export const ChatPanel: React.FC = () => {
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
       <ChatHeader>
-        {docked && (
+        {(docked || expanded) && (
           <IconButton
-            icon="arrows-left-right"
+            icon={expanded ? 'down-left-and-up-right-to-center' : 'up-right-and-down-left-from-center'}
             title={expanded ? t('chat.collapse', 'Collapse') : t('chat.expand', 'Expand')}
-            onClick={() =>
-              dispatch.chat.set({
-                width: Math.min(expanded ? CHAT_PANEL_WIDTH : CHAT_PANEL_WIDTH_EXPANDED, maxWidth),
-              })
-            }
+            onClick={() => dispatch.chat.set({ expanded: !expanded })}
           />
         )}
         {!browser.isMobile && (

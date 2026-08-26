@@ -1,5 +1,5 @@
-import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
-import { useChatEnabled } from '../../hooks/useChatEnabled'
+import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../../constants'
+import { useChatEnabled, useHideSidebar } from '../../hooks/useChatEnabled'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
@@ -38,7 +38,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
 
   const navigateUp = useNavigationUp(panels)
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+  const sidebarHidden = useHideSidebar()
   const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()

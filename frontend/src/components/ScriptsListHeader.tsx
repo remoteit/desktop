@@ -1,15 +1,15 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Box, Button, Typography, Tooltip, useMediaQuery } from '@mui/material'
+import { Box, Button, Typography, Tooltip } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { selectPermissions } from '../selectors/organizations'
+import { useHideSidebar } from '../hooks/useChatEnabled'
 import { IconButton } from '../buttons/IconButton'
 import { RefreshButton } from '../buttons/RefreshButton'
 import { Icon } from '../components/Icon'
 import { Title } from '../components/Title'
 import { spacing } from '../styling'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
 import { Dispatch } from '../store'
 
 type Props = {
@@ -21,7 +21,7 @@ type Props = {
 export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }) => {
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+  const sidebarHidden = useHideSidebar()
   const permissions = useSelector(selectPermissions)
   const { t } = useTranslation()
 

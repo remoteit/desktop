@@ -22,6 +22,7 @@ const chatTransform = createTransform(
     conversationId: inbound.conversationId,
     orgId: inbound.orgId,
     open: inbound.open,
+    expanded: inbound.expanded,
     width: inbound.width,
     poppedOut: inbound.poppedOut,
   }),

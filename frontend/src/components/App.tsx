@@ -10,14 +10,13 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { selectResellerRef } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import {
-  HIDE_SIDEBAR_WIDTH,
   HIDE_TWO_PANEL_WIDTH,
   MOBILE_WIDTH,
   REGEX_FIRST_PATH,
   SHOW_TRIPLE_PANEL_WIDTH,
 } from '../constants'
 import { State, Dispatch } from '../store'
-import { useMediaQuery, Box } from '@mui/material'
+import { Box } from '@mui/material'
 import { InstallationNotice } from './InstallationNotice'
 import { LoadingMessage } from './LoadingMessage'
 import { ResellerLogo } from './ResellerLogo'
@@ -25,7 +24,14 @@ import { SidebarMenu } from './SidebarMenu'
 import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
-import { useChatEnabled, useChatDocked, useChatWidth, useSidebarWidth } from '../hooks/useChatEnabled'
+import {
+  useChatEnabled,
+  useChatDocked,
+  useChatWidth,
+  useSidebarWidth,
+  useEffectiveWidth,
+  useHideSidebar,
+} from '../hooks/useChatEnabled'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
@@ -60,10 +66,14 @@ export const App: React.FC = () => {
   const sidebarWidth = useSidebarWidth()
   const reseller = useSelector(selectResellerRef)
   const dispatch = useDispatch<Dispatch>()
-  const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
-  const singlePanel = useMediaQuery(`(max-width:${HIDE_TWO_PANEL_WIDTH}px)`)
-  const triplePanel = useMediaQuery(`(min-width:${SHOW_TRIPLE_PANEL_WIDTH}px)`)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  // Breakpoints measure the EFFECTIVE width — the window minus the docked chat
+  // column — so opening or widening the chat reflows the app (sidebar → hamburger,
+  // two panels → one) exactly the way shrinking the window does
+  const effectiveWidth = useEffectiveWidth()
+  const hideSidebar = useHideSidebar()
+  const singlePanel = effectiveWidth <= HIDE_TWO_PANEL_WIDTH
+  const triplePanel = effectiveWidth >= SHOW_TRIPLE_PANEL_WIDTH
+  const mobile = effectiveWidth <= MOBILE_WIDTH
   // The docked chat column reserves layout space the same way the sidebar
   // does; useChatDocked only docks when the panels still fit beside it —
   // otherwise the chat renders as an overlay and reserves nothing

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useMediaQuery } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import {
@@ -33,14 +32,13 @@ const useViewportWidth = (): number => {
   return width
 }
 
-/* The widest the chat column may be dragged: what is left once the sidebar
-   chrome and the two content panels keep their minimums. Bounding the drag
-   here is also what keeps the column docked — a wider chat would fail the
-   fit-check below and snap to a full-screen overlay mid-drag. */
+/* The widest the chat column may be dragged: whatever the window holds once the
+   content area keeps its single-panel minimum. The sidebar no longer caps the drag —
+   the layout breakpoints below measure the REMAINING width, so a chat dragged wide
+   collapses the sidebar into the hamburger menu exactly as narrowing the window would. */
 export const useChatMaxWidth = (): number => {
   const viewport = useViewportWidth()
-  const sidebarWidth = useSidebarWidth()
-  return Math.max(CHAT_PANEL_WIDTH_MIN, viewport - sidebarWidth - HIDE_TWO_PANEL_WIDTH)
+  return Math.max(CHAT_PANEL_WIDTH_MIN, viewport - HIDE_TWO_PANEL_WIDTH)
 }
 
 /* Width the docked chat column occupies — single source for the fit-check
@@ -54,22 +52,40 @@ export const useChatWidth = (): number => {
   return Math.min(Math.max(stored || CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_MIN), max)
 }
 
-/* Width of the left chrome (sidebar + org bar) the layout reserves —
-   shared by App's sidePanelWidth and the chat docking fit-check */
-export const useSidebarWidth = (): number => {
-  const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
-  const hideSidebar = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
-  return hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
-}
-
-/* Whether the open chat reserves layout width (docked) or floats as a
-   full-screen overlay. Docked only when the window still fits two content
-   panels beside the sidebar chrome and the chat column — reserving width
-   past that point drives the panel resize math below its minimums. */
+/* Whether the open chat reserves layout width (docked) or floats as an
+   overlay. Docked only when at least one content panel still fits beside the
+   column, and never while maximized — the expanded chat covers the content
+   area as an overlay so the layout underneath keeps its full width. */
 export const useChatDocked = (): boolean => {
   const enabled = useChatEnabled()
   const open = useSelector((state: State) => state.chat.open)
-  const required = useChatWidth() + HIDE_TWO_PANEL_WIDTH + useSidebarWidth()
-  const fits = useMediaQuery(`(min-width:${required}px)`)
-  return enabled && open && fits
+  const expanded = useSelector((state: State) => state.chat.expanded)
+  const viewport = useViewportWidth()
+  const chatWidth = useChatWidth()
+  return enabled && open && !expanded && viewport - chatWidth >= HIDE_TWO_PANEL_WIDTH
+}
+
+/* The width the app layout actually has left: the window minus the docked chat
+   column. Every layout breakpoint (sidebar, single/triple panel, mobile) measures
+   THIS instead of the raw window, so docking the chat reflows the app the same way
+   shrinking the window does. Consistency is arithmetic, not luck: docked guarantees
+   HIDE_TWO_PANEL_WIDTH remains, and a visible sidebar implies more than
+   HIDE_SIDEBAR_WIDTH remains — which more than covers sidebar chrome plus a panel. */
+export const useEffectiveWidth = (): number => {
+  const viewport = useViewportWidth()
+  const docked = useChatDocked()
+  const chatWidth = useChatWidth()
+  return docked ? viewport - chatWidth : viewport
+}
+
+/* max-width media query semantics (≤) against the effective width — shared by App
+   and the components that mirror its sidebar breakpoint (Header, AvatarMenu…) */
+export const useHideSidebar = (): boolean => useEffectiveWidth() <= HIDE_SIDEBAR_WIDTH
+
+/* Width of the left chrome (sidebar + org bar) the layout reserves —
+   shared by App's sidePanelWidth and the chat overlay's left edge */
+export const useSidebarWidth = (): number => {
+  const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
+  const hideSidebar = useHideSidebar()
+  return hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
 }

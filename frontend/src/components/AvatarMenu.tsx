@@ -2,8 +2,8 @@ import React, { useState, useRef, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
-import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
+import { ButtonBase, Divider, Menu } from '@mui/material'
+import { useHideSidebar } from '../hooks/useChatEnabled'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
 import { ListItemLocation } from './ListItemLocation'
@@ -30,7 +30,7 @@ export const AvatarMenu: React.FC = () => {
   const leaveTimer = useRef<number>()
   const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+  const sidebarHidden = useHideSidebar()
   const user = useSelector((state: State) => state.auth.user)
   const remoteUI = useSelector(isRemoteUI)
   const testUI = useSelector((state: State) => ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''))
