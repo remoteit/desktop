@@ -100,8 +100,46 @@ Windows  C:\Users\%username%\AppData\Local\temp\remoteit.log
 
 ### Setup
 
-Get a copy of the .env file
-place the .env file in the root directory - it will be copied into the sub projects at start
+Copy `.env.example` to `.env` in the root directory, then fill in the private values
+(FontAwesome, Airbrake, Zendesk, Segment, signing) from a teammate or 1Password.
+`npm run copy-env` propagates the root `.env` into `frontend/` and `electron/` for builds;
+the vite dev server reads `frontend/.env`, so copy it there too after changing anything.
+
+#### Sign-in (permitteer OIDC)
+
+Sign-in is renderer-owned and identical on web and desktop — the backend never touches auth.
+`VITE_OAUTH_ISSUER` is the only variable with no built-in fallback; without it the app logs
+`VITE_OAUTH_ISSUER is not configured` and sign-in never starts.
+
+Leave `VITE_OAUTH_CLIENT_ID` as `remoteit_desktop` locally. Redirect URIs are registered
+**per client**: the deployed AI portal uses `remoteit_portal_ai`, which only has
+`https://app.ai.remote.it/authCallback` registered, so copying that value from the Amplify
+branch config makes authorize fail with a 400. `remoteit_desktop` carries both
+`http://localhost:3003/authCallback` and `remoteit://authCallback` (the Electron deep link).
+
+Browse to `http://localhost:3003` exactly. `npm start` binds `0.0.0.0`, but reaching the app
+over a LAN IP is a non-secure origin, where `crypto.subtle` is unavailable and the DPoP
+proofs every token call carries silently degrade.
+
+#### Choosing a stage
+
+The GraphQL and WebSocket URLs are not environment variables — pick the stage in the running
+app under **Settings → Test Settings → API Target**, which sets both together and mints the
+matching token audience. The options come from the auth server's own allowlist, so an
+illegal target fails at mint with a legible error instead of ambient 403s later.
+
+This matters because the access token's audience *is* the GraphQL URL: a hand-set URL that
+disagrees with `VITE_OAUTH_GRAPHQL_RESOURCE` returns 401s with nothing in the UI explaining
+why. Reach Test Settings by holding **shift+option** and clicking your avatar → Test UI.
+
+#### AI chat
+
+The chat is always on where `VITE_CHAT_ALWAYS_ON=true` (the AI portal, and locally); elsewhere
+it soft-launches behind the Test UI. In dev its requests go through the same-origin `/agent`
+vite proxy, so `AGENT_PROXY_TARGET` is what selects the service — the deployed dev agent, or
+`http://localhost:3001` to run `ai-agent` locally. **Settings → Test Settings → Override agent
+service** overrides it at runtime without a restart (https only). DPoP proofs are signed over
+the canonical resource URL, so neither the proxy nor the override invalidates them.
 
 To use the fontawesome fonts:
 [Installation Instructions](https://fontawesome.com/how-to-use/on-the-web/setup/using-package-managers#installing-pro)
