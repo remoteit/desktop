@@ -288,7 +288,10 @@ export const TestPage: React.FC = () => {
                 hideIcon
               />
               <InlineTextFieldSetting
-                value={apis.agentURL || OAUTH_AGENT_RESOURCE}
+                // Gate the override on its switch the way getApiURL/getWebSocketURL do, so
+                // toggling off shows the default that is actually in effect rather than a
+                // stored override that agentURL() is already ignoring.
+                value={(apis.switchAgent && apis.agentURL) || OAUTH_AGENT_RESOURCE}
                 label={t('testPage.agentURL', 'Agent service URL')}
                 disabled={!customSelected}
                 resetValue={OAUTH_AGENT_RESOURCE}
