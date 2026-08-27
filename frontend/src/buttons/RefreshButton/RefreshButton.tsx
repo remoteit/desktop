@@ -5,7 +5,7 @@ import cloudController from '../../services/cloudController'
 import cloudSync from '../../services/CloudSync'
 import { emit } from '../../services/Controller'
 import { Dispatch, State } from '../../store'
-import { VALID_JOB_ID_LENGTH } from '../../constants'
+import { VALID_JOB_ID_LENGTH, GUIDE_START_DATE } from '../../constants'
 import { useParams, useRouteMatch } from 'react-router-dom'
 import { selectDeviceModelAttributes, selectDevice } from '../../selectors/devices'
 import { useDispatch, useSelector } from 'react-redux'
@@ -166,6 +166,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
       queueAfter="addDevice"
       guide="refresh"
       placement="bottom"
+      startDate={GUIDE_START_DATE}
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
