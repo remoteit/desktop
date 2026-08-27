@@ -24,7 +24,7 @@ export const ChatWindow: React.FC = () => {
         flexFlow: 'column',
         height: '100%',
         width: '100%',
-        bgcolor: 'primaryHighlight.main',
+        bgcolor: 'grayLightest.main',
         paddingBottom: 1,
       }}
     >

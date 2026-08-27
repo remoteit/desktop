@@ -80,7 +80,7 @@ export const ChatPanel: React.FC = () => {
         // indicator on mobile; the bottom menu carries its own inset
         paddingTop: insets?.topPx,
         paddingRight: insets?.rightPx,
-        bgcolor: 'primaryHighlight.main',
+        bgcolor: 'grayLightest.main',
         borderLeft: docked || sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
         boxShadow: docked || sidebarWidth ? 3 : 0,

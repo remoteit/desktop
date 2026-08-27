@@ -37,7 +37,7 @@ export const ChatMessages: React.FC<Props> = ({ messages, streaming, typing, chi
      panel's — otherwise it lands under the composer. */
   return (
     <Box sx={{ position: 'relative', display: 'flex', flexGrow: 1, minHeight: 0 }}>
-      <Body verticalOverflow fadeTop scrollbarBackground="primaryHighlight" bodyRef={ref} sx={{ paddingX: 2.5 }}>
+      <Body verticalOverflow fadeTop scrollbarBackground="grayLightest" bodyRef={ref} sx={{ paddingX: 2.5 }}>
         {messages.map((message, index) => (
           <ChatMessageItem key={index} message={message} />
         ))}
