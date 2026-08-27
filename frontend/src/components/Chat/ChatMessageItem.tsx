@@ -3,7 +3,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
-import { fontSizes } from '../../styling'
+import { fontSizes, radius } from '../../styling'
 import { ChatTranscriptMessage } from '../../models/chat'
 import { ChatToolCalls } from './ChatToolCalls'
 import { scrollbarStyles } from './chatScrollbar'
@@ -24,7 +24,7 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
   if (message.role === 'user')
     return (
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginY: 1 }}>
-        <Box sx={{ bgcolor: 'primaryLighter.main', borderRadius: 2, paddingX: 2, paddingY: 1.25, maxWidth: '85%' }}>
+        <Box sx={{ bgcolor: 'primaryLighter.main', borderRadius: `${radius.lg}px`, paddingX: 2, paddingY: 1.25, maxWidth: '85%' }}>
           <Typography variant="body2" color="grayDarker.main" sx={{ whiteSpace: 'pre-wrap' }}>
             {message.text}
           </Typography>
@@ -41,7 +41,7 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
             theme => ({ '& pre, & table': scrollbarStyles(theme) }),
             {
               bgcolor: 'white.main',
-              borderRadius: 2,
+              borderRadius: `${radius.lg}px`,
               paddingX: 2,
               paddingY: 1.5,
               fontSize: fontSizes.base,
@@ -50,13 +50,13 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
               // Theme tokens, and the app's own emphasis convention (see theme.ts
               // body1/caption): bold is a COLOR step plus weight 500 — never 700.
               color: 'grayDarker.main',
-              '& strong, & b': { fontWeight: 500, color: 'grayDarkest.main' },
+              '& strong, & b': { fontWeight: 'medium', color: 'grayDarkest.main' },
               '& p': { marginY: 0.75 },
               '& ul, & ol': { paddingLeft: 3, marginY: 0.5 },
               '& li': { marginY: 0.25 },
               '& h1, & h2, & h3, & h4': {
-                fontSize: 15,
-                fontWeight: 500,
+                fontSize: fontSizes.md,
+                fontWeight: 'medium',
                 color: 'grayDarkest.main',
                 marginTop: 1.5,
                 marginBottom: 0.5,
@@ -66,14 +66,14 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
                 fontFamily: "'Roboto Mono', monospace",
                 fontSize: fontSizes.sm,
                 bgcolor: 'grayLighter.main',
-                borderRadius: 1,
+                borderRadius: `${radius.sm}px`,
                 paddingX: 0.5,
                 paddingY: 0.25,
               },
               '& pre': {
                 overflowX: 'auto',
                 bgcolor: 'grayLighter.main',
-                borderRadius: 2,
+                borderRadius: `${radius.lg}px`,
                 padding: 1.5,
                 '& code': { padding: 0, bgcolor: 'transparent' },
               },

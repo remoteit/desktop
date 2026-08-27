@@ -1,5 +1,6 @@
 import React from 'react'
 import { Box } from '@mui/material'
+import { radius } from '../../styling'
 
 /* "The agent is working" — three pulsing dots in an assistant-aligned bubble, shown while a
    turn is in flight but nothing else is visibly moving (before the first token, and between
@@ -13,7 +14,7 @@ export const ChatTyping: React.FC = () => (
         alignItems: 'center',
         gap: 0.75,
         bgcolor: 'grayLightest.main',
-        borderRadius: 2,
+        borderRadius: `${radius.lg}px`,
         paddingX: 1.5,
         paddingY: 1,
         '@keyframes chatTypingPulse': {

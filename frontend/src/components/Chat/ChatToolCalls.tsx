@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Box, ButtonBase, Collapse, Typography, CircularProgress } from '@mui/material'
 import { ChatToolCall } from '../../models/chat'
 import { Icon } from '../Icon'
+import { radius } from '../../styling'
 
 export const ChatToolCalls: React.FC<{ toolCalls: ChatToolCall[] }> = ({ toolCalls }) => {
   const { t } = useTranslation()
@@ -11,7 +12,7 @@ export const ChatToolCalls: React.FC<{ toolCalls: ChatToolCall[] }> = ({ toolCal
   const running = toolCalls.some(c => c.status === 'running')
   return (
     <Box sx={{ marginY: 0.5 }}>
-      <ButtonBase onClick={() => setOpen(!open)} sx={{ borderRadius: 1, paddingX: 0.5, color: 'grayDark.main' }}>
+      <ButtonBase onClick={() => setOpen(!open)} sx={{ borderRadius: `${radius.sm}px`, paddingX: 0.5, color: 'grayDark.main' }}>
         {running ? (
           <CircularProgress size={12} sx={{ marginRight: 1 }} />
         ) : (

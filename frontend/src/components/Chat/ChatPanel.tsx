@@ -83,29 +83,11 @@ export const ChatPanel: React.FC = () => {
         bgcolor: 'primaryHighlight.main',
         borderLeft: docked || sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
+        boxShadow: docked || sidebarWidth ? 3 : 0,
         paddingBottom: showBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
       }}
       ref={panelRef}
     >
-      {/* Leading-edge shadow drawn as an OVERLAY rather than an inset box-shadow on
-          the panel: a box-shadow paints beneath the element's own children, so Body's
-          overflow fade (zIndex 7) cut across it. zIndex 8 clears the fade, and
-          PanelHandle follows at the same level in DOM order so the drag divider still
-          sits on top of it. */}
-      {(docked || !!sidebarWidth) && (
-        <Box
-          sx={theme => ({
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 12,
-            zIndex: 8,
-            pointerEvents: 'none',
-            backgroundImage: `linear-gradient(90deg, ${theme.palette.shadow.main}, transparent)`,
-          })}
-        />
-      )}
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
       <ChatHeader
         leading={

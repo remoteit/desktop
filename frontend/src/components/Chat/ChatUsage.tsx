@@ -5,6 +5,7 @@ import { Box, Popover, Typography, LinearProgress, CircularProgress, IconButton 
 import { State } from '../../store'
 import { formatReset } from '../../models/chat'
 import { UsageWindow } from '../../services/agent'
+import { radius } from '../../styling'
 
 const pct = (w: UsageWindow) => (w.unlimited || w.limitUsd <= 0 ? 0 : Math.min(100, Math.round((w.spentUsd / w.limitUsd) * 100)))
 
@@ -25,7 +26,7 @@ const WindowRow: React.FC<{ label: string; window: UsageWindow }> = ({ label, wi
       </Box>
       {!window.unlimited && (
         <>
-          <LinearProgress variant="determinate" value={used} color={color} sx={{ borderRadius: 1, height: 6, marginY: 0.5 }} />
+          <LinearProgress variant="determinate" value={used} color={color} sx={{ borderRadius: `${radius.sm}px`, height: 6, marginY: 0.5 }} />
           {window.resetsAt && (
             <Typography variant="caption" color="grayDark.main">
               {t('chat.usageResets', 'Resets {{when}}', { when: formatReset(window.resetsAt) })}
