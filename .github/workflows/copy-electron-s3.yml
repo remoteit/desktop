@@ -106,7 +106,15 @@ jobs:
           # Checks all downloaded files if they end with zip, tar or tar.gz and extracts them, if true.
           # Prints a warning if enabled but file is not an archive - but does not fail.
           extract: false
-      
+
+      # `/latest` is a prefix rewrite, so this is readable as
+      # downloads.remote.it/desktop/latest/version.txt — the quickest check of
+      # which release the alias is serving.
+      - name: Stamp the release version
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+        run: printf '%s\n' "$TAG" > release-assets/version.txt
+
       - name: Upload release assets to S3
         uses: shallwefootball/s3-upload-action@master
         with:
