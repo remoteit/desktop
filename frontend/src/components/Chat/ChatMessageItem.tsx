@@ -48,10 +48,10 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
           sx={[
             theme => ({
               // Each surface names the color BEHIND its scrollbar, which is what makes
-              // the track invisible until hover: `pre` is a tinted block, while a table's
+              // the track invisible until hover: `pre` is a gray block, while a table's
               // strip sits on the card itself. Keep these in step with the `& pre` /
               // `& th, & td` backgrounds below — a stale color shows as a stray bar.
-              '& pre': scrollbarStyles(theme, { background: 'primaryLighter', width: SCROLLBAR_WIDTH_NARROW }),
+              '& pre': scrollbarStyles(theme, { background: 'grayLighter', width: SCROLLBAR_WIDTH_NARROW }),
               '& table': scrollbarStyles(theme, { background: 'white', width: SCROLLBAR_WIDTH_NARROW }),
             }),
             {
