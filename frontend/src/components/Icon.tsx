@@ -3,14 +3,13 @@ import { useTheme, Badge } from '@mui/material'
 import { PlatformIcon } from './PlatformIcon'
 import { fontSizes, spacing, Sizes } from '../styling'
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome'
-import { library, IconName, IconPrefix } from '@fortawesome/fontawesome-svg-core'
+import { library, IconName, IconPrefix, FlipProp } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { fal } from '@fortawesome/pro-light-svg-icons'
 import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
 import { R3gray } from '../assets/R3gray'
 import { RemoteAI } from '../assets/RemoteAI'
-import { CloneDashed } from '../assets/CloneDashed'
 
 library.add(fal, fab, far, fas)
 
@@ -25,6 +24,8 @@ export interface IconProps {
   fontSize?: number
   onClick?: (event: React.MouseEvent) => void
   size?: Sizes
+  /** Mirror the glyph. Passed straight through to FontAwesome. */
+  flip?: FlipProp
   styles?: React.CSSProperties
   rotate?: number
   spin?: boolean
@@ -108,7 +109,6 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     // Handle special icon cases
     if (name === 'r3') return <R3gray {...props} style={styles} />
     if (name === 'remote-ai') return <RemoteAI {...props} style={styles} />
-    if (name === 'clone-dashed') return <CloneDashed {...props} style={styles} />
 
     let fontType: IconPrefix = 'far'
 
