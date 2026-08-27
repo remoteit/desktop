@@ -23,12 +23,12 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
     setText('')
   }
   return (
-    <Box sx={{ padding: 2, paddingTop: 1 }}>
+    <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
       <Box
         sx={{
           display: 'flex',
           alignItems: 'flex-end',
-          bgcolor: 'grayLightest.main',
+          bgcolor: 'primaryHighlight.main',
           borderRadius: `${radius.lg}px`,
           paddingY: 0.5,
           paddingLeft: 2,
@@ -53,6 +53,7 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
             }
           }}
         />
+        <ChatUsage />
         {streaming ? (
           <IconButton icon="stop" title={t('chat.stop', 'Stop')} color="grayDark" onClick={onStop} />
         ) : (
@@ -66,11 +67,6 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
             onClick={submit}
           />
         )}
-      </Box>
-      {/* Usage rides under the composer, trailing edge — it reports on what the next
-          turn will spend. Renders nothing when both windows are unlimited. */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', minHeight: 0 }}>
-        <ChatUsage />
       </Box>
     </Box>
   )

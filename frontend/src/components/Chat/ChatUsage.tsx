@@ -42,7 +42,7 @@ const WindowRow: React.FC<{ label: string; window: UsageWindow }> = ({ label, wi
    progress circles is the MUI idiom for a donut — there is no dedicated gauge. */
 const UsageRing: React.FC<{ value: number; color: 'primary' | 'warning' | 'error' }> = ({ value, color }) => (
   <Box sx={{ display: 'inline-flex', position: 'relative' }}>
-    <CircularProgress variant="determinate" value={100} size={18} thickness={6} sx={{ color: 'grayLighter.main' }} />
+    <CircularProgress variant="determinate" value={100} size={18} thickness={6} sx={{ color: 'gray.main' }} />
     <CircularProgress
       variant="determinate"
       value={value}
@@ -54,10 +54,11 @@ const UsageRing: React.FC<{ value: number; color: 'primary' | 'warning' | 'error
   </Box>
 )
 
-/* The usage affordance (docs/usage-limits.md D6): quiet until it matters. Sits under the
-   composer rather than in the header — it reports on what you are about to spend, so it
-   belongs with the send box. The ring fills as the tighter of the two windows does;
-   clicking opens both meters. Hidden entirely when both are unlimited. */
+/* The usage affordance (docs/usage-limits.md D6): quiet until it matters. Rides INSIDE
+   the composer, between the field and send — it reports on what you are about to spend,
+   so it belongs with the send box, and sitting in that row costs no extra height. The
+   ring fills as the tighter of the two windows does; clicking opens both meters. Hidden
+   entirely when both are unlimited. */
 export const ChatUsage: React.FC = () => {
   const { t } = useTranslation()
   const usage = useSelector((state: State) => state.chat.usage)
