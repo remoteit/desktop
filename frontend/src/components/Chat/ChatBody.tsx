@@ -7,7 +7,6 @@ import { ChatMessages } from './ChatMessages'
 import { ChatApproval } from './ChatApproval'
 import { ChatInput } from './ChatInput'
 import { ChatIntro } from './ChatIntro'
-import { ChatOrgLabel } from './ChatOrgLabel'
 import { Notice } from '../Notice'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
@@ -41,7 +40,6 @@ export const ChatBody: React.FC = () => {
 
   return (
     <>
-      <ChatOrgLabel />
       {unreachable && !!messages.length && (
         <Notice severity="warning" gutterTop>
           {unavailableMessage}
