@@ -89,14 +89,19 @@ export const ChatPanel: React.FC = () => {
       ref={panelRef}
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
-      <ChatHeader>
-        {(docked || expanded) && (
-          <IconButton
-            icon={expanded ? 'down-left-and-up-right-to-center' : 'up-right-and-down-left-from-center'}
-            title={expanded ? t('chat.collapse', 'Collapse') : t('chat.expand', 'Expand')}
-            onClick={() => dispatch.chat.set({ expanded: !expanded })}
-          />
-        )}
+      <ChatHeader
+        leading={
+          (docked || expanded) && (
+            <IconButton
+              // Direction of travel for a right-docked column: left-to-line grows it
+              // across the content, right-from-line sends it back to its column
+              icon={expanded ? 'arrow-right-from-line' : 'arrow-left-to-line'}
+              title={expanded ? t('chat.collapse', 'Collapse') : t('chat.expand', 'Expand')}
+              onClick={() => dispatch.chat.set({ expanded: !expanded })}
+            />
+          )
+        }
+      >
         {!browser.isMobile && (
           <IconButton
             icon="arrow-up-right-from-square"

@@ -6,15 +6,25 @@ import { Dispatch, State } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { Icon } from '../Icon'
 
-/* Title row shared by the docked panel and the popout window — the
-   window-specific buttons render as children in each caller's order */
-export const ChatHeader: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+/* Title row shared by the docked panel and the popout window — `leading` takes the
+   panel-chrome control (expand/collapse) at the far left, the window-specific actions
+   render as children on the right in each caller's order.
+   The row mirrors the app Header's box exactly — same height, same top margin, centered
+   — so the two icon rows share a baseline across the divider instead of the chat's
+   sitting high on an auto-height row. */
+export const ChatHeader: React.FC<{ leading?: React.ReactNode; children?: React.ReactNode }> = ({
+  leading,
+  children,
+}) => {
   const { t } = useTranslation()
   const sessionName = useSelector((state: State) => state.chat.title)
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', paddingX: 2, paddingY: 1 }}>
+    <Box
+      sx={{ display: 'flex', alignItems: 'center', height: 45, maxHeight: 45, paddingX: 2.25, marginTop: 1.5 }}
+    >
+      {leading}
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Typography variant="subtitle1" sx={{ padding: 0, margin: 0, minHeight: 0, lineHeight: 1.2 }}>
+        <Typography variant="subtitle1" noWrap sx={{ padding: 0, margin: 0, minHeight: 0, lineHeight: 1.2 }}>
           {t('chat.title', 'Remote.It AI')}
         </Typography>
         <Typography variant="caption" color="grayDark.main" noWrap sx={{ display: 'block', maxWidth: '100%' }}>
