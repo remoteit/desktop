@@ -2,8 +2,6 @@ import React, { useState, useContext } from 'react'
 import { GUIDE_START_DATE } from '../constants'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { Typography, Collapse } from '@mui/material'
-import { useDispatch } from 'react-redux'
-import { Dispatch } from '../store'
 import { DeviceContext } from '../services/Context'
 import { ComboButton } from './ComboButton'
 import { GuideBubble } from '../components/GuideBubble'
@@ -14,7 +12,6 @@ import { Gutters } from '../components/Gutters'
 export const ServiceConnectButton: React.FC = () => {
   const { device, service, connection, instance } = useContext(DeviceContext)
   const [showError, setShowError] = useState<boolean>(true)
-  const dispatch = useDispatch<Dispatch>()
 
   return (
     <Collapse in={!connection.connectLink} timeout={800}>
@@ -67,7 +64,6 @@ export const ServiceConnectButton: React.FC = () => {
               service={service}
               connection={connection}
               permissions={instance?.permissions}
-              onClick={() => dispatch.ui.guide({ guide: 'aws', step: 6 })}
               fullWidth
             />
           </Gutters>

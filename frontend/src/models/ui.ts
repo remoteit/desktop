@@ -8,7 +8,6 @@ import { Settings as LuxonSettings } from 'luxon'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../constants'
-import { State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/browser'
 
@@ -16,7 +15,6 @@ export const DEFAULT_INTERFACE = 'searching'
 
 const SAVED_ACROSS_LOGOUT = [
   'apis',
-  'guides',
   'panelWidth',
   'poppedBubbles',
   'expireBubbles',
@@ -97,7 +95,6 @@ export type UIState = {
   noticeMessage: React.ReactNode
   errorMessage: React.ReactNode
   panelWidth: ILookup<number>
-  guides: ILookup<IGuide>
   poppedBubbles: string[]
   /** WHEN the user last chose "dismiss all", as a timestamp — not whether they did.
    *  A bubble introduced after that moment still gets shown. `true` is the legacy
@@ -199,14 +196,6 @@ export const defaultState: UIState = {
   noticeMessage: '',
   errorMessage: '',
   panelWidth: {},
-  guides: {
-    // all multi-step guides disabled while testing the guide bubbles
-    // - consider removing guide steps feature if not needed any longer
-    aws: { title: 'AWS Guide', step: 1, total: 6, done: true, weight: 20 },
-    network: { title: 'Add Network Guide', step: 1, total: 3, done: true, weight: 30 },
-    service: { title: 'Add Service Guide ', step: 1, total: 3, done: true, weight: 40 },
-    register: { title: 'Device Registration Guide', step: 1, total: 1, done: true, weight: 10 },
-  },
   poppedBubbles: [],
   expireBubbles: false,
   guidesResetDate: undefined,
@@ -285,22 +274,6 @@ export default createModel<RootModel>()({
       console.log('SET COLUMN WIDTHS', columnWidths)
       dispatch.ui.setPersistent({ columnWidths })
     },
-    async guide({ guide, ...props }: ILookup<any>, state) {
-      let original = state.ui.guides[guide]
-      if (!original) return
-      const active = props.active === undefined ? original.active : props.active
-
-      if (active) {
-        if (props.step > original.total) {
-          props.done = true
-          props.step = 0
-        }
-        if (props.done) props.active = false
-      }
-
-      const guides = { ...state.ui.guides, [guide]: { ...original, ...props } }
-      dispatch.ui.setPersistent({ guides })
-    },
     async pop(bubble: string, state) {
       let poppedBubbles = [...state.ui.poppedBubbles]
       poppedBubbles.push(bubble)
@@ -313,7 +286,6 @@ export default createModel<RootModel>()({
     },
     async resetHelp(_: void) {
       dispatch.ui.setPersistent({
-        guides: { ...defaultState.guides },
         poppedBubbles: [...defaultState.poppedBubbles],
         expireBubbles: false,
         // An explicit reset treats the account as new from this moment, so even
@@ -392,19 +364,6 @@ export default createModel<RootModel>()({
     },
   },
 })
-
-export function selectPriorityGuide(state: State, guide: string, startDate: Date): IGuide {
-  const all = state.ui.guides
-  const result = all[guide] || {}
-  let active = result.active
-  for (let key in all) {
-    const g = all[key]
-    if (g.active && g.weight < result.weight) active = false
-  }
-  const cohortAnchor = Math.max(state.user.created.getTime(), state.ui.guidesResetDate || 0)
-  if (cohortAnchor < startDate.getTime()) active = false
-  return { ...result, active }
-}
 
 function migrateColumnStates(states: ILookup<any>): ILookup<any> {
   if (!states.columns || states.columns.includes('serviceName')) return states

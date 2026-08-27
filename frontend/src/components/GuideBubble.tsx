@@ -1,10 +1,51 @@
 import React from 'react'
-import { Box, Tooltip, TooltipProps, BoxProps, Button } from '@mui/material'
+import { Box, Tooltip, TooltipProps, BoxProps, Button, Theme, alpha } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { tipSx, arrowSx, boxSx } from './GuideStep'
-import { toSxArray } from '../styling'
+import { spacing, radius, fontSizes, toSxArray } from '../styling'
 import { Link } from './Link'
+
+const boxSx = (highlight?: boolean) => (theme: Theme) => ({
+  border: highlight ? `1px dotted ${theme.palette.guide.main}` : undefined,
+  borderRadius: `${radius.lg}px`,
+  position: 'relative' as const,
+})
+
+const arrowSx = (theme: Theme) => ({ color: theme.palette.guide.main })
+
+const tipSx = (theme: Theme) => ({
+  backgroundColor: theme.palette.guide.main,
+  color: theme.palette.white.main,
+  fontSize: fontSizes.lg,
+  padding: `${spacing.lg}px`,
+  paddingRight: `${spacing.xl}px`,
+  margin: `${spacing.lg}px`,
+  position: 'relative',
+  borderRadius: `${radius.lg}px`,
+  '& .MuiTypography-caption': { color: theme.palette.white.main, marginTop: `${spacing.md}px`, display: 'block' },
+  '& .MuiLink-root': {
+    color: theme.palette.white.main,
+    marginRight: `${-spacing.sm}px`,
+    textDecoration: 'none',
+    fontSize: fontSizes.xs,
+    fontWeight: 400,
+    cursor: 'pointer',
+    opacity: 0.3,
+  },
+  '& .MuiLink-root:hover': { opacity: 1 },
+  '& .IconButtonTooltip': { position: 'absolute', right: `${spacing.xs}px`, top: `${spacing.xs}px` },
+  '& .MuiButton-root': { background: alpha(theme.palette.white.main, 0.15), color: theme.palette.white.main },
+  '& .MuiButton-root:hover': { background: alpha(theme.palette.white.main, 0.3) },
+  '& cite': {
+    fontStyle: 'normal',
+    textTransform: 'uppercase',
+    fontWeight: 700,
+    fontSize: '0.8em',
+    letterSpacing: 1,
+    paddingLeft: `${spacing.xs}px`,
+    paddingRight: `${spacing.xs}px`,
+  },
+})
 
 /* "Dismiss all" used to be permanent AND retroactive: one boolean hid every bubble ever
    written, including ones added long afterwards, so a single click quietly opted the user

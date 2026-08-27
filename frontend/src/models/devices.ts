@@ -570,7 +570,6 @@ export default createModel<RootModel>()({
       const accountId = selectActiveAccountId(state)
 
       dispatch.ui.set({ claiming: true })
-      dispatch.ui.guide({ guide: 'aws', step: 2 })
 
       const result = await graphQLClaimDevice(code, accountId)
       await dispatch.accounts.set({ activeId: accountId })
@@ -598,8 +597,6 @@ export default createModel<RootModel>()({
         }
         dispatch.ui.set({ claiming: false })
       }
-
-      dispatch.ui.guide({ guide: 'aws', step: 3 })
     },
 
     async createRegistration({
