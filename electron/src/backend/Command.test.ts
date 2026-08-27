@@ -7,12 +7,12 @@ jest.mock('child_process', () => {
   return { exec }
 })
 
-import Command from './Command'
-import AirBrake from './AirBrake'
-
-const notify = AirBrake.notify as jest.Mock
-
 const AUTH_HASH = '8832A2155D371EB9806FDF682C42480D0AA085DD'
+
+// Command keeps a module-level set of already-reported errors, so each test
+// needs its own copy of the module or the dedupe state leaks between them.
+let Command: typeof import('./Command').default
+let notify: jest.Mock
 
 function failWith(message: string) {
   mockExec.mockImplementation(() => {
@@ -23,9 +23,17 @@ function failWith(message: string) {
   })
 }
 
+// sudoPromise, and any non-exec failure, rejects with a plain Error that has
+// neither stdout nor stderr.
+function failWithMessageOnly(message: string) {
+  mockExec.mockImplementation(() => Promise.reject(new Error(message)))
+}
+
 describe('backend/Command', () => {
   beforeEach(() => {
-    notify.mockClear()
+    jest.resetModules()
+    Command = require('./Command').default
+    notify = require('./AirBrake').default.notify
     mockExec.mockReset()
   })
 
@@ -109,6 +117,34 @@ describe('backend/Command', () => {
       await new Command({ command: 'remoteit connection add' }).exec()
 
       expect(notify).toHaveBeenCalledTimes(1)
+    })
+
+    test('separates failures that differ only past a long shared prefix', async () => {
+      const command = `"C:\\Program Files\\Remote.It\\resources\\remoteit.exe" -j --authhash ${AUTH_HASH} connection add --id 90:00:00:00:00:0D:F2:FC --name "a-service-with-a-fairly-long-name" --port 33008 --ip 127.0.0.1 --logfolder "C:\\Users\\someone\\AppData\\Local\\remoteit\\log"`
+      expect(command.length).toBeGreaterThan(200)
+
+      failWithMessageOnly(`Command failed: ${command} The system cannot execute the specified program.`)
+      await new Command({ command: 'remoteit connection add' }).exec()
+      failWithMessageOnly(`Command failed: ${command} Access is denied.`)
+      await new Command({ command: 'remoteit connection add' }).exec()
+
+      expect(notify).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('admin commands', () => {
+    test('reports a rejection that carries no stdout or stderr', async () => {
+      failWithMessageOnly('Command failed: /usr/bin/remoteit agent install')
+      await new Command({ command: 'remoteit agent install', admin: true }).exec()
+
+      expect(notify).toHaveBeenCalledTimes(1)
+    })
+
+    test('does not report a dismissed elevation prompt', async () => {
+      failWithMessageOnly('User did not grant permission.')
+      await new Command({ command: 'remoteit agent install', admin: true }).exec()
+
+      expect(notify).not.toHaveBeenCalled()
     })
   })
 })

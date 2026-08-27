@@ -4,6 +4,7 @@ import Logger from './Logger'
 import environment from './environment'
 import { promisify } from 'util'
 import { exec, ExecException } from 'child_process'
+import { createHash } from 'crypto'
 import { sudoPromise } from './sudoPromise'
 
 type StdExecException = ExecException & { stderr: string; stdout: string }
@@ -15,6 +16,13 @@ const reportedErrors = new Set<string>()
 // them from anything that leaves the machine -- not only the hash of the user
 // we happen to have loaded, since a command can carry another account's.
 const AUTH_HASH_PATTERN = /(--authhash[=\s]+)([A-Fa-f0-9]{8,})/g
+
+// Failures that describe the machine we're running on rather than a defect.
+const IGNORED_MESSAGES = [
+  'read-only file system',
+  'user did not grant permission', // elevation prompt dismissed
+  'no polkit authentication agent found', // no way to prompt for elevation
+]
 
 // CLI exit codes that report an expected state rather than a defect. Each is
 // already surfaced in the UI, so reporting them only buries real failures.
@@ -121,6 +129,9 @@ export default class Command {
         this.log(`EXEC CAUGHT *** STD ERROR ***`, { cliError, errorStack: error.stack }, 'error', true)
         this.onError(cliError)
       } else if (error instanceof Error) {
+        // sudoPromise rejects with a plain Error carrying no stdout or stderr,
+        // so admin commands only ever reach Airbrake through this branch.
+        this.airbrake(error, error, 'COMMAND ERROR')
         this.log(`EXEC CAUGHT *** ERROR ***`, { error, errorStack: error.stack }, 'error', true)
       } else {
         Logger.error(`EXEC CAUGHT *** UNKNOWN ERROR ***`, { error }, 'error', true)
@@ -130,7 +141,7 @@ export default class Command {
     return result
   }
 
-  airbrake(cliError: Error, error: string | StdExecException, type: string) {
+  airbrake(cliError: Error, error: Error, type: string) {
     if (!this.report || !isErrorReportable(cliError)) return
     AirBrake.notify({
       params: { type, exec: this.toSafeString() },
@@ -147,7 +158,8 @@ function isStdExecException(error: any): error is StdExecException {
 
 function isErrorReportable(error: Error) {
   if (EXPECTED_CLI_CODES.includes(error.name)) return false
-  if (error.message.includes('read-only file system')) return false
+  const message = error.message.toLowerCase()
+  if (IGNORED_MESSAGES.some(ignored => message.includes(ignored))) return false
 
   // error.name is the CLI exit code, but every non-JSON stderr shares the name
   // "Error" -- keying on it alone collapses all of them into a single slot.
@@ -160,12 +172,15 @@ function isErrorReportable(error: Error) {
 
 // Collapse the parts of a message that vary per run -- ids, ports, paths and
 // versions -- so one failure isn't reported once per device or connection.
+// Hashed rather than truncated: the reason a command failed is usually at the
+// end of the message, and a head slice would collapse unrelated failures that
+// share a long command line.
 function fingerprint(message: string) {
-  return message
+  const normalized = message
     .toLowerCase()
     .replace(/\b[0-9a-f]{2}(:[0-9a-f]{2})+\b/g, '#') // device and service ids
     .replace(/\d+/g, '#')
-    .slice(0, 200)
+  return createHash('sha1').update(normalized).digest('hex')
 }
 
 function scrub(text: string) {
@@ -174,11 +189,10 @@ function scrub(text: string) {
   return result
 }
 
-function scrubError(error: string | StdExecException): Error {
-  const source = typeof error === 'string' ? new Error(error) : error
-  const scrubbed = new Error(scrub(source.message))
-  scrubbed.name = source.name
-  if (source.stack) scrubbed.stack = scrub(source.stack)
+function scrubError(error: Error): Error {
+  const scrubbed = new Error(scrub(error.message))
+  scrubbed.name = error.name
+  if (error.stack) scrubbed.stack = scrub(error.stack)
   return scrubbed
 }
 
