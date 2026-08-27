@@ -2,7 +2,7 @@
   "accessAccordion": {
     "addAccess": "Add access",
     "guests": "Guests",
-    "noUsers": "No users",
+    "noUsers": "No\u00a0users",
     "organizationMembers": "Organization members",
     "subtitle": "Access"
   },
@@ -51,7 +51,7 @@
   },
   "addFromNetwork": {
     "scanForServices": "Scan for Services",
-    "scanNetwork": "Scan network"
+    "scanNetwork": "Scan\u00a0network"
   },
   "addPage": {
     "addDevice": "Add a device",
@@ -61,7 +61,7 @@
     "demoDevice": "Demo device",
     "products": "Products",
     "provisionInBulk": "Provision in bulk",
-    "title": "What do you want to connect to?",
+    "title": "What do you want to connect\u00a0to?",
     "tryDevice": "Try a device"
   },
   "addPlatformServices": {
@@ -1680,7 +1680,7 @@
     "downloadDescription": "Download our disk image for easy, headless setup with Bluetooth WiFi onboarding.",
     "downloadQuestion": "New to Pi?",
     "downloadTitle": "Download Pi Image",
-    "heading": "Set Up Your Raspberry Pi for Remote Access",
+    "heading": "Set Up Your Raspberry Pi for\u00a0Remote\u00a0Access",
     "onboardDescription": "Set up WiFi via Bluetooth and register your device for remote access.",
     "onboardQuestion": "Have our custom Pi image?",
     "onboardTitle": "Onboard via Bluetooth"
@@ -1707,7 +1707,8 @@
     "guideInstallAgent": "First step is to install our agent on any device you would like to connect to.",
     "guideRegistersAfter": "page.",
     "guideRegistersBefore": "Your device will automatically register and appear on the",
-    "guideTitle": "Add a device"
+    "guideTitle": "Add a device",
+    "managePermissionRequired": "Manage permission required to add a device to this organization."
   },
   "rentANodeForm": {
     "addDns": "Add a public DNS address",

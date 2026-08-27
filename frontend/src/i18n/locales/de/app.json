@@ -1707,7 +1707,8 @@
     "guideInstallAgent": "Der erste Schritt besteht darin, unseren Agenten auf jedem Gerät zu installieren, mit dem Sie sich verbinden möchten.",
     "guideRegistersAfter": "angezeigt.",
     "guideRegistersBefore": "Ihr Gerät wird automatisch registriert und auf der Seite",
-    "guideTitle": "Gerät hinzufügen"
+    "guideTitle": "Gerät hinzufügen",
+    "managePermissionRequired": "Sie benötigen die Berechtigung „Verwalten“, um ein Gerät zu dieser Organisation hinzuzufügen."
   },
   "rentANodeForm": {
     "addDns": "Öffentliche DNS-Adresse hinzufügen",

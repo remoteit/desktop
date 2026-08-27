@@ -17,9 +17,9 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
   const location = useLocation()
   const layout = useSelector((state: State) => state.ui.layout)
   const unauthorized = !useSelector(selectCanRegister)
-  const disabled = location.pathname === '/add'
+  const disabled = unauthorized || location.pathname === '/add'
 
-  if (unauthorized || (fab && !layout.hideSidebar)) return null
+  if (fab && !layout.hideSidebar) return null
 
   const button = (
     <GuideBubble
@@ -51,8 +51,29 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
     >
       <IconButton
         {...props}
-        sx={{ borderRadius: '50%', width: buttonSize, height: buttonSize }}
-        title={t('registerMenu.addDevice', 'Add device')}
+        sx={{
+          borderRadius: '50%',
+          width: buttonSize,
+          height: buttonSize,
+          // Without register permission the button stays visible but reads as
+          // inert - a grey plus on the surface colour instead of white on blue.
+          // MUI's own .Mui-disabled rule is more specific than sx, so the
+          // disabled state has to be restated to win.
+          ...(unauthorized && {
+            backgroundColor: 'white.main',
+            color: 'gray.main',
+            '&:hover': { backgroundColor: 'white.main' },
+            '&.Mui-disabled': { backgroundColor: 'white.main', color: 'gray.main' },
+          }),
+        }}
+        title={
+          unauthorized
+            ? t(
+                'registerMenu.managePermissionRequired',
+                'Manage permission required to add a device to this organization.'
+              )
+            : t('registerMenu.addDevice', 'Add device')
+        }
         to="/add"
         forceTitle
         hideDisableFade
@@ -73,7 +94,7 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
         borderColor: 'white.main',
         borderRadius: '50%',
         position: 'absolute',
-        bgcolor: 'primary.main',
+        bgcolor: unauthorized ? 'white.main' : 'primary.main',
         bottom: layout.mobile ? spacing.sm : spacing.xl,
         right: spacing.xl,
         zIndex: 10,

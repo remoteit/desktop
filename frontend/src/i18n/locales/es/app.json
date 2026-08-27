@@ -1729,7 +1729,8 @@
     "guideInstallAgent": "El primer paso es instalar nuestro agente en cualquier dispositivo al que quieras conectarte.",
     "guideRegistersAfter": "de la aplicación.",
     "guideRegistersBefore": "Tu dispositivo se registrará automáticamente y aparecerá en la página",
-    "guideTitle": "Añadir un dispositivo"
+    "guideTitle": "Añadir un dispositivo",
+    "managePermissionRequired": "Debes tener el permiso \"Gestionar\" para añadir un dispositivo a esta organización."
   },
   "rentANodeForm": {
     "addDns": "Añadir una dirección DNS pública",
