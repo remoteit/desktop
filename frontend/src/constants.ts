@@ -109,6 +109,10 @@ export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
 export const CHAT_PANEL_WIDTH = 400
 export const CHAT_PANEL_WIDTH_MIN = 320
+/* When the AI chat tour shipped. GuideBubble's `added` — a "dismiss all" from before
+   this date does not suppress it, so users who opted out of the older guides still
+   get introduced to a feature that did not exist back then. */
+export const CHAT_GUIDE_DATE = new Date('2026-08-27')
 /* Content that must survive beside a docked chat column. The column shrinks to
    preserve it, so the chat keeps its column on small desktop windows instead of
    taking the screen — that only happens at phone size (MOBILE_WIDTH). */

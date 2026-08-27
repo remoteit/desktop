@@ -1,4 +1,4 @@
-import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../../constants'
+import { REGEX_FIRST_PATH, MOBILE_WIDTH, CHAT_GUIDE_DATE } from '../../constants'
 import { useChatEnabled, useHideSidebar } from '../../hooks/useChatEnabled'
 import { GuideBubble } from '../GuideBubble'
 import React, { useState, useRef } from 'react'
@@ -106,6 +106,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
         {chatEnabled && !chatPoppedOut && (
           <GuideBubble
             guide="chatAgent"
+            added={CHAT_GUIDE_DATE}
             placement="bottom"
             enterDelay={1200}
             instructions={

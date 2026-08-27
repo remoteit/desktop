@@ -8,6 +8,7 @@ import { Icon } from '../Icon'
 import { fontSizes, spacing } from '../../styling'
 import { GuideBubble } from '../GuideBubble'
 import { isChatPopout } from '../../services/chatPopout'
+import { CHAT_GUIDE_DATE } from '../../constants'
 
 /* Control row shared by the docked panel and the popout window — `leading` takes the
    panel-chrome control (expand/collapse) at the far left, then the conversation's name,
@@ -29,6 +30,7 @@ export const ChatHeader: React.FC<{ leading?: React.ReactNode; children?: React.
             inserted div would refuse to shrink and the name would stop truncating. */}
         <GuideBubble
           guide="chatHistory"
+          added={CHAT_GUIDE_DATE}
           placement="bottom"
           queueAfter="chatCompose"
           hide={isChatPopout}

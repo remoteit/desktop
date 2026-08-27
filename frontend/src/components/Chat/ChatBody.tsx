@@ -12,6 +12,7 @@ import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { GuideBubble } from '../GuideBubble'
 import { isChatPopout } from '../../services/chatPopout'
+import { CHAT_GUIDE_DATE } from '../../constants'
 
 /* Everything below the chat header — shared by the docked panel and the
    popout window */
@@ -88,6 +89,7 @@ export const ChatBody: React.FC = () => {
           bubble in a second window would fire with no context around it. */}
       <GuideBubble
         guide="chatCompose"
+        added={CHAT_GUIDE_DATE}
         placement="top"
         queueAfter="chatAgent"
         hide={isChatPopout}
