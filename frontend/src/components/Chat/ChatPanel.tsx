@@ -83,6 +83,9 @@ export const ChatPanel: React.FC = () => {
         bgcolor: 'primaryHighlight.main',
         borderLeft: docked || sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
+        // Lifts the column off the content behind it — inset so it reads as depth
+        // at the seam rather than a drop shadow cast onto the page
+        boxShadow: theme => `inset 10px 0 12px -10px ${theme.palette.shadow.main}`,
         paddingBottom: showBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
       }}
       ref={panelRef}

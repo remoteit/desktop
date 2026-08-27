@@ -24,8 +24,8 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
   if (message.role === 'user')
     return (
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginY: 1 }}>
-        <Box sx={{ bgcolor: 'primaryLighter.main', borderRadius: 2, paddingX: 1.5, paddingY: 0.75, maxWidth: '85%' }}>
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+        <Box sx={{ bgcolor: 'primaryLighter.main', borderRadius: 2, paddingX: 2, paddingY: 1.25, maxWidth: '85%' }}>
+          <Typography variant="body2" color="grayDarker.main" sx={{ whiteSpace: 'pre-wrap' }}>
             {message.text}
           </Typography>
         </Box>
@@ -42,15 +42,25 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
             {
               bgcolor: 'white.main',
               borderRadius: 2,
-              paddingX: 1.5,
-              paddingY: 1,
+              paddingX: 2,
+              paddingY: 1.5,
               fontSize: fontSizes.base,
               lineHeight: 1.5,
               wordBreak: 'break-word',
+              // Theme tokens, and the app's own emphasis convention (see theme.ts
+              // body1/caption): bold is a COLOR step plus weight 500 — never 700.
+              color: 'grayDarker.main',
+              '& strong, & b': { fontWeight: 500, color: 'grayDarkest.main' },
               '& p': { marginY: 0.75 },
               '& ul, & ol': { paddingLeft: 3, marginY: 0.5 },
               '& li': { marginY: 0.25 },
-              '& h1, & h2, & h3, & h4': { fontSize: 15, marginTop: 1.5, marginBottom: 0.5 },
+              '& h1, & h2, & h3, & h4': {
+                fontSize: 15,
+                fontWeight: 500,
+                color: 'grayDarkest.main',
+                marginTop: 1.5,
+                marginBottom: 0.5,
+              },
               '& a': { color: 'primary.main' },
               '& code': {
                 fontFamily: "'Roboto Mono', monospace",
