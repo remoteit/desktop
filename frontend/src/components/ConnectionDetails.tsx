@@ -198,6 +198,7 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                 enterDelay={800}
                 placement="bottom"
                 startDate={GUIDE_START_DATE}
+                added={GUIDE_START_DATE}
                 queueAfter="connectButton"
                 instructions={
                   <>

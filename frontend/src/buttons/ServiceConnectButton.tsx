@@ -24,6 +24,7 @@ export const ServiceConnectButton: React.FC = () => {
           enterDelay={400}
           hide={connection.connectLink}
           startDate={GUIDE_START_DATE}
+          added={GUIDE_START_DATE}
           queueAfter={device ? 'availableServices' : 'addNetwork'}
           instructions={
             <>

@@ -24,9 +24,9 @@ type Props = {
   instructions: React.ReactNode
   component?: BoxProps['component']
   startDate?: Date // Cohort gate: hidden from users who signed up before this date
-  /** When this bubble shipped. A "dismiss all" older than this does not hide it.
-   *  Defaults to startDate, so existing bubbles keep their current behaviour. */
-  added?: Date
+  /** When this bubble shipped. A "dismiss all" older than this does not hide it —
+   *  required so a new bubble can't silently inherit an old dismissal. */
+  added: Date
   highlight?: boolean
   hideArrow?: boolean
   hide?: boolean
@@ -59,7 +59,7 @@ export const GuideBubble: React.FC<Props> = ({
   )
   const dismissed = useSelector((state: State) => dismissedAt(state.ui.expireBubbles))
   // Dismissed only counts against bubbles that already existed when it happened
-  const expired = cohortExpired || (dismissed !== undefined && (added ?? startDate).getTime() <= dismissed)
+  const expired = cohortExpired || (dismissed !== undefined && added.getTime() <= dismissed)
   const poppedBubbles = useSelector((state: State) => state.ui.poppedBubbles)
   const sidebarOpen = useSelector((state: State) => state.ui.sidebarMenu)
   const [waiting, setWaiting] = React.useState<boolean>(true)

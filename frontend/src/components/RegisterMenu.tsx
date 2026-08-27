@@ -26,6 +26,7 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
       guide="addDevice"
       placement="bottom"
       startDate={GUIDE_START_DATE}
+      added={GUIDE_START_DATE}
       enterDelay={400}
       hide={disabled}
       instructions={

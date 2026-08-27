@@ -73,6 +73,7 @@ const DeviceListRow: React.FC<RowProps> = React.memo(
             guide="deviceList"
             placement="bottom"
             startDate={GUIDE_START_DATE}
+            added={GUIDE_START_DATE}
             queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
             instructions={
               <>

@@ -35,6 +35,7 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
       enterDelay={400}
       placement="bottom"
       startDate={GUIDE_START_DATE}
+      added={GUIDE_START_DATE}
       queueAfter="addService"
       instructions={
         <>

@@ -19,6 +19,7 @@ export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) =>
       enterDelay={400}
       placement="bottom"
       startDate={GUIDE_START_DATE}
+      added={GUIDE_START_DATE}
       queueAfter="usingConnection"
       instructions={
         <>

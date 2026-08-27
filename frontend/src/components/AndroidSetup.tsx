@@ -27,6 +27,7 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
           guide="registerMenu"
           placement="bottom"
           startDate={GUIDE_START_DATE}
+          added={GUIDE_START_DATE}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
