@@ -1590,9 +1590,9 @@
     "title": "Suscripciones"
   },
   "platformAddPage": {
+    "managePermissionRequired": "Debes tener el permiso \"Gestionar\" para añadir un dispositivo a esta organización.",
     "multiUse": "USO MÚLTIPLE",
     "oneTimeUse": "USO ÚNICO",
-    "registerPermissionRequired": "Debes tener el permiso de registro para añadir un dispositivo a esta organización.",
     "screenViewCodeHint": "O usa este código de registro para reclamar manualmente la aplicación ScreenView."
   },
   "portSetting": {
@@ -1729,8 +1729,7 @@
     "guideInstallAgent": "El primer paso es instalar nuestro agente en cualquier dispositivo al que quieras conectarte.",
     "guideRegistersAfter": "de la aplicación.",
     "guideRegistersBefore": "Tu dispositivo se registrará automáticamente y aparecerá en la página",
-    "guideTitle": "Añadir un dispositivo",
-    "managePermissionRequired": "Se requiere el permiso \"Gestionar\" para agregar un dispositivo a esta organización."
+    "guideTitle": "Añadir un dispositivo"
   },
   "rentANodeForm": {
     "addDns": "Añadir una dirección DNS pública",

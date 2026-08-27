@@ -1550,9 +1550,9 @@
     "title": "サブスクリプション"
   },
   "platformAddPage": {
+    "managePermissionRequired": "この組織にデバイスを追加するには「管理」権限が必要です。",
     "multiUse": "複数回使用",
     "oneTimeUse": "一回限りの使用",
-    "registerPermissionRequired": "この組織にデバイスを追加するには、登録権限が必要です。",
     "screenViewCodeHint": "または、この登録コードを使用してScreenViewアプリを手動で登録できます。"
   },
   "portSetting": {
@@ -1685,8 +1685,7 @@
     "guideInstallAgent": "まず、接続したいデバイスに当社のエージェントをインストールします。",
     "guideRegistersAfter": "ページに表示されます。",
     "guideRegistersBefore": "デバイスは自動的に登録され、",
-    "guideTitle": "デバイスを追加",
-    "managePermissionRequired": "この組織にデバイスを追加するには「管理」権限が必要です。"
+    "guideTitle": "デバイスを追加"
   },
   "rentANodeForm": {
     "addDns": "公開DNSアドレスを追加",

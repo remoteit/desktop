@@ -4,7 +4,7 @@ import { GUIDE_START_DATE } from '../constants'
 import { State } from '../store'
 import { useLocation } from 'react-router-dom'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
-import { selectPermissions } from '../selectors/organizations'
+import { selectCanRegister } from '../selectors/organizations'
 import { Typography, Paper } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { GuideBubble } from './GuideBubble'
@@ -16,9 +16,8 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
   const { t } = useTranslation()
   const location = useLocation()
   const layout = useSelector((state: State) => state.ui.layout)
-  const permissions = useSelector(selectPermissions)
-  const unauthorized = !permissions.includes('MANAGE')
-  const disabled = unauthorized || location.pathname === '/add'
+  const unauthorized = !useSelector(selectCanRegister)
+  const disabled = location.pathname === '/add'
 
   if (unauthorized || (fab && !layout.hideSidebar)) return null
 
@@ -53,14 +52,7 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
       <IconButton
         {...props}
         sx={{ borderRadius: '50%', width: buttonSize, height: buttonSize }}
-        title={
-          unauthorized
-            ? t(
-                'registerMenu.managePermissionRequired',
-                'Manage permission required to add a device to this organization.'
-              )
-            : t('registerMenu.addDevice', 'Add device')
-        }
+        title={t('registerMenu.addDevice', 'Add device')}
         to="/add"
         forceTitle
         hideDisableFade

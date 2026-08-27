@@ -1570,9 +1570,9 @@
     "title": "Abonnements"
   },
   "platformAddPage": {
+    "managePermissionRequired": "Sie benötigen die Berechtigung „Verwalten“, um ein Gerät zu dieser Organisation hinzuzufügen.",
     "multiUse": "MEHRFACHNUTZUNG",
     "oneTimeUse": "EINMALIGE NUTZUNG",
-    "registerPermissionRequired": "Sie benötigen die Berechtigung zum Registrieren, um ein Gerät zu dieser Organisation hinzuzufügen.",
     "screenViewCodeHint": "Oder verwenden Sie diesen Registrierungscode, um die ScreenView-App manuell zu beanspruchen."
   },
   "portSetting": {
@@ -1707,8 +1707,7 @@
     "guideInstallAgent": "Der erste Schritt besteht darin, unseren Agenten auf jedem Gerät zu installieren, mit dem Sie sich verbinden möchten.",
     "guideRegistersAfter": "angezeigt.",
     "guideRegistersBefore": "Ihr Gerät wird automatisch registriert und auf der Seite",
-    "guideTitle": "Gerät hinzufügen",
-    "managePermissionRequired": "Zum Hinzufügen eines Geräts zu dieser Organisation ist die Berechtigung „Verwalten“ erforderlich."
+    "guideTitle": "Gerät hinzufügen"
   },
   "rentANodeForm": {
     "addDns": "Öffentliche DNS-Adresse hinzufügen",

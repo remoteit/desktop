@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../selectors/devices'
 import { getConnectionsLookup } from '../selectors/connections'
-import { selectPermissions } from '../selectors/organizations'
+import { selectCanRegister } from '../selectors/organizations'
 import { restoreAttributes } from '../components/Attributes'
 import { DeviceListEmpty } from '../components/DeviceListEmpty'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -22,13 +22,13 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const { attributes, required } = useSelector(selectDeviceListAttributes)
   const { fetching: deviceFetching, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
   const devices = useSelector(selectVisibleDevices)
-  const permissions = useSelector(selectPermissions)
+  const canRegister = useSelector(selectCanRegister)
   const connections = useSelector(getConnectionsLookup)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const selected = useSelector((state: State) => state.ui.selected)
   const fetching = useSelector((state: State) => state.ui.fetching) || deviceFetching
 
-  const shouldRedirect = initLoad && permissions.includes('MANAGE')
+  const shouldRedirect = initLoad && canRegister
 
   useEffect(() => {
     if (!initialized) setInitLoad(true)
