@@ -33,12 +33,14 @@ export const PERMISSION: ILookup<{
   SCRIPTING: { name: 'Script', description: 'View and run device scripts', icon: 'scripting', hidden: false },
   MANAGE: {
     name: 'Manage',
-    description: 'Edit, delete, transfer and share devices and networks',
+    // Registering a device needs MANAGE, not ADMIN - the API gates it on
+    // canManage(). See selectCanRegister in selectors/organizations.
+    description: 'Register, edit, delete, transfer and share devices and networks',
     icon: 'pencil',
   },
   ADMIN: {
     name: 'Administer',
-    description: 'Manage organization tags, scripts, members and device registrations. View logs.',
+    description: 'Manage organization tags, scripts and members. View logs.',
     icon: 'user-pen',
     user: true,
   },

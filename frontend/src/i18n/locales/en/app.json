@@ -1512,7 +1512,7 @@
   },
   "permission": {
     "ADMIN": {
-      "description": "Manage organization tags, scripts, members and device registrations. View logs.",
+      "description": "Manage organization tags, scripts and members. View logs.",
       "name": "Administer"
     },
     "CONNECT": {
@@ -1520,7 +1520,7 @@
       "name": "Connect"
     },
     "MANAGE": {
-      "description": "Edit, delete, transfer and share devices and networks",
+      "description": "Register, edit, delete, transfer and share devices and networks",
       "name": "Manage"
     },
     "SCRIPTING": {

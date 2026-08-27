@@ -1512,7 +1512,7 @@
   },
   "permission": {
     "ADMIN": {
-      "description": "Organisations-Tags, Skripte, Mitglieder und Geräteregistrierungen verwalten. Protokolle anzeigen.",
+      "description": "Organisations-Tags, Skripte und Mitglieder verwalten. Protokolle anzeigen.",
       "name": "Administrieren"
     },
     "CONNECT": {
@@ -1520,7 +1520,7 @@
       "name": "Verbinden"
     },
     "MANAGE": {
-      "description": "Geräte und Netzwerke bearbeiten, löschen, übertragen und teilen",
+      "description": "Geräte und Netzwerke registrieren, bearbeiten, löschen, übertragen und teilen",
       "name": "Verwalten"
     },
     "SCRIPTING": {

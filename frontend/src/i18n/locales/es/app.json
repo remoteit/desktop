@@ -1531,7 +1531,7 @@
   },
   "permission": {
     "ADMIN": {
-      "description": "Gestionar etiquetas, scripts, miembros y registros de dispositivos de la organización. Ver registros.",
+      "description": "Gestionar etiquetas, scripts y miembros de la organización. Ver registros.",
       "name": "Administrar"
     },
     "CONNECT": {
@@ -1539,7 +1539,7 @@
       "name": "Conectar"
     },
     "MANAGE": {
-      "description": "Editar, eliminar, transferir y compartir dispositivos y redes",
+      "description": "Registrar, editar, eliminar, transferir y compartir dispositivos y redes",
       "name": "Gestionar"
     },
     "SCRIPTING": {
