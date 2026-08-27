@@ -1,5 +1,6 @@
 import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../../constants'
 import { useChatEnabled, useHideSidebar } from '../../hooks/useChatEnabled'
+import { GuideBubble } from '../GuideBubble'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
@@ -98,15 +99,38 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             color="grayDarker"
           />
         )}
+        {/* Step 1 of the chat tour. Deliberately no startDate — this is new to everyone,
+            including long-standing accounts, so the usual "only for recent signups" cohort
+            gate would hide it from the people who most need it. The delay lets the app
+            settle before it speaks up. */}
         {chatEnabled && !chatPoppedOut && (
-          <IconButton
-            fixedWidth
-            icon="remote-ai"
-            size="lg"
-            color={chatOpen ? 'primary' : 'grayDarker'}
-            title={t('header.aiAgent', 'AI Agent')}
-            onClick={() => dispatch.chat.set({ open: !chatOpen })}
-          />
+          <GuideBubble
+            guide="chatAgent"
+            placement="bottom"
+            enterDelay={1200}
+            instructions={
+              <>
+                <Typography variant="h3" gutterBottom>
+                  <b>{t('chat.guideAgentTitle', 'Meet Remote.It AI')}</b>
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  {t(
+                    'chat.guideAgentBody',
+                    'Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.'
+                  )}
+                </Typography>
+              </>
+            }
+          >
+            <IconButton
+              fixedWidth
+              icon="remote-ai"
+              size="lg"
+              color={chatOpen ? 'primary' : 'grayDarker'}
+              title={t('header.aiAgent', 'AI Agent')}
+              onClick={() => dispatch.chat.set({ open: !chatOpen })}
+            />
+          </GuideBubble>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (

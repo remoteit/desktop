@@ -1,11 +1,13 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
-import { Box, Menu, MenuItem, ListItemText, ListSubheader, IconButton as MuiIconButton } from '@mui/material'
+import { Box, Menu, MenuItem, ListItemText, ListSubheader, Typography, IconButton as MuiIconButton } from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { Icon } from '../Icon'
 import { fontSizes, spacing } from '../../styling'
+import { GuideBubble } from '../GuideBubble'
+import { isChatPopout } from '../../services/chatPopout'
 
 /* Control row shared by the docked panel and the popout window — `leading` takes the
    panel-chrome control (expand/collapse) at the far left, then the conversation's name,
@@ -18,11 +20,32 @@ export const ChatHeader: React.FC<{ leading?: React.ReactNode; children?: React.
   leading,
   children,
 }) => {
+  const { t } = useTranslation()
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', height: 45, maxHeight: 45, paddingX: 2.5, marginTop: 1.5 }}>
       {leading}
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', alignItems: 'center', marginLeft: 0.25 }}>
-        <HistoryButton />
+        {/* Step 3. The wrapper sx keeps the shrink chain intact — without minWidth: 0 the
+            inserted div would refuse to shrink and the name would stop truncating. */}
+        <GuideBubble
+          guide="chatHistory"
+          placement="bottom"
+          queueAfter="chatCompose"
+          hide={isChatPopout}
+          sx={{ minWidth: 0, display: 'flex' }}
+          instructions={
+            <>
+              <Typography variant="h3" gutterBottom>
+                <b>{t('chat.guideHistoryTitle', 'Your conversations')}</b>
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                {t('chat.guideHistoryBody', 'Chats are saved. Switch between them, or start a new one, from here.')}
+              </Typography>
+            </>
+          }
+        >
+          <HistoryButton />
+        </GuideBubble>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{children}</Box>
     </Box>

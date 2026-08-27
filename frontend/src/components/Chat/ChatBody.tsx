@@ -10,6 +10,7 @@ import { ChatIntro } from './ChatIntro'
 import { Notice } from '../Notice'
 import { Body } from '../Body'
 import { Icon } from '../Icon'
+import { GuideBubble } from '../GuideBubble'
 import { isChatPopout } from '../../services/chatPopout'
 
 /* Everything below the chat header — shared by the docked panel and the
@@ -83,6 +84,27 @@ export const ChatBody: React.FC = () => {
           )}
         </ChatMessages>
       )}
+      {/* Step 2. Hidden in the popout — the tour belongs to the main window, and a
+          bubble in a second window would fire with no context around it. */}
+      <GuideBubble
+        guide="chatCompose"
+        placement="top"
+        queueAfter="chatAgent"
+        hide={isChatPopout}
+        instructions={
+          <>
+            <Typography variant="h3" gutterBottom>
+              <b>{t('chat.guideComposeTitle', 'Just ask')}</b>
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              {t(
+                'chat.guideComposeBody',
+                'Type a question, or say what you want changed. Anything that alters your account pauses for your approval first.'
+              )}
+            </Typography>
+          </>
+        }
+      >
       <ChatInput
         disabled={!!pendingConfirmation || signedOut || unreachable}
         placeholder={
@@ -94,6 +116,7 @@ export const ChatBody: React.FC = () => {
         onSend={text => dispatch.chat.send(text)}
         onStop={() => dispatch.chat.stop()}
       />
+      </GuideBubble>
     </>
   )
 }
