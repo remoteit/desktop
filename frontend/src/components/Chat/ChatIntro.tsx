@@ -36,7 +36,7 @@ export const ChatIntro: React.FC = () => {
           width: 64,
           height: 64,
           borderRadius: '50%',
-          bgcolor: 'primaryHighlight.main',
+          bgcolor: 'primaryLighter.main',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

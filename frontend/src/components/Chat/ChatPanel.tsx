@@ -10,7 +10,6 @@ import { usePanelDrag } from '../../hooks/usePanelDrag'
 import { PanelHandle } from '../PanelHandle'
 import { IconButton } from '../../buttons/IconButton'
 import { ChatHeader, NewChatButton, HistoryButton } from './ChatHeader'
-import { ChatUsage } from './ChatUsage'
 import { ChatBody } from './ChatBody'
 import browser from '../../services/browser'
 
@@ -81,7 +80,7 @@ export const ChatPanel: React.FC = () => {
         // indicator on mobile; the bottom menu carries its own inset
         paddingTop: insets?.topPx,
         paddingRight: insets?.rightPx,
-        bgcolor: 'white.main',
+        bgcolor: 'primaryHighlight.main',
         borderLeft: docked || sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
         paddingBottom: showBottomMenu ? 1 : insets?.bottomPx || 1,
@@ -109,7 +108,6 @@ export const ChatPanel: React.FC = () => {
             onClick={() => dispatch.chat.popOut()}
           />
         )}
-        <ChatUsage />
         <HistoryButton />
         <NewChatButton />
         <IconButton icon="times" title={t('chat.close', 'Close')} onClick={() => dispatch.chat.set({ open: false })} />

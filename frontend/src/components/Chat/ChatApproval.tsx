@@ -12,7 +12,7 @@ type Props = {
 export const ChatApproval: React.FC<Props> = ({ toolName, input, onRespond }) => {
   const { t } = useTranslation()
   return (
-    <Paper elevation={0} sx={{ bgcolor: 'primaryHighlight.main', borderRadius: 2, padding: 2, marginY: 1 }}>
+    <Paper elevation={0} sx={{ bgcolor: 'white.main', borderRadius: 2, padding: 2, marginY: 1 }}>
       <Typography variant="body2" gutterBottom>
         <Trans
           i18nKey="chat.toolRequest"

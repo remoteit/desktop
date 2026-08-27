@@ -24,7 +24,7 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
   if (message.role === 'user')
     return (
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginY: 1 }}>
-        <Box sx={{ bgcolor: 'primaryHighlight.main', borderRadius: 2, paddingX: 1.5, paddingY: 0.75, maxWidth: '85%' }}>
+        <Box sx={{ bgcolor: 'primaryLighter.main', borderRadius: 2, paddingX: 1.5, paddingY: 0.75, maxWidth: '85%' }}>
           <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
             {message.text}
           </Typography>

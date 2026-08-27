@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Box, InputBase } from '@mui/material'
 import { fontSizes, radius } from '../../styling'
 import { IconButton } from '../../buttons/IconButton'
+import { ChatUsage } from './ChatUsage'
 
 type Props = {
   disabled: boolean
@@ -65,6 +66,11 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
             onClick={submit}
           />
         )}
+      </Box>
+      {/* Usage rides under the composer, trailing edge — it reports on what the next
+          turn will spend. Renders nothing when both windows are unlimited. */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', minHeight: 0 }}>
+        <ChatUsage />
       </Box>
     </Box>
   )
