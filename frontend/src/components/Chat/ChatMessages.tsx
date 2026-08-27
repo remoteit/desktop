@@ -45,7 +45,13 @@ export const ChatMessages: React.FC<Props> = ({ messages, streaming, typing, chi
         sx={{ paddingX: 2.5, paddingY: 1 }}
       >
         {messages.map((message, index) => (
-          <ChatMessageItem key={index} message={message} />
+          <ChatMessageItem
+            key={index}
+            message={message}
+            /* The mark means "this answer is finished", so the tail earns it only once
+               the stream stops — every earlier message is already done by definition. */
+            signed={message.role === 'assistant' && (index < messages.length - 1 || !streaming)}
+          />
         ))}
         {typing && <ChatTyping />}
         {children}

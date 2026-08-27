@@ -2,7 +2,12 @@ import React from 'react'
 
 /* The Remote.It AI mark — a bot head under signal arcs. Stroked in
    currentColor so it takes the Icon component's color and size like any
-   other icon (see Icon.tsx's `remote-ai` case). */
+   other icon (see Icon.tsx's `remote-ai` case).
+
+   The two arcs are separate paths, and the antenna dot is separate again, so a
+   caller can animate the signal without touching the head: target `.signal-inner`
+   and `.signal-outer` from a parent's sx (see ChatTyping). Kept as one visual
+   group here — nothing about the resting mark depends on the split. */
 export const RemoteAI = props => {
   return (
     <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -14,7 +19,23 @@ export const RemoteAI = props => {
         strokeLinejoin="round"
       />
       <path
-        d="M10.85 8.34978H10.8575M5.60001 2.99403C7.00197 1.61982 8.88686 0.850098 10.85 0.850098C12.8132 0.850098 14.698 1.61982 16.1 2.99403M8.22501 5.67153C8.92599 4.98443 9.86843 4.59956 10.85 4.59956C11.8316 4.59956 12.774 4.98443 13.475 5.67153"
+        d="M10.85 8.34978H10.8575"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        className="signal-inner"
+        d="M8.22501 5.67153C8.92599 4.98443 9.86843 4.59956 10.85 4.59956C11.8316 4.59956 12.774 4.98443 13.475 5.67153"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        className="signal-outer"
+        d="M5.60001 2.99403C7.00197 1.61982 8.88686 0.850098 10.85 0.850098C12.8132 0.850098 14.698 1.61982 16.1 2.99403"
         stroke="currentColor"
         strokeWidth="1.7"
         strokeLinecap="round"
