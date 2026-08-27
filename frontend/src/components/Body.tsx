@@ -14,6 +14,9 @@ export type BodyProps = {
   gutterBottom?: boolean
   gutterTop?: boolean
   verticalOverflow?: boolean
+  /** Also fade the TOP edge of the vertical overflow. Opt-in so existing
+   *  scroll surfaces keep their single bottom fade. */
+  fadeTop?: boolean
   horizontalOverflow?: boolean
   scrollbarBackground?: Color
   children?: React.ReactNode
@@ -30,6 +33,7 @@ export const Body: React.FC<BodyProps> = ({
   gutterBottom,
   gutterTop,
   verticalOverflow,
+  fadeTop,
   horizontalOverflow,
   scrollbarBackground,
   children,
@@ -50,6 +54,20 @@ export const Body: React.FC<BodyProps> = ({
             right: horizontalOverflow ? `${scrollbarWidth}px` : undefined,
             bottom: horizontalOverflow ? `${scrollbarWidth}px` : 0,
             backgroundImage: `linear-gradient(transparent, ${theme.palette[bg].main})`,
+            pointerEvents: 'none',
+          })}
+        />
+      )}
+      {verticalOverflow && fadeTop && (
+        <Box
+          sx={theme => ({
+            position: 'absolute',
+            height: 30,
+            zIndex: 7,
+            width: '100%',
+            right: horizontalOverflow ? `${scrollbarWidth}px` : undefined,
+            top: 0,
+            backgroundImage: `linear-gradient(${theme.palette[bg].main}, transparent)`,
             pointerEvents: 'none',
           })}
         />
