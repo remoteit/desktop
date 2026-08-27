@@ -63,12 +63,25 @@ const dismissedAt = (value: number | boolean): number | undefined =>
 /* Bubbles queue behind one another (queueAfter), so dismissing one is often what
    makes the next appear. Every rendered bubble registers here — open or not — so an
    open bubble can tell whether its successor is on the current screen and label its
-   button "Next" instead of "Ok". A successor on another page stays "Ok": dismissing
-   would not visibly advance anything. */
-type Registration = { guide: string; queueAfter?: string; hide?: boolean }
+   button "Next" instead of "Ok".
+
+   `eligible` is the whole of a bubble's own gating except the queue: hidden,
+   already popped, cohort/dismissal expired, or suppressed behind the sidebar
+   drawer all make it false. Only an eligible successor earns a "Next" — one that
+   is merely mounted may be barred by its own gate and would never appear, and a
+   successor on another page is not mounted at all. `waiting` is deliberately not
+   part of it: an enter delay resolves on its own, so "Next" is still honest. */
+type Registration = { guide: string; queueAfter?: string; eligible: boolean }
 const mountedBubbles = new Set<Registration>()
 const bubbleListeners = new Set<() => void>()
-const notifyBubbles = () => bubbleListeners.forEach(listener => listener())
+// Bumped on every change so getSnapshot stays O(1); the successor scan then runs
+// once per bubble per change instead of on every render.
+let bubbleVersion = 0
+const notifyBubbles = () => {
+  bubbleVersion++
+  bubbleListeners.forEach(listener => listener())
+}
+const getBubbleVersion = () => bubbleVersion
 const subscribeBubbles = (listener: () => void) => {
   bubbleListeners.add(listener)
   return () => {
@@ -115,8 +128,12 @@ export const GuideBubble: React.FC<Props> = ({
   const { ui } = useDispatch<Dispatch>()
   const cohortExpired = useSelector((state: State) => {
     // An explicit "Reset interactive guides" re-anchors the cohort to the reset
-    // moment, so even accounts that predate the guides get onboarded again
-    const cohortAnchor = Math.max(state.user.created.getTime(), state.ui.guidesResetDate || 0)
+    // moment, so even accounts that predate the guides get onboarded again.
+    // `created` is new Date(apiValue) and is NaN if the account payload has no
+    // created date — guard it, or Math.max would return NaN and every
+    // comparison below would be false, silently ungating every bubble.
+    const created = state.user.created.getTime()
+    const cohortAnchor = Math.max(Number.isNaN(created) ? 0 : created, state.ui.guidesResetDate || 0)
     return startDate.getTime() > cohortAnchor && !state.ui.testUI
   })
   const dismissed = useSelector((state: State) => dismissedAt(state.ui.expireBubbles))
@@ -127,32 +144,33 @@ export const GuideBubble: React.FC<Props> = ({
   const [waiting, setWaiting] = React.useState<boolean>(true)
   const hideForSidebar = sidebarOpen && !sidebar
   const queued = !!queueAfter && !poppedBubbles.includes(queueAfter)
-  const open: boolean = !hide && !poppedBubbles.includes(guide) && !expired && !waiting && !queued && !hideForSidebar
+  const eligible = !hide && !poppedBubbles.includes(guide) && !expired && !hideForSidebar
+  const open: boolean = eligible && !waiting && !queued
 
-  const registration = React.useRef<Registration>({ guide, queueAfter, hide }).current
-  registration.queueAfter = queueAfter
-  registration.hide = hide
+  // Registered from an effect rather than during render: the Set is module state
+  // shared with every other bubble, and a render can be discarded.
+  const registration = React.useRef<Registration>({ guide, queueAfter, eligible }).current
 
   React.useEffect(() => {
     mountedBubbles.add(registration)
-    notifyBubbles()
     return () => {
       mountedBubbles.delete(registration)
       notifyBubbles()
     }
   }, [])
 
-  React.useEffect(() => notifyBubbles(), [queueAfter, hide])
+  React.useEffect(() => {
+    registration.guide = guide
+    registration.queueAfter = queueAfter
+    registration.eligible = eligible
+    notifyBubbles()
+  }, [guide, queueAfter, eligible])
 
-  // Joined to a string so the snapshot stays referentially stable between renders
-  const successors = React.useSyncExternalStore(subscribeBubbles, () =>
-    Array.from(mountedBubbles)
-      .filter(bubble => bubble.queueAfter === guide && !bubble.hide)
-      .map(bubble => bubble.guide)
-      .sort()
-      .join()
+  const version = React.useSyncExternalStore(subscribeBubbles, getBubbleVersion)
+  const hasNext = React.useMemo(
+    () => Array.from(mountedBubbles).some(bubble => bubble.queueAfter === guide && bubble.eligible),
+    [version, guide]
   )
-  const hasNext = !!successors && successors.split(',').some(name => !poppedBubbles.includes(name))
 
   React.useEffect(() => {
     const timeout = setTimeout(() => setWaiting(false), enterDelay || 0)

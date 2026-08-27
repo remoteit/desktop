@@ -19,7 +19,11 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
   const unauthorized = !useSelector(selectCanRegister)
   const disabled = unauthorized || location.pathname === '/add'
 
-  if (fab && !layout.hideSidebar) return null
+  // The sidebar button stays visible but disabled, so the tooltip can explain the
+  // missing permission. The mobile FAB does not: it is a floating primary action
+  // over page content, and a permanently inert one is just an obstacle - on mobile
+  // the disabled button is still reachable in the drawer.
+  if (fab && (unauthorized || !layout.hideSidebar)) return null
 
   const button = (
     <GuideBubble
@@ -94,7 +98,7 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
         borderColor: 'white.main',
         borderRadius: '50%',
         position: 'absolute',
-        bgcolor: unauthorized ? 'white.main' : 'primary.main',
+        bgcolor: 'primary.main',
         bottom: layout.mobile ? spacing.sm : spacing.xl,
         right: spacing.xl,
         zIndex: 10,
