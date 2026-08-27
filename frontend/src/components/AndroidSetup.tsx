@@ -1,6 +1,6 @@
 import React from 'react'
 import browser, { windowOpen } from '../services/browser'
-import { SCREEN_VIEW_APP_LINK } from '../constants'
+import { SCREEN_VIEW_APP_LINK, GUIDE_START_DATE } from '../constants'
 import { useHistory } from 'react-router-dom'
 import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Typography } from '@mui/material'
 import { GuideBubble } from '../components/GuideBubble'
@@ -26,7 +26,7 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
           enterDelay={400}
           guide="registerMenu"
           placement="bottom"
-          startDate={new Date('2022-09-20')}
+          startDate={GUIDE_START_DATE}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>

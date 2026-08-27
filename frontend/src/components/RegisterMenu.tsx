@@ -1,4 +1,5 @@
 import React from 'react'
+import { GUIDE_START_DATE } from '../constants'
 import { State } from '../store'
 import { useLocation } from 'react-router-dom'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
@@ -24,7 +25,7 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
       sidebar={sidebar}
       guide="addDevice"
       placement="bottom"
-      startDate={new Date('2022-09-20')}
+      startDate={GUIDE_START_DATE}
       enterDelay={400}
       hide={disabled}
       instructions={

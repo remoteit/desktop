@@ -1,4 +1,5 @@
 import React from 'react'
+import { GUIDE_START_DATE } from '../constants'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { selectSessionUsers } from '../selectors/sessions'
@@ -33,7 +34,7 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
       guide="users"
       enterDelay={400}
       placement="bottom"
-      startDate={new Date('2022-09-20')}
+      startDate={GUIDE_START_DATE}
       queueAfter="addService"
       instructions={
         <>

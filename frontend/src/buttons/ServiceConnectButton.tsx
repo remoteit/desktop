@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react'
+import { GUIDE_START_DATE } from '../constants'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
 import { Typography, Collapse } from '@mui/material'
 import { useDispatch } from 'react-redux'
@@ -22,7 +23,7 @@ export const ServiceConnectButton: React.FC = () => {
           guide="connectButton"
           enterDelay={400}
           hide={connection.connectLink}
-          startDate={new Date('2022-09-20')}
+          startDate={GUIDE_START_DATE}
           queueAfter={device ? 'availableServices' : 'addNetwork'}
           instructions={
             <>

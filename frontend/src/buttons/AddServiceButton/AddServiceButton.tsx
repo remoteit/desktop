@@ -1,4 +1,5 @@
 import React from 'react'
+import { GUIDE_START_DATE } from '../../constants'
 import { useHistory } from 'react-router-dom'
 import { IconButton } from '../IconButton'
 import { GuideBubble } from '../../components/GuideBubble'
@@ -17,7 +18,7 @@ export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) =>
       guide="addService"
       enterDelay={400}
       placement="bottom"
-      startDate={new Date('2022-09-20')}
+      startDate={GUIDE_START_DATE}
       queueAfter="usingConnection"
       instructions={
         <>

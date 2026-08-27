@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { GUIDE_START_DATE } from '../constants'
 import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { AddFromNetwork } from '../components/AddFromNetwork'
@@ -116,7 +117,7 @@ export const DevicePage: React.FC = () => {
           guide="availableServices"
           enterDelay={400}
           placement="bottom"
-          startDate={new Date('2022-09-20')}
+          startDate={GUIDE_START_DATE}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>

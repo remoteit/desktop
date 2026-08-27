@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import browser from '../services/browser'
 import { useLocation } from 'react-router-dom'
-import { MOBILE_WIDTH } from '../constants'
+import { MOBILE_WIDTH, GUIDE_START_DATE } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
@@ -13,8 +13,6 @@ import { isOffline } from '../models/devices'
 import { GuideBubble } from './GuideBubble'
 import { DeviceLoadMore } from './LoadMore'
 import { GridList } from './GridList'
-
-const GUIDE_START_DATE = new Date('2022-09-20')
 
 export interface DeviceListProps {
   attributes: Attribute[]
