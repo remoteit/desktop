@@ -208,7 +208,7 @@
     "newSession": "New chat",
     "inputPlaceholder": "Chat with Remote.It",
     "introTitle": "Remote.It AI",
-    "introBody": "Ask about your devices, connections, and services.",
+    "introBody": "Ask about your devices, connections, and services — or make changes.",
     "prompt1": "Which of my devices are offline?",
     "prompt2": "Show my recent connections",
     "prompt3": "Restart a service on one of my devices",
