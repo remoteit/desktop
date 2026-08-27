@@ -32,7 +32,9 @@ export const ChatHeader: React.FC<{ leading?: React.ReactNode; children?: React.
 export const NewChatButton: React.FC = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
-  return <IconButton icon="plus" title={t('chat.newChat', 'New Chat')} onClick={() => dispatch.chat.clearConversation()} />
+  return (
+    <IconButton icon="plus" title={t('chat.newChat', 'New Chat')} onClick={() => dispatch.chat.clearConversation()} />
+  )
 }
 
 /* History picker: the conversation's NAME is the control — the header carries no
@@ -86,7 +88,14 @@ export const HistoryButton: React.FC = () => {
       <MuiIconButton
         onClick={open}
         title={t('chat.history', 'History')}
-        sx={{ minWidth: 0, maxWidth: '100%', display: 'flex', alignItems: 'center', gap: 0.5, color: 'grayDarker.main' }}
+        sx={{
+          minWidth: 0,
+          maxWidth: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          color: 'grayDarker.main',
+        }}
       >
         <Box
           ref={labelRef}
@@ -111,7 +120,17 @@ export const HistoryButton: React.FC = () => {
           <Icon name="chevron-down" size="sm" />
         </Box>
       </MuiIconButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={close} slotProps={{
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={close}
+        /* Match the avatar menu: elevation 2 keeps the edge crisp — MUI's default 8
+           is a wide diffuse blur that reads as soft. The list is transparent so the
+           paper's white shows through, instead of the theme's grayLightest sitting
+           as a second surface inside it. */
+        elevation={2}
+        sx={{ '& .MuiList-root': { backgroundColor: 'transparent' } }}
+        slotProps={{
           paper: {
             sx: {
               maxHeight: 360,
@@ -122,7 +141,8 @@ export const HistoryButton: React.FC = () => {
               '& .MuiMenuItem-root.MuiMenuItem-dense': { paddingLeft: `${spacing.sm}px` },
             },
           },
-        }}>
+        }}
+      >
         <ListSubheader disableGutters disableSticky>
           {t('chat.history', 'History')}
         </ListSubheader>
