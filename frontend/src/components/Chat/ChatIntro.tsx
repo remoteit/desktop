@@ -20,7 +20,7 @@ export const ChatIntro: React.FC = () => {
   ]
 
   return (
-    <Box sx={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingX: 2 }}>
+    <Box sx={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingX: 2.5 }}>
       <Box
         sx={{
           flexGrow: 1,

@@ -23,7 +23,7 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
     setText('')
   }
   return (
-    <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box sx={{ paddingX: 2.5, paddingTop: 1, paddingBottom: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
       <Box
         sx={{
           flexGrow: 1,

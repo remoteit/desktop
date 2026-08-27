@@ -17,7 +17,7 @@ export const ChatHeader: React.FC<{ leading?: React.ReactNode; children?: React.
   children,
 }) => {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', height: 45, maxHeight: 45, paddingX: 2.25, marginTop: 1.5 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', height: 45, maxHeight: 45, paddingX: 2.5, marginTop: 1.5 }}>
       {leading}
       <Box sx={{ flexGrow: 1, minWidth: 0 }} />
       {children}

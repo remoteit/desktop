@@ -28,7 +28,7 @@ export const ChatMessages: React.FC<Props> = ({ messages, streaming, typing, chi
         const el = ref.current
         if (el) setPinned(el.scrollHeight - el.scrollTop - el.clientHeight < 40)
       }}
-      sx={[{ flexGrow: 1, overflowY: 'auto', paddingX: 2 }, scrollbarStyles]}
+      sx={[{ flexGrow: 1, overflowY: 'auto', paddingX: 2.5 }, scrollbarStyles]}
     >
       {messages.map((message, index) => (
         <ChatMessageItem key={index} message={message} />

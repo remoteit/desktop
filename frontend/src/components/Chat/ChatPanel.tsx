@@ -83,7 +83,7 @@ export const ChatPanel: React.FC = () => {
         bgcolor: 'primaryHighlight.main',
         borderLeft: docked || sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
-        paddingBottom: showBottomMenu ? 1 : insets?.bottomPx || 1,
+        paddingBottom: showBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
       }}
       ref={panelRef}
     >

@@ -35,62 +35,68 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
   return (
     <Box sx={{ marginY: 1 }}>
       <ChatToolCalls toolCalls={message.toolCalls} />
-      <Box
-        sx={[
-          theme => ({ '& pre, & table': scrollbarStyles(theme) }),
-          {
-            fontSize: fontSizes.base,
-            lineHeight: 1.5,
-            wordBreak: 'break-word',
-            '& p': { marginY: 0.75 },
-            '& ul, & ol': { paddingLeft: 3, marginY: 0.5 },
-            '& li': { marginY: 0.25 },
-            '& h1, & h2, & h3, & h4': { fontSize: 15, marginTop: 1.5, marginBottom: 0.5 },
-            '& a': { color: 'primary.main' },
-            '& code': {
-              fontFamily: "'Roboto Mono', monospace",
-              fontSize: fontSizes.sm,
-              bgcolor: 'grayLightest.main',
-              borderRadius: 1,
-              paddingX: 0.5,
-              paddingY: 0.25,
-            },
-            '& pre': {
-              overflowX: 'auto',
-              bgcolor: 'grayLightest.main',
+      {!!message.text && (
+        <Box
+          sx={[
+            theme => ({ '& pre, & table': scrollbarStyles(theme) }),
+            {
+              bgcolor: 'white.main',
               borderRadius: 2,
-              padding: 1.5,
-              '& code': { padding: 0, bgcolor: 'transparent' },
+              paddingX: 1.5,
+              paddingY: 1,
+              fontSize: fontSizes.base,
+              lineHeight: 1.5,
+              wordBreak: 'break-word',
+              '& p': { marginY: 0.75 },
+              '& ul, & ol': { paddingLeft: 3, marginY: 0.5 },
+              '& li': { marginY: 0.25 },
+              '& h1, & h2, & h3, & h4': { fontSize: 15, marginTop: 1.5, marginBottom: 0.5 },
+              '& a': { color: 'primary.main' },
+              '& code': {
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: fontSizes.sm,
+                bgcolor: 'grayLighter.main',
+                borderRadius: 1,
+                paddingX: 0.5,
+                paddingY: 0.25,
+              },
+              '& pre': {
+                overflowX: 'auto',
+                bgcolor: 'grayLighter.main',
+                borderRadius: 2,
+                padding: 1.5,
+                '& code': { padding: 0, bgcolor: 'transparent' },
+              },
+              '& table': {
+                display: 'block',
+                overflowX: 'auto',
+                borderCollapse: 'collapse',
+                fontSize: fontSizes.sm,
+                marginY: 1,
+              },
+              '& th, & td': {
+                border: '1px solid',
+                borderColor: 'grayLighter.main',
+                paddingX: 1,
+                paddingY: 0.5,
+                textAlign: 'left',
+                whiteSpace: 'nowrap',
+              },
+              '& blockquote': {
+                borderLeft: '3px solid',
+                borderColor: 'grayLighter.main',
+                marginX: 0,
+                paddingLeft: 1.5,
+                color: 'grayDark.main',
+              },
             },
-            '& table': {
-              display: 'block',
-              overflowX: 'auto',
-              borderCollapse: 'collapse',
-              fontSize: fontSizes.sm,
-              marginY: 1,
-            },
-            '& th, & td': {
-              border: '1px solid',
-              borderColor: 'grayLighter.main',
-              paddingX: 1,
-              paddingY: 0.5,
-              textAlign: 'left',
-              whiteSpace: 'nowrap',
-            },
-            '& blockquote': {
-              borderLeft: '3px solid',
-              borderColor: 'grayLighter.main',
-              marginX: 0,
-              paddingLeft: 1.5,
-              color: 'grayDark.main',
-            },
-          },
-        ]}
-      >
-        <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-          {message.text}
-        </Markdown>
-      </Box>
+          ]}
+        >
+          <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {message.text}
+          </Markdown>
+        </Box>
+      )}
       {message.interrupted && (
         <Typography variant="caption" color="warning.main">
           {t('chat.interrupted', 'Interrupted')}
