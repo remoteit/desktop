@@ -102,7 +102,7 @@ export const ChatPanel: React.FC = () => {
           )
         }
       >
-        {!browser.isMobile && (
+        {!browser.isMobile && !layout.mobile && (
           <IconButton
             icon="arrow-up-right-from-square"
             title={t('chat.popOut', 'Pop out')}

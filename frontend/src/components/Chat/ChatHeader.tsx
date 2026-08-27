@@ -1,11 +1,11 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
-import { Box, ButtonBase, Menu, MenuItem, ListItemText, IconButton as MuiIconButton } from '@mui/material'
+import { Box, Menu, MenuItem, ListItemText, ListSubheader, IconButton as MuiIconButton } from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { Icon } from '../Icon'
-import { fontSizes, radius } from '../../styling'
+import { fontSizes } from '../../styling'
 
 /* Control row shared by the docked panel and the popout window — `leading` takes the
    panel-chrome control (expand/collapse) at the far left, then the conversation's name,
@@ -83,21 +83,10 @@ export const HistoryButton: React.FC = () => {
 
   return (
     <>
-      <ButtonBase
+      <MuiIconButton
         onClick={open}
         title={t('chat.history', 'History')}
-        sx={{
-          minWidth: 0,
-          maxWidth: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.5,
-          paddingX: 0.75,
-          paddingY: 0.25,
-          borderRadius: `${radius.sm}px`,
-          color: 'grayDarker.main',
-          '&:hover': { bgcolor: 'primaryLighter.main' },
-        }}
+        sx={{ minWidth: 0, maxWidth: '100%', display: 'flex', alignItems: 'center', gap: 0.5, color: 'grayDarker.main' }}
       >
         <Box
           ref={labelRef}
@@ -112,9 +101,12 @@ export const HistoryButton: React.FC = () => {
         >
           {label}
         </Box>
-        <Icon name="caret-down" size="xxs" />
-      </ButtonBase>
+        <Icon name="caret-down" size="sm" type="solid" />
+      </MuiIconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={close} slotProps={{ paper: { sx: { maxHeight: 360, minWidth: 240 } } }}>
+        <ListSubheader disableGutters disableSticky>
+          {t('chat.history', 'History')}
+        </ListSubheader>
         {items.length === 0 && (
           <MenuItem disabled dense>
             <ListItemText primary={t('chat.historyEmpty', 'No past conversations')} />
@@ -125,6 +117,10 @@ export const HistoryButton: React.FC = () => {
             key={c.id}
             dense
             selected={c.id === currentId}
+            sx={{
+              '& .remove': { opacity: 0, transition: 'opacity 100ms' },
+              '&:hover .remove, &:focus-within .remove': { opacity: 1 },
+            }}
             onClick={() => {
               dispatch.chat.openConversation(c.id)
               close()
@@ -137,6 +133,7 @@ export const HistoryButton: React.FC = () => {
             <MuiIconButton
               edge="end"
               size="small"
+              className="remove"
               sx={{ marginLeft: 1 }}
               title={t('chat.deleteConversation', 'Delete')}
               onClick={e => {
@@ -144,7 +141,7 @@ export const HistoryButton: React.FC = () => {
                 dispatch.chat.removeConversation(c.id)
               }}
             >
-              <Icon name="trash" size="xs" />
+              <Icon name="times" size="sm" />
             </MuiIconButton>
           </MenuItem>
         ))}
