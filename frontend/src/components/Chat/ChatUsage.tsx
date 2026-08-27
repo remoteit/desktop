@@ -5,7 +5,6 @@ import { Box, Popover, Typography, LinearProgress, CircularProgress, IconButton 
 import { State } from '../../store'
 import { formatReset } from '../../models/chat'
 import { UsageWindow } from '../../services/agent'
-import { Icon } from '../Icon'
 
 const pct = (w: UsageWindow) => (w.unlimited || w.limitUsd <= 0 ? 0 : Math.min(100, Math.round((w.spentUsd / w.limitUsd) * 100)))
 
@@ -42,12 +41,12 @@ const WindowRow: React.FC<{ label: string; window: UsageWindow }> = ({ label, wi
    progress circles is the MUI idiom for a donut — there is no dedicated gauge. */
 const UsageRing: React.FC<{ value: number; color: 'primary' | 'warning' | 'error' }> = ({ value, color }) => (
   <Box sx={{ display: 'inline-flex', position: 'relative' }}>
-    <CircularProgress variant="determinate" value={100} size={18} thickness={6} sx={{ color: 'gray.main' }} />
+    <CircularProgress variant="determinate" value={100} size={24} thickness={5} sx={{ color: 'white.main' }} />
     <CircularProgress
       variant="determinate"
       value={value}
-      size={18}
-      thickness={6}
+      size={24}
+      thickness={5}
       color={color}
       sx={{ position: 'absolute', left: 0 }}
     />
@@ -87,10 +86,9 @@ export const ChatUsage: React.FC = () => {
         transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         slotProps={{ paper: { sx: { width: 260, padding: 2 } } }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 1 }}>
-          <Icon name="gauge" size="sm" color="grayDarker" />
-          <Typography variant="subtitle2">{t('chat.usageTitle', 'Usage')}</Typography>
-        </Box>
+        <Typography variant="subtitle2" sx={{ marginBottom: 1 }}>
+          {t('chat.usageTitle', 'Usage')}
+        </Typography>
         <WindowRow label={t('chat.usageSession', '5-hour session')} window={usage.session} />
         <WindowRow label={t('chat.usageWeekly', 'This week')} window={usage.weekly} />
       </Popover>

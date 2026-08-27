@@ -23,12 +23,14 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
     setText('')
   }
   return (
-    <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
+    <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
       <Box
         sx={{
+          flexGrow: 1,
+          minWidth: 0,
           display: 'flex',
           alignItems: 'flex-end',
-          bgcolor: 'primaryHighlight.main',
+          bgcolor: 'white.main',
           borderRadius: `${radius.lg}px`,
           paddingY: 0.5,
           paddingLeft: 2,
@@ -53,7 +55,6 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
             }
           }}
         />
-        <ChatUsage />
         {streaming ? (
           <IconButton icon="stop" title={t('chat.stop', 'Stop')} color="grayDark" onClick={onStop} />
         ) : (
@@ -68,6 +69,7 @@ export const ChatInput: React.FC<Props> = ({ disabled, placeholder, streaming, o
           />
         )}
       </Box>
+      <ChatUsage />
     </Box>
   )
 }
