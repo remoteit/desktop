@@ -107,6 +107,95 @@
   "announcementsPage": {
     "title": "通知"
   },
+  "appType": {
+    "adminPanel": {
+      "title": "管理パネル",
+      "use": "デバイス上で動作するRemote.It管理パネルです。以前はデバイスの設定をリモートで管理するために使用されていました。現在、ほとんどのデバイスはRemote.itアプリまたはWebポータルから管理できます。"
+    },
+    "browser": {
+      "title": "ブラウザ",
+      "use": "暗号化接続に対応していないWebアプリケーションへのアクセスやホスティングに使用します。セキュリティが懸念されないローカル開発環境や社内ネットワークに最適です。"
+    },
+    "dockerApi": {
+      "use": "Dockerコンテナのリモート管理に使用します。Docker環境をリモートで制御する必要がある開発者やシステム管理者に最適です。"
+    },
+    "launch": {
+      "browser": "ブラウザ",
+      "command": "コマンド",
+      "copyCommand": "コマンドをコピー",
+      "script": "スクリプト",
+      "terminal": "ターミナル"
+    },
+    "minecraft": {
+      "use": "TCPを使用してMinecraftサーバーをホストまたは接続するために設定します。プレイヤーがあなたのMinecraftワールドに参加できるようになります。"
+    },
+    "minecraftBedrock": {
+      "use": "Minecraft Bedrock Editionサーバー向けに選択します。モバイルやコンソールなどのプラットフォームでのゲームプレイにUDPを使用し、プレイヤーが接続して一緒にプレイできるようにします。"
+    },
+    "mysql": {
+      "use": "MySQLデータベースへのリモートアクセスに使用します。データベースをリモートで管理する開発者やデータベース管理者に最適です。"
+    },
+    "nextcloud": {
+      "use": "Nextcloudハブへの安全なアクセスに選択します。安全なプライベートクラウド環境内でのファイル共有、コラボレーション、コミュニケーションが可能になります。"
+    },
+    "nxwitness": {
+      "use": "Nx Witnessビデオ管理システム(VMS)への接続に使用します。IPカメラネットワークを管理するセキュリティ専門家に適しています。"
+    },
+    "openvpnTcp": {
+      "use": "TCPプロトコルを使用した信頼性の高い安全なVPNアクセスに選択します。データの整合性が重要な安定した接続に最適ですが、UDPより速度が遅くなる場合があります。"
+    },
+    "openvpnUdp": {
+      "use": "UDPプロトコルを使用した高速で安全なVPNアクセスに選択します。パケットロスが多少発生しても許容できる速度重視のアプリケーションに最適です。"
+    },
+    "postgresql": {
+      "use": "PostgreSQLデータベースへのリモートアクセスに使用します。リモートでデータを管理する必要があるデータベース管理者や開発者に不可欠です。"
+    },
+    "public": {
+      "title": "公開"
+    },
+    "rdp": {
+      "use": "Windowsサーバーやデバイスへのリモートデスクトップアクセスに使用します。グラフィカルデスクトップを備えたデバイスをリモートで操作する必要がある場合に使用します。"
+    },
+    "redis": {
+      "use": "Redisサーバーへの接続に選択します。キャッシュやメッセージングのための高性能データベースを扱う開発者に最適です。"
+    },
+    "samba": {
+      "use": "Windowsネットワーク内、またはSMBプロトコルに対応する異なるオペレーティングシステム間で、ファイル、プリンター、シリアルポートへの共有アクセスを設定するために使用します。"
+    },
+    "screenview": {
+      "use": "Remote.ItのScreenViewアプリを使用したリモート画面表示または操作に使用します。サポート、コラボレーション、リモートアクセスを容易にします。"
+    },
+    "secureBrowser": {
+      "title": "セキュアブラウザ",
+      "use": "機密データを扱うWebアプリケーションや、インターネット上で安全な通信が必要なコンテンツに不可欠です。"
+    },
+    "socks": {
+      "disconnectDisplay": "切断時にSOCKSプロキシを削除するためブラウザを再起動します",
+      "use": "SOCKSプロトコルを介してインターネットトラフィックを処理するプロキシサーバーとして使用します。安全で匿名の通信を提供し、ユーザーがインターネット制限を回避してオンラインのプライバシーを保護できるようにします。"
+    },
+    "ssh": {
+      "help": "任意のSSH設定属性を追加できます",
+      "use": "サーバーやデバイスへの安全なターミナルアクセスとコマンドライン実行に使用します。システム管理者や開発者に不可欠です。"
+    },
+    "tcp": {
+      "use": "Webトラフィックを伴わないカスタムTCP接続に使用します。リバースプロキシ機能がないため、アプリケーション間の直接通信に最適です。"
+    },
+    "terraria": {
+      "use": "Terrariaゲームサーバーをホストまたは接続するために設定します。プレイヤーはユニークな2Dワールドで一緒に探索、建築、冒険を楽しめます。"
+    },
+    "udp": {
+      "use": "信頼性よりも速度が重視される、ストリーミング、ゲーム、放送などのアプリケーションに選択します。"
+    },
+    "unauthenticated": {
+      "title": "認証なし"
+    },
+    "vnc": {
+      "use": "コンピューターやサーバーのグラフィカルインターフェースへのリモートデスクトップアクセスに最適です。グラフィカルデスクトップを備えたデバイスをリモートで操作する必要がある場合に使用します。"
+    },
+    "wireguard": {
+      "use": "モダンで安全なVPN接続に選択します。プライベートネットワークへの高速かつ安全なアクセスを、簡単なセットアップと管理で提供します。"
+    }
+  },
   "argumentDefinitionEditForm": {
     "cancel": "キャンセル",
     "delete": "削除",
@@ -191,6 +280,12 @@
   "columns": {
     "access": "ゲスト",
     "bind": "バインドアドレス",
+    "body": "本文",
+    "categoryA": "カテゴリーA",
+    "categoryB": "カテゴリーB",
+    "categoryC": "カテゴリーC",
+    "categoryD": "カテゴリーD",
+    "categoryE": "カテゴリーE",
     "city": "市区町村",
     "configurable": "リモート設定",
     "configurable_help": "リモートで設定可能",
@@ -198,10 +293,16 @@
     "connectionType": "接続タイプ",
     "country": "国",
     "created": "作成日",
+    "customerEmail": "メール",
+    "customerPlan": "プラン",
+    "customerPrice": "価格",
+    "customerQuantity": "数量",
+    "customerReseller": "担当者",
     "deviceDescription": "説明",
     "deviceName": "デバイス名",
     "duration": "期間",
     "externalAddress": "外部IP",
+    "from": "開始",
     "hardwareId": "ハードウェアID",
     "id": "デバイスID",
     "initiatorPlatform": "プラットフォーム",
@@ -211,13 +312,36 @@
     "license": "ライセンス",
     "location": "場所",
     "owner": "所有者",
+    "partnerActivated": "有効化",
+    "partnerActive": "アクティブ",
+    "partnerDevicesTotal": "デバイス",
+    "partnerName": "名前",
+    "partnerOnline": "オンライン",
     "permissions": "権限",
     "presenceAddress": "プレゼンス",
+    "productCreated": "作成日",
+    "productCreatedDetail": "作成日",
+    "productIdDetail": "プロダクトID",
+    "productName": "名前",
+    "productPlatform": "プラットフォーム",
+    "productPlatformDetail": "プラットフォーム",
+    "productServiceIdDetail": "サービスID",
+    "productServicePortDetail": "ポート",
+    "productServices": "サービス",
+    "productServicesDetail": "サービス",
+    "productServiceStatusDetail": "ステータス",
+    "productServiceTypeDetail": "サービスタイプ",
+    "productUpdated": "更新日",
+    "productUpdatedDetail": "更新日",
     "quality": "安定性",
     "qualitySmall": "通信品質",
     "restore": "復元",
     "restrict": "ローカルセキュリティ",
     "role": "ロール",
+    "scriptCreated": "作成日",
+    "scriptDescription": "説明",
+    "scriptName": "スクリプト",
+    "scriptUpdated": "変更日",
     "serviceAccess": "ユーザー",
     "serviceAction": "操作",
     "serviceCreated": "サービス作成日",
@@ -237,56 +361,21 @@
     "serviceStatus": "ステータス",
     "serviceType": "サービスタイプ",
     "session": "コネクト",
+    "stage": "ステージ",
     "state": "州",
     "status": "ステータス",
-    "tags": "タグ",
-    "targetPlatform": "プラットフォーム",
-    "unknown": "不明",
-    "version": "CONNECTDバージョン",
-    "body": "本文",
-    "categoryA": "カテゴリーA",
-    "categoryB": "カテゴリーB",
-    "categoryC": "カテゴリーC",
-    "categoryD": "カテゴリーD",
-    "categoryE": "カテゴリーE",
-    "customerEmail": "メール",
-    "customerPlan": "プラン",
-    "customerPrice": "価格",
-    "customerQuantity": "数量",
-    "customerReseller": "担当者",
-    "from": "開始",
-    "partnerActivated": "有効化",
-    "partnerActive": "アクティブ",
-    "partnerDevicesTotal": "デバイス",
-    "partnerName": "名前",
-    "partnerOnline": "オンライン",
-    "productCreated": "作成日",
-    "productCreatedDetail": "作成日",
-    "productIdDetail": "プロダクトID",
-    "productName": "名前",
-    "productPlatform": "プラットフォーム",
-    "productPlatformDetail": "プラットフォーム",
-    "productServiceIdDetail": "サービスID",
-    "productServicePortDetail": "ポート",
-    "productServices": "サービス",
-    "productServicesDetail": "サービス",
-    "productServiceStatusDetail": "ステータス",
-    "productServiceTypeDetail": "サービスタイプ",
-    "productUpdated": "更新日",
-    "productUpdatedDetail": "更新日",
-    "scriptCreated": "作成日",
-    "scriptDescription": "説明",
-    "scriptName": "スクリプト",
-    "scriptUpdated": "変更日",
-    "stage": "ステージ",
     "statusA": "ステータスA",
     "statusB": "ステータスB",
     "statusC": "ステータスC",
     "statusD": "ステータスD",
     "statusE": "ステータスE",
+    "tags": "タグ",
+    "targetPlatform": "プラットフォーム",
     "title": "タイトル",
     "type": "タイプ",
-    "until": "終了"
+    "unknown": "不明",
+    "until": "終了",
+    "version": "CONNECTDバージョン"
   },
   "common": {
     "actionCannotBeUndone": "この操作は元に戻せません。",
@@ -758,6 +847,26 @@
     "title": "グラフ",
     "updateToSeeMore": "詳細を見るにはアップデートしてください。"
   },
+  "graphStyle": {
+    "bar": "棒グラフ",
+    "heatmap": "ヒートマップ"
+  },
+  "graphType": {
+    "AVAILABILITY": "オンライン%",
+    "CONNECT": "接続イベント",
+    "CONNECT_DURATION": "接続時間",
+    "DISCONNECT": "切断イベント",
+    "OFFLINE": "オフラインイベント",
+    "ONLINE": "オンラインイベント",
+    "ONLINE_DURATION": "オンライン時間",
+    "USAGE": "接続%"
+  },
+  "graphUnit": {
+    "DAY": "日",
+    "HOUR": "時間",
+    "MONTH": "月",
+    "WEEK": "週"
+  },
   "guideStep": {
     "exitGuide": "ガイドを終了",
     "next": "次へ",
@@ -831,6 +940,14 @@
   },
   "jobsPage": {
     "runScriptToStart": "開始するにはスクリプトを実行してください"
+  },
+  "jobStatus": {
+    "CANCELLED": "キャンセル済み",
+    "FAILED": "失敗",
+    "READY": "準備完了",
+    "RUNNING": "実行中",
+    "SUCCESS": "成功",
+    "WAITING": "待機中"
   },
   "lanSharePage": {
     "allowUsersToConnect": "カスタムポートを使用して、IPアドレス経由でユーザーがリモートデバイスに接続できるようにします。",
@@ -1013,6 +1130,13 @@
     "thisDevice": "このデバイス",
     "totalDevices": "合計デバイス数",
     "totalNetworks": "合計ネットワーク数"
+  },
+  "network": {
+    "active": "アクティブ",
+    "cloudProxy": "クラウドプロキシ",
+    "local": "ローカル",
+    "personal": "個人用",
+    "recent": "最近"
   },
   "networkAdd": {
     "add": "追加",
@@ -1360,6 +1484,28 @@
     "veryWeak": "非常に弱い",
     "weak": "弱い"
   },
+  "permission": {
+    "ADMIN": {
+      "description": "組織のタグ、スクリプト、メンバー、デバイス登録を管理します。ログを表示します。",
+      "name": "管理者"
+    },
+    "CONNECT": {
+      "description": "デバイスサービスに接続",
+      "name": "コネクト"
+    },
+    "MANAGE": {
+      "description": "デバイスとネットワークの編集、削除、譲渡、共有",
+      "name": "管理"
+    },
+    "SCRIPTING": {
+      "description": "デバイススクリプトの閲覧と実行",
+      "name": "スクリプト"
+    },
+    "VIEW": {
+      "description": "デバイスと現在の状態を表示",
+      "name": "閲覧"
+    }
+  },
   "planCheckout": {
     "devices": "デバイス",
     "downgrade": "ダウングレード",
@@ -1442,15 +1588,6 @@
     "deleteSelected": "選択項目を削除",
     "selected": "選択済み"
   },
-  "productsHeaderButtons": {
-    "adminRequired": ""
-  },
-  "productsPage": {
-    "createFirst": "",
-    "emptyHelp": "",
-    "emptyHelpReadOnly": "",
-    "loading": ""
-  },
   "productServiceAddPage": {
     "failedToAddService": "サービスの追加に失敗しました",
     "newService": "新しいサービス",
@@ -1464,6 +1601,15 @@
     "removeServiceConfirmPrefix": "次のサービスを削除してもよろしいですか",
     "serviceMayHaveBeenRemoved": "サービスが削除された可能性があります。",
     "serviceNotFound": "サービスが見つかりません"
+  },
+  "productsHeaderButtons": {
+    "adminRequired": ""
+  },
+  "productsPage": {
+    "createFirst": "",
+    "emptyHelp": "",
+    "emptyHelpReadOnly": "",
+    "loading": ""
   },
   "productTransferPage": {
     "cancel": "キャンセル",
@@ -1970,151 +2116,5 @@
   "viewAsBanner": {
     "exit": "表示モードを終了",
     "viewingAs": "表示中: {{email}}"
-  },
-  "graphStyle": {
-    "bar": "棒グラフ",
-    "heatmap": "ヒートマップ"
-  },
-  "graphType": {
-    "AVAILABILITY": "オンライン%",
-    "CONNECT": "接続イベント",
-    "CONNECT_DURATION": "接続時間",
-    "DISCONNECT": "切断イベント",
-    "OFFLINE": "オフラインイベント",
-    "ONLINE": "オンラインイベント",
-    "ONLINE_DURATION": "オンライン時間",
-    "USAGE": "接続%"
-  },
-  "graphUnit": {
-    "DAY": "日",
-    "HOUR": "時間",
-    "MONTH": "月",
-    "WEEK": "週"
-  },
-  "jobStatus": {
-    "CANCELLED": "キャンセル済み",
-    "FAILED": "失敗",
-    "READY": "準備完了",
-    "RUNNING": "実行中",
-    "SUCCESS": "成功",
-    "WAITING": "待機中"
-  },
-  "permission": {
-    "ADMIN": {
-      "description": "組織のタグ、スクリプト、メンバー、デバイス登録を管理します。ログを表示します。",
-      "name": "管理者"
-    },
-    "CONNECT": {
-      "description": "デバイスサービスに接続",
-      "name": "コネクト"
-    },
-    "MANAGE": {
-      "description": "デバイスとネットワークの編集、削除、譲渡、共有",
-      "name": "管理"
-    },
-    "SCRIPTING": {
-      "description": "デバイススクリプトの閲覧と実行",
-      "name": "スクリプト"
-    },
-    "VIEW": {
-      "description": "デバイスと現在の状態を表示",
-      "name": "閲覧"
-    }
-  },
-  "appType": {
-    "launch": {
-      "command": "コマンド",
-      "terminal": "ターミナル",
-      "script": "スクリプト",
-      "copyCommand": "コマンドをコピー",
-      "browser": "ブラウザ"
-    },
-    "public": {
-      "title": "公開"
-    },
-    "unauthenticated": {
-      "title": "認証なし"
-    },
-    "tcp": {
-      "use": "Webトラフィックを伴わないカスタムTCP接続に使用します。リバースプロキシ機能がないため、アプリケーション間の直接通信に最適です。"
-    },
-    "vnc": {
-      "use": "コンピューターやサーバーのグラフィカルインターフェースへのリモートデスクトップアクセスに最適です。グラフィカルデスクトップを備えたデバイスをリモートで操作する必要がある場合に使用します。"
-    },
-    "ssh": {
-      "use": "サーバーやデバイスへの安全なターミナルアクセスとコマンドライン実行に使用します。システム管理者や開発者に不可欠です。",
-      "help": "任意のSSH設定属性を追加できます"
-    },
-    "rdp": {
-      "use": "Windowsサーバーやデバイスへのリモートデスクトップアクセスに使用します。グラフィカルデスクトップを備えたデバイスをリモートで操作する必要がある場合に使用します。"
-    },
-    "secureBrowser": {
-      "title": "セキュアブラウザ",
-      "use": "機密データを扱うWebアプリケーションや、インターネット上で安全な通信が必要なコンテンツに不可欠です。"
-    },
-    "browser": {
-      "title": "ブラウザ",
-      "use": "暗号化接続に対応していないWebアプリケーションへのアクセスやホスティングに使用します。セキュリティが懸念されないローカル開発環境や社内ネットワークに最適です。"
-    },
-    "samba": {
-      "use": "Windowsネットワーク内、またはSMBプロトコルに対応する異なるオペレーティングシステム間で、ファイル、プリンター、シリアルポートへの共有アクセスを設定するために使用します。"
-    },
-    "nxwitness": {
-      "use": "Nx Witnessビデオ管理システム(VMS)への接続に使用します。IPカメラネットワークを管理するセキュリティ専門家に適しています。"
-    },
-    "nextcloud": {
-      "use": "Nextcloudハブへの安全なアクセスに選択します。安全なプライベートクラウド環境内でのファイル共有、コラボレーション、コミュニケーションが可能になります。"
-    },
-    "openvpnTcp": {
-      "use": "TCPプロトコルを使用した信頼性の高い安全なVPNアクセスに選択します。データの整合性が重要な安定した接続に最適ですが、UDPより速度が遅くなる場合があります。"
-    },
-    "minecraft": {
-      "use": "TCPを使用してMinecraftサーバーをホストまたは接続するために設定します。プレイヤーがあなたのMinecraftワールドに参加できるようになります。"
-    },
-    "adminPanel": {
-      "title": "管理パネル",
-      "use": "デバイス上で動作するRemote.It管理パネルです。以前はデバイスの設定をリモートで管理するために使用されていました。現在、ほとんどのデバイスはRemote.itアプリまたはWebポータルから管理できます。"
-    },
-    "terraria": {
-      "use": "Terrariaゲームサーバーをホストまたは接続するために設定します。プレイヤーはユニークな2Dワールドで一緒に探索、建築、冒険を楽しめます。"
-    },
-    "redis": {
-      "use": "Redisサーバーへの接続に選択します。キャッシュやメッセージングのための高性能データベースを扱う開発者に最適です。"
-    },
-    "mysql": {
-      "use": "MySQLデータベースへのリモートアクセスに使用します。データベースをリモートで管理する開発者やデータベース管理者に最適です。"
-    },
-    "postgresql": {
-      "use": "PostgreSQLデータベースへのリモートアクセスに使用します。リモートでデータを管理する必要があるデータベース管理者や開発者に不可欠です。"
-    },
-    "dockerApi": {
-      "use": "Dockerコンテナのリモート管理に使用します。Docker環境をリモートで制御する必要がある開発者やシステム管理者に最適です。"
-    },
-    "screenview": {
-      "use": "Remote.ItのScreenViewアプリを使用したリモート画面表示または操作に使用します。サポート、コラボレーション、リモートアクセスを容易にします。"
-    },
-    "socks": {
-      "use": "SOCKSプロトコルを介してインターネットトラフィックを処理するプロキシサーバーとして使用します。安全で匿名の通信を提供し、ユーザーがインターネット制限を回避してオンラインのプライバシーを保護できるようにします。",
-      "disconnectDisplay": "切断時にSOCKSプロキシを削除するためブラウザを再起動します"
-    },
-    "udp": {
-      "use": "信頼性よりも速度が重視される、ストリーミング、ゲーム、放送などのアプリケーションに選択します。"
-    },
-    "openvpnUdp": {
-      "use": "UDPプロトコルを使用した高速で安全なVPNアクセスに選択します。パケットロスが多少発生しても許容できる速度重視のアプリケーションに最適です。"
-    },
-    "wireguard": {
-      "use": "モダンで安全なVPN接続に選択します。プライベートネットワークへの高速かつ安全なアクセスを、簡単なセットアップと管理で提供します。"
-    },
-    "minecraftBedrock": {
-      "use": "Minecraft Bedrock Editionサーバー向けに選択します。モバイルやコンソールなどのプラットフォームでのゲームプレイにUDPを使用し、プレイヤーが接続して一緒にプレイできるようにします。"
-    }
-  },
-  "network": {
-    "active": "アクティブ",
-    "cloudProxy": "クラウドプロキシ",
-    "local": "ローカル",
-    "personal": "個人用",
-    "recent": "最近"
   }
 }

@@ -2,7 +2,7 @@
   "accessAccordion": {
     "addAccess": "Add access",
     "guests": "Guests",
-    "noUsers": "No users",
+    "noUsers": "No\u00a0users",
     "organizationMembers": "Organization members",
     "subtitle": "Access"
   },
@@ -51,7 +51,7 @@
   },
   "addFromNetwork": {
     "scanForServices": "Scan for Services",
-    "scanNetwork": "Scan network"
+    "scanNetwork": "Scan\u00a0network"
   },
   "addPage": {
     "addDevice": "Add a device",
@@ -61,7 +61,7 @@
     "demoDevice": "Demo device",
     "products": "Products",
     "provisionInBulk": "Provision in bulk",
-    "title": "What do you want to connect to?",
+    "title": "What do you want to connect\u00a0to?",
     "tryDevice": "Try a device"
   },
   "addPlatformServices": {
@@ -108,6 +108,95 @@
   },
   "announcementsPage": {
     "title": "Notifications"
+  },
+  "appType": {
+    "adminPanel": {
+      "title": "Admin Panel",
+      "use": "Remote.It admin panel running on the device. Previously used to remotely manage a device’s configuration. Now most devices can be managed from the Remote.it app or web portal."
+    },
+    "browser": {
+      "title": "Browser",
+      "use": "Use for accessing or hosting web applications that do not support encrypted connections. Ideal for local development environments or internal networks where security is not a concern."
+    },
+    "dockerApi": {
+      "use": "Use for remote management of Docker containers. Ideal for developers and system administrators who need to control Docker environments remotely."
+    },
+    "launch": {
+      "browser": "Browser",
+      "command": "Command",
+      "copyCommand": "Copy command",
+      "script": "Script",
+      "terminal": "Terminal"
+    },
+    "minecraft": {
+      "use": "Set up for hosting or connecting to a Minecraft server using TCP for gameplay, allowing players to join your Minecraft world."
+    },
+    "minecraftBedrock": {
+      "use": "Choose for Minecraft Bedrock Edition servers, using UDP for gameplay on platforms like mobile and consoles, enabling players to connect and play together."
+    },
+    "mysql": {
+      "use": "Utilize for remote access to MySQL databases. Ideal for developers and database administrators managing databases remotely."
+    },
+    "nextcloud": {
+      "use": "Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment."
+    },
+    "nxwitness": {
+      "use": "Use for connecting to Nx Witness Video Management Systems (VMS), suitable for security professionals managing IP camera networks."
+    },
+    "openvpnTcp": {
+      "use": "Choose for reliable, secure VPN access using TCP protocol. Best for stable connections where data integrity is crucial, though potentially slower than UDP."
+    },
+    "openvpnUdp": {
+      "use": "Choose for fast, secure VPN access using UDP protocol. Best for speed-sensitive applications where occasional packet loss is acceptable."
+    },
+    "postgresql": {
+      "use": "Utilize for remote access to PostgreSQL databases, essential for database administrators and developers needing to manage data remotely."
+    },
+    "public": {
+      "title": "Public"
+    },
+    "rdp": {
+      "use": "For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely."
+    },
+    "redis": {
+      "use": "Select for connecting to Redis servers, ideal for developers working with high-performance databases for caching and messaging."
+    },
+    "samba": {
+      "use": "Utilize for setting up shared access to files, printers, and serial ports within a Windows network or across different operating systems supporting SMB protocol."
+    },
+    "screenview": {
+      "use": "Use for remote screen viewing or control via Remote.It’s ScreenView app. Facilitates support, collaboration and remote access."
+    },
+    "secureBrowser": {
+      "title": "Secure Browser",
+      "use": "Essential for any web application handling sensitive data, or any content requiring secure communication over the internet."
+    },
+    "socks": {
+      "disconnectDisplay": "Restarts your browser to remove SOCKS Proxy on disconnect",
+      "use": "Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy."
+    },
+    "ssh": {
+      "help": "Any ssh config attribute may be added",
+      "use": "For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers."
+    },
+    "tcp": {
+      "use": "Use for custom TCP connections not involving web traffic, as it lacks reverse proxy capabilities. Ideal for direct application-to-application communication."
+    },
+    "terraria": {
+      "use": "Set up for hosting or connecting to a Terraria game server, allowing players to explore, build, and adventure together in a unique 2D world."
+    },
+    "udp": {
+      "use": "Select for applications that require fast communication where reliability is less critical, such as streaming, gaming, or broadcasting."
+    },
+    "unauthenticated": {
+      "title": "Unauthenticated"
+    },
+    "vnc": {
+      "use": "Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely."
+    },
+    "wireguard": {
+      "use": "Choose for a modern, secure VPN connection, offering fast and secure access to private networks with ease of setup and management."
+    }
   },
   "argumentDefinitionEditForm": {
     "cancel": "Cancel",
@@ -1054,6 +1143,13 @@
     "totalDevices": "Total Devices",
     "totalNetworks": "Total Networks"
   },
+  "network": {
+    "active": "Active",
+    "cloudProxy": "Cloud Proxy",
+    "local": "Local",
+    "personal": "Personal",
+    "recent": "Recent"
+  },
   "networkAdd": {
     "add": "Add",
     "adding": "Adding...",
@@ -1514,15 +1610,6 @@
     "deleteSelected": "Delete selected",
     "selected": "Selected"
   },
-  "productsHeaderButtons": {
-    "adminRequired": "Admin permissions required"
-  },
-  "productsPage": {
-    "createFirst": "Create your first product",
-    "emptyHelp": "Products are used for bulk device registration and management.",
-    "emptyHelpReadOnly": "Products are used for bulk device registration and management. You must have the admin permission to create one.",
-    "loading": "Loading products..."
-  },
   "productServiceAddPage": {
     "failedToAddService": "Failed to add service",
     "newService": "New service",
@@ -1536,6 +1623,15 @@
     "removeServiceConfirmPrefix": "Are you sure you want to remove the service",
     "serviceMayHaveBeenRemoved": "The service may have been removed.",
     "serviceNotFound": "Service not found"
+  },
+  "productsHeaderButtons": {
+    "adminRequired": "Admin permissions required"
+  },
+  "productsPage": {
+    "createFirst": "Create your first product",
+    "emptyHelp": "Products are used for bulk device registration and management.",
+    "emptyHelpReadOnly": "Products are used for bulk device registration and management. You must have the admin permission to create one.",
+    "loading": "Loading products..."
   },
   "productTransferPage": {
     "cancel": "Cancel",
@@ -1577,7 +1673,7 @@
     "downloadDescription": "Download our disk image for easy, headless setup with Bluetooth WiFi onboarding.",
     "downloadQuestion": "New to Pi?",
     "downloadTitle": "Download Pi Image",
-    "heading": "Set Up Your Raspberry Pi for Remote Access",
+    "heading": "Set Up Your Raspberry Pi for\u00a0Remote\u00a0Access",
     "onboardDescription": "Set up WiFi via Bluetooth and register your device for remote access.",
     "onboardQuestion": "Have our custom Pi image?",
     "onboardTitle": "Onboard via Bluetooth"
@@ -2056,101 +2152,5 @@
   "viewAsBanner": {
     "exit": "Exit view-as mode",
     "viewingAs": "Viewing as: {{email}}"
-  },
-  "appType": {
-    "launch": {
-      "command": "Command",
-      "terminal": "Terminal",
-      "script": "Script",
-      "copyCommand": "Copy command",
-      "browser": "Browser"
-    },
-    "public": {
-      "title": "Public"
-    },
-    "unauthenticated": {
-      "title": "Unauthenticated"
-    },
-    "ssh": {
-      "help": "Any ssh config attribute may be added",
-      "use": "For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers."
-    },
-    "secureBrowser": {
-      "title": "Secure Browser",
-      "use": "Essential for any web application handling sensitive data, or any content requiring secure communication over the internet."
-    },
-    "browser": {
-      "title": "Browser",
-      "use": "Use for accessing or hosting web applications that do not support encrypted connections. Ideal for local development environments or internal networks where security is not a concern."
-    },
-    "adminPanel": {
-      "title": "Admin Panel",
-      "use": "Remote.It admin panel running on the device. Previously used to remotely manage a device’s configuration. Now most devices can be managed from the Remote.it app or web portal."
-    },
-    "socks": {
-      "disconnectDisplay": "Restarts your browser to remove SOCKS Proxy on disconnect",
-      "use": "Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy."
-    },
-    "tcp": {
-      "use": "Use for custom TCP connections not involving web traffic, as it lacks reverse proxy capabilities. Ideal for direct application-to-application communication."
-    },
-    "vnc": {
-      "use": "Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely."
-    },
-    "rdp": {
-      "use": "For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely."
-    },
-    "samba": {
-      "use": "Utilize for setting up shared access to files, printers, and serial ports within a Windows network or across different operating systems supporting SMB protocol."
-    },
-    "nxwitness": {
-      "use": "Use for connecting to Nx Witness Video Management Systems (VMS), suitable for security professionals managing IP camera networks."
-    },
-    "nextcloud": {
-      "use": "Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment."
-    },
-    "openvpnTcp": {
-      "use": "Choose for reliable, secure VPN access using TCP protocol. Best for stable connections where data integrity is crucial, though potentially slower than UDP."
-    },
-    "minecraft": {
-      "use": "Set up for hosting or connecting to a Minecraft server using TCP for gameplay, allowing players to join your Minecraft world."
-    },
-    "terraria": {
-      "use": "Set up for hosting or connecting to a Terraria game server, allowing players to explore, build, and adventure together in a unique 2D world."
-    },
-    "redis": {
-      "use": "Select for connecting to Redis servers, ideal for developers working with high-performance databases for caching and messaging."
-    },
-    "mysql": {
-      "use": "Utilize for remote access to MySQL databases. Ideal for developers and database administrators managing databases remotely."
-    },
-    "postgresql": {
-      "use": "Utilize for remote access to PostgreSQL databases, essential for database administrators and developers needing to manage data remotely."
-    },
-    "dockerApi": {
-      "use": "Use for remote management of Docker containers. Ideal for developers and system administrators who need to control Docker environments remotely."
-    },
-    "screenview": {
-      "use": "Use for remote screen viewing or control via Remote.It’s ScreenView app. Facilitates support, collaboration and remote access."
-    },
-    "udp": {
-      "use": "Select for applications that require fast communication where reliability is less critical, such as streaming, gaming, or broadcasting."
-    },
-    "openvpnUdp": {
-      "use": "Choose for fast, secure VPN access using UDP protocol. Best for speed-sensitive applications where occasional packet loss is acceptable."
-    },
-    "wireguard": {
-      "use": "Choose for a modern, secure VPN connection, offering fast and secure access to private networks with ease of setup and management."
-    },
-    "minecraftBedrock": {
-      "use": "Choose for Minecraft Bedrock Edition servers, using UDP for gameplay on platforms like mobile and consoles, enabling players to connect and play together."
-    }
-  },
-  "network": {
-    "active": "Active",
-    "cloudProxy": "Cloud Proxy",
-    "local": "Local",
-    "personal": "Personal",
-    "recent": "Recent"
   }
 }
