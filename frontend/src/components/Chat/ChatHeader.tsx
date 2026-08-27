@@ -5,7 +5,7 @@ import { Box, Menu, MenuItem, ListItemText, ListSubheader, IconButton as MuiIcon
 import { Dispatch, State } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { Icon } from '../Icon'
-import { fontSizes } from '../../styling'
+import { fontSizes, spacing } from '../../styling'
 
 /* Control row shared by the docked panel and the popout window — `leading` takes the
    panel-chrome control (expand/collapse) at the far left, then the conversation's name,
@@ -101,9 +101,28 @@ export const HistoryButton: React.FC = () => {
         >
           {label}
         </Box>
-        <Icon name="caret-down" size="sm" type="solid" />
+        <Box
+          sx={{
+            display: 'flex',
+            transition: 'transform 150ms',
+            transform: anchorEl ? 'rotate(180deg)' : 'none',
+          }}
+        >
+          <Icon name="chevron-down" size="sm" />
+        </Box>
       </MuiIconButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={close} slotProps={{ paper: { sx: { maxHeight: 360, minWidth: 240 } } }}>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={close} slotProps={{
+          paper: {
+            sx: {
+              maxHeight: 360,
+              minWidth: 240,
+              // Line the rows up with the subheader: the theme indents dense items
+              // by margin 6 + padding 6 = 12, while ListSubheader sits at 18.
+              // Two classes, to outrank the theme's own `.MuiMenu-list .MuiMenuItem-dense`
+              '& .MuiMenuItem-root.MuiMenuItem-dense': { paddingLeft: `${spacing.sm}px` },
+            },
+          },
+        }}>
         <ListSubheader disableGutters disableSticky>
           {t('chat.history', 'History')}
         </ListSubheader>
