@@ -88,7 +88,7 @@ export const ChatBody: React.FC = () => {
         placeholder={
           pendingConfirmation
             ? t('chat.waitingApproval', 'Waiting for approval…')
-            : t('chat.inputPlaceholder', 'Message Remote.It AI…')
+            : t('chat.inputPlaceholder', 'Chat with Remote.It')
         }
         streaming={streaming}
         onSend={text => dispatch.chat.send(text)}
