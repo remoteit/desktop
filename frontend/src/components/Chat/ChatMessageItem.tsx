@@ -3,10 +3,9 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
-import { fontSizes, radius } from '../../styling'
+import { fontSizes, radius, scrollbarStyles, SCROLLBAR_WIDTH_NARROW } from '../../styling'
 import { ChatTranscriptMessage } from '../../models/chat'
 import { ChatToolCalls } from './ChatToolCalls'
-import { scrollbarStyles } from './chatScrollbar'
 
 // Links open in a new tab: a bare anchor is a top-level navigation, which in
 // Electron replaces the app window with the external site (will-navigate only
@@ -38,7 +37,9 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
       {!!message.text && (
         <Box
           sx={[
-            theme => ({ '& pre, & table': scrollbarStyles(theme) }),
+            theme => ({
+              '& pre, & table': scrollbarStyles(theme, { background: 'grayLighter', width: SCROLLBAR_WIDTH_NARROW }),
+            }),
             {
               bgcolor: 'white.main',
               borderRadius: `${radius.lg}px`,

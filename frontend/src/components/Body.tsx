@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import browser from '../services/browser'
 import { Box, SxProps, Theme } from '@mui/material'
-import { spacing, toSxArray } from '../styling'
+import { spacing, toSxArray, scrollbarStyles, SCROLLBAR_WIDTH } from '../styling'
 
 export type BodyProps = {
   inset?: boolean
@@ -38,8 +38,7 @@ export const Body: React.FC<BodyProps> = ({
   scrollbarBackground,
   children,
 }) => {
-  const [hover, setHover] = useState<boolean>(false)
-  const scrollbarWidth = browser.isMobile ? 0 : 15
+  const scrollbarWidth = browser.isMobile ? 0 : SCROLLBAR_WIDTH
   const bg: Color = scrollbarBackground || 'white'
 
   return (
@@ -90,9 +89,8 @@ export const Body: React.FC<BodyProps> = ({
         ref={bodyRef}
         className={className}
         style={maxHeight ? { maxHeight } : undefined}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
         sx={[
+          theme => scrollbarStyles(theme, { background: bg, width: scrollbarWidth }),
           theme => ({
             flexGrow: 1,
             height: '100%',
@@ -100,15 +98,6 @@ export const Body: React.FC<BodyProps> = ({
             overscrollBehaviorX: 'none',
             position: 'relative',
             WebkitOverflowScrolling: 'touch',
-            '&::-webkit-scrollbar': { WebkitAppearance: 'none' },
-            '&::-webkit-scrollbar:vertical': { width: `${scrollbarWidth}px` },
-            '&::-webkit-scrollbar:horizontal': { height: `${scrollbarWidth}px` },
-            '&::-webkit-scrollbar-corner': { background: theme.palette[bg].main },
-            '&::-webkit-scrollbar-thumb': {
-              borderRadius: '8px',
-              border: `4px solid ${theme.palette[bg].main}`,
-              backgroundColor: theme.palette[bg].main,
-            },
             [theme.breakpoints.down('sm')]: {
               overflowX: 'hidden',
             },
@@ -135,13 +124,6 @@ export const Body: React.FC<BodyProps> = ({
           inset ? { padding: `${spacing.sm}px ${spacing.xl}px` } : {},
           gutterBottom ? { paddingBottom: `${spacing.xxl}px` } : {},
           gutterTop ? { paddingTop: `${spacing.sm}px` } : {},
-          hover
-            ? (theme: Theme) => ({
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: `${theme.palette.grayLight.main} !important`,
-                },
-              })
-            : {},
           ...toSxArray(sx),
         ]}
       >
