@@ -59,6 +59,22 @@ const DISMISSAL_DATED_FROM = new Date('2026-08-01').getTime()
 const dismissedAt = (value: number | boolean): number | undefined =>
   value === true ? DISMISSAL_DATED_FROM : typeof value === 'number' ? value : undefined
 
+/* Bubbles queue behind one another (queueAfter), so dismissing one is often what
+   makes the next appear. Every rendered bubble registers here — open or not — so an
+   open bubble can tell whether its successor is on the current screen and label its
+   button "Next" instead of "Ok". A successor on another page stays "Ok": dismissing
+   would not visibly advance anything. */
+type Registration = { guide: string; queueAfter?: string; hide?: boolean }
+const mountedBubbles = new Set<Registration>()
+const bubbleListeners = new Set<() => void>()
+const notifyBubbles = () => bubbleListeners.forEach(listener => listener())
+const subscribeBubbles = (listener: () => void) => {
+  bubbleListeners.add(listener)
+  return () => {
+    bubbleListeners.delete(listener)
+  }
+}
+
 type Props = {
   guide: string
   placement?: TooltipProps['placement']
@@ -111,6 +127,31 @@ export const GuideBubble: React.FC<Props> = ({
   const queued = !!queueAfter && !poppedBubbles.includes(queueAfter)
   const open: boolean = !hide && !poppedBubbles.includes(guide) && !expired && !waiting && !queued && !hideForSidebar
 
+  const registration = React.useRef<Registration>({ guide, queueAfter, hide }).current
+  registration.queueAfter = queueAfter
+  registration.hide = hide
+
+  React.useEffect(() => {
+    mountedBubbles.add(registration)
+    notifyBubbles()
+    return () => {
+      mountedBubbles.delete(registration)
+      notifyBubbles()
+    }
+  }, [])
+
+  React.useEffect(() => notifyBubbles(), [queueAfter, hide])
+
+  // Joined to a string so the snapshot stays referentially stable between renders
+  const successors = React.useSyncExternalStore(subscribeBubbles, () =>
+    Array.from(mountedBubbles)
+      .filter(bubble => bubble.queueAfter === guide && !bubble.hide)
+      .map(bubble => bubble.guide)
+      .sort()
+      .join()
+  )
+  const hasNext = !!successors && successors.split(',').some(name => !poppedBubbles.includes(name))
+
   React.useEffect(() => {
     const timeout = setTimeout(() => setWaiting(false), enterDelay || 0)
     return () => clearTimeout(timeout)
@@ -129,7 +170,7 @@ export const GuideBubble: React.FC<Props> = ({
           {instructions}
           <Box display="flex" alignItems="flex-end" justifyContent="space-between">
             <Button size="small" variant="text" onClick={() => ui.pop(guide)}>
-              Ok
+              {hasNext ? 'Next' : 'Ok'}
             </Button>
             <Link onClick={() => ui.popAll()}>dismiss all</Link>
           </Box>
