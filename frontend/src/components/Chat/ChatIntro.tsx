@@ -51,7 +51,7 @@ export const ChatIntro: React.FC = () => {
             onClick={() => dispatch.chat.send(prompt)}
             sx={{
               bgcolor: 'white.main',
-              color: 'grayDarkest.main',
+              color: 'grayDarker.main',
               maxWidth: '100%',
               '&:hover': { bgcolor: 'primaryLighter.main' },
             }}
