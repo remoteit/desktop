@@ -37,7 +37,7 @@ export const ChatIntro: React.FC = () => {
           {t('chat.introTitle', 'Remote.It AI')}
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ maxWidth: 280, marginTop: 1 }}>
-          {t('chat.introBody', 'Ask about your devices, connections, and services \u2014 or make changes.')}
+          {t('chat.introBody', 'Manage your devices, connections, and services \u2014 just ask.')}
         </Typography>
       </Box>
       {/* Left-aligned and content-width so they read as suggestions to pick up,
