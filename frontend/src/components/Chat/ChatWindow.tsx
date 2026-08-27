@@ -31,7 +31,7 @@ export const ChatWindow: React.FC = () => {
       <ChatHeader>
         <NewChatButton />
         <IconButton
-          icon="down-left-and-up-right-to-center"
+          icon="clone-dashed"
           title={t('chat.popIn', 'Pop back in')}
           onClick={() => dispatch.chat.popIn()}
         />

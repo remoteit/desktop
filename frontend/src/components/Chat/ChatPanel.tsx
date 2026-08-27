@@ -104,7 +104,7 @@ export const ChatPanel: React.FC = () => {
       >
         {!browser.isMobile && !layout.mobile && (
           <IconButton
-            icon="arrow-up-right-from-square"
+            icon="clone"
             title={t('chat.popOut', 'Pop out')}
             onClick={() => dispatch.chat.popOut()}
           />

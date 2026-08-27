@@ -10,6 +10,7 @@ import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
 import { R3gray } from '../assets/R3gray'
 import { RemoteAI } from '../assets/RemoteAI'
+import { CloneDashed } from '../assets/CloneDashed'
 
 library.add(fal, fab, far, fas)
 
@@ -107,6 +108,7 @@ export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     // Handle special icon cases
     if (name === 'r3') return <R3gray {...props} style={styles} />
     if (name === 'remote-ai') return <RemoteAI {...props} style={styles} />
+    if (name === 'clone-dashed') return <CloneDashed {...props} style={styles} />
 
     let fontType: IconPrefix = 'far'
 
