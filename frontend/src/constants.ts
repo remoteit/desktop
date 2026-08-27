@@ -109,6 +109,10 @@ export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
 export const CHAT_PANEL_WIDTH = 400
 export const CHAT_PANEL_WIDTH_MIN = 320
+/* Content that must survive beside a docked chat column. The column shrinks to
+   preserve it, so the chat keeps its column on small desktop windows instead of
+   taking the screen — that only happens at phone size (MOBILE_WIDTH). */
+export const CHAT_MIN_CONTENT_WIDTH = 500
 export const ORGANIZATION_BAR_WIDTH = 70
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750

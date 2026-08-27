@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
+import browser from '../services/browser'
 import {
   MODE,
   CHAT_ALWAYS_ON,
   CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_MIN,
-  HIDE_TWO_PANEL_WIDTH,
+  CHAT_MIN_CONTENT_WIDTH,
   HIDE_SIDEBAR_WIDTH,
   SIDEBAR_WIDTH,
   ORGANIZATION_BAR_WIDTH,
@@ -33,12 +34,14 @@ const useViewportWidth = (): number => {
 }
 
 /* The widest the chat column may be dragged: whatever the window holds once the
-   content area keeps its single-panel minimum. The sidebar no longer caps the drag —
-   the layout breakpoints below measure the REMAINING width, so a chat dragged wide
-   collapses the sidebar into the hamburger menu exactly as narrowing the window would. */
+   content keeps CHAT_MIN_CONTENT_WIDTH. The sidebar does not cap the drag — the layout
+   breakpoints below measure the REMAINING width, so a chat dragged wide collapses the
+   sidebar into the hamburger exactly as narrowing the window would. This is also what
+   keeps the column docked as the WINDOW shrinks: the chat gives up its own width first,
+   down to CHAT_PANEL_WIDTH_MIN, rather than the app flipping to a full-screen chat. */
 export const useChatMaxWidth = (): number => {
   const viewport = useViewportWidth()
-  return Math.max(CHAT_PANEL_WIDTH_MIN, viewport - HIDE_TWO_PANEL_WIDTH)
+  return Math.max(CHAT_PANEL_WIDTH_MIN, viewport - CHAT_MIN_CONTENT_WIDTH)
 }
 
 /* Width the docked chat column occupies — single source for the fit-check
@@ -52,17 +55,22 @@ export const useChatWidth = (): number => {
   return Math.min(Math.max(stored || CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_MIN), max)
 }
 
-/* Whether the open chat reserves layout width (docked) or floats as an
-   overlay. Docked only when at least one content panel still fits beside the
-   column, and never while maximized — the expanded chat covers the content
-   area as an overlay so the layout underneath keeps its full width. */
+/* Whether the open chat reserves layout width (docked) or covers the app as an
+   overlay. Taking the whole screen is a PHONE behaviour, not a small-window one:
+   a narrow desktop window keeps the column and lets the chat and the content share
+   what there is. Maximizing is the one way to get the overlay on a real screen.
+   The threshold is DERIVED — the window must hold the column at its minimum and the
+   content at its minimum — rather than borrowed from the two-panel breakpoint, which
+   is what used to un-dock the chat on windows as wide as 1150px. Deliberately
+   independent of the chat's CURRENT width: gating docking on the width that docking
+   determines is what let the panel flip out from under a drag. */
 export const useChatDocked = (): boolean => {
   const enabled = useChatEnabled()
   const open = useSelector((state: State) => state.chat.open)
   const expanded = useSelector((state: State) => state.chat.expanded)
   const viewport = useViewportWidth()
-  const chatWidth = useChatWidth()
-  return enabled && open && !expanded && viewport - chatWidth >= HIDE_TWO_PANEL_WIDTH
+  const fits = viewport >= CHAT_PANEL_WIDTH_MIN + CHAT_MIN_CONTENT_WIDTH
+  return enabled && open && !expanded && !browser.isMobile && fits
 }
 
 /* The width the app layout actually has left: the window minus the docked chat
