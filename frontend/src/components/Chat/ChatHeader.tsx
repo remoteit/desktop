@@ -158,7 +158,11 @@ export const HistoryButton: React.FC = () => {
             selected={c.id === currentId}
             sx={{
               '& .remove': { opacity: 0, transition: 'opacity 100ms' },
-              '&:hover .remove, &:focus-within .remove': { opacity: 1 },
+              // Hover, or the button's own KEYBOARD focus. Not :focus-within — MUI
+              // focuses the selected item when the menu opens, which would pin the X
+              // on the active row. :focus-visible keeps it reachable by tab without
+              // matching that programmatic focus.
+              '&:hover .remove, & .remove:focus-visible': { opacity: 1 },
             }}
             onClick={() => {
               dispatch.chat.openConversation(c.id)
