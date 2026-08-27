@@ -106,7 +106,24 @@ jobs:
           # Checks all downloaded files if they end with zip, tar or tar.gz and extracts them, if true.
           # Prints a warning if enabled but file is not an archive - but does not fail.
           extract: false
-      
+
+      # A stamp file that rides along inside the versioned folder. Because the
+      # /latest alias is a prefix rewrite, `.../latest/version.txt` resolves to
+      # this file and is the quickest way to confirm which release the alias is
+      # currently serving — no console, no AWS creds, just a URL:
+      #
+      #   curl https://downloads.remote.it/desktop/latest/version.txt
+      #
+      # It is written into the same directory the upload step reads, so it goes
+      # up with the assets rather than needing a second S3 call.
+      - name: Stamp the release version
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$TAG" > release-assets/version.txt
+          cat release-assets/version.txt
+
       - name: Upload release assets to S3
         uses: shallwefootball/s3-upload-action@master
         with:
