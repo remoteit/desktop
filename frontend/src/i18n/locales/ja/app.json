@@ -186,6 +186,8 @@
     "approve": "承認",
     "close": "閉じる",
     "collapse": "縮小",
+    "deleteConfirmAction": "削除",
+    "deleteConfirmTitle": "この会話を削除しますか？",
     "deleteConversation": "削除",
     "deny": "拒否",
     "expand": "拡大",

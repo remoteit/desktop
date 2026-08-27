@@ -189,6 +189,8 @@
     "approve": "Genehmigen",
     "close": "Schließen",
     "collapse": "Verkleinern",
+    "deleteConfirmAction": "Löschen",
+    "deleteConfirmTitle": "Diese Unterhaltung löschen?",
     "deleteConversation": "Löschen",
     "deny": "Ablehnen",
     "expand": "Vergrößern",

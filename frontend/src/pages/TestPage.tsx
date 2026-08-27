@@ -110,6 +110,10 @@ export const TestPage: React.FC = () => {
   // stage switches GraphQL, WebSocket and the agent together — so the radio leads with
   // the ENVIRONMENT and keeps the registry name underneath as the detail.
   const stageLabel = (stage: string) => stage.charAt(0).toUpperCase() + stage.slice(1)
+  // The registry name describes the GraphQL resource alone ("remote.it GraphQL (dev)"),
+  // which misreads as "this only changes GraphQL". Name the environment's domain instead
+  // — that is what every one of the three APIs actually moves to.
+  const stageDomain = (stage: string) => (stage === 'prod' ? 'remote.it' : `${stage}.remote.it`)
 
   type StagePair = { stage: string; name: string; graphql?: string; ws?: string }
   const stagePairs: StagePair[] = useMemo(() => {
@@ -251,7 +255,7 @@ export const TestPage: React.FC = () => {
                 <ListItemRadio
                   key={pair.stage}
                   label={stageLabel(pair.stage)}
-                  subLabel={pair.name}
+                  subLabel={stageDomain(pair.stage)}
                   disabled={!customSelected}
                   // Lit only when the WHOLE pair still matches — editing either URL by hand
                   // drops the light, so a half-custom target can never read as a stage.

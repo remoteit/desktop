@@ -192,6 +192,8 @@
     "approve": "Aprobar",
     "close": "Cerrar",
     "collapse": "Contraer",
+    "deleteConfirmAction": "Eliminar",
+    "deleteConfirmTitle": "¿Eliminar esta conversación?",
     "deleteConversation": "Eliminar",
     "deny": "Denegar",
     "expand": "Expandir",

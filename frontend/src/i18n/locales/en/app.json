@@ -189,6 +189,8 @@
     "approve": "Approve",
     "close": "Close",
     "collapse": "Collapse",
+    "deleteConfirmAction": "Delete",
+    "deleteConfirmTitle": "Delete this conversation?",
     "deny": "Deny",
     "expand": "Expand",
     "guideAgentBody": "Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.",

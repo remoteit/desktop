@@ -7,7 +7,10 @@ import { IconButton } from '../../buttons/IconButton'
 import { Icon } from '../Icon'
 import { fontSizes, spacing } from '../../styling'
 import { GuideBubble } from '../GuideBubble'
+import { Confirm } from '../Confirm'
+import { Notice } from '../Notice'
 import { isChatPopout } from '../../services/chatPopout'
+import { ConversationSummary } from '../../services/agent'
 import { CHAT_GUIDE_DATE } from '../../constants'
 
 /* Control row shared by the docked panel and the popout window — `leading` takes the
@@ -84,6 +87,11 @@ export const HistoryButton: React.FC = () => {
       ? [{ id: currentId, title: currentTitle, createdAt: '', updatedAt: '' }, ...conversations]
       : conversations
   const [anchorEl, setAnchorEl] = React.useState<Element | null>(null)
+  /* The row to delete, held while the dialog is up. The Confirm lives OUTSIDE the
+     Menu: a dialog rendered inside it would unmount the moment the menu closed, and
+     its backdrop reads as an outside click to the menu. So the X closes the menu and
+     hands the conversation over here. */
+  const [deleting, setDeleting] = React.useState<ConversationSummary | null>(null)
 
   const open = (e: React.MouseEvent) => {
     dispatch.chat.loadConversations() // freshen on open
@@ -198,6 +206,8 @@ export const HistoryButton: React.FC = () => {
               primary={c.title || t('chat.untitled', 'New conversation')}
               primaryTypographyProps={{ noWrap: true, sx: { maxWidth: 240 } }}
             />
+            {/* stopPropagation so the row's own onClick does not load the very
+                conversation we are about to delete. */}
             <MuiIconButton
               edge="end"
               size="small"
@@ -206,7 +216,8 @@ export const HistoryButton: React.FC = () => {
               title={t('chat.deleteConversation', 'Delete')}
               onClick={e => {
                 e.stopPropagation()
-                dispatch.chat.removeConversation(c.id)
+                setDeleting(c)
+                close()
               }}
             >
               <Icon name="times" size="sm" />
@@ -214,6 +225,24 @@ export const HistoryButton: React.FC = () => {
           </MenuItem>
         ))}
       </Menu>
+      {/* The server cascades this — messages, turns and the journal all go with it
+          (D9) — so it asks first. */}
+      <Confirm
+        open={!!deleting}
+        title={t('chat.deleteConfirmTitle', 'Delete this conversation?')}
+        action={t('chat.deleteConfirmAction', 'Delete')}
+        color="error"
+        onConfirm={() => {
+          if (deleting) dispatch.chat.removeConversation(deleting.id)
+          setDeleting(null)
+        }}
+        onDeny={() => setDeleting(null)}
+      >
+        <Notice severity="error" gutterBottom fullWidth>
+          {t('common.cannotBeUndone', 'This action cannot be undone.')}
+        </Notice>
+        <Typography variant="body2">{deleting?.title || t('chat.untitled', 'New conversation')}</Typography>
+      </Confirm>
     </>
   )
 }
