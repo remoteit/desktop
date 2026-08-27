@@ -22,8 +22,17 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
   const { t } = useTranslation()
   if (message.role === 'user')
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginY: 1 }}>
-        <Box sx={{ bgcolor: 'primaryLighter.main', borderRadius: `${radius.lg}px`, paddingX: 2, paddingY: 1.25, maxWidth: '85%' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginY: 2 }}>
+        <Box
+          sx={{
+            bgcolor: 'primaryLighter.main',
+            borderRadius: `${radius.lg}px`,
+            marginLeft: 8,
+            padding: 2,
+            paddingY: 1.25,
+            maxWidth: 800,
+          }}
+        >
           <Typography variant="body2" color="grayDarker.main" sx={{ whiteSpace: 'pre-wrap' }}>
             {message.text}
           </Typography>
@@ -39,9 +48,10 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
           sx={[
             theme => ({
               // Each surface names the color BEHIND its scrollbar, which is what makes
-              // the track invisible until hover: `pre` is a gray block, while a table's
-              // strip sits on the card itself.
-              '& pre': scrollbarStyles(theme, { background: 'grayLight', width: SCROLLBAR_WIDTH_NARROW }),
+              // the track invisible until hover: `pre` is a tinted block, while a table's
+              // strip sits on the card itself. Keep these in step with the `& pre` /
+              // `& th, & td` backgrounds below — a stale color shows as a stray bar.
+              '& pre': scrollbarStyles(theme, { background: 'primaryLighter', width: SCROLLBAR_WIDTH_NARROW }),
               '& table': scrollbarStyles(theme, { background: 'white', width: SCROLLBAR_WIDTH_NARROW }),
             }),
             {
@@ -51,6 +61,7 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
               paddingY: 2,
               fontSize: fontSizes.base,
               lineHeight: 1.7,
+              maxWidth: 800,
               wordBreak: 'break-word',
               // Theme tokens, and the app's own emphasis convention (see theme.ts
               // body1/caption): bold is a COLOR step plus weight 500 — never 700.
@@ -70,14 +81,14 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
               '& code': {
                 fontFamily: "'Roboto Mono', monospace",
                 fontSize: fontSizes.sm,
-                bgcolor: 'grayLight.main',
+                bgcolor: 'grayLighter.main',
                 borderRadius: `${radius.sm}px`,
                 paddingX: 0.5,
                 paddingY: 0.25,
               },
               '& pre': {
                 overflowX: 'auto',
-                bgcolor: 'grayLight.main',
+                bgcolor: 'grayLighter.main',
                 borderRadius: `${radius.lg}px`,
                 padding: 1.5,
                 '& code': { padding: 0, bgcolor: 'transparent' },
@@ -87,7 +98,8 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
                 overflowX: 'auto',
                 borderCollapse: 'collapse',
                 fontSize: fontSizes.sm,
-                marginY: 1,
+                marginY: 2,
+                borderRadius: `${radius.sm}px`,
               },
               // Inverted against the card: the cells carry the fill and the grid is drawn
               // in the card's own white, so the rules read as gaps rather than lines.
@@ -95,10 +107,13 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
                 bgcolor: 'grayLightest.main',
                 border: '1px solid',
                 borderColor: 'white.main',
-                paddingX: 1,
+                paddingX: 1.5,
                 paddingY: 0.5,
                 textAlign: 'left',
                 whiteSpace: 'nowrap',
+                '& code': {
+                  bgcolor: 'white.main',
+                },
               },
               '& blockquote': {
                 borderLeft: '3px solid',
