@@ -26,7 +26,7 @@ export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) =>
             <b>Add a service (application)</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
-            This device can be dynamically setup to host new services.
+            This device can be dynamically set up to host new services.
           </Typography>
         </>
       }

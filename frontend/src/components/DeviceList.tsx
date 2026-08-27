@@ -80,7 +80,7 @@ const DeviceListRow: React.FC<RowProps> = React.memo(
                   <b>Access a device</b>
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  A device can host it's own applications (services), or it can host another service on it's local
+                  A device can host its own applications (services), or it can host another service on its local
                   network.
                 </Typography>
                 <Typography variant="body2" gutterBottom>

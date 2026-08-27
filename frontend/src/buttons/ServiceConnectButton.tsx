@@ -40,7 +40,7 @@ export const ServiceConnectButton: React.FC = () => {
               </DesktopUI>
               <DesktopUI>
                 <Typography variant="body2" gutterBottom>
-                  Start listening on to this endpoint for network requests. On request, automatically create the
+                  Start listening on this endpoint for network requests. On request, automatically create the
                   connection and disconnect when idle.
                 </Typography>
               </DesktopUI>
