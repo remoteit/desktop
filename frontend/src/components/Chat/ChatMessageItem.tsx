@@ -38,15 +38,19 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
         <Box
           sx={[
             theme => ({
-              '& pre, & table': scrollbarStyles(theme, { background: 'grayLighter', width: SCROLLBAR_WIDTH_NARROW }),
+              // Each surface names the color BEHIND its scrollbar, which is what makes
+              // the track invisible until hover: `pre` is a gray block, while a table's
+              // strip sits on the card itself.
+              '& pre': scrollbarStyles(theme, { background: 'grayLight', width: SCROLLBAR_WIDTH_NARROW }),
+              '& table': scrollbarStyles(theme, { background: 'white', width: SCROLLBAR_WIDTH_NARROW }),
             }),
             {
               bgcolor: 'white.main',
               borderRadius: `${radius.lg}px`,
-              paddingX: 2,
-              paddingY: 1.5,
+              paddingX: 3,
+              paddingY: 2,
               fontSize: fontSizes.base,
-              lineHeight: 1.5,
+              lineHeight: 1.7,
               wordBreak: 'break-word',
               // Theme tokens, and the app's own emphasis convention (see theme.ts
               // body1/caption): bold is a COLOR step plus weight 500 — never 700.
@@ -66,14 +70,14 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
               '& code': {
                 fontFamily: "'Roboto Mono', monospace",
                 fontSize: fontSizes.sm,
-                bgcolor: 'grayLighter.main',
+                bgcolor: 'grayLight.main',
                 borderRadius: `${radius.sm}px`,
                 paddingX: 0.5,
                 paddingY: 0.25,
               },
               '& pre': {
                 overflowX: 'auto',
-                bgcolor: 'grayLighter.main',
+                bgcolor: 'grayLight.main',
                 borderRadius: `${radius.lg}px`,
                 padding: 1.5,
                 '& code': { padding: 0, bgcolor: 'transparent' },
@@ -85,9 +89,12 @@ export const ChatMessageItem = React.memo<{ message: ChatTranscriptMessage }>(({
                 fontSize: fontSizes.sm,
                 marginY: 1,
               },
+              // Inverted against the card: the cells carry the fill and the grid is drawn
+              // in the card's own white, so the rules read as gaps rather than lines.
               '& th, & td': {
+                bgcolor: 'grayLightest.main',
                 border: '1px solid',
-                borderColor: 'grayLighter.main',
+                borderColor: 'white.main',
                 paddingX: 1,
                 paddingY: 0.5,
                 textAlign: 'left',
