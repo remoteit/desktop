@@ -98,7 +98,11 @@ export type UIState = {
   panelWidth: ILookup<number>
   guides: ILookup<IGuide>
   poppedBubbles: string[]
-  expireBubbles: boolean
+  /** WHEN the user last chose "dismiss all", as a timestamp — not whether they did.
+   *  A bubble introduced after that moment still gets shown. `true` is the legacy
+   *  value from when this was a permanent flag; GuideBubble reads it as a dismissal
+   *  dated to the release that changed this. */
+  expireBubbles: number | boolean
   confirm?: { id: string; callback: () => void }
   accordion: ILookup<boolean>
   autoConnect: boolean
@@ -297,7 +301,9 @@ export default createModel<RootModel>()({
       dispatch.ui.setPersistent({ poppedBubbles })
     },
     async popAll(_: void) {
-      dispatch.ui.setPersistent({ expireBubbles: true })
+      // Dated, so this only opts out of the guides that exist TODAY — a single
+      // click should not silently cancel every future feature's onboarding.
+      dispatch.ui.setPersistent({ expireBubbles: Date.now() })
     },
     async resetHelp(_: void) {
       dispatch.ui.setPersistent({

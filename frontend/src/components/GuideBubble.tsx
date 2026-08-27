@@ -6,12 +6,27 @@ import { tipSx, arrowSx, boxSx } from './GuideStep'
 import { toSxArray } from '../styling'
 import { Link } from './Link'
 
+/* "Dismiss all" used to be permanent AND retroactive: one boolean hid every bubble ever
+   written, including ones added long afterwards, so a single click quietly opted the user
+   out of all future onboarding. It now records WHEN it happened, and a bubble introduced
+   after that moment still gets its chance.
+
+   A legacy `true` is read as a dismissal dated to the release that made this change — so
+   everything that existed then stays dismissed, and only genuinely newer bubbles return. */
+const DISMISSAL_DATED_FROM = new Date('2026-08-01').getTime()
+
+const dismissedAt = (value: number | boolean): number | undefined =>
+  value === true ? DISMISSAL_DATED_FROM : typeof value === 'number' ? value : undefined
+
 type Props = {
   guide: string
   placement?: TooltipProps['placement']
   instructions: React.ReactNode
   component?: BoxProps['component']
-  startDate?: Date // Show to users created before this date
+  startDate?: Date // Cohort gate: hidden from users who signed up before this date
+  /** When this bubble shipped. A "dismiss all" older than this does not hide it.
+   *  Defaults to startDate, so existing bubbles keep their current behaviour. */
+  added?: Date
   highlight?: boolean
   hideArrow?: boolean
   hide?: boolean
@@ -27,6 +42,7 @@ export const GuideBubble: React.FC<Props> = ({
   placement,
   instructions,
   startDate = new Date(0),
+  added,
   component = 'div',
   highlight,
   hideArrow,
@@ -38,9 +54,12 @@ export const GuideBubble: React.FC<Props> = ({
   children,
 }) => {
   const { ui } = useDispatch<Dispatch>()
-  const expired = useSelector(
-    (state: State) => (startDate > state.user.created && !state.ui.testUI) || state.ui.expireBubbles
+  const cohortExpired = useSelector(
+    (state: State) => startDate > state.user.created && !state.ui.testUI
   )
+  const dismissed = useSelector((state: State) => dismissedAt(state.ui.expireBubbles))
+  // Dismissed only counts against bubbles that already existed when it happened
+  const expired = cohortExpired || (dismissed !== undefined && (added ?? startDate).getTime() <= dismissed)
   const poppedBubbles = useSelector((state: State) => state.ui.poppedBubbles)
   const sidebarOpen = useSelector((state: State) => state.ui.sidebarMenu)
   const [waiting, setWaiting] = React.useState<boolean>(true)
