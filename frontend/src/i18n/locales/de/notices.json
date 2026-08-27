@@ -13,7 +13,8 @@
     "authRequired": "Agentenauthentifizierung erforderlich — melden Sie sich an, um fortzufahren.",
     "popupBlocked": "Pop-out blockiert — erlauben Sie Pop-ups für diese Seite und versuchen Sie es erneut.",
     "sessionExpired": "Agentensitzung abgelaufen — melden Sie sich erneut an, um fortzufahren.",
-    "signInFailed": "Agentenanmeldung fehlgeschlagen — {{error}}"
+    "signInFailed": "Agentenanmeldung fehlgeschlagen — {{error}}",
+    "usageReset": "{{msg}} Zurücksetzung {{when}}."
   },
   "connection": {
     "surveyFailed": "Die Übermittlung der Verbindungsumfrage ist fehlgeschlagen. Bitte wenden Sie sich an den Support."

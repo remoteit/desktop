@@ -176,6 +176,8 @@
   },
   "changePassword": {
     "currentPassword": "Current Password",
+    "mfaCode": "Authentication code",
+    "mfaPrompt": "Enter the 6-digit code from your authenticator to finish changing your password.",
     "noticeAfter": "automatically sign you out of other sessions.",
     "noticeBefore": "Changing your password will",
     "noticeEmphasis": "NOT",
@@ -187,7 +189,6 @@
     "approve": "Approve",
     "close": "Close",
     "collapse": "Collapse",
-    "currentOrg": "Current Org",
     "deny": "Deny",
     "expand": "Expand",
     "interrupted": "Interrupted",
@@ -202,9 +203,6 @@
     "historyEmpty": "No past conversations",
     "untitled": "New conversation",
     "deleteConversation": "Delete",
-    "organization": "Organization",
-    "personal": "Personal",
-    "actingIn": "Acting in {{org}}",
     "newSession": "New chat",
     "inputPlaceholder": "Chat with Remote.It",
     "introTitle": "Remote.It AI",
@@ -222,7 +220,6 @@
     "toolRequest": "The agent wants to run <tool>{{tool}}</tool>",
     "toolsUsed_one": "Used {{count}} tool",
     "toolsUsed_other": "Used {{count}} tools",
-    "title": "Remote.It AI",
     "unavailable": "Remote.It AI is temporarily unavailable. Check your internet connection or try again in a few minutes.",
     "waitingApproval": "Waiting for approval…",
     "windowTitle": "remote.it chat"
@@ -344,6 +341,7 @@
     "close": "Close",
     "confirm": "Confirm",
     "confirmingEllipsis": "Confirming...",
+    "continue": "Continue",
     "delete": "Delete",
     "disable": "Disable",
     "done": "Done",
@@ -359,6 +357,7 @@
     "saved": "Saved",
     "saving": "Saving",
     "savingEllipsis": "Saving...",
+    "verify": "Verify",
     "yes": "Yes"
   },
   "connect": {
@@ -384,26 +383,48 @@
     "resetConnection": "Reset connection"
   },
   "connectedAppDetailPage": {
+    "accounts": "Accounts",
+    "addAccount": "{{label}} — add",
+    "allAccounts": "All accounts, including ones added later",
+    "allAccountsAdd": "All accounts, including ones added later — add",
+    "allAccountsPlain": "every account, including ones you join later",
     "authorized": "Authorized",
+    "confirmExtend": "Give {{name}} access it does not have yet?\n\nAdding: {{list}}",
+    "delayedReach": "Access already in progress at {{apis}} ends within {{window}}.",
     "details": "Details",
     "deviceAccess": "Device access",
+    "editHint": "Granted when {{name}} signed in. Tap a permission to disable it — it stays listed so you can re-enable it later.",
     "grantedWhenSignedIn": "Granted when {{name}} signed in. To change them, revoke access and have it sign in again.",
     "lastActive": "Last active",
+    "lastUsed": "Last used",
     "noActivityYet": "No activity yet",
     "noDeviceAccess": "No device access — it can confirm your identity, but cannot see or control any devices.",
     "noLongerAuthorized": "This app is no longer authorized.",
+    "notGranted": "{{label}} — not granted",
+    "notGrantedHint": "This app asked for this and you did not grant it. You can turn it on here.",
     "permissions": "Permissions",
     "requestAgain": "It can request access again by signing in.",
     "revoke": "Revoke",
     "revokeAccess": "Revoke access",
     "revokeAccessConfirmTitle": "Revoke access?",
+    "revokeExplain": "Signs {{name}} out of your account and blocks it from getting new access. It can request access again by signing in.",
+    "revokeSection": "Revoke access",
+    "revoked": "revoked",
+    "revokedHint": "This access was revoked — shown for the record. {{name}} can request access again by signing in.",
+    "save": "Save changes",
+    "saveFailed": "That change could not be saved.",
     "service": "Service",
+    "signInOnly": "Sign-in only — it can confirm your identity, but was granted nothing else.",
+    "signInScopes": "Sign-in scopes",
     "signOutBefore": "will be signed out. New access is blocked immediately; any session already in progress ends within",
-    "title": "Connected App"
+    "title": "Connected App",
+    "willAdd": "This gives the app access it does not have yet: {{list}}"
   },
   "connectedApps": {
     "empty": "You have not authorized any apps yet.",
     "loading": "Loading…",
+    "reauth": "Sign in again to see your connected apps — your current session started before this page could ask for them.",
+    "reauthAction": "Sign in again",
     "title": "Apps & AI agents"
   },
   "connectedAppsPage": {
@@ -1008,6 +1029,32 @@
   "logsPage": {
     "title": "Logs"
   },
+  "mfa": {
+    "choose": "How would you like to get your code? (totp or sms)",
+    "codesTitle": "Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.",
+    "confirmPassword": "Confirm your password to continue — changing a credential re-proves the one you hold.",
+    "disable": "Turn Off",
+    "enable": "Set Up",
+    "failed": "Something went wrong — try again.",
+    "federated": "You sign in with an identity provider (like Google), so your password and two-factor are managed there. To add a Remote.It password — usable alongside your provider — set one up first.",
+    "method": "Method",
+    "off": "Off",
+    "on": "On",
+    "phone": "Mobile number (+15555550123)",
+    "prefer": "Make preferred",
+    "preferred": "On · preferred",
+    "protects": "The preferred method challenges every sign-in with this account.",
+    "relay": "Enter the 6-digit code from your current second factor.",
+    "relayHint": "Enter the code sent to {{hint}}.",
+    "scan": "Scan with your authenticator app, then enter its 6-digit code.",
+    "secret": "Or enter the key manually:",
+    "setPassword": "Set a Password",
+    "smsSent": "We texted a code to your phone — enter it to finish turning on text-message codes.",
+    "suggest": "Protect your account with an authenticator app or text messages.",
+    "title": "Two-Factor Authentication",
+    "wrongCode": "That code didn't match — try again.",
+    "wrongPassword": "That password didn't match."
+  },
   "mfaConfigureApp": {
     "code": "Code: {{code}}",
     "generateNewCode": "Generate new QR Code",
@@ -1089,6 +1136,7 @@
     "signOutConfirm": "Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.",
     "support": "Support",
     "supportForum": "Support Forum",
+    "switchAccount": "Switch account",
     "testUI": "Test UI",
     "testUIConfirm": "Enabling alpha features may be unstable. It is only intended for testing and development.",
     "thisDevice": "This Device",
@@ -1432,6 +1480,15 @@
     "noMatchingPartners": "No matching partners",
     "noPartnersFound": "No partners found",
     "searchPlaceholder": "Search partners..."
+  },
+  "passkeys": {
+    "add": "Add a Passkey",
+    "added": "Passkey added — next sign-in, use it instead of typing a code.",
+    "defaultName": "This device",
+    "explainer": "A passkey signs you in here with a touch instead of a code. Text or authenticator codes still protect sign-ins from older apps.",
+    "failed": "Something went wrong — try again.",
+    "needFactor": "Set up an authenticator or text codes first.",
+    "title": "Passkeys"
   },
   "passwordStrengthInput": {
     "confirmNewPassword": "Confirm new password",
@@ -2047,10 +2104,11 @@
     "setServiceLicensesHint": "Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY",
     "showLatestAnnouncement": "Show latest announcement",
     "showLatestAnnouncementHint": "Previews the latest announcement without changing its read status.",
-    "switchGraphQLAPIs": "Switch GraphQL APIs",
+    "stagesEmpty": "The authorization server lists no switchable targets for this client.",
+    "stagesError": "Could not load available targets ({{status}}) — enter a URL below.",
+    "stagesLoading": "Loading available targets…",
     "testOptions": "Test Options",
-    "title": "Test Settings",
-    "webSocketURL": "WebSocket URL"
+    "title": "Test Settings"
   },
   "timeSeriesSelect": {
     "graphLength": "Graph length",
@@ -2099,6 +2157,7 @@
   },
   "viewAsBanner": {
     "exit": "Exit view-as mode",
+    "supportSession": "Support session — viewing as {{email}}. Tokens are stamped with your identity; the user can see and end this session.",
     "viewingAs": "Viewing as: {{email}}"
   },
   "appType": {
