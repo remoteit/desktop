@@ -106,6 +106,11 @@ export const TestPage: React.FC = () => {
     })
   }, [])
 
+  // Registry names describe the GraphQL resource ("remote.it GraphQL (dev)"), but a
+  // stage switches GraphQL, WebSocket and the agent together — so the radio leads with
+  // the ENVIRONMENT and keeps the registry name underneath as the detail.
+  const stageLabel = (stage: string) => stage.charAt(0).toUpperCase() + stage.slice(1)
+
   type StagePair = { stage: string; name: string; graphql?: string; ws?: string }
   const stagePairs: StagePair[] = useMemo(() => {
     const pairs = new Map<string, StagePair>()
@@ -245,8 +250,8 @@ export const TestPage: React.FC = () => {
               {stagePairs.map(pair => (
                 <ListItemRadio
                   key={pair.stage}
-                  label={pair.name}
-                  subLabel={pair.graphql}
+                  label={stageLabel(pair.stage)}
+                  subLabel={pair.name}
                   disabled={!customSelected}
                   // Lit only when the WHOLE pair still matches — editing either URL by hand
                   // drops the light, so a half-custom target can never read as a stage.
