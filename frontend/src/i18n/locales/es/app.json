@@ -80,6 +80,10 @@
     "title": "Agregar servicio",
     "typeRequired": "El tipo de servicio es obligatorio"
   },
+  "addServiceButton": {
+    "guideBody": "Este dispositivo se puede configurar dinámicamente para alojar nuevos servicios.",
+    "guideTitle": "Añadir un servicio (aplicación)"
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "Agregar etiqueta...",
     "allDevices": "Todos los dispositivos",
@@ -97,6 +101,10 @@
     "summary": "{{name}} puede acceder a {{scope}}{{limits}}.",
     "summaryNone": "{{name}} no puede acceder a ningún dispositivo.",
     "summaryUnlimited": "{{name}} puede acceder a todos los dispositivos de todas las organizaciones a las que perteneces."
+  },
+  "androidSetup": {
+    "guideBody": "Puedes configurar tu dispositivo Android o seguir las sencillas instrucciones para configurar una de las plataformas más utilizadas.",
+    "guideTitle": "Selecciona un dispositivo"
   },
   "announcementCard": {
     "learnMore": "Más información",
@@ -398,6 +406,7 @@
     "enable": "Habilitar",
     "loading": "Cargando...",
     "loadingEllipsis": "Cargando…",
+    "next": "Siguiente",
     "no": "No",
     "notAvailable": "N/D",
     "ok": "Aceptar",
@@ -667,9 +676,10 @@
     "clearSelection": "Borrar selección",
     "demoDevice": "Dispositivo de demostración",
     "demoHelp": "Descubre lo sencillo que es conectarte con nuestro dispositivo de demostración de AWS, o añade tu propio dispositivo desde el menú más (+) en la parte superior izquierda de la pantalla.",
-    "demoInstructions1": "Haz clic en el botón de abajo para que compartamos nuestro dispositivo contigo.",
-    "demoInstructions2": "Espera mientras se comparte el dispositivo...",
     "filterNoResults": "Tu filtro no arrojó resultados",
+    "guideHosting": "Un dispositivo puede alojar sus propias aplicaciones (servicios) o alojar otro servicio en su red local.",
+    "guideSelect": "Selecciona un dispositivo para conectarte a un servicio o configurarlo.",
+    "guideTitle": "Accede a un dispositivo",
     "newScript": "Nuevo script",
     "noDevices": "Esta cuenta no tiene dispositivos",
     "removeTag": "Quitar etiqueta",
@@ -885,11 +895,8 @@
     "MONTH": "Mes",
     "WEEK": "Semana"
   },
-  "guideStep": {
-    "exitGuide": "Salir de la guía",
-    "next": "siguiente",
-    "previous": "anterior",
-    "stepOf": "{{step}} de {{total}}"
+  "guideBubble": {
+    "dismissAll": "descartar todo"
   },
   "header": {
     "back": "Atrás",
@@ -1166,7 +1173,6 @@
     "add": "Agregar",
     "adding": "Agregando...",
     "cancel": "Cancelar",
-    "guideInstructions": "Haz clic aquí después de ingresar el nombre de tu red.",
     "name": "Nombre"
   },
   "networkAddPage": {
@@ -1187,9 +1193,6 @@
     "addServicesHint": "Agrega servicios a esta red desde una página de servicio",
     "connections": "Conexiones",
     "emptyNetwork": "Red vacía",
-    "networkAdded": "¡Red agregada!",
-    "nextAddService": "A continuación, agrega un servicio. Búscalo en la página de dispositivos y utiliza el panel de red para agregarlo.",
-    "ownOrManageNote": "Nota: solo puedes agregar desde dispositivos que posees o administras.",
     "settings": "Configuración",
     "startAll": "Iniciar todo",
     "stopAll": "Detener todo"
@@ -1707,12 +1710,21 @@
     "device": "Actualizar {{name}}",
     "deviceLogs": "Actualizar registros de {{name}}",
     "devices": "Actualizar dispositivos",
+    "guideBody": "El estado de los dispositivos se actualiza automáticamente mientras tu sistema esté encendido y la aplicación en ejecución.",
+    "guideTitle": "Actualizar la aplicación",
     "logs": "Actualizar registros",
     "networks": "Actualizar redes",
     "partnerStats": "Actualizar estadísticas de socios",
     "products": "Actualizar productos",
     "script": "Actualizar script",
     "scripts": "Actualizar scripts"
+  },
+  "registerMenu": {
+    "guideDevices": "dispositivos",
+    "guideInstallAgent": "El primer paso es instalar nuestro agente en cualquier dispositivo al que quieras conectarte.",
+    "guideRegistersAfter": "de la aplicación.",
+    "guideRegistersBefore": "Tu dispositivo se registrará automáticamente y aparecerá en la página",
+    "guideTitle": "Añadir un dispositivo"
   },
   "rentANodeForm": {
     "addDns": "Añadir una dirección DNS pública",
@@ -1918,6 +1930,13 @@
     "routingDesktopOnly": "El enrutamiento solo está disponible en el escritorio.",
     "tokenDefault": "{{token}} predeterminado",
     "tokenFoundIn": "Este token se encontró en"
+  },
+  "serviceConnectButton": {
+    "guideAutoLaunch": "Esta conexión se iniciará al conectarse porque la opción \"Inicio automático\" está activada.",
+    "guideBodyBrowser": "Crea una conexión a este servicio con el botón de conexión.",
+    "guideBodyDesktop": "Empieza a escuchar solicitudes de red en este endpoint. Cuando llegue una solicitud, la conexión se crea automáticamente y se cierra cuando está inactiva.",
+    "guideTitleBrowser": "Iniciar una conexión",
+    "guideTitleDesktop": "Conexión bajo demanda"
   },
   "serviceDefaultsPage": {
     "defaults": "Valores predeterminados",
@@ -2184,6 +2203,12 @@
   "upgradeBanner": {
     "accessPremium": "Accede a funciones premium y soporte",
     "upgradePlan": "Mejorar plan"
+  },
+  "usersTab": {
+    "guideBodyAfter": ".",
+    "guideBodyBefore": "Puedes compartir directamente con un usuario invitado desde aquí, o añadiendo miembros a tu",
+    "guideOrganization": "Organización",
+    "guideTitle": "El poder de compartir"
   },
   "viewAsBanner": {
     "exit": "Salir del modo de vista como",

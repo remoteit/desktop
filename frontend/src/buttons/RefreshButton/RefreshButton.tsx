@@ -171,10 +171,13 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
-            <b>Refresh the application</b>
+            <b>{t('refreshButton.guideTitle', 'Refresh the application')}</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
-            Device state will update automatically while your system is on and the app is running.
+            {t(
+              'refreshButton.guideBody',
+              'Device state will update automatically while your system is on and the app is running.'
+            )}
           </Typography>
         </>
       }

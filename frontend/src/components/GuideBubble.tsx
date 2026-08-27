@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Tooltip, TooltipProps, BoxProps, Button, Theme, alpha } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { spacing, radius, fontSizes, toSxArray } from '../styling'
 import { Link } from './Link'
@@ -110,6 +111,7 @@ export const GuideBubble: React.FC<Props> = ({
   sx,
   children,
 }) => {
+  const { t } = useTranslation()
   const { ui } = useDispatch<Dispatch>()
   const cohortExpired = useSelector((state: State) => {
     // An explicit "Reset interactive guides" re-anchors the cohort to the reset
@@ -170,9 +172,9 @@ export const GuideBubble: React.FC<Props> = ({
           {instructions}
           <Box display="flex" alignItems="flex-end" justifyContent="space-between">
             <Button size="small" variant="text" onClick={() => ui.pop(guide)}>
-              {hasNext ? 'Next' : 'Ok'}
+              {hasNext ? t('common.next', 'Next') : t('common.ok', 'Ok')}
             </Button>
-            <Link onClick={() => ui.popAll()}>dismiss all</Link>
+            <Link onClick={() => ui.popAll()}>{t('guideBubble.dismissAll', 'dismiss all')}</Link>
           </Box>
         </>
       }

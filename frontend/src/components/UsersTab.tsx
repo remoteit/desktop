@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { GUIDE_START_DATE } from '../constants'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, size = 'large' }) => {
+  const { t } = useTranslation()
   const connected = useSelector((state: State) =>
     selectSessionUsers(state, undefined, service ? service.id : instance?.id)
   ).length
@@ -40,11 +42,15 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
-            <b>The power of sharing</b>
+            <b>{t('usersTab.guideTitle', 'The power of sharing')}</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
-            Sharing can be done directly to a guest user from here, or by adding members to your
-            <cite>Organization</cite>.
+            {t(
+              'usersTab.guideBodyBefore',
+              'Sharing can be done directly to a guest user from here, or by adding members to your'
+            )}{' '}
+            <cite>{t('usersTab.guideOrganization', 'Organization')}</cite>
+            {t('usersTab.guideBodyAfter', '.')}
           </Typography>
         </>
       }

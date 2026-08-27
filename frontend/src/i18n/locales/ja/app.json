@@ -80,6 +80,10 @@
     "title": "サービスを追加",
     "typeRequired": "サービスタイプは必須です"
   },
+  "addServiceButton": {
+    "guideBody": "このデバイスは、新しいサービスをホストするように動的にセットアップできます。",
+    "guideTitle": "サービス(アプリケーション)を追加"
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "タグを追加...",
     "allDevices": "すべてのデバイス",
@@ -93,6 +97,10 @@
     "summary": "{{name}} は {{scope}}{{limits}} にアクセスできます。",
     "summaryNone": "{{name}} はどのデバイスにもアクセスできません。",
     "summaryUnlimited": "{{name}} は、所属するすべての組織のすべてのデバイスにアクセスできます。"
+  },
+  "androidSetup": {
+    "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
+    "guideTitle": "デバイスを選択"
   },
   "announcementCard": {
     "learnMore": "詳細を見る",
@@ -392,6 +400,7 @@
     "enable": "有効にする",
     "loading": "読み込み中...",
     "loadingEllipsis": "読み込み中…",
+    "next": "次へ",
     "no": "いいえ",
     "notAvailable": "該当なし",
     "ok": "OK",
@@ -655,9 +664,10 @@
     "clearSelection": "選択を解除",
     "demoDevice": "デモデバイス",
     "demoHelp": "AWS デモデバイスへの接続がいかに簡単か確認するか、画面左上のプラスメニューからご自身のデバイスを追加してください。",
-    "demoInstructions1": "下のボタンをクリックすると、デバイスが共有されます。",
-    "demoInstructions2": "デバイスを共有しています。しばらくお待ちください...",
     "filterNoResults": "フィルターに一致する結果がありません",
+    "guideHosting": "デバイスは自身のアプリケーション(サービス)をホストすることも、ローカルネットワーク上の別のサービスをホストすることもできます。",
+    "guideSelect": "デバイスを選択して、サービスに接続するか設定してください。",
+    "guideTitle": "デバイスにアクセス",
     "newScript": "新しいスクリプト",
     "noDevices": "このアカウントにはデバイスがありません",
     "removeTag": "タグを削除",
@@ -867,11 +877,8 @@
     "MONTH": "月",
     "WEEK": "週"
   },
-  "guideStep": {
-    "exitGuide": "ガイドを終了",
-    "next": "次へ",
-    "previous": "前へ",
-    "stepOf": "{{total}}件中{{step}}件目"
+  "guideBubble": {
+    "dismissAll": "すべて閉じる"
   },
   "header": {
     "back": "戻る",
@@ -1142,7 +1149,6 @@
     "add": "追加",
     "adding": "追加中...",
     "cancel": "キャンセル",
-    "guideInstructions": "ネットワーク名を入力した後、ここをクリックしてください。",
     "name": "名前"
   },
   "networkAddPage": {
@@ -1163,9 +1169,6 @@
     "addServicesHint": "サービスページからこのネットワークにサービスを追加してください",
     "connections": "コネクト",
     "emptyNetwork": "空のネットワーク",
-    "networkAdded": "ネットワークが追加されました！",
-    "nextAddService": "次にサービスを追加します。デバイスページからサービスを見つけて、ネットワークパネルを使用して追加してください。",
-    "ownOrManageNote": "注：所有または管理しているデバイスからのみ追加できます。",
     "settings": "設定",
     "startAll": "すべて開始",
     "stopAll": "すべて停止"
@@ -1663,12 +1666,21 @@
     "device": "{{name}} を更新",
     "deviceLogs": "{{name}} のログを更新",
     "devices": "デバイスを更新",
+    "guideBody": "システムが起動していてアプリが実行中の間、デバイスの状態は自動的に更新されます。",
+    "guideTitle": "アプリケーションを更新",
     "logs": "ログを更新",
     "networks": "ネットワークを更新",
     "partnerStats": "パートナー統計を更新",
     "products": "プロダクトを更新",
     "script": "スクリプトを更新",
     "scripts": "スクリプトを更新"
+  },
+  "registerMenu": {
+    "guideDevices": "デバイス",
+    "guideInstallAgent": "まず、接続したいデバイスに当社のエージェントをインストールします。",
+    "guideRegistersAfter": "ページに表示されます。",
+    "guideRegistersBefore": "デバイスは自動的に登録され、",
+    "guideTitle": "デバイスを追加"
   },
   "rentANodeForm": {
     "addDns": "公開DNSアドレスを追加",
@@ -1852,6 +1864,13 @@
     "routingDesktopOnly": "ルーティングはデスクトップでのみ利用できます。",
     "tokenDefault": "{{token}} のデフォルト",
     "tokenFoundIn": "このトークンは次の場所で見つかりました"
+  },
+  "serviceConnectButton": {
+    "guideAutoLaunch": "「自動起動」の設定がオンになっているため、接続時にこの接続が起動します。",
+    "guideBodyBrowser": "接続ボタンでこのサービスへの接続を作成します。",
+    "guideBodyDesktop": "このエンドポイントでネットワークリクエストの待ち受けを開始します。リクエストがあると自動的に接続し、アイドル状態になると切断します。",
+    "guideTitleBrowser": "接続の開始",
+    "guideTitleDesktop": "オンデマンド接続"
   },
   "serviceDefaultsPage": {
     "defaults": "デフォルト",
@@ -2112,6 +2131,12 @@
   "upgradeBanner": {
     "accessPremium": "プレミアム機能とサポートを利用",
     "upgradePlan": "プランをアップグレード"
+  },
+  "usersTab": {
+    "guideBodyAfter": "にメンバーを追加することでも共有できます。",
+    "guideBodyBefore": "ここからゲストユーザーに直接共有することも、",
+    "guideOrganization": "組織",
+    "guideTitle": "共有の力"
   },
   "viewAsBanner": {
     "exit": "表示モードを終了",

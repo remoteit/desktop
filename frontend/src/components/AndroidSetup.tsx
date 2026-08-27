@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import browser, { windowOpen } from '../services/browser'
 import { SCREEN_VIEW_APP_LINK, GUIDE_START_DATE } from '../constants'
 import { useHistory } from 'react-router-dom'
@@ -10,6 +11,7 @@ import { Icon } from '../components/Icon'
 type Props = { className?: string; onClick?: () => void }
 
 export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
+  const { t } = useTranslation()
   const history = useHistory()
 
   const handleClick = () => {
@@ -31,11 +33,13 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
-                <b>Select a device</b>
+                <b>{t('androidSetup.guideTitle', 'Select a device')}</b>
               </Typography>
               <Typography variant="body2" gutterBottom>
-                You can setup your Android device, or follow the simple instructions to setup one of the commonly used
-                platforms.
+                {t(
+                  'androidSetup.guideBody',
+                  'You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.'
+                )}
               </Typography>
             </>
           }

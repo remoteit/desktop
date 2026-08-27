@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { GUIDE_START_DATE } from '../../constants'
 import { useHistory } from 'react-router-dom'
 import { IconButton } from '../IconButton'
@@ -8,6 +9,7 @@ import { Typography } from '@mui/material'
 type Props = { device?: IDevice; editable?: boolean; link: string }
 
 export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) => {
+  const { t } = useTranslation()
   const history = useHistory()
 
   if (!device || !editable) return null
@@ -24,10 +26,10 @@ export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) =>
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
-            <b>Add a service (application)</b>
+            <b>{t('addServiceButton.guideTitle', 'Add a service (application)')}</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
-            This device can be dynamically set up to host new services.
+            {t('addServiceButton.guideBody', 'This device can be dynamically set up to host new services.')}
           </Typography>
         </>
       }

@@ -80,6 +80,10 @@
     "title": "Add Service",
     "typeRequired": "Service type is required"
   },
+  "addServiceButton": {
+    "guideBody": "This device can be dynamically set up to host new services.",
+    "guideTitle": "Add a service (application)"
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "Add tag...",
     "allDevices": "All devices",
@@ -95,6 +99,10 @@
     "summary": "{{name}} can reach {{scope}}{{limits}}.",
     "summaryNone": "{{name}} cannot reach any devices.",
     "summaryUnlimited": "{{name}} can reach all devices in every organization you belong to."
+  },
+  "androidSetup": {
+    "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
+    "guideTitle": "Select a device"
   },
   "announcementCard": {
     "learnMore": "Learn more",
@@ -395,6 +403,7 @@
     "enable": "Enable",
     "loading": "Loading...",
     "loadingEllipsis": "Loading…",
+    "next": "Next",
     "no": "No",
     "notAvailable": "N/A",
     "ok": "Ok",
@@ -661,9 +670,10 @@
     "clearSelection": "Clear selection",
     "demoDevice": "Demo Device",
     "demoHelp": "See how simple it is to connect with our AWS demo device, or add your own device from the plus menu in the top left of the screen.",
-    "demoInstructions1": "Click the button below to have our device shared with you.",
-    "demoInstructions2": "Please wait while the device is being shared...",
     "filterNoResults": "Your filter returned no results",
+    "guideHosting": "A device can host its own applications (services), or it can host another service on its local network.",
+    "guideSelect": "Select a device to connect to a service, or configure it.",
+    "guideTitle": "Access a device",
     "newScript": "New Script",
     "noDevices": "This account has no devices",
     "removeTag": "Remove Tag",
@@ -876,11 +886,8 @@
     "MONTH": "Month",
     "WEEK": "Week"
   },
-  "guideStep": {
-    "exitGuide": "Exit guide",
-    "next": "next",
-    "previous": "previous",
-    "stepOf": "{{step}} of {{total}}"
+  "guideBubble": {
+    "dismissAll": "dismiss all"
   },
   "header": {
     "back": "Back",
@@ -1154,7 +1161,6 @@
     "add": "Add",
     "adding": "Adding...",
     "cancel": "Cancel",
-    "guideInstructions": "Click here after entering your network name.",
     "name": "Name"
   },
   "networkAddPage": {
@@ -1175,9 +1181,6 @@
     "addServicesHint": "Add services to this network from a service page",
     "connections": "Connections",
     "emptyNetwork": "Empty network",
-    "networkAdded": "Network added!",
-    "nextAddService": "Next add a service. Find one from the devices page and use the network panel to add.",
-    "ownOrManageNote": "Note, you can only add from devices you own or manage.",
     "settings": "Settings",
     "startAll": "Start All",
     "stopAll": "Stop All"
@@ -1685,12 +1688,21 @@
     "device": "Refresh {{name}}",
     "deviceLogs": "Refresh {{name}} logs",
     "devices": "Refresh devices",
+    "guideBody": "Device state will update automatically while your system is on and the app is running.",
+    "guideTitle": "Refresh the application",
     "logs": "Refresh logs",
     "networks": "Refresh networks",
     "partnerStats": "Refresh partner stats",
     "products": "Refresh products",
     "script": "Refresh script",
     "scripts": "Refresh scripts"
+  },
+  "registerMenu": {
+    "guideDevices": "devices",
+    "guideInstallAgent": "First step is to install our agent on any device you would like to connect to.",
+    "guideRegistersAfter": "page.",
+    "guideRegistersBefore": "Your device will automatically register and appear on the",
+    "guideTitle": "Add a device"
   },
   "rentANodeForm": {
     "addDns": "Add a public DNS address",
@@ -1885,6 +1897,13 @@
     "routingDesktopOnly": "Routing is only available on desktop.",
     "tokenDefault": "{{token}} default",
     "tokenFoundIn": "This token was found in"
+  },
+  "serviceConnectButton": {
+    "guideAutoLaunch": "This connection will launch when connected because the \"Auto Launch\" configuration toggle is on.",
+    "guideBodyBrowser": "Create a connection to this service with the connect button.",
+    "guideBodyDesktop": "Start listening on this endpoint for network requests. On request, automatically create the connection and disconnect when idle.",
+    "guideTitleBrowser": "Starting a connection",
+    "guideTitleDesktop": "Connect on demand"
   },
   "serviceDefaultsPage": {
     "defaults": "Defaults",
@@ -2148,6 +2167,12 @@
   "upgradeBanner": {
     "accessPremium": "Access premium features & support",
     "upgradePlan": "Upgrade Plan"
+  },
+  "usersTab": {
+    "guideBodyAfter": ".",
+    "guideBodyBefore": "Sharing can be done directly to a guest user from here, or by adding members to your",
+    "guideOrganization": "Organization",
+    "guideTitle": "The power of sharing"
   },
   "viewAsBanner": {
     "exit": "Exit view-as mode",
