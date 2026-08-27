@@ -5,7 +5,7 @@ import { Box } from '@mui/material'
 import { Dispatch } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { useChatPopoutSync } from '../../hooks/useChatSync'
-import { ChatHeader, NewChatButton, HistoryButton } from './ChatHeader'
+import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
 
 /* Full-page chat for the popped-out window (?chatPopout boot flag). Display
@@ -29,7 +29,6 @@ export const ChatWindow: React.FC = () => {
       }}
     >
       <ChatHeader>
-        <HistoryButton />
         <NewChatButton />
         <IconButton
           icon="down-left-and-up-right-to-center"

@@ -9,7 +9,7 @@ import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
 import { PanelHandle } from '../PanelHandle'
 import { IconButton } from '../../buttons/IconButton'
-import { ChatHeader, NewChatButton, HistoryButton } from './ChatHeader'
+import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
 import browser from '../../services/browser'
 
@@ -109,7 +109,6 @@ export const ChatPanel: React.FC = () => {
             onClick={() => dispatch.chat.popOut()}
           />
         )}
-        <HistoryButton />
         <NewChatButton />
         <IconButton icon="times" title={t('chat.close', 'Close')} onClick={() => dispatch.chat.set({ open: false })} />
       </ChatHeader>
