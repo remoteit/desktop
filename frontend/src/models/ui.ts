@@ -20,6 +20,7 @@ const SAVED_ACROSS_LOGOUT = [
   'panelWidth',
   'poppedBubbles',
   'expireBubbles',
+  'guidesResetDate',
   'themeMode',
   'language',
   'accordion',
@@ -103,6 +104,10 @@ export type UIState = {
    *  value from when this was a permanent flag; GuideBubble reads it as a dismissal
    *  dated to the release that changed this. */
   expireBubbles: number | boolean
+  /** WHEN the user last chose "Reset interactive guides". The cohort gate uses
+   *  max(account created, this) — so an explicit reset re-onboards even accounts
+   *  that predate the guides, while guides cohort-dated after the reset stay gated. */
+  guidesResetDate?: number
   confirm?: { id: string; callback: () => void }
   accordion: ILookup<boolean>
   autoConnect: boolean
@@ -204,6 +209,7 @@ export const defaultState: UIState = {
   },
   poppedBubbles: [],
   expireBubbles: false,
+  guidesResetDate: undefined,
   accordion: { config: false, configConnected: false, options: false, service: false, networks: false, logs: false },
   confirm: undefined,
   autoConnect: false,
@@ -310,6 +316,9 @@ export default createModel<RootModel>()({
         guides: { ...defaultState.guides },
         poppedBubbles: [...defaultState.poppedBubbles],
         expireBubbles: false,
+        // An explicit reset treats the account as new from this moment, so even
+        // accounts that predate the guides get onboarded again
+        guidesResetDate: Date.now(),
       })
     },
     async accordion(params: ILookup<boolean>, state) {
@@ -392,7 +401,8 @@ export function selectPriorityGuide(state: State, guide: string, startDate: Date
     const g = all[key]
     if (g.active && g.weight < result.weight) active = false
   }
-  if (state.user.created < startDate) active = false
+  const cohortAnchor = Math.max(state.user.created.getTime(), state.ui.guidesResetDate || 0)
+  if (cohortAnchor < startDate.getTime()) active = false
   return { ...result, active }
 }
 

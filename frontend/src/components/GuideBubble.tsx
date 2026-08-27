@@ -54,9 +54,12 @@ export const GuideBubble: React.FC<Props> = ({
   children,
 }) => {
   const { ui } = useDispatch<Dispatch>()
-  const cohortExpired = useSelector(
-    (state: State) => startDate > state.user.created && !state.ui.testUI
-  )
+  const cohortExpired = useSelector((state: State) => {
+    // An explicit "Reset interactive guides" re-anchors the cohort to the reset
+    // moment, so even accounts that predate the guides get onboarded again
+    const cohortAnchor = Math.max(state.user.created.getTime(), state.ui.guidesResetDate || 0)
+    return startDate.getTime() > cohortAnchor && !state.ui.testUI
+  })
   const dismissed = useSelector((state: State) => dismissedAt(state.ui.expireBubbles))
   // Dismissed only counts against bubbles that already existed when it happened
   const expired = cohortExpired || (dismissed !== undefined && added.getTime() <= dismissed)
