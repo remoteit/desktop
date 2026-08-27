@@ -1,8 +1,10 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Box, Chip, Typography } from '@mui/material'
-import { Dispatch } from '../../store'
+import { Dispatch, State } from '../../store'
+import { resolveChatOrg } from '../../models/chat'
+import { getDeviceModelFn } from '../../selectors/devices'
 import { Icon } from '../Icon'
 
 /* Empty-state introduction: shown before the first message so the panel reads as a chat,
@@ -13,11 +15,31 @@ export const ChatIntro: React.FC = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
 
-  const prompts = [
-    t('chat.prompt1', 'Which of my devices are offline?'),
-    t('chat.prompt2', 'Show my recent connections'),
-    t('chat.prompt3', 'Restart a service on one of my devices'),
-  ]
+  /* An account with nothing in it makes every stock prompt a dead end — "which of my
+     devices are offline?" answers "none", which is a poor first impression of a feature
+     someone is trying for the first time. Swap in prompts the agent can answer from
+     knowledge rather than from data they do not have yet.
+
+     Scoped to the org the CHAT is pointed at, not the active account: those differ, and
+     an account whose own device list is empty may still see plenty through a membership.
+     Gated on `initialized` so an unloaded list never masquerades as an empty one. */
+  const chatOrg = useSelector(resolveChatOrg, (a, b) => a?.id === b?.id)
+  const userId = useSelector((state: State) => state.user.id)
+  const accountId = chatOrg?.id || userId
+  const deviceModel = useSelector((state: State) => getDeviceModelFn(state.devices, accountId, accountId))
+  const gettingStarted = deviceModel.initialized && !deviceModel.total
+
+  const prompts = gettingStarted
+    ? [
+        t('chat.newPrompt1', 'How do I add my first device?'),
+        t('chat.newPrompt2', 'Try it out with the demo device'),
+        t('chat.newPrompt3', 'How do I reach a Raspberry Pi without port forwarding?'),
+      ]
+    : [
+        t('chat.prompt1', 'Which of my devices are offline?'),
+        t('chat.prompt2', 'Show my recent connections'),
+        t('chat.prompt3', 'Restart a service on one of my devices'),
+      ]
 
   return (
     <Box sx={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingX: 2.5 }}>
