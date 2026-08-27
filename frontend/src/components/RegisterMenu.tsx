@@ -54,14 +54,12 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
         {...props}
         sx={{ borderRadius: '50%', width: buttonSize, height: buttonSize }}
         title={
-          unauthorized ? (
-            <>
-              Register permission required to <br />
-              add a device to this organization.
-            </>
-          ) : (
-            'Add device'
-          )
+          unauthorized
+            ? t(
+                'registerMenu.managePermissionRequired',
+                'Manage permission required to add a device to this organization.'
+              )
+            : t('registerMenu.addDevice', 'Add device')
         }
         to="/add"
         forceTitle

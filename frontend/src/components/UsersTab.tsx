@@ -61,16 +61,16 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
         </ListItemIcon>
         <ListItemText
           sx={{ color: connected ? 'primary.main' : undefined }}
-          primary="Access"
+          primary={t('usersTab.access', 'Access')}
           secondary={
             !!total &&
             size === 'large' && (
               <>
-                {total ? total + ' total' : ''}
+                {total ? t('usersTab.totalCount', { count: total, defaultValue: '{{count}} total' }) : ''}
                 <br />
                 {!!connected && (
                   <Box component="span" sx={{ color: 'primary.main' }}>
-                    {connected} connected
+                    {t('usersTab.connectedCount', { count: connected, defaultValue: '{{count}} connected' })}
                   </Box>
                 )}
               </>

@@ -82,7 +82,8 @@
   },
   "addServiceButton": {
     "guideBody": "Dieses Gerät kann dynamisch eingerichtet werden, um neue Dienste zu hosten.",
-    "guideTitle": "Dienst (Anwendung) hinzufügen"
+    "guideTitle": "Dienst (Anwendung) hinzufügen",
+    "title": "Dienst hinzufügen"
   },
   "agentReachEditor": {
     "addTagPlaceholder": "Tag hinzufügen...",
@@ -102,7 +103,10 @@
   },
   "androidSetup": {
     "guideBody": "Sie können Ihr Android-Gerät einrichten oder den einfachen Anweisungen folgen, um eine der gängigen Plattformen einzurichten.",
-    "guideTitle": "Gerät auswählen"
+    "guideTitle": "Gerät auswählen",
+    "thisDevice": "Dieses Gerät",
+    "thisDeviceDescription": "Dieses Gerät und das lokale Netzwerk steuern oder darauf zugreifen",
+    "thisSystem": "Dieses System"
   },
   "announcementCard": {
     "learnMore": "Mehr erfahren",
@@ -1698,11 +1702,13 @@
     "scripts": "Skripte aktualisieren"
   },
   "registerMenu": {
+    "addDevice": "Gerät hinzufügen",
     "guideDevices": "Geräte",
     "guideInstallAgent": "Der erste Schritt besteht darin, unseren Agenten auf jedem Gerät zu installieren, mit dem Sie sich verbinden möchten.",
     "guideRegistersAfter": "angezeigt.",
     "guideRegistersBefore": "Ihr Gerät wird automatisch registriert und auf der Seite",
-    "guideTitle": "Gerät hinzufügen"
+    "guideTitle": "Gerät hinzufügen",
+    "managePermissionRequired": "Zum Hinzufügen eines Geräts zu dieser Organisation ist die Berechtigung „Verwalten“ erforderlich."
   },
   "rentANodeForm": {
     "addDns": "Öffentliche DNS-Adresse hinzufügen",
@@ -2169,10 +2175,15 @@
     "upgradePlan": "Plan upgraden"
   },
   "usersTab": {
+    "access": "Zugriff",
+    "connectedCount_one": "{{count}} verbunden",
+    "connectedCount_other": "{{count}} verbunden",
     "guideBodyAfter": ".",
     "guideBodyBefore": "Die Freigabe kann direkt an einen Gastbenutzer erfolgen oder durch Hinzufügen von Mitgliedern zu Ihrer",
     "guideOrganization": "Organisation",
-    "guideTitle": "Die Stärke der Freigabe"
+    "guideTitle": "Die Stärke der Freigabe",
+    "totalCount_one": "{{count}} gesamt",
+    "totalCount_other": "{{count}} gesamt"
   },
   "viewAsBanner": {
     "exit": "Ansichtsmodus verlassen",

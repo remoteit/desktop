@@ -82,7 +82,8 @@
   },
   "addServiceButton": {
     "guideBody": "Este dispositivo se puede configurar dinámicamente para alojar nuevos servicios.",
-    "guideTitle": "Añadir un servicio (aplicación)"
+    "guideTitle": "Añadir un servicio (aplicación)",
+    "title": "Añadir servicio"
   },
   "agentReachEditor": {
     "addTagPlaceholder": "Agregar etiqueta...",
@@ -104,7 +105,10 @@
   },
   "androidSetup": {
     "guideBody": "Puedes configurar tu dispositivo Android o seguir las sencillas instrucciones para configurar una de las plataformas más utilizadas.",
-    "guideTitle": "Selecciona un dispositivo"
+    "guideTitle": "Selecciona un dispositivo",
+    "thisDevice": "Este dispositivo",
+    "thisDeviceDescription": "Controla o accede a este dispositivo y a la red local",
+    "thisSystem": "Este sistema"
   },
   "announcementCard": {
     "learnMore": "Más información",
@@ -1720,11 +1724,13 @@
     "scripts": "Actualizar scripts"
   },
   "registerMenu": {
+    "addDevice": "Agregar dispositivo",
     "guideDevices": "dispositivos",
     "guideInstallAgent": "El primer paso es instalar nuestro agente en cualquier dispositivo al que quieras conectarte.",
     "guideRegistersAfter": "de la aplicación.",
     "guideRegistersBefore": "Tu dispositivo se registrará automáticamente y aparecerá en la página",
-    "guideTitle": "Añadir un dispositivo"
+    "guideTitle": "Añadir un dispositivo",
+    "managePermissionRequired": "Se requiere el permiso \"Gestionar\" para agregar un dispositivo a esta organización."
   },
   "rentANodeForm": {
     "addDns": "Añadir una dirección DNS pública",
@@ -2205,10 +2211,17 @@
     "upgradePlan": "Mejorar plan"
   },
   "usersTab": {
+    "access": "Acceso",
+    "connectedCount_one": "{{count}} conectado",
+    "connectedCount_many": "{{count}} conectados",
+    "connectedCount_other": "{{count}} conectados",
     "guideBodyAfter": ".",
     "guideBodyBefore": "Puedes compartir directamente con un usuario invitado desde aquí, o añadiendo miembros a tu",
     "guideOrganization": "Organización",
-    "guideTitle": "El poder de compartir"
+    "guideTitle": "El poder de compartir",
+    "totalCount_one": "{{count}} en total",
+    "totalCount_many": "{{count}} en total",
+    "totalCount_other": "{{count}} en total"
   },
   "viewAsBanner": {
     "exit": "Salir del modo de vista como",

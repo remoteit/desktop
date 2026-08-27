@@ -23,7 +23,7 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
   return (
     <MobileUI android>
       <List className={className} dense disablePadding>
-        <ListSubheader disableGutters>This system</ListSubheader>
+        <ListSubheader disableGutters>{t('androidSetup.thisSystem', 'This system')}</ListSubheader>
         <GuideBubble
           enterDelay={400}
           guide="registerMenu"
@@ -48,7 +48,10 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
             <ListItemIcon>
               <Icon name="android" fixedWidth platformIcon size="xxl" />
             </ListItemIcon>
-            <ListItemText primary="This device" secondary="Control or access this device and local network" />
+            <ListItemText
+              primary={t('androidSetup.thisDevice', 'This device')}
+              secondary={t('androidSetup.thisDeviceDescription', 'Control or access this device and local network')}
+            />
           </ListItemButton>
         </GuideBubble>
       </List>

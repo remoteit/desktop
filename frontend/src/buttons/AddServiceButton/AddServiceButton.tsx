@@ -34,7 +34,12 @@ export const AddServiceButton: React.FC<Props> = ({ device, editable, link }) =>
         </>
       }
     >
-      <IconButton icon="plus" size="md" title="Add Service" onClick={() => history.push(link)} />
+      <IconButton
+        icon="plus"
+        size="md"
+        title={t('addServiceButton.title', 'Add Service')}
+        onClick={() => history.push(link)}
+      />
     </GuideBubble>
   )
 }

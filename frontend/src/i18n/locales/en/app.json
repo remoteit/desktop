@@ -2,7 +2,7 @@
   "accessAccordion": {
     "addAccess": "Add access",
     "guests": "Guests",
-    "noUsers": "No\u00a0users",
+    "noUsers": "No users",
     "organizationMembers": "Organization members",
     "subtitle": "Access"
   },
@@ -51,7 +51,7 @@
   },
   "addFromNetwork": {
     "scanForServices": "Scan for Services",
-    "scanNetwork": "Scan\u00a0network"
+    "scanNetwork": "Scan network"
   },
   "addPage": {
     "addDevice": "Add a device",
@@ -61,7 +61,7 @@
     "demoDevice": "Demo device",
     "products": "Products",
     "provisionInBulk": "Provision in bulk",
-    "title": "What do you want to connect\u00a0to?",
+    "title": "What do you want to connect to?",
     "tryDevice": "Try a device"
   },
   "addPlatformServices": {
@@ -82,7 +82,8 @@
   },
   "addServiceButton": {
     "guideBody": "This device can be dynamically set up to host new services.",
-    "guideTitle": "Add a service (application)"
+    "guideTitle": "Add a service (application)",
+    "title": "Add Service"
   },
   "agentReachEditor": {
     "addTagPlaceholder": "Add tag...",
@@ -102,7 +103,10 @@
   },
   "androidSetup": {
     "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
-    "guideTitle": "Select a device"
+    "guideTitle": "Select a device",
+    "thisDevice": "This device",
+    "thisDeviceDescription": "Control or access this device and local network",
+    "thisSystem": "This system"
   },
   "announcementCard": {
     "learnMore": "Learn more",
@@ -1676,7 +1680,7 @@
     "downloadDescription": "Download our disk image for easy, headless setup with Bluetooth WiFi onboarding.",
     "downloadQuestion": "New to Pi?",
     "downloadTitle": "Download Pi Image",
-    "heading": "Set Up Your Raspberry Pi for\u00a0Remote\u00a0Access",
+    "heading": "Set Up Your Raspberry Pi for Remote Access",
     "onboardDescription": "Set up WiFi via Bluetooth and register your device for remote access.",
     "onboardQuestion": "Have our custom Pi image?",
     "onboardTitle": "Onboard via Bluetooth"
@@ -1698,11 +1702,13 @@
     "scripts": "Refresh scripts"
   },
   "registerMenu": {
+    "addDevice": "Add device",
     "guideDevices": "devices",
     "guideInstallAgent": "First step is to install our agent on any device you would like to connect to.",
     "guideRegistersAfter": "page.",
     "guideRegistersBefore": "Your device will automatically register and appear on the",
-    "guideTitle": "Add a device"
+    "guideTitle": "Add a device",
+    "managePermissionRequired": "Manage permission required to add a device to this organization."
   },
   "rentANodeForm": {
     "addDns": "Add a public DNS address",
@@ -2169,10 +2175,15 @@
     "upgradePlan": "Upgrade Plan"
   },
   "usersTab": {
+    "access": "Access",
+    "connectedCount_one": "{{count}} connected",
+    "connectedCount_other": "{{count}} connected",
     "guideBodyAfter": ".",
     "guideBodyBefore": "Sharing can be done directly to a guest user from here, or by adding members to your",
     "guideOrganization": "Organization",
-    "guideTitle": "The power of sharing"
+    "guideTitle": "The power of sharing",
+    "totalCount_one": "{{count}} total",
+    "totalCount_other": "{{count}} total"
   },
   "viewAsBanner": {
     "exit": "Exit view-as mode",

@@ -82,7 +82,8 @@
   },
   "addServiceButton": {
     "guideBody": "このデバイスは、新しいサービスをホストするように動的にセットアップできます。",
-    "guideTitle": "サービス(アプリケーション)を追加"
+    "guideTitle": "サービス(アプリケーション)を追加",
+    "title": "サービスを追加"
   },
   "agentReachEditor": {
     "addTagPlaceholder": "タグを追加...",
@@ -100,7 +101,10 @@
   },
   "androidSetup": {
     "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
-    "guideTitle": "デバイスを選択"
+    "guideTitle": "デバイスを選択",
+    "thisDevice": "このデバイス",
+    "thisDeviceDescription": "このデバイスとローカルネットワークを制御またはアクセスします",
+    "thisSystem": "このシステム"
   },
   "announcementCard": {
     "learnMore": "詳細を見る",
@@ -1676,11 +1680,13 @@
     "scripts": "スクリプトを更新"
   },
   "registerMenu": {
+    "addDevice": "デバイスを追加",
     "guideDevices": "デバイス",
     "guideInstallAgent": "まず、接続したいデバイスに当社のエージェントをインストールします。",
     "guideRegistersAfter": "ページに表示されます。",
     "guideRegistersBefore": "デバイスは自動的に登録され、",
-    "guideTitle": "デバイスを追加"
+    "guideTitle": "デバイスを追加",
+    "managePermissionRequired": "この組織にデバイスを追加するには「管理」権限が必要です。"
   },
   "rentANodeForm": {
     "addDns": "公開DNSアドレスを追加",
@@ -2133,10 +2139,13 @@
     "upgradePlan": "プランをアップグレード"
   },
   "usersTab": {
+    "access": "アクセス",
+    "connectedCount_other": "接続中 {{count}} 件",
     "guideBodyAfter": "にメンバーを追加することでも共有できます。",
     "guideBodyBefore": "ここからゲストユーザーに直接共有することも、",
     "guideOrganization": "組織",
-    "guideTitle": "共有の力"
+    "guideTitle": "共有の力",
+    "totalCount_other": "合計 {{count}} 件"
   },
   "viewAsBanner": {
     "exit": "表示モードを終了",
