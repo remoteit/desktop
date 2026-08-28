@@ -4,6 +4,20 @@ import { useSelector, useDispatch } from 'react-redux'
 import { store, State, Dispatch } from '../store'
 import { toChatHandoff } from '../models/chat'
 import { initChatPopoutMain, initChatPopoutWindow, checkPopoutPresence, PopoutMainHandlers } from '../services/chatPopout'
+import network from '../services/Network'
+
+/* Re-probe the agent when the app's own detector says connectivity is back — the same
+   'connect' event Heartbeat, CloudSync and Controller reconnect on. Without it an
+   outage sticks until the panel is reopened, and the panel is left implying the user
+   should go check their own connection. */
+const useAgentHealthOnReconnect = (check: () => void): void => {
+  useEffect(() => {
+    network.on('connect', check)
+    return () => {
+      network.off('connect', check)
+    }
+  }, [])
+}
 
 const currentHandoff = () => toChatHandoff(store.getState().chat)
 
@@ -57,6 +71,8 @@ export const useChatMainSync = (): void => {
     if (open) dispatch.chat.checkHealth()
   }, [open])
 
+  useAgentHealthOnReconnect(() => dispatch.chat.checkHealth())
+
   // The chat follows the app's active org from the sidebar selector
   useEffect(() => {
     dispatch.chat.syncOrg()
@@ -93,4 +109,7 @@ export const useChatPopoutSync = (): void => {
     })
     return unsubscribe
   }, [])
+
+  // The popout is its own app instance, so it has its own Network to listen to
+  useAgentHealthOnReconnect(() => dispatch.chat.checkHealth())
 }

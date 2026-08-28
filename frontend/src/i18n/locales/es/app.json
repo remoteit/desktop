@@ -228,7 +228,7 @@
     "toolsUsed_one": "{{count}} herramienta utilizada",
     "toolsUsed_many": "{{count}} de herramientas utilizadas",
     "toolsUsed_other": "{{count}} herramientas utilizadas",
-    "unavailable": "Mycal no está disponible temporalmente. Compruebe su conexión a internet o inténtelo de nuevo en unos minutos.",
+    "unavailable": "Remote.It AI no está disponible temporalmente. Inténtelo de nuevo en unos minutos.",
     "untitled": "Nueva conversación",
     "usage": "Uso",
     "usageResets": "Se restablece {{when}}",

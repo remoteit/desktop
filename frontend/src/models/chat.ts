@@ -294,7 +294,13 @@ export default createModel<RootModel>()({
       await dispatch.chat.stop()
       closePopoutWithHandback(toChatHandoff(store.getState().chat))
     },
-    async checkHealth() {
+    async checkHealth(_: void, state) {
+      /* Connectivity is the app's to detect and report — services/Network owns the
+         online/offline events and raises the global notice. The same guard get.ts and
+         post.ts use: probing while the app knows it is offline would relabel a network
+         outage as an agent outage, and the panel would say so on top of the global
+         message. Network's `connect` event re-runs this (see useChatSync). */
+      if (state.ui.offline) return
       dispatch.chat.set({ health: await agentHealth() })
     },
     /* The server owns the transcript now (D11) — adopt its copy when it knows more than

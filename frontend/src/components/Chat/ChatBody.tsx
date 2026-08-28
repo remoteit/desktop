@@ -26,10 +26,12 @@ export const ChatBody: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const signedOut = health === 'unauthorized'
   const unreachable = health === 'unreachable'
-  // Literal default: the i18next parser can't extract a value passed as a variable
+  // Literal default: the i18next parser can't extract a value passed as a variable.
+  // Says only what a failed agent probe proves — diagnosing the connection is
+  // services/Network's job, and it raises its own notice.
   const unavailableMessage = t(
     'chat.unavailable',
-    'Remote.It AI is temporarily unavailable. Check your internet connection or try again in a few minutes.'
+    'Remote.It AI is temporarily unavailable. Try again in a few minutes.'
   )
 
   // "Working" indicator: a turn is in flight but nothing else is moving — before the first

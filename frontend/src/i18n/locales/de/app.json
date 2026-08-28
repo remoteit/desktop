@@ -224,7 +224,7 @@
     "toolRequest": "Der Agent möchte <tool>{{tool}}</tool> ausführen",
     "toolsUsed_one": "{{count}} Tool verwendet",
     "toolsUsed_other": "{{count}} Tools verwendet",
-    "unavailable": "Mycal ist vorübergehend nicht verfügbar. Überprüfen Sie Ihre Internetverbindung oder versuchen Sie es in einigen Minuten erneut.",
+    "unavailable": "Remote.It AI ist vorübergehend nicht verfügbar. Versuchen Sie es in einigen Minuten erneut.",
     "untitled": "Neue Unterhaltung",
     "usage": "Nutzung",
     "usageResets": "Zurücksetzung {{when}}",

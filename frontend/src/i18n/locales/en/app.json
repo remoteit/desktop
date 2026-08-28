@@ -231,7 +231,7 @@
     "toolRequest": "The agent wants to run <tool>{{tool}}</tool>",
     "toolsUsed_one": "Used {{count}} tool",
     "toolsUsed_other": "Used {{count}} tools",
-    "unavailable": "Remote.It AI is temporarily unavailable. Check your internet connection or try again in a few minutes.",
+    "unavailable": "Remote.It AI is temporarily unavailable. Try again in a few minutes.",
     "waitingApproval": "Waiting for approval…",
     "windowTitle": "remote.it chat"
   },
