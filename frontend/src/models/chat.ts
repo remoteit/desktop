@@ -44,7 +44,6 @@ export type ChatTranscriptMessage =
 export type IChatState = {
   open: boolean
   /** Maximized over the content area (the left nav stays); toggled by the header expand button */
-  expanded: boolean
   /** Docked column width in px — drag-resized, persisted */
   width: number
   messages: ChatTranscriptMessage[]
@@ -67,7 +66,6 @@ export type IChatState = {
 
 export const defaultChatState: IChatState = {
   open: true,
-  expanded: false,
   width: CHAT_PANEL_WIDTH,
   messages: [],
   conversationId: '',
@@ -123,7 +121,8 @@ function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
       // pointless until the token is refreshed (e.g. it expired mid-turn).
       if (event.message.startsWith('reauth_required')) {
         state.error = i18n.t('notices:chat.sessionExpired', {
-          defaultValue: 'The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.',
+          defaultValue:
+            'The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.',
         })
         state.health = 'unauthorized'
       } else {
@@ -162,7 +161,9 @@ export const toChatHandoff = (chat: IChatState): ChatHandoff => ({
 })
 
 const authRequiredError = () =>
-  i18n.t('notices:chat.authRequired', { defaultValue: 'The agent refused this session\u2019s credentials — refresh permissions to continue.' })
+  i18n.t('notices:chat.authRequired', {
+    defaultValue: 'The agent refused this session\u2019s credentials — refresh permissions to continue.',
+  })
 
 /* A short, human reset time: a time-of-day within a day, else weekday + time. */
 export const formatReset = (iso: string | null): string => {
@@ -176,7 +177,9 @@ export const formatReset = (iso: string | null): string => {
 
 const usageLimitMessage = (e: UsageLimitError): string => {
   const when = formatReset(e.resetsAt)
-  return when ? i18n.t('notices:chat.usageReset', { defaultValue: '{{msg}} Resets {{when}}.', msg: e.message, when }) : e.message
+  return when
+    ? i18n.t('notices:chat.usageReset', { defaultValue: '{{msg}} Resets {{when}}.', msg: e.message, when })
+    : e.message
 }
 
 let abortController: AbortController | null = null
@@ -235,7 +238,8 @@ export default createModel<RootModel>()({
       } catch (error) {
         flushDeltas()
         if (error instanceof AgentAuthError) dispatch.chat.set({ error: authRequiredError(), health: 'unauthorized' })
-        else if (error instanceof UsageLimitError) dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
+        else if (error instanceof UsageLimitError)
+          dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
         else if ((error as Error).name !== 'AbortError')
           dispatch.chat.applyEvent({ type: 'error', message: (error as Error).message })
       } finally {
@@ -315,7 +319,7 @@ export default createModel<RootModel>()({
             messages: remote.messages.map(m =>
               m.role === 'assistant'
                 ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
-                : { role: 'user' as const, text: m.content },
+                : { role: 'user' as const, text: m.content }
             ),
           })
         }
@@ -377,7 +381,7 @@ export default createModel<RootModel>()({
         messages: remote.messages.map(m =>
           m.role === 'assistant'
             ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
-            : { role: 'user' as const, text: m.content },
+            : { role: 'user' as const, text: m.content }
         ),
       })
     },

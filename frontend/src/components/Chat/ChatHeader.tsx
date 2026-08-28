@@ -1,7 +1,15 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
-import { Box, Menu, MenuItem, ListItemText, ListSubheader, Typography, IconButton as MuiIconButton } from '@mui/material'
+import {
+  Box,
+  Menu,
+  MenuItem,
+  ListItemText,
+  ListSubheader,
+  Typography,
+  IconButton as MuiIconButton,
+} from '@mui/material'
 import { Dispatch, State } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { Icon } from '../Icon'
@@ -13,21 +21,16 @@ import { isChatPopout } from '../../services/chatPopout'
 import { ConversationSummary } from '../../services/agent'
 import { CHAT_GUIDE_DATE } from '../../constants'
 
-/* Control row shared by the docked panel and the popout window — `leading` takes the
-   panel-chrome control (expand/collapse) at the far left, then the conversation's name,
-   which doubles as the history picker; window-specific actions render as children on the
-   right in each caller's order. The row mirrors the app Header's box exactly — same
+/* Control row shared by the docked panel and the popout window — the conversation's
+   name sits at the left and doubles as the history picker; window-specific actions
+   render as children on the right in each caller's order. The row mirrors the app Header's box exactly — same
    height, same top margin, centered — so the two icon rows share a baseline across the
    divider. The name is the only thing allowed to shrink: it takes the slack and yields
    it back, so the action icons never compress. */
-export const ChatHeader: React.FC<{ leading?: React.ReactNode; children?: React.ReactNode }> = ({
-  leading,
-  children,
-}) => {
+export const ChatHeader: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation()
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', height: 45, maxHeight: 45, paddingX: 2.5, marginTop: 1.5 }}>
-      {leading}
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', alignItems: 'center', marginLeft: 0.25 }}>
         {/* Step 3. The wrapper sx keeps the shrink chain intact — without minWidth: 0 the
             inserted div would refuse to shrink and the name would stop truncating. */}

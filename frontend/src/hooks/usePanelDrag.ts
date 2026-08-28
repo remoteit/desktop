@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import { useViewportWidth } from './useViewportWidth'
 
 interface UsePanelDragOptions {
   panelRef: React.RefObject<HTMLDivElement>
@@ -35,6 +36,7 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
   const handleRef = useRef<number>(initialWidth)
   const moveRef = useRef<number>(0)
   const [width, setWidth] = useState<number>(initialWidth)
+  const viewportWidth = useViewportWidth()
   const [grab, setGrab] = useState<boolean>(false)
 
   const measure = useCallback(() => {
@@ -51,7 +53,10 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
       // CLAMP the accumulator rather than ignoring out-of-range values: letting
       // it run past the limit meant a drag beyond the edge had to retrace the
       // whole overshoot before the panel moved again, which reads as sticking.
-      handleRef.current = Math.min(Math.max(handleRef.current + (anchor === 'right' ? -delta : delta), minWidth), maxWidth)
+      handleRef.current = Math.min(
+        Math.max(handleRef.current + (anchor === 'right' ? -delta : delta), minWidth),
+        maxWidth
+      )
       setWidth(handleRef.current)
       onChange?.(handleRef.current)
     },
@@ -83,11 +88,11 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
     setWidth(initialWidth)
   }, [initialWidth])
 
+  // Re-clamp when the layout shifts or the window resizes — the shared viewport width
+  // is the resize signal, already coalesced to a frame and silent when nothing moved
   useEffect(() => {
     measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [layoutDep])
+  }, [layoutDep, viewportWidth])
 
   return { width, grab, onDown }
 }

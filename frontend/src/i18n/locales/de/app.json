@@ -289,12 +289,10 @@
   "chat": {
     "approve": "Genehmigen",
     "close": "Schließen",
-    "collapse": "Verkleinern",
     "deleteConfirmAction": "Löschen",
     "deleteConfirmTitle": "Diese Unterhaltung löschen?",
     "deleteConversation": "Löschen",
     "deny": "Ablehnen",
-    "expand": "Vergrößern",
     "guideAgentBody": "Fragen Sie nach Ihren Geräten, Verbindungen und Diensten — oder lassen Sie Änderungen vornehmen. Hier können Sie den Assistenten jederzeit öffnen und schließen.",
     "guideAgentTitle": "Das ist Remote.It AI",
     "guideComposeBody": "Stellen Sie eine Frage oder sagen Sie, was geändert werden soll. Alles, was Ihr Konto verändert, wartet zuerst auf Ihre Zustimmung.",

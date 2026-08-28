@@ -19,14 +19,7 @@ import { SidebarMenu } from './SidebarMenu'
 import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
-import {
-  useChatEnabled,
-  useChatDocked,
-  useChatWidth,
-  useSidebarWidth,
-  useEffectiveWidth,
-  useHideSidebar,
-} from '../hooks/useChatEnabled'
+import { useChatEnabled, useSidebarWidth, useEffectiveWidth, useHideSidebar } from '../hooks/useChatEnabled'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
@@ -56,8 +49,6 @@ export const App: React.FC = () => {
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const chatEnabled = useChatEnabled()
-  const chatDocked = useChatDocked()
-  const chatWidth = useChatWidth()
   const sidebarWidth = useSidebarWidth()
   const reseller = useSelector(selectResellerRef)
   const dispatch = useDispatch<Dispatch>()
@@ -69,10 +60,11 @@ export const App: React.FC = () => {
   const singlePanel = effectiveWidth <= HIDE_TWO_PANEL_WIDTH
   const triplePanel = effectiveWidth >= SHOW_TRIPLE_PANEL_WIDTH
   const mobile = effectiveWidth <= MOBILE_WIDTH
-  // The docked chat column reserves layout space the same way the sidebar
-  // does; useChatDocked only docks when the panels still fit beside it —
-  // otherwise the chat renders as an overlay and reserves nothing
-  const sidePanelWidth = sidebarWidth + (chatDocked ? chatWidth : 0)
+  /* Chrome the content panels have to share their row with. The chat is NOT in that
+     row — it is a column beside the whole app side — so it must not be counted here:
+     the panels' own parent already excludes it, and adding it back subtracted the chat
+     twice, which drove their max width below their minimum and froze the drag. */
+  const sidePanelWidth = sidebarWidth
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
   const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
   const needsUserHydration = authenticated && !user

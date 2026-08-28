@@ -24,7 +24,6 @@ const INSET = 1
 export const ChatPanel: React.FC = () => {
   const { t } = useTranslation()
   const open = useSelector((state: State) => state.chat.open)
-  const expanded = useSelector((state: State) => state.chat.expanded)
   const insets = useSelector((state: State) => state.ui.layout.insets)
   const layout = useSelector((state: State) => state.ui.layout)
   const docked = useChatDocked()
@@ -61,10 +60,10 @@ export const ChatPanel: React.FC = () => {
         display: 'flex',
         flexFlow: 'column',
         flexShrink: 0,
-        // Docked column beside the panels when it fits; otherwise an overlay
-        // over the CONTENT area — expanded (maximized) or on a small window.
-        // The overlay's left edge stops at the sidebar chrome so it never
-        // covers the left nav; when the sidebar is hidden it spans the window
+        // Docked column beside the panels when it fits, otherwise an overlay over the
+        // CONTENT area — a phone, or a window too narrow to hold both. The overlay's
+        // left edge stops at the sidebar chrome so it never covers the left nav; when
+        // the sidebar is hidden it spans the window
         ...(docked
           ? {
               position: 'relative',
@@ -108,19 +107,7 @@ export const ChatPanel: React.FC = () => {
       ref={panelRef}
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
-      <ChatHeader
-        leading={
-          (docked || expanded) && (
-            <IconButton
-              // Direction of travel for a right-docked column: left-to-line grows it
-              // across the content, right-from-line sends it back to its column
-              icon={expanded ? 'arrow-right-from-line' : 'arrow-left-to-line'}
-              title={expanded ? t('chat.collapse', 'Collapse') : t('chat.expand', 'Expand')}
-              onClick={() => dispatch.chat.set({ expanded: !expanded })}
-            />
-          )
-        }
-      >
+      <ChatHeader>
         {!browser.isMobile && !layout.mobile && (
           <IconButton
             icon="arrow-up-right-from-square"

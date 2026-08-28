@@ -289,11 +289,9 @@
   "chat": {
     "approve": "Approve",
     "close": "Close",
-    "collapse": "Collapse",
     "deleteConfirmAction": "Delete",
     "deleteConfirmTitle": "Delete this conversation?",
     "deny": "Deny",
-    "expand": "Expand",
     "guideAgentBody": "Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.",
     "guideAgentTitle": "Meet Remote.It AI",
     "guideComposeBody": "Type a question, or say what you want changed. Anything that alters your account pauses for your approval first.",

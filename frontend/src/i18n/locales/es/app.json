@@ -292,12 +292,10 @@
   "chat": {
     "approve": "Aprobar",
     "close": "Cerrar",
-    "collapse": "Contraer",
     "deleteConfirmAction": "Eliminar",
     "deleteConfirmTitle": "¿Eliminar esta conversación?",
     "deleteConversation": "Eliminar",
     "deny": "Denegar",
-    "expand": "Expandir",
     "guideAgentBody": "Pregunte por sus dispositivos, conexiones y servicios — o pídale que haga cambios. Puede abrirlo y cerrarlo aquí en cualquier momento.",
     "guideAgentTitle": "Le presentamos Remote.It AI",
     "guideComposeBody": "Escriba una pregunta o indique qué quiere cambiar. Todo lo que modifique su cuenta espera primero su aprobación.",

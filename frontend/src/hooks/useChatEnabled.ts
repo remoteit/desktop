@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import browser from '../services/browser'
+import { useViewportWidth } from './useViewportWidth'
 import {
   MODE,
   CHAT_ALWAYS_ON,
@@ -19,18 +19,6 @@ import {
 export const useChatEnabled = (): boolean => {
   const testUI = useSelector((state: State) => state.ui.testUI)
   return MODE === 'development' || CHAT_ALWAYS_ON || !!testUI
-}
-
-/* Viewport width, tracked for the chat column's fit math — the content
-   panels measure on the same event (see DoublePanel's resize listener) */
-const useViewportWidth = (): number => {
-  const [width, setWidth] = useState(() => window.innerWidth)
-  useEffect(() => {
-    const onResize = () => setWidth(window.innerWidth)
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-  return width
 }
 
 /* The widest the chat column may be dragged: whatever the window holds once the
@@ -58,8 +46,8 @@ export const useChatWidth = (): number => {
 /* Whether the open chat reserves layout width (docked) or covers the app as an
    overlay. Taking the whole screen is a PHONE behaviour, not a small-window one:
    a narrow desktop window keeps the column and lets the chat and the content share
-   what there is. Maximizing is the one way to get the overlay on a real screen.
-   The threshold is DERIVED — the window must hold the column at its minimum and the
+   what there is. On a real screen the chat is always a column — it is resized by
+   dragging its edge, not by a maximize toggle. The threshold is DERIVED — the window must hold the column at its minimum and the
    content at its minimum — rather than borrowed from the two-panel breakpoint, which
    is what used to un-dock the chat on windows as wide as 1150px. Deliberately
    independent of the chat's CURRENT width: gating docking on the width that docking
@@ -67,10 +55,9 @@ export const useChatWidth = (): number => {
 export const useChatDocked = (): boolean => {
   const enabled = useChatEnabled()
   const open = useSelector((state: State) => state.chat.open)
-  const expanded = useSelector((state: State) => state.chat.expanded)
   const viewport = useViewportWidth()
   const fits = viewport >= CHAT_PANEL_WIDTH_MIN + CHAT_MIN_CONTENT_WIDTH
-  return enabled && open && !expanded && !browser.isMobile && fits
+  return enabled && open && !browser.isMobile && fits
 }
 
 /* The width the app layout actually has left: the window minus the docked chat

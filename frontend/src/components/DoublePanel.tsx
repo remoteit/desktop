@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { getPanelWidthDefault, usePanelWidth } from '../hooks/usePanelWidth'
 import { usePanelDrag } from '../hooks/usePanelDrag'
+import { useViewportWidth } from '../hooks/useViewportWidth'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useLocation } from 'react-router-dom'
 import { Box } from '@mui/material'
@@ -23,18 +24,16 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
   const secondaryMinWidth = getPanelWidthDefault(routeKey, undefined, MIN_WIDTH)
   const primaryRef = useRef<HTMLDivElement>(null)
   const [parentWidth, setParentWidth] = useState<number | undefined>()
+  const viewportWidth = useViewportWidth()
 
   const sidePanelWidth = layout.sidePanelWidth + PADDING
 
-  const getMaxWidth = useCallback(
-    () => {
-      const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
-      // Never below the minimum: a max < min makes usePanelDrag oscillate and
-      // emit negative widths when reserved chrome exceeds the window
-      return Math.max(MIN_WIDTH, fullWidth - secondaryMinWidth - sidePanelWidth)
-    },
-    [secondaryMinWidth, sidePanelWidth]
-  )
+  const getMaxWidth = useCallback(() => {
+    const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
+    // Never below the minimum: a max < min makes usePanelDrag oscillate and
+    // emit negative widths when reserved chrome exceeds the window
+    return Math.max(MIN_WIDTH, fullWidth - secondaryMinWidth - sidePanelWidth)
+  }, [secondaryMinWidth, sidePanelWidth])
 
   const drag = usePanelDrag(panelWidth, {
     panelRef: primaryRef,
@@ -49,14 +48,11 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
     setParentWidth(parent)
   }, [sidePanelWidth])
 
+  // The shared viewport width stands in for a resize listener: it only changes when the
+  // window actually did, and at most once a frame
   useEffect(() => {
     measureParent()
-  }, [layout, drag.width, measureParent])
-
-  useEffect(() => {
-    window.addEventListener('resize', measureParent)
-    return () => window.removeEventListener('resize', measureParent)
-  }, [measureParent])
+  }, [layout, drag.width, viewportWidth, measureParent])
 
   const panelSx = {
     height: '100%',

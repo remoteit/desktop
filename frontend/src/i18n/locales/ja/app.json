@@ -286,12 +286,10 @@
   "chat": {
     "approve": "承認",
     "close": "閉じる",
-    "collapse": "縮小",
     "deleteConfirmAction": "削除",
     "deleteConfirmTitle": "この会話を削除しますか？",
     "deleteConversation": "削除",
     "deny": "拒否",
-    "expand": "拡大",
     "guideAgentBody": "デバイス、接続、サービスについて質問したり、変更を指示したりできます。ここからいつでも開閉できます。",
     "guideAgentTitle": "Remote.It AI のご紹介",
     "guideComposeBody": "質問を入力するか、変更したい内容を伝えてください。アカウントに変更を加える操作は、必ず承認を求めてから実行されます。",
