@@ -1,4 +1,5 @@
-import { REGEX_FIRST_PATH, MOBILE_WIDTH, CHAT_GUIDE_DATE } from '../../constants'
+import { REGEX_FIRST_PATH, CHAT_GUIDE_DATE } from '../../constants'
+import { useMobile } from '../../hooks/useMobile'
 import { useChatEnabled, useHideSidebar } from '../../hooks/useChatEnabled'
 import { GuideBubble } from '../GuideBubble'
 import React, { useState, useRef } from 'react'
@@ -7,7 +8,7 @@ import useNavigationUp from '../../hooks/useNavigationUp'
 import browser from '../../services/browser'
 import { State } from '../../store'
 import { Dispatch } from '../../store'
-import { useMediaQuery, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
 import { useLocation, Switch, Route } from 'react-router-dom'
@@ -40,7 +41,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const navigateUp = useNavigationUp(panels)
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const sidebarHidden = useHideSidebar()
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()

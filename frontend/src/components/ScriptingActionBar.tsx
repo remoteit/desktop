@@ -1,10 +1,10 @@
-import { Stack,Typography,useMediaQuery } from '@mui/material'
+import { Stack, Typography } from '@mui/material'
+import { useMobile } from '../hooks/useMobile'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch,useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { IconButton } from '../buttons/IconButton'
-import { MOBILE_WIDTH } from '../constants'
 import { Dispatch,State } from '../store'
 import { radius } from '../styling'
 import { Icon } from './Icon'
@@ -13,7 +13,7 @@ export const ScriptingActionBar: React.FC = () => {
   const { t } = useTranslation()
   const selected = useSelector((state: State) => state.ui.selected)
   const scriptForm = useSelector((state: State) => state.ui.scriptForm)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
 

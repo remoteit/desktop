@@ -1,7 +1,6 @@
 import React from 'react'
 import browser from '../services/browser'
-import { useSelector } from 'react-redux'
-import { State } from '../store'
+import { useMobile } from '../hooks/useMobile'
 
 type Props = {
   ios?: boolean
@@ -21,7 +20,7 @@ export const MobileUI: React.FC<Props> = ({ ios, android, hide, children }) => {
 
      `ios`/`android` stay platform questions (which native build am I?), which is a
      different thing from how much room there is. */
-  let mobile = useSelector((state: State) => state.ui.layout.mobile)
+  let mobile = useMobile()
 
   if (android) mobile = mobile && browser.isAndroid
   if (ios) mobile = mobile && browser.isIOS

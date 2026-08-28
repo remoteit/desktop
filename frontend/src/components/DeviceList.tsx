@@ -1,13 +1,14 @@
 import React, { useCallback, useMemo } from 'react'
+import { useMobile } from '../hooks/useMobile'
 import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import { useLocation } from 'react-router-dom'
-import { MOBILE_WIDTH, GUIDE_START_DATE } from '../constants'
+import { GUIDE_START_DATE } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
-import { Typography, useMediaQuery } from '@mui/material'
+import { Typography } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { isOffline } from '../models/devices'
@@ -117,7 +118,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   select,
 }) => {
   const location = useLocation()
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const dispatch = useDispatch<Dispatch>()
   const onFirstClick = useCallback(() => dispatch.ui.pop('deviceList'), [dispatch])
   const isScriptsPath = location.pathname.includes('scripts')

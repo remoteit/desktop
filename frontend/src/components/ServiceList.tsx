@@ -1,11 +1,11 @@
 import React, { useRef } from 'react'
+import { useMobile } from '../hooks/useMobile'
 import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { MOBILE_WIDTH } from '../constants'
 import { getSortOptions } from './SortServices'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
-import { Divider, useMediaQuery } from '@mui/material'
+import { Divider } from '@mui/material'
 import { DeviceListContext } from '../services/Context'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
@@ -39,7 +39,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   const { sortService } = getSortOptions(useSelector(selectDeviceModelAttributes).sortServiceOption)
   const location = useLocation()
   const previousName = useRef<string>('')
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
 
   const rows = devices.reduce((row, device) => {
     const hasFilter = applicationTypes?.length

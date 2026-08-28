@@ -1,10 +1,11 @@
 import React from 'react'
+import { useMobile } from '../hooks/useMobile'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem, Theme } from '@mui/material'
+import { REGEX_FIRST_PATH } from '../constants'
+import { Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem, Theme } from '@mui/material'
 import { getOwnOrganization, defaultState } from '../models/organization'
 import { selectAllConnectionSessions } from '../selectors/connections'
 import { selectOrganization } from '../selectors/organizations'
@@ -100,7 +101,7 @@ export const OrganizationSelect: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const { accounts, devices, files, tags, networks, logs, products, partnerStats } = useDispatch<Dispatch>()
 
   let activeOrg = useSelector(selectOrganization)

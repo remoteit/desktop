@@ -1,21 +1,12 @@
 import React from 'react'
+import { useMobile } from '../hooks/useMobile'
 import browser from '../services/browser'
 import { useTranslation } from 'react-i18next'
-import { MOBILE_WIDTH } from '../constants'
 import { selectLimitsLookup } from '../selectors/organizations'
 import { selectDefaultSelectedPage } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import {
-  Box,
-  Badge,
-  List,
-  Divider,
-  Tooltip,
-  Chip,
-  Theme,
-  useMediaQuery,
-} from '@mui/material'
+import { Box, Badge, List, Divider, Tooltip, Chip, Theme } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { UpgradeBanner } from './UpgradeBanner'
 import { ResellerLogo } from './ResellerLogo'
@@ -49,7 +40,7 @@ export const SidebarNav: React.FC = () => {
   const limits = useSelector(selectLimitsLookup)
   const insets = useSelector((state: State) => state.ui.layout.insets)
   const rootPaths = useSelector((state: State) => !browser.isElectron && state.ui.layout.hideSidebar)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const dispatch = useDispatch<Dispatch>()
   const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
   const { t } = useTranslation()
