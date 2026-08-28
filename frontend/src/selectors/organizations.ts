@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
-import { PENDING_FEATURES, PENDING_FEATURE_DEFAULT } from '../constants'
+import { PENDING_FEATURES } from '../constants'
 import {
   getUser,
   getOrganizations,
@@ -98,10 +98,10 @@ export const selectLimitsLookup = createSelector(
   [selectLimits, isUserAccount, getLimitsOverride],
   (baseLimits, isUserAccount, limitsOverride): ILookup<ILimit['value']> => {
     const result: ILookup<ILimit['value']> = {}
-    // Flags this build knows about but no license carries yet: worth their dev default
-    // until the API says otherwise, and — being named — something an override can take a
-    // position on, which a name the lookup has never seen would not be.
-    PENDING_FEATURES.forEach(name => (result[name] = PENDING_FEATURE_DEFAULT))
+    // Flags this build knows about but no license carries yet: worth their declared
+    // default until the API says otherwise, and — being named — something an override can
+    // take a position on, which a name the lookup has never seen would not be.
+    Object.entries(PENDING_FEATURES).forEach(([name, value]) => (result[name] = value))
     baseLimits.forEach(l => (result[l.name] = l.value))
     if (isUserAccount)
       Object.keys(result).forEach(name => {
@@ -121,8 +121,8 @@ export const selectFeatures = createSelector([selectLimits], (limits): IFeature[
   const features: IFeature[] = limits
     .filter(l => typeof l.value === 'boolean')
     .map(l => ({ name: l.name, value: l.value as boolean }))
-  for (const name of PENDING_FEATURES)
-    if (!features.some(f => f.name === name)) features.push({ name, value: PENDING_FEATURE_DEFAULT, pending: true })
+  for (const [name, value] of Object.entries(PENDING_FEATURES))
+    if (!features.some(f => f.name === name)) features.push({ name, value, pending: true })
   return features
 })
 

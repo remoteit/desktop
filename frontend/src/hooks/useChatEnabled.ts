@@ -4,7 +4,6 @@ import { selectLimitsLookup } from '../selectors/organizations'
 import browser from '../services/browser'
 import { useViewportWidth } from './useViewportWidth'
 import {
-  CHAT_ALWAYS_ON,
   CHAT_FEATURE,
   CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_MIN,
@@ -25,14 +24,11 @@ import {
    It is a LICENSE feature, read exactly the way tagging/saml/roles are, which means it
    follows the ACCOUNT you are viewing: the chat is scoped to the organization in the
    sidebar selector, so an org whose license does not carry the agent does not get one.
-   One build skips the license: app.ai.remote.it (CHAT_ALWAYS_ON) IS the AI surface. Local
-   dev is NOT an exception — the flag simply defaults on there (PENDING_FEATURE_DEFAULT),
-   so the gate itself is what you toggle rather than something you have to work around.
-   Until the API carries the limit, Test Settings → Features is how to turn it on. */
-export const useChatEnabled = (): boolean => {
-  const licensed = useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
-  return CHAT_ALWAYS_ON || licensed
-}
+   Nothing skips this gate. Local dev and the AI portal (CHAT_ALWAYS_ON) only set the
+   flag's default where no license carries it yet (PENDING_FEATURES), so even there the
+   chat is a feature flag you can switch back off in Test Settings → Features — which is
+   also how you turn it on anywhere else until the API starts sending the limit. */
+export const useChatEnabled = (): boolean => useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
 
 /* The widest the chat column may be dragged: whatever the window holds once the
    content keeps CHAT_MIN_CONTENT_WIDTH. The sidebar does not cap the drag — the layout
