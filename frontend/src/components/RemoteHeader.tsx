@@ -5,11 +5,20 @@ import { TargetPlatform } from './TargetPlatform'
 import { Icon } from './Icon'
 import screenfull from 'screenfull'
 import browser from '../services/browser'
+import { useChatDocked, useChatWidth } from '../hooks/useChatEnabled'
 
 type Props = { device?: IDevice; children: React.ReactNode }
 
 export const RemoteHeader: React.FC<Props> = ({ device, children }) => {
-  const maxWidth = !browser.isElectron && useMediaQuery(`(min-width:${APP_MAX_WIDTH}px)`)
+  /* APP_MAX_WIDTH is how wide the APP's content should ever get. The docked chat is a
+     column beside that content rather than part of it, so the frame grows by exactly
+     what the chat takes — otherwise opening the chat quietly spends the app's own width
+     on it. Expanded doesn't count: it overlays the content instead of sitting beside it.
+     The media query uses the same figure, or the framed look would start before the
+     frame could actually reach its width. (Web only — Electron always fills its window.) */
+  const chatWidth = useChatWidth()
+  const appMaxWidth = APP_MAX_WIDTH + (useChatDocked() ? chatWidth : 0)
+  const maxWidth = !browser.isElectron && useMediaQuery(`(min-width:${appMaxWidth}px)`)
   const showFrame = browser.isRemote
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled
@@ -54,7 +63,7 @@ export const RemoteHeader: React.FC<Props> = ({ device, children }) => {
           marginTop: maxWidth || showFrame ? 3 / 2 : 0,
           height: `calc(100% - ${showFrame ? spacing(6) : maxWidth ? spacing(3) : '0px'})`,
           width: `calc(100% - ${showFrame ? spacing(6) : '0px'})`,
-          maxWidth: maxWidth ? APP_MAX_WIDTH : undefined,
+          maxWidth: maxWidth ? appMaxWidth : undefined,
           backgroundColor: 'white.main',
           borderRadius: maxWidth || showFrame ? 5 : undefined,
           boxShadow: maxWidth || showFrame ? 3 : undefined,

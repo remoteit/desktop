@@ -120,6 +120,10 @@ export const CHAT_GUIDE_DATE = new Date('2026-08-27')
    preserve it, so the chat keeps its column on small desktop windows instead of
    taking the screen — that only happens at phone size (MOBILE_WIDTH). */
 export const CHAT_MIN_CONTENT_WIDTH = 500
+// Reading measure for the transcript column — text much wider than this is hard to
+// track back to the start of the next line. Applied to the COLUMN, so the panel itself
+// may be any width without the conversation spreading across it.
+export const CHAT_MAX_MESSAGE_WIDTH = 800
 export const ORGANIZATION_BAR_WIDTH = 70
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750

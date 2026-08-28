@@ -34,7 +34,6 @@ export const ChatMessageItem = React.memo<Props>(({ message }) => {
             marginLeft: 8,
             padding: 2,
             paddingY: 1.25,
-            maxWidth: 800,
           }}
         >
           <Typography variant="body2" color="grayDarker.main" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -65,7 +64,6 @@ export const ChatMessageItem = React.memo<Props>(({ message }) => {
               paddingY: 2,
               fontSize: fontSizes.base,
               lineHeight: 1.7,
-              maxWidth: 800,
               wordBreak: 'break-word',
               // Theme tokens, and the app's own emphasis convention (see theme.ts
               // body1/caption): bold is a COLOR step plus weight 500 — never 700.
