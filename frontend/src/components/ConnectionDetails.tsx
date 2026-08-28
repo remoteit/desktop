@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react'
+import { GUIDE_START_DATE } from '../constants'
 import { useTranslation } from 'react-i18next'
 import useResizeObserver from 'use-resize-observer'
 import { replaceHost } from '@common/nameHelper'
@@ -196,7 +197,8 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                 guide="usingConnection"
                 enterDelay={800}
                 placement="bottom"
-                startDate={new Date('2022-09-20')}
+                startDate={GUIDE_START_DATE}
+                added={GUIDE_START_DATE}
                 queueAfter="connectButton"
                 instructions={
                   <>

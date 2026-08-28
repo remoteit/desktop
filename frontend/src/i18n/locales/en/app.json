@@ -2,7 +2,7 @@
   "accessAccordion": {
     "addAccess": "Add access",
     "guests": "Guests",
-    "noUsers": "No users",
+    "noUsers": "No\u00a0users",
     "organizationMembers": "Organization members",
     "subtitle": "Access"
   },
@@ -51,7 +51,7 @@
   },
   "addFromNetwork": {
     "scanForServices": "Scan for Services",
-    "scanNetwork": "Scan network"
+    "scanNetwork": "Scan\u00a0network"
   },
   "addPage": {
     "addDevice": "Add a device",
@@ -61,7 +61,7 @@
     "demoDevice": "Demo device",
     "products": "Products",
     "provisionInBulk": "Provision in bulk",
-    "title": "What do you want to connect to?",
+    "title": "What do you want to connect\u00a0to?",
     "tryDevice": "Try a device"
   },
   "addPlatformServices": {
@@ -80,6 +80,11 @@
     "title": "Add Service",
     "typeRequired": "Service type is required"
   },
+  "addServiceButton": {
+    "guideBody": "This device can be dynamically set up to host new services.",
+    "guideTitle": "Add a service (application)",
+    "title": "Add Service"
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "Add tag...",
     "allDevices": "All devices",
@@ -96,6 +101,13 @@
     "summaryNone": "{{name}} cannot reach any devices.",
     "summaryUnlimited": "{{name}} can reach all devices in every organization you belong to."
   },
+  "androidSetup": {
+    "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
+    "guideTitle": "Select a device",
+    "thisDevice": "This device",
+    "thisDeviceDescription": "Control or access this device and local network",
+    "thisSystem": "This system"
+  },
   "announcementCard": {
     "learnMore": "Learn more",
     "markRead": "Mark read",
@@ -108,6 +120,95 @@
   },
   "announcementsPage": {
     "title": "Notifications"
+  },
+  "appType": {
+    "adminPanel": {
+      "title": "Admin Panel",
+      "use": "Remote.It admin panel running on the device. Previously used to remotely manage a device’s configuration. Now most devices can be managed from the Remote.it app or web portal."
+    },
+    "browser": {
+      "title": "Browser",
+      "use": "Use for accessing or hosting web applications that do not support encrypted connections. Ideal for local development environments or internal networks where security is not a concern."
+    },
+    "dockerApi": {
+      "use": "Use for remote management of Docker containers. Ideal for developers and system administrators who need to control Docker environments remotely."
+    },
+    "launch": {
+      "browser": "Browser",
+      "command": "Command",
+      "copyCommand": "Copy command",
+      "script": "Script",
+      "terminal": "Terminal"
+    },
+    "minecraft": {
+      "use": "Set up for hosting or connecting to a Minecraft server using TCP for gameplay, allowing players to join your Minecraft world."
+    },
+    "minecraftBedrock": {
+      "use": "Choose for Minecraft Bedrock Edition servers, using UDP for gameplay on platforms like mobile and consoles, enabling players to connect and play together."
+    },
+    "mysql": {
+      "use": "Utilize for remote access to MySQL databases. Ideal for developers and database administrators managing databases remotely."
+    },
+    "nextcloud": {
+      "use": "Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment."
+    },
+    "nxwitness": {
+      "use": "Use for connecting to Nx Witness Video Management Systems (VMS), suitable for security professionals managing IP camera networks."
+    },
+    "openvpnTcp": {
+      "use": "Choose for reliable, secure VPN access using TCP protocol. Best for stable connections where data integrity is crucial, though potentially slower than UDP."
+    },
+    "openvpnUdp": {
+      "use": "Choose for fast, secure VPN access using UDP protocol. Best for speed-sensitive applications where occasional packet loss is acceptable."
+    },
+    "postgresql": {
+      "use": "Utilize for remote access to PostgreSQL databases, essential for database administrators and developers needing to manage data remotely."
+    },
+    "public": {
+      "title": "Public"
+    },
+    "rdp": {
+      "use": "For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely."
+    },
+    "redis": {
+      "use": "Select for connecting to Redis servers, ideal for developers working with high-performance databases for caching and messaging."
+    },
+    "samba": {
+      "use": "Utilize for setting up shared access to files, printers, and serial ports within a Windows network or across different operating systems supporting SMB protocol."
+    },
+    "screenview": {
+      "use": "Use for remote screen viewing or control via Remote.It’s ScreenView app. Facilitates support, collaboration and remote access."
+    },
+    "secureBrowser": {
+      "title": "Secure Browser",
+      "use": "Essential for any web application handling sensitive data, or any content requiring secure communication over the internet."
+    },
+    "socks": {
+      "disconnectDisplay": "Restarts your browser to remove SOCKS Proxy on disconnect",
+      "use": "Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy."
+    },
+    "ssh": {
+      "help": "Any ssh config attribute may be added",
+      "use": "For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers."
+    },
+    "tcp": {
+      "use": "Use for custom TCP connections not involving web traffic, as it lacks reverse proxy capabilities. Ideal for direct application-to-application communication."
+    },
+    "terraria": {
+      "use": "Set up for hosting or connecting to a Terraria game server, allowing players to explore, build, and adventure together in a unique 2D world."
+    },
+    "udp": {
+      "use": "Select for applications that require fast communication where reliability is less critical, such as streaming, gaming, or broadcasting."
+    },
+    "unauthenticated": {
+      "title": "Unauthenticated"
+    },
+    "vnc": {
+      "use": "Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely."
+    },
+    "wireguard": {
+      "use": "Choose for a modern, secure VPN connection, offering fast and secure access to private networks with ease of setup and management."
+    }
   },
   "argumentDefinitionEditForm": {
     "cancel": "Cancel",
@@ -306,6 +407,7 @@
     "enable": "Enable",
     "loading": "Loading...",
     "loadingEllipsis": "Loading…",
+    "next": "Next",
     "no": "No",
     "notAvailable": "N/A",
     "ok": "Ok",
@@ -572,9 +674,10 @@
     "clearSelection": "Clear selection",
     "demoDevice": "Demo Device",
     "demoHelp": "See how simple it is to connect with our AWS demo device, or add your own device from the plus menu in the top left of the screen.",
-    "demoInstructions1": "Click the button below to have our device shared with you.",
-    "demoInstructions2": "Please wait while the device is being shared...",
     "filterNoResults": "Your filter returned no results",
+    "guideHosting": "A device can host its own applications (services), or it can host another service on its local network.",
+    "guideSelect": "Select a device to connect to a service, or configure it.",
+    "guideTitle": "Access a device",
     "newScript": "New Script",
     "noDevices": "This account has no devices",
     "removeTag": "Remove Tag",
@@ -787,11 +890,8 @@
     "MONTH": "Month",
     "WEEK": "Week"
   },
-  "guideStep": {
-    "exitGuide": "Exit guide",
-    "next": "next",
-    "previous": "previous",
-    "stepOf": "{{step}} of {{total}}"
+  "guideBubble": {
+    "dismissAll": "dismiss all"
   },
   "header": {
     "back": "Back",
@@ -1054,11 +1154,17 @@
     "totalDevices": "Total Devices",
     "totalNetworks": "Total Networks"
   },
+  "network": {
+    "active": "Active",
+    "cloudProxy": "Cloud Proxy",
+    "local": "Local",
+    "personal": "Personal",
+    "recent": "Recent"
+  },
   "networkAdd": {
     "add": "Add",
     "adding": "Adding...",
     "cancel": "Cancel",
-    "guideInstructions": "Click here after entering your network name.",
     "name": "Name"
   },
   "networkAddPage": {
@@ -1079,9 +1185,6 @@
     "addServicesHint": "Add services to this network from a service page",
     "connections": "Connections",
     "emptyNetwork": "Empty network",
-    "networkAdded": "Network added!",
-    "nextAddService": "Next add a service. Find one from the devices page and use the network panel to add.",
-    "ownOrManageNote": "Note, you can only add from devices you own or manage.",
     "settings": "Settings",
     "startAll": "Start All",
     "stopAll": "Stop All"
@@ -1409,7 +1512,7 @@
   },
   "permission": {
     "ADMIN": {
-      "description": "Manage organization tags, scripts, members and device registrations. View logs.",
+      "description": "Manage organization tags, scripts and members. View logs.",
       "name": "Administer"
     },
     "CONNECT": {
@@ -1417,7 +1520,7 @@
       "name": "Connect"
     },
     "MANAGE": {
-      "description": "Edit, delete, transfer and share devices and networks",
+      "description": "Register, edit, delete, transfer and share devices and networks",
       "name": "Manage"
     },
     "SCRIPTING": {
@@ -1467,9 +1570,9 @@
     "title": "Subscriptions"
   },
   "platformAddPage": {
+    "managePermissionRequired": "You must have the Manage permission to add a device to this organization.",
     "multiUse": "MULTI USE",
     "oneTimeUse": "ONE-TIME USE",
-    "registerPermissionRequired": "You must have the register permission to add a device to this organization.",
     "screenViewCodeHint": "Or use this registration code to manually claim the ScreenView app."
   },
   "portSetting": {
@@ -1514,15 +1617,6 @@
     "deleteSelected": "Delete selected",
     "selected": "Selected"
   },
-  "productsHeaderButtons": {
-    "adminRequired": "Admin permissions required"
-  },
-  "productsPage": {
-    "createFirst": "Create your first product",
-    "emptyHelp": "Products are used for bulk device registration and management.",
-    "emptyHelpReadOnly": "Products are used for bulk device registration and management. You must have the admin permission to create one.",
-    "loading": "Loading products..."
-  },
   "productServiceAddPage": {
     "failedToAddService": "Failed to add service",
     "newService": "New service",
@@ -1536,6 +1630,15 @@
     "removeServiceConfirmPrefix": "Are you sure you want to remove the service",
     "serviceMayHaveBeenRemoved": "The service may have been removed.",
     "serviceNotFound": "Service not found"
+  },
+  "productsHeaderButtons": {
+    "adminRequired": "Admin permissions required"
+  },
+  "productsPage": {
+    "createFirst": "Create your first product",
+    "emptyHelp": "Products are used for bulk device registration and management.",
+    "emptyHelpReadOnly": "Products are used for bulk device registration and management. You must have the admin permission to create one.",
+    "loading": "Loading products..."
   },
   "productTransferPage": {
     "cancel": "Cancel",
@@ -1577,7 +1680,7 @@
     "downloadDescription": "Download our disk image for easy, headless setup with Bluetooth WiFi onboarding.",
     "downloadQuestion": "New to Pi?",
     "downloadTitle": "Download Pi Image",
-    "heading": "Set Up Your Raspberry Pi for Remote Access",
+    "heading": "Set Up Your Raspberry Pi for\u00a0Remote\u00a0Access",
     "onboardDescription": "Set up WiFi via Bluetooth and register your device for remote access.",
     "onboardQuestion": "Have our custom Pi image?",
     "onboardTitle": "Onboard via Bluetooth"
@@ -1589,12 +1692,23 @@
     "device": "Refresh {{name}}",
     "deviceLogs": "Refresh {{name}} logs",
     "devices": "Refresh devices",
+    "guideBody": "Device state will update automatically while your system is on and the app is running.",
+    "guideTitle": "Refresh the application",
     "logs": "Refresh logs",
     "networks": "Refresh networks",
     "partnerStats": "Refresh partner stats",
     "products": "Refresh products",
     "script": "Refresh script",
     "scripts": "Refresh scripts"
+  },
+  "registerMenu": {
+    "addDevice": "Add device",
+    "guideDevices": "devices",
+    "guideInstallAgent": "First step is to install our agent on any device you would like to connect to.",
+    "guideRegistersAfter": "page.",
+    "guideRegistersBefore": "Your device will automatically register and appear on the",
+    "guideTitle": "Add a device",
+    "managePermissionRequired": "Manage permission required to add a device to this organization."
   },
   "rentANodeForm": {
     "addDns": "Add a public DNS address",
@@ -1789,6 +1903,13 @@
     "routingDesktopOnly": "Routing is only available on desktop.",
     "tokenDefault": "{{token}} default",
     "tokenFoundIn": "This token was found in"
+  },
+  "serviceConnectButton": {
+    "guideAutoLaunch": "This connection will launch when connected because the \"Auto Launch\" configuration toggle is on.",
+    "guideBodyBrowser": "Create a connection to this service with the connect button.",
+    "guideBodyDesktop": "Start listening on this endpoint for network requests. On request, automatically create the connection and disconnect when idle.",
+    "guideTitleBrowser": "Starting a connection",
+    "guideTitleDesktop": "Connect on demand"
   },
   "serviceDefaultsPage": {
     "defaults": "Defaults",
@@ -2053,104 +2174,19 @@
     "accessPremium": "Access premium features & support",
     "upgradePlan": "Upgrade Plan"
   },
+  "usersTab": {
+    "access": "Access",
+    "connectedCount_one": "{{count}} connected",
+    "connectedCount_other": "{{count}} connected",
+    "guideBodyAfter": ".",
+    "guideBodyBefore": "Sharing can be done directly to a guest user from here, or by adding members to your",
+    "guideOrganization": "Organization",
+    "guideTitle": "The power of sharing",
+    "totalCount_one": "{{count}} total",
+    "totalCount_other": "{{count}} total"
+  },
   "viewAsBanner": {
     "exit": "Exit view-as mode",
     "viewingAs": "Viewing as: {{email}}"
-  },
-  "appType": {
-    "launch": {
-      "command": "Command",
-      "terminal": "Terminal",
-      "script": "Script",
-      "copyCommand": "Copy command",
-      "browser": "Browser"
-    },
-    "public": {
-      "title": "Public"
-    },
-    "unauthenticated": {
-      "title": "Unauthenticated"
-    },
-    "ssh": {
-      "help": "Any ssh config attribute may be added",
-      "use": "For secure terminal access and command-line execution on servers or devices. Essential for system admins and developers."
-    },
-    "secureBrowser": {
-      "title": "Secure Browser",
-      "use": "Essential for any web application handling sensitive data, or any content requiring secure communication over the internet."
-    },
-    "browser": {
-      "title": "Browser",
-      "use": "Use for accessing or hosting web applications that do not support encrypted connections. Ideal for local development environments or internal networks where security is not a concern."
-    },
-    "adminPanel": {
-      "title": "Admin Panel",
-      "use": "Remote.It admin panel running on the device. Previously used to remotely manage a device’s configuration. Now most devices can be managed from the Remote.it app or web portal."
-    },
-    "socks": {
-      "disconnectDisplay": "Restarts your browser to remove SOCKS Proxy on disconnect",
-      "use": "Use as a proxy server for handling internet traffic via the SOCKS protocol. Provides secure and anonymous communication, allowing users to bypass internet restrictions and protect their online privacy."
-    },
-    "tcp": {
-      "use": "Use for custom TCP connections not involving web traffic, as it lacks reverse proxy capabilities. Ideal for direct application-to-application communication."
-    },
-    "vnc": {
-      "use": "Ideal for remote desktop access to graphical interfaces on computers or servers. Use when you need to control a device with a graphical desktop remotely."
-    },
-    "rdp": {
-      "use": "For remote desktop access to Windows servers or devices. Use when you need to control a device with a graphical desktop remotely."
-    },
-    "samba": {
-      "use": "Utilize for setting up shared access to files, printers, and serial ports within a Windows network or across different operating systems supporting SMB protocol."
-    },
-    "nxwitness": {
-      "use": "Use for connecting to Nx Witness Video Management Systems (VMS), suitable for security professionals managing IP camera networks."
-    },
-    "nextcloud": {
-      "use": "Select for secure access to Nextcloud hubs, allowing for file sharing, collaboration, and communication within a secure, private cloud environment."
-    },
-    "openvpnTcp": {
-      "use": "Choose for reliable, secure VPN access using TCP protocol. Best for stable connections where data integrity is crucial, though potentially slower than UDP."
-    },
-    "minecraft": {
-      "use": "Set up for hosting or connecting to a Minecraft server using TCP for gameplay, allowing players to join your Minecraft world."
-    },
-    "terraria": {
-      "use": "Set up for hosting or connecting to a Terraria game server, allowing players to explore, build, and adventure together in a unique 2D world."
-    },
-    "redis": {
-      "use": "Select for connecting to Redis servers, ideal for developers working with high-performance databases for caching and messaging."
-    },
-    "mysql": {
-      "use": "Utilize for remote access to MySQL databases. Ideal for developers and database administrators managing databases remotely."
-    },
-    "postgresql": {
-      "use": "Utilize for remote access to PostgreSQL databases, essential for database administrators and developers needing to manage data remotely."
-    },
-    "dockerApi": {
-      "use": "Use for remote management of Docker containers. Ideal for developers and system administrators who need to control Docker environments remotely."
-    },
-    "screenview": {
-      "use": "Use for remote screen viewing or control via Remote.It’s ScreenView app. Facilitates support, collaboration and remote access."
-    },
-    "udp": {
-      "use": "Select for applications that require fast communication where reliability is less critical, such as streaming, gaming, or broadcasting."
-    },
-    "openvpnUdp": {
-      "use": "Choose for fast, secure VPN access using UDP protocol. Best for speed-sensitive applications where occasional packet loss is acceptable."
-    },
-    "wireguard": {
-      "use": "Choose for a modern, secure VPN connection, offering fast and secure access to private networks with ease of setup and management."
-    },
-    "minecraftBedrock": {
-      "use": "Choose for Minecraft Bedrock Edition servers, using UDP for gameplay on platforms like mobile and consoles, enabling players to connect and play together."
-    }
-  },
-  "network": {
-    "active": "Active",
-    "cloudProxy": "Cloud Proxy",
-    "local": "Local",
-    "personal": "Personal",
-    "recent": "Recent"
   }
 }

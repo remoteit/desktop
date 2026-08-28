@@ -80,6 +80,11 @@
     "title": "Dienst hinzufügen",
     "typeRequired": "Diensttyp ist erforderlich"
   },
+  "addServiceButton": {
+    "guideBody": "Dieses Gerät kann dynamisch eingerichtet werden, um neue Dienste zu hosten.",
+    "guideTitle": "Dienst (Anwendung) hinzufügen",
+    "title": "Dienst hinzufügen"
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "Tag hinzufügen...",
     "allDevices": "Alle Geräte",
@@ -96,6 +101,13 @@
     "summaryNone": "{{name}} kann keine Geräte erreichen.",
     "summaryUnlimited": "{{name}} kann alle Geräte in jeder Organisation erreichen, der Sie angehören."
   },
+  "androidSetup": {
+    "guideBody": "Sie können Ihr Android-Gerät einrichten oder den einfachen Anweisungen folgen, um eine der gängigen Plattformen einzurichten.",
+    "guideTitle": "Gerät auswählen",
+    "thisDevice": "Dieses Gerät",
+    "thisDeviceDescription": "Dieses Gerät und das lokale Netzwerk steuern oder darauf zugreifen",
+    "thisSystem": "Dieses System"
+  },
   "announcementCard": {
     "learnMore": "Mehr erfahren",
     "markRead": "Als gelesen markieren",
@@ -108,6 +120,95 @@
   },
   "announcementsPage": {
     "title": "Benachrichtigungen"
+  },
+  "appType": {
+    "adminPanel": {
+      "title": "Admin-Panel",
+      "use": "Auf dem Gerät ausgeführtes Remote.It-Admin-Panel. Wurde früher zur Remote-Verwaltung der Gerätekonfiguration verwendet. Die meisten Geräte können jetzt über die Remote.it-App oder das Webportal verwaltet werden."
+    },
+    "browser": {
+      "title": "Browser",
+      "use": "Für den Zugriff auf oder das Hosten von Webanwendungen, die keine verschlüsselten Verbindungen unterstützen. Ideal für lokale Entwicklungsumgebungen oder interne Netzwerke, in denen Sicherheit keine Rolle spielt."
+    },
+    "dockerApi": {
+      "use": "Für die Remote-Verwaltung von Docker-Containern. Ideal für Entwickler und Systemadministratoren, die Docker-Umgebungen remote steuern müssen."
+    },
+    "launch": {
+      "browser": "Browser",
+      "command": "Befehl",
+      "copyCommand": "Befehl kopieren",
+      "script": "Skript",
+      "terminal": "Terminal"
+    },
+    "minecraft": {
+      "use": "Zum Hosten oder Verbinden mit einem Minecraft-Server über TCP für das Gameplay eingerichtet, sodass Spieler Ihrer Minecraft-Welt beitreten können."
+    },
+    "minecraftBedrock": {
+      "use": "Wählen Sie diese Option für Minecraft Bedrock Edition-Server, die UDP für das Gameplay auf Plattformen wie Mobilgeräten und Konsolen verwenden, sodass Spieler sich verbinden und gemeinsam spielen können."
+    },
+    "mysql": {
+      "use": "Für den Remote-Zugriff auf MySQL-Datenbanken. Ideal für Entwickler und Datenbankadministratoren, die Datenbanken remote verwalten."
+    },
+    "nextcloud": {
+      "use": "Wählen Sie diese Option für den sicheren Zugriff auf Nextcloud-Hubs, der Dateifreigabe, Zusammenarbeit und Kommunikation in einer sicheren, privaten Cloud-Umgebung ermöglicht."
+    },
+    "nxwitness": {
+      "use": "Für die Verbindung mit Nx Witness Video-Management-Systemen (VMS), geeignet für Sicherheitsexperten, die IP-Kameranetzwerke verwalten."
+    },
+    "openvpnTcp": {
+      "use": "Wählen Sie diese Option für zuverlässigen, sicheren VPN-Zugriff über das TCP-Protokoll. Am besten geeignet für stabile Verbindungen, bei denen Datenintegrität entscheidend ist, wenngleich möglicherweise langsamer als UDP."
+    },
+    "openvpnUdp": {
+      "use": "Wählen Sie diese Option für schnellen, sicheren VPN-Zugriff über das UDP-Protokoll. Am besten geeignet für geschwindigkeitssensible Anwendungen, bei denen gelegentlicher Paketverlust akzeptabel ist."
+    },
+    "postgresql": {
+      "use": "Für den Remote-Zugriff auf PostgreSQL-Datenbanken, unverzichtbar für Datenbankadministratoren und Entwickler, die Daten remote verwalten müssen."
+    },
+    "public": {
+      "title": "Öffentlich"
+    },
+    "rdp": {
+      "use": "Für den Remote-Desktopzugriff auf Windows-Server oder -Geräte. Verwenden Sie diese Option, wenn Sie ein Gerät mit grafischem Desktop remote steuern müssen."
+    },
+    "redis": {
+      "use": "Wählen Sie diese Option für die Verbindung mit Redis-Servern, ideal für Entwickler, die mit leistungsstarken Datenbanken für Caching und Messaging arbeiten."
+    },
+    "samba": {
+      "use": "Verwenden Sie diese Option, um den gemeinsamen Zugriff auf Dateien, Drucker und serielle Ports innerhalb eines Windows-Netzwerks oder zwischen verschiedenen Betriebssystemen mit SMB-Unterstützung einzurichten."
+    },
+    "screenview": {
+      "use": "Für die Remote-Bildschirmanzeige oder -Steuerung über die ScreenView-App von Remote.It. Erleichtert Support, Zusammenarbeit und Remote-Zugriff."
+    },
+    "secureBrowser": {
+      "title": "Sicherer Browser",
+      "use": "Unverzichtbar für Webanwendungen, die sensible Daten verarbeiten, oder für Inhalte, die eine sichere Kommunikation über das Internet erfordern."
+    },
+    "socks": {
+      "disconnectDisplay": "Startet Ihren Browser neu, um den SOCKS-Proxy beim Trennen zu entfernen",
+      "use": "Wird als Proxyserver zur Abwicklung des Internetverkehrs über das SOCKS-Protokoll verwendet. Bietet sichere und anonyme Kommunikation, sodass Benutzer Internetbeschränkungen umgehen und ihre Online-Privatsphäre schützen können."
+    },
+    "ssh": {
+      "help": "Jedes SSH-Konfigurationsattribut kann hinzugefügt werden",
+      "use": "Für sicheren Terminalzugriff und die Ausführung von Befehlen auf Servern oder Geräten. Unverzichtbar für Systemadministratoren und Entwickler."
+    },
+    "tcp": {
+      "use": "Für benutzerdefinierte TCP-Verbindungen ohne Webverkehr, da keine Reverse-Proxy-Funktionen vorhanden sind. Ideal für die direkte Kommunikation zwischen Anwendungen."
+    },
+    "terraria": {
+      "use": "Zum Hosten oder Verbinden mit einem Terraria-Spielserver eingerichtet, sodass Spieler gemeinsam eine einzigartige 2D-Welt erkunden, bauen und erleben können."
+    },
+    "udp": {
+      "use": "Wählen Sie diese Option für Anwendungen, die schnelle Kommunikation erfordern und bei denen Zuverlässigkeit weniger entscheidend ist, wie Streaming, Gaming oder Broadcasting."
+    },
+    "unauthenticated": {
+      "title": "Nicht authentifiziert"
+    },
+    "vnc": {
+      "use": "Ideal für den Remote-Desktopzugriff auf grafische Oberflächen von Computern oder Servern. Verwenden Sie diese Option, wenn Sie ein Gerät mit grafischem Desktop remote steuern müssen."
+    },
+    "wireguard": {
+      "use": "Wählen Sie diese Option für eine moderne, sichere VPN-Verbindung, die schnellen und sicheren Zugriff auf private Netzwerke bei einfacher Einrichtung und Verwaltung bietet."
+    }
   },
   "argumentDefinitionEditForm": {
     "cancel": "Abbrechen",
@@ -194,6 +295,12 @@
   "columns": {
     "access": "Gäste",
     "bind": "Bind-Adresse",
+    "body": "Text",
+    "categoryA": "Kategorie A",
+    "categoryB": "Kategorie B",
+    "categoryC": "Kategorie C",
+    "categoryD": "Kategorie D",
+    "categoryE": "Kategorie E",
     "city": "Stadt",
     "configurable": "Konfigurierbar",
     "configurable_help": "Kann remote konfiguriert werden",
@@ -201,10 +308,16 @@
     "connectionType": "Verbindungstyp",
     "country": "Land",
     "created": "Erstellungsdatum",
+    "customerEmail": "E-Mail",
+    "customerPlan": "Plan",
+    "customerPrice": "Preis",
+    "customerQuantity": "Menge",
+    "customerReseller": "Vertreter",
     "deviceDescription": "Beschreibung",
     "deviceName": "Name",
     "duration": "Dauer",
     "externalAddress": "Externe IP",
+    "from": "Von",
     "hardwareId": "Hardware-ID",
     "id": "Geräte-ID",
     "initiatorPlatform": "Plattform",
@@ -214,13 +327,36 @@
     "license": "Lizenz",
     "location": "Standort",
     "owner": "Eigentümer",
+    "partnerActivated": "Aktiviert",
+    "partnerActive": "Aktiv",
+    "partnerDevicesTotal": "Geräte",
+    "partnerName": "Name",
+    "partnerOnline": "Online",
     "permissions": "Berechtigungen",
     "presenceAddress": "Präsenz",
+    "productCreated": "Erstellt",
+    "productCreatedDetail": "Erstellt",
+    "productIdDetail": "Produkt-ID",
+    "productName": "Name",
+    "productPlatform": "Plattform",
+    "productPlatformDetail": "Plattform",
+    "productServiceIdDetail": "Dienst-ID",
+    "productServicePortDetail": "Port",
+    "productServices": "Dienste",
+    "productServicesDetail": "Dienste",
+    "productServiceStatusDetail": "Status",
+    "productServiceTypeDetail": "Diensttyp",
+    "productUpdated": "Aktualisiert",
+    "productUpdatedDetail": "Aktualisiert",
     "quality": "Stabilität",
     "qualitySmall": "Qualität",
     "restore": "Wiederherstellen",
     "restrict": "Lokale Sicherheit",
     "role": "Rolle",
+    "scriptCreated": "Erstellt",
+    "scriptDescription": "Beschreibung",
+    "scriptName": "Skript",
+    "scriptUpdated": "Geändert",
     "serviceAccess": "Benutzer",
     "serviceAction": "Aktion",
     "serviceCreated": "Dienst erstellt",
@@ -240,56 +376,21 @@
     "serviceStatus": "Status",
     "serviceType": "Diensttyp",
     "session": "Verbindung",
+    "stage": "Stufe",
     "state": "Region",
     "status": "Status",
-    "tags": "Tags",
-    "targetPlatform": "Plattform",
-    "unknown": "Unbekannt",
-    "version": "Daemon-Version",
-    "body": "Text",
-    "categoryA": "Kategorie A",
-    "categoryB": "Kategorie B",
-    "categoryC": "Kategorie C",
-    "categoryD": "Kategorie D",
-    "categoryE": "Kategorie E",
-    "customerEmail": "E-Mail",
-    "customerPlan": "Plan",
-    "customerPrice": "Preis",
-    "customerQuantity": "Menge",
-    "customerReseller": "Vertreter",
-    "from": "Von",
-    "partnerActivated": "Aktiviert",
-    "partnerActive": "Aktiv",
-    "partnerDevicesTotal": "Geräte",
-    "partnerName": "Name",
-    "partnerOnline": "Online",
-    "productCreated": "Erstellt",
-    "productCreatedDetail": "Erstellt",
-    "productIdDetail": "Produkt-ID",
-    "productName": "Name",
-    "productPlatform": "Plattform",
-    "productPlatformDetail": "Plattform",
-    "productServiceIdDetail": "Dienst-ID",
-    "productServicePortDetail": "Port",
-    "productServices": "Dienste",
-    "productServicesDetail": "Dienste",
-    "productServiceStatusDetail": "Status",
-    "productServiceTypeDetail": "Diensttyp",
-    "productUpdated": "Aktualisiert",
-    "productUpdatedDetail": "Aktualisiert",
-    "scriptCreated": "Erstellt",
-    "scriptDescription": "Beschreibung",
-    "scriptName": "Skript",
-    "scriptUpdated": "Geändert",
-    "stage": "Stufe",
     "statusA": "Status A",
     "statusB": "Status B",
     "statusC": "Status C",
     "statusD": "Status D",
     "statusE": "Status E",
+    "tags": "Tags",
+    "targetPlatform": "Plattform",
     "title": "Titel",
     "type": "Typ",
-    "until": "Bis"
+    "unknown": "Unbekannt",
+    "until": "Bis",
+    "version": "Daemon-Version"
   },
   "common": {
     "actionCannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
@@ -306,6 +407,7 @@
     "enable": "Aktivieren",
     "loading": "Wird geladen...",
     "loadingEllipsis": "Wird geladen…",
+    "next": "Weiter",
     "no": "Nein",
     "notAvailable": "Nicht verfügbar",
     "ok": "OK",
@@ -572,9 +674,10 @@
     "clearSelection": "Auswahl aufheben",
     "demoDevice": "Demogerät",
     "demoHelp": "Erfahren Sie, wie einfach die Verbindung mit unserem AWS-Demogerät ist, oder fügen Sie über das Plus-Menü oben links im Bildschirm Ihr eigenes Gerät hinzu.",
-    "demoInstructions1": "Klicken Sie auf die Schaltfläche unten, um unser Gerät mit Ihnen zu teilen.",
-    "demoInstructions2": "Bitte warten Sie, während das Gerät freigegeben wird...",
     "filterNoResults": "Ihr Filter hat keine Ergebnisse geliefert",
+    "guideHosting": "Ein Gerät kann eigene Anwendungen (Dienste) hosten oder einen anderen Dienst in seinem lokalen Netzwerk bereitstellen.",
+    "guideSelect": "Wählen Sie ein Gerät aus, um sich mit einem Dienst zu verbinden oder es zu konfigurieren.",
+    "guideTitle": "Auf ein Gerät zugreifen",
     "newScript": "Neues Skript",
     "noDevices": "Dieses Konto hat keine Geräte",
     "removeTag": "Tag entfernen",
@@ -767,11 +870,28 @@
     "title": "Diagramme",
     "updateToSeeMore": "Aktualisieren Sie, um mehr zu sehen."
   },
-  "guideStep": {
-    "exitGuide": "Anleitung beenden",
-    "next": "weiter",
-    "previous": "zurück",
-    "stepOf": "{{step}} von {{total}}"
+  "graphStyle": {
+    "bar": "Balken",
+    "heatmap": "Heatmap"
+  },
+  "graphType": {
+    "AVAILABILITY": "Online %",
+    "CONNECT": "Verbindungsereignisse",
+    "CONNECT_DURATION": "Verbindungsdauer",
+    "DISCONNECT": "Trennungsereignisse",
+    "OFFLINE": "Offline-Ereignisse",
+    "ONLINE": "Online-Ereignisse",
+    "ONLINE_DURATION": "Online-Zeit",
+    "USAGE": "Verbunden %"
+  },
+  "graphUnit": {
+    "DAY": "Tag",
+    "HOUR": "Stunde",
+    "MONTH": "Monat",
+    "WEEK": "Woche"
+  },
+  "guideBubble": {
+    "dismissAll": "alle ausblenden"
   },
   "header": {
     "back": "Zurück",
@@ -840,6 +960,14 @@
   },
   "jobsPage": {
     "runScriptToStart": "Führen Sie ein Skript aus, um zu beginnen"
+  },
+  "jobStatus": {
+    "CANCELLED": "Abgebrochen",
+    "FAILED": "Fehlgeschlagen",
+    "READY": "Bereit",
+    "RUNNING": "Läuft",
+    "SUCCESS": "Erfolgreich",
+    "WAITING": "Wartend"
   },
   "lanSharePage": {
     "allowUsersToConnect": "Ermöglichen Sie Benutzern, sich über Ihre IP-Adresse und einen benutzerdefinierten Port mit Ihrem Remote-Gerät zu verbinden.",
@@ -1026,11 +1154,17 @@
     "totalDevices": "Geräte insgesamt",
     "totalNetworks": "Netzwerke insgesamt"
   },
+  "network": {
+    "active": "Aktiv",
+    "cloudProxy": "Cloud-Proxy",
+    "local": "Lokal",
+    "personal": "Persönlich",
+    "recent": "Kürzlich"
+  },
   "networkAdd": {
     "add": "Hinzufügen",
     "adding": "Wird hinzugefügt...",
     "cancel": "Abbrechen",
-    "guideInstructions": "Klicken Sie hier, nachdem Sie Ihren Netzwerknamen eingegeben haben.",
     "name": "Name"
   },
   "networkAddPage": {
@@ -1051,9 +1185,6 @@
     "addServicesHint": "Fügen Sie diesem Netzwerk Dienste über eine Dienstseite hinzu",
     "connections": "Verbindungen",
     "emptyNetwork": "Leeres Netzwerk",
-    "networkAdded": "Netzwerk hinzugefügt!",
-    "nextAddService": "Fügen Sie als Nächstes einen Dienst hinzu. Suchen Sie einen auf der Geräteseite und fügen Sie ihn über das Netzwerkpanel hinzu.",
-    "ownOrManageNote": "Hinweis: Sie können nur von Geräten hinzufügen, die Sie besitzen oder verwalten.",
     "settings": "Einstellungen",
     "startAll": "Alle starten",
     "stopAll": "Alle stoppen"
@@ -1379,6 +1510,28 @@
     "veryWeak": "Sehr schwach",
     "weak": "Schwach"
   },
+  "permission": {
+    "ADMIN": {
+      "description": "Organisations-Tags, Skripte und Mitglieder verwalten. Protokolle anzeigen.",
+      "name": "Administrieren"
+    },
+    "CONNECT": {
+      "description": "Mit Gerätediensten verbinden",
+      "name": "Verbinden"
+    },
+    "MANAGE": {
+      "description": "Geräte und Netzwerke registrieren, bearbeiten, löschen, übertragen und teilen",
+      "name": "Verwalten"
+    },
+    "SCRIPTING": {
+      "description": "Geräteskripte anzeigen und ausführen",
+      "name": "Skript"
+    },
+    "VIEW": {
+      "description": "Geräte und ihren aktuellen Status anzeigen",
+      "name": "Anzeigen"
+    }
+  },
   "planCheckout": {
     "devices": "Geräte",
     "downgrade": "Herabstufen",
@@ -1417,9 +1570,9 @@
     "title": "Abonnements"
   },
   "platformAddPage": {
+    "managePermissionRequired": "Sie benötigen die Berechtigung „Verwalten“, um ein Gerät zu dieser Organisation hinzuzufügen.",
     "multiUse": "MEHRFACHNUTZUNG",
     "oneTimeUse": "EINMALIGE NUTZUNG",
-    "registerPermissionRequired": "Sie benötigen die Berechtigung zum Registrieren, um ein Gerät zu dieser Organisation hinzuzufügen.",
     "screenViewCodeHint": "Oder verwenden Sie diesen Registrierungscode, um die ScreenView-App manuell zu beanspruchen."
   },
   "portSetting": {
@@ -1464,15 +1617,6 @@
     "deleteSelected": "Auswahl löschen",
     "selected": "Ausgewählt"
   },
-  "productsHeaderButtons": {
-    "adminRequired": ""
-  },
-  "productsPage": {
-    "createFirst": "",
-    "emptyHelp": "",
-    "emptyHelpReadOnly": "",
-    "loading": ""
-  },
   "productServiceAddPage": {
     "failedToAddService": "Dienst konnte nicht hinzugefügt werden",
     "newService": "Neuer Dienst",
@@ -1486,6 +1630,15 @@
     "removeServiceConfirmPrefix": "Möchten Sie den Dienst wirklich entfernen",
     "serviceMayHaveBeenRemoved": "Der Dienst wurde möglicherweise entfernt.",
     "serviceNotFound": "Dienst nicht gefunden"
+  },
+  "productsHeaderButtons": {
+    "adminRequired": ""
+  },
+  "productsPage": {
+    "createFirst": "",
+    "emptyHelp": "",
+    "emptyHelpReadOnly": "",
+    "loading": ""
   },
   "productTransferPage": {
     "cancel": "Abbrechen",
@@ -1539,12 +1692,23 @@
     "device": "{{name}} aktualisieren",
     "deviceLogs": "Protokolle von {{name}} aktualisieren",
     "devices": "Geräte aktualisieren",
+    "guideBody": "Der Gerätestatus wird automatisch aktualisiert, solange Ihr System eingeschaltet ist und die App läuft.",
+    "guideTitle": "Anwendung aktualisieren",
     "logs": "Protokolle aktualisieren",
     "networks": "Netzwerke aktualisieren",
     "partnerStats": "Partnerstatistiken aktualisieren",
     "products": "Produkte aktualisieren",
     "script": "Skript aktualisieren",
     "scripts": "Skripte aktualisieren"
+  },
+  "registerMenu": {
+    "addDevice": "Gerät hinzufügen",
+    "guideDevices": "Geräte",
+    "guideInstallAgent": "Der erste Schritt besteht darin, unseren Agenten auf jedem Gerät zu installieren, mit dem Sie sich verbinden möchten.",
+    "guideRegistersAfter": "angezeigt.",
+    "guideRegistersBefore": "Ihr Gerät wird automatisch registriert und auf der Seite",
+    "guideTitle": "Gerät hinzufügen",
+    "managePermissionRequired": "Sie benötigen die Berechtigung „Verwalten“, um ein Gerät zu dieser Organisation hinzuzufügen."
   },
   "rentANodeForm": {
     "addDns": "Öffentliche DNS-Adresse hinzufügen",
@@ -1739,6 +1903,13 @@
     "routingDesktopOnly": "Routing ist nur auf dem Desktop verfügbar.",
     "tokenDefault": "{{token}} Standard",
     "tokenFoundIn": "Dieses Token wurde gefunden in"
+  },
+  "serviceConnectButton": {
+    "guideAutoLaunch": "Diese Verbindung wird beim Verbinden gestartet, weil die Einstellung „Automatisch starten“ aktiviert ist.",
+    "guideBodyBrowser": "Erstellen Sie mit der Verbinden-Schaltfläche eine Verbindung zu diesem Dienst.",
+    "guideBodyDesktop": "Beginnen Sie, an diesem Endpunkt auf Netzwerkanfragen zu warten. Bei einer Anfrage wird die Verbindung automatisch hergestellt und bei Inaktivität wieder getrennt.",
+    "guideTitleBrowser": "Eine Verbindung starten",
+    "guideTitleDesktop": "Bei Bedarf verbinden"
   },
   "serviceDefaultsPage": {
     "defaults": "Standardwerte",
@@ -2003,154 +2174,19 @@
     "accessPremium": "Zugriff auf Premium-Funktionen und Support",
     "upgradePlan": "Plan upgraden"
   },
+  "usersTab": {
+    "access": "Zugriff",
+    "connectedCount_one": "{{count}} verbunden",
+    "connectedCount_other": "{{count}} verbunden",
+    "guideBodyAfter": ".",
+    "guideBodyBefore": "Die Freigabe kann direkt an einen Gastbenutzer erfolgen oder durch Hinzufügen von Mitgliedern zu Ihrer",
+    "guideOrganization": "Organisation",
+    "guideTitle": "Die Stärke der Freigabe",
+    "totalCount_one": "{{count}} gesamt",
+    "totalCount_other": "{{count}} gesamt"
+  },
   "viewAsBanner": {
     "exit": "Ansichtsmodus verlassen",
     "viewingAs": "Anzeige als: {{email}}"
-  },
-  "graphStyle": {
-    "bar": "Balken",
-    "heatmap": "Heatmap"
-  },
-  "graphType": {
-    "AVAILABILITY": "Online %",
-    "CONNECT": "Verbindungsereignisse",
-    "CONNECT_DURATION": "Verbindungsdauer",
-    "DISCONNECT": "Trennungsereignisse",
-    "OFFLINE": "Offline-Ereignisse",
-    "ONLINE": "Online-Ereignisse",
-    "ONLINE_DURATION": "Online-Zeit",
-    "USAGE": "Verbunden %"
-  },
-  "graphUnit": {
-    "DAY": "Tag",
-    "HOUR": "Stunde",
-    "MONTH": "Monat",
-    "WEEK": "Woche"
-  },
-  "jobStatus": {
-    "CANCELLED": "Abgebrochen",
-    "FAILED": "Fehlgeschlagen",
-    "READY": "Bereit",
-    "RUNNING": "Läuft",
-    "SUCCESS": "Erfolgreich",
-    "WAITING": "Wartend"
-  },
-  "permission": {
-    "ADMIN": {
-      "description": "Organisations-Tags, Skripte, Mitglieder und Geräteregistrierungen verwalten. Protokolle anzeigen.",
-      "name": "Administrieren"
-    },
-    "CONNECT": {
-      "description": "Mit Gerätediensten verbinden",
-      "name": "Verbinden"
-    },
-    "MANAGE": {
-      "description": "Geräte und Netzwerke bearbeiten, löschen, übertragen und teilen",
-      "name": "Verwalten"
-    },
-    "SCRIPTING": {
-      "description": "Geräteskripte anzeigen und ausführen",
-      "name": "Skript"
-    },
-    "VIEW": {
-      "description": "Geräte und ihren aktuellen Status anzeigen",
-      "name": "Anzeigen"
-    }
-  },
-  "appType": {
-    "launch": {
-      "command": "Befehl",
-      "terminal": "Terminal",
-      "script": "Skript",
-      "copyCommand": "Befehl kopieren",
-      "browser": "Browser"
-    },
-    "public": {
-      "title": "Öffentlich"
-    },
-    "unauthenticated": {
-      "title": "Nicht authentifiziert"
-    },
-    "tcp": {
-      "use": "Für benutzerdefinierte TCP-Verbindungen ohne Webverkehr, da keine Reverse-Proxy-Funktionen vorhanden sind. Ideal für die direkte Kommunikation zwischen Anwendungen."
-    },
-    "vnc": {
-      "use": "Ideal für den Remote-Desktopzugriff auf grafische Oberflächen von Computern oder Servern. Verwenden Sie diese Option, wenn Sie ein Gerät mit grafischem Desktop remote steuern müssen."
-    },
-    "ssh": {
-      "use": "Für sicheren Terminalzugriff und die Ausführung von Befehlen auf Servern oder Geräten. Unverzichtbar für Systemadministratoren und Entwickler.",
-      "help": "Jedes SSH-Konfigurationsattribut kann hinzugefügt werden"
-    },
-    "rdp": {
-      "use": "Für den Remote-Desktopzugriff auf Windows-Server oder -Geräte. Verwenden Sie diese Option, wenn Sie ein Gerät mit grafischem Desktop remote steuern müssen."
-    },
-    "secureBrowser": {
-      "title": "Sicherer Browser",
-      "use": "Unverzichtbar für Webanwendungen, die sensible Daten verarbeiten, oder für Inhalte, die eine sichere Kommunikation über das Internet erfordern."
-    },
-    "browser": {
-      "title": "Browser",
-      "use": "Für den Zugriff auf oder das Hosten von Webanwendungen, die keine verschlüsselten Verbindungen unterstützen. Ideal für lokale Entwicklungsumgebungen oder interne Netzwerke, in denen Sicherheit keine Rolle spielt."
-    },
-    "samba": {
-      "use": "Verwenden Sie diese Option, um den gemeinsamen Zugriff auf Dateien, Drucker und serielle Ports innerhalb eines Windows-Netzwerks oder zwischen verschiedenen Betriebssystemen mit SMB-Unterstützung einzurichten."
-    },
-    "nxwitness": {
-      "use": "Für die Verbindung mit Nx Witness Video-Management-Systemen (VMS), geeignet für Sicherheitsexperten, die IP-Kameranetzwerke verwalten."
-    },
-    "nextcloud": {
-      "use": "Wählen Sie diese Option für den sicheren Zugriff auf Nextcloud-Hubs, der Dateifreigabe, Zusammenarbeit und Kommunikation in einer sicheren, privaten Cloud-Umgebung ermöglicht."
-    },
-    "openvpnTcp": {
-      "use": "Wählen Sie diese Option für zuverlässigen, sicheren VPN-Zugriff über das TCP-Protokoll. Am besten geeignet für stabile Verbindungen, bei denen Datenintegrität entscheidend ist, wenngleich möglicherweise langsamer als UDP."
-    },
-    "minecraft": {
-      "use": "Zum Hosten oder Verbinden mit einem Minecraft-Server über TCP für das Gameplay eingerichtet, sodass Spieler Ihrer Minecraft-Welt beitreten können."
-    },
-    "adminPanel": {
-      "title": "Admin-Panel",
-      "use": "Auf dem Gerät ausgeführtes Remote.It-Admin-Panel. Wurde früher zur Remote-Verwaltung der Gerätekonfiguration verwendet. Die meisten Geräte können jetzt über die Remote.it-App oder das Webportal verwaltet werden."
-    },
-    "terraria": {
-      "use": "Zum Hosten oder Verbinden mit einem Terraria-Spielserver eingerichtet, sodass Spieler gemeinsam eine einzigartige 2D-Welt erkunden, bauen und erleben können."
-    },
-    "redis": {
-      "use": "Wählen Sie diese Option für die Verbindung mit Redis-Servern, ideal für Entwickler, die mit leistungsstarken Datenbanken für Caching und Messaging arbeiten."
-    },
-    "mysql": {
-      "use": "Für den Remote-Zugriff auf MySQL-Datenbanken. Ideal für Entwickler und Datenbankadministratoren, die Datenbanken remote verwalten."
-    },
-    "postgresql": {
-      "use": "Für den Remote-Zugriff auf PostgreSQL-Datenbanken, unverzichtbar für Datenbankadministratoren und Entwickler, die Daten remote verwalten müssen."
-    },
-    "dockerApi": {
-      "use": "Für die Remote-Verwaltung von Docker-Containern. Ideal für Entwickler und Systemadministratoren, die Docker-Umgebungen remote steuern müssen."
-    },
-    "screenview": {
-      "use": "Für die Remote-Bildschirmanzeige oder -Steuerung über die ScreenView-App von Remote.It. Erleichtert Support, Zusammenarbeit und Remote-Zugriff."
-    },
-    "socks": {
-      "use": "Wird als Proxyserver zur Abwicklung des Internetverkehrs über das SOCKS-Protokoll verwendet. Bietet sichere und anonyme Kommunikation, sodass Benutzer Internetbeschränkungen umgehen und ihre Online-Privatsphäre schützen können.",
-      "disconnectDisplay": "Startet Ihren Browser neu, um den SOCKS-Proxy beim Trennen zu entfernen"
-    },
-    "udp": {
-      "use": "Wählen Sie diese Option für Anwendungen, die schnelle Kommunikation erfordern und bei denen Zuverlässigkeit weniger entscheidend ist, wie Streaming, Gaming oder Broadcasting."
-    },
-    "openvpnUdp": {
-      "use": "Wählen Sie diese Option für schnellen, sicheren VPN-Zugriff über das UDP-Protokoll. Am besten geeignet für geschwindigkeitssensible Anwendungen, bei denen gelegentlicher Paketverlust akzeptabel ist."
-    },
-    "wireguard": {
-      "use": "Wählen Sie diese Option für eine moderne, sichere VPN-Verbindung, die schnellen und sicheren Zugriff auf private Netzwerke bei einfacher Einrichtung und Verwaltung bietet."
-    },
-    "minecraftBedrock": {
-      "use": "Wählen Sie diese Option für Minecraft Bedrock Edition-Server, die UDP für das Gameplay auf Plattformen wie Mobilgeräten und Konsolen verwenden, sodass Spieler sich verbinden und gemeinsam spielen können."
-    }
-  },
-  "network": {
-    "active": "Aktiv",
-    "cloudProxy": "Cloud-Proxy",
-    "local": "Lokal",
-    "personal": "Persönlich",
-    "recent": "Kürzlich"
   }
 }

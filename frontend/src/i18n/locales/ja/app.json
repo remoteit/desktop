@@ -80,6 +80,11 @@
     "title": "サービスを追加",
     "typeRequired": "サービスタイプは必須です"
   },
+  "addServiceButton": {
+    "guideBody": "このデバイスは、新しいサービスをホストするように動的にセットアップできます。",
+    "guideTitle": "サービス(アプリケーション)を追加",
+    "title": "サービスを追加"
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "タグを追加...",
     "allDevices": "すべてのデバイス",
@@ -94,6 +99,13 @@
     "summaryNone": "{{name}} はどのデバイスにもアクセスできません。",
     "summaryUnlimited": "{{name}} は、所属するすべての組織のすべてのデバイスにアクセスできます。"
   },
+  "androidSetup": {
+    "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
+    "guideTitle": "デバイスを選択",
+    "thisDevice": "このデバイス",
+    "thisDeviceDescription": "このデバイスとローカルネットワークを制御またはアクセスします",
+    "thisSystem": "このシステム"
+  },
   "announcementCard": {
     "learnMore": "詳細を見る",
     "markRead": "既読にする",
@@ -106,6 +118,95 @@
   },
   "announcementsPage": {
     "title": "通知"
+  },
+  "appType": {
+    "adminPanel": {
+      "title": "管理パネル",
+      "use": "デバイス上で動作するRemote.It管理パネルです。以前はデバイスの設定をリモートで管理するために使用されていました。現在、ほとんどのデバイスはRemote.itアプリまたはWebポータルから管理できます。"
+    },
+    "browser": {
+      "title": "ブラウザ",
+      "use": "暗号化接続に対応していないWebアプリケーションへのアクセスやホスティングに使用します。セキュリティが懸念されないローカル開発環境や社内ネットワークに最適です。"
+    },
+    "dockerApi": {
+      "use": "Dockerコンテナのリモート管理に使用します。Docker環境をリモートで制御する必要がある開発者やシステム管理者に最適です。"
+    },
+    "launch": {
+      "browser": "ブラウザ",
+      "command": "コマンド",
+      "copyCommand": "コマンドをコピー",
+      "script": "スクリプト",
+      "terminal": "ターミナル"
+    },
+    "minecraft": {
+      "use": "TCPを使用してMinecraftサーバーをホストまたは接続するために設定します。プレイヤーがあなたのMinecraftワールドに参加できるようになります。"
+    },
+    "minecraftBedrock": {
+      "use": "Minecraft Bedrock Editionサーバー向けに選択します。モバイルやコンソールなどのプラットフォームでのゲームプレイにUDPを使用し、プレイヤーが接続して一緒にプレイできるようにします。"
+    },
+    "mysql": {
+      "use": "MySQLデータベースへのリモートアクセスに使用します。データベースをリモートで管理する開発者やデータベース管理者に最適です。"
+    },
+    "nextcloud": {
+      "use": "Nextcloudハブへの安全なアクセスに選択します。安全なプライベートクラウド環境内でのファイル共有、コラボレーション、コミュニケーションが可能になります。"
+    },
+    "nxwitness": {
+      "use": "Nx Witnessビデオ管理システム(VMS)への接続に使用します。IPカメラネットワークを管理するセキュリティ専門家に適しています。"
+    },
+    "openvpnTcp": {
+      "use": "TCPプロトコルを使用した信頼性の高い安全なVPNアクセスに選択します。データの整合性が重要な安定した接続に最適ですが、UDPより速度が遅くなる場合があります。"
+    },
+    "openvpnUdp": {
+      "use": "UDPプロトコルを使用した高速で安全なVPNアクセスに選択します。パケットロスが多少発生しても許容できる速度重視のアプリケーションに最適です。"
+    },
+    "postgresql": {
+      "use": "PostgreSQLデータベースへのリモートアクセスに使用します。リモートでデータを管理する必要があるデータベース管理者や開発者に不可欠です。"
+    },
+    "public": {
+      "title": "公開"
+    },
+    "rdp": {
+      "use": "Windowsサーバーやデバイスへのリモートデスクトップアクセスに使用します。グラフィカルデスクトップを備えたデバイスをリモートで操作する必要がある場合に使用します。"
+    },
+    "redis": {
+      "use": "Redisサーバーへの接続に選択します。キャッシュやメッセージングのための高性能データベースを扱う開発者に最適です。"
+    },
+    "samba": {
+      "use": "Windowsネットワーク内、またはSMBプロトコルに対応する異なるオペレーティングシステム間で、ファイル、プリンター、シリアルポートへの共有アクセスを設定するために使用します。"
+    },
+    "screenview": {
+      "use": "Remote.ItのScreenViewアプリを使用したリモート画面表示または操作に使用します。サポート、コラボレーション、リモートアクセスを容易にします。"
+    },
+    "secureBrowser": {
+      "title": "セキュアブラウザ",
+      "use": "機密データを扱うWebアプリケーションや、インターネット上で安全な通信が必要なコンテンツに不可欠です。"
+    },
+    "socks": {
+      "disconnectDisplay": "切断時にSOCKSプロキシを削除するためブラウザを再起動します",
+      "use": "SOCKSプロトコルを介してインターネットトラフィックを処理するプロキシサーバーとして使用します。安全で匿名の通信を提供し、ユーザーがインターネット制限を回避してオンラインのプライバシーを保護できるようにします。"
+    },
+    "ssh": {
+      "help": "任意のSSH設定属性を追加できます",
+      "use": "サーバーやデバイスへの安全なターミナルアクセスとコマンドライン実行に使用します。システム管理者や開発者に不可欠です。"
+    },
+    "tcp": {
+      "use": "Webトラフィックを伴わないカスタムTCP接続に使用します。リバースプロキシ機能がないため、アプリケーション間の直接通信に最適です。"
+    },
+    "terraria": {
+      "use": "Terrariaゲームサーバーをホストまたは接続するために設定します。プレイヤーはユニークな2Dワールドで一緒に探索、建築、冒険を楽しめます。"
+    },
+    "udp": {
+      "use": "信頼性よりも速度が重視される、ストリーミング、ゲーム、放送などのアプリケーションに選択します。"
+    },
+    "unauthenticated": {
+      "title": "認証なし"
+    },
+    "vnc": {
+      "use": "コンピューターやサーバーのグラフィカルインターフェースへのリモートデスクトップアクセスに最適です。グラフィカルデスクトップを備えたデバイスをリモートで操作する必要がある場合に使用します。"
+    },
+    "wireguard": {
+      "use": "モダンで安全なVPN接続に選択します。プライベートネットワークへの高速かつ安全なアクセスを、簡単なセットアップと管理で提供します。"
+    }
   },
   "argumentDefinitionEditForm": {
     "cancel": "キャンセル",
@@ -191,6 +292,12 @@
   "columns": {
     "access": "ゲスト",
     "bind": "バインドアドレス",
+    "body": "本文",
+    "categoryA": "カテゴリーA",
+    "categoryB": "カテゴリーB",
+    "categoryC": "カテゴリーC",
+    "categoryD": "カテゴリーD",
+    "categoryE": "カテゴリーE",
     "city": "市区町村",
     "configurable": "リモート設定",
     "configurable_help": "リモートで設定可能",
@@ -198,10 +305,16 @@
     "connectionType": "接続タイプ",
     "country": "国",
     "created": "作成日",
+    "customerEmail": "メール",
+    "customerPlan": "プラン",
+    "customerPrice": "価格",
+    "customerQuantity": "数量",
+    "customerReseller": "担当者",
     "deviceDescription": "説明",
     "deviceName": "デバイス名",
     "duration": "期間",
     "externalAddress": "外部IP",
+    "from": "開始",
     "hardwareId": "ハードウェアID",
     "id": "デバイスID",
     "initiatorPlatform": "プラットフォーム",
@@ -211,13 +324,36 @@
     "license": "ライセンス",
     "location": "場所",
     "owner": "所有者",
+    "partnerActivated": "有効化",
+    "partnerActive": "アクティブ",
+    "partnerDevicesTotal": "デバイス",
+    "partnerName": "名前",
+    "partnerOnline": "オンライン",
     "permissions": "権限",
     "presenceAddress": "プレゼンス",
+    "productCreated": "作成日",
+    "productCreatedDetail": "作成日",
+    "productIdDetail": "プロダクトID",
+    "productName": "名前",
+    "productPlatform": "プラットフォーム",
+    "productPlatformDetail": "プラットフォーム",
+    "productServiceIdDetail": "サービスID",
+    "productServicePortDetail": "ポート",
+    "productServices": "サービス",
+    "productServicesDetail": "サービス",
+    "productServiceStatusDetail": "ステータス",
+    "productServiceTypeDetail": "サービスタイプ",
+    "productUpdated": "更新日",
+    "productUpdatedDetail": "更新日",
     "quality": "安定性",
     "qualitySmall": "通信品質",
     "restore": "復元",
     "restrict": "ローカルセキュリティ",
     "role": "ロール",
+    "scriptCreated": "作成日",
+    "scriptDescription": "説明",
+    "scriptName": "スクリプト",
+    "scriptUpdated": "変更日",
     "serviceAccess": "ユーザー",
     "serviceAction": "操作",
     "serviceCreated": "サービス作成日",
@@ -237,56 +373,21 @@
     "serviceStatus": "ステータス",
     "serviceType": "サービスタイプ",
     "session": "コネクト",
+    "stage": "ステージ",
     "state": "州",
     "status": "ステータス",
-    "tags": "タグ",
-    "targetPlatform": "プラットフォーム",
-    "unknown": "不明",
-    "version": "CONNECTDバージョン",
-    "body": "本文",
-    "categoryA": "カテゴリーA",
-    "categoryB": "カテゴリーB",
-    "categoryC": "カテゴリーC",
-    "categoryD": "カテゴリーD",
-    "categoryE": "カテゴリーE",
-    "customerEmail": "メール",
-    "customerPlan": "プラン",
-    "customerPrice": "価格",
-    "customerQuantity": "数量",
-    "customerReseller": "担当者",
-    "from": "開始",
-    "partnerActivated": "有効化",
-    "partnerActive": "アクティブ",
-    "partnerDevicesTotal": "デバイス",
-    "partnerName": "名前",
-    "partnerOnline": "オンライン",
-    "productCreated": "作成日",
-    "productCreatedDetail": "作成日",
-    "productIdDetail": "プロダクトID",
-    "productName": "名前",
-    "productPlatform": "プラットフォーム",
-    "productPlatformDetail": "プラットフォーム",
-    "productServiceIdDetail": "サービスID",
-    "productServicePortDetail": "ポート",
-    "productServices": "サービス",
-    "productServicesDetail": "サービス",
-    "productServiceStatusDetail": "ステータス",
-    "productServiceTypeDetail": "サービスタイプ",
-    "productUpdated": "更新日",
-    "productUpdatedDetail": "更新日",
-    "scriptCreated": "作成日",
-    "scriptDescription": "説明",
-    "scriptName": "スクリプト",
-    "scriptUpdated": "変更日",
-    "stage": "ステージ",
     "statusA": "ステータスA",
     "statusB": "ステータスB",
     "statusC": "ステータスC",
     "statusD": "ステータスD",
     "statusE": "ステータスE",
+    "tags": "タグ",
+    "targetPlatform": "プラットフォーム",
     "title": "タイトル",
     "type": "タイプ",
-    "until": "終了"
+    "unknown": "不明",
+    "until": "終了",
+    "version": "CONNECTDバージョン"
   },
   "common": {
     "actionCannotBeUndone": "この操作は元に戻せません。",
@@ -303,6 +404,7 @@
     "enable": "有効にする",
     "loading": "読み込み中...",
     "loadingEllipsis": "読み込み中…",
+    "next": "次へ",
     "no": "いいえ",
     "notAvailable": "該当なし",
     "ok": "OK",
@@ -566,9 +668,10 @@
     "clearSelection": "選択を解除",
     "demoDevice": "デモデバイス",
     "demoHelp": "AWS デモデバイスへの接続がいかに簡単か確認するか、画面左上のプラスメニューからご自身のデバイスを追加してください。",
-    "demoInstructions1": "下のボタンをクリックすると、デバイスが共有されます。",
-    "demoInstructions2": "デバイスを共有しています。しばらくお待ちください...",
     "filterNoResults": "フィルターに一致する結果がありません",
+    "guideHosting": "デバイスは自身のアプリケーション(サービス)をホストすることも、ローカルネットワーク上の別のサービスをホストすることもできます。",
+    "guideSelect": "デバイスを選択して、サービスに接続するか設定してください。",
+    "guideTitle": "デバイスにアクセス",
     "newScript": "新しいスクリプト",
     "noDevices": "このアカウントにはデバイスがありません",
     "removeTag": "タグを削除",
@@ -758,11 +861,28 @@
     "title": "グラフ",
     "updateToSeeMore": "詳細を見るにはアップデートしてください。"
   },
-  "guideStep": {
-    "exitGuide": "ガイドを終了",
-    "next": "次へ",
-    "previous": "前へ",
-    "stepOf": "{{total}}件中{{step}}件目"
+  "graphStyle": {
+    "bar": "棒グラフ",
+    "heatmap": "ヒートマップ"
+  },
+  "graphType": {
+    "AVAILABILITY": "オンライン%",
+    "CONNECT": "接続イベント",
+    "CONNECT_DURATION": "接続時間",
+    "DISCONNECT": "切断イベント",
+    "OFFLINE": "オフラインイベント",
+    "ONLINE": "オンラインイベント",
+    "ONLINE_DURATION": "オンライン時間",
+    "USAGE": "接続%"
+  },
+  "graphUnit": {
+    "DAY": "日",
+    "HOUR": "時間",
+    "MONTH": "月",
+    "WEEK": "週"
+  },
+  "guideBubble": {
+    "dismissAll": "すべて閉じる"
   },
   "header": {
     "back": "戻る",
@@ -831,6 +951,14 @@
   },
   "jobsPage": {
     "runScriptToStart": "開始するにはスクリプトを実行してください"
+  },
+  "jobStatus": {
+    "CANCELLED": "キャンセル済み",
+    "FAILED": "失敗",
+    "READY": "準備完了",
+    "RUNNING": "実行中",
+    "SUCCESS": "成功",
+    "WAITING": "待機中"
   },
   "lanSharePage": {
     "allowUsersToConnect": "カスタムポートを使用して、IPアドレス経由でユーザーがリモートデバイスに接続できるようにします。",
@@ -1014,11 +1142,17 @@
     "totalDevices": "合計デバイス数",
     "totalNetworks": "合計ネットワーク数"
   },
+  "network": {
+    "active": "アクティブ",
+    "cloudProxy": "クラウドプロキシ",
+    "local": "ローカル",
+    "personal": "個人用",
+    "recent": "最近"
+  },
   "networkAdd": {
     "add": "追加",
     "adding": "追加中...",
     "cancel": "キャンセル",
-    "guideInstructions": "ネットワーク名を入力した後、ここをクリックしてください。",
     "name": "名前"
   },
   "networkAddPage": {
@@ -1039,9 +1173,6 @@
     "addServicesHint": "サービスページからこのネットワークにサービスを追加してください",
     "connections": "コネクト",
     "emptyNetwork": "空のネットワーク",
-    "networkAdded": "ネットワークが追加されました！",
-    "nextAddService": "次にサービスを追加します。デバイスページからサービスを見つけて、ネットワークパネルを使用して追加してください。",
-    "ownOrManageNote": "注：所有または管理しているデバイスからのみ追加できます。",
     "settings": "設定",
     "startAll": "すべて開始",
     "stopAll": "すべて停止"
@@ -1360,6 +1491,28 @@
     "veryWeak": "非常に弱い",
     "weak": "弱い"
   },
+  "permission": {
+    "ADMIN": {
+      "description": "組織のタグ、スクリプト、メンバーを管理します。ログを表示します。",
+      "name": "管理者"
+    },
+    "CONNECT": {
+      "description": "デバイスサービスに接続",
+      "name": "コネクト"
+    },
+    "MANAGE": {
+      "description": "デバイスとネットワークの登録、編集、削除、譲渡、共有",
+      "name": "管理"
+    },
+    "SCRIPTING": {
+      "description": "デバイススクリプトの閲覧と実行",
+      "name": "スクリプト"
+    },
+    "VIEW": {
+      "description": "デバイスと現在の状態を表示",
+      "name": "閲覧"
+    }
+  },
   "planCheckout": {
     "devices": "デバイス",
     "downgrade": "ダウングレード",
@@ -1397,9 +1550,9 @@
     "title": "サブスクリプション"
   },
   "platformAddPage": {
+    "managePermissionRequired": "この組織にデバイスを追加するには「管理」権限が必要です。",
     "multiUse": "複数回使用",
     "oneTimeUse": "一回限りの使用",
-    "registerPermissionRequired": "この組織にデバイスを追加するには、登録権限が必要です。",
     "screenViewCodeHint": "または、この登録コードを使用してScreenViewアプリを手動で登録できます。"
   },
   "portSetting": {
@@ -1442,15 +1595,6 @@
     "deleteSelected": "選択項目を削除",
     "selected": "選択済み"
   },
-  "productsHeaderButtons": {
-    "adminRequired": ""
-  },
-  "productsPage": {
-    "createFirst": "",
-    "emptyHelp": "",
-    "emptyHelpReadOnly": "",
-    "loading": ""
-  },
   "productServiceAddPage": {
     "failedToAddService": "サービスの追加に失敗しました",
     "newService": "新しいサービス",
@@ -1464,6 +1608,15 @@
     "removeServiceConfirmPrefix": "次のサービスを削除してもよろしいですか",
     "serviceMayHaveBeenRemoved": "サービスが削除された可能性があります。",
     "serviceNotFound": "サービスが見つかりません"
+  },
+  "productsHeaderButtons": {
+    "adminRequired": ""
+  },
+  "productsPage": {
+    "createFirst": "",
+    "emptyHelp": "",
+    "emptyHelpReadOnly": "",
+    "loading": ""
   },
   "productTransferPage": {
     "cancel": "キャンセル",
@@ -1517,12 +1670,23 @@
     "device": "{{name}} を更新",
     "deviceLogs": "{{name}} のログを更新",
     "devices": "デバイスを更新",
+    "guideBody": "システムが起動していてアプリが実行中の間、デバイスの状態は自動的に更新されます。",
+    "guideTitle": "アプリケーションを更新",
     "logs": "ログを更新",
     "networks": "ネットワークを更新",
     "partnerStats": "パートナー統計を更新",
     "products": "プロダクトを更新",
     "script": "スクリプトを更新",
     "scripts": "スクリプトを更新"
+  },
+  "registerMenu": {
+    "addDevice": "デバイスを追加",
+    "guideDevices": "デバイス",
+    "guideInstallAgent": "まず、接続したいデバイスに当社のエージェントをインストールします。",
+    "guideRegistersAfter": "ページに表示されます。",
+    "guideRegistersBefore": "デバイスは自動的に登録され、",
+    "guideTitle": "デバイスを追加",
+    "managePermissionRequired": "この組織にデバイスを追加するには「管理」権限が必要です。"
   },
   "rentANodeForm": {
     "addDns": "公開DNSアドレスを追加",
@@ -1706,6 +1870,13 @@
     "routingDesktopOnly": "ルーティングはデスクトップでのみ利用できます。",
     "tokenDefault": "{{token}} のデフォルト",
     "tokenFoundIn": "このトークンは次の場所で見つかりました"
+  },
+  "serviceConnectButton": {
+    "guideAutoLaunch": "「自動起動」の設定がオンになっているため、接続時にこの接続が起動します。",
+    "guideBodyBrowser": "接続ボタンでこのサービスへの接続を作成します。",
+    "guideBodyDesktop": "このエンドポイントでネットワークリクエストの待ち受けを開始します。リクエストがあると自動的に接続し、アイドル状態になると切断します。",
+    "guideTitleBrowser": "接続の開始",
+    "guideTitleDesktop": "オンデマンド接続"
   },
   "serviceDefaultsPage": {
     "defaults": "デフォルト",
@@ -1967,154 +2138,17 @@
     "accessPremium": "プレミアム機能とサポートを利用",
     "upgradePlan": "プランをアップグレード"
   },
+  "usersTab": {
+    "access": "アクセス",
+    "connectedCount_other": "接続中 {{count}} 件",
+    "guideBodyAfter": "にメンバーを追加することでも共有できます。",
+    "guideBodyBefore": "ここからゲストユーザーに直接共有することも、",
+    "guideOrganization": "組織",
+    "guideTitle": "共有の力",
+    "totalCount_other": "合計 {{count}} 件"
+  },
   "viewAsBanner": {
     "exit": "表示モードを終了",
     "viewingAs": "表示中: {{email}}"
-  },
-  "graphStyle": {
-    "bar": "棒グラフ",
-    "heatmap": "ヒートマップ"
-  },
-  "graphType": {
-    "AVAILABILITY": "オンライン%",
-    "CONNECT": "接続イベント",
-    "CONNECT_DURATION": "接続時間",
-    "DISCONNECT": "切断イベント",
-    "OFFLINE": "オフラインイベント",
-    "ONLINE": "オンラインイベント",
-    "ONLINE_DURATION": "オンライン時間",
-    "USAGE": "接続%"
-  },
-  "graphUnit": {
-    "DAY": "日",
-    "HOUR": "時間",
-    "MONTH": "月",
-    "WEEK": "週"
-  },
-  "jobStatus": {
-    "CANCELLED": "キャンセル済み",
-    "FAILED": "失敗",
-    "READY": "準備完了",
-    "RUNNING": "実行中",
-    "SUCCESS": "成功",
-    "WAITING": "待機中"
-  },
-  "permission": {
-    "ADMIN": {
-      "description": "組織のタグ、スクリプト、メンバー、デバイス登録を管理します。ログを表示します。",
-      "name": "管理者"
-    },
-    "CONNECT": {
-      "description": "デバイスサービスに接続",
-      "name": "コネクト"
-    },
-    "MANAGE": {
-      "description": "デバイスとネットワークの編集、削除、譲渡、共有",
-      "name": "管理"
-    },
-    "SCRIPTING": {
-      "description": "デバイススクリプトの閲覧と実行",
-      "name": "スクリプト"
-    },
-    "VIEW": {
-      "description": "デバイスと現在の状態を表示",
-      "name": "閲覧"
-    }
-  },
-  "appType": {
-    "launch": {
-      "command": "コマンド",
-      "terminal": "ターミナル",
-      "script": "スクリプト",
-      "copyCommand": "コマンドをコピー",
-      "browser": "ブラウザ"
-    },
-    "public": {
-      "title": "公開"
-    },
-    "unauthenticated": {
-      "title": "認証なし"
-    },
-    "tcp": {
-      "use": "Webトラフィックを伴わないカスタムTCP接続に使用します。リバースプロキシ機能がないため、アプリケーション間の直接通信に最適です。"
-    },
-    "vnc": {
-      "use": "コンピューターやサーバーのグラフィカルインターフェースへのリモートデスクトップアクセスに最適です。グラフィカルデスクトップを備えたデバイスをリモートで操作する必要がある場合に使用します。"
-    },
-    "ssh": {
-      "use": "サーバーやデバイスへの安全なターミナルアクセスとコマンドライン実行に使用します。システム管理者や開発者に不可欠です。",
-      "help": "任意のSSH設定属性を追加できます"
-    },
-    "rdp": {
-      "use": "Windowsサーバーやデバイスへのリモートデスクトップアクセスに使用します。グラフィカルデスクトップを備えたデバイスをリモートで操作する必要がある場合に使用します。"
-    },
-    "secureBrowser": {
-      "title": "セキュアブラウザ",
-      "use": "機密データを扱うWebアプリケーションや、インターネット上で安全な通信が必要なコンテンツに不可欠です。"
-    },
-    "browser": {
-      "title": "ブラウザ",
-      "use": "暗号化接続に対応していないWebアプリケーションへのアクセスやホスティングに使用します。セキュリティが懸念されないローカル開発環境や社内ネットワークに最適です。"
-    },
-    "samba": {
-      "use": "Windowsネットワーク内、またはSMBプロトコルに対応する異なるオペレーティングシステム間で、ファイル、プリンター、シリアルポートへの共有アクセスを設定するために使用します。"
-    },
-    "nxwitness": {
-      "use": "Nx Witnessビデオ管理システム(VMS)への接続に使用します。IPカメラネットワークを管理するセキュリティ専門家に適しています。"
-    },
-    "nextcloud": {
-      "use": "Nextcloudハブへの安全なアクセスに選択します。安全なプライベートクラウド環境内でのファイル共有、コラボレーション、コミュニケーションが可能になります。"
-    },
-    "openvpnTcp": {
-      "use": "TCPプロトコルを使用した信頼性の高い安全なVPNアクセスに選択します。データの整合性が重要な安定した接続に最適ですが、UDPより速度が遅くなる場合があります。"
-    },
-    "minecraft": {
-      "use": "TCPを使用してMinecraftサーバーをホストまたは接続するために設定します。プレイヤーがあなたのMinecraftワールドに参加できるようになります。"
-    },
-    "adminPanel": {
-      "title": "管理パネル",
-      "use": "デバイス上で動作するRemote.It管理パネルです。以前はデバイスの設定をリモートで管理するために使用されていました。現在、ほとんどのデバイスはRemote.itアプリまたはWebポータルから管理できます。"
-    },
-    "terraria": {
-      "use": "Terrariaゲームサーバーをホストまたは接続するために設定します。プレイヤーはユニークな2Dワールドで一緒に探索、建築、冒険を楽しめます。"
-    },
-    "redis": {
-      "use": "Redisサーバーへの接続に選択します。キャッシュやメッセージングのための高性能データベースを扱う開発者に最適です。"
-    },
-    "mysql": {
-      "use": "MySQLデータベースへのリモートアクセスに使用します。データベースをリモートで管理する開発者やデータベース管理者に最適です。"
-    },
-    "postgresql": {
-      "use": "PostgreSQLデータベースへのリモートアクセスに使用します。リモートでデータを管理する必要があるデータベース管理者や開発者に不可欠です。"
-    },
-    "dockerApi": {
-      "use": "Dockerコンテナのリモート管理に使用します。Docker環境をリモートで制御する必要がある開発者やシステム管理者に最適です。"
-    },
-    "screenview": {
-      "use": "Remote.ItのScreenViewアプリを使用したリモート画面表示または操作に使用します。サポート、コラボレーション、リモートアクセスを容易にします。"
-    },
-    "socks": {
-      "use": "SOCKSプロトコルを介してインターネットトラフィックを処理するプロキシサーバーとして使用します。安全で匿名の通信を提供し、ユーザーがインターネット制限を回避してオンラインのプライバシーを保護できるようにします。",
-      "disconnectDisplay": "切断時にSOCKSプロキシを削除するためブラウザを再起動します"
-    },
-    "udp": {
-      "use": "信頼性よりも速度が重視される、ストリーミング、ゲーム、放送などのアプリケーションに選択します。"
-    },
-    "openvpnUdp": {
-      "use": "UDPプロトコルを使用した高速で安全なVPNアクセスに選択します。パケットロスが多少発生しても許容できる速度重視のアプリケーションに最適です。"
-    },
-    "wireguard": {
-      "use": "モダンで安全なVPN接続に選択します。プライベートネットワークへの高速かつ安全なアクセスを、簡単なセットアップと管理で提供します。"
-    },
-    "minecraftBedrock": {
-      "use": "Minecraft Bedrock Editionサーバー向けに選択します。モバイルやコンソールなどのプラットフォームでのゲームプレイにUDPを使用し、プレイヤーが接続して一緒にプレイできるようにします。"
-    }
-  },
-  "network": {
-    "active": "アクティブ",
-    "cloudProxy": "クラウドプロキシ",
-    "local": "ローカル",
-    "personal": "個人用",
-    "recent": "最近"
   }
 }

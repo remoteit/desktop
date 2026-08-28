@@ -1006,15 +1006,6 @@ declare global {
     disabled?: boolean
   }
 
-  type IGuide = {
-    step: number
-    total: number
-    done?: boolean
-    title?: string
-    active?: boolean
-    weight: number
-  }
-
   type IPreferences = {
     version: string
     cliVersion: string

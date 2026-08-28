@@ -1,8 +1,10 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { GUIDE_START_DATE } from '../constants'
 import { State } from '../store'
 import { useLocation } from 'react-router-dom'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
-import { selectPermissions } from '../selectors/organizations'
+import { selectCanRegister } from '../selectors/organizations'
 import { Typography, Paper } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { GuideBubble } from './GuideBubble'
@@ -11,48 +13,70 @@ import { spacing } from '../styling'
 type Props = ButtonProps & { fab?: boolean; buttonSize: number; sidebar?: boolean }
 
 export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, ...props }) => {
+  const { t } = useTranslation()
   const location = useLocation()
   const layout = useSelector((state: State) => state.ui.layout)
-  const permissions = useSelector(selectPermissions)
-  const unauthorized = !permissions.includes('MANAGE')
+  const unauthorized = !useSelector(selectCanRegister)
   const disabled = unauthorized || location.pathname === '/add'
 
-  if (unauthorized || (fab && !layout.hideSidebar)) return null
+  // The sidebar button stays visible but disabled, so the tooltip can explain the
+  // missing permission. The mobile FAB does not: it is a floating primary action
+  // over page content, and a permanently inert one is just an obstacle - on mobile
+  // the disabled button is still reachable in the drawer.
+  if (fab && (unauthorized || !layout.hideSidebar)) return null
 
   const button = (
     <GuideBubble
       sidebar={sidebar}
       guide="addDevice"
       placement="bottom"
-      startDate={new Date('2022-09-20')}
+      startDate={GUIDE_START_DATE}
+      added={GUIDE_START_DATE}
       enterDelay={400}
       hide={disabled}
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
-            <b>Add a device</b>
+            <b>{t('registerMenu.guideTitle', 'Add a device')}</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
-            First step is to install our agent on any device you would like to connect to.
+            {t(
+              'registerMenu.guideInstallAgent',
+              'First step is to install our agent on any device you would like to connect to.'
+            )}
           </Typography>
           <Typography variant="body2" gutterBottom>
-            Your device will automatically register and appear on the <cite>devices</cite> page.
+            {t('registerMenu.guideRegistersBefore', 'Your device will automatically register and appear on the')}{' '}
+            <cite>{t('registerMenu.guideDevices', 'devices')}</cite>{' '}
+            {t('registerMenu.guideRegistersAfter', 'page.')}
           </Typography>
         </>
       }
     >
       <IconButton
         {...props}
-        sx={{ borderRadius: '50%', width: buttonSize, height: buttonSize }}
+        sx={{
+          borderRadius: '50%',
+          width: buttonSize,
+          height: buttonSize,
+          // Without register permission the button stays visible but reads as
+          // inert - a grey plus on the surface colour instead of white on blue.
+          // MUI's own .Mui-disabled rule is more specific than sx, so the
+          // disabled state has to be restated to win.
+          ...(unauthorized && {
+            backgroundColor: 'white.main',
+            color: 'gray.main',
+            '&:hover': { backgroundColor: 'white.main' },
+            '&.Mui-disabled': { backgroundColor: 'white.main', color: 'gray.main' },
+          }),
+        }}
         title={
-          unauthorized ? (
-            <>
-              Register permission required to <br />
-              add a device to this organization.
-            </>
-          ) : (
-            'Add device'
-          )
+          unauthorized
+            ? t(
+                'registerMenu.managePermissionRequired',
+                'Manage permission required to add a device to this organization.'
+              )
+            : t('registerMenu.addDevice', 'Add device')
         }
         to="/add"
         forceTitle

@@ -1,4 +1,5 @@
 import React from 'react'
+import { GUIDE_START_DATE } from '../../constants'
 import { useTranslation } from 'react-i18next'
 import browser, { getOs } from '../../services/browser'
 import { safeHostname } from '@common/nameHelper'
@@ -99,7 +100,8 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
           enterDelay={400}
           guide="registerMenu"
           placement="right"
-          startDate={new Date('2022-09-20')}
+          startDate={GUIDE_START_DATE}
+          added={GUIDE_START_DATE}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>

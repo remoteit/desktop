@@ -6,7 +6,6 @@ import { TextField, Button } from '@mui/material'
 import { selectNetwork } from '../models/networks'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
-import { GuideStep } from './GuideStep'
 import { Gutters } from './Gutters'
 import sleep from '../helpers/sleep'
 
@@ -31,7 +30,6 @@ export const NetworkAdd: React.FC = () => {
         event.preventDefault()
         setAdding(true)
         await dispatch.networks.addNetwork({ ...network, name })
-        dispatch.ui.guide({ guide: 'network', step: 3 })
         reset()
       }}
     >
@@ -53,17 +51,9 @@ export const NetworkAdd: React.FC = () => {
         />
       </Gutters>
       <Gutters>
-        <GuideStep
-          step={2}
-          guide="network"
-          instructions={t('networkAdd.guideInstructions', 'Click here after entering your network name.')}
-          placement="top-end"
-          highlight
-        >
-          <Button color="primary" disabled={name.length < 2 || adding} variant="contained" type="submit">
-            {adding ? t('networkAdd.adding', 'Adding...') : t('networkAdd.add', 'Add')}
-          </Button>
-        </GuideStep>
+        <Button color="primary" disabled={name.length < 2 || adding} variant="contained" type="submit">
+          {adding ? t('networkAdd.adding', 'Adding...') : t('networkAdd.add', 'Add')}
+        </Button>
         <Button
           onClick={() => {
             history.goBack()
