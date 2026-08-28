@@ -319,7 +319,7 @@
     "introBody": "Manage your devices, connections, and services — just ask.",
     "prompt1": "Which of my devices are offline?",
     "prompt2": "Show my recent connections",
-    "prompt3": "Restart a service on one of my devices",
+    "prompt3": "Help me add a new device",
     "popIn": "Pop back in",
     "popOut": "Pop out",
     "send": "Send",

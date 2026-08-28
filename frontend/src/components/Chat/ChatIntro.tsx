@@ -38,7 +38,7 @@ export const ChatIntro: React.FC = () => {
     : [
         t('chat.prompt1', 'Which of my devices are offline?'),
         t('chat.prompt2', 'Show my recent connections'),
-        t('chat.prompt3', 'Restart a service on one of my devices'),
+        t('chat.prompt3', 'Help me add a new device'),
       ]
 
   return (
