@@ -1,11 +1,12 @@
 import React, { useRef } from 'react'
-import { useMobile } from '../hooks/useMobile'
+import { useContainerWidth } from '../hooks/useContainerWidth'
+import { MOBILE_WIDTH } from '../constants'
 import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { getSortOptions } from './SortServices'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
-import { Divider } from '@mui/material'
+import { Box, Divider } from '@mui/material'
 import { DeviceListContext } from '../services/Context'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
@@ -39,7 +40,10 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   const { sortService } = getSortOptions(useSelector(selectDeviceModelAttributes).sortServiceOption)
   const location = useLocation()
   const previousName = useRef<string>('')
-  const mobile = useMobile()
+  const { containerRef, containerWidth } = useContainerWidth()
+  // The panel this list sits in, not the whole app: a list squeezed into a narrow panel
+  // is cramped even when the app overall is nowhere near mobile.
+  const mobile = containerWidth < MOBILE_WIDTH
 
   const rows = devices.reduce((row, device) => {
     const hasFilter = applicationTypes?.length
@@ -54,29 +58,36 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   // Reset previous name when the list changes
   previousName.current = ''
 
+  /* Measured wrapper: `width: 100%` resolves against the scroll container, so it reports
+     the space this list ACTUALLY has. The GridList inside is deliberately wider than the
+     container when columns overflow — that IS the horizontal scroll — so measuring the
+     list itself would report content width instead. Overflow still reaches the scroll
+     container, and Body's first-child rule now applies to this box just the same. */
   return (
-    <GridList
-      {...{ attributes, required, fetching, columnWidths, mobile, rowShrink: 6 }}
-      headerIcon={<DeviceListHeaderCheckbox select={select} devices={devices} />}
-      headerContextData={{ device: devices[0], service: devices[0].services[0] }}
-      headerContextProvider={DeviceListContext.Provider}
-    >
-      {rows.map(([service, device]) => {
-        const disabled = select && !device.scriptable && location.pathname.includes('scripts')
-        const duplicateName = device.id === previousName.current
-        const divider = !duplicateName && !!previousName.current
-        previousName.current = device.id
-        return (
-          <DeviceListContext.Provider
-            key={service.id}
-            value={{ device, service, connections: connections[device.id], required, attributes }}
-          >
-            {divider && <Divider variant="inset" />}
-            <DeviceListItem {...{ mobile, duplicateName, select, selected, disabled }} />
-          </DeviceListContext.Provider>
-        )
-      })}
-      <DeviceLoadMore />
-    </GridList>
+    <Box ref={containerRef} sx={{ width: '100%' }}>
+      <GridList
+        {...{ attributes, required, fetching, columnWidths, mobile, rowShrink: 6 }}
+        headerIcon={<DeviceListHeaderCheckbox select={select} devices={devices} />}
+        headerContextData={{ device: devices[0], service: devices[0].services[0] }}
+        headerContextProvider={DeviceListContext.Provider}
+      >
+        {rows.map(([service, device]) => {
+          const disabled = select && !device.scriptable && location.pathname.includes('scripts')
+          const duplicateName = device.id === previousName.current
+          const divider = !duplicateName && !!previousName.current
+          previousName.current = device.id
+          return (
+            <DeviceListContext.Provider
+              key={service.id}
+              value={{ device, service, connections: connections[device.id], required, attributes }}
+            >
+              {divider && <Divider variant="inset" />}
+              <DeviceListItem {...{ mobile, duplicateName, select, selected, disabled }} />
+            </DeviceListContext.Provider>
+          )
+        })}
+        <DeviceLoadMore />
+      </GridList>
+    </Box>
   )
 }

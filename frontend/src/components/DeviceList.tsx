@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
-import { useMobile } from '../hooks/useMobile'
+import { useContainerWidth } from '../hooks/useContainerWidth'
+import { MOBILE_WIDTH } from '../constants'
 import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import { useLocation } from 'react-router-dom'
@@ -8,7 +9,7 @@ import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
-import { Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
 import { Attribute } from './Attributes'
 import { isOffline } from '../models/devices'
@@ -118,40 +119,50 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   select,
 }) => {
   const location = useLocation()
-  const mobile = useMobile()
+  const { containerRef, containerWidth } = useContainerWidth()
+  // The panel this list sits in, not the whole app: a list squeezed into a narrow panel
+  // is cramped even when the app overall is nowhere near mobile.
+  const mobile = containerWidth < MOBILE_WIDTH
   const dispatch = useDispatch<Dispatch>()
   const onFirstClick = useCallback(() => dispatch.ui.pop('deviceList'), [dispatch])
   const isScriptsPath = location.pathname.includes('scripts')
 
+  /* Measured wrapper: `width: 100%` resolves against the scroll container, so it reports
+     the space this list ACTUALLY has. The GridList inside is deliberately wider than the
+     container when columns overflow — that IS the horizontal scroll — so measuring the
+     list itself would report content width instead. Overflow still reaches the scroll
+     container, and Body's first-child rule now applies to this box just the same. */
   return (
-    <GridList
-      {...{ attributes, required, fetching, columnWidths, mobile }}
-      headerIcon={<DeviceListHeaderCheckbox select={select} devices={devices} />}
-      headerContextData={{ device: devices[0] }}
-      headerContextProvider={DeviceListContext.Provider}
-    >
-      {devices?.map((device, index) => {
-        const canRestore = isOffline(device) && !device.shared
-        if (restore && !canRestore) return null
-        const disabled = select && !device.scriptable && isScriptsPath
-        return (
-          <DeviceListRow
-            key={device.id}
-            device={device}
-            deviceConnections={connections[device.id]}
-            attributes={attributes}
-            required={required}
-            restore={restore}
-            canRestore={canRestore}
-            select={select}
-            mobile={mobile}
-            disabled={disabled}
-            showGuide={!index}
-            onClick={index ? undefined : onFirstClick}
-          />
-        )
-      })}
-      <DeviceLoadMore />
-    </GridList>
+    <Box ref={containerRef} sx={{ width: '100%' }}>
+      <GridList
+        {...{ attributes, required, fetching, columnWidths, mobile }}
+        headerIcon={<DeviceListHeaderCheckbox select={select} devices={devices} />}
+        headerContextData={{ device: devices[0] }}
+        headerContextProvider={DeviceListContext.Provider}
+      >
+        {devices?.map((device, index) => {
+          const canRestore = isOffline(device) && !device.shared
+          if (restore && !canRestore) return null
+          const disabled = select && !device.scriptable && isScriptsPath
+          return (
+            <DeviceListRow
+              key={device.id}
+              device={device}
+              deviceConnections={connections[device.id]}
+              attributes={attributes}
+              required={required}
+              restore={restore}
+              canRestore={canRestore}
+              select={select}
+              mobile={mobile}
+              disabled={disabled}
+              showGuide={!index}
+              onClick={index ? undefined : onFirstClick}
+            />
+          )
+        })}
+        <DeviceLoadMore />
+      </GridList>
+    </Box>
   )
 }
