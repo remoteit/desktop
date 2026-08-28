@@ -18,7 +18,11 @@ export const RemoteHeader: React.FC<Props> = ({ device, children }) => {
      frame could actually reach its width. (Web only — Electron always fills its window.) */
   const chatWidth = useChatWidth()
   const appMaxWidth = APP_MAX_WIDTH + (useChatDocked() ? chatWidth : 0)
-  const maxWidth = !browser.isElectron && useMediaQuery(`(min-width:${appMaxWidth}px)`)
+  /* The QUERY is the constant, not the widened cap: it only asks "is the window wider
+     than the app wants to be", which the chat does not change. Interpolating the live
+     cap rebuilt the MediaQueryList on every frame of a chat drag — a fresh matchMedia
+     and re-subscribe per frame — for an answer that flips at one threshold. */
+  const maxWidth = !browser.isElectron && useMediaQuery(`(min-width:${APP_MAX_WIDTH}px)`)
   const showFrame = browser.isRemote
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled

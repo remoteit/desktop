@@ -9,6 +9,9 @@ import {
   CHAT_PANEL_WIDTH_MIN,
   CHAT_MIN_CONTENT_WIDTH,
   HIDE_SIDEBAR_WIDTH,
+  HIDE_TWO_PANEL_WIDTH,
+  SHOW_TRIPLE_PANEL_WIDTH,
+  MOBILE_WIDTH,
   SIDEBAR_WIDTH,
   ORGANIZATION_BAR_WIDTH,
 } from '../constants'
@@ -84,3 +87,13 @@ export const useSidebarWidth = (): number => {
   const hideSidebar = useHideSidebar()
   return hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
 }
+
+/* The app reads the chat's width ONLY through these thresholds — the sidebar collapsing,
+   one panel or two or three, phone size. Nothing downstream wants the pixel value, so a
+   drag has to publish once per threshold it crosses rather than once per frame. Packed
+   into one number purely so two widths can be compared for "same layout" in a line. */
+export const layoutBreakpoints = (effectiveWidth: number): number =>
+  (effectiveWidth <= HIDE_SIDEBAR_WIDTH ? 1 : 0) +
+  (effectiveWidth <= HIDE_TWO_PANEL_WIDTH ? 2 : 0) +
+  (effectiveWidth >= SHOW_TRIPLE_PANEL_WIDTH ? 4 : 0) +
+  (effectiveWidth <= MOBILE_WIDTH ? 8 : 0)
