@@ -31,12 +31,11 @@ export const ChatMessages: React.FC<Props> = ({ messages, streaming, typing, chi
     return () => element.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* The app's standard scroll surface: Body draws the bottom overflow fade the
-     settings and device pages use. Its fade is absolutely positioned, so it needs
-     this relative wrapper to sit at the transcript's bottom edge rather than the
-     panel's — otherwise it lands under the composer. */
+  /* The app's standard scroll surface: Body draws the same top and bottom overflow
+     fades the settings and device pages use. They are masked onto the scroll box
+     itself, so this wrapper is only here to give the column its flex bounds. */
   return (
-    <Box sx={{ position: 'relative', display: 'flex', flexGrow: 1, minHeight: 0 }}>
+    <Box sx={{ display: 'flex', flexGrow: 1, minHeight: 0 }}>
       <Body
         fadeTop
         verticalOverflow
