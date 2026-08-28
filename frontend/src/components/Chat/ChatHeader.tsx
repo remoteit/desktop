@@ -193,7 +193,15 @@ export const HistoryButton: React.FC = () => {
             dense
             selected={c.id === currentId}
             sx={{
-              '& .remove': { opacity: 0, transition: 'opacity 100ms' },
+              /* Hide-until-hover only where something can do the hovering. A touch
+                 screen has no hover state to enter, so the row would offer no way to
+                 delete at all — there the X just stays visible. Asked as a capability
+                 rather than off browser.isMobile, which only knows the native builds:
+                 an iPad on the web or a touch laptop needs the same treatment and is
+                 not "mobile" by that measure. */
+              '@media (hover: hover)': {
+                '& .remove': { opacity: 0, transition: 'opacity 100ms' },
+              },
               // Hover, or the button's own KEYBOARD focus. Not :focus-within — MUI
               // focuses the selected item when the menu opens, which would pin the X
               // on the active row. :focus-visible keeps it reachable by tab without
