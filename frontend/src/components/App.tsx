@@ -9,12 +9,7 @@ import { useLocation } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
 import { selectResellerRef } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  HIDE_TWO_PANEL_WIDTH,
-  MOBILE_WIDTH,
-  REGEX_FIRST_PATH,
-  SHOW_TRIPLE_PANEL_WIDTH,
-} from '../constants'
+import { HIDE_TWO_PANEL_WIDTH, MOBILE_WIDTH, REGEX_FIRST_PATH, SHOW_TRIPLE_PANEL_WIDTH } from '../constants'
 import { State, Dispatch } from '../store'
 import { Box } from '@mui/material'
 import { InstallationNotice } from './InstallationNotice'
@@ -157,19 +152,41 @@ export const App: React.FC = () => {
                 display: 'flex',
                 overflow: 'hidden',
                 flexDirection: 'row',
-                alignItems: 'start',
-                justifyContent: 'start',
               }}
             >
-              {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
-              <Router layout={layout} />
+              {/* The app side owns its own chrome. The sidebar, the pages AND the bottom
+                  menu stack in this column, so the docked chat is a full-height column
+                  BESIDE all three rather than a panel the menu runs underneath. */}
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  minWidth: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                }}
+              >
+                <Box
+                  sx={{
+                    flexGrow: 1,
+                    minHeight: 0,
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'start',
+                    justifyContent: 'start',
+                  }}
+                >
+                  {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
+                  <Router layout={layout} />
+                </Box>
+                {showBottomMenu && <BottomMenu layout={layout} />}
+              </Box>
               {chatEnabled && (
                 <React.Suspense fallback={null}>
                   <ChatPanel />
                 </React.Suspense>
               )}
             </Box>
-            {showBottomMenu && <BottomMenu layout={layout} />}
           </>
         )}
         <AnnouncementDialog />

@@ -26,7 +26,6 @@ export const ChatPanel: React.FC = () => {
   const open = useSelector((state: State) => state.chat.open)
   const expanded = useSelector((state: State) => state.chat.expanded)
   const insets = useSelector((state: State) => state.ui.layout.insets)
-  const showBottomMenu = useSelector((state: State) => state.ui.layout.showBottomMenu)
   const layout = useSelector((state: State) => state.ui.layout)
   const docked = useChatDocked()
   const chatWidth = useChatWidth()
@@ -101,7 +100,10 @@ export const ChatPanel: React.FC = () => {
         borderLeft: !docked && sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
         boxShadow: docked || sidebarWidth ? 3 : 0,
-        paddingBottom: showBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
+        // The chat reaches the window's bottom edge in both modes now — a full-height
+        // column beside the bottom menu when docked, over it when it overlays — so it
+        // owns its safe-area inset rather than leaving it to the menu below it
+        paddingBottom: insets?.bottomPx || 1.5,
       }}
       ref={panelRef}
     >
