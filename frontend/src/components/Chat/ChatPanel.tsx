@@ -1,9 +1,10 @@
 import React, { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
-import { Box } from '@mui/material'
+import { Box, Theme } from '@mui/material'
 import { State, Dispatch } from '../../store'
 import { CHAT_PANEL_WIDTH_MIN } from '../../constants'
+import { radius } from '../../styling'
 import { useChatDocked, useChatWidth, useChatMaxWidth, useSidebarWidth } from '../../hooks/useChatEnabled'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
@@ -12,6 +13,11 @@ import { IconButton } from '../../buttons/IconButton'
 import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
 import browser from '../../services/browser'
+
+/* How far the docked column floats off the window edges, in theme spacing units.
+   One knob: the margins and the size subtractions below both derive from it, so a
+   change here can't leave the box and its margins disagreeing. */
+const INSET = 1
 
 /* Display-only: lifecycle, popout protocol, and org mirroring live in
    useChatMainSync; user actions dispatch chat model effects */
@@ -63,8 +69,17 @@ export const ChatPanel: React.FC = () => {
         ...(docked
           ? {
               position: 'relative',
-              height: '100%',
-              width: drag.width,
+              /* Floating inset column. The margins come OUT of the width App already
+                 reserves for the chat (chatWidth), rather than being added to it — so
+                 the footprint still measures drag.width and the content area's math,
+                 the drag clamp and the effective-width breakpoints all stay honest.
+                 Hence subtracting one inset horizontally (right margin only) and two
+                 vertically (top and bottom). */
+              marginY: INSET,
+              marginRight: INSET,
+              height: (theme: Theme) => `calc(100% - ${theme.spacing(INSET * 2)})`,
+              width: (theme: Theme) => `calc(${drag.width}px - ${theme.spacing(INSET)})`,
+              borderRadius: `${radius.lg}px`,
             }
           : {
               position: 'absolute',
@@ -81,7 +96,9 @@ export const ChatPanel: React.FC = () => {
         paddingTop: insets?.topPx,
         paddingRight: insets?.rightPx,
         bgcolor: 'grayLightest.main',
-        borderLeft: docked || sidebarWidth ? 1 : 0,
+        // Only the overlay needs a drawn edge — the floating column is separated by
+        // its shadow, and a left-only border would run out mid-way around the radius
+        borderLeft: !docked && sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
         boxShadow: docked || sidebarWidth ? 3 : 0,
         paddingBottom: showBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
@@ -103,11 +120,7 @@ export const ChatPanel: React.FC = () => {
         }
       >
         {!browser.isMobile && !layout.mobile && (
-          <IconButton
-            icon="clone"
-            title={t('chat.popOut', 'Pop out')}
-            onClick={() => dispatch.chat.popOut()}
-          />
+          <IconButton icon="clone" title={t('chat.popOut', 'Pop out')} onClick={() => dispatch.chat.popOut()} />
         )}
         <NewChatButton />
         <IconButton icon="times" title={t('chat.close', 'Close')} onClick={() => dispatch.chat.set({ open: false })} />

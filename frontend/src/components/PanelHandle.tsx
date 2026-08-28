@@ -1,5 +1,6 @@
 import React from 'react'
 import { Box, Theme } from '@mui/material'
+import { radius } from '../styling'
 
 /* The app's drag divider: a hairline that thickens and takes the primary
    color on hover or while grabbed. Extracted from the panel components so
@@ -34,12 +35,17 @@ type Props = {
   onMouseDown: (event: React.MouseEvent) => void
   grab: boolean
   /** Position it against the left edge of the panel it resizes — for a
-   *  right-docked column that has no divider slot of its own in the flow */
+   *  right-docked column that has no divider slot of its own in the flow.
+   *  That column is a floating rounded panel, so the line stops where its
+   *  corners start curving instead of running the full height past them. */
   inset?: boolean
 }
 
 export const PanelHandle: React.FC<Props> = ({ onMouseDown, grab, inset }) => (
-  <Box onMouseDown={onMouseDown} sx={[handleSx, inset ? { left: 0, top: 0 } : {}]}>
+  <Box
+    onMouseDown={onMouseDown}
+    sx={[handleSx, inset ? { left: 0, top: `${radius.lg}px`, bottom: `${radius.lg}px`, height: 'auto' } : {}]}
+  >
     <div className={grab ? 'active' : undefined} />
   </Box>
 )
