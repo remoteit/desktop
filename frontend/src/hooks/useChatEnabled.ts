@@ -7,6 +7,7 @@ import {
   CHAT_ALWAYS_ON,
   CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_MIN,
+  CHAT_PANEL_WIDTH_MAX,
   CHAT_MIN_CONTENT_WIDTH,
   HIDE_SIDEBAR_WIDTH,
   HIDE_TWO_PANEL_WIDTH,
@@ -32,7 +33,9 @@ export const useChatEnabled = (): boolean => {
    down to CHAT_PANEL_WIDTH_MIN, rather than the app flipping to a full-screen chat. */
 export const useChatMaxWidth = (): number => {
   const viewport = useViewportWidth()
-  return Math.max(CHAT_PANEL_WIDTH_MIN, viewport - CHAT_MIN_CONTENT_WIDTH)
+  // Two ceilings: what the window can spare, and what the transcript can actually use.
+  // The floor wins over both — a window too small for either still gets a usable column.
+  return Math.max(CHAT_PANEL_WIDTH_MIN, Math.min(CHAT_PANEL_WIDTH_MAX, viewport - CHAT_MIN_CONTENT_WIDTH))
 }
 
 /* Width the docked chat column occupies — single source for the fit-check

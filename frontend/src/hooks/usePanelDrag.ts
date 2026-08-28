@@ -69,7 +69,7 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
       event.preventDefault()
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
-      onPersist?.(panelRef.current?.offsetWidth || width)
+      onPersist?.(handleRef.current)
     },
     [onMove, onPersist, panelRef, width]
   )
@@ -78,7 +78,12 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
     setGrab(true)
     measure()
     moveRef.current = event.clientX
-    handleRef.current = panelRef.current?.offsetWidth || width
+    /* The accumulator tracks the panel's LOGICAL width, not what it renders as. The
+       chat column draws itself an inset narrower than the width it is given, so seeding
+       (and persisting) from offsetWidth quietly shaved that inset off every drag — the
+       column settled a margin short of its own ceiling and never reached the reading
+       measure the ceiling exists to provide. */
+    handleRef.current = width
     event.preventDefault()
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)

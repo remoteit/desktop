@@ -124,6 +124,13 @@ export const CHAT_MIN_CONTENT_WIDTH = 500
 // track back to the start of the next line. Applied to the COLUMN, so the panel itself
 // may be any width without the conversation spreading across it.
 export const CHAT_MAX_MESSAGE_WIDTH = 800
+/* Widest the column is worth dragging — the point at which the transcript stops growing,
+   so past it the drag only buys empty panel around a column already at full width. Built
+   from what actually stands between the two: the 20px gutter either side of the
+   transcript (ChatMessages' paddingX) and the 8px the docked column insets itself by
+   (ChatPanel's INSET). Derived rather than written down, because a round number here
+   lands just short and the transcript never quite reaches its own measure. */
+export const CHAT_PANEL_WIDTH_MAX = CHAT_MAX_MESSAGE_WIDTH + 20 * 2 + 8
 export const ORGANIZATION_BAR_WIDTH = 70
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750
