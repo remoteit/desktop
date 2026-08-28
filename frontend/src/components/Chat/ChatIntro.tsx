@@ -54,7 +54,7 @@ export const ChatIntro: React.FC = () => {
           paddingY: 4,
         }}
       >
-        <Icon name="remote-ai" size="xxxl" color="primary" />
+        <Icon name="remote-ai" size="xxxl" color="grayDarker" />
         <Typography variant="h3" sx={{ marginTop: 1.5 }}>
           {t('chat.introTitle', 'Remote.It AI')}
         </Typography>

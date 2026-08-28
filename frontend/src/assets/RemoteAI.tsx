@@ -6,7 +6,7 @@ import React from 'react'
 
    The two arcs are separate paths, and the antenna dot is separate again, so a
    caller can animate the signal without touching the head: target `.signal-inner`
-   and `.signal-outer` from a parent's sx (see ChatTyping). Kept as one visual
+   and `.signal-outer` from a parent's sx (see ChatMark). Kept as one visual
    group here — nothing about the resting mark depends on the split. */
 export const RemoteAI = props => {
   return (

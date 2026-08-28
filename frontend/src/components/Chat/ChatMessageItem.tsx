@@ -6,7 +6,6 @@ import { Box, Typography } from '@mui/material'
 import { fontSizes, radius, scrollbarStyles, SCROLLBAR_WIDTH_NARROW } from '../../styling'
 import { ChatTranscriptMessage } from '../../models/chat'
 import { ChatToolCalls } from './ChatToolCalls'
-import { Icon } from '../Icon'
 
 // Links open in a new tab: a bare anchor is a top-level navigation, which in
 // Electron replaces the app window with the external site (will-navigate only
@@ -18,14 +17,12 @@ const markdownComponents = {
 
 type Props = {
   message: ChatTranscriptMessage
-  /** Show the sign-off mark. Withheld by the caller while the message is still streaming. */
-  signed?: boolean
 }
 
 // Memoized: immer keeps unchanged message refs stable, so during streaming
 // only the tail message re-renders instead of re-parsing every message's
 // markdown on each delta
-export const ChatMessageItem = React.memo<Props>(({ message, signed }) => {
+export const ChatMessageItem = React.memo<Props>(({ message }) => {
   const { t } = useTranslation()
   if (message.role === 'user')
     return (
@@ -141,14 +138,6 @@ export const ChatMessageItem = React.memo<Props>(({ message, signed }) => {
         <Typography variant="caption" color="warning.main">
           {t('chat.interrupted', 'Interrupted')}
         </Typography>
-      )}
-      {/* Signs off a finished answer — the caller withholds it from a message that is
-          still streaming, so the mark landing is what tells you the turn is done.
-          Indented to the card's text, not its edge, so it hangs under the writing. */}
-      {signed && (
-        <Box sx={{ display: 'flex', marginTop: 1, marginLeft: 2 }}>
-          <Icon name="remote-ai" size="lg" color="primary" />
-        </Box>
       )}
     </Box>
   )
