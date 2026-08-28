@@ -6,7 +6,7 @@ import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getApiURL, getWebSocketURL } from '../helpers/apiHelper'
 import { oidcAccessToken, oidcMintError } from '../services/oidc'
-import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
+import { selectLimitsLookup, selectFeatures } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { bindableResources } from '../services/permitteerAccount'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -26,8 +26,11 @@ export const TestPage: React.FC = () => {
   const apis = useSelector((state: State) => state.ui.apis)
   const testUI = useSelector((state: State) => state.ui.testUI)
   const preferences = useSelector((state: State) => state.backend.preferences)
-  const limitsOverride = useSelector(selectLimitsLookup)
-  const limits = useSelector(selectLimits)
+  // What is in EFFECT (the license, with any override on top) versus the overrides
+  // themselves: the switch reads the first and writes the second.
+  const featureValues = useSelector(selectLimitsLookup)
+  const features = useSelector(selectFeatures)
+  const overrides = useSelector((state: State) => state.ui.limitsOverride)
 
   /* The backend replaces its WHOLE preferences object with what we send, and our copy
      starts out as `{ version: '', cliVersion: '' }` until the backend pushes its own
@@ -336,28 +339,32 @@ export const TestPage: React.FC = () => {
       </List>
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>
       <List>
-        {limits.map(l => {
-          if (typeof l.value === 'boolean')
-            return (
-              <ListItemSetting
-                hideIcon
-                key={l.name}
-                label={t('testPage.featureLabel', {
-                  name: l.name,
-                  state: l.value
-                    ? t('testPage.enabled', 'enabled')
-                    : t('testPage.disabled', 'disabled'),
-                  defaultValue: '{{name}} (default {{state}})',
-                })}
-                toggle={limitsOverride[l.name]}
-                onClick={() =>
-                  dispatch.ui.setPersistent({
-                    limitsOverride: { ...limitsOverride, [l.name]: !limitsOverride[l.name] },
-                  })
-                }
-              />
-            )
-        })}
+        {features.map(f => (
+          <ListItemSetting
+            hideIcon
+            key={f.name}
+            label={t('testPage.featureLabel', {
+              name: f.name,
+              state: f.value ? t('testPage.enabled', 'enabled') : t('testPage.disabled', 'disabled'),
+              defaultValue: '{{name}} (default {{state}})',
+            })}
+            subLabel={
+              f.pending
+                ? t(
+                    'testPage.featurePending',
+                    'Not carried by any license yet \u2014 this switch is the only way to turn it on.'
+                  )
+                : undefined
+            }
+            toggle={!!featureValues[f.name]}
+            /* Writes the OVERRIDE, not the effective lookup. Spreading the lookup pinned
+               every OTHER feature at its current value as well, so a later change to the
+               account's license went unseen until someone hit Reset. */
+            onClick={() =>
+              dispatch.ui.setPersistent({ limitsOverride: { ...overrides, [f.name]: !featureValues[f.name] } })
+            }
+          />
+        ))}
         <Divider variant="inset" />
         <ListItemSetting
           hideIcon

@@ -3,9 +3,29 @@ const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
 // The AI portal (app.ai.remote.it) shows the Remote.It AI chat unconditionally: it IS the
-// AI surface. Set per-deployment via the Amplify branch env so the general app keeps the
-// soft-launch (Test UI) even if this branch's code merges elsewhere.
+// AI surface. Set per-deployment via the Amplify branch env so the general app stays on
+// the licensed gate below even if this branch's code merges elsewhere.
 export const CHAT_ALWAYS_ON = env.VITE_CHAT_ALWAYS_ON === 'true'
+
+/* The license limit that gates the Remote.It AI chat. The whole surface hangs off this
+   one name — the header button, the docked column and everything the panel loads — so
+   switching the feature on for an account is a licensing change rather than a release. */
+export const CHAT_FEATURE = 'ai-agent'
+
+/* Boolean license features this build gates on that an account's license may not carry
+   yet. Naming one here gives it a row on the Test page AND puts it in the limits lookup,
+   which is what makes it testable at all: the lookup is built FROM the limits the API
+   returned, so a flag the API has never mentioned has nothing for an override to attach
+   to. The API's value always wins once it starts arriving, so an entry whose limit has
+   gone live everywhere is dead weight and can be deleted. */
+export const PENDING_FEATURES: string[] = [CHAT_FEATURE]
+
+/* What a forward-declared flag is worth before any license mentions it: ON in local dev,
+   because you are building the feature, and OFF in every deployed build. Kept as the
+   flag's VALUE rather than as a bypass around the gate, so the Test page switch always
+   reads what is actually in effect and one click still turns the feature off in dev. */
+export const PENDING_FEATURE_DEFAULT = MODE === 'development'
+
 // Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
 // web and desktop; the backend never touches auth.
 export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''

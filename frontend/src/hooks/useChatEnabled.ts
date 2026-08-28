@@ -1,10 +1,11 @@
 import { useSelector } from 'react-redux'
 import { State } from '../store'
+import { selectLimitsLookup } from '../selectors/organizations'
 import browser from '../services/browser'
 import { useViewportWidth } from './useViewportWidth'
 import {
-  MODE,
   CHAT_ALWAYS_ON,
+  CHAT_FEATURE,
   CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_MIN,
   CHAT_PANEL_WIDTH_MAX,
@@ -17,12 +18,20 @@ import {
   ORGANIZATION_BAR_WIDTH,
 } from '../constants'
 
-/* The Remote.It AI chat is always on in local dev builds and on the dedicated AI portal
-   (CHAT_ALWAYS_ON, set for app.ai.remote.it); in every other deployed build it soft-launches
-   behind the hidden Test UI (shift+option on the avatar menu → Test UI). */
+/* Whether the Remote.It AI chat exists for this user at all — the single gate the header
+   button, the docked column and everything the panel loads hang off. Nothing chat-related
+   mounts without it, so a user without the feature makes no agent requests.
+
+   It is a LICENSE feature, read exactly the way tagging/saml/roles are, which means it
+   follows the ACCOUNT you are viewing: the chat is scoped to the organization in the
+   sidebar selector, so an org whose license does not carry the agent does not get one.
+   One build skips the license: app.ai.remote.it (CHAT_ALWAYS_ON) IS the AI surface. Local
+   dev is NOT an exception — the flag simply defaults on there (PENDING_FEATURE_DEFAULT),
+   so the gate itself is what you toggle rather than something you have to work around.
+   Until the API carries the limit, Test Settings → Features is how to turn it on. */
 export const useChatEnabled = (): boolean => {
-  const testUI = useSelector((state: State) => state.ui.testUI)
-  return MODE === 'development' || CHAT_ALWAYS_ON || !!testUI
+  const licensed = useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
+  return CHAT_ALWAYS_ON || licensed
 }
 
 /* The widest the chat column may be dragged: whatever the window holds once the

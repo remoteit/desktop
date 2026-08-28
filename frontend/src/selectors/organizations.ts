@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
+import { PENDING_FEATURES, PENDING_FEATURE_DEFAULT } from '../constants'
 import {
   getUser,
   getOrganizations,
@@ -89,16 +90,41 @@ export const selectLimit = createSelector(
   (limits, limitName): ILimit | undefined => limits.find(limit => limit.name === limitName)
 )
 
+/* Every feature gate in the app reads this: the account's licensed limits, with the
+   Test page's overrides applied on top. Overrides are a PERSONAL-account tool — an
+   organization's real entitlements are never faked, so what you see on an org is what
+   its license actually grants. */
 export const selectLimitsLookup = createSelector(
   [selectLimits, isUserAccount, getLimitsOverride],
   (baseLimits, isUserAccount, limitsOverride): ILookup<ILimit['value']> => {
-    let result: ILookup<boolean> = {}
-    baseLimits.forEach(l => {
-      result[l.name] = limitsOverride[l.name] === undefined || !isUserAccount ? l.value : limitsOverride[l.name]
-    })
+    const result: ILookup<ILimit['value']> = {}
+    // Flags this build knows about but no license carries yet: worth their dev default
+    // until the API says otherwise, and — being named — something an override can take a
+    // position on, which a name the lookup has never seen would not be.
+    PENDING_FEATURES.forEach(name => (result[name] = PENDING_FEATURE_DEFAULT))
+    baseLimits.forEach(l => (result[l.name] = l.value))
+    if (isUserAccount)
+      Object.keys(result).forEach(name => {
+        if (limitsOverride[name] !== undefined) result[name] = limitsOverride[name]
+      })
     return result
   }
 )
+
+export type IFeature = { name: string; value: boolean; pending?: boolean }
+
+/* The boolean features the Test page lists: the ones this account's license mentions,
+   plus the ones this build forward-declares. `pending` is the difference between "the
+   license said no" and "no license has mentioned it yet" — the second is a flag still
+   soft-launching, where the Test page switch is the only way to see the feature. */
+export const selectFeatures = createSelector([selectLimits], (limits): IFeature[] => {
+  const features: IFeature[] = limits
+    .filter(l => typeof l.value === 'boolean')
+    .map(l => ({ name: l.name, value: l.value as boolean }))
+  for (const name of PENDING_FEATURES)
+    if (!features.some(f => f.name === name)) features.push({ name, value: PENDING_FEATURE_DEFAULT, pending: true })
+  return features
+})
 
 export const selectLicensesWithLimits = createSelector([selectLicenses, selectLimits], (licenses, limits) => {
   return {
