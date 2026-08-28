@@ -2,7 +2,13 @@ import React from 'react'
 import {
   TimeSeriesTypeLookup,
   TimeSeriesAvailableResolutions,
+  TimeSeriesAvailableStyles,
+  TimeSeriesHeatmapResolutions,
   TimeSeriesLengths,
+  timeSeriesLengthUnit,
+  withinLogLimit,
+  timeSeriesWithStyle,
+  timeSeriesStyleLabel,
   timeSeriesTypeLabel,
   timeSeriesResolutionLabel,
 } from '../helpers/dateHelper'
@@ -22,6 +28,12 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
   const limitDuration = Duration.fromISO(logLimit)
   const { t } = useTranslation()
   const overLimitLabel = t('timeSeriesSelect.overLimit', ' (over limit)')
+  const heatmap = timeSeriesOptions.style === 'heatmap'
+
+  const resolutions = heatmap ? TimeSeriesHeatmapResolutions : Object.keys(TimeSeriesAvailableResolutions)
+  const lengthUnit = timeSeriesLengthUnit(timeSeriesOptions)
+  const lengths = TimeSeriesLengths[lengthUnit]
+
   return (
     <List>
       <SelectSetting
@@ -33,40 +45,48 @@ export const TimeSeriesSelect: React.FC<Props> = ({ timeSeriesOptions, logLimit,
         onChange={value => onChange?.({ ...timeSeriesOptions, type: value as ITimeSeriesType })}
       />
       <SelectSetting
+        icon="table-cells"
+        label={t('timeSeriesSelect.graphStyle', 'Graph style')}
+        value={timeSeriesOptions.style ?? 'bar'}
+        defaultValue={defaults.style}
+        values={Object.keys(TimeSeriesAvailableStyles).map(key => ({ key, name: timeSeriesStyleLabel(key) }))}
+        onChange={value => onChange?.(timeSeriesWithStyle(timeSeriesOptions, value as ITimeSeriesStyle, limitDuration))}
+      />
+      <SelectSetting
         icon="timer"
         label={t('timeSeriesSelect.graphUnit', 'Graph unit')}
         value={timeSeriesOptions.resolution}
         defaultValue={defaults.resolution}
-        values={Object.keys(TimeSeriesAvailableResolutions).map(key => {
-          const disabled = limitDuration.valueOf() < Duration.fromObject({ [key]: TimeSeriesLengths[key][0] }).valueOf()
+        values={resolutions.map(key => {
+          // Measured in whichever unit this resolution makes `length` count.
+          const unit = timeSeriesLengthUnit({ ...timeSeriesOptions, resolution: key as ITimeSeriesResolution })
+          const disabled = !withinLogLimit(limitDuration, unit, TimeSeriesLengths[unit][0])
           return {
             key,
             name: timeSeriesResolutionLabel(key) + (disabled ? overLimitLabel : ''),
             disabled,
           }
         })}
-        onChange={value =>
-          onChange?.({
-            ...timeSeriesOptions,
-            resolution: value as ITimeSeriesResolution,
-            length: TimeSeriesLengths[value][0],
-          })
-        }
+        onChange={value => {
+          // The new length is counted in whatever unit the new resolution makes
+          // `length` mean — days for a heat map, the resolution itself for bars.
+          const next = { ...timeSeriesOptions, resolution: value as ITimeSeriesResolution }
+          onChange?.({ ...next, length: TimeSeriesLengths[timeSeriesLengthUnit(next)][0] })
+        }}
       />
       <SelectSetting
         icon="ruler"
         label={t('timeSeriesSelect.graphLength', 'Graph length')}
         value={timeSeriesOptions.length}
         defaultValue={defaults.length}
-        values={TimeSeriesLengths[timeSeriesOptions.resolution].map(key => {
-          const disabled =
-            limitDuration.valueOf() < Duration.fromObject({ [timeSeriesOptions.resolution]: key }).valueOf()
+        values={lengths.map(key => {
+          const disabled = !withinLogLimit(limitDuration, lengthUnit, key)
           return {
             key,
             name:
               t('timeSeriesSelect.lengthValue', {
                 count: Number(key),
-                unit: timeSeriesResolutionLabel(timeSeriesOptions.resolution),
+                unit: timeSeriesResolutionLabel(lengthUnit),
                 defaultValue_one: '{{count}} {{unit}}',
                 defaultValue_other: '{{count}} {{unit}}s',
               }) + (disabled ? overLimitLabel : ''),

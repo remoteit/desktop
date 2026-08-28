@@ -43,7 +43,10 @@ export default async function launch(command: string, type: 'TERMINAL' | 'SCRIPT
     Logger.info('SCRIPT', { script, scriptPath, command })
   }
 
-  const commands = new Command({ command })
+  // Not reported to Airbrake: this shells out to the user's own terminal, VNC
+  // or RDP client, so a failure here almost always means the app isn't
+  // installed or the OS denied us -- their environment, not our defect.
+  const commands = new Command({ command, report: false })
   commands.onError = (e: Error) => {
     Logger.error('LAUNCH APP ERROR', e)
     let message = e.toString()

@@ -58,6 +58,9 @@ export const BT_UUIDS = {
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
 
+// When the guide bubble system shipped — bubbles are hidden from accounts created before their start date
+export const GUIDE_START_DATE = new Date('2022-09-20')
+
 //Airbrake
 export const AIRBRAKE_ID = parseInt(env.VITE_AIRBRAKE_ID || '', 10)
 export const AIRBRAKE_KEY = String(env.VITE_AIRBRAKE_KEY)

@@ -14,6 +14,9 @@ import { byName } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
+// The organization selector's guide shipped later than the rest — its own cohort cutoff
+const ORG_GUIDE_DATE = new Date('2023-01-01')
+
 const CLEAR_ID_BASE: Record<string, string> = {
   '/runs': '/runs',
   '/script': '/scripts',
@@ -161,7 +164,8 @@ export const OrganizationSelect: React.FC = () => {
         sidebar
         guide="organizationSelect"
         placement="right"
-        startDate={new Date('2023-01-01')}
+        startDate={ORG_GUIDE_DATE}
+        added={ORG_GUIDE_DATE}
         queueAfter="refresh"
         enterDelay={600}
         instructions={

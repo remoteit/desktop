@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import { useLocation } from 'react-router-dom'
-import { MOBILE_WIDTH } from '../constants'
+import { MOBILE_WIDTH, GUIDE_START_DATE } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
@@ -13,8 +14,6 @@ import { isOffline } from '../models/devices'
 import { GuideBubble } from './GuideBubble'
 import { DeviceLoadMore } from './LoadMore'
 import { GridList } from './GridList'
-
-const GUIDE_START_DATE = new Date('2022-09-20')
 
 export interface DeviceListProps {
   attributes: Attribute[]
@@ -40,6 +39,38 @@ type RowProps = {
   disabled?: boolean
   showGuide: boolean
   onClick?: () => void
+}
+
+// Only the first row shows the guide, so it owns the translation subscription
+// rather than every row in the list paying for one.
+const DeviceListGuide: React.FC = () => {
+  const { t } = useTranslation()
+  return (
+    <GuideBubble
+      enterDelay={400}
+      guide="deviceList"
+      placement="bottom"
+      startDate={GUIDE_START_DATE}
+      added={GUIDE_START_DATE}
+      queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
+      instructions={
+        <>
+          <Typography variant="h3" gutterBottom>
+            <b>{t('deviceList.guideTitle', 'Access a device')}</b>
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            {t(
+              'deviceList.guideHosting',
+              'A device can host its own applications (services), or it can host another service on its local network.'
+            )}
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            {t('deviceList.guideSelect', 'Select a device to connect to a service, or configure it.')}
+          </Typography>
+        </>
+      }
+    />
+  )
 }
 
 const DeviceListRow: React.FC<RowProps> = React.memo(
@@ -69,29 +100,7 @@ const DeviceListRow: React.FC<RowProps> = React.memo(
           onClick={onClick}
           disabled={disabled}
         />
-        {showGuide && (
-          <GuideBubble
-            enterDelay={400}
-            guide="deviceList"
-            placement="bottom"
-            startDate={GUIDE_START_DATE}
-            queueAfter={browser.hasBackend ? 'registerMenu' : 'addDevice'}
-            instructions={
-              <>
-                <Typography variant="h3" gutterBottom>
-                  <b>Access a device</b>
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  A device can host it's own applications (services), or it can host another service on it's local
-                  network.
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  Select a device to connect to a service, or configure it.
-                </Typography>
-              </>
-            }
-          />
-        )}
+        {showGuide && <DeviceListGuide />}
       </DeviceListContext.Provider>
     )
   }

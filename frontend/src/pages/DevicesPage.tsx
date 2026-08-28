@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { getConnectionsLookup } from '../selectors/connections'
-import { selectPermissions } from '../selectors/organizations'
+import { selectCanRegister } from '../selectors/organizations'
 import { restoreAttributes } from '../components/Attributes'
 import { DeviceListEmpty } from '../components/DeviceListEmpty'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -28,13 +28,13 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const { fetching: deviceFetching, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
   const devices = useSelector(selectVisibleDevices)
   const accountId = useSelector(selectActiveAccountId)
-  const permissions = useSelector(selectPermissions)
+  const canRegister = useSelector(selectCanRegister)
   const connections = useSelector(getConnectionsLookup)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const selected = useSelector((state: State) => state.ui.selected)
   const fetching = useSelector((state: State) => state.ui.fetching) || deviceFetching
 
-  const shouldRedirect = loadingAccount === accountId && permissions.includes('MANAGE')
+  const shouldRedirect = loadingAccount === accountId && canRegister
 
   /* An empty list means "add your first device" only once it has actually loaded — so
      arm on the way down and redirect on the way up, never both in one pass. Keyed to

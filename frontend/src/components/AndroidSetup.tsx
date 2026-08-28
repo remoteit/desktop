@@ -1,6 +1,7 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import browser, { windowOpen } from '../services/browser'
-import { SCREEN_VIEW_APP_LINK } from '../constants'
+import { SCREEN_VIEW_APP_LINK, GUIDE_START_DATE } from '../constants'
 import { useHistory } from 'react-router-dom'
 import { List, ListItemButton, ListItemText, ListSubheader, ListItemIcon, Typography } from '@mui/material'
 import { GuideBubble } from '../components/GuideBubble'
@@ -10,6 +11,7 @@ import { Icon } from '../components/Icon'
 type Props = { className?: string; onClick?: () => void }
 
 export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
+  const { t } = useTranslation()
   const history = useHistory()
 
   const handleClick = () => {
@@ -21,20 +23,23 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
   return (
     <MobileUI android>
       <List className={className} dense disablePadding>
-        <ListSubheader disableGutters>This system</ListSubheader>
+        <ListSubheader disableGutters>{t('androidSetup.thisSystem', 'This system')}</ListSubheader>
         <GuideBubble
           enterDelay={400}
           guide="registerMenu"
           placement="bottom"
-          startDate={new Date('2022-09-20')}
+          startDate={GUIDE_START_DATE}
+          added={GUIDE_START_DATE}
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
-                <b>Select a device</b>
+                <b>{t('androidSetup.guideTitle', 'Select a device')}</b>
               </Typography>
               <Typography variant="body2" gutterBottom>
-                You can setup your Android device, or follow the simple instructions to setup one of the commonly used
-                platforms.
+                {t(
+                  'androidSetup.guideBody',
+                  'You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.'
+                )}
               </Typography>
             </>
           }
@@ -43,7 +48,10 @@ export const AndroidSetup: React.FC<Props> = ({ className, onClick }) => {
             <ListItemIcon>
               <Icon name="android" fixedWidth platformIcon size="xxl" />
             </ListItemIcon>
-            <ListItemText primary="This device" secondary="Control or access this device and local network" />
+            <ListItemText
+              primary={t('androidSetup.thisDevice', 'This device')}
+              secondary={t('androidSetup.thisDeviceDescription', 'Control or access this device and local network')}
+            />
           </ListItemButton>
         </GuideBubble>
       </List>

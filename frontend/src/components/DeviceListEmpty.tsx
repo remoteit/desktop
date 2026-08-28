@@ -8,7 +8,6 @@ import { State, Dispatch } from '../store'
 import { DEMO_DEVICE_CLAIM_CODE } from '../constants'
 import { Typography, Stack, Button, Box } from '@mui/material'
 import { isUserAccount } from '../selectors/accounts'
-import { GuideStep } from './GuideStep'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 import { Body } from './Body'
@@ -35,32 +34,17 @@ export const DeviceListEmpty: React.FC = () => {
       ) : userAccount ? (
         brand.name === 'remoteit' ? (
           <>
-            <GuideStep
-              step={1}
-              showStart
-              guide="aws"
-              instructions={t('deviceList.demoInstructions1', 'Click the button below to have our device shared with you.')}
-              autoStart
+            <Button
+              onClick={() => devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE })}
+              variant="contained"
+              color="primary"
+              size="medium"
+              sx={{ marginBottom: 2.25 }}
+              disabled={claiming}
             >
-              <GuideStep
-                guide="aws"
-                step={2}
-                instructions={t('deviceList.demoInstructions2', 'Please wait while the device is being shared...')}
-                hideArrow
-              >
-                <Button
-                  onClick={() => devices.claimDevice({ code: DEMO_DEVICE_CLAIM_CODE })}
-                  variant="contained"
-                  color="primary"
-                  size="medium"
-                  sx={{ marginBottom: 2.25 }}
-                  disabled={claiming}
-                >
-                  <Icon name={claiming ? 'spinner-third' : 'plus'} spin={claiming} type="solid" inlineLeft />{' '}
-                  {t('deviceList.demoDevice', 'Demo Device')}
-                </Button>
-              </GuideStep>
-            </GuideStep>
+              <Icon name={claiming ? 'spinner-third' : 'plus'} spin={claiming} type="solid" inlineLeft />{' '}
+              {t('deviceList.demoDevice', 'Demo Device')}
+            </Button>
             <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
               {t(
                 'deviceList.demoHelp',

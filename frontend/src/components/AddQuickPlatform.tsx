@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { Stack, ListItemIcon, Box } from '@mui/material'
 import { AddPlatformServices } from './AddPlatformServices'
-import { selectPermissions } from '../selectors/organizations'
+import { selectCanRegister } from '../selectors/organizations'
 import { AddDevice } from './AddDevice'
 import { platforms } from '../platforms'
 import { Icon } from './Icon'
@@ -11,7 +11,7 @@ export const AddQuickPlatform: React.FC = () => {
   const platform = 'linux'
   const platformObj = platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
-  const permissions = useSelector(selectPermissions)
+  const canRegister = useSelector(selectCanRegister)
   const [applicationTypes, setApplicationTypes] = useState<number[]>(defaultServices)
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export const AddQuickPlatform: React.FC = () => {
         <ListItemIcon>
           <Icon name={platform} size="xxl" platformIcon fixedWidth />
         </ListItemIcon>
-        {permissions.includes('MANAGE') && (
+        {canRegister && (
           <AddPlatformServices types={applicationTypes} onChange={type => setApplicationTypes(type)} />
         )}
       </Stack>

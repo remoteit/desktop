@@ -117,6 +117,19 @@ export const selectPermissions = createSelector(
   }
 )
 
+// Registration requires MANAGE, matching what the API enforces: graphql-api
+// gates User.registrationCode/registrationCommand and RegistrationService on
+// canManage() -> RolePermission.MANAGE.
+//
+// It is tempting to read the Roles screen's ADMIN blurb ("...and device
+// registrations") as meaning ADMIN is required — it is not. A short-lived
+// REGISTER permission existed in 2022 and was withdrawn (graphql-api ece69b36
+// "revert REGISTER permission"), which is also why some copy used to ask for a
+// non-existent "register permission".
+export const selectCanRegister = createSelector([selectPermissions], (permissions): boolean =>
+  permissions.includes('MANAGE')
+)
+
 export const selectOwner = createSelector(
   [selectActiveUser, selectRemoteitLicense],
   (user, license): IOrganizationMember | undefined => {

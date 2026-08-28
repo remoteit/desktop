@@ -10,7 +10,6 @@ import { networkAttributes } from '../components/Attributes'
 import { NetworkHeaderMenu } from '../components/NetworkHeaderMenu'
 import { NetworkSettings } from '../components/NetworkSettings'
 import { DataDisplay } from '../components/DataDisplay'
-import { GuideStep } from '../components/GuideStep'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 
@@ -27,63 +26,39 @@ export const NetworkPage: React.FC = () => {
   const empty = network.serviceIds.length === 0
 
   return (
-    <GuideStep
-      step={3}
-      guide="network"
-      instructions={
-        <>
-          <Typography variant="body1" gutterBottom>
-            {t('networkPage.networkAdded', 'Network added!')}
-          </Typography>
-          <Typography variant="body2">
-            {t(
-              'networkPage.nextAddService',
-              'Next add a service. Find one from the devices page and use the network panel to add.'
-            )}
-          </Typography>
-          <Typography variant="caption">
-            {t('networkPage.ownOrManageNote', 'Note, you can only add from devices you own or manage.')}
-          </Typography>
-        </>
-      }
-      placement="left"
-      hideArrow
-      autoNext
-    >
-      <NetworkHeaderMenu network={network} email={email}>
-        {empty && (
-          <Notice gutterTop>
-            {t('networkPage.emptyNetwork', 'Empty network')}{' '}
-            <em>{t('networkPage.addServicesHint', 'Add services to this network from a service page')}</em>
-          </Notice>
-        )}
-        <Typography variant="subtitle1">{t('networkPage.connections', 'Connections')}</Typography>
-        <Gutters bottom="xxl">
-          <Button
-            variant="contained"
-            size="small"
-            disabled={empty}
-            onClick={() => dispatch.connections.queueEnable({ ...network, enabled: true })}
-          >
-            {t('networkPage.startAll', 'Start All')}
-          </Button>
-          <Button
-            variant="contained"
-            color="info"
-            size="small"
-            disabled={empty}
-            onClick={() => dispatch.connections.queueEnable({ ...network, enabled: false })}
-            sx={{ marginLeft: 1 }}
-          >
-            {t('networkPage.stopAll', 'Stop All')}
-          </Button>
-        </Gutters>
-        <Typography variant="subtitle1">{t('networkPage.settings', 'Settings')}</Typography>
-        <NetworkSettings network={network} orgName={orgName} />
-        <Gutters>
-          <DataDisplay attributes={networkAttributes} instance={network} />
-        </Gutters>
-      </NetworkHeaderMenu>
-    </GuideStep>
+    <NetworkHeaderMenu network={network} email={email}>
+      {empty && (
+        <Notice gutterTop>
+          {t('networkPage.emptyNetwork', 'Empty network')}{' '}
+          <em>{t('networkPage.addServicesHint', 'Add services to this network from a service page')}</em>
+        </Notice>
+      )}
+      <Typography variant="subtitle1">{t('networkPage.connections', 'Connections')}</Typography>
+      <Gutters bottom="xxl">
+        <Button
+          variant="contained"
+          size="small"
+          disabled={empty}
+          onClick={() => dispatch.connections.queueEnable({ ...network, enabled: true })}
+        >
+          {t('networkPage.startAll', 'Start All')}
+        </Button>
+        <Button
+          variant="contained"
+          color="info"
+          size="small"
+          disabled={empty}
+          onClick={() => dispatch.connections.queueEnable({ ...network, enabled: false })}
+          sx={{ marginLeft: 1 }}
+        >
+          {t('networkPage.stopAll', 'Stop All')}
+        </Button>
+      </Gutters>
+      <Typography variant="subtitle1">{t('networkPage.settings', 'Settings')}</Typography>
+      <NetworkSettings network={network} orgName={orgName} />
+      <Gutters>
+        <DataDisplay attributes={networkAttributes} instance={network} />
+      </Gutters>
+    </NetworkHeaderMenu>
   )
 }
