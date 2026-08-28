@@ -120,7 +120,11 @@ export const ChatPanel: React.FC = () => {
         }
       >
         {!browser.isMobile && !layout.mobile && (
-          <IconButton icon="clone" title={t('chat.popOut', 'Pop out')} onClick={() => dispatch.chat.popOut()} />
+          <IconButton
+            icon="arrow-up-right-from-square"
+            title={t('chat.popOut', 'Pop out')}
+            onClick={() => dispatch.chat.popOut()}
+          />
         )}
         <NewChatButton />
         <IconButton icon="times" title={t('chat.close', 'Close')} onClick={() => dispatch.chat.set({ open: false })} />
