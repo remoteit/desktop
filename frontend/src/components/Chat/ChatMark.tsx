@@ -14,7 +14,8 @@ export const ChatMark: React.FC<{ active?: boolean }> = ({ active }) => (
   <Box
     sx={{
       display: 'flex',
-      marginY: 1,
+      marginTop: 3,
+      marginBottom: 2,
       marginLeft: 2,
       color: active ? 'primary.main' : 'grayDarker.main',
       transition: 'color 300ms',
