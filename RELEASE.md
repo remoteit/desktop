@@ -2,9 +2,22 @@
 
 How a desktop release gets built, published and pointed at.
 
-## Two channels, one release
+## What ships
 
-A release reaches users two ways, and they are controlled separately:
+One version bump feeds four targets, each released on its own:
+
+| Target            | Released by                                          |
+| ----------------- | ---------------------------------------------------- |
+| **Desktop**       | **Build / Electron**, then **Copy / Electron to S3** |
+| **iOS**           | **Build / iOS** → TestFlight → submit for review     |
+| **Android**       | **Build / Android** → Play internal track → promote  |
+| **app.remote.it** | Fast-forward the `release` branch                    |
+
+Do the version bump once, then run whichever targets you are shipping.
+
+## Desktop: two channels, one release
+
+A desktop release reaches users two ways, and they are controlled separately:
 
 | Channel                                                   | Source                                                              | Controlled by                                               |
 | --------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------- |
@@ -16,9 +29,7 @@ A release marked **Pre-release** is only offered to users who have opted in
 That is the whole difference between a beta and a public release — a
 pre-release that is never promoted is invisible to everyone else.
 
-## Steps
-
-### 1. Bump the version
+## 1. Bump the version
 
 From `main`, with everything merged and CI green:
 
@@ -45,7 +56,7 @@ Both lockfiles matter: `npm ci` fails in CI if only one is regenerated.
 
 Then push the commit and the tag `npm version` created.
 
-### 2. Build
+## 2. Desktop: build
 
 Run **Build / Electron** (`workflow_dispatch`) — `brand` defaults to `remoteit`,
 and **uncheck `skip_signing`** for a real release, since it defaults to `true`.
@@ -55,7 +66,7 @@ version from `package.json` (not from the tag), and attaches the installers to
 the GitHub release for that tag. Node comes from `.nvmrc` — electron-builder
 needs Node >= 20.19 / 22.12, so don't pin it lower.
 
-### 3. Write the release notes
+## 3. Desktop: write the release notes
 
 Sections, in order — omit any that is empty:
 
@@ -74,12 +85,12 @@ Write notes against the **last release users actually received**, not the last
 tag. If the previous release was an unpromoted pre-release, its changes are new
 to the public and belong in these notes too.
 
-### 4. Publish
+## 4. Desktop: publish
 
 Mark the GitHub release **Latest** for a public release, or **Pre-release** for
 a beta. This is what gates the in-app auto update.
 
-### 5. Copy to S3
+## 5. Desktop: copy to S3
 
 Run **Copy / Electron to S3** (`workflow_dispatch`):
 
@@ -91,10 +102,61 @@ downloads the release assets and uploads them to `desktop/<tag>/`, and
 `point-latest` repoints the `/latest` alias — skipped automatically for
 pre-release tags (`vN.N.N-something`).
 
-### 6. Verify
+## 6. Desktop: verify
 
 `downloads.remote.it/desktop/latest/version.txt` returns the tag `/latest`
 currently serves — the quickest confirmation the alias moved.
+
+## 7. Mobile
+
+Both are `workflow_dispatch` and both take their version from the files the
+bump already updated — `ios/App/App.xcodeproj/project.pbxproj` and
+`android/app/build.gradle`. `version.sh` increments the iOS
+`CURRENT_PROJECT_VERSION` and the Android `versionCode` on every bump, which is
+what the stores require: a build number that never repeats.
+
+**Build / iOS** builds and signs the archive, exports the ipa, validates it, and
+uploads it to App Store Connect with `altool`. That puts the build in
+TestFlight. Submitting for App Store review is a separate manual step in App
+Store Connect.
+
+**Build / Android** runs `./gradlew bundleRelease` and uploads the aab to Google
+Play with `track: internal`. Promoting from the internal track to production is
+a separate manual step in the Play Console.
+
+So neither workflow publishes to the public store on its own — each one gets the
+build as far as the store's own staging, and a human promotes it.
+
+## 8. app.remote.it
+
+The web portal deploys from the `release` branch. `release` carries no commits
+of its own, so shipping is a fast-forward of `main`:
+
+```bash
+git fetch origin
+git push origin origin/main:release
+```
+
+Pushing `origin/main` rather than a local branch means the deploy is exactly
+what is on the remote, with no local checkout to be stale, and no need to switch
+branches.
+
+Leave off `--force`. Because this is a plain push, it **fails** if `release`
+has commits `main` does not — which is the entire point: a force push cannot
+tell "`release` is simply behind" from "`release` has a hotfix nobody merged
+back", and quietly destroys the second case. If the push is rejected, look
+before doing anything else:
+
+```bash
+git log --oneline origin/main..origin/release
+```
+
+Empty means it is safe to fast-forward and something else is wrong (branch
+protection, most likely). Not empty means there is work on `release` to merge
+back into `main` first.
+
+Amplify builds the branch. Its build settings live in the Amplify console, not
+in this repo, so there is no `amplify.yml` here to change.
 
 ## How the `/latest` alias works
 
