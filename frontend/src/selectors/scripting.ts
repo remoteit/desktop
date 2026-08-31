@@ -1,14 +1,13 @@
 import { getFiles, getJobs, optionalSecondParam, optionalThirdParam } from './state'
 import { createSelector } from 'reselect'
 import { selectActiveAccountId } from './accounts'
+import { byNewest } from '../helpers/utilHelper'
 
 /*
   Newest run first. The API is asked for this order, but the job cache is also
   written to by prepend, append and in place update, any of which can leave the
   cached order stale - so sort here rather than trusting the cache order.
 */
-const byNewest = (a: IJob, b: IJob) => new Date(b.updated).getTime() - new Date(a.updated).getTime()
-
 const sortJobs = (jobs: IJob[] = []) => [...jobs].sort(byNewest)
 
 export const selectScripts = createSelector([getFiles, getJobs, selectActiveAccountId], (files, jobs, accountId) => {
