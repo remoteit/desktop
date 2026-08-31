@@ -352,7 +352,7 @@ export const TestPage: React.FC = () => {
               f.pending
                 ? t(
                     'testPage.featurePending',
-                    'Not carried by any license yet \u2014 this switch is the only way to turn it on.'
+                    'Not in any license yet. Switches here apply to your personal account only.'
                   )
                 : undefined
             }

@@ -2243,7 +2243,7 @@
     "disabled": "deaktiviert",
     "enabled": "aktiviert",
     "featureLabel": "{{name}} (Standard {{state}})",
-    "featurePending": "Noch in keiner Lizenz enthalten – nur über diesen Schalter aktivierbar.",
+    "featurePending": "Noch in keiner Lizenz enthalten. Schalter hier gelten nur für Ihr persönliches Konto.",
     "features": "Funktionen",
     "hideTestUIBackgrounds": "Test-UI-Hintergründe ausblenden",
     "licenseMessageCleared": "Lizenzmeldung gelöscht",

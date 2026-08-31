@@ -2243,7 +2243,7 @@
     "disabled": "disabled",
     "enabled": "enabled",
     "featureLabel": "{{name}} (default {{state}})",
-    "featurePending": "Not carried by any license yet — this switch is the only way to turn it on.",
+    "featurePending": "Not in any license yet. Switches here apply to your personal account only.",
     "features": "Features",
     "hideTestUIBackgrounds": "Hide test UI backgrounds",
     "licenseMessageCleared": "License message cleared",

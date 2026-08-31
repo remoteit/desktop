@@ -2280,7 +2280,7 @@
     "disabled": "desactivado",
     "enabled": "activado",
     "featureLabel": "{{name}} (predeterminado {{state}})",
-    "featurePending": "Todavía no está incluida en ninguna licencia; este interruptor es la única forma de activarla.",
+    "featurePending": "Todavía no está en ninguna licencia. Los interruptores aquí solo afectan a tu cuenta personal.",
     "features": "Funciones",
     "hideTestUIBackgrounds": "Ocultar fondos de la interfaz de prueba",
     "licenseMessageCleared": "Mensaje de licencia borrado",

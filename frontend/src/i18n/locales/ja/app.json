@@ -2206,7 +2206,7 @@
     "disabled": "無効",
     "enabled": "有効",
     "featureLabel": "{{name}}(デフォルト: {{state}})",
-    "featurePending": "まだどのライセンスにも含まれていません。このスイッチでのみ有効にできます。",
+    "featurePending": "まだどのライセンスにも含まれていません。ここのスイッチは個人アカウントにのみ適用されます。",
     "features": "機能",
     "hideTestUIBackgrounds": "テストUIの背景を非表示にする",
     "licenseMessageCleared": "ライセンスメッセージがクリアされました",
