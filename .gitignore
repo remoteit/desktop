@@ -6,6 +6,8 @@ node_modules
 # testing
 /coverage
 .env
+.env.*
+!.env.example
 .idea
 
 # production
@@ -39,3 +41,6 @@ logs/code_signing_tool.log
 /frontend/public/brand
 /electron/src/images
 /electron/src/icons
+
+# Claude Code local state and worktrees
+.claude/
