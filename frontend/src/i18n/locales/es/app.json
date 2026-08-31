@@ -2197,6 +2197,23 @@
     "chooseServices": "Elige los servicios a los que deseas dar acceso.",
     "services": "Servicios"
   },
+  "signIn": {
+    "button": "Iniciar sesión",
+    "cancel": "Cancelar",
+    "errorExpired": "Ese intento de inicio de sesión caducó antes de completarse. Inténtalo de nuevo.",
+    "errorRateLimited": "Demasiados intentos de inicio de sesión desde esta red. Espera unos minutos e inténtalo de nuevo.",
+    "errorRateLimitedWait_many": "Demasiados intentos de inicio de sesión desde esta red. Inténtalo de nuevo en aproximadamente {{count}} minutos.",
+    "errorRateLimitedWait_one": "Demasiados intentos de inicio de sesión desde esta red. Inténtalo de nuevo en aproximadamente un minuto.",
+    "errorRateLimitedWait_other": "Demasiados intentos de inicio de sesión desde esta red. Inténtalo de nuevo en aproximadamente {{count}} minutos.",
+    "errorRefused": "El servicio de inicio de sesión rechazó esta solicitud. Inténtalo de nuevo y contacta con soporte si el problema continúa.",
+    "errorUnavailable": "El servicio de inicio de sesión no está disponible temporalmente. Inténtalo de nuevo en unos minutos.",
+    "errorUnknown": "El inicio de sesión no se completó. Inténtalo de nuevo.",
+    "errorUnreachable": "No pudimos conectar con el servicio de inicio de sesión. Comprueba tu conexión a internet e inténtalo de nuevo.",
+    "redirecting": "Te llevamos al inicio de sesión…",
+    "retry": "Reintentar",
+    "subtitle": "Abriremos tu navegador para iniciar sesión con Remote.It Single Sign-On.",
+    "title": "Inicia sesión en {{app}}"
+  },
   "statusChip": {
     "connected": "Conectado",
     "idle": "Inactivo",

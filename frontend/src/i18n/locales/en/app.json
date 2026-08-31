@@ -2163,6 +2163,22 @@
     "chooseServices": "Choose the services you'd like to provide access to.",
     "services": "Services"
   },
+  "signIn": {
+    "button": "Sign In",
+    "cancel": "Cancel",
+    "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
+    "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
+    "errorRateLimitedWait_one": "Too many sign-in attempts from this network. Please try again in about a minute.",
+    "errorRateLimitedWait_other": "Too many sign-in attempts from this network. Please try again in about {{count}} minutes.",
+    "errorRefused": "The sign-in service refused this request. Try again, and contact support if it keeps happening.",
+    "errorUnavailable": "The sign-in service is temporarily unavailable. Please try again in a few minutes.",
+    "errorUnknown": "Sign in didn't complete. Please try again.",
+    "errorUnreachable": "We couldn't reach the sign-in service. Check your internet connection, then try again.",
+    "redirecting": "Taking you to sign in…",
+    "retry": "Try again",
+    "subtitle": "We'll open your browser to sign you in with Remote.It Single Sign-On.",
+    "title": "Sign in to {{app}}"
+  },
   "statusChip": {
     "connected": "Connected",
     "idle": "Idle",

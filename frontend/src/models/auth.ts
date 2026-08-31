@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantStale, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -32,7 +32,13 @@ export interface AuthState {
   initialized: boolean
   authenticated: boolean
   backendAuthenticated: boolean
+  /** Technical detail — console, support, bug reports. NEVER rendered on its own: it is
+   *  the server's own wording, so it is untranslated and often meaningless to a person. */
   signInError?: string
+  /** What the failure MEANS, which is what the screen actually translates and acts on. */
+  signInErrorCode?: OidcErrorCode
+  /** Seconds the server asked us to wait, when it said so (429). */
+  signInRetryAfter?: number
   signingIn?: boolean
   passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
@@ -45,11 +51,24 @@ const defaultState: AuthState = {
   authenticated: false,
   backendAuthenticated: false,
   signInError: undefined,
+  signInErrorCode: undefined,
+  signInRetryAfter: undefined,
   signingIn: false,
   user: undefined,
   mfaMethod: '',
   AWSUser: { authProvider: '' },
 }
+
+/* Every sign-in failure lands here, so the screen has exactly one shape to read and a
+   new throw site cannot reintroduce a raw server string on the UI. */
+const signInFailure = (error: any): Partial<AuthState> => ({
+  signingIn: false,
+  signInError: error?.message,
+  signInErrorCode: error instanceof OidcError ? error.code : undefined,
+  signInRetryAfter: error instanceof OidcError ? error.retryAfter : undefined,
+})
+
+const signInCleared = { signInError: undefined, signInErrorCode: undefined, signInRetryAfter: undefined }
 
 export default createModel<RootModel>()({
   state: defaultState,
@@ -79,7 +98,7 @@ export default createModel<RootModel>()({
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
           console.error('AUTH INIT: sign-in completion failed', error)
-          if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
+          if (!options.silent) dispatch.auth.set(signInFailure(error))
         }
       }
       dispatch.auth.set({ initialized: true })
@@ -124,11 +143,11 @@ export default createModel<RootModel>()({
       try {
         await oidcStart({ prompt: 'select_account' })
       } catch (error) {
-        dispatch.auth.set({ signInError: error?.message || 'Could not open the account chooser.' })
+        dispatch.auth.set(signInFailure(error))
       }
     },
     async signIn(_: void) {
-      dispatch.auth.set({ signingIn: true, signInError: undefined })
+      dispatch.auth.set({ signingIn: true, ...signInCleared })
       try {
         // Desktop sign-in always offers the CHOOSER (prompt=select_account): a live chip
         // in the browser would otherwise silently SSO whoever was last signed in, and a
@@ -139,7 +158,7 @@ export default createModel<RootModel>()({
         await oidcStart(browser.isElectron ? { prompt: 'select_account' } : {})
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
-        dispatch.auth.set({ signingIn: false, signInError: error?.message || 'Sign in failed, please try again.' })
+        dispatch.auth.set(signInFailure(error))
       }
     },
     async fetchUser(_: void) {
@@ -149,7 +168,7 @@ export default createModel<RootModel>()({
 
       const user = response?.data?.data?.login
 
-      auth.set({ user, signInError: undefined })
+      auth.set({ user, ...signInCleared })
       if (user.authhash && user.yoicsId) {
         Controller.setupConnection({ username: user.yoicsId, authHash: user.authhash, guid: user.id })
         auth.signedIn()

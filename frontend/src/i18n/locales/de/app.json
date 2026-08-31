@@ -2163,6 +2163,22 @@
     "chooseServices": "Wählen Sie die Dienste aus, für die Sie Zugriff gewähren möchten.",
     "services": "Dienste"
   },
+  "signIn": {
+    "button": "Anmelden",
+    "cancel": "Abbrechen",
+    "errorExpired": "Der Anmeldeversuch ist abgelaufen, bevor er abgeschlossen war. Bitte versuchen Sie es erneut.",
+    "errorRateLimited": "Zu viele Anmeldeversuche aus diesem Netzwerk. Bitte warten Sie einige Minuten und versuchen Sie es erneut.",
+    "errorRateLimitedWait_one": "Zu viele Anmeldeversuche aus diesem Netzwerk. Bitte versuchen Sie es in etwa einer Minute erneut.",
+    "errorRateLimitedWait_other": "Zu viele Anmeldeversuche aus diesem Netzwerk. Bitte versuchen Sie es in etwa {{count}} Minuten erneut.",
+    "errorRefused": "Der Anmeldedienst hat diese Anfrage abgelehnt. Versuchen Sie es erneut und wenden Sie sich an den Support, falls es weiterhin auftritt.",
+    "errorUnavailable": "Der Anmeldedienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es in einigen Minuten erneut.",
+    "errorUnknown": "Die Anmeldung wurde nicht abgeschlossen. Bitte versuchen Sie es erneut.",
+    "errorUnreachable": "Der Anmeldedienst war nicht erreichbar. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "redirecting": "Sie werden zur Anmeldung weitergeleitet…",
+    "retry": "Erneut versuchen",
+    "subtitle": "Wir öffnen Ihren Browser, um Sie mit Remote.It Single Sign-On anzumelden.",
+    "title": "Bei {{app}} anmelden"
+  },
   "statusChip": {
     "connected": "Verbunden",
     "idle": "Inaktiv",

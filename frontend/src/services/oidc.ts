@@ -76,6 +76,44 @@ let minting: Promise<unknown> = Promise.resolve()
 let mintErrors: { [resource: string]: string } = {}
 let discovery: { authorization_endpoint: string; token_endpoint: string; end_session_endpoint?: string; end_session_api_endpoint?: string } | undefined
 
+/* Sign-in failures the person reading them can DO something different about. The message
+   stays the technical detail — console, support, bug reports — while `code` is what picks
+   the sentence they read, so the AS rewording an error_description can never silently
+   change our copy, and an untranslated server string can never reach the screen. */
+export type OidcErrorCode = 'rateLimited' | 'unreachable' | 'unavailable' | 'refused' | 'expired'
+
+export class OidcError extends Error {
+  code: OidcErrorCode
+  /** Seconds to wait, when the server told us (429). */
+  retryAfter?: number
+  constructor(code: OidcErrorCode, message: string, retryAfter?: number) {
+    super(message)
+    this.name = 'OidcError'
+    this.code = code
+    this.retryAfter = retryAfter
+  }
+}
+
+/* Retry-After is allowed to be either delta-seconds or an HTTP date; permitteer's
+   rate limiter also sends ratelimit-reset, which is always seconds. Take whichever
+   is present so "try again in N minutes" is the server's number, not a guess. */
+const retryAfterSeconds = (response: Response): number | undefined => {
+  const header = response.headers.get('retry-after') || response.headers.get('ratelimit-reset')
+  if (!header) return undefined
+  const seconds = Number(header)
+  if (!Number.isNaN(seconds)) return Math.max(0, Math.round(seconds))
+  const date = Date.parse(header)
+  return Number.isNaN(date) ? undefined : Math.max(0, Math.round((date - Date.now()) / 1000))
+}
+
+/* One place that decides what a non-OK response from the AS MEANS, so the token endpoint
+   and discovery cannot drift into telling the user different stories about a 429. */
+const responseError = (response: Response, detail: string): OidcError => {
+  if (response.status === 429) return new OidcError('rateLimited', detail, retryAfterSeconds(response))
+  if (response.status >= 500) return new OidcError('unavailable', detail)
+  return new OidcError('refused', detail)
+}
+
 const b64u = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 const randomB64u = (length: number) => b64u(crypto.getRandomValues(new Uint8Array(length)))
@@ -106,8 +144,14 @@ export const oidcActor = (): { sub: string } | null => decodeJwt(stored()?.id_to
 
 async function discover() {
   if (discovery) return discovery
-  const response = await fetch(`${OAUTH_ISSUER}/.well-known/openid-configuration`)
-  if (!response.ok) throw new Error(`discovery failed: ${response.status}`)
+  let response: Response
+  try {
+    response = await fetch(`${OAUTH_ISSUER}/.well-known/openid-configuration`)
+  } catch (error: any) {
+    // fetch only rejects when the request never got an answer: offline, DNS, TLS, CORS.
+    throw new OidcError('unreachable', `discovery unreachable: ${error?.message || 'network error'}`)
+  }
+  if (!response.ok) throw responseError(response, `discovery failed: ${response.status}`)
   discovery = await response.json()
   return discovery!
 }
@@ -208,9 +252,9 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   sessionStorage.removeItem(FLOW_KEY)
   cleanUrl()
   const flow: Flow | undefined = raw ? JSON.parse(raw) : undefined
-  if (!flow || flow.state !== state) throw new Error('Sign-in state mismatch — try again.')
+  if (!flow || flow.state !== state) throw new OidcError('expired', 'Sign-in state mismatch')
   const error = query.get('error')
-  if (error) throw new Error(query.get('error_description') || error)
+  if (error) throw new OidcError('refused', query.get('error_description') || error)
 
   const body = await tokenRequest({
     grant_type: 'authorization_code',
@@ -220,7 +264,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     resource: OAUTH_GRAPHQL_RESOURCE,
   })
   const claims = decodeJwt(body.id_token)
-  if (claims?.nonce !== flow.nonce) throw new Error('Sign-in nonce mismatch — try again.')
+  if (claims?.nonce !== flow.nonce) throw new OidcError('expired', 'Sign-in nonce mismatch')
   const previous = stored()?.refresh_token
   if (previous && previous !== body.refresh_token) {
     fetch(`${OAUTH_ISSUER}/revoke`, {
@@ -443,7 +487,8 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
   })
   const body: any = await response.json().catch(() => ({}))
   if (!response.ok || !body.access_token) {
-    const error: any = new Error(body.error_description || body.error || `token endpoint ${response.status}`)
+    const detail = body.error_description || body.error || `token endpoint ${response.status}`
+    const error: any = responseError(response, detail)
     error.oauthError = body.error
     throw error
   }
