@@ -38,9 +38,8 @@ export const ScriptPage: React.FC = () => {
   // Split jobs into groups
   const readyJobs = jobs.filter(j => j.status === 'READY')
   const runningJobs = jobs.filter(j => j.status === 'RUNNING' || j.status === 'WAITING')
-  const allCompleted = [...jobs]
-    .filter(j => j.status === 'SUCCESS' || j.status === 'FAILED' || j.status === 'CANCELLED')
-    .sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime())
+  // selectJobs is already newest first
+  const allCompleted = jobs.filter(j => j.status === 'SUCCESS' || j.status === 'FAILED' || j.status === 'CANCELLED')
   const completedJobs = allCompleted.slice(0, MAX_RUNS)
   const hasMoreRuns = allCompleted.length > completedJobs.length
 
