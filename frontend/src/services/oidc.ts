@@ -51,6 +51,13 @@ export const oidcCountAutoStart = (): void => {
     /* blocked storage must not stop someone signing in */
   }
 }
+export const oidcClearAutoStarts = (): void => {
+  try {
+    window.sessionStorage.removeItem(AUTO_START_KEY)
+  } catch {
+    /* non-fatal */
+  }
+}
 
 // A boot on /signoutCallback is the RETURN from an explicit sign-out: the next authorize
 // must show the LOGIN PAGE (prompt=login), never silently SSO into another account's
@@ -116,16 +123,25 @@ export class OidcError extends Error {
   }
 }
 
-/* Retry-After is allowed to be either delta-seconds or an HTTP date; permitteer's
-   rate limiter also sends ratelimit-reset, which is always seconds. Take whichever
-   is present so "try again in N minutes" is the server's number, not a guess. */
+/* A day. Nothing that gates a sign-in retry waits longer, so a "wait" bigger than this
+   is not a countdown at all — it is an epoch timestamp, which some rate limiters send in
+   ratelimit-reset despite the draft specifying delta-seconds. Taken literally that
+   renders as "try again in about 29566667 minutes", so treat it as the unusable number
+   it is and let the caller fall back to wording with no figure in it. */
+const MAX_RETRY_AFTER = 24 * 60 * 60
+
+/* Retry-After is allowed to be either delta-seconds or an HTTP date; permitteer's rate
+   limiter also sends ratelimit-reset. Take whichever is present so "try again in N
+   minutes" is the server's number rather than a guess — but only when the number is
+   one a person could actually act on. */
 const retryAfterSeconds = (response: Response): number | undefined => {
   const header = response.headers.get('retry-after') || response.headers.get('ratelimit-reset')
   if (!header) return undefined
+  const plausible = (seconds: number) => (seconds >= 0 && seconds <= MAX_RETRY_AFTER ? Math.round(seconds) : undefined)
   const seconds = Number(header)
-  if (!Number.isNaN(seconds)) return Math.max(0, Math.round(seconds))
+  if (!Number.isNaN(seconds)) return plausible(seconds)
   const date = Date.parse(header)
-  return Number.isNaN(date) ? undefined : Math.max(0, Math.round((date - Date.now()) / 1000))
+  return Number.isNaN(date) ? undefined : plausible((date - Date.now()) / 1000)
 }
 
 /* One place that decides what a non-OK response from the AS MEANS, so the token endpoint
@@ -299,8 +315,6 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
   // is merged from exactly that — so the grant now covers this build. Stamp it.
   try { tokenStore().setItem(DECLARATION_KEY, declarationFingerprint()) } catch { /* non-fatal */ }
-  // A completed exchange is the proof the automatic path works; let it start fresh.
-  try { window.sessionStorage.removeItem(AUTO_START_KEY) } catch { /* non-fatal */ }
   const at = decodeJwt(body.access_token)
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims

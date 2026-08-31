@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantStale, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantStale, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -275,6 +275,11 @@ export default createModel<RootModel>()({
       }
     },
     async handleSignInSuccess(claims: OidcClaims): Promise<void> {
+      // A session — freshly exchanged OR restored from stored tokens — is proof the
+      // automatic path works, so it clears the auto-start budget. Doing it only at the
+      // code exchange left a tab that had spent its budget unable to auto sign-in again
+      // after a perfectly healthy restore.
+      oidcClearAutoStarts()
       await dispatch.auth.set({
         authenticated: true,
         AWSUser: {
@@ -391,7 +396,12 @@ export default createModel<RootModel>()({
       // signing out of the app must not sign the user out of login.* (their browser
       // session is theirs; an explicit "sign out everywhere" action can come later).
       oidcClearLocal()
-      await dispatch.auth.set({ user: undefined })
+      /* signInCleared as well as the user: a failure recorded while SIGNED IN — a refused
+         account switch, say — would otherwise survive into the signed-out screen, where
+         signInFailed is the brake on auto sign-in. The next person to land here would get
+         a stale error and no redirect, for something that happened in someone else's
+         session. */
+      await dispatch.auth.set({ user: undefined, ...signInCleared })
       dispatch.chat.reset()
       dispatch.user.reset()
       dispatch.organization.reset()

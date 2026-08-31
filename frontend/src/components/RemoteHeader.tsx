@@ -7,7 +7,7 @@ import screenfull from 'screenfull'
 import browser from '../services/browser'
 import { spacing as scale } from '../styling'
 import { useChatDocked, useChatWidth } from '../hooks/useChatEnabled'
-import { useViewportWidth } from '../hooks/useViewportWidth'
+import { useViewportWiderThan } from '../hooks/useViewportWidth'
 
 type Props = { device?: IDevice; children: React.ReactNode }
 
@@ -31,11 +31,14 @@ export const RemoteHeader: React.FC<Props> = ({ device, children }) => {
      that dead zone by its own width, raising the cap but not the query.
 
      Compared as numbers rather than through matchMedia BECAUSE the threshold moves with
-     the chat: interpolating a live value into a media query rebuilt the MediaQueryList
-     on every frame of a drag. useViewportWidth is one shared, frame-coalesced listener,
-     so reading the width here costs nothing extra. */
-  const viewport = useViewportWidth()
-  const maxWidth = !browser.isElectron && viewport >= appMaxWidth + FRAME_GUTTER * 2
+     the chat: interpolating a live value into a media query rebuilt the MediaQueryList on
+     every frame of a drag. useViewportWiderThan subscribes to the ANSWER, so this
+     component — which wraps the whole app — re-renders when the framed state flips and
+     not on every frame of a window resize. The hook is called unconditionally: isElectron
+     is fixed for the app's lifetime, but a hook behind a && still reads as a conditional
+     one. */
+  const wideEnough = useViewportWiderThan(appMaxWidth + FRAME_GUTTER * 2)
+  const maxWidth = !browser.isElectron && wideEnough
   const showFrame = browser.isRemote
   const [fullscreen, setFullscreen] = useState<boolean>(false)
   const fullscreenEnabled = screenfull.isEnabled

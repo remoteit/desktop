@@ -45,3 +45,12 @@ const subscribe = (listener: () => void) => {
 const getSnapshot = () => width
 
 export const useViewportWidth = (): number => useSyncExternalStore(subscribe, getSnapshot)
+
+/* Is the window at least `threshold` wide? Same single listener, but the subscriber is
+   the ANSWER rather than the width, so a component that only wants a breakpoint
+   re-renders when the breakpoint FLIPS instead of on every frame of a resize. Reach for
+   this over useViewportWidth wherever the pixel value is not itself rendered — reading
+   the raw width to compute a boolean re-renders (and re-serializes every sx object) 60
+   times a second while someone drags the window edge. */
+export const useViewportWiderThan = (threshold: number): boolean =>
+  useSyncExternalStore(subscribe, () => width >= threshold)
