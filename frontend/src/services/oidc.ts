@@ -30,6 +30,28 @@ const TOKENS_KEY = 'oidc.tokens'
 // What the grant behind those tokens was last written from (see oidcGrantStale).
 const DECLARATION_KEY = 'oidc.declaration'
 
+/* Authorizes this tab has started on its OWN — no click, nobody asked. This client is
+   first-party skipConsent, so an automatic authorize shows the person NOTHING: a loop
+   through it is invisible from the app and its only outward symptom is the AS
+   rate-limiting the whole address, which then locks out everyone behind it. The state
+   guards in the auth model are the real brakes; this is the backstop that holds when one
+   of them is missed. Cleared the moment an exchange completes. */
+const AUTO_START_KEY = 'oidc.autoStarts'
+export const oidcAutoStartsSpent = (): number => {
+  try {
+    return Number(window.sessionStorage.getItem(AUTO_START_KEY)) || 0
+  } catch {
+    return 0
+  }
+}
+export const oidcCountAutoStart = (): void => {
+  try {
+    window.sessionStorage.setItem(AUTO_START_KEY, String(oidcAutoStartsSpent() + 1))
+  } catch {
+    /* blocked storage must not stop someone signing in */
+  }
+}
+
 // A boot on /signoutCallback is the RETURN from an explicit sign-out: the next authorize
 // must show the LOGIN PAGE (prompt=login), never silently SSO into another account's
 // live session in the multi-account cookie.
@@ -277,6 +299,8 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
   // is merged from exactly that — so the grant now covers this build. Stamp it.
   try { tokenStore().setItem(DECLARATION_KEY, declarationFingerprint()) } catch { /* non-fatal */ }
+  // A completed exchange is the proof the automatic path works; let it start fresh.
+  try { window.sessionStorage.removeItem(AUTO_START_KEY) } catch { /* non-fatal */ }
   const at = decodeJwt(body.access_token)
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims

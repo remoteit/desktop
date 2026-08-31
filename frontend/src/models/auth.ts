@@ -32,6 +32,10 @@ export interface AuthState {
   initialized: boolean
   authenticated: boolean
   backendAuthenticated: boolean
+  /** A sign-in attempt failed. Deliberately SEPARATE from the message: this is what stops
+   *  the web app starting another authorize by itself, and a brake that reads a display
+   *  string is a brake that vanishes the moment the string is empty or suppressed. */
+  signInFailed?: boolean
   /** Technical detail — console, support, bug reports. NEVER rendered on its own: it is
    *  the server's own wording, so it is untranslated and often meaningless to a person. */
   signInError?: string
@@ -50,6 +54,7 @@ const defaultState: AuthState = {
   initialized: false,
   authenticated: false,
   backendAuthenticated: false,
+  signInFailed: false,
   signInError: undefined,
   signInErrorCode: undefined,
   signInRetryAfter: undefined,
@@ -63,20 +68,34 @@ const defaultState: AuthState = {
    new throw site cannot reintroduce a raw server string on the UI. */
 const signInFailure = (error: any): Partial<AuthState> => ({
   signingIn: false,
-  signInError: error?.message,
+  signInFailed: true,
+  // Never empty: an absent message used to leave the auto-start guard looking like success.
+  signInError: error?.message || 'Sign in failed',
   signInErrorCode: error instanceof OidcError ? error.code : undefined,
   signInRetryAfter: error instanceof OidcError ? error.retryAfter : undefined,
 })
 
-const signInCleared = { signInError: undefined, signInErrorCode: undefined, signInRetryAfter: undefined }
+const signInCleared = {
+  signInFailed: false,
+  signInError: undefined,
+  signInErrorCode: undefined,
+  signInRetryAfter: undefined,
+}
 
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    // The BACKEND owns the OIDC session (permitteer docs/remoteit-desktop-login.md):
-    // init just asks it whether one exists. silent suppresses the session-error toast
-    // for machine-triggered runs (a network reconnect). See Controller.onNetworkConnect.
-    async init(options: { silent?: boolean } = {}, state) {
+    /* The BACKEND owns the OIDC session (permitteer docs/remoteit-desktop-login.md):
+       init just asks it whether one exists.
+
+       This used to take a `silent` flag that skipped RECORDING a failed sign-in, meaning
+       to spare an unattended window a toast. But signInError is not a toast — it is the
+       only thing telling SignInApp not to start another authorize. Suppressed, a rejected
+       authorize returned, left no trace, and was retried immediately: an invisible
+       redirect loop (skipConsent shows no consent screen) running as fast as the page
+       could reload, until the AS rate-limited the address for everyone behind it. A
+       failure is always recorded now; being unattended is not a reason to forget it. */
+    async init(_: void, state) {
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
@@ -98,7 +117,7 @@ export default createModel<RootModel>()({
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
           console.error('AUTH INIT: sign-in completion failed', error)
-          if (!options.silent) dispatch.auth.set(signInFailure(error))
+          dispatch.auth.set(signInFailure(error))
         }
       }
       dispatch.auth.set({ initialized: true })

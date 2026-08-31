@@ -3,7 +3,7 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { OidcErrorCode } from '../services/oidc'
+import { OidcErrorCode, oidcAutoStartsSpent, oidcCountAutoStart } from '../services/oidc'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
 
@@ -78,18 +78,32 @@ const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?
   )
 }
 
+/* How many authorizes this tab may start with nobody asking. Two, because one legitimate
+   retry (a token that died mid-session) is normal and a third in one tab never is. */
+const AUTO_START_LIMIT = 2
+
 export function SignInApp() {
   const { t } = useTranslation()
-  const { signInError, signInErrorCode, signInRetryAfter, signingIn } = useSelector((state: State) => state.auth)
+  const { signInFailed, signInError, signInErrorCode, signInRetryAfter, signingIn } = useSelector(
+    (state: State) => state.auth
+  )
   const { auth } = useDispatch<Dispatch>()
 
-  // On the WEB there is nothing to show a signed-out user — the AS login page IS the
-  // sign-in surface, so leave for it immediately (once per landing; an error return
-  // stays here so a cancel at the AS can't loop). Desktop keeps the launcher: its
-  // window must show something while the SYSTEM browser hosts the journey.
-  const autoStart = !browser.isElectron && !signingIn && !signInError
+  /* On the WEB there is nothing to show a signed-out user — the AS login page IS the
+     sign-in surface, so leave for it immediately. Desktop keeps the launcher: its window
+     must show something while the SYSTEM browser hosts the journey.
+
+     TWO brakes, because this effect redirects the browser and the redirect can come
+     straight back. signInFailed is the real one: any failed attempt parks us here with an
+     explanation instead of bouncing. The spend counter is the backstop for the case that
+     actually bit — a path that returns without recording the failure — since an automatic
+     authorize renders nothing to a person and the first visible symptom is the AS
+     rate-limiting the address. A click is never counted against it. */
+  const autoStart = !browser.isElectron && !signingIn && !signInFailed && oidcAutoStartsSpent() < AUTO_START_LIMIT
   useEffect(() => {
-    if (autoStart) auth.signIn()
+    if (!autoStart) return
+    oidcCountAutoStart()
+    auth.signIn()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart])
 
@@ -125,10 +139,10 @@ export function SignInApp() {
         <Button variant="contained" size="large" onClick={() => auth.signIn()} sx={{ marginTop: 2 }}>
           {/* After a failure the same button is a RETRY — "Sign In" beside an error reads
               as the thing that just didn't work rather than as the way out of it. */}
-          {signInError ? t('signIn.retry', 'Try again') : t('signIn.button', 'Sign In')}
+          {signInFailed ? t('signIn.retry', 'Try again') : t('signIn.button', 'Sign In')}
         </Button>
       )}
-      {!!signInError && <SignInError code={signInErrorCode} detail={signInError} retryAfter={signInRetryAfter} />}
+      {signInFailed && <SignInError code={signInErrorCode} detail={signInError} retryAfter={signInRetryAfter} />}
     </Box>
   )
 }
