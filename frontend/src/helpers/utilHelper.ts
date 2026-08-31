@@ -14,6 +14,23 @@ export function byName<T extends { name?: string }>(a: T, b: T) {
   return alphaSort(a.name, b.name)
 }
 
+// The counterpart to alphaSort for time: one comparator behind every "most recent first" sort,
+// so recency means the same thing everywhere. Missing or unparseable dates fall back to the
+// epoch so they sort last, rather than returning NaN and silently comparing as equal.
+function timeOf(date?: ISOTimestamp | number | Date) {
+  const time = date ? new Date(date).getTime() : NaN
+  return Number.isNaN(time) ? 0 : time
+}
+
+// Newest first
+export function dateSort(a?: ISOTimestamp | number | Date, b?: ISOTimestamp | number | Date) {
+  return timeOf(b) - timeOf(a)
+}
+
+export function byNewest<T extends { updated?: ISOTimestamp }>(a: T, b: T) {
+  return dateSort(a.updated, b.updated)
+}
+
 export function toLookup<T>(array: T[], key: string): ILookup<T> {
   return array.reduce((obj, item) => ({ ...obj, [item[key]]: item }), {})
 }
