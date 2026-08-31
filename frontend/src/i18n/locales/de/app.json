@@ -2164,6 +2164,7 @@
     "services": "Dienste"
   },
   "signIn": {
+    "autoStopped": "Die automatische Anmeldung wurde nach wiederholten Versuchen gestoppt. Wählen Sie „Anmelden“, um es erneut zu versuchen.",
     "button": "Anmelden",
     "cancel": "Abbrechen",
     "errorExpired": "Der Anmeldeversuch ist abgelaufen, bevor er abgeschlossen war. Bitte versuchen Sie es erneut.",

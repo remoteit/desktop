@@ -2198,6 +2198,7 @@
     "services": "Servicios"
   },
   "signIn": {
+    "autoStopped": "El inicio de sesión automático se detuvo tras varios intentos. Selecciona Iniciar sesión para volver a intentarlo.",
     "button": "Iniciar sesión",
     "cancel": "Cancelar",
     "errorExpired": "Ese intento de inicio de sesión caducó antes de completarse. Inténtalo de nuevo.",

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { OidcErrorCode, oidcAutoStartsSpent, oidcCountAutoStart } from '../services/oidc'
+import { MODE } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
 
@@ -24,6 +25,12 @@ const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?
   retryAfter,
 }) => {
   const { t } = useTranslation()
+  /* The server's own wording, shown only where someone is equipped to read it. It names
+     internal machinery — resource identifiers, endpoints, an authorization_details type —
+     which is what makes it useful in a bug report and wrong on a stranger's screen,
+     untranslated, under a sentence written for them. console.error still carries it for
+     everyone, so a support session loses nothing. */
+  const showDetail = useSelector((state: State) => MODE === 'development' || !!state.ui.testUI)
   // Round UP: telling someone to wait 6 minutes when the lock lifts in 6:40 just earns
   // a second failure. Below a minute still reads as "a minute".
   const minutes = Math.max(1, Math.ceil((retryAfter || 0) / 60))
@@ -69,7 +76,7 @@ const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?
       <Typography variant="body2" color="error" textAlign="center">
         {message()}
       </Typography>
-      {!!detail && (
+      {!!detail && showDetail && (
         <Typography variant="caption" color="grayDark.main" textAlign="center">
           {detail}
         </Typography>
@@ -87,7 +94,7 @@ export function SignInApp() {
   const { signInFailed, signInError, signInErrorCode, signInRetryAfter, signingIn } = useSelector(
     (state: State) => state.auth
   )
-  const { auth } = useDispatch<Dispatch>()
+  const { auth, ui } = useDispatch<Dispatch>()
 
   /* On the WEB there is nothing to show a signed-out user — the AS login page IS the
      sign-in surface, so leave for it immediately. Desktop keeps the launcher: its window
@@ -99,13 +106,29 @@ export function SignInApp() {
      actually bit — a path that returns without recording the failure — since an automatic
      authorize renders nothing to a person and the first visible symptom is the AS
      rate-limiting the address. A click is never counted against it. */
-  const autoStart = !browser.isElectron && !signingIn && !signInFailed && oidcAutoStartsSpent() < AUTO_START_LIMIT
+  const budgetSpent = oidcAutoStartsSpent() >= AUTO_START_LIMIT
+  const autoStart = !browser.isElectron && !signingIn && !signInFailed && !budgetSpent
   useEffect(() => {
     if (!autoStart) return
     oidcCountAutoStart()
     auth.signIn()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart])
+
+  /* The backstop is silent by construction — it catches the case where NOTHING recorded a
+     failure, so there is no error on screen to explain why the redirect stopped. Said
+     through the app's own snackbar (Page renders it over the signed-out screen too)
+     rather than by growing a second error surface on this panel. */
+  useEffect(() => {
+    if (browser.isElectron || signingIn || signInFailed || !budgetSpent) return
+    ui.set({
+      noticeMessage: t(
+        'signIn.autoStopped',
+        'Automatic sign-in stopped after repeated attempts. Select Sign In to try again.'
+      ),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [budgetSpent, signInFailed, signingIn])
 
   if (autoStart || (!browser.isElectron && signingIn))
     return (

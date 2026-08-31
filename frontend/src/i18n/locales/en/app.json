@@ -2164,6 +2164,7 @@
     "services": "Services"
   },
   "signIn": {
+    "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
     "button": "Sign In",
     "cancel": "Cancel",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
