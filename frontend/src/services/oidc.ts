@@ -205,7 +205,48 @@ const redirectUri = () =>
  *  `passport_account` gates the native security settings; `permitteer_account` is Connected
  *  Apps against the AS's own account API (plan D6) — list + revoke. The graphql audience
  *  stays pure scope-`full` and carries no details, so it is not listed here. */
-const DECLARED: Array<{ resource: string; type: string; actions: string[]; actor?: string }> = [
+// The MCP detail-type NAME is the resource's to declare, not this bundle's to pin: it is
+// DISCOVERED from the MCP PRM (RFC 9728 — authorization_details_types_supported and the rich
+// catalog), cached in the token store so sync callers read the last-known value, and refreshed
+// before every authorize. A pinned copy is exactly what broke on 2026-08-31: the AS retired
+// remoteit_mcp_dev for the stage-stable remoteit_mcp, the pinned request stopped resolving, and
+// the agent lane died with "needs permissions" / reauth loops. The SHAPE stays local on
+// purpose — the device-only action subset and the `actor` marker are this app's declaration
+// (deliberately narrower than the advertisement); only the name rides discovery. A discovered
+// RENAME flips declarationFingerprint(), so the existing stale-grant path heals it with one
+// silent re-authorize instead of an error screen.
+const MCP_TYPE_KEY = 'r3.oauth.mcpDetailType'
+let mcpTypeMemo: string | undefined
+function mcpDetailType(): string {
+  if (mcpTypeMemo) return mcpTypeMemo
+  try { const stored = tokenStore().getItem(MCP_TYPE_KEY); if (stored) return (mcpTypeMemo = stored) } catch { /* fall through */ }
+  return OAUTH_MCP_DETAIL
+}
+async function refreshMcpDetailType(): Promise<string> {
+  try {
+    const r = new URL(OAUTH_MCP_RESOURCE)
+    const prm = `${r.origin}/.well-known/oauth-protected-resource${r.pathname}`
+    const doc = (await (await fetch(prm)).json()) as {
+      authorization_details_types_supported?: string[]
+      authorization_details_types?: Array<{ type?: string; risk_class?: string }>
+    }
+    const rich = doc.authorization_details_types ?? []
+    const names = doc.authorization_details_types_supported ?? []
+    // The standard (non-org) grant type: the rich catalog says so directly; a names-only
+    // document falls back to the naming convention the registry has always used.
+    const picked = rich.find(t => t.risk_class === 'standard' && typeof t.type === 'string')?.type
+      ?? names.find(n => !n.endsWith('_org'))
+    if (picked) {
+      mcpTypeMemo = picked
+      try { tokenStore().setItem(MCP_TYPE_KEY, picked) } catch { /* best effort */ }
+    }
+  } catch { /* offline or blocked — the last-known (or fallback) name stands */ }
+  return mcpDetailType()
+}
+// Warm the cache off the boot path so oidcGrantStale() compares against fresh truth early.
+void refreshMcpDetailType()
+
+const declared = (): Array<{ resource: string; type: string; actions: string[]; actor?: string; locations?: string[] }> => [
   { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
   { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write'] },
   // The AI agent's slice (remoteit-ai-agent.md D5): the stage's MCP detail, delegated
@@ -213,13 +254,16 @@ const DECLARED: Array<{ resource: string; type: string; actions: string[]; actor
   // tokens, which is the exchange's precondition. The slice partitions from any plain
   // request of the same type, and the grant row it mints is the revocable object the
   // account console shows.
-  { resource: OAUTH_MCP_RESOURCE, type: OAUTH_MCP_DETAIL, actions: ['device:read', 'device:write', 'device:connect', 'device:execute'], actor: OAUTH_AGENT_ACTOR },
+  // `locations` names WHICH resource's type this is (RFC 9396): the stage-stable name is
+  // shared across every stage's MCP resource, and the actor's registered edge may cover more
+  // than one (dev also acts toward evan) — the AS fails closed on that ambiguity by design.
+  { resource: OAUTH_MCP_RESOURCE, type: mcpDetailType(), locations: [OAUTH_MCP_RESOURCE], actions: ['device:read', 'device:write', 'device:connect', 'device:execute'], actor: OAUTH_AGENT_ACTOR },
 ]
 
 /** A stable fingerprint of what this build asks for. Order-insensitive, so reshuffling the
  *  list is not a change; adding, dropping or renaming an action is. */
 const declarationFingerprint = () =>
-  DECLARED.map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}${d.actor ? `@${d.actor}` : ''}`)
+  declared().map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}${d.actor ? `@${d.actor}` : ''}`)
     .sort()
     .join('|')
 
@@ -244,6 +288,9 @@ export function oidcGrantStale(): boolean {
 
 export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; loginHint?: string } = {}): Promise<void> {
   const d = await discover()
+  // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
+  // exchange can't use) — resolve it fresh, falling back to last-known on failure.
+  await refreshMcpDetailType()
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
@@ -260,7 +307,7 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; log
     // the passport-audience token minted later via refresh carries this slice, gating the
     // native security settings (credentials.write); the graphql audience stays pure
     // scope-`full` (an uncovered resource yields audience-only tokens).
-    authorization_details: JSON.stringify(DECLARED.map(d => ({ type: d.type, actions: d.actions, ...(d.actor ? { actor: d.actor } : {}) }))),
+    authorization_details: JSON.stringify(declared().map(d => ({ type: d.type, actions: d.actions, ...(d.locations ? { locations: d.locations } : {}), ...(d.actor ? { actor: d.actor } : {}) }))),
     state: flow.state,
     nonce: flow.nonce,
   }
@@ -312,7 +359,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     }).catch(() => {})
   }
   persist({ refresh_token: body.refresh_token, id_token: body.id_token })
-  // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
+  // The authorize that just completed asked for declared(), and a skipConsent first-party grant
   // is merged from exactly that — so the grant now covers this build. Stamp it.
   try { tokenStore().setItem(DECLARATION_KEY, declarationFingerprint()) } catch { /* non-fatal */ }
   const at = decodeJwt(body.access_token)

@@ -39,7 +39,10 @@ export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'http
 // delegated onward to the service actor — which is what makes those tokens exchangeable.
 export const OAUTH_AGENT_RESOURCE = env.VITE_OAUTH_AGENT_RESOURCE || 'https://agent.dev.remote.it'
 export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || 'https://mcp.dev.remote.it/mcp'
-export const OAUTH_MCP_DETAIL = env.VITE_OAUTH_MCP_DETAIL || 'remoteit_mcp_dev'
+// FALLBACK only: the live name is DISCOVERED from the MCP resource's PRM at sign-in
+// (services/oidc.ts) — per-resource keying made it stage-stable, and the 2026-08-31
+// retirement of the _dev names is exactly why a pinned copy can't be the source of truth.
+export const OAUTH_MCP_DETAIL = env.VITE_OAUTH_MCP_DETAIL || 'remoteit_mcp'
 export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
