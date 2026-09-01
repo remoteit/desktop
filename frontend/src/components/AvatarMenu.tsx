@@ -13,6 +13,7 @@ import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
+import { oidcAccounts } from '../services/oidc'
 import { emit } from '../services/Controller'
 
 const ENTER_DELAY = 300
@@ -178,6 +179,23 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         </DesktopUI>
+        {/* The other accounts this app has signed into (services/oidc.ts registry) — one
+            click makes one active. Emails render as-is (identities are not translated);
+            the AS chooser behind "Switch account" below remains the way to ADD one. */}
+        {oidcAccounts()
+          .filter(a => !a.active)
+          .map(a => (
+            <ListItemSetting
+              key={a.sub}
+              label={a.name || a.email || a.sub}
+              subLabel={a.name && a.email ? a.email : undefined}
+              icon="user"
+              onClick={async () => {
+                handleClose()
+                await dispatch.auth.activateAccount(a.sub)
+              }}
+            />
+          ))}
         <ListItemSetting
           label={t('nav.switchAccount', 'Switch account')}
           icon="users"

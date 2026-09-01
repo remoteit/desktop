@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -119,12 +119,28 @@ export default createModel<RootModel>()({
     // panel until the deep link reloads it with the code.
     /** Account switch: re-run authorize with select_account — the AS chooser shows the
      * real session chips; nothing is torn down locally, so a canceled chooser costs
-     * nothing. Completion replaces the session like any sign-in (old family revoked). */
+     * nothing. Completion replaces the session like any sign-in (a SAME-account re-auth
+     * revokes the old family; a DIFFERENT account files the old one in the registry —
+     * services/oidc.ts). */
     async switchAccount(_: void) {
       try {
         await oidcStart({ prompt: 'select_account' })
       } catch (error) {
         dispatch.auth.set({ signInError: error?.message || 'Could not open the account chooser.' })
+      }
+    },
+    /** Activate a SAVED account from the avatar menu (the oidc registry): a storage swap
+     * plus a full reload, so every model boots as the new identity — a soft swap would
+     * bleed one account's devices and orgs into the other's view. A stale saved session
+     * surfaces on boot exactly like any expired sign-in (refresh fails → sign-in screen),
+     * which is the honest fallback. An unknown sub falls to the add-account chooser, so a
+     * menu row that somehow outlived its registry entry still lands somewhere sensible. */
+    async activateAccount(sub: string) {
+      if (oidcClaims()?.sub === sub) return // already active — nothing to do
+      if (oidcActivateAccount(sub)) {
+        window.location.assign('/')
+      } else {
+        await dispatch.auth.switchAccount()
       }
     },
     async signIn(_: void) {

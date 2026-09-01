@@ -29,6 +29,17 @@ const FLOW_KEY = 'oidc.flow'
 const TOKENS_KEY = 'oidc.tokens'
 // What the grant behind those tokens was last written from (see oidcGrantStale).
 const DECLARATION_KEY = 'oidc.declaration'
+// The ACCOUNT REGISTRY (multi-account menu): one saved token set per subject this app has
+// signed into, beside the single ACTIVE set in TOKENS_KEY. Google-style client-side
+// multi-account — the AS's own session set is browser-cookie state this origin can never
+// read (SameSite=Lax + no CORS on cookie lanes, by doctrine), so the menu lists the
+// accounts THIS APP knows; the AS chooser on the add-account hop shows the rest. Every
+// entry's refresh token is DPoP-bound to the ONE browser key (below), so the key rotates
+// only when the LAST account leaves — rotating on every sign-out would silently kill the
+// other accounts' saved sessions. A support session (id_token carries `act`) is NEVER
+// saved: impersonation must not become a stored identity (support tabs keep an isolated
+// per-tab store anyway).
+const ACCOUNTS_KEY = 'oidc.accounts'
 
 // A boot on /signoutCallback is the RETURN from an explicit sign-out: the next authorize
 // must show the LOGIN PAGE (prompt=login), never silently SSO into another account's
@@ -211,8 +222,14 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   })
   const claims = decodeJwt(body.id_token)
   if (claims?.nonce !== flow.nonce) throw new Error('Sign-in nonce mismatch — try again.')
-  const previous = stored()?.refresh_token
-  if (previous && previous !== body.refresh_token) {
+  // Sub-aware handover: the SAME account signing in again replaces its family (revoke the
+  // old refresh token — it is dead weight); a DIFFERENT account arriving is the
+  // add-account path, and the previous account's set is a LIVING saved session — persist()
+  // already filed it in the registry, so it must absolutely not be revoked here.
+  const previousSet = stored()
+  const previousSub = decodeJwt(previousSet?.id_token)?.sub
+  const previous = previousSet?.refresh_token
+  if (previous && previous !== body.refresh_token && (!claims?.sub || previousSub === claims.sub)) {
     fetch(`${OAUTH_ISSUER}/revoke`, {
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -221,8 +238,15 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   }
   persist({ refresh_token: body.refresh_token, id_token: body.id_token })
   // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
-  // is merged from exactly that — so the grant now covers this build. Stamp it.
-  try { tokenStore().setItem(DECLARATION_KEY, declarationFingerprint()) } catch { /* non-fatal */ }
+  // is merged from exactly that — so the grant now covers this build. Stamp it — active AND
+  // this account's registry entry, so a later activation restores the right measurement.
+  try {
+    tokenStore().setItem(DECLARATION_KEY, declarationFingerprint())
+    if (claims?.sub && !claims?.act) {
+      const reg = readRegistry()
+      if (reg[claims.sub]) { reg[claims.sub].declaration = declarationFingerprint(); writeRegistry(reg) }
+    }
+  } catch { /* non-fatal */ }
   const at = decodeJwt(body.access_token)
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims
@@ -288,16 +312,26 @@ export function invalidateOidcToken() {
   access = {}
 }
 
-/** Local-only teardown: clears this app's tokens and NOTHING else. App sign-out never
- * ends the AS session (user directive — the browser session at the AS belongs to the
- * user, not to this app's error handling). `oidcSignOut` (RP-initiated end_session)
- * remains for a future explicit "sign out everywhere" action only. */
+/** Local-only teardown: clears the ACTIVE account's tokens (and its registry entry) and
+ * NOTHING else. App sign-out never ends the AS session (user directive — the browser
+ * session at the AS belongs to the user, not to this app's error handling), and it never
+ * touches the OTHER saved accounts — signing out one identity is not signing out of the
+ * app's memory of the rest. `oidcSignOut` (RP-initiated end_session) remains for a future
+ * explicit "sign out everywhere" action only. */
 export function oidcClearLocal() {
   clearLocal()
 }
 
 function clearLocal() {
-  void clearDpopKey()
+  const activeSub = oidcClaims()?.sub
+  const reg = readRegistry()
+  if (activeSub && reg[activeSub]) {
+    delete reg[activeSub]
+    writeRegistry(reg)
+  }
+  // The one DPoP key binds EVERY saved account's refresh token, so it rotates only when
+  // the last account leaves — "key loss ≡ session loss" now means ALL sessions.
+  if (Object.keys(reg).length === 0) void clearDpopKey()
   access = {}
   tokenStore().removeItem(TOKENS_KEY)
   tokenStore().removeItem(DECLARATION_KEY)
@@ -305,6 +339,69 @@ function clearLocal() {
 
 function persist(tokens: Stored) {
   tokenStore().setItem(TOKENS_KEY, JSON.stringify(tokens))
+  // Keep the registry entry in step with the ACTIVE set. This runs on every refresh too,
+  // which is load-bearing: refresh tokens rotate single-use, so a registry copy left
+  // behind would be a REPLAY when later activated — revoking the whole family.
+  fileAccount(tokens)
+}
+
+// --- the account registry (multi-account menu) ---------------------------------------
+
+type RegistryEntry = Stored & { email?: string; name?: string; declaration?: string }
+
+const readRegistry = (): { [sub: string]: RegistryEntry } => {
+  try {
+    const raw = tokenStore().getItem(ACCOUNTS_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+const writeRegistry = (reg: { [sub: string]: RegistryEntry }) => {
+  try { tokenStore().setItem(ACCOUNTS_KEY, JSON.stringify(reg)) } catch { /* storage blocked — menu degrades to active-only */ }
+}
+
+/** File a token set under its subject — silently NOT for support sessions (`act`). */
+function fileAccount(tokens: Stored) {
+  const claims = decodeJwt(tokens.id_token)
+  const sub = claims?.sub
+  if (!sub || claims?.act) return
+  const reg = readRegistry()
+  reg[sub] = {
+    ...tokens,
+    email: claims?.email,
+    name: claims?.name,
+    declaration: reg[sub]?.declaration,
+  }
+  writeRegistry(reg)
+}
+
+export type OidcAccount = { sub: string; email?: string; name?: string; active: boolean }
+
+/** The accounts this app has signed into, for the avatar menu. Active first. */
+export function oidcAccounts(): OidcAccount[] {
+  const activeSub = oidcClaims()?.sub
+  const reg = readRegistry()
+  return Object.entries(reg)
+    .map(([sub, e]) => ({ sub, email: e.email, name: e.name, active: sub === activeSub }))
+    .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
+}
+
+/** Make a saved account the ACTIVE one. Storage-only — the caller reloads the app so
+ *  every model boots as the new identity (a soft swap would bleed one account's data
+ *  into the other's view). Returns false when the account is unknown. */
+export function oidcActivateAccount(sub: string): boolean {
+  const entry = readRegistry()[sub]
+  if (!entry?.refresh_token) return false
+  access = {}
+  tokenStore().setItem(TOKENS_KEY, JSON.stringify({ refresh_token: entry.refresh_token, id_token: entry.id_token }))
+  // The declaration stamp is per-GRANT, and the grant is per-account: swap it with the
+  // tokens or the boot check would measure account B against account A's grant.
+  try {
+    if (entry.declaration) tokenStore().setItem(DECLARATION_KEY, entry.declaration)
+    else tokenStore().removeItem(DECLARATION_KEY)
+  } catch { /* non-fatal — worst case is one redundant re-authorize */ }
+  return true
 }
 
 function cleanUrl() {
