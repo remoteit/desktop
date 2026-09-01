@@ -128,10 +128,21 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
         run: |
-          xcrun altool --validate-app -f "$BUILD_PATH/Remote.It.ipa" -t ios \
+          # altool prints `ERROR: [altool...]` and still exits 0, so a rejected
+          # build reports success and never reaches TestFlight. Check the output,
+          # not just the status.
+          set +e
+          out=$(xcrun altool --validate-app -f "$BUILD_PATH/Remote.It.ipa" -t ios \
             --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
             --apiIssuer "$APP_STORE_CONNECT_API_ISSUER_ID" \
-            --output-format xml
+            --output-format xml 2>&1)
+          status=$?
+          set -e
+          printf '%s\n' "$out"
+          if [ "$status" -ne 0 ] || printf '%s\n' "$out" | grep -qE 'ERROR: \[altool|<key>product-errors</key>'; then
+            echo "::error::altool validation failed - the build was NOT accepted"
+            exit 1
+          fi
 
       - name: Upload ipa
         working-directory: ./ios/App
@@ -139,7 +150,17 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
         run: |
-          xcrun altool --upload-app -f "$BUILD_PATH/Remote.It.ipa" -t ios \
+          # Same as validation above: altool's exit code cannot be trusted.
+          set +e
+          out=$(xcrun altool --upload-app -f "$BUILD_PATH/Remote.It.ipa" -t ios \
             --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
             --apiIssuer "$APP_STORE_CONNECT_API_ISSUER_ID" \
-            --output-format xml
+            --output-format xml 2>&1)
+          status=$?
+          set -e
+          printf '%s\n' "$out"
+          if [ "$status" -ne 0 ] || printf '%s\n' "$out" | grep -qE 'ERROR: \[altool|<key>product-errors</key>'; then
+            echo "::error::altool upload failed - nothing was delivered to App Store Connect"
+            exit 1
+          fi
+          echo "Uploaded to App Store Connect - the build should appear in TestFlight after processing"
