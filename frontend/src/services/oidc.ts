@@ -161,7 +161,7 @@ export function oidcGrantStale(): boolean {
   }
 }
 
-export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; loginHint?: string } = {}): Promise<void> {
+export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string } = {}): Promise<void> {
   const d = await discover()
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
@@ -394,9 +394,25 @@ export function oidcAccounts(): OidcAccount[] {
 /** Make a saved account the ACTIVE one. Storage-only — the caller reloads the app so
  *  every model boots as the new identity (a soft swap would bleed one account's data
  *  into the other's view). Returns false when the account is unknown. */
+/** One-shot marker: WHO was just activated, so a boot that finds the saved tokens dead can
+ *  try ONE silent recovery (prompt=none + login_hint — the AS serves any live set member
+ *  the hint names) before falling to the sign-in screen. sessionStorage: dies with the tab,
+ *  and it is cleared before the attempt so a failed round can never loop. */
+const ACTIVATING_KEY = 'oidc.activating'
+export function oidcTakeActivationHint(): string | undefined {
+  try {
+    const email = sessionStorage.getItem(ACTIVATING_KEY) ?? undefined
+    sessionStorage.removeItem(ACTIVATING_KEY)
+    return email || undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function oidcActivateAccount(sub: string): boolean {
   const entry = readRegistry()[sub]
   if (!entry?.refresh_token) return false
+  try { if (entry.email) sessionStorage.setItem(ACTIVATING_KEY, entry.email) } catch { /* recovery hint only */ }
   access = {}
   tokenStore().setItem(TOKENS_KEY, JSON.stringify({ refresh_token: entry.refresh_token, id_token: entry.id_token }))
   // The declaration stamp is per-GRANT, and the grant is per-account: swap it with the

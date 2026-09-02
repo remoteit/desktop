@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -75,7 +75,16 @@ export default createModel<RootModel>()({
             if (alive) {
               await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
               await dispatch.auth.healGrant()
-            } else invalidateOidcToken()
+            } else {
+              invalidateOidcToken()
+              // A JUST-ACTIVATED saved account whose refresh family died: one silent
+              // recovery through the AS — prompt=none + login_hint serves any live
+              // session-set member the hint names (permitteer silent selection), so the
+              // person lands back signed in with zero screens. The marker is one-shot;
+              // a refused silent round falls to the ordinary sign-in screen.
+              const hint = oidcTakeActivationHint()
+              if (hint) await oidcStart({ prompt: 'none', loginHint: hint })
+            }
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
           console.error('AUTH INIT: sign-in completion failed', error)
