@@ -2036,6 +2036,7 @@
   },
   "viewAsBanner": {
     "exit": "Salir del modo de vista como",
+    "supportSession": "Sesión de soporte — viendo como {{email}} hasta {{until}}. Los tokens llevan tu identidad; la persona puede ver y finalizar esta sesión.",
     "viewingAs": "Viendo como: {{email}}"
   },
   "graphType": {

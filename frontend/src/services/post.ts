@@ -81,7 +81,9 @@ export async function apiError(error: unknown) {
       // on a failure path may end the AS session. Log the URL: it names the offender.
       console.warn('AUTH-SHAPED API ERROR', { url: error.config?.url, status: error.response?.status })
       await sleep(1000 * errorCount * errorCount)
-      auth.checkSession({ refreshToken: true, silent: true })
+      // The status rides along: under a SUPPORT session a 401 is terminal (no refresh token, the
+      // session is gone) while a 403 is an ordinary refused write — checkSession tells them apart.
+      auth.checkSession({ refreshToken: true, silent: true, status: error.response?.status })
     }
   }
 

@@ -2000,6 +2000,7 @@
   },
   "viewAsBanner": {
     "exit": "Ansichtsmodus verlassen",
+    "supportSession": "Support-Sitzung — Ansicht als {{email}} bis {{until}}. Tokens tragen Ihre Identität; die Person kann diese Sitzung sehen und beenden.",
     "viewingAs": "Anzeige als: {{email}}"
   },
   "graphType": {

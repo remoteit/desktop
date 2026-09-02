@@ -65,11 +65,21 @@ if (window.location.pathname === '/signoutCallback') {
 // (Module-scope discipline: touch only hoisted consts and the storage APIs here — the
 // first cut's clearLocal() call hit a temporal dead zone and killed the whole bundle.)
 const SUPPORT_FLAG = 'oidc.support'
-if (new URLSearchParams(window.location.search).has('support_session')) {
-  try { sessionStorage.setItem(SUPPORT_FLAG, '1') } catch { /* a blocked storage API must not kill the boot */ }
-  const clean = new URL(window.location.href)
-  clean.searchParams.delete('support_session')
-  window.history.replaceState({}, '', clean.toString())
+const SUPPORT_TICKET_KEY = 'oidc.support_ticket'
+// Support-session LAUNCH (permitteer docs/desktop-support.md): the console lands this tab on
+// the app with a one-time ?support_ticket. The ticket is stashed for the authorize auth.init
+// starts (it rides that request as `support_ticket`; the AS binds the sign-in to the operator's
+// support session, which also needs the browser's support cookie on the AS origin), the flag
+// makes this tab's token store tab-scoped, and the URL is scrubbed so a reload never replays a
+// spent ticket. Replaces the earlier `?support_session=1` contract, which the AS no longer sends.
+{
+  const launch = new URLSearchParams(window.location.search).get('support_ticket')
+  if (launch) {
+    try { sessionStorage.setItem(SUPPORT_FLAG, '1'); sessionStorage.setItem(SUPPORT_TICKET_KEY, launch) } catch { /* a blocked storage API must not kill the boot */ }
+    const clean = new URL(window.location.href)
+    clean.searchParams.delete('support_ticket')
+    window.history.replaceState({}, '', clean.toString())
+  }
 }
 /** The token store for THIS TAB: tab-scoped for a support session, shared otherwise. */
 const tokenStore = (): Storage => {
@@ -77,7 +87,9 @@ const tokenStore = (): Storage => {
 }
 
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
-type Stored = { refresh_token: string; id_token?: string }
+/** A support session (`act` in the id_token) has NO refresh token — its one access token IS the
+ *  session, stored so a reload of the support tab survives until it expires. */
+type Stored = { refresh_token?: string; id_token?: string; support?: { access_token: string; exp: number; type?: string } }
 
 let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
 let refreshing: Promise<string> | undefined
@@ -104,7 +116,16 @@ const stored = (): Stored | undefined => {
 }
 
 export const oidcConfigured = () => !!OAUTH_ISSUER
-export const oidcSignedIn = () => !!stored()?.refresh_token
+const supportLive = (s: Stored | undefined) => !!s?.support && s.support.exp - Math.floor(Date.now() / 1000) > 0
+export const oidcSignedIn = () => { const s = stored(); return !!s?.refresh_token || supportLive(s) }
+/** This tab was opened by a support launch (its token store is tab-scoped). */
+export const oidcIsSupportTab = (): boolean => { try { return !!sessionStorage.getItem(SUPPORT_FLAG) } catch { return false } }
+/** The launch ticket, ONCE — consumed by the authorize auth.init starts. */
+export function oidcTakeSupportTicket(): string | undefined {
+  try { const t = sessionStorage.getItem(SUPPORT_TICKET_KEY) ?? undefined; sessionStorage.removeItem(SUPPORT_TICKET_KEY); return t } catch { return undefined }
+}
+/** When the support session's token — and with it the session — ends (ms), for the banner. */
+export const oidcSupportEndsAt = (): number | undefined => { const s = stored()?.support; return s ? s.exp * 1000 : undefined }
 export const oidcClaims = (): OidcClaims | undefined => decodeJwt(stored()?.id_token)
 /** The support-session marker: permitteer stamps `act` (the OPERATOR acting as this
  *  subject) into every token of an impersonated session, the id_token included — the
@@ -161,7 +182,7 @@ export function oidcGrantStale(): boolean {
   }
 }
 
-export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string } = {}): Promise<void> {
+export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; supportTicket?: string } = {}): Promise<void> {
   const d = await discover()
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
@@ -189,6 +210,8 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'n
   // chooser — without it, prompt=login lands on the picker and choosing your own account
   // simply returns you to the same page, which reads as a loop.
   if (opts.loginHint) params.login_hint = opts.loginHint
+  // A support launch: the one-time ticket binds THIS authorize to the operator's support session.
+  if (opts.supportTicket) params.support_ticket = opts.supportTicket
   if (opts.prompt) {
     params.prompt = opts.prompt
   } else if (promptLogin) {
@@ -238,7 +261,15 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
       body: new URLSearchParams({ token: previous, token_type_hint: 'refresh_token', client_id: OAUTH_CLIENT_ID }),
     }).catch(() => {})
   }
-  persist({ refresh_token: body.refresh_token, id_token: body.id_token })
+  const at = decodeJwt(body.access_token)
+  if (claims?.act) {
+    // A SUPPORT session (docs/desktop-support.md): the AS mints no refresh token, and the access
+    // token lives exactly as long as the session — so it is stored (tab-scoped) and used until
+    // it expires; that expiry IS the end of the support session. Never filed as an account.
+    persist({ id_token: body.id_token, support: { access_token: body.access_token, exp: at?.exp ?? 0, type: body.token_type } })
+  } else {
+    persist({ refresh_token: body.refresh_token, id_token: body.id_token })
+  }
   // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
   // is merged from exactly that — so the grant now covers this build. Stamp it — active AND
   // this account's registry entry, so a later activation restores the right measurement.
@@ -249,7 +280,6 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
       if (reg[claims.sub]) { reg[claims.sub].declaration = declarationFingerprint(); writeRegistry(reg) }
     }
   } catch { /* non-fatal */ }
-  const at = decodeJwt(body.access_token)
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims
 }
@@ -258,8 +288,13 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
  * single-flight — the rotating single-use refresh makes a concurrent second refresh
  * token REUSE, which revokes the whole family. */
 export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE): Promise<string> {
-  const cached = access[resource]
   const now = Math.floor(Date.now() / 1000)
+  // A support session's token IS the session: served until it expires (a reload restores it from
+  // the tab store), never refreshed, and '' — the end — once it is gone. Other audiences have
+  // nothing to mint from; their features fail closed, as writes do under `act`.
+  const support = stored()?.support
+  if (support) return resource === OAUTH_GRAPHQL_RESOURCE && support.exp - now > 0 ? support.access_token : ''
+  const cached = access[resource]
   if (cached && cached.exp - now > 30) return cached.token
   if (!refreshing) refreshing = refresh(resource).finally(() => (refreshing = undefined))
   return refreshing

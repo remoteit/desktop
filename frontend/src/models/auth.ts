@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -64,6 +64,13 @@ export default createModel<RootModel>()({
         try {
           // A boot with ?code&state in the URL IS the sign-in completing (web return, or
           // the desktop deep-link reload); otherwise restore a stored session.
+          // A support LAUNCH (permitteer docs/desktop-support.md): this tab arrived with a one-time
+          // ticket, and the authorize it starts binds the sign-in to the operator's support session.
+          const ticket = oidcTakeSupportTicket()
+          if (ticket) {
+            await oidcStart({ supportTicket: ticket })
+            return
+          }
           const claims = await oidcCompleteFromUrl()
           if (claims) await dispatch.auth.handleSignInSuccess(claims)
           else if (oidcSignedIn()) {
@@ -74,7 +81,9 @@ export default createModel<RootModel>()({
             const alive = await getToken()
             if (alive) {
               await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
-              await dispatch.auth.healGrant()
+              // Never re-authorize a SUPPORT session: a plain authorize in this tab would sign
+              // the operator in as THEMSELVES and quietly turn the support view into their own.
+              if (!oidcActor()) await dispatch.auth.healGrant()
             } else {
               invalidateOidcToken()
               // A JUST-ACTIVATED saved account whose refresh family died: one silent
@@ -253,11 +262,20 @@ export default createModel<RootModel>()({
     // The 401 recovery path (services/post.ts): drop the renderer cache and let the
     // backend refresh on the next token fetch. If the backend says the session is gone
     // (refresh family revoked / AS session expired), sign the app out.
-    async checkSession(options: { refreshToken: boolean; silent?: boolean }, state) {
+    async checkSession(options: { refreshToken: boolean; silent?: boolean; status?: number }, state) {
       invalidateOidcToken()
+      // A SUPPORT session cannot be recovered: no refresh token, and a 401 means the session was
+      // ended — by the user, by the operator's relaunch, or by its own expiry. The end is the end
+      // (docs/desktop-support.md). A 403 is an ordinary refused write and changes nothing.
+      if (oidcActor() && options.status === 401) {
+        oidcClearLocal()
+        dispatch.ui.set({ errorMessage: 'Support session ended.' })
+        await dispatch.auth.signedOut()
+        return
+      }
       if (!oidcSignedIn() && state.auth.authenticated) {
         console.error('SESSION ERROR: session gone (refresh family dead or signed out)')
-        if (!options.silent) dispatch.ui.set({ errorMessage: 'Session expired.' })
+        if (!options.silent) dispatch.ui.set({ errorMessage: oidcIsSupportTab() ? 'Support session ended.' : 'Session expired.' })
         await dispatch.auth.signedOut()
       }
     },

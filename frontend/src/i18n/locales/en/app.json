@@ -2052,6 +2052,7 @@
   },
   "viewAsBanner": {
     "exit": "Exit view-as mode",
+    "supportSession": "Support session — viewing as {{email}} until {{until}}. Tokens are stamped with your identity; the user can see and end this session.",
     "viewingAs": "Viewing as: {{email}}"
   },
   "appType": {
