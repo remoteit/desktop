@@ -9,13 +9,8 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'docker-extension',
-  name: 'Docker Jumpbox Extension',
   component: Component,
-  types: { 1220: 'Docker Extension' },
-  services: [],
   installation: {
-    label: 'Registration Code',
-    command: '[CODE]',
     instructions: (
       <>
         For more information please download Docker Desktop and install our extension or
@@ -25,6 +20,5 @@ platforms.register({
         if it's already installed.
       </>
     ),
-    qualifier: 'For docker desktop',
   },
 })

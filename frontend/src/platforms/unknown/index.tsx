@@ -19,13 +19,5 @@ const Index = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'unknown',
-  name: 'Unknown',
   component: Index,
-  types: { 65535: 'Unknown' },
-  installation: {
-    label: 'Registration Code',
-    command: '[CODE]',
-    qualifier: 'For generic device registration',
-    instructions: 'This unique code allows any device to register with your account, keep it safe.',
-  },
 })

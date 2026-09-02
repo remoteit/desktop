@@ -17,7 +17,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'liverock',
-  name: 'Liverock Technologies',
   component: Component,
-  types: { 1226: 'Liverock Technologies' },
 })

@@ -8,12 +8,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'advantech',
-  name: 'Advantech',
   component: Component,
-  types: { 1206: 'Advantech' },
-  installation: {
-    command: true,
-    qualifier: 'For Advantech systems',
-    link: 'https://link.remote.it/support/streamline-install',
-  },
 })

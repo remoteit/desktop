@@ -17,12 +17,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'nvidia',
-  name: 'NVIDIA Jetson',
   component: Component,
-  types: { 1201: 'NVIDIA Jetson' },
-  installation: {
-    command: true,
-    qualifier: 'For NVIDIA Jetson systems',
-    link: 'https://link.remote.it/support/streamline-install',
-  },
 })
