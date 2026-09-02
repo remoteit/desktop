@@ -1042,6 +1042,7 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "signOutConfirm": "Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.",
+    "signedInOnBrowser": "Signed in on this browser",
     "support": "Support",
     "supportForum": "Support Forum",
     "testUI": "Test UI",

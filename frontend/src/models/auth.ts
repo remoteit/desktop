@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -97,7 +97,13 @@ export default createModel<RootModel>()({
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
           console.error('AUTH INIT: sign-in completion failed', error)
-          if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
+          // A REFUSED silent selection (a known account signed out elsewhere meanwhile) must not
+          // strand a signed-in person on the sign-in screen: the stored session is intact — restore
+          // it, say why, and let the menu re-learn the browser's accounts.
+          if (String(error?.message || '').includes('login_required') && oidcSignedIn() && (await getToken())) {
+            await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
+            dispatch.ui.set({ errorMessage: 'That account is no longer signed in on this browser.' })
+          } else if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
         }
       }
       dispatch.auth.set({ initialized: true })
@@ -157,6 +163,9 @@ export default createModel<RootModel>()({
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
       if (oidcActivateAccount(sub)) {
         window.location.assign('/')
+      } else if (await oidcSelectKnownAccount(sub)) {
+        // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
+        // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
       } else {
         await dispatch.auth.switchAccount()
       }
@@ -290,6 +299,8 @@ export default createModel<RootModel>()({
       })
       await dispatch.auth.fetchUser()
       console.log('AUTHENTICATED SUCCESS')
+      // The other accounts signed in on this browser, for the avatar menu — best effort.
+      void oidcRefreshBrowserAccounts().catch(() => {})
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {

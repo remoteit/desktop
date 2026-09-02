@@ -1018,6 +1018,7 @@
     "settings": "Einstellungen",
     "signOut": "Abmelden",
     "signOutConfirm": "Durch das Abmelden kann dieses Gerät übertragen oder ein anderer Benutzer angemeldet werden. Dadurch werden alle Verbindungen beendet.",
+    "signedInOnBrowser": "In diesem Browser angemeldet",
     "support": "Support",
     "supportForum": "Support-Forum",
     "testUI": "Test-UI",

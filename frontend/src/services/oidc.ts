@@ -153,7 +153,9 @@ const redirectUri = () =>
  *  stays pure scope-`full` and carries no details, so it is not listed here. */
 const DECLARED: Array<{ resource: string; type: string; actions: string[] }> = [
   { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
-  { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write'] },
+  // accounts.read: the OTHER accounts signed in on this browser, served by the account API from
+  // this token's session — first-party apps only (permitteer docs/browser-accounts.md).
+  { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write', 'accounts.read'] },
 ]
 
 /** A stable fingerprint of what this build asks for. Order-insensitive, so reshuffling the
@@ -422,14 +424,16 @@ function fileAccount(tokens: Stored) {
   writeRegistry(reg)
 }
 
-export type OidcAccount = { sub: string; email?: string; name?: string; picture?: string; active: boolean }
+/** `known`: signed in on this BROWSER (the AS's session set) but not in this app yet — no tokens
+ *  here; picking it runs a silent selection instead of a storage swap. */
+export type OidcAccount = { sub: string; email?: string; name?: string; picture?: string; active: boolean; known: boolean }
 
 /** The accounts this app has signed into, for the avatar menu. Active first. */
 export function oidcAccounts(): OidcAccount[] {
   const activeSub = oidcClaims()?.sub
   const reg = readRegistry()
   return Object.entries(reg)
-    .map(([sub, e]) => ({ sub, email: e.email, name: e.name, picture: e.picture, active: sub === activeSub }))
+    .map(([sub, e]) => ({ sub, email: e.email, name: e.name, picture: e.picture, active: sub === activeSub, known: !e.refresh_token && !e.support }))
     .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
 }
 
@@ -584,4 +588,44 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
     throw error
   }
   return body
+}
+
+// --- the browser's accounts (permitteer docs/browser-accounts.md) --------------------------
+// The AS keeps a per-browser session SET, but its cookie never reaches this origin, so the
+// account API serves the set from this token's own session. Members this app holds no tokens
+// for are filed as KNOWN — identity only — and the menu offers them; picking one is a silent
+// selection (prompt=none + login_hint), which the AS answers for any live set member.
+const ACCOUNT_RESOURCE = `${OAUTH_ISSUER}/account/api`
+export async function oidcRefreshBrowserAccounts(): Promise<void> {
+  if (oidcActor()) return // a support session is no set member and has nothing to switch to
+  const url = `${ACCOUNT_RESOURCE}/accounts`
+  const headers = await oidcAuthHeaders('GET', url, ACCOUNT_RESOURCE)
+  if (!headers.authorization) return
+  const r = await fetch(url, { headers })
+  if (!r.ok) return
+  const body = (await r.json()) as { multi?: boolean; accounts?: { sub: string; email?: string | null; name?: string | null; picture?: string | null; current?: boolean }[] }
+  const listed = new Set<string>()
+  const reg = readRegistry()
+  for (const a of body.accounts ?? []) {
+    if (!a.sub || a.current) continue
+    listed.add(a.sub)
+    const prev = reg[a.sub]
+    reg[a.sub] = {
+      ...(prev ?? {}),
+      email: a.email ?? prev?.email,
+      name: a.name ?? prev?.name,
+      picture: typeof a.picture === 'string' && /^https:\/\//i.test(a.picture) ? a.picture : prev?.picture,
+    }
+  }
+  // A known-only entry the AS no longer lists was signed out elsewhere: drop it. Saved accounts
+  // (tokens here) are this app's own and stay.
+  for (const [sub, e] of Object.entries(reg)) if (!e.refresh_token && !e.support && !listed.has(sub) && sub !== oidcClaims()?.sub) delete reg[sub]
+  writeRegistry(reg)
+}
+/** Pick a KNOWN account: silent selection through the AS. False when the sub is not a known entry. */
+export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
+  const e = readRegistry()[sub]
+  if (!e || e.refresh_token || !e.email) return false
+  await oidcStart({ prompt: 'none', loginHint: e.email })
+  return true
 }
