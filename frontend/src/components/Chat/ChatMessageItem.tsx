@@ -55,13 +55,13 @@ export const ChatMessageItem = React.memo<Props>(({ message }) => {
               // strip sits on the card itself. Keep these in step with the `& pre` /
               // `& th, & td` backgrounds below — a stale color shows as a stray bar.
               '& pre': scrollbarStyles(theme, { background: 'grayLighter', width: SCROLLBAR_WIDTH_NARROW }),
-              '& table': scrollbarStyles(theme, { background: 'white', width: SCROLLBAR_WIDTH_NARROW }),
+              '& table': scrollbarStyles(theme, { background: 'grayLightest', width: SCROLLBAR_WIDTH_NARROW }),
             }),
             {
-              bgcolor: 'white.main',
-              borderRadius: `${radius.lg}px`,
-              paddingX: 3,
-              paddingY: 2,
+              // No card: the agent's words sit on the panel itself, flush with the
+              // column edge the user bubble hangs from. The user's turns are then the
+              // only cards, which is what makes each of them stand out in a long thread.
+              paddingY: 0.5,
               fontSize: fontSizes.base,
               lineHeight: 1.7,
               wordBreak: 'break-word',
@@ -91,6 +91,10 @@ export const ChatMessageItem = React.memo<Props>(({ message }) => {
               '& pre': {
                 overflowX: 'auto',
                 bgcolor: 'grayLighter.main',
+                // One step of gray against the panel is not enough on its own to read
+                // as a block; the hairline does that work without darkening the fill.
+                border: '1px solid',
+                borderColor: 'grayLight.main',
                 borderRadius: `${radius.lg}px`,
                 padding: 1.5,
                 '& code': { padding: 0, bgcolor: 'transparent' },
@@ -103,18 +107,19 @@ export const ChatMessageItem = React.memo<Props>(({ message }) => {
                 marginY: 2,
                 borderRadius: `${radius.sm}px`,
               },
-              // Inverted against the card: the cells carry the fill and the grid is drawn
-              // in the card's own white, so the rules read as gaps rather than lines.
+              // The cells carry the fill and the grid is drawn in the panel's own gray, so
+              // the rules read as gaps rather than lines — the same trick as before, with
+              // the colors swapped now that the table sits on the panel and not a card.
               '& th, & td': {
-                bgcolor: 'grayLightest.main',
+                bgcolor: 'white.main',
                 border: '1px solid',
-                borderColor: 'white.main',
+                borderColor: 'grayLightest.main',
                 paddingX: 1.5,
                 paddingY: 0.5,
                 textAlign: 'left',
                 whiteSpace: 'nowrap',
                 '& code': {
-                  bgcolor: 'white.main',
+                  bgcolor: 'grayLighter.main',
                 },
               },
               '& blockquote': {
