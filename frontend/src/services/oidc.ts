@@ -71,6 +71,30 @@ if (new URLSearchParams(window.location.search).has('support_session')) {
   clean.searchParams.delete('support_session')
   window.history.replaceState({}, '', clean.toString())
 }
+// The support STASH: the support session's id_token + window deadline, kept APART from the
+// live token set so switching this tab to a personal account cannot orphan the way back.
+// Written once per window when the support callback lands; read by the silent re-acquire
+// and the avatar menu's "return to support" row; sessionStorage, so it dies with the tab.
+const SUPPORT_STASH = 'oidc.support.stash'
+const SUPPORT_REACQ = 'oidc.support.reacquiring'
+export type SupportStash = { id_token: string; deadline: number; email?: string; name?: string }
+export function oidcSupportStash(): SupportStash | null {
+  try {
+    const raw = sessionStorage.getItem(SUPPORT_STASH)
+    const s = raw ? (JSON.parse(raw) as SupportStash) : null
+    return s && s.deadline > Date.now() ? s : null
+  } catch {
+    return null
+  }
+}
+/** Bounce this tab back into its still-live support session (the amber menu row). */
+export function oidcReturnToSupport(): void {
+  const s = oidcSupportStash()
+  if (!s) return
+  try { sessionStorage.setItem(SUPPORT_FLAG, '1'); sessionStorage.removeItem(SUPPORT_REACQ) } catch { /* best effort */ }
+  void oidcStart({ prompt: 'none', idTokenHint: s.id_token })
+}
+
 /** The token store for THIS TAB: tab-scoped for a support session, shared otherwise. */
 const tokenStore = (): Storage => {
   try { return sessionStorage.getItem(SUPPORT_FLAG) ? window.sessionStorage : window.localStorage } catch { return window.localStorage }
@@ -161,7 +185,7 @@ export function oidcGrantStale(): boolean {
   }
 }
 
-export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string } = {}): Promise<void> {
+export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; idTokenHint?: string } = {}): Promise<void> {
   const d = await discover()
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
@@ -189,6 +213,9 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'n
   // chooser — without it, prompt=login lands on the picker and choosing your own account
   // simply returns you to the same page, which reads as a loop.
   if (opts.loginHint) params.login_hint = opts.loginHint
+  // The EXACT lane (support tabs): the AS serves the one session this id_token proves we
+  // already hold — including an impersonated member, which login_hint can never select.
+  if (opts.idTokenHint) params.id_token_hint = opts.idTokenHint
   if (opts.prompt) {
     params.prompt = opts.prompt
   } else if (promptLogin) {
@@ -251,6 +278,15 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   } catch { /* non-fatal */ }
   const at = decodeJwt(body.access_token)
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
+  if (claims?.act && body.id_token) {
+    // A support callback: stash the way back (once per window — a re-acquire must not
+    // extend the deadline; the AS's 15 minutes are the truth and this only mirrors them),
+    // and clear the one-shot re-acquire guard so the NEXT expiry may redirect again.
+    try {
+      if (!oidcSupportStash()) sessionStorage.setItem(SUPPORT_STASH, JSON.stringify({ id_token: body.id_token, deadline: Date.now() + 15 * 60_000, email: claims.email, name: claims.name }))
+      sessionStorage.removeItem(SUPPORT_REACQ)
+    } catch { /* stash is a convenience — its loss costs a relaunch, never the flow */ }
+  }
   return claims
 }
 
@@ -267,7 +303,21 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
 
 async function refresh(resource: string): Promise<string> {
   const current = stored()
-  if (!current?.refresh_token) return ''
+  if (!current?.refresh_token) {
+    // A SUPPORT tab holds no refresh token by design — its renewal lane is a silent
+    // redirect that re-acquires the EXACT session via id_token_hint, so a chip switch on
+    // another surface can never flip this tab's identity mid-window. One-shot guarded: a
+    // dead support session answers login_required once, never a loop; the guard clears on
+    // the next successful support callback.
+    try {
+      const stash = oidcSupportStash()
+      if (stash && sessionStorage.getItem(SUPPORT_FLAG) && !sessionStorage.getItem(SUPPORT_REACQ)) {
+        sessionStorage.setItem(SUPPORT_REACQ, String(Date.now()))
+        void oidcStart({ prompt: 'none', idTokenHint: stash.id_token })
+      }
+    } catch { /* storage unavailable — behave as plain signed-out */ }
+    return ''
+  }
   try {
     const body = await tokenRequest({
       grant_type: 'refresh_token',

@@ -1002,6 +1002,8 @@
     "products": "プロダクト",
     "quit": "終了",
     "quitConfirm": "終了しても接続は閉じられません。",
+    "returnToSupport": "サポートセッション — {{who}}",
+    "returnToSupportSub": "残り{{minutes}}分 — 戻る",
     "scripting": "スクリプト",
     "settings": "設定",
     "signOut": "サインアウト",

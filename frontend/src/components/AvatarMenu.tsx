@@ -13,7 +13,7 @@ import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
-import { oidcAccounts } from '../services/oidc'
+import { oidcAccounts, oidcSupportStash, oidcReturnToSupport, oidcActor } from '../services/oidc'
 import { emit } from '../services/Controller'
 
 const ENTER_DELAY = 300
@@ -179,6 +179,26 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         </DesktopUI>
+        {/* The way BACK into a still-live support window after this tab switched to a
+            personal account. Sourced from the TAB's stash — never the account registry —
+            so no other tab or surface ever grows a support row (permitteer
+            docs/multi-account-sessions.md, decision 7 revised 2026-09-01). */}
+        {(() => {
+          const stash = oidcSupportStash()
+          if (!stash || oidcActor()) return null
+          const minutes = Math.max(1, Math.round((stash.deadline - Date.now()) / 60_000))
+          return (
+            <ListItemSetting
+              label={t('nav.returnToSupport', 'Support session — {{who}}', { who: stash.name || stash.email || 'user' })}
+              subLabel={t('nav.returnToSupportSub', '{{minutes}} min left — return', { minutes })}
+              icon="headset"
+              onClick={() => {
+                handleClose()
+                oidcReturnToSupport()
+              }}
+            />
+          )
+        })()}
         {/* The other accounts this app has signed into (services/oidc.ts registry) — one
             click makes one active. Emails render as-is (identities are not translated);
             the AS chooser behind "Switch account" below remains the way to ADD one. */}

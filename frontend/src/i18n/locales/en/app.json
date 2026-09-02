@@ -1038,6 +1038,8 @@
     "products": "Products",
     "quit": "Quit",
     "quitConfirm": "Quitting will not close your connections.",
+    "returnToSupport": "Support session — {{who}}",
+    "returnToSupportSub": "{{minutes}} min left — return",
     "scripting": "Scripting",
     "settings": "Settings",
     "signOut": "Sign out",

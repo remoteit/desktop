@@ -1014,6 +1014,8 @@
     "products": "Produkte",
     "quit": "Beenden",
     "quitConfirm": "Das Beenden schließt Ihre Verbindungen nicht.",
+    "returnToSupport": "Support-Sitzung — {{who}}",
+    "returnToSupportSub": "Noch {{minutes}} Min. — zurückkehren",
     "scripting": "Skripte",
     "settings": "Einstellungen",
     "signOut": "Abmelden",

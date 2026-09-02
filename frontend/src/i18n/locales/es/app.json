@@ -1026,6 +1026,8 @@
     "products": "Productos",
     "quit": "Salir",
     "quitConfirm": "Salir no cerrará tus conexiones.",
+    "returnToSupport": "Sesión de soporte — {{who}}",
+    "returnToSupportSub": "Quedan {{minutes}} min — volver",
     "scripting": "Scripts",
     "settings": "Configuración",
     "signOut": "Cerrar sesión",
