@@ -274,7 +274,14 @@ async function refresh(resource: string): Promise<string> {
       refresh_token: current.refresh_token,
       resource,
     })
-    // Rotated — persist the successor FIRST, before anything can race another mint.
+    // Rotated — persist the successor FIRST, before anything can race another mint. But
+    // ONLY onto the same token set we rotated from: a sign-out or an account activation
+    // that landed mid-flight has already moved the store, and writing the rotation would
+    // resurrect the signed-out account (persist() re-files it in the registry — caught by
+    // the multi-account e2e, ~50% of runs) or clobber the activated one. The dropped
+    // successor costs nothing: sign-out already ended the AS session (revoking its refresh
+    // family), and activation replaced the family in use.
+    if (stored()?.refresh_token !== current.refresh_token) return ''
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
     const at = decodeJwt(body.access_token)
     access[resource] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
