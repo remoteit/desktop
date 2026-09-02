@@ -49,6 +49,9 @@
     "sendingEllipsis": "Enviando...",
     "sendPromotionRequest": "Enviar solicitud de promoción"
   },
+  "addDevice": {
+    "codeExpiration": "El código caduca en {{hours}}\u00a0horas."
+  },
   "addFromNetwork": {
     "scanForServices": "Buscar servicios",
     "scanNetwork": "Escanear red"

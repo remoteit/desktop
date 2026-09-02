@@ -49,6 +49,9 @@
     "sendingEllipsis": "Sending...",
     "sendPromotionRequest": "Send Promotion Request"
   },
+  "addDevice": {
+    "codeExpiration": "Code expires in {{hours}}\u00a0hours."
+  },
   "addFromNetwork": {
     "scanForServices": "Scan for Services",
     "scanNetwork": "Scan\u00a0network"
