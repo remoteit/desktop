@@ -111,9 +111,10 @@ frontend, so behaviour changes are verified by driving the running app.
 
 ## Related, but not this task
 
-`login.dev.remote.it` currently rejects the client's authorize with
-`invalid_authorization_details: unknown authorization_details type "remoteit_mcp_dev"`, so
-sign-in on the dev stage fails outright. That is `OAUTH_MCP_DETAIL` not being registered on
-that AS. It is unrelated to licensing, but it blocks testing anything on dev, so it likely
-needs fixing first. A client-side redirect loop this triggered was fixed in `a0386f40` —
-the failure is now reported once instead of retried forever.
+On 2026-08-31 the AS retired the `remoteit_mcp_dev` authorization_details type for the
+stage-stable `remoteit_mcp`, which broke dev sign-in for any build that pinned the old
+name. Fixed in `d646b229`: the type is now discovered from the MCP resource's PRM at
+sign-in, with the constant as an offline fallback. If dev sign-in still fails on a machine,
+check that its `.env` does not set `VITE_OAUTH_MCP_DETAIL` to the retired name — an env
+value overrides the fallback. A client-side redirect loop the retirement triggered was
+fixed separately in `a0386f40`; a refused authorize is now reported once, not retried.
