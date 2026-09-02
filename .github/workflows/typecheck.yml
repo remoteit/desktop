@@ -39,6 +39,17 @@ jobs:
       - name: Run typecheck
         run: npm run typecheck
 
+      # The platform catalogue (frontend/src/platforms/catalogue.generated.ts) is generated
+      # from the GraphQL API and committed as the startup fallback. This fails the build when
+      # it drifts from the API. It needs a read token; until R3_API_TOKEN is set as a secret
+      # (once the catalogue is live server-side) the step reports and skips instead of failing.
+      - name: Platform catalogue is up to date
+        env:
+          R3_API_TOKEN: ${{ secrets.R3_API_TOKEN }}
+        run: |
+          if [ -z "$R3_API_TOKEN" ]; then echo "::notice::R3_API_TOKEN not set — skipping platform catalogue check"; exit 0; fi
+          npm run platforms:check
+
       # Catalog parity: fails on a key missing from ja/de/es, a dead key, or an
       # empty English value. Runs after typecheck so a broken build reports first.
       - name: Check translation catalogs
