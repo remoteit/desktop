@@ -174,7 +174,9 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; log
     response_type: 'code',
     code_challenge: b64u(new Uint8Array(digest)),
     code_challenge_method: 'S256',
-    scope: 'openid email full',
+    // `profile` rides for the account menus: name + the IdP avatar (the AS stamps the
+    // session's picture into the id_token under profile — https-only, its one guard).
+    scope: 'openid email profile full',
     // First-party clients declare their own details (no consent screen — skipConsent):
     // the passport-audience token minted later via refresh carries this slice, gating the
     // native security settings (credentials.write); the graphql audience stays pure
@@ -347,7 +349,7 @@ function persist(tokens: Stored) {
 
 // --- the account registry (multi-account menu) ---------------------------------------
 
-type RegistryEntry = Stored & { email?: string; name?: string; declaration?: string }
+type RegistryEntry = Stored & { email?: string; name?: string; picture?: string; declaration?: string }
 
 const readRegistry = (): { [sub: string]: RegistryEntry } => {
   try {
@@ -371,19 +373,21 @@ function fileAccount(tokens: Stored) {
     ...tokens,
     email: claims?.email,
     name: claims?.name,
+    // Belt on the AS's own https-only guard — this string lands in an <img src>.
+    picture: typeof claims?.picture === 'string' && /^https:\/\//i.test(claims.picture) ? claims.picture : undefined,
     declaration: reg[sub]?.declaration,
   }
   writeRegistry(reg)
 }
 
-export type OidcAccount = { sub: string; email?: string; name?: string; active: boolean }
+export type OidcAccount = { sub: string; email?: string; name?: string; picture?: string; active: boolean }
 
 /** The accounts this app has signed into, for the avatar menu. Active first. */
 export function oidcAccounts(): OidcAccount[] {
   const activeSub = oidcClaims()?.sub
   const reg = readRegistry()
   return Object.entries(reg)
-    .map(([sub, e]) => ({ sub, email: e.email, name: e.name, active: sub === activeSub }))
+    .map(([sub, e]) => ({ sub, email: e.email, name: e.name, picture: e.picture, active: sub === activeSub }))
     .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
 }
 

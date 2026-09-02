@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
 import { HIDE_SIDEBAR_WIDTH } from '../constants'
-import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
+import { useMediaQuery, ButtonBase, Divider, Menu, Avatar as MuiAvatar } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
 import { ListItemLocation } from './ListItemLocation'
@@ -189,7 +189,11 @@ export const AvatarMenu: React.FC = () => {
               key={a.sub}
               label={a.name || a.email || a.sub}
               subLabel={a.name && a.email ? a.email : undefined}
-              icon="user"
+              icon={
+                <MuiAvatar src={a.picture} sx={{ width: 24, height: 24, fontSize: 12 }}>
+                  {(a.name || a.email || '?').charAt(0).toUpperCase()}
+                </MuiAvatar>
+              }
               onClick={async () => {
                 handleClose()
                 await dispatch.auth.activateAccount(a.sub)
