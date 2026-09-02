@@ -1,4 +1,4 @@
-import { CATALOGUE, CatalogueInstallation } from './catalogue.generated'
+import { CATALOGUE, CatalogueInstallation } from './catalogue'
 
 export interface IPlatform {
   id: string
@@ -24,9 +24,11 @@ export interface IPlatform {
 }
 
 // What a platforms/<id>/index.tsx registers now that the data lives in the API catalogue: the
-// id, the code (component, override, listItemTitle, JSX instructions, a conditional altLink)
-// and, for routes the catalogue has no row for (this, remoteit, android-screenview), any data
-// fields it still needs to supply itself.
+// id and the code (component, override, listItemTitle, JSX instructions, a browser-conditional
+// altLink). A route the catalogue has no row for (the hidden android-screenview deep link) still
+// supplies its own data. Any DEFINED field a local file sets wins over the catalogue — so a
+// hot-fix in a local file takes effect — while an undefined one (a conditional altLink on the
+// wrong OS) falls through to the catalogue value.
 export type IPlatformLocal = Partial<IPlatform> & Pick<IPlatform, 'id' | 'component'>
 
 export interface IPlatformOverrideProps {
@@ -34,6 +36,11 @@ export interface IPlatformOverrideProps {
   serviceTypes: number[]
   tags?: string[]
   oneTimeUse?: boolean
+}
+
+// Only the keys whose value is not undefined.
+function defined<T extends object>(value?: T): Partial<T> {
+  return value ? (Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined)) as Partial<T>) : {}
 }
 
 class Platforms {
@@ -78,7 +85,22 @@ class Platforms {
   ]
 
   constructor() {
+    this.seedFromCatalogue()
     this.initialize()
+  }
+
+  // The catalogue drives what exists; local files attach code. Every type gets its name (so the
+  // legacy types with no page still resolve instead of "Unknown"), and every page without a
+  // local file is registered with no logo — so a platform added in the API shows up in lists,
+  // filters and /add before the desktop ships a logo for it.
+  private seedFromCatalogue() {
+    for (const [typeId, type] of Object.entries(CATALOGUE.types)) {
+      this.nameLookup[Number(typeId)] = type.displayName || type.name
+    }
+    for (const id of Object.keys(CATALOGUE.installations)) {
+      // No logo until a local file ships one; PlatformIcon already tolerates a null render.
+      if (!this.installed.includes(id)) this.register({ id, component: (() => null) as unknown as IPlatform['component'] })
+    }
   }
 
   async initialize() {
@@ -89,44 +111,40 @@ class Platforms {
 
   // What the API catalogue supplies for a route, in IPlatform's shape. Everything that is
   // data comes from here; the local file keeps only code (component, override, JSX).
-  private fromCatalogue(id: string, data: CatalogueInstallation): Pick<IPlatform, 'name' | 'types' | 'services' | 'installation'> {
+  private fromCatalogue(data: CatalogueInstallation): Pick<IPlatform, 'name' | 'types' | 'services' | 'installation'> {
     const types: INumberLookup<string> = {}
-    for (const [typeId, type] of Object.entries(CATALOGUE.types)) {
-      if (type.installation === id) types[Number(typeId)] = type.displayName || type.name
+    for (const [typeId, label] of Object.entries(data.types)) types[Number(typeId)] = label
+    const installation: NonNullable<IPlatform['installation']> = {
+      // command: a bespoke template is substituted client-side (Docker, IDY); `true` shows the
+      // API's registrationCommand verbatim; '[CODE]' shows the bare code.
+      command: data.kind === 'command' ? data.commandTemplate ?? true : data.kind === 'code' ? '[CODE]' : undefined,
+      // download: an app or agent to fetch first. A code row WITH a link is that too — Android:
+      // install ScreenView from the store, the code is the manual fallback.
+      download: data.kind === 'download' || (data.kind === 'code' && !!data.link) || undefined,
+      qualifier: data.qualifier,
+      instructions: data.instructions,
+      link: data.link,
+      altLink: data.altLink,
     }
-    return {
-      name: data.name,
-      types,
-      services: data.services,
-      installation: {
-        // `true` = show the API's registrationCommand verbatim (the API renders the platform's
-        // template); '[CODE]' = show the bare code. The desktop no longer holds any templates.
-        command: data.kind === 'command' ? true : data.kind === 'code' ? '[CODE]' : undefined,
-        download: data.kind === 'download' || undefined,
-        label: data.kind === 'code' ? 'Registration Code' : undefined,
-        qualifier: data.qualifier,
-        instructions: data.instructions,
-        link: data.link,
-        altLink: data.altLink,
-      },
-    }
+    const hasInstallation = Object.values(installation).some(value => value !== undefined)
+    return { name: data.name, types, services: data.services, installation: hasInstallation ? installation : undefined }
   }
 
   register(local: IPlatformLocal) {
     const data = CATALOGUE.installations[local.id]
     const base: IPlatform = { name: local.id, ...local }
-    // Catalogue wins for data; the local file wins for code — and for the two installation
-    // fields that are code in disguise: JSX instructions and a browser-conditional altLink.
-    const fromCatalogue = data && this.fromCatalogue(local.id, data)
-    const platform: IPlatform = fromCatalogue
+    if (!data && !local.hidden && !local.types && import.meta.env?.DEV) {
+      console.warn(`platforms: "${local.id}" has no catalogue row and supplies no types — regenerate the snapshot (npm run platforms:generate)`)
+    }
+    const catalogue = data && this.fromCatalogue(data)
+    const platform: IPlatform = catalogue
       ? {
           ...base,
-          ...fromCatalogue,
-          installation: {
-            ...fromCatalogue.installation,
-            ...(local.installation?.instructions && typeof local.installation.instructions !== 'string' ? { instructions: local.installation.instructions } : {}),
-            ...(local.installation && 'altLink' in local.installation ? { altLink: local.installation.altLink } : {}),
-          },
+          ...catalogue,
+          // A local file's DEFINED values win (JSX instructions, an OS-matched altLink, any
+          // deliberate override); its undefined ones fall through to the catalogue.
+          services: catalogue.services ?? local.services,
+          installation: { ...catalogue.installation, ...defined(local.installation) },
         }
       : base
     platform.types = platform.types || {}

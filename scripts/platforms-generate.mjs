@@ -1,119 +1,96 @@
 #!/usr/bin/env node
-// Regenerate frontend/src/platforms/catalogue.generated.ts from the API's platform catalogue.
+// Regenerate frontend/src/platforms/catalogue.generated.json from the API's platform catalogue.
 //
-//   node scripts/platforms-generate.mjs            # rewrite the file from the API
-//   node scripts/platforms-generate.mjs --check    # exit 1 if the committed file is stale
-//   node scripts/platforms-generate.mjs --from-seed path/to/platform-seed.json   # bootstrap
+//   node scripts/platforms-generate.mjs            # rewrite the snapshot from the API
+//   node scripts/platforms-generate.mjs --check    # exit 1 if the committed snapshot is stale
 //
-// Env: R3_API_TOKEN (bearer for the GraphQL API), R3_GRAPHQL_API (default prod).
+// Env: R3_API_TOKEN — a bearer JWT for the GraphQL API (the API's Bearer path accepts Cognito
+//      and agent JWTs, which are short-lived; a long-lived CI credential needs the access-key
+//      signature scheme instead — see graphql-api docs/PLATFORM-CATALOGUE.md).
+//      R3_GRAPHQL_API | VITE_GRAPHQL_API — endpoint (default: the prod GraphQL API).
+//
 // The API is the single source of truth for platform names, onboarding routes and install
-// commands (graphql-api docs/PLATFORM-CATALOGUE.md). The desktop keeps only what is code —
-// logo components, one override, a few JSX instruction blocks — in frontend/src/platforms/*/.
-// The committed file is the offline/startup fallback; CI runs --check so it cannot drift.
+// commands. The committed JSON is a BUILD-TIME SNAPSHOT of it — the app reads only that file,
+// so a catalogue change reaches clients when this is re-run and shipped. The desktop keeps only
+// what is code (logo components, one override, a few JSX blocks) in frontend/src/platforms/*/.
 import fs from 'node:fs'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-const OUT = path.join(here, '..', 'frontend', 'src', 'platforms', 'catalogue.generated.ts')
-const API = process.env.R3_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
-const args = process.argv.slice(2)
-const check = args.includes('--check')
-const seedIdx = args.indexOf('--from-seed')
+const OUT = path.join(here, '..', 'frontend', 'src', 'platforms', 'catalogue.generated.json')
+const API = process.env.R3_GRAPHQL_API || process.env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
+const check = process.argv.includes('--check')
 
+const INSTALLATION = 'id name kind commandTemplate qualifier instructions link altLink services { application port name host enabled }'
 const QUERY = `{
-  platformTypes {
-    id name displayName scripting visible
-    installation { id name kind commandTemplate qualifier instructions link altLink services { application port } }
-  }
+  platformTypes { id name displayName installation { ${INSTALLATION} } }
+  platformInstallations { ${INSTALLATION} }
 }`
 
 async function fromApi() {
   const token = process.env.R3_API_TOKEN
-  if (!token) throw new Error('R3_API_TOKEN is required (a bearer token for the GraphQL API)')
-  const res = await fetch(API, {method: 'POST', headers: {'content-type': 'application/json', authorization: `Bearer ${token}`}, body: JSON.stringify({query: QUERY})})
-  if (!res.ok) throw new Error(`${API} → HTTP ${res.status}`)
-  const {data, errors} = await res.json()
-  if (errors?.length) throw new Error(errors.map(e => e.message).join('; '))
-  return normalise(data.platformTypes)
-}
-
-// Bootstrap path: the seed extracted from the desktop registry, in the same shape the API
-// serves. Used until the catalogue is live server-side; --check then takes over.
-function fromSeed(file) {
-  const seed = JSON.parse(fs.readFileSync(file, 'utf8'))
-  const dbNames = seed.dbNames || {}
-  const routes = Object.fromEntries(seed.routes.filter(r => r.id !== 'android-screenview').map(r => [r.id, r]))
-  const typeToRoute = {}
-  for (const rt of seed.routeTypes) if (rt.routeId !== 'android-screenview') typeToRoute[rt.platformTypeId] = rt.routeId
-  const ids = new Set([...Object.keys(dbNames).map(Number), ...Object.keys(seed.displayName).map(Number)])
-  const types = [...ids].sort((a, b) => a - b).map(id => {
-    const name = dbNames[id] ?? seed.displayName[id]
-    const label = seed.displayName[id]
-    const slug = typeToRoute[id]
-    const r = slug && routes[slug]
-    return {
-      id, name, displayName: label && label !== name ? label : null,
-      installation: r ? {id: slug, name: r.name, kind: r.kind, commandTemplate: r.commandTemplate ?? null, qualifier: r.qualifier ?? null,
-        instructions: r.instructions ?? null, link: r.link ?? null, altLink: r.altLink ?? null, services: r.services ?? null} : null,
-    }
+  if (!token) throw new Error('R3_API_TOKEN is required (a bearer JWT for the GraphQL API)')
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: {'content-type': 'application/json', authorization: `Bearer ${token}`},
+    body: JSON.stringify({query: QUERY}),
+    signal: AbortSignal.timeout(15_000),
   })
-  return normalise(types)
+  if (!res.ok) throw new Error(`${API} → HTTP ${res.status}`)
+  const text = await res.text()
+  let body
+  try { body = JSON.parse(text) } catch { throw new Error(`${API} → HTTP ${res.status} but not JSON (edge/WAF page?): ${text.slice(0, 80)}`) }
+  if (body.errors?.length) throw new Error(body.errors.map(e => e.message).join('; '))
+  if (!body.data?.platformTypes) throw new Error(`${API} returned no platformTypes`)
+  return normalise(body.data.platformTypes, body.data.platformInstallations || [])
 }
 
-// Two maps keyed for O(1) lookup at registry time. Types keyed by id; installations keyed by
-// slug, de-duplicated (several types share one page).
-function normalise(platformTypes) {
+// Drop null/undefined recursively; keep [] (it means "none", distinct from unset).
+const clean = value => Array.isArray(value)
+  ? value.map(clean)
+  : value && typeof value === 'object'
+    ? Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => [k, clean(v)]))
+    : value
+
+// Two maps: every type by id (name + display name, for naming devices), and every onboarding
+// page by slug, each carrying the type ids it onboards with their labels — so the registry
+// never has to invert anything at startup.
+export function normalise(platformTypes, platformInstallations) {
   const types = {}
   const installations = {}
+  const page = row => {
+    const {id, ...rest} = row
+    installations[id] ??= {...clean(rest), types: {}}
+    return installations[id]
+  }
+  for (const row of platformInstallations) page(row)
   for (const t of platformTypes) {
-    types[t.id] = {name: t.name, ...(t.displayName ? {displayName: t.displayName} : {}), ...(t.installation ? {installation: t.installation.id} : {})}
-    if (t.installation && !installations[t.installation.id]) {
-      const {id, ...rest} = t.installation
-      installations[id] = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== null && v !== undefined))
-    }
+    if (typeof t.name !== 'string') continue
+    types[t.id] = clean({name: t.name, displayName: t.displayName})
+    if (t.installation) page(t.installation).types[t.id] = t.displayName || t.name
   }
   return {types, installations}
 }
 
-function render({types, installations}) {
-  const json = JSON.stringify({types, installations}, null, 2)
-  return `// GENERATED by scripts/platforms-generate.mjs — do not edit. CI fails when this is stale.
-// Source of truth: the GraphQL API's platformTypes catalogue (graphql-api docs/PLATFORM-CATALOGUE.md).
-// Regenerate: npm run platforms:generate    Verify: npm run platforms:check
+const canonical = data => JSON.stringify(data, null, 2) + '\n'
 
-export type CatalogueKind = 'command' | 'code' | 'download' | 'info'
-
-export interface CatalogueType {
-  name: string
-  displayName?: string
-  installation?: string // slug into installations
+const data = await fromApi()
+const live = Object.keys(data.installations).length > 0
+if (!live) {
+  // The API deploy is ahead of the migration / the stage's PLATFORM_CATALOGUE flag: nothing to
+  // compare against yet, and writing this would strip every /add page's data from the app.
+  console.log(`${API} serves no platform catalogue yet (flag off or migration pending) — ${check ? 'nothing to check' : 'refusing to overwrite the snapshot'}`)
+  process.exit(check ? 0 : 2)
 }
-
-export interface CatalogueInstallation {
-  name: string
-  kind: CatalogueKind
-  commandTemplate?: string
-  qualifier?: string
-  instructions?: string
-  link?: string
-  altLink?: string
-  services?: { application: number; port?: number }[]
-}
-
-export const CATALOGUE: { types: Record<string, CatalogueType>; installations: Record<string, CatalogueInstallation> } = ${json}
-`
-}
-
-const data = seedIdx >= 0 ? fromSeed(args[seedIdx + 1]) : await fromApi()
-const next = render(data)
+const next = canonical(data)
 if (check) {
-  const current = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : ''
+  const current = fs.existsSync(OUT) ? canonical(JSON.parse(fs.readFileSync(OUT, 'utf8'))) : ''
   if (current !== next) {
     console.error(`STALE: ${path.relative(process.cwd(), OUT)} differs from the API catalogue. Run: npm run platforms:generate`)
     process.exit(1)
   }
-  console.log('platform catalogue is up to date')
+  console.log('platform catalogue snapshot is up to date')
 } else {
   fs.writeFileSync(OUT, next)
   console.log(`wrote ${path.relative(process.cwd(), OUT)}: ${Object.keys(data.types).length} types, ${Object.keys(data.installations).length} installations`)
