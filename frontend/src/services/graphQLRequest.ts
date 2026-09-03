@@ -53,13 +53,14 @@ export async function graphQLJobs(args: {
   ids?: string[]
   from?: number
   size?: number
+  sort?: string
 }) {
-  const { accountId, fileIds, ids, from, size } = args
+  const { accountId, fileIds, ids, from, size, sort = '-updated' } = args
   return await graphQLBasicRequest(
-    ` query Jobs($accountId: String, $ids: [ID!], $fileIds: [ID!], $from: Int, $size: Int) {
+    ` query Jobs($accountId: String, $ids: [ID!], $fileIds: [ID!], $from: Int, $size: Int, $sort: String) {
         login {
           account(id: $accountId) {
-            jobs(ids: $ids, fileIds: $fileIds, from: $from, size: $size) {
+            jobs(ids: $ids, fileIds: $fileIds, from: $from, size: $size, sort: $sort) {
               total
               items {
                 id
@@ -113,7 +114,7 @@ export async function graphQLJobs(args: {
           }
         }
       }`,
-    { accountId, fileIds, ids, from, size }
+    { accountId, fileIds, ids, from, size, sort }
   )
 }
 

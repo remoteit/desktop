@@ -2,7 +2,9 @@ import React from 'react'
 import { OEM_GUIDE_LINK } from '../constants'
 import { IPlatform } from '../platforms'
 import { usePlatformText } from '../platforms/text'
+import { useTranslation } from 'react-i18next'
 import { List, Typography } from '@mui/material'
+import { REGISTRATION_CODE_EXPIRATION_HOURS } from '../constants'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { CopyRegistrationCode } from './CopyRegistrationCode'
 import { useAutoRegistration } from '../hooks/useAutoRegistration'
@@ -25,6 +27,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
     redirect,
     oneTimeUse,
   })
+  const { t } = useTranslation()
   const codeOnly = platform.installation?.command === '[CODE]'
   const text = usePlatformText(platform)
 
@@ -42,6 +45,11 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
     </List>
   )
 
+  const expiration = t('addDevice.codeExpiration', {
+    hours: REGISTRATION_CODE_EXPIRATION_HOURS,
+    defaultValue: 'Code expires in {{hours}}\u00a0hours.',
+  })
+
   return minimal ? (
     codeBlock
   ) : (
@@ -55,12 +63,14 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
         {codeOnly ? <>Copy the code below:</> : <>Run this command on your device:</>}
       </Typography>
       {codeBlock}
-      <Typography variant="body2" color="textSecondary">
+      <Typography variant="body2" color="textSecondary" sx={{ textWrap: 'pretty' }}>
         {text.instructions ? (
-          text.instructions
+          <>
+            {text.instructions} {expiration}
+          </>
         ) : (
           <>
-            This page will automatically update when complete.
+            This page will automatically update when complete. {expiration}
             {platform.installation?.link && <Link href={platform.installation?.link}>Instructions.</Link>}
             {platform.installation?.oemGuide && (
               <>

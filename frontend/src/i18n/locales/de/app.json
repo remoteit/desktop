@@ -49,6 +49,9 @@
     "sendingEllipsis": "Wird gesendet...",
     "sendPromotionRequest": "Beförderungsanfrage senden"
   },
+  "addDevice": {
+    "codeExpiration": "Code läuft in {{hours}}\u00a0Stunden ab."
+  },
   "addFromNetwork": {
     "scanForServices": "Nach Diensten suchen",
     "scanNetwork": "Netzwerk durchsuchen"

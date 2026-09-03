@@ -49,6 +49,9 @@
     "sendingEllipsis": "送信中...",
     "sendPromotionRequest": "昇格リクエストを送信"
   },
+  "addDevice": {
+    "codeExpiration": "コードは{{hours}}時間で失効します。"
+  },
   "addFromNetwork": {
     "scanForServices": "サービスをスキャン",
     "scanNetwork": "ネットワークをスキャン"

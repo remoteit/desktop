@@ -68,6 +68,8 @@ BRAND_ELECTRON_PATH="$SOURCE_PATH/electron"
 mkdir -p "$TARGET_PATH"
 
 # Check if brand-specific electron directory exists
+# NOTE: icon PNGs must be named for their pixel size (256x256.png). Anything else
+# is skipped silently and breaks the Linux build. See brands/README.md.
 if [ -d "$BRAND_ELECTRON_PATH" ]; then
   echo "Copying $BRAND electron assets..."
   cp -R "$BRAND_ELECTRON_PATH/"* "$TARGET_PATH/" 2>/dev/null || :

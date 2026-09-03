@@ -36,6 +36,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      # One platform failing should not cancel the others - a Linux packaging
+      # error tells you nothing about whether macOS and Windows are healthy,
+      # and a release needs all three.
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-14, windows-latest]
 
