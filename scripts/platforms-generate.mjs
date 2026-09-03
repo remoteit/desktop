@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 // Regenerate frontend/src/platforms/catalogue.generated.json from the API's platform catalogue.
 //
-//   node scripts/platforms-generate.mjs            # rewrite the snapshot from the API
+//   node scripts/platforms-generate.mjs --cli      # rewrite the snapshot, via the remote.it CLI
+//   node scripts/platforms-generate.mjs            # ...or with R3_API_TOKEN set directly
 //   node scripts/platforms-generate.mjs --check    # exit 1 if the committed snapshot is stale
 //
-// Env: R3_API_TOKEN — a bearer JWT for the GraphQL API. The Bearer path accepts Cognito and
-//      agent JWTs, both short-lived, so there is no static token to configure: take one from a
-//      signed-in session (dev tools → Network → any request to api.remote.it/graphql/v1 → copy
-//      the Authorization bearer value). A durable credential would need the access-key signature
-//      scheme instead — see graphql-api docs/PLATFORM-CATALOGUE.md.
+// `--cli` is the easy path: it shells out to `sudo remoteit exec-gql`, so the CLI supplies the
+// credentials and there is nothing to paste. It needs sudo because the CLI runs as root, which is
+// fine for an occasional developer refresh and is exactly why this is NOT a CI mechanism.
+//
+// Env: R3_API_TOKEN — used when --cli is not given: a bearer JWT for the GraphQL API. The Bearer
+//      path accepts Cognito and agent JWTs, both short-lived, so there is no static token to
+//      configure — take one from a signed-in session (dev tools → Network → any request to
+//      api.remote.it/graphql/v1 → copy the Authorization bearer value).
 //      R3_GRAPHQL_API | VITE_GRAPHQL_API — endpoint (default: the prod GraphQL API).
 //
 // The API is the single source of truth for platform names, onboarding routes and install
@@ -28,6 +32,7 @@
 //      If this is ever automated, `Authorization: Signature` (access key) is the mechanism that
 //      needs no new surface.
 // Until then this is a local tool: `npm run platforms:generate` after a catalogue change.
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
@@ -43,6 +48,7 @@ const NAMESPACE = 'platforms'
 const TRANSLATABLE = ['name', 'description', 'instructions']
 const API = process.env.R3_GRAPHQL_API || process.env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
 const check = process.argv.includes('--check')
+const viaCli = process.argv.includes('--cli')
 
 const INSTALLATION = 'id name kind commandTemplate description instructions link services { application port name host enabled }'
 const QUERY = `{
@@ -50,9 +56,38 @@ const QUERY = `{
   platformInstallations { ${INSTALLATION} }
 }`
 
+// `remoteit exec-gql --json` answers with a status envelope whose data carries the GraphQL
+// response — as a string in the versions seen so far, but unwrap an object too rather than
+// depending on which.
+export function unwrapCli(stdout) {
+  let parsed
+  try { parsed = JSON.parse(stdout) } catch { throw new Error(`remoteit exec-gql did not return JSON: ${stdout.slice(0, 160)}`) }
+
+  // Both shapes carry a top-level `data` meaning different things, so `code` is the
+  // discriminator: the CLI's status envelope has one, a bare GraphQL response does not.
+  const envelope = typeof parsed?.code === 'number' ? parsed : null
+  const raw = envelope ? envelope.data : parsed
+  if (envelope && raw === undefined) throw new Error(`remoteit exec-gql failed: ${envelope.message || stdout.slice(0, 160)}`)
+
+  const body = typeof raw === 'string' ? JSON.parse(raw) : raw
+  if (body?.errors?.length) throw new Error(body.errors.map(e => e.message).join('; '))
+  if (!body?.data) throw new Error(`exec-gql returned no data: ${stdout.slice(0, 160)}`)
+
+  return body.data
+}
+
+function fromCli() {
+  // stdin/stderr inherited so sudo can prompt.
+  const stdout = execFileSync('sudo', ['remoteit', 'exec-gql', '--json', '--query', QUERY],
+    {encoding: 'utf8', stdio: ['inherit', 'pipe', 'inherit']})
+  const data = unwrapCli(stdout)
+  if (!data.platformTypes) throw new Error('exec-gql returned no platformTypes')
+  return normalise(data.platformTypes, data.platformInstallations || [])
+}
+
 async function fromApi() {
   const token = process.env.R3_API_TOKEN
-  if (!token) throw new Error('R3_API_TOKEN is required (a bearer JWT for the GraphQL API)')
+  if (!token) throw new Error('R3_API_TOKEN is required (a bearer JWT for the GraphQL API) — or pass --cli to use the remote.it CLI instead')
   const res = await fetch(API, {
     method: 'POST',
     headers: {'content-type': 'application/json', authorization: `Bearer ${token}`},
@@ -135,27 +170,30 @@ function writeCatalogs(installations) {
   return {keys: Object.values(english).reduce((n, f) => n + Object.keys(f).length, 0), written}
 }
 
-const data = await fromApi()
-const live = Object.keys(data.installations).length > 0
-if (!live) {
-  // The API deploy is ahead of the migration / the stage's PLATFORM_CATALOGUE flag: nothing to
-  // compare against yet, and writing this would strip every /add page's data from the app.
-  console.log(`${API} serves no platform catalogue yet (flag off or migration pending) — ${check ? 'nothing to check' : 'refusing to overwrite the snapshot'}`)
-  process.exit(check ? 0 : 2)
-}
-const next = canonical(data)
-if (check) {
-  const current = fs.existsSync(OUT) ? canonical(JSON.parse(fs.readFileSync(OUT, 'utf8'))) : ''
-  const englishFile = path.join(LOCALES_DIR, 'en', `${NAMESPACE}.json`)
-  const englishCurrent = fs.existsSync(englishFile) ? fs.readFileSync(englishFile, 'utf8') : ''
-  if (current !== next || englishCurrent !== canonical(catalogFrom(data.installations))) {
-    console.error(`STALE: the committed platform snapshot or its English catalog differs from the API. Run: npm run platforms:generate`)
-    process.exit(1)
+// Only run when invoked directly, so the helpers above stay importable (and testable).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const data = viaCli ? fromCli() : await fromApi()
+  const live = Object.keys(data.installations).length > 0
+  if (!live) {
+    // The API deploy is ahead of the migration / the stage's PLATFORM_CATALOGUE flag: nothing to
+    // compare against yet, and writing this would strip every /add page's data from the app.
+    console.log(`${API} serves no platform catalogue yet (flag off or migration pending) — ${check ? 'nothing to check' : 'refusing to overwrite the snapshot'}`)
+    process.exit(check ? 0 : 2)
   }
-  console.log('platform catalogue snapshot is up to date')
-} else {
-  fs.writeFileSync(OUT, next)
-  const {keys, written} = writeCatalogs(data.installations)
-  console.log(`wrote ${path.relative(process.cwd(), OUT)}: ${Object.keys(data.types).length} types, ${Object.keys(data.installations).length} installations`)
-  console.log(`wrote ${keys} translatable string(s) to the ${NAMESPACE} catalog${written.length ? ` (${written.join(', ')})` : ' (no change)'}`)
+  const next = canonical(data)
+  if (check) {
+    const current = fs.existsSync(OUT) ? canonical(JSON.parse(fs.readFileSync(OUT, 'utf8'))) : ''
+    const englishFile = path.join(LOCALES_DIR, 'en', `${NAMESPACE}.json`)
+    const englishCurrent = fs.existsSync(englishFile) ? fs.readFileSync(englishFile, 'utf8') : ''
+    if (current !== next || englishCurrent !== canonical(catalogFrom(data.installations))) {
+      console.error(`STALE: the committed platform snapshot or its English catalog differs from the API. Run: npm run platforms:generate`)
+      process.exit(1)
+    }
+    console.log('platform catalogue snapshot is up to date')
+  } else {
+    fs.writeFileSync(OUT, next)
+    const {keys, written} = writeCatalogs(data.installations)
+    console.log(`wrote ${path.relative(process.cwd(), OUT)}: ${Object.keys(data.types).length} types, ${Object.keys(data.installations).length} installations`)
+    console.log(`wrote ${keys} translatable string(s) to the ${NAMESPACE} catalog${written.length ? ` (${written.join(', ')})` : ' (no change)'}`)
+  }
 }
