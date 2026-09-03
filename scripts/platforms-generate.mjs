@@ -13,6 +13,17 @@
 // commands. The committed JSON is a BUILD-TIME SNAPSHOT of it — the app reads only that file,
 // so a catalogue change reaches clients when this is re-run and shipped. The desktop keeps only
 // what is code (logo components, one override, a few JSX blocks) in frontend/src/platforms/*/.
+//
+// NOT WIRED INTO CI, deliberately. Two reasons, and the credential is the smaller one:
+//   1. The snapshot is MEANT to lag the database until someone regenerates and ships, so
+//      "differs from the API" is the normal state after any row edit, not a fault. As a per-PR
+//      gate it would turn every open pull request red for a change none of them made. The right
+//      trigger is a scheduled job that regenerates and opens a PR with the diff.
+//   2. `platformTypes` / `platformInstallations` are @Authorized(), and the API's Bearer path
+//      takes only short-lived JWTs, so no static CI secret can satisfy it. Pending a decision on
+//      making those two queries public (they carry no customer data — platform names, install
+//      commands and doc links, the same content a public /add page renders).
+// Until then this is a local tool: `npm run platforms:generate` after a catalogue change.
 import fs from 'node:fs'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
