@@ -11,6 +11,6 @@ platforms.register({
   id: 'windows',
   component: Component,
   installation: {
-    altLink: browser.isWindows ? '/devices/setup' : undefined,
+    addThisDevice: browser.isWindows,
   },
 })

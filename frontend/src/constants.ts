@@ -102,6 +102,17 @@ export const GOOGLE_TAG_MANAGER_IOS_KEY = env.VITE_GOOGLE_TAG_MANAGER_IOS_KEY
 export const CERTIFICATE_DOMAIN = 'at.remote.it'
 export const ANONYMOUS_MANUFACTURER_CODE = 34560
 export const SCREEN_VIEW_APP_LINK = 'https://play.google.com/store/apps/details?id=it.remote.screenview'
+
+// The OEM provisioning guide, shown beside the "do not clone devices" warning on command-based
+// /add pages (see AddDevice). One URL for every platform that shows it, so it is a constant here
+// rather than a per-platform value in the API catalogue — a fact about remote.it, not about the
+// platform. It is a link.remote.it redirect, so the destination changes without a release.
+export const OEM_GUIDE_LINK = 'https://link.remote.it/docs/oem-overview'
+
+// In-app route that registers the machine this app is running on. Offered only where the running
+// client can do it (Windows, or Mac under Electron), which is why it is a client capability and
+// not catalogue data.
+export const DEVICE_SETUP_PATH = '/devices/setup'
 export const DEMO_SCRIPT_URL =
   'https://raw.githubusercontent.com/remoteit/code_samples/refs/heads/main/scripts/linux/script_demo.sh'
 

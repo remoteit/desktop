@@ -390,7 +390,6 @@
       "kind": "command",
       "qualifier": "For any Linux based system",
       "link": "https://link.remote.it/support/streamline-install",
-      "altLink": "https://link.remote.it/docs/oem-overview",
       "types": {
         "769": "Linux",
         "1121": "RedHat Linux",
@@ -447,7 +446,6 @@
       "kind": "command",
       "qualifier": "For any Raspberry Pi or Linux based system",
       "link": "https://link.remote.it/support/streamline-install",
-      "altLink": "https://link.remote.it/docs/oem-overview",
       "types": {
         "1072": "Raspberry Pi",
         "1075": "Remote.It Pi",

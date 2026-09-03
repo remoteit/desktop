@@ -1,4 +1,5 @@
 import React from 'react'
+import { OEM_GUIDE_LINK } from '../constants'
 import { IPlatform } from '../platforms'
 import { List, Typography } from '@mui/material'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
@@ -56,10 +57,10 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
           <>
             This page will automatically update when complete.
             {platform.installation?.link && <Link href={platform.installation?.link}>Instructions.</Link>}
-            {platform.installation?.altLink && (
+            {platform.installation?.oemGuide && (
               <>
                 In production <u>do not clone devices</u>, please follow these
-                <Link href={platform.installation.altLink}>oem instructions.</Link>
+                <Link href={OEM_GUIDE_LINK}>oem instructions.</Link>
               </>
             )}
           </>

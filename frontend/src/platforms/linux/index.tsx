@@ -56,4 +56,6 @@ const Component = ({ darkMode, ...props }) => {
 platforms.register({
   id: 'linux',
   component: Component,
+  // Cloning an installed image duplicates the device identity — OEM guidance covers it.
+  installation: { oemGuide: true },
 })

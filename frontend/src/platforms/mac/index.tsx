@@ -16,6 +16,6 @@ platforms.register({
   id: 'mac',
   component: Component,
   installation: {
-    altLink: browser.isMac && browser.isElectron ? '/devices/setup' : undefined,
+    addThisDevice: browser.isMac && browser.isElectron,
   },
 })

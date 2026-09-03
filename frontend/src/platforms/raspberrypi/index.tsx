@@ -75,6 +75,8 @@ const Component = ({ darkMode, ...props }) => {
 platforms.register({
   id: 'raspberrypi',
   component: Component,
+  // Cloning an installed image duplicates the device identity — OEM guidance covers it.
+  installation: { oemGuide: true },
   route: '/add/raspberrypi-options',
   listItemTitle: (
     <>

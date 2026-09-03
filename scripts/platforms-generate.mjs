@@ -22,7 +22,7 @@ const OUT = path.join(here, '..', 'frontend', 'src', 'platforms', 'catalogue.gen
 const API = process.env.R3_GRAPHQL_API || process.env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
 const check = process.argv.includes('--check')
 
-const INSTALLATION = 'id name kind commandTemplate qualifier instructions link altLink services { application port name host enabled }'
+const INSTALLATION = 'id name kind commandTemplate qualifier instructions link services { application port name host enabled }'
 const QUERY = `{
   platformTypes { id name displayName installation { ${INSTALLATION} } }
   platformInstallations { ${INSTALLATION} }

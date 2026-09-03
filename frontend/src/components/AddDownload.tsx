@@ -1,4 +1,5 @@
 import React from 'react'
+import { DEVICE_SETUP_PATH } from '../constants'
 import browser, { windowOpen } from '../services/browser'
 import { safeHostname } from '@common/nameHelper'
 import { useSelector } from 'react-redux'
@@ -35,9 +36,9 @@ export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => 
       >
         {browser.isAndroid ? 'Install' : browser.hasBackend ? 'Downloads Page' : 'View'}
       </Button>
-      {platform.installation?.altLink && (
+      {platform.installation?.addThisDevice && (
         <Typography variant="body2" color="textSecondary">
-          or add<Link to={platform.installation.altLink}>this device ({hostname})</Link>
+          or add<Link to={DEVICE_SETUP_PATH}>this device ({hostname})</Link>
         </Typography>
       )}
     </>

@@ -18,17 +18,22 @@ export interface IPlatform {
     command?: boolean | string
     instructions?: string | React.ReactNode
     qualifier?: string
+    // Where the platform is installed from — catalogue data.
     link?: string
-    altLink?: string
+    // Client capabilities, never catalogue data (see catalogue.ts): show the OEM provisioning
+    // guide (OEM_GUIDE_LINK), and offer to register the machine this app is running on
+    // (DEVICE_SETUP_PATH). Set in a local platform file, the second one OS-conditionally.
+    oemGuide?: boolean
+    addThisDevice?: boolean
   }
 }
 
 // What a platforms/<id>/index.tsx registers now that the data lives in the API catalogue: the
-// id and the code (component, override, listItemTitle, JSX instructions, a browser-conditional
-// altLink). A route the catalogue has no row for (the hidden android-screenview deep link) still
+// id and the code (component, override, listItemTitle, JSX instructions, the client-capability
+// flags oemGuide / addThisDevice). A route the catalogue has no row for (the hidden android-screenview deep link) still
 // supplies its own data. Any DEFINED field a local file sets wins over the catalogue — so a
-// hot-fix in a local file takes effect — while an undefined one (a conditional altLink on the
-// wrong OS) falls through to the catalogue value.
+// hot-fix in a local file takes effect — while an undefined one (a client-capability flag that
+// is off on this OS) falls through to the catalogue value.
 export type IPlatformLocal = Partial<IPlatform> & Pick<IPlatform, 'id' | 'component'>
 
 export interface IPlatformOverrideProps {
@@ -124,7 +129,6 @@ class Platforms {
       qualifier: data.qualifier,
       instructions: data.instructions,
       link: data.link,
-      altLink: data.altLink,
     }
     const hasInstallation = Object.values(installation).some(value => value !== undefined)
     return { name: data.name, types, services: data.services, installation: hasInstallation ? installation : undefined }
@@ -141,7 +145,7 @@ class Platforms {
       ? {
           ...base,
           ...catalogue,
-          // A local file's DEFINED values win (JSX instructions, an OS-matched altLink, any
+          // A local file's DEFINED values win (JSX instructions, an OS-matched capability flag, any
           // deliberate override); its undefined ones fall through to the catalogue.
           services: catalogue.services ?? local.services,
           installation: { ...catalogue.installation, ...defined(local.installation) },

@@ -21,8 +21,8 @@ export interface CatalogueInstallation {
   commandTemplate?: string
   qualifier?: string
   instructions?: string
+  // Where the platform is installed from (download, app store, docs article).
   link?: string
-  altLink?: string
   // [] = no default service (Docker); absent = unspecified, the UI's default applies.
   services?: IServiceRegistration[]
   // Platform type ids this page onboards, with their labels.
