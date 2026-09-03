@@ -19,10 +19,12 @@
 //      "differs from the API" is the normal state after any row edit, not a fault. As a per-PR
 //      gate it would turn every open pull request red for a change none of them made. The right
 //      trigger is a scheduled job that regenerates and opens a PR with the diff.
-//   2. `platformTypes` / `platformInstallations` are @Authorized(), and the API's Bearer path
-//      takes only short-lived JWTs, so no static CI secret can satisfy it. Pending a decision on
-//      making those two queries public (they carry no customer data — platform names, install
-//      commands and doc links, the same content a public /add page renders).
+//   2. Auth is enforced at the GATEWAY (`POST /graphql` carries an authorizer), not the
+//      resolver, so the request never reaches platformTypes and dropping @Authorized() would
+//      change nothing — a public catalogue would mean a new unauthenticated route. The API's
+//      Bearer path also takes only short-lived JWTs, so no static CI secret can satisfy it.
+//      If this is ever automated, `Authorization: Signature` (access key) is the mechanism that
+//      needs no new surface.
 // Until then this is a local tool: `npm run platforms:generate` after a catalogue change.
 import fs from 'node:fs'
 import path from 'node:path'
