@@ -1,0 +1,130 @@
+{
+  "advantech": {
+    "name": "",
+    "description": ""
+  },
+  "alpine": {
+    "name": "",
+    "description": ""
+  },
+  "amnimo": {
+    "name": ""
+  },
+  "android": {
+    "name": "",
+    "description": ""
+  },
+  "arm": {
+    "name": "",
+    "description": ""
+  },
+  "aws": {
+    "name": "",
+    "description": ""
+  },
+  "axis": {
+    "name": "",
+    "description": ""
+  },
+  "azure": {
+    "name": "",
+    "description": ""
+  },
+  "cachengo": {
+    "name": ""
+  },
+  "docker": {
+    "name": "",
+    "description": ""
+  },
+  "docker-extension": {
+    "name": "",
+    "description": ""
+  },
+  "docker-jumpbox": {
+    "name": "",
+    "description": ""
+  },
+  "embedded-works": {
+    "name": ""
+  },
+  "firewalla": {
+    "name": "",
+    "description": ""
+  },
+  "gcp": {
+    "name": "",
+    "description": ""
+  },
+  "idy": {
+    "name": "",
+    "description": ""
+  },
+  "ios": {
+    "name": ""
+  },
+  "linux": {
+    "name": "",
+    "description": ""
+  },
+  "liverock": {
+    "name": ""
+  },
+  "mac": {
+    "name": "",
+    "description": "",
+    "instructions": ""
+  },
+  "nas": {
+    "name": "",
+    "description": "",
+    "instructions": ""
+  },
+  "nvidia": {
+    "name": "",
+    "description": ""
+  },
+  "openwrt": {
+    "name": "",
+    "description": ""
+  },
+  "raspberrypi": {
+    "name": "",
+    "description": ""
+  },
+  "remoteit": {
+    "name": ""
+  },
+  "teltonika": {
+    "name": "",
+    "description": ""
+  },
+  "this": {
+    "name": ""
+  },
+  "tinkerboard": {
+    "name": "",
+    "description": ""
+  },
+  "toa": {
+    "name": ""
+  },
+  "ubiquiti": {
+    "name": "",
+    "description": ""
+  },
+  "ubuntu": {
+    "name": "",
+    "description": ""
+  },
+  "unknown": {
+    "name": "",
+    "description": "",
+    "instructions": ""
+  },
+  "windows": {
+    "name": "",
+    "description": "",
+    "instructions": ""
+  }
+}

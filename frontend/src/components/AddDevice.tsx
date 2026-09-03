@@ -1,6 +1,7 @@
 import React from 'react'
 import { OEM_GUIDE_LINK } from '../constants'
 import { IPlatform } from '../platforms'
+import { usePlatformText } from '../platforms/text'
 import { List, Typography } from '@mui/material'
 import { OrganizationIndicator } from '../components/OrganizationIndicator'
 import { CopyRegistrationCode } from './CopyRegistrationCode'
@@ -25,6 +26,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
     oneTimeUse,
   })
   const codeOnly = platform.installation?.command === '[CODE]'
+  const text = usePlatformText(platform)
 
   const codeBlock = (
     <List disablePadding={minimal}>
@@ -49,13 +51,13 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
         {/* `description` is a complete sentence from the catalogue; the action line follows from
             the platform kind and belongs here, not in the database (an MCP agent reads the same
             row and has no "below"). */}
-        {platform.installation?.description && <>{platform.installation.description} </>}
+        {text.description && <>{text.description} </>}
         {codeOnly ? <>Copy the code below:</> : <>Run this command on your device:</>}
       </Typography>
       {codeBlock}
       <Typography variant="body2" color="textSecondary">
-        {platform.installation?.instructions ? (
-          platform.installation.instructions
+        {text.instructions ? (
+          text.instructions
         ) : (
           <>
             This page will automatically update when complete.

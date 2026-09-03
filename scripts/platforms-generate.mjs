@@ -19,6 +19,13 @@ import {fileURLToPath} from 'node:url'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const OUT = path.join(here, '..', 'frontend', 'src', 'platforms', 'catalogue.generated.json')
+const LOCALES_DIR = path.join(here, '..', 'frontend', 'src', 'i18n', 'locales')
+const NAMESPACE = 'platforms'
+// English comes from the database; the other locales are for translators. The keys are built at
+// render time (`platforms:<slug>.description`), so i18next-parser cannot see them statically —
+// this script maintains the catalogs instead, the same arrangement the parser config already
+// documents for the `columns.<id>` labels.
+const TRANSLATABLE = ['name', 'description', 'instructions']
 const API = process.env.R3_GRAPHQL_API || process.env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
 const check = process.argv.includes('--check')
 
@@ -76,6 +83,43 @@ export function normalise(platformTypes, platformInstallations) {
 
 const canonical = data => JSON.stringify(data, null, 2) + '\n'
 
+// Build `<slug>.<field>` entries for every translatable string in the catalogue.
+function catalogFrom(installations) {
+  const out = {}
+  for (const [slug, row] of Object.entries(installations)) {
+    for (const field of TRANSLATABLE) {
+      if (typeof row[field] === 'string' && row[field].trim()) (out[slug] ??= {})[field] = row[field]
+    }
+  }
+  return Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)))
+}
+
+// English takes the catalogue text. Other locales KEEP whatever has been translated, gain empty
+// entries for new keys, and lose entries for keys that no longer exist — so regenerating can
+// never discard a translation.
+function mergeCatalog(locale, english) {
+  const file = path.join(LOCALES_DIR, locale, `${NAMESPACE}.json`)
+  const existing = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
+  const merged = {}
+  for (const [slug, fields] of Object.entries(english)) {
+    for (const [field, value] of Object.entries(fields)) {
+      (merged[slug] ??= {})[field] = locale === 'en' ? value : existing[slug]?.[field] ?? ''
+    }
+  }
+  return {file, merged}
+}
+
+function writeCatalogs(installations) {
+  const english = catalogFrom(installations)
+  const written = []
+  for (const locale of fs.readdirSync(LOCALES_DIR, {withFileTypes: true}).filter(d => d.isDirectory()).map(d => d.name)) {
+    const {file, merged} = mergeCatalog(locale, english)
+    const next = canonical(merged)
+    if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== next) { fs.writeFileSync(file, next); written.push(locale) }
+  }
+  return {keys: Object.values(english).reduce((n, f) => n + Object.keys(f).length, 0), written}
+}
+
 const data = await fromApi()
 const live = Object.keys(data.installations).length > 0
 if (!live) {
@@ -87,12 +131,16 @@ if (!live) {
 const next = canonical(data)
 if (check) {
   const current = fs.existsSync(OUT) ? canonical(JSON.parse(fs.readFileSync(OUT, 'utf8'))) : ''
-  if (current !== next) {
-    console.error(`STALE: ${path.relative(process.cwd(), OUT)} differs from the API catalogue. Run: npm run platforms:generate`)
+  const englishFile = path.join(LOCALES_DIR, 'en', `${NAMESPACE}.json`)
+  const englishCurrent = fs.existsSync(englishFile) ? fs.readFileSync(englishFile, 'utf8') : ''
+  if (current !== next || englishCurrent !== canonical(catalogFrom(data.installations))) {
+    console.error(`STALE: the committed platform snapshot or its English catalog differs from the API. Run: npm run platforms:generate`)
     process.exit(1)
   }
   console.log('platform catalogue snapshot is up to date')
 } else {
   fs.writeFileSync(OUT, next)
+  const {keys, written} = writeCatalogs(data.installations)
   console.log(`wrote ${path.relative(process.cwd(), OUT)}: ${Object.keys(data.types).length} types, ${Object.keys(data.installations).length} installations`)
+  console.log(`wrote ${keys} translatable string(s) to the ${NAMESPACE} catalog${written.length ? ` (${written.join(', ')})` : ' (no change)'}`)
 }
