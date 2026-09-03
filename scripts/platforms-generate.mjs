@@ -35,7 +35,7 @@
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import {fileURLToPath} from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const OUT = path.join(here, '..', 'frontend', 'src', 'platforms', 'catalogue.generated.json')
@@ -77,9 +77,18 @@ export function unwrapCli(stdout) {
 }
 
 function fromCli() {
-  // stdin/stderr inherited so sudo can prompt.
-  const stdout = execFileSync('sudo', ['remoteit', 'exec-gql', '--json', '--query', QUERY],
-    {encoding: 'utf8', stdio: ['inherit', 'pipe', 'inherit']})
+  let stdout
+  try {
+    // stdin/stderr inherited so sudo can prompt and the CLI's own errors reach the terminal.
+    stdout = execFileSync('sudo', ['remoteit', 'exec-gql', '--json', '--query', QUERY],
+      {encoding: 'utf8', stdio: ['inherit', 'pipe', 'inherit']})
+  } catch (error) {
+    // execFileSync throws an object that prints as an unreadable dump; say what to check instead.
+    throw new Error(
+      '`sudo remoteit exec-gql` failed (see above). The CLI runs as root, so this needs sudo. ' +
+      'Check that the remote.it CLI is installed and signed in, or set R3_API_TOKEN and drop --cli.'
+    )
+  }
   const data = unwrapCli(stdout)
   if (!data.platformTypes) throw new Error('exec-gql returned no platformTypes')
   return normalise(data.platformTypes, data.platformInstallations || [])
