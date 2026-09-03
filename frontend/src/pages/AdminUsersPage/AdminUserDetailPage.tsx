@@ -65,7 +65,10 @@ export const AdminUserDetailPage: React.FC = () => {
     // The EMAIL is the key both worlds share: permitteer subjects are sub_<hex>, not r3
     // GUIDs — the authorizer joins them by email — and the console resolves an unknown
     // deep-link id through its user search (one match opens; else honestly unknown).
-    windowOpen(`${OAUTH_ISSUER}/admin/console/users/${encodeURIComponent(user.email || user.id)}?launch=remoteit_portal`, '_blank', true)
+    // The launch lands on THIS portal's origin — the lane the operator is on (app.dev, app.evan,
+    // latest) — not on whichever redirect URI the client happens to list first
+    // (permitteer docs/support-cookie.md: the mint validates the origin against the registration).
+    windowOpen(`${OAUTH_ISSUER}/admin/console/users/${encodeURIComponent(user.email || user.id)}?launch=remoteit_portal&origin=${encodeURIComponent(window.location.origin)}`, '_blank', true)
   }
 
   return (
