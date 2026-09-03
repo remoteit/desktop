@@ -4,9 +4,11 @@
 //   node scripts/platforms-generate.mjs            # rewrite the snapshot from the API
 //   node scripts/platforms-generate.mjs --check    # exit 1 if the committed snapshot is stale
 //
-// Env: R3_API_TOKEN — a bearer JWT for the GraphQL API (the API's Bearer path accepts Cognito
-//      and agent JWTs, which are short-lived; a long-lived CI credential needs the access-key
-//      signature scheme instead — see graphql-api docs/PLATFORM-CATALOGUE.md).
+// Env: R3_API_TOKEN — a bearer JWT for the GraphQL API. The Bearer path accepts Cognito and
+//      agent JWTs, both short-lived, so there is no static token to configure: take one from a
+//      signed-in session (dev tools → Network → any request to api.remote.it/graphql/v1 → copy
+//      the Authorization bearer value). A durable credential would need the access-key signature
+//      scheme instead — see graphql-api docs/PLATFORM-CATALOGUE.md.
 //      R3_GRAPHQL_API | VITE_GRAPHQL_API — endpoint (default: the prod GraphQL API).
 //
 // The API is the single source of truth for platform names, onboarding routes and install

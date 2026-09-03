@@ -29,6 +29,25 @@ A release marked **Pre-release** is only offered to users who have opted in
 That is the whole difference between a beta and a public release — a
 pre-release that is never promoted is invisible to everyone else.
 
+## Before you bump: refresh the platform catalogue
+
+`frontend/src/platforms/catalogue.generated.json` is a committed snapshot of the API's platform
+catalogue — the names, install commands and `/add` page copy that used to be hard-coded here. It
+does not refresh itself, so a release can ship stale platform copy if the catalogue changed in the
+database and nobody propagated it.
+
+```bash
+npm run platforms:generate
+```
+
+No diff is the normal case and means the snapshot is current. A diff means the database moved
+since the last regeneration: review it as a content change, and note that English copy changes
+also need the translations in `frontend/src/i18n/locales/*/platforms.json` updated. Land it as its
+own pull request rather than folding it into the version bump.
+
+The primary control is upstream of this — whoever edits the catalogue should regenerate and open
+that pull request at the time — so this step is a backstop for when that did not happen.
+
 ## 1. Bump the version
 
 From `main`, with everything merged and CI green:
