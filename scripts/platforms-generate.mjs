@@ -24,7 +24,7 @@ const check = process.argv.includes('--check')
 
 const INSTALLATION = 'id name kind commandTemplate qualifier instructions link services { application port name host enabled }'
 const QUERY = `{
-  platformTypes { id name displayName installation { ${INSTALLATION} } }
+  platformTypes { id name displayName label installation { ${INSTALLATION} } }
   platformInstallations { ${INSTALLATION} }
 }`
 
@@ -68,7 +68,8 @@ export function normalise(platformTypes, platformInstallations) {
   for (const t of platformTypes) {
     if (typeof t.name !== 'string') continue
     types[t.id] = clean({name: t.name, displayName: t.displayName})
-    if (t.installation) page(t.installation).types[t.id] = t.displayName || t.name
+    // `label` is the API's own displayName-or-name rule; never re-derive it here.
+    if (t.installation) page(t.installation).types[t.id] = t.label || t.name
   }
   return {types, installations}
 }
