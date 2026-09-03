@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, IconButton } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { Icon } from './Icon'
-import { oidcActor, oidcSupportEndsAt } from '../services/oidc'
+import { oidcActor, oidcSupportEndsAt, oidcClearLocal } from '../services/oidc'
+import { OAUTH_ISSUER } from '../constants'
 
 export const ViewAsBanner: React.FC = () => {
   const { t } = useTranslation()
@@ -30,8 +31,19 @@ export const ViewAsBanner: React.FC = () => {
     window.sessionStorage.removeItem('viewAsUser')
     // Clear from Redux state
     dispatch.ui.set({ viewAsUser: null })
-    // Close the window/tab
+    // Close the window/tab. Only a script-opened window may close itself — after a step-up on
+    // the way in, the console's OWN tab became the support session (the popup had no click behind
+    // it), so close() is a no-op there. Then: end this tab's support state and go back to the
+    // console, which is where the operator came from (permitteer docs/desktop-support.md).
     window.close()
+    window.setTimeout(() => {
+      if (window.closed) return
+      if (supportSession) {
+        oidcClearLocal()
+        try { window.sessionStorage.removeItem('oidc.support') } catch { /* nothing to clear */ }
+        window.location.assign(`${OAUTH_ISSUER}/admin/console/users`)
+      }
+    }, 150)
   }
 
   return (
