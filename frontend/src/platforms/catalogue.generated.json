@@ -250,7 +250,7 @@
       "name": "Mac",
       "kind": "download",
       "description": "For macOS systems.",
-      "instructions": "Install the Desktop or CLI on the Mac to you want to enable remote access to.",
+      "instructions": "Install the Desktop or CLI on the Mac you want to enable remote access to.",
       "link": "https://link.remote.it/download/desktop",
       "types": {
         "256": "Mac"
@@ -362,7 +362,7 @@
       "name": "Windows",
       "kind": "download",
       "description": "For Windows systems.",
-      "instructions": "Install the Desktop or CLI on the Windows system to you want to enable remote access to.",
+      "instructions": "Install the Desktop or CLI on the Windows system you want to enable remote access to.",
       "link": "https://link.remote.it/download/desktop",
       "types": {
         "0": "Windows",

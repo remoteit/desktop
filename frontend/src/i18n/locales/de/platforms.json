@@ -1,130 +1,130 @@
 {
   "advantech": {
-    "name": "",
-    "description": ""
+    "name": "Advantech",
+    "description": "Für Advantech-Systeme."
   },
   "alpine": {
-    "name": "",
-    "description": ""
+    "name": "Alpine Linux",
+    "description": "Für Systeme auf Basis von Alpine Linux."
   },
   "amnimo": {
-    "name": ""
+    "name": "Amnimo"
   },
   "android": {
-    "name": "",
-    "description": ""
+    "name": "Android",
+    "description": "Für ein Android-Smartphone oder -Tablet."
   },
   "arm": {
-    "name": "",
-    "description": ""
+    "name": "Arm Virtual Hardware",
+    "description": "Für die Arm Virtual Hardware-Plattform."
   },
   "aws": {
-    "name": "",
-    "description": ""
+    "name": "AWS",
+    "description": "Für jede Linux-basierte virtuelle AWS-Maschine."
   },
   "axis": {
-    "name": "",
-    "description": ""
+    "name": "AXIS",
+    "description": "Für AXIS-Kamerasysteme."
   },
   "azure": {
-    "name": "",
-    "description": ""
+    "name": "Azure",
+    "description": "Für jede Linux-basierte virtuelle Maschine in der Azure Cloud."
   },
   "cachengo": {
-    "name": ""
+    "name": "Cachengo"
   },
   "docker": {
-    "name": "",
-    "description": ""
+    "name": "Docker",
+    "description": "Zum Testen auf jedem System, auf dem Docker läuft."
   },
   "docker-extension": {
-    "name": "",
-    "description": ""
+    "name": "Docker Jumpbox-Erweiterung",
+    "description": "Für Docker Desktop."
   },
   "docker-jumpbox": {
-    "name": "",
-    "description": ""
+    "name": "Docker Jumpbox",
+    "description": "Zum Testen auf jedem System, auf dem Docker läuft."
   },
   "embedded-works": {
-    "name": ""
+    "name": "Embedded Works"
   },
   "firewalla": {
-    "name": "",
-    "description": ""
+    "name": "Firewalla",
+    "description": "Für jedes Firewalla-System."
   },
   "gcp": {
-    "name": "",
-    "description": ""
+    "name": "Google Cloud",
+    "description": "Für jede Linux-basierte Google Cloud-Instanz."
   },
   "idy": {
-    "name": "",
-    "description": ""
+    "name": "IDY",
+    "description": "Für IDY-Router und -Gateways."
   },
   "ios": {
-    "name": ""
+    "name": "iOS"
   },
   "linux": {
-    "name": "",
-    "description": ""
+    "name": "Linux",
+    "description": "Für jedes Linux-basierte System."
   },
   "liverock": {
-    "name": ""
+    "name": "Liverock Technologies"
   },
   "mac": {
-    "name": "",
-    "description": "",
-    "instructions": ""
+    "name": "Mac",
+    "description": "Für macOS-Systeme.",
+    "instructions": "Installieren Sie die Desktop-App oder die CLI auf dem Mac, für den Sie den Remote-Zugriff aktivieren möchten."
   },
   "nas": {
-    "name": "",
-    "description": "",
-    "instructions": ""
+    "name": "Synology",
+    "description": "Für Synology NAS-Systeme.",
+    "instructions": "Laden Sie die Paketdatei herunter und installieren Sie sie über die Weboberfläche Ihres NAS."
   },
   "nvidia": {
-    "name": "",
-    "description": ""
+    "name": "NVIDIA Jetson",
+    "description": "Für NVIDIA Jetson-Systeme."
   },
   "openwrt": {
-    "name": "",
-    "description": ""
+    "name": "OpenWrt",
+    "description": "Für OpenWrt-Router."
   },
   "raspberrypi": {
-    "name": "",
-    "description": ""
+    "name": "Raspberry Pi",
+    "description": "Für jeden Raspberry Pi oder jedes Linux-basierte System."
   },
   "remoteit": {
-    "name": ""
+    "name": "Remote.It"
   },
   "teltonika": {
-    "name": "",
-    "description": ""
+    "name": "Teltonika",
+    "description": "Für Teltonika-Router und -Gateways."
   },
   "this": {
-    "name": ""
+    "name": "Dieses System"
   },
   "tinkerboard": {
-    "name": "",
-    "description": ""
+    "name": "Tinker Board",
+    "description": "Für das ASUS Tinker Board."
   },
   "toa": {
-    "name": ""
+    "name": "TOA"
   },
   "ubiquiti": {
-    "name": "",
-    "description": ""
+    "name": "Ubiquiti",
+    "description": "Für Ubiquiti-Router."
   },
   "ubuntu": {
-    "name": "",
-    "description": ""
+    "name": "Ubuntu Desktop",
+    "description": "Für Ubuntu Desktop-Systeme."
   },
   "unknown": {
-    "name": "",
-    "description": "",
-    "instructions": ""
+    "name": "Unbekannt",
+    "description": "Zum Registrieren eines beliebigen Geräts.",
+    "instructions": "Mit diesem eindeutigen Code kann sich jedes Gerät bei Ihrem Konto registrieren. Bewahren Sie ihn sicher auf."
   },
   "windows": {
-    "name": "",
-    "description": "",
-    "instructions": ""
+    "name": "Windows",
+    "description": "Für Windows-Systeme.",
+    "instructions": "Installieren Sie die Desktop-App oder die CLI auf dem Windows-System, für das Sie den Remote-Zugriff aktivieren möchten."
   }
 }

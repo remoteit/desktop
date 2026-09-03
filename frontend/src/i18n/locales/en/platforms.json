@@ -73,7 +73,7 @@
   "mac": {
     "name": "Mac",
     "description": "For macOS systems.",
-    "instructions": "Install the Desktop or CLI on the Mac to you want to enable remote access to."
+    "instructions": "Install the Desktop or CLI on the Mac you want to enable remote access to."
   },
   "nas": {
     "name": "Synology",
@@ -125,6 +125,6 @@
   "windows": {
     "name": "Windows",
     "description": "For Windows systems.",
-    "instructions": "Install the Desktop or CLI on the Windows system to you want to enable remote access to."
+    "instructions": "Install the Desktop or CLI on the Windows system you want to enable remote access to."
   }
 }

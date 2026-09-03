@@ -1,130 +1,130 @@
 {
   "advantech": {
-    "name": "",
-    "description": ""
+    "name": "Advantech",
+    "description": "Para sistemas Advantech."
   },
   "alpine": {
-    "name": "",
-    "description": ""
+    "name": "Alpine Linux",
+    "description": "Para sistemas basados en Alpine Linux."
   },
   "amnimo": {
-    "name": ""
+    "name": "Amnimo"
   },
   "android": {
-    "name": "",
-    "description": ""
+    "name": "Android",
+    "description": "Para un teléfono o tableta Android."
   },
   "arm": {
-    "name": "",
-    "description": ""
+    "name": "Arm Virtual Hardware",
+    "description": "Para la plataforma Arm Virtual Hardware."
   },
   "aws": {
-    "name": "",
-    "description": ""
+    "name": "AWS",
+    "description": "Para cualquier máquina virtual de AWS basada en Linux."
   },
   "axis": {
-    "name": "",
-    "description": ""
+    "name": "AXIS",
+    "description": "Para sistemas de cámaras AXIS."
   },
   "azure": {
-    "name": "",
-    "description": ""
+    "name": "Azure",
+    "description": "Para cualquier máquina virtual de Azure Cloud basada en Linux."
   },
   "cachengo": {
-    "name": ""
+    "name": "Cachengo"
   },
   "docker": {
-    "name": "",
-    "description": ""
+    "name": "Docker",
+    "description": "Para pruebas en cualquier sistema que ejecute Docker."
   },
   "docker-extension": {
-    "name": "",
-    "description": ""
+    "name": "Extensión Docker Jumpbox",
+    "description": "Para Docker Desktop."
   },
   "docker-jumpbox": {
-    "name": "",
-    "description": ""
+    "name": "Docker Jumpbox",
+    "description": "Para pruebas en cualquier sistema que ejecute Docker."
   },
   "embedded-works": {
-    "name": ""
+    "name": "Embedded Works"
   },
   "firewalla": {
-    "name": "",
-    "description": ""
+    "name": "Firewalla",
+    "description": "Para cualquier sistema Firewalla."
   },
   "gcp": {
-    "name": "",
-    "description": ""
+    "name": "Google Cloud",
+    "description": "Para cualquier instancia de Google Cloud basada en Linux."
   },
   "idy": {
-    "name": "",
-    "description": ""
+    "name": "IDY",
+    "description": "Para routers y gateways IDY."
   },
   "ios": {
-    "name": ""
+    "name": "iOS"
   },
   "linux": {
-    "name": "",
-    "description": ""
+    "name": "Linux",
+    "description": "Para cualquier sistema basado en Linux."
   },
   "liverock": {
-    "name": ""
+    "name": "Liverock Technologies"
   },
   "mac": {
-    "name": "",
-    "description": "",
-    "instructions": ""
+    "name": "Mac",
+    "description": "Para sistemas macOS.",
+    "instructions": "Instala la aplicación de escritorio o la CLI en el Mac al que quieres habilitar el acceso remoto."
   },
   "nas": {
-    "name": "",
-    "description": "",
-    "instructions": ""
+    "name": "Synology",
+    "description": "Para sistemas NAS de Synology.",
+    "instructions": "Descarga el archivo del paquete e instálalo desde la interfaz web de tu NAS."
   },
   "nvidia": {
-    "name": "",
-    "description": ""
+    "name": "NVIDIA Jetson",
+    "description": "Para sistemas NVIDIA Jetson."
   },
   "openwrt": {
-    "name": "",
-    "description": ""
+    "name": "OpenWrt",
+    "description": "Para routers OpenWrt."
   },
   "raspberrypi": {
-    "name": "",
-    "description": ""
+    "name": "Raspberry Pi",
+    "description": "Para cualquier Raspberry Pi o sistema basado en Linux."
   },
   "remoteit": {
-    "name": ""
+    "name": "Remote.It"
   },
   "teltonika": {
-    "name": "",
-    "description": ""
+    "name": "Teltonika",
+    "description": "Para routers y gateways Teltonika."
   },
   "this": {
-    "name": ""
+    "name": "Este sistema"
   },
   "tinkerboard": {
-    "name": "",
-    "description": ""
+    "name": "Tinker Board",
+    "description": "Para la ASUS Tinker Board."
   },
   "toa": {
-    "name": ""
+    "name": "TOA"
   },
   "ubiquiti": {
-    "name": "",
-    "description": ""
+    "name": "Ubiquiti",
+    "description": "Para routers Ubiquiti."
   },
   "ubuntu": {
-    "name": "",
-    "description": ""
+    "name": "Ubuntu Desktop",
+    "description": "Para sistemas Ubuntu Desktop."
   },
   "unknown": {
-    "name": "",
-    "description": "",
-    "instructions": ""
+    "name": "Desconocido",
+    "description": "Para registrar cualquier dispositivo.",
+    "instructions": "Este código único permite que cualquier dispositivo se registre en tu cuenta. Guárdalo en un lugar seguro."
   },
   "windows": {
-    "name": "",
-    "description": "",
-    "instructions": ""
+    "name": "Windows",
+    "description": "Para sistemas Windows.",
+    "instructions": "Instala la aplicación de escritorio o la CLI en el sistema Windows al que quieres habilitar el acceso remoto."
   }
 }
