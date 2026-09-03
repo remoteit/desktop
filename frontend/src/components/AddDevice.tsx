@@ -46,8 +46,11 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
     <>
       <OrganizationIndicator avatarSize={42} marginBottom={3} display="inline-flex" />
       <Typography variant="h3" sx={{ marginBottom: 1 }}>
-        {platform.installation?.qualifier},
-        {codeOnly ? <> copy the code below:</> : <> run this command on your device:</>}
+        {/* `description` is a complete sentence from the catalogue; the action line follows from
+            the platform kind and belongs here, not in the database (an MCP agent reads the same
+            row and has no "below"). */}
+        {platform.installation?.description && <>{platform.installation.description} </>}
+        {codeOnly ? <>Copy the code below:</> : <>Run this command on your device:</>}
       </Typography>
       {codeBlock}
       <Typography variant="body2" color="textSecondary">

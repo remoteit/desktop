@@ -75,7 +75,7 @@
     "advantech": {
       "name": "Advantech",
       "kind": "command",
-      "qualifier": "For Advantech systems",
+      "description": "For Advantech systems.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1206": "Advantech"
@@ -84,7 +84,7 @@
     "alpine": {
       "name": "Alpine Linux",
       "kind": "command",
-      "qualifier": "For Alpine Linux based systems",
+      "description": "For Alpine Linux based systems.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1122": "Alpine Linux"
@@ -100,7 +100,7 @@
     "android": {
       "name": "Android",
       "kind": "code",
-      "qualifier": "To register an Android phone or tablet",
+      "description": "For an Android phone or tablet.",
       "link": "https://play.google.com/store/apps/details?id=it.remote.screenview",
       "services": [
         {
@@ -114,7 +114,7 @@
     "arm": {
       "name": "Arm Virtual Hardware",
       "kind": "command",
-      "qualifier": "For the Arm Virtual Hardware platform",
+      "description": "For the Arm Virtual Hardware platform.",
       "link": "https://link.remote.it/avh",
       "types": {
         "1217": "AVH"
@@ -123,7 +123,7 @@
     "aws": {
       "name": "AWS",
       "kind": "command",
-      "qualifier": "For any Linux based AWS virtual machine",
+      "description": "For any Linux based AWS virtual machine.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1185": "AWS"
@@ -132,7 +132,7 @@
     "axis": {
       "name": "AXIS",
       "kind": "command",
-      "qualifier": "For AXIS camera systems",
+      "description": "For AXIS camera systems.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1209": "AXIS"
@@ -141,7 +141,7 @@
     "azure": {
       "name": "Azure",
       "kind": "command",
-      "qualifier": "For any Linux based Azure Cloud virtual machine",
+      "description": "For any Linux based Azure Cloud virtual machine.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1186": "Azure"
@@ -159,7 +159,7 @@
       "name": "Docker",
       "kind": "command",
       "commandTemplate": "docker run -d -e R3_REGISTRATION_CODE=\"[CODE]\" --restart unless-stopped --pull always remoteit/remoteit-agent:latest",
-      "qualifier": "For testing on any system running Docker",
+      "description": "For testing on any system running Docker.",
       "link": "https://hub.docker.com/r/remoteit/remoteit-agent",
       "services": [],
       "types": {
@@ -169,7 +169,7 @@
     "docker-extension": {
       "name": "Docker Jumpbox Extension",
       "kind": "code",
-      "qualifier": "For docker desktop",
+      "description": "For Docker Desktop.",
       "services": [],
       "types": {
         "1220": "Docker Extension"
@@ -179,7 +179,7 @@
       "name": "Docker Jumpbox",
       "kind": "command",
       "commandTemplate": "docker run -d -e R3_REGISTRATION_CODE=\"[CODE]\" -v /var/run/docker.sock:/var/run/docker.sock --restart unless-stopped --name remoteit_docker_jumpbox --pull always remoteit/docker-extension:latest",
-      "qualifier": "For testing on any system running Docker",
+      "description": "For testing on any system running Docker.",
       "link": "https://hub.docker.com/r/remoteit/docker-extension",
       "services": [],
       "types": {
@@ -196,7 +196,7 @@
     "firewalla": {
       "name": "Firewalla",
       "kind": "command",
-      "qualifier": "For any Firewalla system",
+      "description": "For any Firewalla system.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1216": "Firewalla"
@@ -205,7 +205,7 @@
     "gcp": {
       "name": "Google Cloud",
       "kind": "command",
-      "qualifier": "For any Linux based Google Cloud instance",
+      "description": "For any Linux based Google Cloud instance.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1187": "Google Cloud"
@@ -215,7 +215,7 @@
       "name": "IDY",
       "kind": "command",
       "commandTemplate": "config net-remoteit-agent=enable; config net-remoteit-registration_code=[CODE]; /etc/init.d/remoteit-refresh start",
-      "qualifier": "For IDY routers and gateways",
+      "description": "For IDY routers and gateways.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1225": "IDY"
@@ -231,7 +231,7 @@
     "linux": {
       "name": "Linux",
       "kind": "command",
-      "qualifier": "For any Linux based system",
+      "description": "For any Linux based system.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "769": "Linux",
@@ -249,7 +249,7 @@
     "mac": {
       "name": "Mac",
       "kind": "download",
-      "qualifier": "Macintosh installation",
+      "description": "For macOS systems.",
       "instructions": "Install the Desktop or CLI on the Mac to you want to enable remote access to.",
       "link": "https://link.remote.it/download/desktop",
       "types": {
@@ -259,7 +259,7 @@
     "nas": {
       "name": "Synology",
       "kind": "download",
-      "qualifier": "Synology manual installation",
+      "description": "For Synology NAS systems.",
       "instructions": "Download the package file and install it through your NAS web interface.",
       "link": "https://link.remote.it/getting-started/synology",
       "types": {
@@ -269,7 +269,7 @@
     "nvidia": {
       "name": "NVIDIA Jetson",
       "kind": "command",
-      "qualifier": "For NVIDIA Jetson systems",
+      "description": "For NVIDIA Jetson systems.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1201": "NVIDIA Jetson"
@@ -278,7 +278,7 @@
     "openwrt": {
       "name": "OpenWrt",
       "kind": "command",
-      "qualifier": "For OpenWrt routers",
+      "description": "For OpenWrt routers.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1205": "OpenWrt"
@@ -287,7 +287,7 @@
     "raspberrypi": {
       "name": "Raspberry Pi",
       "kind": "command",
-      "qualifier": "For any Raspberry Pi or Linux based system",
+      "description": "For any Raspberry Pi or Linux based system.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1072": "Raspberry Pi",
@@ -304,7 +304,7 @@
     "teltonika": {
       "name": "Teltonika",
       "kind": "command",
-      "qualifier": "For Teltonika routers and gateways",
+      "description": "For Teltonika routers and gateways.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1281": "Teltonika"
@@ -318,7 +318,7 @@
     "tinkerboard": {
       "name": "Tinker Board",
       "kind": "command",
-      "qualifier": "For the ASUS Tinker Board",
+      "description": "For the ASUS Tinker Board.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1215": "ASUS Tinker Board"
@@ -334,7 +334,7 @@
     "ubiquiti": {
       "name": "Ubiquiti",
       "kind": "command",
-      "qualifier": "For Ubiquiti routers",
+      "description": "For Ubiquiti routers.",
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "1218": "Ubiquiti Router"
@@ -343,7 +343,7 @@
     "ubuntu": {
       "name": "Ubuntu Desktop",
       "kind": "download",
-      "qualifier": "For Ubuntu Desktop systems",
+      "description": "For Ubuntu Desktop systems.",
       "link": "https://link.remote.it/download/desktop",
       "types": {
         "1120": "Debian Linux"
@@ -352,7 +352,7 @@
     "unknown": {
       "name": "Unknown",
       "kind": "code",
-      "qualifier": "For generic device registration",
+      "description": "For registering any device.",
       "instructions": "This unique code allows any device to register with your account, keep it safe.",
       "types": {
         "65535": "Unknown"
@@ -361,7 +361,7 @@
     "windows": {
       "name": "Windows",
       "kind": "download",
-      "qualifier": "Windows installation",
+      "description": "For Windows systems.",
       "instructions": "Install the Desktop or CLI on the Windows system to you want to enable remote access to.",
       "link": "https://link.remote.it/download/desktop",
       "types": {

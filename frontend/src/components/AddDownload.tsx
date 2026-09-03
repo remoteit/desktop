@@ -16,7 +16,7 @@ export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => 
   return (
     <>
       <Typography variant="body2" color="textSecondary">
-        {platform.installation?.qualifier}
+        {platform.installation?.description}
       </Typography>
       <Typography variant="h3">{platform.installation?.instructions}</Typography>
       <Button

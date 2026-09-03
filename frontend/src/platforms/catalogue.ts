@@ -14,7 +14,8 @@ export interface CatalogueInstallation {
   // registry substitutes [CODE] client-side for these — identical to the API's output once a
   // stage renders server-side — so the command is right regardless of deploy order.
   commandTemplate?: string
-  qualifier?: string
+  // A complete sentence saying who the page is for. The client adds its own action line.
+  description?: string
   instructions?: string
   // Where the platform is installed from (download, app store, docs article).
   link?: string

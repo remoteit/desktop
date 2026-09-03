@@ -17,7 +17,7 @@ export interface IPlatform {
     download?: boolean
     command?: boolean | string
     instructions?: string | React.ReactNode
-    qualifier?: string
+    description?: string
     // Where the platform is installed from — catalogue data.
     link?: string
     // Client capabilities, never catalogue data (see catalogue.ts): show the OEM provisioning
@@ -126,7 +126,7 @@ class Platforms {
       // download: an app or agent to fetch first. A code row WITH a link is that too — Android:
       // install ScreenView from the store, the code is the manual fallback.
       download: data.kind === 'download' || (data.kind === 'code' && !!data.link) || undefined,
-      qualifier: data.qualifier,
+      description: data.description,
       instructions: data.instructions,
       link: data.link,
     }
