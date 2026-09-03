@@ -97,14 +97,27 @@ for (const ns of namespaces) {
     // translation can be stale; an empty one is simply untranslated, which is allowed.
     for (const [key, value] of Object.entries(target)) {
       if (typeof value !== 'string' || !value.trim()) continue
-      const english = source[key]
-      if (typeof english !== 'string') continue // plural-form/dead-key mismatches are reported below
+
+      // A locale can have plural categories English does not (Spanish `_many`, where English has
+      // only `_one`/`_other`). Those still translate an English string — the `_other` form — so
+      // fall back to it rather than skipping, which would leave them permanently unwatched.
+      const { base, cat } = splitPlural(key)
+      const english = typeof source[key] === 'string' ? source[key]
+        : cat && typeof source[`${base}_other`] === 'string' ? source[`${base}_other`]
+        : undefined
+      if (english === undefined) continue // genuine plural-form/dead-key mismatch, reported below
 
       ;(recorded[locale] ??= {})[ns] ??= {}
       recorded[locale][ns][key] = english
 
       const was = sources[locale]?.[ns]?.[key]
-      if (was === undefined) continue // never recorded (first run / new translation) — accept it
+      if (was === undefined) {
+        // Never recorded: a translation landed without `i18n:accept`. Left alone it would sit
+        // outside the safety net forever, since check mode never writes the record.
+        if (!accept)
+          report(`[${locale}/${ns}] translation not recorded: "${key}"\n      Run "npm run i18n:accept" so later English edits can be detected as stale.`)
+        continue
+      }
       if (was !== english)
         report(`[${locale}/${ns}] stale translation: "${key}"\n      English was: ${JSON.stringify(was)}\n      English now: ${JSON.stringify(english)}\n      Update the ${locale} translation, or run "npm run i18n:accept" if it is still correct.`)
     }

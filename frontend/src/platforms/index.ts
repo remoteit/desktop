@@ -162,7 +162,15 @@ class Platforms {
   }
 
   type(type: number): IPlatform {
-    return this.get(this.lookup[type] || 'unknown')
+    const id = this.lookup[type]
+    if (id) return this.get(id)
+
+    // A catalogue type with no /add page (31 legacy types: Lorex, Astak, Philips…) has a name
+    // but no platform of its own. Answer with the unknown platform's icon carrying the real
+    // name, so device lists and tooltips show "x86 Generic Linux" rather than "Unknown".
+    const name = this.nameLookup[type]
+
+    return name ? { ...this.get('unknown'), name, types: { [type]: name } } : this.get('unknown')
   }
 
   get(id: string = 'unknown'): IPlatform {
