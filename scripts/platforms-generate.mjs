@@ -24,7 +24,7 @@ const check = process.argv.includes('--check')
 
 const INSTALLATION = 'id name kind commandTemplate qualifier instructions link services { application port name host enabled }'
 const QUERY = `{
-  platformTypes { id name displayName label installation { ${INSTALLATION} } }
+  platformTypes { id label installation { ${INSTALLATION} } }
   platformInstallations { ${INSTALLATION} }
 }`
 
@@ -53,9 +53,10 @@ const clean = value => Array.isArray(value)
     ? Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => [k, clean(v)]))
     : value
 
-// Two maps: every type by id (name + display name, for naming devices), and every onboarding
-// page by slug, each carrying the type ids it onboards with their labels — so the registry
-// never has to invert anything at startup.
+// Two maps: every platform type id to the name to show for it, and every onboarding page by
+// slug, each carrying the type ids it onboards with those same labels — so the registry never
+// has to invert anything, or re-derive a name, at startup. `label` is the API's own
+// displayName-or-name rule; it is never recomputed here.
 export function normalise(platformTypes, platformInstallations) {
   const types = {}
   const installations = {}
@@ -66,10 +67,9 @@ export function normalise(platformTypes, platformInstallations) {
   }
   for (const row of platformInstallations) page(row)
   for (const t of platformTypes) {
-    if (typeof t.name !== 'string') continue
-    types[t.id] = clean({name: t.name, displayName: t.displayName})
-    // `label` is the API's own displayName-or-name rule; never re-derive it here.
-    if (t.installation) page(t.installation).types[t.id] = t.label || t.name
+    if (typeof t.label !== 'string') continue
+    types[t.id] = t.label
+    if (t.installation) page(t.installation).types[t.id] = t.label
   }
   return {types, installations}
 }

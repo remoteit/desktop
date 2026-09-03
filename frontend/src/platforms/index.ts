@@ -99,8 +99,8 @@ class Platforms {
   // local file is registered with no logo — so a platform added in the API shows up in lists,
   // filters and /add before the desktop ships a logo for it.
   private seedFromCatalogue() {
-    for (const [typeId, type] of Object.entries(CATALOGUE.types)) {
-      this.nameLookup[Number(typeId)] = type.displayName || type.name
+    for (const [typeId, label] of Object.entries(CATALOGUE.types)) {
+      this.nameLookup[Number(typeId)] = label
     }
     for (const id of Object.keys(CATALOGUE.installations)) {
       // No logo until a local file ships one; PlatformIcon already tolerates a null render.

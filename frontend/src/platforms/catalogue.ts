@@ -7,11 +7,6 @@ import raw from './catalogue.generated.json'
 
 export type CatalogueKind = 'command' | 'code' | 'download' | 'info'
 
-export interface CatalogueType {
-  name: string
-  displayName?: string
-}
-
 export interface CatalogueInstallation {
   name: string
   kind: CatalogueKind
@@ -30,7 +25,8 @@ export interface CatalogueInstallation {
 }
 
 export interface Catalogue {
-  types: Record<string, CatalogueType>
+  // Platform type id to the name to show for it (the API's `label`: displayName, else name).
+  types: Record<string, string>
   installations: Record<string, CatalogueInstallation>
 }
 
