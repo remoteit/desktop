@@ -39,8 +39,7 @@ jobs:
       - name: Run typecheck
         run: npm run typecheck
 
-      # Catalog health: missing/dead keys, empty English, and translations whose English source
-      # changed after they were translated (the keys are semantic, so an English edit otherwise
-      # leaves every locale silently showing the old wording). No network, so it always runs.
+      # Catalog health: a locale missing a key English has, a dead key English no longer has, or
+      # an empty English value. No network and no credential, so it always runs.
       - name: Check translation catalogs
         run: npm run i18n:check

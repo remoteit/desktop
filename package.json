@@ -35,8 +35,7 @@
     "version": "npm version $npm_package_version --workspaces && sh version.sh $npm_package_version",
     "platforms:generate": "node scripts/platforms-generate.mjs",
     "platforms:check": "node scripts/platforms-generate.mjs --check",
-    "i18n:check": "npm run i18n:check -w=frontend",
-    "i18n:accept": "npm run i18n:accept -w=frontend"
+    "i18n:check": "npm run i18n:check -w=frontend"
   },
   "dependencies": {
     "@capacitor-community/bluetooth-le": "^7.1.1",
