@@ -48,7 +48,7 @@
     "dotenv": "^16.4.5",
     "electron-updater": "^6.8.9",
     "escape-string-regexp": "^4.0.0",
-    "express": "^4.22.2",
+    "express": "^5.2.1",
     "is-electron": "^2.2.2",
     "is-elevated": "^3.0.0",
     "is-port-reachable": "^3.1.0",
