@@ -70,7 +70,21 @@ export function unwrapCli(stdout) {
   if (envelope && raw === undefined) throw new Error(`remoteit exec-gql failed: ${envelope.message || stdout.slice(0, 160)}`)
 
   const body = typeof raw === 'string' ? JSON.parse(raw) : raw
-  if (body?.errors?.length) throw new Error(body.errors.map(e => e.message).join('; '))
+  if (body?.errors?.length) {
+    const messages = body.errors.map(e => e.message).join('; ')
+    // The catalogue fields ship with graphql-api's platform-catalogue work. Until that is
+    // deployed to whichever stage this is pointed at, the schema simply has no such fields, and
+    // "Did you mean name?" is a confusing way to learn that.
+    if (/platformInstallations|"(label|installation)"/.test(messages)) {
+      throw new Error(
+        'This stage does not serve the platform catalogue yet — the schema has no `label`, ' +
+        '`installation` or `platformInstallations` (graphql-api#209 is not deployed here). ' +
+        'Point at a stage that has it, or leave the committed snapshot alone until it ships.\n' +
+        `  GraphQL said: ${messages}`
+      )
+    }
+    throw new Error(messages)
+  }
   if (!body?.data) throw new Error(`exec-gql returned no data: ${stdout.slice(0, 160)}`)
 
   return body.data

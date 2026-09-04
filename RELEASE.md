@@ -48,6 +48,10 @@ own pull request rather than folding it into the version bump.
 The primary control is upstream of this — whoever edits the catalogue should regenerate and open
 that pull request at the time — so this step is a backstop for when that did not happen.
 
+Until the platform catalogue is deployed to the stage the CLI points at, this reports that the
+schema has no catalogue fields. That is expected, not a failure: skip the step and leave the
+committed snapshot as it is.
+
 ## 1. Bump the version
 
 From `main`, with everything merged and CI green:
