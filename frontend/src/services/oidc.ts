@@ -761,7 +761,7 @@ const ACCOUNT_RESOURCE = `${OAUTH_ISSUER}/account/api`
  *  kept rendering its cache while the AS was turning the call away, so a stale list and a
  *  broken one looked identical — on screen and in the console. */
 export type BrowserAccountsRefresh =
-  | { ok: true; multi: boolean }
+  | { ok: true; multi: boolean; authoritative: boolean }
   | { ok: false; reason: 'support-session' | 'no-token' | 'refused'; status?: number }
 
 export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefresh> {
@@ -776,7 +776,7 @@ export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefre
     console.warn(`AUTH: the browser's accounts could not be refreshed (${r.status}) — the menu is showing its last known list`)
     return { ok: false, reason: 'refused', status: r.status }
   }
-  const body = (await r.json()) as { multi?: boolean; accounts?: { sub: string; email?: string | null; name?: string | null; picture?: string | null; current?: boolean }[] }
+  const body = (await r.json()) as { multi?: boolean; authoritative?: boolean; accounts?: { sub: string; email?: string | null; name?: string | null; picture?: string | null; current?: boolean }[] }
   const listed = new Set<string>()
   const reg = readRegistry()
   for (const a of body.accounts ?? []) {
@@ -796,10 +796,14 @@ export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefre
   // activating it cannot work (its session, and with it its refresh family, is gone), so the
   // click swaps in tokens that fail and drops the person on the sign-in screen.
   //
-  // The `multi` guard is the one thing that must not be reconciled away: with multi-account
-  // switched off the AS answers "just you" by design, not "everyone else is gone", and pruning
-  // on that would sign out every account this app has saved. Identity-only entries carry no
-  // such risk — they exist only because some earlier answer named them.
+  // Two guards, and neither may be reconciled away. `authoritative` says the AS answered from the
+  // BROWSER's own membership rather than a stale-able per-session snapshot (permitteer
+  // docs/browser-id-plan.md); without it the list is a copy that may predate the others, and
+  // trusting it is how a live account gets deleted. `multi` off means the AS answers "just you" by
+  // design, not "everyone else is gone" — pruning on that would sign out every saved account. An
+  // AS that says neither (an older deployment) simply never prunes saved entries, which is the
+  // pre-existing behaviour. Identity-only entries carry no such risk either way: they exist only
+  // because some earlier answer named them.
   //
   // The active account is never in `listed` (it arrives as `current` and is skipped above), so
   // it is held out explicitly. Support entries live in a tab-scoped store and are not members.
@@ -809,15 +813,17 @@ export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefre
   // the answer distinguishes it from a sign-out. Dropping it costs one "Switch account" to get
   // back, needs an eleventh account on one browser to happen at all, and the alternative is the
   // dead row this whole change exists to remove.
-  const reportsSet = body.multi === true
+  const multi = body.multi === true
+  const authoritative = body.authoritative === true
+  const mayPruneSaved = multi && authoritative
   const activeSub = oidcClaims()?.sub
   for (const [sub, e] of Object.entries(reg)) {
     if (e.support || listed.has(sub) || sub === activeSub) continue
-    if (e.refresh_token && !reportsSet) continue
+    if (e.refresh_token && !mayPruneSaved) continue
     delete reg[sub]
   }
   writeRegistry(reg)
-  return { ok: true, multi: reportsSet }
+  return { ok: true, multi, authoritative }
 }
 /** Pick a KNOWN account: silent selection through the AS. False when the sub is not a known entry. */
 export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
