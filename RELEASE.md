@@ -61,9 +61,14 @@ Then push the commit and the tag `npm version` created.
 Run **Build / Electron** (`workflow_dispatch`) — `brand` defaults to `remoteit`,
 and **uncheck `skip_signing`** for a real release, since it defaults to `true`.
 
-It builds a matrix of ubuntu-latest / macos-14 / windows-latest, reads the
-version from `package.json` (not from the tag), and attaches the installers to
-the GitHub release for that tag. Node comes from `.nvmrc` — electron-builder
+A `prepare` job first creates the **draft** release for the version (on tag
+builds only), then a matrix of ubuntu-latest / macos-14 / windows-latest reads
+the version from `package.json` (not from the tag) and attaches the installers
+to it. The draft is created up front on purpose: electron-builder otherwise
+creates it lazily from whichever runner uploads first, and concurrent runners
+have produced **two drafts for one version** with the installers split between
+them. If that ever shows up again — two drafts with the same tag in the
+releases list — keep the one with the installers, delete the other, and re-run. Node comes from `.nvmrc` — electron-builder
 needs Node >= 20.19 / 22.12, so don't pin it lower.
 
 Windows ships three installers, one per arch (`-ia32`, `-x64`, `-arm64`), and
