@@ -1,6 +1,8 @@
+import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
 import { EventBus, Logger, EVENTS, preferences, environment, brand } from './backend'
+import { detectNativeWindowsArch, resolveWindowsUpdateChannel } from './backend/updateChannel'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
@@ -41,7 +43,6 @@ export default class AppUpdater {
   downloading: boolean = false
   version?: string
   error: boolean = false
-  private readonly updateManifestFile = process.platform === 'darwin' ? 'latest-mac.yml' : 'latest.yml'
   private readonly defaultGithubFeed: GitHubFeedConfig = resolveGitHubFeedFromBrand()
 
   constructor() {
@@ -119,13 +120,19 @@ export default class AppUpdater {
     }
   }
 
+  private get updateManifestFile() {
+    if (process.platform === 'darwin') return 'latest-mac.yml'
+    return `${autoUpdater.channel || 'latest'}.yml`
+  }
+
   check = async (force?: boolean) => {
     if ((!environment.isWindows && !environment.isMac) || !preferences.get().autoUpdate) return
 
     try {
       if (force || this.nextCheck < Date.now()) {
         this.setDefaultFeed()
-        Logger.info('CHECK FOR UPDATE', { url: autoUpdater.getFeedURL() })
+        this.applyUpdateChannel()
+        Logger.info('CHECK FOR UPDATE', { url: autoUpdater.getFeedURL(), channel: autoUpdater.channel })
         Logger.info('Checking for update')
         this.nextCheck =
           Date.now() + (autoUpdater.allowPrerelease ? PRE_RELEASE_CHECK_INTERVAL : AUTO_UPDATE_CHECK_INTERVAL)
@@ -134,6 +141,7 @@ export default class AppUpdater {
       }
     } catch (error) {
       if (this.isMissingChannelFileError(error)) {
+        if (await this.checkWithDefaultChannel()) return
         const recovered = await this.checkWithFallbackRelease()
         if (recovered) return
       }
@@ -144,6 +152,33 @@ export default class AppUpdater {
   install = () => {
     Logger.info('QUIT AND INSTALL UPDATE')
     autoUpdater.quitAndInstall()
+  }
+
+  private applyUpdateChannel() {
+    if (!environment.isWindows) return
+    const nativeArch = detectNativeWindowsArch(process.arch, app.runningUnderARM64Translation, process.env)
+    const channel = resolveWindowsUpdateChannel(process.arch, nativeArch, autoUpdater.allowPrerelease)
+    if (autoUpdater.channel !== channel) {
+      autoUpdater.channel = channel
+      Logger.info('AUTO UPDATE CHANNEL', { channel, processArch: process.arch, nativeArch })
+    }
+  }
+
+  // A release built before per-arch manifests existed only carries latest.yml. Its
+  // entry for this build's own arch is still a valid update, just not the native one.
+  private async checkWithDefaultChannel(): Promise<boolean> {
+    if (!environment.isWindows || !autoUpdater.channel || autoUpdater.channel === 'latest') return false
+    Logger.warn('AUTO UPDATE ARCH MANIFEST MISSING', { channel: autoUpdater.channel })
+    autoUpdater.channel = 'latest'
+    try {
+      await autoUpdater.checkForUpdatesAndNotify()
+      this.emitStatus()
+      return true
+    } catch (error) {
+      if (this.isMissingChannelFileError(error)) return false
+      Logger.warn('AUTO UPDATE ERROR', { error })
+      return true
+    }
   }
 
   private setDefaultFeed() {
