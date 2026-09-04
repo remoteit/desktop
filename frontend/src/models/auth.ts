@@ -8,7 +8,7 @@ import { selectDeviceModelAttributes } from '../selectors/devices'
 import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
-import { getToken } from '../services/remoteit'
+import { getToken, apiAuthHeaders } from '../services/remoteit'
 import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
@@ -252,7 +252,7 @@ export default createModel<RootModel>()({
             headers: {
               'Content-Type': 'application/json',
               developerKey: DEVELOPER_KEY,
-              Authorization: await getToken(),
+              ...(await apiAuthHeaders('POST', `${API_URL}/user/email/`)),
             },
           }
         )

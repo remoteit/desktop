@@ -1,4 +1,4 @@
-import { oidcAccessToken } from './oidc'
+import { oidcAccessToken, oidcAuthHeaders } from './oidc'
 import { getApiResource } from '../helpers/apiHelper'
 
 /**
@@ -15,4 +15,16 @@ export async function getToken(): Promise<string> {
 
 export async function hasCredentials() {
   return !!(await oidcAccessToken())
+}
+
+/** Scheme-aware auth headers for a graphql/REST call (permitteer docs — the container now
+ * ENFORCES the DPoP binding: a bound token must arrive as `DPoP <token>` with a proof over
+ * this exact method+URL, and presenting it as Bearer is refused). Same machinery the account
+ * API calls already use (oidcAuthHeaders); resolves to {} when signed out — callers no-op on
+ * a missing authorization, exactly as they did on an empty getToken(). getToken() itself
+ * stays for liveness probes and the events subscribe envelope (in-band bearer, exempt by the
+ * frozen wire contract).
+ */
+export async function apiAuthHeaders(method: string, url: string): Promise<Record<string, string>> {
+  return await oidcAuthHeaders(method, url, getApiResource())
 }

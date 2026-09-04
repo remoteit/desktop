@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { getApiURL, getTestHeader } from '../helpers/apiHelper'
-import { getToken } from './remoteit'
+import { apiAuthHeaders } from './remoteit'
 import { store } from '../store'
 import network from './Network'
 import sleep from '../helpers/sleep'
@@ -14,13 +14,14 @@ export function resetErrorCount() {
 export async function post(data: ILookup<any, string> = {}, path: string = '') {
   if (store.getState().ui.offline) return
 
-  const token = await getToken()
-  if (!token) {
+  const url = getApiURL() + path
+  const auth = await apiAuthHeaders('POST', url)
+  if (!auth.authorization) {
     console.warn('Unable to get token for API request.', data)
     return
   }
-  
-  const headers: any = { Authorization: token, ...getTestHeader() }
+
+  const headers: any = { ...auth, ...getTestHeader() }
   
   // Add x-r3-user header if in view-as mode
   const viewAsUser = store.getState().ui.viewAsUser
@@ -29,7 +30,7 @@ export async function post(data: ILookup<any, string> = {}, path: string = '') {
   }
   
   const request = {
-    url: getApiURL() + path,
+    url,
     method: 'post' as 'post',
     headers,
     data,
