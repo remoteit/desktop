@@ -722,6 +722,12 @@ export async function oidcAuthHeaders(method: string, url: string, resource: str
   if (access[resource]?.type === 'DPoP') {
     const proof = await dpopProof(method, url, token)
     if (proof) return { authorization: `DPoP ${token}`, DPoP: proof }
+    // A bound token with no proof to present. Falling through to Bearer is deliberate — the AS
+    // decides, and it will refuse (RFC 9449) — but that refusal arrives as a bare 401 with no
+    // hint that the cause was a missing key rather than a dead session. Name it here, because
+    // this is the only place that knows. Reached when WebCrypto/IndexedDB are unavailable,
+    // which on a phone usually means private browsing.
+    console.warn(`AUTH: no DPoP proof available for ${resource} — presenting a sender-constrained token as Bearer, which the AS will refuse`)
   }
   return { authorization: `Bearer ${token}` }
 }
@@ -750,13 +756,26 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
 // for are filed as KNOWN — identity only — and the menu offers them; picking one is a silent
 // selection (prompt=none + login_hint), which the AS answers for any live set member.
 const ACCOUNT_RESOURCE = `${OAUTH_ISSUER}/account/api`
-export async function oidcRefreshBrowserAccounts(): Promise<void> {
-  if (oidcActor()) return // a support session is no set member and has nothing to switch to
+
+/** Why a refresh did not happen. `refused` is the one that used to be invisible: the menu
+ *  kept rendering its cache while the AS was turning the call away, so a stale list and a
+ *  broken one looked identical — on screen and in the console. */
+export type BrowserAccountsRefresh =
+  | { ok: true; multi: boolean }
+  | { ok: false; reason: 'support-session' | 'no-token' | 'refused'; status?: number }
+
+export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefresh> {
+  if (oidcActor()) return { ok: false, reason: 'support-session' } // no set member, nothing to switch to
   const url = `${ACCOUNT_RESOURCE}/accounts`
   const headers = await oidcAuthHeaders('GET', url, ACCOUNT_RESOURCE)
-  if (!headers.authorization) return
+  if (!headers.authorization) return { ok: false, reason: 'no-token' }
   const r = await fetch(url, { headers })
-  if (!r.ok) return
+  if (!r.ok) {
+    // Never silently: an unreconciled menu is showing accounts that may not exist and hiding
+    // ones that do, and the person has no way to tell. Say so where a bug report can find it.
+    console.warn(`AUTH: the browser's accounts could not be refreshed (${r.status}) — the menu is showing its last known list`)
+    return { ok: false, reason: 'refused', status: r.status }
+  }
   const body = (await r.json()) as { multi?: boolean; accounts?: { sub: string; email?: string | null; name?: string | null; picture?: string | null; current?: boolean }[] }
   const listed = new Set<string>()
   const reg = readRegistry()
@@ -771,10 +790,34 @@ export async function oidcRefreshBrowserAccounts(): Promise<void> {
       picture: typeof a.picture === 'string' && /^https:\/\//i.test(a.picture) ? a.picture : prev?.picture,
     }
   }
-  // A known-only entry the AS no longer lists was signed out elsewhere: drop it. Saved accounts
-  // (tokens here) are this app's own and stay.
-  for (const [sub, e] of Object.entries(reg)) if (!e.refresh_token && !e.support && !listed.has(sub) && sub !== oidcClaims()?.sub) delete reg[sub]
+  // The AS has just told us who is signed in on this browser, so that answer WINS: a member it
+  // no longer lists was signed out elsewhere or has expired, and an entry we keep is one the
+  // menu offers. Keeping a saved-but-unlisted account is what put a dead row on the menu —
+  // activating it cannot work (its session, and with it its refresh family, is gone), so the
+  // click swaps in tokens that fail and drops the person on the sign-in screen.
+  //
+  // The `multi` guard is the one thing that must not be reconciled away: with multi-account
+  // switched off the AS answers "just you" by design, not "everyone else is gone", and pruning
+  // on that would sign out every account this app has saved. Identity-only entries carry no
+  // such risk — they exist only because some earlier answer named them.
+  //
+  // The active account is never in `listed` (it arrives as `current` and is skipped above), so
+  // it is held out explicitly. Support entries live in a tab-scoped store and are not members.
+  //
+  // One case this deliberately treats as "gone": a session the AS's write cap evicted from the
+  // set (SESSION_SET_CAP = 10) stays LIVE but stops being part of this browser, and nothing in
+  // the answer distinguishes it from a sign-out. Dropping it costs one "Switch account" to get
+  // back, needs an eleventh account on one browser to happen at all, and the alternative is the
+  // dead row this whole change exists to remove.
+  const reportsSet = body.multi === true
+  const activeSub = oidcClaims()?.sub
+  for (const [sub, e] of Object.entries(reg)) {
+    if (e.support || listed.has(sub) || sub === activeSub) continue
+    if (e.refresh_token && !reportsSet) continue
+    delete reg[sub]
+  }
   writeRegistry(reg)
+  return { ok: true, multi: reportsSet }
 }
 /** Pick a KNOWN account: silent selection through the AS. False when the sub is not a known entry. */
 export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
