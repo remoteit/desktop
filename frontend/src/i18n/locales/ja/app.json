@@ -1006,6 +1006,7 @@
     "settings": "設定",
     "signOut": "サインアウト",
     "signOutConfirm": "サインアウトすると、このデバイスの譲渡や他のユーザーのサインインが可能になります。すべての接続が停止します。",
+    "signedInOnBrowser": "このブラウザでサインイン済み",
     "support": "サポート",
     "supportForum": "サポートフォーラム",
     "testUI": "テストUI",
@@ -1964,6 +1965,7 @@
   },
   "viewAsBanner": {
     "exit": "表示モードを終了",
+    "supportSession": "サポートセッション — {{email}} として表示中（{{until}} まで）。トークンにはあなたの ID が記録され、ユーザーはこのセッションを確認して終了できます。",
     "viewingAs": "表示中: {{email}}"
   },
   "graphType": {

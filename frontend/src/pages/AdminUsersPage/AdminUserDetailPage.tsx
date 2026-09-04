@@ -59,13 +59,18 @@ export const AdminUserDetailPage: React.FC = () => {
   const handleViewAsUser = () => {
     // Permitteer lane: view-as is a SUPPORT SESSION, not a header (docs/remoteit-desktop-
     // login.md Phase 4d). The X-R3-User lane is deliberately dead for these tokens (no
-    // `delegate` scope is minted), so the eye button deep-links to the operator console's
-    // user page, whose "open <app> as user" mints the launch behind its own gates:
-    // kill-switch, operator roster, an MFA-carrying sign-in fresher than ten minutes.
-    // The EMAIL is the key both worlds share: permitteer subjects are sub_<hex>, not r3
-    // GUIDs — the authorizer joins them by email — and the console resolves an unknown
-    // deep-link id through its user search (one match opens; else honestly unknown).
-    windowOpen(`${OAUTH_ISSUER}/admin/console/users/${encodeURIComponent(user.email || user.id)}?launch=remoteit_portal`, '_blank', true)
+    // `delegate` scope is minted), so the eye button is a NAVIGATION into the AS
+    // (permitteer docs/as-elevation.md): the AS runs every launch gate on the operator's own
+    // session — the kill-switch, the operator roster, the target (never an operator), and its
+    // own elevation stamp — then either opens this portal as the user straight away or shows its
+    // "confirm it's you" page first (one tap with a factor, or the first factor's set-up) and
+    // opens the portal from there. No admin console in between.
+    // The EMAIL is the key both worlds share: permitteer subjects are sub_<hex>, not r3 GUIDs —
+    // the authorizer joins them by email — and the AS resolves the user by email or id.
+    // `origin` names THIS portal — the lane the operator is on (app.dev, app.evan, latest) — so
+    // the support session lands here rather than on whichever redirect URI the client lists first
+    // (the AS validates it against the registration).
+    windowOpen(`${OAUTH_ISSUER}/elevate/launch?user=${encodeURIComponent(user.email || user.id)}&client=remoteit_portal&origin=${encodeURIComponent(window.location.origin)}`)
   }
 
   return (

@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, OidcClaims } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -64,6 +64,13 @@ export default createModel<RootModel>()({
         try {
           // A boot with ?code&state in the URL IS the sign-in completing (web return, or
           // the desktop deep-link reload); otherwise restore a stored session.
+          // A support LAUNCH (permitteer docs/desktop-support.md): this tab arrived with a one-time
+          // ticket, and the authorize it starts binds the sign-in to the operator's support session.
+          const ticket = oidcTakeSupportTicket()
+          if (ticket) {
+            await oidcStart({ supportTicket: ticket })
+            return
+          }
           const claims = await oidcCompleteFromUrl()
           if (claims) await dispatch.auth.handleSignInSuccess(claims)
           else if (oidcSignedIn()) {
@@ -74,7 +81,9 @@ export default createModel<RootModel>()({
             const alive = await getToken()
             if (alive) {
               await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
-              await dispatch.auth.healGrant()
+              // Never re-authorize a SUPPORT session: a plain authorize in this tab would sign
+              // the operator in as THEMSELVES and quietly turn the support view into their own.
+              if (!oidcActor()) await dispatch.auth.healGrant()
             } else {
               invalidateOidcToken()
               // A JUST-ACTIVATED saved account whose refresh family died: one silent
@@ -88,7 +97,13 @@ export default createModel<RootModel>()({
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
           console.error('AUTH INIT: sign-in completion failed', error)
-          if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
+          // A REFUSED silent selection (a known account signed out elsewhere meanwhile) must not
+          // strand a signed-in person on the sign-in screen: the stored session is intact — restore
+          // it, say why, and let the menu re-learn the browser's accounts.
+          if (String(error?.message || '').includes('login_required') && oidcSignedIn() && (await getToken())) {
+            await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
+            dispatch.ui.set({ errorMessage: 'That account is no longer signed in on this browser.' })
+          } else if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
         }
       }
       dispatch.auth.set({ initialized: true })
@@ -148,6 +163,9 @@ export default createModel<RootModel>()({
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
       if (oidcActivateAccount(sub)) {
         window.location.assign('/')
+      } else if (await oidcSelectKnownAccount(sub)) {
+        // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
+        // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
       } else {
         await dispatch.auth.switchAccount()
       }
@@ -253,11 +271,20 @@ export default createModel<RootModel>()({
     // The 401 recovery path (services/post.ts): drop the renderer cache and let the
     // backend refresh on the next token fetch. If the backend says the session is gone
     // (refresh family revoked / AS session expired), sign the app out.
-    async checkSession(options: { refreshToken: boolean; silent?: boolean }, state) {
+    async checkSession(options: { refreshToken: boolean; silent?: boolean; status?: number }, state) {
       invalidateOidcToken()
+      // A SUPPORT session cannot be recovered: no refresh token, and a 401 means the session was
+      // ended — by the user, by the operator's relaunch, or by its own expiry. The end is the end
+      // (docs/desktop-support.md). A 403 is an ordinary refused write and changes nothing.
+      if (oidcActor() && options.status === 401) {
+        oidcClearLocal()
+        dispatch.ui.set({ errorMessage: 'Support session ended.' })
+        await dispatch.auth.signedOut()
+        return
+      }
       if (!oidcSignedIn() && state.auth.authenticated) {
         console.error('SESSION ERROR: session gone (refresh family dead or signed out)')
-        if (!options.silent) dispatch.ui.set({ errorMessage: 'Session expired.' })
+        if (!options.silent) dispatch.ui.set({ errorMessage: oidcIsSupportTab() ? 'Support session ended.' : 'Session expired.' })
         await dispatch.auth.signedOut()
       }
     },
@@ -272,6 +299,8 @@ export default createModel<RootModel>()({
       })
       await dispatch.auth.fetchUser()
       console.log('AUTHENTICATED SUCCESS')
+      // The other accounts signed in on this browser, for the avatar menu — best effort.
+      void oidcRefreshBrowserAccounts().catch(() => {})
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {
