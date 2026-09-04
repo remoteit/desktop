@@ -40,7 +40,8 @@ function finalize(dir, channel) {
     const file = path.join(dir, entry.url)
     if (!fs.existsSync(file)) throw new Error(`${channel}.yml lists ${entry.url} but it is not in ${dir}`)
     if (sha512(file) !== entry.sha512) throw new Error(`${entry.url}: sha512 in ${channel}.yml does not match the file`)
-    if (entry.size != null && fs.statSync(file).size !== entry.size) throw new Error(`${entry.url}: size in ${channel}.yml does not match the file`)
+    if (entry.size != null && fs.statSync(file).size !== entry.size)
+      throw new Error(`${entry.url}: size in ${channel}.yml does not match the file`)
     byArch.set(arch, entry)
   }
 
