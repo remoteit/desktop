@@ -50,9 +50,9 @@ const API = process.env.R3_GRAPHQL_API || process.env.VITE_GRAPHQL_API || 'https
 const check = process.argv.includes('--check')
 const viaCli = process.argv.includes('--cli')
 
-const INSTALLATION = 'id name kind commandTemplate description instructions link services { application port name host enabled }'
+const INSTALLATION = 'slug name kind commandTemplate description instructions link services { application port name host enabled }'
 const QUERY = `{
-  platformTypes { id label installation { ${INSTALLATION} } }
+  platformTypes { id label installations { slug } }
   platformInstallations { ${INSTALLATION} }
 }`
 
@@ -75,10 +75,10 @@ export function unwrapCli(stdout) {
     // The catalogue fields ship with graphql-api's platform-catalogue work. Until that is
     // deployed to whichever stage this is pointed at, the schema simply has no such fields, and
     // "Did you mean name?" is a confusing way to learn that.
-    if (/platformInstallations|"(label|installation)"/.test(messages)) {
+    if (/platformInstallations|"(label|installations|slug)"/.test(messages)) {
       throw new Error(
         'This stage does not serve the platform catalogue yet — the schema has no `label`, ' +
-        '`installation` or `platformInstallations` (graphql-api#209 is not deployed here). ' +
+        '`installations` or `platformInstallations` (graphql-api#209 is not deployed here). ' +
         'Point at a stage that has it, or leave the committed snapshot alone until it ships.\n' +
         `  GraphQL said: ${messages}`
       )
@@ -133,25 +133,26 @@ const clean = value => Array.isArray(value)
     ? Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => [k, clean(v)]))
     : value
 
-// Two maps: every platform type id to the name to show for it, and every onboarding page by
-// slug, each carrying the type ids it onboards with those same labels — so the registry never
-// has to invert anything, or re-derive a name, at startup. `label` is the API's own
-// displayName-or-name rule; it is never recomputed here.
+// Three maps: every platform type id to the name to show for it; every onboarding page by slug,
+// carrying the type ids it onboards with those same labels; and, for the types that several
+// pages onboard, their routes default first — so the registry never has to invert anything, or
+// re-derive a name, at startup. Pages are keyed by SLUG: the API's `id` is a surrogate uuid it
+// may rename a slug under, and the desktop's logo components are stored by slug. `label` is the
+// API's own displayName-or-name rule; it is never recomputed here.
 export function normalise(platformTypes, platformInstallations) {
   const types = {}
   const installations = {}
-  const page = row => {
-    const {id, ...rest} = row
-    installations[id] ??= {...clean(rest), types: {}}
-    return installations[id]
-  }
-  for (const row of platformInstallations) page(row)
+  const routes = {}
+  const page = slug => (installations[slug] ??= {types: {}})
+  for (const {slug, ...rest} of platformInstallations) installations[slug] = {...clean(rest), types: {}}
   for (const t of platformTypes) {
     if (typeof t.label !== 'string') continue
     types[t.id] = t.label
-    if (t.installation) page(t.installation).types[t.id] = t.label
+    const slugs = (t.installations ?? []).map(route => route.slug)
+    for (const slug of slugs) page(slug).types[t.id] = t.label
+    if (slugs.length > 1) routes[t.id] = slugs
   }
-  return {types, installations}
+  return {types, routes, installations}
 }
 
 const canonical = data => JSON.stringify(data, null, 2) + '\n'
@@ -198,9 +199,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const data = viaCli ? fromCli() : await fromApi()
   const live = Object.keys(data.installations).length > 0
   if (!live) {
-    // The API deploy is ahead of the migration / the stage's PLATFORM_CATALOGUE flag: nothing to
-    // compare against yet, and writing this would strip every /add page's data from the app.
-    console.log(`${API} serves no platform catalogue yet (flag off or migration pending) — ${check ? 'nothing to check' : 'refusing to overwrite the snapshot'}`)
+    // The API deploy is ahead of the migration: nothing to compare against yet, and writing
+    // this would strip every /add page's data from the app.
+    console.log(`${API} serves no platform catalogue yet (migration pending) — ${check ? 'nothing to check' : 'refusing to overwrite the snapshot'}`)
     process.exit(check ? 0 : 2)
   }
   const next = canonical(data)

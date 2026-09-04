@@ -1,6 +1,5 @@
 {
   "types": {
-    "0": "Windows",
     "4": "Windows",
     "5": "Windows Desktop",
     "10": "Windows Server",
@@ -70,6 +69,12 @@
     "9999": "Legacy Camera",
     "65535": "Unknown",
     "65536": "Any"
+  },
+  "routes": {
+    "1120": [
+      "linux",
+      "ubuntu"
+    ]
   },
   "installations": {
     "advantech": {
@@ -235,6 +240,7 @@
       "link": "https://link.remote.it/support/streamline-install",
       "types": {
         "769": "Linux",
+        "1120": "Debian Linux",
         "1121": "RedHat Linux",
         "1200": "Linux ARM"
       }
@@ -365,7 +371,6 @@
       "instructions": "Install the Desktop or CLI on the Windows system you want to enable remote access to.",
       "link": "https://link.remote.it/download/desktop",
       "types": {
-        "0": "Windows",
         "5": "Windows Desktop",
         "10": "Windows Server"
       }

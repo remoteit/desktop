@@ -104,7 +104,8 @@ class Platforms {
     }
     for (const id of Object.keys(CATALOGUE.installations)) {
       // No logo until a local file ships one; PlatformIcon already tolerates a null render.
-      if (!this.installed.includes(id)) this.register({ id, component: (() => null) as unknown as IPlatform['component'] })
+      if (!this.installed.includes(id))
+        this.register({ id, component: (() => null) as unknown as IPlatform['component'] })
     }
   }
 
@@ -138,7 +139,9 @@ class Platforms {
     const data = CATALOGUE.installations[local.id]
     const base: IPlatform = { name: local.id, ...local }
     if (!data && !local.hidden && !local.types && import.meta.env?.DEV) {
-      console.warn(`platforms: "${local.id}" has no catalogue row and supplies no types — regenerate the snapshot (npm run platforms:generate)`)
+      console.warn(
+        `platforms: "${local.id}" has no catalogue row and supplies no types — regenerate the snapshot (npm run platforms:generate)`
+      )
     }
     const catalogue = data && this.fromCatalogue(data)
     const platform: IPlatform = catalogue
@@ -156,6 +159,10 @@ class Platforms {
     this.platforms[platform.id] = platform
     Object.keys(platform.types).forEach(type => {
       if (platform.hidden) return
+      // Several pages can onboard one type (Debian: `linux` and `ubuntu`); its devices render as
+      // the default page, not whichever registered last.
+      const routes = CATALOGUE.routes[type]
+      if (routes && routes[0] !== platform.id) return
       this.lookup[type] = platform.id
       this.nameLookup[type] = platform.types?.[type]
     })

@@ -28,6 +28,9 @@ export interface CatalogueInstallation {
 export interface Catalogue {
   // Platform type id to the name to show for it (the API's `label`: displayName, else name).
   types: Record<string, string>
+  // Types that more than one page onboards, default first (the API's sortOrder). A type absent
+  // here has exactly one page: the one whose `types` lists it.
+  routes: Record<string, string[]>
   installations: Record<string, CatalogueInstallation>
 }
 
