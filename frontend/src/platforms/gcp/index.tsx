@@ -30,12 +30,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'gcp',
-  name: 'Google Cloud',
   component: Component,
-  types: { 1187: 'Google Cloud' },
-  installation: {
-    command: true,
-    qualifier: 'For any Linux based Google Cloud instance',
-    link: 'https://link.remote.it/support/streamline-install',
-  },
 })

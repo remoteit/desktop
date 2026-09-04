@@ -1,0 +1,130 @@
+{
+  "advantech": {
+    "name": "Advantech",
+    "description": "Para sistemas Advantech."
+  },
+  "alpine": {
+    "name": "Alpine Linux",
+    "description": "Para sistemas basados en Alpine Linux."
+  },
+  "amnimo": {
+    "name": "Amnimo"
+  },
+  "android": {
+    "name": "Android",
+    "description": "Para un teléfono o tableta Android."
+  },
+  "arm": {
+    "name": "Arm Virtual Hardware",
+    "description": "Para la plataforma Arm Virtual Hardware."
+  },
+  "aws": {
+    "name": "AWS",
+    "description": "Para cualquier máquina virtual de AWS basada en Linux."
+  },
+  "axis": {
+    "name": "AXIS",
+    "description": "Para sistemas de cámaras AXIS."
+  },
+  "azure": {
+    "name": "Azure",
+    "description": "Para cualquier máquina virtual de Azure Cloud basada en Linux."
+  },
+  "cachengo": {
+    "name": "Cachengo"
+  },
+  "docker": {
+    "name": "Docker",
+    "description": "Para pruebas en cualquier sistema que ejecute Docker."
+  },
+  "docker-extension": {
+    "name": "Extensión Docker Jumpbox",
+    "description": "Para Docker Desktop."
+  },
+  "docker-jumpbox": {
+    "name": "Docker Jumpbox",
+    "description": "Para pruebas en cualquier sistema que ejecute Docker."
+  },
+  "embedded-works": {
+    "name": "Embedded Works"
+  },
+  "firewalla": {
+    "name": "Firewalla",
+    "description": "Para cualquier sistema Firewalla."
+  },
+  "gcp": {
+    "name": "Google Cloud",
+    "description": "Para cualquier instancia de Google Cloud basada en Linux."
+  },
+  "idy": {
+    "name": "IDY",
+    "description": "Para routers y gateways IDY."
+  },
+  "ios": {
+    "name": "iOS"
+  },
+  "linux": {
+    "name": "Linux",
+    "description": "Para cualquier sistema basado en Linux."
+  },
+  "liverock": {
+    "name": "Liverock Technologies"
+  },
+  "mac": {
+    "name": "Mac",
+    "description": "Para sistemas macOS.",
+    "instructions": "Instala la aplicación de escritorio o la CLI en el Mac al que quieres habilitar el acceso remoto."
+  },
+  "nas": {
+    "name": "Synology",
+    "description": "Para sistemas NAS de Synology.",
+    "instructions": "Descarga el archivo del paquete e instálalo desde la interfaz web de tu NAS."
+  },
+  "nvidia": {
+    "name": "NVIDIA Jetson",
+    "description": "Para sistemas NVIDIA Jetson."
+  },
+  "openwrt": {
+    "name": "OpenWrt",
+    "description": "Para routers OpenWrt."
+  },
+  "raspberrypi": {
+    "name": "Raspberry Pi",
+    "description": "Para cualquier Raspberry Pi o sistema basado en Linux."
+  },
+  "remoteit": {
+    "name": "Remote.It"
+  },
+  "teltonika": {
+    "name": "Teltonika",
+    "description": "Para routers y gateways Teltonika."
+  },
+  "this": {
+    "name": "Este sistema"
+  },
+  "tinkerboard": {
+    "name": "Tinker Board",
+    "description": "Para la ASUS Tinker Board."
+  },
+  "toa": {
+    "name": "TOA"
+  },
+  "ubiquiti": {
+    "name": "Ubiquiti",
+    "description": "Para routers Ubiquiti."
+  },
+  "ubuntu": {
+    "name": "Ubuntu Desktop",
+    "description": "Para sistemas Ubuntu Desktop."
+  },
+  "unknown": {
+    "name": "Desconocido",
+    "description": "Para registrar cualquier dispositivo.",
+    "instructions": "Este código único permite que cualquier dispositivo se registre en tu cuenta. Guárdalo en un lugar seguro."
+  },
+  "windows": {
+    "name": "Windows",
+    "description": "Para sistemas Windows.",
+    "instructions": "Instala la aplicación de escritorio o la CLI en el sistema Windows al que quieres habilitar el acceso remoto."
+  }
+}

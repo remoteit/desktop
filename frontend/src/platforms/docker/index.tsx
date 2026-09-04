@@ -9,20 +9,13 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'docker',
-  name: 'Docker',
   component: Component,
-  types: { 1219: 'Docker Container' },
-  services: [],
   installation: {
-    command:
-      'docker run -d -e R3_REGISTRATION_CODE="[CODE]" --restart unless-stopped --pull always remoteit/remoteit-agent:latest',
     instructions: (
       <>
         For production settings please visit our
         <Link href="https://hub.docker.com/r/remoteit/remoteit-agent">Docker Hub page.</Link>
       </>
     ),
-    qualifier: 'For testing on any system running Docker',
-    link: 'https://hub.docker.com/r/remoteit/remoteit-agent',
   },
 })

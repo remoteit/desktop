@@ -4,7 +4,13 @@
 //   - a non-English catalog is missing a key that English has
 //   - a non-English catalog has a key English no longer has (dead key)
 //   - an English value is empty (extracted but no source text supplied)
-// Run: npm run i18n:check  (also used in CI)
+// Run: npm run i18n:check  (CI: .github/workflows/typecheck.yml)
+//
+// NOT checked: whether a translation is stale because its English changed after it was
+// translated. The keys are semantic, so editing English leaves translations in place and
+// silently outdated. Detecting that needs a record of the English each translation was made
+// from, and keeping that record current means a step on every translation delivery — a cost
+// judged not worth it against slightly outdated wording (2026-09-03).
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -20,7 +26,7 @@ const namespaces = readdirSync(join(root, SOURCE))
 
 const load = (locale, ns) => JSON.parse(readFileSync(join(root, locale, `${ns}.json`), 'utf8'))
 
-// Flatten nested keys to dotted paths, keeping i18next plural suffixes intact.
+
 const flatten = (obj, prefix = '', out = {}) => {
   for (const [k, v] of Object.entries(obj)) {
     const key = prefix ? `${prefix}.${k}` : k

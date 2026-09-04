@@ -20,7 +20,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'amnimo',
-  name: 'Amnimo',
   component: Component,
-  types: { 1063: 'Amnimo' },
 })

@@ -1,0 +1,376 @@
+{
+  "types": {
+    "4": "Windows",
+    "5": "Windows Desktop",
+    "10": "Windows Server",
+    "256": "Mac",
+    "407": "Lorex DVR 1",
+    "408": "Lorex DVR 2",
+    "768": "Generic Unix",
+    "769": "Linux",
+    "1024": "Drobo Box",
+    "1025": "Lorex Zavio Web",
+    "1026": "Lorex Zavio Streamer",
+    "1030": "Astak Mole",
+    "1033": "Pixord",
+    "1040": "Lorex DVR 1",
+    "1041": "Lorex NVR",
+    "1042": "Lorex DVR 2",
+    "1043": "Cisco NAS 1",
+    "1053": "Cisco NAS 2",
+    "1054": "Cisco NAS 3",
+    "1056": "Stem",
+    "1057": "Philips M100",
+    "1058": "Philips B100",
+    "1059": "Philips B120",
+    "1060": "Astak Mini Mole",
+    "1062": "Foscam",
+    "1063": "Amnimo",
+    "1072": "Raspberry Pi",
+    "1075": "Remote.It Pi",
+    "1076": "Remote.It Pi Lite",
+    "1077": "Remote.It Pi 64",
+    "1120": "Debian Linux",
+    "1121": "RedHat Linux",
+    "1122": "Alpine Linux",
+    "1185": "AWS",
+    "1186": "Azure",
+    "1187": "Google Cloud",
+    "1200": "Linux ARM",
+    "1201": "NVIDIA Jetson",
+    "1202": "x86 Generic Linux",
+    "1204": "Netcom NWL25",
+    "1205": "OpenWrt",
+    "1206": "Advantech",
+    "1207": "Furukawa",
+    "1208": "Dragino",
+    "1209": "AXIS",
+    "1210": "Synology",
+    "1211": "TEKTELIC",
+    "1212": "NETGEAR",
+    "1213": "Android Phone",
+    "1214": "iPhone",
+    "1215": "ASUS Tinker Board",
+    "1216": "Firewalla",
+    "1217": "AVH",
+    "1218": "Ubiquiti Router",
+    "1219": "Docker Container",
+    "1220": "Docker Extension",
+    "1221": "Docker Jumpbox",
+    "1222": "Demo Device",
+    "1223": "Embedded Works",
+    "1224": "Cachengo",
+    "1225": "IDY",
+    "1226": "Liverock Technologies",
+    "1227": "Rent-A-Node",
+    "1228": "TOA",
+    "1280": "Unknown",
+    "1281": "Teltonika",
+    "9999": "Legacy Camera",
+    "65535": "Unknown",
+    "65536": "Any"
+  },
+  "routes": {
+    "1120": ["linux", "ubuntu"]
+  },
+  "installations": {
+    "advantech": {
+      "name": "Advantech",
+      "kind": "command",
+      "description": "For Advantech systems.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1206": "Advantech"
+      }
+    },
+    "alpine": {
+      "name": "Alpine Linux",
+      "kind": "command",
+      "description": "For Alpine Linux based systems.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1122": "Alpine Linux"
+      }
+    },
+    "amnimo": {
+      "name": "Amnimo",
+      "kind": "info",
+      "types": {
+        "1063": "Amnimo"
+      }
+    },
+    "android": {
+      "name": "Android",
+      "kind": "code",
+      "description": "For an Android phone or tablet.",
+      "link": "https://play.google.com/store/apps/details?id=it.remote.screenview",
+      "services": [
+        {
+          "application": 48
+        }
+      ],
+      "types": {
+        "1213": "Android Phone"
+      }
+    },
+    "arm": {
+      "name": "Arm Virtual Hardware",
+      "kind": "command",
+      "description": "For the Arm Virtual Hardware platform.",
+      "link": "https://link.remote.it/avh",
+      "types": {
+        "1217": "AVH"
+      }
+    },
+    "aws": {
+      "name": "AWS",
+      "kind": "command",
+      "description": "For any Linux based AWS virtual machine.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1185": "AWS"
+      }
+    },
+    "axis": {
+      "name": "AXIS",
+      "kind": "command",
+      "description": "For AXIS camera systems.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1209": "AXIS"
+      }
+    },
+    "azure": {
+      "name": "Azure",
+      "kind": "command",
+      "description": "For any Linux based Azure Cloud virtual machine.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1186": "Azure"
+      }
+    },
+    "cachengo": {
+      "name": "Cachengo",
+      "kind": "command",
+      "types": {
+        "1224": "Cachengo",
+        "1227": "Rent-A-Node"
+      }
+    },
+    "docker": {
+      "name": "Docker",
+      "kind": "command",
+      "commandTemplate": "docker run -d -e R3_REGISTRATION_CODE=\"[CODE]\" --restart unless-stopped --pull always remoteit/remoteit-agent:latest",
+      "description": "For testing on any system running Docker.",
+      "link": "https://hub.docker.com/r/remoteit/remoteit-agent",
+      "services": [],
+      "types": {
+        "1219": "Docker Container"
+      }
+    },
+    "docker-extension": {
+      "name": "Docker Jumpbox Extension",
+      "kind": "code",
+      "description": "For Docker Desktop.",
+      "services": [],
+      "types": {
+        "1220": "Docker Extension"
+      }
+    },
+    "docker-jumpbox": {
+      "name": "Docker Jumpbox",
+      "kind": "command",
+      "commandTemplate": "docker run -d -e R3_REGISTRATION_CODE=\"[CODE]\" -v /var/run/docker.sock:/var/run/docker.sock --restart unless-stopped --name remoteit_docker_jumpbox --pull always remoteit/docker-extension:latest",
+      "description": "For testing on any system running Docker.",
+      "link": "https://hub.docker.com/r/remoteit/docker-extension",
+      "services": [],
+      "types": {
+        "1221": "Docker Jumpbox"
+      }
+    },
+    "embedded-works": {
+      "name": "Embedded Works",
+      "kind": "info",
+      "types": {
+        "1223": "Embedded Works"
+      }
+    },
+    "firewalla": {
+      "name": "Firewalla",
+      "kind": "command",
+      "description": "For any Firewalla system.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1216": "Firewalla"
+      }
+    },
+    "gcp": {
+      "name": "Google Cloud",
+      "kind": "command",
+      "description": "For any Linux based Google Cloud instance.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1187": "Google Cloud"
+      }
+    },
+    "idy": {
+      "name": "IDY",
+      "kind": "command",
+      "commandTemplate": "config net-remoteit-agent=enable; config net-remoteit-registration_code=[CODE]; /etc/init.d/remoteit-refresh start",
+      "description": "For IDY routers and gateways.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1225": "IDY"
+      }
+    },
+    "ios": {
+      "name": "iOS",
+      "kind": "info",
+      "types": {
+        "1214": "iPhone"
+      }
+    },
+    "linux": {
+      "name": "Linux",
+      "kind": "command",
+      "description": "For any Linux based system.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "769": "Linux",
+        "1120": "Debian Linux",
+        "1121": "RedHat Linux",
+        "1200": "Linux ARM"
+      }
+    },
+    "liverock": {
+      "name": "Liverock Technologies",
+      "kind": "info",
+      "types": {
+        "1226": "Liverock Technologies"
+      }
+    },
+    "mac": {
+      "name": "Mac",
+      "kind": "download",
+      "description": "For macOS systems.",
+      "instructions": "Install the Desktop or CLI on the Mac you want to enable remote access to.",
+      "link": "https://link.remote.it/download/desktop",
+      "types": {
+        "256": "Mac"
+      }
+    },
+    "nas": {
+      "name": "Synology",
+      "kind": "download",
+      "description": "For Synology NAS systems.",
+      "instructions": "Download the package file and install it through your NAS web interface.",
+      "link": "https://link.remote.it/getting-started/synology",
+      "types": {
+        "1210": "Synology"
+      }
+    },
+    "nvidia": {
+      "name": "NVIDIA Jetson",
+      "kind": "command",
+      "description": "For NVIDIA Jetson systems.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1201": "NVIDIA Jetson"
+      }
+    },
+    "openwrt": {
+      "name": "OpenWrt",
+      "kind": "command",
+      "description": "For OpenWrt routers.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1205": "OpenWrt"
+      }
+    },
+    "raspberrypi": {
+      "name": "Raspberry Pi",
+      "kind": "command",
+      "description": "For any Raspberry Pi or Linux based system.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1072": "Raspberry Pi",
+        "1075": "Remote.It Pi",
+        "1076": "Remote.It Pi Lite",
+        "1077": "Remote.It Pi 64"
+      }
+    },
+    "remoteit": {
+      "name": "Remote.It",
+      "kind": "info",
+      "types": {}
+    },
+    "teltonika": {
+      "name": "Teltonika",
+      "kind": "command",
+      "description": "For Teltonika routers and gateways.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1281": "Teltonika"
+      }
+    },
+    "this": {
+      "name": "This system",
+      "kind": "info",
+      "types": {}
+    },
+    "tinkerboard": {
+      "name": "Tinker Board",
+      "kind": "command",
+      "description": "For the ASUS Tinker Board.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1215": "ASUS Tinker Board"
+      }
+    },
+    "toa": {
+      "name": "TOA",
+      "kind": "info",
+      "types": {
+        "1228": "TOA"
+      }
+    },
+    "ubiquiti": {
+      "name": "Ubiquiti",
+      "kind": "command",
+      "description": "For Ubiquiti routers.",
+      "link": "https://link.remote.it/support/streamline-install",
+      "types": {
+        "1218": "Ubiquiti Router"
+      }
+    },
+    "ubuntu": {
+      "name": "Ubuntu Desktop",
+      "kind": "download",
+      "description": "For Ubuntu Desktop systems.",
+      "link": "https://link.remote.it/download/desktop",
+      "types": {
+        "1120": "Debian Linux"
+      }
+    },
+    "unknown": {
+      "name": "Unknown",
+      "kind": "code",
+      "description": "For registering any device.",
+      "instructions": "This unique code allows any device to register with your account, keep it safe.",
+      "types": {
+        "65535": "Unknown"
+      }
+    },
+    "windows": {
+      "name": "Windows",
+      "kind": "download",
+      "description": "For Windows systems.",
+      "instructions": "Install the Desktop or CLI on the Windows system you want to enable remote access to.",
+      "link": "https://link.remote.it/download/desktop",
+      "types": {
+        "5": "Windows Desktop",
+        "10": "Windows Server"
+      }
+    }
+  }
+}

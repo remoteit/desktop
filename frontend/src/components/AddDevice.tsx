@@ -1,5 +1,7 @@
 import React from 'react'
+import { OEM_GUIDE_LINK } from '../constants'
 import { IPlatform } from '../platforms'
+import { usePlatformText } from '../platforms/text'
 import { useTranslation } from 'react-i18next'
 import { List, Typography } from '@mui/material'
 import { REGISTRATION_CODE_EXPIRATION_HOURS } from '../constants'
@@ -27,6 +29,7 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
   })
   const { t } = useTranslation()
   const codeOnly = platform.installation?.command === '[CODE]'
+  const text = usePlatformText(platform)
 
   const codeBlock = (
     <List disablePadding={minimal}>
@@ -53,23 +56,26 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
     <>
       <OrganizationIndicator avatarSize={42} marginBottom={3} display="inline-flex" />
       <Typography variant="h3" sx={{ marginBottom: 1 }}>
-        {platform.installation?.qualifier},
-        {codeOnly ? <> copy the code below:</> : <> run this command on your device:</>}
+        {/* `description` is a complete sentence from the catalogue; the action line follows from
+            the platform kind and belongs here, not in the database (an MCP agent reads the same
+            row and has no "below"). */}
+        {text.description && <>{text.description} </>}
+        {codeOnly ? <>Copy the code below:</> : <>Run this command on your device:</>}
       </Typography>
       {codeBlock}
       <Typography variant="body2" color="textSecondary" sx={{ textWrap: 'pretty' }}>
-        {platform.installation?.instructions ? (
+        {text.instructions ? (
           <>
-            {platform.installation.instructions} {expiration}
+            {text.instructions} {expiration}
           </>
         ) : (
           <>
             This page will automatically update when complete. {expiration}
             {platform.installation?.link && <Link href={platform.installation?.link}>Instructions.</Link>}
-            {platform.installation?.altLink && (
+            {platform.installation?.oemGuide && (
               <>
                 In production <u>do not clone devices</u>, please follow these
-                <Link href={platform.installation.altLink}>oem instructions.</Link>
+                <Link href={OEM_GUIDE_LINK}>oem instructions.</Link>
               </>
             )}
           </>

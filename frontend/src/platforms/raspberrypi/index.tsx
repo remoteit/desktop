@@ -74,10 +74,10 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'raspberrypi',
-  name: 'Raspberry Pi',
   component: Component,
+  // Cloning an installed image duplicates the device identity — OEM guidance covers it.
+  installation: { oemGuide: true },
   route: '/add/raspberrypi-options',
-  types: { 1072: 'Raspberry Pi', 1075: 'Remote.It Pi', 1076: 'Remote.It Pi Lite', 1077: 'Remote.It Pi 64' },
   listItemTitle: (
     <>
       Raspberry Pi &nbsp;
@@ -87,10 +87,4 @@ platforms.register({
       </Typography>
     </>
   ),
-  installation: {
-    command: true,
-    qualifier: 'For any Raspberry Pi or Linux based system',
-    link: 'https://link.remote.it/support/streamline-install',
-    altLink: 'https://link.remote.it/docs/oem-overview',
-  },
 })
