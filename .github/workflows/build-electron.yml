@@ -103,3 +103,18 @@ jobs:
         run: |
           cd electron
           npm run build
+
+      # electron-builder orders `files` in latest.yml by build completion, and every
+      # client on electron-updater <= 6.6.2 (all releases through 3.46.1) installs
+      # whatever is first. Make the order deterministic, write the per-arch manifests
+      # an emulated build uses to reach its native installer, and replace what
+      # electron-builder already attached. See RELEASE.md, "Windows update manifests".
+      - name: Finalize Windows update manifests
+        if: matrix.os == 'windows-latest'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          set -o pipefail
+          cd electron
+          node scripts/finalize-win-update-manifests.js dist | tee manifests.txt
+          gh release upload "$VERSION" $(cat manifests.txt) --clobber
