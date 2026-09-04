@@ -1,4 +1,4 @@
-import { detectNativeWindowsArch, resolveWindowsUpdateChannel } from './updateChannel'
+import { detectNativeWindowsArch, resolveNativeArchSteering } from './updateChannel'
 
 describe('detectNativeWindowsArch', () => {
   const env = (PROCESSOR_ARCHITECTURE?: string, PROCESSOR_ARCHITEW6432?: string) => ({
@@ -23,20 +23,16 @@ describe('detectNativeWindowsArch', () => {
   })
 })
 
-describe('resolveWindowsUpdateChannel', () => {
-  test('native builds stay on latest.yml', () => {
-    expect(resolveWindowsUpdateChannel('arm64', 'arm64', false)).toBe('latest')
-    expect(resolveWindowsUpdateChannel('x64', 'x64', false)).toBe('latest')
-    expect(resolveWindowsUpdateChannel('ia32', 'ia32', false)).toBe('latest')
+describe('resolveNativeArchSteering', () => {
+  test('native builds are not steered', () => {
+    expect(resolveNativeArchSteering('arm64', 'arm64')).toBeNull()
+    expect(resolveNativeArchSteering('x64', 'x64')).toBeNull()
+    expect(resolveNativeArchSteering('ia32', 'ia32')).toBeNull()
   })
 
-  test('emulated builds ask for the native manifest', () => {
-    expect(resolveWindowsUpdateChannel('ia32', 'arm64', false)).toBe('latest-arm64')
-    expect(resolveWindowsUpdateChannel('x64', 'arm64', false)).toBe('latest-arm64')
-    expect(resolveWindowsUpdateChannel('ia32', 'x64', false)).toBe('latest-x64')
-  })
-
-  test('pre-release users are never given a custom channel', () => {
-    expect(resolveWindowsUpdateChannel('ia32', 'arm64', true)).toBe('latest')
+  test('emulated builds are steered to the native arch', () => {
+    expect(resolveNativeArchSteering('ia32', 'arm64')).toBe('arm64')
+    expect(resolveNativeArchSteering('x64', 'arm64')).toBe('arm64')
+    expect(resolveNativeArchSteering('ia32', 'x64')).toBe('x64')
   })
 })

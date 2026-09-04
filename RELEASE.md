@@ -202,11 +202,14 @@ Two things fix that, and both are automatic:
    `latest-arm64.yml`, each listing only that installer. A build running under
    emulation (a 32-bit or x64 app on ARM64, or 32-bit on x64) reports its own
    `process.arch` to electron-updater and would re-install the emulated build
-   forever; `AutoUpdater` detects the machine's real arch and sets
-   `autoUpdater.channel = 'latest-<arch>'` so it moves to the native installer
-   on the next release. Native builds and `allowPrerelease` users stay on
-   `latest.yml` — GitHubProvider resolves pre-release tags by channel name, so a
-   custom channel cannot be combined with it.
+   forever. `AutoUpdater` detects the machine's real arch and, when it differs,
+   points electron-updater at the newest eligible release's `latest-<arch>.yml`
+   — a generic feed pinned to that release, pre-release aware — so the machine
+   moves to its native installer on the next release. The updater's own
+   `channel` is deliberately never set: GitHubProvider matches an explicit
+   channel against tag pre-release ids and breaks every pre-release user's
+   checks. If the newest release predates the per-arch files, the app falls
+   back to `latest.yml`, which still updates it on its current arch.
 
 `beta.yml` / `alpha.yml` get the same treatment if electron-builder emits them.
 
