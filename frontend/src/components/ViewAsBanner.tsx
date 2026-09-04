@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, IconButton } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { Icon } from './Icon'
-import { oidcActor } from '../services/oidc'
+import { oidcActor, oidcSupportEndsAt, oidcClearLocal } from '../services/oidc'
+import { OAUTH_ISSUER } from '../constants'
 
 export const ViewAsBanner: React.FC = () => {
   const { t } = useTranslation()
@@ -18,6 +19,10 @@ export const ViewAsBanner: React.FC = () => {
   // one signal that cannot drift from what the session actually is.
   const actor = oidcActor()
   const supportSession = !viewAsUser && !!actor && !!user
+  // The session's end is the token's expiry (permitteer docs/desktop-support.md): shown so the
+  // operator knows how long the view lasts — nothing renews it.
+  const endsAt = oidcSupportEndsAt()
+  const until = endsAt ? new Date(endsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
   if (!viewAsUser && !supportSession) return null
   const email = viewAsUser?.email || user?.email || ''
 
@@ -26,8 +31,19 @@ export const ViewAsBanner: React.FC = () => {
     window.sessionStorage.removeItem('viewAsUser')
     // Clear from Redux state
     dispatch.ui.set({ viewAsUser: null })
-    // Close the window/tab
+    // Close the window/tab. Only a script-opened window may close itself — after a step-up on
+    // the way in, the console's OWN tab became the support session (the popup had no click behind
+    // it), so close() is a no-op there. Then: end this tab's support state and go back to the
+    // console, which is where the operator came from (permitteer docs/desktop-support.md).
     window.close()
+    window.setTimeout(() => {
+      if (window.closed) return
+      if (supportSession) {
+        oidcClearLocal()
+        try { window.sessionStorage.removeItem('oidc.support') } catch { /* nothing to clear */ }
+        window.location.assign(`${OAUTH_ISSUER}/admin/console/users`)
+      }
+    }, 150)
   }
 
   return (
@@ -46,7 +62,7 @@ export const ViewAsBanner: React.FC = () => {
     >
       <Typography variant="body2" sx={{ fontWeight: 500, flexGrow: 1, textAlign: 'center' }}>
         {supportSession
-          ? t('viewAsBanner.supportSession', { email, defaultValue: 'Support session — viewing as {{email}}. Tokens are stamped with your identity; the user can see and end this session.' })
+          ? t('viewAsBanner.supportSession', { email, until, defaultValue: 'Support session — viewing as {{email}} until {{until}}. Tokens are stamped with your identity; the user can see and end this session.' })
           : t('viewAsBanner.viewingAs', { email, defaultValue: 'Viewing as: {{email}}' })}
       </Typography>
       <IconButton

@@ -1,19 +1,20 @@
 import axios from 'axios'
 import { getApiURL } from '../helpers/apiHelper'
-import { getToken } from './remoteit'
+import { apiAuthHeaders } from './remoteit'
 import { apiError } from './post'
 import { store } from '../store'
 
 export async function get(path: string = '') {
   if (store.getState().ui.offline) return
 
-  const token = await getToken()
-  if (!token) {
+  const url = getApiURL() + path
+  const auth = await apiAuthHeaders('GET', url)
+  if (!auth.authorization) {
     console.warn('Unable to get token for API request.')
     return
   }
 
-  const headers: any = { Authorization: token }
+  const headers: any = { ...auth }
   
   // Add x-r3-user header if in view-as mode
   const viewAsUser = store.getState().ui.viewAsUser
@@ -22,7 +23,7 @@ export async function get(path: string = '') {
   }
 
   const request = {
-    url: getApiURL() + path,
+    url,
     method: 'get',
     headers,
   }

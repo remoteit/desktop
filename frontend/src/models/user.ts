@@ -5,7 +5,7 @@ import { graphQLNotificationSettings, graphQLSetAttributes, graphQLLeaveReseller
 import { graphQLUser } from '../services/graphQLRequest'
 import { RootModel } from '.'
 import i18n, { LanguageMode } from '../i18n'
-import { getToken } from '../services/remoteit'
+import { apiAuthHeaders } from '../services/remoteit'
 
 type IUserState = {
   id: string
@@ -89,7 +89,7 @@ export default createModel<RootModel>()({
           headers: {
             'Content-Type': 'application/json',
             developerKey: DEVELOPER_KEY,
-            Authorization: await getToken(),
+            ...(await apiAuthHeaders('POST', `${API_URL}/user/language/`)),
           },
         }
       )

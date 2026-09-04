@@ -29,6 +29,17 @@ const FLOW_KEY = 'oidc.flow'
 const TOKENS_KEY = 'oidc.tokens'
 // What the grant behind those tokens was last written from (see oidcGrantStale).
 const DECLARATION_KEY = 'oidc.declaration'
+// The ACCOUNT REGISTRY (multi-account menu): one saved token set per subject this app has
+// signed into, beside the single ACTIVE set in TOKENS_KEY. Google-style client-side
+// multi-account — the AS's own session set is browser-cookie state this origin can never
+// read (SameSite=Lax + no CORS on cookie lanes, by doctrine), so the menu lists the
+// accounts THIS APP knows; the AS chooser on the add-account hop shows the rest. Every
+// entry's refresh token is DPoP-bound to the ONE browser key (below), so the key rotates
+// only when the LAST account leaves — rotating on every sign-out would silently kill the
+// other accounts' saved sessions. A support session (id_token carries `act`) is NEVER
+// saved: impersonation must not become a stored identity (support tabs keep an isolated
+// per-tab store anyway).
+const ACCOUNTS_KEY = 'oidc.accounts'
 
 /* Authorizes this tab has started on its OWN — no click, nobody asked. This client is
    first-party skipConsent, so an automatic authorize shows the person NOTHING: a loop
@@ -83,11 +94,21 @@ if (window.location.pathname === '/signoutCallback') {
 // (Module-scope discipline: touch only hoisted consts and the storage APIs here — the
 // first cut's clearLocal() call hit a temporal dead zone and killed the whole bundle.)
 const SUPPORT_FLAG = 'oidc.support'
-if (new URLSearchParams(window.location.search).has('support_session')) {
-  try { sessionStorage.setItem(SUPPORT_FLAG, '1') } catch { /* a blocked storage API must not kill the boot */ }
-  const clean = new URL(window.location.href)
-  clean.searchParams.delete('support_session')
-  window.history.replaceState({}, '', clean.toString())
+const SUPPORT_TICKET_KEY = 'oidc.support_ticket'
+// Support-session LAUNCH (permitteer docs/desktop-support.md): the console lands this tab on
+// the app with a one-time ?support_ticket. The ticket is stashed for the authorize auth.init
+// starts (it rides that request as `support_ticket`; the AS binds the sign-in to the operator's
+// support session, which also needs the browser's support cookie on the AS origin), the flag
+// makes this tab's token store tab-scoped, and the URL is scrubbed so a reload never replays a
+// spent ticket. Replaces the earlier `?support_session=1` contract, which the AS no longer sends.
+{
+  const launch = new URLSearchParams(window.location.search).get('support_ticket')
+  if (launch) {
+    try { sessionStorage.setItem(SUPPORT_FLAG, '1'); sessionStorage.setItem(SUPPORT_TICKET_KEY, launch) } catch { /* a blocked storage API must not kill the boot */ }
+    const clean = new URL(window.location.href)
+    clean.searchParams.delete('support_ticket')
+    window.history.replaceState({}, '', clean.toString())
+  }
 }
 /** The token store for THIS TAB: tab-scoped for a support session, shared otherwise. */
 const tokenStore = (): Storage => {
@@ -95,7 +116,9 @@ const tokenStore = (): Storage => {
 }
 
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
-type Stored = { refresh_token: string; id_token?: string }
+/** A support session (`act` in the id_token) has NO refresh token — its one access token IS the
+ *  session, stored so a reload of the support tab survives until it expires. */
+type Stored = { refresh_token?: string; id_token?: string; support?: { access_token: string; exp: number; type?: string } }
 
 let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
 let minting: Promise<unknown> = Promise.resolve()
@@ -173,7 +196,16 @@ const stored = (): Stored | undefined => {
 }
 
 export const oidcConfigured = () => !!OAUTH_ISSUER
-export const oidcSignedIn = () => !!stored()?.refresh_token
+const supportLive = (s: Stored | undefined) => !!s?.support && s.support.exp - Math.floor(Date.now() / 1000) > 0
+export const oidcSignedIn = () => { const s = stored(); return !!s?.refresh_token || supportLive(s) }
+/** This tab was opened by a support launch (its token store is tab-scoped). */
+export const oidcIsSupportTab = (): boolean => { try { return !!sessionStorage.getItem(SUPPORT_FLAG) } catch { return false } }
+/** The launch ticket, ONCE — consumed by the authorize auth.init starts. */
+export function oidcTakeSupportTicket(): string | undefined {
+  try { const t = sessionStorage.getItem(SUPPORT_TICKET_KEY) ?? undefined; sessionStorage.removeItem(SUPPORT_TICKET_KEY); return t } catch { return undefined }
+}
+/** When the support session's token — and with it the session — ends (ms), for the banner. */
+export const oidcSupportEndsAt = (): number | undefined => { const s = stored()?.support; return s ? s.exp * 1000 : undefined }
 export const oidcClaims = (): OidcClaims | undefined => decodeJwt(stored()?.id_token)
 /** The support-session marker: permitteer stamps `act` (the OPERATOR acting as this
  *  subject) into every token of an impersonated session, the id_token included — the
@@ -248,7 +280,9 @@ void refreshMcpDetailType()
 
 const declared = (): Array<{ resource: string; type: string; actions: string[]; actor?: string; locations?: string[] }> => [
   { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
-  { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write'] },
+  // accounts.read: the OTHER accounts signed in on this browser, served by the account API from
+  // this token's session — first-party apps only (permitteer docs/browser-accounts.md).
+  { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write', 'accounts.read'] },
   // The AI agent's slice (remoteit-ai-agent.md D5): the stage's MCP detail, delegated
   // ONWARD to the agent service — `actor` is what stamps may_act into this session's
   // tokens, which is the exchange's precondition. The slice partitions from any plain
@@ -286,7 +320,7 @@ export function oidcGrantStale(): boolean {
   }
 }
 
-export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; loginHint?: string } = {}): Promise<void> {
+export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; supportTicket?: string } = {}): Promise<void> {
   const d = await discover()
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
@@ -302,7 +336,9 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; log
     response_type: 'code',
     code_challenge: b64u(new Uint8Array(digest)),
     code_challenge_method: 'S256',
-    scope: 'openid email full',
+    // `profile` rides for the account menus: name + the IdP avatar (the AS stamps the
+    // session's picture into the id_token under profile — https-only, its one guard).
+    scope: 'openid email profile full',
     // First-party clients declare their own details (no consent screen — skipConsent):
     // the passport-audience token minted later via refresh carries this slice, gating the
     // native security settings (credentials.write); the graphql audience stays pure
@@ -315,6 +351,8 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account'; log
   // chooser — without it, prompt=login lands on the picker and choosing your own account
   // simply returns you to the same page, which reads as a loop.
   if (opts.loginHint) params.login_hint = opts.loginHint
+  // A support launch: the one-time ticket binds THIS authorize to the operator's support session.
+  if (opts.supportTicket) params.support_ticket = opts.supportTicket
   if (opts.prompt) {
     params.prompt = opts.prompt
   } else if (promptLogin) {
@@ -350,19 +388,40 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   })
   const claims = decodeJwt(body.id_token)
   if (claims?.nonce !== flow.nonce) throw new OidcError('expired', 'Sign-in nonce mismatch')
-  const previous = stored()?.refresh_token
-  if (previous && previous !== body.refresh_token) {
+  // Sub-aware handover: the SAME account signing in again replaces its family (revoke the
+  // old refresh token — it is dead weight); a DIFFERENT account arriving is the
+  // add-account path, and the previous account's set is a LIVING saved session — persist()
+  // already filed it in the registry, so it must absolutely not be revoked here.
+  const previousSet = stored()
+  const previousSub = decodeJwt(previousSet?.id_token)?.sub
+  const previous = previousSet?.refresh_token
+  if (previous && previous !== body.refresh_token && (!claims?.sub || previousSub === claims.sub)) {
     fetch(`${OAUTH_ISSUER}/revoke`, {
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ token: previous, token_type_hint: 'refresh_token', client_id: OAUTH_CLIENT_ID }),
     }).catch(() => {})
   }
-  persist({ refresh_token: body.refresh_token, id_token: body.id_token })
-  // The authorize that just completed asked for declared(), and a skipConsent first-party grant
-  // is merged from exactly that — so the grant now covers this build. Stamp it.
-  try { tokenStore().setItem(DECLARATION_KEY, declarationFingerprint()) } catch { /* non-fatal */ }
+
   const at = decodeJwt(body.access_token)
+  if (claims?.act) {
+    // A SUPPORT session (docs/desktop-support.md): the AS mints no refresh token, and the access
+    // token lives exactly as long as the session — so it is stored (tab-scoped) and used until
+    // it expires; that expiry IS the end of the support session. Never filed as an account.
+    persist({ id_token: body.id_token, support: { access_token: body.access_token, exp: at?.exp ?? 0, type: body.token_type } })
+  } else {
+    persist({ refresh_token: body.refresh_token, id_token: body.id_token })
+  }
+  // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
+  // is merged from exactly that — so the grant now covers this build. Stamp it — active AND
+  // this account's registry entry, so a later activation restores the right measurement.
+  try {
+    tokenStore().setItem(DECLARATION_KEY, declarationFingerprint())
+    if (claims?.sub && !claims?.act) {
+      const reg = readRegistry()
+      if (reg[claims.sub]) { reg[claims.sub].declaration = declarationFingerprint(); writeRegistry(reg) }
+    }
+  } catch { /* non-fatal */ }
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims
 }
@@ -374,6 +433,11 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
  * out to the account API and come back 401. Queue instead, and re-read the cache after
  * the wait so N callers for one audience still cost one refresh. */
 export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE): Promise<string> {
+  // A support session's token IS the session: served until it expires (a reload restores it from
+  // the tab store), never refreshed, and '' — the end — once it is gone. Other audiences have
+  // nothing to mint from; their features fail closed, as writes do under `act`.
+  const support = stored()?.support
+  if (support) return resource === OAUTH_GRAPHQL_RESOURCE && support.exp - Math.floor(Date.now() / 1000) > 0 ? support.access_token : ''
   const fresh = () => {
     const cached = access[resource]
     return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined
@@ -394,7 +458,14 @@ async function refresh(resource: string): Promise<string> {
       refresh_token: current.refresh_token,
       resource,
     })
-    // Rotated — persist the successor FIRST, before anything can race another mint.
+    // Rotated — persist the successor FIRST, before anything can race another mint. But
+    // ONLY onto the same token set we rotated from: a sign-out or an account activation
+    // that landed mid-flight has already moved the store, and writing the rotation would
+    // resurrect the signed-out account (persist() re-files it in the registry — caught by
+    // the multi-account e2e, ~50% of runs) or clobber the activated one. The dropped
+    // successor costs nothing: sign-out already ended the AS session (revoking its refresh
+    // family), and activation replaced the family in use.
+    if (stored()?.refresh_token !== current.refresh_token) return ''
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
     const at = decodeJwt(body.access_token)
     access[resource] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
@@ -440,16 +511,26 @@ export function invalidateOidcToken() {
   mintErrors = {}
 }
 
-/** Local-only teardown: clears this app's tokens and NOTHING else. App sign-out never
- * ends the AS session (user directive — the browser session at the AS belongs to the
- * user, not to this app's error handling). `oidcSignOut` (RP-initiated end_session)
- * remains for a future explicit "sign out everywhere" action only. */
+/** Local-only teardown: clears the ACTIVE account's tokens (and its registry entry) and
+ * NOTHING else. App sign-out never ends the AS session (user directive — the browser
+ * session at the AS belongs to the user, not to this app's error handling), and it never
+ * touches the OTHER saved accounts — signing out one identity is not signing out of the
+ * app's memory of the rest. `oidcSignOut` (RP-initiated end_session) remains for a future
+ * explicit "sign out everywhere" action only. */
 export function oidcClearLocal() {
   clearLocal()
 }
 
 function clearLocal() {
-  void clearDpopKey()
+  const activeSub = oidcClaims()?.sub
+  const reg = readRegistry()
+  if (activeSub && reg[activeSub]) {
+    delete reg[activeSub]
+    writeRegistry(reg)
+  }
+  // The one DPoP key binds EVERY saved account's refresh token, so it rotates only when
+  // the last account leaves — "key loss ≡ session loss" now means ALL sessions.
+  if (Object.keys(reg).length === 0) void clearDpopKey()
   access = {}
   tokenStore().removeItem(TOKENS_KEY)
   tokenStore().removeItem(DECLARATION_KEY)
@@ -457,6 +538,89 @@ function clearLocal() {
 
 function persist(tokens: Stored) {
   tokenStore().setItem(TOKENS_KEY, JSON.stringify(tokens))
+  // Keep the registry entry in step with the ACTIVE set. This runs on every refresh too,
+  // which is load-bearing: refresh tokens rotate single-use, so a registry copy left
+  // behind would be a REPLAY when later activated — revoking the whole family.
+  fileAccount(tokens)
+}
+
+// --- the account registry (multi-account menu) ---------------------------------------
+
+type RegistryEntry = Stored & { email?: string; name?: string; picture?: string; declaration?: string }
+
+const readRegistry = (): { [sub: string]: RegistryEntry } => {
+  try {
+    const raw = tokenStore().getItem(ACCOUNTS_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+const writeRegistry = (reg: { [sub: string]: RegistryEntry }) => {
+  try { tokenStore().setItem(ACCOUNTS_KEY, JSON.stringify(reg)) } catch { /* storage blocked — menu degrades to active-only */ }
+}
+
+/** File a token set under its subject — silently NOT for support sessions (`act`). */
+function fileAccount(tokens: Stored) {
+  const claims = decodeJwt(tokens.id_token)
+  const sub = claims?.sub
+  if (!sub || claims?.act) return
+  const reg = readRegistry()
+  reg[sub] = {
+    ...tokens,
+    email: claims?.email,
+    name: claims?.name,
+    // Belt on the AS's own https-only guard — this string lands in an <img src>.
+    picture: typeof claims?.picture === 'string' && /^https:\/\//i.test(claims.picture) ? claims.picture : undefined,
+    declaration: reg[sub]?.declaration,
+  }
+  writeRegistry(reg)
+}
+
+/** `known`: signed in on this BROWSER (the AS's session set) but not in this app yet — no tokens
+ *  here; picking it runs a silent selection instead of a storage swap. */
+export type OidcAccount = { sub: string; email?: string; name?: string; picture?: string; active: boolean; known: boolean }
+
+/** The accounts this app has signed into, for the avatar menu. Active first. */
+export function oidcAccounts(): OidcAccount[] {
+  const activeSub = oidcClaims()?.sub
+  const reg = readRegistry()
+  return Object.entries(reg)
+    .map(([sub, e]) => ({ sub, email: e.email, name: e.name, picture: e.picture, active: sub === activeSub, known: !e.refresh_token && !e.support }))
+    .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
+}
+
+/** Make a saved account the ACTIVE one. Storage-only — the caller reloads the app so
+ *  every model boots as the new identity (a soft swap would bleed one account's data
+ *  into the other's view). Returns false when the account is unknown. */
+/** One-shot marker: WHO was just activated, so a boot that finds the saved tokens dead can
+ *  try ONE silent recovery (prompt=none + login_hint — the AS serves any live set member
+ *  the hint names) before falling to the sign-in screen. sessionStorage: dies with the tab,
+ *  and it is cleared before the attempt so a failed round can never loop. */
+const ACTIVATING_KEY = 'oidc.activating'
+export function oidcTakeActivationHint(): string | undefined {
+  try {
+    const email = sessionStorage.getItem(ACTIVATING_KEY) ?? undefined
+    sessionStorage.removeItem(ACTIVATING_KEY)
+    return email || undefined
+  } catch {
+    return undefined
+  }
+}
+
+export function oidcActivateAccount(sub: string): boolean {
+  const entry = readRegistry()[sub]
+  if (!entry?.refresh_token) return false
+  try { if (entry.email) sessionStorage.setItem(ACTIVATING_KEY, entry.email) } catch { /* recovery hint only */ }
+  access = {}
+  tokenStore().setItem(TOKENS_KEY, JSON.stringify({ refresh_token: entry.refresh_token, id_token: entry.id_token }))
+  // The declaration stamp is per-GRANT, and the grant is per-account: swap it with the
+  // tokens or the boot check would measure account B against account A's grant.
+  try {
+    if (entry.declaration) tokenStore().setItem(DECLARATION_KEY, entry.declaration)
+    else tokenStore().removeItem(DECLARATION_KEY)
+  } catch { /* non-fatal — worst case is one redundant re-authorize */ }
+  return true
 }
 
 function cleanUrl() {
@@ -578,4 +742,44 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
     throw error
   }
   return body
+}
+
+// --- the browser's accounts (permitteer docs/browser-accounts.md) --------------------------
+// The AS keeps a per-browser session SET, but its cookie never reaches this origin, so the
+// account API serves the set from this token's own session. Members this app holds no tokens
+// for are filed as KNOWN — identity only — and the menu offers them; picking one is a silent
+// selection (prompt=none + login_hint), which the AS answers for any live set member.
+const ACCOUNT_RESOURCE = `${OAUTH_ISSUER}/account/api`
+export async function oidcRefreshBrowserAccounts(): Promise<void> {
+  if (oidcActor()) return // a support session is no set member and has nothing to switch to
+  const url = `${ACCOUNT_RESOURCE}/accounts`
+  const headers = await oidcAuthHeaders('GET', url, ACCOUNT_RESOURCE)
+  if (!headers.authorization) return
+  const r = await fetch(url, { headers })
+  if (!r.ok) return
+  const body = (await r.json()) as { multi?: boolean; accounts?: { sub: string; email?: string | null; name?: string | null; picture?: string | null; current?: boolean }[] }
+  const listed = new Set<string>()
+  const reg = readRegistry()
+  for (const a of body.accounts ?? []) {
+    if (!a.sub || a.current) continue
+    listed.add(a.sub)
+    const prev = reg[a.sub]
+    reg[a.sub] = {
+      ...(prev ?? {}),
+      email: a.email ?? prev?.email,
+      name: a.name ?? prev?.name,
+      picture: typeof a.picture === 'string' && /^https:\/\//i.test(a.picture) ? a.picture : prev?.picture,
+    }
+  }
+  // A known-only entry the AS no longer lists was signed out elsewhere: drop it. Saved accounts
+  // (tokens here) are this app's own and stay.
+  for (const [sub, e] of Object.entries(reg)) if (!e.refresh_token && !e.support && !listed.has(sub) && sub !== oidcClaims()?.sub) delete reg[sub]
+  writeRegistry(reg)
+}
+/** Pick a KNOWN account: silent selection through the AS. False when the sub is not a known entry. */
+export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
+  const e = readRegistry()[sub]
+  if (!e || e.refresh_token || !e.email) return false
+  await oidcStart({ prompt: 'none', loginHint: e.email })
+  return true
 }

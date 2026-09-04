@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { getApiURL } from '../helpers/apiHelper'
-import { getToken } from './remoteit'
+import { apiAuthHeaders } from './remoteit'
 import { store } from '../store'
 import network from './Network'
 import sleep from '../helpers/sleep'
@@ -14,13 +14,14 @@ export function resetErrorCount() {
 export async function post(data: ILookup<any, string> = {}, path: string = '') {
   if (store.getState().ui.offline) return
 
-  const token = await getToken()
-  if (!token) {
+  const url = getApiURL() + path
+  const auth = await apiAuthHeaders('POST', url)
+  if (!auth.authorization) {
     console.warn('Unable to get token for API request.', data)
     return
   }
-  
-  const headers: any = { Authorization: token }
+
+  const headers: any = { ...auth }
   
   // Add x-r3-user header if in view-as mode
   const viewAsUser = store.getState().ui.viewAsUser
@@ -29,7 +30,7 @@ export async function post(data: ILookup<any, string> = {}, path: string = '') {
   }
   
   const request = {
-    url: getApiURL() + path,
+    url,
     method: 'post' as 'post',
     headers,
     data,
@@ -81,7 +82,9 @@ export async function apiError(error: unknown) {
       // on a failure path may end the AS session. Log the URL: it names the offender.
       console.warn('AUTH-SHAPED API ERROR', { url: error.config?.url, status: error.response?.status })
       await sleep(1000 * errorCount * errorCount)
-      auth.checkSession({ refreshToken: true, silent: true })
+      // The status rides along: under a SUPPORT session a 401 is terminal (no refresh token, the
+      // session is gone) while a 403 is an ordinary refused write — checkSession tells them apart.
+      auth.checkSession({ refreshToken: true, silent: true, status: error.response?.status })
     }
   }
 
