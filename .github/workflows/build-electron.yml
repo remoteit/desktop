@@ -32,7 +32,36 @@ env:
   GH_TOKEN: ${{ secrets.github_token }}
 
 jobs:
+  # electron-builder creates the GitHub draft lazily, from whichever upload finishes
+  # first. Three runners racing on "release doesn't exist" have produced two drafts
+  # for one version with the installers split between them - publishing either ships
+  # an incomplete release. Create the draft once, up front, so every runner finds it.
+  # Only on a tag build: that is the only case electron-builder publishes at all.
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create the draft release once
+        if: github.ref_type == 'tag'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" --json isDraft >/dev/null 2>&1; then
+            echo "release $VERSION already exists"
+          else
+            gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --draft --title "${VERSION#v}" --notes "" --target "$GITHUB_SHA"
+          fi
+
   release:
+    needs: prepare
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -103,3 +132,42 @@ jobs:
         run: |
           cd electron
           npm run build
+
+      # electron-builder orders `files` in latest.yml by build completion, and every
+      # client on electron-updater <= 6.6.2 (all releases through 3.46.1) installs
+      # whatever is first. Make the order deterministic, write the per-arch manifests
+      # an emulated build uses to reach its native installer, and replace what
+      # electron-builder already attached. See RELEASE.md, "Windows update manifests".
+      - name: Finalize Windows update manifests
+        if: matrix.os == 'windows-latest'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          set -o pipefail
+          cd electron
+          node scripts/finalize-win-update-manifests.js dist | tee manifests.txt
+          # Upload only into the DRAFT release electron-builder publishes to. A published
+          # release is never rewritten from CI - electron-builder refuses that case too -
+          # so a version that is already live fails the job instead of touching it.
+          # A branch build creates no release at all and has nothing to upload to.
+          state=$(gh release view "$VERSION" --json isDraft -q 'if .isDraft then "draft" else "published" end' 2>/dev/null || echo missing)
+          case "$state" in
+            draft)
+              # gh picks one draft by tag; if the runners raced and made several, the
+              # manifests could land in a draft without the installers. Refuse instead.
+              drafts=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" -q "[.[] | select(.tag_name==\"$VERSION\" and .draft)] | length")
+              if [ "$drafts" != "1" ]; then
+                echo "::error::$drafts draft releases are tagged $VERSION. Keep one, delete the rest, and re-run - see RELEASE.md."
+                exit 1
+              fi
+              gh release upload "$VERSION" $(cat manifests.txt) --clobber ;;
+            published)
+              echo "::error::$VERSION is already published. CI never rewrites a live release's update manifests - bump the version."
+              exit 1 ;;
+            missing)
+              if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+                echo "::error::Release $VERSION not found although building tag $GITHUB_REF_NAME"
+                exit 1
+              fi
+              echo "::notice::No $VERSION release - electron-builder does not publish from a branch. Manifests were generated but not uploaded." ;;
+          esac

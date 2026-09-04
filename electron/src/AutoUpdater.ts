@@ -1,6 +1,8 @@
+import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
 import { EventBus, Logger, EVENTS, preferences, environment, brand } from './backend'
+import { detectNativeWindowsArch, resolveNativeArchSteering, WindowsArch } from './backend/updateChannel'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
@@ -41,7 +43,7 @@ export default class AppUpdater {
   downloading: boolean = false
   version?: string
   error: boolean = false
-  private readonly updateManifestFile = process.platform === 'darwin' ? 'latest-mac.yml' : 'latest.yml'
+  private steering: WindowsArch | null = null
   private readonly defaultGithubFeed: GitHubFeedConfig = resolveGitHubFeedFromBrand()
 
   constructor() {
@@ -119,13 +121,18 @@ export default class AppUpdater {
     }
   }
 
+  private get updateManifestFile() {
+    if (process.platform === 'darwin') return 'latest-mac.yml'
+    return this.steering ? `latest-${this.steering}.yml` : 'latest.yml'
+  }
+
   check = async (force?: boolean) => {
     if ((!environment.isWindows && !environment.isMac) || !preferences.get().autoUpdate) return
 
     try {
       if (force || this.nextCheck < Date.now()) {
-        this.setDefaultFeed()
-        Logger.info('CHECK FOR UPDATE', { url: autoUpdater.getFeedURL() })
+        await this.applyFeed()
+        Logger.info('CHECK FOR UPDATE', { url: autoUpdater.getFeedURL(), nativeArch: this.steering })
         Logger.info('Checking for update')
         this.nextCheck =
           Date.now() + (autoUpdater.allowPrerelease ? PRE_RELEASE_CHECK_INTERVAL : AUTO_UPDATE_CHECK_INTERVAL)
@@ -134,6 +141,7 @@ export default class AppUpdater {
       }
     } catch (error) {
       if (this.isMissingChannelFileError(error)) {
+        if (await this.checkWithoutSteering()) return
         const recovered = await this.checkWithFallbackRelease()
         if (recovered) return
       }
@@ -144,6 +152,72 @@ export default class AppUpdater {
   install = () => {
     Logger.info('QUIT AND INSTALL UPDATE')
     autoUpdater.quitAndInstall()
+  }
+
+  // A build running under emulation asks for the native installer through the per-arch
+  // manifest of the newest eligible release. That release is pinned in a generic feed:
+  // GitHubProvider resolves pre-release tags by channel name, so setting the updater's own
+  // `channel` would break every pre-release user's checks.
+  private async applyFeed() {
+    this.steering = null
+    const nativeArch = environment.isWindows
+      ? resolveNativeArchSteering(
+          process.arch,
+          detectNativeWindowsArch(process.arch, app.runningUnderARM64Translation, process.env)
+        )
+      : null
+
+    if (nativeArch) {
+      const tag = await this.findNewestReleaseTag(`latest-${nativeArch}.yml`)
+      if (tag) {
+        autoUpdater.setFeedURL({
+          provider: 'generic',
+          url: `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`,
+          channel: `latest-${nativeArch}`,
+          useMultipleRangeRequest: false,
+        })
+        this.steering = nativeArch
+        Logger.info('AUTO UPDATE NATIVE ARCH', { processArch: process.arch, nativeArch, tag })
+        return
+      }
+      Logger.info('AUTO UPDATE NATIVE ARCH UNAVAILABLE', { processArch: process.arch, nativeArch })
+    }
+
+    this.setDefaultFeed()
+  }
+
+  // Only the newest eligible release counts: steering to an older one that happens to
+  // carry the per-arch manifest would hide a newer version.
+  private async findNewestReleaseTag(asset: string): Promise<string | undefined> {
+    try {
+      const { data } = await axios.get<GitHubRelease[]>(
+        `https://api.github.com/repos/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases?per_page=30`,
+        { headers: { Accept: 'application/vnd.github+json' } }
+      )
+      const newest = data.find(item => !item.draft && (autoUpdater.allowPrerelease || !item.prerelease))
+      return newest?.assets?.some(a => a.name === asset) ? newest.tag_name : undefined
+    } catch (error) {
+      Logger.warn('AUTO UPDATE RELEASE LOOKUP FAILED', { error })
+      return undefined
+    }
+  }
+
+  // The pinned release lost its per-arch manifest between lookup and fetch. Its entry
+  // for this build's own arch is still a valid update, just not the native one.
+  private async checkWithoutSteering(): Promise<boolean> {
+    if (!this.steering) return false
+    Logger.warn('AUTO UPDATE NATIVE ARCH MANIFEST MISSING', { manifest: this.updateManifestFile })
+    this.steering = null
+    this.setDefaultFeed()
+    try {
+      await autoUpdater.checkForUpdatesAndNotify()
+      this.emitStatus()
+      return true
+    } catch (error) {
+      if (this.isMissingChannelFileError(error)) return false
+      Logger.warn('AUTO UPDATE ERROR', { error })
+      return true
+    }
   }
 
   private setDefaultFeed() {

@@ -58,6 +58,14 @@ Var FileHandle
 
     ; Install new agent
     FileWrite $FileHandle "Installing Agent ... $\r$\n"
+    ; nsExec reports a binary it cannot start the same way as one that fails, so a package
+    ; that never put remoteit.exe here would read as an agent fault. Check for it first.
+    ${IfNot} ${FileExists} "$INSTDIR\resources\remoteit.exe"
+        FileWrite $FileHandle "Fatal installer error: $INSTDIR\resources\remoteit.exe is missing$\r$\n"
+        FileClose $FileHandle
+        MessageBox MB_OK|MB_ICONSTOP "The Remote.It agent is missing from $INSTDIR\resources. This installer may not match your computer's architecture. Setup will now exit."
+        Abort
+    ${EndIf}
     !insertmacro logExecRequired "$\"$INSTDIR\resources\remoteit$\" agent install" "The Remote.It agent service could not be installed. Setup will now exit."
     
     ; REMOVE AFTER v3.16.x -- Remove from machine path env var incase already there
@@ -170,7 +178,7 @@ Var FileHandle
     StrCpy $6 "Remote.It Agent Uninstall"
 
     ; Check if the agent is installed - must happen before uninstall because of name conflict with desktop app
-    !insertmacro logPowershell "(Get-Command remoteit).Path.Contains('resources')"
+    !insertmacro logPowershell "(Get-Command remoteit -ErrorAction SilentlyContinue).Path -like '*resources*'"
     
     ; Remove trailing line break from $1
     StrCpy $1 $1 -2
@@ -210,10 +218,16 @@ Var FileHandle
 
 !macro logExecRequired command errorMessage
     !insertmacro logExec "${command}"
-    ${If} $0 != 0
+    ; nsExec pushes the literal "error" when the process could not be started at all
+    ${If} $0 == "error"
+        FileWrite $FileHandle "Fatal installer error: command could not be started. ${errorMessage}$\r$\n"
+        FileClose $FileHandle
+        MessageBox MB_OK|MB_ICONSTOP "${errorMessage}$\r$\n$\r$\nThe command could not be started:$\r$\n${command}"
+        Abort
+    ${ElseIf} $0 != 0
         FileWrite $FileHandle "Fatal installer error: ${errorMessage}$\r$\n"
         FileClose $FileHandle
-        MessageBox MB_OK|MB_ICONSTOP "${errorMessage}"
+        MessageBox MB_OK|MB_ICONSTOP "${errorMessage}$\r$\n$\r$\nExit code $0$\r$\n$1"
         Abort
     ${EndIf}
 !macroend
