@@ -117,4 +117,14 @@ jobs:
           set -o pipefail
           cd electron
           node scripts/finalize-win-update-manifests.js dist | tee manifests.txt
-          gh release upload "$VERSION" $(cat manifests.txt) --clobber
+          # electron-builder publishes only when building a tag, or into a draft that
+          # already exists for this version. Mirror that: a branch build has nothing to
+          # upload to and must not fail here; a tag build with no release is an error.
+          if gh release view "$VERSION" --json tagName >/dev/null 2>&1; then
+            gh release upload "$VERSION" $(cat manifests.txt) --clobber
+          elif [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            echo "::notice::No $VERSION release - electron-builder does not publish from a branch. Manifests were generated but not uploaded."
+          else
+            echo "::error::Release $VERSION not found although building tag $GITHUB_REF_NAME"
+            exit 1
+          fi

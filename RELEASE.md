@@ -183,7 +183,9 @@ hit "The Remote.It agent service could not be installed."
 Two things fix that, and both are automatic:
 
 1. **Build / Electron** runs `electron/scripts/finalize-win-update-manifests.js`
-   after the Windows build. It reorders `files` to `ia32, x64, arm64` — ia32
+   after the Windows build. Like electron-builder's own publish step, it uploads
+   only when the release exists — so dispatch the workflow **on the tag**; a
+   branch build generates the manifests in `dist/` but has nowhere to put them. It reorders `files` to `ia32, x64, arm64` — ia32
    first because it is the one installer that runs on every Windows machine, so
    it is the safe answer for the old clients — drops any entry without an arch
    in its name, checks each entry's `sha512` and `size` against the file it
