@@ -1,4 +1,6 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { GUIDE_START_DATE } from '../constants'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { selectSessionUsers } from '../selectors/sessions'
@@ -17,6 +19,7 @@ type Props = {
 }
 
 export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, size = 'large' }) => {
+  const { t } = useTranslation()
   const connected = useSelector((state: State) =>
     selectSessionUsers(state, undefined, service ? service.id : instance?.id)
   ).length
@@ -33,16 +36,21 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
       guide="users"
       enterDelay={400}
       placement="bottom"
-      startDate={new Date('2022-09-20')}
+      startDate={GUIDE_START_DATE}
+      added={GUIDE_START_DATE}
       queueAfter="addService"
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
-            <b>The power of sharing</b>
+            <b>{t('usersTab.guideTitle', 'The power of sharing')}</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
-            Sharing can be done directly to a guest user from here, or by adding members to your
-            <cite>Organization</cite>.
+            {t(
+              'usersTab.guideBodyBefore',
+              'Sharing can be done directly to a guest user from here, or by adding members to your'
+            )}{' '}
+            <cite>{t('usersTab.guideOrganization', 'Organization')}</cite>
+            {t('usersTab.guideBodyAfter', '.')}
           </Typography>
         </>
       }
@@ -53,16 +61,16 @@ export const UsersTab: React.FC<Props> = ({ instance, service, menuItem, to, siz
         </ListItemIcon>
         <ListItemText
           sx={{ color: connected ? 'primary.main' : undefined }}
-          primary="Access"
+          primary={t('usersTab.access', 'Access')}
           secondary={
             !!total &&
             size === 'large' && (
               <>
-                {total ? total + ' total' : ''}
+                {total ? t('usersTab.totalCount', { count: total, defaultValue: '{{count}} total' }) : ''}
                 <br />
                 {!!connected && (
                   <Box component="span" sx={{ color: 'primary.main' }}>
-                    {connected} connected
+                    {t('usersTab.connectedCount', { count: connected, defaultValue: '{{count}} connected' })}
                   </Box>
                 )}
               </>

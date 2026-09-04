@@ -1,4 +1,5 @@
 import React from 'react'
+import { GUIDE_START_DATE } from '../constants'
 import { useTranslation } from 'react-i18next'
 import { Typography, Divider } from '@mui/material'
 import { selectNetworks } from '../selectors/networks'
@@ -41,7 +42,8 @@ export const NetworksPage: React.FC = () => {
                 guide="addNetwork"
                 enterDelay={400}
                 placement="bottom"
-                startDate={new Date('2002-01-01')}
+                startDate={GUIDE_START_DATE}
+                added={GUIDE_START_DATE}
                 instructions={
                   <>
                     <Typography variant="h3" gutterBottom>

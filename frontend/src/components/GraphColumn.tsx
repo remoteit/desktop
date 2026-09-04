@@ -1,8 +1,7 @@
 import React from 'react'
-import { humanizeResolutionLookup, timeSeriesTypeLabel } from '../helpers/dateHelper'
+import { timeSeriesSpanLabel, timeSeriesTypeLabel } from '../helpers/dateHelper'
 import { IconButton } from '../buttons/IconButton'
 import { Box } from '@mui/material'
-import { humanizeDuration as humanize } from '../helpers/dateHelper'
 
 export const GraphColumn: React.FC<{ title: string; timeSeries?: ITimeSeries }> = ({ title, timeSeries }) => {
   if (!timeSeries) return <>{title}</>
@@ -20,14 +19,7 @@ export const GraphColumn: React.FC<{ title: string; timeSeries?: ITimeSeries }> 
         }}
       >
         <IconButton
-          title={
-            'Last ' +
-            humanize(timeSeries.end.getTime() - timeSeries.start.getTime(), {
-              largest: 1,
-              round: true,
-              units: [humanizeResolutionLookup[timeSeries.resolution || 'DAY']],
-            })
-          }
+          title={'Last ' + timeSeriesSpanLabel(timeSeries)}
           name="sliders"
           color="grayDark"
           to="/settings/graphs"

@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery, Typography, Box, Stack, Divider, Theme, Chip } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
-import { selectPermissions } from '../selectors/organizations'
+import { selectCanRegister } from '../selectors/organizations'
 import { AddPlatformTags } from '../components/AddPlatformTags'
 import { AddDownload } from '../components/AddDownload'
 import { AddDevice } from '../components/AddDevice'
@@ -17,7 +17,7 @@ export const PlatformAddPage: React.FC = () => {
   let { platform = '', redirect } = useParams<{ platform?: string; redirect?: string }>()
   const platformObj = platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
-  const permissions = useSelector(selectPermissions)
+  const canRegister = useSelector(selectCanRegister)
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [serviceTypes, setServiceTypes] = useState<number[]>(defaultServices)
   const [oneTimeUse, setOneTimeUse] = useState(false)
@@ -42,7 +42,7 @@ export const PlatformAddPage: React.FC = () => {
           flexDirection={{ xs: 'row', md: 'column' }}
         >
           <Icon name={platform} fontSize={100} inlineLeft={xs} platformIcon />
-          {platformObj.installation?.command && permissions.includes('MANAGE') && (
+          {platformObj.installation?.command && canRegister && (
             <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
               {!xs && <Divider sx={{ marginTop: 4, width: '80%' }} />}
               <AddPlatformServices
@@ -93,12 +93,12 @@ export const PlatformAddPage: React.FC = () => {
             '& > .MuiTypography-body2': { marginBottom: 0.75 },
           }}
         >
-          {!permissions.includes('MANAGE') ? (
+          {!canRegister ? (
             <Box>
               <Notice>
                 {t(
-                  'platformAddPage.registerPermissionRequired',
-                  'You must have the register permission to add a device to this organization.'
+                  'platformAddPage.managePermissionRequired',
+                  'You must have the Manage permission to add a device to this organization.'
                 )}
               </Notice>
             </Box>

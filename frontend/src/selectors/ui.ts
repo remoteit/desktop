@@ -1,6 +1,11 @@
 import { Duration } from 'luxon'
 import { createSelector } from 'reselect'
-import { findLongestLength, defaultDeviceTimeSeries, defaultServiceTimeSeries } from '../helpers/dateHelper'
+import {
+  findLongestLength,
+  timeSeriesLengthUnit,
+  defaultDeviceTimeSeries,
+  defaultServiceTimeSeries,
+} from '../helpers/dateHelper'
 import {
   getDefaultSelected,
   getThemeDark,
@@ -32,16 +37,19 @@ export const selectUpdateNotice = createSelector(
   }
 )
 
-export const selectTimeSeriesDefaults = createSelector([state => selectLimit(state, undefined, 'log-limit')], logLimit => ({
-  deviceTimeSeries: {
-    ...defaultDeviceTimeSeries,
-    length: findLongestLength(Duration.fromISO(logLimit?.value), defaultDeviceTimeSeries.resolution),
-  },
-  serviceTimeSeries: {
-    ...defaultServiceTimeSeries,
-    length: findLongestLength(Duration.fromISO(logLimit?.value), defaultServiceTimeSeries.resolution),
-  },
-}))
+export const selectTimeSeriesDefaults = createSelector(
+  [state => selectLimit(state, undefined, 'log-limit')],
+  logLimit => ({
+    deviceTimeSeries: {
+      ...defaultDeviceTimeSeries,
+      length: findLongestLength(Duration.fromISO(logLimit?.value), timeSeriesLengthUnit(defaultDeviceTimeSeries)),
+    },
+    serviceTimeSeries: {
+      ...defaultServiceTimeSeries,
+      length: findLongestLength(Duration.fromISO(logLimit?.value), timeSeriesLengthUnit(defaultServiceTimeSeries)),
+    },
+  })
+)
 
 export const selectTimeSeries = createSelector(
   [selectTimeSeriesDefaults, getDeviceTimeSeries, getServiceTimeSeries],
@@ -52,7 +60,6 @@ export const selectTimeSeries = createSelector(
     }
   }
 )
-
 
 export const selectIsAdminRouteMode = createSelector(
   [getUserAdmin, (_state, pathname: string) => pathname],
