@@ -71,10 +71,7 @@
     "65536": "Any"
   },
   "routes": {
-    "1120": [
-      "linux",
-      "ubuntu"
-    ]
+    "1120": ["linux", "ubuntu"]
   },
   "installations": {
     "advantech": {

@@ -36,6 +36,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import prettier from 'prettier'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const OUT = path.join(here, '..', 'frontend', 'src', 'platforms', 'catalogue.generated.json')
@@ -50,7 +51,8 @@ const API = process.env.R3_GRAPHQL_API || process.env.VITE_GRAPHQL_API || 'https
 const check = process.argv.includes('--check')
 const viaCli = process.argv.includes('--cli')
 
-const INSTALLATION = 'slug name kind commandTemplate description instructions link services { application port name host enabled }'
+const INSTALLATION =
+  'slug name kind commandTemplate description instructions link services { application port name host enabled }'
 const QUERY = `{
   platformTypes { id label installations { slug } }
   platformInstallations { ${INSTALLATION} }
@@ -61,13 +63,18 @@ const QUERY = `{
 // depending on which.
 export function unwrapCli(stdout) {
   let parsed
-  try { parsed = JSON.parse(stdout) } catch { throw new Error(`remoteit exec-gql did not return JSON: ${stdout.slice(0, 160)}`) }
+  try {
+    parsed = JSON.parse(stdout)
+  } catch {
+    throw new Error(`remoteit exec-gql did not return JSON: ${stdout.slice(0, 160)}`)
+  }
 
   // Both shapes carry a top-level `data` meaning different things, so `code` is the
   // discriminator: the CLI's status envelope has one, a bare GraphQL response does not.
   const envelope = typeof parsed?.code === 'number' ? parsed : null
   const raw = envelope ? envelope.data : parsed
-  if (envelope && raw === undefined) throw new Error(`remoteit exec-gql failed: ${envelope.message || stdout.slice(0, 160)}`)
+  if (envelope && raw === undefined)
+    throw new Error(`remoteit exec-gql failed: ${envelope.message || stdout.slice(0, 160)}`)
 
   const body = typeof raw === 'string' ? JSON.parse(raw) : raw
   if (body?.errors?.length) {
@@ -78,9 +85,9 @@ export function unwrapCli(stdout) {
     if (/platformInstallations|"(label|installations|slug)"/.test(messages)) {
       throw new Error(
         'This stage does not serve the platform catalogue yet — the schema has no `label`, ' +
-        '`installations` or `platformInstallations` (graphql-api#209 is not deployed here). ' +
-        'Point at a stage that has it, or leave the committed snapshot alone until it ships.\n' +
-        `  GraphQL said: ${messages}`
+          '`installations` or `platformInstallations` (graphql-api#209 is not deployed here). ' +
+          'Point at a stage that has it, or leave the committed snapshot alone until it ships.\n' +
+          `  GraphQL said: ${messages}`
       )
     }
     throw new Error(messages)
@@ -94,13 +101,15 @@ function fromCli() {
   let stdout
   try {
     // stdin/stderr inherited so sudo can prompt and the CLI's own errors reach the terminal.
-    stdout = execFileSync('sudo', ['remoteit', 'exec-gql', '--json', '--query', QUERY],
-      {encoding: 'utf8', stdio: ['inherit', 'pipe', 'inherit']})
+    stdout = execFileSync('sudo', ['remoteit', 'exec-gql', '--json', '--query', QUERY], {
+      encoding: 'utf8',
+      stdio: ['inherit', 'pipe', 'inherit'],
+    })
   } catch (error) {
     // execFileSync throws an object that prints as an unreadable dump; say what to check instead.
     throw new Error(
       '`sudo remoteit exec-gql` failed (see above). The CLI runs as root, so this needs sudo. ' +
-      'Check that the remote.it CLI is installed and signed in, or set R3_API_TOKEN and drop --cli.'
+        'Check that the remote.it CLI is installed and signed in, or set R3_API_TOKEN and drop --cli.'
     )
   }
   const data = unwrapCli(stdout)
@@ -110,27 +119,39 @@ function fromCli() {
 
 async function fromApi() {
   const token = process.env.R3_API_TOKEN
-  if (!token) throw new Error('R3_API_TOKEN is required (a bearer JWT for the GraphQL API) — or pass --cli to use the remote.it CLI instead')
+  if (!token)
+    throw new Error(
+      'R3_API_TOKEN is required (a bearer JWT for the GraphQL API) — or pass --cli to use the remote.it CLI instead'
+    )
   const res = await fetch(API, {
     method: 'POST',
-    headers: {'content-type': 'application/json', authorization: `Bearer ${token}`},
-    body: JSON.stringify({query: QUERY}),
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ query: QUERY }),
     signal: AbortSignal.timeout(15_000),
   })
   if (!res.ok) throw new Error(`${API} → HTTP ${res.status}`)
   const text = await res.text()
   let body
-  try { body = JSON.parse(text) } catch { throw new Error(`${API} → HTTP ${res.status} but not JSON (edge/WAF page?): ${text.slice(0, 80)}`) }
+  try {
+    body = JSON.parse(text)
+  } catch {
+    throw new Error(`${API} → HTTP ${res.status} but not JSON (edge/WAF page?): ${text.slice(0, 80)}`)
+  }
   if (body.errors?.length) throw new Error(body.errors.map(e => e.message).join('; '))
   if (!body.data?.platformTypes) throw new Error(`${API} returned no platformTypes`)
   return normalise(body.data.platformTypes, body.data.platformInstallations || [])
 }
 
 // Drop null/undefined recursively; keep [] (it means "none", distinct from unset).
-const clean = value => Array.isArray(value)
-  ? value.map(clean)
-  : value && typeof value === 'object'
-    ? Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => [k, clean(v)]))
+const clean = value =>
+  Array.isArray(value)
+    ? value.map(clean)
+    : value && typeof value === 'object'
+    ? Object.fromEntries(
+        Object.entries(value)
+          .filter(([, v]) => v !== null && v !== undefined)
+          .map(([k, v]) => [k, clean(v)])
+      )
     : value
 
 // Three maps: every platform type id to the name to show for it; every onboarding page by slug,
@@ -143,8 +164,8 @@ export function normalise(platformTypes, platformInstallations) {
   const types = {}
   const installations = {}
   const routes = {}
-  const page = slug => (installations[slug] ??= {types: {}})
-  for (const {slug, ...rest} of platformInstallations) installations[slug] = {...clean(rest), types: {}}
+  const page = slug => (installations[slug] ??= { types: {} })
+  for (const { slug, ...rest } of platformInstallations) installations[slug] = { ...clean(rest), types: {} }
   for (const t of platformTypes) {
     if (typeof t.label !== 'string') continue
     types[t.id] = t.label
@@ -152,10 +173,14 @@ export function normalise(platformTypes, platformInstallations) {
     for (const slug of slugs) page(slug).types[t.id] = t.label
     if (slugs.length > 1) routes[t.id] = slugs
   }
-  return {types, routes, installations}
+  return { types, routes, installations }
 }
 
 const canonical = data => JSON.stringify(data, null, 2) + '\n'
+// What is written goes through the project's prettier, so a regeneration never leaves a file that
+// format-on-save would then change. Comparison stays on `canonical`, which parsing makes
+// formatting-immune.
+const formatted = (file, text) => prettier.format(text, { filepath: file })
 
 // Build `<slug>.<field>` entries for every translatable string in the catalogue.
 function catalogFrom(installations) {
@@ -177,21 +202,27 @@ function mergeCatalog(locale, english) {
   const merged = {}
   for (const [slug, fields] of Object.entries(english)) {
     for (const [field, value] of Object.entries(fields)) {
-      (merged[slug] ??= {})[field] = locale === 'en' ? value : existing[slug]?.[field] ?? ''
+      ;(merged[slug] ??= {})[field] = locale === 'en' ? value : existing[slug]?.[field] ?? ''
     }
   }
-  return {file, merged}
+  return { file, merged }
 }
 
 function writeCatalogs(installations) {
   const english = catalogFrom(installations)
   const written = []
-  for (const locale of fs.readdirSync(LOCALES_DIR, {withFileTypes: true}).filter(d => d.isDirectory()).map(d => d.name)) {
-    const {file, merged} = mergeCatalog(locale, english)
+  for (const locale of fs
+    .readdirSync(LOCALES_DIR, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name)) {
+    const { file, merged } = mergeCatalog(locale, english)
     const next = canonical(merged)
-    if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== next) { fs.writeFileSync(file, next); written.push(locale) }
+    if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== next) {
+      fs.writeFileSync(file, formatted(file, next))
+      written.push(locale)
+    }
   }
-  return {keys: Object.values(english).reduce((n, f) => n + Object.keys(f).length, 0), written}
+  return { keys: Object.values(english).reduce((n, f) => n + Object.keys(f).length, 0), written }
 }
 
 // Only run when invoked directly, so the helpers above stay importable (and testable).
@@ -201,7 +232,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (!live) {
     // The API deploy is ahead of the migration: nothing to compare against yet, and writing
     // this would strip every /add page's data from the app.
-    console.log(`${API} serves no platform catalogue yet (migration pending) — ${check ? 'nothing to check' : 'refusing to overwrite the snapshot'}`)
+    console.log(
+      `${API} serves no platform catalogue yet (migration pending) — ${
+        check ? 'nothing to check' : 'refusing to overwrite the snapshot'
+      }`
+    )
     process.exit(check ? 0 : 2)
   }
   const next = canonical(data)
@@ -210,14 +245,24 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const englishFile = path.join(LOCALES_DIR, 'en', `${NAMESPACE}.json`)
     const englishCurrent = fs.existsSync(englishFile) ? fs.readFileSync(englishFile, 'utf8') : ''
     if (current !== next || englishCurrent !== canonical(catalogFrom(data.installations))) {
-      console.error(`STALE: the committed platform snapshot or its English catalog differs from the API. Run: npm run platforms:generate`)
+      console.error(
+        `STALE: the committed platform snapshot or its English catalog differs from the API. Run: npm run platforms:generate`
+      )
       process.exit(1)
     }
     console.log('platform catalogue snapshot is up to date')
   } else {
-    fs.writeFileSync(OUT, next)
-    const {keys, written} = writeCatalogs(data.installations)
-    console.log(`wrote ${path.relative(process.cwd(), OUT)}: ${Object.keys(data.types).length} types, ${Object.keys(data.installations).length} installations`)
-    console.log(`wrote ${keys} translatable string(s) to the ${NAMESPACE} catalog${written.length ? ` (${written.join(', ')})` : ' (no change)'}`)
+    fs.writeFileSync(OUT, formatted(OUT, next))
+    const { keys, written } = writeCatalogs(data.installations)
+    console.log(
+      `wrote ${path.relative(process.cwd(), OUT)}: ${Object.keys(data.types).length} types, ${
+        Object.keys(data.installations).length
+      } installations`
+    )
+    console.log(
+      `wrote ${keys} translatable string(s) to the ${NAMESPACE} catalog${
+        written.length ? ` (${written.join(', ')})` : ' (no change)'
+      }`
+    )
   }
 }
