@@ -117,14 +117,21 @@ jobs:
           set -o pipefail
           cd electron
           node scripts/finalize-win-update-manifests.js dist | tee manifests.txt
-          # electron-builder publishes only when building a tag, or into a draft that
-          # already exists for this version. Mirror that: a branch build has nothing to
-          # upload to and must not fail here; a tag build with no release is an error.
-          if gh release view "$VERSION" --json tagName >/dev/null 2>&1; then
-            gh release upload "$VERSION" $(cat manifests.txt) --clobber
-          elif [ "$GITHUB_REF_TYPE" != "tag" ]; then
-            echo "::notice::No $VERSION release - electron-builder does not publish from a branch. Manifests were generated but not uploaded."
-          else
-            echo "::error::Release $VERSION not found although building tag $GITHUB_REF_NAME"
-            exit 1
-          fi
+          # Upload only into the DRAFT release electron-builder publishes to. A published
+          # release is never rewritten from CI - electron-builder refuses that case too -
+          # so a version that is already live fails the job instead of touching it.
+          # A branch build creates no release at all and has nothing to upload to.
+          state=$(gh release view "$VERSION" --json isDraft -q 'if .isDraft then "draft" else "published" end' 2>/dev/null || echo missing)
+          case "$state" in
+            draft)
+              gh release upload "$VERSION" $(cat manifests.txt) --clobber ;;
+            published)
+              echo "::error::$VERSION is already published. CI never rewrites a live release's update manifests - bump the version."
+              exit 1 ;;
+            missing)
+              if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+                echo "::error::Release $VERSION not found although building tag $GITHUB_REF_NAME"
+                exit 1
+              fi
+              echo "::notice::No $VERSION release - electron-builder does not publish from a branch. Manifests were generated but not uploaded." ;;
+          esac
