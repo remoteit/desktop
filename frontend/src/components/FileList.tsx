@@ -1,9 +1,8 @@
 import React from 'react'
+import { useMobile } from '../hooks/useMobile'
 import { State } from '../store'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery } from '@mui/material'
 import { FileListItem } from './FileListItem'
 import { Attribute } from './Attributes'
 import { GridList } from './GridList'
@@ -20,7 +19,7 @@ interface FileListProps {
 export const FileList: React.FC<FileListProps> = ({ attributes, required, scripts = [], columnWidths, fetching, isScriptList = true }) => {
   const { fileID } = useParams<{ fileID?: string }>()
   const selectedIds = useSelector((state: State) => state.ui.selected)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   return (
     <GridList {...{ attributes, required, fetching, columnWidths, mobile }} headerIcon>
       {scripts?.map((script, index) => (

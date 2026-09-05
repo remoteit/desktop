@@ -54,9 +54,10 @@ class Controller extends EventEmitter {
       ui.set({ errorMessage: '' })
       // This is the app's only entry into auth.init, so it has to run whether or
       // not the window has focus - a window launched in the background still has
-      // to sign in. Unattended, though, nobody asked for this and nobody is
-      // watching, so a failed session check shouldn't leave a toast waiting.
-      auth.init({ silent: !network.isActive() })
+      // to sign in. It used to pass silent:true when unattended, to spare nobody a
+      // toast; that suppressed the record of a FAILED sign in, which is what stops
+      // the app retrying it, so an unattended window looped the authorize instead.
+      auth.init()
     }
   }
 

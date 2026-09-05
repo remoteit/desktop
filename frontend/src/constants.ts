@@ -2,28 +2,70 @@ import brand from '@common/brand/config'
 const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
-export const CLIENT_ID = env.VITE_CLIENT_ID
-export const MOBILE_CLIENT_ID = env.VITE_MOBILE_CLIENT_ID
-export const COGNITO_USER_POOL_ID = env.VITE_COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
-export const COGNITO_AUTH_DOMAIN = env.VITE_COGNITO_AUTH_DOMAIN || 'auth.remote.it'
+// The AI portal (app.ai.remote.it) shows the Remote.It AI chat unconditionally: it IS the
+// AI surface. Set per-deployment via the Amplify branch env so the general app stays on
+// the licensed gate below even if this branch's code merges elsewhere.
+export const CHAT_ALWAYS_ON = env.VITE_CHAT_ALWAYS_ON === 'true'
+
+/* The license limit that gates the Remote.It AI chat. The whole surface hangs off this
+   one name — the header button, the docked column and everything the panel loads — so
+   switching the feature on for an account is a licensing change rather than a release. */
+export const CHAT_FEATURE = 'ai-agent'
+
+/* Boolean license features this build gates on that an account's license may not carry
+   yet, each paired with what it is worth until a license speaks. Naming one here gives it
+   a row on the Test page AND puts it in the limits lookup, which is what makes it testable
+   at all: the lookup is built FROM the limits the API returned, so a flag the API has
+   never mentioned has nothing for an override to attach to. The API's value wins once it
+   starts arriving, so an entry whose limit has gone live is dead weight and can go.
+
+   These are DEFAULTS, not bypasses — every one of them stays a normal feature flag, so
+   the Test page switch reads what is actually in effect and can turn the feature back
+   OFF. That is the point of routing local dev and the AI portal through here rather than
+   around the gate: on app.ai.remote.it the chat is on because CHAT_ALWAYS_ON makes this
+   default true, and it is still one switch away from off. */
+export const PENDING_FEATURES: ILookup<boolean> = {
+  [CHAT_FEATURE]: MODE === 'development' || CHAT_ALWAYS_ON,
+}
+
+// Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
+// web and desktop; the backend never touches auth.
+export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''
+export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
+export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://graphql.dev.remote.it/graphql'
+export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.dev.remote.it/account/api'
+// The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
+// tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail
+// delegated onward to the service actor — which is what makes those tokens exchangeable.
+export const OAUTH_AGENT_RESOURCE = env.VITE_OAUTH_AGENT_RESOURCE || 'https://agent.dev.remote.it'
+export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || 'https://mcp.dev.remote.it/mcp'
+// FALLBACK only: the live name is DISCOVERED from the MCP resource's PRM at sign-in
+// (services/oidc.ts) — per-resource keying made it stage-stable, and the 2026-08-31
+// retirement of the _dev names is exactly why a pinned copy can't be the source of truth.
+export const OAUTH_MCP_DETAIL = env.VITE_OAUTH_MCP_DETAIL || 'remoteit_mcp'
+export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
+
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
-export const GRAPHQL_API = env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
-export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
+// The access token's audience IS the GraphQL URL, so the data plane defaults to the
+// resource we mint for rather than to a fixed stage — otherwise an install that sets only
+// the OIDC vars calls one stage with another stage's token and 401s with nothing in the UI
+// explaining why. Set VITE_GRAPHQL_API (or pick a stage in Test Settings) to override.
+export const GRAPHQL_API = env.VITE_GRAPHQL_API || OAUTH_GRAPHQL_RESOURCE
+export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || GRAPHQL_API
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const PORTAL_URL = env.VITE_PORTAL_URL || brand.package?.homepage || 'https://app.remote.it'
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
-export const REDIRECT_URL = env.VITE_REDIRECT_URL || PROTOCOL + 'authCallback'
-export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
-export const CALLBACK_URL =
-  env.VITE_CALLBACK_URL || env.MODE === 'development'
-    ? env.VITE_DEV_CALLBACK_URL || 'https://dev-auth.internal.remote.it/v1/callback/'
-    : env.VITE_PROD_CALLBACK_URL || 'https://auth.api.remote.it/v1/callback/'
 
-export const WEBSOCKET_URL = env.VITE_WEBSOCKET_URL
-export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL
+// Pairs with the GraphQL stage above (graphql.dev…/graphql <-> wss://ws.dev…/v1), the same
+// pairing Test Settings' stage picker applies. Previously these had NO fallback: dropping
+// the env var left the socket URL undefined, which breaks the app before the UI that could
+// fix it is reachable.
+const graphqlStage = GRAPHQL_API.match(/^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/)?.[1]
+export const WEBSOCKET_URL = env.VITE_WEBSOCKET_URL || `wss://ws${graphqlStage ? `.${graphqlStage}` : ''}.remote.it/v1`
+export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL || WEBSOCKET_URL
 export const PORT = env.VITE_PORT || 29999
 export const PASSWORD_MIN_LENGTH = env.PASSWORD_MIN_LENGTH ? Number(env.PASSWORD_MIN_LENGTH) : 7
 export const PASSWORD_MAX_LENGTH = env.PASSWORD_MAX_LENGTH ? Number(env.PASSWORD_MAX_LENGTH) : 64
@@ -43,7 +85,6 @@ export const REGISTRATION_CODE_EXPIRATION_HOURS = 24
 
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
-export const TEST_HEADER = 'test-header'
 
 // When the guide bubble system shipped — bubbles are hidden from accounts created before their start date
 export const GUIDE_START_DATE = new Date('2022-09-20')
@@ -97,6 +138,27 @@ export const SIGN_OUT_BACKEND_TIMEOUT = 3000
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
+export const CHAT_PANEL_WIDTH = 400
+export const CHAT_PANEL_WIDTH_MIN = 320
+/* When the AI chat tour shipped. GuideBubble's `added` — a "dismiss all" from before
+   this date does not suppress it, so users who opted out of the older guides still
+   get introduced to a feature that did not exist back then. */
+export const CHAT_GUIDE_DATE = new Date('2026-08-27')
+/* Content that must survive beside a docked chat column. The column shrinks to
+   preserve it, so the chat keeps its column on small desktop windows instead of
+   taking the screen — that only happens at phone size (MOBILE_WIDTH). */
+export const CHAT_MIN_CONTENT_WIDTH = 500
+// Reading measure for the transcript column — text much wider than this is hard to
+// track back to the start of the next line. Applied to the COLUMN, so the panel itself
+// may be any width without the conversation spreading across it.
+export const CHAT_MAX_MESSAGE_WIDTH = 800
+/* Widest the column is worth dragging — the point at which the transcript stops growing,
+   so past it the drag only buys empty panel around a column already at full width. Built
+   from what actually stands between the two: the 20px gutter either side of the
+   transcript (ChatMessages' paddingX) and the 8px the docked column insets itself by
+   (ChatPanel's INSET). Derived rather than written down, because a round number here
+   lands just short and the transcript never quite reaches its own measure. */
+export const CHAT_PANEL_WIDTH_MAX = CHAT_MAX_MESSAGE_WIDTH + 20 * 2 + 8
 export const ORGANIZATION_BAR_WIDTH = 70
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750

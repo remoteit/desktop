@@ -1,10 +1,10 @@
-import { Button, Stack, Tooltip, useMediaQuery } from '@mui/material'
+import { Button, Stack, Tooltip } from '@mui/material'
+import { useMobile } from '../hooks/useMobile'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Route, Link as RouteLink, useHistory, useLocation } from 'react-router-dom'
 import { IconButton } from '../buttons/IconButton'
-import { MOBILE_WIDTH } from '../constants'
 import { selectPermissions } from '../selectors/organizations'
 import { ScriptingActionBar } from './ScriptingActionBar'
 import { ScriptingTabBar } from './ScriptingTabBar'
@@ -25,7 +25,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
   const location = useLocation()
   const permissions = useSelector(selectPermissions)
   const selectedIds = useSelector((state: State) => state.ui.selected)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
 
   return (
     <Container

@@ -1,11 +1,14 @@
-import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
+import { REGEX_FIRST_PATH, CHAT_GUIDE_DATE } from '../../constants'
+import { useMobile } from '../../hooks/useMobile'
+import { useChatEnabled, useHideSidebar } from '../../hooks/useChatEnabled'
+import { GuideBubble } from '../GuideBubble'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
 import browser from '../../services/browser'
 import { State } from '../../store'
 import { Dispatch } from '../../store'
-import { useMediaQuery, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
 import { useLocation, Switch, Route } from 'react-router-dom'
@@ -29,13 +32,16 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const { t } = useTranslation()
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
+  const chatOpen = useSelector((state: State) => state.chat.open)
+  const chatPoppedOut = useSelector((state: State) => state.chat.poppedOut)
+  const chatEnabled = useChatEnabled()
   const layout = useSelector((state: State) => state.ui.layout)
   const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
   const navigateUp = useNavigationUp(panels)
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const sidebarHidden = useHideSidebar()
+  const mobile = useMobile()
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
@@ -44,7 +50,15 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
 
   // Admin pages have two-level roots: /admin/users and /admin/partners (without IDs)
-  const adminRootPages = ['/admin/users', '/admin/admins', '/admin/partners', '/admin/enterprise-licenses', '/admin/devices', '/admin/notices', '/partner-stats']
+  const adminRootPages = [
+    '/admin/users',
+    '/admin/admins',
+    '/admin/partners',
+    '/admin/enterprise-licenses',
+    '/admin/devices',
+    '/admin/notices',
+    '/partner-stats',
+  ]
   const isAdminRootPage = adminRootPages.includes(location.pathname)
   const isRootMenu = menu === location.pathname || isAdminRootPage
 
@@ -68,7 +82,13 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
         )}
         {(layout.hideSidebar || browser.isMobile) && (
           <Route path="/add" exact>
-            <IconButton title={t('header.back', 'Back')} to="/devices" icon="chevron-left" size="md" color="grayDarker" />
+            <IconButton
+              title={t('header.back', 'Back')}
+              to="/devices"
+              icon="chevron-left"
+              size="md"
+              color="grayDarker"
+            />
           </Route>
         )}
         {!isRootMenu && (
@@ -79,6 +99,40 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             size="md"
             color="grayDarker"
           />
+        )}
+        {/* Step 1 of the chat tour. Deliberately no startDate — this is new to everyone,
+            including long-standing accounts, so the usual "only for recent signups" cohort
+            gate would hide it from the people who most need it. The delay lets the app
+            settle before it speaks up. */}
+        {chatEnabled && !chatPoppedOut && (
+          <GuideBubble
+            guide="chatAgent"
+            added={CHAT_GUIDE_DATE}
+            placement="bottom"
+            enterDelay={1200}
+            instructions={
+              <>
+                <Typography variant="h3" gutterBottom>
+                  <b>{t('chat.guideAgentTitle', 'Meet Remote.It AI')}</b>
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  {t(
+                    'chat.guideAgentBody',
+                    'Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.'
+                  )}
+                </Typography>
+              </>
+            }
+          >
+            <IconButton
+              fixedWidth
+              icon="remote-ai"
+              size="lg"
+              color={chatOpen ? 'primary' : 'grayDarker'}
+              title={t('header.aiAgent', 'AI Agent')}
+              onClick={() => dispatch.chat.set({ open: !chatOpen })}
+            />
+          </GuideBubble>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (

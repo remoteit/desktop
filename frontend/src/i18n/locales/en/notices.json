@@ -9,6 +9,13 @@
     "loginFailed": "Login failed.",
     "passwordChanged": "Password changed successfully."
   },
+  "chat": {
+    "usageReset": "{{msg}} Resets {{when}}.",
+    "authRequired": "Agent authentication required — sign in to continue.",
+    "popupBlocked": "Pop out was blocked — allow popups for this site and try again.",
+    "sessionExpired": "The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.",
+    "signInFailed": "Agent sign-in failed — {{error}}"
+  },
   "connection": {
     "surveyFailed": "Connection survey submission failed. Please contact support."
   },

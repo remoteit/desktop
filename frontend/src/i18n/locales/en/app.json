@@ -1149,6 +1149,7 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "signOutConfirm": "Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.",
+    "signedInOnBrowser": "Signed in on this browser",
     "support": "Support",
     "supportForum": "Support Forum",
     "testUI": "Test UI",
@@ -2105,8 +2106,13 @@
   "testPage": {
     "addQueryHeader": "Add query header",
     "addQueryHeaderPlaceholder": "Example: \"key:value\"",
+    "apiTarget": "API Target",
     "clearViewedAnnouncements": "Clear viewed announcements",
     "clearViewedAnnouncementsHint": "Marks all loaded announcements unread for this account.",
+    "customAPITarget": "Custom",
+    "customAPITargetHint": "Point at a URL the authorization server has not registered.",
+    "customGraphQLURL": "Custom GraphQL URL (advanced)",
+    "customWebSocketURL": "Custom WebSocket URL (advanced)",
     "disableTestUI": "Disable Test UI",
     "disableTestUIHint": "To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift.",
     "featureLabel": "{{name}} (default {{state}})",
@@ -2114,6 +2120,7 @@
     "hideTestUIBackgrounds": "Hide test UI backgrounds",
     "licenseMessageCleared": "License message cleared",
     "licensingOptions": "Licensing Options",
+    "mintError": "This target was refused at token mint: {{error}}",
     "overrideDefaultAPIs": "Override default APIs",
     "overrideLicensesAndLimits": "Override licenses and limits",
     "reset": "Reset",
@@ -2190,6 +2197,7 @@
   },
   "viewAsBanner": {
     "exit": "Exit view-as mode",
+    "supportSession": "Support session — viewing as {{email}} until {{until}}. Tokens are stamped with your identity; the user can see and end this session.",
     "viewingAs": "Viewing as: {{email}}"
   }
 }

@@ -6,9 +6,10 @@ import { selectJob } from '../selectors/scripting'
 import { AxiosResponse } from 'axios'
 import { isReverseProxy } from '../models/applicationTypes'
 import { getAccountIds, accountFromDevice } from '../models/accounts'
-import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
+import { getWebSocketURL } from '../helpers/apiHelper'
 import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
+import { oidcAccessToken } from './oidc'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -27,6 +28,20 @@ import { emit } from './Controller'
 
 const stateTimes = new CloudTimes()
 const connectTimes = new CloudTimes()
+
+// D11a (permitteer docs/remoteit-desktop-login.md Phase 4c): the events stream is its OWN
+// audience — for the per-stage fronts the WS URL IS the resource identifier
+// (wss://ws.<stage>.remote.it/v1; prod's bare wss://ws.remote.it/v1). The legacy
+// shared-domain URL (wss://ws.remote.it/<stage>) is not a registered resource, so
+// connections through it keep presenting the graphql-audience token — admitted by the
+// authorizer's dual-accept window until that contract retires.
+const EVENTS_RESOURCE = /^wss:\/\/ws(\.[a-z0-9-]+)?\.remote\.it\/v1$/
+async function wsAuthorization(): Promise<string> {
+  const url = getWebSocketURL() || ''
+  if (!EVENTS_RESOURCE.test(url)) return await getToken()
+  const token = await oidcAccessToken(url)
+  return token ? 'Bearer ' + token : ''
+}
 
 class CloudController {
   initialized: boolean = false
@@ -149,9 +164,8 @@ class CloudController {
       // this flag continue to receive single-event frames.
       supportsBatch: true,
       headers: {
-        authorization: await getToken(),
+        authorization: await wsAuthorization(),
         'User-Agent': `remoteit/${version} ${agent()}`,
-        ...getTestHeader(),
       },
       query: `
       {

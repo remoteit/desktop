@@ -1,4 +1,4 @@
-import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, TEST_HEADER } from '../constants'
+import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, OAUTH_GRAPHQL_RESOURCE } from '../constants'
 import { graphQLRentANode } from '../services/graphQLMutation'
 import { version } from './versionHelper'
 import { store } from '../store'
@@ -13,6 +13,18 @@ export function getApiURL(): string | undefined {
       ? overrides?.betaApiURL || GRAPHQL_BETA_API
       : overrides?.apiURL || GRAPHQL_API
   return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
+}
+
+// D10 (permitteer docs/remoteit-desktop-login.md Phase 4c): the token's audience follows the
+// switched URL — for the Permitteer-era fronts the graphql URL IS the resource identifier, so
+// switching APIs means switching WHICH resource we mint for. Off-allowlist targets fail at
+// MINT with a legible invalid_target instead of as ambient 403s an hour later. Only the
+// switcher lane follows; the default lane stays pinned to the env's declared resource (the
+// backend-override lane predates audience binding and never fed the token layer).
+export function getApiResource(): string {
+  if (!store) return OAUTH_GRAPHQL_RESOURCE
+  const { apiGraphqlURL, switchApi } = store.getState().ui.apis
+  return switchApi && apiGraphqlURL ? apiGraphqlURL : OAUTH_GRAPHQL_RESOURCE
 }
 
 export function getRestApi(): string | undefined {
@@ -31,14 +43,6 @@ export function getWebSocketURL(): string | undefined {
   const apis = store.getState().ui.apis
   const defaultURL = version.includes('alpha') || version.includes('beta') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
   return apis?.webSocketURL && apis?.switchApi ? apis.webSocketURL : defaultURL
-}
-
-export function getTestHeader(): { [key: string]: string } {
-  const testHeader = window.localStorage.getItem(TEST_HEADER)
-  if (!testHeader) return {}
-  const parts = testHeader.split(':')
-  console.log('USING TEST HEADER', { [parts[0].trim()]: parts[1].trim() })
-  return { [parts[0].trim()]: parts[1].trim() }
 }
 
 export async function apiError(error: unknown) {

@@ -1,4 +1,6 @@
 import electron, { Menu, dialog } from 'electron'
+import { CHAT_POPOUT_PARAM, CHAT_POPOUT_SIZE } from '@common/constants'
+import { execFile } from 'child_process'
 import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
@@ -192,6 +194,84 @@ export default class ElectronApp {
     }
   }
 
+  /** The new-window flag for a browser named by app name (mac) or executable (Windows).
+   * Empty for Safari and anything unrecognized — those keep the plain open. */
+  private newWindowFlag(browser: string) {
+    return /chrome|chromium|edge|brave|vivaldi|opera/i.test(browser)
+      ? '--new-window'
+      : /firefox/i.test(browser)
+      ? '-new-window'
+      : ''
+  }
+
+  /** The default browser's EXECUTABLE on Windows, via the registry association chain:
+   * the user's https choice names a ProgId, and that ProgId's shell-open command holds
+   * the real path. Yields '' on anything unexpected — a missing UserChoice (no explicit
+   * default set), an unparsable command, a non-exe target — and every caller treats ''
+   * as "use the plain open". Two hops rather than getApplicationNameForProtocol because
+   * that returns a DISPLAY name here ("Google Chrome"), which is not launchable. */
+  private windowsDefaultBrowser(done: (exe: string) => void) {
+    const association =
+      'HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice'
+    execFile('reg', ['query', association, '/v', 'ProgId'], (error, stdout) => {
+      const progId = error ? undefined : /ProgId\s+REG_SZ\s+(\S+)/i.exec(stdout)?.[1]
+      if (!progId) return done('')
+      execFile('reg', ['query', `HKCR\\${progId}\\shell\\open\\command`, '/ve'], (commandError, commandOut) => {
+        const command = commandError ? undefined : /REG_SZ\s+(.+)/i.exec(commandOut)?.[1]?.trim()
+        if (!command) return done('')
+        // Either `"C:\...\chrome.exe" --single-argument %1` or a bare path plus switches.
+        const exe = command.startsWith('"') ? command.slice(1, command.indexOf('"', 1)) : command.split(/\s+/)[0]
+        done(/\.exe$/i.test(exe) ? exe : '')
+      })
+    })
+  }
+
+  /** The auth journey gets a NEW browser window. Plain openExternal fronts the browser
+   * on whatever tab it already had — a flash of unrelated content before the sign-in
+   * page. Chromium-family and Firefox take a new-window flag; Safari and unknown
+   * browsers would need Apple-Events permission for the same, so they keep the plain
+   * open. Regular external links (setWindowOpenHandler, deep-linked URLs) deliberately
+   * stay on openExternal — normal tab behavior is right for them.
+   *
+   * EVERY path falls back to openExternal, which is the pre-polish behavior and always
+   * correct — so an unrecognized browser, a registry shape we don't expect, or a failed
+   * spawn costs the nicety, never the sign-in. Linux stays on the plain open: its
+   * default-browser lookup varies by desktop environment for the same modest gain. */
+  private openAuthWindow(url: string) {
+    const openPlainly = () => electron.shell.openExternal(url)
+
+    if (environment.isMac) {
+      const name = this.app.getApplicationNameForProtocol('https://')
+      const flag = this.newWindowFlag(name)
+      if (!flag) return openPlainly()
+      // Two-step: create the window WITHOUT focus (-g), let the page load and paint out of
+      // sight, then front the browser — the user lands on a finished sign-in page instead
+      // of watching a window be born. The delay is a heuristic; there is no cross-process
+      // signal for the browser's paint.
+      execFile('open', ['-g', '-na', name, '--args', flag, url], error => {
+        if (error) return openPlainly()
+        setTimeout(() => execFile('open', ['-a', name], () => {}), 900)
+      })
+      return
+    }
+
+    if (environment.isWindows) {
+      this.windowsDefaultBrowser(exe => {
+        // Match the FILE NAME, not the full path — a user folder called "Edge" should not
+        // decide which flag we pass. No background-then-front counterpart here: Windows
+        // governs foreground activation itself, so the window simply appears.
+        const flag = exe ? this.newWindowFlag(path.basename(exe)) : ''
+        if (!flag) return openPlainly()
+        execFile(exe, [flag, url], error => {
+          if (error) openPlainly()
+        })
+      })
+      return
+    }
+
+    openPlainly()
+  }
+
   private setDeepLink(url?: string) {
     if (!url) return
     const scheme = this.protocol + '://'
@@ -202,6 +282,8 @@ export default class ElectronApp {
     }
 
     if (url.includes('authCallback')) {
+      // The RENDERER owns the exchange (D8): reload the window with the callback query —
+      // the app boots with ?code&state exactly like the web return.
       this.authCallback = true
       Logger.info('SET AUTH CALLBACK')
     }
@@ -248,16 +330,53 @@ export default class ElectronApp {
     })
 
     this.window.webContents.setWindowOpenHandler(({ url }) => {
-      Logger.info('OPEN EXTERNAL URL', { url })
-      electron.shell.openExternal(url)
+      // The dev chat panel pops out into its own window (?chatPopout on our
+      // own origin); every other window.open goes to the system browser.
+      try {
+        const parsed = new URL(url)
+        if (parsed.origin === new URL(this.getStartUrl()).origin && parsed.searchParams.has(CHAT_POPOUT_PARAM)) {
+          return {
+            action: 'allow',
+            overrideBrowserWindowOptions: { ...CHAT_POPOUT_SIZE, autoHideMenuBar: true },
+          }
+        }
+      } catch {}
+      this.openExternal(url)
       return { action: 'deny' }
     })
 
-    this.window.webContents.on('will-navigate', (event, url) => {
-      if (url.includes('auth.remote.it')) {
-        Logger.info('AUTH NAVIGATION DETECTED')
+    // The allowed chat popout is a real child window: give it the same
+    // external-URL discipline as the main window, or window.open /
+    // target=_blank / link navigation inside it spawns unguarded native
+    // windows on remote content instead of the system browser
+    this.window.webContents.on('did-create-window', child => {
+      child.webContents.setWindowOpenHandler(({ url }) => {
+        this.openExternal(url)
+        return { action: 'deny' }
+      })
+      child.webContents.on('will-navigate', (event, url) => {
+        try {
+          if (new URL(url).origin === new URL(this.getStartUrl()).origin) return
+        } catch {}
         event.preventDefault()
-        electron.shell.openExternal(url)
+        this.openExternal(url)
+      })
+    })
+
+    this.window.webContents.on('will-navigate', (event, url) => {
+      // This window hosts exactly ONE origin: the app's own UI. Any other navigation —
+      // the auth journey above all — belongs in the SYSTEM browser, where the user's
+      // password manager, passkeys and single sign-on session live. Keyed on origin,
+      // not configuration: the packaged main process has no .env, so an issuer-based
+      // match fails CLOSED into this window; an origin rule fails open to the browser.
+      let external = false
+      try {
+        external = new URL(url).origin !== new URL(this.getStartUrl()).origin
+      } catch {}
+      if (external) {
+        Logger.info('EXTERNAL NAVIGATION -> SYSTEM BROWSER', { url })
+        event.preventDefault()
+        this.openAuthWindow(url)
       }
     })
 
@@ -276,6 +395,13 @@ export default class ElectronApp {
     })
 
     this.logWebErrors()
+  }
+
+  /* The external-URL discipline: everything leaving the renderer opens in
+     the system browser, logged */
+  private openExternal(url: string) {
+    Logger.info('OPEN EXTERNAL URL', { url })
+    electron.shell.openExternal(url)
   }
 
   private validateWindowState(state?: IPreferences['windowState']): IPreferences['windowState'] {

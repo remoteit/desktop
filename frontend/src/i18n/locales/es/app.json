@@ -1161,6 +1161,7 @@
     "settings": "Configuración",
     "signOut": "Cerrar sesión",
     "signOutConfirm": "Al cerrar sesión, este dispositivo podrá transferirse o permitir que otro usuario inicie sesión. Esto detendrá todas las conexiones.",
+    "signedInOnBrowser": "Con sesión iniciada en este navegador",
     "support": "Soporte",
     "supportForum": "Foro de soporte",
     "testUI": "UI de prueba",
@@ -2228,6 +2229,7 @@
   },
   "viewAsBanner": {
     "exit": "Salir del modo de vista como",
+    "supportSession": "Sesión de soporte — viendo como {{email}} hasta {{until}}. Los tokens llevan tu identidad; la persona puede ver y finalizar esta sesión.",
     "viewingAs": "Viendo como: {{email}}"
   }
 }
