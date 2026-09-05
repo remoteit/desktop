@@ -449,7 +449,43 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
   return next
 }
 
+// CROSS-TAB single-flight. The `refreshing` guard above stops a tab racing itself, but the refresh
+// token lives in localStorage and every tab of this origin shares it — so two tabs redeem the SAME
+// token, the AS sees a double-spend and answers as theft: the family is revoked and the person is
+// mailed "A sign-in was ended as a precaution". Not hypothetical — dev logged two reuse_detected
+// events 4ms apart on one session/client (2026-09-04), and the AS is right to do it: treating a
+// race more leniently than a replay would make racing the way to evade detection.
+//
+// The lock makes the redeem exclusive; the RE-READ is what makes it correct. refreshOnce reads the
+// stored token AFTER the lock is held, so a tab that waited redeems the successor the winner just
+// wrote instead of the token it saw before waiting — which would be the very double-spend this
+// exists to prevent. Costs the waiter one extra rotation; costs nobody an alarm.
+//
+// Bounded wait, because tokenRequest has no timeout: a hung fetch holds the lock, and without a
+// bound that would stall EVERY tab where today it stalls only the one. On timeout we proceed
+// unlocked — which is exactly today's behaviour, so the fallback can only be as bad as the status
+// quo, never worse. Same for an environment without Web Locks (older webviews, non-secure
+// contexts): run unlocked rather than not at all.
+const REFRESH_LOCK = 'oidc.refresh'
+const REFRESH_LOCK_WAIT_MS = 10_000
+
 async function refresh(resource: string): Promise<string> {
+  const locks = (navigator as { locks?: { request: Function } } | undefined)?.locks
+  if (!locks?.request || typeof AbortSignal?.timeout !== 'function') return refreshOnce(resource)
+  try {
+    return await locks.request(REFRESH_LOCK, { signal: AbortSignal.timeout(REFRESH_LOCK_WAIT_MS) }, () =>
+      refreshOnce(resource)
+    )
+  } catch (error: any) {
+    // Only the WAIT aborts here — refreshOnce swallows its own failures and returns ''. Waiting
+    // longer than the bound means some tab is wedged mid-refresh; go ahead unlocked rather than
+    // leave this tab unable to call anything.
+    console.warn('OIDC REFRESH LOCK: proceeding unlocked —', error?.name || error?.message)
+    return refreshOnce(resource)
+  }
+}
+
+async function refreshOnce(resource: string): Promise<string> {
   const current = stored()
   if (!current?.refresh_token) return ''
   try {
