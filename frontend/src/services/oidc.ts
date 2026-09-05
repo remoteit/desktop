@@ -5,7 +5,8 @@ import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, OAUTH_PASSPORT_R
  * The renderer-owned OIDC client (permitteer docs/remoteit-desktop-login.md, D8):
  * IDENTICAL on web and desktop — the backend is for machine-local concerns, never auth.
  *
- * Flow: authorize redirect with PKCE (verifier/state in sessionStorage) → the app
+ * Flow: authorize redirect with PKCE (verifier/state in sessionStorage, mirrored to a
+ * state-keyed localStorage record so another tab can finish it — see rememberFlow) → the app
  * (re)boots with ?code&state in its URL → exchange completes here. The only per-shell
  * difference is how the code returns: the page's own /authCallback URL on web; the
  * remoteit://authCallback deep link reloading the window with the same query on packaged
@@ -26,6 +27,15 @@ export type OidcClaims = {
 }
 
 const FLOW_KEY = 'oidc.flow'
+// A flow's record ALSO goes to localStorage, keyed by its state, so a sign-in that completes in
+// ANOTHER tab of this browser can finish it — the email-link case: signup's set-password link
+// (or a password reset) opens in a fresh tab whose sessionStorage is empty, and the AS then sends
+// that tab to the callback carrying a state the first tab minted. Until 2026-09-05 that ended in
+// "Sign-in state mismatch — try again." for every self-signup. sessionStorage stays the same-tab
+// fast path; the shared record is the fallback, single-use, pruned after FLOW_TTL_MS. A support
+// tab keeps its flow tab-scoped, like its tokens — a support launch never arrives by email.
+const FLOW_SHARED_PREFIX = 'oidc.flow:'
+const FLOW_TTL_MS = 24 * 60 * 60 * 1000 // the set-password link's own life (Passport mints it for 24h)
 const TOKENS_KEY = 'oidc.tokens'
 // What the grant behind those tokens was last written from (see oidcGrantStale).
 const DECLARATION_KEY = 'oidc.declaration'
@@ -87,6 +97,43 @@ const tokenStore = (): Storage => {
 }
 
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
+
+function rememberFlow(flow: Flow): void {
+  sessionStorage.setItem(FLOW_KEY, JSON.stringify(flow))
+  if (oidcIsSupportTab()) return
+  try {
+    const now = Date.now()
+    for (const key of Object.keys(localStorage)) {
+      if (!key.startsWith(FLOW_SHARED_PREFIX)) continue
+      let at = 0
+      try { at = (JSON.parse(localStorage.getItem(key) || '{}') as { at?: number }).at ?? 0 } catch { /* unreadable: drop it */ }
+      if (now - at > FLOW_TTL_MS) localStorage.removeItem(key)
+    }
+    localStorage.setItem(FLOW_SHARED_PREFIX + flow.state, JSON.stringify({ ...flow, at: now }))
+  } catch { /* a blocked storage API leaves the same-tab path intact */ }
+}
+
+/** The flow a callback's `state` belongs to: this tab's, else one another tab of this browser
+ *  started (the email-link case). Single-use either way — both records are cleared. */
+function takeFlow(state: string): Flow | undefined {
+  let flow: Flow | undefined
+  try {
+    const raw = sessionStorage.getItem(FLOW_KEY)
+    sessionStorage.removeItem(FLOW_KEY)
+    const own: Flow | undefined = raw ? JSON.parse(raw) : undefined
+    if (own?.state === state) flow = own
+  } catch { /* fall through to the shared record */ }
+  try {
+    const key = FLOW_SHARED_PREFIX + state
+    const raw = localStorage.getItem(key)
+    localStorage.removeItem(key)
+    if (!flow && raw) {
+      const shared = JSON.parse(raw) as Flow & { at?: number }
+      if (Date.now() - (shared.at ?? 0) <= FLOW_TTL_MS) flow = shared
+    }
+  } catch { /* nothing shared */ }
+  return flow
+}
 /** A support session (`act` in the id_token) has NO refresh token — its one access token IS the
  *  session, stored so a reload of the support tab survives until it expires. */
 type Stored = { refresh_token?: string; id_token?: string; support?: { access_token: string; exp: number; type?: string } }
@@ -189,7 +236,7 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'n
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
-  sessionStorage.setItem(FLOW_KEY, JSON.stringify(flow))
+  rememberFlow(flow)
   const url = new URL(d.authorization_endpoint)
   const params: { [key: string]: string } = {
     client_id: OAUTH_CLIENT_ID,
@@ -232,11 +279,9 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   const state = query.get('state')
   if (!state || !(query.get('code') || query.get('error'))) return undefined
 
-  const raw = sessionStorage.getItem(FLOW_KEY)
-  sessionStorage.removeItem(FLOW_KEY)
+  const flow = takeFlow(state)
   cleanUrl()
-  const flow: Flow | undefined = raw ? JSON.parse(raw) : undefined
-  if (!flow || flow.state !== state) throw new Error('Sign-in state mismatch — try again.')
+  if (!flow) throw new Error('Sign-in state mismatch — try again.')
   const error = query.get('error')
   if (error) throw new Error(query.get('error_description') || error)
 
