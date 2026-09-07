@@ -401,19 +401,39 @@ async function refreshOnce(resource: string): Promise<string> {
     // ONLY onto the same token set we rotated from: a sign-out or an account activation
     // that landed mid-flight has already moved the store, and writing the rotation would
     // resurrect the signed-out account (persist() re-files it in the registry — caught by
-    // the multi-account e2e, ~50% of runs) or clobber the activated one. The dropped
-    // successor costs nothing: sign-out already ended the AS session (revoking its refresh
-    // family), and activation replaced the family in use.
-    if (stored()?.refresh_token !== current.refresh_token) return ''
+    // the multi-account e2e, ~50% of runs) or clobber the activated one. The successor is
+    // not dropped, though: it still belongs to the account we rotated FOR, whose saved
+    // registry token is now the SPENT one — switching back would replay it (dev: the app.ai
+    // replays a minute after a switch). Re-file it there — update only; a signed-out account
+    // has no entry left, so nothing comes back.
+    if (stored()?.refresh_token !== current.refresh_token) {
+      refileSuccessor(current.refresh_token, { refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
+      return ''
+    }
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
     const at = decodeJwt(body.access_token)
     access[resource] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
     return body.access_token
   } catch (error: any) {
     console.error('OIDC REFRESH FAILED', error?.message)
-    // A dead grant (revoked / expired session / family revoked on reuse) ends the
-    // session; transient network errors keep it and the next call retries.
-    if (error?.oauthError === 'invalid_grant') clearLocal()
+    if (error?.oauthError === 'invalid_grant') {
+      // The AS tells a STALE COPY apart from a dead grant: "…this copy is stale and the session was
+      // not ended" means the family rotated on without this tab (a response lost to a navigation,
+      // another tab) and the successor is spent too — this store holds nothing newer, but the AS
+      // session is alive. Recover on it the way a just-activated account does (models/auth init):
+      // ONE silent round, prompt=none + login_hint naming THIS account so a multi-account browser
+      // gets the same person back rather than whichever member the AS has active. One-shot: a
+      // second stale refusal for the same account within a minute means the silent round came
+      // back refused (the AS cookie is gone while the tokens lingered), and that is a sign-out.
+      const email = decodeJwt(current.id_token)?.email
+      if (/session was not ended/.test(String(error?.message)) && email && recoverOnce(email)) {
+        void oidcStart({ prompt: 'none', loginHint: email })
+        return ''
+      }
+      // A dead grant (revoked / expired session / family revoked on reuse) ends the session;
+      // transient network errors keep it and the next call retries.
+      clearLocal()
+    }
     return ''
   }
 }
@@ -507,6 +527,32 @@ function fileAccount(tokens: Stored) {
     picture: typeof claims?.picture === 'string' && /^https:\/\//i.test(claims.picture) ? claims.picture : undefined,
     declaration: reg[sub]?.declaration,
   }
+  writeRegistry(reg)
+}
+
+/** The stale-copy recovery's loop-breaker: true the FIRST time an account asks within a minute,
+ *  false for a repeat — sessionStorage, so it rides the same-tab round trip through the AS and
+ *  dies with the tab. Storage refused → no recovery (a plain sign-out), never a loop. */
+const RECOVERING_KEY = 'oidc.recovering'
+function recoverOnce(email: string): boolean {
+  try {
+    const [who, at] = (sessionStorage.getItem(RECOVERING_KEY) ?? '').split('|')
+    if (who === email && Date.now() - Number(at) < 60_000) return false
+    sessionStorage.setItem(RECOVERING_KEY, `${email}|${Date.now()}`)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** A rotation that completed for an account no longer in the active store: put its successor on
+ *  that account's registry entry — UPDATE only, never insert (a signed-out account has no entry and
+ *  must stay gone). Without this the entry keeps the spent token and the next activation replays it. */
+function refileSuccessor(spent: string, tokens: Stored) {
+  const reg = readRegistry()
+  const sub = Object.keys(reg).find(k => reg[k].refresh_token === spent)
+  if (!sub) return
+  reg[sub] = { ...reg[sub], refresh_token: tokens.refresh_token, id_token: tokens.id_token ?? reg[sub].id_token }
   writeRegistry(reg)
 }
 
