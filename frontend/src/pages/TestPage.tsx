@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import cloudSync from '../services/CloudSync'
-import { TEST_HEADER, OAUTH_GRAPHQL_RESOURCE } from '../constants'
+import { TEST_HEADER, GRAPHQL_API } from '../constants'
 import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
-import { getApiURL, getWebSocketURL } from '../helpers/apiHelper'
+import { getApiURL, getWebSocketURL, resourceForApiURL } from '../helpers/apiHelper'
 import { bindableResources } from '../services/permitteerAccount'
 import { oidcAccessToken } from '../services/oidc'
 import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
@@ -45,20 +45,42 @@ export const TestPage: React.FC = () => {
     bindableResources().then(setTargets)
   }, [])
 
-  type StagePair = { stage: string; name: string; graphql?: string; ws?: string }
+  // `resources` is what we MINT for, kept apart from the URLs we CALL because the two front shapes
+  // disagree about that. A legacy stage is two hosts and two identifiers (graphql + events); a
+  // unified-front stage is ONE identifier with both as paths inside it. Keyed by shape AND stage,
+  // never stage alone: a client allowed both — which every dev client is, mid-migration — would
+  // otherwise collide the two into one row that describes neither.
+  type StagePair = { key: string; name: string; graphql?: string; ws?: string; resources: string[] }
   const stagePairs: StagePair[] = React.useMemo(() => {
     const pairs = new Map<string, StagePair>()
+    const at = (key: string, name: string) => pairs.get(key) || { key, name, resources: [] }
     for (const target of targets) {
+      // The UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md). The identifier is not a URL to
+      // call: graphql and the socket hang off it, and one audience covers both.
+      const cloud = target.identifier.match(/^https:\/\/cloud(?:\.([a-z0-9-]+))?\.remote\.it\/api$/)
+      if (cloud) {
+        const key = `cloud:${cloud[1] || 'prod'}`
+        pairs.set(key, {
+          ...at(key, target.name),
+          name: target.name,
+          graphql: `${target.identifier}/graphql`,
+          ws: `${target.identifier.replace(/^https:/, 'wss:')}/ws`,
+          resources: [target.identifier],
+        })
+        continue
+      }
       const gql = target.identifier.match(/^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/)
       const ws = target.identifier.match(/^wss:\/\/ws(?:\.([a-z0-9-]+))?\.remote\.it\/v1$/)
       if (!gql && !ws) continue // passport / account-api entries are not switch targets
       const stage = (gql?.[1] ?? ws?.[1]) || 'prod'
-      const pair = pairs.get(stage) || { stage, name: stage }
+      const key = `legacy:${stage}`
+      const pair = at(key, stage)
       if (gql) {
         pair.graphql = target.identifier
         pair.name = target.name
       } else pair.ws = target.identifier
-      pairs.set(stage, pair)
+      pair.resources = [...pair.resources, target.identifier]
+      pairs.set(key, pair)
     }
     return [...pairs.values()].filter(pair => pair.graphql)
   }, [targets])
@@ -68,7 +90,10 @@ export const TestPage: React.FC = () => {
   // so the switch is gone and `switchApi` (still read by the Electron backend to configure
   // the CLI binary) is set from here. `customMode` is held locally because a hand-typed URL
   // may coincide with a registered stage, and the choice should not silently jump to it.
-  const currentGraphql = apis.switchApi && apis.apiGraphqlURL ? apis.apiGraphqlURL : OAUTH_GRAPHQL_RESOURCE
+  // Compare on the URL the app actually CALLS, not on the audience it mints for. Those were the
+  // same string until the unified front, where the build's resource (…/api) matches no row's URL
+  // (…/api/graphql) — so every radio read unchecked and the picker looked broken.
+  const currentGraphql = getApiURL()
   const [customMode, setCustomMode] = useState<boolean | undefined>(undefined)
   const customSelected =
     customMode ?? (!!apis.switchApi && stagePairs.length > 0 && !stagePairs.some(p => p.graphql === currentGraphql))
@@ -88,7 +113,7 @@ export const TestPage: React.FC = () => {
   async function selectStage(pair: StagePair) {
     setMintError('')
     setCustomMode(false)
-    const isDefault = pair.graphql === OAUTH_GRAPHQL_RESOURCE
+    const isDefault = pair.graphql === GRAPHQL_API
     const values = {
       switchApi: !isDefault,
       apiGraphqlURL: pair.graphql!,
@@ -97,10 +122,9 @@ export const TestPage: React.FC = () => {
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
     emit('preferences', { ...preferences, ...values })
     try {
-      if (!isDefault) {
-        await oidcAccessToken(pair.graphql!)
-        if (pair.ws) await oidcAccessToken(pair.ws)
-      }
+      // One mint per RESOURCE, which is two on a legacy stage and one on the unified front — where
+      // asking for the socket URL separately would answer invalid_target, correctly.
+      if (!isDefault) for (const resource of pair.resources) await oidcAccessToken(resource)
       emit('binaries/install')
       cloudSync.all()
     } catch (error) {
@@ -176,7 +200,7 @@ export const TestPage: React.FC = () => {
       <List>
         {stagePairs.map(pair => (
           <ListItemRadio
-            key={pair.stage}
+            key={pair.key}
             label={pair.name}
             subLabel={pair.ws ? `${pair.graphql} + events` : pair.graphql}
             checked={!customSelected && currentGraphql === pair.graphql}
@@ -212,7 +236,7 @@ export const TestPage: React.FC = () => {
                   setMintError('')
                   await setAPIPreference('apiGraphqlURL', url)
                   try {
-                    await oidcAccessToken(url)
+                    await oidcAccessToken(resourceForApiURL(url))
                   } catch (error) {
                     setMintError(error instanceof Error ? error.message : String(error))
                   }
