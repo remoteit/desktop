@@ -9,12 +9,17 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken, apiAuthHeaders } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc' 
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
 import i18n from '../i18n'
+
+// One re-authorize attempt per browser session, keyed by the declaration it was made from
+// (healGrant below). sessionStorage rather than local: the bound is meant to survive reloads of
+// this tab and nothing more, so a new tab is always a clean slate.
+const GRANT_HEAL_KEY = 'oidc.regrant'
 
 export interface AWSUser {
   authProvider: string
@@ -159,22 +164,46 @@ export default createModel<RootModel>()({
      *  whose declaration outruns what the AS will grant it — a second try would return here
      *  and loop the person through the browser forever. Same loop-breaker the console's
      *  renew marker uses. */
-    async healGrant() {
-      const ATTEMPTED = 'oidc.regrant'
+    async healGrant(options?: { force?: boolean }) {
       try {
         if (!oidcGrantStale()) {
-          window.sessionStorage.removeItem(ATTEMPTED)
+          window.sessionStorage.removeItem(GRANT_HEAL_KEY)
           return
         }
-        if (window.sessionStorage.getItem(ATTEMPTED)) {
+        // FORCE is for a deliberate human action (the chat's "Refresh permissions" button). The
+        // loop-breaker below exists to stop an AUTOMATIC retry cycling someone through the browser
+        // forever; a person clicking a button is their own loop-breaker, and suppressing them makes
+        // the control inert with no feedback — which is exactly what it did, since the boot heal
+        // above spends the attempt before the button is ever shown.
+        //
+        // The marker records WHICH declaration was tried, not merely that something was, so a
+        // deploy that changes what this build asks for gets a fresh attempt instead of inheriting
+        // the previous refusal.
+        if (!options?.force && window.sessionStorage.getItem(GRANT_HEAL_KEY) === oidcDeclaration()) {
           console.warn('AUTH: grant still stale after re-authorizing; not retrying this session')
           return
         }
         console.log('AUTH: grant predates this build’s declaration — re-authorizing')
-        window.sessionStorage.setItem(ATTEMPTED, '1')
+        window.sessionStorage.setItem(GRANT_HEAL_KEY, oidcDeclaration())
         await oidcStart({})
       } catch (error) {
         console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
+      }
+    },
+    /** A resource server answering "this grant does not cover me" is SERVER truth, and newer than
+     *  the client-side fingerprint the marker was written from — the declaration can be unchanged
+     *  while the registry behind it moved (2026-09-06: app.ai was repointed at a new MCP resource
+     *  hours before the actor was registered to act toward it, so the one automatic attempt was
+     *  spent on a refusal that a later apply fixed, and nothing could try again).
+     *
+     *  Deliberately only FORGETS the attempt. Re-authorizing from here would redirect the person to
+     *  the AS mid-turn and lose whatever they were typing; this just makes the button live and lets
+     *  the next boot heal on its own. */
+    async forgetGrantHealAttempt() {
+      try {
+        window.sessionStorage.removeItem(GRANT_HEAL_KEY)
+      } catch {
+        /* storage unavailable — the marker was never written either */
       }
     },
     // Leave for the AS (the whole login UX — email-first, org SSO, MFA, signup, forgot —

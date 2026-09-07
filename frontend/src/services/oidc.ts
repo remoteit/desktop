@@ -367,6 +367,11 @@ export function oidcGrantStale(): boolean {
   }
 }
 
+/** The fingerprint itself, for a caller that must record WHICH declaration an attempt was made
+ *  from rather than merely that one was (the grant-heal marker in models/auth.ts). Exported rather
+ *  than recomputed there, so the two can never disagree about what "the same request" means. */
+export const oidcDeclaration = (): string => declarationFingerprint()
+
 export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; supportTicket?: string } = {}): Promise<void> {
   const d = await discover()
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
