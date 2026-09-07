@@ -6,7 +6,12 @@ export const MODE = env.MODE || 'development'
 // web and desktop; the backend never touches auth.
 export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''
 export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
-export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://graphql.dev.remote.it/graphql'
+// The dev stage's UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md). The identifier is the
+// TREE, not the graphql URL: /api covers graphql, the user REST surface and the events socket, so
+// one token serves all three. Was https://graphql.dev.remote.it/graphql until 2026-09-06, when
+// that host was destroyed — a build falling back to the old default now asks for an audience whose
+// resource server is being retired, and gets invalid_target.
+export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://cloud.dev.remote.it/api'
 export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.dev.remote.it/account/api'
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
