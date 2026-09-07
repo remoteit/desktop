@@ -32,13 +32,18 @@ export const PENDING_FEATURES: ILookup<boolean> = {
 // web and desktop; the backend never touches auth.
 export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''
 export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
-export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://graphql.dev.remote.it/graphql'
+// The dev stage's UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md). The identifier is the
+// TREE, not the graphql URL: /api covers graphql, the user REST surface and the events socket, so
+// one token serves all three. Was https://graphql.dev.remote.it/graphql until 2026-09-06, when
+// that host was destroyed — a build falling back to the old default now asks for an audience whose
+// resource server is being retired, and gets invalid_target.
+export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://cloud.dev.remote.it/api'
 export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.dev.remote.it/account/api'
 // The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
 // tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail
 // delegated onward to the service actor — which is what makes those tokens exchangeable.
 export const OAUTH_AGENT_RESOURCE = env.VITE_OAUTH_AGENT_RESOURCE || 'https://agent.dev.remote.it'
-export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || 'https://mcp.dev.remote.it/mcp'
+export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || 'https://cloud.dev.remote.it/mcp'
 // FALLBACK only: the live name is DISCOVERED from the MCP resource's PRM at sign-in
 // (services/oidc.ts) — per-resource keying made it stage-stable, and the 2026-08-31
 // retirement of the _dev names is exactly why a pinned copy can't be the source of truth.
@@ -47,11 +52,19 @@ export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
-// The access token's audience IS the GraphQL URL, so the data plane defaults to the
-// resource we mint for rather than to a fixed stage — otherwise an install that sets only
-// the OIDC vars calls one stage with another stage's token and 401s with nothing in the UI
-// explaining why. Set VITE_GRAPHQL_API (or pick a stage in Test Settings) to override.
-export const GRAPHQL_API = env.VITE_GRAPHQL_API || OAUTH_GRAPHQL_RESOURCE
+// The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
+// install that sets only the OIDC vars calls one stage with another stage's token and 401s with
+// nothing in the UI explaining why. Set VITE_GRAPHQL_API (or pick a stage in Test Settings) to
+// override.
+//
+// Two front shapes exist, and the audience means a different thing in each. On the legacy per-stage
+// HOSTS the identifier IS the graphql URL (https://graphql.<stage>.remote.it/graphql). On the
+// UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md) one host carries every surface under PATH
+// TREES, so the identifier is the TREE — https://cloud.<stage>.remote.it/api — and graphql and the
+// socket are paths INSIDE it. Calling the audience directly there would POST queries at the tree
+// root, so the tree has to be recognised and the leaf appended.
+const cloudTree = OAUTH_GRAPHQL_RESOURCE.match(/^https:\/\/cloud(?:\.[a-z0-9-]+)?\.remote\.it\/api$/)?.[0]
+export const GRAPHQL_API = env.VITE_GRAPHQL_API || (cloudTree ? `${cloudTree}/graphql` : OAUTH_GRAPHQL_RESOURCE)
 export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || GRAPHQL_API
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const PORTAL_URL = env.VITE_PORTAL_URL || brand.package?.homepage || 'https://app.remote.it'
@@ -59,12 +72,20 @@ export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcx
 
 export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
 
-// Pairs with the GraphQL stage above (graphql.dev…/graphql <-> wss://ws.dev…/v1), the same
-// pairing Test Settings' stage picker applies. Previously these had NO fallback: dropping
-// the env var left the socket URL undefined, which breaks the app before the UI that could
-// fix it is reachable.
+// Pairs with the GraphQL stage above, the same pairing Test Settings' stage picker applies:
+// graphql.<stage>…/graphql <-> wss://ws.<stage>…/v1 on the legacy hosts, and the tree's own /ws
+// path on the unified front. Previously these had NO fallback: dropping the env var left the
+// socket URL undefined, which breaks the app before the UI that could fix it is reachable.
+//
+// The cloud branch is not a nicety. The legacy regex CANNOT match a tree identifier, and its miss
+// falls through to the unlabelled `wss://ws.remote.it/v1` — PRODUCTION's socket. A dev build that
+// merely stopped setting VITE_WEBSOCKET_URL would have connected there silently.
 const graphqlStage = GRAPHQL_API.match(/^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/)?.[1]
-export const WEBSOCKET_URL = env.VITE_WEBSOCKET_URL || `wss://ws${graphqlStage ? `.${graphqlStage}` : ''}.remote.it/v1`
+export const WEBSOCKET_URL =
+  env.VITE_WEBSOCKET_URL ||
+  (cloudTree
+    ? `${cloudTree.replace(/^https:/, 'wss:')}/ws`
+    : `wss://ws${graphqlStage ? `.${graphqlStage}` : ''}.remote.it/v1`)
 export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL || WEBSOCKET_URL
 export const PORT = env.VITE_PORT || 29999
 export const PASSWORD_MIN_LENGTH = env.PASSWORD_MIN_LENGTH ? Number(env.PASSWORD_MIN_LENGTH) : 7
