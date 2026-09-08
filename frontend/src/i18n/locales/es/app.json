@@ -50,7 +50,7 @@
     "sendPromotionRequest": "Enviar solicitud de promoción"
   },
   "addDevice": {
-    "codeExpiration": "El código caduca en {{hours}}\u00a0horas."
+    "codeExpiration": "El código caduca en {{hours}} horas."
   },
   "addFromNetwork": {
     "scanForServices": "Buscar servicios",
@@ -2141,8 +2141,13 @@
   "testPage": {
     "addQueryHeader": "Agregar encabezado de consulta",
     "addQueryHeaderPlaceholder": "Ejemplo: \"key:value\"",
+    "apiTarget": "Destino de la API",
     "clearViewedAnnouncements": "Borrar anuncios vistos",
     "clearViewedAnnouncementsHint": "Marca todos los anuncios cargados como no leídos para esta cuenta.",
+    "customAPITarget": "Personalizado",
+    "customAPITargetHint": "Apunta a una URL que el servidor de autorización no ha registrado.",
+    "customGraphQLURL": "URL de GraphQL personalizada (avanzado)",
+    "customWebSocketURL": "URL de WebSocket personalizada (avanzado)",
     "disableTestUI": "Deshabilitar la interfaz de prueba",
     "disableTestUIHint": "Para volver a habilitar la interfaz alfa, debes seleccionar el menú de avatar mientras mantienes presionado alt-shift.",
     "featureLabel": "{{name}} (predeterminado {{state}})",
@@ -2150,6 +2155,7 @@
     "hideTestUIBackgrounds": "Ocultar fondos de la interfaz de prueba",
     "licenseMessageCleared": "Mensaje de licencia borrado",
     "licensingOptions": "Opciones de licencia",
+    "mintError": "Este destino fue rechazado al emitir el token: {{error}}",
     "overrideDefaultAPIs": "Anular las API predeterminadas",
     "overrideLicensesAndLimits": "Anular licencias y límites",
     "reset": "Restablecer",
