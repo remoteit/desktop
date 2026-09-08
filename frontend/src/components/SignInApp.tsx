@@ -7,6 +7,7 @@ import { OidcErrorCode, oidcAutoStartsSpent, oidcCountAutoStart } from '../servi
 import { MODE } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
+import { oidcIsSupportTab } from '../services/oidc'
 
 /**
  * The sign-in panel is a LAUNCHER now: the whole journey — email-first with org SSO
@@ -91,7 +92,7 @@ const AUTO_START_LIMIT = 2
 
 export function SignInApp() {
   const { t } = useTranslation()
-  const { signInFailed, signInError, signInErrorCode, signInRetryAfter, signingIn } = useSelector(
+  const { signInFailed, signInError, signInErrorCode, signInRetryAfter, signingIn, initialized } = useSelector(
     (state: State) => state.auth
   )
   const { auth, ui } = useDispatch<Dispatch>()
@@ -106,8 +107,13 @@ export function SignInApp() {
      actually bit — a path that returns without recording the failure — since an automatic
      authorize renders nothing to a person and the first visible symptom is the AS
      rate-limiting the address. A click is never counted against it. */
+  // A SUPPORT tab (opened by the console's launch — permitteer docs/desktop-support.md) never
+  // auto-starts a plain sign-in: that would sign the operator in as THEMSELVES and quietly turn
+  // the support view into their own account. auth.init drives the ticketed authorize; once the
+  // session has ended, the tab says so and stops.
+  const supportTab = oidcIsSupportTab()
   const budgetSpent = oidcAutoStartsSpent() >= AUTO_START_LIMIT
-  const autoStart = !browser.isElectron && !signingIn && !signInFailed && !budgetSpent
+  const autoStart = !browser.isElectron && !signingIn && !signInFailed && !budgetSpent && !supportTab
   useEffect(() => {
     if (!autoStart) return
     oidcCountAutoStart()
@@ -129,6 +135,28 @@ export function SignInApp() {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [budgetSpent, signInFailed, signingIn])
+  if (supportTab)
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={12} paddingX={4}>
+        {initialized ? (
+          <>
+            <Typography variant="h1" textAlign="center">
+              Support session ended
+            </Typography>
+            <Typography variant="body2" color="textSecondary" textAlign="center">
+              Close this tab to return to the console.
+            </Typography>
+          </>
+        ) : (
+          <>
+            <CircularProgress size={28} />
+            <Typography variant="body2" color="textSecondary">
+              Opening the support session…
+            </Typography>
+          </>
+        )}
+      </Box>
+    )
 
   if (autoStart || (!browser.isElectron && signingIn))
     return (

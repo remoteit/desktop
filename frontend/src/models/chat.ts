@@ -231,13 +231,21 @@ export default createModel<RootModel>()({
             } else {
               // Buffered text must land before the next non-text event
               flushDeltas()
+              // The agent saying the grant does not cover it is SERVER truth, newer than the
+              // fingerprint the heal marker was written from — so a refusal recorded earlier in
+              // this browser session stops standing in the way of trying again.
+              if (event.type === 'error' && event.message.startsWith('reauth_required'))
+                dispatch.auth.forgetGrantHealAttempt()
               dispatch.chat.applyEvent(event)
             }
           },
         })
       } catch (error) {
         flushDeltas()
-        if (error instanceof AgentAuthError) dispatch.chat.set({ error: authRequiredError(), health: 'unauthorized' })
+        if (error instanceof AgentAuthError) {
+          dispatch.auth.forgetGrantHealAttempt() // same reason as the streamed reauth_required above
+          dispatch.chat.set({ error: authRequiredError(), health: 'unauthorized' })
+        }
         else if (error instanceof UsageLimitError)
           dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
         else if ((error as Error).name !== 'AbortError')
@@ -332,7 +340,11 @@ export default createModel<RootModel>()({
        app works means the standing grant predates this build's agent slice, so
        the fix is the grant heal: one silent re-authorize that merges it in. */
     async signIn() {
-      await dispatch.auth.healGrant()
+      // FORCE: this is the person pressing "Refresh permissions" after being told the agent lacks
+      // authority. Without it the press reaches healGrant's one-attempt loop-breaker — already
+      // spent by the boot heal, which runs first and is the very failure that put this button on
+      // screen — and returns silently, leaving a control that does nothing.
+      await dispatch.auth.healGrant({ force: true })
       await dispatch.chat.checkHealth()
     },
     /* The history picker's list — refreshed on mount, after a turn, and after a delete. */

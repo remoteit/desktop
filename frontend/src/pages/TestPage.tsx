@@ -4,7 +4,7 @@ import cloudSync from '../services/CloudSync'
 import { OAUTH_AGENT_RESOURCE } from '../constants'
 import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
-import { getApiURL, getWebSocketURL } from '../helpers/apiHelper'
+import { getApiURL, getWebSocketURL, resourceForApiURL } from '../helpers/apiHelper'
 import { oidcAccessToken, oidcMintError } from '../services/oidc'
 import { selectLimitsLookup, selectFeatures } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
@@ -118,20 +118,55 @@ export const TestPage: React.FC = () => {
   // — that is what every one of the three APIs actually moves to.
   const stageDomain = (stage: string) => (stage === 'prod' ? 'remote.it' : `${stage}.remote.it`)
 
-  type StagePair = { stage: string; name: string; graphql?: string; ws?: string }
+  /* `resources` is what we MINT for, kept apart from the URLs we CALL, because the two front
+     shapes disagree about that. A legacy stage is two hosts and two identifiers (graphql +
+     events). A UNIFIED FRONT stage (graphql-permitteer docs/CLOUD-EDGE.md) is ONE identifier —
+     https://cloud.<stage>.remote.it/api — with graphql and the socket as PATHS inside it, so the
+     identifier is not a URL to call and asking for the socket separately answers invalid_target.
+
+     Keyed by shape AND stage, never stage alone: a client allowed both, which every dev client is
+     mid-migration, would otherwise collide the two into one row describing neither. They render as
+     two rows of the same stage told apart by `domain`, which is what that column is for — and the
+     legacy row leaves on its own the day its identifier is retired from the allowlist. */
+  type StagePair = {
+    key: string
+    stage: string
+    name: string
+    domain: string
+    graphql?: string
+    ws?: string
+    resources: string[]
+  }
   const stagePairs: StagePair[] = useMemo(() => {
     const pairs = new Map<string, StagePair>()
     for (const target of targets) {
+      const cloud = target.identifier.match(/^https:\/\/(cloud(?:\.([a-z0-9-]+))?\.remote\.it)\/api$/)
+      if (cloud) {
+        const stage = cloud[2] || 'prod'
+        const key = `cloud:${stage}`
+        pairs.set(key, {
+          key,
+          stage,
+          name: target.name,
+          domain: cloud[1],
+          graphql: `${target.identifier}/graphql`,
+          ws: `${target.identifier.replace(/^https:/, 'wss:')}/ws`,
+          resources: [target.identifier],
+        })
+        continue
+      }
       const gql = target.identifier.match(/^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/)
       const ws = target.identifier.match(/^wss:\/\/ws(?:\.([a-z0-9-]+))?\.remote\.it\/v1$/)
       if (!gql && !ws) continue // passport / account-api entries are not switch targets
       const stage = (gql?.[1] ?? ws?.[1]) || 'prod'
-      const pair = pairs.get(stage) || { stage, name: stage }
+      const key = `legacy:${stage}`
+      const pair = pairs.get(key) || { key, stage, name: stage, domain: stageDomain(stage), resources: [] }
       if (gql) {
         pair.graphql = target.identifier
         pair.name = target.name
       } else pair.ws = target.identifier
-      pairs.set(stage, pair)
+      pair.resources = [...pair.resources, target.identifier]
+      pairs.set(key, pair)
     }
     return [...pairs.values()].filter(pair => pair.graphql)
   }, [targets])
@@ -149,7 +184,9 @@ export const TestPage: React.FC = () => {
     }
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
     emitPreferences(values)
-    if (!(await mintCheck(pair.graphql!, ...(pair.ws ? [pair.ws] : [])))) return
+    // One mint per RESOURCE — two on a legacy stage, one on the unified front, where the socket
+    // has no identity of its own and asking for one would be refused.
+    if (!(await mintCheck(...pair.resources))) return
     emit('binaries/install')
     cloudSync.all()
   }
@@ -256,9 +293,9 @@ export const TestPage: React.FC = () => {
             <List disablePadding>
               {stagePairs.map(pair => (
                 <ListItemRadio
-                  key={pair.stage}
+                  key={pair.key}
                   label={stageLabel(pair.stage)}
-                  subLabel={stageDomain(pair.stage)}
+                  subLabel={pair.domain}
                   disabled={!customSelected}
                   // Lit only when the WHOLE pair still matches — editing either URL by hand
                   // drops the light, so a half-custom target can never read as a stage.
@@ -292,7 +329,7 @@ export const TestPage: React.FC = () => {
                   const url = result.toString()
                   setMintError('')
                   await setAPIPreference('apiGraphqlURL', url)
-                  if (!(await mintCheck(url))) return
+                  if (!(await mintCheck(resourceForApiURL(url)))) return
                   emit('binaries/install')
                   cloudSync.all()
                 }}
