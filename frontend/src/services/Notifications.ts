@@ -50,7 +50,7 @@ function stateNotification(event: ICloudEvent) {
   event.target.forEach(target => {
     // notify if device changes state only
     if (target.typeID === DEVICE_TYPE) {
-      let body = platforms.nameLookup[target.platform]
+      let body = platforms.type(target.platform).name
       let url = `/devices/${target.deviceId}`
       if (target.service?.id) url += `/${target.service?.id}`
       if (event.authUserId !== target.owner?.id) body += ' - ' + target.owner?.email
