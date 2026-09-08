@@ -25,6 +25,12 @@ export default createModel<RootModel>()({
       const result = await graphQLBasicRequest(
         ` query Accounts {
               login {
+                id
+                account {
+                  devices(size: 0) {
+                    total
+                  }
+                }
                 membership {
                   created
                   customRole {
@@ -51,19 +57,29 @@ export default createModel<RootModel>()({
       console.log('MEMBERSHIPS', gqlData)
       if (!gqlData) return
       const membership = gqlData.membership || []
-      dispatch.accounts.set({
-        membership: membership.map(m => ({
-          created: new Date(m.created),
-          roleId: m.customRole.id,
-          roleName: m.customRole.name,
-          license: m.license || [],
-          account: m.organization.account,
-          name: m.organization.name,
-        })),
-      })
-      if (!membership.find(m => m.organization.account.id === state.accounts.activeId)) {
-        dispatch.accounts.set({ activeId: undefined })
+      const memberships: IMembership[] = membership.map(m => ({
+        created: new Date(m.created),
+        roleId: m.customRole.id,
+        roleName: m.customRole.name,
+        license: m.license || [],
+        account: m.organization.account,
+        name: m.organization.name,
+      }))
+      dispatch.accounts.set({ membership: memberships })
+
+      const userId = state.auth.user?.id || state.user.id
+      let activeId = state.accounts.activeId
+      if (activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)) activeId = undefined
+
+      // A member with an empty personal account starts in their organization rather than
+      // on an empty device list - only when nothing has been selected yet, so a remembered
+      // account (including a deliberate switch to personal) still wins.
+      if (!activeId && memberships.length && !gqlData.account?.devices?.total) {
+        const oldest = [...memberships].sort((a, b) => a.created.getTime() - b.created.getTime())[0]
+        activeId = oldest.account.id
       }
+
+      if (activeId !== state.accounts.activeId) dispatch.accounts.set({ activeId })
     },
     async select(accountId: string) {
       await dispatch.logs.reset()
