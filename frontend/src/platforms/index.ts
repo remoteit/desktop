@@ -168,6 +168,13 @@ class Platforms {
     })
   }
 
+  // Types with an /add page, for a picker a user chooses from. `nameLookup` is deliberately
+  // wider — every catalogue type, so `type()` can name a legacy device — which makes it the
+  // wrong source here: it carries ids no page onboards, and labels that repeat.
+  get pageTypes(): INumberLookup<string> {
+    return Object.fromEntries(Object.keys(this.lookup).map(type => [type, this.nameLookup[type]]))
+  }
+
   type(type: number): IPlatform {
     const id = this.lookup[type]
     if (id) return this.get(id)

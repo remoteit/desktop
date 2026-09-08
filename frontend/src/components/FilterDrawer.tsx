@@ -134,8 +134,8 @@ export const FilterDrawer: React.FC = () => {
                 value={state.platform === undefined ? [-1] : state.platform}
                 onSelect={onPlatform}
                 filterList={platformFilter.concat(
-                  Object.keys(platforms.nameLookup)
-                    .map(p => ({ value: parseInt(p), name: platforms.nameLookup[p] }))
+                  Object.entries(platforms.pageTypes)
+                    .map(([value, name]) => ({ value: parseInt(value), name }))
                     .sort(byName)
                 )}
               />
