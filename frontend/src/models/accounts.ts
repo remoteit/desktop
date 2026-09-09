@@ -84,7 +84,8 @@ export default createModel<RootModel>()({
       const { membership } = state.accounts
       const result = await graphQLLeaveMembership(id)
       if (result !== 'ERROR') {
-        dispatch.accounts.set({ membership: membership.filter(m => m.account.id !== id), activeId: state.user.id })
+        dispatch.accounts.set({ membership: membership.filter(m => m.account.id !== id) })
+        await dispatch.accounts.select(state.user.id)
         dispatch.ui.set({
           successMessage: i18n.t('notices:organization.left', {
             defaultValue: 'You have successfully left the organization.',
