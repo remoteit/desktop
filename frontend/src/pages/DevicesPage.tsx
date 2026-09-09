@@ -3,7 +3,6 @@ import { Dispatch, State } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../selectors/devices'
-import { selectActiveAccountId } from '../selectors/accounts'
 import { getConnectionsLookup } from '../selectors/connections'
 import { selectCanRegister } from '../selectors/organizations'
 import { selectDefaultAccountId } from '../selectors/accounts'
@@ -25,7 +24,6 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const { attributes, required } = useSelector(selectDeviceListAttributes)
   const { fetching: deviceFetching, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
   const devices = useSelector(selectVisibleDevices)
-  const accountId = useSelector(selectActiveAccountId)
   const canRegister = useSelector(selectCanRegister)
   const defaultAccountId = useSelector(selectDefaultAccountId)
   const connections = useSelector(getConnectionsLookup)
