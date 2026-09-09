@@ -10,7 +10,7 @@ import { getToken } from '../services/remoteit'
 type IUserState = {
   id: string
   email: string
-  created: Date
+  created: Date | null
   notificationSettings: INotificationSetting
   reseller: IResellerRef | null
   language: string

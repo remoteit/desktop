@@ -531,7 +531,7 @@ declare global {
     email: string
     authHash?: string
     yoicsId?: string
-    created?: Date
+    created?: Date | null
     timestamp?: Date
     scripting?: boolean // @FIXME why do we have scripting on a user seems like a share setting
     apiKey?: string
@@ -557,7 +557,7 @@ declare global {
   type IUserRef = {
     id: string
     email: string
-    created?: Date
+    created?: Date | null
     scripting?: boolean
   }
 
