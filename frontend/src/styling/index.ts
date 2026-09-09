@@ -116,3 +116,38 @@ export const radius = {
   sm: 7,
   lg: 14,
 }
+
+/* The app's scrollbar. One implementation, so every scroll surface matches:
+   the thumb hides against its own background and only appears while the pointer
+   is over the surface. `width` is the knob — the page default, or NARROW for
+   small overflow areas (inline code, tables) where the full bar would swamp the
+   content. Body passes 0 on mobile, where the OS draws its own overlay bar.
+
+   Hover is CSS rather than React state so a scroll surface does not re-render
+   on pointer enter. */
+export const SCROLLBAR_WIDTH = 15
+export const SCROLLBAR_WIDTH_NARROW = 8
+
+export const scrollbarStyles = (theme: Theme, options: { background?: Color; width?: number } = {}) => {
+  const { background = 'white', width = SCROLLBAR_WIDTH } = options
+  const bg = theme.palette[background].main
+  const thumb = theme.palette.grayLight.main
+  const narrow = width <= SCROLLBAR_WIDTH_NARROW
+  return {
+    // Firefox has no thumb pseudo-element; it takes the pair directly
+    scrollbarWidth: (narrow ? 'thin' : 'auto') as 'thin' | 'auto',
+    scrollbarColor: `${bg} transparent`,
+    '&:hover': { scrollbarColor: `${thumb} transparent` },
+    '&::-webkit-scrollbar': { WebkitAppearance: 'none' as const },
+    '&::-webkit-scrollbar:vertical': { width },
+    '&::-webkit-scrollbar:horizontal': { height: width },
+    '&::-webkit-scrollbar-corner': { background: bg },
+    '&::-webkit-scrollbar-thumb': {
+      borderRadius: radius.sm,
+      // The inset border is what makes the thumb read as slim inside a wide track
+      border: `${narrow ? 2 : 4}px solid ${bg}`,
+      backgroundColor: bg,
+    },
+    '&:hover::-webkit-scrollbar-thumb': { backgroundColor: thumb },
+  }
+}

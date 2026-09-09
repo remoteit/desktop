@@ -35,6 +35,10 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   // has actually finished - a switched-to account swaps in an empty, unloaded model.
   const shouldRedirect = initLoad && initialized && canRegister
 
+  /* An empty list means "add your first device" only once it has actually loaded — so
+     arm on the way down and redirect on the way up, never both in one pass. Keyed to
+     the account and re-run when the list empties, so every switch re-decides instead
+     of inheriting the last account's answer. */
   useEffect(() => {
     if (!initialized) setInitLoad(true)
     if (shouldRedirect && !devices.length) {

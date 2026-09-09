@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { PasswordStrengthInput } from './PasswordStrengthInput'
 import { Button, TextField, Typography } from '@mui/material'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { ConfirmButton } from '../../buttons/ConfirmButton'
-import { Dispatch } from '../../store'
+import { Dispatch, State } from '../../store'
 import { Gutters } from '../Gutters'
 
 export const ChangePassword = () => {
@@ -16,22 +16,65 @@ export const ChangePassword = () => {
   const [saving, setSaving] = useState<boolean>(false)
   const [key, setKey] = useState<number>(0)
   const { auth } = useDispatch<Dispatch>()
+  const passwordChallenge = useSelector((state: State) => state.auth.passwordChallenge)
+  const [code, setCode] = useState<string>('')
   const history = useHistory()
 
   const evaluateCurrentPassword = (e: { target: { value: React.SetStateAction<string> } }) => {
     setCurrentPassword(e.target.value.toString())
   }
+  const reset = () => {
+    setCurrentPassword('')
+    setPassword('')
+    setCode('')
+    setValid(false)
+    setKey(k => k + 1)
+  }
   const updatePassword = async () => {
     setSaving(true)
     const success = await auth.changePassword({ currentPassword, password })
     setSaving(false)
-    if (success) {
-      setCurrentPassword('')
-      setPassword('')
-      setValid(false)
-      setKey(k => k + 1)
-    }
+    if (success) reset()
   }
+  const verifyCode = async () => {
+    setSaving(true)
+    const success = await auth.completePasswordChallenge(code)
+    setSaving(false)
+    if (success) reset()
+    else setCode('')
+  }
+
+  // The credential store challenged (pool MFA): the change is staged server-side and
+  // completes with the authenticator code — same proof the console relays.
+  if (passwordChallenge)
+    return (
+      <>
+        <Typography variant="subtitle1" gutterBottom>
+          {t('changePassword.title', 'Change Password')}
+        </Typography>
+        <Gutters sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
+          <Typography variant="body2" gutterBottom>
+            {t('changePassword.mfaPrompt', 'Enter the 6-digit code from your authenticator to finish changing your password.')}
+          </Typography>
+          <TextField
+            autoFocus
+            variant="filled"
+            label={t('changePassword.mfaCode', 'Authentication code')}
+            value={code}
+            onChange={e => setCode(e.target.value.trim())}
+          />
+        </Gutters>
+        <Gutters bottom="xl">
+          <Button variant="contained" color="primary" size="small" disabled={code.length < 6 || saving} onClick={verifyCode}>
+            {t('common.verify', 'Verify')}
+          </Button>
+          <Button size="small" onClick={() => auth.set({ passwordChallenge: undefined })}>
+            {t('common.cancel', 'Cancel')}
+          </Button>
+        </Gutters>
+      </>
+    )
+
   return (
     <>
       <Typography variant="subtitle1" gutterBottom>

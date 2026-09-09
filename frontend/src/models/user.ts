@@ -5,7 +5,7 @@ import { graphQLNotificationSettings, graphQLSetAttributes, graphQLLeaveReseller
 import { graphQLUser } from '../services/graphQLRequest'
 import { RootModel } from '.'
 import i18n, { LanguageMode } from '../i18n'
-import { getToken } from '../services/remoteit'
+import { apiAuthHeaders } from '../services/remoteit'
 
 type IUserState = {
   id: string
@@ -48,10 +48,18 @@ export default createModel<RootModel>()({
     async parse(result: AxiosResponse<any> | undefined) {
       const data = result?.data?.data?.login?.account
       console.log('USER DATA', data)
+      // No account in the payload (a failed or foreign-stage query) is NOT a user: writing
+      // `{created: Invalid Date}` into state persisted as `created: null` (redux-persist
+      // serialises an invalid date to null), and every later boot crashed on it before the
+      // next login could overwrite it. Return nothing, so nothing is set.
+      if (!data) return undefined
+      const created = data.created ? new Date(data.created) : undefined
       return {
         ...data,
-        created: new Date(data?.created),
-        attributes: data?.attributes?.$remoteit,
+        // Only a VALID date replaces the one in state; an absent or unparseable value leaves
+        // it alone (the default is the epoch, which every reader already treats as "unknown").
+        ...(created && !isNaN(created.getTime()) ? { created } : {}),
+        attributes: data.attributes?.$remoteit,
       }
     },
     async leaveReseller() {
@@ -89,7 +97,7 @@ export default createModel<RootModel>()({
           headers: {
             'Content-Type': 'application/json',
             developerKey: DEVELOPER_KEY,
-            Authorization: await getToken(),
+            ...(await apiAuthHeaders('POST', `${API_URL}/user/language/`)),
           },
         }
       )

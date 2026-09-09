@@ -64,7 +64,9 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
     () => {
       const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
       const secondaryWidth = secondaryRef.current?.offsetWidth || MIN_WIDTH
-      return fullWidth - secondaryWidth - MIN_WIDTH - sidePanelWidth
+      // Never below the minimum: a max < min makes usePanelDrag oscillate and
+      // emit negative widths when reserved chrome exceeds the window
+      return Math.max(MIN_WIDTH, fullWidth - secondaryWidth - MIN_WIDTH - sidePanelWidth)
     },
     [sidePanelWidth]
   )
@@ -73,7 +75,7 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
     () => {
       const fullWidth = secondaryRef.current?.parentElement?.offsetWidth || 1000
       const primaryWidth = primaryRef.current?.offsetWidth || MIN_WIDTH
-      return fullWidth - primaryWidth - MIN_WIDTH - sidePanelWidth
+      return Math.max(MIN_WIDTH, fullWidth - primaryWidth - MIN_WIDTH - sidePanelWidth)
     },
     [sidePanelWidth]
   )

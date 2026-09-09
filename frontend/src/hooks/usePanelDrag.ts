@@ -1,11 +1,22 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import { useViewportWidth } from './useViewportWidth'
 
 interface UsePanelDragOptions {
   panelRef: React.RefObject<HTMLDivElement>
   minWidth: number
   getMaxWidth: () => number
   onPersist?: (width: number) => void
+  /** Called on every drag frame. Panels whose siblings size themselves from
+   *  shared state (the chat column: App reserves its width, DoublePanel sizes
+   *  the content from that) must publish the width DURING the drag, or those
+   *  siblings keep a stale minWidth, refuse to shrink, and the panel overflows
+   *  until mouseup snaps it back. */
+  onChange?: (width: number) => void
   layoutDep?: unknown
+  /** Which edge the panel is fixed to. A right-anchored panel (the chat
+   *  column) grows when the handle is dragged LEFT, so the pointer delta
+   *  is inverted. Defaults to left, matching the content panels. */
+  anchor?: 'left' | 'right'
 }
 
 /**
@@ -20,11 +31,12 @@ interface UsePanelDragOptions {
  * @param options.layoutDep - Dependency to trigger re-measurement (e.g., layout object)
  */
 export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions) {
-  const { panelRef, minWidth, getMaxWidth, onPersist, layoutDep } = options
+  const { panelRef, minWidth, getMaxWidth, onPersist, onChange, layoutDep, anchor = 'left' } = options
 
   const handleRef = useRef<number>(initialWidth)
   const moveRef = useRef<number>(0)
   const [width, setWidth] = useState<number>(initialWidth)
+  const viewportWidth = useViewportWidth()
   const [grab, setGrab] = useState<boolean>(false)
 
   const measure = useCallback(() => {
@@ -36,13 +48,19 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
   const onMove = useCallback(
     (event: MouseEvent) => {
       const maxWidth = getMaxWidth()
-      handleRef.current += event.clientX - moveRef.current
+      const delta = event.clientX - moveRef.current
       moveRef.current = event.clientX
-      if (handleRef.current > minWidth && handleRef.current < maxWidth) {
-        setWidth(handleRef.current)
-      }
+      // CLAMP the accumulator rather than ignoring out-of-range values: letting
+      // it run past the limit meant a drag beyond the edge had to retrace the
+      // whole overshoot before the panel moved again, which reads as sticking.
+      handleRef.current = Math.min(
+        Math.max(handleRef.current + (anchor === 'right' ? -delta : delta), minWidth),
+        maxWidth
+      )
+      setWidth(handleRef.current)
+      onChange?.(handleRef.current)
     },
-    [minWidth, getMaxWidth]
+    [minWidth, getMaxWidth, anchor, onChange]
   )
 
   const onUp = useCallback(
@@ -51,7 +69,7 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
       event.preventDefault()
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
-      onPersist?.(panelRef.current?.offsetWidth || width)
+      onPersist?.(handleRef.current)
     },
     [onMove, onPersist, panelRef, width]
   )
@@ -60,7 +78,12 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
     setGrab(true)
     measure()
     moveRef.current = event.clientX
-    handleRef.current = panelRef.current?.offsetWidth || width
+    /* The accumulator tracks the panel's LOGICAL width, not what it renders as. The
+       chat column draws itself an inset narrower than the width it is given, so seeding
+       (and persisting) from offsetWidth quietly shaved that inset off every drag — the
+       column settled a margin short of its own ceiling and never reached the reading
+       measure the ceiling exists to provide. */
+    handleRef.current = width
     event.preventDefault()
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
@@ -70,11 +93,11 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
     setWidth(initialWidth)
   }, [initialWidth])
 
+  // Re-clamp when the layout shifts or the window resizes — the shared viewport width
+  // is the resize signal, already coalesced to a frame and silent when nothing moved
   useEffect(() => {
     measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [layoutDep])
+  }, [layoutDep, viewportWidth])
 
   return { width, grab, onDown }
 }

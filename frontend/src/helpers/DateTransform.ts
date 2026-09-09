@@ -28,7 +28,12 @@ const DateTransform = createTransform(
       return obj
     }
     return convertDates(outboundState)
-  }
+  },
+
+  // Chat transcripts are free-form user/agent text — a message or tool result
+  // that happens to look like a timestamp must rehydrate as a string, not a
+  // Date (rendering a Date as a React child crashes the app)
+  { blacklist: ['chat'] }
 )
 
 export default DateTransform

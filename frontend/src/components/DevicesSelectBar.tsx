@@ -1,7 +1,7 @@
 import React from 'react'
+import { useMobile } from '../hooks/useMobile'
 import { State } from '../store'
-import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Stack, Typography, Button } from '@mui/material'
+import { Stack, Typography, Button } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { radius } from '../styling'
@@ -9,7 +9,7 @@ import { Icon } from './Icon'
 
 export const DevicesSelectBar: React.FC = () => {
   const selected = useSelector((state: State) => state.ui.selected)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const history = useHistory()
 
   return (

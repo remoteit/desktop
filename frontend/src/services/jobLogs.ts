@@ -1,6 +1,6 @@
 import axios from 'axios'
-import { getApiURL, getTestHeader } from '../helpers/apiHelper'
-import { getToken } from './remoteit'
+import { getApiURL } from '../helpers/apiHelper'
+import { apiAuthHeaders } from './remoteit'
 import { store } from '../store'
 
 export type DeviceLogEntry = {
@@ -36,17 +36,18 @@ export type GetJobLogsResult =
  * for transient operational failures and gave users no recovery path.
  */
 export async function getJobLogs(jobId: string): Promise<GetJobLogsResult> {
-  const token = await getToken()
-  if (!token) {
+  const url = `${getApiURL()}/job/log/all/${jobId}`
+  const auth = await apiAuthHeaders('GET', url)
+  if (!auth.authorization) {
     return { kind: 'error', status: 401, message: 'Not signed in' }
   }
 
-  const headers: any = { Authorization: token, ...getTestHeader() }
+  const headers: any = { ...auth }
   const viewAsUser = store.getState().ui.viewAsUser
   if (viewAsUser) headers['X-R3-User'] = viewAsUser.id
 
   try {
-    const response = await axios.get(`${getApiURL()}/job/log/all/${jobId}`, { headers })
+    const response = await axios.get(url, { headers })
     return { kind: 'ok', data: response?.data as JobLogsResponse }
   } catch (err: any) {
     const status: number | undefined = err?.response?.status

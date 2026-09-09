@@ -9,6 +9,13 @@
     "loginFailed": "Error al iniciar sesión.",
     "passwordChanged": "Contraseña cambiada correctamente."
   },
+  "chat": {
+    "authRequired": "Se requiere autenticación del agente — inicie sesión para continuar.",
+    "popupBlocked": "Ventana emergente bloqueada — permita las ventanas emergentes para este sitio e inténtelo de nuevo.",
+    "sessionExpired": "La sesión del agente ha expirado — inicie sesión de nuevo para continuar.",
+    "signInFailed": "Error al iniciar sesión en el agente — {{error}}",
+    "usageReset": "{{msg}} Se restablece {{when}}."
+  },
   "connection": {
     "surveyFailed": "No se pudo enviar la encuesta de conexión. Ponte en contacto con soporte."
   },

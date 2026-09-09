@@ -2,8 +2,8 @@ import React, { useState, useRef, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
-import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
+import { ButtonBase, Divider, Menu, Avatar as MuiAvatar } from '@mui/material'
+import { useHideSidebar } from '../hooks/useChatEnabled'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
 import { ListItemLocation } from './ListItemLocation'
@@ -13,6 +13,7 @@ import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
+import { oidcAccounts, oidcRefreshBrowserAccounts } from '../services/oidc'
 import { emit } from '../services/Controller'
 
 const ENTER_DELAY = 300
@@ -24,13 +25,15 @@ const AVATAR_BORDER = 6
 export const AvatarMenu: React.FC = () => {
   const history = useHistory()
   const [open, setOpen] = useState<boolean>(false)
+  // The registry's accounts, re-read after each refresh of the browser's set on open.
+  const [accounts, setAccounts] = useState(oidcAccounts())
   const [altMenu, setAltMenu] = useState<boolean>(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const enterTimer = useRef<number>()
   const leaveTimer = useRef<number>()
   const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+  const sidebarHidden = useHideSidebar()
   const user = useSelector((state: State) => state.auth.user)
   const remoteUI = useSelector(isRemoteUI)
   const testUI = useSelector((state: State) => ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''))
@@ -40,6 +43,7 @@ export const AvatarMenu: React.FC = () => {
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
 
   const handleOpen = () => {
+    void oidcRefreshBrowserAccounts().then(() => setAccounts(oidcAccounts())).catch(() => setAccounts(oidcAccounts()))
     window.addEventListener('keydown', checkAltMenu)
     setOpen(true)
   }
@@ -178,6 +182,35 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         </DesktopUI>
+        {/* The other accounts this app has signed into (services/oidc.ts registry) — one
+            click makes one active. Emails render as-is (identities are not translated);
+            the AS chooser behind "Switch account" below remains the way to ADD one. */}
+        {accounts
+          .filter(a => !a.active)
+          .map(a => (
+            <ListItemSetting
+              key={a.sub}
+              label={a.name || a.email || a.sub}
+              subLabel={a.known ? t('nav.signedInOnBrowser', 'Signed in on this browser') : a.name && a.email ? a.email : undefined}
+              icon={
+                <MuiAvatar src={a.picture} sx={{ width: 24, height: 24, fontSize: 12 }}>
+                  {(a.name || a.email || '?').charAt(0).toUpperCase()}
+                </MuiAvatar>
+              }
+              onClick={async () => {
+                handleClose()
+                await dispatch.auth.activateAccount(a.sub)
+              }}
+            />
+          ))}
+        <ListItemSetting
+          label={t('nav.switchAccount', 'Switch account')}
+          icon="users"
+          onClick={async () => {
+            handleClose()
+            await dispatch.auth.switchAccount()
+          }}
+        />
         <ListItemSetting
           confirm={backendAuthenticated}
           label={t('nav.signOut', 'Sign out')}

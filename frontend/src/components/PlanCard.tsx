@@ -1,6 +1,6 @@
 import React from 'react'
-import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Typography, List, ListItem, ListItemIcon, Divider, Button, Box } from '@mui/material'
+import { useMobile } from '../hooks/useMobile'
+import { Typography, List, ListItem, ListItemIcon, Divider, Button, Box } from '@mui/material'
 import { spacing, fontSizes, radius } from '../styling'
 import { Icon } from './Icon'
 
@@ -20,7 +20,6 @@ type Props = {
   onSelect?: () => void
 }
 
-
 export const PlanCard: React.FC<Props> = ({
   name,
   description,
@@ -36,7 +35,7 @@ export const PlanCard: React.FC<Props> = ({
   wide,
   onSelect,
 }) => {
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   wide = wide && !mobile
 
   return (

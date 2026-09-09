@@ -1137,6 +1137,7 @@
     "settings": "設定",
     "signOut": "サインアウト",
     "signOutConfirm": "サインアウトすると、このデバイスの譲渡や他のユーザーのサインインが可能になります。すべての接続が停止します。",
+    "signedInOnBrowser": "このブラウザでサインイン済み",
     "support": "サポート",
     "supportForum": "サポートフォーラム",
     "testUI": "テストUI",
@@ -2070,8 +2071,13 @@
   "testPage": {
     "addQueryHeader": "クエリヘッダーを追加",
     "addQueryHeaderPlaceholder": "例: \"key:value\"",
+    "apiTarget": "APIターゲット",
     "clearViewedAnnouncements": "閲覧済みのお知らせをクリア",
     "clearViewedAnnouncementsHint": "このアカウントで読み込まれたすべてのお知らせを未読としてマークします。",
+    "customAPITarget": "カスタム",
+    "customAPITargetHint": "認可サーバーに登録されていないURLを指定します。",
+    "customGraphQLURL": "カスタムGraphQL URL（詳細設定）",
+    "customWebSocketURL": "カスタムWebSocket URL（詳細設定）",
     "disableTestUI": "テストUIを無効にする",
     "disableTestUIHint": "アルファUIを再度有効にするには、alt-shiftを押しながらアバターメニューを選択する必要があります。",
     "featureLabel": "{{name}}(デフォルト: {{state}})",
@@ -2079,6 +2085,7 @@
     "hideTestUIBackgrounds": "テストUIの背景を非表示にする",
     "licenseMessageCleared": "ライセンスメッセージがクリアされました",
     "licensingOptions": "ライセンスオプション",
+    "mintError": "このターゲットはトークン発行時に拒否されました: {{error}}",
     "overrideDefaultAPIs": "デフォルトのAPIをオーバーライド",
     "overrideLicensesAndLimits": "ライセンスと制限をオーバーライド",
     "reset": "リセット",
@@ -2152,6 +2159,7 @@
   },
   "viewAsBanner": {
     "exit": "表示モードを終了",
+    "supportSession": "サポートセッション — {{email}} として表示中（{{until}} まで）。トークンにはあなたの ID が記録され、ユーザーはこのセッションを確認して終了できます。",
     "viewingAs": "表示中: {{email}}"
   }
 }

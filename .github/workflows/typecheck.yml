@@ -38,3 +38,8 @@ jobs:
 
       - name: Run typecheck
         run: npm run typecheck
+
+      # Catalog parity: fails on a key missing from ja/de/es, a dead key, or an
+      # empty English value. Runs after typecheck so a broken build reports first.
+      - name: Check translation catalogs
+        run: npm run i18n:check -w=frontend
