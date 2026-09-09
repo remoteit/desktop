@@ -59,27 +59,12 @@ export default createModel<RootModel>()({
         account: m.organization.account,
         name: m.organization.name,
       }))
-      dispatch.accounts.set({ membership: memberships })
-
-      // Only clear a stale organization - the user's own id means they deliberately
-      // selected their personal account, which selectDefault must not override.
+      // Only an organization the user has left is stale - their own id means they
+      // deliberately selected their personal account, which selectDefaultAccountId reads.
       const activeId = state.accounts.activeId
       const userId = state.auth.user?.id || state.user.id
-      if (activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)) {
-        dispatch.accounts.set({ activeId: undefined })
-      }
-    },
-    /*
-      A new organization member has an empty personal account, so signing in drops them
-      on an empty device list. Once that list has loaded empty, move them to their
-      organization instead. Returns whether it switched.
-    */
-    async selectDefault(_: void, state): Promise<boolean> {
-      if (state.accounts.activeId) return false // they have chosen an account themselves
-      const [oldest] = [...state.accounts.membership].sort((a, b) => a.created.getTime() - b.created.getTime())
-      if (!oldest) return false
-      await dispatch.accounts.select(oldest.account.id)
-      return true
+      const stale = !!activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)
+      dispatch.accounts.set({ membership: memberships, ...(stale ? { activeId: undefined } : {}) })
     },
     async select(accountId: string) {
       await dispatch.logs.reset()

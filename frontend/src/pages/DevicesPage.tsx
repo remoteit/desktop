@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../selectors/devices'
 import { getConnectionsLookup } from '../selectors/connections'
 import { selectCanRegister } from '../selectors/organizations'
+import { selectDefaultAccountId } from '../selectors/accounts'
 import { restoreAttributes } from '../components/Attributes'
 import { DeviceListEmpty } from '../components/DeviceListEmpty'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -24,23 +25,21 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const { fetching: deviceFetching, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
   const devices = useSelector(selectVisibleDevices)
   const canRegister = useSelector(selectCanRegister)
+  const defaultAccountId = useSelector(selectDefaultAccountId)
   const connections = useSelector(getConnectionsLookup)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const selected = useSelector((state: State) => state.ui.selected)
   const fetching = useSelector((state: State) => state.ui.fetching) || deviceFetching
 
-  // initialized so the list has actually loaded - an account switch swaps in an
-  // uninitialized device model, whose empty list would otherwise read as no devices.
+  // initLoad so only a list that loaded during this mount redirects, initialized so it
+  // has actually finished - a switched-to account swaps in an empty, unloaded model.
   const shouldRedirect = initLoad && initialized && canRegister
 
   useEffect(() => {
     if (!initialized) setInitLoad(true)
     if (shouldRedirect && !devices.length) {
-      // An organization member with an empty personal account moves to their
-      // organization rather than straight to device registration.
-      accounts.selectDefault().then(switched => {
-        if (!switched) history.push('/add')
-      })
+      if (defaultAccountId) accounts.select(defaultAccountId)
+      else history.push('/add')
     }
   }, [initialized, history])
 
