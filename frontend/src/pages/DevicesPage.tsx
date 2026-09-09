@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { State } from '../store'
+import { Dispatch, State } from '../store'
 import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../selectors/devices'
 import { getConnectionsLookup } from '../selectors/connections'
 import { selectCanRegister } from '../selectors/organizations'
+import { selectDefaultAccountId } from '../selectors/accounts'
 import { restoreAttributes } from '../components/Attributes'
 import { DeviceListEmpty } from '../components/DeviceListEmpty'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -18,22 +19,27 @@ type Props = { restore?: boolean; select?: boolean }
 
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const history = useHistory()
+  const { accounts } = useDispatch<Dispatch>()
   const [initLoad, setInitLoad] = useState<boolean>(false)
   const { attributes, required } = useSelector(selectDeviceListAttributes)
   const { fetching: deviceFetching, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
   const devices = useSelector(selectVisibleDevices)
   const canRegister = useSelector(selectCanRegister)
+  const defaultAccountId = useSelector(selectDefaultAccountId)
   const connections = useSelector(getConnectionsLookup)
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const selected = useSelector((state: State) => state.ui.selected)
   const fetching = useSelector((state: State) => state.ui.fetching) || deviceFetching
 
-  const shouldRedirect = initLoad && canRegister
+  // initLoad so only a list that loaded during this mount redirects, initialized so it
+  // has actually finished - a switched-to account swaps in an empty, unloaded model.
+  const shouldRedirect = initLoad && initialized && canRegister
 
   useEffect(() => {
     if (!initialized) setInitLoad(true)
     if (shouldRedirect && !devices.length) {
-      history.push('/add')
+      if (defaultAccountId) accounts.select(defaultAccountId)
+      else history.push('/add')
     }
   }, [initialized, history])
 
@@ -41,7 +47,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
     <DevicesDrawers>
       <RegisterMenu buttonSize={56} fontSize={22} fab />
       <DevicesHeader select={select} devices={devices}>
-        {(!initialized || fetching || shouldRedirect) && !devices.length ? (
+        {(!initialized || fetching) && !devices.length ? (
           <LoadingMessage />
         ) : !devices.length ? (
           <DeviceListEmpty />
