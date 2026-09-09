@@ -129,11 +129,12 @@ export const GuideBubble: React.FC<Props> = ({
   const cohortExpired = useSelector((state: State) => {
     // An explicit "Reset interactive guides" re-anchors the cohort to the reset
     // moment, so even accounts that predate the guides get onboarded again.
-    // `created` is new Date(apiValue) and is NaN if the account payload has no
-    // created date — guard it, or Math.max would return NaN and every
-    // comparison below would be false, silently ungating every bubble.
-    const created = state.user.created.getTime()
-    const cohortAnchor = Math.max(Number.isNaN(created) ? 0 : created, state.ui.guidesResetDate || 0)
+    // `created` is absent until the account loads, and an invalid Date persists as
+    // null (Date#toJSON) and rehydrates as null — so it can be missing or NaN.
+    // Guard both, or Math.max returns NaN and every comparison below is false,
+    // silently ungating every bubble.
+    const created = state.user.created?.getTime()
+    const cohortAnchor = Math.max(created && !Number.isNaN(created) ? created : 0, state.ui.guidesResetDate || 0)
     return startDate.getTime() > cohortAnchor && !state.ui.testUI
   })
   const dismissed = useSelector((state: State) => dismissedAt(state.ui.expireBubbles))
