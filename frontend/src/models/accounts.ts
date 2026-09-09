@@ -66,12 +66,19 @@ export default createModel<RootModel>()({
       const stale = !!activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)
       dispatch.accounts.set({ membership: memberships, ...(stale ? { activeId: undefined } : {}) })
     },
+    /*
+      The one way to switch accounts - every account scoped list has to be re-fetched
+      or it keeps showing the previous account's data. Callers own their navigation.
+    */
     async select(accountId: string) {
       await dispatch.logs.reset()
       await dispatch.accounts.set({ activeId: accountId })
+      dispatch.networks.fetchIfEmpty()
       dispatch.devices.fetchIfEmpty()
+      dispatch.files.fetchIfEmpty()
       dispatch.tags.fetchIfEmpty()
       dispatch.products.fetchIfEmpty()
+      dispatch.partnerStats.fetchIfEmpty()
     },
     async leaveMembership(id: string, state) {
       const { membership } = state.accounts
