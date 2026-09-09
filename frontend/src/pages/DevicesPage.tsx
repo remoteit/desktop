@@ -29,7 +29,9 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const selected = useSelector((state: State) => state.ui.selected)
   const fetching = useSelector((state: State) => state.ui.fetching) || deviceFetching
 
-  const shouldRedirect = initLoad && canRegister
+  // initialized so the list has actually loaded - an account switch swaps in an
+  // uninitialized device model, whose empty list would otherwise read as no devices.
+  const shouldRedirect = initLoad && initialized && canRegister
 
   useEffect(() => {
     if (!initialized) setInitLoad(true)
