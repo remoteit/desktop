@@ -25,12 +25,6 @@ export default createModel<RootModel>()({
       const result = await graphQLBasicRequest(
         ` query Accounts {
               login {
-                id
-                account {
-                  devices(size: 0) {
-                    total
-                  }
-                }
                 membership {
                   created
                   customRole {
@@ -67,19 +61,25 @@ export default createModel<RootModel>()({
       }))
       dispatch.accounts.set({ membership: memberships })
 
+      // Only clear a stale organization - the user's own id means they deliberately
+      // selected their personal account, which selectDefault must not override.
+      const activeId = state.accounts.activeId
       const userId = state.auth.user?.id || state.user.id
-      let activeId = state.accounts.activeId
-      if (activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)) activeId = undefined
-
-      // A member with an empty personal account starts in their organization rather than
-      // on an empty device list - only when nothing has been selected yet, so a remembered
-      // account (including a deliberate switch to personal) still wins.
-      if (!activeId && memberships.length && !gqlData.account?.devices?.total) {
-        const oldest = [...memberships].sort((a, b) => a.created.getTime() - b.created.getTime())[0]
-        activeId = oldest.account.id
+      if (activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)) {
+        dispatch.accounts.set({ activeId: undefined })
       }
-
-      if (activeId !== state.accounts.activeId) dispatch.accounts.set({ activeId })
+    },
+    /*
+      A new organization member has an empty personal account, so signing in drops them
+      on an empty device list. Once that list has loaded empty, move them to their
+      organization instead. Returns whether it switched.
+    */
+    async selectDefault(_: void, state): Promise<boolean> {
+      if (state.accounts.activeId) return false // they have chosen an account themselves
+      const [oldest] = [...state.accounts.membership].sort((a, b) => a.created.getTime() - b.created.getTime())
+      if (!oldest) return false
+      await dispatch.accounts.select(oldest.account.id)
+      return true
     },
     async select(accountId: string) {
       await dispatch.logs.reset()

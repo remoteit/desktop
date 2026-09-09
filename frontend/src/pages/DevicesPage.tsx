@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { State } from '../store'
+import { Dispatch, State } from '../store'
 import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceListAttributes, selectDeviceModelAttributes, selectVisibleDevices } from '../selectors/devices'
 import { getConnectionsLookup } from '../selectors/connections'
 import { selectCanRegister } from '../selectors/organizations'
@@ -18,6 +18,7 @@ type Props = { restore?: boolean; select?: boolean }
 
 export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const history = useHistory()
+  const { accounts } = useDispatch<Dispatch>()
   const [initLoad, setInitLoad] = useState<boolean>(false)
   const { attributes, required } = useSelector(selectDeviceListAttributes)
   const { fetching: deviceFetching, initialized, applicationTypes } = useSelector(selectDeviceModelAttributes)
@@ -33,7 +34,11 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   useEffect(() => {
     if (!initialized) setInitLoad(true)
     if (shouldRedirect && !devices.length) {
-      history.push('/add')
+      // An organization member with an empty personal account moves to their
+      // organization rather than straight to device registration.
+      accounts.selectDefault().then(switched => {
+        if (!switched) history.push('/add')
+      })
     }
   }, [initialized, history])
 
