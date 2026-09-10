@@ -170,7 +170,7 @@ class Platforms {
   }
 
   component(id?: string): IPlatform['component'] {
-    return this.get(id).component
+    return this.get(id).component ?? this.get('unknown').component
   }
 
   componentByType(type: number): IPlatform['component'] {
