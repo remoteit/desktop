@@ -151,16 +151,11 @@ class Platforms {
   }
 
   type(type: number): IPlatform {
-    const id = this.lookup[type]
-    if (id) return this.get(id)
-
-    const name = this.nameLookup[type]
-
-    return name ? { ...this.get('unknown'), name, types: { [type]: name } } : this.get('unknown')
+    return this.get(this.lookup[type])
   }
 
   // A page covers several types, so the type's own label beats the page name: 10 is
-  // "Windows Server", not "Windows".
+  // "Windows Server", not "Windows". A type with no page still has a label.
   name(type: number): string {
     return this.nameLookup[type] || this.type(type).name
   }
