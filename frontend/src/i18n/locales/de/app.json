@@ -50,7 +50,8 @@
     "sendPromotionRequest": "Beförderungsanfrage senden"
   },
   "addDevice": {
-    "codeExpiration": "Code läuft in {{hours}} Stunden ab."
+    "codeExpiration": "Code läuft in {{hours}} Stunden ab.",
+    "registrationCode": "Registrierungscode"
   },
   "addFromNetwork": {
     "scanForServices": "Nach Diensten suchen",

@@ -39,7 +39,9 @@ export const AddDevice: React.FC<Props> = ({ platform, tags, serviceTypes, redir
         }
         code={registrationCode}
         link={redirectUrl}
-        label={platform.installation?.label}
+        label={
+          platform.installation?.label ?? (codeOnly ? t('addDevice.registrationCode', 'Registration Code') : undefined)
+        }
         sx={{ textAlign: 'left' }}
       />
     </List>

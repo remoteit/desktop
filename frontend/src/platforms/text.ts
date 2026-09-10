@@ -2,14 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { IPlatform } from '.'
 
-// Platform copy (name, description, instructions) is English in the API catalogue and translated
-// here, in the `platforms` namespace, keyed by route slug. The keys are built at render time, so
-// i18next-parser cannot extract them — scripts/platforms-generate.mjs maintains the catalogs
-// instead, the same arrangement the parser config documents for the `columns.<id>` labels.
-//
-// The catalogue string is always the inline default, so a platform whose row has not been through
-// the generator still renders its English rather than a key. Keys are namespace-prefixed so this
-// works with whatever `t` the caller already has.
+// See ./README.md, Translations.
 const key = (platform: IPlatform, field: string) => `platforms:${platform.id}.${field}`
 
 export interface PlatformText {
@@ -22,10 +15,19 @@ export interface PlatformText {
 export function platformText(t: TFunction, platform: IPlatform): PlatformText {
   const { description, instructions } = platform.installation ?? {}
 
+  // An empty default makes i18next return the key itself (returnEmptyString: false), and a
+  // platform whose module has not loaded yet has no id — both would render as "<id>.name".
+  if (!platform.id) return { name: platform.name ?? '', description, instructions }
+
   return {
-    name: t(key(platform, 'name'), platform.name),
-    description: description === undefined ? undefined : t(key(platform, 'description'), description),
-    instructions: typeof instructions === 'string' ? t(key(platform, 'instructions'), instructions) : instructions,
+    name: platform.name ? t(key(platform, 'name'), platform.name) : '',
+    description: description ? t(key(platform, 'description'), description) : undefined,
+    instructions:
+      typeof instructions === 'string'
+        ? instructions
+          ? t(key(platform, 'instructions'), instructions)
+          : undefined
+        : instructions,
   }
 }
 
