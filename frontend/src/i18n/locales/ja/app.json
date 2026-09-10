@@ -2086,7 +2086,7 @@
     "hideTestUIBackgrounds": "テストUIの背景を非表示にする",
     "licenseMessageCleared": "ライセンスメッセージがクリアされました",
     "licensingOptions": "ライセンスオプション",
-    "mintError": "このターゲットはトークンの発行時に拒否されました: {{error}}",
+    "mintError": "このターゲットはトークン発行時に拒否されました: {{error}}",
     "overrideDefaultAPIs": "デフォルトのAPIをオーバーライド",
     "overrideLicensesAndLimits": "ライセンスと制限をオーバーライド",
     "reset": "リセット",

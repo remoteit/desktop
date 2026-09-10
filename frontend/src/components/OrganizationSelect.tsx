@@ -102,7 +102,7 @@ export const OrganizationSelect: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const mobile = useMobile()
-  const { accounts, devices, files, tags, networks, logs, products, partnerStats } = useDispatch<Dispatch>()
+  const { accounts } = useDispatch<Dispatch>()
 
   let activeOrg = useSelector(selectOrganization)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
@@ -134,14 +134,7 @@ export const OrganizationSelect: React.FC = () => {
 
   const onSelect = async (id: string) => {
     id = id || userId
-    await logs.reset()
-    await accounts.set({ activeId: id.toString() })
-    networks.fetchIfEmpty()
-    devices.fetchIfEmpty()
-    files.fetchIfEmpty()
-    tags.fetchIfEmpty()
-    products.fetchIfEmpty()
-    partnerStats.fetchIfEmpty()
+    await accounts.select(id.toString())
     if (mobile) return
     if (['/devices', '/networks', '/connections', '/products', '/partner-stats'].includes(menu)) {
       history.push(defaultSelection[id]?.[menu] || menu)
@@ -289,4 +282,3 @@ function Title({ primary, count }: { primary: string; count: number }) {
     </>
   )
 }
-

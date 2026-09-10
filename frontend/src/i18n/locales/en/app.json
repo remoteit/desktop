@@ -2,7 +2,7 @@
   "accessAccordion": {
     "addAccess": "Add access",
     "guests": "Guests",
-    "noUsers": "No users",
+    "noUsers": "No\u00a0users",
     "organizationMembers": "Organization members",
     "subtitle": "Access"
   },
@@ -50,12 +50,12 @@
     "sendPromotionRequest": "Send Promotion Request"
   },
   "addDevice": {
-    "codeExpiration": "Code expires in {{hours}} hours.",
+    "codeExpiration": "Code expires in {{hours}}\u00a0hours.",
     "registrationCode": "Registration Code"
   },
   "addFromNetwork": {
     "scanForServices": "Scan for Services",
-    "scanNetwork": "Scan network"
+    "scanNetwork": "Scan\u00a0network"
   },
   "addPage": {
     "addDevice": "Add a device",
@@ -65,7 +65,7 @@
     "demoDevice": "Demo device",
     "products": "Products",
     "provisionInBulk": "Provision in bulk",
-    "title": "What do you want to connect to?",
+    "title": "What do you want to connect\u00a0to?",
     "tryDevice": "Try a device"
   },
   "addPlatformServices": {
@@ -1685,7 +1685,7 @@
     "downloadDescription": "Download our disk image for easy, headless setup with Bluetooth WiFi onboarding.",
     "downloadQuestion": "New to Pi?",
     "downloadTitle": "Download Pi Image",
-    "heading": "Set Up Your Raspberry Pi for Remote Access",
+    "heading": "Set Up Your Raspberry Pi for\u00a0Remote\u00a0Access",
     "onboardDescription": "Set up WiFi via Bluetooth and register your device for remote access.",
     "onboardQuestion": "Have our custom Pi image?",
     "onboardTitle": "Onboard via Bluetooth"

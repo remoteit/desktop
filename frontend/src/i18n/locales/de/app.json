@@ -50,7 +50,7 @@
     "sendPromotionRequest": "Beförderungsanfrage senden"
   },
   "addDevice": {
-    "codeExpiration": "Code läuft in {{hours}} Stunden ab.",
+    "codeExpiration": "Code läuft in {{hours}}\u00a0Stunden ab.",
     "registrationCode": "Registrierungscode"
   },
   "addFromNetwork": {
@@ -2111,7 +2111,7 @@
     "clearViewedAnnouncements": "Angesehene Ankündigungen löschen",
     "clearViewedAnnouncementsHint": "Markiert alle geladenen Ankündigungen für dieses Konto als ungelesen.",
     "customAPITarget": "Benutzerdefiniert",
-    "customAPITargetHint": "Verweist auf eine URL, die der Autorisierungsserver nicht registriert hat.",
+    "customAPITargetHint": "Auf eine URL zeigen, die der Autorisierungsserver nicht registriert hat.",
     "customGraphQLURL": "Benutzerdefinierte GraphQL-URL (erweitert)",
     "customWebSocketURL": "Benutzerdefinierte WebSocket-URL (erweitert)",
     "disableTestUI": "Test-UI deaktivieren",
@@ -2121,7 +2121,7 @@
     "hideTestUIBackgrounds": "Test-UI-Hintergründe ausblenden",
     "licenseMessageCleared": "Lizenzmeldung gelöscht",
     "licensingOptions": "Lizenzierungsoptionen",
-    "mintError": "Dieses Ziel wurde bei der Token-Ausstellung abgelehnt: {{error}}",
+    "mintError": "Dieses Ziel wurde beim Token-Mint abgelehnt: {{error}}",
     "overrideDefaultAPIs": "Standard-APIs überschreiben",
     "overrideLicensesAndLimits": "Lizenzen und Limits überschreiben",
     "reset": "Zurücksetzen",
