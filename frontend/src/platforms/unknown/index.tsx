@@ -20,4 +20,5 @@ const Index = ({ darkMode, ...props }) => {
 platforms.register({
   id: 'unknown',
   component: Index,
+  types: { 65535: 'Unknown', 0: 'Unknown' },
 })
