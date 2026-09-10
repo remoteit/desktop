@@ -44,6 +44,7 @@ export default class AppUpdater {
   version?: string
   error: boolean = false
   private steering: WindowsArch | null = null
+  private feedUrl = ''
   private readonly defaultGithubFeed: GitHubFeedConfig = resolveGitHubFeedFromBrand()
 
   constructor() {
@@ -132,7 +133,7 @@ export default class AppUpdater {
     try {
       if (force || this.nextCheck < Date.now()) {
         await this.applyFeed()
-        Logger.info('CHECK FOR UPDATE', { url: autoUpdater.getFeedURL(), nativeArch: this.steering })
+        Logger.info('CHECK FOR UPDATE', { feed: this.feedUrl, nativeArch: this.steering })
         Logger.info('Checking for update')
         this.nextCheck =
           Date.now() + (autoUpdater.allowPrerelease ? PRE_RELEASE_CHECK_INTERVAL : AUTO_UPDATE_CHECK_INTERVAL)
@@ -170,9 +171,10 @@ export default class AppUpdater {
     if (nativeArch) {
       const tag = await this.findNewestReleaseTag(`latest-${nativeArch}.yml`)
       if (tag) {
+        this.feedUrl = `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`
         autoUpdater.setFeedURL({
           provider: 'generic',
-          url: `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`,
+          url: this.feedUrl,
           channel: `latest-${nativeArch}`,
           useMultipleRangeRequest: false,
         })
@@ -221,6 +223,7 @@ export default class AppUpdater {
   }
 
   private setDefaultFeed() {
+    this.feedUrl = `github:${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}`
     autoUpdater.setFeedURL({
       provider: 'github',
       owner: this.defaultGithubFeed.owner,
@@ -240,9 +243,10 @@ export default class AppUpdater {
       const tag = await this.findFallbackReleaseTag()
       if (!tag) return false
 
+      this.feedUrl = `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`
       autoUpdater.setFeedURL({
         provider: 'generic',
-        url: `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`,
+        url: this.feedUrl,
       })
       Logger.warn('AUTO UPDATE FALLBACK RELEASE', { tag, manifest: this.updateManifestFile })
       await autoUpdater.checkForUpdatesAndNotify()
