@@ -21,12 +21,8 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'ubuntu',
-  name: 'Ubuntu Desktop',
   component: Component,
-  types: { 1120: 'Debian Linux' },
   installation: {
-    qualifier: 'For Ubuntu Desktop systems',
-    link: 'https://link.remote.it/download/desktop',
     instructions: (
       <>
         Install the Desktop app with our CLI on an Ubuntu Desktop system <br />

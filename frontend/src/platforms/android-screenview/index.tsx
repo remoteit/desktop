@@ -23,6 +23,6 @@ platforms.register({
   installation: {
     label: 'Registration Code',
     command: '[CODE]',
-    qualifier: 'For Android ScreenView',
+    description: 'For the Android ScreenView app.',
   },
 })

@@ -50,7 +50,7 @@ function stateNotification(event: ICloudEvent) {
   event.target.forEach(target => {
     // notify if device changes state only
     if (target.typeID === DEVICE_TYPE) {
-      let body = platforms.nameLookup[target.platform]
+      let body = platforms.name(target.platform)
       let url = `/devices/${target.deviceId}`
       if (target.service?.id) url += `/${target.service?.id}`
       if (event.authUserId !== target.owner?.id) body += ' - ' + target.owner?.email
@@ -107,7 +107,7 @@ function transferNotification(event: ICloudEvent) {
   event.target.forEach(target => {
     if (target.typeID === DEVICE_TYPE) {
       const isReceiving = target.owner?.id === event.authUserId
-      
+
       if (isReceiving) {
         const title = `${target.name} was transferred to you`
         const body = `from ${event.actor.email}`

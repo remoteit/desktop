@@ -45,13 +45,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'idy',
-  name: 'IDY',
   component: Component,
-  types: { 1225: 'IDY' },
-  installation: {
-    command:
-      'config net-remoteit-agent=enable; config net-remoteit-registration_code=[CODE]; /etc/init.d/remoteit-refresh start',
-    qualifier: 'For IDY routers and gateways',
-    link: 'https://link.remote.it/support/streamline-install',
-  },
 })

@@ -38,12 +38,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'nas',
-  name: 'Synology',
   component: Component,
-  types: { 1210: 'Synology' },
-  installation: {
-    instructions: 'Download the package file and install it through your NAS web interface.',
-    qualifier: 'Synology manual installation',
-    link: 'https://link.remote.it/getting-started/synology',
-  },
 })

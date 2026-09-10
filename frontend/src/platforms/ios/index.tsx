@@ -39,7 +39,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'ios',
-  name: 'iOS',
   component: Component,
-  types: { 1214: 'iPhone' },
 })

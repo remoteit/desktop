@@ -1,4 +1,5 @@
 import brand from '@common/brand/config'
+import { CATALOGUE } from './platforms/catalogue'
 const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
@@ -125,7 +126,13 @@ export const GOOGLE_TAG_MANAGER_IOS_KEY = env.VITE_GOOGLE_TAG_MANAGER_IOS_KEY
 
 export const CERTIFICATE_DOMAIN = 'at.remote.it'
 export const ANONYMOUS_MANUFACTURER_CODE = 34560
-export const SCREEN_VIEW_APP_LINK = 'https://play.google.com/store/apps/details?id=it.remote.screenview'
+// The catalogue owns this URL (android.link); the fallback only covers a stale snapshot.
+export const SCREEN_VIEW_APP_LINK =
+  CATALOGUE.installations.android?.link ?? 'https://play.google.com/store/apps/details?id=it.remote.screenview'
+
+// Client capabilities, not catalogue data — see platforms/README.md.
+export const OEM_GUIDE_LINK = 'https://link.remote.it/docs/oem-overview'
+export const DEVICE_SETUP_PATH = '/devices/setup'
 export const DEMO_SCRIPT_URL =
   'https://raw.githubusercontent.com/remoteit/code_samples/refs/heads/main/scripts/linux/script_demo.sh'
 

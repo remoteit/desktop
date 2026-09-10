@@ -55,13 +55,7 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'linux',
-  name: 'Linux',
   component: Component,
-  types: { 769: 'Linux', 1121: 'RedHat Linux', 1200: 'Linux ARM' },
-  installation: {
-    command: true,
-    qualifier: 'For any Linux based system',
-    link: 'https://link.remote.it/support/streamline-install',
-    altLink: 'https://link.remote.it/docs/oem-overview',
-  },
+  // Cloning an installed image duplicates the device identity — OEM guidance covers it.
+  installation: { oemGuide: true },
 })

@@ -1,0 +1,130 @@
+{
+  "advantech": {
+    "name": "Advantech",
+    "description": "Advantechシステム向けです。"
+  },
+  "alpine": {
+    "name": "Alpine Linux",
+    "description": "Alpine Linuxベースのシステム向けです。"
+  },
+  "amnimo": {
+    "name": "Amnimo"
+  },
+  "android": {
+    "name": "Android",
+    "description": "Androidのスマートフォンまたはタブレット向けです。"
+  },
+  "arm": {
+    "name": "Arm Virtual Hardware",
+    "description": "Arm Virtual Hardwareプラットフォーム向けです。"
+  },
+  "aws": {
+    "name": "AWS",
+    "description": "LinuxベースのAWS仮想マシン向けです。"
+  },
+  "axis": {
+    "name": "AXIS",
+    "description": "AXISカメラシステム向けです。"
+  },
+  "azure": {
+    "name": "Azure",
+    "description": "LinuxベースのAzure Cloud仮想マシン向けです。"
+  },
+  "cachengo": {
+    "name": "Cachengo"
+  },
+  "docker": {
+    "name": "Docker",
+    "description": "Dockerを実行しているシステムでのテスト向けです。"
+  },
+  "docker-extension": {
+    "name": "Docker Jumpbox拡張機能",
+    "description": "Docker Desktop向けです。"
+  },
+  "docker-jumpbox": {
+    "name": "Docker Jumpbox",
+    "description": "Dockerを実行しているシステムでのテスト向けです。"
+  },
+  "embedded-works": {
+    "name": "Embedded Works"
+  },
+  "firewalla": {
+    "name": "Firewalla",
+    "description": "Firewallaシステム向けです。"
+  },
+  "gcp": {
+    "name": "Google Cloud",
+    "description": "LinuxベースのGoogle Cloudインスタンス向けです。"
+  },
+  "idy": {
+    "name": "IDY",
+    "description": "IDYのルーターおよびゲートウェイ向けです。"
+  },
+  "ios": {
+    "name": "iOS"
+  },
+  "linux": {
+    "name": "Linux",
+    "description": "Linuxベースのシステム向けです。"
+  },
+  "liverock": {
+    "name": "Liverock Technologies"
+  },
+  "mac": {
+    "name": "Mac",
+    "description": "macOSシステム向けです。",
+    "instructions": "リモートアクセスを有効にしたいMacに、デスクトップアプリまたはCLIをインストールしてください。"
+  },
+  "nas": {
+    "name": "Synology",
+    "description": "Synology NASシステム向けです。",
+    "instructions": "パッケージファイルをダウンロードし、NASのウェブインターフェースからインストールしてください。"
+  },
+  "nvidia": {
+    "name": "NVIDIA Jetson",
+    "description": "NVIDIA Jetsonシステム向けです。"
+  },
+  "openwrt": {
+    "name": "OpenWrt",
+    "description": "OpenWrtルーター向けです。"
+  },
+  "raspberrypi": {
+    "name": "Raspberry Pi",
+    "description": "Raspberry PiまたはLinuxベースのシステム向けです。"
+  },
+  "remoteit": {
+    "name": "Remote.It"
+  },
+  "teltonika": {
+    "name": "Teltonika",
+    "description": "Teltonikaのルーターおよびゲートウェイ向けです。"
+  },
+  "this": {
+    "name": "このシステム"
+  },
+  "tinkerboard": {
+    "name": "Tinker Board",
+    "description": "ASUS Tinker Board向けです。"
+  },
+  "toa": {
+    "name": "TOA"
+  },
+  "ubiquiti": {
+    "name": "Ubiquiti",
+    "description": "Ubiquitiルーター向けです。"
+  },
+  "ubuntu": {
+    "name": "Ubuntu Desktop",
+    "description": "Ubuntu Desktopシステム向けです。"
+  },
+  "unknown": {
+    "name": "不明",
+    "description": "任意のデバイスを登録するためのものです。",
+    "instructions": "この固有のコードを使うと、任意のデバイスをアカウントに登録できます。大切に保管してください。"
+  },
+  "windows": {
+    "name": "Windows",
+    "description": "Windowsシステム向けです。",
+    "instructions": "リモートアクセスを有効にしたいWindowsシステムに、デスクトップアプリまたはCLIをインストールしてください。"
+  }
+}

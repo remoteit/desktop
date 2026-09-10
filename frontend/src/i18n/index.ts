@@ -3,6 +3,7 @@ import resourcesToBackend from 'i18next-resources-to-backend'
 import { initReactI18next } from 'react-i18next'
 import enApp from './locales/en/app.json'
 import enNotices from './locales/en/notices.json'
+import enPlatforms from './locales/en/platforms.json'
 
 // Languages the app ships translations for. English is always the source/fallback.
 // Endonyms are shown untranslated in the language picker.
@@ -13,7 +14,7 @@ export const SUPPORTED_LANGUAGES: { value: string; label: string }[] = [
   { value: 'es', label: 'Español' },
 ]
 
-export const NAMESPACES = ['app', 'notices'] as const
+export const NAMESPACES = ['app', 'notices', 'platforms'] as const
 
 export type LanguageMode = 'system' | 'en' | 'ja' | 'de' | 'es'
 
@@ -58,7 +59,7 @@ i18n
     returnNull: false,
     partialBundledLanguages: true,
     resources: {
-      en: { app: enApp, notices: enNotices },
+      en: { app: enApp, notices: enNotices, platforms: enPlatforms },
     },
   })
 

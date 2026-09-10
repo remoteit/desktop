@@ -12,5 +12,5 @@ type Props = React.SVGProps<SVGSVGElement> & {
 export const PlatformIcon: React.FC<Props> = ({ name, platform, ...originalProps }) => {
   const props = { ...originalProps, darkMode: useSelector((state: State) => state.ui.themeDark) }
   const Component = platform !== undefined ? platforms.componentByType(platform) : platforms.component(name)
-  return <Component {...props} />
+  return Component ? <Component {...props} /> : null
 }
