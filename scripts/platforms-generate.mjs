@@ -164,23 +164,33 @@ export function normalise(platformTypes, platformInstallations) {
   const types = {}
   const installations = {}
   const routes = {}
-  const page = slug => (installations[slug] ??= { types: {} })
+  const skipped = new Set()
   for (const { slug, ...rest } of platformInstallations) installations[slug] = { ...clean(rest), types: {} }
   for (const t of platformTypes) {
     if (typeof t.label !== 'string') continue
     types[t.id] = t.label
-    const slugs = (t.installations ?? []).map(route => route.slug)
-    for (const slug of slugs) page(slug).types[t.id] = t.label
+    // A type can link to a row platformInstallations does not return — `generic`, which the API
+    // hides because it is an inherited template, not a page. Inventing one gives it no name.
+    const slugs = (t.installations ?? [])
+      .map(route => route.slug)
+      .filter(slug => {
+        if (installations[slug]) return true
+        skipped.add(slug)
+        return false
+      })
+    for (const slug of slugs) installations[slug].types[t.id] = t.label
     if (slugs.length > 1) routes[t.id] = slugs
   }
+  if (skipped.size) console.warn(`  note: ignored route(s) with no installation row: ${[...skipped].join(', ')}`)
   return { types, routes, installations }
 }
 
 const canonical = data => JSON.stringify(data, null, 2) + '\n'
-// What is written goes through the project's prettier, so a regeneration never leaves a file that
-// format-on-save would then change. Comparison stays on `canonical`, which parsing makes
-// formatting-immune.
-const formatted = (file, text) => prettier.format(text, { filepath: file })
+// Written output goes through the project's prettier so a regeneration leaves nothing for
+// format-on-save to change. Awaited because prettier 3 returns a promise — writing the result
+// unawaited put the string "[object Promise]" in the file. Comparison stays on `canonical`.
+const formatted = async (file, text) =>
+  prettier.format(text, { filepath: file, ...((await prettier.resolveConfig(file)) ?? {}) })
 
 // Build `<slug>.<field>` entries for every translatable string in the catalogue.
 function catalogFrom(installations) {
@@ -208,7 +218,7 @@ function mergeCatalog(locale, english) {
   return { file, merged }
 }
 
-function writeCatalogs(installations) {
+async function writeCatalogs(installations) {
   const english = catalogFrom(installations)
   const written = []
   for (const locale of fs
@@ -217,8 +227,9 @@ function writeCatalogs(installations) {
     .map(d => d.name)) {
     const { file, merged } = mergeCatalog(locale, english)
     const next = canonical(merged)
-    if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== next) {
-      fs.writeFileSync(file, formatted(file, next))
+    const current = fs.existsSync(file) ? canonical(JSON.parse(fs.readFileSync(file, 'utf8'))) : ''
+    if (current !== next) {
+      fs.writeFileSync(file, await formatted(file, next))
       written.push(locale)
     }
   }
@@ -243,7 +254,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (check) {
     const current = fs.existsSync(OUT) ? canonical(JSON.parse(fs.readFileSync(OUT, 'utf8'))) : ''
     const englishFile = path.join(LOCALES_DIR, 'en', `${NAMESPACE}.json`)
-    const englishCurrent = fs.existsSync(englishFile) ? fs.readFileSync(englishFile, 'utf8') : ''
+    const englishCurrent = fs.existsSync(englishFile) ? canonical(JSON.parse(fs.readFileSync(englishFile, 'utf8'))) : ''
     if (current !== next || englishCurrent !== canonical(catalogFrom(data.installations))) {
       console.error(
         `STALE: the committed platform snapshot or its English catalog differs from the API. Run: npm run platforms:generate`
@@ -252,8 +263,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     }
     console.log('platform catalogue snapshot is up to date')
   } else {
-    fs.writeFileSync(OUT, formatted(OUT, next))
-    const { keys, written } = writeCatalogs(data.installations)
+    fs.writeFileSync(OUT, await formatted(OUT, next))
+    const { keys, written } = await writeCatalogs(data.installations)
     console.log(
       `wrote ${path.relative(process.cwd(), OUT)}: ${Object.keys(data.types).length} types, ${
         Object.keys(data.installations).length
