@@ -45,7 +45,29 @@ Var FileHandle
     ${ifNot} $InstallLocationToRemove == ""
         FileWrite $FileHandle "Old installation marked for removal: $InstallLocationToRemove $\r$\n"
     ${endIf}
-    
+
+    !ifndef APP_32
+    ; An ia32 install registers itself in the 32-bit registry view. This 64-bit installer reads
+    ; the 64-bit view, so electron-builder skipped the old uninstaller, left the agent service
+    ; running and could not replace its locked remoteit.exe (3.48.2 ia32 -> 3.48.3 arm64).
+    ; Mirror the registration so the normal upgrade path finds it.
+    SetRegView 64
+    ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
+    ${if} $0 == ""
+        SetRegView 32
+        ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
+        ReadRegStr $1 HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation
+        ReadRegStr $2 HKLM "${INSTALL_REGISTRY_KEY}" KeepShortcuts
+        SetRegView 64
+        ${ifNot} $0 == ""
+            WriteRegStr HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString $0
+            WriteRegStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation $1
+            WriteRegStr HKLM "${INSTALL_REGISTRY_KEY}" KeepShortcuts $2
+            FileWrite $FileHandle "Mirrored 32-bit registration to the 64-bit view: $0 $\r$\n"
+        ${endIf}
+    ${endIf}
+    !endif
+
     FileWrite $FileHandle "End PreInit $\r$\n"
     FileClose $FileHandle
 !macroend
@@ -83,6 +105,15 @@ Var FileHandle
         RMDir /r $InstallLocationToRemove
         FileWrite $FileHandle "DONE$\r$\n"
     ${endIf}
+
+    !ifndef APP_32
+    ; Drop the 32-bit registration of the ia32 install this replaced; it would otherwise
+    ; linger in Programs and Features pointing at an uninstaller that no longer exists.
+    SetRegView 32
+    DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY}"
+    DeleteRegKey HKLM "${INSTALL_REGISTRY_KEY}"
+    SetRegView 64
+    !endif
 
     FileWrite $FileHandle "End CustomInstall$\r$\n"
     FileClose $FileHandle

@@ -194,6 +194,19 @@ To check an installer by hand: `7zz l -slt <installer>` shows the payload as
 `$PLUGINSDIR/app-<arch>.7z`; extract it and `7zz l -slt` again — `Method = ARM64 …`
 on any entry is the tell.
 
+## Cross-architecture upgrades on Windows
+
+An ia32 install registers its uninstaller in the **32-bit** registry view; the
+x64 and arm64 installers read the **64-bit** view. electron-builder's upgrade
+step therefore never found the old install when a machine moved from ia32 to a
+native build — it skipped the uninstall, the old agent service kept running with
+`resources\remoteit.exe` locked, extraction could not replace that one file
+("Remote.It cannot be closed… Retry"), and the result was an arm64 app with an
+ia32 agent and two entries in Programs and Features. `installer.nsh` now mirrors
+a 32-bit-only registration into the 64-bit view in `preInit`, so the normal
+upgrade path runs the old uninstaller, and removes the stale 32-bit keys in
+`customInstall`. Every currently-ia32 machine takes this hop when it goes native.
+
 ## Windows update manifests
 
 The in-app updater on Windows reads `latest.yml` from the release and picks one
