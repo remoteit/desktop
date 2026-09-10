@@ -169,6 +169,31 @@ back into `main` first.
 Amplify builds the branch. Its build settings live in the Amplify console, not
 in this repo, so there is no `amplify.yml` here to change.
 
+## Windows installer payloads
+
+The app payload inside each NSIS installer is a 7z archive that NSIS extracts with
+the `nsis7z` plugin, which was built in 2019. electron-builder 26.15's 7-Zip
+compresses ARM64 executables with the newer **ARM64 branch filter**, which
+`nsis7z` cannot decode — it skips those entries *without reporting an error*.
+On a Windows ARM64 machine that meant the old install was removed and then
+`Remote.It.exe`, every DLL and all of `resources\*.exe` were simply absent,
+surfacing as "The Remote.It agent service could not be installed." That is what
+broke 3.47.1's universal installer, 3.47.1's standalone arm64 installer on the
+download page, and 3.48.1. 3.46.1 (electron-builder 26.8.1) used BCJ2 everywhere.
+
+Two things hold it:
+
+- `electron/package.json` runs electron-builder with
+  `ELECTRON_BUILDER_7Z_FILTER=BCJ2`, which reproduces the 26.8.1 output exactly.
+- **Build / Electron** runs `electron/scripts/verify-win-installers.js` on every
+  Windows installer: it carves the payload out of the installer, lists its
+  coders, and fails the build — removing the installers from the draft — if any
+  coder is one `nsis7z` lacks, or an expected executable is missing.
+
+To check an installer by hand: `7zz l -slt <installer>` shows the payload as
+`$PLUGINSDIR/app-<arch>.7z`; extract it and `7zz l -slt` again — `Method = ARM64 …`
+on any entry is the tell.
+
 ## Windows update manifests
 
 The in-app updater on Windows reads `latest.yml` from the release and picks one
