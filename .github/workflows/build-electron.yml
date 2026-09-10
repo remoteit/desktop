@@ -133,6 +133,28 @@ jobs:
           cd electron
           npm run build
 
+      # nsis7z (built 2019) silently skips payload entries compressed with a coder it does
+      # not know; electron-builder 26.15's 7-Zip used the ARM64 filter on ARM64 executables
+      # and every 3.47.1/3.48.1 ARM64 install lost its binaries. package.json forces BCJ2;
+      # this proves each installer's payload. electron-builder has already attached the
+      # installers to the draft, so on failure they are removed before anyone can publish.
+      - name: Verify Windows installers extract with nsis7z
+        if: matrix.os == 'windows-latest'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          cd electron
+          if ! node scripts/verify-win-installers.js dist; then
+            if [ "$(gh release view "$VERSION" --json isDraft -q .isDraft 2>/dev/null)" = "true" ]; then
+              for a in Remote.It-Installer-ia32.exe Remote.It-Installer-x64.exe Remote.It-Installer-arm64.exe \
+                       Remote.It-Installer-ia32.exe.blockmap Remote.It-Installer-x64.exe.blockmap Remote.It-Installer-arm64.exe.blockmap latest.yml; do
+                gh release delete-asset "$VERSION" "$a" --yes 2>/dev/null || true
+              done
+              echo "::error::Windows installers removed from draft $VERSION - their payload cannot be extracted by nsis7z (see above)"
+            fi
+            exit 1
+          fi
+
       # electron-builder orders `files` in latest.yml by build completion, and every
       # client on electron-updater <= 6.6.2 (all releases through 3.46.1) installs
       # whatever is first. Make the order deterministic, write the per-arch manifests
