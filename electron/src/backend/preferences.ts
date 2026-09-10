@@ -52,13 +52,17 @@ export class Preferences {
     this.set({ ...data, ...pref })
   }
 
+  // Merge, never replace: the renderer can emit its own preferences state before the
+  // backend's has reached it (ui.ts resolves the language on startup), which wiped every
+  // key but version/cliVersion/language and switched auto-update off.
   set = (preferences: IPreferences) => {
     Logger.info('SET PREFERENCES', { preferences })
-    this.file.write(preferences)
-    this.data = preferences
+    const data = { ...this.data, ...preferences }
     // @ts-ignore - remove circular reference
-    delete this.data.preferences
-    EventBus.emit(this.EVENTS.update, preferences)
+    delete data.preferences
+    this.file.write(data)
+    this.data = data
+    EventBus.emit(this.EVENTS.update, data)
   }
 }
 
