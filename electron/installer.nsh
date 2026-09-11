@@ -7,9 +7,6 @@
 
 Var InstallLocationToRemove
 Var FileHandle
-!ifndef APP_32
-Var Mirrored32
-!endif
 
 !macro preInit
     !insertmacro openLogFile "PreInit"
@@ -58,20 +55,14 @@ Var Mirrored32
     SetRegView 64
     ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
     ${ifNot} $1 == ""
-        ${if} $0 == ""
-            WriteRegStr HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString $1
-            ; A folder the user chose (any drive) stays theirs; only the 32-bit default is remapped in customInit.
-            ${ifNot} $2 == ""
-            ${andIfNot} $2 == "$PROGRAMFILES32\${APP_FILENAME}"
-                WriteRegStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation $2
-                FileWrite $FileHandle "Kept chosen install dir: $2 $\r$\n"
-            ${endIf}
-            StrCpy $Mirrored32 "1"
-            FileWrite $FileHandle "Mirrored 32-bit uninstaller entry to the 64-bit view: $1 $\r$\n"
-        ${elseIf} $0 == $1
-            ; Left by an earlier run of this installer that did not finish.
-            StrCpy $Mirrored32 "1"
-            FileWrite $FileHandle "32-bit uninstaller entry already mirrored: $1 $\r$\n"
+    ${andIf} $0 == ""
+        WriteRegStr HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString $1
+        FileWrite $FileHandle "Mirrored 32-bit uninstaller entry to the 64-bit view: $1 $\r$\n"
+        ; A folder the user chose (any drive) stays theirs; only the 32-bit default is remapped in customInit.
+        ${ifNot} $2 == ""
+        ${andIfNot} $2 == "$PROGRAMFILES32\${APP_FILENAME}"
+            WriteRegStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation $2
+            FileWrite $FileHandle "Kept chosen install dir: $2 $\r$\n"
         ${endIf}
     ${endIf}
     !endif
@@ -82,22 +73,38 @@ Var Mirrored32
 
 !macro customInit
     !ifndef APP_32
+    !insertmacro openLogFile "CustomInit"
     ; electron-builder's multiUser.nsh picks $PROGRAMFILES64 only for an x64 payload (APP_64), so an
     ; arm64-only installer defaults to Program Files (x86). Move that one default; keep a chosen folder.
     !insertmacro GetDParameter $R0
     ${if} $R0 == ""
     ${andIf} $INSTDIR == "$PROGRAMFILES32\${APP_FILENAME}"
         StrCpy $INSTDIR "$PROGRAMFILES64\${APP_FILENAME}"
-        FileOpen $FileHandle "$TEMP\${LOGNAME}" a
-        FileSeek $FileHandle 0 END
         FileWrite $FileHandle "Moved default install dir to $INSTDIR $\r$\n"
-        FileClose $FileHandle
     ${endIf}
+    FileClose $FileHandle
     !endif
 !macroend
 
 !macro customInstall
     !insertmacro openLogFile "CustomInstall"
+
+    !ifndef APP_32
+    ; The ia32 uninstaller deletes the 64-bit (mirrored) keys, not its own: customRemoveFiles leaves
+    ; SetRegView 64. Drop a 32-bit registration whose uninstaller is gone so it cannot linger.
+    SetRegView 32
+    ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
+    ${ifNot} $0 == ""
+        !insertmacro GetInQuotes $1 "$0"
+        ${ifNot} $1 == ""
+        ${andIfNot} ${FileExists} "$1"
+            DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY}"
+            DeleteRegKey HKLM "${INSTALL_REGISTRY_KEY}"
+            FileWrite $FileHandle "Removed stale 32-bit registration: $0 $\r$\n"
+        ${endIf}
+    ${endIf}
+    SetRegView 64
+    !endif
 
     ; Remove any old agents
     !insertmacro uninstallAnyAgent
@@ -107,10 +114,7 @@ Var Mirrored32
     ; nsExec reports a binary it cannot start like one that failed; a payload that lost
     ; remoteit.exe (3.47.1 ARM64) would read as an agent fault.
     ${IfNot} ${FileExists} "$INSTDIR\resources\remoteit.exe"
-        FileWrite $FileHandle "Fatal installer error: $INSTDIR\resources\remoteit.exe is missing$\r$\n"
-        FileClose $FileHandle
-        MessageBox MB_OK|MB_ICONSTOP "The Remote.It agent is missing from $INSTDIR\resources. This installer may not match your computer's architecture. Setup will now exit."
-        Abort
+        !insertmacro fatal "$INSTDIR\resources\remoteit.exe is missing" "The Remote.It agent is missing from $INSTDIR\resources. This installer may not match your computer's architecture. Setup will now exit."
     ${EndIf}
     !insertmacro logExecRequired "$\"$INSTDIR\resources\remoteit$\" agent install" "The Remote.It agent service could not be installed. Setup will now exit."
     
@@ -129,17 +133,6 @@ Var Mirrored32
         RMDir /r $InstallLocationToRemove
         FileWrite $FileHandle "DONE$\r$\n"
     ${endIf}
-
-    !ifndef APP_32
-    ${if} $Mirrored32 == "1"
-        ; The ia32 uninstaller leaves SetRegView 64 in customRemoveFiles, so it deleted the
-        ; mirrored keys, not its own; without this it lingers in Programs and Features.
-        SetRegView 32
-        DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY}"
-        DeleteRegKey HKLM "${INSTALL_REGISTRY_KEY}"
-        SetRegView 64
-    ${endIf}
-    !endif
 
     FileWrite $FileHandle "End CustomInstall$\r$\n"
     FileClose $FileHandle
@@ -280,28 +273,29 @@ Var Mirrored32
     !insertmacro logExec "${command}"
     ; nsExec pushes the literal "error" when the process could not be started at all
     ${If} $0 == "error"
-        FileWrite $FileHandle "Fatal installer error: command could not be started. ${errorMessage}$\r$\n"
-        FileClose $FileHandle
-        MessageBox MB_OK|MB_ICONSTOP "${errorMessage}$\r$\n$\r$\nThe command could not be started:$\r$\n${command}"
-        Abort
-    ${ElseIf} $0 != 0
-        FileWrite $FileHandle "Fatal installer error: ${errorMessage}$\r$\n"
-        FileClose $FileHandle
-        MessageBox MB_OK|MB_ICONSTOP "${errorMessage}$\r$\n$\r$\nExit code $0$\r$\n$1"
-        Abort
+        StrCpy $2 "The command could not be started:$\r$\n${command}"
+    ${Else}
+        StrCpy $2 "Exit code $0$\r$\n$1"
+    ${EndIf}
+    ${If} $0 != 0
+        !insertmacro fatal "${errorMessage} $2" "${errorMessage}$\r$\n$\r$\n$2"
     ${EndIf}
 !macroend
 
+!macro fatal logText boxText
+    FileWrite $FileHandle "Fatal installer error: ${logText}$\r$\n"
+    FileClose $FileHandle
+    MessageBox MB_OK|MB_ICONSTOP "${boxText}"
+    Abort
+!macroend
+
 !macro openLogFile section
-    IfFileExists "$TEMP\${LOGNAME}" logFound logNotFound
-    logFound:
+    ${If} ${FileExists} "$TEMP\${LOGNAME}"
         FileOpen $FileHandle "$TEMP\${LOGNAME}" a
         FileSeek $FileHandle 0 END
-        goto logFoundEnd
-    logNotFound:
+    ${Else}
         FileOpen $FileHandle "$TEMP\${LOGNAME}" w
-    logFoundEnd:
-
+    ${EndIf}
     FileWrite $FileHandle "$\r$\nStart ${section} ${VERSION} (${__DATE__} ${__TIME__}) $\r$\n"
 !macroend
 
