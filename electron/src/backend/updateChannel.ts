@@ -1,3 +1,5 @@
+import { prerelease } from 'semver'
+
 export type WindowsArch = 'ia32' | 'x64' | 'arm64'
 
 // The CPU Windows is running on, as opposed to process.arch, which is the arch this
@@ -20,4 +22,24 @@ export function detectNativeWindowsArch(
 // arch forever and needs latest-<arch>.yml (scripts/finalize-win-update-manifests.js).
 export function resolveNativeArchSteering(processArch: string, nativeArch: WindowsArch): WindowsArch | null {
   return nativeArch === processArch ? null : nativeArch
+}
+
+export function releaseChannel(version: string): string | null {
+  const id = prerelease(version)?.[0]
+  return id == null ? null : String(id)
+}
+
+// Mirrors GitHubProvider's rule for which release a client may move to: stable follows
+// anything, alpha/beta rank against each other, a custom pre-release id only follows itself.
+export function isEligibleRelease(currentVersion: string, tag: string, allowPrerelease: boolean): boolean {
+  const target = releaseChannel(tag)
+  if (target === null) return true
+  if (!allowPrerelease) return false
+  const current = releaseChannel(currentVersion)
+  if (current === null) return true
+  if (current === 'alpha' || current === 'beta') {
+    if (target !== 'alpha' && target !== 'beta') return false
+    return !(current === 'beta' && target === 'alpha')
+  }
+  return target === current
 }

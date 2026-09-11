@@ -2,7 +2,13 @@ import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
 import { EventBus, Logger, EVENTS, preferences, environment, brand } from './backend'
-import { detectNativeWindowsArch, resolveNativeArchSteering, WindowsArch } from './backend/updateChannel'
+import {
+  detectNativeWindowsArch,
+  isEligibleRelease,
+  releaseChannel,
+  resolveNativeArchSteering,
+  WindowsArch,
+} from './backend/updateChannel'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
@@ -44,6 +50,7 @@ export default class AppUpdater {
   version?: string
   error: boolean = false
   private steering: WindowsArch | null = null
+  private steeringChannel = 'latest'
   private feedUrl = ''
   private readonly defaultGithubFeed: GitHubFeedConfig = resolveGitHubFeedFromBrand()
 
@@ -124,7 +131,7 @@ export default class AppUpdater {
 
   private get updateManifestFile() {
     if (process.platform === 'darwin') return 'latest-mac.yml'
-    return this.steering ? `latest-${this.steering}.yml` : 'latest.yml'
+    return this.steering ? `${this.steeringChannel}-${this.steering}.yml` : 'latest.yml'
   }
 
   check = async (force?: boolean) => {
@@ -169,17 +176,18 @@ export default class AppUpdater {
       : null
 
     if (nativeArch) {
-      const tag = await this.findNewestReleaseTag(`latest-${nativeArch}.yml`)
-      if (tag) {
-        this.feedUrl = `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`
+      const release = await this.findNewestRelease(nativeArch)
+      if (release) {
+        this.feedUrl = `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${release.tag}`
         autoUpdater.setFeedURL({
           provider: 'generic',
           url: this.feedUrl,
-          channel: `latest-${nativeArch}`,
+          channel: `${release.channel}-${nativeArch}`,
           useMultipleRangeRequest: false,
         })
         this.steering = nativeArch
-        Logger.info('AUTO UPDATE NATIVE ARCH', { processArch: process.arch, nativeArch, tag })
+        this.steeringChannel = release.channel
+        Logger.info('AUTO UPDATE NATIVE ARCH', { processArch: process.arch, nativeArch, tag: release.tag })
         return
       }
       Logger.info('AUTO UPDATE NATIVE ARCH UNAVAILABLE', { processArch: process.arch, nativeArch })
@@ -188,16 +196,27 @@ export default class AppUpdater {
     this.setDefaultFeed()
   }
 
-  // Only the newest eligible release counts: steering to an older one that happens to
-  // carry the per-arch manifest would hide a newer version.
-  private async findNewestReleaseTag(asset: string): Promise<string | undefined> {
+  // Only the newest release this client may move to counts: steering to an older one that
+  // happens to carry the per-arch manifest would hide a newer version. The manifest is named
+  // after the release's channel (latest-, beta-, alpha-), as electron-builder writes it.
+  private async findNewestRelease(nativeArch: WindowsArch): Promise<{ tag: string; channel: string } | undefined> {
     try {
       const { data } = await axios.get<GitHubRelease[]>(
         `https://api.github.com/repos/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases?per_page=30`,
         { headers: { Accept: 'application/vnd.github+json' } }
       )
-      const newest = data.find(item => !item.draft && (autoUpdater.allowPrerelease || !item.prerelease))
-      return newest?.assets?.some(a => a.name === asset) ? newest.tag_name : undefined
+      const current = autoUpdater.currentVersion.version
+      const newest = data.find(
+        item =>
+          !item.draft &&
+          (autoUpdater.allowPrerelease || !item.prerelease) &&
+          isEligibleRelease(current, item.tag_name, autoUpdater.allowPrerelease)
+      )
+      if (!newest) return undefined
+      const channel = releaseChannel(newest.tag_name) || 'latest'
+      return newest.assets?.some(a => a.name === `${channel}-${nativeArch}.yml`)
+        ? { tag: newest.tag_name, channel }
+        : undefined
     } catch (error) {
       Logger.warn('AUTO UPDATE RELEASE LOOKUP FAILED', { error })
       return undefined
