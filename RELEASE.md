@@ -71,9 +71,10 @@ creates it lazily from whichever runner uploads first, and concurrent runners
 have produced **two drafts for one version** with the installers split between
 them. If that ever shows up again — two drafts with the same tag in the
 releases list — keep the one with the installers, delete the other, and re-run.
-Every `gh` step targets that resolved repository, so the token the workflow runs
-with must be able to write there — the automatic token only reaches the
-repository the workflow runs in. Node comes from `.nvmrc` — electron-builder
+Every `gh` step targets that resolved repository. The automatic token only
+reaches the repository the workflow runs in, so a brand release either runs from
+the brand's own repository or sets the `RELEASE_TOKEN` secret to a token that
+can write there — `prepare` checks and fails before anything is built. Node comes from `.nvmrc` — electron-builder
 needs Node >= 20.19 / 22.12, so don't pin it lower.
 
 Windows ships three installers, one per arch (`-ia32`, `-x64`, `-arm64`), and
@@ -251,8 +252,11 @@ Two things fix that, and both are automatic:
    moves to its native installer on the next release. The updater's own
    `channel` is deliberately never set: GitHubProvider matches an explicit
    channel against tag pre-release ids and breaks every pre-release user's
-   checks. If the newest release predates the per-arch files, the app falls
-   back to `latest.yml`, which still updates it on its current arch.
+   checks. A client on a pre-release version follows electron-updater's channel
+   rules (beta never moves onto alpha, a custom id only follows itself) and
+   reads that release's `<channel>-<arch>.yml`. If the newest release predates
+   the per-arch files, the app falls back to `latest.yml`, which still updates
+   it on its current arch.
 
 `beta.yml` / `alpha.yml` get the same treatment if electron-builder emits them.
 

@@ -29,7 +29,9 @@ env:
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
   SKIP_SIGNING: ${{ inputs.skip_signing }}
   BRAND: ${{ inputs.brand || 'remoteit' }}
-  GH_TOKEN: ${{ secrets.github_token }}
+  # A brand's release publishes to the brand's own repository, which the automatic token
+  # cannot reach; RELEASE_TOKEN (optional) supplies one that can.
+  GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.github_token }}
 
 jobs:
   # electron-builder creates the GitHub draft lazily, from whichever upload finishes
@@ -55,7 +57,13 @@ jobs:
       # not necessarily the one this workflow runs in. Every gh call below targets it.
       - name: Resolve the release repository for the brand
         id: repo
-        run: echo "RELEASE_REPO=$(node electron/scripts/release-repo.js)" >> $GITHUB_OUTPUT
+        run: |
+          RELEASE_REPO=$(node electron/scripts/release-repo.js)
+          if [ "$RELEASE_REPO" != "$GITHUB_REPOSITORY" ] && [ "$(gh api "repos/$RELEASE_REPO" -q .permissions.push 2>/dev/null)" != "true" ]; then
+            echo "::error::GH_TOKEN cannot write to $RELEASE_REPO. Run this workflow from that repository, or set the RELEASE_TOKEN secret to a token with write access there."
+            exit 1
+          fi
+          echo "RELEASE_REPO=$RELEASE_REPO" >> $GITHUB_OUTPUT
 
       - name: Create the draft release once
         if: github.ref_type == 'tag'
@@ -66,7 +74,11 @@ jobs:
           if gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft >/dev/null 2>&1; then
             echo "release $VERSION already exists in $RELEASE_REPO"
           else
-            gh release create "$VERSION" --repo "$RELEASE_REPO" --draft --title "${VERSION#v}" --notes "" --target "$GITHUB_SHA"
+            # --target must name a commit the destination repository has; another brand's
+            # repository need not contain this one, so leave it to the tag or default branch there.
+            target=()
+            [ "$RELEASE_REPO" = "$GITHUB_REPOSITORY" ] && target=(--target "$GITHUB_SHA")
+            gh release create "$VERSION" --repo "$RELEASE_REPO" --draft --title "${VERSION#v}" --notes "" "${target[@]}"
           fi
 
   release:
