@@ -127,7 +127,15 @@ export default class AppUpdater {
     return this.steering ? `latest-${this.steering}.yml` : 'latest.yml'
   }
 
-  check = async (force?: boolean) => {
+  private inFlight: Promise<void> | null = null
+
+  // Startup fires several checks at once; run in parallel they interleave the feed and steering state.
+  check = (force?: boolean) => {
+    if (!this.inFlight) this.inFlight = this.run(force).finally(() => (this.inFlight = null))
+    return this.inFlight
+  }
+
+  private async run(force?: boolean) {
     if ((!environment.isWindows && !environment.isMac) || !preferences.get().autoUpdate) return
 
     try {
