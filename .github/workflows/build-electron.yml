@@ -29,11 +29,68 @@ env:
   FONT_AWESOME_AUTH_TOKEN: ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
   SKIP_SIGNING: ${{ inputs.skip_signing }}
   BRAND: ${{ inputs.brand || 'remoteit' }}
-  GH_TOKEN: ${{ secrets.github_token }}
 
 jobs:
+  # Creates the draft before the runners start: electron-builder otherwise creates it lazily
+  # and racing runners have produced two drafts for one version. See RELEASE.md, section 2.
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+      release_repo: ${{ steps.repo.outputs.RELEASE_REPO }}
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+
+      # A brand may publish to its own repository (brands/<brand>/config.ts); every gh call targets it.
+      - name: Resolve the release repository for the brand
+        id: repo
+        run: echo "RELEASE_REPO=$(node electron/scripts/release-repo.js)" >> $GITHUB_OUTPUT
+
+      # Only a tag build publishes, and only another repository needs a token of its own.
+      - name: Check write access to the brand's repository
+        if: github.ref_type == 'tag' && steps.repo.outputs.RELEASE_REPO != github.repository
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          RELEASE_REPO: ${{ steps.repo.outputs.RELEASE_REPO }}
+        run: |
+          if [ -z "$GH_TOKEN" ] || [ "$(gh api "repos/$RELEASE_REPO" -q .permissions.push 2>/dev/null)" != "true" ]; then
+            echo "::error::RELEASE_TOKEN cannot write to $RELEASE_REPO. Set it to a token with write access there, or run this workflow from that repository."
+            exit 1
+          fi
+
+      - name: Create the draft release once
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ steps.repo.outputs.RELEASE_REPO != github.repository && secrets.RELEASE_TOKEN || secrets.github_token }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          RELEASE_REPO: ${{ steps.repo.outputs.RELEASE_REPO }}
+        run: |
+          if view=$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft 2>&1); then
+            echo "release $VERSION already exists in $RELEASE_REPO"
+          elif [[ "$view" == *"release not found"* ]]; then
+            # --target must name a commit the destination repository has.
+            target=()
+            [ "$RELEASE_REPO" = "$GITHUB_REPOSITORY" ] && target=(--target "$GITHUB_SHA")
+            gh release create "$VERSION" --repo "$RELEASE_REPO" --draft --title "${VERSION#v}" --notes "" "${target[@]}"
+          else
+            echo "::error::Could not look up release $VERSION in $RELEASE_REPO: $view"
+            exit 1
+          fi
+
   release:
+    needs: prepare
     runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ needs.prepare.outputs.release_repo != github.repository && secrets.RELEASE_TOKEN || secrets.github_token }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+      RELEASE_REPO: ${{ needs.prepare.outputs.release_repo }}
 
     strategy:
       # One platform failing should not cancel the others - a Linux packaging
@@ -46,12 +103,6 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
-
-      - name: Get version from package.json
-        id: version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v4
@@ -103,3 +154,48 @@ jobs:
         run: |
           cd electron
           npm run build
+
+      # nsis7z silently skips payload entries it cannot decode (3.47.1/3.48.1 ARM64). electron-builder
+      # has already attached the installers to the draft, so a failure pulls them back out.
+      - name: Verify Windows installers extract with nsis7z
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd electron
+          if ! node scripts/verify-win-installers.js dist; then
+            if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft -q .isDraft 2>/dev/null)" = "true" ]; then
+              for f in dist/*-Installer-*.exe dist/*-Installer-*.exe.blockmap dist/latest.yml; do
+                [ -e "$f" ] && gh release delete-asset "$VERSION" "$(basename "$f")" --repo "$RELEASE_REPO" --yes 2>/dev/null || true
+              done
+              echo "::error::Windows installers removed from draft $VERSION in $RELEASE_REPO - their payload cannot be extracted by nsis7z (see above)"
+            fi
+            exit 1
+          fi
+
+      # Pins the ia32-first order old clients depend on and writes latest-<arch>.yml, replacing
+      # what electron-builder attached to the draft. See RELEASE.md, "Windows update manifests".
+      - name: Finalize Windows update manifests
+        if: matrix.os == 'windows-latest'
+        run: |
+          set -o pipefail
+          cd electron
+          node scripts/finalize-win-update-manifests.js dist | tee manifests.txt
+          # Only a tag build published anything, and only into a draft; a live release is never rewritten.
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            echo "::notice::electron-builder does not publish from a branch. Manifests were generated but not uploaded."
+            exit 0
+          fi
+          releases=$(gh api "repos/$RELEASE_REPO/releases?per_page=100" -q "[.[] | select(.tag_name==\"$VERSION\")]")
+          published=$(jq 'map(select(.draft|not)) | length' <<<"$releases")
+          drafts=$(jq 'map(select(.draft)) | length' <<<"$releases")
+          if [ "$published" != "0" ]; then
+            echo "::error::$VERSION is already published in $RELEASE_REPO. CI never rewrites a live release's update manifests - bump the version."
+            exit 1
+          elif [ "$drafts" = "0" ]; then
+            echo "::error::Release $VERSION not found in $RELEASE_REPO although building tag $GITHUB_REF_NAME"
+            exit 1
+          elif [ "$drafts" != "1" ]; then
+            # gh picks one draft by tag; the manifests could land in a draft without the installers.
+            echo "::error::$drafts draft releases are tagged $VERSION. Keep one, delete the rest, and re-run - see RELEASE.md."
+            exit 1
+          fi
+          gh release upload "$VERSION" $(cat manifests.txt) --repo "$RELEASE_REPO" --clobber

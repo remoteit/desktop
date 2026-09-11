@@ -22,13 +22,12 @@ export const TestPage: React.FC = () => {
   const { tests, informed } = useSelector((state: State) => state.plans)
   const apis = useSelector((state: State) => state.ui.apis)
   const testUI = useSelector((state: State) => state.ui.testUI)
-  const preferences = useSelector((state: State) => state.backend.preferences)
   const limitsOverride = useSelector(selectLimitsLookup)
   const limits = useSelector(selectLimits)
 
   async function setAPIPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
-    emit('preferences', { ...preferences, [key]: value })
+    emit('preferences', { [key]: value })
   }
 
   return (
@@ -50,7 +49,7 @@ export const TestPage: React.FC = () => {
           )}
           onClick={() => {
             dispatch.ui.setPersistent({ testUI: undefined })
-            emit('preferences', { ...preferences, allowPrerelease: false, switchApi: false })
+            emit('preferences', { allowPrerelease: false, switchApi: false })
           }}
         />
         <ListItemSetting
@@ -74,7 +73,10 @@ export const TestPage: React.FC = () => {
         <ListItemSetting
           hideIcon
           label={t('testPage.clearViewedAnnouncements', 'Clear viewed announcements')}
-          subLabel={t('testPage.clearViewedAnnouncementsHint', 'Marks all loaded announcements unread for this account.')}
+          subLabel={t(
+            'testPage.clearViewedAnnouncementsHint',
+            'Marks all loaded announcements unread for this account.'
+          )}
           onClick={() => dispatch.announcements.clearRead()}
         />
         <PortalUI>
@@ -145,9 +147,7 @@ export const TestPage: React.FC = () => {
                 key={l.name}
                 label={t('testPage.featureLabel', {
                   name: l.name,
-                  state: l.value
-                    ? t('testPage.enabled', 'enabled')
-                    : t('testPage.disabled', 'disabled'),
+                  state: l.value ? t('testPage.enabled', 'enabled') : t('testPage.disabled', 'disabled'),
                   defaultValue: '{{name}} (default {{state}})',
                 })}
                 toggle={limitsOverride[l.name]}

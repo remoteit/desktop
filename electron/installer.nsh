@@ -45,19 +45,77 @@ Var FileHandle
     ${ifNot} $InstallLocationToRemove == ""
         FileWrite $FileHandle "Old installation marked for removal: $InstallLocationToRemove $\r$\n"
     ${endIf}
-    
+
+    !ifndef APP_32
+    ; An ia32 install registers in the 32-bit view, where this installer never looks, so the old
+    ; uninstaller was skipped. Copy only its entry: see RELEASE.md, "Cross-architecture upgrades".
+    SetRegView 32
+    ReadRegStr $1 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
+    ReadRegStr $2 HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation
+    SetRegView 64
+    ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
+    ${ifNot} $1 == ""
+    ${andIf} $0 == ""
+        WriteRegStr HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString $1
+        FileWrite $FileHandle "Mirrored 32-bit uninstaller entry to the 64-bit view: $1 $\r$\n"
+        ; A folder the user chose (any drive) stays theirs; only the 32-bit default is remapped in customInit.
+        ${ifNot} $2 == ""
+        ${andIfNot} $2 == "$PROGRAMFILES32\${APP_FILENAME}"
+            WriteRegStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation $2
+            FileWrite $FileHandle "Kept chosen install dir: $2 $\r$\n"
+        ${endIf}
+    ${endIf}
+    !endif
+
     FileWrite $FileHandle "End PreInit $\r$\n"
     FileClose $FileHandle
 !macroend
 
+!macro customInit
+    !ifndef APP_32
+    !insertmacro openLogFile "CustomInit"
+    ; electron-builder's multiUser.nsh picks $PROGRAMFILES64 only for an x64 payload (APP_64), so an
+    ; arm64-only installer defaults to Program Files (x86). Move that one default; keep a chosen folder.
+    !insertmacro GetDParameter $R0
+    ${if} $R0 == ""
+    ${andIf} $INSTDIR == "$PROGRAMFILES32\${APP_FILENAME}"
+        StrCpy $INSTDIR "$PROGRAMFILES64\${APP_FILENAME}"
+        FileWrite $FileHandle "Moved default install dir to $INSTDIR $\r$\n"
+    ${endIf}
+    FileClose $FileHandle
+    !endif
+!macroend
+
 !macro customInstall
     !insertmacro openLogFile "CustomInstall"
+
+    !ifndef APP_32
+    ; The ia32 uninstaller deletes the 64-bit (mirrored) keys, not its own: customRemoveFiles leaves
+    ; SetRegView 64. Drop a 32-bit registration whose uninstaller is gone so it cannot linger.
+    SetRegView 32
+    ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
+    ${ifNot} $0 == ""
+        !insertmacro GetInQuotes $1 "$0"
+        ${ifNot} $1 == ""
+        ${andIfNot} ${FileExists} "$1"
+            DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY}"
+            DeleteRegKey HKLM "${INSTALL_REGISTRY_KEY}"
+            FileWrite $FileHandle "Removed stale 32-bit registration: $0 $\r$\n"
+        ${endIf}
+    ${endIf}
+    SetRegView 64
+    !endif
 
     ; Remove any old agents
     !insertmacro uninstallAnyAgent
 
     ; Install new agent
     FileWrite $FileHandle "Installing Agent ... $\r$\n"
+    ; nsExec reports a binary it cannot start like one that failed; a payload that lost
+    ; remoteit.exe (3.47.1 ARM64) would read as an agent fault.
+    ${IfNot} ${FileExists} "$INSTDIR\resources\remoteit.exe"
+        !insertmacro fatal "$INSTDIR\resources\remoteit.exe is missing" "The Remote.It agent is missing from $INSTDIR\resources. This installer may not match your computer's architecture. Setup will now exit."
+    ${EndIf}
     !insertmacro logExecRequired "$\"$INSTDIR\resources\remoteit$\" agent install" "The Remote.It agent service could not be installed. Setup will now exit."
     
     ; REMOVE AFTER v3.16.x -- Remove from machine path env var incase already there
@@ -137,9 +195,12 @@ Var FileHandle
             FileWrite $FileHandle "Device config not found$\r$\n"
         end_of_config:
 
-        ; Remove app data
+        ; Remove the desktop's per-user data. In the per-machine context $LOCALAPPDATA is
+        ; C:\ProgramData, which deleted the agent's identity on every manual uninstall (3.45.2+).
+        SetShellVarContext current
         FileWrite $FileHandle "RMDir $LOCALAPPDATA\remoteit$\r$\n"
         RMDir /r "$LOCALAPPDATA\remoteit"
+        SetShellVarContext all
     ${endIf}
 
     ; Remove agent
@@ -170,7 +231,7 @@ Var FileHandle
     StrCpy $6 "Remote.It Agent Uninstall"
 
     ; Check if the agent is installed - must happen before uninstall because of name conflict with desktop app
-    !insertmacro logPowershell "(Get-Command remoteit).Path.Contains('resources')"
+    !insertmacro logPowershell "(Get-Command remoteit -ErrorAction SilentlyContinue).Path -like '*resources*'"
     
     ; Remove trailing line break from $1
     StrCpy $1 $1 -2
@@ -210,24 +271,31 @@ Var FileHandle
 
 !macro logExecRequired command errorMessage
     !insertmacro logExec "${command}"
+    ; nsExec pushes the literal "error" when the process could not be started at all
+    ${If} $0 == "error"
+        StrCpy $2 "The command could not be started:$\r$\n${command}"
+    ${Else}
+        StrCpy $2 "Exit code $0$\r$\n$1"
+    ${EndIf}
     ${If} $0 != 0
-        FileWrite $FileHandle "Fatal installer error: ${errorMessage}$\r$\n"
-        FileClose $FileHandle
-        MessageBox MB_OK|MB_ICONSTOP "${errorMessage}"
-        Abort
+        !insertmacro fatal "${errorMessage} $2" "${errorMessage}$\r$\n$\r$\n$2"
     ${EndIf}
 !macroend
 
+!macro fatal logText boxText
+    FileWrite $FileHandle "Fatal installer error: ${logText}$\r$\n"
+    FileClose $FileHandle
+    MessageBox MB_OK|MB_ICONSTOP "${boxText}"
+    Abort
+!macroend
+
 !macro openLogFile section
-    IfFileExists "$TEMP\${LOGNAME}" logFound logNotFound
-    logFound:
+    ${If} ${FileExists} "$TEMP\${LOGNAME}"
         FileOpen $FileHandle "$TEMP\${LOGNAME}" a
         FileSeek $FileHandle 0 END
-        goto logFoundEnd
-    logNotFound:
+    ${Else}
         FileOpen $FileHandle "$TEMP\${LOGNAME}" w
-    logFoundEnd:
-
+    ${EndIf}
     FileWrite $FileHandle "$\r$\nStart ${section} ${VERSION} (${__DATE__} ${__TIME__}) $\r$\n"
 !macroend
 

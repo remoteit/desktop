@@ -61,10 +61,29 @@ Then push the commit and the tag `npm version` created.
 Run **Build / Electron** (`workflow_dispatch`) — `brand` defaults to `remoteit`,
 and **uncheck `skip_signing`** for a real release, since it defaults to `true`.
 
-It builds a matrix of ubuntu-latest / macos-14 / windows-latest, reads the
-version from `package.json` (not from the tag), and attaches the installers to
-the GitHub release for that tag. Node comes from `.nvmrc` — electron-builder
+A `prepare` job first resolves the release repository for the selected brand
+(`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
+creates the **draft** release there for the version (on tag builds only), then a
+matrix of ubuntu-latest / macos-14 / windows-latest reads
+the version from `package.json` (not from the tag) and attaches the installers
+to it. The draft is created up front on purpose: electron-builder otherwise
+creates it lazily from whichever runner uploads first, and concurrent runners
+have produced **two drafts for one version** with the installers split between
+them. If that ever shows up again — two drafts with the same tag in the
+releases list — keep the one with the installers, delete the other, and re-run.
+Every `gh` step targets that resolved repository. The automatic token only
+reaches the repository the workflow runs in, so a tag build for a brand that
+publishes elsewhere needs the `RELEASE_TOKEN` secret (a token with write access
+there); `prepare` checks it before anything is built, and it is used only for
+that repository — a same-repository build keeps the automatic token. Branch
+builds publish nothing, skip the check, and never touch a draft. Node comes from `.nvmrc` — electron-builder
 needs Node >= 20.19 / 22.12, so don't pin it lower.
+
+Windows ships three installers, one per arch (`-ia32`, `-x64`, `-arm64`), and
+the job's last step rewrites the update manifests they are listed in — see
+[Windows update manifests](#windows-update-manifests). The combined
+multi-arch `Remote.It-Installer.exe` is no longer built
+(`nsis.buildUniversalInstaller: false`).
 
 ## 3. Desktop: write the release notes
 
@@ -157,6 +176,128 @@ back into `main` first.
 
 Amplify builds the branch. Its build settings live in the Amplify console, not
 in this repo, so there is no `amplify.yml` here to change.
+
+## Windows installer payloads
+
+The app payload inside each NSIS installer is a 7z archive that NSIS extracts with
+the `nsis7z` plugin, which was built in 2019. electron-builder 26.15's 7-Zip
+compresses ARM64 executables with the newer **ARM64 branch filter**, which
+`nsis7z` cannot decode — it skips those entries _without reporting an error_.
+On a Windows ARM64 machine that meant the old install was removed and then
+`Remote.It.exe`, every DLL and all of `resources\*.exe` were simply absent,
+surfacing as "The Remote.It agent service could not be installed." That is what
+broke 3.47.1's universal installer, 3.47.1's standalone arm64 installer on the
+download page, and 3.48.1. 3.46.1 (electron-builder 26.8.1) used BCJ2 everywhere.
+
+Two things hold it:
+
+- `electron/package.json` runs electron-builder with
+  `ELECTRON_BUILDER_7Z_FILTER=BCJ2`, which reproduces the 26.8.1 output exactly.
+- **Build / Electron** runs `electron/scripts/verify-win-installers.js` on every
+  Windows installer: it carves the payload out of the installer, lists its
+  coders, and fails the build — removing the installers from the draft — if any
+  coder is one `nsis7z` lacks, or an expected executable is missing.
+
+To check an installer by hand: `7zz l -slt <installer>` shows the payload as
+`$PLUGINSDIR/app-<arch>.7z`; extract it and `7zz l -slt` again — `Method = ARM64 …`
+on any entry is the tell.
+
+## Cross-architecture upgrades on Windows
+
+An ia32 install registers its uninstaller in the **32-bit** registry view; the
+x64 and arm64 installers read the **64-bit** view. electron-builder's upgrade
+step therefore never found the old install when a machine moved from ia32 to a
+native build — it skipped the uninstall, the old agent service kept running with
+`resources\remoteit.exe` locked, extraction could not replace that one file
+("Remote.It cannot be closed… Retry"), and the result was an arm64 app with an
+ia32 agent and two entries in Programs and Features. `installer.nsh` now copies
+a 32-bit-only `UninstallString` into the 64-bit view in `preInit`, so the normal
+upgrade path runs the old uninstaller (electron-builder derives the old folder
+from the uninstaller's path), and, in `customInstall`, drops a 32-bit registration whose uninstaller no longer exists — the ia32 uninstaller's own cleanup runs under the 64-bit view (`customRemoveFiles` switches to it) and misses its keys, and an upgrade that aborted part-way must still clean up on retry. Only the uninstaller entry is copied:
+a mirrored `InstallLocation` would be adopted as the new install folder.
+
+The install folder needs one more correction: electron-builder's NSIS template
+uses the 64-bit `Program Files` only when the installer carries an **x64**
+payload, so an arm64-only installer defaults to `Program Files (x86)` even on a
+clean machine (that is where the 3.48.3 → 3.48.7 pre-releases landed on the
+Surface). `customInit` moves exactly that default to `Program Files`. A folder
+the user chose — including one on another drive — is left alone and is carried
+across the ia32 → native hop (`preInit` copies a non-default `InstallLocation`
+along with the uninstaller entry), and an explicit `/D=` is never overridden.
+It also migrates a machine that already sits in the default (x86) folder on its
+next update, since the old install is uninstalled first.
+Every currently-ia32 machine takes this hop when it goes native.
+
+## Windows update manifests
+
+The in-app updater on Windows reads `latest.yml` from the release and picks one
+entry from its `files` list. How it picks depends on the electron-updater the
+**installed** app was built with — the new release has no say:
+
+| electron-updater | Shipped in             | Picks                                                                             |
+| ---------------- | ---------------------- | --------------------------------------------------------------------------------- |
+| <= 6.6.2         | every release ≤ 3.46.1 | the **first** `.exe` in `files`, whatever it is                                   |
+| >= 6.6.4         | 3.47.1 onwards         | the first entry whose name contains its own `process.arch`, else the first `.exe` |
+
+electron-builder sorts `files` with a universal (multi-arch) installer first,
+then by arch. In 3.47.1 that put the multi-arch `Remote.It-Installer.exe` first,
+which fails on Windows ARM64 — every ≤ 3.46.1 client on ARM64 downloaded it and
+hit "The Remote.It agent service could not be installed." The universal
+installer is no longer built, and the manifest step pins the order so it never
+depends on electron-builder's sort again.
+
+Two things fix that, and both are automatic:
+
+1. **Build / Electron** runs `electron/scripts/finalize-win-update-manifests.js`
+   after the Windows build. Like electron-builder's own publish step, it uploads
+   only into the **draft** release for this version — so dispatch the workflow
+   **on the tag**; a branch build creates no release and has nowhere to upload to.
+   It never writes to a published release: if the version is already live the
+   job fails rather than rewrite a live manifest. Changing a live `latest.yml`
+   is only ever the deliberate manual step below. It reorders `files` to `ia32, x64, arm64` — ia32
+   first because it is the one installer that runs on every Windows machine, so
+   it is the safe answer for the old clients — drops any entry without an arch
+   in its name, checks each entry's `sha512` and `size` against the file it
+   names, and re-uploads `latest.yml` with `--clobber`.
+2. The same step writes `latest-ia32.yml`, `latest-x64.yml` and
+   `latest-arm64.yml`, each listing only that installer. A build running under
+   emulation (a 32-bit or x64 app on ARM64, or 32-bit on x64) reports its own
+   `process.arch` to electron-updater and would re-install the emulated build
+   forever. `AutoUpdater` detects the machine's real arch and, when it differs,
+   sets the feed's `channel` to `latest-<arch>`. That option only renames the
+   manifest GitHubProvider fetches from the release it picks by its normal rules
+   (Latest, or the newest pre-release for opted-in users); `autoUpdater.channel`
+   is deliberately never set, because that one also changes which tags it
+   considers and breaks every pre-release user's checks. When GitHubProvider
+   cannot read that manifest — the release feed also lists tags whose release is
+   still a draft, so a pending draft makes it fail for every pre-release user —
+   the app asks the API for the newest _published_ release the client may move to
+   (electron-updater's channel rules: beta never onto alpha, a custom id only
+   onto itself) and pins that: with
+   the per-arch manifest present it is checked natively; only when it predates
+   the per-arch files does the app fall back to its `latest.yml`, which still
+   updates it on its current arch. It never takes the emulated arch of a release
+   that also carries the native manifest, which a publish landing mid-check once
+   caused (3.48.5 → 3.48.6 ia32 on the Surface). Two limits: electron-builder's GitHub
+   publisher only ever writes `latest.yml`, so there are no `beta-`/`alpha-`
+   variants; and for a tag with a semver pre-release id (`v3.49.0-beta.1`)
+   GitHubProvider asks for `beta.yml` and falls back to `latest.yml` itself, so
+   such a release updates an emulated build on its current arch and the native
+   hop waits for the next plain-version tag.
+
+**If a release has the wrong first entry** (a manifest published without the
+step, or rolled back by hand): download `latest.yml` from the release, move the
+`-ia32.exe` entry to the top of `files`, set the top-level `path` and `sha512`
+to that entry's values — change nothing else — and
+`gh release upload <tag> latest.yml --clobber`. Clients re-read the manifest on
+their next check; a stale download may still sit in
+`%LOCALAPPDATA%\remoteit-updater\pending\` and can be deleted.
+
+Note that `downloads.remote.it` serves its HTML download page with **HTTP 200**
+for a key that does not exist, so `curl -f` and any status-only check will
+happily save that page as `something.exe`. `electron/scripts/verify-binaries.js`
+checks the bundled binaries by their magic bytes for this reason; when checking
+a download by hand, `file` is the tool, not the status code.
 
 ## How the `/latest` alias works
 

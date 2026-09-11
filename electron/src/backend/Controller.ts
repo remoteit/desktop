@@ -171,12 +171,12 @@ class Controller {
   }
 
   useCertificate = async (use: boolean) => {
-    preferences.update({ useCertificate: use })
+    preferences.set({ useCertificate: use })
     this.pool.updateAll()
   }
 
   sshConfig = async (use: boolean) => {
-    preferences.update({ sshConfig: use })
+    preferences.set({ sshConfig: use })
     sshConfig.toggle(use)
   }
 
