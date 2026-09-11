@@ -184,21 +184,18 @@ jobs:
             echo "::notice::electron-builder does not publish from a branch. Manifests were generated but not uploaded."
             exit 0
           fi
-          state=$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft -q 'if .isDraft then "draft" else "published" end' 2>/dev/null || echo missing)
-          case "$state" in
-            draft)
-              # gh picks one draft by tag; if the runners raced and made several, the
-              # manifests could land in a draft without the installers. Refuse instead.
-              drafts=$(gh api "repos/$RELEASE_REPO/releases?per_page=100" -q "[.[] | select(.tag_name==\"$VERSION\" and .draft)] | length")
-              if [ "$drafts" != "1" ]; then
-                echo "::error::$drafts draft releases are tagged $VERSION. Keep one, delete the rest, and re-run - see RELEASE.md."
-                exit 1
-              fi
-              gh release upload "$VERSION" $(cat manifests.txt) --repo "$RELEASE_REPO" --clobber ;;
-            published)
-              echo "::error::$VERSION is already published in $RELEASE_REPO. CI never rewrites a live release's update manifests - bump the version."
-              exit 1 ;;
-            missing)
-              echo "::error::Release $VERSION not found in $RELEASE_REPO although building tag $GITHUB_REF_NAME"
-              exit 1 ;;
-          esac
+          releases=$(gh api "repos/$RELEASE_REPO/releases?per_page=100" -q "[.[] | select(.tag_name==\"$VERSION\")]")
+          published=$(jq 'map(select(.draft|not)) | length' <<<"$releases")
+          drafts=$(jq 'map(select(.draft)) | length' <<<"$releases")
+          if [ "$published" != "0" ]; then
+            echo "::error::$VERSION is already published in $RELEASE_REPO. CI never rewrites a live release's update manifests - bump the version."
+            exit 1
+          elif [ "$drafts" = "0" ]; then
+            echo "::error::Release $VERSION not found in $RELEASE_REPO although building tag $GITHUB_REF_NAME"
+            exit 1
+          elif [ "$drafts" != "1" ]; then
+            # gh picks one draft by tag; the manifests could land in a draft without the installers.
+            echo "::error::$drafts draft releases are tagged $VERSION. Keep one, delete the rest, and re-run - see RELEASE.md."
+            exit 1
+          fi
+          gh release upload "$VERSION" $(cat manifests.txt) --repo "$RELEASE_REPO" --clobber
