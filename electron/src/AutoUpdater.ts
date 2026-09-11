@@ -78,6 +78,8 @@ export default class AppUpdater {
     autoUpdater.on('update-available', info => {
       this.available = true
       this.checking = false
+      // The differential-download preamble emits no progress for several seconds.
+      this.downloading = autoUpdater.autoDownload
       this.error = false
       this.version = info.version
       this.emitStatus()
