@@ -64,7 +64,7 @@ export const OptionsPage: React.FC = () => {
             )}
             icon="sliders-h"
             toggle={!!preferences.remoteUIOverride}
-            onClick={() => emit('preferences', { ...preferences, remoteUIOverride: !preferences.remoteUIOverride })}
+            onClick={() => emit('preferences', { remoteUIOverride: !preferences.remoteUIOverride })}
             confirmProps={{
               title: t('common.areYouSure', 'Are you sure?'),
               children: t('options.showFullInterface.confirm', {
@@ -79,7 +79,7 @@ export const OptionsPage: React.FC = () => {
             label={t('options.openAtLogin', 'Open at login')}
             icon="door-open"
             toggle={!!preferences.openAtLogin}
-            onClick={() => emit('preferences', { ...preferences, openAtLogin: !preferences.openAtLogin })}
+            onClick={() => emit('preferences', { openAtLogin: !preferences.openAtLogin })}
           />
           <ListItemSetting
             label={t('options.sshConfig.label', 'Managed SSH config')}
@@ -141,7 +141,7 @@ export const OptionsPage: React.FC = () => {
                 )}
                 icon={preferences.disableDeepLinks ? 'link-slash' : 'link'}
                 toggle={!!preferences.disableDeepLinks}
-                onClick={() => emit('preferences', { ...preferences, disableDeepLinks: !preferences.disableDeepLinks })}
+                onClick={() => emit('preferences', { disableDeepLinks: !preferences.disableDeepLinks })}
                 confirm
                 confirmProps={{
                   title: t('options.disableDeepLinks.confirmTitle', 'Restart required'),
@@ -159,13 +159,19 @@ export const OptionsPage: React.FC = () => {
                     ? t('options.reinstallAgent.installing', 'Installing...')
                     : t('options.reinstallAgent.label', 'Re-install system agent')
                 }
-                subLabel={t('options.reinstallAgent.version', { version: cliVersion, defaultValue: 'Version {{version}}' })}
+                subLabel={t('options.reinstallAgent.version', {
+                  version: cliVersion,
+                  defaultValue: 'Version {{version}}',
+                })}
                 disabled={installing}
                 icon="terminal"
                 onClick={() => binaries.install()}
                 confirmProps={{
                   title: t('common.areYouSure', 'Are you sure?'),
-                  children: t('options.reinstallAgent.confirm', 'This will stop and attempt to re-install the system agent.'),
+                  children: t(
+                    'options.reinstallAgent.confirm',
+                    'This will stop and attempt to re-install the system agent.'
+                  ),
                 }}
               />
               {os !== 'windows' && (

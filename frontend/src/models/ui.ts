@@ -335,15 +335,14 @@ export default createModel<RootModel>()({
         if (SAVED_ACROSS_LOGOUT.includes(key)) setLocalStorage(state, `ui-${key}`, params[key])
       })
     },
-    async deprecated(_: void, state) {
+    async deprecated() {
       if (!browser.isElectron) return
-      const { preferences } = state.backend
       dispatch.ui.set({
         errorMessage: i18n.t('notices:version.unsupported', {
           defaultValue: 'This version of Desktop is no longer supported. It should auto update shortly.',
         }),
       })
-      emit('preferences', { ...preferences, autoUpdate: true })
+      emit('preferences', { autoUpdate: true })
     },
   }),
   reducers: {

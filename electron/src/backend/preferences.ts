@@ -46,8 +46,6 @@ export class Preferences {
     return this.data || this.file.read()
   }
 
-  update = (pref: Partial<IPreferences>) => this.set(pref)
-
   // Merge, never replace: a renderer emit that raced the backend's state once wiped every
   // other key and switched auto-update off.
   set = (preferences: Partial<IPreferences>) => {
