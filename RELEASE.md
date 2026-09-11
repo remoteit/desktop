@@ -72,9 +72,11 @@ have produced **two drafts for one version** with the installers split between
 them. If that ever shows up again — two drafts with the same tag in the
 releases list — keep the one with the installers, delete the other, and re-run.
 Every `gh` step targets that resolved repository. The automatic token only
-reaches the repository the workflow runs in, so a brand release either runs from
-the brand's own repository or sets the `RELEASE_TOKEN` secret to a token that
-can write there — `prepare` checks and fails before anything is built. Node comes from `.nvmrc` — electron-builder
+reaches the repository the workflow runs in, so a tag build for a brand that
+publishes elsewhere needs the `RELEASE_TOKEN` secret (a token with write access
+there); `prepare` checks it before anything is built, and it is used only for
+that repository — a same-repository build keeps the automatic token. Branch
+builds publish nothing and skip the check. Node comes from `.nvmrc` — electron-builder
 needs Node >= 20.19 / 22.12, so don't pin it lower.
 
 Windows ships three installers, one per arch (`-ia32`, `-x64`, `-arm64`), and
@@ -180,7 +182,7 @@ in this repo, so there is no `amplify.yml` here to change.
 The app payload inside each NSIS installer is a 7z archive that NSIS extracts with
 the `nsis7z` plugin, which was built in 2019. electron-builder 26.15's 7-Zip
 compresses ARM64 executables with the newer **ARM64 branch filter**, which
-`nsis7z` cannot decode — it skips those entries *without reporting an error*.
+`nsis7z` cannot decode — it skips those entries _without reporting an error_.
 On a Windows ARM64 machine that meant the old install was removed and then
 `Remote.It.exe`, every DLL and all of `resources\*.exe` were simply absent,
 surfacing as "The Remote.It agent service could not be installed." That is what
@@ -208,10 +210,16 @@ step therefore never found the old install when a machine moved from ia32 to a
 native build — it skipped the uninstall, the old agent service kept running with
 `resources\remoteit.exe` locked, extraction could not replace that one file
 ("Remote.It cannot be closed… Retry"), and the result was an arm64 app with an
-ia32 agent and two entries in Programs and Features. `installer.nsh` now mirrors
-a 32-bit-only registration into the 64-bit view in `preInit`, so the normal
-upgrade path runs the old uninstaller, and removes the stale 32-bit keys in
-`customInstall`. Every currently-ia32 machine takes this hop when it goes native.
+ia32 agent and two entries in Programs and Features. `installer.nsh` now copies
+a 32-bit-only `UninstallString` into the 64-bit view in `preInit`, so the normal
+upgrade path runs the old uninstaller (electron-builder derives the old folder
+from the uninstaller's path), and drops the stale 32-bit keys in `customInstall`
+afterwards. Only the uninstaller entry is copied: a mirrored `InstallLocation`
+is adopted as the new install folder, which is how the 3.48.3 → 3.48.4
+pre-release hop put the native app under `Program Files (x86)`. A machine that
+took that hop stays there until it is uninstalled and reinstalled; a public
+ia32 → native upgrade lands in `Program Files`. Every currently-ia32 machine
+takes this hop when it goes native.
 
 ## Windows update manifests
 
@@ -219,15 +227,17 @@ The in-app updater on Windows reads `latest.yml` from the release and picks one
 entry from its `files` list. How it picks depends on the electron-updater the
 **installed** app was built with — the new release has no say:
 
-| electron-updater | Shipped in            | Picks                                                   |
-| ---------------- | --------------------- | ------------------------------------------------------- |
-| <= 6.6.2         | every release ≤ 3.46.1 | the **first** `.exe` in `files`, whatever it is         |
-| >= 6.6.4         | 3.47.1 onwards        | the first entry whose name contains its own `process.arch`, else the first `.exe` |
+| electron-updater | Shipped in             | Picks                                                                             |
+| ---------------- | ---------------------- | --------------------------------------------------------------------------------- |
+| <= 6.6.2         | every release ≤ 3.46.1 | the **first** `.exe` in `files`, whatever it is                                   |
+| >= 6.6.4         | 3.47.1 onwards         | the first entry whose name contains its own `process.arch`, else the first `.exe` |
 
-electron-builder writes `files` in build-completion order, so "first" changed
-between releases. In 3.47.1 it became the multi-arch `Remote.It-Installer.exe`,
+electron-builder sorts `files` with a universal (multi-arch) installer first,
+then by arch. In 3.47.1 that put the multi-arch `Remote.It-Installer.exe` first,
 which fails on Windows ARM64 — every ≤ 3.46.1 client on ARM64 downloaded it and
-hit "The Remote.It agent service could not be installed."
+hit "The Remote.It agent service could not be installed." The universal
+installer is no longer built, and the manifest step pins the order so it never
+depends on electron-builder's sort again.
 
 Two things fix that, and both are automatic:
 
@@ -247,18 +257,18 @@ Two things fix that, and both are automatic:
    emulation (a 32-bit or x64 app on ARM64, or 32-bit on x64) reports its own
    `process.arch` to electron-updater and would re-install the emulated build
    forever. `AutoUpdater` detects the machine's real arch and, when it differs,
-   points electron-updater at the newest eligible release's `latest-<arch>.yml`
-   — a generic feed pinned to that release, pre-release aware — so the machine
-   moves to its native installer on the next release. The updater's own
-   `channel` is deliberately never set: GitHubProvider matches an explicit
-   channel against tag pre-release ids and breaks every pre-release user's
-   checks. A client on a pre-release version follows electron-updater's channel
-   rules (beta never moves onto alpha, a custom id only follows itself) and
-   reads that release's `<channel>-<arch>.yml`. If the newest release predates
-   the per-arch files, the app falls back to `latest.yml`, which still updates
-   it on its current arch.
-
-`beta.yml` / `alpha.yml` get the same treatment if electron-builder emits them.
+   sets the feed's `channel` to `latest-<arch>`. That option only renames the
+   manifest GitHubProvider fetches from the release it picks by its normal rules
+   (Latest, or the newest pre-release for opted-in users); `autoUpdater.channel`
+   is deliberately never set, because that one also changes which tags it
+   considers and breaks every pre-release user's checks. If the release it picks
+   predates the per-arch files, the app falls back to `latest.yml`, which still
+   updates it on its current arch. Two limits: electron-builder's GitHub
+   publisher only ever writes `latest.yml`, so there are no `beta-`/`alpha-`
+   variants; and for a tag with a semver pre-release id (`v3.49.0-beta.1`)
+   GitHubProvider asks for `beta.yml` and falls back to `latest.yml` itself, so
+   such a release updates an emulated build on its current arch and the native
+   hop waits for the next plain-version tag.
 
 **If a release has the wrong first entry** (a manifest published without the
 step, or rolled back by hand): download `latest.yml` from the release, move the
