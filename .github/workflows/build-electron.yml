@@ -39,6 +39,8 @@ jobs:
   # Only on a tag build: that is the only case electron-builder publishes at all.
   prepare:
     runs-on: ubuntu-latest
+    outputs:
+      release_repo: ${{ steps.repo.outputs.RELEASE_REPO }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
@@ -49,15 +51,22 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
 
+      # A branded build publishes to the brand's repository (brands/<brand>/config.ts),
+      # not necessarily the one this workflow runs in. Every gh call below targets it.
+      - name: Resolve the release repository for the brand
+        id: repo
+        run: echo "RELEASE_REPO=$(node electron/scripts/release-repo.js)" >> $GITHUB_OUTPUT
+
       - name: Create the draft release once
         if: github.ref_type == 'tag'
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
+          RELEASE_REPO: ${{ steps.repo.outputs.RELEASE_REPO }}
         run: |
-          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" --json isDraft >/dev/null 2>&1; then
-            echo "release $VERSION already exists"
+          if gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft >/dev/null 2>&1; then
+            echo "release $VERSION already exists in $RELEASE_REPO"
           else
-            gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --draft --title "${VERSION#v}" --notes "" --target "$GITHUB_SHA"
+            gh release create "$VERSION" --repo "$RELEASE_REPO" --draft --title "${VERSION#v}" --notes "" --target "$GITHUB_SHA"
           fi
 
   release:
@@ -142,15 +151,15 @@ jobs:
         if: matrix.os == 'windows-latest'
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
+          RELEASE_REPO: ${{ needs.prepare.outputs.release_repo }}
         run: |
           cd electron
           if ! node scripts/verify-win-installers.js dist; then
-            if [ "$(gh release view "$VERSION" --json isDraft -q .isDraft 2>/dev/null)" = "true" ]; then
-              for a in Remote.It-Installer-ia32.exe Remote.It-Installer-x64.exe Remote.It-Installer-arm64.exe \
-                       Remote.It-Installer-ia32.exe.blockmap Remote.It-Installer-x64.exe.blockmap Remote.It-Installer-arm64.exe.blockmap latest.yml; do
-                gh release delete-asset "$VERSION" "$a" --yes 2>/dev/null || true
+            if [ "$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft -q .isDraft 2>/dev/null)" = "true" ]; then
+              for f in dist/*-Installer-*.exe dist/*-Installer-*.exe.blockmap dist/latest.yml; do
+                [ -e "$f" ] && gh release delete-asset "$VERSION" "$(basename "$f")" --repo "$RELEASE_REPO" --yes 2>/dev/null || true
               done
-              echo "::error::Windows installers removed from draft $VERSION - their payload cannot be extracted by nsis7z (see above)"
+              echo "::error::Windows installers removed from draft $VERSION in $RELEASE_REPO - their payload cannot be extracted by nsis7z (see above)"
             fi
             exit 1
           fi
@@ -164,6 +173,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
+          RELEASE_REPO: ${{ needs.prepare.outputs.release_repo }}
         run: |
           set -o pipefail
           cd electron
@@ -172,23 +182,23 @@ jobs:
           # release is never rewritten from CI - electron-builder refuses that case too -
           # so a version that is already live fails the job instead of touching it.
           # A branch build creates no release at all and has nothing to upload to.
-          state=$(gh release view "$VERSION" --json isDraft -q 'if .isDraft then "draft" else "published" end' 2>/dev/null || echo missing)
+          state=$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft -q 'if .isDraft then "draft" else "published" end' 2>/dev/null || echo missing)
           case "$state" in
             draft)
               # gh picks one draft by tag; if the runners raced and made several, the
               # manifests could land in a draft without the installers. Refuse instead.
-              drafts=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" -q "[.[] | select(.tag_name==\"$VERSION\" and .draft)] | length")
+              drafts=$(gh api "repos/$RELEASE_REPO/releases?per_page=100" -q "[.[] | select(.tag_name==\"$VERSION\" and .draft)] | length")
               if [ "$drafts" != "1" ]; then
                 echo "::error::$drafts draft releases are tagged $VERSION. Keep one, delete the rest, and re-run - see RELEASE.md."
                 exit 1
               fi
-              gh release upload "$VERSION" $(cat manifests.txt) --clobber ;;
+              gh release upload "$VERSION" $(cat manifests.txt) --repo "$RELEASE_REPO" --clobber ;;
             published)
-              echo "::error::$VERSION is already published. CI never rewrites a live release's update manifests - bump the version."
+              echo "::error::$VERSION is already published in $RELEASE_REPO. CI never rewrites a live release's update manifests - bump the version."
               exit 1 ;;
             missing)
               if [ "$GITHUB_REF_TYPE" = "tag" ]; then
-                echo "::error::Release $VERSION not found although building tag $GITHUB_REF_NAME"
+                echo "::error::Release $VERSION not found in $RELEASE_REPO although building tag $GITHUB_REF_NAME"
                 exit 1
               fi
               echo "::notice::No $VERSION release - electron-builder does not publish from a branch. Manifests were generated but not uploaded." ;;
