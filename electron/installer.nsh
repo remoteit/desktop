@@ -7,6 +7,7 @@
 
 Var InstallLocationToRemove
 Var FileHandle
+Var Mirrored32
 
 !macro preInit
     !insertmacro openLogFile "PreInit"
@@ -47,23 +48,18 @@ Var FileHandle
     ${endIf}
 
     !ifndef APP_32
-    ; An ia32 install registers itself in the 32-bit registry view. This 64-bit installer reads
-    ; the 64-bit view, so electron-builder skipped the old uninstaller, left the agent service
-    ; running and could not replace its locked remoteit.exe (3.48.2 ia32 -> 3.48.3 arm64).
-    ; Mirror the registration so the normal upgrade path finds it.
+    ; An ia32 install registers in the 32-bit view, where this installer never looks, so the old
+    ; uninstaller was skipped. Copy only its entry: see RELEASE.md, "Cross-architecture upgrades".
     SetRegView 64
     ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
     ${if} $0 == ""
         SetRegView 32
         ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
-        ReadRegStr $1 HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation
-        ReadRegStr $2 HKLM "${INSTALL_REGISTRY_KEY}" KeepShortcuts
         SetRegView 64
         ${ifNot} $0 == ""
             WriteRegStr HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString $0
-            WriteRegStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation $1
-            WriteRegStr HKLM "${INSTALL_REGISTRY_KEY}" KeepShortcuts $2
-            FileWrite $FileHandle "Mirrored 32-bit registration to the 64-bit view: $0 $\r$\n"
+            StrCpy $Mirrored32 "1"
+            FileWrite $FileHandle "Mirrored 32-bit uninstaller entry to the 64-bit view: $0 $\r$\n"
         ${endIf}
     ${endIf}
     !endif
@@ -80,8 +76,8 @@ Var FileHandle
 
     ; Install new agent
     FileWrite $FileHandle "Installing Agent ... $\r$\n"
-    ; nsExec reports a binary it cannot start the same way as one that fails, so a package
-    ; that never put remoteit.exe here would read as an agent fault. Check for it first.
+    ; nsExec reports a binary it cannot start like one that failed; a payload that lost
+    ; remoteit.exe (3.47.1 ARM64) would read as an agent fault.
     ${IfNot} ${FileExists} "$INSTDIR\resources\remoteit.exe"
         FileWrite $FileHandle "Fatal installer error: $INSTDIR\resources\remoteit.exe is missing$\r$\n"
         FileClose $FileHandle
@@ -107,12 +103,13 @@ Var FileHandle
     ${endIf}
 
     !ifndef APP_32
-    ; Drop the 32-bit registration of the ia32 install this replaced; it would otherwise
-    ; linger in Programs and Features pointing at an uninstaller that no longer exists.
-    SetRegView 32
-    DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY}"
-    DeleteRegKey HKLM "${INSTALL_REGISTRY_KEY}"
-    SetRegView 64
+    ${if} $Mirrored32 == "1"
+        ; The ia32 uninstaller has run; its registration must not linger in Programs and Features.
+        SetRegView 32
+        DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY}"
+        DeleteRegKey HKLM "${INSTALL_REGISTRY_KEY}"
+        SetRegView 64
+    ${endIf}
     !endif
 
     FileWrite $FileHandle "End CustomInstall$\r$\n"
