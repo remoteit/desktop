@@ -179,9 +179,12 @@ Var Mirrored32
             FileWrite $FileHandle "Device config not found$\r$\n"
         end_of_config:
 
-        ; Remove app data
+        ; Remove the desktop's per-user data. In the per-machine context $LOCALAPPDATA is
+        ; C:\ProgramData, which deleted the agent's identity on every manual uninstall (3.45.2+).
+        SetShellVarContext current
         FileWrite $FileHandle "RMDir $LOCALAPPDATA\remoteit$\r$\n"
         RMDir /r "$LOCALAPPDATA\remoteit"
+        SetShellVarContext all
     ${endIf}
 
     ; Remove agent
