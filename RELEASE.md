@@ -216,12 +216,17 @@ upgrade path runs the old uninstaller (electron-builder derives the old folder
 from the uninstaller's path), and drops the stale 32-bit keys in `customInstall`
 afterwards — the ia32 uninstaller's own cleanup runs under the 64-bit view
 (`customRemoveFiles` switches to it) and misses them. A retried upgrade finds the
-entry already mirrored and still cleans up. Only the uninstaller entry is copied: a mirrored `InstallLocation`
-is adopted as the new install folder, which is how the 3.48.3 → 3.48.4
-pre-release hop put the native app under `Program Files (x86)`. A machine that
-took that hop stays there until it is uninstalled and reinstalled; a public
-ia32 → native upgrade lands in `Program Files`. Every currently-ia32 machine
-takes this hop when it goes native.
+entry already mirrored and still cleans up. Only the uninstaller entry is copied:
+a mirrored `InstallLocation` would be adopted as the new install folder.
+
+The install folder needs one more correction: electron-builder's NSIS template
+uses the 64-bit `Program Files` only when the installer carries an **x64**
+payload, so an arm64-only installer defaults to `Program Files (x86)` even on a
+clean machine (that is where the 3.48.3 → 3.48.7 pre-releases landed on the
+Surface). `customInit` moves exactly that default to `Program Files`; a folder
+the user chose is left alone. It also migrates a machine that already sits in
+the (x86) folder on its next update, since the old install is uninstalled first.
+Every currently-ia32 machine takes this hop when it goes native.
 
 ## Windows update manifests
 
