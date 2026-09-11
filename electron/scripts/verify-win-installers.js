@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 
-// Fail the build if a Windows installer's app payload uses a 7-Zip coder that NSIS's
-// nsis7z plugin (built in 2019) cannot decode. electron-builder 26.15's 7-Zip applied the
-// ARM64 branch filter to ARM64 executables; nsis7z skipped exactly those entries without
-// reporting an error, so 3.47.1 and 3.48.1 installed everything except the executables on
-// Windows ARM64. ELECTRON_BUILDER_7Z_FILTER=BCJ2 (package.json) prevents it; this proves
-// the payload of every installer before its manifests are published.
+// nsis7z (built 2019) silently skips payload entries it cannot decode; 3.47.1 and 3.48.1 lost
+// every executable on Windows ARM64 that way. See RELEASE.md, "Windows installer payloads".
 
 const fs = require('fs')
 const os = require('os')
@@ -45,17 +41,13 @@ const SEVEN_Z_MAGIC = Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c])
 
 function sevenZip() {
   if (process.env.SEVEN_ZIP) return process.env.SEVEN_ZIP
-  try {
-    return require('7zip-bin').path7za
-  } catch {}
   for (const name of ['7z', '7za', '7zz', 'C:\\Program Files\\7-Zip\\7z.exe']) {
     if (!spawnSync(name, [], { stdio: 'ignore' }).error) return name
   }
-  throw new Error('no 7-Zip binary found: set SEVEN_ZIP or install 7zip-bin')
+  throw new Error('no 7-Zip binary found: install 7-Zip or set SEVEN_ZIP to its path')
 }
 
-// The app payload is stored uncompressed inside the NSIS stub, so its 7z start header is
-// intact: signature, then the offset and size of the end header, which give the exact
+// The payload is stored uncompressed in the NSIS stub, so its 7z start header gives the
 // archive length regardless of what NSIS stores after it.
 function extractPayload(installer, dir) {
   const data = fs.readFileSync(installer)

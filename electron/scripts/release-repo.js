@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
-// Print the GitHub repository (owner/repo) a build publishes to. Branding rewrites
-// electron/package.json's repository from brands/<brand>/config.ts, so every `gh`
-// call in CI has to target that repository rather than the one the workflow runs in.
-// Reads the brand config directly: the prepare job needs this before npm install.
+// Prints the owner/repo a brand publishes to, read straight from brands/<brand>/config.ts
+// because the prepare job runs before npm install.
 
 const fs = require('fs')
 const path = require('path')

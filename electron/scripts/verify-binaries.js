@@ -5,10 +5,8 @@ const root = path.resolve(__dirname, '..')
 const binRoot = path.join(root, 'bin')
 const binaryNames = ['remoteit', 'connectd', 'demuxer', 'muxer']
 
-// Every arch the installer for this platform bundles (see binary-installer.sh and the
-// `arch` lists in package.json). Each file must be a real executable: downloads.remote.it
-// answers a missing key with its HTML download page and HTTP 200, so the `curl -f` in
-// binary-installer.sh cannot tell a binary from a 404 - only the bytes can.
+// downloads.remote.it answers a missing key with its HTML download page and HTTP 200, so the
+// `curl -f` in binary-installer.sh cannot tell a binary from a 404; only the bytes can.
 const platforms = {
   darwin: { archs: ['x64', 'arm64'], ext: '', format: 'Mach-O', magic: ['cffaedfe', 'cefaedfe', 'cafebabe'] },
   linux: { archs: ['x64', 'armv7l', 'arm64'], ext: '', format: 'ELF', magic: ['7f454c46'] },
