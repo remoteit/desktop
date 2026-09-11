@@ -7,7 +7,9 @@
 
 Var InstallLocationToRemove
 Var FileHandle
+!ifndef APP_32
 Var Mirrored32
+!endif
 
 !macro preInit
     !insertmacro openLogFile "PreInit"
