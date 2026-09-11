@@ -162,7 +162,7 @@ jobs:
         run: |
           cd electron
           if ! node scripts/verify-win-installers.js dist; then
-            if [ "$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft -q .isDraft 2>/dev/null)" = "true" ]; then
+            if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft -q .isDraft 2>/dev/null)" = "true" ]; then
               for f in dist/*-Installer-*.exe dist/*-Installer-*.exe.blockmap dist/latest.yml; do
                 [ -e "$f" ] && gh release delete-asset "$VERSION" "$(basename "$f")" --repo "$RELEASE_REPO" --yes 2>/dev/null || true
               done
@@ -180,6 +180,10 @@ jobs:
           cd electron
           node scripts/finalize-win-update-manifests.js dist | tee manifests.txt
           # Only a tag build published anything, and only into a draft; a live release is never rewritten.
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            echo "::notice::electron-builder does not publish from a branch. Manifests were generated but not uploaded."
+            exit 0
+          fi
           state=$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft -q 'if .isDraft then "draft" else "published" end' 2>/dev/null || echo missing)
           case "$state" in
             draft)
@@ -192,15 +196,9 @@ jobs:
               fi
               gh release upload "$VERSION" $(cat manifests.txt) --repo "$RELEASE_REPO" --clobber ;;
             published)
-              if [ "$GITHUB_REF_TYPE" = "tag" ]; then
-                echo "::error::$VERSION is already published in $RELEASE_REPO. CI never rewrites a live release's update manifests - bump the version."
-                exit 1
-              fi
-              echo "::notice::$VERSION is already published - electron-builder does not publish from a branch. Manifests were generated but not uploaded." ;;
+              echo "::error::$VERSION is already published in $RELEASE_REPO. CI never rewrites a live release's update manifests - bump the version."
+              exit 1 ;;
             missing)
-              if [ "$GITHUB_REF_TYPE" = "tag" ]; then
-                echo "::error::Release $VERSION not found in $RELEASE_REPO although building tag $GITHUB_REF_NAME"
-                exit 1
-              fi
-              echo "::notice::No $VERSION release - electron-builder does not publish from a branch. Manifests were generated but not uploaded." ;;
+              echo "::error::Release $VERSION not found in $RELEASE_REPO although building tag $GITHUB_REF_NAME"
+              exit 1 ;;
           esac
