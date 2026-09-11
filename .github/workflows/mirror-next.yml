@@ -1,0 +1,25 @@
+# app.next.remote.it — the NEXT portal — is this branch built for PRODUCTION's AS and container
+# (Amplify branch `next`, env VITE_OAUTH_ISSUER=https://login.remote.it and cloud.remote.it for
+# the API). Amplify deploys a branch once, so `next` is a git branch that MIRRORS this one: every
+# push here is pushed through, and Amplify's webhook builds it. Nobody commits to `next`.
+#
+# Why a mirror rather than a second Amplify app: one app, one GitHub connection, one build spec
+# and one set of app-level env — `next` differs from app.dev by six branch-level variables.
+name: Mirror to next
+
+on:
+  push:
+    branches: [feat/permitteer-login]
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push this commit to next
+        run: git push --force origin HEAD:refs/heads/next
