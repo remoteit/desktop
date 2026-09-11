@@ -73,6 +73,19 @@ Var Mirrored32
     FileClose $FileHandle
 !macroend
 
+!macro customInit
+    !ifndef APP_32
+    ; electron-builder's multiUser.nsh picks $PROGRAMFILES64 only for an x64 payload (APP_64), so an
+    ; arm64-only installer defaults to Program Files (x86). Move that one default; keep a chosen folder.
+    ${if} $INSTDIR == "$PROGRAMFILES32\${APP_FILENAME}"
+        StrCpy $INSTDIR "$PROGRAMFILES64\${APP_FILENAME}"
+        !insertmacro openLogFile "CustomInit"
+        FileWrite $FileHandle "Moved default install dir to $INSTDIR $\r$\n"
+        FileClose $FileHandle
+    ${endIf}
+    !endif
+!macroend
+
 !macro customInstall
     !insertmacro openLogFile "CustomInstall"
 
