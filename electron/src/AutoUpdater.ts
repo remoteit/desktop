@@ -149,11 +149,8 @@ export default class AppUpdater {
         this.emitStatus()
       }
     } catch (error) {
-      if (this.isMissingChannelFileError(error)) {
-        if (await this.checkWithFallbackRelease()) return
-        if (await this.checkWithoutSteering()) return
-      }
-      Logger.warn('AUTO UPDATE ERROR', { error })
+      if (this.isMissingChannelFileError(error)) await this.checkNewestRelease()
+      else Logger.warn('AUTO UPDATE ERROR', { error })
     }
   }
 
@@ -181,23 +178,6 @@ export default class AppUpdater {
     if (steering) Logger.info('AUTO UPDATE NATIVE ARCH', { processArch: process.arch, nativeArch: steering })
   }
 
-  // No release carries this build's per-arch manifest yet; latest.yml still updates it on its
-  // current arch.
-  private async checkWithoutSteering(): Promise<boolean> {
-    if (!this.steering) return false
-    Logger.warn('AUTO UPDATE NATIVE ARCH MANIFEST MISSING', { manifest: this.updateManifestFile })
-    this.applyFeed(null)
-    try {
-      await autoUpdater.checkForUpdatesAndNotify()
-      this.emitStatus()
-      return true
-    } catch (error) {
-      if (this.isMissingChannelFileError(error)) return this.checkWithFallbackRelease()
-      Logger.warn('AUTO UPDATE ERROR', { error })
-      return true
-    }
-  }
-
   private isMissingChannelFileError(error: any): boolean {
     return (
       error?.code === 'ERR_UPDATER_CHANNEL_FILE_NOT_FOUND' ||
@@ -205,41 +185,43 @@ export default class AppUpdater {
     )
   }
 
-  private async checkWithFallbackRelease(): Promise<boolean> {
+  // GitHubProvider resolves the newest tag from the release feed, which also lists tags whose
+  // release is still a draft; the API lists only published releases, with their assets.
+  private async checkNewestRelease() {
+    const { owner, repo } = this.defaultGithubFeed
     try {
-      const tag = await this.findFallbackReleaseTag()
-      if (!tag) return false
+      const { data } = await axios.get<GitHubRelease[]>(
+        `https://api.github.com/repos/${owner}/${repo}/releases?per_page=30`,
+        { headers: { Accept: 'application/vnd.github+json' }, timeout: 10000 }
+      )
+      const release = data.find(item => !item.draft && (autoUpdater.allowPrerelease || !item.prerelease))
+      if (!release) {
+        Logger.warn('AUTO UPDATE NO PUBLISHED RELEASE')
+        return
+      }
 
-      const url = `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`
+      const has = (name: string) => !!release.assets?.some(asset => asset.name === name)
+      if (this.steering && !has(this.updateManifestFile)) {
+        Logger.warn('AUTO UPDATE NATIVE ARCH MANIFEST MISSING', {
+          tag: release.tag_name,
+          manifest: this.updateManifestFile,
+        })
+        this.steering = null
+      }
+      if (!has(this.updateManifestFile)) {
+        Logger.warn('AUTO UPDATE MANIFEST MISSING', { tag: release.tag_name, manifest: this.updateManifestFile })
+        return
+      }
+
+      const url = `https://github.com/${owner}/${repo}/releases/download/${release.tag_name}`
       autoUpdater.setFeedURL(
         this.steering ? { provider: 'generic', url, channel: `latest-${this.steering}` } : { provider: 'generic', url }
       )
-      Logger.warn('AUTO UPDATE FALLBACK RELEASE', { tag, manifest: this.updateManifestFile })
-      const result = await autoUpdater.checkForUpdatesAndNotify()
+      Logger.warn('AUTO UPDATE PINNED RELEASE', { tag: release.tag_name, manifest: this.updateManifestFile })
+      await autoUpdater.checkForUpdatesAndNotify()
       this.emitStatus()
-      if (this.steering && !result?.isUpdateAvailable) {
-        Logger.warn('AUTO UPDATE FALLBACK RELEASE NOT NEWER', { tag })
-        return false
-      }
-      return true
     } catch (error) {
       Logger.warn('AUTO UPDATE FALLBACK ERROR', { error })
-      return false
     }
-  }
-
-  private async findFallbackReleaseTag(): Promise<string | undefined> {
-    const { data } = await axios.get<GitHubRelease[]>(
-      `https://api.github.com/repos/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases?per_page=30`,
-      { headers: { Accept: 'application/vnd.github+json' }, timeout: 10000 }
-    )
-
-    const release = data.find(item => {
-      if (item.draft) return false
-      if (!autoUpdater.allowPrerelease && item.prerelease) return false
-      return item.assets?.some(asset => asset.name === this.updateManifestFile)
-    })
-
-    return release?.tag_name
   }
 }
