@@ -84,7 +84,7 @@ export default class AppUpdater {
       this.available = true
       this.checking = false
       // The differential-download preamble emits no progress for several seconds.
-      this.downloading = autoUpdater.autoDownload
+      this.downloading = autoUpdater.autoDownload && !this.downloaded
       this.error = false
       this.version = info.version
       this.emitStatus()
@@ -129,9 +129,12 @@ export default class AppUpdater {
     }
   }
 
+  private get channel() {
+    return this.steering ? `latest-${this.steering}` : 'latest'
+  }
+
   private get updateManifestFile() {
-    if (process.platform === 'darwin') return 'latest-mac.yml'
-    return this.steering ? `latest-${this.steering}.yml` : 'latest.yml'
+    return `${this.channel}${process.platform === 'darwin' ? '-mac' : ''}.yml`
   }
 
   private inFlight: Promise<void> | null = null
@@ -150,7 +153,12 @@ export default class AppUpdater {
         this.nextCheck =
           Date.now() + (autoUpdater.allowPrerelease ? PRE_RELEASE_CHECK_INTERVAL : AUTO_UPDATE_CHECK_INTERVAL)
         this.applyFeed(this.nativeArchSteering())
-        Logger.info('CHECK FOR UPDATE', { feed: this.defaultGithubFeed, manifest: this.updateManifestFile })
+        Logger.info('CHECK FOR UPDATE', {
+          feed: this.defaultGithubFeed,
+          manifest: this.updateManifestFile,
+          processArch: process.arch,
+          steering: this.steering,
+        })
         Logger.info('Checking for update')
         await autoUpdater.checkForUpdatesAndNotify()
         this.emitStatus()
@@ -177,12 +185,7 @@ export default class AppUpdater {
   private applyFeed(steering: WindowsArch | null) {
     const { owner, repo } = this.defaultGithubFeed
     this.steering = steering
-    autoUpdater.setFeedURL(
-      steering
-        ? { provider: 'github', owner, repo, channel: `latest-${steering}` }
-        : { provider: 'github', owner, repo }
-    )
-    if (steering) Logger.info('AUTO UPDATE NATIVE ARCH', { processArch: process.arch, nativeArch: steering })
+    autoUpdater.setFeedURL({ provider: 'github', owner, repo, channel: this.channel })
   }
 
   private isMissingChannelFileError(error: any): boolean {
@@ -225,9 +228,7 @@ export default class AppUpdater {
       }
 
       const url = `https://github.com/${owner}/${repo}/releases/download/${release.tag_name}`
-      autoUpdater.setFeedURL(
-        this.steering ? { provider: 'generic', url, channel: `latest-${this.steering}` } : { provider: 'generic', url }
-      )
+      autoUpdater.setFeedURL({ provider: 'generic', url, channel: this.channel, useMultipleRangeRequest: false })
       Logger.warn('AUTO UPDATE PINNED RELEASE', { tag: release.tag_name, manifest: this.updateManifestFile })
       await autoUpdater.checkForUpdatesAndNotify()
       this.emitStatus()
