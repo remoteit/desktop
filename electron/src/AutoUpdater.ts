@@ -207,8 +207,12 @@ export default class AppUpdater {
         this.steering ? { provider: 'generic', url, channel: `latest-${this.steering}` } : { provider: 'generic', url }
       )
       Logger.warn('AUTO UPDATE FALLBACK RELEASE', { tag, manifest: this.updateManifestFile })
-      await autoUpdater.checkForUpdatesAndNotify()
+      const result = await autoUpdater.checkForUpdatesAndNotify()
       this.emitStatus()
+      if (this.steering && !result?.isUpdateAvailable) {
+        Logger.warn('AUTO UPDATE FALLBACK RELEASE NOT NEWER', { tag })
+        return false
+      }
       return true
     } catch (error) {
       Logger.warn('AUTO UPDATE FALLBACK ERROR', { error })

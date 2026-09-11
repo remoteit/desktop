@@ -52,16 +52,19 @@ Var Mirrored32
     !ifndef APP_32
     ; An ia32 install registers in the 32-bit view, where this installer never looks, so the old
     ; uninstaller was skipped. Copy only its entry: see RELEASE.md, "Cross-architecture upgrades".
+    SetRegView 32
+    ReadRegStr $1 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
     SetRegView 64
     ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
-    ${if} $0 == ""
-        SetRegView 32
-        ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
-        SetRegView 64
-        ${ifNot} $0 == ""
-            WriteRegStr HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString $0
+    ${ifNot} $1 == ""
+        ${if} $0 == ""
+            WriteRegStr HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString $1
             StrCpy $Mirrored32 "1"
-            FileWrite $FileHandle "Mirrored 32-bit uninstaller entry to the 64-bit view: $0 $\r$\n"
+            FileWrite $FileHandle "Mirrored 32-bit uninstaller entry to the 64-bit view: $1 $\r$\n"
+        ${elseIf} $0 == $1
+            ; Left by an earlier run of this installer that did not finish.
+            StrCpy $Mirrored32 "1"
+            FileWrite $FileHandle "32-bit uninstaller entry already mirrored: $1 $\r$\n"
         ${endIf}
     ${endIf}
     !endif
@@ -106,7 +109,8 @@ Var Mirrored32
 
     !ifndef APP_32
     ${if} $Mirrored32 == "1"
-        ; The ia32 uninstaller has run; its registration must not linger in Programs and Features.
+        ; The ia32 uninstaller leaves SetRegView 64 in customRemoveFiles, so it deleted the
+        ; mirrored keys, not its own; without this it lingers in Programs and Features.
         SetRegView 32
         DeleteRegKey HKLM "${UNINSTALL_REGISTRY_KEY}"
         DeleteRegKey HKLM "${INSTALL_REGISTRY_KEY}"

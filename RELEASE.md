@@ -214,7 +214,9 @@ ia32 agent and two entries in Programs and Features. `installer.nsh` now copies
 a 32-bit-only `UninstallString` into the 64-bit view in `preInit`, so the normal
 upgrade path runs the old uninstaller (electron-builder derives the old folder
 from the uninstaller's path), and drops the stale 32-bit keys in `customInstall`
-afterwards. Only the uninstaller entry is copied: a mirrored `InstallLocation`
+afterwards — the ia32 uninstaller's own cleanup runs under the 64-bit view
+(`customRemoveFiles` switches to it) and misses them. A retried upgrade finds the
+entry already mirrored and still cleans up. Only the uninstaller entry is copied: a mirrored `InstallLocation`
 is adopted as the new install folder, which is how the 3.48.3 → 3.48.4
 pre-release hop put the native app under `Program Files (x86)`. A machine that
 took that hop stays there until it is uninstalled and reinstalled; a public
