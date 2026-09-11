@@ -28,8 +28,13 @@ const NSIS7Z_CODERS = new Set([
   'DEFLATE',
   'BZIP2',
 ])
+// Branding renames the product (Remote.It, Telepath, ...) and with it the installer and app exe.
+const PRODUCT_NAME = process.env.PRODUCT_NAME || require(path.join(__dirname, '..', 'package.json')).build.productName
+const INSTALLER = new RegExp(
+  `^${PRODUCT_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-Installer-(ia32|x64|arm64)\\.exe$`
+)
 const REQUIRED = [
-  'Remote.It.exe',
+  `${PRODUCT_NAME}.exe`,
   'resources/app.asar',
   'resources/remoteit.exe',
   'resources/connectd.exe',
@@ -98,9 +103,9 @@ function verify(tool, installer, dir) {
 }
 
 const distDir = path.resolve(process.argv[2] || 'dist')
-const installers = fs.readdirSync(distDir).filter(f => /^Remote\.It-Installer-(ia32|x64|arm64)\.exe$/.test(f))
+const installers = fs.readdirSync(distDir).filter(f => INSTALLER.test(f))
 if (installers.length === 0) {
-  console.error(`[verify-win-installers] no Remote.It-Installer-*.exe in ${distDir}`)
+  console.error(`[verify-win-installers] no ${PRODUCT_NAME}-Installer-*.exe in ${distDir}`)
   process.exit(1)
 }
 
