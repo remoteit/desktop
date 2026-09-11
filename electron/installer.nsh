@@ -54,11 +54,18 @@ Var Mirrored32
     ; uninstaller was skipped. Copy only its entry: see RELEASE.md, "Cross-architecture upgrades".
     SetRegView 32
     ReadRegStr $1 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
+    ReadRegStr $2 HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation
     SetRegView 64
     ReadRegStr $0 HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString
     ${ifNot} $1 == ""
         ${if} $0 == ""
             WriteRegStr HKLM "${UNINSTALL_REGISTRY_KEY}" UninstallString $1
+            ; A folder the user chose (any drive) stays theirs; only the 32-bit default is remapped in customInit.
+            ${ifNot} $2 == ""
+            ${andIfNot} $2 == "$PROGRAMFILES32\${APP_FILENAME}"
+                WriteRegStr HKLM "${INSTALL_REGISTRY_KEY}" InstallLocation $2
+                FileWrite $FileHandle "Kept chosen install dir: $2 $\r$\n"
+            ${endIf}
             StrCpy $Mirrored32 "1"
             FileWrite $FileHandle "Mirrored 32-bit uninstaller entry to the 64-bit view: $1 $\r$\n"
         ${elseIf} $0 == $1
@@ -77,7 +84,9 @@ Var Mirrored32
     !ifndef APP_32
     ; electron-builder's multiUser.nsh picks $PROGRAMFILES64 only for an x64 payload (APP_64), so an
     ; arm64-only installer defaults to Program Files (x86). Move that one default; keep a chosen folder.
-    ${if} $INSTDIR == "$PROGRAMFILES32\${APP_FILENAME}"
+    !insertmacro GetDParameter $R0
+    ${if} $R0 == ""
+    ${andIf} $INSTDIR == "$PROGRAMFILES32\${APP_FILENAME}"
         StrCpy $INSTDIR "$PROGRAMFILES64\${APP_FILENAME}"
         !insertmacro openLogFile "CustomInit"
         FileWrite $FileHandle "Moved default install dir to $INSTDIR $\r$\n"

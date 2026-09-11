@@ -223,9 +223,12 @@ The install folder needs one more correction: electron-builder's NSIS template
 uses the 64-bit `Program Files` only when the installer carries an **x64**
 payload, so an arm64-only installer defaults to `Program Files (x86)` even on a
 clean machine (that is where the 3.48.3 → 3.48.7 pre-releases landed on the
-Surface). `customInit` moves exactly that default to `Program Files`; a folder
-the user chose is left alone. It also migrates a machine that already sits in
-the (x86) folder on its next update, since the old install is uninstalled first.
+Surface). `customInit` moves exactly that default to `Program Files`. A folder
+the user chose — including one on another drive — is left alone and is carried
+across the ia32 → native hop (`preInit` copies a non-default `InstallLocation`
+along with the uninstaller entry), and an explicit `/D=` is never overridden.
+It also migrates a machine that already sits in the default (x86) folder on its
+next update, since the old install is uninstalled first.
 Every currently-ia32 machine takes this hop when it goes native.
 
 ## Windows update manifests
