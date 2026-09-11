@@ -274,7 +274,9 @@ Two things fix that, and both are automatic:
    considers and breaks every pre-release user's checks. When GitHubProvider
    cannot read that manifest — the release feed also lists tags whose release is
    still a draft, so a pending draft makes it fail for every pre-release user —
-   the app asks the API for the newest _published_ release and pins that: with
+   the app asks the API for the newest _published_ release the client may move to
+   (electron-updater's channel rules: beta never onto alpha, a custom id only
+   onto itself) and pins that: with
    the per-arch manifest present it is checked natively; only when it predates
    the per-arch files does the app fall back to its `latest.yml`, which still
    updates it on its current arch. It never takes the emulated arch of a release

@@ -2,7 +2,12 @@ import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
 import { EventBus, Logger, EVENTS, preferences, environment, brand } from './backend'
-import { detectNativeWindowsArch, resolveNativeArchSteering, WindowsArch } from './backend/updateChannel'
+import {
+  detectNativeWindowsArch,
+  isEligibleRelease,
+  resolveNativeArchSteering,
+  WindowsArch,
+} from './backend/updateChannel'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
@@ -196,7 +201,11 @@ export default class AppUpdater {
         `https://api.github.com/repos/${owner}/${repo}/releases?per_page=30`,
         { headers: { Accept: 'application/vnd.github+json' }, timeout: 10000 }
       )
-      const release = data.find(item => !item.draft && (autoUpdater.allowPrerelease || !item.prerelease))
+      const current = autoUpdater.currentVersion.version
+      const release = data.find(
+        item =>
+          !item.draft && (autoUpdater.allowPrerelease ? isEligibleRelease(current, item.tag_name) : !item.prerelease)
+      )
       if (!release) {
         Logger.warn('AUTO UPDATE NO PUBLISHED RELEASE')
         return
