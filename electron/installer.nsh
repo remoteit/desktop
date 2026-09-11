@@ -88,7 +88,8 @@ Var Mirrored32
     ${if} $R0 == ""
     ${andIf} $INSTDIR == "$PROGRAMFILES32\${APP_FILENAME}"
         StrCpy $INSTDIR "$PROGRAMFILES64\${APP_FILENAME}"
-        !insertmacro openLogFile "CustomInit"
+        FileOpen $FileHandle "$TEMP\${LOGNAME}" a
+        FileSeek $FileHandle 0 END
         FileWrite $FileHandle "Moved default install dir to $INSTDIR $\r$\n"
         FileClose $FileHandle
     ${endIf}
