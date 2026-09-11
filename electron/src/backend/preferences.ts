@@ -46,16 +46,11 @@ export class Preferences {
     return this.data || this.file.read()
   }
 
-  update(pref: { [key: string]: any }) {
-    Logger.info('UPDATE PREFERENCE', pref)
-    const data = this.get()
-    this.set({ ...data, ...pref })
-  }
+  update = (pref: Partial<IPreferences>) => this.set(pref)
 
-  // Merge, never replace: the renderer can emit its own preferences state before the
-  // backend's has reached it (ui.ts resolves the language on startup), which wiped every
-  // key but version/cliVersion/language and switched auto-update off.
-  set = (preferences: IPreferences) => {
+  // Merge, never replace: a renderer emit that raced the backend's state once wiped every
+  // other key and switched auto-update off.
+  set = (preferences: Partial<IPreferences>) => {
     Logger.info('SET PREFERENCES', { preferences })
     const data = { ...this.data, ...preferences }
     // @ts-ignore - remove circular reference

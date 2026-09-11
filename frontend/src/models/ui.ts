@@ -266,7 +266,7 @@ export default createModel<RootModel>()({
       // Sync the resolved code to the Electron main process (tray/menu/dialogs).
       if (browser.isElectron) {
         const { preferences } = state.backend
-        if (preferences.language !== resolved) emit('preferences', { ...preferences, language: resolved })
+        if (preferences.language !== resolved) emit('preferences', { language: resolved })
       }
     },
     async resizeColumn(params: { id: string; width: number }, state) {
