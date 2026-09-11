@@ -3,23 +3,20 @@ const path = require('path')
 
 const root = path.resolve(__dirname, '..')
 const binRoot = path.join(root, 'bin')
+const build = require(path.join(root, 'package.json')).build
 const binaryNames = ['remoteit', 'connectd', 'demuxer', 'muxer']
 
 // downloads.remote.it answers a missing key with its HTML download page and HTTP 200, so the
 // `curl -f` in binary-installer.sh cannot tell a binary from a 404; only the bytes can.
 const platforms = {
-  darwin: { archs: ['x64', 'arm64'], ext: '', format: 'Mach-O', magic: ['cffaedfe', 'cefaedfe', 'cafebabe'] },
-  linux: { archs: ['x64', 'armv7l', 'arm64'], ext: '', format: 'ELF', magic: ['7f454c46'] },
-  win32: { archs: ['ia32', 'x64', 'arm64'], ext: '.exe', format: 'PE', magic: ['4d5a'] },
+  darwin: { config: 'mac', ext: '', format: 'Mach-O', magic: ['cffaedfe', 'cefaedfe', 'cafebabe'] },
+  linux: { config: 'linux', ext: '', format: 'ELF', magic: ['7f454c46'] },
+  win32: { config: 'win', ext: '.exe', format: 'PE', magic: ['4d5a'] },
 }
 
-const platform = platforms[process.platform]
-if (!platform) {
-  console.log(`[verify-binaries] No checks defined for platform '${process.platform}', skipping.`)
-  process.exit(0)
-}
+const archsOf = config => [...new Set(build[config].target.flatMap(target => target.arch))]
 
-function describe(filePath) {
+function describe(platform, filePath) {
   let stat
   try {
     stat = fs.statSync(filePath)
@@ -39,22 +36,33 @@ function describe(filePath) {
   return `is not ${platform.format} (starts with ${hex.slice(0, 8)})`
 }
 
-const problems = []
-for (const arch of platform.archs) {
-  for (const name of binaryNames) {
-    const filePath = path.join(binRoot, arch, `${name}${platform.ext}`)
-    const problem = describe(filePath)
-    if (problem) problems.push(`${filePath} ${problem}`)
+function main() {
+  const platform = platforms[process.platform]
+  if (!platform) {
+    console.log(`[verify-binaries] No checks defined for platform '${process.platform}', skipping.`)
+    return 0
   }
+
+  const archs = archsOf(platform.config)
+  const problems = []
+  for (const arch of archs) {
+    for (const name of binaryNames) {
+      const filePath = path.join(binRoot, arch, `${name}${platform.ext}`)
+      const problem = describe(platform, filePath)
+      if (problem) problems.push(`${filePath} ${problem}`)
+    }
+  }
+
+  if (problems.length > 0) {
+    console.error('[verify-binaries] Bundled binaries are not usable:')
+    for (const entry of problems) console.error(`  - ${entry}`)
+    console.error('[verify-binaries] Run `npm run install-binaries` in electron/ and retry.')
+    return 1
+  }
+
+  console.log(`[verify-binaries] OK (${archs.join(', ')})`)
+  return 0
 }
 
-if (problems.length > 0) {
-  console.error('[verify-binaries] Bundled binaries are not usable:')
-  for (const entry of problems) {
-    console.error(`  - ${entry}`)
-  }
-  console.error('[verify-binaries] Run `npm run install-binaries` in electron/ and retry.')
-  process.exit(1)
-}
-
-console.log(`[verify-binaries] OK (${platform.archs.join(', ')})`)
+module.exports = { archsOf, binaryNames }
+if (require.main === module) process.exit(main())

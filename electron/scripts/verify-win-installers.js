@@ -7,6 +7,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const { spawnSync } = require('child_process')
+const { archsOf, binaryNames } = require('./verify-binaries')
 
 const NSIS7Z_CODERS = new Set([
   'LZMA',
@@ -27,16 +28,9 @@ const NSIS7Z_CODERS = new Set([
 // Branding renames the product (Remote.It, Telepath, ...) and with it the installer and app exe.
 const PRODUCT_NAME = process.env.PRODUCT_NAME || require(path.join(__dirname, '..', 'package.json')).build.productName
 const INSTALLER = new RegExp(
-  `^${PRODUCT_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-Installer-(ia32|x64|arm64)\\.exe$`
+  `^${PRODUCT_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-Installer-(${archsOf('win').join('|')})\\.exe$`
 )
-const REQUIRED = [
-  `${PRODUCT_NAME}.exe`,
-  'resources/app.asar',
-  'resources/remoteit.exe',
-  'resources/connectd.exe',
-  'resources/muxer.exe',
-  'resources/demuxer.exe',
-]
+const REQUIRED = [`${PRODUCT_NAME}.exe`, 'resources/app.asar', ...binaryNames.map(name => `resources/${name}.exe`)]
 const SEVEN_Z_MAGIC = Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c])
 
 function sevenZip() {
