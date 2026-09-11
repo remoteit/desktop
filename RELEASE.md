@@ -213,10 +213,7 @@ native build — it skipped the uninstall, the old agent service kept running wi
 ia32 agent and two entries in Programs and Features. `installer.nsh` now copies
 a 32-bit-only `UninstallString` into the 64-bit view in `preInit`, so the normal
 upgrade path runs the old uninstaller (electron-builder derives the old folder
-from the uninstaller's path), and drops the stale 32-bit keys in `customInstall`
-afterwards — the ia32 uninstaller's own cleanup runs under the 64-bit view
-(`customRemoveFiles` switches to it) and misses them. A retried upgrade finds the
-entry already mirrored and still cleans up. Only the uninstaller entry is copied:
+from the uninstaller's path), and, in `customInstall`, drops a 32-bit registration whose uninstaller no longer exists — the ia32 uninstaller's own cleanup runs under the 64-bit view (`customRemoveFiles` switches to it) and misses its keys, and an upgrade that aborted part-way must still clean up on retry. Only the uninstaller entry is copied:
 a mirrored `InstallLocation` would be adopted as the new install folder.
 
 The install folder needs one more correction: electron-builder's NSIS template
