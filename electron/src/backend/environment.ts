@@ -83,11 +83,6 @@ export class Environment {
     this.initializePaths()
   }
 
-  isWindowsARM() {
-    const archString = '' + process.env.PROCESSOR_ARCHITECTURE + process.env.PROCESSOR_ARCHITEW6432
-    return archString.toLowerCase().includes('arm')
-  }
-
   initializePaths() {
     if (!fs.existsSync(this.connectionLogPath)) fs.mkdirSync(this.connectionLogPath, { recursive: true })
   }
