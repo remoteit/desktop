@@ -60,22 +60,26 @@ export class BinaryInstaller {
     return status
   }
 
-  // The running agent decides whether it can adopt the installed binaries itself; the desktop only
-  // knows when the bundled cli is unusable. A refusal stands until the agent itself changes.
+  // The running agent decides whether it can adopt the installed binaries itself.
   canReload(status: BinaryReason) {
-    return !status.binariesOutdated && this.reloadRefusedBy !== this.cliBinary.agentVersion
+    return !status.binariesOutdated && !status.agentStopped && this.reloadRefusedBy !== this.cliBinary.agentVersion
   }
 
   async reload(): Promise<boolean> {
+    if (this.inProgress) {
+      Logger.info('AGENT RELOAD ALREADY IN PROGRESS')
+      return true
+    }
     Logger.info('START AGENT RELOAD')
     this.inProgress = true
 
-    const reloaded = await cli.agentReload()
+    const version = await cli.agentReload()
+    const reloaded = !!version && version === this.cliBinary.version
     if (reloaded) {
       await this.completeInstall()
     } else {
       this.reloadRefusedBy = this.cliBinary.agentVersion
-      Logger.warn('AGENT RELOAD REFUSED', { agentVersion: this.cliBinary.agentVersion, fallback: 'install' })
+      Logger.warn('AGENT RELOAD REFUSED', { version, agentVersion: this.cliBinary.agentVersion, fallback: 'install' })
     }
 
     this.inProgress = false
@@ -94,6 +98,7 @@ export class BinaryInstaller {
   }
 
   private async completeInstall() {
+    this.reloadRefusedBy = undefined
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     EventBus.emit(ConnectionPool.EVENTS.clearErrors)
     await this.updateVersions()
@@ -220,7 +225,7 @@ export class BinaryInstaller {
   }
 
   async updateVersions() {
-    const cliVersion = await cli.version()
+    const cliVersion = this.cliBinary.installedVersion || (await cli.version())
     Logger.info('CLI VERSION UPDATE', { cliVersion })
     preferences.update({ version: environment.version, cliVersion })
   }
