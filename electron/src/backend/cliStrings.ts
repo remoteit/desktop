@@ -92,6 +92,10 @@ export default {
     return `-j agent restart`
   },
 
+  agentReload() {
+    return '-j agent reload'
+  },
+
   toolsInstall() {
     return '-j agent tools-install --yes'
   },

@@ -36,6 +36,7 @@ export class BinaryInstaller {
 
     if (shouldInstall) {
       if (environment.isElevated) return await this.install()
+      if (this.canReload(status) && (await this.reload())) return
       return EventBus.emit(Binary.EVENTS.notInstalled, status)
     } else if (!this.ready) {
       Logger.info('INSTALLER DONE')
@@ -56,6 +57,31 @@ export class BinaryInstaller {
     Logger.info('SHOULD INSTALL?', status)
 
     return status
+  }
+
+  // An app update leaves the service definition and symlinks valid, so when only the versions
+  // disagree the running agent can adopt the new binaries itself and no elevation prompt is needed.
+  canReload(status: BinaryReason) {
+    if (environment.isWindows || environment.isHeadless) return false
+    return !status.binariesOutdated && !status.agentStopped
+  }
+
+  async reload(): Promise<boolean> {
+    Logger.info('START AGENT RELOAD')
+    this.inProgress = true
+
+    const reloaded = await cli.agentReload()
+    if (reloaded) {
+      EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
+      EventBus.emit(ConnectionPool.EVENTS.clearErrors)
+      await this.updateVersions()
+      this.ready = true
+    } else {
+      Logger.warn('AGENT RELOAD FAILED', { fallback: 'install' })
+    }
+
+    this.inProgress = false
+    return reloaded
   }
 
   async install() {
