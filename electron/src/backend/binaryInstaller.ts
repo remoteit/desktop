@@ -15,6 +15,7 @@ export class BinaryInstaller {
   ready = false
   inProgress = false
   uninstallInitiated = false
+  reloadRefusedBy?: string
   binaries: Binary[]
   cliBinary: Binary
 
@@ -59,11 +60,10 @@ export class BinaryInstaller {
     return status
   }
 
-  // An app update leaves the service definition and symlinks valid, so when only the versions
-  // disagree the running agent can adopt the new binaries itself and no elevation prompt is needed.
+  // The running agent decides whether it can adopt the installed binaries itself; the desktop only
+  // knows when the bundled cli is unusable. A refusal stands until the agent itself changes.
   canReload(status: BinaryReason) {
-    if (environment.isWindows || environment.isHeadless) return false
-    return !status.binariesOutdated && !status.agentStopped
+    return !status.binariesOutdated && this.reloadRefusedBy !== this.cliBinary.agentVersion
   }
 
   async reload(): Promise<boolean> {
@@ -72,12 +72,10 @@ export class BinaryInstaller {
 
     const reloaded = await cli.agentReload()
     if (reloaded) {
-      EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
-      EventBus.emit(ConnectionPool.EVENTS.clearErrors)
-      await this.updateVersions()
-      this.ready = true
+      await this.completeInstall()
     } else {
-      Logger.warn('AGENT RELOAD FAILED', { fallback: 'install' })
+      this.reloadRefusedBy = this.cliBinary.agentVersion
+      Logger.warn('AGENT RELOAD REFUSED', { agentVersion: this.cliBinary.agentVersion, fallback: 'install' })
     }
 
     this.inProgress = false
@@ -90,12 +88,15 @@ export class BinaryInstaller {
     this.inProgress = true
 
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
+    await this.completeInstall()
 
+    this.inProgress = false
+  }
+
+  private async completeInstall() {
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     EventBus.emit(ConnectionPool.EVENTS.clearErrors)
     await this.updateVersions()
-
-    this.inProgress = false
     this.ready = true
   }
 
@@ -146,15 +147,6 @@ export class BinaryInstaller {
         Logger.warn('FILE REMOVAL FAILED', { file })
       }
     })
-  }
-
-  async restart() {
-    const commands = new Command({ onError: e => EventBus.emit(Binary.EVENTS.error, e.toString()), admin: true })
-    commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceRestart()}`)
-
-    this.inProgress = true
-    await commands.exec()
-    this.inProgress = false
   }
 
   async uninstall() {

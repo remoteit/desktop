@@ -151,6 +151,7 @@ describe('backend/binaryInstaller', () => {
       updateSpy = jest.spyOn(preferences, 'update').mockImplementation()
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       environment.version = desktopVersion
+      binaryInstaller.reloadRefusedBy = undefined
     })
 
     afterEach(() => {
@@ -178,47 +179,18 @@ describe('backend/binaryInstaller', () => {
       expect(binaryInstaller.inProgress).toBe(false)
     })
 
-    test('falls back to the install prompt when the agent cannot reload', async () => {
+    test('does not retry a refused reload until the agent itself changes', async () => {
       agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
 
       await binaryInstaller.check()
-
+      await binaryInstaller.check()
       expect(reloadSpy).toBeCalledTimes(1)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ agentMismatched: true }))
-      expect(eventSpy).not.toBeCalledWith('binary/installed', expect.anything())
-    })
-
-    test('does not reload when the agent is stopped', async () => {
-      agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(false))
-
-      await binaryInstaller.check()
-
-      expect(reloadSpy).toBeCalledTimes(0)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ agentStopped: true }))
-    })
-
-    test('does not reload when the cli binary itself is outdated', async () => {
-      versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(outdated))
-
-      await binaryInstaller.check()
-
-      expect(reloadSpy).toBeCalledTimes(0)
-      expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ binariesOutdated: true }))
-    })
-
-    test('does not reload on windows or headless', async () => {
-      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
-
-      environment.isWindows = true
-      await binaryInstaller.check()
-      environment.isWindows = false
-      environment.isHeadless = true
-      await binaryInstaller.check()
-      environment.isHeadless = false
-
-      expect(reloadSpy).toBeCalledTimes(0)
       expect(eventSpy).toBeCalledTimes(2)
       expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ agentMismatched: true }))
+
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('3.0.0'))
+      await binaryInstaller.check()
+      expect(reloadSpy).toBeCalledTimes(2)
     })
 
     test('should notify if installed', async () => {
@@ -250,6 +222,7 @@ describe('backend/binaryInstaller', () => {
         desktopUpdated: false,
       })
       expect(versionSpy).toBeCalledTimes(1)
+      expect(reloadSpy).toBeCalledTimes(1)
     })
 
     test('should notify if agent version is wrong', async () => {
@@ -270,6 +243,7 @@ describe('backend/binaryInstaller', () => {
         desktopUpdated: false,
       })
       expect(agentVersionSpy).toBeCalledTimes(1)
+      expect(reloadSpy).toBeCalledTimes(1)
     })
 
     test('should notify with different installed cli version', async () => {
@@ -304,6 +278,7 @@ describe('backend/binaryInstaller', () => {
         desktopUpdated: false,
       })
       expect(versionSpy).toBeCalledTimes(1)
+      expect(reloadSpy).toBeCalledTimes(0)
     })
 
     test('should notify if desktop version updated', async () => {

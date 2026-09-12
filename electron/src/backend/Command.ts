@@ -22,6 +22,7 @@ const IGNORED_MESSAGES = [
   'read-only file system',
   'user did not grant permission', // elevation prompt dismissed
   'no polkit authentication agent found', // no way to prompt for elevation
+  'unknown-message', // agent predates the command, e.g. reload sent to an older daemon
 ]
 
 // CLI exit codes that report an expected state rather than a defect. Each is
@@ -30,6 +31,8 @@ const EXPECTED_CLI_CODES = [
   '12', // config - you must be signed in
   '101', // agent not reachable
   '101001', // agent version mismatch
+  '409', // control - reload not supported on this platform
+  '410', // control - agent service predates reload support
   '7003', // cmd - you must run this command with elevated privileges
 ]
 

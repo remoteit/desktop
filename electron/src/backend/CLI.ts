@@ -27,7 +27,6 @@ type IExec = {
   skipSignInCheck?: boolean
   admin?: boolean
   quiet?: boolean
-  report?: boolean
   skipInstalledCheck?: boolean
   onCommand?: (command: string) => void
   onError?: (error: Error) => void
@@ -299,15 +298,12 @@ export default class CLI {
     return result?.version
   }
 
-  // An agent from before reload support answers with an error, which is the expected first-update
-  // path and not worth an Airbrake report; the sudo install that follows reports its own failures.
   async agentReload() {
     const result = await this.exec({
       cmds: [strings.agentReload()],
       skipSignInCheck: true,
       skipInstalledCheck: true,
       quiet: true,
-      report: false,
     })
     return !!result?.version
   }
@@ -319,7 +315,6 @@ export default class CLI {
     skipInstalledCheck,
     admin = false,
     quiet = false,
-    report = true,
     onCommand,
     onError,
   }: IExec) {
@@ -336,7 +331,7 @@ export default class CLI {
       return ''
     }
 
-    let commands = new Command({ admin, quiet, report })
+    let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
     if (!skipInstalledCheck) {
