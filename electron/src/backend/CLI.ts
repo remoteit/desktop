@@ -298,6 +298,16 @@ export default class CLI {
     return result?.version
   }
 
+  async agentReload(): Promise<string | undefined> {
+    const result = await this.exec({
+      cmds: [strings.agentReload()],
+      skipSignInCheck: true,
+      skipInstalledCheck: true,
+      quiet: true,
+    })
+    return result?.version
+  }
+
   async exec({
     cmds,
     checkAuthHash = false,

@@ -88,8 +88,8 @@ export default {
     return `-j agent uninstall`
   },
 
-  serviceRestart() {
-    return `-j agent restart`
+  agentReload() {
+    return '-j agent reload'
   },
 
   toolsInstall() {
