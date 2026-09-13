@@ -466,9 +466,13 @@ export default createModel<RootModel>()({
       Controller.close()
     },
     async globalSignOut() {
-      // Pilot: signs this session out at the AS (RP-initiated logout). Every-device
-      // sign-out maps to the AS's /logout/all and rides Phase 2b with the rest of the
-      // security surface.
+      // "Sign out everywhere" (SecurityPage) is the EXPLICIT, AS-wide action, distinct from the
+      // avatar-menu sign-out which is local to this app: end the AS browser session (RP-initiated
+      // logout) BEFORE the local teardown, so the security control does what it reports. The
+      // every-device /logout/all lands with Phase 2b. signOut itself stays LOCAL — a failure-path
+      // or menu sign-out must never end the AS session.
+      const { oidcEndSessionSilently } = await import('../services/oidc')
+      await oidcEndSessionSilently()
       dispatch.auth.signOut()
     },
   }),
