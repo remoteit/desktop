@@ -8,7 +8,9 @@
     "build": "cross-env NODE_OPTIONS='--max-old-space-size=4096' vite build",
     "typecheck": "tsc --noEmit",
     "i18n:extract": "i18next -c i18next-parser.config.js",
-    "i18n:check": "node scripts/i18n-check.mjs"
+    "i18n:check": "node scripts/i18n-check.mjs",
+    "test": "vitest run",
+    "test-watch": "vitest"
   },
   "dependencies": {
     "@airbrake/browser": "^2.1.9",
@@ -95,8 +97,10 @@
     "@vitejs/plugin-react": "^4.3.2",
     "eslint": "^8.53.0",
     "i18next-parser": "^9.4.0",
+    "jsdom": "^27.0.1",
     "typescript": "^5.9.2",
-    "vite": "^6.4.3"
+    "vite": "^6.4.3",
+    "vitest": "^3.2.7"
   },
   "eslintConfig": {
     "extends": "react-app"

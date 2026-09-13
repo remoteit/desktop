@@ -51,20 +51,6 @@ const DECLARATION_KEY = 'oidc.declaration'
 // per-tab store anyway).
 const ACCOUNTS_KEY = 'oidc.accounts'
 
-// A boot on /signoutCallback is the RETURN from an explicit sign-out: the next authorize
-// must show the LOGIN PAGE (prompt=login), never silently SSO into another account's
-// live session in the multi-account cookie.
-let promptLogin = false
-/** The NEXT authorize must land on the login page (no silent SSO into another chip) —
- * set by the silent sign-out just before the app re-enters the sign-in flow. */
-export function oidcRequireLoginPrompt() {
-  promptLogin = true
-}
-if (window.location.pathname === '/signoutCallback') {
-  promptLogin = true
-  window.history.replaceState({}, '', window.location.origin + '/')
-}
-
 // A support TAB keeps its tokens in sessionStorage — per-tab — never in the shared
 // localStorage. The first cut CLEARED localStorage instead, and localStorage is
 // origin-wide: the support tab's impersonated tokens replaced the operator's own, so
@@ -268,9 +254,6 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'n
   if (opts.supportTicket) params.support_ticket = opts.supportTicket
   if (opts.prompt) {
     params.prompt = opts.prompt
-  } else if (promptLogin) {
-    params.prompt = 'login'
-    promptLogin = false
   }
   for (const key in params) url.searchParams.set(key, params[key])
   window.location.assign(url.toString())
