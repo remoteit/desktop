@@ -202,13 +202,12 @@ export default createModel<RootModel>()({
     async signIn(_: void) {
       dispatch.auth.set({ signingIn: true, signInError: undefined })
       try {
-        // Desktop sign-in always offers the CHOOSER (prompt=select_account): a live chip
-        // in the browser would otherwise silently SSO whoever was last signed in, and a
-        // button that says "Sign in" should let the person pick. This also covers the
-        // post-signout rule (never silently reuse a chip) — a deliberate selection is
-        // not silent. Web keeps the plain path: its auto-start SSO is the point there,
-        // and its signout-return lane still forces prompt=login.
-        await oidcStart(browser.isElectron ? { prompt: 'select_account' } : {})
+        // Sign-in ALWAYS offers the CHOOSER (prompt=select_account), web and desktop alike.
+        // A "Sign in" button should let the person pick; and with a live AS cookie a
+        // PROMPTLESS authorize would silently SSO the last user straight back in — which is
+        // exactly the "sign-out doesn't stick" bug. select_account also means that signing
+        // out and reloading always lands on the picker, never a silent re-login.
+        await oidcStart({ prompt: 'select_account' })
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
         dispatch.auth.set({ signingIn: false, signInError: error?.message || 'Sign in failed, please try again.' })
@@ -392,14 +391,12 @@ export default createModel<RootModel>()({
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
-      // EXPLICIT sign-out ends the AS session too — SILENTLY (fetch, before teardown
-      // clears the id_token): no end_session redirect parade, no navigation race with
-      // the sign-in auto-start. The next authorize carries prompt=login so the user
-      // lands on the LOGIN PAGE, never a silent SSO into another chip's live session.
-      // Failure-driven teardown (signedOut via the error paths) stays local-only.
-      const { oidcEndSessionSilently, oidcRequireLoginPrompt } = await import('../services/oidc')
-      await oidcEndSessionSilently()
-      oidcRequireLoginPrompt()
+      // Sign-out is LOCAL to this app: drop this app's tokens/session (dispatch.auth.signedOut
+      // below). The AS browser session belongs to the user and is NOT ended here — a true
+      // "sign out everywhere" is a separate, explicit action (oidcEndSessionSilently /
+      // end_session remain for it). Because signIn always uses prompt=select_account, the next
+      // sign-in and any reload land on the AS chooser rather than silently SSO-ing back in, so
+      // no login-prompt guard is needed.
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
