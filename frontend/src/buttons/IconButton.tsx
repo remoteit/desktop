@@ -7,7 +7,14 @@ type VariantType = 'text' | 'contained' | 'outlined'
 
 export type ButtonProps = Omit<IconProps, 'title'> & {
   to?: string
+  /** The tooltip. A STRING title is also the button's accessible name — unless `label` says
+   *  otherwise (a title that is a React node, or one that swaps in an explanation). */
   title?: React.ReactNode
+  /** The control's stable accessible name, for when `title` cannot be it: a node title
+   *  (ServiceKeySetting's "Get the Node.js package" + launch icon), or a title that changes to
+   *  a disabled-state explanation ("Manage permission required…") — which must not become
+   *  the name of what the button DOES. */
+  label?: string
   forceTitle?: boolean
   icon?: string
   name?: string
@@ -35,6 +42,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       to,
       sx = {},
       title,
+      label,
       forceTitle,
       icon,
       name,
@@ -107,11 +115,11 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const button = (
       <MuiIconButton
         {...{ ref, disabled, onMouseDown, onMouseEnter, onMouseLeave, className }}
-        // The title is this icon-only button's NAME. The Tooltip below wraps a <span> around the
-        // button, so MUI's own aria-label landed on the span — a wrapper nothing focuses or reads
-        // — and every icon button in the app was nameless to assistive tech and to the e2e suite's
-        // getByRole('button', { name }). Name the button itself; a string title is the label.
-        aria-label={typeof title === 'string' ? title : undefined}
+        // Name the BUTTON. The Tooltip below wraps a <span> around it, so MUI's own aria-label
+        // landed on the span — a wrapper nothing focuses or reads — and every icon button in the
+        // app was nameless to assistive tech and to the e2e suite's getByRole('button', { name }).
+        // `label` wins; otherwise a string title is the name; a node title names nothing here.
+        aria-label={label ?? (typeof title === 'string' ? title : undefined)}
         sx={updatedSx}
         size={buttonBaseSize}
         onClick={clickHandler}
