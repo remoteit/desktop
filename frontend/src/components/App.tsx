@@ -20,6 +20,7 @@ import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
 import { useChatEnabled, useSidebarWidth, useEffectiveWidth, useHideSidebar } from '../hooks/useChatEnabled'
+import { useChatPopoutScope } from '../hooks/useChatSync'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
@@ -38,7 +39,7 @@ export const App: React.FC = () => {
   // render-time translations resolved outside React (Attribute label getters,
   // value functions, date/duration helpers) re-render when the language switches
   // or a non-English catalog chunk finishes loading.
-  useTranslation()
+  const { t } = useTranslation()
   const { insets } = useSafeArea()
   const location = useLocation()
   const hideSplashScreen = useCapacitor()
@@ -49,6 +50,9 @@ export const App: React.FC = () => {
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const chatEnabled = useChatEnabled()
+  // organization.initialized flips exactly when the account's license limits have been parsed,
+  // so it is the one signal that chatEnabled has been RESOLVED rather than merely not yet loaded
+  const chatEntitlementResolved = useSelector((state: State) => state.organization.initialized)
   const sidebarWidth = useSidebarWidth()
   const reseller = useSelector(selectResellerRef)
   const dispatch = useDispatch<Dispatch>()
@@ -82,6 +86,9 @@ export const App: React.FC = () => {
   }
 
   useViewAsUser()
+  // Before the popout's entitlement gate below can be read, the window must run under the
+  // account scope that opened it (otherwise it reads the personal account's license)
+  useChatPopoutScope()
 
   useEffect(() => {
     hideSplashScreen()
@@ -128,13 +135,28 @@ export const App: React.FC = () => {
       <ViewAsBanner />
       <AnnouncementBanner />
       <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
-        {/* isChatPopout is a boot constant — the window only exists because
-            chat opened it, so no feature-flag gate (chatEnabled depends on
-            async-restored testUI and would flash the full app in the popup) */}
+        {/* isChatPopout is a boot constant, but ?chatPopout is USER-CONTROLLED: an authenticated
+            user without the ai-agent license can land here directly, so the entitlement gate the
+            dock and the header obey applies here too — ChatWindow, and the agent requests its sync
+            hook fires on mount, exist only behind it. Not-yet-enabled is NOT the else-branch: that
+            would flash the full app into the popup. Until the license is known the window waits;
+            once the limits have loaded and the feature is still absent it says so, rather than
+            spinning forever or assuming every flagged URL came from the gated Pop out action. */}
         {isChatPopout ? (
-          <React.Suspense fallback={null}>
-            <ChatWindow />
-          </React.Suspense>
+          chatEnabled ? (
+            <React.Suspense fallback={null}>
+              <ChatWindow />
+            </React.Suspense>
+          ) : (
+            <LoadingMessage
+              spinner={!chatEntitlementResolved}
+              message={
+                chatEntitlementResolved
+                  ? t('chat.notLicensed', 'Remote.It AI is not available for this account.')
+                  : undefined
+              }
+            />
+          )
         ) : (
           <>
             <Box

@@ -9,6 +9,7 @@ import {
   deleteConversation,
   fetchUsage,
   UsageLimitError,
+  AgentStreamEndedError,
   type ConversationSummary,
   type Usage,
   agentHealth,
@@ -183,12 +184,32 @@ const usageLimitMessage = (e: UsageLimitError): string => {
 }
 
 let abortController: AbortController | null = null
+/* The GENERATION of the conversation on screen — the one guard for everything that writes fetched
+   chat content into the store. It advances on every event that makes a load already in flight
+   unwanted: a history pick (the pick itself takes the new ticket), New Chat, a send (the user has
+   committed to what is on screen), and sign-out (nothing this session started may land in the
+   next one's store — a slow pick under one account must not write that account's transcript onto
+   the next). A load applies only while the ticket it took is still current; the instantaneous
+   `streaming` flag is not enough on its own, since a turn can start AND finish while a fetch is
+   in flight. (The same check logs.ts keys on requestId.) */
+let generation = 0
+const nextGeneration = () => ++generation
+/* Independent probes — health, the history list, the usage meter — are not scoped to the
+   conversation, so they get their own latest-wins tickets instead: an older response that
+   lands last must not overwrite a newer one. */
+let healthProbe = 0
+let listLoad = 0
+let usageLoad = 0
 
 export default createModel<RootModel>()({
   state: { ...defaultChatState },
   effects: dispatch => ({
     async send(text: string, state) {
       if (state.chat.streaming || state.chat.pendingConfirmation) return
+      // A send commits the user to the conversation on screen: any pick or sync still in flight is
+      // no longer wanted — a turn that starts and finishes before it lands would otherwise be
+      // replaced (a pick) or removed (a sync) by the stale load.
+      nextGeneration()
       const conversationId = state.chat.conversationId || crypto.randomUUID()
       dispatch.chat.addUserMessage(text)
       dispatch.chat.set({
@@ -248,6 +269,15 @@ export default createModel<RootModel>()({
         }
         else if (error instanceof UsageLimitError)
           dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
+        else if (error instanceof AgentStreamEndedError)
+          // The error event marks the answer Interrupted and ends the turn — a cut-off must not
+          // leave a truncated reply looking complete with the composer open for another send.
+          dispatch.chat.applyEvent({
+            type: 'error',
+            message: i18n.t('notices:chat.streamEnded', {
+              defaultValue: 'The connection to the agent closed before it finished — the answer may be incomplete. Try again.',
+            }),
+          })
         else if ((error as Error).name !== 'AbortError')
           dispatch.chat.applyEvent({ type: 'error', message: (error as Error).message })
       } finally {
@@ -285,15 +315,36 @@ export default createModel<RootModel>()({
         else dispatch.chat.set({ pendingConfirmation: pending, error: (error as Error).message })
       }
     },
-    async stop() {
+    async stop(_: void, state) {
+      // A pending approval is part of the turn. Abandoning the turn — Stop, New Chat, deleting the
+      // open conversation, an identity change, the panel unmounting — DENIES it: the safe answer
+      // for a write the user never approved, and the one that lets the server-side turn resolve
+      // instead of waiting on a card no window shows any more. (Pop out / Pop back in are GATED
+      // while an approval is pending rather than routed here: a handoff means to continue the
+      // turn, not abandon it.) Best-effort and not awaited — stopping never waits on the network.
+      const { pendingConfirmation, turnId } = state.chat
+      if (pendingConfirmation && turnId)
+        confirmTool({ turnId, toolUseId: pendingConfirmation.toolUseId, approved: false }).catch(() => {})
       abortController?.abort()
       abortController = null
       dispatch.chat.set({ streaming: false, pendingConfirmation: null })
     },
+    /* Discard the current conversation AND any in-flight turn together. clearConversation is a
+       reducer, so it cannot abort the streamChat request on its own: a turn left running would
+       keep appending events to the freshly cleared transcript, and the next send would orphan its
+       AbortController (Stop then targets only the newer turn, mixing two conversations). New Chat,
+       an identity change, and deleting the open conversation all route through here. */
+    async newConversation() {
+      nextGeneration() // a New Chat outranks any pick or sync still in flight
+      await dispatch.chat.stop()
+      dispatch.chat.clearConversation()
+    },
     /* Move the conversation to its own window; the dock hides when the popout
        says hello. A blocked popup is surfaced instead of silently ignored. */
-    async popOut() {
-      if (!openChatPopout())
+    async popOut(_: void, state) {
+      // Hand over this window's account scope so the popout boots under it, not the personal
+      // account its unset activeId would default to (popoutScopeId explains the stakes)
+      if (!openChatPopout(state.chat.orgId || undefined))
         dispatch.chat.set({
           error: i18n.t('notices:chat.popupBlocked', {
             defaultValue: 'Pop out was blocked — allow popups for this site and try again.',
@@ -313,24 +364,49 @@ export default createModel<RootModel>()({
          outage as an agent outage, and the panel would say so on top of the global
          message. Network's `connect` event re-runs this (see useChatSync). */
       if (state.ui.offline) return
-      dispatch.chat.set({ health: await agentHealth() })
+      // Latest probe wins: a slow probe started while connectivity was failing must not land after
+      // the reconnect-triggered one and flip a fresh `ok` back to `unreachable` — which disabled the
+      // composer until the next reopen or network event, with the agent perfectly reachable.
+      const probe = ++healthProbe
+      const health = await agentHealth()
+      if (probe === healthProbe) dispatch.chat.set({ health })
     },
     /* The server owns the transcript now (D11) — adopt its copy when it knows more than
        we do, which is exactly how a background turn's result appears after a reopen. */
     async syncTranscript(_: void, state) {
       const id = state.chat.conversationId
       if (!id || state.chat.streaming) return
+      // Reads the generation without advancing it: a sync is a background reconcile, not a user
+      // action, so it must not out-rank a pick already in flight — but any pick, New Chat, send
+      // or sign-out that happens while it waits makes ITS result the stale one.
+      const ticket = generation
       try {
         const remote = await fetchConversation(id)
-        if (remote && remote.messages.length > state.chat.messages.length) {
-          dispatch.chat.set({
-            messages: remote.messages.map(m =>
-              m.role === 'assistant'
-                ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
-                : { role: 'user' as const, text: m.content }
-            ),
-          })
-        }
+        if (!remote) return
+        // The fetch may have outlived the conversation: a New Chat or a history pick while it
+        // was in flight leaves `state` describing a conversation no longer on screen, and
+        // applying against that snapshot would land the OLD transcript in the new conversation
+        // under its newer conversationId (or repopulate one just cleared). And a turn that
+        // started and FINISHED meanwhile leaves `streaming` false again with the same id — only
+        // the generation sees that, and without it the stale server snapshot removed the newly
+        // completed turn from view. Re-read the LIVE store and compare against what is current.
+        const current = store.getState().chat
+        if (ticket !== generation || current.conversationId !== id || current.streaming) return
+        const messages = remote.messages.map(m =>
+          m.role === 'assistant'
+            ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
+            : { role: 'user' as const, text: m.content }
+        )
+        // Adopt the server copy when it DIFFERS, not only when it is longer: a popout hands back a
+        // partially rendered reply the server then completes to the SAME message count, so a
+        // length-only test leaves the partial on screen. Compare the last message's text too. Also
+        // apply the server title — a reload restores conversationId but the title defaults to ''.
+        const last = messages[messages.length - 1]?.text ?? ''
+        const localLast = current.messages[current.messages.length - 1]?.text ?? ''
+        const differs = messages.length !== current.messages.length || last !== localLast
+        const title = remote.title || current.title
+        if (differs) dispatch.chat.set({ messages, title })
+        else if (title !== current.title) dispatch.chat.set({ title })
       } catch {
         /* offline or deleted — the local display cache stands */
       }
@@ -354,7 +430,7 @@ export default createModel<RootModel>()({
        over (posting to it 404s, and its history isn't yours). Same identity → no-op. */
     async syncIdentity(userId: string, state) {
       if (!userId || state.chat.ownerId === userId) return
-      dispatch.chat.clearConversation()
+      await dispatch.chat.newConversation()
       dispatch.chat.set({ ownerId: userId, conversations: [], usage: null })
       dispatch.chat.loadConversations()
       dispatch.chat.loadUsage()
@@ -362,12 +438,15 @@ export default createModel<RootModel>()({
     /* The usage meter (docs/usage-limits.md D6) — refreshed on mount, after each turn, and
        on open. Silent on failure; the last-known meter stands. */
     async loadUsage() {
+      const load = ++usageLoad
       const usage = await fetchUsage()
-      if (usage) dispatch.chat.set({ usage })
+      if (usage && load === usageLoad) dispatch.chat.set({ usage }) // latest wins
     },
     async loadConversations() {
+      const load = ++listLoad
       try {
-        dispatch.chat.set({ conversations: await listConversations() })
+        const conversations = await listConversations()
+        if (load === listLoad) dispatch.chat.set({ conversations }) // latest wins
       } catch {
         /* offline — leave the last-known list */
       }
@@ -376,13 +455,29 @@ export default createModel<RootModel>()({
        live turn state so nothing from the previous thread bleeds across. */
     async openConversation(id: string, state) {
       if (state.chat.streaming) dispatch.chat.stop()
-      const remote = await fetchConversation(id)
-      if (!remote) {
-        // Vanished (deleted elsewhere) — drop it from the list and start fresh.
-        dispatch.chat.clearConversation()
-        await dispatch.chat.loadConversations()
+      // Out-of-order guard: pick A, then B, and A's fetch lands last — A must not replace B. Nor
+      // may a New Chat, a send, a sign-out (all of which advance the generation) or a turn still
+      // running meanwhile (the composer stays enabled) be clobbered by a load no longer wanted.
+      const ticket = nextGeneration()
+      const superseded = () => ticket !== generation || store.getState().chat.streaming
+      let remote
+      try {
+        remote = await fetchConversation(id)
+      } catch (error) {
+        // A service or auth failure is not a deletion: keep the transcript on screen and report,
+        // rather than clearing to a new chat as if the conversation had vanished. Unless the
+        // user has already moved on — then it is only noise about a thread they left.
+        if (!superseded()) dispatch.chat.set({ error: (error as Error).message })
         return
       }
+      if (!remote) {
+        // Vanished — a genuine 404 (deleted elsewhere). Drop it from the list, and unless the
+        // user has already moved on, start fresh.
+        await dispatch.chat.loadConversations()
+        if (!superseded()) dispatch.chat.clearConversation()
+        return
+      }
+      if (superseded()) return
       dispatch.chat.set({
         conversationId: id,
         turnId: '',
@@ -398,9 +493,28 @@ export default createModel<RootModel>()({
       })
     },
     /* Delete a conversation for real (D9). If it's the one on screen, clear to a new chat. */
-    async removeConversation(id: string, state) {
-      await deleteConversation(id)
-      if (state.chat.conversationId === id) dispatch.chat.clearConversation()
+    async removeConversation(id: string) {
+      // A failed DELETE (401/403/5xx) is NOT a deletion — the row survives on the server and would
+      // reappear on the next refresh. Report it and keep the local copy, rather than clearing the
+      // open transcript as though it succeeded. A REJECTED request (network, DNS, CORS — no HTTP
+      // response at all) is the same failure and takes the same path: the confirm dialog has
+      // already closed, so an unhandled rejection here left the user with no feedback whatsoever.
+      let deleted = false
+      try {
+        deleted = await deleteConversation(id)
+      } catch {
+        deleted = false
+      }
+      if (!deleted) {
+        dispatch.chat.set({
+          error: i18n.t('notices:chat.deleteFailed', { defaultValue: 'Could not delete the conversation — try again.' }),
+        })
+        return
+      }
+      // The LIVE id, not the invocation snapshot: a slow delete of the open conversation A followed
+      // by opening B must not clear B; deleting A from the picker and then opening A before the
+      // delete lands must still clear the now-deleted transcript.
+      if (store.getState().chat.conversationId === id) await dispatch.chat.newConversation()
       await dispatch.chat.loadConversations()
     },
     /* App sign-out: nothing agent-specific to revoke — the session's end IS the
@@ -409,11 +523,22 @@ export default createModel<RootModel>()({
        purge-to-reload window and re-persist the pre-signout state. */
     async signOut() {
       broadcastChatSignout()
+      // Aborting covers the STREAM; the generation covers every other load in flight. Without it a
+      // slow history pick started under this account passed its own guard after the reset (its
+      // ticket unchanged, nothing streaming) and wrote this account's transcript into the store the
+      // NEXT account boots from — persisted, and on the next account's screen if it landed late.
+      nextGeneration()
       abortController?.abort()
       abortController = null
-      // Explicit sign-out ends the background relationship too (plan D8): best-effort
-      // revoke of the agent's stored grant, before the session tokens vanish.
-      void backgroundDisable()
+      // Explicit sign-out ends the background relationship (plan D8): revoke the agent's stored
+      // grant BEFORE the session tokens vanish. AWAITED but BOUNDED — an unawaited revoke raced
+      // oidcClearLocal(), so its authenticated DELETE minted no token and background AI access
+      // survived sign-out. Awaiting lets the revoke finish while the tokens are still valid; the
+      // timeout keeps a slow agent from blocking sign-out.
+      await Promise.race([
+        backgroundDisable().catch(() => {}),
+        new Promise(resolve => setTimeout(resolve, 3000)),
+      ])
     },
   }),
   reducers: {

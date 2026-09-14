@@ -11,9 +11,11 @@
   },
   "chat": {
     "authRequired": "Agentenauthentifizierung erforderlich — melden Sie sich an, um fortzufahren.",
+    "deleteFailed": "",
     "popupBlocked": "Pop-out blockiert — erlauben Sie Pop-ups für diese Seite und versuchen Sie es erneut.",
     "sessionExpired": "Agentensitzung abgelaufen — melden Sie sich erneut an, um fortzufahren.",
     "signInFailed": "Agentenanmeldung fehlgeschlagen — {{error}}",
+    "streamEnded": "",
     "usageReset": "{{msg}} Zurücksetzung {{when}}."
   },
   "connection": {

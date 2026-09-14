@@ -18,14 +18,14 @@ import { OAUTH_AGENT_RESOURCE } from '../constants'
    the Test Settings validation so what saves is exactly what engages. */
 export const isSecureAgentURL = (url: string): boolean => /^https:\/\//i.test(url)
 
-/* Base URL for the agent service, resolved per request. The Test UI override
-   wins (Test Settings → Override agent service). Otherwise dev rides the vite
-   proxy (same-origin, CSP-clean) even when VITE_AGENT_URL is set, staying out
-   of CORS; builds have no proxy and use the deployed agent domain from
+/* Base URL for the agent service, resolved per request. A Test UI override
+   wins (Test Settings → Agent service URL, https only). Otherwise dev rides the
+   vite proxy (same-origin, CSP-clean) even when VITE_AGENT_URL is set, staying
+   out of CORS; builds have no proxy and use the deployed agent domain from
    VITE_AGENT_URL. */
 export function agentURL(): string {
-  const { switchAgent, agentURL: override } = store.getState().ui.apis
-  if (switchAgent && override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
+  const override = store.getState().ui.apis.agentURL
+  if (override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
   return import.meta.env.DEV ? '/agent' : import.meta.env.VITE_AGENT_URL || '/agent'
 }
 
@@ -38,6 +38,16 @@ export class AgentAuthError extends Error {
 
 /* A usage window (session/weekly) or the fleet is spent — the turn was refused before it ran.
    Carries which window and when it resets so the UI can say "resets at 4:30pm". */
+/* The stream closed cleanly before a terminal event (done / error) — the server or an
+   intermediary (a proxy idle timeout on a long turn, say) ended it mid-answer. Without this
+   the turn resolved normally and a truncated answer looked complete. */
+export class AgentStreamEndedError extends Error {
+  constructor() {
+    super('Agent stream ended before the turn completed')
+    this.name = 'AgentStreamEndedError'
+  }
+}
+
 export class UsageLimitError extends Error {
   constructor(
     message: string,
@@ -96,23 +106,54 @@ export async function streamChat(options: {
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
+  let terminal = false // a done or error event closed the turn — anything else at EOF is a cut-off
+  const deliver = (block: string) => {
+    let event = 'message'
+    const dataLines: string[] = []
+    for (const line of block.split('\n')) {
+      if (line.startsWith('event:')) event = line.slice(6).trim()
+      else if (line.startsWith('data:')) dataLines.push(line.slice(5).trimStart())
+    }
+    if (!dataLines.length) return
+    if (event === 'done' || event === 'error') terminal = true
+    onEvent({ type: event, ...JSON.parse(dataLines.join('\n')) } as AgentEvent)
+  }
+  /* An event ends at a blank line. SSE permits CRLF, LF or CR line endings, so normalise to LF
+     before looking for it — a CRLF server would otherwise never produce the '\n\n' we search
+     for, and every turn would finish silently empty. A CR at the very end of the buffer may be
+     the first half of a CRLF split across reads, so it is held back for the next read. */
+  const drain = (final = false) => {
+    const hold = !final && buffer.endsWith('\r') ? '\r' : ''
+    buffer = buffer.slice(0, buffer.length - hold.length).replace(/\r\n?/g, '\n') + hold
+    let index: number
+    while ((index = buffer.indexOf('\n\n')) !== -1) {
+      deliver(buffer.slice(0, index))
+      buffer = buffer.slice(index + 2)
+    }
+    // EOF: an event the server closed on without a trailing blank line is still an event.
+    // EventSource discards it because it cannot know whether it is complete; our payloads are
+    // JSON, so a successful parse IS that check — and a torn tail is dropped, not surfaced as
+    // a parse error over a turn the user already watched finish.
+    if (final && buffer.trim()) {
+      try {
+        deliver(buffer)
+      } catch {
+        /* truncated mid-event */
+      }
+      buffer = ''
+    }
+  }
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
     buffer += decoder.decode(value, { stream: true })
-    let index: number
-    while ((index = buffer.indexOf('\n\n')) !== -1) {
-      const block = buffer.slice(0, index)
-      buffer = buffer.slice(index + 2)
-      let event = 'message'
-      const dataLines: string[] = []
-      for (const line of block.split('\n')) {
-        if (line.startsWith('event:')) event = line.slice(6).trim()
-        else if (line.startsWith('data:')) dataLines.push(line.slice(5).trimStart())
-      }
-      if (dataLines.length) onEvent({ type: event, ...JSON.parse(dataLines.join('\n')) } as AgentEvent)
-    }
+    drain()
   }
+  buffer += decoder.decode() // flush a multi-byte sequence still pending in the decoder
+  drain(true)
+  // A clean close with no terminal event is a cut-off, not a completion. (A Stop never lands
+  // here: aborting rejects reader.read() with an AbortError, which the caller ignores.)
+  if (!terminal) throw new AgentStreamEndedError()
 }
 
 /* Approve or deny a write tool the agent paused on — addressed to the TURN */
@@ -150,7 +191,9 @@ export type ConversationSummary = { id: string; title: string | null; createdAt:
 /* The user's conversations, newest first (D11) — the history picker's source. */
 export async function listConversations(): Promise<ConversationSummary[]> {
   const response = await fetch(`${agentURL()}/api/conversations`, { headers: await agentHeaders('GET', '/api/conversations', false) })
-  if (!response.ok) return []
+  // Don't turn an auth/service failure (401/403/5xx) into an empty list — loadConversations would
+  // overwrite the last-known history as though the user had none. Throw so its catch keeps it.
+  if (!response.ok) throw new Error(`listConversations: ${response.status}`)
   return ((await response.json()) as { conversations: ConversationSummary[] }).conversations
 }
 
@@ -160,7 +203,10 @@ export async function fetchConversation(
 ): Promise<{ title: string | null; messages: Array<{ role: string; content: string }> } | null> {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}`
   const response = await fetch(`${agentURL()}${path}`, { headers: await agentHeaders('GET', path, false) })
-  if (!response.ok) return null
+  // null means GONE (callers clear the local copy). An auth/service failure is NOT a deletion —
+  // throw it so callers preserve the transcript and report, instead of discarding a live chat.
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`fetchConversation: ${response.status}`)
   return (await response.json()) as { title: string | null; messages: Array<{ role: string; content: string }> }
 }
 

@@ -64,7 +64,7 @@ export const NewChatButton: React.FC = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   return (
-    <IconButton icon="plus" title={t('chat.newChat', 'New Chat')} onClick={() => dispatch.chat.clearConversation()} />
+    <IconButton icon="plus" title={t('chat.newChat', 'New Chat')} onClick={() => dispatch.chat.newConversation()} />
   )
 }
 

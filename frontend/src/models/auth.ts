@@ -6,10 +6,10 @@ import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
-import { persistor } from '../store'
+import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken, apiAuthHeaders } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcMcpDetailReady, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -166,6 +166,10 @@ export default createModel<RootModel>()({
      *  renew marker uses. */
     async healGrant(options?: { force?: boolean }) {
       try {
+        // The freshness check compares against the MCP detail type; on the first load after a
+        // rename the cached name is the OLD one until the boot metadata refresh lands. Wait for it
+        // (bounded, resolved instantly thereafter) so this cannot call a renamed-away grant current.
+        await oidcMcpDetailReady()
         if (!oidcGrantStale()) {
           window.sessionStorage.removeItem(GRANT_HEAL_KEY)
           return
@@ -241,13 +245,12 @@ export default createModel<RootModel>()({
     async signIn(_: void) {
       dispatch.auth.set({ signingIn: true, ...signInCleared })
       try {
-        // Desktop sign-in always offers the CHOOSER (prompt=select_account): a live chip
-        // in the browser would otherwise silently SSO whoever was last signed in, and a
-        // button that says "Sign in" should let the person pick. This also covers the
-        // post-signout rule (never silently reuse a chip) — a deliberate selection is
-        // not silent. Web keeps the plain path: its auto-start SSO is the point there,
-        // and its signout-return lane still forces prompt=login.
-        await oidcStart(browser.isElectron ? { prompt: 'select_account' } : {})
+        // Sign-in ALWAYS offers the CHOOSER (prompt=select_account), web and desktop alike.
+        // A "Sign in" button should let the person pick; and with a live AS cookie a
+        // PROMPTLESS authorize would silently SSO the last user straight back in — which is
+        // exactly the "sign-out doesn't stick" bug. select_account also means that signing
+        // out and reloading always lands on the picker, never a silent re-login.
+        await oidcStart({ prompt: 'select_account' })
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
         dispatch.auth.set(signInFailure(error))
@@ -387,21 +390,43 @@ export default createModel<RootModel>()({
     },
     async disconnect(_: void, state) {
       if (!state.auth.authenticated && !state.auth.backendAuthenticated && browser.hasBackend) {
+        // Read the LIVE store, not the invocation-time snapshot: backendSignInError records its
+        // failure after its own teardown and this handler fires right behind it when the
+        // rejected socket drops, so the snapshot predates that message. Carry an existing
+        // failure through this teardown (signedOut()'s signInCleared would wipe it) and only
+        // otherwise fall back to the generic one — either way through the signInFailure shape,
+        // so signInFailed is set and SignInApp actually renders the message.
+        const live = store.getState().auth
+        const failure: Partial<AuthState> = live.signInFailed
+          ? {
+              signInFailed: true,
+              signInError: live.signInError,
+              signInErrorCode: live.signInErrorCode,
+              signInRetryAfter: live.signInRetryAfter,
+            }
+          : signInFailure(new Error('Sign in failed, please try again.'))
         await dispatch.auth.signedOut()
-        if (!state.auth.signInError) dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
+        dispatch.auth.set(failure)
       }
       dispatch.ui.set({ connected: false })
       dispatch.auth.set({ backendAuthenticated: false })
     },
     async signInError(signInError: string) {
-      dispatch.auth.set({ signInError })
+      // Through signInFailure, not a bare signInError set: SignInApp renders the message only
+      // while signInFailed is true, so a raw string here would never reach the screen.
+      dispatch.auth.set(signInFailure(new Error(signInError)))
       //send message to backend to sign out
       emit('user/lock')
     },
     async backendSignInError(signInError: string) {
       console.error(signInError)
-      await dispatch.auth.set({ signInError })
+      // Tear down FIRST, then record the failure: signedOut() deliberately clears
+      // signInFailed/signInError (a failure logged while signed in must not survive into the
+      // signed-out screen), so a set() before it was wiped and SignInApp — which renders its
+      // message only while signInFailed is true — showed a bare sign-in screen with no word of
+      // the backend's rejection. signInFailure is the one shape every failure takes.
       await dispatch.auth.signedOut()
+      dispatch.auth.set(signInFailure(new Error(signInError)))
     },
     async appReady(_: void, state) {
       // Temp migration of state
@@ -436,14 +461,12 @@ export default createModel<RootModel>()({
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
-      // EXPLICIT sign-out ends the AS session too — SILENTLY (fetch, before teardown
-      // clears the id_token): no end_session redirect parade, no navigation race with
-      // the sign-in auto-start. The next authorize carries prompt=login so the user
-      // lands on the LOGIN PAGE, never a silent SSO into another chip's live session.
-      // Failure-driven teardown (signedOut via the error paths) stays local-only.
-      const { oidcEndSessionSilently, oidcRequireLoginPrompt } = await import('../services/oidc')
-      await oidcEndSessionSilently()
-      oidcRequireLoginPrompt()
+      // Sign-out is LOCAL to this app: drop this app's tokens/session (dispatch.auth.signedOut
+      // below). The AS browser session belongs to the user and is NOT ended here — a true
+      // "sign out everywhere" is a separate, explicit action (oidcEndSessionSilently /
+      // end_session remain for it). Because signIn always uses prompt=select_account, the next
+      // sign-in and any reload land on the AS chooser rather than silently SSO-ing back in, so
+      // no login-prompt guard is needed.
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
@@ -474,7 +497,10 @@ export default createModel<RootModel>()({
       // re-save the pre-signout state for the next user of the machine.
       // (The DCR agent session retires with the permitteer chat lane —
       // remoteit-ai-agent.md Phase 4; until then both sign-outs run.)
-      dispatch.chat.signOut()
+      // AWAIT the chat sign-out: it revokes the background-agent grant, whose authenticated DELETE
+      // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
+      // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
+      await dispatch.chat.signOut()
       await persistor.purge()
       // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
       // signing out of the app must not sign the user out of login.* (their browser
@@ -528,9 +554,13 @@ export default createModel<RootModel>()({
       Controller.close()
     },
     async globalSignOut() {
-      // Pilot: signs this session out at the AS (RP-initiated logout). Every-device
-      // sign-out maps to the AS's /logout/all and rides Phase 2b with the rest of the
-      // security surface.
+      // "Sign out everywhere" (SecurityPage) is the EXPLICIT, AS-wide action, distinct from the
+      // avatar-menu sign-out which is local to this app: end the AS browser session (RP-initiated
+      // logout) BEFORE the local teardown, so the security control does what it reports. The
+      // every-device /logout/all lands with Phase 2b. signOut itself stays LOCAL — a failure-path
+      // or menu sign-out must never end the AS session.
+      const { oidcEndSessionSilently } = await import('../services/oidc')
+      await oidcEndSessionSilently()
       dispatch.auth.signOut()
     },
   }),

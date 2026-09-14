@@ -11,9 +11,11 @@
   },
   "chat": {
     "authRequired": "Se requiere autenticación del agente — inicie sesión para continuar.",
+    "deleteFailed": "",
     "popupBlocked": "Ventana emergente bloqueada — permita las ventanas emergentes para este sitio e inténtelo de nuevo.",
     "sessionExpired": "La sesión del agente ha expirado — inicie sesión de nuevo para continuar.",
     "signInFailed": "Error al iniciar sesión en el agente — {{error}}",
+    "streamEnded": "",
     "usageReset": "{{msg}} Se restablece {{when}}."
   },
   "connection": {
