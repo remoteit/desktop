@@ -160,7 +160,10 @@ export async function fetchConversation(
 ): Promise<{ title: string | null; messages: Array<{ role: string; content: string }> } | null> {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}`
   const response = await fetch(`${agentURL()}${path}`, { headers: await agentHeaders('GET', path, false) })
-  if (!response.ok) return null
+  // null means GONE (callers clear the local copy). An auth/service failure is NOT a deletion —
+  // throw it so callers preserve the transcript and report, instead of discarding a live chat.
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`fetchConversation: ${response.status}`)
   return (await response.json()) as { title: string | null; messages: Array<{ role: string; content: string }> }
 }
 

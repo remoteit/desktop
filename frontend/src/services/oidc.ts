@@ -290,7 +290,11 @@ async function refreshMcpDetailType(): Promise<string> {
   try {
     const r = new URL(OAUTH_MCP_RESOURCE)
     const prm = `${r.origin}/.well-known/oauth-protected-resource${r.pathname}`
-    const doc = (await (await fetch(prm)).json()) as {
+    // BOUND it: this optional agent-metadata lookup sits on the sign-in / account-switch /
+    // grant-heal path, so a slow or half-open MCP endpoint must not block authentication. On
+    // timeout the fetch aborts, the catch fires, and the cached/fallback name (mcpDetailType())
+    // stands — the AS being healthy is enough to sign in.
+    const doc = (await (await fetch(prm, { signal: AbortSignal.timeout(4000) })).json()) as {
       authorization_details_types_supported?: string[]
       authorization_details_types?: Array<{ type?: string; risk_class?: string }>
     }

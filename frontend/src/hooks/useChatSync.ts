@@ -54,12 +54,21 @@ export const useChatMainSync = (): void => {
       adopt: payload => {
         dispatch.chat.adoptTranscript(payload)
         dispatch.chat.set({ poppedOut: false, open: true })
+        // The handback carries only the partial response rendered when the popout closed; the
+        // server journals the rest of the turn, so pull its copy or the remainder is missing
+        // (and the partial looks complete) until a reload.
+        dispatch.chat.syncTranscript()
       },
       onPopoutOpened: () => {
         dispatch.chat.stop()
         dispatch.chat.set({ open: false, poppedOut: true })
       },
-      onPopoutLost: () => dispatch.chat.set({ poppedOut: false, open: true }),
+      // A lost popout leaves no handback at all — reconcile against the server so the dock
+      // reopens on the true transcript rather than this window's stale copy.
+      onPopoutLost: () => {
+        dispatch.chat.set({ poppedOut: false, open: true })
+        dispatch.chat.syncTranscript()
+      },
       onPresence: present => dispatch.chat.set(present ? { poppedOut: true, open: false } : { poppedOut: false }),
     }
     const unsubscribe = initChatPopoutMain(handlers)

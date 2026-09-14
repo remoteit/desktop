@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Dispatch, State } from '../store'
 import { useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -38,14 +38,20 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   /* An empty list means "add your first device" only once it has actually loaded — so
      arm on the way down and redirect on the way up, never both in one pass. Keyed to
      the account and re-run when the list empties, so every switch re-decides instead
-     of inheriting the last account's answer. */
+     of inheriting the last account's answer. The trigger must include the inputs the
+     decision reads — the empty-list and default-account signals — because memberships
+     arriving late, or switching to an already-loaded empty account, change those
+     without touching `initialized`. A ref keyed to the account we acted for keeps that
+     from re-selecting or re-pushing /add on every re-run. */
+  const actedFor = useRef<string | undefined>(undefined)
   useEffect(() => {
     if (!initialized) setInitLoad(true)
-    if (shouldRedirect && !devices.length) {
+    if (shouldRedirect && !devices.length && actedFor.current !== defaultAccountId) {
+      actedFor.current = defaultAccountId
       if (defaultAccountId) accounts.select(defaultAccountId)
       else history.push('/add')
     }
-  }, [initialized, history])
+  }, [initialized, shouldRedirect, devices.length, defaultAccountId, history, accounts])
 
   return (
     <DevicesDrawers>

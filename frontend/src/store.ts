@@ -15,12 +15,15 @@ const loggerConfig: ReduxLoggerOptions = {
 }
 
 // Persist only the durable chat fields — streaming/pendingConfirmation/error/
-// health are runtime-only and must never survive a reload
+// health are runtime-only and must never survive a reload. ownerId IS durable: it is
+// what syncIdentity compares against the signed-in user, so without it a reload resets
+// ownerId to '' and the guard clears the transcript as if a different person had signed in.
 const chatTransform = createTransform(
   (inbound: IChatState) => ({
     messages: inbound.messages,
     conversationId: inbound.conversationId,
     orgId: inbound.orgId,
+    ownerId: inbound.ownerId,
     open: inbound.open,
     width: inbound.width,
     poppedOut: inbound.poppedOut,
@@ -29,13 +32,22 @@ const chatTransform = createTransform(
   { whitelist: ['chat'] }
 )
 
+// The chat popout is a SECOND full app instance on the same 'app' storage key. redux-persist
+// with whitelist:[] does NOT disable writes — it still persists its _persist metadata (and an
+// otherwise-empty state) to that shared key, clobbering the main window's cached accounts,
+// devices, chat, etc. So the popout gets a storage adapter that reads/writes NOTHING: it adopts
+// its transcript over the BroadcastChannel handoff and owns no durable state of its own.
+const noopStorage = {
+  getItem: () => Promise.resolve(null),
+  setItem: () => Promise.resolve(),
+  removeItem: () => Promise.resolve(),
+}
+
 const persistConfig: PersistConfig<RootModel> = {
   key: 'app',
   version: numericVersion(),
-  storage: localForage,
-  // The chat popout window is a second full app instance on the same storage
-  // key; it adopts its transcript over the BroadcastChannel handoff and must
-  // never write, or the two windows clobber each other (last-writer-wins)
+  // The popout persists nothing (noopStorage) so it cannot clobber the main window's 'app' key.
+  storage: isChatPopout ? noopStorage : localForage,
   whitelist: isChatPopout
     ? []
     : [

@@ -290,6 +290,15 @@ export default createModel<RootModel>()({
       abortController = null
       dispatch.chat.set({ streaming: false, pendingConfirmation: null })
     },
+    /* Discard the current conversation AND any in-flight turn together. clearConversation is a
+       reducer, so it cannot abort the streamChat request on its own: a turn left running would
+       keep appending events to the freshly cleared transcript, and the next send would orphan its
+       AbortController (Stop then targets only the newer turn, mixing two conversations). New Chat,
+       an identity change, and deleting the open conversation all route through here. */
+    async newConversation() {
+      await dispatch.chat.stop()
+      dispatch.chat.clearConversation()
+    },
     /* Move the conversation to its own window; the dock hides when the popout
        says hello. A blocked popup is surfaced instead of silently ignored. */
     async popOut() {
@@ -354,7 +363,7 @@ export default createModel<RootModel>()({
        over (posting to it 404s, and its history isn't yours). Same identity → no-op. */
     async syncIdentity(userId: string, state) {
       if (!userId || state.chat.ownerId === userId) return
-      dispatch.chat.clearConversation()
+      await dispatch.chat.newConversation()
       dispatch.chat.set({ ownerId: userId, conversations: [], usage: null })
       dispatch.chat.loadConversations()
       dispatch.chat.loadUsage()
@@ -376,9 +385,17 @@ export default createModel<RootModel>()({
        live turn state so nothing from the previous thread bleeds across. */
     async openConversation(id: string, state) {
       if (state.chat.streaming) dispatch.chat.stop()
-      const remote = await fetchConversation(id)
+      let remote
+      try {
+        remote = await fetchConversation(id)
+      } catch (error) {
+        // A service or auth failure is not a deletion: keep the transcript on screen and report,
+        // rather than clearing to a new chat as if the conversation had vanished.
+        dispatch.chat.set({ error: (error as Error).message })
+        return
+      }
       if (!remote) {
-        // Vanished (deleted elsewhere) — drop it from the list and start fresh.
+        // Vanished — a genuine 404 (deleted elsewhere). Drop it from the list and start fresh.
         dispatch.chat.clearConversation()
         await dispatch.chat.loadConversations()
         return
@@ -400,7 +417,7 @@ export default createModel<RootModel>()({
     /* Delete a conversation for real (D9). If it's the one on screen, clear to a new chat. */
     async removeConversation(id: string, state) {
       await deleteConversation(id)
-      if (state.chat.conversationId === id) dispatch.chat.clearConversation()
+      if (state.chat.conversationId === id) await dispatch.chat.newConversation()
       await dispatch.chat.loadConversations()
     },
     /* App sign-out: nothing agent-specific to revoke — the session's end IS the
