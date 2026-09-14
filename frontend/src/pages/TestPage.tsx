@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import cloudSync from '../services/CloudSync'
-import { TEST_HEADER, GRAPHQL_API } from '../constants'
+import { TEST_HEADER, GRAPHQL_API, OAUTH_AGENT_RESOURCE } from '../constants'
 import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getApiURL, getWebSocketURL, resourceForApiURL } from '../helpers/apiHelper'
 import { bindableResources } from '../services/permitteerAccount'
 import { oidcAccessToken } from '../services/oidc'
+import { isSecureAgentURL } from '../services/agent'
 import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -41,6 +42,7 @@ export const TestPage: React.FC = () => {
   // an illegal target fails here with a legible error, never as ambient 403s an hour later.
   const [targets, setTargets] = useState<Array<{ identifier: string; name: string }>>([])
   const [mintError, setMintError] = useState<string>('')
+  const [agentError, setAgentError] = useState<string>('')
   useEffect(() => {
     bindableResources().then(setTargets)
   }, [])
@@ -257,6 +259,39 @@ export const TestPage: React.FC = () => {
                 }}
                 hideIcon
               />
+            </List>
+          </Quote>
+        </ListItem>
+      </List>
+
+      <Typography variant="subtitle1">{t('testPage.aiAgent', 'AI Agent')}</Typography>
+      <List>
+        <ListItem>
+          <Quote margin={null} indent="listItem" noInset>
+            <List disablePadding>
+              <InlineTextFieldSetting
+                value={apis.agentURL || OAUTH_AGENT_RESOURCE}
+                label={t('testPage.agentURL', 'Agent service URL (advanced)')}
+                resetValue={OAUTH_AGENT_RESOURCE}
+                maxLength={200}
+                onSave={result => {
+                  const url = result.toString().trim()
+                  if (url && !isSecureAgentURL(url)) {
+                    setAgentError(t('testPage.agentURLInvalid', 'Agent service URL must start with https://'))
+                    return
+                  }
+                  setAgentError('')
+                  setAPIPreference('agentURL', url)
+                }}
+                hideIcon
+              />
+              {!!agentError && (
+                <ListItem>
+                  <Typography variant="caption" color="error">
+                    {agentError}
+                  </Typography>
+                </ListItem>
+              )}
             </List>
           </Quote>
         </ListItem>

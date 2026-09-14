@@ -49,7 +49,6 @@ export type UIState = {
     webSocketURL?: IPreferences['webSocketURL']
     apiURL?: IPreferences['apiURL']
     // Test UI: point the Remote.It AI chat at a deployed agent (https only)
-    switchAgent?: boolean
     agentURL?: string
   }
   layout: ILayout
