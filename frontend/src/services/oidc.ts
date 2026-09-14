@@ -321,8 +321,14 @@ async function refreshMcpDetailType(): Promise<string> {
   } catch { /* offline or blocked — the last-known (or fallback) name stands */ }
   return mcpDetailType()
 }
-// Warm the cache off the boot path so oidcGrantStale() compares against fresh truth early.
-void refreshMcpDetailType()
+// Warm the cache off the boot path so oidcGrantStale() compares against fresh truth early — and
+// let the boot freshness check WAIT for it (oidcMcpDetailReady). Fire-and-forget alone had a hole
+// on the first load after a rename: healGrant() ran before this resolved, compared against the
+// cached (renamed-away) type, called the grant current, and the discovery that followed updated
+// only the cache — nothing re-ran the heal, so agent authorization stayed broken until a reload.
+// Bounded (the fetch times out) and never rejects, so awaiting it costs at most that bound once.
+const mcpDetailReady: Promise<string> = refreshMcpDetailType()
+export const oidcMcpDetailReady = (): Promise<string> => mcpDetailReady
 
 const declared = (): Array<{ resource: string; type: string; actions: string[]; actor?: string; locations?: string[] }> => [
   { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },

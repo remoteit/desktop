@@ -184,22 +184,32 @@ const usageLimitMessage = (e: UsageLimitError): string => {
 }
 
 let abortController: AbortController | null = null
-/* Which conversation SELECTION is current. openConversation takes a ticket and applies its fetch
-   only while it still holds the latest. newConversation and send take one too: a New Chat, or a
-   message sent to the conversation on screen, during a slow open must not be undone when that open
-   finally lands. (The same generation check logs.ts keys on requestId.) */
-let selection = 0
+/* The GENERATION of the conversation on screen — the one guard for everything that writes fetched
+   chat content into the store. It advances on every event that makes a load already in flight
+   unwanted: a history pick (the pick itself takes the new ticket), New Chat, a send (the user has
+   committed to what is on screen), and sign-out (nothing this session started may land in the
+   next one's store — a slow pick under one account must not write that account's transcript onto
+   the next). A load applies only while the ticket it took is still current; the instantaneous
+   `streaming` flag is not enough on its own, since a turn can start AND finish while a fetch is
+   in flight. (The same check logs.ts keys on requestId.) */
+let generation = 0
+const nextGeneration = () => ++generation
+/* Independent probes — health, the history list, the usage meter — are not scoped to the
+   conversation, so they get their own latest-wins tickets instead: an older response that
+   lands last must not overwrite a newer one. */
+let healthProbe = 0
+let listLoad = 0
+let usageLoad = 0
 
 export default createModel<RootModel>()({
   state: { ...defaultChatState },
   effects: dispatch => ({
     async send(text: string, state) {
       if (state.chat.streaming || state.chat.pendingConfirmation) return
-      // A send commits the user to the conversation on screen: any history pick still in flight
-      // is no longer wanted. Take the ticket HERE, not only via the streaming flag — a turn that
-      // starts and finishes before a slow pick lands leaves streaming false again, and the stale
-      // load would otherwise replace the completed turn.
-      selection++
+      // A send commits the user to the conversation on screen: any pick or sync still in flight is
+      // no longer wanted — a turn that starts and finishes before it lands would otherwise be
+      // replaced (a pick) or removed (a sync) by the stale load.
+      nextGeneration()
       const conversationId = state.chat.conversationId || crypto.randomUUID()
       dispatch.chat.addUserMessage(text)
       dispatch.chat.set({
@@ -325,7 +335,7 @@ export default createModel<RootModel>()({
        AbortController (Stop then targets only the newer turn, mixing two conversations). New Chat,
        an identity change, and deleting the open conversation all route through here. */
     async newConversation() {
-      selection++ // a New Chat outranks any conversation open still in flight
+      nextGeneration() // a New Chat outranks any pick or sync still in flight
       await dispatch.chat.stop()
       dispatch.chat.clearConversation()
     },
@@ -354,25 +364,34 @@ export default createModel<RootModel>()({
          outage as an agent outage, and the panel would say so on top of the global
          message. Network's `connect` event re-runs this (see useChatSync). */
       if (state.ui.offline) return
-      dispatch.chat.set({ health: await agentHealth() })
+      // Latest probe wins: a slow probe started while connectivity was failing must not land after
+      // the reconnect-triggered one and flip a fresh `ok` back to `unreachable` — which disabled the
+      // composer until the next reopen or network event, with the agent perfectly reachable.
+      const probe = ++healthProbe
+      const health = await agentHealth()
+      if (probe === healthProbe) dispatch.chat.set({ health })
     },
     /* The server owns the transcript now (D11) — adopt its copy when it knows more than
        we do, which is exactly how a background turn's result appears after a reopen. */
     async syncTranscript(_: void, state) {
       const id = state.chat.conversationId
       if (!id || state.chat.streaming) return
+      // Reads the generation without advancing it: a sync is a background reconcile, not a user
+      // action, so it must not out-rank a pick already in flight — but any pick, New Chat, send
+      // or sign-out that happens while it waits makes ITS result the stale one.
+      const ticket = generation
       try {
         const remote = await fetchConversation(id)
         if (!remote) return
         // The fetch may have outlived the conversation: a New Chat or a history pick while it
         // was in flight leaves `state` describing a conversation no longer on screen, and
         // applying against that snapshot would land the OLD transcript in the new conversation
-        // under its newer conversationId (or repopulate one just cleared). Re-read the LIVE
-        // store, drop the response once the active id has moved on or a turn has started, and
-        // compare against what is actually current — the generation check logs.ts keys on
-        // requestId.
+        // under its newer conversationId (or repopulate one just cleared). And a turn that
+        // started and FINISHED meanwhile leaves `streaming` false again with the same id — only
+        // the generation sees that, and without it the stale server snapshot removed the newly
+        // completed turn from view. Re-read the LIVE store and compare against what is current.
         const current = store.getState().chat
-        if (current.conversationId !== id || current.streaming) return
+        if (ticket !== generation || current.conversationId !== id || current.streaming) return
         const messages = remote.messages.map(m =>
           m.role === 'assistant'
             ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
@@ -419,12 +438,15 @@ export default createModel<RootModel>()({
     /* The usage meter (docs/usage-limits.md D6) — refreshed on mount, after each turn, and
        on open. Silent on failure; the last-known meter stands. */
     async loadUsage() {
+      const load = ++usageLoad
       const usage = await fetchUsage()
-      if (usage) dispatch.chat.set({ usage })
+      if (usage && load === usageLoad) dispatch.chat.set({ usage }) // latest wins
     },
     async loadConversations() {
+      const load = ++listLoad
       try {
-        dispatch.chat.set({ conversations: await listConversations() })
+        const conversations = await listConversations()
+        if (load === listLoad) dispatch.chat.set({ conversations }) // latest wins
       } catch {
         /* offline — leave the last-known list */
       }
@@ -434,10 +456,10 @@ export default createModel<RootModel>()({
     async openConversation(id: string, state) {
       if (state.chat.streaming) dispatch.chat.stop()
       // Out-of-order guard: pick A, then B, and A's fetch lands last — A must not replace B. Nor
-      // may a New Chat (which also takes a ticket) or a turn the user started meanwhile (the
-      // composer stays enabled) be clobbered by a load that is no longer wanted.
-      const ticket = ++selection
-      const superseded = () => ticket !== selection || store.getState().chat.streaming
+      // may a New Chat, a send, a sign-out (all of which advance the generation) or a turn still
+      // running meanwhile (the composer stays enabled) be clobbered by a load no longer wanted.
+      const ticket = nextGeneration()
+      const superseded = () => ticket !== generation || store.getState().chat.streaming
       let remote
       try {
         remote = await fetchConversation(id)
@@ -501,6 +523,11 @@ export default createModel<RootModel>()({
        purge-to-reload window and re-persist the pre-signout state. */
     async signOut() {
       broadcastChatSignout()
+      // Aborting covers the STREAM; the generation covers every other load in flight. Without it a
+      // slow history pick started under this account passed its own guard after the reset (its
+      // ticket unchanged, nothing streaming) and wrote this account's transcript into the store the
+      // NEXT account boots from — persisted, and on the next account's screen if it landed late.
+      nextGeneration()
       abortController?.abort()
       abortController = null
       // Explicit sign-out ends the background relationship (plan D8): revoke the agent's stored

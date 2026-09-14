@@ -9,7 +9,7 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken, apiAuthHeaders } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcMcpDetailReady, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -166,6 +166,10 @@ export default createModel<RootModel>()({
      *  renew marker uses. */
     async healGrant(options?: { force?: boolean }) {
       try {
+        // The freshness check compares against the MCP detail type; on the first load after a
+        // rename the cached name is the OLD one until the boot metadata refresh lands. Wait for it
+        // (bounded, resolved instantly thereafter) so this cannot call a renamed-away grant current.
+        await oidcMcpDetailReady()
         if (!oidcGrantStale()) {
           window.sessionStorage.removeItem(GRANT_HEAL_KEY)
           return

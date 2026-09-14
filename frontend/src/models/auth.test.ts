@@ -6,16 +6,24 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // the hoisted vi.mock factory runs. `browser` and the live `store` state are hoisted MUTABLE
 // objects so individual tests can steer the electron/backend branch and what the effects
 // re-read from the store after a teardown.
-const { oidcStart, oidcEndSessionSilently, browser, storeState } = vi.hoisted(() => ({
+const { oidcStart, oidcEndSessionSilently, oidcGrantStale, oidcMcpDetailReady, browser, storeState } = vi.hoisted(() => ({
   oidcStart: vi.fn(),
   oidcEndSessionSilently: vi.fn(),
+  oidcGrantStale: vi.fn(),
+  oidcMcpDetailReady: vi.fn(),
   browser: { isElectron: false, hasBackend: false },
   storeState: { auth: {} as Record<string, unknown> },
 }))
 
 // signInFailure() tests `error instanceof OidcError`, so the mock must export a real class
 // (an undefined right-hand side of instanceof throws rather than returning false).
-vi.mock('../services/oidc', () => ({ oidcStart, oidcEndSessionSilently, OidcError: class OidcError extends Error {} }))
+vi.mock('../services/oidc', () => ({
+  oidcStart,
+  oidcEndSessionSilently,
+  oidcGrantStale,
+  oidcMcpDetailReady,
+  OidcError: class OidcError extends Error {},
+}))
 vi.mock('../services/Controller', () => ({ default: {}, emit: vi.fn(() => false) }))
 vi.mock('../services/CloudSync', () => ({ default: {} }))
 vi.mock('../services/cloudController', () => ({ default: {} }))
@@ -49,6 +57,8 @@ const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 beforeEach(() => {
   oidcStart.mockReset()
   oidcEndSessionSilently.mockReset()
+  oidcGrantStale.mockReset()
+  oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
 })
 
 describe('auth model — sign-in always offers the chooser', () => {
@@ -105,6 +115,24 @@ describe('auth model — a backend rejection survives the sign-out teardown', ()
     const dispatch = makeDispatch()
     await effectsFor(dispatch).signInError('locked')
     expect(dispatch.auth.set).toHaveBeenCalledWith(aFailureShowing('locked'))
+  })
+})
+
+/* oidcGrantStale() compares against the MCP detail type. On the first load after a rename the
+   cached name is the OLD one until the boot metadata refresh lands; a check that ran before it
+   called a renamed-away grant current, and the discovery that followed re-ran nothing. */
+describe('auth model — the grant freshness check waits for the boot MCP metadata', () => {
+  it('healGrant does not consult oidcGrantStale until oidcMcpDetailReady resolves', async () => {
+    let ready!: (type: string) => void
+    oidcMcpDetailReady.mockReturnValue(new Promise<string>(resolve => (ready = resolve)))
+    oidcGrantStale.mockReturnValue(false)
+    const dispatch = makeDispatch()
+    const healing = effectsFor(dispatch).healGrant()
+    await Promise.resolve()
+    expect(oidcGrantStale).not.toHaveBeenCalled()
+    ready('mcp_type_v2')
+    await healing
+    expect(oidcGrantStale).toHaveBeenCalledTimes(1)
   })
 })
 

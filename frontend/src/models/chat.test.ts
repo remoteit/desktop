@@ -4,26 +4,37 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // stub them so the syncTranscript EFFECT runs in isolation. fetchConversation is the one real
 // spy — each test scripts what the server returns and, crucially, what the user does to the
 // live store WHILE that fetch is in flight. The store is a hoisted MUTABLE object for that.
-const { fetchConversation, deleteConversation, streamChat, confirmTool, openChatPopout, storeState } = vi.hoisted(
-  () => ({
-    fetchConversation: vi.fn(),
-    deleteConversation: vi.fn(),
-    streamChat: vi.fn(),
-    confirmTool: vi.fn(),
-    openChatPopout: vi.fn(),
-    storeState: { chat: {} as Record<string, unknown> },
-  })
-)
+const {
+  fetchConversation,
+  deleteConversation,
+  streamChat,
+  confirmTool,
+  backgroundDisable,
+  listConversations,
+  agentHealth,
+  openChatPopout,
+  storeState,
+} = vi.hoisted(() => ({
+  fetchConversation: vi.fn(),
+  deleteConversation: vi.fn(),
+  streamChat: vi.fn(),
+  confirmTool: vi.fn(),
+  backgroundDisable: vi.fn(),
+  listConversations: vi.fn(),
+  agentHealth: vi.fn(),
+  openChatPopout: vi.fn(),
+  storeState: { chat: {} as Record<string, unknown> },
+}))
 
 vi.mock('../services/agent', () => ({
   fetchConversation,
   deleteConversation,
   streamChat,
   confirmTool,
-  backgroundDisable: vi.fn(),
-  listConversations: vi.fn(),
+  backgroundDisable,
+  listConversations,
   fetchUsage: vi.fn(),
-  agentHealth: vi.fn(),
+  agentHealth,
   UsageLimitError: class UsageLimitError extends Error {},
   AgentAuthError: class AgentAuthError extends Error {},
   AgentStreamEndedError: class AgentStreamEndedError extends Error {},
@@ -80,6 +91,9 @@ beforeEach(() => {
   deleteConversation.mockReset()
   streamChat.mockReset()
   confirmTool.mockReset()
+  backgroundDisable.mockReset().mockResolvedValue(undefined)
+  listConversations.mockReset()
+  agentHealth.mockReset()
   openChatPopout.mockReset()
   storeState.chat = { conversationId: 'a', streaming: false, messages: [], title: '' }
 })
@@ -163,6 +177,71 @@ describe('chat model — openConversation applies only the latest selection', ()
     const dispatch = makeDispatch()
     await effectsFor(dispatch).openConversation('A', current())
     expect(dispatch.chat.set).toHaveBeenCalledWith(opened('A'))
+  })
+
+  /* Aborting on sign-out covers only the STREAM. A slow pick started under one account passed
+     its own guard after the reset (ticket unchanged, nothing streaming) and wrote that account's
+     transcript into the store the next account boots from. */
+  it('a pick still in flight at sign-out never lands — not even after the next account is in', async () => {
+    const a = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => a.promise)
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const openA = fx.openConversation('A', current())
+    await fx.signOut()
+    storeState.chat = { conversationId: '', streaming: false, messages: [], title: '' } // reset, next user booting
+    a.resolve(remote)
+    await openA
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith(opened('A'))
+  })
+})
+
+/* A sync is a background reconcile against the server. One that outlives a turn the user
+   started AND finished meanwhile sees the same id and streaming false again — and without the
+   generation it applied the older server snapshot, removing the just-completed turn from view. */
+describe('chat model — syncTranscript is invalidated by a turn that completes during it', () => {
+  it('drops the stale server snapshot after a send', async () => {
+    const sync = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => sync.promise)
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const syncing = fx.syncTranscript(undefined, current())
+    await fx.send('hello', sendable()) // whole turn completes; streaming false again, same id
+    sync.resolve(remote) // the older snapshot, without the new turn
+    await syncing
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith(expect.objectContaining({ messages: expect.anything() }))
+  })
+})
+
+/* Probes that are not conversation-scoped get latest-wins tickets instead: an older response
+   landing last must not overwrite a newer one. */
+describe('chat model — independent probes are latest-wins', () => {
+  const online = { ui: { offline: false }, chat: {} }
+
+  it('an older, slower health probe cannot flip a fresh ok back to unreachable', async () => {
+    const slow = deferred<string>()
+    agentHealth.mockImplementationOnce(() => slow.promise).mockResolvedValueOnce('ok')
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const first = fx.checkHealth(undefined, online) // started while connectivity was failing…
+    await fx.checkHealth(undefined, online) // …the reconnect-triggered probe lands first
+    slow.resolve('unreachable')
+    await first
+    expect(dispatch.chat.set).toHaveBeenCalledWith({ health: 'ok' })
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith({ health: 'unreachable' })
+  })
+
+  it('an older, slower history-list load cannot overwrite a newer one', async () => {
+    const slow = deferred<unknown[]>()
+    listConversations.mockImplementationOnce(() => slow.promise).mockResolvedValueOnce([{ id: 'new' }])
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const first = fx.loadConversations()
+    await fx.loadConversations()
+    slow.resolve([{ id: 'old' }])
+    await first
+    expect(dispatch.chat.set).toHaveBeenCalledWith({ conversations: [{ id: 'new' }] })
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith({ conversations: [{ id: 'old' }] })
   })
 })
 
