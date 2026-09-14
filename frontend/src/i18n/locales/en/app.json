@@ -293,6 +293,7 @@
   "chat": {
     "approve": "Approve",
     "close": "Close",
+    "closeChat": "Close chat",
     "deleteConfirmAction": "Delete",
     "deleteConfirmTitle": "Delete this conversation?",
     "deleteConversation": "Delete",

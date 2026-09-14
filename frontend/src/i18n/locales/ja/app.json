@@ -290,6 +290,7 @@
   "chat": {
     "approve": "",
     "close": "",
+    "closeChat": "",
     "deleteConfirmAction": "",
     "deleteConfirmTitle": "",
     "deleteConversation": "",

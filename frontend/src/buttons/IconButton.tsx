@@ -107,6 +107,11 @@ export const IconButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const button = (
       <MuiIconButton
         {...{ ref, disabled, onMouseDown, onMouseEnter, onMouseLeave, className }}
+        // The title is this icon-only button's NAME. The Tooltip below wraps a <span> around the
+        // button, so MUI's own aria-label landed on the span — a wrapper nothing focuses or reads
+        // — and every icon button in the app was nameless to assistive tech and to the e2e suite's
+        // getByRole('button', { name }). Name the button itself; a string title is the label.
+        aria-label={typeof title === 'string' ? title : undefined}
         sx={updatedSx}
         size={buttonBaseSize}
         onClick={clickHandler}
