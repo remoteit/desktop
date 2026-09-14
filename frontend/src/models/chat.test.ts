@@ -42,8 +42,14 @@ const makeDispatch = () => ({
     clearConversation: vi.fn(),
     loadConversations: vi.fn(),
     newConversation: vi.fn(),
+    // what send() touches around its (mocked, instantly-resolving) streamChat
+    addUserMessage: vi.fn(),
+    applyEvent: vi.fn(),
+    loadUsage: vi.fn(),
   },
 })
+// The wider snapshot send() reads (resolveChatOrg looks at the user and memberships)
+const sendable = (chat: Record<string, unknown> = {}) => ({ ...current(chat), user: { id: 'u' }, accounts: { membership: [] } })
 
 // A fetch the test resolves by hand, to interleave user actions with an in-flight request.
 const deferred = <T,>() => {
@@ -111,6 +117,21 @@ describe('chat model — openConversation applies only the latest selection', ()
     })
     const dispatch = makeDispatch()
     await effectsFor(dispatch).openConversation('A', current())
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith(opened('A'))
+  })
+
+  it('a turn that starts AND finishes during a slow pick still invalidates it', async () => {
+    const a = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => a.promise)
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const openA = fx.openConversation('A', current())
+    // The whole turn runs to completion while A is still loading — streaming is false again by
+    // the time A lands, so only the ticket send() took can tell the load is stale.
+    await fx.send('hello', sendable())
+    expect(storeState.chat.streaming).toBe(false)
+    a.resolve(remote)
+    await openA
     expect(dispatch.chat.set).not.toHaveBeenCalledWith(opened('A'))
   })
 

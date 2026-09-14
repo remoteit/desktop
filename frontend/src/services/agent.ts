@@ -96,23 +96,48 @@ export async function streamChat(options: {
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
+  const deliver = (block: string) => {
+    let event = 'message'
+    const dataLines: string[] = []
+    for (const line of block.split('\n')) {
+      if (line.startsWith('event:')) event = line.slice(6).trim()
+      else if (line.startsWith('data:')) dataLines.push(line.slice(5).trimStart())
+    }
+    if (dataLines.length) onEvent({ type: event, ...JSON.parse(dataLines.join('\n')) } as AgentEvent)
+  }
+  /* An event ends at a blank line. SSE permits CRLF, LF or CR line endings, so normalise to LF
+     before looking for it — a CRLF server would otherwise never produce the '\n\n' we search
+     for, and every turn would finish silently empty. A CR at the very end of the buffer may be
+     the first half of a CRLF split across reads, so it is held back for the next read. */
+  const drain = (final = false) => {
+    const hold = !final && buffer.endsWith('\r') ? '\r' : ''
+    buffer = buffer.slice(0, buffer.length - hold.length).replace(/\r\n?/g, '\n') + hold
+    let index: number
+    while ((index = buffer.indexOf('\n\n')) !== -1) {
+      deliver(buffer.slice(0, index))
+      buffer = buffer.slice(index + 2)
+    }
+    // EOF: an event the server closed on without a trailing blank line is still an event.
+    // EventSource discards it because it cannot know whether it is complete; our payloads are
+    // JSON, so a successful parse IS that check — and a torn tail is dropped, not surfaced as
+    // a parse error over a turn the user already watched finish.
+    if (final && buffer.trim()) {
+      try {
+        deliver(buffer)
+      } catch {
+        /* truncated mid-event */
+      }
+      buffer = ''
+    }
+  }
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
     buffer += decoder.decode(value, { stream: true })
-    let index: number
-    while ((index = buffer.indexOf('\n\n')) !== -1) {
-      const block = buffer.slice(0, index)
-      buffer = buffer.slice(index + 2)
-      let event = 'message'
-      const dataLines: string[] = []
-      for (const line of block.split('\n')) {
-        if (line.startsWith('event:')) event = line.slice(6).trim()
-        else if (line.startsWith('data:')) dataLines.push(line.slice(5).trimStart())
-      }
-      if (dataLines.length) onEvent({ type: event, ...JSON.parse(dataLines.join('\n')) } as AgentEvent)
-    }
+    drain()
   }
+  buffer += decoder.decode() // flush a multi-byte sequence still pending in the decoder
+  drain(true)
 }
 
 /* Approve or deny a write tool the agent paused on — addressed to the TURN */

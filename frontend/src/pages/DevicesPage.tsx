@@ -36,13 +36,16 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   const shouldRedirect = initLoad && initialized && canRegister
 
   /* An empty list means "add your first device" only once it has actually loaded — so
-     arm on the way down and redirect on the way up, never both in one pass. Keyed to
-     the account and re-run when the list empties, so every switch re-decides instead
-     of inheriting the last account's answer. The trigger must include the inputs the
-     decision reads — the empty-list and default-account signals — because memberships
-     arriving late, or switching to an already-loaded empty account, change those
-     without touching `initialized`. A ref keyed to the account we acted for keeps that
-     from re-selecting or re-pushing /add on every re-run. */
+     arm on the way down and redirect on the way up, never both in one pass. The latch is
+     deliberate and STICKY: `devices` is persisted, so a page that mounts already
+     `initialized` from storage never arms it — stale persisted emptiness must not bounce a
+     reload to /add, and a membership that lands mid-session must not yank the user to that
+     org. Only a load observed during this mount (a fresh sign-in, an expired or unloaded
+     account's fetch) arms it, and from then on every re-run re-decides. The trigger must
+     include the inputs the decision reads — the empty-list and default-account signals —
+     because on a fresh sign-in the memberships arrive after the list does, changing the
+     answer without touching `initialized`. A ref keyed to the account we acted for keeps
+     that from re-selecting or re-pushing /add on every re-run. */
   // Guard by the ACTIVE account, not defaultAccountId: on a personal account with no memberships
   // defaultAccountId is undefined, so keying on it would make the guard `undefined !== undefined`
   // (never redirect to /add) and could not tell one chosen account from the next. activeAccountId

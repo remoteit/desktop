@@ -184,9 +184,9 @@ const usageLimitMessage = (e: UsageLimitError): string => {
 
 let abortController: AbortController | null = null
 /* Which conversation SELECTION is current. openConversation takes a ticket and applies its fetch
-   only while it still holds the latest; newConversation takes one too, so a New Chat during a slow
-   open is not undone when that open finally lands. (The same generation check logs.ts keys on
-   requestId.) */
+   only while it still holds the latest. newConversation and send take one too: a New Chat, or a
+   message sent to the conversation on screen, during a slow open must not be undone when that open
+   finally lands. (The same generation check logs.ts keys on requestId.) */
 let selection = 0
 
 export default createModel<RootModel>()({
@@ -194,6 +194,11 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async send(text: string, state) {
       if (state.chat.streaming || state.chat.pendingConfirmation) return
+      // A send commits the user to the conversation on screen: any history pick still in flight
+      // is no longer wanted. Take the ticket HERE, not only via the streaming flag — a turn that
+      // starts and finishes before a slow pick lands leaves streaming false again, and the stale
+      // load would otherwise replace the completed turn.
+      selection++
       const conversationId = state.chat.conversationId || crypto.randomUUID()
       dispatch.chat.addUserMessage(text)
       dispatch.chat.set({
