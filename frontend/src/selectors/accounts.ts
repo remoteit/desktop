@@ -1,5 +1,15 @@
 import { createSelector } from 'reselect'
+import { dateSort } from '../helpers/utilHelper'
 import { getUserId, getUser, getActiveId, optionalAccountId, getMemberships } from './state'
+
+/*
+  A new organization member's personal account is empty, so when they have never
+  chosen an account themselves they belong in the organization they joined first.
+  Undefined once they have chosen, which includes selecting their own account.
+*/
+export const selectDefaultAccountId = createSelector([getActiveId, getMemberships], (activeId, memberships) =>
+  activeId ? undefined : [...memberships].sort((a, b) => dateSort(b.created, a.created))[0]?.account.id
+)
 
 export const selectActiveAccountId = createSelector(
   [optionalAccountId, getActiveId, getUserId],

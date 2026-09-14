@@ -1,5 +1,5 @@
 import browser from './browser'
-import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, OAUTH_PASSPORT_RESOURCE, PROTOCOL } from '../constants'
+import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, OAUTH_PASSPORT_RESOURCE, OAUTH_MCP_RESOURCE, OAUTH_MCP_DETAIL, OAUTH_AGENT_ACTOR, PROTOCOL } from '../constants'
 
 /**
  * The renderer-owned OIDC client (permitteer docs/remoteit-desktop-login.md, D8):
@@ -51,6 +51,34 @@ const DECLARATION_KEY = 'oidc.declaration'
 // per-tab store anyway).
 const ACCOUNTS_KEY = 'oidc.accounts'
 
+/* Authorizes this tab has started on its OWN — no click, nobody asked. This client is
+   first-party skipConsent, so an automatic authorize shows the person NOTHING: a loop
+   through it is invisible from the app and its only outward symptom is the AS
+   rate-limiting the whole address, which then locks out everyone behind it. The state
+   guards in the auth model are the real brakes; this is the backstop that holds when one
+   of them is missed. Cleared the moment an exchange completes. */
+const AUTO_START_KEY = 'oidc.autoStarts'
+export const oidcAutoStartsSpent = (): number => {
+  try {
+    return Number(window.sessionStorage.getItem(AUTO_START_KEY)) || 0
+  } catch {
+    return 0
+  }
+}
+export const oidcCountAutoStart = (): void => {
+  try {
+    window.sessionStorage.setItem(AUTO_START_KEY, String(oidcAutoStartsSpent() + 1))
+  } catch {
+    /* blocked storage must not stop someone signing in */
+  }
+}
+export const oidcClearAutoStarts = (): void => {
+  try {
+    window.sessionStorage.removeItem(AUTO_START_KEY)
+  } catch {
+    /* non-fatal */
+  }
+}
 // A support TAB keeps its tokens in sessionStorage — per-tab — never in the shared
 // localStorage. The first cut CLEARED localStorage instead, and localStorage is
 // origin-wide: the support tab's impersonated tokens replaced the operator's own, so
@@ -125,8 +153,59 @@ function takeFlow(state: string): Flow | undefined {
 type Stored = { refresh_token?: string; id_token?: string; support?: { access_token: string; exp: number; type?: string } }
 
 let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
-let refreshing: Promise<string> | undefined
+let minting: Promise<unknown> = Promise.resolve()
+/* Why the last mint for an audience failed. refresh() reports a refusal by returning
+   '' so callers can degrade quietly, which loses the AS's reason — keep it here so a
+   settings screen can say "not covered by this grant" instead of just "refused". */
+let mintErrors: { [resource: string]: string } = {}
 let discovery: { authorization_endpoint: string; token_endpoint: string; end_session_endpoint?: string; end_session_api_endpoint?: string } | undefined
+
+/* Sign-in failures the person reading them can DO something different about. The message
+   stays the technical detail — console, support, bug reports — while `code` is what picks
+   the sentence they read, so the AS rewording an error_description can never silently
+   change our copy, and an untranslated server string can never reach the screen. */
+export type OidcErrorCode = 'rateLimited' | 'unreachable' | 'unavailable' | 'refused' | 'expired'
+
+export class OidcError extends Error {
+  code: OidcErrorCode
+  /** Seconds to wait, when the server told us (429). */
+  retryAfter?: number
+  constructor(code: OidcErrorCode, message: string, retryAfter?: number) {
+    super(message)
+    this.name = 'OidcError'
+    this.code = code
+    this.retryAfter = retryAfter
+  }
+}
+
+/* A day. Nothing that gates a sign-in retry waits longer, so a "wait" bigger than this
+   is not a countdown at all — it is an epoch timestamp, which some rate limiters send in
+   ratelimit-reset despite the draft specifying delta-seconds. Taken literally that
+   renders as "try again in about 29566667 minutes", so treat it as the unusable number
+   it is and let the caller fall back to wording with no figure in it. */
+const MAX_RETRY_AFTER = 24 * 60 * 60
+
+/* Retry-After is allowed to be either delta-seconds or an HTTP date; permitteer's rate
+   limiter also sends ratelimit-reset. Take whichever is present so "try again in N
+   minutes" is the server's number rather than a guess — but only when the number is
+   one a person could actually act on. */
+const retryAfterSeconds = (response: Response): number | undefined => {
+  const header = response.headers.get('retry-after') || response.headers.get('ratelimit-reset')
+  if (!header) return undefined
+  const plausible = (seconds: number) => (seconds >= 0 && seconds <= MAX_RETRY_AFTER ? Math.round(seconds) : undefined)
+  const seconds = Number(header)
+  if (!Number.isNaN(seconds)) return plausible(seconds)
+  const date = Date.parse(header)
+  return Number.isNaN(date) ? undefined : plausible((date - Date.now()) / 1000)
+}
+
+/* One place that decides what a non-OK response from the AS MEANS, so the token endpoint
+   and discovery cannot drift into telling the user different stories about a 429. */
+const responseError = (response: Response, detail: string): OidcError => {
+  if (response.status === 429) return new OidcError('rateLimited', detail, retryAfterSeconds(response))
+  if (response.status >= 500) return new OidcError('unavailable', detail)
+  return new OidcError('refused', detail)
+}
 
 const b64u = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
@@ -167,8 +246,14 @@ export const oidcActor = (): { sub: string } | null => decodeJwt(stored()?.id_to
 
 async function discover() {
   if (discovery) return discovery
-  const response = await fetch(`${OAUTH_ISSUER}/.well-known/openid-configuration`)
-  if (!response.ok) throw new Error(`discovery failed: ${response.status}`)
+  let response: Response
+  try {
+    response = await fetch(`${OAUTH_ISSUER}/.well-known/openid-configuration`)
+  } catch (error: any) {
+    // fetch only rejects when the request never got an answer: offline, DNS, TLS, CORS.
+    throw new OidcError('unreachable', `discovery unreachable: ${error?.message || 'network error'}`)
+  }
+  if (!response.ok) throw responseError(response, `discovery failed: ${response.status}`)
   discovery = await response.json()
   return discovery!
 }
@@ -184,17 +269,87 @@ const redirectUri = () =>
  *  `passport_account` gates the native security settings; `permitteer_account` is Connected
  *  Apps against the AS's own account API (plan D6) — list + revoke. The graphql audience
  *  stays pure scope-`full` and carries no details, so it is not listed here. */
-const DECLARED: Array<{ resource: string; type: string; actions: string[] }> = [
+// The MCP detail-type NAME is the resource's to declare, not this bundle's to pin: it is
+// DISCOVERED from the MCP PRM (RFC 9728 — authorization_details_types_supported and the rich
+// catalog), cached in the token store so sync callers read the last-known value, and refreshed
+// before every authorize. A pinned copy is exactly what broke on 2026-08-31: the AS retired
+// remoteit_mcp_dev for the stage-stable remoteit_mcp, the pinned request stopped resolving, and
+// the agent lane died with "needs permissions" / reauth loops. The SHAPE stays local on
+// purpose — the device-only action subset and the `actor` marker are this app's declaration
+// (deliberately narrower than the advertisement); only the name rides discovery. A discovered
+// RENAME flips declarationFingerprint(), so the existing stale-grant path heals it with one
+// silent re-authorize instead of an error screen.
+const MCP_TYPE_KEY = 'r3.oauth.mcpDetailType'
+let mcpTypeMemo: string | undefined
+function mcpDetailType(): string {
+  if (mcpTypeMemo) return mcpTypeMemo
+  try { const stored = tokenStore().getItem(MCP_TYPE_KEY); if (stored) return (mcpTypeMemo = stored) } catch { /* fall through */ }
+  return OAUTH_MCP_DETAIL
+}
+/* AbortSignal.timeout, by hand where the static is missing (older mobile WebViews). The bound
+   below is not optional — dropping it would let a half-open endpoint block sign-in — and a
+   throw from the missing static would skip the fetch altogether, leaving a renamed detail type
+   undiscovered exactly where this lookup exists to discover it. */
+const timeoutSignal = (ms: number): AbortSignal => {
+  if (typeof AbortSignal?.timeout === 'function') return AbortSignal.timeout(ms)
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), ms)
+  return controller.signal
+}
+async function refreshMcpDetailType(): Promise<string> {
+  try {
+    const r = new URL(OAUTH_MCP_RESOURCE)
+    const prm = `${r.origin}/.well-known/oauth-protected-resource${r.pathname}`
+    // BOUND it: this optional agent-metadata lookup sits on the sign-in / account-switch /
+    // grant-heal path, so a slow or half-open MCP endpoint must not block authentication. On
+    // timeout the fetch aborts, the catch fires, and the cached/fallback name (mcpDetailType())
+    // stands — the AS being healthy is enough to sign in.
+    const doc = (await (await fetch(prm, { signal: timeoutSignal(4000) })).json()) as {
+      authorization_details_types_supported?: string[]
+      authorization_details_types?: Array<{ type?: string; risk_class?: string }>
+    }
+    const rich = doc.authorization_details_types ?? []
+    const names = doc.authorization_details_types_supported ?? []
+    // The standard (non-org) grant type: the rich catalog says so directly; a names-only
+    // document falls back to the naming convention the registry has always used.
+    const picked = rich.find(t => t.risk_class === 'standard' && typeof t.type === 'string')?.type
+      ?? names.find(n => !n.endsWith('_org'))
+    if (picked) {
+      mcpTypeMemo = picked
+      try { tokenStore().setItem(MCP_TYPE_KEY, picked) } catch { /* best effort */ }
+    }
+  } catch { /* offline or blocked — the last-known (or fallback) name stands */ }
+  return mcpDetailType()
+}
+// Warm the cache off the boot path so oidcGrantStale() compares against fresh truth early — and
+// let the boot freshness check WAIT for it (oidcMcpDetailReady). Fire-and-forget alone had a hole
+// on the first load after a rename: healGrant() ran before this resolved, compared against the
+// cached (renamed-away) type, called the grant current, and the discovery that followed updated
+// only the cache — nothing re-ran the heal, so agent authorization stayed broken until a reload.
+// Bounded (the fetch times out) and never rejects, so awaiting it costs at most that bound once.
+const mcpDetailReady: Promise<string> = refreshMcpDetailType()
+export const oidcMcpDetailReady = (): Promise<string> => mcpDetailReady
+
+const declared = (): Array<{ resource: string; type: string; actions: string[]; actor?: string; locations?: string[] }> => [
   { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
   // accounts.read: the OTHER accounts signed in on this browser, served by the account API from
   // this token's session — first-party apps only (permitteer docs/browser-accounts.md).
   { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write', 'accounts.read'] },
+  // The AI agent's slice (remoteit-ai-agent.md D5): the stage's MCP detail, delegated
+  // ONWARD to the agent service — `actor` is what stamps may_act into this session's
+  // tokens, which is the exchange's precondition. The slice partitions from any plain
+  // request of the same type, and the grant row it mints is the revocable object the
+  // account console shows.
+  // `locations` names WHICH resource's type this is (RFC 9396): the stage-stable name is
+  // shared across every stage's MCP resource, and the actor's registered edge may cover more
+  // than one (dev also acts toward evan) — the AS fails closed on that ambiguity by design.
+  { resource: OAUTH_MCP_RESOURCE, type: mcpDetailType(), locations: [OAUTH_MCP_RESOURCE], actions: ['device:read', 'device:write', 'device:connect', 'device:execute'], actor: OAUTH_AGENT_ACTOR },
 ]
 
 /** A stable fingerprint of what this build asks for. Order-insensitive, so reshuffling the
  *  list is not a change; adding, dropping or renaming an action is. */
 const declarationFingerprint = () =>
-  DECLARED.map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}`)
+  declared().map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}${d.actor ? `@${d.actor}` : ''}`)
     .sort()
     .join('|')
 
@@ -224,6 +379,9 @@ export const oidcDeclaration = (): string => declarationFingerprint()
 
 export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; supportTicket?: string } = {}): Promise<void> {
   const d = await discover()
+  // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
+  // exchange can't use) — resolve it fresh, falling back to last-known on failure.
+  await refreshMcpDetailType()
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
@@ -242,7 +400,7 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'n
     // the passport-audience token minted later via refresh carries this slice, gating the
     // native security settings (credentials.write); the graphql audience stays pure
     // scope-`full` (an uncovered resource yields audience-only tokens).
-    authorization_details: JSON.stringify(DECLARED.map(d => ({ type: d.type, actions: d.actions }))),
+    authorization_details: JSON.stringify(declared().map(d => ({ type: d.type, actions: d.actions, ...(d.locations ? { locations: d.locations } : {}), ...(d.actor ? { actor: d.actor } : {}) }))),
     state: flow.state,
     nonce: flow.nonce,
   }
@@ -269,9 +427,12 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
 
   const flow = takeFlow(state)
   cleanUrl()
-  if (!flow) throw new Error('Sign-in state mismatch — try again.')
+  // takeFlow already matches on `state` — the session copy explicitly, the shared copy by key —
+  // so the old flow.state check is now inside it. The typed error stays: the chat UI distinguishes
+  // an expired flow from a refused one.
+  if (!flow) throw new OidcError('expired', 'Sign-in state mismatch')
   const error = query.get('error')
-  if (error) throw new Error(query.get('error_description') || error)
+  if (error) throw new OidcError('refused', query.get('error_description') || error)
 
   const body = await tokenRequest({
     grant_type: 'authorization_code',
@@ -281,7 +442,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     resource: OAUTH_GRAPHQL_RESOURCE,
   })
   const claims = decodeJwt(body.id_token)
-  if (claims?.nonce !== flow.nonce) throw new Error('Sign-in nonce mismatch — try again.')
+  if (claims?.nonce !== flow.nonce) throw new OidcError('expired', 'Sign-in nonce mismatch')
   // Sub-aware handover: the SAME account signing in again replaces its family (revoke the
   // old refresh token — it is dead weight); a DIFFERENT account arriving is the
   // add-account path, and the previous account's set is a LIVING saved session — persist()
@@ -296,6 +457,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
       body: new URLSearchParams({ token: previous, token_type_hint: 'refresh_token', client_id: OAUTH_CLIENT_ID }),
     }).catch(() => {})
   }
+
   const at = decodeJwt(body.access_token)
   if (claims?.act) {
     // A SUPPORT session (docs/desktop-support.md): the AS mints no refresh token, and the access
@@ -319,20 +481,27 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   return claims
 }
 
-/** Current access token for the graphql audience ('' when signed out). Refreshes
- * single-flight — the rotating single-use refresh makes a concurrent second refresh
- * token REUSE, which revokes the whole family. */
+/** Current access token for `resource` ('' when signed out). Mints are SERIALIZED, not
+ * shared: the rotating single-use refresh makes a concurrent second refresh a token
+ * REUSE, which revokes the whole family — but a single shared promise handed a queued
+ * caller whichever audience happened to be minting, so an agent-audience token would go
+ * out to the account API and come back 401. Queue instead, and re-read the cache after
+ * the wait so N callers for one audience still cost one refresh. */
 export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE): Promise<string> {
-  const now = Math.floor(Date.now() / 1000)
   // A support session's token IS the session: served until it expires (a reload restores it from
   // the tab store), never refreshed, and '' — the end — once it is gone. Other audiences have
   // nothing to mint from; their features fail closed, as writes do under `act`.
   const support = stored()?.support
-  if (support) return resource === OAUTH_GRAPHQL_RESOURCE && support.exp - now > 0 ? support.access_token : ''
-  const cached = access[resource]
-  if (cached && cached.exp - now > 30) return cached.token
-  if (!refreshing) refreshing = refresh(resource).finally(() => (refreshing = undefined))
-  return refreshing
+  if (support) return resource === OAUTH_GRAPHQL_RESOURCE && support.exp - Math.floor(Date.now() / 1000) > 0 ? support.access_token : ''
+  const fresh = () => {
+    const cached = access[resource]
+    return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined
+  }
+  const hit = fresh()
+  if (hit) return hit
+  const next = minting.then(() => fresh() ?? refresh(resource))
+  minting = next.catch(() => {})
+  return next
 }
 
 // CROSS-TAB single-flight. The `refreshing` guard above stops a tab racing itself, but the refresh
@@ -396,9 +565,11 @@ async function refreshOnce(resource: string): Promise<string> {
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
     const at = decodeJwt(body.access_token)
     access[resource] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
+    delete mintErrors[resource]
     return body.access_token
   } catch (error: any) {
     console.error('OIDC REFRESH FAILED', error?.message)
+    mintErrors[resource] = error?.message || 'token request failed'
     if (error?.oauthError === 'invalid_grant') {
       // The AS tells a STALE COPY apart from a dead grant: "…this copy is stale and the session was
       // not ended" means the family rotated on without this tab (a response lost to a navigation,
@@ -443,8 +614,12 @@ export async function oidcEndSessionSilently(): Promise<void> {
   }
 }
 
+/** Why the last mint for this audience was refused, if it was. */
+export const oidcMintError = (resource: string): string | undefined => mintErrors[resource]
+
 export function invalidateOidcToken() {
   access = {}
+  mintErrors = {}
 }
 
 /** Local-only teardown: clears the ACTIVE account's tokens (and its registry entry) and
@@ -704,7 +879,8 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
   })
   const body: any = await response.json().catch(() => ({}))
   if (!response.ok || !body.access_token) {
-    const error: any = new Error(body.error_description || body.error || `token endpoint ${response.status}`)
+    const detail = body.error_description || body.error || `token endpoint ${response.status}`
+    const error: any = responseError(response, detail)
     error.oauthError = body.error
     throw error
   }

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import cloudSync from '../services/CloudSync'
-import { TEST_HEADER, GRAPHQL_API } from '../constants'
+import { TEST_HEADER, GRAPHQL_API, OAUTH_AGENT_RESOURCE } from '../constants'
 import { Dispatch, State } from '../store'
 import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getApiURL, getWebSocketURL, resourceForApiURL } from '../helpers/apiHelper'
 import { bindableResources } from '../services/permitteerAccount'
 import { oidcAccessToken } from '../services/oidc'
-import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
+import { isSecureAgentURL, backgroundConnectUrl, backgroundStatus, backgroundDisable } from '../services/agent'
+import { windowOpen } from '../services/browser'
+import { selectLimitsLookup, selectFeatures } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
@@ -26,8 +28,9 @@ export const TestPage: React.FC = () => {
   const apis = useSelector((state: State) => state.ui.apis)
   const testUI = useSelector((state: State) => state.ui.testUI)
   const preferences = useSelector((state: State) => state.backend.preferences)
-  const limitsOverride = useSelector(selectLimitsLookup)
-  const limits = useSelector(selectLimits)
+  const featureValues = useSelector(selectLimitsLookup)
+  const features = useSelector(selectFeatures)
+  const overrides = useSelector((state: State) => state.ui.limitsOverride)
 
   async function setAPIPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
@@ -41,6 +44,29 @@ export const TestPage: React.FC = () => {
   // an illegal target fails here with a legible error, never as ambient 403s an hour later.
   const [targets, setTargets] = useState<Array<{ identifier: string; name: string }>>([])
   const [mintError, setMintError] = useState<string>('')
+  const [agentError, setAgentError] = useState<string>('')
+
+  // Background work (permitteer docs/remoteit-ai-agent.md D6): the agent's own, narrower
+  // grant — enrollment is a browser ceremony at the AS; this page only reads/ends it. (The
+  // one UI entry point for it: without this control backgroundConnectUrl/backgroundStatus
+  // have no caller and the workflow cannot be enabled.)
+  const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
+  useEffect(() => {
+    backgroundStatus().then(setBackgroundEnrolled)
+  }, [])
+  async function connectBackground() {
+    await windowOpen(backgroundConnectUrl(), '_blank', true)
+    // The ceremony finishes in the browser — poll briefly for the verdict.
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 2000))
+      if (await backgroundStatus()) break
+    }
+    setBackgroundEnrolled(await backgroundStatus())
+  }
+  async function disableBackground() {
+    await backgroundDisable()
+    setBackgroundEnrolled(await backgroundStatus())
+  }
   useEffect(() => {
     bindableResources().then(setTargets)
   }, [])
@@ -261,30 +287,82 @@ export const TestPage: React.FC = () => {
           </Quote>
         </ListItem>
       </List>
+
+      <Typography variant="subtitle1">{t('testPage.aiAgent', 'AI Agent')}</Typography>
+      <List>
+        <ListItemSetting
+          hideIcon
+          label={t('testPage.backgroundWork', 'AI background work')}
+          subLabel={
+            backgroundEnrolled === undefined
+              ? t('testPage.backgroundWorkUnknown', 'Checking…')
+              : backgroundEnrolled
+                ? t('testPage.backgroundWorkOn', 'The agent can read and watch while you are away.')
+                : t('testPage.backgroundWorkOff', 'The agent only works while you are here.')
+          }
+          toggle={!!backgroundEnrolled}
+          onClick={() => (backgroundEnrolled ? disableBackground() : connectBackground())}
+        />
+        <ListItem>
+          <Quote margin={null} indent="listItem" noInset>
+            <List disablePadding>
+              <InlineTextFieldSetting
+                value={apis.agentURL || OAUTH_AGENT_RESOURCE}
+                label={t('testPage.agentURL', 'Agent service URL (advanced)')}
+                resetValue={OAUTH_AGENT_RESOURCE}
+                maxLength={200}
+                onSave={result => {
+                  const url = result.toString().trim()
+                  if (url && !isSecureAgentURL(url)) {
+                    setAgentError(t('testPage.agentURLInvalid', 'Agent service URL must start with https://'))
+                    return
+                  }
+                  setAgentError('')
+                  // Reset (or entering the default) CLEARS the override so agentURL() falls back to the
+                  // /agent proxy (dev) or VITE_AGENT_URL (build) — never pinning the OAuth audience as the transport.
+                  setAPIPreference('agentURL', url === OAUTH_AGENT_RESOURCE ? '' : url)
+                }}
+                hideIcon
+              />
+              {!!agentError && (
+                <ListItem>
+                  <Typography variant="caption" color="error">
+                    {agentError}
+                  </Typography>
+                </ListItem>
+              )}
+            </List>
+          </Quote>
+        </ListItem>
+      </List>
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>
       <List>
-        {limits.map(l => {
-          if (typeof l.value === 'boolean')
-            return (
-              <ListItemSetting
-                hideIcon
-                key={l.name}
-                label={t('testPage.featureLabel', {
-                  name: l.name,
-                  state: l.value
-                    ? t('testPage.enabled', 'enabled')
-                    : t('testPage.disabled', 'disabled'),
-                  defaultValue: '{{name}} (default {{state}})',
-                })}
-                toggle={limitsOverride[l.name]}
-                onClick={() =>
-                  dispatch.ui.setPersistent({
-                    limitsOverride: { ...limitsOverride, [l.name]: !limitsOverride[l.name] },
-                  })
-                }
-              />
-            )
-        })}
+        {features.map(f => (
+          <ListItemSetting
+            hideIcon
+            key={f.name}
+            label={t('testPage.featureLabel', {
+              name: f.name,
+              state: f.value ? t('testPage.enabled', 'enabled') : t('testPage.disabled', 'disabled'),
+              defaultValue: '{{name}} (default {{state}})',
+            })}
+            subLabel={
+              f.pending
+                ? t(
+                    'testPage.featurePending',
+                    'Not in any license yet. Switches here apply to your personal account only.'
+                  )
+                : undefined
+            }
+            toggle={!!featureValues[f.name]}
+            /* Writes the OVERRIDE, not the effective lookup. Spreading the lookup pinned
+               every OTHER feature at its current value as well, so a later change to the
+               account's license went unseen until someone hit Reset. */
+            onClick={() =>
+              dispatch.ui.setPersistent({ limitsOverride: { ...overrides, [f.name]: !featureValues[f.name] } })
+            }
+          />
+        ))}
         <Divider variant="inset" />
         <ListItemSetting
           hideIcon

@@ -15,7 +15,7 @@ const AVATAR_SIZE = 28
 export const OrganizationSelectList: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
-  const { accounts, devices, tags, networks, logs, products } = useDispatch<Dispatch>()
+  const { accounts } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, user } = useSelector((state: State) => ({
     activeOrg: selectOrganization(state),
     options: state.accounts.membership.map(m => {
@@ -36,12 +36,7 @@ export const OrganizationSelectList: React.FC = () => {
   const ownOrgId = ownOrg?.id
   const onSelect = async (id: string) => {
     if (id) {
-      await logs.reset()
-      await accounts.set({ activeId: id.toString() })
-      networks.fetchIfEmpty()
-      devices.fetchIfEmpty()
-      tags.fetchIfEmpty()
-      products.fetchIfEmpty()
+      await accounts.select(id.toString())
       history.push('/devices')
     }
   }

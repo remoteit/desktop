@@ -6,10 +6,10 @@ import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
-import { persistor } from '../store'
+import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken, apiAuthHeaders } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, OidcClaims } from '../services/oidc'
+import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcMcpDetailReady, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -37,7 +37,17 @@ export interface AuthState {
   initialized: boolean
   authenticated: boolean
   backendAuthenticated: boolean
+  /** A sign-in attempt failed. Deliberately SEPARATE from the message: this is what stops
+   *  the web app starting another authorize by itself, and a brake that reads a display
+   *  string is a brake that vanishes the moment the string is empty or suppressed. */
+  signInFailed?: boolean
+  /** Technical detail — console, support, bug reports. NEVER rendered on its own: it is
+   *  the server's own wording, so it is untranslated and often meaningless to a person. */
   signInError?: string
+  /** What the failure MEANS, which is what the screen actually translates and acts on. */
+  signInErrorCode?: OidcErrorCode
+  /** Seconds the server asked us to wait, when it said so (429). */
+  signInRetryAfter?: number
   signingIn?: boolean
   passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
@@ -49,20 +59,48 @@ const defaultState: AuthState = {
   initialized: false,
   authenticated: false,
   backendAuthenticated: false,
+  signInFailed: false,
   signInError: undefined,
+  signInErrorCode: undefined,
+  signInRetryAfter: undefined,
   signingIn: false,
   user: undefined,
   mfaMethod: '',
   AWSUser: { authProvider: '' },
 }
 
+/* Every sign-in failure lands here, so the screen has exactly one shape to read and a
+   new throw site cannot reintroduce a raw server string on the UI. */
+const signInFailure = (error: any): Partial<AuthState> => ({
+  signingIn: false,
+  signInFailed: true,
+  // Never empty: an absent message used to leave the auto-start guard looking like success.
+  signInError: error?.message || 'Sign in failed',
+  signInErrorCode: error instanceof OidcError ? error.code : undefined,
+  signInRetryAfter: error instanceof OidcError ? error.retryAfter : undefined,
+})
+
+const signInCleared = {
+  signInFailed: false,
+  signInError: undefined,
+  signInErrorCode: undefined,
+  signInRetryAfter: undefined,
+}
+
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    // The BACKEND owns the OIDC session (permitteer docs/remoteit-desktop-login.md):
-    // init just asks it whether one exists. silent suppresses the session-error toast
-    // for machine-triggered runs (a network reconnect). See Controller.onNetworkConnect.
-    async init(options: { silent?: boolean } = {}, state) {
+    /* The BACKEND owns the OIDC session (permitteer docs/remoteit-desktop-login.md):
+       init just asks it whether one exists.
+
+       This used to take a `silent` flag that skipped RECORDING a failed sign-in, meaning
+       to spare an unattended window a toast. But signInError is not a toast — it is the
+       only thing telling SignInApp not to start another authorize. Suppressed, a rejected
+       authorize returned, left no trace, and was retried immediately: an invisible
+       redirect loop (skipConsent shows no consent screen) running as fast as the page
+       could reload, until the AS rate-limited the address for everyone behind it. A
+       failure is always recorded now; being unattended is not a reason to forget it. */
+    async init(_: void, state) {
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
@@ -104,11 +142,12 @@ export default createModel<RootModel>()({
           console.error('AUTH INIT: sign-in completion failed', error)
           // A REFUSED silent selection (a known account signed out elsewhere meanwhile) must not
           // strand a signed-in person on the sign-in screen: the stored session is intact — restore
-          // it, say why, and let the menu re-learn the browser's accounts.
+          // it, say why, and let the menu re-learn the browser's accounts. Otherwise fall through
+          // to this branch's richer error mapping (signInFailure).
           if (String(error?.message || '').includes('login_required') && oidcSignedIn() && (await getToken())) {
             await dispatch.auth.handleSignInSuccess(oidcClaims() ?? {})
             dispatch.ui.set({ errorMessage: 'That account is no longer signed in on this browser.' })
-          } else if (!options.silent) dispatch.auth.set({ signInError: error?.message || 'Sign in failed, please try again.' })
+          } else dispatch.auth.set(signInFailure(error))
         }
       }
       dispatch.auth.set({ initialized: true })
@@ -127,6 +166,10 @@ export default createModel<RootModel>()({
      *  renew marker uses. */
     async healGrant(options?: { force?: boolean }) {
       try {
+        // The freshness check compares against the MCP detail type; on the first load after a
+        // rename the cached name is the OLD one until the boot metadata refresh lands. Wait for it
+        // (bounded, resolved instantly thereafter) so this cannot call a renamed-away grant current.
+        await oidcMcpDetailReady()
         if (!oidcGrantStale()) {
           window.sessionStorage.removeItem(GRANT_HEAL_KEY)
           return
@@ -179,7 +222,7 @@ export default createModel<RootModel>()({
       try {
         await oidcStart({ prompt: 'select_account' })
       } catch (error) {
-        dispatch.auth.set({ signInError: error?.message || 'Could not open the account chooser.' })
+        dispatch.auth.set(signInFailure(error))
       }
     },
     /** Activate a SAVED account from the avatar menu (the oidc registry): a storage swap
@@ -200,7 +243,7 @@ export default createModel<RootModel>()({
       }
     },
     async signIn(_: void) {
-      dispatch.auth.set({ signingIn: true, signInError: undefined })
+      dispatch.auth.set({ signingIn: true, ...signInCleared })
       try {
         // Sign-in ALWAYS offers the CHOOSER (prompt=select_account), web and desktop alike.
         // A "Sign in" button should let the person pick; and with a live AS cookie a
@@ -210,7 +253,7 @@ export default createModel<RootModel>()({
         await oidcStart({ prompt: 'select_account' })
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
-        dispatch.auth.set({ signingIn: false, signInError: error?.message || 'Sign in failed, please try again.' })
+        dispatch.auth.set(signInFailure(error))
       }
     },
     async fetchUser(_: void) {
@@ -220,7 +263,7 @@ export default createModel<RootModel>()({
 
       const user = response?.data?.data?.login
 
-      auth.set({ user, signInError: undefined })
+      auth.set({ user, ...signInCleared })
       if (user.authhash && user.yoicsId) {
         Controller.setupConnection({ username: user.yoicsId, authHash: user.authhash, guid: user.id })
         auth.signedIn()
@@ -317,6 +360,11 @@ export default createModel<RootModel>()({
       }
     },
     async handleSignInSuccess(claims: OidcClaims): Promise<void> {
+      // A session — freshly exchanged OR restored from stored tokens — is proof the
+      // automatic path works, so it clears the auto-start budget. Doing it only at the
+      // code exchange left a tab that had spent its budget unable to auto sign-in again
+      // after a perfectly healthy restore.
+      oidcClearAutoStarts()
       await dispatch.auth.set({
         authenticated: true,
         AWSUser: {
@@ -342,21 +390,43 @@ export default createModel<RootModel>()({
     },
     async disconnect(_: void, state) {
       if (!state.auth.authenticated && !state.auth.backendAuthenticated && browser.hasBackend) {
+        // Read the LIVE store, not the invocation-time snapshot: backendSignInError records its
+        // failure after its own teardown and this handler fires right behind it when the
+        // rejected socket drops, so the snapshot predates that message. Carry an existing
+        // failure through this teardown (signedOut()'s signInCleared would wipe it) and only
+        // otherwise fall back to the generic one — either way through the signInFailure shape,
+        // so signInFailed is set and SignInApp actually renders the message.
+        const live = store.getState().auth
+        const failure: Partial<AuthState> = live.signInFailed
+          ? {
+              signInFailed: true,
+              signInError: live.signInError,
+              signInErrorCode: live.signInErrorCode,
+              signInRetryAfter: live.signInRetryAfter,
+            }
+          : signInFailure(new Error('Sign in failed, please try again.'))
         await dispatch.auth.signedOut()
-        if (!state.auth.signInError) dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
+        dispatch.auth.set(failure)
       }
       dispatch.ui.set({ connected: false })
       dispatch.auth.set({ backendAuthenticated: false })
     },
     async signInError(signInError: string) {
-      dispatch.auth.set({ signInError })
+      // Through signInFailure, not a bare signInError set: SignInApp renders the message only
+      // while signInFailed is true, so a raw string here would never reach the screen.
+      dispatch.auth.set(signInFailure(new Error(signInError)))
       //send message to backend to sign out
       emit('user/lock')
     },
     async backendSignInError(signInError: string) {
       console.error(signInError)
-      await dispatch.auth.set({ signInError })
+      // Tear down FIRST, then record the failure: signedOut() deliberately clears
+      // signInFailed/signInError (a failure logged while signed in must not survive into the
+      // signed-out screen), so a set() before it was wiped and SignInApp — which renders its
+      // message only while signInFailed is true — showed a bare sign-in screen with no word of
+      // the backend's rejection. signInFailure is the one shape every failure takes.
       await dispatch.auth.signedOut()
+      dispatch.auth.set(signInFailure(new Error(signInError)))
     },
     async appReady(_: void, state) {
       // Temp migration of state
@@ -419,12 +489,30 @@ export default createModel<RootModel>()({
      * Gets called when the backend signs the user out
      */
     async signedOut(_: void) {
+      // Agent (Hydra) session goes with the app session — clears stored
+      // tokens synchronously, revoke is fire-and-forget so sign-out never
+      // blocks on it. Runs before the purge (and the transcript reset joins
+      // the model resets below) so nothing dispatches between purge and a
+      // signOut-triggered reload — a store write there makes redux-persist
+      // re-save the pre-signout state for the next user of the machine.
+      // (The DCR agent session retires with the permitteer chat lane —
+      // remoteit-ai-agent.md Phase 4; until then both sign-outs run.)
+      // AWAIT the chat sign-out: it revokes the background-agent grant, whose authenticated DELETE
+      // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
+      // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
+      await dispatch.chat.signOut()
       await persistor.purge()
       // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
       // signing out of the app must not sign the user out of login.* (their browser
       // session is theirs; an explicit "sign out everywhere" action can come later).
       oidcClearLocal()
-      await dispatch.auth.set({ user: undefined })
+      /* signInCleared as well as the user: a failure recorded while SIGNED IN — a refused
+         account switch, say — would otherwise survive into the signed-out screen, where
+         signInFailed is the brake on auto sign-in. The next person to land here would get
+         a stale error and no redirect, for something that happened in someone else's
+         session. */
+      await dispatch.auth.set({ user: undefined, ...signInCleared })
+      dispatch.chat.reset()
       dispatch.user.reset()
       dispatch.organization.reset()
       dispatch.networks.reset()

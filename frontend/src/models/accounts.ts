@@ -51,32 +51,41 @@ export default createModel<RootModel>()({
       console.log('MEMBERSHIPS', gqlData)
       if (!gqlData) return
       const membership = gqlData.membership || []
-      dispatch.accounts.set({
-        membership: membership.map(m => ({
-          created: new Date(m.created),
-          roleId: m.customRole.id,
-          roleName: m.customRole.name,
-          license: m.license || [],
-          account: m.organization.account,
-          name: m.organization.name,
-        })),
-      })
-      if (!membership.find(m => m.organization.account.id === state.accounts.activeId)) {
-        dispatch.accounts.set({ activeId: undefined })
-      }
+      const memberships: IMembership[] = membership.map(m => ({
+        created: new Date(m.created),
+        roleId: m.customRole.id,
+        roleName: m.customRole.name,
+        license: m.license || [],
+        account: m.organization.account,
+        name: m.organization.name,
+      }))
+      // Only an organization the user has left is stale - their own id means they
+      // deliberately selected their personal account, which selectDefaultAccountId reads.
+      const activeId = state.accounts.activeId
+      const userId = state.auth.user?.id || state.user.id
+      const stale = !!activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)
+      dispatch.accounts.set({ membership: memberships, ...(stale ? { activeId: undefined } : {}) })
     },
+    /*
+      The one way to switch accounts - every account scoped list has to be re-fetched
+      or it keeps showing the previous account's data. Callers own their navigation.
+    */
     async select(accountId: string) {
       await dispatch.logs.reset()
       await dispatch.accounts.set({ activeId: accountId })
+      dispatch.networks.fetchIfEmpty()
       dispatch.devices.fetchIfEmpty()
+      dispatch.files.fetchIfEmpty()
       dispatch.tags.fetchIfEmpty()
       dispatch.products.fetchIfEmpty()
+      dispatch.partnerStats.fetchIfEmpty()
     },
     async leaveMembership(id: string, state) {
       const { membership } = state.accounts
       const result = await graphQLLeaveMembership(id)
       if (result !== 'ERROR') {
-        dispatch.accounts.set({ membership: membership.filter(m => m.account.id !== id), activeId: state.user.id })
+        dispatch.accounts.set({ membership: membership.filter(m => m.account.id !== id) })
+        await dispatch.accounts.select(state.user.id)
         dispatch.ui.set({
           successMessage: i18n.t('notices:organization.left', {
             defaultValue: 'You have successfully left the organization.',
