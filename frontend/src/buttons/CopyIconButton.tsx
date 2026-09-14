@@ -56,6 +56,9 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
 
     const onClose = () => setOpen(false)
 
+    // The name stays the ACTION ("Copy command") while the tooltip flashes the status: a control
+    // renamed "Copied!" for 800ms is one a screen reader or voice control can no longer find.
+    const label = props.label ?? (typeof title === 'string' ? title : undefined)
     title = clipboard.copied ? 'Copied!' : title
 
     return (
@@ -66,6 +69,7 @@ export const CopyIconButton = React.forwardRef<HTMLButtonElement, CopyButtonProp
           onClick={check}
           color={clipboard.copied ? colorCopied : props.color}
           icon={clipboard.copied ? 'check' : icon}
+          label={label}
           title={title}
           size={size}
         />

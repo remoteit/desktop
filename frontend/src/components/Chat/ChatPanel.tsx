@@ -150,7 +150,10 @@ export const ChatPanel: React.FC = () => {
           />
         )}
         <NewChatButton />
-        <IconButton icon="times" title={t('chat.close', 'Close')} onClick={() => dispatch.chat.set({ open: false })} />
+        {/* "Close chat", not "Close": the title is this icon-only button's accessible name, and a
+            bare "Close" is ambiguous beside every other close on the page — for a screen reader,
+            and for the e2e suite, which dismisses a docked chat by that name (helpers/app.ts). */}
+        <IconButton icon="times" title={t('chat.closeChat', 'Close chat')} onClick={() => dispatch.chat.set({ open: false })} />
       </ChatHeader>
       <ChatBody />
     </Box>

@@ -69,6 +69,7 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ConfirmIconButton
             icon="trash"
+            label={t('productsActionBar.deleteSelected', 'Delete selected')}
             title={
               admin
                 ? t('productsActionBar.deleteSelected', 'Delete selected')

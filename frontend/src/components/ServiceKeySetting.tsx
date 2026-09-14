@@ -101,6 +101,7 @@ export const ServiceKeySetting: React.FC<Props> = ({ connection, service, permis
                 <IconButton
                   type="brands"
                   name="github"
+                  label={t('serviceKeySetting.nodePackage', 'Get the Node.js package')}
                   title={
                     <>
                       {t('serviceKeySetting.nodePackage', 'Get the Node.js package')}
