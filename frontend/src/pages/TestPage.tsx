@@ -8,7 +8,7 @@ import { getApiURL, getWebSocketURL, resourceForApiURL } from '../helpers/apiHel
 import { bindableResources } from '../services/permitteerAccount'
 import { oidcAccessToken } from '../services/oidc'
 import { isSecureAgentURL } from '../services/agent'
-import { selectLimitsLookup, selectLimits } from '../selectors/organizations'
+import { selectLimitsLookup, selectFeatures } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
@@ -27,8 +27,9 @@ export const TestPage: React.FC = () => {
   const apis = useSelector((state: State) => state.ui.apis)
   const testUI = useSelector((state: State) => state.ui.testUI)
   const preferences = useSelector((state: State) => state.backend.preferences)
-  const limitsOverride = useSelector(selectLimitsLookup)
-  const limits = useSelector(selectLimits)
+  const featureValues = useSelector(selectLimitsLookup)
+  const features = useSelector(selectFeatures)
+  const overrides = useSelector((state: State) => state.ui.limitsOverride)
 
   async function setAPIPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
@@ -281,7 +282,9 @@ export const TestPage: React.FC = () => {
                     return
                   }
                   setAgentError('')
-                  setAPIPreference('agentURL', url)
+                  // Reset (or entering the default) CLEARS the override so agentURL() falls back to the
+                  // /agent proxy (dev) or VITE_AGENT_URL (build) — never pinning the OAuth audience as the transport.
+                  setAPIPreference('agentURL', url === OAUTH_AGENT_RESOURCE ? '' : url)
                 }}
                 hideIcon
               />
@@ -298,28 +301,32 @@ export const TestPage: React.FC = () => {
       </List>
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>
       <List>
-        {limits.map(l => {
-          if (typeof l.value === 'boolean')
-            return (
-              <ListItemSetting
-                hideIcon
-                key={l.name}
-                label={t('testPage.featureLabel', {
-                  name: l.name,
-                  state: l.value
-                    ? t('testPage.enabled', 'enabled')
-                    : t('testPage.disabled', 'disabled'),
-                  defaultValue: '{{name}} (default {{state}})',
-                })}
-                toggle={limitsOverride[l.name]}
-                onClick={() =>
-                  dispatch.ui.setPersistent({
-                    limitsOverride: { ...limitsOverride, [l.name]: !limitsOverride[l.name] },
-                  })
-                }
-              />
-            )
-        })}
+        {features.map(f => (
+          <ListItemSetting
+            hideIcon
+            key={f.name}
+            label={t('testPage.featureLabel', {
+              name: f.name,
+              state: f.value ? t('testPage.enabled', 'enabled') : t('testPage.disabled', 'disabled'),
+              defaultValue: '{{name}} (default {{state}})',
+            })}
+            subLabel={
+              f.pending
+                ? t(
+                    'testPage.featurePending',
+                    'Not in any license yet. Switches here apply to your personal account only.'
+                  )
+                : undefined
+            }
+            toggle={!!featureValues[f.name]}
+            /* Writes the OVERRIDE, not the effective lookup. Spreading the lookup pinned
+               every OTHER feature at its current value as well, so a later change to the
+               account's license went unseen until someone hit Reset. */
+            onClick={() =>
+              dispatch.ui.setPersistent({ limitsOverride: { ...overrides, [f.name]: !featureValues[f.name] } })
+            }
+          />
+        ))}
         <Divider variant="inset" />
         <ListItemSetting
           hideIcon
