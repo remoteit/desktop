@@ -25,7 +25,7 @@ export const SettingsDisableNetworkItem: React.FC = () => {
 
   const handleClick = () => {
     setToggleChange(!toggleChange)
-    emit('preferences', { ...preferences, disableLocalNetwork: !preferences.disableLocalNetwork })
+    emit('preferences', { disableLocalNetwork: !preferences.disableLocalNetwork })
   }
 
   return (

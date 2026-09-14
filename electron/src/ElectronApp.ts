@@ -3,15 +3,7 @@ import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import { t, setLanguage } from './i18n'
-import {
-  EVENTS,
-  PROTOCOL,
-  brand,
-  environment,
-  preferences,
-  EventBus,
-  Logger,
-} from './backend'
+import { EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
 const IP_PRIVATE = '127.0.0.1'
@@ -145,7 +137,7 @@ export default class ElectronApp {
         navigationHistory.clear()
         break
     }
-    
+
     const canNavigate = {
       canGoBack: navigationHistory.canGoBack(),
       canGoForward: navigationHistory.canGoForward(),
@@ -310,7 +302,7 @@ export default class ElectronApp {
 
   private saveWindowState = () => {
     const bounds = this.window?.getBounds()
-    preferences.update({ windowState: bounds })
+    preferences.set({ windowState: bounds })
   }
 
   private logWebErrors = () => {

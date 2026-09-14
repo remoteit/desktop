@@ -20,7 +20,8 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
   const updateAvailable = downloaded && version !== currentVersion
 
   let label = t('updateSetting.about', 'About')
-  if (updateAvailable) label = t('updateSetting.versionAvailable', { version, defaultValue: 'Version {{version}} available' })
+  if (updateAvailable)
+    label = t('updateSetting.versionAvailable', { version, defaultValue: 'Version {{version}} available' })
   if (checking) label = t('updateSetting.checkingForUpdates', 'Checking for updates...')
 
   return (
@@ -51,13 +52,13 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
                   {downloading
                     ? t('updateSetting.downloading', 'Downloading...')
                     : checking
-                      ? t('updateSetting.checking', 'Checking...')
-                      : t('updateSetting.check', 'Check')}
+                    ? t('updateSetting.checking', 'Checking...')
+                    : t('updateSetting.check', 'Check')}
                 </Button>
               )
             }
             toggle={!!preferences.autoUpdate}
-            onClick={() => emit('preferences', { ...preferences, autoUpdate: !preferences.autoUpdate })}
+            onClick={() => emit('preferences', { autoUpdate: !preferences.autoUpdate })}
           />
           {preferences.autoUpdate && (
             <TestUI>
@@ -65,7 +66,7 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
                 quote
                 label={t('updateSetting.preReleaseBuilds', 'Update to pre-release builds')}
                 toggle={!!preferences.allowPrerelease}
-                onClick={() => emit('preferences', { ...preferences, allowPrerelease: !preferences.allowPrerelease })}
+                onClick={() => emit('preferences', { allowPrerelease: !preferences.allowPrerelease })}
               />
             </TestUI>
           )}

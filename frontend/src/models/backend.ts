@@ -144,8 +144,8 @@ export default createModel<RootModel>()({
     async setUpdateNotice(updateVersion: string | undefined, state) {
       setLocalStorage(state, NOTICE_VERSION_ID, updateVersion)
     },
-    async disableAutoUpdate(_: void, state) {
-      emit('preferences', { ...state.backend.preferences, autoUpdate: false })
+    async disableAutoUpdate() {
+      emit('preferences', { autoUpdate: false })
     },
     async install() {
       dispatch.ui.set({ waitMessage: 'updating' })
