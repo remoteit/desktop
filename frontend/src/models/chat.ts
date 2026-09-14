@@ -183,6 +183,11 @@ const usageLimitMessage = (e: UsageLimitError): string => {
 }
 
 let abortController: AbortController | null = null
+/* Which conversation SELECTION is current. openConversation takes a ticket and applies its fetch
+   only while it still holds the latest; newConversation takes one too, so a New Chat during a slow
+   open is not undone when that open finally lands. (The same generation check logs.ts keys on
+   requestId.) */
+let selection = 0
 
 export default createModel<RootModel>()({
   state: { ...defaultChatState },
@@ -296,13 +301,16 @@ export default createModel<RootModel>()({
        AbortController (Stop then targets only the newer turn, mixing two conversations). New Chat,
        an identity change, and deleting the open conversation all route through here. */
     async newConversation() {
+      selection++ // a New Chat outranks any conversation open still in flight
       await dispatch.chat.stop()
       dispatch.chat.clearConversation()
     },
     /* Move the conversation to its own window; the dock hides when the popout
        says hello. A blocked popup is surfaced instead of silently ignored. */
-    async popOut() {
-      if (!openChatPopout())
+    async popOut(_: void, state) {
+      // Hand over this window's account scope so the popout boots under it, not the personal
+      // account its unset activeId would default to (popoutScopeId explains the stakes)
+      if (!openChatPopout(state.chat.orgId || undefined))
         dispatch.chat.set({
           error: i18n.t('notices:chat.popupBlocked', {
             defaultValue: 'Pop out was blocked — allow popups for this site and try again.',
@@ -401,21 +409,29 @@ export default createModel<RootModel>()({
        live turn state so nothing from the previous thread bleeds across. */
     async openConversation(id: string, state) {
       if (state.chat.streaming) dispatch.chat.stop()
+      // Out-of-order guard: pick A, then B, and A's fetch lands last — A must not replace B. Nor
+      // may a New Chat (which also takes a ticket) or a turn the user started meanwhile (the
+      // composer stays enabled) be clobbered by a load that is no longer wanted.
+      const ticket = ++selection
+      const superseded = () => ticket !== selection || store.getState().chat.streaming
       let remote
       try {
         remote = await fetchConversation(id)
       } catch (error) {
         // A service or auth failure is not a deletion: keep the transcript on screen and report,
-        // rather than clearing to a new chat as if the conversation had vanished.
-        dispatch.chat.set({ error: (error as Error).message })
+        // rather than clearing to a new chat as if the conversation had vanished. Unless the
+        // user has already moved on — then it is only noise about a thread they left.
+        if (!superseded()) dispatch.chat.set({ error: (error as Error).message })
         return
       }
       if (!remote) {
-        // Vanished — a genuine 404 (deleted elsewhere). Drop it from the list and start fresh.
-        dispatch.chat.clearConversation()
+        // Vanished — a genuine 404 (deleted elsewhere). Drop it from the list, and unless the
+        // user has already moved on, start fresh.
         await dispatch.chat.loadConversations()
+        if (!superseded()) dispatch.chat.clearConversation()
         return
       }
+      if (superseded()) return
       dispatch.chat.set({
         conversationId: id,
         turnId: '',
@@ -431,17 +447,28 @@ export default createModel<RootModel>()({
       })
     },
     /* Delete a conversation for real (D9). If it's the one on screen, clear to a new chat. */
-    async removeConversation(id: string, state) {
+    async removeConversation(id: string) {
       // A failed DELETE (401/403/5xx) is NOT a deletion — the row survives on the server and would
       // reappear on the next refresh. Report it and keep the local copy, rather than clearing the
-      // open transcript as though it succeeded.
-      if (!(await deleteConversation(id))) {
+      // open transcript as though it succeeded. A REJECTED request (network, DNS, CORS — no HTTP
+      // response at all) is the same failure and takes the same path: the confirm dialog has
+      // already closed, so an unhandled rejection here left the user with no feedback whatsoever.
+      let deleted = false
+      try {
+        deleted = await deleteConversation(id)
+      } catch {
+        deleted = false
+      }
+      if (!deleted) {
         dispatch.chat.set({
           error: i18n.t('notices:chat.deleteFailed', { defaultValue: 'Could not delete the conversation — try again.' }),
         })
         return
       }
-      if (state.chat.conversationId === id) await dispatch.chat.newConversation()
+      // The LIVE id, not the invocation snapshot: a slow delete of the open conversation A followed
+      // by opening B must not clear B; deleting A from the picker and then opening A before the
+      // delete lands must still clear the now-deleted transcript.
+      if (store.getState().chat.conversationId === id) await dispatch.chat.newConversation()
       await dispatch.chat.loadConversations()
     },
     /* App sign-out: nothing agent-specific to revoke — the session's end IS the

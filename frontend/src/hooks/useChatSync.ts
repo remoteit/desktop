@@ -3,7 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { store, State, Dispatch } from '../store'
 import { toChatHandoff } from '../models/chat'
-import { initChatPopoutMain, initChatPopoutWindow, checkPopoutPresence, PopoutMainHandlers } from '../services/chatPopout'
+import {
+  initChatPopoutMain,
+  initChatPopoutWindow,
+  checkPopoutPresence,
+  PopoutMainHandlers,
+  isChatPopout,
+  popoutScopeId,
+} from '../services/chatPopout'
 import network from '../services/Network'
 
 /* Re-probe the agent when the app's own detector says connectivity is back — the same
@@ -20,6 +27,20 @@ const useAgentHealthOnReconnect = (check: () => void): void => {
 }
 
 const currentHandoff = () => toChatHandoff(store.getState().chat)
+
+/* Popout boot: run under the account scope of the window that opened it. Everything org-scoped
+   — App's chat entitlement gate above all — resolves through accounts.activeId, which the
+   popout's no-op persistence leaves unset, i.e. the PERSONAL account: a chat licensed only for
+   an organization would be refused in its own popout. This must run OUTSIDE that gate
+   (ChatWindow's own hooks sit behind it), so App calls it unconditionally; it is a no-op in
+   the main window. accounts.parse clears a scope the user is no member of, so a hand-edited
+   URL can only ever land back on the personal account. */
+export const useChatPopoutScope = (): void => {
+  const dispatch = useDispatch<Dispatch>()
+  useEffect(() => {
+    if (isChatPopout && popoutScopeId) dispatch.accounts.set({ activeId: popoutScopeId })
+  }, [])
+}
 
 /* Main-window chat lifecycle — everything ChatPanel needs to happen but that
    isn't display: adopting the server's transcript on mount, wiring the popout
@@ -73,7 +94,17 @@ export const useChatMainSync = (): void => {
     }
     const unsubscribe = initChatPopoutMain(handlers)
     checkPopoutPresence(handlers)
-    return unsubscribe
+    return () => {
+      unsubscribe()
+      // This panel unmounts ONLY when the entitlement goes away — an org switch to an unlicensed
+      // account, or the Test feature turned off (closing it merely renders null; popping out
+      // stops explicitly). A turn left streaming behind that runs on headless: the remount's
+      // resetTransient() then clears streaming/pendingConfirmation while the old request is
+      // still live, so the next send orphans its AbortController and two turns' events
+      // interleave — and a pending write approval is stranded with no card left to answer it.
+      // The turn goes with the panel.
+      dispatch.chat.stop()
+    }
   }, [])
 
   useEffect(() => {
@@ -116,7 +147,12 @@ export const useChatPopoutSync = (): void => {
       getHandoff: currentHandoff,
       onSignout: () => window.close(),
     })
-    return unsubscribe
+    return () => {
+      unsubscribe()
+      // Same invariant as the dock: the window's only unmount is App's entitlement gate
+      // closing (a window close runs no React cleanup), and a turn must not outlive its surface
+      dispatch.chat.stop()
+    }
   }, [])
 
   // The popout is its own app instance, so it has its own Network to listen to

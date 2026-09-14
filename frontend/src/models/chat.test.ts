@@ -4,18 +4,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // stub them so the syncTranscript EFFECT runs in isolation. fetchConversation is the one real
 // spy — each test scripts what the server returns and, crucially, what the user does to the
 // live store WHILE that fetch is in flight. The store is a hoisted MUTABLE object for that.
-const { fetchConversation, storeState } = vi.hoisted(() => ({
+const { fetchConversation, deleteConversation, openChatPopout, storeState } = vi.hoisted(() => ({
   fetchConversation: vi.fn(),
+  deleteConversation: vi.fn(),
+  openChatPopout: vi.fn(),
   storeState: { chat: {} as Record<string, unknown> },
 }))
 
 vi.mock('../services/agent', () => ({
   fetchConversation,
+  deleteConversation,
   streamChat: vi.fn(),
   confirmTool: vi.fn(),
   backgroundDisable: vi.fn(),
   listConversations: vi.fn(),
-  deleteConversation: vi.fn(),
   fetchUsage: vi.fn(),
   agentHealth: vi.fn(),
   UsageLimitError: class UsageLimitError extends Error {},
@@ -23,7 +25,7 @@ vi.mock('../services/agent', () => ({
 }))
 vi.mock('../services/chatPopout', () => ({
   broadcastChatSignout: vi.fn(),
-  openChatPopout: vi.fn(),
+  openChatPopout,
   popIn: vi.fn(),
 }))
 vi.mock('../store', () => ({ store: { getState: () => storeState } }))
@@ -33,7 +35,22 @@ vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 import chatModel from './chat'
 
 const effectsFor = (dispatch: any) => (chatModel as any).effects(dispatch)
-const makeDispatch = () => ({ chat: { set: vi.fn() } })
+const makeDispatch = () => ({
+  chat: {
+    set: vi.fn(),
+    stop: vi.fn(),
+    clearConversation: vi.fn(),
+    loadConversations: vi.fn(),
+    newConversation: vi.fn(),
+  },
+})
+
+// A fetch the test resolves by hand, to interleave user actions with an in-flight request.
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>(r => (resolve = r))
+  return { promise, resolve }
+}
 
 // A conversation as the effect sees it at invocation time (the rematch `state` snapshot).
 const current = (over: Record<string, unknown> = {}) => ({
@@ -47,7 +64,125 @@ const remoteAsLocal = [
 
 beforeEach(() => {
   fetchConversation.mockReset()
+  deleteConversation.mockReset()
+  openChatPopout.mockReset()
   storeState.chat = { conversationId: 'a', streaming: false, messages: [], title: '' }
+})
+
+// What openConversation writes for a loaded conversation — the shape the out-of-order tests
+// look for, so they can tell WHICH load landed.
+const opened = (id: string) => expect.objectContaining({ conversationId: id })
+
+/* A pick from the history is a request that may lose the race with the next pick. Without a
+   generation check, "A then B, A lands last" leaves A on screen under B's selection. */
+describe('chat model — openConversation applies only the latest selection', () => {
+  it('a slower earlier pick (A) does not replace the later one (B)', async () => {
+    const a = deferred<any>()
+    const b = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => a.promise).mockImplementationOnce(() => b.promise)
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const openA = fx.openConversation('A', current())
+    const openB = fx.openConversation('B', current())
+    b.resolve({ ...remote, title: 'B' })
+    await openB
+    a.resolve({ ...remote, title: 'A' }) // A finishes last
+    await openA
+    expect(dispatch.chat.set).toHaveBeenCalledWith(opened('B'))
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith(opened('A'))
+  })
+
+  it('a New Chat during a slow pick is not undone when that pick lands', async () => {
+    const a = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => a.promise)
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const openA = fx.openConversation('A', current())
+    await fx.newConversation() // takes the next ticket
+    a.resolve(remote)
+    await openA
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith(opened('A'))
+  })
+
+  it('a turn the user started meanwhile is not clobbered by the landing pick', async () => {
+    fetchConversation.mockImplementation(async () => {
+      storeState.chat.streaming = true // the composer stays enabled during a pick
+      return remote
+    })
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).openConversation('A', current())
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith(opened('A'))
+  })
+
+  it('a stale pick that 404s still refreshes the list but does not clear the conversation now on screen', async () => {
+    const a = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => a.promise)
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const openA = fx.openConversation('A', current())
+    await fx.newConversation() // clears once, itself
+    a.resolve(null) // A was deleted elsewhere
+    await openA
+    expect(dispatch.chat.loadConversations).toHaveBeenCalled()
+    // Only New Chat's own clear — the stale 404 must not clear the fresh conversation again
+    expect(dispatch.chat.clearConversation).toHaveBeenCalledTimes(1)
+  })
+
+  it('a current pick still applies (control)', async () => {
+    fetchConversation.mockResolvedValue(remote)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).openConversation('A', current())
+    expect(dispatch.chat.set).toHaveBeenCalledWith(opened('A'))
+  })
+})
+
+/* Deleting is a request too: it can fail without an HTTP response, and it can be slow enough
+   for the user to have moved to another conversation before it lands. */
+describe('chat model — removeConversation', () => {
+  const deleteFailed = expect.objectContaining({ error: 'notices:chat.deleteFailed' })
+
+  it('reports a REJECTED delete (no HTTP response) exactly like a failed one, and keeps the transcript', async () => {
+    deleteConversation.mockRejectedValue(new TypeError('Failed to fetch'))
+    const dispatch = makeDispatch()
+    await expect(effectsFor(dispatch).removeConversation('a')).resolves.toBeUndefined()
+    expect(dispatch.chat.set).toHaveBeenCalledWith(deleteFailed)
+    expect(dispatch.chat.newConversation).not.toHaveBeenCalled()
+    expect(dispatch.chat.loadConversations).not.toHaveBeenCalled()
+  })
+
+  it('clears the conversation only if it is STILL the one on screen when the delete lands', async () => {
+    deleteConversation.mockImplementation(async () => {
+      storeState.chat.conversationId = 'b' // the user opened B while A was being deleted
+      return true
+    })
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).removeConversation('a')
+    expect(dispatch.chat.newConversation).not.toHaveBeenCalled()
+    expect(dispatch.chat.loadConversations).toHaveBeenCalled()
+  })
+
+  it('clears a conversation the user opened DURING its own deletion', async () => {
+    storeState.chat.conversationId = 'c'
+    deleteConversation.mockImplementation(async () => {
+      storeState.chat.conversationId = 'a' // deleted A from the picker, then opened A before it landed
+      return true
+    })
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).removeConversation('a')
+    expect(dispatch.chat.newConversation).toHaveBeenCalledTimes(1)
+  })
+})
+
+/* The popout persists nothing, so it boots on the PERSONAL account unless told otherwise —
+   and a chat licensed only for an organization would then be refused in its own popout. */
+describe('chat model — popOut hands over the account scope', () => {
+  it('passes the current org to openChatPopout', async () => {
+    openChatPopout.mockReturnValue(true)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).popOut(undefined, { chat: { orgId: 'org-1' } })
+    expect(openChatPopout).toHaveBeenCalledWith('org-1')
+    expect(dispatch.chat.set).not.toHaveBeenCalled() // no popup-blocked error
+  })
 })
 
 /* The fetch can outlive the conversation it was for. Applying its result against the

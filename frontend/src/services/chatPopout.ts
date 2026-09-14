@@ -11,6 +11,9 @@ import { CHAT_POPOUT_PARAM, CHAT_POPOUT_SIZE } from '@common/constants'
  * callers inject handlers (avoids store/model import cycles).
  */
 const OWNER_KEY = 'chatPopoutOwner'
+// Rides beside CHAT_POPOUT_PARAM: the ACCOUNT SCOPE the opening window ran under. Frontend-only —
+// Electron's window-open handler keys on CHAT_POPOUT_PARAM alone — so it lives here, not in common.
+const SCOPE_PARAM = 'chatPopoutScope'
 
 // Captured at module-evaluation time, before any routing can touch the URL
 
@@ -20,6 +23,13 @@ export const isChatPopout = bootQuery.has(CHAT_POPOUT_PARAM)
 // it. Every main tab hears the shared channel, so directed messages carry
 // this id and non-owner tabs ignore them.
 const popoutId = bootQuery.get(CHAT_POPOUT_PARAM) || ''
+/* The account scope of the window that opened this popout, for the boot to adopt
+   (useChatPopoutScope). The popout persists nothing, so accounts.activeId starts unset and
+   every org-scoped read — the chat entitlement gate above all — falls back to the PERSONAL
+   account, refusing a chat that is licensed only for an organization. User-controlled like
+   the rest of the URL, and safe that way: a scope the user is no member of is cleared again
+   by accounts.parse, back to the personal account the gate would have read anyway. */
+export const popoutScopeId = bootQuery.get(SCOPE_PARAM) || ''
 
 // Per-tab (sessionStorage survives a reload of the owning tab, but no other
 // tab has it): the id of the popout this tab opened, if any
@@ -91,14 +101,18 @@ const pingPopout = (id: string): Promise<boolean> =>
 
 /* ---------- main-window side ---------- */
 
-export function openChatPopout(): boolean {
+/* `scope` is the opener's account scope (accounts.activeId, or the user for the personal
+   account) — see popoutScopeId for why the popout needs it handed over at boot. */
+export function openChatPopout(scope?: string): boolean {
   // Reuse the stored id so re-clicking Pop out re-targets the same named
   // window instead of orphaning it under a new identity
   const id = ownerId() || crypto.randomUUID().slice(0, 8)
+  const query = new URLSearchParams({ [CHAT_POPOUT_PARAM]: id })
+  if (scope) query.set(SCOPE_PARAM, scope)
   // Name the window PER OWNER so a re-click from THIS tab reuses only its own popup. A single
   // constant name let a second main tab's window.open reuse and navigate the first tab's popup,
   // orphaning the first tab's handle (its dock never restored, its ping never sent).
-  const opened = window.open(`${window.location.origin}/?${CHAT_POPOUT_PARAM}=${id}`, `${WINDOW_NAME}-${id}`, WINDOW_FEATURES)
+  const opened = window.open(`${window.location.origin}/?${query}`, `${WINDOW_NAME}-${id}`, WINDOW_FEATURES)
   if (!opened) return false // popup blocked — dock stays; hello never arrives
   window.sessionStorage.setItem(OWNER_KEY, id)
   popoutWindow = opened
