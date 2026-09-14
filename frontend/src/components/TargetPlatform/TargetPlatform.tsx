@@ -12,8 +12,7 @@ export const TargetPlatform: React.FC<{
   inlineLeft?: boolean
 }> = ({ id = -1, size, tooltip, label, inlineLeft }) => {
   const icon = <Icon size={size} inlineLeft={inlineLeft || !!label} platform={id} platformIcon />
-  const platform = platforms.type(id)
-  const typeName = platform.types?.[id] || platform.name
+  const typeName = platforms.name(id)
 
   if (tooltip)
     return (

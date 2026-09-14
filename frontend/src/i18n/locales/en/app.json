@@ -50,7 +50,8 @@
     "sendPromotionRequest": "Send Promotion Request"
   },
   "addDevice": {
-    "codeExpiration": "Code expires in {{hours}}\u00a0hours."
+    "codeExpiration": "Code expires in {{hours}}\u00a0hours.",
+    "registrationCode": "Registration Code"
   },
   "addFromNetwork": {
     "scanForServices": "Scan for Services",

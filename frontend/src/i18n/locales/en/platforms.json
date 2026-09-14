@@ -1,0 +1,130 @@
+{
+  "advantech": {
+    "name": "Advantech",
+    "description": "For Advantech systems."
+  },
+  "alpine": {
+    "name": "Alpine Linux",
+    "description": "For Alpine Linux based systems."
+  },
+  "amnimo": {
+    "name": "Amnimo"
+  },
+  "android": {
+    "name": "Android",
+    "description": "For an Android phone or tablet."
+  },
+  "arm": {
+    "name": "Arm Virtual Hardware",
+    "description": "For the Arm Virtual Hardware platform."
+  },
+  "aws": {
+    "name": "AWS",
+    "description": "For any Linux based AWS virtual machine."
+  },
+  "axis": {
+    "name": "AXIS",
+    "description": "For AXIS camera systems."
+  },
+  "azure": {
+    "name": "Azure",
+    "description": "For any Linux based Azure Cloud virtual machine."
+  },
+  "cachengo": {
+    "name": "Cachengo"
+  },
+  "docker": {
+    "name": "Docker",
+    "description": "For testing on any system running Docker."
+  },
+  "docker-extension": {
+    "name": "Docker Jumpbox Extension",
+    "description": "For Docker Desktop."
+  },
+  "docker-jumpbox": {
+    "name": "Docker Jumpbox",
+    "description": "For testing on any system running Docker."
+  },
+  "embedded-works": {
+    "name": "Embedded Works"
+  },
+  "firewalla": {
+    "name": "Firewalla",
+    "description": "For any Firewalla system."
+  },
+  "gcp": {
+    "name": "Google Cloud",
+    "description": "For any Linux based Google Cloud instance."
+  },
+  "idy": {
+    "name": "IDY",
+    "description": "For IDY routers and gateways."
+  },
+  "ios": {
+    "name": "iOS"
+  },
+  "linux": {
+    "name": "Linux",
+    "description": "For any Linux based system."
+  },
+  "liverock": {
+    "name": "Liverock Technologies"
+  },
+  "mac": {
+    "name": "Mac",
+    "description": "For macOS systems.",
+    "instructions": "Install the Desktop or CLI on the Mac you want to enable remote access to."
+  },
+  "nas": {
+    "name": "Synology",
+    "description": "For Synology NAS systems.",
+    "instructions": "Download the package file and install it through your NAS web interface."
+  },
+  "nvidia": {
+    "name": "NVIDIA Jetson",
+    "description": "For NVIDIA Jetson systems."
+  },
+  "openwrt": {
+    "name": "OpenWrt",
+    "description": "For OpenWrt routers."
+  },
+  "raspberrypi": {
+    "name": "Raspberry Pi",
+    "description": "For any Raspberry Pi or Linux based system."
+  },
+  "remoteit": {
+    "name": "Remote.It"
+  },
+  "teltonika": {
+    "name": "Teltonika",
+    "description": "For Teltonika routers and gateways."
+  },
+  "this": {
+    "name": "This system"
+  },
+  "tinkerboard": {
+    "name": "Tinker Board",
+    "description": "For the ASUS Tinker Board."
+  },
+  "toa": {
+    "name": "TOA"
+  },
+  "ubiquiti": {
+    "name": "Ubiquiti",
+    "description": "For Ubiquiti routers."
+  },
+  "ubuntu": {
+    "name": "Ubuntu Desktop",
+    "description": "For Ubuntu Desktop systems."
+  },
+  "unknown": {
+    "name": "Unknown",
+    "description": "For registering any device.",
+    "instructions": "This unique code allows any device to register with your account, keep it safe."
+  },
+  "windows": {
+    "name": "Windows",
+    "description": "For Windows systems.",
+    "instructions": "Install the Desktop or CLI on the Windows system you want to enable remote access to."
+  }
+}

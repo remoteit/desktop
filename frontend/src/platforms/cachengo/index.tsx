@@ -9,9 +9,6 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'cachengo',
-  name: 'Cachengo',
   component: Component,
-  types: { 1227: 'Rent-A-Node', 1224: 'Cachengo' },
-  installation: { command: true },
   override: RentANodeRequest,
 })

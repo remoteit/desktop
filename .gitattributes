@@ -1,0 +1,6 @@
+# Vendored snapshot of the API's platform catalogue, written by scripts/platforms-generate.mjs.
+# It is committed on purpose — the app reads it at module load, so generating it at build time
+# would need API credentials in every build and would make builds non-reproducible. Marking it
+# generated collapses it in review, where the meaningful diff is the migration it came from.
+# JSON takes no comments, so this is the only place the marker can live.
+frontend/src/platforms/catalogue.generated.json linguist-generated=true
