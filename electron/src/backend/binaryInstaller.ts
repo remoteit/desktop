@@ -11,10 +11,20 @@ import Binary, { binaries, cliBinary } from './Binary'
 import { existsSync, lstatSync } from 'fs'
 import Logger from './Logger'
 
+// Refusals the running agent will give again: unsupported platform, a service definition that
+// predates staging, a signature it will not accept, and a daemon too old to know the command.
+const PERMANENT_REFUSAL_CODES = ['409', '410', '411']
+
+function permanentRefusal(error?: Error) {
+  if (!error) return false
+  return PERMANENT_REFUSAL_CODES.includes(error.name) || error.message.toLowerCase().includes('unknown-message')
+}
+
 export class BinaryInstaller {
   ready = false
   inProgress = false
   uninstallInitiated = false
+  reloadRefusedBy?: string
   binaries: Binary[]
   cliBinary: Binary
 
@@ -36,6 +46,7 @@ export class BinaryInstaller {
 
     if (shouldInstall) {
       if (environment.isElevated) return await this.install()
+      if (this.canReload(status) && (await this.reload())) return
       return EventBus.emit(Binary.EVENTS.notInstalled, status)
     } else if (!this.ready) {
       Logger.info('INSTALLER DONE')
@@ -58,18 +69,56 @@ export class BinaryInstaller {
     return status
   }
 
+  // The running agent decides whether it can adopt the installed binaries itself.
+  canReload(status: BinaryReason) {
+    return !status.binariesOutdated && !status.agentStopped && this.reloadRefusedBy !== this.cliBinary.agentVersion
+  }
+
+  async reload(): Promise<boolean> {
+    if (this.inProgress) {
+      Logger.info('AGENT RELOAD ALREADY IN PROGRESS')
+      return true
+    }
+    Logger.info('START AGENT RELOAD')
+    this.inProgress = true
+
+    const { version, error } = await cli.agentReload()
+    const reloaded = !!version && version === this.cliBinary.version
+    if (reloaded) {
+      await this.completeInstall()
+    } else {
+      // A daemon that answered, or refused for a reason it will repeat, is worth latching. An
+      // unreachable agent or a failed spawn is not, or the unprivileged retry never happens again.
+      if (!!version || permanentRefusal(error)) this.reloadRefusedBy = this.cliBinary.agentVersion
+      Logger.warn('AGENT RELOAD REFUSED', {
+        version,
+        code: error?.name,
+        error: error?.message,
+        latched: this.reloadRefusedBy,
+        agentVersion: this.cliBinary.agentVersion,
+      })
+    }
+
+    this.inProgress = false
+    return reloaded
+  }
+
   async install() {
     if (this.inProgress) return Logger.warn('INSTALL IN PROGRESS', { error: 'Can not install while in progress' })
     Logger.info('START INSTALLATION')
     this.inProgress = true
 
     await this.installBinaries().catch(error => EventBus.emit(Binary.EVENTS.error, error))
+    await this.completeInstall()
 
+    this.inProgress = false
+  }
+
+  private async completeInstall() {
+    this.reloadRefusedBy = undefined
     EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
     EventBus.emit(ConnectionPool.EVENTS.clearErrors)
     await this.updateVersions()
-
-    this.inProgress = false
     this.ready = true
   }
 
@@ -120,15 +169,6 @@ export class BinaryInstaller {
         Logger.warn('FILE REMOVAL FAILED', { file })
       }
     })
-  }
-
-  async restart() {
-    const commands = new Command({ onError: e => EventBus.emit(Binary.EVENTS.error, e.toString()), admin: true })
-    commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceRestart()}`)
-
-    this.inProgress = true
-    await commands.exec()
-    this.inProgress = false
   }
 
   async uninstall() {
@@ -202,7 +242,7 @@ export class BinaryInstaller {
   }
 
   async updateVersions() {
-    const cliVersion = await cli.version()
+    const cliVersion = this.cliBinary.installedVersion || (await cli.version())
     Logger.info('CLI VERSION UPDATE', { cliVersion })
     preferences.set({ version: environment.version, cliVersion })
   }
