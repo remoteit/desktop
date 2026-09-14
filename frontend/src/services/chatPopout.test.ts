@@ -44,4 +44,17 @@ describe('chatPopout — openChatPopout', () => {
     expect(openChatPopout('org-1')).toBe(false)
     expect(window.sessionStorage.getItem('chatPopoutOwner')).toBeNull()
   })
+
+  /* The whole handoff rides a BroadcastChannel. Without one a popout would open, never say
+     hello, never be adopted, and neither window could hand the transcript back. */
+  it('is unsupported, and refuses to open, where BroadcastChannel is missing', async () => {
+    vi.stubGlobal('BroadcastChannel', undefined)
+    vi.resetModules()
+    const open = vi.spyOn(window, 'open').mockReturnValue({} as Window)
+    const fresh = await import('./chatPopout')
+    expect(fresh.chatPopoutSupported).toBe(false)
+    expect(fresh.openChatPopout('org-1')).toBe(false)
+    expect(open).not.toHaveBeenCalled()
+    vi.unstubAllGlobals()
+  })
 })

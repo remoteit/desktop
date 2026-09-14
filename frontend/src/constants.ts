@@ -82,11 +82,16 @@ export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
 // The cloud branch is not a nicety. The legacy regex CANNOT match a tree identifier, and its miss
 // falls through to the unlabelled `wss://ws.remote.it/v1` — PRODUCTION's socket. A dev build that
 // merely stopped setting VITE_WEBSOCKET_URL would have connected there silently.
+//
+// Both shapes are read off the EFFECTIVE graphql URL, not off the OAuth resource: VITE_GRAPHQL_API
+// may point at a legacy stage while the resource stays a cloud tree, and pairing the socket with
+// the resource there would split API and event traffic across stages.
+const graphqlTree = GRAPHQL_API.match(/^(https:\/\/cloud(?:\.[a-z0-9-]+)?\.remote\.it\/api)\/graphql$/)?.[1]
 const graphqlStage = GRAPHQL_API.match(/^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/)?.[1]
 export const WEBSOCKET_URL =
   env.VITE_WEBSOCKET_URL ||
-  (cloudTree
-    ? `${cloudTree.replace(/^https:/, 'wss:')}/ws`
+  (graphqlTree
+    ? `${graphqlTree.replace(/^https:/, 'wss:')}/ws`
     : `wss://ws${graphqlStage ? `.${graphqlStage}` : ''}.remote.it/v1`)
 export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL || WEBSOCKET_URL
 export const PORT = env.VITE_PORT || 29999

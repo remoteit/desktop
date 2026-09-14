@@ -15,6 +15,7 @@
     "popupBlocked": "ポップアウトがブロックされました — このサイトのポップアップを許可してから、もう一度お試しください。",
     "sessionExpired": "エージェントのセッションの期限が切れました — もう一度サインインして続行してください。",
     "signInFailed": "エージェントのサインインに失敗しました — {{error}}",
+    "streamEnded": "",
     "usageReset": "{{msg}} {{when}}にリセットされます。"
   },
   "connection": {

@@ -46,10 +46,18 @@ export const useChatPopoutScope = (): void => {
    isn't display: adopting the server's transcript on mount, wiring the popout
    handoff protocol, re-checking agent health when the dock opens, and
    mirroring the app's active org. */
+/* The identity the chat is scoped by. auth.user, NOT the persisted `user` model: auth.user is
+   fetched for the CURRENT tokens at sign-in (it is what lets App mount), while the user model
+   is restored from storage and only catches up when the cloud sync lands. Activating a saved
+   account swaps tokens and reloads without purging persisted models, so for that interval
+   (indefinitely, if the sync stalls) the user model still names the PREVIOUS account — and an
+   ownership check against it would keep that account's transcript on the new account's screen. */
+const useChatIdentity = (): string => useSelector((state: State) => state.auth.user?.id ?? '') // '' = not signed in: syncIdentity no-ops
+
 export const useChatMainSync = (): void => {
   const open = useSelector((state: State) => state.chat.open)
   const activeId = useSelector((state: State) => state.accounts.activeId)
-  const userId = useSelector((state: State) => state.user.id)
+  const userId = useChatIdentity()
   const dispatch = useDispatch<Dispatch>()
 
   // Reset the chat when the signed-in identity changes (a different account) — declared
@@ -124,7 +132,7 @@ export const useChatMainSync = (): void => {
    display-only. */
 export const useChatPopoutSync = (): void => {
   const { t } = useTranslation()
-  const userId = useSelector((state: State) => state.user.id)
+  const userId = useChatIdentity()
   const dispatch = useDispatch<Dispatch>()
 
   useEffect(() => {

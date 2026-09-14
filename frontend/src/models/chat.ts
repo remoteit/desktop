@@ -9,6 +9,7 @@ import {
   deleteConversation,
   fetchUsage,
   UsageLimitError,
+  AgentStreamEndedError,
   type ConversationSummary,
   type Usage,
   agentHealth,
@@ -258,6 +259,15 @@ export default createModel<RootModel>()({
         }
         else if (error instanceof UsageLimitError)
           dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
+        else if (error instanceof AgentStreamEndedError)
+          // The error event marks the answer Interrupted and ends the turn — a cut-off must not
+          // leave a truncated reply looking complete with the composer open for another send.
+          dispatch.chat.applyEvent({
+            type: 'error',
+            message: i18n.t('notices:chat.streamEnded', {
+              defaultValue: 'The connection to the agent closed before it finished — the answer may be incomplete. Try again.',
+            }),
+          })
         else if ((error as Error).name !== 'AbortError')
           dispatch.chat.applyEvent({ type: 'error', message: (error as Error).message })
       } finally {
@@ -295,7 +305,16 @@ export default createModel<RootModel>()({
         else dispatch.chat.set({ pendingConfirmation: pending, error: (error as Error).message })
       }
     },
-    async stop() {
+    async stop(_: void, state) {
+      // A pending approval is part of the turn. Abandoning the turn — Stop, New Chat, deleting the
+      // open conversation, an identity change, the panel unmounting — DENIES it: the safe answer
+      // for a write the user never approved, and the one that lets the server-side turn resolve
+      // instead of waiting on a card no window shows any more. (Pop out / Pop back in are GATED
+      // while an approval is pending rather than routed here: a handoff means to continue the
+      // turn, not abandon it.) Best-effort and not awaited — stopping never waits on the network.
+      const { pendingConfirmation, turnId } = state.chat
+      if (pendingConfirmation && turnId)
+        confirmTool({ turnId, toolUseId: pendingConfirmation.toolUseId, approved: false }).catch(() => {})
       abortController?.abort()
       abortController = null
       dispatch.chat.set({ streaming: false, pendingConfirmation: null })

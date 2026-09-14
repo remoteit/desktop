@@ -7,7 +7,8 @@ import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getApiURL, getWebSocketURL, resourceForApiURL } from '../helpers/apiHelper'
 import { bindableResources } from '../services/permitteerAccount'
 import { oidcAccessToken } from '../services/oidc'
-import { isSecureAgentURL } from '../services/agent'
+import { isSecureAgentURL, backgroundConnectUrl, backgroundStatus, backgroundDisable } from '../services/agent'
+import { windowOpen } from '../services/browser'
 import { selectLimitsLookup, selectFeatures } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -44,6 +45,28 @@ export const TestPage: React.FC = () => {
   const [targets, setTargets] = useState<Array<{ identifier: string; name: string }>>([])
   const [mintError, setMintError] = useState<string>('')
   const [agentError, setAgentError] = useState<string>('')
+
+  // Background work (permitteer docs/remoteit-ai-agent.md D6): the agent's own, narrower
+  // grant — enrollment is a browser ceremony at the AS; this page only reads/ends it. (The
+  // one UI entry point for it: without this control backgroundConnectUrl/backgroundStatus
+  // have no caller and the workflow cannot be enabled.)
+  const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
+  useEffect(() => {
+    backgroundStatus().then(setBackgroundEnrolled)
+  }, [])
+  async function connectBackground() {
+    await windowOpen(backgroundConnectUrl(), '_blank', true)
+    // The ceremony finishes in the browser — poll briefly for the verdict.
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 2000))
+      if (await backgroundStatus()) break
+    }
+    setBackgroundEnrolled(await backgroundStatus())
+  }
+  async function disableBackground() {
+    await backgroundDisable()
+    setBackgroundEnrolled(await backgroundStatus())
+  }
   useEffect(() => {
     bindableResources().then(setTargets)
   }, [])
@@ -267,6 +290,19 @@ export const TestPage: React.FC = () => {
 
       <Typography variant="subtitle1">{t('testPage.aiAgent', 'AI Agent')}</Typography>
       <List>
+        <ListItemSetting
+          hideIcon
+          label={t('testPage.backgroundWork', 'AI background work')}
+          subLabel={
+            backgroundEnrolled === undefined
+              ? t('testPage.backgroundWorkUnknown', 'Checking…')
+              : backgroundEnrolled
+                ? t('testPage.backgroundWorkOn', 'The agent can read and watch while you are away.')
+                : t('testPage.backgroundWorkOff', 'The agent only works while you are here.')
+          }
+          toggle={!!backgroundEnrolled}
+          onClick={() => (backgroundEnrolled ? disableBackground() : connectBackground())}
+        />
         <ListItem>
           <Quote margin={null} indent="listItem" noInset>
             <List disablePadding>

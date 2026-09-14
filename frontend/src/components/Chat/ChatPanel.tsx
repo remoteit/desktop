@@ -20,6 +20,7 @@ import { IconButton } from '../../buttons/IconButton'
 import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
 import browser from '../../services/browser'
+import { chatPopoutSupported } from '../../services/chatPopout'
 
 /* How far the docked column floats off the window edges, in theme spacing units.
    One knob: the margins and the size subtractions below both derive from it, so a
@@ -140,7 +141,7 @@ export const ChatPanel: React.FC = () => {
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
       <ChatHeader>
-        {!browser.isMobile && !layout.mobile && (
+        {!browser.isMobile && !layout.mobile && chatPopoutSupported && (
           <IconButton
             icon="arrow-up-right-from-square"
             title={t('chat.popOut', 'Pop out')}

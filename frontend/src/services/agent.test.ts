@@ -7,7 +7,7 @@ vi.mock('../store', () => ({ store: { getState: () => state } }))
 vi.mock('./oidc', () => ({ oidcAuthHeaders: vi.fn() }))
 vi.mock('../constants', () => ({ OAUTH_AGENT_RESOURCE: 'https://agent.remote.it' }))
 
-import { agentURL, isSecureAgentURL, streamChat } from './agent'
+import { agentURL, isSecureAgentURL, streamChat, AgentStreamEndedError } from './agent'
 
 beforeEach(() => {
   state.ui.apis = {}
@@ -50,10 +50,18 @@ describe('streamChat — SSE framing', () => {
     })
     return new Response(body, { status: 200 })
   }
-  const collect = async (chunks: string[]) => {
+  // Runs a stream to the end, returning the delivered events and the terminal outcome
+  const run = async (chunks: string[]) => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sseResponse(chunks)))
     const events: unknown[] = []
-    await streamChat({ conversationId: 'c', text: 'hi', onEvent: event => events.push(event) })
+    const outcome = await streamChat({ conversationId: 'c', text: 'hi', onEvent: event => events.push(event) })
+      .then(() => 'completed' as const)
+      .catch((error: unknown) => error)
+    return { events, outcome }
+  }
+  const collect = async (chunks: string[]) => {
+    const { events, outcome } = await run(chunks)
+    expect(outcome).toBe('completed')
     return events
   }
   const turn = { type: 'turn', turnId: 't1' }
@@ -85,8 +93,23 @@ describe('streamChat — SSE framing', () => {
     expect(events).toEqual([turn, done])
   })
 
-  it('drops a torn tail rather than surfacing a parse error over a finished turn', async () => {
-    const events = await collect(['event: turn\ndata: {"turnId":"t1"}\n\nevent: text_delta\ndata: {"text":"tru'])
+  /* A clean close with no done/error is a cut-off — a proxy idle timeout on a long turn, say.
+     It used to resolve like a completion, leaving a truncated answer looking finished with
+     the composer open for another send. */
+  it('reports a clean EOF with no terminal event as a cut-off, after delivering what arrived', async () => {
+    const { events, outcome } = await run(['event: turn\ndata: {"turnId":"t1"}\n\nevent: text_delta\ndata: {"text":"half an"}\n\n'])
+    expect(events).toEqual([turn, { type: 'text_delta', text: 'half an' }])
+    expect(outcome).toBeInstanceOf(AgentStreamEndedError)
+  })
+
+  it('drops a torn tail rather than surfacing a parse error — and reports the cut-off', async () => {
+    const { events, outcome } = await run(['event: turn\ndata: {"turnId":"t1"}\n\nevent: text_delta\ndata: {"text":"tru'])
     expect(events).toEqual([turn])
+    expect(outcome).toBeInstanceOf(AgentStreamEndedError)
+  })
+
+  it('an error event is terminal too (no cut-off on top of a reported failure)', async () => {
+    const events = await collect(['event: turn\ndata: {"turnId":"t1"}\n\nevent: error\ndata: {"message":"boom"}\n\n'])
+    expect(events).toEqual([turn, { type: 'error', message: 'boom' }])
   })
 })

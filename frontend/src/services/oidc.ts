@@ -286,6 +286,16 @@ function mcpDetailType(): string {
   try { const stored = tokenStore().getItem(MCP_TYPE_KEY); if (stored) return (mcpTypeMemo = stored) } catch { /* fall through */ }
   return OAUTH_MCP_DETAIL
 }
+/* AbortSignal.timeout, by hand where the static is missing (older mobile WebViews). The bound
+   below is not optional — dropping it would let a half-open endpoint block sign-in — and a
+   throw from the missing static would skip the fetch altogether, leaving a renamed detail type
+   undiscovered exactly where this lookup exists to discover it. */
+const timeoutSignal = (ms: number): AbortSignal => {
+  if (typeof AbortSignal?.timeout === 'function') return AbortSignal.timeout(ms)
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), ms)
+  return controller.signal
+}
 async function refreshMcpDetailType(): Promise<string> {
   try {
     const r = new URL(OAUTH_MCP_RESOURCE)
@@ -294,7 +304,7 @@ async function refreshMcpDetailType(): Promise<string> {
     // grant-heal path, so a slow or half-open MCP endpoint must not block authentication. On
     // timeout the fetch aborts, the catch fires, and the cached/fallback name (mcpDetailType())
     // stands — the AS being healthy is enough to sign in.
-    const doc = (await (await fetch(prm, { signal: AbortSignal.timeout(4000) })).json()) as {
+    const doc = (await (await fetch(prm, { signal: timeoutSignal(4000) })).json()) as {
       authorization_details_types_supported?: string[]
       authorization_details_types?: Array<{ type?: string; risk_class?: string }>
     }

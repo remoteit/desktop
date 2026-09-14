@@ -4,24 +4,29 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // stub them so the syncTranscript EFFECT runs in isolation. fetchConversation is the one real
 // spy — each test scripts what the server returns and, crucially, what the user does to the
 // live store WHILE that fetch is in flight. The store is a hoisted MUTABLE object for that.
-const { fetchConversation, deleteConversation, openChatPopout, storeState } = vi.hoisted(() => ({
-  fetchConversation: vi.fn(),
-  deleteConversation: vi.fn(),
-  openChatPopout: vi.fn(),
-  storeState: { chat: {} as Record<string, unknown> },
-}))
+const { fetchConversation, deleteConversation, streamChat, confirmTool, openChatPopout, storeState } = vi.hoisted(
+  () => ({
+    fetchConversation: vi.fn(),
+    deleteConversation: vi.fn(),
+    streamChat: vi.fn(),
+    confirmTool: vi.fn(),
+    openChatPopout: vi.fn(),
+    storeState: { chat: {} as Record<string, unknown> },
+  })
+)
 
 vi.mock('../services/agent', () => ({
   fetchConversation,
   deleteConversation,
-  streamChat: vi.fn(),
-  confirmTool: vi.fn(),
+  streamChat,
+  confirmTool,
   backgroundDisable: vi.fn(),
   listConversations: vi.fn(),
   fetchUsage: vi.fn(),
   agentHealth: vi.fn(),
   UsageLimitError: class UsageLimitError extends Error {},
   AgentAuthError: class AgentAuthError extends Error {},
+  AgentStreamEndedError: class AgentStreamEndedError extends Error {},
 }))
 vi.mock('../services/chatPopout', () => ({
   broadcastChatSignout: vi.fn(),
@@ -33,6 +38,8 @@ vi.mock('../constants', () => ({ CHAT_PANEL_WIDTH: 400 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 
 import chatModel from './chat'
+// The mocked module's class — the same one chat.ts's instanceof sees
+import { AgentStreamEndedError } from '../services/agent'
 
 const effectsFor = (dispatch: any) => (chatModel as any).effects(dispatch)
 const makeDispatch = () => ({
@@ -71,6 +78,8 @@ const remoteAsLocal = [
 beforeEach(() => {
   fetchConversation.mockReset()
   deleteConversation.mockReset()
+  streamChat.mockReset()
+  confirmTool.mockReset()
   openChatPopout.mockReset()
   storeState.chat = { conversationId: 'a', streaming: false, messages: [], title: '' }
 })
@@ -191,6 +200,50 @@ describe('chat model — removeConversation', () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).removeConversation('a')
     expect(dispatch.chat.newConversation).toHaveBeenCalledTimes(1)
+  })
+})
+
+/* A pending approval is part of the turn: abandoning the turn must DENY it, or the server-side
+   turn waits on a card no window shows any more. stop() is the one place every abandonment path
+   (Stop, New Chat, delete, identity change, unmount) runs through. */
+describe('chat model — stop() denies a pending approval', () => {
+  const pending = { toolUseId: 'tool-9', name: 'update_device', input: {} }
+
+  it('sends an explicit deny for the pending tool before clearing it', async () => {
+    confirmTool.mockResolvedValue(undefined)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).stop(undefined, current({ turnId: 'turn-1', pendingConfirmation: pending }))
+    expect(confirmTool).toHaveBeenCalledWith({ turnId: 'turn-1', toolUseId: 'tool-9', approved: false })
+    expect(dispatch.chat.set).toHaveBeenCalledWith({ streaming: false, pendingConfirmation: null })
+  })
+
+  it('sends nothing when no approval is pending', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).stop(undefined, current({ turnId: 'turn-1', pendingConfirmation: null }))
+    expect(confirmTool).not.toHaveBeenCalled()
+  })
+
+  it('never waits on, or fails from, the deny (best-effort)', async () => {
+    confirmTool.mockRejectedValue(new Error('offline'))
+    const dispatch = makeDispatch()
+    await expect(
+      effectsFor(dispatch).stop(undefined, current({ turnId: 'turn-1', pendingConfirmation: pending }))
+    ).resolves.toBeUndefined()
+    expect(dispatch.chat.set).toHaveBeenCalledWith({ streaming: false, pendingConfirmation: null })
+  })
+})
+
+/* A stream the server closed cleanly mid-answer must end the turn as an interruption — not
+   resolve like a completion with a truncated reply on screen and the composer open. */
+describe('chat model — send() treats a cut-off stream as an interrupted turn', () => {
+  it('maps AgentStreamEndedError to an error event (which marks the reply Interrupted)', async () => {
+    streamChat.mockRejectedValue(new AgentStreamEndedError())
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).send('hello', sendable())
+    expect(dispatch.chat.applyEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'error', message: 'notices:chat.streamEnded' })
+    )
+    expect(dispatch.chat.set).toHaveBeenCalledWith({ streaming: false })
   })
 })
 

@@ -38,6 +38,16 @@ export class AgentAuthError extends Error {
 
 /* A usage window (session/weekly) or the fleet is spent — the turn was refused before it ran.
    Carries which window and when it resets so the UI can say "resets at 4:30pm". */
+/* The stream closed cleanly before a terminal event (done / error) — the server or an
+   intermediary (a proxy idle timeout on a long turn, say) ended it mid-answer. Without this
+   the turn resolved normally and a truncated answer looked complete. */
+export class AgentStreamEndedError extends Error {
+  constructor() {
+    super('Agent stream ended before the turn completed')
+    this.name = 'AgentStreamEndedError'
+  }
+}
+
 export class UsageLimitError extends Error {
   constructor(
     message: string,
@@ -96,6 +106,7 @@ export async function streamChat(options: {
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
+  let terminal = false // a done or error event closed the turn — anything else at EOF is a cut-off
   const deliver = (block: string) => {
     let event = 'message'
     const dataLines: string[] = []
@@ -103,7 +114,9 @@ export async function streamChat(options: {
       if (line.startsWith('event:')) event = line.slice(6).trim()
       else if (line.startsWith('data:')) dataLines.push(line.slice(5).trimStart())
     }
-    if (dataLines.length) onEvent({ type: event, ...JSON.parse(dataLines.join('\n')) } as AgentEvent)
+    if (!dataLines.length) return
+    if (event === 'done' || event === 'error') terminal = true
+    onEvent({ type: event, ...JSON.parse(dataLines.join('\n')) } as AgentEvent)
   }
   /* An event ends at a blank line. SSE permits CRLF, LF or CR line endings, so normalise to LF
      before looking for it — a CRLF server would otherwise never produce the '\n\n' we search
@@ -138,6 +151,9 @@ export async function streamChat(options: {
   }
   buffer += decoder.decode() // flush a multi-byte sequence still pending in the decoder
   drain(true)
+  // A clean close with no terminal event is a cut-off, not a completion. (A Stop never lands
+  // here: aborting rejects reader.read() with an AbortError, which the caller ignores.)
+  if (!terminal) throw new AgentStreamEndedError()
 }
 
 /* Approve or deny a write tool the agent paused on — addressed to the TURN */

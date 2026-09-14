@@ -15,6 +15,7 @@
     "popupBlocked": "Pop out was blocked — allow popups for this site and try again.",
     "sessionExpired": "The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.",
     "signInFailed": "Agent sign-in failed — {{error}}",
+    "streamEnded": "The connection to the agent closed before it finished — the answer may be incomplete. Try again.",
     "usageReset": "{{msg}} Resets {{when}}."
   },
   "connection": {
