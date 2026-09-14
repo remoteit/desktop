@@ -43,15 +43,20 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
      arriving late, or switching to an already-loaded empty account, change those
      without touching `initialized`. A ref keyed to the account we acted for keeps that
      from re-selecting or re-pushing /add on every re-run. */
+  // Guard by the ACTIVE account, not defaultAccountId: on a personal account with no memberships
+  // defaultAccountId is undefined, so keying on it would make the guard `undefined !== undefined`
+  // (never redirect to /add) and could not tell one chosen account from the next. activeAccountId
+  // is always set and changes on every switch, so each account decides exactly once.
+  const activeAccountId = useSelector((state: State) => state.accounts.activeId || state.user.id)
   const actedFor = useRef<string | undefined>(undefined)
   useEffect(() => {
     if (!initialized) setInitLoad(true)
-    if (shouldRedirect && !devices.length && actedFor.current !== defaultAccountId) {
-      actedFor.current = defaultAccountId
+    if (shouldRedirect && !devices.length && actedFor.current !== activeAccountId) {
+      actedFor.current = activeAccountId
       if (defaultAccountId) accounts.select(defaultAccountId)
       else history.push('/add')
     }
-  }, [initialized, shouldRedirect, devices.length, defaultAccountId, history, accounts])
+  }, [initialized, shouldRedirect, devices.length, defaultAccountId, activeAccountId, history, accounts])
 
   return (
     <DevicesDrawers>

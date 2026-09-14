@@ -331,15 +331,22 @@ export default createModel<RootModel>()({
       if (!id || state.chat.streaming) return
       try {
         const remote = await fetchConversation(id)
-        if (remote && remote.messages.length > state.chat.messages.length) {
-          dispatch.chat.set({
-            messages: remote.messages.map(m =>
-              m.role === 'assistant'
-                ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
-                : { role: 'user' as const, text: m.content }
-            ),
-          })
-        }
+        if (!remote) return
+        const messages = remote.messages.map(m =>
+          m.role === 'assistant'
+            ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
+            : { role: 'user' as const, text: m.content }
+        )
+        // Adopt the server copy when it DIFFERS, not only when it is longer: a popout hands back a
+        // partially rendered reply the server then completes to the SAME message count, so a
+        // length-only test leaves the partial on screen. Compare the last message's text too. Also
+        // apply the server title — a reload restores conversationId but the title defaults to ''.
+        const last = messages[messages.length - 1]?.text ?? ''
+        const localLast = state.chat.messages[state.chat.messages.length - 1]?.text ?? ''
+        const differs = messages.length !== state.chat.messages.length || last !== localLast
+        const title = remote.title || state.chat.title
+        if (differs) dispatch.chat.set({ messages, title })
+        else if (title !== state.chat.title) dispatch.chat.set({ title })
       } catch {
         /* offline or deleted — the local display cache stands */
       }
@@ -416,7 +423,15 @@ export default createModel<RootModel>()({
     },
     /* Delete a conversation for real (D9). If it's the one on screen, clear to a new chat. */
     async removeConversation(id: string, state) {
-      await deleteConversation(id)
+      // A failed DELETE (401/403/5xx) is NOT a deletion — the row survives on the server and would
+      // reappear on the next refresh. Report it and keep the local copy, rather than clearing the
+      // open transcript as though it succeeded.
+      if (!(await deleteConversation(id))) {
+        dispatch.chat.set({
+          error: i18n.t('notices:chat.deleteFailed', { defaultValue: 'Could not delete the conversation — try again.' }),
+        })
+        return
+      }
       if (state.chat.conversationId === id) await dispatch.chat.newConversation()
       await dispatch.chat.loadConversations()
     },
@@ -428,9 +443,15 @@ export default createModel<RootModel>()({
       broadcastChatSignout()
       abortController?.abort()
       abortController = null
-      // Explicit sign-out ends the background relationship too (plan D8): best-effort
-      // revoke of the agent's stored grant, before the session tokens vanish.
-      void backgroundDisable()
+      // Explicit sign-out ends the background relationship (plan D8): revoke the agent's stored
+      // grant BEFORE the session tokens vanish. AWAITED but BOUNDED — an unawaited revoke raced
+      // oidcClearLocal(), so its authenticated DELETE minted no token and background AI access
+      // survived sign-out. Awaiting lets the revoke finish while the tokens are still valid; the
+      // timeout keeps a slow agent from blocking sign-out.
+      await Promise.race([
+        backgroundDisable().catch(() => {}),
+        new Promise(resolve => setTimeout(resolve, 3000)),
+      ])
     },
   }),
   reducers: {

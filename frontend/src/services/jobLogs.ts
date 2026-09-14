@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getApiURL } from '../helpers/apiHelper'
+import { getApiURL, getTestHeader } from '../helpers/apiHelper'
 import { apiAuthHeaders } from './remoteit'
 import { store } from '../store'
 
@@ -42,7 +42,7 @@ export async function getJobLogs(jobId: string): Promise<GetJobLogsResult> {
     return { kind: 'error', status: 401, message: 'Not signed in' }
   }
 
-  const headers: any = { ...auth }
+  const headers: any = { ...auth, ...getTestHeader() }
   const viewAsUser = store.getState().ui.viewAsUser
   if (viewAsUser) headers['X-R3-User'] = viewAsUser.id
 

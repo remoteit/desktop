@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getApiURL } from '../helpers/apiHelper'
+import { getApiURL, getTestHeader } from '../helpers/apiHelper'
 import { apiAuthHeaders } from './remoteit'
 import { apiError } from './post'
 import { store } from '../store'
@@ -14,8 +14,8 @@ export async function get(path: string = '') {
     return
   }
 
-  const headers: any = { ...auth }
-  
+  const headers: any = { ...auth, ...getTestHeader() }
+
   // Add x-r3-user header if in view-as mode
   const viewAsUser = store.getState().ui.viewAsUser
   if (viewAsUser) {

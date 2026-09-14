@@ -471,7 +471,10 @@ export default createModel<RootModel>()({
       // re-save the pre-signout state for the next user of the machine.
       // (The DCR agent session retires with the permitteer chat lane —
       // remoteit-ai-agent.md Phase 4; until then both sign-outs run.)
-      dispatch.chat.signOut()
+      // AWAIT the chat sign-out: it revokes the background-agent grant, whose authenticated DELETE
+      // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
+      // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
+      await dispatch.chat.signOut()
       await persistor.purge()
       // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
       // signing out of the app must not sign the user out of login.* (their browser

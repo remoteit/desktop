@@ -22,6 +22,7 @@ const chatTransform = createTransform(
   (inbound: IChatState) => ({
     messages: inbound.messages,
     conversationId: inbound.conversationId,
+    title: inbound.title,
     orgId: inbound.orgId,
     ownerId: inbound.ownerId,
     open: inbound.open,

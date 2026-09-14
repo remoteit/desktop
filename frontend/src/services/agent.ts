@@ -150,7 +150,9 @@ export type ConversationSummary = { id: string; title: string | null; createdAt:
 /* The user's conversations, newest first (D11) — the history picker's source. */
 export async function listConversations(): Promise<ConversationSummary[]> {
   const response = await fetch(`${agentURL()}/api/conversations`, { headers: await agentHeaders('GET', '/api/conversations', false) })
-  if (!response.ok) return []
+  // Don't turn an auth/service failure (401/403/5xx) into an empty list — loadConversations would
+  // overwrite the last-known history as though the user had none. Throw so its catch keeps it.
+  if (!response.ok) throw new Error(`listConversations: ${response.status}`)
   return ((await response.json()) as { conversations: ConversationSummary[] }).conversations
 }
 
