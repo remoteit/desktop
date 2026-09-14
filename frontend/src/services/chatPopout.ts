@@ -95,7 +95,10 @@ export function openChatPopout(): boolean {
   // Reuse the stored id so re-clicking Pop out re-targets the same named
   // window instead of orphaning it under a new identity
   const id = ownerId() || crypto.randomUUID().slice(0, 8)
-  const opened = window.open(`${window.location.origin}/?${CHAT_POPOUT_PARAM}=${id}`, WINDOW_NAME, WINDOW_FEATURES)
+  // Name the window PER OWNER so a re-click from THIS tab reuses only its own popup. A single
+  // constant name let a second main tab's window.open reuse and navigate the first tab's popup,
+  // orphaning the first tab's handle (its dock never restored, its ping never sent).
+  const opened = window.open(`${window.location.origin}/?${CHAT_POPOUT_PARAM}=${id}`, `${WINDOW_NAME}-${id}`, WINDOW_FEATURES)
   if (!opened) return false // popup blocked — dock stays; hello never arrives
   window.sessionStorage.setItem(OWNER_KEY, id)
   popoutWindow = opened

@@ -6,7 +6,7 @@ import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
-import { persistor } from '../store'
+import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken, apiAuthHeaders } from '../services/remoteit'
 import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
@@ -386,21 +386,43 @@ export default createModel<RootModel>()({
     },
     async disconnect(_: void, state) {
       if (!state.auth.authenticated && !state.auth.backendAuthenticated && browser.hasBackend) {
+        // Read the LIVE store, not the invocation-time snapshot: backendSignInError records its
+        // failure after its own teardown and this handler fires right behind it when the
+        // rejected socket drops, so the snapshot predates that message. Carry an existing
+        // failure through this teardown (signedOut()'s signInCleared would wipe it) and only
+        // otherwise fall back to the generic one — either way through the signInFailure shape,
+        // so signInFailed is set and SignInApp actually renders the message.
+        const live = store.getState().auth
+        const failure: Partial<AuthState> = live.signInFailed
+          ? {
+              signInFailed: true,
+              signInError: live.signInError,
+              signInErrorCode: live.signInErrorCode,
+              signInRetryAfter: live.signInRetryAfter,
+            }
+          : signInFailure(new Error('Sign in failed, please try again.'))
         await dispatch.auth.signedOut()
-        if (!state.auth.signInError) dispatch.auth.set({ signInError: 'Sign in failed, please try again.' })
+        dispatch.auth.set(failure)
       }
       dispatch.ui.set({ connected: false })
       dispatch.auth.set({ backendAuthenticated: false })
     },
     async signInError(signInError: string) {
-      dispatch.auth.set({ signInError })
+      // Through signInFailure, not a bare signInError set: SignInApp renders the message only
+      // while signInFailed is true, so a raw string here would never reach the screen.
+      dispatch.auth.set(signInFailure(new Error(signInError)))
       //send message to backend to sign out
       emit('user/lock')
     },
     async backendSignInError(signInError: string) {
       console.error(signInError)
-      await dispatch.auth.set({ signInError })
+      // Tear down FIRST, then record the failure: signedOut() deliberately clears
+      // signInFailed/signInError (a failure logged while signed in must not survive into the
+      // signed-out screen), so a set() before it was wiped and SignInApp — which renders its
+      // message only while signInFailed is true — showed a bare sign-in screen with no word of
+      // the backend's rejection. signInFailure is the one shape every failure takes.
       await dispatch.auth.signedOut()
+      dispatch.auth.set(signInFailure(new Error(signInError)))
     },
     async appReady(_: void, state) {
       // Temp migration of state

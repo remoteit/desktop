@@ -332,6 +332,15 @@ export default createModel<RootModel>()({
       try {
         const remote = await fetchConversation(id)
         if (!remote) return
+        // The fetch may have outlived the conversation: a New Chat or a history pick while it
+        // was in flight leaves `state` describing a conversation no longer on screen, and
+        // applying against that snapshot would land the OLD transcript in the new conversation
+        // under its newer conversationId (or repopulate one just cleared). Re-read the LIVE
+        // store, drop the response once the active id has moved on or a turn has started, and
+        // compare against what is actually current — the generation check logs.ts keys on
+        // requestId.
+        const current = store.getState().chat
+        if (current.conversationId !== id || current.streaming) return
         const messages = remote.messages.map(m =>
           m.role === 'assistant'
             ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
@@ -342,11 +351,11 @@ export default createModel<RootModel>()({
         // length-only test leaves the partial on screen. Compare the last message's text too. Also
         // apply the server title — a reload restores conversationId but the title defaults to ''.
         const last = messages[messages.length - 1]?.text ?? ''
-        const localLast = state.chat.messages[state.chat.messages.length - 1]?.text ?? ''
-        const differs = messages.length !== state.chat.messages.length || last !== localLast
-        const title = remote.title || state.chat.title
+        const localLast = current.messages[current.messages.length - 1]?.text ?? ''
+        const differs = messages.length !== current.messages.length || last !== localLast
+        const title = remote.title || current.title
         if (differs) dispatch.chat.set({ messages, title })
-        else if (title !== state.chat.title) dispatch.chat.set({ title })
+        else if (title !== current.title) dispatch.chat.set({ title })
       } catch {
         /* offline or deleted — the local display cache stands */
       }
