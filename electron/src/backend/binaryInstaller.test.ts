@@ -154,7 +154,7 @@ describe('backend/binaryInstaller', () => {
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
       agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(agentVersion))
       reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ error: refusal('410') }))
-      updateSpy = jest.spyOn(preferences, 'update').mockImplementation()
+      updateSpy = jest.spyOn(preferences, 'set').mockImplementation()
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       environment.version = desktopVersion
       binaryInstaller.reloadRefusedBy = undefined
