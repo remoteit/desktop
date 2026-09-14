@@ -14,6 +14,12 @@ describe('Test framework is working', () => {
   expect(true).toBeTruthy()
 })
 
+const refusal = (code: string, message = 'refused') => {
+  const error = new Error(message)
+  error.name = code
+  return error
+}
+
 describe('backend/binaryInstaller', () => {
   const version = '0.37.6'
   const agentVersion = '0.37.6'
@@ -147,7 +153,7 @@ describe('backend/binaryInstaller', () => {
       agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(true))
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
       agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(agentVersion))
-      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve(undefined))
+      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ error: refusal('410') }))
       updateSpy = jest.spyOn(preferences, 'update').mockImplementation()
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       environment.version = desktopVersion
@@ -167,7 +173,7 @@ describe('backend/binaryInstaller', () => {
 
     test('reloads the running agent instead of prompting when only the agent version differs', async () => {
       agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
-      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve(version))
+      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ version }))
 
       await binaryInstaller.check()
 
@@ -179,9 +185,35 @@ describe('backend/binaryInstaller', () => {
       expect(binaryInstaller.inProgress).toBe(false)
     })
 
+    test('does not latch a reload that failed because the agent was unreachable', async () => {
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest
+        .spyOn(cli, 'agentReload')
+        .mockImplementation(() => Promise.resolve({ error: refusal('101', 'agent not reachable') }))
+
+      await binaryInstaller.check()
+      expect(binaryInstaller.reloadRefusedBy).toBeUndefined()
+
+      await binaryInstaller.check()
+      expect(reloadSpy).toBeCalledTimes(2)
+    })
+
+    test('latches a refusal the agent will repeat', async () => {
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest
+        .spyOn(cli, 'agentReload')
+        .mockImplementation(() => Promise.resolve({ error: refusal('3', 'UNKNOWN-MESSAGE: {}') }))
+
+      await binaryInstaller.check()
+      await binaryInstaller.check()
+
+      expect(reloadSpy).toBeCalledTimes(1)
+      expect(binaryInstaller.reloadRefusedBy).toBe('2.0.0')
+    })
+
     test('treats a reload that leaves another version running as refused', async () => {
       agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
-      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ version: '2.0.0' }))
 
       await binaryInstaller.check()
 
@@ -215,7 +247,7 @@ describe('backend/binaryInstaller', () => {
     test('clears a refusal once the agent has been brought current', async () => {
       binaryInstaller.reloadRefusedBy = '1.0.0'
       agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
-      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve(version))
+      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ version }))
 
       await binaryInstaller.check()
 

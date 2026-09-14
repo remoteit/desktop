@@ -11,6 +11,15 @@ import Binary, { binaries, cliBinary } from './Binary'
 import { existsSync, lstatSync } from 'fs'
 import Logger from './Logger'
 
+// Refusals the running agent will give again: unsupported platform, a service definition that
+// predates staging, a signature it will not accept, and a daemon too old to know the command.
+const PERMANENT_REFUSAL_CODES = ['409', '410', '411']
+
+function permanentRefusal(error?: Error) {
+  if (!error) return false
+  return PERMANENT_REFUSAL_CODES.includes(error.name) || error.message.toLowerCase().includes('unknown-message')
+}
+
 export class BinaryInstaller {
   ready = false
   inProgress = false
@@ -73,13 +82,21 @@ export class BinaryInstaller {
     Logger.info('START AGENT RELOAD')
     this.inProgress = true
 
-    const version = await cli.agentReload()
+    const { version, error } = await cli.agentReload()
     const reloaded = !!version && version === this.cliBinary.version
     if (reloaded) {
       await this.completeInstall()
     } else {
-      this.reloadRefusedBy = this.cliBinary.agentVersion
-      Logger.warn('AGENT RELOAD REFUSED', { version, agentVersion: this.cliBinary.agentVersion, fallback: 'install' })
+      // A daemon that answered, or refused for a reason it will repeat, is worth latching. An
+      // unreachable agent or a failed spawn is not, or the unprivileged retry never happens again.
+      if (!!version || permanentRefusal(error)) this.reloadRefusedBy = this.cliBinary.agentVersion
+      Logger.warn('AGENT RELOAD REFUSED', {
+        version,
+        code: error?.name,
+        error: error?.message,
+        latched: this.reloadRefusedBy,
+        agentVersion: this.cliBinary.agentVersion,
+      })
     }
 
     this.inProgress = false
