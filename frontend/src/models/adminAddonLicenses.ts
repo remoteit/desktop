@@ -1,5 +1,6 @@
 import { createModel } from '@rematch/core'
 import { graphQLAdminAddonCustomers, graphQLAdminAddonProducts } from '../services/graphQLRequest'
+import { getApiURL } from '../helpers/apiHelper'
 import type { RootModel } from '.'
 
 /* Admin grants of ADD-ON licences (graphql-api docs/AI-AGENT-LICENSE.md) — generic over add-on
@@ -41,6 +42,10 @@ interface AdminAddonLicensesState {
   products: AdminAddonProduct[]
   productsStatus: LoadStatus
   productId?: string
+  /* The API target (graphql URL) the rows were fetched from. Part of the list's identity with the
+     product: Test Settings switches the target without a reload, a product id is the same on every
+     stage, and rows from the other stage must not sit on screen — interactive — behind the same id. */
+  target?: string
   customers: AdminAddonCustomer[]
   total: number
   hasMore: boolean
@@ -53,6 +58,7 @@ const initialState: AdminAddonLicensesState = {
   products: [],
   productsStatus: 'idle',
   productId: undefined,
+  target: undefined,
   customers: [],
   total: 0,
   hasMore: false,
@@ -85,6 +91,11 @@ export const adminAddonLicenses = createModel<RootModel>()({
       productId === state.productId
         ? state
         : { ...state, productId, customers: [], total: 0, hasMore: false, listStatus: 'idle' as const },
+    // A new target empties the list the same way a new product does: nothing on screen is from here.
+    setTarget: (state, target?: string) =>
+      target === state.target
+        ? state
+        : { ...state, target, customers: [], total: 0, hasMore: false, listStatus: 'idle' as const },
     setListStatus: (state, listStatus: LoadStatus) => ({ ...state, listStatus }),
     setCustomers: (state, payload: Page) => ({
       ...state,
@@ -131,9 +142,12 @@ export const adminAddonLicenses = createModel<RootModel>()({
        hands the choice back to the page, which redirects to one that exists), then that product's
        list, fetched AFRESH. Always afresh: the page can remount over rows from another API target
        (Test Settings switches the stage without reloading, and cloudSync.all() knows nothing of
-       this model), and a product id is the same on every stage. A switch's request retires
+       this model), and a product id is the same on every stage — so the target is checked FIRST,
+       before anything is awaited: rows from another target leave the screen at once rather than
+       staying interactive until (or beyond, if it fails) the new answer. A switch's request retires
        whatever the old product still had in flight (the tickets above). */
     async refresh(preferredProductId: string | undefined, rootState) {
+      dispatch.adminAddonLicenses.setTarget(getApiURL())
       const products = await dispatch.adminAddonLicenses.fetchProducts()
       if (!products) return
 

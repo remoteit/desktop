@@ -51,13 +51,19 @@ export const TestPage: React.FC = () => {
   // grant — enrollment is a browser ceremony at the AS; this page only reads/ends it. (The
   // one UI entry point for it: without this control backgroundConnectUrl/backgroundStatus
   // have no caller and the workflow cannot be enabled.)
-  // Behind the same licence gate as the chat: without it the section is not shown, and the
-  // agent service is not asked anything.
+  // Behind the chat's licence gate — with one exception. The background grant is the agent's OWN
+  // standing at the AS and outlives the entitlement (which is why sign-out revokes it explicitly),
+  // so losing the licence — revoked, expired, or switched off in Features below — must not take
+  // the only control that can end it. The status is therefore always asked (one GET, on this staff
+  // page only), and the section shows while the feature is licensed OR a grant is still standing;
+  // an unlicensed account with no grant sees nothing. Revoking on the entitlement flipping off
+  // would be wrong: it also flips when merely viewing an organization without the add-on.
   const chatEnabled = useChatEnabled()
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {
-    if (chatEnabled) backgroundStatus().then(setBackgroundEnrolled)
-  }, [chatEnabled])
+    backgroundStatus().then(setBackgroundEnrolled)
+  }, [])
+  const showAgentSettings = chatEnabled || !!backgroundEnrolled
   async function connectBackground() {
     await windowOpen(backgroundConnectUrl(), '_blank', true)
     // The ceremony finishes in the browser — poll briefly for the verdict.
@@ -292,7 +298,7 @@ export const TestPage: React.FC = () => {
         </ListItem>
       </List>
 
-      {chatEnabled && (
+      {showAgentSettings && (
         <>
           <Typography variant="subtitle1">{t('testPage.aiAgent', 'AI Agent')}</Typography>
           <List>
@@ -302,6 +308,11 @@ export const TestPage: React.FC = () => {
               subLabel={
                 backgroundEnrolled === undefined
                   ? t('testPage.backgroundWorkUnknown', 'Checking…')
+                  : backgroundEnrolled && !chatEnabled
+                  ? t(
+                      'testPage.backgroundWorkOrphaned',
+                      'The agent can still read and watch while you are away, though this account no longer has Remote.It AI — switch it off.'
+                    )
                   : backgroundEnrolled
                   ? t('testPage.backgroundWorkOn', 'The agent can read and watch while you are away.')
                   : t('testPage.backgroundWorkOff', 'The agent only works while you are here.')

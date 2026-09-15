@@ -85,8 +85,10 @@ enterprise-licences page (`AdminEnterpriseLicensesListPage.tsx`) with the produc
 account without the add-on has no `ai-agent` entry at all — falsy — and nothing chat-related
 mounts: no header button, no docked column, no popout (it says "Remote.It AI is not available for
 this account"), and the Test page's **AI Agent** section (background work, agent URL) is behind the
-same gate, so the agent service is not even asked for the background status. The Test page's
-Features list shows only what the licence mentions — an account holding the add-on can switch it
+same gate — with one exception: the agent's **background-work grant** is its own standing at the AS
+and outlives the entitlement (sign-out revokes it explicitly for that reason), so the section also
+shows, unlicensed, while such a grant exists, keeping the one control that ends it reachable. The
+Test page's Features list shows only what the licence mentions — an account holding the add-on can switch it
 off there; one without it has no row and gets it granted, not toggled. This holds for a dev build
 and for app.ai.remote.it alike: a developer's dev account needs the grant too.
 

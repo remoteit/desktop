@@ -2,11 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // The model touches nothing but the two request wrappers; stub those and drive the effects and
 // reducers directly, the way chat.test.ts does.
-const { graphQLAdminAddonProducts, graphQLAdminAddonCustomers } = vi.hoisted(() => ({
+const { graphQLAdminAddonProducts, graphQLAdminAddonCustomers, getApiURL } = vi.hoisted(() => ({
   graphQLAdminAddonProducts: vi.fn(),
   graphQLAdminAddonCustomers: vi.fn(),
+  getApiURL: vi.fn(() => 'https://cloud.dev.remote.it/api/graphql'),
 }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLAdminAddonProducts, graphQLAdminAddonCustomers }))
+vi.mock('../helpers/apiHelper', () => ({ getApiURL }))
 
 import { adminAddonLicenses } from './adminAddonLicenses'
 
@@ -30,6 +32,7 @@ const makeDispatch = () => ({
     setCustomers: vi.fn(),
     appendCustomers: vi.fn(),
     setProductsStatus: vi.fn(),
+    setTarget: vi.fn(),
     setListStatus: vi.fn(),
     setSearchValue: vi.fn(),
     resetState: vi.fn(),
@@ -75,6 +78,16 @@ describe('adminAddonLicenses reducers', () => {
     const before = { ...model.state, productId: 'a', listStatus: 'loaded' }
     expect(model.reducers.setProductId(before, 'b')).toMatchObject({ listStatus: 'idle', customers: [] })
   })
+
+  it('a new API target empties the list exactly like a new product; the same target keeps it', () => {
+    const before = { ...model.state, target: 'dev', customers: [holder('u1')], total: 1, listStatus: 'loaded' }
+    expect(model.reducers.setTarget(before, 'prod')).toMatchObject({
+      target: 'prod',
+      customers: [],
+      listStatus: 'idle',
+    })
+    expect(model.reducers.setTarget(before, 'dev')).toBe(before)
+  })
 })
 
 describe('adminAddonLicenses effects', () => {
@@ -97,6 +110,15 @@ describe('adminAddonLicenses effects', () => {
     expect(
       dispatch.adminAddonLicenses.setProductsStatus.mock.calls.filter((call: unknown[]) => call[0] === 'failed')
     ).toHaveLength(3)
+  })
+
+  it('refresh stamps the current API target before anything is awaited — rows from another target leave at once', async () => {
+    const dispatch = makeDispatch()
+    const effects = withRealEffects(dispatch, { productId: 'A' })
+    getApiURL.mockReturnValueOnce('https://cloud.remote.it/api/graphql')
+    graphQLAdminAddonProducts.mockReturnValueOnce(new Promise(() => {})) // never answers
+    void effects.refresh('A', stateWith({ productId: 'A', target: 'https://cloud.dev.remote.it/api/graphql' }))
+    expect(dispatch.adminAddonLicenses.setTarget).toHaveBeenCalledWith('https://cloud.remote.it/api/graphql')
   })
 
   it("refresh takes the URL's product when the catalogue lists it, and fetches its list afresh", async () => {

@@ -2247,6 +2247,7 @@
     "backgroundWork": "",
     "backgroundWorkOff": "",
     "backgroundWorkOn": "",
+    "backgroundWorkOrphaned": "",
     "backgroundWorkUnknown": "",
     "clearViewedAnnouncements": "Angesehene Ankündigungen löschen",
     "clearViewedAnnouncementsHint": "Markiert alle geladenen Ankündigungen für dieses Konto als ungelesen.",
