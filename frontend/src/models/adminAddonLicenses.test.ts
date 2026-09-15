@@ -95,7 +95,7 @@ describe('adminAddonLicenses effects', () => {
     }
     expect(dispatch.adminAddonLicenses.setProducts).not.toHaveBeenCalled()
     expect(
-      dispatch.adminAddonLicenses.setProductsStatus.mock.calls.filter(([s]: [string]) => s === 'failed')
+      dispatch.adminAddonLicenses.setProductsStatus.mock.calls.filter((call: unknown[]) => call[0] === 'failed')
     ).toHaveLength(3)
   })
 
