@@ -104,9 +104,24 @@ Sections, in order — omit any that is empty:
 listed as `remoteit`). Check it against the previous release — it does not
 change every time.
 
-Write notes against the **last release users actually received**, not the last
-tag. If the previous release was an unpromoted pre-release, its changes are new
-to the public and belong in these notes too.
+The GitHub notes are the changelog: **one entry per tag, listing only what
+changed since the previous tag**, pre-release or not. Never repeat an earlier
+entry — the release list is meant to read top to bottom.
+
+Nothing shows these bodies to customers (the app does not display them, and
+there is no changelog on the docs or marketing sites), so a **customer-facing
+summary** is a separate, derived document. When a release goes Latest, print
+every entry since the previous Latest, pre-releases included:
+
+```bash
+gh api 'repos/remoteit/desktop/releases?per_page=30' \
+  -q '[.[] | select(.draft | not)] | .[: (map(.tag_name) | index("v3.47.1"))][] | "## \(.tag_name)\n\n\(.body)\n"'
+```
+
+(`v3.47.1` being the previous Latest.) Then pare it down: keep Updates and the
+fixes a customer would notice, drop Chore, merge lines that describe one thing,
+and lead with the headline. It goes wherever the audience is — an email, a
+community post, a support reply — not back onto GitHub.
 
 ## 4. Desktop: publish
 
