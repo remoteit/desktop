@@ -282,8 +282,15 @@ export const AdminAddonLicensesListPage: React.FC = () => {
             </TextField>
             {/* A disabled add-on refuses new grants at the API; its existing ones can still be revoked. */}
             {product?.enabled && (
-              <Button onClick={() => setGrantDialogOpen(true)} size="small" sx={{ whiteSpace: 'nowrap' }}>
-                Grant Add-on
+              <Button
+                onClick={() => setGrantDialogOpen(true)}
+                size="small"
+                variant="contained"
+                color="primary"
+                startIcon={<Icon name="plus" />}
+                sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
+                Grant
               </Button>
             )}
             <TextField
