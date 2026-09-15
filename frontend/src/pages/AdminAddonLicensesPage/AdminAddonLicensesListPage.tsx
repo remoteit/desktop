@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { Attribute } from '../../components/Attributes'
@@ -193,16 +193,7 @@ export const AdminAddonLicensesListPage: React.FC = () => {
       dispatch.ui.setDefaultSelected({ key: ADMIN_ADDONS_ROUTE, value: location.pathname, accountId: 'admin' })
   }, [location.pathname])
 
-  // Refetch when the (committed) search term changes, skipping the initial mount.
-  const isInitialMount = useRef(true)
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
-    }
-    dispatch.adminAddonLicenses.fetch()
-  }, [searchValue])
-
+  // Enter commits the term; the model refetches for it (and retires the page in flight).
   const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       dispatch.adminAddonLicenses.setSearch(searchInput)
