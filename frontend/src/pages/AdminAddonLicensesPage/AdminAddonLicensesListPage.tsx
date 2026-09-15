@@ -26,6 +26,7 @@ import { LoadingMessage } from '../../components/LoadingMessage'
 import { removeObject } from '../../helpers/utilHelper'
 import { graphQLAddAddonCustomer, graphQLRemoveAddonCustomer } from '../../services/graphQLMutation'
 import { AdminAddonCustomer, AdminAddonProduct } from '../../models/adminAddonLicenses'
+import { AI_AGENT_PRODUCT_ID } from '../../models/plans'
 import { Dispatch, State } from '../../store'
 
 /* Add-on licences (graphql-api docs/AI-AGENT-LICENSE.md): one page for every add-on product, not
@@ -46,7 +47,13 @@ const toInputValue = (date: Date) => {
 
 type AddonCustomerAttributeOptions = {
   customer?: AdminAddonCustomer
+  /* The add-on the row's licence is for, looked up from the row's own productId — so the row says
+     what it holds without leaning on the selector above it. */
+  product?: AdminAddonProduct
 }
+
+// The ai-agent add-on wears the feature's own mark; any other add-on the generic one.
+const addonIcon = (productId?: string) => (productId === AI_AGENT_PRODUCT_ID ? 'remote-ai' : 'puzzle-piece')
 
 class AddonCustomerAttribute extends Attribute<AddonCustomerAttributeOptions> {
   type: Attribute['type'] = 'MASTER'
@@ -60,6 +67,12 @@ const addonCustomerAttributes: AddonCustomerAttribute[] = [
     defaultWidth: 250,
     required: true,
     value: ({ customer }) => customer?.email || '-',
+  }),
+  new AddonCustomerAttribute({
+    id: 'addon',
+    label: 'Add-on',
+    defaultWidth: 150,
+    value: ({ product, customer }) => product?.description || product?.name || customer?.productId || '-',
   }),
   new AddonCustomerAttribute({
     id: 'devices',
@@ -125,6 +138,7 @@ export const AdminAddonLicensesListPage: React.FC = () => {
 
   const product = products.find(p => p.id === productId)
   const label = productLabel(product)
+  const productOf = (customer: AdminAddonCustomer) => products.find(p => p.id === customer.productId)
 
   const listAttributes = useMemo(
     () => [
@@ -316,8 +330,8 @@ export const AdminAddonLicensesListPage: React.FC = () => {
             <GridListItem
               key={customer.userId}
               disableGutters
-              icon={<Icon name="puzzle-piece" size="md" color="grayDark" />}
-              required={required?.value({ customer })}
+              icon={<Icon name={addonIcon(customer.productId)} size="md" color="grayDark" />}
+              required={required?.value({ customer, product: productOf(customer) })}
             >
               {attributes.map(attribute => (
                 <Box key={attribute.id} className="attribute">
@@ -327,7 +341,7 @@ export const AdminAddonLicensesListPage: React.FC = () => {
                     <Box
                       sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flex: 1 }}
                     >
-                      {attribute.value({ customer })}
+                      {attribute.value({ customer, product: productOf(customer) })}
                     </Box>
                   )}
                 </Box>
