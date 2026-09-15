@@ -159,6 +159,16 @@ export const AdminAddonLicensesListPage: React.FC = () => {
 
   const product = products.find(p => p.id === productId)
   const label = productLabel(product)
+  /* What is on screen is worth showing only if the list ANSWERED for it, or rows are held (a failed
+     Load More keeps them). Decides between the grid and the four "nothing to list" screens below —
+     never products.length or customers.length alone: a stale catalogue survives a failed refresh
+     (fetchProducts keeps what it held), and rows survive a failed page. */
+  const listUsable = listStatus === 'loaded' || customers.length > 0
+  const retry = (
+    <Button size="small" onClick={() => dispatch.adminAddonLicenses.refresh(urlProductId)}>
+      Retry
+    </Button>
+  )
   const productOf = (customer: AdminAddonCustomer) => products.find(p => p.id === customer.productId)
   const removeLabel = removeTarget ? productLabel(productOf(removeTarget)) : label
 
@@ -337,15 +347,16 @@ export const AdminAddonLicensesListPage: React.FC = () => {
         </Gutters>
       }
     >
-      {/* Each screen is decided by a STATUS and the rows, never by an empty array alone — "nothing
-          has answered yet", "the answer was no", and "nobody holds it" are different screens. */}
-      {!products.length && productsStatus === 'failed' ? (
+      {/* Each screen is decided by the STATUSES, never by an empty array alone — "nothing has
+          answered yet", "the answer was no", and "nobody holds it" are different screens. With
+          nothing usable on screen, a catalogue that failed to answer is the screen even when a
+          stale catalogue is held (a target switch empties the rows first, then its refresh can fail);
+          with something usable, the rows stay and the failure is the snackbar. */}
+      {!listUsable && productsStatus === 'failed' ? (
         <Empty title="Couldn't load the add-ons" body="The API did not answer. Check the connection and try again.">
-          <Button size="small" onClick={() => dispatch.adminAddonLicenses.refresh(urlProductId)}>
-            Retry
-          </Button>
+          {retry}
         </Empty>
-      ) : !products.length && productsStatus !== 'loaded' ? (
+      ) : !listUsable && productsStatus !== 'loaded' ? (
         <LoadingMessage message="Loading add-ons..." />
       ) : !products.length ? (
         <Empty
@@ -354,16 +365,14 @@ export const AdminAddonLicensesListPage: React.FC = () => {
         />
       ) : !product ? (
         <LoadingMessage message="Loading add-ons..." /> // the redirect above is choosing one
-      ) : !customers.length && listStatus === 'failed' ? (
+      ) : !listUsable && listStatus === 'failed' ? (
         <Empty
           title={`Couldn't load the ${label} licenses`}
           body="The API did not answer. Check the connection and try again."
         >
-          <Button size="small" onClick={() => dispatch.adminAddonLicenses.refresh(urlProductId)}>
-            Retry
-          </Button>
+          {retry}
         </Empty>
-      ) : !customers.length && listStatus !== 'loaded' ? (
+      ) : !listUsable ? (
         <LoadingMessage message={`Loading ${label} licenses...`} />
       ) : !customers.length ? (
         <Empty title={searchValue ? `No matching ${label} licenses` : `No ${label} licenses granted`} />

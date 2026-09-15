@@ -128,6 +128,14 @@ page works the day it lands, and prod gets it with the branch's promotion.
 
 ## Left for later
 
+- **Expiry is enforced at the next sync, not at the second.** A time-boxed grant that lapses while
+  the grantee's app stays open keeps its cached `ai-agent` limit until the desktop next refetches
+  limits (a licence event, a reconnect, a refresh) — exactly as every other licensed feature behaves
+  when its licence expires. The real enforcement point is server-side: the agent service gates on
+  nothing licence-shaped today, and neither does the MCP surface (graphql-api
+  `docs/AI-AGENT-LICENSE.md`, "Exposure"). A client-side timer would only paper over that; the
+  server check is the fix, and once it exists the client's lazy refresh is merely cosmetic.
+
 - **app.ai.remote.it for the unlicensed.** With no floor, an account without the add-on gets the
   ordinary portal there, chat-less and without a word about why (the popout is the one place that
   says so). If the AI portal should explain itself, that is a notice keyed on the same gate — not a
