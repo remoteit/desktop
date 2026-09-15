@@ -6,10 +6,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // the hoisted vi.mock factory runs. `browser` and the live `store` state are hoisted MUTABLE
 // objects so individual tests can steer the electron/backend branch and what the effects
 // re-read from the store after a teardown.
-const { oidcStart, signOutEverywhere, oidcGrantStale, oidcMcpDetailReady, browser, storeState } = vi.hoisted(() => ({
+const { oidcStart, signOutEverywhere, oidcGrantStale, oidcMcpDetailReady, oidcActor, browser, storeState } = vi.hoisted(() => ({
   oidcStart: vi.fn(),
   signOutEverywhere: vi.fn(),
   oidcGrantStale: vi.fn(),
+  oidcActor: vi.fn(),
   oidcMcpDetailReady: vi.fn(),
   browser: { isElectron: false, hasBackend: false },
   storeState: { auth: {} as Record<string, unknown> },
@@ -21,6 +22,7 @@ vi.mock('../services/oidc', () => ({
   oidcStart,
   oidcGrantStale,
   oidcMcpDetailReady,
+  oidcActor,
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
@@ -36,7 +38,7 @@ vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.f
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
 vi.mock('../store', () => ({ persistor: { purge: vi.fn() }, store: { getState: () => storeState } }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
-vi.mock('../constants', () => ({ API_URL: '', DEVELOPER_KEY: '', SIGN_OUT_BACKEND_TIMEOUT: 1000 }))
+vi.mock('../constants', () => ({ API_URL: '', DEVELOPER_KEY: '', SIGN_OUT_BACKEND_TIMEOUT: 1000, SIGN_OUT_EVERYWHERE_TIMEOUT: 50 }))
 vi.mock('axios', () => ({ default: {} }))
 
 // The effects are `dispatch => ({...})`; build them against a fake dispatch so each auth.*
@@ -57,6 +59,7 @@ const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 beforeEach(() => {
   oidcStart.mockReset()
   signOutEverywhere.mockReset().mockResolvedValue({ status: 200, body: { ended: 1, pool: 'skipped' } })
+  oidcActor.mockReset().mockReturnValue(null)
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
 })
@@ -114,6 +117,28 @@ describe('auth model — "Sign out everywhere" is one AS call, then the local te
     signOutEverywhere.mockRejectedValue(new Error('network down'))
     const dispatch = makeDispatch()
     await effectsFor(dispatch).globalSignOut()
+    expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
+  })
+
+  /* Audience mints serialize through one shared promise; a mint the grant revoke abandoned
+     mid-stall would queue the AS call behind it for good. The bound is what keeps the panic
+     button from leaving the person signed in here. */
+  it('a call that never answers is cut off at the bound — the local sign-out still follows', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    signOutEverywhere.mockReturnValue(new Promise(() => {})) // never settles
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).globalSignOut()
+    expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
+  })
+
+  /* A support session (the id_token carries `act`) holds no refresh token and the AS refuses its
+     writes: there is nothing to call. Straight to the local teardown, no revoke, no AS round trip. */
+  it('a support session goes straight to the local sign-out — nothing is asked of the AS', async () => {
+    oidcActor.mockReturnValue({ sub: 'op_1' })
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).globalSignOut()
+    expect(signOutEverywhere).not.toHaveBeenCalled()
+    expect(dispatch.chat.signOut).not.toHaveBeenCalled()
     expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
   })
 })

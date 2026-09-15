@@ -5,7 +5,7 @@ import network from '../services/Network'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
+import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT } from '../constants'
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken, apiAuthHeaders } from '../services/remoteit'
@@ -565,15 +565,34 @@ export default createModel<RootModel>()({
       // always follows — a miss is logged, never fatal. signOut itself stays LOCAL — a
       // failure-path or menu sign-out must never end the AS sessions.
       //
+      //
+      // A SUPPORT session (an operator viewing as the person) holds no refresh token and can
+      // mint for nothing but the data plane, and the account API refuses writes from an acted
+      // token anyway — so there is nothing to call; the control is hidden for it (SecurityPage),
+      // and this is the backstop: straight to the local teardown. Ending the support session
+      // itself is the operator's console or the person's account page, never this button.
+      if (oidcActor()) {
+        dispatch.auth.signOut()
+        return
+      }
       // The agent's background grant goes FIRST: chat.signOut revokes it through the agent
       // service with a token minted from THIS session, and once the AS has ended the session no
-      // token can be minted for that call. signedOut() runs chat.signOut again on the far side
-      // — a bounded no-op then, with nothing left to mint.
+      // token can be minted for that call. It revokes once per identity, so the chat.signOut
+      // inside signedOut() is a real no-op on the far side.
       await dispatch.chat.signOut()
+      // BOUNDED, like the revoke above. Audience mints serialize through one shared promise
+      // (services/oidc), so a mint the revoke abandoned mid-stall would otherwise queue this call
+      // behind it indefinitely — and the panic button must never leave the person signed in here
+      // because the token service was half-open. Past the bound, the local sign-out proceeds and
+      // the AS is told nothing; that is the failure the mail and the account page can still show.
       try {
         const { signOutEverywhere } = await import('../services/permitteerAccount')
-        const r = await signOutEverywhere()
-        if (r.status === 200) console.log('SIGN OUT EVERYWHERE', r.body)
+        const r = await Promise.race([
+          signOutEverywhere(),
+          new Promise<null>(resolve => setTimeout(() => resolve(null), SIGN_OUT_EVERYWHERE_TIMEOUT)),
+        ])
+        if (!r) console.warn('SIGN OUT EVERYWHERE timed out — signing out locally')
+        else if (r.status === 200) console.log('SIGN OUT EVERYWHERE', r.body)
         else console.warn('SIGN OUT EVERYWHERE refused', r.status, r.body)
       } catch (error) {
         console.warn('SIGN OUT EVERYWHERE FAILED', error)

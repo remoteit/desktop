@@ -381,3 +381,33 @@ describe('chat model — syncTranscript discards a response for a conversation n
     expect(dispatch.chat.set).not.toHaveBeenCalled()
   })
 })
+
+/* The background grant is revoked ONCE per identity. "Sign out everywhere" (models/auth) revokes
+   it before the AS ends the session, and the local teardown that follows calls signOut again —
+   a second enrollment DELETE, and another bounded wait on a slow agent, for nothing. reset()
+   ends every teardown and re-arms it for the next identity. */
+describe('chat model — the background grant is revoked once per identity', () => {
+  const reducers = (chatModel as any).reducers
+  const signedInAs = (id: string) => ({ auth: { user: { id } } })
+  it('a second signOut for the same identity issues no second revoke; reset re-arms it', async () => {
+    reducers.reset({}) // whatever an earlier test left behind
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    await fx.signOut(undefined, signedInAs('alice'))
+    await fx.signOut(undefined, signedInAs('alice'))
+    expect(backgroundDisable).toHaveBeenCalledTimes(1)
+    reducers.reset({})
+    await fx.signOut(undefined, signedInAs('alice'))
+    expect(backgroundDisable).toHaveBeenCalledTimes(2)
+    reducers.reset({}) // leave the module armed for the tests that follow
+  })
+  it('a DIFFERENT identity is never skipped', async () => {
+    reducers.reset({})
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    await fx.signOut(undefined, signedInAs('alice'))
+    await fx.signOut(undefined, signedInAs('bob'))
+    expect(backgroundDisable).toHaveBeenCalledTimes(2)
+    reducers.reset({})
+  })
+})
