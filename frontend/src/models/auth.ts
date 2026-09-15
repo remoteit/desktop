@@ -538,6 +538,7 @@ export default createModel<RootModel>()({
       dispatch.adminUsers.reset()
       dispatch.adminPartners.reset()
       dispatch.adminEnterpriseLicenses.reset()
+      dispatch.adminAddonLicenses.reset()
       dispatch.adminNotices.reset()
       // ui.reset() only restores redux defaults; the live i18next/luxon locale must be
       // re-resolved so signed-out screens follow the OS rather than the previous

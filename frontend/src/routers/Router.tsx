@@ -63,6 +63,7 @@ import { AdminConfirmPage } from '../pages/AdminConfirmPage'
 import { AdminAdminsPage } from '../pages/AdminAdminsPage/AdminAdminsPage'
 import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { AdminEnterpriseLicensesListPage } from '../pages/AdminEnterpriseLicensesPage/AdminEnterpriseLicensesListPage'
+import { AdminAddonLicensesListPage } from '../pages/AdminAddonLicensesPage/AdminAddonLicensesListPage'
 import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
@@ -438,6 +439,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
               <Route path="/admin/enterprise-licenses">
                 <AdminEnterpriseLicensesListPage />
+              </Route>
+              <Route path="/admin/add-ons/:productId?">
+                <AdminAddonLicensesListPage />
               </Route>
               <Route path="/admin/notices/:noticeId?">
                 <AdminNoticesPage />

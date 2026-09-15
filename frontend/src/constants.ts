@@ -3,31 +3,15 @@ import { CATALOGUE } from './platforms/catalogue'
 const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
-// The AI portal (app.ai.remote.it) shows the Remote.It AI chat unconditionally: it IS the
-// AI surface. Set per-deployment via the Amplify branch env so the general app stays on
-// the licensed gate below even if this branch's code merges elsewhere.
-export const CHAT_ALWAYS_ON = env.VITE_CHAT_ALWAYS_ON === 'true'
 
 /* The license limit that gates the Remote.It AI chat. The whole surface hangs off this
    one name — the header button, the docked column and everything the panel loads — so
-   switching the feature on for an account is a licensing change rather than a release. */
+   switching the feature on for an account is a licensing change rather than a release:
+   the ai-agent ADD-ON licence, granted per account from Admin → Add-ons (graphql-api
+   docs/AI-AGENT-LICENSE.md). It is the ONLY switch. Until 2026-09-14 a dev build and the
+   AI portal defaulted the flag on ahead of the licence (PENDING_FEATURES / CHAT_ALWAYS_ON);
+   now an account without the licence — a developer's included — sees no chat anywhere. */
 export const CHAT_FEATURE = 'ai-agent'
-
-/* Boolean license features this build gates on that an account's license may not carry
-   yet, each paired with what it is worth until a license speaks. Naming one here gives it
-   a row on the Test page AND puts it in the limits lookup, which is what makes it testable
-   at all: the lookup is built FROM the limits the API returned, so a flag the API has
-   never mentioned has nothing for an override to attach to. The API's value wins once it
-   starts arriving, so an entry whose limit has gone live is dead weight and can go.
-
-   These are DEFAULTS, not bypasses — every one of them stays a normal feature flag, so
-   the Test page switch reads what is actually in effect and can turn the feature back
-   OFF. That is the point of routing local dev and the AI portal through here rather than
-   around the gate: on app.ai.remote.it the chat is on because CHAT_ALWAYS_ON makes this
-   default true, and it is still one switch away from off. */
-export const PENDING_FEATURES: ILookup<boolean> = {
-  [CHAT_FEATURE]: MODE === 'development' || CHAT_ALWAYS_ON,
-}
 
 // Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
 // web and desktop; the backend never touches auth.

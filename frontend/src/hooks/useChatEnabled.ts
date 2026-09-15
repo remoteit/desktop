@@ -24,10 +24,9 @@ import {
    It is a LICENSE feature, read exactly the way tagging/saml/roles are, which means it
    follows the ACCOUNT you are viewing: the chat is scoped to the organization in the
    sidebar selector, so an org whose license does not carry the agent does not get one.
-   Nothing skips this gate. Local dev and the AI portal (CHAT_ALWAYS_ON) only set the
-   flag's default where no license carries it yet (PENDING_FEATURES), so even there the
-   chat is a feature flag you can switch back off in Test Settings → Features — which is
-   also how you turn it on anywhere else until the API starts sending the limit. */
+   Nothing skips this gate — not a dev build, not the AI portal. The limit comes from the
+   ai-agent add-on licence (Admin → Add-ons); an account holding it can still switch the
+   feature off in Test Settings → Features, and one without it has no row there. */
 export const useChatEnabled = (): boolean => useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
 
 /* The widest the chat column may be dragged: whatever the window holds once the

@@ -5,6 +5,7 @@ import agents from './agents'
 import { adminPartners } from './adminPartners'
 import { adminUsers } from './adminUsers'
 import { adminEnterpriseLicenses } from './adminEnterpriseLicenses'
+import { adminAddonLicenses } from './adminAddonLicenses'
 import adminNotices from './adminNotices'
 import announcements from './announcements'
 import applicationTypes from './applicationTypes'
@@ -43,6 +44,7 @@ export interface RootModel extends Models<RootModel> {
   adminPartners: typeof adminPartners
   adminUsers: typeof adminUsers
   adminEnterpriseLicenses: typeof adminEnterpriseLicenses
+  adminAddonLicenses: typeof adminAddonLicenses
   adminNotices: typeof adminNotices
   announcements: typeof announcements
   applicationTypes: typeof applicationTypes
@@ -82,6 +84,7 @@ export const models: RootModel = {
   adminPartners,
   adminUsers,
   adminEnterpriseLicenses,
+  adminAddonLicenses,
   adminNotices,
   announcements,
   applicationTypes,

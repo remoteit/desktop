@@ -1097,11 +1097,13 @@
     "title": "ライセンス"
   },
   "licensingSetting": {
+    "expires": "",
     "notSubscribed": "未契約",
     "plan": "プラン",
     "renews": "更新"
   },
   "limitSetting": {
+    "aiAgentAvailable": "",
     "emailSupport": "メールサポートが利用可能です",
     "evaluationPeriod": "サービスには{{period}}の評価期間が付与されます",
     "forumSupport": "フォーラムサポートのみ",
@@ -2218,7 +2220,6 @@
     "disableTestUI": "テストUIを無効にする",
     "disableTestUIHint": "アルファUIを再度有効にするには、alt-shiftを押しながらアバターメニューを選択する必要があります。",
     "featureLabel": "{{name}}(デフォルト: {{state}})",
-    "featurePending": "",
     "features": "機能",
     "hideTestUIBackgrounds": "テストUIの背景を非表示にする",
     "licenseMessageCleared": "ライセンスメッセージがクリアされました",

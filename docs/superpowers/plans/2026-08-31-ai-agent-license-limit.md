@@ -3,9 +3,14 @@
 **Goal:** Make the Remote.It AI chat a real licensed feature by having the API return an
 `ai-agent` limit, then remove the client-side scaffolding that stands in for it today.
 
-**Status:** The CLIENT side is done and shipped on `feature/agent-chat-interface`. The API
-returns no such limit yet, so the client forward-declares it. Nothing here is blocked on
-more frontend work — this note is for whoever picks up the graphql-api / licensing side.
+**Status:** DONE, both halves. The API side shipped 2026-09-13 as the `ai-agent` add-on
+licence (graphql-api `docs/AI-AGENT-LICENSE.md`); the client cleanup below landed 2026-09-14
+with the Admin → Add-ons page (`2026-09-14-admin-addon-licenses-page.md`): `PENDING_FEATURES`,
+`CHAT_ALWAYS_ON` and `VITE_CHAT_ALWAYS_ON` are gone, and the licence is the only switch —
+including for dev builds and app.ai.remote.it (decision 3 resolved as "the portal paywalls":
+an unlicensed account there gets the ordinary app with no chat, and the popout says
+"Remote.It AI is not available for this account"). The rest of this note is the record of
+what the client assumed while the limit did not exist.
 
 **Where the work lives:** the limit itself is a graphql-api + licensing change, in another
 repo. The only thing in THIS repo is the cleanup in the last section, which should land at
