@@ -39,6 +39,16 @@ jobs:
       version: ${{ steps.version.outputs.VERSION }}
       release_repo: ${{ steps.repo.outputs.RELEASE_REPO }}
     steps:
+      # Only a tag build publishes; a signed branch build paid for 24 eSigner signatures and discarded them (2026-09-15).
+      - name: Refuse to sign a build that cannot publish
+        if: github.ref_type != 'tag' && !inputs.skip_signing
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          echo "::error::skip_signing is off but this run is on $REF_TYPE '$REF_NAME'. Only a tag build publishes, so the signatures would be paid for and thrown away. Re-run from the version tag, or leave skip_signing checked."
+          exit 1
+
       - name: Check out Git repository
         uses: actions/checkout@v4
 

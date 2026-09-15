@@ -58,8 +58,12 @@ Then push the commit and the tag `npm version` created.
 
 ## 2. Desktop: build
 
-Run **Build / Electron** (`workflow_dispatch`) — `brand` defaults to `remoteit`,
-and **uncheck `skip_signing`** for a real release, since it defaults to `true`.
+Run **Build / Electron** (`workflow_dispatch`) **from the version tag** — in
+"Use workflow from", switch to Tags and pick `vN.N.N`, not `main`. `brand`
+defaults to `remoteit`; **uncheck `skip_signing`** for a real release, since it
+defaults to `true`. Only a tag build creates the draft and publishes into it; a
+branch build compiles and discards everything, so with `skip_signing` off the
+`prepare` job refuses to start rather than pay for signatures nobody receives.
 
 A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
