@@ -63,9 +63,16 @@ enterprise-licences page (`AdminEnterpriseLicensesListPage.tsx`) with the produc
 
 ### Wiring
 
-- `models/adminAddonLicenses.ts` — products + the selected product + the paginated holder list
-  (`fetchProducts`, `select`, `fetch`, `fetchMore`, `reset`); registered in `models/index.ts`, reset
-  on sign-out in `models/auth.ts`, refreshed by the header's refresh button (`RefreshButton.tsx`).
+- `models/adminAddonLicenses.ts` — the catalogue, the selected product and the paginated holder
+  list, each with a load STATUS (`idle | loading | loaded | failed`) kept apart from what it last
+  delivered, so the page tells "nothing has answered yet" from "nobody holds it". `refresh(urlProduct)`
+  is the one way in — on mount, on every move of the URL's product, and from the header's refresh
+  button: catalogue first, the selection checked against it (a product the API stopped listing is
+  cleared and the page redirects), then the list fetched afresh (a remount can sit over rows from
+  another API target — Test Settings switches the stage without a reload). Every request carries a
+  latest-wins ticket, so a page that lands after its list was superseded (a product switch, a new
+  search, a refresh under a Load More, sign-out) is dropped. Registered in `models/index.ts`, reset
+  on sign-out in `models/auth.ts`.
 - `services/graphQLRequest.ts` — `graphQLAdminAddonProducts`, `graphQLAdminAddonCustomers`;
   `services/graphQLMutation.ts` — `graphQLAddAddonCustomer`, `graphQLRemoveAddonCustomer`.
 - `routers/Router.tsx` (the `/admin/*` block), `components/AdminSidebarNav.tsx` ("Add-ons"),

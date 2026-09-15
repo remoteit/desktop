@@ -12,13 +12,25 @@ import { adminAddonLicenses } from './adminAddonLicenses'
 
 const model = adminAddonLicenses as any
 const effectsFor = (dispatch: any) => model.effects(dispatch)
+// refresh dispatches fetchProducts and fetch through the model; the fake routes those to the
+// real effects so a refresh test exercises the whole way in.
+const withRealEffects = (dispatch: any, state: Record<string, unknown> = {}) => {
+  const effects = effectsFor(dispatch)
+  dispatch.adminAddonLicenses.fetchProducts = () => effects.fetchProducts()
+  dispatch.adminAddonLicenses.fetch = vi.fn(() => effects.fetch(undefined, stateWith(state)))
+  return effects
+}
+const catalogue = (...ids: string[]) => ({
+  data: { data: { admin: { addonProducts: ids.map(id => ({ id, name: id, enabled: true })) } } },
+})
 const makeDispatch = () => ({
   adminAddonLicenses: {
     setProducts: vi.fn(),
     setProductId: vi.fn(),
     setCustomers: vi.fn(),
     appendCustomers: vi.fn(),
-    setLoading: vi.fn(),
+    setProductsStatus: vi.fn(),
+    setListStatus: vi.fn(),
     setSearchValue: vi.fn(),
     resetState: vi.fn(),
     fetch: vi.fn(),
@@ -56,41 +68,75 @@ describe('adminAddonLicenses reducers', () => {
   })
 
   it('the product list marks itself loaded, empty or not', () => {
-    expect(model.reducers.setProducts(model.state, [])).toMatchObject({ products: [], productsLoaded: true })
+    expect(model.reducers.setProducts(model.state, [])).toMatchObject({ products: [], productsStatus: 'loaded' })
+  })
+
+  it('a new product resets the list to never-asked, so the page shows loading rather than empty', () => {
+    const before = { ...model.state, productId: 'a', listStatus: 'loaded' }
+    expect(model.reducers.setProductId(before, 'b')).toMatchObject({ listStatus: 'idle', customers: [] })
   })
 })
 
 describe('adminAddonLicenses effects', () => {
-  it('fetchProducts stores what the API lists and ignores a refused request', async () => {
+  it('fetchProducts stores what the API lists and resolves to it', async () => {
     const dispatch = makeDispatch()
     const products = [{ id: 'p1', name: 'ai-agent', description: 'AI Agent', enabled: true }]
     graphQLAdminAddonProducts.mockResolvedValueOnce({ data: { data: { admin: { addonProducts: products } } } })
-    await effectsFor(dispatch).fetchProducts()
+    await expect(effectsFor(dispatch).fetchProducts()).resolves.toEqual(products)
+    expect(dispatch.adminAddonLicenses.setProductsStatus).toHaveBeenCalledWith('loading')
     expect(dispatch.adminAddonLicenses.setProducts).toHaveBeenCalledWith(products)
-
-    graphQLAdminAddonProducts.mockResolvedValueOnce('ERROR')
-    await effectsFor(dispatch).fetchProducts()
-    expect(dispatch.adminAddonLicenses.setProducts).toHaveBeenCalledTimes(1)
   })
 
-  it('a missing response (offline, no auth yet) is not an empty product list — nothing is written', async () => {
+  it('a refused or missing response (offline, no auth yet) is not an empty product list — the list held stays, marked failed', async () => {
     const dispatch = makeDispatch()
-    graphQLAdminAddonProducts.mockResolvedValueOnce(undefined)
-    await effectsFor(dispatch).fetchProducts()
-    graphQLAdminAddonProducts.mockResolvedValueOnce({ data: { data: { admin: {} } } })
-    await effectsFor(dispatch).fetchProducts()
+    for (const answer of ['ERROR', undefined, { data: { data: { admin: {} } } }]) {
+      graphQLAdminAddonProducts.mockResolvedValueOnce(answer)
+      await expect(effectsFor(dispatch).fetchProducts()).resolves.toBeUndefined()
+    }
     expect(dispatch.adminAddonLicenses.setProducts).not.toHaveBeenCalled()
+    expect(
+      dispatch.adminAddonLicenses.setProductsStatus.mock.calls.filter(([s]: [string]) => s === 'failed')
+    ).toHaveLength(3)
   })
 
-  it('select switches product and fetches; the product already on screen is a no-op', async () => {
+  it("refresh takes the URL's product when the catalogue lists it, and fetches its list afresh", async () => {
     const dispatch = makeDispatch()
-    await effectsFor(dispatch).select('p2', stateWith({ productId: 'p1' }))
-    expect(dispatch.adminAddonLicenses.setProductId).toHaveBeenCalledWith('p2')
+    const effects = withRealEffects(dispatch, { productId: 'B' })
+    graphQLAdminAddonProducts.mockResolvedValueOnce(catalogue('A', 'B'))
+    graphQLAdminAddonCustomers.mockResolvedValueOnce(page([holder('b1')], 1, false))
+    await effects.refresh('B', stateWith({ productId: 'A', customers: [holder('a1')] }))
+    expect(dispatch.adminAddonLicenses.setProductId).toHaveBeenCalledWith('B')
     expect(dispatch.adminAddonLicenses.fetch).toHaveBeenCalledTimes(1)
+    expect(graphQLAdminAddonCustomers).toHaveBeenCalledWith('B', { from: 0, size: 50 }, undefined)
+  })
 
-    await effectsFor(dispatch).select('p1', stateWith({ productId: 'p1' }))
-    expect(dispatch.adminAddonLicenses.setProductId).toHaveBeenCalledTimes(1)
+  it('refresh keeps the product held when the URL names none, and refetches even a loaded list (another API target may have filled it)', async () => {
+    const dispatch = makeDispatch()
+    const effects = withRealEffects(dispatch, { productId: 'A' })
+    graphQLAdminAddonProducts.mockResolvedValueOnce(catalogue('A'))
+    graphQLAdminAddonCustomers.mockResolvedValueOnce(page([], 0, false))
+    await effects.refresh(undefined, stateWith({ productId: 'A', customers: [holder('stale')], listStatus: 'loaded' }))
+    expect(dispatch.adminAddonLicenses.setProductId).toHaveBeenCalledWith('A')
     expect(dispatch.adminAddonLicenses.fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('refresh clears a selection the catalogue no longer lists and asks for no list — the page picks a product that exists', async () => {
+    const dispatch = makeDispatch()
+    const effects = withRealEffects(dispatch, { productId: 'gone' })
+    graphQLAdminAddonProducts.mockResolvedValueOnce(catalogue('A'))
+    await effects.refresh('gone', stateWith({ productId: 'gone' }))
+    expect(dispatch.adminAddonLicenses.setProductId).toHaveBeenCalledWith(undefined)
+    expect(dispatch.adminAddonLicenses.fetch).not.toHaveBeenCalled()
+    expect(graphQLAdminAddonCustomers).not.toHaveBeenCalled()
+  })
+
+  it('refresh touches neither the selection nor the list when the catalogue did not answer', async () => {
+    const dispatch = makeDispatch()
+    const effects = withRealEffects(dispatch, { productId: 'A' })
+    graphQLAdminAddonProducts.mockResolvedValueOnce(undefined)
+    await effects.refresh('A', stateWith({ productId: 'A' }))
+    expect(dispatch.adminAddonLicenses.setProductId).not.toHaveBeenCalled()
+    expect(dispatch.adminAddonLicenses.fetch).not.toHaveBeenCalled()
   })
 
   it('fetch asks for the selected product with the committed search, and never without a product', async () => {
@@ -101,7 +147,7 @@ describe('adminAddonLicenses effects', () => {
     graphQLAdminAddonCustomers.mockResolvedValueOnce(page([holder('u1')], 7, true))
     await effectsFor(dispatch).fetch(undefined, stateWith({ productId: 'p1', pageSize: 50, searchValue: '  ann  ' }))
     expect(graphQLAdminAddonCustomers).toHaveBeenCalledWith('p1', { from: 0, size: 50 }, 'ann')
-    expect(dispatch.adminAddonLicenses.setLoading).toHaveBeenCalledWith(true)
+    expect(dispatch.adminAddonLicenses.setListStatus).toHaveBeenCalledWith('loading')
     expect(dispatch.adminAddonLicenses.setCustomers).toHaveBeenCalledWith({
       customers: [holder('u1')],
       total: 7,
@@ -109,12 +155,14 @@ describe('adminAddonLicenses effects', () => {
     })
   })
 
-  it('a refused list clears the spinner and leaves the rows alone', async () => {
+  it('a refused or missing list marks the list failed and leaves the rows alone', async () => {
     const dispatch = makeDispatch()
-    graphQLAdminAddonCustomers.mockResolvedValueOnce('ERROR')
-    await effectsFor(dispatch).fetch(undefined, stateWith({ productId: 'p1' }))
+    for (const answer of ['ERROR', undefined]) {
+      graphQLAdminAddonCustomers.mockResolvedValueOnce(answer)
+      await effectsFor(dispatch).fetch(undefined, stateWith({ productId: 'p1' }))
+      expect(dispatch.adminAddonLicenses.setListStatus).toHaveBeenLastCalledWith('failed')
+    }
     expect(dispatch.adminAddonLicenses.setCustomers).not.toHaveBeenCalled()
-    expect(dispatch.adminAddonLicenses.setLoading).toHaveBeenLastCalledWith(false)
   })
 
   it('fetchMore pages from the rows already held and appends', async () => {
@@ -136,7 +184,10 @@ describe('adminAddonLicenses effects', () => {
   it('fetchMore does nothing at the end of the list or while a page is loading', async () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).fetchMore(undefined, stateWith({ productId: 'p1', hasMore: false }))
-    await effectsFor(dispatch).fetchMore(undefined, stateWith({ productId: 'p1', hasMore: true, loading: true }))
+    await effectsFor(dispatch).fetchMore(
+      undefined,
+      stateWith({ productId: 'p1', hasMore: true, listStatus: 'loading' })
+    )
     expect(graphQLAdminAddonCustomers).not.toHaveBeenCalled()
   })
 
@@ -165,7 +216,7 @@ describe('adminAddonLicenses stale responses', () => {
     graphQLAdminAddonCustomers.mockReturnValueOnce(a.promise).mockReturnValueOnce(b.promise)
 
     const forA = effects.fetch(undefined, stateWith({ productId: 'A' }))
-    const forB = effects.fetch(undefined, stateWith({ productId: 'B' })) // what select(B) issues
+    const forB = effects.fetch(undefined, stateWith({ productId: 'B' })) // what refresh(B) issues
     b.resolve(page([holder('b1')], 1, false))
     a.resolve(page([holder('a1')], 1, false)) // A's answer arrives last
     await Promise.all([forA, forB])
@@ -195,7 +246,7 @@ describe('adminAddonLicenses stale responses', () => {
     expect(dispatch.adminAddonLicenses.appendCustomers).not.toHaveBeenCalled()
   })
 
-  it('a superseded request leaves the spinner to the request that owns it', async () => {
+  it("a superseded request leaves the list's status to the request that owns it", async () => {
     const dispatch = makeDispatch()
     const effects = effectsFor(dispatch)
     const first = deferred<unknown>()
@@ -203,11 +254,11 @@ describe('adminAddonLicenses stale responses', () => {
 
     const stale = effects.fetch(undefined, stateWith({ productId: 'A' }))
     await effects.fetch(undefined, stateWith({ productId: 'A' }))
-    dispatch.adminAddonLicenses.setLoading.mockClear()
-    first.resolve('ERROR') // a refused stale request must not clear the newer one's spinner either
+    dispatch.adminAddonLicenses.setListStatus.mockClear()
+    first.resolve('ERROR') // a refused stale request must not mark the newer one's list failed either
     await stale
 
-    expect(dispatch.adminAddonLicenses.setLoading).not.toHaveBeenCalled()
+    expect(dispatch.adminAddonLicenses.setListStatus).not.toHaveBeenCalled()
   })
 
   it('sign-out retires every request in flight, the product list included', async () => {

@@ -45,6 +45,21 @@ const toInputValue = (date: Date) => {
   return new Date(date.getTime() - offset).toISOString().slice(0, 16)
 }
 
+const Empty: React.FC<{ title: string; body?: string; children?: React.ReactNode }> = ({ title, body, children }) => (
+  <Box sx={{ textAlign: 'center', padding: 4 }}>
+    <Icon name="puzzle-piece" size="xxl" color="grayLight" />
+    <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
+      {title}
+    </Typography>
+    {body && (
+      <Typography variant="body2" color="grayDark.main" gutterBottom>
+        {body}
+      </Typography>
+    )}
+    {children}
+  </Box>
+)
+
 type AddonCustomerAttributeOptions = {
   customer?: AdminAddonCustomer
   /* The add-on the row's licence is for, looked up from the row's own productId — so the row says
@@ -133,10 +148,11 @@ export const AdminAddonLicensesListPage: React.FC = () => {
   const [searchInput, setSearchInput] = useState('')
 
   const products = useSelector((state: State) => state.adminAddonLicenses.products)
-  const productsLoaded = useSelector((state: State) => state.adminAddonLicenses.productsLoaded)
+  const productsStatus = useSelector((state: State) => state.adminAddonLicenses.productsStatus)
   const productId = useSelector((state: State) => state.adminAddonLicenses.productId)
   const customers = useSelector((state: State) => state.adminAddonLicenses.customers)
-  const loading = useSelector((state: State) => state.adminAddonLicenses.loading)
+  const listStatus = useSelector((state: State) => state.adminAddonLicenses.listStatus)
+  const loading = listStatus === 'loading'
   const total = useSelector((state: State) => state.adminAddonLicenses.total)
   const hasMore = useSelector((state: State) => state.adminAddonLicenses.hasMore)
   const searchValue = useSelector((state: State) => state.adminAddonLicenses.searchValue)
@@ -174,24 +190,25 @@ export const AdminAddonLicensesListPage: React.FC = () => {
 
   useEffect(() => {
     setSearchInput(searchValue)
-    dispatch.adminAddonLicenses.fetchProducts()
   }, [])
 
-  // The URL is the selection — once the API has confirmed it names an add-on, so a stale link never
-  // fires a list request that can only be refused. `select` is a no-op for the product on screen.
+  // The URL is the selection, and refresh is the one way in: on mount and on every move of the
+  // product it re-reads the catalogue, checks the product against it, and fetches the list afresh
+  // — so a stale link never fires a list request that can only be refused, and a remount never
+  // shows rows fetched from another API target.
   useEffect(() => {
-    if (urlProductId && products.some(p => p.id === urlProductId)) dispatch.adminAddonLicenses.select(urlProductId)
-  }, [urlProductId, products])
+    dispatch.adminAddonLicenses.refresh(urlProductId)
+  }, [urlProductId])
 
   // No product in the URL, or one the API no longer lists: go to the product last looked at, else
-  // the first add-on. Waits for the product list so a deep link to a real product is never bounced.
+  // the first add-on. Waits for the catalogue so a deep link to a real product is never bounced.
   useEffect(() => {
-    if (!productsLoaded || !products.length) return
+    if (productsStatus !== 'loaded' || !products.length) return
     if (urlProductId && products.some(p => p.id === urlProductId)) return
     const saved = defaultSelection['admin']?.[ADMIN_ADDONS_ROUTE]
     const remembered = products.find(p => saved === `${ADMIN_ADDONS_ROUTE}/${p.id}`)
     history.replace(`${ADMIN_ADDONS_ROUTE}/${(remembered || products[0]).id}`)
-  }, [urlProductId, productsLoaded, products])
+  }, [urlProductId, productsStatus, products])
 
   // Remember the product for the sidebar's Add-ons entry (AdminSidebarNav.handleNavClick)
   useEffect(() => {
@@ -320,25 +337,36 @@ export const AdminAddonLicensesListPage: React.FC = () => {
         </Gutters>
       }
     >
-      {productsLoaded && !products.length ? (
-        <Box sx={{ textAlign: 'center', padding: 4 }}>
-          <Icon name="puzzle-piece" size="xxl" color="grayLight" />
-          <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            No add-on products
-          </Typography>
-          <Typography variant="body2" color="grayDark.main">
-            An add-on is a product with no default plan on the API — none is defined on this stage.
-          </Typography>
-        </Box>
-      ) : loading && customers.length === 0 ? (
+      {/* Each screen is decided by a STATUS and the rows, never by an empty array alone — "nothing
+          has answered yet", "the answer was no", and "nobody holds it" are different screens. */}
+      {!products.length && productsStatus === 'failed' ? (
+        <Empty title="Couldn't load the add-ons" body="The API did not answer. Check the connection and try again.">
+          <Button size="small" onClick={() => dispatch.adminAddonLicenses.refresh(urlProductId)}>
+            Retry
+          </Button>
+        </Empty>
+      ) : !products.length && productsStatus !== 'loaded' ? (
+        <LoadingMessage message="Loading add-ons..." />
+      ) : !products.length ? (
+        <Empty
+          title="No add-on products"
+          body="An add-on is a product with no default plan on the API — none is defined on this stage."
+        />
+      ) : !product ? (
+        <LoadingMessage message="Loading add-ons..." /> // the redirect above is choosing one
+      ) : !customers.length && listStatus === 'failed' ? (
+        <Empty
+          title={`Couldn't load the ${label} licenses`}
+          body="The API did not answer. Check the connection and try again."
+        >
+          <Button size="small" onClick={() => dispatch.adminAddonLicenses.refresh(urlProductId)}>
+            Retry
+          </Button>
+        </Empty>
+      ) : !customers.length && listStatus !== 'loaded' ? (
         <LoadingMessage message={`Loading ${label} licenses...`} />
-      ) : customers.length === 0 ? (
-        <Box sx={{ textAlign: 'center', padding: 4 }}>
-          <Icon name="puzzle-piece" size="xxl" color="grayLight" />
-          <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-            {searchValue ? `No matching ${label} licenses` : `No ${label} licenses granted`}
-          </Typography>
-        </Box>
+      ) : !customers.length ? (
+        <Empty title={searchValue ? `No matching ${label} licenses` : `No ${label} licenses granted`} />
       ) : (
         <GridList attributes={attributes} required={required} columnWidths={columnWidths} fetching={loading}>
           {customers.map(customer => (

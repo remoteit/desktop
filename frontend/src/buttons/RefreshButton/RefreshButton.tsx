@@ -39,7 +39,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const adminUsersPage = useRouteMatch('/admin/users')
   const adminPartnersPage = useRouteMatch('/admin/partners')
   const adminEnterpriseLicensesPage = useRouteMatch('/admin/enterprise-licenses')
-  const adminAddonLicensesPage = useRouteMatch('/admin/add-ons')
+  const adminAddonLicensesPage = useRouteMatch<{ productId?: string }>('/admin/add-ons/:productId?')
   const adminNoticesPage = useRouteMatch('/admin/notices')
   const scriptingPage = useRouteMatch(['/script', '/scripts', '/runs'])
   const runsPage = useRouteMatch<{ fileID?: string }>('/runs/:fileID?')
@@ -144,8 +144,8 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
     // admin add-on licenses page
   } else if (adminAddonLicensesPage) {
     title = 'Refresh add-on licenses'
-    methods.push(async () => await dispatch.adminAddonLicenses.fetchProducts())
-    methods.push(async () => await dispatch.adminAddonLicenses.fetch())
+    // One call: the catalogue, the selection re-checked against it, then the list
+    methods.push(async () => await dispatch.adminAddonLicenses.refresh(adminAddonLicensesPage.params.productId))
 
     // admin notices pages
   } else if (adminNoticesPage) {

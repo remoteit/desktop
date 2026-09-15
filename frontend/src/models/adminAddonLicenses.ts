@@ -30,26 +30,33 @@ export interface AdminAddonCustomer {
   expiration?: string | null
 }
 
+/* Where a request stands, kept apart from what it last delivered. `idle` = never asked; `failed` =
+   the last ask got no usable answer (offline, no auth header yet, a refused query) — whatever was
+   delivered before is kept, so the page decides what to show from the status AND the rows, never
+   from an empty array alone: "empty because nobody holds it" and "empty because nothing has
+   answered yet" are different screens. */
+export type LoadStatus = 'idle' | 'loading' | 'loaded' | 'failed'
+
 interface AdminAddonLicensesState {
   products: AdminAddonProduct[]
-  productsLoaded: boolean
+  productsStatus: LoadStatus
   productId?: string
   customers: AdminAddonCustomer[]
   total: number
   hasMore: boolean
-  loading: boolean
+  listStatus: LoadStatus
   pageSize: number
   searchValue: string
 }
 
 const initialState: AdminAddonLicensesState = {
   products: [],
-  productsLoaded: false,
+  productsStatus: 'idle',
   productId: undefined,
   customers: [],
   total: 0,
   hasMore: false,
-  loading: false,
+  listStatus: 'idle',
   pageSize: 50,
   searchValue: '',
 }
@@ -71,47 +78,70 @@ export const adminAddonLicenses = createModel<RootModel>()({
   name: 'adminAddonLicenses',
   state: initialState,
   reducers: {
-    setProducts: (state, products: AdminAddonProduct[]) => ({ ...state, products, productsLoaded: true }),
+    setProductsStatus: (state, productsStatus: LoadStatus) => ({ ...state, productsStatus }),
+    setProducts: (state, products: AdminAddonProduct[]) => ({ ...state, products, productsStatus: 'loaded' as const }),
     // Switching product empties the list: the rows on screen belong to the old one.
     setProductId: (state, productId?: string) =>
-      productId === state.productId ? state : { ...state, productId, customers: [], total: 0, hasMore: false },
+      productId === state.productId
+        ? state
+        : { ...state, productId, customers: [], total: 0, hasMore: false, listStatus: 'idle' as const },
+    setListStatus: (state, listStatus: LoadStatus) => ({ ...state, listStatus }),
     setCustomers: (state, payload: Page) => ({
       ...state,
       customers: payload.customers,
       total: payload.total,
       hasMore: payload.hasMore,
-      loading: false,
+      listStatus: 'loaded' as const,
     }),
     appendCustomers: (state, payload: Page) => ({
       ...state,
       customers: [...state.customers, ...payload.customers],
       total: payload.total,
       hasMore: payload.hasMore,
-      loading: false,
+      listStatus: 'loaded' as const,
     }),
-    setLoading: (state, loading: boolean) => ({ ...state, loading }),
     setSearchValue: (state, searchValue: string) => ({ ...state, searchValue }),
     resetState: () => initialState,
   },
   effects: dispatch => ({
-    async fetchProducts() {
+    /* The product catalogue. Resolves to the fresh list, or undefined when nothing answered — the
+       products held stay, marked failed. */
+    async fetchProducts(): Promise<AdminAddonProduct[] | undefined> {
       const ticket = ++productsRequest
+      dispatch.adminAddonLicenses.setProductsStatus('loading')
       const result = await graphQLAdminAddonProducts()
-      if (ticket !== productsRequest || result === 'ERROR') return
-      // No response at all (offline, no auth header yet) is not an empty list: the products already
-      // held stay, and the page is not told there are none. Only an answer marks the list loaded.
-      const products: AdminAddonProduct[] | undefined = result?.data?.data?.admin?.addonProducts
-      if (!Array.isArray(products)) return
+      if (ticket !== productsRequest) return undefined
+
+      // No response at all (offline, no auth header yet) is not an empty list.
+      const products: AdminAddonProduct[] | undefined =
+        result === 'ERROR' ? undefined : result?.data?.data?.admin?.addonProducts
+      if (!Array.isArray(products)) {
+        dispatch.adminAddonLicenses.setProductsStatus('failed')
+        return undefined
+      }
+
       dispatch.adminAddonLicenses.setProducts(products)
+      return products
     },
 
-    /* The page's selection. The list belongs to one product, so a new product fetches afresh —
-       and its request's ticket retires whatever the old product still had in flight. Re-selecting
-       the current one is a no-op (the URL effect fires on every render of the route). */
-    async select(productId: string, rootState) {
-      if (rootState.adminAddonLicenses.productId === productId) return
+    /* The ONE way in — the page on mount and on every move of the URL's product, and the refresh
+       button: the catalogue first, then the selection checked against it (the URL's product when it
+       names one that exists, else the one held if it still exists, else none — a product the API
+       no longer lists cannot stay selected, or every list request for it is refused; clearing it
+       hands the choice back to the page, which redirects to one that exists), then that product's
+       list, fetched AFRESH. Always afresh: the page can remount over rows from another API target
+       (Test Settings switches the stage without reloading, and cloudSync.all() knows nothing of
+       this model), and a product id is the same on every stage. A switch's request retires
+       whatever the old product still had in flight (the tickets above). */
+    async refresh(preferredProductId: string | undefined, rootState) {
+      const products = await dispatch.adminAddonLicenses.fetchProducts()
+      if (!products) return
+
+      const held = rootState.adminAddonLicenses.productId
+      const listed = (id?: string) => !!id && products.some(p => p.id === id)
+      const productId = listed(preferredProductId) ? preferredProductId : listed(held) ? held : undefined
       dispatch.adminAddonLicenses.setProductId(productId)
-      await dispatch.adminAddonLicenses.fetch()
+      if (productId) await dispatch.adminAddonLicenses.fetch()
     },
 
     /* A committed search term: the list is refetched for it, which retires the page in flight for
@@ -125,7 +155,7 @@ export const adminAddonLicenses = createModel<RootModel>()({
       const state = rootState.adminAddonLicenses
       if (!state.productId) return
       const ticket = ++listRequest
-      dispatch.adminAddonLicenses.setLoading(true)
+      dispatch.adminAddonLicenses.setListStatus('loading')
 
       const result = await graphQLAdminAddonCustomers(
         state.productId,
@@ -133,27 +163,27 @@ export const adminAddonLicenses = createModel<RootModel>()({
         state.searchValue.trim() || undefined
       )
 
-      // Superseded: a newer request, or an event that retired this one, owns the list (and the
-      // spinner) now — this response describes a list nobody is looking at.
+      // Superseded: a newer request, or an event that retired this one, owns the list (and its
+      // status) now — this response describes a list nobody is looking at.
       if (ticket !== listRequest) return
 
-      if (result !== 'ERROR' && result?.data?.data?.admin?.addonCustomers) {
-        const data = result.data.data.admin.addonCustomers
+      const data = result === 'ERROR' ? undefined : result?.data?.data?.admin?.addonCustomers
+      if (data) {
         dispatch.adminAddonLicenses.setCustomers({
           customers: data.items || [],
           total: data.total || 0,
           hasMore: !!data.hasMore,
         })
       } else {
-        dispatch.adminAddonLicenses.setLoading(false)
+        dispatch.adminAddonLicenses.setListStatus('failed')
       }
     },
 
     async fetchMore(_: void, rootState) {
       const state = rootState.adminAddonLicenses
-      if (!state.productId || !state.hasMore || state.loading) return
+      if (!state.productId || !state.hasMore || state.listStatus === 'loading') return
       const ticket = ++listRequest
-      dispatch.adminAddonLicenses.setLoading(true)
+      dispatch.adminAddonLicenses.setListStatus('loading')
 
       const result = await graphQLAdminAddonCustomers(
         state.productId,
@@ -163,15 +193,16 @@ export const adminAddonLicenses = createModel<RootModel>()({
 
       if (ticket !== listRequest) return
 
-      if (result !== 'ERROR' && result?.data?.data?.admin?.addonCustomers) {
-        const data = result.data.data.admin.addonCustomers
+      const data = result === 'ERROR' ? undefined : result?.data?.data?.admin?.addonCustomers
+      if (data) {
         dispatch.adminAddonLicenses.appendCustomers({
           customers: data.items || [],
           total: data.total || 0,
           hasMore: !!data.hasMore,
         })
       } else {
-        dispatch.adminAddonLicenses.setLoading(false)
+        // The rows held stay; the page keeps its Load More for another try.
+        dispatch.adminAddonLicenses.setListStatus('failed')
       }
     },
 
