@@ -1097,6 +1097,7 @@
     "title": "ライセンス"
   },
   "licensingSetting": {
+    "expires": "",
     "notSubscribed": "未契約",
     "plan": "プラン",
     "renews": "更新"

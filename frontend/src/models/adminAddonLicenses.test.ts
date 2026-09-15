@@ -73,6 +73,15 @@ describe('adminAddonLicenses effects', () => {
     expect(dispatch.adminAddonLicenses.setProducts).toHaveBeenCalledTimes(1)
   })
 
+  it('a missing response (offline, no auth yet) is not an empty product list — nothing is written', async () => {
+    const dispatch = makeDispatch()
+    graphQLAdminAddonProducts.mockResolvedValueOnce(undefined)
+    await effectsFor(dispatch).fetchProducts()
+    graphQLAdminAddonProducts.mockResolvedValueOnce({ data: { data: { admin: {} } } })
+    await effectsFor(dispatch).fetchProducts()
+    expect(dispatch.adminAddonLicenses.setProducts).not.toHaveBeenCalled()
+  })
+
   it('select switches product and fetches; the product already on screen is a no-op', async () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).select('p2', stateWith({ productId: 'p1' }))

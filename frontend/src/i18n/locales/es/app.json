@@ -1119,6 +1119,7 @@
     "title": "Licencia"
   },
   "licensingSetting": {
+    "expires": "",
     "notSubscribed": "Sin suscripción",
     "plan": "plan",
     "renews": "Se renueva"

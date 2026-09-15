@@ -98,7 +98,10 @@ export const adminAddonLicenses = createModel<RootModel>()({
       const ticket = ++productsRequest
       const result = await graphQLAdminAddonProducts()
       if (ticket !== productsRequest || result === 'ERROR') return
-      const products: AdminAddonProduct[] = result?.data?.data?.admin?.addonProducts || []
+      // No response at all (offline, no auth header yet) is not an empty list: the products already
+      // held stay, and the page is not told there are none. Only an answer marks the list loaded.
+      const products: AdminAddonProduct[] | undefined = result?.data?.data?.admin?.addonProducts
+      if (!Array.isArray(products)) return
       dispatch.adminAddonLicenses.setProducts(products)
     },
 
