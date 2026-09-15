@@ -103,6 +103,7 @@
       "name": "Android",
       "kind": "code",
       "description": "For an Android phone or tablet.",
+      "instructions": "Install the Remote.It ScreenView app from the Play Store, open it, and enter this code to register the device.",
       "link": "https://play.google.com/store/apps/details?id=it.remote.screenview",
       "services": [
         {
@@ -172,6 +173,7 @@
       "name": "Docker Jumpbox Extension",
       "kind": "code",
       "description": "For Docker Desktop.",
+      "instructions": "Install the Remote.It Jumpbox extension in Docker Desktop, open it, and enter this code to register.",
       "services": [],
       "types": {
         "1220": "Docker Extension"
