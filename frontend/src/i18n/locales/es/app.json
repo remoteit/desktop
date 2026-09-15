@@ -2293,7 +2293,6 @@
     "disableTestUI": "Deshabilitar la interfaz de prueba",
     "disableTestUIHint": "Para volver a habilitar la interfaz alfa, debes seleccionar el menú de avatar mientras mantienes presionado alt-shift.",
     "featureLabel": "{{name}} (predeterminado {{state}})",
-    "featurePending": "",
     "features": "Funciones",
     "hideTestUIBackgrounds": "Ocultar fondos de la interfaz de prueba",
     "licenseMessageCleared": "Mensaje de licencia borrado",

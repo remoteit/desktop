@@ -2256,7 +2256,6 @@
     "disableTestUI": "Test-UI deaktivieren",
     "disableTestUIHint": "Um die Alpha-UI wieder zu aktivieren, müssen Sie das Avatar-Menü bei gedrückter Alt-Umschalt-Taste auswählen.",
     "featureLabel": "{{name}} (Standard {{state}})",
-    "featurePending": "",
     "features": "Funktionen",
     "hideTestUIBackgrounds": "Test-UI-Hintergründe ausblenden",
     "licenseMessageCleared": "Lizenzmeldung gelöscht",

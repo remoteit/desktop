@@ -13,11 +13,11 @@ desktop half: what the page does, where it lives, and how to verify it.
 
 ## Where things stood before this branch
 
-- **The gate already existed.** `useChatEnabled()` reads `limits['ai-agent']` through
-  `selectLimitsLookup` (`frontend/src/hooks/useChatEnabled.ts`), the same selector that gates
-  `saml`, `roles` and `tagging`. `PENDING_FEATURES` (`frontend/src/constants.ts`) still defaults the
-  flag ON for local dev builds and app.ai.remote.it, and the API's value wins the moment it arrives —
-  which it now does for any account holding the add-on licence.
+- **The gate already existed — with a hole.** `useChatEnabled()` reads `limits['ai-agent']`
+  through `selectLimitsLookup` (`frontend/src/hooks/useChatEnabled.ts`), the same selector that
+  gates `saml`, `roles` and `tagging`. But `PENDING_FEATURES` (`frontend/src/constants.ts`)
+  defaulted the flag ON for dev builds and app.ai.remote.it, so there the chat showed with or
+  without a licence.
 - **The API was done.** graphql-api `main` carries the generic add-on admin surface —
   `admin.addonProducts`, `admin.addonCustomers(product, from, size, search)`,
   `addAddonCustomer(product, email, expiration?)`, `removeAddonCustomer(product, userId)` — with
@@ -71,6 +71,18 @@ enterprise-licences page (`AdminEnterpriseLicensesListPage.tsx`) with the produc
 - `routers/Router.tsx` (the `/admin/*` block), `components/AdminSidebarNav.tsx` ("Add-ons"),
   `components/Header/Header.tsx` (root-page rule).
 
+### The licence is the only switch
+
+`PENDING_FEATURES`, `CHAT_ALWAYS_ON` and `VITE_CHAT_ALWAYS_ON` are gone (the 2026-08-31 note's
+"client cleanup"). `selectLimitsLookup` is built only from the limits the API returns, so an
+account without the add-on has no `ai-agent` entry at all — falsy — and nothing chat-related
+mounts: no header button, no docked column, no popout (it says "Remote.It AI is not available for
+this account"), and the Test page's **AI Agent** section (background work, agent URL) is behind the
+same gate, so the agent service is not even asked for the background status. The Test page's
+Features list shows only what the licence mentions — an account holding the add-on can switch it
+off there; one without it has no row and gets it granted, not toggled. This holds for a dev build
+and for app.ai.remote.it alike: a developer's dev account needs the grant too.
+
 ### The licence card
 
 - `components/LimitSetting.tsx` — `case 'ai-agent'`: "AI agent is available" when true, and **no
@@ -88,10 +100,10 @@ enterprise-licences page (`AdminEnterpriseLicensesListPage.tsx`) with the produc
   i18n:check`.
 - Driving it: run the frontend against dev (`frontend/.env.local`), sign in as a **system admin**
   (`r3_Users.admin`), Admin → Add-ons. Grant a test account with and without an expiration; on that
-  account, Account → Licensing shows the "AI Agent Alpha plan" card with "AI agent is available",
-  and on a non-dev build the header's AI button appears (a dev build defaults the flag on — flip
-  the Test page override to see the licence's own value). Revoke → the card, the line and the
-  button go, live. Grant an unknown email → the API's message, dialog still open.
+  account, Account → License shows the "AI Agent Alpha plan" card with "AI agent is available", the
+  header's AI button appears and Test Settings lists `ai-agent`. Revoke → the card, the line, the
+  button and the row go, live. Grant an unknown email → the API's message, dialog still open. An
+  account never granted: no AI button, no docked chat, no AI Agent section on the Test page.
 - The API round trip is covered by e2e `addon-license.spec.ts`; a UI spec would need an admin
   sign-in through Permitteer, which the suite does not have — deliberately not added.
 
@@ -103,10 +115,10 @@ page works the day it lands, and prod gets it with the branch's promotion.
 
 ## Left for later
 
-- **`PENDING_FEATURES` cleanup** (2026-08-31 note, "Client cleanup"): the limit is real now, but
-  with no default row an account WITHOUT the add-on still gets no `ai-agent` limit at all, so the
-  forward-declared default is what keeps local dev and app.ai on. Retire it when the API sends a
-  default row (the GA upsell line) or app.ai gets its own floor — decision 3 in that note.
+- **app.ai.remote.it for the unlicensed.** With no floor, an account without the add-on gets the
+  ordinary portal there, chat-less and without a word about why (the popout is the one place that
+  says so). If the AI portal should explain itself, that is a notice keyed on the same gate — not a
+  bypass. The Amplify branch env's `VITE_CHAT_ALWAYS_ON=true` is now inert and can be removed.
 - **The admin user-detail "License" column** (`pages/AdminUsersPage/adminUserAttributes.tsx`, a
   TODO) is the natural place to *show* an account's add-ons beside its plan.
 - **Phase 2/3** (paid tiers carrying the limit; the add-on sold through Stripe) are API-side — see

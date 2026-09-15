@@ -2256,7 +2256,6 @@
     "disableTestUI": "Disable Test UI",
     "disableTestUIHint": "To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift.",
     "featureLabel": "{{name}} (default {{state}})",
-    "featurePending": "Not in any license yet. Switches here apply to your personal account only.",
     "features": "Features",
     "hideTestUIBackgrounds": "Hide test UI backgrounds",
     "licenseMessageCleared": "License message cleared",

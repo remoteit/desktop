@@ -1,6 +1,5 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
-import { PENDING_FEATURES } from '../constants'
 import {
   getUser,
   getOrganizations,
@@ -98,10 +97,8 @@ export const selectLimitsLookup = createSelector(
   [selectLimits, isUserAccount, getLimitsOverride],
   (baseLimits, isUserAccount, limitsOverride): ILookup<ILimit['value']> => {
     const result: ILookup<ILimit['value']> = {}
-    // Flags this build knows about but no license carries yet: worth their declared
-    // default until the API says otherwise, and — being named — something an override can
-    // take a position on, which a name the lookup has never seen would not be.
-    Object.entries(PENDING_FEATURES).forEach(([name, value]) => (result[name] = value))
+    // Built FROM the limits the API returned: a name no license has mentioned is simply
+    // absent (falsy), and there is nothing for a Test page override to attach to.
     baseLimits.forEach(l => (result[l.name] = l.value))
     if (isUserAccount)
       Object.keys(result).forEach(name => {
@@ -111,20 +108,14 @@ export const selectLimitsLookup = createSelector(
   }
 )
 
-export type IFeature = { name: string; value: boolean; pending?: boolean }
+export type IFeature = { name: string; value: boolean }
 
-/* The boolean features the Test page lists: the ones this account's license mentions,
-   plus the ones this build forward-declares. `pending` is the difference between "the
-   license said no" and "no license has mentioned it yet" — the second is a flag still
-   soft-launching, where the Test page switch is the only way to see the feature. */
-export const selectFeatures = createSelector([selectLimits], (limits): IFeature[] => {
-  const features: IFeature[] = limits
-    .filter(l => typeof l.value === 'boolean')
-    .map(l => ({ name: l.name, value: l.value as boolean }))
-  for (const [name, value] of Object.entries(PENDING_FEATURES))
-    if (!features.some(f => f.name === name)) features.push({ name, value, pending: true })
-  return features
-})
+/* The boolean features the Test page lists: exactly the ones this account's license
+   mentions. A feature no license carries has no row — it is granted (Admin → Add-ons for
+   the add-ons), not switched on here. */
+export const selectFeatures = createSelector([selectLimits], (limits): IFeature[] =>
+  limits.filter(l => typeof l.value === 'boolean').map(l => ({ name: l.name, value: l.value as boolean }))
+)
 
 export const selectLicensesWithLimits = createSelector([selectLicenses, selectLimits], (licenses, limits) => {
   return {

@@ -11,6 +11,7 @@ import { isSecureAgentURL, backgroundConnectUrl, backgroundStatus, backgroundDis
 import { windowOpen } from '../services/browser'
 import { selectLimitsLookup, selectFeatures } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
+import { useChatEnabled } from '../hooks/useChatEnabled'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { ListItemRadio } from '../components/ListItemRadio'
@@ -50,10 +51,13 @@ export const TestPage: React.FC = () => {
   // grant — enrollment is a browser ceremony at the AS; this page only reads/ends it. (The
   // one UI entry point for it: without this control backgroundConnectUrl/backgroundStatus
   // have no caller and the workflow cannot be enabled.)
+  // Behind the same licence gate as the chat: without it the section is not shown, and the
+  // agent service is not asked anything.
+  const chatEnabled = useChatEnabled()
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {
-    backgroundStatus().then(setBackgroundEnrolled)
-  }, [])
+    if (chatEnabled) backgroundStatus().then(setBackgroundEnrolled)
+  }, [chatEnabled])
   async function connectBackground() {
     await windowOpen(backgroundConnectUrl(), '_blank', true)
     // The ceremony finishes in the browser — poll briefly for the verdict.
@@ -288,53 +292,57 @@ export const TestPage: React.FC = () => {
         </ListItem>
       </List>
 
-      <Typography variant="subtitle1">{t('testPage.aiAgent', 'AI Agent')}</Typography>
-      <List>
-        <ListItemSetting
-          hideIcon
-          label={t('testPage.backgroundWork', 'AI background work')}
-          subLabel={
-            backgroundEnrolled === undefined
-              ? t('testPage.backgroundWorkUnknown', 'Checking…')
-              : backgroundEnrolled
-                ? t('testPage.backgroundWorkOn', 'The agent can read and watch while you are away.')
-                : t('testPage.backgroundWorkOff', 'The agent only works while you are here.')
-          }
-          toggle={!!backgroundEnrolled}
-          onClick={() => (backgroundEnrolled ? disableBackground() : connectBackground())}
-        />
-        <ListItem>
-          <Quote margin={null} indent="listItem" noInset>
-            <List disablePadding>
-              <InlineTextFieldSetting
-                value={apis.agentURL || OAUTH_AGENT_RESOURCE}
-                label={t('testPage.agentURL', 'Agent service URL (advanced)')}
-                resetValue={OAUTH_AGENT_RESOURCE}
-                maxLength={200}
-                onSave={result => {
-                  const url = result.toString().trim()
-                  if (url && !isSecureAgentURL(url)) {
-                    setAgentError(t('testPage.agentURLInvalid', 'Agent service URL must start with https://'))
-                    return
-                  }
-                  setAgentError('')
-                  // Reset (or entering the default) CLEARS the override so agentURL() falls back to the
-                  // /agent proxy (dev) or VITE_AGENT_URL (build) — never pinning the OAuth audience as the transport.
-                  setAPIPreference('agentURL', url === OAUTH_AGENT_RESOURCE ? '' : url)
-                }}
-                hideIcon
-              />
-              {!!agentError && (
-                <ListItem>
-                  <Typography variant="caption" color="error">
-                    {agentError}
-                  </Typography>
-                </ListItem>
-              )}
-            </List>
-          </Quote>
-        </ListItem>
-      </List>
+      {chatEnabled && (
+        <>
+          <Typography variant="subtitle1">{t('testPage.aiAgent', 'AI Agent')}</Typography>
+          <List>
+            <ListItemSetting
+              hideIcon
+              label={t('testPage.backgroundWork', 'AI background work')}
+              subLabel={
+                backgroundEnrolled === undefined
+                  ? t('testPage.backgroundWorkUnknown', 'Checking…')
+                  : backgroundEnrolled
+                  ? t('testPage.backgroundWorkOn', 'The agent can read and watch while you are away.')
+                  : t('testPage.backgroundWorkOff', 'The agent only works while you are here.')
+              }
+              toggle={!!backgroundEnrolled}
+              onClick={() => (backgroundEnrolled ? disableBackground() : connectBackground())}
+            />
+            <ListItem>
+              <Quote margin={null} indent="listItem" noInset>
+                <List disablePadding>
+                  <InlineTextFieldSetting
+                    value={apis.agentURL || OAUTH_AGENT_RESOURCE}
+                    label={t('testPage.agentURL', 'Agent service URL (advanced)')}
+                    resetValue={OAUTH_AGENT_RESOURCE}
+                    maxLength={200}
+                    onSave={result => {
+                      const url = result.toString().trim()
+                      if (url && !isSecureAgentURL(url)) {
+                        setAgentError(t('testPage.agentURLInvalid', 'Agent service URL must start with https://'))
+                        return
+                      }
+                      setAgentError('')
+                      // Reset (or entering the default) CLEARS the override so agentURL() falls back to the
+                      // /agent proxy (dev) or VITE_AGENT_URL (build) — never pinning the OAuth audience as the transport.
+                      setAPIPreference('agentURL', url === OAUTH_AGENT_RESOURCE ? '' : url)
+                    }}
+                    hideIcon
+                  />
+                  {!!agentError && (
+                    <ListItem>
+                      <Typography variant="caption" color="error">
+                        {agentError}
+                      </Typography>
+                    </ListItem>
+                  )}
+                </List>
+              </Quote>
+            </ListItem>
+          </List>
+        </>
+      )}
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>
       <List>
         {features.map(f => (
@@ -346,14 +354,6 @@ export const TestPage: React.FC = () => {
               state: f.value ? t('testPage.enabled', 'enabled') : t('testPage.disabled', 'disabled'),
               defaultValue: '{{name}} (default {{state}})',
             })}
-            subLabel={
-              f.pending
-                ? t(
-                    'testPage.featurePending',
-                    'Not in any license yet. Switches here apply to your personal account only.'
-                  )
-                : undefined
-            }
             toggle={!!featureValues[f.name]}
             /* Writes the OVERRIDE, not the effective lookup. Spreading the lookup pinned
                every OTHER feature at its current value as well, so a later change to the
