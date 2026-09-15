@@ -12,7 +12,8 @@
   },
   "android": {
     "name": "Android",
-    "description": "Para un teléfono o tableta Android."
+    "description": "Para un teléfono o tableta Android.",
+    "instructions": "Instala la aplicación Remote.It ScreenView desde Play Store, ábrela e introduce este código para registrar el dispositivo."
   },
   "arm": {
     "name": "Arm Virtual Hardware",
@@ -39,7 +40,8 @@
   },
   "docker-extension": {
     "name": "Extensión Docker Jumpbox",
-    "description": "Para Docker Desktop."
+    "description": "Para Docker Desktop.",
+    "instructions": "Instala la extensión Remote.It Jumpbox en Docker Desktop, ábrela e introduce este código para completar el registro."
   },
   "docker-jumpbox": {
     "name": "Docker Jumpbox",

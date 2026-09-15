@@ -12,7 +12,8 @@
   },
   "android": {
     "name": "Android",
-    "description": "Androidのスマートフォンまたはタブレット向けです。"
+    "description": "Androidのスマートフォンまたはタブレット向けです。",
+    "instructions": "Play StoreからRemote.It ScreenViewアプリをインストールして開き、このコードを入力してデバイスを登録してください。"
   },
   "arm": {
     "name": "Arm Virtual Hardware",
@@ -39,7 +40,8 @@
   },
   "docker-extension": {
     "name": "Docker Jumpbox拡張機能",
-    "description": "Docker Desktop向けです。"
+    "description": "Docker Desktop向けです。",
+    "instructions": "Docker DesktopにRemote.It Jumpbox拡張機能をインストールして開き、このコードを入力して登録してください。"
   },
   "docker-jumpbox": {
     "name": "Docker Jumpbox",
