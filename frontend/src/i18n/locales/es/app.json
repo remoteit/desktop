@@ -1124,6 +1124,7 @@
     "renews": "Se renueva"
   },
   "limitSetting": {
+    "aiAgentAvailable": "",
     "emailSupport": "Soporte por correo electrónico disponible",
     "evaluationPeriod": "Los servicios reciben un período de evaluación de {{period}}",
     "forumSupport": "Solo soporte en el foro",

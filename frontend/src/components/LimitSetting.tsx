@@ -38,6 +38,14 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
         ? t('limitSetting.rolesAvailable', 'Custom roles are available')
         : t('limitSetting.rolesUnavailable', 'Custom roles are unavailable')
       break
+    case 'ai-agent':
+      // An alpha granted per account (graphql-api docs/AI-AGENT-LICENSE.md, decision 1): accounts
+      // that lack it are shown nothing, so there is no "unavailable" line — false renders no row.
+      if (limit.value) {
+        template = 'text'
+        message = t('limitSetting.aiAgentAvailable', 'AI agent is available')
+      }
+      break
     case 'tagging':
       // ignore
       break

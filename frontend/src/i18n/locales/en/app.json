@@ -1113,6 +1113,7 @@
     "renews": "Renews"
   },
   "limitSetting": {
+    "aiAgentAvailable": "AI agent is available",
     "emailSupport": "Email support available",
     "evaluationPeriod": "Services are granted an evaluation period of {{period}}",
     "forumSupport": "Forum support only",

@@ -59,7 +59,9 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
     '/admin/notices',
     '/partner-stats',
   ]
-  const isAdminRootPage = adminRootPages.includes(location.pathname)
+  // The add-ons page keys its product into the URL (/admin/add-ons/:productId): that is its root
+  // list, not a detail with a level above it.
+  const isAdminRootPage = adminRootPages.includes(location.pathname) || location.pathname.startsWith('/admin/add-ons')
   const isRootMenu = menu === location.pathname || isAdminRootPage
 
   return (

@@ -1102,6 +1102,7 @@
     "renews": "更新"
   },
   "limitSetting": {
+    "aiAgentAvailable": "",
     "emailSupport": "メールサポートが利用可能です",
     "evaluationPeriod": "サービスには{{period}}の評価期間が付与されます",
     "forumSupport": "フォーラムサポートのみ",

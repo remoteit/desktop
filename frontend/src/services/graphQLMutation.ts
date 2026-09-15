@@ -708,6 +708,37 @@ export async function graphQLRemoveEnterpriseCustomer(userId: string) {
   )
 }
 
+// Add-on licence grants. `expiration` is a String on purpose — the API parses it strictly (a
+// malformed date is refused rather than read as open-ended); undefined leaves an existing grant's
+// expiry alone, null clears it.
+export async function graphQLAddAddonCustomer(product: string, email: string, expiration?: string | null) {
+  return await graphQLBasicRequest(
+    ` mutation AddAddonCustomer($product: String!, $email: String!, $expiration: String) {
+        addAddonCustomer(product: $product, email: $email, expiration: $expiration) {
+          productId
+          userId
+          email
+          name
+          deviceCount
+          memberCount
+          licenseId
+          created
+          expiration
+        }
+      }`,
+    { product, email, expiration }
+  )
+}
+
+export async function graphQLRemoveAddonCustomer(product: string, userId: string) {
+  return await graphQLBasicRequest(
+    ` mutation RemoveAddonCustomer($product: String!, $userId: String!) {
+        removeAddonCustomer(product: $product, userId: $userId)
+      }`,
+    { product, userId }
+  )
+}
+
 export async function graphQLAdminUpdateEmail(from: string, to: string) {
   return await graphQLBasicRequest(
     ` mutation UpdateEmail($from: String!, $to: String!) {

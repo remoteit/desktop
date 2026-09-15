@@ -1113,6 +1113,7 @@
     "renews": "Verlängert sich"
   },
   "limitSetting": {
+    "aiAgentAvailable": "",
     "emailSupport": "E-Mail-Support verfügbar",
     "evaluationPeriod": "Diensten wird ein Testzeitraum von {{period}} gewährt",
     "forumSupport": "Nur Forum-Support",
