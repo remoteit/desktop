@@ -5,7 +5,7 @@ import network from '../services/Network'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT } from '../constants'
+import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT } from '../constants'
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken, apiAuthHeaders } from '../services/remoteit'
@@ -463,10 +463,9 @@ export default createModel<RootModel>()({
     async signOut(_: void, state) {
       // Sign-out is LOCAL to this app: drop this app's tokens/session (dispatch.auth.signedOut
       // below). The AS browser session belongs to the user and is NOT ended here — a true
-      // "sign out everywhere" is a separate, explicit action (oidcEndSessionSilently /
-      // end_session remain for it). Because signIn always uses prompt=select_account, the next
-      // sign-in and any reload land on the AS chooser rather than silently SSO-ing back in, so
-      // no login-prompt guard is needed.
+      // "sign out everywhere" is a separate, explicit action (globalSignOut). Because signIn
+      // always uses prompt=select_account, the next sign-in and any reload land on the AS
+      // chooser rather than silently SSO-ing back in, so no login-prompt guard is needed.
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
@@ -504,7 +503,7 @@ export default createModel<RootModel>()({
       await persistor.purge()
       // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
       // signing out of the app must not sign the user out of login.* (their browser
-      // session is theirs; an explicit "sign out everywhere" action can come later).
+      // session is theirs; the explicit "sign out everywhere" is globalSignOut).
       oidcClearLocal()
       /* signInCleared as well as the user: a failure recorded while SIGNED IN — a refused
          account switch, say — would otherwise survive into the signed-out screen, where
@@ -555,13 +554,49 @@ export default createModel<RootModel>()({
       Controller.close()
     },
     async globalSignOut() {
-      // "Sign out everywhere" (SecurityPage) is the EXPLICIT, AS-wide action, distinct from the
-      // avatar-menu sign-out which is local to this app: end the AS browser session (RP-initiated
-      // logout) BEFORE the local teardown, so the security control does what it reports. The
-      // every-device /logout/all lands with Phase 2b. signOut itself stays LOCAL — a failure-path
-      // or menu sign-out must never end the AS session.
-      const { oidcEndSessionSilently } = await import('../services/oidc')
-      await oidcEndSessionSilently()
+      // "Sign out everywhere" (SecurityPage) is the EXPLICIT, account-wide action, distinct from
+      // the avatar-menu sign-out which is local to this app. ONE call at the AS ends every session
+      // of the account — this one included — with each refresh family swept, the resource servers
+      // told, and on a bridged stage the legacy pool's tokens revoked too (permitteer
+      // docs/remoteit-desktop-login.md Phase 4e); it runs BEFORE the local teardown, so the
+      // security control does what it reports, and it needs only the access token this app
+      // already holds. Best-effort by design: the refusal or outage that a person hits while
+      // reaching for the panic button must not leave them signed in here, so the local sign-out
+      // always follows — a miss is logged, never fatal. signOut itself stays LOCAL — a
+      // failure-path or menu sign-out must never end the AS sessions.
+      //
+      //
+      // A SUPPORT session (an operator viewing as the person) holds no refresh token and can
+      // mint for nothing but the data plane, and the account API refuses writes from an acted
+      // token anyway — so there is nothing to call; the control is hidden for it (SecurityPage),
+      // and this is the backstop: straight to the local teardown. Ending the support session
+      // itself is the operator's console or the person's account page, never this button.
+      if (oidcActor()) {
+        dispatch.auth.signOut()
+        return
+      }
+      // The agent's background grant goes FIRST: chat.signOut revokes it through the agent
+      // service with a token minted from THIS session, and once the AS has ended the session no
+      // token can be minted for that call. It revokes once per identity, so the chat.signOut
+      // inside signedOut() is a real no-op on the far side.
+      await dispatch.chat.signOut()
+      // BOUNDED, like the revoke above. Audience mints serialize through one shared promise
+      // (services/oidc), so a mint the revoke abandoned mid-stall would otherwise queue this call
+      // behind it indefinitely — and the panic button must never leave the person signed in here
+      // because the token service was half-open. Past the bound, the local sign-out proceeds and
+      // the AS is told nothing; that is the failure the mail and the account page can still show.
+      try {
+        const { signOutEverywhere } = await import('../services/permitteerAccount')
+        const r = await Promise.race([
+          signOutEverywhere(),
+          new Promise<null>(resolve => setTimeout(() => resolve(null), SIGN_OUT_EVERYWHERE_TIMEOUT)),
+        ])
+        if (!r) console.warn('SIGN OUT EVERYWHERE timed out — signing out locally')
+        else if (r.status === 200) console.log('SIGN OUT EVERYWHERE', r.body)
+        else console.warn('SIGN OUT EVERYWHERE refused', r.status, r.body)
+      } catch (error) {
+        console.warn('SIGN OUT EVERYWHERE FAILED', error)
+      }
       dispatch.auth.signOut()
     },
   }),

@@ -184,6 +184,14 @@ const usageLimitMessage = (e: UsageLimitError): string => {
 }
 
 let abortController: AbortController | null = null
+/* The background grant is revoked ONCE per signed-in identity: the id whose revoke this cycle has
+   already issued. "Sign out everywhere" revokes it before the AS call (models/auth globalSignOut)
+   and the local teardown that follows runs signOut again — without this the second pass issued a
+   second enrollment DELETE and could hold the teardown for another bounded wait on a slow agent.
+   Keyed by identity rather than a bare flag so a different account is never skipped. Module
+   state, like the controller above: it belongs to the process's sign-in cycle, not to persisted
+   chat state. Cleared by reset(), which every completed teardown ends with. */
+let backgroundRevokedFor: string | null = null
 /* The GENERATION of the conversation on screen — the one guard for everything that writes fetched
    chat content into the store. It advances on every event that makes a load already in flight
    unwanted: a history pick (the pick itself takes the new ticket), New Chat, a send (the user has
@@ -521,7 +529,7 @@ export default createModel<RootModel>()({
        chat's end. The transcript reset is dispatched by auth.signedOut alongside
        the other model resets — dispatching it here would land in the
        purge-to-reload window and re-persist the pre-signout state. */
-    async signOut() {
+    async signOut(_: void, state) {
       broadcastChatSignout()
       // Aborting covers the STREAM; the generation covers every other load in flight. Without it a
       // slow history pick started under this account passed its own guard after the reset (its
@@ -534,7 +542,10 @@ export default createModel<RootModel>()({
       // grant BEFORE the session tokens vanish. AWAITED but BOUNDED — an unawaited revoke raced
       // oidcClearLocal(), so its authenticated DELETE minted no token and background AI access
       // survived sign-out. Awaiting lets the revoke finish while the tokens are still valid; the
-      // timeout keeps a slow agent from blocking sign-out.
+      // timeout keeps a slow agent from blocking sign-out. Once per identity (see the marker).
+      const who = state?.auth?.user?.id
+      if (who && backgroundRevokedFor === who) return
+      backgroundRevokedFor = who ?? null
       await Promise.race([
         backgroundDisable().catch(() => {}),
         new Promise(resolve => setTimeout(resolve, 3000)),
@@ -580,6 +591,7 @@ export default createModel<RootModel>()({
       return state
     },
     reset() {
+      backgroundRevokedFor = null // the next sign-in cycle gets its own revoke
       return { ...defaultChatState }
     },
   },
