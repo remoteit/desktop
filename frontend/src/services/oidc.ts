@@ -334,7 +334,9 @@ const declared = (): Array<{ resource: string; type: string; actions: string[]; 
   { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
   // accounts.read: the OTHER accounts signed in on this browser, served by the account API from
   // this token's session — first-party apps only (permitteer docs/browser-accounts.md).
-  { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write', 'accounts.read'] },
+  // devices.write: "Sign out everywhere" (SecurityPage) — every session of the account, this
+  // one included, ended in one call at the AS (permitteer docs/remoteit-desktop-login.md 4e).
+  { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write', 'accounts.read', 'devices.write'] },
   // The AI agent's slice (remoteit-ai-agent.md D5): the stage's MCP detail, delegated
   // ONWARD to the agent service — `actor` is what stamps may_act into this session's
   // tokens, which is the exchange's precondition. The slice partitions from any plain
@@ -597,23 +599,6 @@ async function refreshOnce(resource: string): Promise<string> {
  * navigation — the parade of redirect hops was the only thing the front-channel bought
  * us. Best-effort: an unreachable AS must not block local teardown; the session gate
  * kills the tokens lazily anyway. */
-export async function oidcEndSessionSilently(): Promise<void> {
-  const idToken = stored()?.id_token
-  if (!idToken) return
-  try {
-    const d = await discover()
-    if (!d.end_session_api_endpoint) return
-    const response = await fetch(d.end_session_api_endpoint, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id_token_hint: idToken }),
-    })
-    if (!response.ok && response.status !== 204) console.warn('OIDC SILENT LOGOUT', response.status)
-  } catch (error) {
-    console.warn('OIDC SILENT LOGOUT FAILED', error)
-  }
-}
-
 /** Why the last mint for this audience was refused, if it was. */
 export const oidcMintError = (resource: string): string | undefined => mintErrors[resource]
 
@@ -626,8 +611,8 @@ export function invalidateOidcToken() {
  * NOTHING else. App sign-out never ends the AS session (user directive — the browser
  * session at the AS belongs to the user, not to this app's error handling), and it never
  * touches the OTHER saved accounts — signing out one identity is not signing out of the
- * app's memory of the rest. `oidcSignOut` (RP-initiated end_session) remains for a future
- * explicit "sign out everywhere" action only. */
+ * app's memory of the rest. The explicit "Sign out everywhere" (models/auth globalSignOut)
+ * ends the sessions at the AS through the account API before it lands here. */
 export function oidcClearLocal() {
   clearLocal()
 }

@@ -463,10 +463,9 @@ export default createModel<RootModel>()({
     async signOut(_: void, state) {
       // Sign-out is LOCAL to this app: drop this app's tokens/session (dispatch.auth.signedOut
       // below). The AS browser session belongs to the user and is NOT ended here — a true
-      // "sign out everywhere" is a separate, explicit action (oidcEndSessionSilently /
-      // end_session remain for it). Because signIn always uses prompt=select_account, the next
-      // sign-in and any reload land on the AS chooser rather than silently SSO-ing back in, so
-      // no login-prompt guard is needed.
+      // "sign out everywhere" is a separate, explicit action (globalSignOut). Because signIn
+      // always uses prompt=select_account, the next sign-in and any reload land on the AS
+      // chooser rather than silently SSO-ing back in, so no login-prompt guard is needed.
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
@@ -504,7 +503,7 @@ export default createModel<RootModel>()({
       await persistor.purge()
       // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
       // signing out of the app must not sign the user out of login.* (their browser
-      // session is theirs; an explicit "sign out everywhere" action can come later).
+      // session is theirs; the explicit "sign out everywhere" is globalSignOut).
       oidcClearLocal()
       /* signInCleared as well as the user: a failure recorded while SIGNED IN — a refused
          account switch, say — would otherwise survive into the signed-out screen, where
@@ -555,13 +554,30 @@ export default createModel<RootModel>()({
       Controller.close()
     },
     async globalSignOut() {
-      // "Sign out everywhere" (SecurityPage) is the EXPLICIT, AS-wide action, distinct from the
-      // avatar-menu sign-out which is local to this app: end the AS browser session (RP-initiated
-      // logout) BEFORE the local teardown, so the security control does what it reports. The
-      // every-device /logout/all lands with Phase 2b. signOut itself stays LOCAL — a failure-path
-      // or menu sign-out must never end the AS session.
-      const { oidcEndSessionSilently } = await import('../services/oidc')
-      await oidcEndSessionSilently()
+      // "Sign out everywhere" (SecurityPage) is the EXPLICIT, account-wide action, distinct from
+      // the avatar-menu sign-out which is local to this app. ONE call at the AS ends every session
+      // of the account — this one included — with each refresh family swept, the resource servers
+      // told, and on a bridged stage the legacy pool's tokens revoked too (permitteer
+      // docs/remoteit-desktop-login.md Phase 4e); it runs BEFORE the local teardown, so the
+      // security control does what it reports, and it needs only the access token this app
+      // already holds. Best-effort by design: the refusal or outage that a person hits while
+      // reaching for the panic button must not leave them signed in here, so the local sign-out
+      // always follows — a miss is logged, never fatal. signOut itself stays LOCAL — a
+      // failure-path or menu sign-out must never end the AS sessions.
+      //
+      // The agent's background grant goes FIRST: chat.signOut revokes it through the agent
+      // service with a token minted from THIS session, and once the AS has ended the session no
+      // token can be minted for that call. signedOut() runs chat.signOut again on the far side
+      // — a bounded no-op then, with nothing left to mint.
+      await dispatch.chat.signOut()
+      try {
+        const { signOutEverywhere } = await import('../services/permitteerAccount')
+        const r = await signOutEverywhere()
+        if (r.status === 200) console.log('SIGN OUT EVERYWHERE', r.body)
+        else console.warn('SIGN OUT EVERYWHERE refused', r.status, r.body)
+      } catch (error) {
+        console.warn('SIGN OUT EVERYWHERE FAILED', error)
+      }
       dispatch.auth.signOut()
     },
   }),

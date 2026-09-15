@@ -6,9 +6,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // the hoisted vi.mock factory runs. `browser` and the live `store` state are hoisted MUTABLE
 // objects so individual tests can steer the electron/backend branch and what the effects
 // re-read from the store after a teardown.
-const { oidcStart, oidcEndSessionSilently, oidcGrantStale, oidcMcpDetailReady, browser, storeState } = vi.hoisted(() => ({
+const { oidcStart, signOutEverywhere, oidcGrantStale, oidcMcpDetailReady, browser, storeState } = vi.hoisted(() => ({
   oidcStart: vi.fn(),
-  oidcEndSessionSilently: vi.fn(),
+  signOutEverywhere: vi.fn(),
   oidcGrantStale: vi.fn(),
   oidcMcpDetailReady: vi.fn(),
   browser: { isElectron: false, hasBackend: false },
@@ -19,11 +19,11 @@ const { oidcStart, oidcEndSessionSilently, oidcGrantStale, oidcMcpDetailReady, b
 // (an undefined right-hand side of instanceof throws rather than returning false).
 vi.mock('../services/oidc', () => ({
   oidcStart,
-  oidcEndSessionSilently,
   oidcGrantStale,
   oidcMcpDetailReady,
   OidcError: class OidcError extends Error {},
 }))
+vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 vi.mock('../services/Controller', () => ({ default: {}, emit: vi.fn(() => false) }))
 vi.mock('../services/CloudSync', () => ({ default: {} }))
 vi.mock('../services/cloudController', () => ({ default: {} }))
@@ -42,7 +42,7 @@ vi.mock('axios', () => ({ default: {} }))
 // The effects are `dispatch => ({...})`; build them against a fake dispatch so each auth.*
 // call is an observable spy rather than a real reducer/effect.
 function makeDispatch() {
-  return { auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn() }, ui: { set: vi.fn() } }
+  return { auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn() }, ui: { set: vi.fn() }, chat: { signOut: vi.fn() } }
 }
 
 // The only shape SignInApp renders: it shows a message ONLY while signInFailed is true, and
@@ -56,7 +56,7 @@ const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
 beforeEach(() => {
   oidcStart.mockReset()
-  oidcEndSessionSilently.mockReset()
+  signOutEverywhere.mockReset().mockResolvedValue({ status: 200, body: { ended: 1, pool: 'skipped' } })
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
 })
@@ -71,25 +71,50 @@ describe('auth model — sign-in always offers the chooser', () => {
 })
 
 describe('auth model — sign-out is local to the app', () => {
-  it('signOut does NOT end the AS session (no oidcEndSessionSilently)', async () => {
+  it('signOut does NOT end the AS sessions (no signOutEverywhere)', async () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).signOut(undefined, { auth: { backendAuthenticated: false } })
-    expect(oidcEndSessionSilently).not.toHaveBeenCalled()
+    expect(signOutEverywhere).not.toHaveBeenCalled()
     // Local teardown still happens.
     expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
   })
 })
 
-describe('auth model — "Sign out everywhere" stays AS-wide', () => {
-  it('globalSignOut ends the AS session BEFORE local teardown', async () => {
+/* "Sign out everywhere" is ONE call at the AS — every session of the account, this one
+   included — and it must run while this app still holds a usable token: before the local
+   teardown, and after the agent's background grant is revoked (that revocation mints from the
+   very session the call ends). It is best-effort: the person reaching for the panic button
+   must end up signed out here whatever the AS answered. */
+describe('auth model — "Sign out everywhere" is one AS call, then the local teardown', () => {
+  it('globalSignOut revokes the background grant, calls sign-out-all, THEN signs out locally', async () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).globalSignOut()
-    expect(oidcEndSessionSilently).toHaveBeenCalledTimes(1)
+    expect(dispatch.chat.signOut).toHaveBeenCalledTimes(1)
+    expect(signOutEverywhere).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
-    // Order matters: the AS logout must precede the local sign-out.
-    expect(oidcEndSessionSilently.mock.invocationCallOrder[0]).toBeLessThan(
-      dispatch.auth.signOut.mock.invocationCallOrder[0]
-    )
+    const [grant, everywhere, local] = [
+      dispatch.chat.signOut.mock.invocationCallOrder[0],
+      signOutEverywhere.mock.invocationCallOrder[0],
+      dispatch.auth.signOut.mock.invocationCallOrder[0],
+    ]
+    expect(grant).toBeLessThan(everywhere)
+    expect(everywhere).toBeLessThan(local)
+  })
+
+  it('a refused sign-out-all still signs the app out locally', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    signOutEverywhere.mockResolvedValue({ status: 403, body: { error: 'insufficient_authorization' } })
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).globalSignOut()
+    expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('an AS that cannot be reached still signs the app out locally', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    signOutEverywhere.mockRejectedValue(new Error('network down'))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).globalSignOut()
+    expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
   })
 })
 

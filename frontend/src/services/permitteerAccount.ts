@@ -37,6 +37,16 @@ async function call<T = any>(path: string, init: RequestInit = {}): Promise<Acco
   return { status: response.status, body }
 }
 
+/** "Sign out everywhere" (permitteer docs/remoteit-desktop-login.md Phase 4e): every session
+ *  of the account at the AS — THIS one included — ended in one stroke, each with its refresh
+ *  family swept and the resource servers told, and, on a Cognito-bridged stage, the pool's
+ *  tokens for the person revoked as well (the legacy apps' sessions). `pool` reports that half:
+ *  skipped (no pool on this stage), none, revoked, or failed. The token that makes this call is
+ *  dead by the time the answer is read; the caller tears the app down right after. */
+export async function signOutEverywhere(): Promise<AccountApiResult<{ ended: number; pool: string }>> {
+  return await call('/devices/sign-out-all', { method: 'POST' })
+}
+
 /** The person's connected apps — the AS account API's own view rows, unreshaped. */
 export async function accountApps(): Promise<AccountApiResult<{ items: IAuthorizedAgent[] }>> {
   return await call('/apps')
