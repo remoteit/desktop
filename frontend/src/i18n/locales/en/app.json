@@ -2247,7 +2247,6 @@
     "backgroundWork": "AI background work",
     "backgroundWorkOff": "The agent only works while you are here.",
     "backgroundWorkOn": "The agent can read and watch while you are away.",
-    "backgroundWorkOrphaned": "The agent can still read and watch while you are away, though this account no longer has Remote.It AI — switch it off.",
     "backgroundWorkUnknown": "Checking…",
     "clearViewedAnnouncements": "Clear viewed announcements",
     "clearViewedAnnouncementsHint": "Marks all loaded announcements unread for this account.",

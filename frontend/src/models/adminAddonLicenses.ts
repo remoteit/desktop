@@ -147,7 +147,11 @@ export const adminAddonLicenses = createModel<RootModel>()({
        staying interactive until (or beyond, if it fails) the new answer. A switch's request retires
        whatever the old product still had in flight (the tickets above). */
     async refresh(preferredProductId: string | undefined, rootState) {
-      dispatch.adminAddonLicenses.setTarget(getApiURL())
+      const target = getApiURL()
+      // A page still in flight from the other target is retired with its rows — it would otherwise
+      // pass the ticket check and refill the emptied list while the catalogue is awaited.
+      if (target !== rootState.adminAddonLicenses.target) ++listRequest
+      dispatch.adminAddonLicenses.setTarget(target)
       const products = await dispatch.adminAddonLicenses.fetchProducts()
       if (!products) return
 

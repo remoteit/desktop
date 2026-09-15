@@ -121,6 +121,22 @@ describe('adminAddonLicenses effects', () => {
     expect(dispatch.adminAddonLicenses.setTarget).toHaveBeenCalledWith('https://cloud.remote.it/api/graphql')
   })
 
+  it("a target change retires the other target's page in flight: it cannot refill the emptied list", async () => {
+    const dispatch = makeDispatch()
+    const effects = withRealEffects(dispatch, { productId: 'A' })
+    const oldTargetPage = deferred<unknown>()
+    graphQLAdminAddonCustomers.mockReturnValueOnce(oldTargetPage.promise)
+    const inFlight = effects.fetch(undefined, stateWith({ productId: 'A', target: 'dev' }))
+
+    getApiURL.mockReturnValueOnce('prod')
+    graphQLAdminAddonProducts.mockReturnValueOnce(new Promise(() => {})) // the catalogue is still being awaited
+    void effects.refresh('A', stateWith({ productId: 'A', target: 'dev' }))
+    oldTargetPage.resolve(page([holder('dev-user')], 1, false))
+    await inFlight
+
+    expect(dispatch.adminAddonLicenses.setCustomers).not.toHaveBeenCalled()
+  })
+
   it("refresh takes the URL's product when the catalogue lists it, and fetches its list afresh", async () => {
     const dispatch = makeDispatch()
     const effects = withRealEffects(dispatch, { productId: 'B' })
