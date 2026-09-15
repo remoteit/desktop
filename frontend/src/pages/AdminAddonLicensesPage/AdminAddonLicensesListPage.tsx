@@ -119,7 +119,12 @@ export const AdminAddonLicensesListPage: React.FC = () => {
   const { productId: urlProductId } = useParams<{ productId?: string }>()
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
-  const [grantDialogOpen, setGrantDialogOpen] = useState(false)
+  /* Each dialog acts on what it was OPENED for, not on the selection at the moment it is confirmed:
+     the grant dialog captures the product, and the revoke confirm takes the product from the row.
+     The URL can move the selection while a dialog is up — Back/Forward, or the product refresh
+     redirecting off a product the API dropped — and a mutation built from the live selection would
+     then hit product B under a title that said A. Both dialogs also close when that happens. */
+  const [grantFor, setGrantFor] = useState<AdminAddonProduct | null>(null)
   const [grantEmail, setGrantEmail] = useState('')
   const [grantExpiration, setGrantExpiration] = useState('')
   const [granting, setGranting] = useState(false)
@@ -139,6 +144,7 @@ export const AdminAddonLicensesListPage: React.FC = () => {
   const product = products.find(p => p.id === productId)
   const label = productLabel(product)
   const productOf = (customer: AdminAddonCustomer) => products.find(p => p.id === customer.productId)
+  const removeLabel = removeTarget ? productLabel(productOf(removeTarget)) : label
 
   const listAttributes = useMemo(
     () => [
@@ -201,14 +207,21 @@ export const AdminAddonLicensesListPage: React.FC = () => {
   }
 
   const closeGrantDialog = () => {
-    setGrantDialogOpen(false)
+    setGrantFor(null)
     setGrantEmail('')
     setGrantExpiration('')
   }
 
+  // The selection moved: whatever a dialog was about is no longer on screen.
+  useEffect(() => {
+    setRemoveTarget(null)
+    closeGrantDialog()
+  }, [productId])
+
   const handleGrant = async () => {
     const email = grantEmail.trim()
-    if (!email || !productId) return
+    if (!email || !grantFor) return
+    const grantLabel = productLabel(grantFor)
 
     // Blank = open-ended. Sent as null, not omitted: the API leaves an OMITTED expiration alone,
     // and re-granting a time-boxed holder from a blank form should give the open-ended grant the
@@ -216,7 +229,7 @@ export const AdminAddonLicensesListPage: React.FC = () => {
     const expiration = grantExpiration ? new Date(grantExpiration).toISOString() : null
 
     setGranting(true)
-    const result = await graphQLAddAddonCustomer(productId, email, expiration)
+    const result = await graphQLAddAddonCustomer(grantFor.id, email, expiration)
     setGranting(false)
 
     // A refused grant (unknown email, a disabled add-on, a Stripe-owned licence) already surfaced
@@ -224,27 +237,28 @@ export const AdminAddonLicensesListPage: React.FC = () => {
     if (result === 'ERROR') return
     if (result?.data?.data?.addAddonCustomer) {
       closeGrantDialog()
-      dispatch.ui.set({ successMessage: `Granted ${label} to ${email}` })
+      dispatch.ui.set({ successMessage: `Granted ${grantLabel} to ${email}` })
       await dispatch.adminAddonLicenses.fetch()
     } else {
-      dispatch.ui.set({ errorMessage: `Failed to grant ${label}` })
+      dispatch.ui.set({ errorMessage: `Failed to grant ${grantLabel}` })
     }
   }
 
   const handleRemove = async () => {
-    if (!removeTarget || !productId) return
+    if (!removeTarget) return
 
     setRemoving(true)
-    const result = await graphQLRemoveAddonCustomer(productId, removeTarget.userId)
+    // The row's own product — the licence being revoked is the one the row showed
+    const result = await graphQLRemoveAddonCustomer(removeTarget.productId, removeTarget.userId)
     setRemoving(false)
 
     if (result === 'ERROR') return
     if (result?.data?.data?.removeAddonCustomer) {
-      dispatch.ui.set({ successMessage: `Revoked ${label} from ${removeTarget.email}` })
+      dispatch.ui.set({ successMessage: `Revoked ${removeLabel} from ${removeTarget.email}` })
       setRemoveTarget(null)
       await dispatch.adminAddonLicenses.fetch()
     } else {
-      dispatch.ui.set({ errorMessage: `Failed to revoke ${label}` })
+      dispatch.ui.set({ errorMessage: `Failed to revoke ${removeLabel}` })
     }
   }
 
@@ -276,7 +290,7 @@ export const AdminAddonLicensesListPage: React.FC = () => {
               {/* A disabled add-on refuses new grants at the API; its existing ones can still be revoked. */}
               {product?.enabled && (
                 <Button
-                  onClick={() => setGrantDialogOpen(true)}
+                  onClick={() => setGrantFor(product)}
                   size="small"
                   variant="contained"
                   color="primary"
@@ -363,8 +377,8 @@ export const AdminAddonLicensesListPage: React.FC = () => {
         </GridList>
       )}
 
-      <Dialog open={grantDialogOpen} onClose={closeGrantDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Grant {label}</DialogTitle>
+      <Dialog open={!!grantFor} onClose={closeGrantDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Grant {productLabel(grantFor ?? undefined)}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -399,7 +413,7 @@ export const AdminAddonLicensesListPage: React.FC = () => {
 
       <Confirm
         open={!!removeTarget}
-        title={`Revoke ${label}`}
+        title={`Revoke ${removeLabel}`}
         action={removing ? 'Revoking...' : 'Revoke'}
         color="error"
         disabled={removing}
@@ -408,8 +422,8 @@ export const AdminAddonLicensesListPage: React.FC = () => {
       >
         {removeTarget && (
           <>
-            Are you sure you want to revoke <strong>{label}</strong> from <strong>{removeTarget.email}</strong>? The
-            account loses the feature immediately.
+            Are you sure you want to revoke <strong>{removeLabel}</strong> from <strong>{removeTarget.email}</strong>?
+            The account loses the feature immediately.
           </>
         )}
       </Confirm>
