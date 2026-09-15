@@ -264,35 +264,38 @@ export const AdminAddonLicensesListPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
       header={
         <Gutters>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <TextField
-              select
-              size="small"
-              label="Add-on"
-              // Out-of-range values make MUI's Select warn; hold '' until the list carries the product.
-              value={product ? product.id : ''}
-              onChange={e => history.push(`${ADMIN_ADDONS_ROUTE}/${e.target.value}`)}
-              sx={{ minWidth: 180 }}
-            >
-              {products.map(p => (
-                <MenuItem key={p.id} value={p.id}>
-                  {productLabel(p)}
-                </MenuItem>
-              ))}
-            </TextField>
-            {/* A disabled add-on refuses new grants at the API; its existing ones can still be revoked. */}
-            {product?.enabled && (
-              <Button
-                onClick={() => setGrantDialogOpen(true)}
+          {/* Two rows: which add-on and its one action, then the search over that add-on's holders */}
+          <Stack spacing={1}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <TextField
+                select
                 size="small"
-                variant="contained"
-                color="primary"
-                startIcon={<Icon name="plus" />}
-                sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+                label="Add-on"
+                // Out-of-range values make MUI's Select warn; hold '' until the list carries the product.
+                value={product ? product.id : ''}
+                onChange={e => history.push(`${ADMIN_ADDONS_ROUTE}/${e.target.value}`)}
+                sx={{ minWidth: 180 }}
               >
-                Grant
-              </Button>
-            )}
+                {products.map(p => (
+                  <MenuItem key={p.id} value={p.id}>
+                    {productLabel(p)}
+                  </MenuItem>
+                ))}
+              </TextField>
+              {/* A disabled add-on refuses new grants at the API; its existing ones can still be revoked. */}
+              {product?.enabled && (
+                <Button
+                  onClick={() => setGrantDialogOpen(true)}
+                  size="small"
+                  variant="contained"
+                  color="primary"
+                  startIcon={<Icon name="plus" />}
+                  sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+                >
+                  Grant
+                </Button>
+              )}
+            </Stack>
             <TextField
               fullWidth
               size="small"
