@@ -28,14 +28,13 @@ export const TestPage: React.FC = () => {
   const { tests, informed } = useSelector((state: State) => state.plans)
   const apis = useSelector((state: State) => state.ui.apis)
   const testUI = useSelector((state: State) => state.ui.testUI)
-  const preferences = useSelector((state: State) => state.backend.preferences)
   const featureValues = useSelector(selectLimitsLookup)
   const features = useSelector(selectFeatures)
   const overrides = useSelector((state: State) => state.ui.limitsOverride)
 
   async function setAPIPreference(key: string, value: string | number | boolean) {
     await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
-    emit('preferences', { ...preferences, [key]: value })
+    emit('preferences', { [key]: value })
   }
 
   // --- the stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c) ----
@@ -140,7 +139,7 @@ export const TestPage: React.FC = () => {
       webSocketURL: apis.webSocketURL || getWebSocketURL() || '',
     }
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
-    emit('preferences', { ...preferences, ...values })
+    emit('preferences', values)
   }
 
   async function selectStage(pair: StagePair) {
@@ -153,7 +152,7 @@ export const TestPage: React.FC = () => {
       ...(pair.ws ? { webSocketURL: pair.ws } : {}),
     }
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
-    emit('preferences', { ...preferences, ...values })
+    emit('preferences', values)
     try {
       // One mint per RESOURCE, which is two on a legacy stage and one on the unified front — where
       // asking for the socket URL separately would answer invalid_target, correctly.
@@ -184,7 +183,7 @@ export const TestPage: React.FC = () => {
           )}
           onClick={() => {
             dispatch.ui.setPersistent({ testUI: undefined })
-            emit('preferences', { ...preferences, allowPrerelease: false, switchApi: false })
+            emit('preferences', { allowPrerelease: false, switchApi: false })
           }}
         />
         <ListItemSetting
@@ -208,7 +207,10 @@ export const TestPage: React.FC = () => {
         <ListItemSetting
           hideIcon
           label={t('testPage.clearViewedAnnouncements', 'Clear viewed announcements')}
-          subLabel={t('testPage.clearViewedAnnouncementsHint', 'Marks all loaded announcements unread for this account.')}
+          subLabel={t(
+            'testPage.clearViewedAnnouncementsHint',
+            'Marks all loaded announcements unread for this account.'
+          )}
           onClick={() => dispatch.announcements.clearRead()}
         />
         <PortalUI>

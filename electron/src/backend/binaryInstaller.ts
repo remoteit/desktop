@@ -204,7 +204,7 @@ export class BinaryInstaller {
   async updateVersions() {
     const cliVersion = await cli.version()
     Logger.info('CLI VERSION UPDATE', { cliVersion })
-    preferences.update({ version: environment.version, cliVersion })
+    preferences.set({ version: environment.version, cliVersion })
   }
 }
 

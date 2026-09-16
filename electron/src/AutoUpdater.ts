@@ -1,6 +1,13 @@
+import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
 import { EventBus, Logger, EVENTS, preferences, environment, brand } from './backend'
+import {
+  detectNativeWindowsArch,
+  isEligibleRelease,
+  resolveNativeArchSteering,
+  WindowsArch,
+} from './backend/updateChannel'
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
@@ -23,9 +30,10 @@ interface GitHubRelease {
   assets: GitHubReleaseAsset[]
 }
 
+// Same pattern as scripts/release-repo.js, which resolves the repository for CI.
 const resolveGitHubFeedFromBrand = (): GitHubFeedConfig => {
   const repositoryUrl = brand?.package?.repository?.url || ''
-  const match = repositoryUrl.match(/github\.com[/:]([^/]+)\/([^/.]+)(?:\.git)?$/i)
+  const match = repositoryUrl.match(/github\.com[/:]([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/i)
 
   return {
     owner: match?.[1] || DEFAULT_GITHUB_OWNER,
@@ -41,7 +49,7 @@ export default class AppUpdater {
   downloading: boolean = false
   version?: string
   error: boolean = false
-  private readonly updateManifestFile = process.platform === 'darwin' ? 'latest-mac.yml' : 'latest.yml'
+  private steering: WindowsArch | null = null
   private readonly defaultGithubFeed: GitHubFeedConfig = resolveGitHubFeedFromBrand()
 
   constructor() {
@@ -75,6 +83,8 @@ export default class AppUpdater {
     autoUpdater.on('update-available', info => {
       this.available = true
       this.checking = false
+      // The differential-download preamble emits no progress for several seconds.
+      this.downloading = autoUpdater.autoDownload && !this.downloaded
       this.error = false
       this.version = info.version
       this.emitStatus()
@@ -119,25 +129,43 @@ export default class AppUpdater {
     }
   }
 
-  check = async (force?: boolean) => {
+  private get channel() {
+    return this.steering ? `latest-${this.steering}` : 'latest'
+  }
+
+  private get updateManifestFile() {
+    return `${this.channel}${process.platform === 'darwin' ? '-mac' : ''}.yml`
+  }
+
+  private inFlight: Promise<void> | null = null
+
+  // Startup fires several checks at once; run in parallel they interleave the feed and steering state.
+  check = (force?: boolean) => {
+    if (!this.inFlight) this.inFlight = this.run(force).finally(() => (this.inFlight = null))
+    return this.inFlight
+  }
+
+  private async run(force?: boolean) {
     if ((!environment.isWindows && !environment.isMac) || !preferences.get().autoUpdate) return
 
     try {
       if (force || this.nextCheck < Date.now()) {
-        this.setDefaultFeed()
-        Logger.info('CHECK FOR UPDATE', { url: autoUpdater.getFeedURL() })
-        Logger.info('Checking for update')
         this.nextCheck =
           Date.now() + (autoUpdater.allowPrerelease ? PRE_RELEASE_CHECK_INTERVAL : AUTO_UPDATE_CHECK_INTERVAL)
+        this.applyFeed(this.nativeArchSteering())
+        Logger.info('CHECK FOR UPDATE', {
+          feed: this.defaultGithubFeed,
+          manifest: this.updateManifestFile,
+          processArch: process.arch,
+          steering: this.steering,
+        })
+        Logger.info('Checking for update')
         await autoUpdater.checkForUpdatesAndNotify()
         this.emitStatus()
       }
     } catch (error) {
-      if (this.isMissingChannelFileError(error)) {
-        const recovered = await this.checkWithFallbackRelease()
-        if (recovered) return
-      }
-      Logger.warn('AUTO UPDATE ERROR', { error })
+      if (this.isMissingChannelFileError(error)) await this.checkNewestRelease()
+      else Logger.warn('AUTO UPDATE ERROR', { error })
     }
   }
 
@@ -146,12 +174,18 @@ export default class AppUpdater {
     autoUpdater.quitAndInstall()
   }
 
-  private setDefaultFeed() {
-    autoUpdater.setFeedURL({
-      provider: 'github',
-      owner: this.defaultGithubFeed.owner,
-      repo: this.defaultGithubFeed.repo,
-    })
+  private nativeArchSteering(): WindowsArch | null {
+    if (!environment.isWindows) return null
+    const nativeArch = detectNativeWindowsArch(process.arch, app.runningUnderARM64Translation, process.env)
+    return resolveNativeArchSteering(process.arch, nativeArch)
+  }
+
+  // The feed's own `channel` only renames the manifest GitHubProvider reads from the release it
+  // picks; autoUpdater.channel would also change which tags it picks. See RELEASE.md.
+  private applyFeed(steering: WindowsArch | null) {
+    const { owner, repo } = this.defaultGithubFeed
+    this.steering = steering
+    autoUpdater.setFeedURL({ provider: 'github', owner, repo, channel: this.channel })
   }
 
   private isMissingChannelFileError(error: any): boolean {
@@ -161,37 +195,45 @@ export default class AppUpdater {
     )
   }
 
-  private async checkWithFallbackRelease(): Promise<boolean> {
+  // GitHubProvider resolves the newest tag from the release feed, which also lists tags whose
+  // release is still a draft; the API lists only published releases, with their assets.
+  private async checkNewestRelease() {
+    const { owner, repo } = this.defaultGithubFeed
     try {
-      const tag = await this.findFallbackReleaseTag()
-      if (!tag) return false
+      const { data } = await axios.get<GitHubRelease[]>(
+        `https://api.github.com/repos/${owner}/${repo}/releases?per_page=30`,
+        { headers: { Accept: 'application/vnd.github+json' }, timeout: 10000 }
+      )
+      const current = autoUpdater.currentVersion.version
+      const release = data.find(
+        item =>
+          !item.draft && (autoUpdater.allowPrerelease ? isEligibleRelease(current, item.tag_name) : !item.prerelease)
+      )
+      if (!release) {
+        Logger.warn('AUTO UPDATE NO PUBLISHED RELEASE')
+        return
+      }
 
-      autoUpdater.setFeedURL({
-        provider: 'generic',
-        url: `https://github.com/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases/download/${tag}`,
-      })
-      Logger.warn('AUTO UPDATE FALLBACK RELEASE', { tag, manifest: this.updateManifestFile })
+      const has = (name: string) => !!release.assets?.some(asset => asset.name === name)
+      if (this.steering && !has(this.updateManifestFile)) {
+        Logger.warn('AUTO UPDATE NATIVE ARCH MANIFEST MISSING', {
+          tag: release.tag_name,
+          manifest: this.updateManifestFile,
+        })
+        this.steering = null
+      }
+      if (!has(this.updateManifestFile)) {
+        Logger.warn('AUTO UPDATE MANIFEST MISSING', { tag: release.tag_name, manifest: this.updateManifestFile })
+        return
+      }
+
+      const url = `https://github.com/${owner}/${repo}/releases/download/${release.tag_name}`
+      autoUpdater.setFeedURL({ provider: 'generic', url, channel: this.channel, useMultipleRangeRequest: false })
+      Logger.warn('AUTO UPDATE PINNED RELEASE', { tag: release.tag_name, manifest: this.updateManifestFile })
       await autoUpdater.checkForUpdatesAndNotify()
       this.emitStatus()
-      return true
     } catch (error) {
       Logger.warn('AUTO UPDATE FALLBACK ERROR', { error })
-      return false
     }
-  }
-
-  private async findFallbackReleaseTag(): Promise<string | undefined> {
-    const { data } = await axios.get<GitHubRelease[]>(
-      `https://api.github.com/repos/${this.defaultGithubFeed.owner}/${this.defaultGithubFeed.repo}/releases?per_page=30`,
-      { headers: { Accept: 'application/vnd.github+json' } }
-    )
-
-    const release = data.find(item => {
-      if (item.draft) return false
-      if (!autoUpdater.allowPrerelease && item.prerelease) return false
-      return item.assets?.some(asset => asset.name === this.updateManifestFile)
-    })
-
-    return release?.tag_name
   }
 }

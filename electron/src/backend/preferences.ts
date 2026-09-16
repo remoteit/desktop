@@ -46,19 +46,16 @@ export class Preferences {
     return this.data || this.file.read()
   }
 
-  update(pref: { [key: string]: any }) {
-    Logger.info('UPDATE PREFERENCE', pref)
-    const data = this.get()
-    this.set({ ...data, ...pref })
-  }
-
-  set = (preferences: IPreferences) => {
+  // Merge, never replace: a renderer emit that raced the backend's state once wiped every
+  // other key and switched auto-update off.
+  set = (preferences: Partial<IPreferences>) => {
     Logger.info('SET PREFERENCES', { preferences })
-    this.file.write(preferences)
-    this.data = preferences
+    const data = { ...this.data, ...preferences }
     // @ts-ignore - remove circular reference
-    delete this.data.preferences
-    EventBus.emit(this.EVENTS.update, preferences)
+    delete data.preferences
+    this.file.write(data)
+    this.data = data
+    EventBus.emit(this.EVENTS.update, data)
   }
 }
 

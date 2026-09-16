@@ -1,6 +1,6 @@
 {
   "name": "remoteit",
-  "version": "3.47.2",
+  "version": "3.48.10",
   "private": true,
   "main": "build/index.js",
   "description": "Remote.It cross platform desktop application for creating and hosting connections",
@@ -14,7 +14,7 @@
     "build": "cross-env NODE_ENV=production run-s build-frontend brand copy-install copy-entitlements compile verify-binaries build-electron",
     "build-local": "cross-env NODE_ENV=production run-s copy-env clean build-frontend brand copy-install copy-entitlements compile verify-binaries build-electron",
     "build-frontend": "cd ../ && npm run build-frontend",
-    "build-electron": "cross-env NODE_ARCH=$npm_config_arch electron-builder",
+    "build-electron": "cross-env NODE_ARCH=$npm_config_arch ELECTRON_BUILDER_7Z_FILTER=BCJ2 electron-builder",
     "clean": "rimraf build/* dist/*",
     "compile": "run-s typecheck-common typecheck sync-assets",
     "verify-binaries": "node ./scripts/verify-binaries.js",
@@ -48,7 +48,7 @@
     "dotenv": "^16.4.5",
     "electron-updater": "^6.8.9",
     "escape-string-regexp": "^4.0.0",
-    "express": "^4.22.2",
+    "express": "^5.2.1",
     "is-electron": "^2.2.2",
     "is-elevated": "^3.0.0",
     "is-port-reachable": "^3.1.0",
@@ -67,7 +67,7 @@
     "@electron/notarize": "^2.5.0",
     "@types/cors": "^2.8.17",
     "@types/debug": "^4.1.12",
-    "@types/express": "^4.17.21",
+    "@types/express": "^5.0.6",
     "@types/jest": "^29.5.13",
     "@types/lodash.isequal": "^4.5.8",
     "@types/node": "^22.7.6",
@@ -113,6 +113,7 @@
       ]
     },
     "nsis": {
+      "buildUniversalInstaller": false,
       "oneClick": false,
       "perMachine": true,
       "allowElevation": true,
