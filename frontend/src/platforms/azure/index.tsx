@@ -43,12 +43,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'azure',
-  name: 'Azure',
   component: Component,
-  types: { 1186: 'Azure' },
-  installation: {
-    command: true,
-    qualifier: 'For any Linux based Azure Cloud virtual machine',
-    link: 'https://link.remote.it/support/streamline-install',
-  },
 })

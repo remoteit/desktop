@@ -5,6 +5,7 @@ import agents from './agents'
 import { adminPartners } from './adminPartners'
 import { adminUsers } from './adminUsers'
 import { adminEnterpriseLicenses } from './adminEnterpriseLicenses'
+import { adminAddonLicenses } from './adminAddonLicenses'
 import adminNotices from './adminNotices'
 import announcements from './announcements'
 import applicationTypes from './applicationTypes'
@@ -13,6 +14,7 @@ import backend from './backend'
 import billing from './billing'
 import binaries from './binaries'
 import bluetooth from './bluetooth'
+import chat from './chat'
 import connections from './connections'
 import contacts from './contacts'
 import devices from './devices'
@@ -42,6 +44,7 @@ export interface RootModel extends Models<RootModel> {
   adminPartners: typeof adminPartners
   adminUsers: typeof adminUsers
   adminEnterpriseLicenses: typeof adminEnterpriseLicenses
+  adminAddonLicenses: typeof adminAddonLicenses
   adminNotices: typeof adminNotices
   announcements: typeof announcements
   applicationTypes: typeof applicationTypes
@@ -50,6 +53,7 @@ export interface RootModel extends Models<RootModel> {
   billing: typeof billing
   binaries: typeof binaries
   bluetooth: typeof bluetooth
+  chat: typeof chat
   connections: typeof connections
   contacts: typeof contacts
   devices: typeof devices
@@ -80,6 +84,7 @@ export const models: RootModel = {
   adminPartners,
   adminUsers,
   adminEnterpriseLicenses,
+  adminAddonLicenses,
   adminNotices,
   announcements,
   applicationTypes,
@@ -88,6 +93,7 @@ export const models: RootModel = {
   billing,
   binaries,
   bluetooth,
+  chat,
   connections,
   contacts,
   devices,

@@ -42,3 +42,9 @@ export const DEFAULT_SERVICE: IService = {
   license: 'UNKNOWN',
   attributes: {},
 }
+
+// Chat popout window — the boot flag and dimensions are a contract between
+// the frontend (opens the window with ?chatPopout=<id>) and electron (allows
+// the window.open and sizes the child window)
+export const CHAT_POPOUT_PARAM = 'chatPopout'
+export const CHAT_POPOUT_SIZE = { width: 520, height: 780, minWidth: 360, minHeight: 500 }

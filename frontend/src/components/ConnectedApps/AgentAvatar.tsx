@@ -10,16 +10,16 @@ type Props = {
   inline?: boolean
 }
 
-// The agent's logo from its OAuth client metadata (logo_uri), loaded on demand, with a colored
-// monogram fallback like user avatars. No per-app code — any client that registers a logo_uri
-// renders automatically.
+// The app's logo from its OAuth client branding, loaded on demand, with a colored
+// monogram fallback like user avatars. No per-app code — any client that registers a
+// logo renders automatically.
 export const AgentAvatar: React.FC<Props> = ({ agent, size = 24, inline }) => {
-  const name = agent.clientName || agent.clientId
+  const name = agent.app || agent.clientId
 
   return (
     <Avatar
       alt={name}
-      src={agent.logoUri || undefined}
+      src={agent.logo || undefined}
       sx={theme => ({
         height: size,
         width: size,

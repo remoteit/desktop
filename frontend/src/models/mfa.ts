@@ -1,10 +1,12 @@
 import { createModel } from '@rematch/core'
-import { AUTH_API_URL, DEVELOPER_KEY } from '../constants'
-import { getToken } from '../services/remoteit'
 import { RootModel } from '.'
-import axios from 'axios'
-import i18n from '../i18n'
 
+/**
+ * PHASE-2B PLACEHOLDER (permitteer docs/remoteit-desktop-login.md, D4): MFA management
+ * moves from the Cognito APIs (died with the Cognito stack) to the Passport self-API,
+ * consumed natively here. Until that lands, MFA state is display-only defaults and the
+ * management effects are inert — enrollment/preference live at the account console.
+ */
 export type IMfa = {
   mfaMethod: 'SMS_MFA' | 'SOFTWARE_TOKEN_MFA' | 'NO_MFA'
   verificationCode: string
@@ -35,123 +37,29 @@ const defaultState: IMfa = {
   error: null,
 }
 
+const PENDING = 'Two-factor management is moving to the new sign-in — available shortly.'
+
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async getAWSUser(_: void, state) {
-      const userInfo = await state.auth.authService?.currentUserInfo()
-      if (!userInfo) {
-        console.error('Could not getAWSUser', userInfo)
-        return
-      }
-      const response = await axios.get(`${AUTH_API_URL}/mfaPref`, {
-        headers: {
-          developerKey: DEVELOPER_KEY,
-          Authorization: await getToken(),
-        },
-      })
-      dispatch.mfa.set({ mfaMethod: response.data.MfaPref })
-      if (userInfo.attributes) {
-        delete userInfo.attributes['identities']
-        delete userInfo.attributes['sub']
-      }
-      const AWSUser = {
-        ...state.auth.AWSUser,
-        ...userInfo.attributes,
-        authProvider: userInfo.username?.toLowerCase().includes('google') ? 'Google' : '',
-      }
-      await dispatch.auth.set({ AWSUser })
+    async getAWSUser(_: void) {
+      /* Phase 2b: read MFA standing from the Passport self-API. */
     },
-
-    async setMFAPreference(mfaMethod: IMfa['mfaMethod']) {
-      try {
-        const response = await axios.post(
-          `${AUTH_API_URL}/mfaPref`,
-          { MfaPref: mfaMethod },
-          { headers: { developerKey: DEVELOPER_KEY, Authorization: await getToken() } }
-        )
-        dispatch.mfa.set({ mfaMethod: response.data.MfaPref, backupCode: response.data.backupCode })
-        if (response.data.MfaPref !== 'NO_MFA') {
-          dispatch.ui.set({
-            successMessage: i18n.t('notices:mfa.enabled', {
-              defaultValue: 'Two-factor authentication enabled successfully.',
-            }),
-          })
-        }
-        console.log('SET MFA PREFERENCE', response)
-      } catch (error) {
-        if (error instanceof Error) {
-          dispatch.ui.set({
-            errorMessage: i18n.t('notices:mfa.enableError', {
-              error: error.message,
-              defaultValue: 'Two-factor authentication enabled error: {{error}}',
-            }),
-          })
-        }
-      }
+    async setMFAPreference(_: IMfa['mfaMethod']) {
+      dispatch.ui.set({ errorMessage: PENDING })
     },
-
-    async updatePhone(phone: string, state) {
-      try {
-        await state.auth.authService?.updateCurrentUserAttributes({ phone_number: phone.replace(/\s+/g, '') })
-        await dispatch.mfa.getAWSUser()
-        await state.auth.authService?.verifyCurrentUserAttribute('phone_number')
-        await dispatch.mfa.setMFAPreference('NO_MFA')
-        dispatch.ui.set({
-          successMessage: i18n.t('notices:mfa.verificationSent', { defaultValue: 'Verification sent.' }),
-        })
-        return true
-      } catch (error) {
-        console.error(error)
-        if (error instanceof Error) {
-          dispatch.ui.set({
-            errorMessage: i18n.t('notices:mfa.updatePhoneError', {
-              error: error.message,
-              defaultValue: 'Update phone error: {{error}}',
-            }),
-          })
-        }
-      }
+    async updatePhone(_: string) {
+      dispatch.ui.set({ errorMessage: PENDING })
     },
-
-    async verifyPhone(verificationCode: string, state) {
-      try {
-        await state.auth.authService?.verifyCurrentUserAttributeSubmit('phone_number', verificationCode)
-        await dispatch.mfa.setMFAPreference('SMS_MFA')
-        await dispatch.mfa.getAWSUser()
-      } catch (error) {
-        console.error(error)
-        if (error instanceof Error) {
-          dispatch.ui.set({
-            errorMessage: i18n.t('notices:mfa.phoneVerificationError', {
-              error: error.message,
-              defaultValue: 'Phone verification error: {{error}}',
-            }),
-          })
-        }
-      }
+    async verifyPhone(_: string) {
+      dispatch.ui.set({ errorMessage: PENDING })
     },
-
-    async getTotpCode(_: void, state) {
-      return state.auth.authService?.setupTOTP()
+    async getTotpCode(_: void): Promise<string | undefined> {
+      dispatch.ui.set({ errorMessage: PENDING })
+      return undefined
     },
-
-    async verifyTotpCode(code: string, state) {
-      try {
-        await state.auth.authService?.verifyTotpToken(code)
-      } catch (error) {
-        console.error(error)
-        if (error instanceof Error) {
-          dispatch.ui.set({
-            errorMessage: i18n.t('notices:mfa.invalidTotp', {
-              error: error.message,
-              defaultValue: 'Invalid TOTP Code. ({{error}})',
-            }),
-          })
-        }
-        return
-      }
-      await dispatch.mfa.setMFAPreference('SOFTWARE_TOKEN_MFA')
+    async verifyTotpCode(_: string) {
+      dispatch.ui.set({ errorMessage: PENDING })
     },
   }),
   reducers: {

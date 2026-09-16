@@ -8,11 +8,12 @@
     "build": "cross-env NODE_OPTIONS='--max-old-space-size=4096' vite build",
     "typecheck": "tsc --noEmit",
     "i18n:extract": "i18next -c i18next-parser.config.js",
-    "i18n:check": "node scripts/i18n-check.mjs"
+    "i18n:check": "node scripts/i18n-check.mjs",
+    "test": "vitest run",
+    "test-watch": "vitest"
   },
   "dependencies": {
     "@airbrake/browser": "^2.1.9",
-    "@aws-amplify/auth": "^5.6.21",
     "@capacitor-community/bluetooth-le": "^7.1.1",
     "@capacitor/app": "^7.0.1",
     "@capacitor/app-launcher": "^7.0.1",
@@ -61,10 +62,12 @@
     "react-dropzone": "^14.3.8",
     "react-gtm-module": "^2.0.11",
     "react-i18next": "^12.3.1",
+    "react-markdown": "^9.0.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^5.3.4",
     "react-select": "^5.10.2",
     "react-string-replace": "^1.1.1",
+    "remark-gfm": "^4.0.0",
     "reaptcha": "^1.12.1",
     "reconnecting-websocket": "^4.4.0",
     "redux": "^5.0.1",
@@ -96,8 +99,10 @@
     "@vitejs/plugin-react": "^4.3.2",
     "eslint": "^8.53.0",
     "i18next-parser": "^9.4.0",
+    "jsdom": "^27.0.1",
     "typescript": "^5.9.2",
-    "vite": "^6.4.3"
+    "vite": "^6.4.3",
+    "vitest": "^3.2.7"
   },
   "eslintConfig": {
     "extends": "react-app"

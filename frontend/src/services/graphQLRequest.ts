@@ -646,6 +646,52 @@ export async function graphQLAdminEnterpriseCustomers(
   )
 }
 
+// Add-on licences (graphql-api docs/AI-AGENT-LICENSE.md): generic over add-on products, of which
+// ai-agent is the first. A product is selected on the admin page, then its holders are listed.
+export async function graphQLAdminAddonProducts() {
+  return await graphQLBasicRequest(
+    ` query AdminAddonProducts {
+        admin {
+          addonProducts {
+            id
+            name
+            description
+            enabled
+          }
+        }
+      }`
+  )
+}
+
+export async function graphQLAdminAddonCustomers(
+  product: string,
+  options: { from?: number; size?: number },
+  search?: string
+) {
+  return await graphQLBasicRequest(
+    ` query AdminAddonCustomers($product: String!, $from: Int, $size: Int, $search: String) {
+        admin {
+          addonCustomers(product: $product, from: $from, size: $size, search: $search) {
+            items {
+              productId
+              userId
+              email
+              name
+              deviceCount
+              memberCount
+              licenseId
+              created
+              expiration
+            }
+            total
+            hasMore
+          }
+        }
+      }`,
+    { product, from: options.from || 0, size: options.size || 50, search: search || undefined }
+  )
+}
+
 export async function graphQLAdminPartners() {
   return await graphQLBasicRequest(
     ` query AdminPartners {

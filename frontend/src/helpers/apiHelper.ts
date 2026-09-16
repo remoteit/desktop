@@ -1,4 +1,4 @@
-import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, TEST_HEADER } from '../constants'
+import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, TEST_HEADER, OAUTH_GRAPHQL_RESOURCE } from '../constants'
 import { graphQLRentANode } from '../services/graphQLMutation'
 import { version } from './versionHelper'
 import { store } from '../store'
@@ -13,6 +13,31 @@ export function getApiURL(): string | undefined {
       ? overrides?.betaApiURL || GRAPHQL_BETA_API
       : overrides?.apiURL || GRAPHQL_API
   return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
+}
+
+/** The RESOURCE (RFC 8707 audience) to mint for when calling a given GraphQL URL.
+ *
+ *  On the legacy per-stage hosts the two are the same string — the identifier IS the graphql URL,
+ *  which is the assumption this whole lane was written on. The UNIFIED FRONT breaks it
+ *  (graphql-permitteer docs/CLOUD-EDGE.md): one identifier per stage covers graphql, the REST
+ *  surface and the socket, and each of those is a PATH inside it. Asking the AS for the leaf
+ *  answers invalid_target, correctly — nothing registered that URL. So the leaf comes off.
+ *
+ *  Derived rather than stored, so a target typed by hand into Test Settings resolves the same way a
+ *  picked one does, with no new persisted field to fall out of step. */
+export function resourceForApiURL(url: string): string {
+  return url.match(/^(https:\/\/cloud(?:\.[a-z0-9-]+)?\.remote\.it\/api)\/graphql$/)?.[1] ?? url
+}
+
+// D10 (permitteer docs/remoteit-desktop-login.md Phase 4c): the token's audience follows the
+// switched URL, so switching APIs means switching WHICH resource we mint for. Off-allowlist targets
+// fail at MINT with a legible invalid_target instead of as ambient 403s an hour later. Only the
+// switcher lane follows; the default lane stays pinned to the env's declared resource (the
+// backend-override lane predates audience binding and never fed the token layer).
+export function getApiResource(): string {
+  if (!store) return OAUTH_GRAPHQL_RESOURCE
+  const { apiGraphqlURL, switchApi } = store.getState().ui.apis
+  return switchApi && apiGraphqlURL ? resourceForApiURL(apiGraphqlURL) : OAUTH_GRAPHQL_RESOURCE
 }
 
 export function getRestApi(): string | undefined {

@@ -169,6 +169,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       {!!editForm?.script && !loading && (
         <IconButton
           name={copied ? 'check' : 'copy'}
+          label={t('scriptEditPage.copyScript', 'Copy Script')} // the name stays the action while the tooltip flashes the status
           title={copied ? t('scriptEditPage.copied', 'Copied!') : t('scriptEditPage.copyScript', 'Copy Script')}
           color={copied ? 'success' : 'grayDark'}
           size="sm"

@@ -17,7 +17,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'toa',
-  name: 'TOA',
   component: Component,
-  types: { 1228: 'TOA' },
 })

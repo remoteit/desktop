@@ -129,12 +129,14 @@ export const GuideBubble: React.FC<Props> = ({
   const cohortExpired = useSelector((state: State) => {
     // An explicit "Reset interactive guides" re-anchors the cohort to the reset
     // moment, so even accounts that predate the guides get onboarded again.
-    // `created` is absent until the account loads, and an invalid Date persists as
-    // null (Date#toJSON) and rehydrates as null — so it can be missing or NaN.
-    // Guard both, or Math.max returns NaN and every comparison below is false,
-    // silently ungating every bubble.
-    const created = state.user.created?.getTime()
-    const cohortAnchor = Math.max(created && !Number.isNaN(created) ? created : 0, state.ui.guidesResetDate || 0)
+    // `created` may be NaN (no created date in the account payload) or, in a browser that
+    // persisted a failed login before models/user.ts parse() refused to store one, null —
+    // redux-persist writes an invalid date as null and the date transform leaves null alone.
+    // Either reads as "unknown" (0): a throw here took the whole app down on every boot, and
+    // Math.max with NaN would silently ungate every bubble.
+    const createdDate = state.user.created
+    const created = createdDate instanceof Date ? createdDate.getTime() : NaN
+    const cohortAnchor = Math.max(Number.isNaN(created) ? 0 : created, state.ui.guidesResetDate || 0)
     return startDate.getTime() > cohortAnchor && !state.ui.testUI
   })
   const dismissed = useSelector((state: State) => dismissedAt(state.ui.expireBubbles))

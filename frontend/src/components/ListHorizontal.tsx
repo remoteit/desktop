@@ -1,6 +1,6 @@
 import React from 'react'
-import { MOBILE_WIDTH } from '../constants'
-import { List, ListProps, useMediaQuery } from '@mui/material'
+import { useMobile } from '../hooks/useMobile'
+import { List, ListProps } from '@mui/material'
 import { spacing, toSxArray } from '../styling'
 
 type Props = ListProps & {
@@ -9,7 +9,7 @@ type Props = ListProps & {
 }
 
 export const ListHorizontal: React.FC<Props> = ({ size = 'large', hideIcons, children, sx, ...props }) => {
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const small = size === 'small'
   return (
     <List

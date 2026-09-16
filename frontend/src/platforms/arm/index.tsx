@@ -9,13 +9,8 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'arm',
-  name: 'Arm Virtual Hardware',
   component: Component,
-  types: { 1217: 'AVH' },
   installation: {
-    command: true,
-    qualifier: 'For the Arm Virtual Hardware platform',
-    link: 'https://link.remote.it/avh',
     instructions: (
       <>
         Arm Virtual Hardware (AVH) requires an Arm account.

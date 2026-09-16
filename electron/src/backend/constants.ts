@@ -1,5 +1,10 @@
 import os from 'os'
 import path from 'path'
+import * as dotenv from 'dotenv'
+// Load .env BEFORE reading it: index.ts calls dotenv.config() too, but import hoisting
+// runs every module body (including this one) first — reading process.env at module load
+// saw only the shell env, so .env-only settings (the OAUTH_* block) never landed.
+dotenv.config()
 const env = process.env
 
 //General
@@ -11,6 +16,11 @@ export const PROTOCOL = env.PROTOCOL || 'remoteit://'
 export const REDIRECT_URL = env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
 export const API_URL = env.API_URL || 'https://api.remote.it/apv/v27'
+
+// The Permitteer issuer origin (D8: sign-in is RENDERER-owned — the backend never
+// touches auth). The main process only needs this to bounce issuer-origin navigations
+// out to the system browser (ElectronApp will-navigate).
+export const OAUTH_ISSUER = env.OAUTH_ISSUER || ''
 
 // Airbrake error reporting
 export const AIRBRAKE_PROJECT_ID = 223457
