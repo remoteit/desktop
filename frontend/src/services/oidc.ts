@@ -1,4 +1,5 @@
 import browser from './browser'
+import i18n from '../i18n'
 import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, OAUTH_PASSPORT_RESOURCE, OAUTH_MCP_RESOURCE, OAUTH_MCP_DETAIL, OAUTH_AGENT_ACTOR, PROTOCOL } from '../constants'
 
 /**
@@ -405,6 +406,9 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'n
     authorization_details: JSON.stringify(declared().map(d => ({ type: d.type, actions: d.actions, ...(d.locations ? { locations: d.locations } : {}), ...(d.actor ? { actor: d.actor } : {}) }))),
     state: flow.state,
     nonce: flow.nonce,
+    // The language this app is showing: the sign-in renders in it, and — because the app
+    // asked rather than the AS guessing from Accept-Language — offers no language picker.
+    ui_locales: i18n.resolvedLanguage ?? i18n.language,
   }
   // Naming WHO is signing in turns a step-up into "confirm it's you" rather than an account
   // chooser — without it, prompt=login lands on the picker and choosing your own account
