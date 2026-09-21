@@ -1874,9 +1874,13 @@
     "confirmTitle": "Confirm Billing Change",
     "devicesCount_one": "{{count}} device",
     "devicesCount_other": "{{count}} devices",
+    "devicesUsed_one": "{{actual}} of {{count}} device",
+    "devicesUsed_other": "{{actual}} of {{count}} devices",
     "label": "Licensing",
     "usersCount_one": "{{count}} user",
     "usersCount_other": "{{count}} users",
+    "usersUsed_one": "{{actual}} of {{count}} user",
+    "usersUsed_other": "{{actual}} of {{count}} users",
     "warning": "This will change your billing."
   },
   "serviceAddPage": {

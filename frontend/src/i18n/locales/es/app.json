@@ -1905,10 +1905,16 @@
     "devicesCount_one": "{{count}} dispositivo",
     "devicesCount_many": "{{count}} dispositivos",
     "devicesCount_other": "{{count}} dispositivos",
+    "devicesUsed_one": "{{actual}} de {{count}} dispositivo",
+    "devicesUsed_many": "{{actual}} de {{count}} dispositivos",
+    "devicesUsed_other": "{{actual}} de {{count}} dispositivos",
     "label": "Licencias",
     "usersCount_one": "{{count}} usuario",
     "usersCount_many": "{{count}} usuarios",
     "usersCount_other": "{{count}} usuarios",
+    "usersUsed_one": "{{actual}} de {{count}} usuario",
+    "usersUsed_many": "{{actual}} de {{count}} usuarios",
+    "usersUsed_other": "{{actual}} de {{count}} usuarios",
     "warning": "Esto cambiará tu facturación."
   },
   "serviceAddPage": {

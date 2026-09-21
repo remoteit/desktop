@@ -6,7 +6,7 @@ import { List, Stack } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { selectRemoteitLicense, selectPlan, selectLimits } from '../selectors/organizations'
+import { selectRemoteitLicense, selectPlan, selectLimit } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { QuantitySelector } from './QuantitySelector'
 import { NoticeCustomPlan } from './NoticeCustomPlan'
@@ -19,7 +19,8 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const accountId = useSelector(selectActiveAccountId)
-  const limits = useSelector(selectLimits)
+  const userLimit = useSelector((state: State) => selectLimit(state, undefined, 'org-users'))
+  const deviceLimit = useSelector((state: State) => selectLimit(state, undefined, 'iot-devices'))
   const license = useSelector(selectRemoteitLicense) || null
   const plan = useSelector(selectPlan)
   const purchasing = useSelector((state: State) => !!state.plans.purchasing)
@@ -53,25 +54,53 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
 
   const display = (
-    <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>
-      {limits.find(l => l.name === 'org-users')?.value}
-      <Icon name="user" size="xxs" type="solid" color="gray" />
-      {limits.find(l => l.name === 'iot-devices')?.value}
-      <Icon name="unknown" size="sm" platformIcon />
+    <Stack flexDirection="row" alignItems="center" gap={3}>
+      <Stack flexDirection="row" alignItems="center" gap={0.7}>
+        <Icon name="user" size="base" type="solid" color="gray" />
+        {userLimit?.value == null
+          ? t('seatsSetting.usersCount', {
+              count: userLimit?.actual ?? 0,
+              defaultValue_one: '{{count}} user',
+              defaultValue_other: '{{count}} users',
+            })
+          : t('seatsSetting.usersUsed', {
+              count: userLimit.value,
+              actual: userLimit.actual ?? 0,
+              defaultValue_one: '{{actual}} of {{count}} user',
+              defaultValue_other: '{{actual}} of {{count}} users',
+            })}
+      </Stack>
+      <Stack flexDirection="row" alignItems="center" gap={0.7}>
+        <Icon name="unknown" size="md" platformIcon />
+        {deviceLimit?.value == null
+          ? t('seatsSetting.devicesCount', {
+              count: deviceLimit?.actual ?? 0,
+              defaultValue_one: '{{count}} device',
+              defaultValue_other: '{{count}} devices',
+            })
+          : t('seatsSetting.devicesUsed', {
+              count: deviceLimit.value,
+              actual: deviceLimit.actual ?? 0,
+              defaultValue_one: '{{actual}} of {{count}} device',
+              defaultValue_other: '{{actual}} of {{count}} devices',
+            })}
+      </Stack>
     </Stack>
   )
+
+  const bare = <Gutters>{display}</Gutters>
 
   if (license?.custom)
     return (
       <>
-        <Gutters>{display}</Gutters>
+        {bare}
         <Gutters size="sm">
           <NoticeCustomPlan />
         </Gutters>
       </>
     )
 
-  if (displayOnly) return <Gutters>{display}</Gutters>
+  if (displayOnly) return bare
 
   return (
     <List>

@@ -1874,9 +1874,13 @@
     "confirmTitle": "Abrechnungsänderung bestätigen",
     "devicesCount_one": "{{count}} Gerät",
     "devicesCount_other": "{{count}} Geräte",
+    "devicesUsed_one": "{{actual}} von {{count}} Gerät",
+    "devicesUsed_other": "{{actual}} von {{count}} Geräten",
     "label": "Lizenzierung",
     "usersCount_one": "{{count}} Benutzer",
     "usersCount_other": "{{count}} Benutzer",
+    "usersUsed_one": "{{actual}} von {{count}} Benutzer",
+    "usersUsed_other": "{{actual}} von {{count}} Benutzern",
     "warning": "Dadurch wird Ihre Abrechnung geändert."
   },
   "serviceAddPage": {

@@ -247,6 +247,7 @@ export default createModel<RootModel>()({
             defaultValue: 'Successfully removed “{{name}}”.',
           }),
         })
+        dispatch.organization.fetch()
       }
     },
 
