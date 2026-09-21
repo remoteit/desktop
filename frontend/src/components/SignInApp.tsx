@@ -3,11 +3,10 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { OidcErrorCode, oidcAutoStartsSpent, oidcCountAutoStart } from '../services/oidc'
+import { OidcErrorCode, oidcAutoStartsSpent, oidcCountAutoStart, oidcIsSupportTab } from '../services/oidc'
 import { MODE } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
-import { oidcIsSupportTab } from '../services/oidc'
 
 /**
  * The sign-in panel is a LAUNCHER now: the whole journey — email-first with org SSO

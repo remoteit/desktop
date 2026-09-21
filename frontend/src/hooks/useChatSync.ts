@@ -76,8 +76,6 @@ export const useChatMainSync = (): void => {
     dispatch.chat.syncTranscript()
     dispatch.chat.loadConversations()
     dispatch.chat.loadUsage()
-    // Completes a Hydra sign-in redirect if this page load carries ?code —
-    // runs on mount regardless of whether the panel is open
     const handlers: PopoutMainHandlers = {
       getHandoff: currentHandoff,
       adopt: payload => {

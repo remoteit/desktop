@@ -49,11 +49,7 @@ export class AgentStreamEndedError extends Error {
 }
 
 export class UsageLimitError extends Error {
-  constructor(
-    message: string,
-    readonly window: 'session' | 'weekly' | 'global',
-    readonly resetsAt: string | null,
-  ) {
+  constructor(message: string, readonly window: 'session' | 'weekly' | 'global', readonly resetsAt: string | null) {
     super(message)
   }
 }
@@ -73,8 +69,6 @@ export type AgentEvent =
   | { type: 'confirmation_required'; id: string; name: string; input: Record<string, unknown> }
   | { type: 'done'; stopReason: string | null }
   | { type: 'error'; message: string }
-
-export type AgentMessageParam = { role: 'user' | 'assistant'; content: string }
 
 export type OrgSelection = { id: string; name: string }
 
@@ -97,9 +91,18 @@ export async function streamChat(options: {
   })
   if (response.status === 401) throw new AgentAuthError()
   if (response.status === 429 || response.status === 503) {
-    const body = (await response.json().catch(() => ({}))) as { error?: string; code?: string; window?: string; resetsAt?: string }
+    const body = (await response.json().catch(() => ({}))) as {
+      error?: string
+      code?: string
+      window?: string
+      resetsAt?: string
+    }
     if (body.code === 'usage_limit')
-      throw new UsageLimitError(body.error || 'Usage limit reached', (body.window as 'session' | 'weekly' | 'global') ?? 'session', body.resetsAt ?? null)
+      throw new UsageLimitError(
+        body.error || 'Usage limit reached',
+        (body.window as 'session' | 'weekly' | 'global') ?? 'session',
+        body.resetsAt ?? null
+      )
   }
   if (!response.ok || !response.body) throw new Error(`Agent request failed (${response.status})`)
 
@@ -157,11 +160,7 @@ export async function streamChat(options: {
 }
 
 /* Approve or deny a write tool the agent paused on — addressed to the TURN */
-export async function confirmTool(options: {
-  turnId: string
-  toolUseId: string
-  approved: boolean
-}): Promise<void> {
+export async function confirmTool(options: { turnId: string; toolUseId: string; approved: boolean }): Promise<void> {
   const path = `/api/turns/${encodeURIComponent(options.turnId)}/confirm`
   const response = await fetch(`${agentURL()}${path}`, {
     method: 'POST',
@@ -176,7 +175,9 @@ export type AgentHealth = 'ok' | 'unauthorized' | 'unreachable'
 
 export async function agentHealth(): Promise<AgentHealth> {
   try {
-    const response = await fetch(`${agentURL()}/api/health`, { headers: await agentHeaders('GET', '/api/health', false) })
+    const response = await fetch(`${agentURL()}/api/health`, {
+      headers: await agentHeaders('GET', '/api/health', false),
+    })
     if (response.status === 401) return 'unauthorized'
     if (!response.ok) return 'unreachable'
     const body = (await response.json()) as { ok?: boolean }
@@ -190,7 +191,9 @@ export type ConversationSummary = { id: string; title: string | null; createdAt:
 
 /* The user's conversations, newest first (D11) — the history picker's source. */
 export async function listConversations(): Promise<ConversationSummary[]> {
-  const response = await fetch(`${agentURL()}/api/conversations`, { headers: await agentHeaders('GET', '/api/conversations', false) })
+  const response = await fetch(`${agentURL()}/api/conversations`, {
+    headers: await agentHeaders('GET', '/api/conversations', false),
+  })
   // Don't turn an auth/service failure (401/403/5xx) into an empty list — loadConversations would
   // overwrite the last-known history as though the user had none. Throw so its catch keeps it.
   if (!response.ok) throw new Error(`listConversations: ${response.status}`)
@@ -199,7 +202,7 @@ export async function listConversations(): Promise<ConversationSummary[]> {
 
 /* The server-side transcript (D11) — the durable copy this client's display caches. */
 export async function fetchConversation(
-  conversationId: string,
+  conversationId: string
 ): Promise<{ title: string | null; messages: Array<{ role: string; content: string }> } | null> {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}`
   const response = await fetch(`${agentURL()}${path}`, { headers: await agentHeaders('GET', path, false) })
@@ -213,7 +216,10 @@ export async function fetchConversation(
 /* The delete that actually deletes (D9): messages, turns, journal all cascade server-side. */
 export async function deleteConversation(conversationId: string): Promise<boolean> {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}`
-  const response = await fetch(`${agentURL()}${path}`, { method: 'DELETE', headers: await agentHeaders('DELETE', path, false) })
+  const response = await fetch(`${agentURL()}${path}`, {
+    method: 'DELETE',
+    headers: await agentHeaders('DELETE', path, false),
+  })
   return response.ok
 }
 
@@ -248,7 +254,9 @@ export const backgroundConnectUrl = (): string => `${agentURL()}/oauth/connect`
 
 export async function backgroundStatus(): Promise<boolean> {
   try {
-    const response = await fetch(`${agentURL()}/api/enrollment`, { headers: await agentHeaders('GET', '/api/enrollment', false) })
+    const response = await fetch(`${agentURL()}/api/enrollment`, {
+      headers: await agentHeaders('GET', '/api/enrollment', false),
+    })
     if (!response.ok) return false
     return ((await response.json()) as { enrolled?: boolean }).enrolled === true
   } catch {
@@ -260,7 +268,10 @@ export async function backgroundStatus(): Promise<boolean> {
    Called from Background-work settings and from explicit sign-out (plan D8). */
 export async function backgroundDisable(): Promise<void> {
   try {
-    await fetch(`${agentURL()}/api/enrollment`, { method: 'DELETE', headers: await agentHeaders('DELETE', '/api/enrollment', false) })
+    await fetch(`${agentURL()}/api/enrollment`, {
+      method: 'DELETE',
+      headers: await agentHeaders('DELETE', '/api/enrollment', false),
+    })
   } catch {
     /* best-effort by design */
   }

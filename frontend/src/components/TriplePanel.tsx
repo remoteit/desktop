@@ -60,28 +60,21 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
 
   const sidePanelWidth = layout.sidePanelWidth + PADDING
 
-  const getPrimaryMaxWidth = useCallback(
-    () => {
-      const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
-      const secondaryWidth = secondaryRef.current?.offsetWidth || MIN_WIDTH
-      // Never below the minimum: a max < min makes usePanelDrag oscillate and
-      // emit negative widths when reserved chrome exceeds the window
-      return Math.max(MIN_WIDTH, fullWidth - secondaryWidth - MIN_WIDTH - sidePanelWidth)
-    },
-    [sidePanelWidth]
-  )
+  const getPrimaryMaxWidth = useCallback(() => {
+    const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
+    const secondaryWidth = secondaryRef.current?.offsetWidth || MIN_WIDTH
+    // Never below the minimum: a max < min makes usePanelDrag oscillate and
+    // emit negative widths when reserved chrome exceeds the window
+    return Math.max(MIN_WIDTH, fullWidth - secondaryWidth - MIN_WIDTH - sidePanelWidth)
+  }, [sidePanelWidth])
 
-  const getSecondaryMaxWidth = useCallback(
-    () => {
-      const fullWidth = secondaryRef.current?.parentElement?.offsetWidth || 1000
-      const primaryWidth = primaryRef.current?.offsetWidth || MIN_WIDTH
-      return Math.max(MIN_WIDTH, fullWidth - primaryWidth - MIN_WIDTH - sidePanelWidth)
-    },
-    [sidePanelWidth]
-  )
+  const getSecondaryMaxWidth = useCallback(() => {
+    const fullWidth = secondaryRef.current?.parentElement?.offsetWidth || 1000
+    const primaryWidth = primaryRef.current?.offsetWidth || MIN_WIDTH
+    return Math.max(MIN_WIDTH, fullWidth - primaryWidth - MIN_WIDTH - sidePanelWidth)
+  }, [sidePanelWidth])
 
   const dragPrimary = usePanelDrag(primaryPanelWidth, {
-    panelRef: primaryRef,
     minWidth: MIN_WIDTH,
     getMaxWidth: getPrimaryMaxWidth,
     onPersist: setPrimaryPanelWidth,
@@ -89,7 +82,6 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
   })
 
   const dragSecondary = usePanelDrag(secondaryPanelWidth, {
-    panelRef: secondaryRef,
     minWidth: MIN_WIDTH,
     getMaxWidth: getSecondaryMaxWidth,
     onPersist: setSecondaryPanelWidth,
@@ -125,7 +117,10 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
       </Box>
       <Box
         className="drag-region"
-        sx={[panelSx, { flexGrow: 1, flexShrink: 10, paddingTop: 3, minWidth: MIN_WIDTH, paddingRight: layout.insets?.rightPx }]}
+        sx={[
+          panelSx,
+          { flexGrow: 1, flexShrink: 10, paddingTop: 3, minWidth: MIN_WIDTH, paddingRight: layout.insets?.rightPx },
+        ]}
       >
         {right}
       </Box>

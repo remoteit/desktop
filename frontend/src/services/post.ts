@@ -22,13 +22,13 @@ export async function post(data: ILookup<any, string> = {}, path: string = '') {
   }
 
   const headers: any = { ...auth, ...getTestHeader() }
-  
+
   // Add x-r3-user header if in view-as mode
   const viewAsUser = store.getState().ui.viewAsUser
   if (viewAsUser) {
     headers['X-R3-User'] = viewAsUser.id
   }
-  
+
   const request = {
     url,
     method: 'post' as 'post',
@@ -84,7 +84,7 @@ export async function apiError(error: unknown) {
       await sleep(1000 * errorCount * errorCount)
       // The status rides along: under a SUPPORT session a 401 is terminal (no refresh token, the
       // session is gone) while a 403 is an ordinary refused write — checkSession tells them apart.
-      auth.checkSession({ refreshToken: true, silent: true, status: error.response?.status })
+      auth.checkSession({ silent: true, status: error.response?.status })
     }
   }
 

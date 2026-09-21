@@ -20,7 +20,11 @@ export default defineConfig(({ mode }) => {
               // Keep the markdown renderer's parser tree out of the always-
               // loaded vendor chunk — it belongs to the lazy-loaded chat panel
               // (small shared utils it pulls in may still land in vendor)
-              if (/[\\/]node_modules[\\/](react-markdown|remark-|rehype-|micromark|mdast-|unified|hast-|vfile|unist-)/.test(id))
+              if (
+                /[\\/]node_modules[\\/](react-markdown|remark-|rehype-|micromark|mdast-|unified|hast-|vfile|unist-)/.test(
+                  id
+                )
+              )
                 return
               return 'vendor'
             }
@@ -45,10 +49,6 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (p: string) => p.replace(/^\/agent/, ''),
         },
-        // Dev-only: same-origin path to the Hydra OAuth front so the browser's
-        // DCR + token-exchange calls avoid CORS entirely (top-level login
-        // redirects go to the real domain and don't need this). Packaged builds
-        // need the origin CORS-allow-listed or a main-process exchange instead.
       },
     },
     type: 'module',

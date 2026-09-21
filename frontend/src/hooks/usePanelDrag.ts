@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { useViewportWidth } from './useViewportWidth'
 
 interface UsePanelDragOptions {
-  panelRef: React.RefObject<HTMLDivElement>
   minWidth: number
   getMaxWidth: () => number
   onPersist?: (width: number) => void
@@ -24,14 +23,13 @@ interface UsePanelDragOptions {
  * Used by DoublePanel and TriplePanel to keep resize logic DRY.
  *
  * @param initialWidth - Starting width of the panel
- * @param options.panelRef - Ref to the panel DOM element
  * @param options.minWidth - Minimum allowed width
  * @param options.getMaxWidth - Callback returning the max allowed width
  * @param options.onPersist - Called on drag end with the final width
  * @param options.layoutDep - Dependency to trigger re-measurement (e.g., layout object)
  */
 export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions) {
-  const { panelRef, minWidth, getMaxWidth, onPersist, onChange, layoutDep, anchor = 'left' } = options
+  const { minWidth, getMaxWidth, onPersist, onChange, layoutDep, anchor = 'left' } = options
 
   const handleRef = useRef<number>(initialWidth)
   const moveRef = useRef<number>(0)
@@ -71,7 +69,7 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
       window.removeEventListener('mouseup', onUp)
       onPersist?.(handleRef.current)
     },
-    [onMove, onPersist, panelRef, width]
+    [onMove, onPersist]
   )
 
   const onDown = (event: React.MouseEvent) => {

@@ -36,7 +36,6 @@ export const OAUTH_MCP_DETAIL = env.VITE_OAUTH_MCP_DETAIL || 'remoteit_mcp'
 export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
-export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
 // The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
 // install that sets only the OIDC vars calls one stage with another stage's token and 401s with
 // nothing in the UI explaining why. Set VITE_GRAPHQL_API (or pick a stage in Test Settings) to

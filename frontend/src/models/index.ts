@@ -24,7 +24,6 @@ import jobs from './jobs'
 import keys from './keys'
 import labels from './labels'
 import logs from './logs'
-import mfa from './mfa'
 import networks from './networks'
 import organization from './organization'
 import partnerStats from './partnerStats'
@@ -63,7 +62,6 @@ export interface RootModel extends Models<RootModel> {
   keys: typeof keys
   labels: typeof labels
   logs: typeof logs
-  mfa: typeof mfa
   networks: typeof networks
   organization: typeof organization
   partnerStats: typeof partnerStats
@@ -103,7 +101,6 @@ export const models: RootModel = {
   keys,
   labels,
   logs,
-  mfa,
   networks,
   organization,
   partnerStats,

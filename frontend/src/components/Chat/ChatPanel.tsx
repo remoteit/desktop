@@ -43,7 +43,6 @@ export const ChatPanel: React.FC = () => {
   const maxWidth = useChatMaxWidth()
   const sidebarWidth = useSidebarWidth()
   const viewport = useViewportWidth()
-  const panelRef = useRef<HTMLDivElement>(null)
   const dispatch = useDispatch<Dispatch>()
 
   useChatMainSync()
@@ -77,7 +76,6 @@ export const ChatPanel: React.FC = () => {
     [setWidth, viewport]
   )
   const drag = usePanelDrag(chatWidth, {
-    panelRef,
     minWidth: CHAT_PANEL_WIDTH_MIN,
     getMaxWidth,
     onChange: publishIfLayoutChanges,
@@ -137,7 +135,6 @@ export const ChatPanel: React.FC = () => {
         // owns its safe-area inset rather than leaving it to the menu below it
         paddingBottom: insets?.bottomPx || 1.5,
       }}
-      ref={panelRef}
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
       <ChatHeader>
@@ -153,7 +150,11 @@ export const ChatPanel: React.FC = () => {
         {/* "Close chat", not "Close": the title is this icon-only button's accessible name, and a
             bare "Close" is ambiguous beside every other close on the page — for a screen reader,
             and for the e2e suite, which dismisses a docked chat by that name (helpers/app.ts). */}
-        <IconButton icon="times" title={t('chat.closeChat', 'Close chat')} onClick={() => dispatch.chat.set({ open: false })} />
+        <IconButton
+          icon="times"
+          title={t('chat.closeChat', 'Close chat')}
+          onClick={() => dispatch.chat.set({ open: false })}
+        />
       </ChatHeader>
       <ChatBody />
     </Box>

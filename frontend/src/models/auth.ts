@@ -9,7 +9,29 @@ import { API_URL, DEVELOPER_KEY, SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_T
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken, apiAuthHeaders } from '../services/remoteit'
-import { oidcConfigured, oidcSignedIn, oidcClaims, oidcStart, oidcClearLocal, oidcCompleteFromUrl, oidcActivateAccount, oidcTakeActivationHint, invalidateOidcToken, oidcGrantStale, oidcMcpDetailReady, oidcDeclaration, oidcActor, oidcTakeSupportTicket, oidcIsSupportTab, oidcRefreshBrowserAccounts, oidcSelectKnownAccount, oidcClearAutoStarts, OidcClaims, OidcError, OidcErrorCode } from '../services/oidc'
+import {
+  oidcConfigured,
+  oidcSignedIn,
+  oidcClaims,
+  oidcStart,
+  oidcClearLocal,
+  oidcCompleteFromUrl,
+  oidcActivateAccount,
+  oidcTakeActivationHint,
+  invalidateOidcToken,
+  oidcGrantStale,
+  oidcMcpDetailReady,
+  oidcDeclaration,
+  oidcActor,
+  oidcTakeSupportTicket,
+  oidcIsSupportTab,
+  oidcRefreshBrowserAccounts,
+  oidcSelectKnownAccount,
+  oidcClearAutoStarts,
+  OidcClaims,
+  OidcError,
+  OidcErrorCode,
+} from '../services/oidc'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
@@ -51,7 +73,6 @@ export interface AuthState {
   signingIn?: boolean
   passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
-  mfaMethod: string
   AWSUser: AWSUser
 }
 
@@ -65,7 +86,6 @@ const defaultState: AuthState = {
   signInRetryAfter: undefined,
   signingIn: false,
   user: undefined,
-  mfaMethod: '',
   AWSUser: { authProvider: '' },
 }
 
@@ -233,14 +253,11 @@ export default createModel<RootModel>()({
      * menu row that somehow outlived its registry entry still lands somewhere sensible. */
     async activateAccount(sub: string) {
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
-      if (oidcActivateAccount(sub)) {
-        window.location.assign('/')
-      } else if (await oidcSelectKnownAccount(sub)) {
-        // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
-        // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
-      } else {
-        await dispatch.auth.switchAccount()
-      }
+      if (oidcActivateAccount(sub)) return window.location.assign('/')
+      // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
+      // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
+      if (await oidcSelectKnownAccount(sub)) return
+      await dispatch.auth.switchAccount()
     },
     async signIn(_: void) {
       dispatch.auth.set({ signingIn: true, ...signInCleared })
@@ -280,7 +297,9 @@ export default createModel<RootModel>()({
       const r = await selfChangePassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
       if (r.status === 'ok') {
         dispatch.auth.set({ passwordChallenge: undefined })
-        dispatch.ui.set({ successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }) })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
+        })
         return true
       }
       if (r.status === 'mfa' && r.challenge) {
@@ -289,9 +308,11 @@ export default createModel<RootModel>()({
       }
       dispatch.ui.set({
         errorMessage:
-          r.error === 'invalid_password' ? 'Current password is incorrect.'
-          : r.error === 'weak_password' ? r.error_description || 'New password does not meet the requirements.'
-          : r.error_description || 'An unexpected error occurred. Please try again.',
+          r.error === 'invalid_password'
+            ? 'Current password is incorrect.'
+            : r.error === 'weak_password'
+            ? r.error_description || 'New password does not meet the requirements.'
+            : r.error_description || 'An unexpected error occurred. Please try again.',
       })
       return false
     },
@@ -303,12 +324,16 @@ export default createModel<RootModel>()({
       const r = await selfChallenge(pending.challenge, { code })
       if (r.status === 'ok') {
         dispatch.auth.set({ passwordChallenge: undefined })
-        dispatch.ui.set({ successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }) })
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
+        })
         return true
       }
       // invalid_code re-arms the SAME step under a fresh handle — a typo never restarts.
       dispatch.auth.set({ passwordChallenge: r.challenge ? { challenge: r.challenge, hint: pending.hint } : undefined })
-      dispatch.ui.set({ errorMessage: r.challenge ? 'That code didn’t match — try again.' : 'The request expired — start over.' })
+      dispatch.ui.set({
+        errorMessage: r.challenge ? 'That code didn’t match — try again.' : 'The request expired — start over.',
+      })
       return false
     },
     /* TODO validate and hook changeEmail up */
@@ -342,7 +367,7 @@ export default createModel<RootModel>()({
     // The 401 recovery path (services/post.ts): drop the renderer cache and let the
     // backend refresh on the next token fetch. If the backend says the session is gone
     // (refresh family revoked / AS session expired), sign the app out.
-    async checkSession(options: { refreshToken: boolean; silent?: boolean; status?: number }, state) {
+    async checkSession(options: { silent?: boolean; status?: number }, state) {
       invalidateOidcToken()
       // A SUPPORT session cannot be recovered: no refresh token, and a 401 means the session was
       // ended — by the user, by the operator's relaunch, or by its own expiry. The end is the end
@@ -355,7 +380,8 @@ export default createModel<RootModel>()({
       }
       if (!oidcSignedIn() && state.auth.authenticated) {
         console.error('SESSION ERROR: session gone (refresh family dead or signed out)')
-        if (!options.silent) dispatch.ui.set({ errorMessage: oidcIsSupportTab() ? 'Support session ended.' : 'Session expired.' })
+        if (!options.silent)
+          dispatch.ui.set({ errorMessage: oidcIsSupportTab() ? 'Support session ended.' : 'Session expired.' })
         await dispatch.auth.signedOut()
       }
     },
@@ -530,7 +556,6 @@ export default createModel<RootModel>()({
       dispatch.files.reset()
       dispatch.jobs.reset()
       dispatch.tags.reset()
-      dispatch.mfa.reset()
       dispatch.ui.reset()
       dispatch.products.reset()
       dispatch.partnerStats.reset()

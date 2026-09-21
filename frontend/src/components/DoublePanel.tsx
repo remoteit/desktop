@@ -36,7 +36,6 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
   }, [secondaryMinWidth, sidePanelWidth])
 
   const drag = usePanelDrag(panelWidth, {
-    panelRef: primaryRef,
     minWidth: MIN_WIDTH,
     getMaxWidth,
     onPersist: setPanelWidth,

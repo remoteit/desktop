@@ -44,7 +44,6 @@ export type ChatTranscriptMessage =
 
 export type IChatState = {
   open: boolean
-  /** Maximized over the content area (the left nav stays); toggled by the header expand button */
   /** Docked column width in px — drag-resized, persisted */
   width: number
   messages: ChatTranscriptMessage[]
@@ -274,8 +273,7 @@ export default createModel<RootModel>()({
         if (error instanceof AgentAuthError) {
           dispatch.auth.forgetGrantHealAttempt() // same reason as the streamed reauth_required above
           dispatch.chat.set({ error: authRequiredError(), health: 'unauthorized' })
-        }
-        else if (error instanceof UsageLimitError)
+        } else if (error instanceof UsageLimitError)
           dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
         else if (error instanceof AgentStreamEndedError)
           // The error event marks the answer Interrupted and ends the turn — a cut-off must not
@@ -283,7 +281,8 @@ export default createModel<RootModel>()({
           dispatch.chat.applyEvent({
             type: 'error',
             message: i18n.t('notices:chat.streamEnded', {
-              defaultValue: 'The connection to the agent closed before it finished — the answer may be incomplete. Try again.',
+              defaultValue:
+                'The connection to the agent closed before it finished — the answer may be incomplete. Try again.',
             }),
           })
         else if ((error as Error).name !== 'AbortError')
@@ -515,7 +514,9 @@ export default createModel<RootModel>()({
       }
       if (!deleted) {
         dispatch.chat.set({
-          error: i18n.t('notices:chat.deleteFailed', { defaultValue: 'Could not delete the conversation — try again.' }),
+          error: i18n.t('notices:chat.deleteFailed', {
+            defaultValue: 'Could not delete the conversation — try again.',
+          }),
         })
         return
       }
@@ -546,10 +547,7 @@ export default createModel<RootModel>()({
       const who = state?.auth?.user?.id
       if (who && backgroundRevokedFor === who) return
       backgroundRevokedFor = who ?? null
-      await Promise.race([
-        backgroundDisable().catch(() => {}),
-        new Promise(resolve => setTimeout(resolve, 3000)),
-      ])
+      await Promise.race([backgroundDisable().catch(() => {}), new Promise(resolve => setTimeout(resolve, 3000))])
     },
   }),
   reducers: {

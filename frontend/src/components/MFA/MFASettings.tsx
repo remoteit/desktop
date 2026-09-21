@@ -4,8 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { Box, Button, Chip, Radio, RadioGroup, FormControlLabel, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
 import {
-  selfMfaStanding, selfMfaEnroll, selfMfaConfirm, selfMfaPrefer, selfMfaDisable, selfChallenge,
-  MfaMethod, SelfContinuation,
+  selfMfaStanding,
+  selfMfaEnroll,
+  selfMfaConfirm,
+  selfMfaPrefer,
+  selfMfaDisable,
+  selfChallenge,
+  MfaMethod,
+  SelfContinuation,
 } from '../../services/passportSelf'
 import { OAUTH_PASSPORT_RESOURCE } from '../../constants'
 
@@ -43,13 +49,21 @@ export const MFASettings: React.FC = () => {
   const refresh = async () => {
     const standing = await selfMfaStanding()
     if (standing.httpStatus === 403) return setStep({ at: 'none' })
-    setStep({ at: 'view', methods: standing.methods ?? [], preferred: standing.preferred, available: standing.available ?? ['totp'] })
+    setStep({
+      at: 'view',
+      methods: standing.methods ?? [],
+      preferred: standing.preferred,
+      available: standing.available ?? ['totp'],
+    })
   }
   useEffect(() => {
     refresh()
   }, [])
 
-  const followContinuation = (r: SelfContinuation & { httpStatus: number }, pending: { mode: Mode; method?: MfaMethod }): boolean => {
+  const followContinuation = (
+    r: SelfContinuation & { httpStatus: number },
+    pending: { mode: Mode; method?: MfaMethod }
+  ): boolean => {
     if (r.status === 'ok') {
       if (r.recovery_codes?.length) setStep({ at: 'codes', codes: r.recovery_codes })
       else refresh()
@@ -73,34 +87,39 @@ export const MFASettings: React.FC = () => {
   const submitPassword = async (mode: Mode, method?: MfaMethod) => {
     setBusy(true)
     const r =
-      mode === 'enroll' ? await selfMfaEnroll(password, method ?? 'totp', method === 'sms' ? phone : undefined)
-      : mode === 'prefer' ? await selfMfaPrefer(password, method ?? 'totp')
-      : await selfMfaDisable(password, method)
+      mode === 'enroll'
+        ? await selfMfaEnroll(password, method ?? 'totp', method === 'sms' ? phone : undefined)
+        : mode === 'prefer'
+        ? await selfMfaPrefer(password, method ?? 'totp')
+        : await selfMfaDisable(password, method)
     setBusy(false)
     setPassword('')
     if (followContinuation(r, { mode, method })) return
     setStep({
-      at: 'password', mode, method,
-      error: r.error === 'invalid_password'
-        ? t('mfa.wrongPassword', "That password didn't match.")
-        : r.error_description || t('mfa.failed', 'Something went wrong — try again.'),
+      at: 'password',
+      mode,
+      method,
+      error:
+        r.error === 'invalid_password'
+          ? t('mfa.wrongPassword', "That password didn't match.")
+          : r.error_description || t('mfa.failed', 'Something went wrong — try again.'),
     })
   }
 
   const submitCode = async () => {
     setBusy(true)
     const current = step as Extract<Step, { at: 'relay' | 'scan' }>
-    const r = current.at === 'scan'
-      ? await selfMfaConfirm(current.challenge, code)
-      : await selfChallenge(current.challenge, { code })
+    const r =
+      current.at === 'scan'
+        ? await selfMfaConfirm(current.challenge, code)
+        : await selfChallenge(current.challenge, { code })
     setBusy(false)
     setCode('')
     const pending = current.at === 'relay' ? current.pending : { mode: 'enroll' as Mode }
     if (followContinuation(r, pending)) return
     if (r.challenge) {
       const error = t('mfa.wrongCode', "That code didn't match — try again.")
-      if (current.at === 'scan') setStep({ ...current, challenge: r.challenge, error })
-      else setStep({ ...current, challenge: r.challenge, error })
+      setStep({ ...current, challenge: r.challenge, error })
       return
     }
     refresh()
@@ -133,7 +152,12 @@ export const MFASettings: React.FC = () => {
               'You sign in with an identity provider (like Google), so your password and two-factor are managed there. To add a Remote.It password — usable alongside your provider — set one up first.'
             )}
           </Typography>
-          <Button variant="contained" size="small" href={`${new URL(OAUTH_PASSPORT_RESOURCE).origin}/forgot`} target="_blank">
+          <Button
+            variant="contained"
+            size="small"
+            href={`${new URL(OAUTH_PASSPORT_RESOURCE).origin}/forgot`}
+            target="_blank"
+          >
             {t('mfa.setPassword', 'Set a Password')}
           </Button>
         </Gutters>
@@ -156,7 +180,13 @@ export const MFASettings: React.FC = () => {
                 <Chip
                   size="small"
                   color={enrolled ? 'success' : 'default'}
-                  label={enrolled ? (preferred ? t('mfa.preferred', 'On · preferred') : t('mfa.on', 'On')) : t('mfa.off', 'Off')}
+                  label={
+                    enrolled
+                      ? preferred
+                        ? t('mfa.preferred', 'On · preferred')
+                        : t('mfa.on', 'On')
+                      : t('mfa.off', 'Off')
+                  }
                 />
                 {enrolled ? (
                   <>
@@ -170,7 +200,12 @@ export const MFASettings: React.FC = () => {
                     </Button>
                   </>
                 ) : (
-                  <Button size="small" variant="contained" color="primary" onClick={() => setStep({ at: 'password', mode: 'enroll', method })}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setStep({ at: 'password', mode: 'enroll', method })}
+                  >
                     {t('mfa.enable', 'Set Up')}
                   </Button>
                 )}
@@ -186,15 +221,19 @@ export const MFASettings: React.FC = () => {
       </>
     )
 
-  if (step.at === 'password')
+  if (step.at === 'password') {
+    const needsPhone = step.mode === 'enroll' && step.method === 'sms'
     return (
       <>
         {title}
         <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
           <Typography variant="body2" gutterBottom>
-            {t('mfa.confirmPassword', 'Confirm your password to continue — changing a credential re-proves the one you hold.')}
+            {t(
+              'mfa.confirmPassword',
+              'Confirm your password to continue — changing a credential re-proves the one you hold.'
+            )}
           </Typography>
-          {step.mode === 'enroll' && step.method === 'sms' && (
+          {needsPhone && (
             <TextField
               autoFocus
               variant="filled"
@@ -205,7 +244,7 @@ export const MFASettings: React.FC = () => {
             />
           )}
           <TextField
-            autoFocus={!(step.mode === 'enroll' && step.method === 'sms')}
+            autoFocus={!needsPhone}
             variant="filled"
             type="password"
             label={t('changePassword.currentPassword', 'Current Password')}
@@ -222,7 +261,7 @@ export const MFASettings: React.FC = () => {
               variant="contained"
               color="primary"
               size="small"
-              disabled={!password || busy || (step.mode === 'enroll' && step.method === 'sms' && !phone)}
+              disabled={!password || busy || (needsPhone && !phone)}
               onClick={() => submitPassword(step.mode, step.method)}
             >
               {t('common.continue', 'Continue')}
@@ -234,6 +273,7 @@ export const MFASettings: React.FC = () => {
         </Gutters>
       </>
     )
+  }
 
   if (step.at === 'select')
     return (
@@ -245,7 +285,12 @@ export const MFASettings: React.FC = () => {
           </Typography>
           <RadioGroup value={choice} onChange={e => setChoice(e.target.value as MfaMethod)}>
             {step.options.map(o => (
-              <FormControlLabel key={o} value={o} control={<Radio size="small" />} label={t(`mfa.method.${o}`, METHOD_LABEL[o] ?? o)} />
+              <FormControlLabel
+                key={o}
+                value={o}
+                control={<Radio size="small" />}
+                label={t(`mfa.method.${o}`, METHOD_LABEL[o] ?? o)}
+              />
             ))}
           </RadioGroup>
           <Box marginTop={1}>
@@ -307,7 +352,13 @@ export const MFASettings: React.FC = () => {
             </Typography>
           )}
           <Box>
-            <Button variant="contained" color="primary" size="small" disabled={code.length < 6 || busy} onClick={submitCode}>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              disabled={code.length < 6 || busy}
+              onClick={submitCode}
+            >
               {t('common.verify', 'Verify')}
             </Button>
             <Button size="small" onClick={() => refresh()}>
@@ -323,7 +374,10 @@ export const MFASettings: React.FC = () => {
       {title}
       <Gutters bottom="xl">
         <Typography variant="body2" gutterBottom>
-          {t('mfa.codesTitle', 'Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.')}
+          {t(
+            'mfa.codesTitle',
+            'Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.'
+          )}
         </Typography>
         <Box component="pre" sx={{ userSelect: 'all', fontFamily: 'monospace', fontSize: 13 }}>
           {step.codes.join('\n')}

@@ -30,7 +30,7 @@ import { AnnouncementBanner } from './AnnouncementBanner'
 import { isChatPopout } from '../services/chatPopout'
 
 // Lazy: keeps the chat surface (and its react-markdown dependency tree) out
-// of the startup bundle — the feature is dev/Test-UI gated
+// of the startup bundle — the feature is licence-gated
 const ChatPanel = React.lazy(() => import('./Chat/ChatPanel').then(m => ({ default: m.ChatPanel })))
 const ChatWindow = React.lazy(() => import('./Chat/ChatWindow').then(m => ({ default: m.ChatWindow })))
 
@@ -68,7 +68,6 @@ export const App: React.FC = () => {
      row — it is a column beside the whole app side — so it must not be counted here:
      the panels' own parent already excludes it, and adding it back subtracted the chat
      twice, which drove their max width below their minimum and froze the drag. */
-  const sidePanelWidth = sidebarWidth
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
   const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
   const needsUserHydration = authenticated && !user
@@ -82,7 +81,7 @@ export const App: React.FC = () => {
     showBottomMenu,
     singlePanel,
     triplePanel,
-    sidePanelWidth,
+    sidePanelWidth: sidebarWidth,
   }
 
   useViewAsUser()
@@ -96,7 +95,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     dispatch.ui.set({ layout })
-  }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, triplePanel, sidePanelWidth])
+  }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, triplePanel, sidebarWidth])
 
   if (waitMessage)
     return (
@@ -158,50 +157,48 @@ export const App: React.FC = () => {
             />
           )
         ) : (
-          <>
+          <Box
+            sx={{
+              flexGrow: 1,
+              position: 'relative',
+              display: 'flex',
+              overflow: 'hidden',
+              flexDirection: 'row',
+            }}
+          >
+            {/* The app side owns its own chrome. The sidebar, the pages AND the bottom
+                menu stack in this column, so the docked chat is a full-height column
+                BESIDE all three rather than a panel the menu runs underneath. */}
             <Box
               sx={{
                 flexGrow: 1,
-                position: 'relative',
+                minWidth: 0,
                 display: 'flex',
+                flexDirection: 'column',
                 overflow: 'hidden',
-                flexDirection: 'row',
               }}
             >
-              {/* The app side owns its own chrome. The sidebar, the pages AND the bottom
-                  menu stack in this column, so the docked chat is a full-height column
-                  BESIDE all three rather than a panel the menu runs underneath. */}
               <Box
                 sx={{
                   flexGrow: 1,
-                  minWidth: 0,
+                  minHeight: 0,
                   display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'hidden',
+                  flexDirection: 'row',
+                  alignItems: 'start',
+                  justifyContent: 'start',
                 }}
               >
-                <Box
-                  sx={{
-                    flexGrow: 1,
-                    minHeight: 0,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'start',
-                    justifyContent: 'start',
-                  }}
-                >
-                  {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
-                  <Router layout={layout} />
-                </Box>
-                {showBottomMenu && <BottomMenu layout={layout} />}
+                {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
+                <Router layout={layout} />
               </Box>
-              {chatEnabled && (
-                <React.Suspense fallback={null}>
-                  <ChatPanel />
-                </React.Suspense>
-              )}
+              {showBottomMenu && <BottomMenu layout={layout} />}
             </Box>
-          </>
+            {chatEnabled && (
+              <React.Suspense fallback={null}>
+                <ChatPanel />
+              </React.Suspense>
+            )}
+          </Box>
         )}
         <AnnouncementDialog />
       </PersistGate>

@@ -1,6 +1,15 @@
 import browser from './browser'
 import i18n from '../i18n'
-import { OAUTH_ISSUER, OAUTH_CLIENT_ID, OAUTH_GRAPHQL_RESOURCE, OAUTH_PASSPORT_RESOURCE, OAUTH_MCP_RESOURCE, OAUTH_MCP_DETAIL, OAUTH_AGENT_ACTOR, PROTOCOL } from '../constants'
+import {
+  OAUTH_ISSUER,
+  OAUTH_CLIENT_ID,
+  OAUTH_GRAPHQL_RESOURCE,
+  OAUTH_PASSPORT_RESOURCE,
+  OAUTH_MCP_RESOURCE,
+  OAUTH_MCP_DETAIL,
+  OAUTH_AGENT_ACTOR,
+  PROTOCOL,
+} from '../constants'
 
 /**
  * The renderer-owned OIDC client (permitteer docs/remoteit-desktop-login.md, D8):
@@ -100,7 +109,12 @@ const SUPPORT_TICKET_KEY = 'oidc.support_ticket'
 {
   const launch = new URLSearchParams(window.location.search).get('support_ticket')
   if (launch) {
-    try { sessionStorage.setItem(SUPPORT_FLAG, '1'); sessionStorage.setItem(SUPPORT_TICKET_KEY, launch) } catch { /* a blocked storage API must not kill the boot */ }
+    try {
+      sessionStorage.setItem(SUPPORT_FLAG, '1')
+      sessionStorage.setItem(SUPPORT_TICKET_KEY, launch)
+    } catch {
+      /* a blocked storage API must not kill the boot */
+    }
     const clean = new URL(window.location.href)
     clean.searchParams.delete('support_ticket')
     window.history.replaceState({}, '', clean.toString())
@@ -108,7 +122,11 @@ const SUPPORT_TICKET_KEY = 'oidc.support_ticket'
 }
 /** The token store for THIS TAB: tab-scoped for a support session, shared otherwise. */
 const tokenStore = (): Storage => {
-  try { return sessionStorage.getItem(SUPPORT_FLAG) ? window.sessionStorage : window.localStorage } catch { return window.localStorage }
+  try {
+    return sessionStorage.getItem(SUPPORT_FLAG) ? window.sessionStorage : window.localStorage
+  } catch {
+    return window.localStorage
+  }
 }
 
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
@@ -121,11 +139,17 @@ function rememberFlow(flow: Flow): void {
     for (const key of Object.keys(localStorage)) {
       if (!key.startsWith(FLOW_SHARED_PREFIX)) continue
       let at = 0
-      try { at = (JSON.parse(localStorage.getItem(key) || '{}') as { at?: number }).at ?? 0 } catch { /* unreadable: drop it */ }
+      try {
+        at = (JSON.parse(localStorage.getItem(key) || '{}') as { at?: number }).at ?? 0
+      } catch {
+        /* unreadable: drop it */
+      }
       if (now - at > FLOW_TTL_MS) localStorage.removeItem(key)
     }
     localStorage.setItem(FLOW_SHARED_PREFIX + flow.state, JSON.stringify({ ...flow, at: now }))
-  } catch { /* a blocked storage API leaves the same-tab path intact */ }
+  } catch {
+    /* a blocked storage API leaves the same-tab path intact */
+  }
 }
 
 /** The flow a callback's `state` belongs to: this tab's, else one another tab of this browser
@@ -137,7 +161,9 @@ function takeFlow(state: string): Flow | undefined {
     sessionStorage.removeItem(FLOW_KEY)
     const own: Flow | undefined = raw ? JSON.parse(raw) : undefined
     if (own?.state === state) flow = own
-  } catch { /* fall through to the shared record */ }
+  } catch {
+    /* fall through to the shared record */
+  }
   try {
     const key = FLOW_SHARED_PREFIX + state
     const raw = localStorage.getItem(key)
@@ -146,20 +172,22 @@ function takeFlow(state: string): Flow | undefined {
       const shared = JSON.parse(raw) as Flow & { at?: number }
       if (Date.now() - (shared.at ?? 0) <= FLOW_TTL_MS) flow = shared
     }
-  } catch { /* nothing shared */ }
+  } catch {
+    /* nothing shared */
+  }
   return flow
 }
 /** A support session (`act` in the id_token) has NO refresh token — its one access token IS the
  *  session, stored so a reload of the support tab survives until it expires. */
-type Stored = { refresh_token?: string; id_token?: string; support?: { access_token: string; exp: number; type?: string } }
+type Stored = {
+  refresh_token?: string
+  id_token?: string
+  support?: { access_token: string; exp: number; type?: string }
+}
 
 let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
 let minting: Promise<unknown> = Promise.resolve()
-/* Why the last mint for an audience failed. refresh() reports a refusal by returning
-   '' so callers can degrade quietly, which loses the AS's reason — keep it here so a
-   settings screen can say "not covered by this grant" instead of just "refused". */
-let mintErrors: { [resource: string]: string } = {}
-let discovery: { authorization_endpoint: string; token_endpoint: string; end_session_endpoint?: string; end_session_api_endpoint?: string } | undefined
+let discovery: { authorization_endpoint: string; token_endpoint: string } | undefined
 
 /* Sign-in failures the person reading them can DO something different about. The message
    stays the technical detail — console, support, bug reports — while `code` is what picks
@@ -209,7 +237,10 @@ const responseError = (response: Response, detail: string): OidcError => {
 }
 
 const b64u = (bytes: Uint8Array) =>
-  btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 const randomB64u = (length: number) => b64u(crypto.getRandomValues(new Uint8Array(length)))
 const decodeJwt = (jwt?: string): any => {
   try {
@@ -230,15 +261,33 @@ const stored = (): Stored | undefined => {
 
 export const oidcConfigured = () => !!OAUTH_ISSUER
 const supportLive = (s: Stored | undefined) => !!s?.support && s.support.exp - Math.floor(Date.now() / 1000) > 0
-export const oidcSignedIn = () => { const s = stored(); return !!s?.refresh_token || supportLive(s) }
+export const oidcSignedIn = () => {
+  const s = stored()
+  return !!s?.refresh_token || supportLive(s)
+}
 /** This tab was opened by a support launch (its token store is tab-scoped). */
-export const oidcIsSupportTab = (): boolean => { try { return !!sessionStorage.getItem(SUPPORT_FLAG) } catch { return false } }
+export const oidcIsSupportTab = (): boolean => {
+  try {
+    return !!sessionStorage.getItem(SUPPORT_FLAG)
+  } catch {
+    return false
+  }
+}
 /** The launch ticket, ONCE — consumed by the authorize auth.init starts. */
 export function oidcTakeSupportTicket(): string | undefined {
-  try { const t = sessionStorage.getItem(SUPPORT_TICKET_KEY) ?? undefined; sessionStorage.removeItem(SUPPORT_TICKET_KEY); return t } catch { return undefined }
+  try {
+    const t = sessionStorage.getItem(SUPPORT_TICKET_KEY) ?? undefined
+    sessionStorage.removeItem(SUPPORT_TICKET_KEY)
+    return t
+  } catch {
+    return undefined
+  }
 }
 /** When the support session's token — and with it the session — ends (ms), for the banner. */
-export const oidcSupportEndsAt = (): number | undefined => { const s = stored()?.support; return s ? s.exp * 1000 : undefined }
+export const oidcSupportEndsAt = (): number | undefined => {
+  const s = stored()?.support
+  return s ? s.exp * 1000 : undefined
+}
 export const oidcClaims = (): OidcClaims | undefined => decodeJwt(stored()?.id_token)
 /** The support-session marker: permitteer stamps `act` (the OPERATOR acting as this
  *  subject) into every token of an impersonated session, the id_token included — the
@@ -259,8 +308,7 @@ async function discover() {
   return discovery!
 }
 
-const redirectUri = () =>
-  browser.isElectron ? PROTOCOL + 'authCallback' : window.location.origin + '/authCallback'
+const redirectUri = () => (browser.isElectron ? PROTOCOL + 'authCallback' : window.location.origin + '/authCallback')
 
 /** Leave for the AS. On web the page departs; on desktop the main process bounces the
  * issuer origin to the system browser and the window stays on the waiting panel. */
@@ -284,7 +332,12 @@ const MCP_TYPE_KEY = 'r3.oauth.mcpDetailType'
 let mcpTypeMemo: string | undefined
 function mcpDetailType(): string {
   if (mcpTypeMemo) return mcpTypeMemo
-  try { const stored = tokenStore().getItem(MCP_TYPE_KEY); if (stored) return (mcpTypeMemo = stored) } catch { /* fall through */ }
+  try {
+    const stored = tokenStore().getItem(MCP_TYPE_KEY)
+    if (stored) return (mcpTypeMemo = stored)
+  } catch {
+    /* fall through */
+  }
   return OAUTH_MCP_DETAIL
 }
 /* AbortSignal.timeout, by hand where the static is missing (older mobile WebViews). The bound
@@ -313,13 +366,20 @@ async function refreshMcpDetailType(): Promise<string> {
     const names = doc.authorization_details_types_supported ?? []
     // The standard (non-org) grant type: the rich catalog says so directly; a names-only
     // document falls back to the naming convention the registry has always used.
-    const picked = rich.find(t => t.risk_class === 'standard' && typeof t.type === 'string')?.type
-      ?? names.find(n => !n.endsWith('_org'))
+    const picked =
+      rich.find(t => t.risk_class === 'standard' && typeof t.type === 'string')?.type ??
+      names.find(n => !n.endsWith('_org'))
     if (picked) {
       mcpTypeMemo = picked
-      try { tokenStore().setItem(MCP_TYPE_KEY, picked) } catch { /* best effort */ }
+      try {
+        tokenStore().setItem(MCP_TYPE_KEY, picked)
+      } catch {
+        /* best effort */
+      }
     }
-  } catch { /* offline or blocked — the last-known (or fallback) name stands */ }
+  } catch {
+    /* offline or blocked — the last-known (or fallback) name stands */
+  }
   return mcpDetailType()
 }
 // Warm the cache off the boot path so oidcGrantStale() compares against fresh truth early — and
@@ -331,13 +391,23 @@ async function refreshMcpDetailType(): Promise<string> {
 const mcpDetailReady: Promise<string> = refreshMcpDetailType()
 export const oidcMcpDetailReady = (): Promise<string> => mcpDetailReady
 
-const declared = (): Array<{ resource: string; type: string; actions: string[]; actor?: string; locations?: string[] }> => [
+const declared = (): Array<{
+  resource: string
+  type: string
+  actions: string[]
+  actor?: string
+  locations?: string[]
+}> => [
   { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
   // accounts.read: the OTHER accounts signed in on this browser, served by the account API from
   // this token's session — first-party apps only (permitteer docs/browser-accounts.md).
   // devices.write: "Sign out everywhere" (SecurityPage) — every session of the account, this
   // one included, ended in one call at the AS (permitteer docs/remoteit-desktop-login.md 4e).
-  { resource: `${OAUTH_ISSUER}/account/api`, type: 'permitteer_account', actions: ['apps.read', 'apps.write', 'accounts.read', 'devices.write'] },
+  {
+    resource: `${OAUTH_ISSUER}/account/api`,
+    type: 'permitteer_account',
+    actions: ['apps.read', 'apps.write', 'accounts.read', 'devices.write'],
+  },
   // The AI agent's slice (remoteit-ai-agent.md D5): the stage's MCP detail, delegated
   // ONWARD to the agent service — `actor` is what stamps may_act into this session's
   // tokens, which is the exchange's precondition. The slice partitions from any plain
@@ -346,13 +416,20 @@ const declared = (): Array<{ resource: string; type: string; actions: string[]; 
   // `locations` names WHICH resource's type this is (RFC 9396): the stage-stable name is
   // shared across every stage's MCP resource, and the actor's registered edge may cover more
   // than one (dev also acts toward evan) — the AS fails closed on that ambiguity by design.
-  { resource: OAUTH_MCP_RESOURCE, type: mcpDetailType(), locations: [OAUTH_MCP_RESOURCE], actions: ['device:read', 'device:write', 'device:connect', 'device:execute'], actor: OAUTH_AGENT_ACTOR },
+  {
+    resource: OAUTH_MCP_RESOURCE,
+    type: mcpDetailType(),
+    locations: [OAUTH_MCP_RESOURCE],
+    actions: ['device:read', 'device:write', 'device:connect', 'device:execute'],
+    actor: OAUTH_AGENT_ACTOR,
+  },
 ]
 
 /** A stable fingerprint of what this build asks for. Order-insensitive, so reshuffling the
  *  list is not a change; adding, dropping or renaming an action is. */
 const declarationFingerprint = () =>
-  declared().map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}${d.actor ? `@${d.actor}` : ''}`)
+  declared()
+    .map(d => `${d.resource}=${d.type}:${[...d.actions].sort().join(',')}${d.actor ? `@${d.actor}` : ''}`)
     .sort()
     .join('|')
 
@@ -378,9 +455,11 @@ export function oidcGrantStale(): boolean {
 /** The fingerprint itself, for a caller that must record WHICH declaration an attempt was made
  *  from rather than merely that one was (the grant-heal marker in models/auth.ts). Exported rather
  *  than recomputed there, so the two can never disagree about what "the same request" means. */
-export const oidcDeclaration = (): string => declarationFingerprint()
+export const oidcDeclaration = declarationFingerprint
 
-export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; supportTicket?: string } = {}): Promise<void> {
+export async function oidcStart(
+  opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; supportTicket?: string } = {}
+): Promise<void> {
   const d = await discover()
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
@@ -403,7 +482,14 @@ export async function oidcStart(opts: { prompt?: 'login' | 'select_account' | 'n
     // the passport-audience token minted later via refresh carries this slice, gating the
     // native security settings (credentials.write); the graphql audience stays pure
     // scope-`full` (an uncovered resource yields audience-only tokens).
-    authorization_details: JSON.stringify(declared().map(d => ({ type: d.type, actions: d.actions, ...(d.locations ? { locations: d.locations } : {}), ...(d.actor ? { actor: d.actor } : {}) }))),
+    authorization_details: JSON.stringify(
+      declared().map(d => ({
+        type: d.type,
+        actions: d.actions,
+        ...(d.locations ? { locations: d.locations } : {}),
+        ...(d.actor ? { actor: d.actor } : {}),
+      }))
+    ),
     state: flow.state,
     nonce: flow.nonce,
     // The language this app is showing: the sign-in renders in it, and — because the app
@@ -469,7 +555,10 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     // A SUPPORT session (docs/desktop-support.md): the AS mints no refresh token, and the access
     // token lives exactly as long as the session — so it is stored (tab-scoped) and used until
     // it expires; that expiry IS the end of the support session. Never filed as an account.
-    persist({ id_token: body.id_token, support: { access_token: body.access_token, exp: at?.exp ?? 0, type: body.token_type } })
+    persist({
+      id_token: body.id_token,
+      support: { access_token: body.access_token, exp: at?.exp ?? 0, type: body.token_type },
+    })
   } else {
     persist({ refresh_token: body.refresh_token, id_token: body.id_token })
   }
@@ -480,9 +569,14 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     tokenStore().setItem(DECLARATION_KEY, declarationFingerprint())
     if (claims?.sub && !claims?.act) {
       const reg = readRegistry()
-      if (reg[claims.sub]) { reg[claims.sub].declaration = declarationFingerprint(); writeRegistry(reg) }
+      if (reg[claims.sub]) {
+        reg[claims.sub].declaration = declarationFingerprint()
+        writeRegistry(reg)
+      }
     }
-  } catch { /* non-fatal */ }
+  } catch {
+    /* non-fatal */
+  }
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
   return claims
 }
@@ -498,7 +592,10 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
   // the tab store), never refreshed, and '' — the end — once it is gone. Other audiences have
   // nothing to mint from; their features fail closed, as writes do under `act`.
   const support = stored()?.support
-  if (support) return resource === OAUTH_GRAPHQL_RESOURCE && support.exp - Math.floor(Date.now() / 1000) > 0 ? support.access_token : ''
+  if (support)
+    return resource === OAUTH_GRAPHQL_RESOURCE && support.exp - Math.floor(Date.now() / 1000) > 0
+      ? support.access_token
+      : ''
   const fresh = () => {
     const cached = access[resource]
     return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined
@@ -565,17 +662,18 @@ async function refreshOnce(resource: string): Promise<string> {
     // replays a minute after a switch). Re-file it there — update only; a signed-out account
     // has no entry left, so nothing comes back.
     if (stored()?.refresh_token !== current.refresh_token) {
-      refileSuccessor(current.refresh_token, { refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
+      refileSuccessor(current.refresh_token, {
+        refresh_token: body.refresh_token || current.refresh_token,
+        id_token: body.id_token || current.id_token,
+      })
       return ''
     }
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
     const at = decodeJwt(body.access_token)
     access[resource] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
-    delete mintErrors[resource]
     return body.access_token
   } catch (error: any) {
     console.error('OIDC REFRESH FAILED', error?.message)
-    mintErrors[resource] = error?.message || 'token request failed'
     if (error?.oauthError === 'invalid_grant') {
       // The AS tells a STALE COPY apart from a dead grant: "…this copy is stale and the session was
       // not ended" means the family rotated on without this tab (a response lost to a navigation,
@@ -598,17 +696,8 @@ async function refreshOnce(resource: string): Promise<string> {
   }
 }
 
-/** SILENT AS logout (EXPLICIT sign-out only — failure paths never end the AS session):
- * the same RP-initiated logout, over fetch. Same trust (the id_token hint), no
- * navigation — the parade of redirect hops was the only thing the front-channel bought
- * us. Best-effort: an unreachable AS must not block local teardown; the session gate
- * kills the tokens lazily anyway. */
-/** Why the last mint for this audience was refused, if it was. */
-export const oidcMintError = (resource: string): string | undefined => mintErrors[resource]
-
 export function invalidateOidcToken() {
   access = {}
-  mintErrors = {}
 }
 
 /** Local-only teardown: clears the ACTIVE account's tokens (and its registry entry) and
@@ -617,9 +706,7 @@ export function invalidateOidcToken() {
  * touches the OTHER saved accounts — signing out one identity is not signing out of the
  * app's memory of the rest. The explicit "Sign out everywhere" (models/auth globalSignOut)
  * ends the sessions at the AS through the account API before it lands here. */
-export function oidcClearLocal() {
-  clearLocal()
-}
+export { clearLocal as oidcClearLocal }
 
 function clearLocal() {
   const activeSub = oidcClaims()?.sub
@@ -657,7 +744,11 @@ const readRegistry = (): { [sub: string]: RegistryEntry } => {
   }
 }
 const writeRegistry = (reg: { [sub: string]: RegistryEntry }) => {
-  try { tokenStore().setItem(ACCOUNTS_KEY, JSON.stringify(reg)) } catch { /* storage blocked — menu degrades to active-only */ }
+  try {
+    tokenStore().setItem(ACCOUNTS_KEY, JSON.stringify(reg))
+  } catch {
+    /* storage blocked — menu degrades to active-only */
+  }
 }
 
 /** File a token set under its subject — silently NOT for support sessions (`act`). */
@@ -705,14 +796,28 @@ function refileSuccessor(spent: string, tokens: Stored) {
 
 /** `known`: signed in on this BROWSER (the AS's session set) but not in this app yet — no tokens
  *  here; picking it runs a silent selection instead of a storage swap. */
-export type OidcAccount = { sub: string; email?: string; name?: string; picture?: string; active: boolean; known: boolean }
+export type OidcAccount = {
+  sub: string
+  email?: string
+  name?: string
+  picture?: string
+  active: boolean
+  known: boolean
+}
 
 /** The accounts this app has signed into, for the avatar menu. Active first. */
 export function oidcAccounts(): OidcAccount[] {
   const activeSub = oidcClaims()?.sub
   const reg = readRegistry()
   return Object.entries(reg)
-    .map(([sub, e]) => ({ sub, email: e.email, name: e.name, picture: e.picture, active: sub === activeSub, known: !e.refresh_token && !e.support }))
+    .map(([sub, e]) => ({
+      sub,
+      email: e.email,
+      name: e.name,
+      picture: e.picture,
+      active: sub === activeSub,
+      known: !e.refresh_token && !e.support,
+    }))
     .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
 }
 
@@ -737,7 +842,11 @@ export function oidcTakeActivationHint(): string | undefined {
 export function oidcActivateAccount(sub: string): boolean {
   const entry = readRegistry()[sub]
   if (!entry?.refresh_token) return false
-  try { if (entry.email) sessionStorage.setItem(ACTIVATING_KEY, entry.email) } catch { /* recovery hint only */ }
+  try {
+    if (entry.email) sessionStorage.setItem(ACTIVATING_KEY, entry.email)
+  } catch {
+    /* recovery hint only */
+  }
   access = {}
   tokenStore().setItem(TOKENS_KEY, JSON.stringify({ refresh_token: entry.refresh_token, id_token: entry.id_token }))
   // The declaration stamp is per-GRANT, and the grant is per-account: swap it with the
@@ -745,7 +854,9 @@ export function oidcActivateAccount(sub: string): boolean {
   try {
     if (entry.declaration) tokenStore().setItem(DECLARATION_KEY, entry.declaration)
     else tokenStore().removeItem(DECLARATION_KEY)
-  } catch { /* non-fatal — worst case is one redundant re-authorize */ }
+  } catch {
+    /* non-fatal — worst case is one redundant re-authorize */
+  }
   return true
 }
 
@@ -822,9 +933,16 @@ const utf8 = (s: string) => new TextEncoder().encode(s)
 async function dpopProof(htm: string, htu: string, accessToken?: string): Promise<string | null> {
   const pair = await dpopKey()
   if (!pair) return null
-  const jwk = (await crypto.subtle.exportKey('jwk', pair.publicKey)) as { kty: string; crv?: string; x?: string; y?: string }
+  const jwk = (await crypto.subtle.exportKey('jwk', pair.publicKey)) as {
+    kty: string
+    crv?: string
+    x?: string
+    y?: string
+  }
   const u = new URL(htu)
-  const header = dpopB64u(utf8(JSON.stringify({ alg: 'ES256', typ: 'dpop+jwt', jwk: { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y } })))
+  const header = dpopB64u(
+    utf8(JSON.stringify({ alg: 'ES256', typ: 'dpop+jwt', jwk: { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y } }))
+  )
   const payload = dpopB64u(
     utf8(
       JSON.stringify({
@@ -836,13 +954,21 @@ async function dpopProof(htm: string, htu: string, accessToken?: string): Promis
       })
     )
   )
-  const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, pair.privateKey, utf8(`${header}.${payload}`))
+  const sig = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    pair.privateKey,
+    utf8(`${header}.${payload}`)
+  )
   return `${header}.${payload}.${dpopB64u(sig)}`
 }
 
 /** Auth headers for an API call: the DPoP scheme + an ath proof when this audience's
  * token came back bound, plain Bearer otherwise. {} when signed out. */
-export async function oidcAuthHeaders(method: string, url: string, resource: string = OAUTH_GRAPHQL_RESOURCE): Promise<Record<string, string>> {
+export async function oidcAuthHeaders(
+  method: string,
+  url: string,
+  resource: string = OAUTH_GRAPHQL_RESOURCE
+): Promise<Record<string, string>> {
   const token = await oidcAccessToken(resource)
   if (!token) return {}
   if (access[resource]?.type === 'DPoP') {
@@ -853,7 +979,9 @@ export async function oidcAuthHeaders(method: string, url: string, resource: str
     // hint that the cause was a missing key rather than a dead session. Name it here, because
     // this is the only place that knows. Reached when WebCrypto/IndexedDB are unavailable,
     // which on a phone usually means private browsing.
-    console.warn(`AUTH: no DPoP proof available for ${resource} — presenting a sender-constrained token as Bearer, which the AS will refuse`)
+    console.warn(
+      `AUTH: no DPoP proof available for ${resource} — presenting a sender-constrained token as Bearer, which the AS will refuse`
+    )
   }
   return { authorization: `Bearer ${token}` }
 }
@@ -899,10 +1027,22 @@ export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefre
   if (!r.ok) {
     // Never silently: an unreconciled menu is showing accounts that may not exist and hiding
     // ones that do, and the person has no way to tell. Say so where a bug report can find it.
-    console.warn(`AUTH: the browser's accounts could not be refreshed (${r.status}) — the menu is showing its last known list`)
+    console.warn(
+      `AUTH: the browser's accounts could not be refreshed (${r.status}) — the menu is showing its last known list`
+    )
     return { ok: false, reason: 'refused', status: r.status }
   }
-  const body = (await r.json()) as { multi?: boolean; authoritative?: boolean; accounts?: { sub: string; email?: string | null; name?: string | null; picture?: string | null; current?: boolean }[] }
+  const body = (await r.json()) as {
+    multi?: boolean
+    authoritative?: boolean
+    accounts?: {
+      sub: string
+      email?: string | null
+      name?: string | null
+      picture?: string | null
+      current?: boolean
+    }[]
+  }
   const listed = new Set<string>()
   const reg = readRegistry()
   for (const a of body.accounts ?? []) {
