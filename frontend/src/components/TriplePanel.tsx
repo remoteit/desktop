@@ -1,34 +1,9 @@
 import React, { useRef, useCallback } from 'react'
 import { usePanelWidth } from '../hooks/usePanelWidth'
 import { usePanelDrag } from '../hooks/usePanelDrag'
-import { Box, Theme } from '@mui/material'
+import { Box } from '@mui/material'
 import { Header } from './Header'
-
-const handleSx = (theme: Theme) => ({
-  zIndex: 8,
-  position: 'absolute' as const,
-  height: '100%',
-  marginLeft: '-5px',
-  padding: `0 ${theme.spacing(0.375)}`,
-  WebkitAppRegion: 'no-drag',
-  '&:hover': {
-    cursor: 'col-resize',
-  },
-  '& > div': {
-    width: '1px',
-    marginLeft: '1px',
-    marginRight: '1px',
-    height: '100%',
-    backgroundColor: theme.palette.grayLighter.main,
-    transition: 'background-color 100ms 200ms, width 100ms 200ms, margin 100ms 200ms',
-  },
-  '&:hover > div, & .active': {
-    width: '3px',
-    marginLeft: 0,
-    marginRight: 0,
-    backgroundColor: theme.palette.primary.main,
-  },
-})
+import { PanelHandle } from './PanelHandle'
 
 type Props = {
   left: React.ReactNode
@@ -99,9 +74,7 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
         {left}
       </Box>
       <Box sx={{ position: 'relative', height: '100%' }}>
-        <Box onMouseDown={dragPrimary.onDown} sx={handleSx}>
-          <div className={dragPrimary.grab ? 'active' : undefined} />
-        </Box>
+        <PanelHandle onMouseDown={dragPrimary.onDown} grab={dragPrimary.grab} />
       </Box>
       <Box
         sx={[panelSx, { paddingTop: 3 }]}
@@ -111,9 +84,7 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
         {center}
       </Box>
       <Box sx={{ position: 'relative', height: '100%' }}>
-        <Box onMouseDown={dragSecondary.onDown} sx={handleSx}>
-          <div className={dragSecondary.grab ? 'active' : undefined} />
-        </Box>
+        <PanelHandle onMouseDown={dragSecondary.onDown} grab={dragSecondary.grab} />
       </Box>
       <Box
         className="drag-region"

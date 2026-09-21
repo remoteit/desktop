@@ -54,16 +54,20 @@ export const useChatPopoutScope = (): void => {
    ownership check against it would keep that account's transcript on the new account's screen. */
 const useChatIdentity = (): string => useSelector((state: State) => state.auth.user?.id ?? '') // '' = not signed in: syncIdentity no-ops
 
-export const useChatMainSync = (): void => {
-  const open = useSelector((state: State) => state.chat.open)
-  const activeId = useSelector((state: State) => state.accounts.activeId)
+/* What both chat surfaces do on boot: follow the signed-in identity, clear what must not
+   survive a reload, and catch up with the server. */
+const useChatBoot = (): void => {
   const userId = useChatIdentity()
   const dispatch = useDispatch<Dispatch>()
 
-  // Reset the chat when the signed-in identity changes (a different account) — declared
-  // first so a persisted chat from a previous account is dropped before anything loads it.
+  // Declared first so a persisted chat from a previous account is dropped before anything loads
+  // it. The list and the meter follow the identity — one load per account, the mount included.
   useEffect(() => {
-    dispatch.chat.syncIdentity(userId)
+    dispatch.chat.syncIdentity(userId).then(() => {
+      if (!userId) return
+      dispatch.chat.loadConversations()
+      dispatch.chat.loadUsage()
+    })
   }, [userId])
 
   useEffect(() => {
@@ -72,10 +76,20 @@ export const useChatMainSync = (): void => {
     // deliberately leaves the stream running)
     dispatch.chat.resetTransient()
     // The server owns the transcript: catch up on anything a background turn finished
-    // while this window was away (plan D6/D11), and load the conversation history.
+    // while this window was away (plan D6/D11).
     dispatch.chat.syncTranscript()
-    dispatch.chat.loadConversations()
-    dispatch.chat.loadUsage()
+  }, [])
+
+  useAgentHealthOnReconnect(() => dispatch.chat.checkHealth())
+}
+
+export const useChatMainSync = (): void => {
+  const open = useSelector((state: State) => state.chat.open)
+  const activeId = useSelector((state: State) => state.accounts.activeId)
+  const dispatch = useDispatch<Dispatch>()
+  useChatBoot()
+
+  useEffect(() => {
     const handlers: PopoutMainHandlers = {
       getHandoff: currentHandoff,
       adopt: payload => {
@@ -117,8 +131,6 @@ export const useChatMainSync = (): void => {
     if (open) dispatch.chat.checkHealth()
   }, [open])
 
-  useAgentHealthOnReconnect(() => dispatch.chat.checkHealth())
-
   // The chat follows the app's active org from the sidebar selector
   useEffect(() => {
     dispatch.chat.syncOrg()
@@ -130,21 +142,11 @@ export const useChatMainSync = (): void => {
    display-only. */
 export const useChatPopoutSync = (): void => {
   const { t } = useTranslation()
-  const userId = useChatIdentity()
   const dispatch = useDispatch<Dispatch>()
-
-  useEffect(() => {
-    dispatch.chat.syncIdentity(userId)
-  }, [userId])
+  useChatBoot()
 
   useEffect(() => {
     document.title = t('chat.windowTitle', 'remote.it chat')
-    dispatch.chat.resetTransient()
-    // The server owns the transcript: catch up on anything a background turn finished
-    // while this window was away (plan D6/D11), and load the conversation history.
-    dispatch.chat.syncTranscript()
-    dispatch.chat.loadConversations()
-    dispatch.chat.loadUsage()
     // No syncOrg here: the popout keeps the org handed off with the
     // conversation (it has no sidebar to change it with)
     dispatch.chat.checkHealth()
@@ -160,7 +162,4 @@ export const useChatPopoutSync = (): void => {
       dispatch.chat.stop()
     }
   }, [])
-
-  // The popout is its own app instance, so it has its own Network to listen to
-  useAgentHealthOnReconnect(() => dispatch.chat.checkHealth())
 }

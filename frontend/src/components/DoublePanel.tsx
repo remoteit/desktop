@@ -6,6 +6,7 @@ import { REGEX_FIRST_PATH } from '../constants'
 import { useLocation } from 'react-router-dom'
 import { Box } from '@mui/material'
 import { Header } from './Header'
+import { PanelHandle } from './PanelHandle'
 
 type Props = {
   left: React.ReactNode
@@ -75,36 +76,7 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
         {left}
       </Box>
       <Box sx={{ position: 'relative', height: '100%' }}>
-        <Box
-          onMouseDown={drag.onDown}
-          sx={theme => ({
-            zIndex: 8,
-            position: 'absolute',
-            height: '100%',
-            marginLeft: '-5px',
-            padding: `0 ${theme.spacing(0.375)}`,
-            WebkitAppRegion: 'no-drag',
-            '&:hover': {
-              cursor: 'col-resize',
-            },
-            '& > div': {
-              width: '1px',
-              marginLeft: '1px',
-              marginRight: '1px',
-              height: '100%',
-              backgroundColor: theme.palette.grayLighter.main,
-              transition: 'background-color 100ms 200ms, width 100ms 200ms, margin 100ms 200ms',
-            },
-            '&:hover > div, & .active': {
-              width: '3px',
-              marginLeft: 0,
-              marginRight: 0,
-              backgroundColor: theme.palette.primary.main,
-            },
-          })}
-        >
-          <div className={drag.grab ? 'active' : undefined} />
-        </Box>
+        <PanelHandle onMouseDown={drag.onDown} grab={drag.grab} />
       </Box>
       <Box
         className="drag-region"

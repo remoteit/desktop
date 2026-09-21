@@ -2,11 +2,12 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Box } from '@mui/material'
-import { Dispatch, State } from '../../store'
+import { Dispatch } from '../../store'
 import { IconButton } from '../../buttons/IconButton'
 import { useChatPopoutSync } from '../../hooks/useChatSync'
 import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
+import { selectTurnActive } from '../../models/chat'
 
 /* Full-page chat for the popped-out window (?chatPopout boot flag). Display
    only: the handoff protocol lives in useChatPopoutSync, user actions in the
@@ -18,7 +19,7 @@ export const ChatWindow: React.FC = () => {
   // the handoff carries neither turnId nor the pending approval — so mid-turn it would abort the
   // stream and strand a confirmation_required turn on the server with no window left able to
   // answer it. Block it until the turn is idle, exactly as the dock blocks Pop out.
-  const turnActive = useSelector((state: State) => state.chat.streaming || !!state.chat.pendingConfirmation)
+  const turnActive = useSelector(selectTurnActive)
 
   useChatPopoutSync()
 

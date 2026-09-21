@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Button, Chip, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
+import { CopyCodeBlock } from '../CopyCodeBlock'
 import {
   selfMe,
   selfPasskeyRegister,
@@ -264,9 +265,7 @@ export const PasskeysSettings: React.FC = () => {
                 'Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.'
               )}
             </Typography>
-            <Box component="pre" sx={{ userSelect: 'all', fontFamily: 'monospace', fontSize: 13 }}>
-              {step.codes.join('\n')}
-            </Box>
+            <CopyCodeBlock value={step.codes.join('\n')} sx={{ marginBottom: 2 }} />
           </>
         ) : null}
         <Button variant="contained" size="small" onClick={() => refresh()}>

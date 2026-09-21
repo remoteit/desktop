@@ -3,8 +3,8 @@ import { Box, Theme } from '@mui/material'
 import { radius } from '../styling'
 
 /* The app's drag divider: a hairline that thickens and takes the primary
-   color on hover or while grabbed. Extracted from the panel components so
-   every resizable edge — content panels and the chat column — matches. */
+   color on hover or while grabbed — every resizable edge, content panels and
+   the chat column alike. */
 const handleSx = (theme: Theme) => ({
   zIndex: 8,
   position: 'absolute' as const,

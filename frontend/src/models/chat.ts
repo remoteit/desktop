@@ -162,6 +162,11 @@ export const toChatHandoff = (chat: IChatState): ChatHandoff => ({
   orgId: chat.orgId,
 })
 
+/* A turn is live while the agent streams or waits on a tool confirmation: no send, no handoff
+   between windows until it ends. */
+export const selectTurnActive = (state: { chat: IChatState }) =>
+  state.chat.streaming || !!state.chat.pendingConfirmation
+
 /* The server transcript in the local shape: tool calls are not replayed, only the text. */
 const toTranscript = (messages: Array<{ role: string; content: string }>): ChatTranscriptMessage[] =>
   messages.map(m =>
@@ -210,7 +215,7 @@ export default createModel<RootModel>()({
   state: { ...defaultChatState },
   effects: dispatch => ({
     async send(text: string, state) {
-      if (state.chat.streaming || state.chat.pendingConfirmation) return
+      if (selectTurnActive(state)) return
       // A send commits the user to the conversation on screen: any pick or sync still in flight is
       // no longer wanted — a turn that starts and finishes before it lands would otherwise be
       // replaced (a pick) or removed (a sync) by the stale load.
@@ -347,6 +352,7 @@ export default createModel<RootModel>()({
     /* Move the conversation to its own window; the dock hides when the popout
        says hello. A blocked popup is surfaced instead of silently ignored. */
     async popOut(_: void, state) {
+      if (selectTurnActive(state)) return
       // Hand over this window's account scope so the popout boots under it, not the personal
       // account its unset activeId would default to (popoutScopeId explains the stakes)
       if (!openChatPopout(state.chat.orgId || undefined))
@@ -358,7 +364,8 @@ export default createModel<RootModel>()({
     },
     /* Hand the conversation back to the main window and close this popout.
        Reads the handoff after stop() so the final flushed text is included. */
-    async popIn() {
+    async popIn(_: void, state) {
+      if (selectTurnActive(state)) return
       await dispatch.chat.stop()
       closePopoutWithHandback(toChatHandoff(store.getState().chat))
     },
@@ -429,12 +436,12 @@ export default createModel<RootModel>()({
        your account). The conversations, transcript, and usage all belong to the permitteer
        subject the agent scopes by; a persisted chat from a previous account must not carry
        over (posting to it 404s, and its history isn't yours). Same identity → no-op. */
+    /* A different signed-in account drops the persisted chat; the caller reloads the list and the
+       meter for whoever is signed in (useChatBoot), so a mount never asks twice. */
     async syncIdentity(userId: string, state) {
       if (!userId || state.chat.ownerId === userId) return
       await dispatch.chat.newConversation()
       dispatch.chat.set({ ownerId: userId, conversations: [], usage: null })
-      dispatch.chat.loadConversations()
-      dispatch.chat.loadUsage()
     },
     /* The usage meter (docs/usage-limits.md D6) — refreshed on mount, after each turn, and
        on open. Silent on failure; the last-known meter stands. */
