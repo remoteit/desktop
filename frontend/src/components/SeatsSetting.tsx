@@ -54,7 +54,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
 
   const display = (
-    <Stack flexDirection="row" alignItems="center" gap={2}>
+    <Stack flexDirection="row" alignItems="center" gap={3}>
       <Stack flexDirection="row" alignItems="center" gap={0.7}>
         <Icon name="user" size="base" type="solid" color="gray" />
         {userLimit?.value == null
