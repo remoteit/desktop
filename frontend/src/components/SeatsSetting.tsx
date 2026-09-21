@@ -57,21 +57,33 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
     <Stack flexDirection="row" alignItems="center" gap={2}>
       <Stack flexDirection="row" alignItems="center" gap={0.7}>
         <Icon name="user" size="xxs" type="solid" color="gray" />
-        {t('seatsSetting.usersUsed', {
-          count: userLimit?.value ?? 0,
-          actual: userLimit?.actual ?? 0,
-          defaultValue_one: '{{actual}} of {{count}} user',
-          defaultValue_other: '{{actual}} of {{count}} users',
-        })}
+        {userLimit?.value == null
+          ? t('seatsSetting.usersCount', {
+              count: userLimit?.actual ?? 0,
+              defaultValue_one: '{{count}} user',
+              defaultValue_other: '{{count}} users',
+            })
+          : t('seatsSetting.usersUsed', {
+              count: userLimit.value,
+              actual: userLimit.actual ?? 0,
+              defaultValue_one: '{{actual}} of {{count}} user',
+              defaultValue_other: '{{actual}} of {{count}} users',
+            })}
       </Stack>
       <Stack flexDirection="row" alignItems="center" gap={0.7}>
         <Icon name="unknown" size="sm" platformIcon />
-        {t('seatsSetting.devicesUsed', {
-          count: deviceLimit?.value ?? 0,
-          actual: deviceLimit?.actual ?? 0,
-          defaultValue_one: '{{actual}} of {{count}} device',
-          defaultValue_other: '{{actual}} of {{count}} devices',
-        })}
+        {deviceLimit?.value == null
+          ? t('seatsSetting.devicesCount', {
+              count: deviceLimit?.actual ?? 0,
+              defaultValue_one: '{{count}} device',
+              defaultValue_other: '{{count}} devices',
+            })
+          : t('seatsSetting.devicesUsed', {
+              count: deviceLimit.value,
+              actual: deviceLimit.actual ?? 0,
+              defaultValue_one: '{{actual}} of {{count}} device',
+              defaultValue_other: '{{actual}} of {{count}} devices',
+            })}
       </Stack>
     </Stack>
   )
