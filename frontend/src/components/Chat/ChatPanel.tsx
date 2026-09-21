@@ -8,11 +8,11 @@ import { radius } from '../../styling'
 import {
   useChatDocked,
   useChatWidth,
-  useChatMaxWidth,
   useSidebarWidth,
   layoutBreakpoints,
+  chatMaxWidth,
 } from '../../hooks/useChatEnabled'
-import { useViewportWidth } from '../../hooks/useViewportWidth'
+import { getViewportWidth } from '../../hooks/useViewportWidth'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
 import { PanelHandle } from '../PanelHandle'
@@ -41,9 +41,7 @@ export const ChatPanel: React.FC = () => {
   const turnActive = useSelector(selectTurnActive)
   const docked = useChatDocked()
   const chatWidth = useChatWidth()
-  const maxWidth = useChatMaxWidth()
   const sidebarWidth = useSidebarWidth()
-  const viewport = useViewportWidth()
   const dispatch = useDispatch<Dispatch>()
 
   useChatMainSync()
@@ -54,7 +52,7 @@ export const ChatPanel: React.FC = () => {
   // width in the layout and DoublePanel sizes the content area from it, so a
   // width held back until mouseup leaves the content on a stale minWidth that
   // will not shrink — the column then overflows the window until it snaps.
-  const getMaxWidth = useCallback(() => maxWidth, [maxWidth])
+  const getMaxWidth = useCallback(() => chatMaxWidth(getViewportWidth()), [])
 
   /* Publishing every pixel put a redux write — and with it a re-render of the whole app
      — on every frame of the drag, which measured ~36ms a frame against ~8ms for the
@@ -71,10 +69,11 @@ export const ChatPanel: React.FC = () => {
   )
   const publishIfLayoutChanges = useCallback(
     (width: number) => {
+      const viewport = getViewportWidth()
       if (layoutBreakpoints(viewport - width) === layoutBreakpoints(viewport - published.current)) return
       setWidth(width)
     },
-    [setWidth, viewport]
+    [setWidth]
   )
   const drag = usePanelDrag(chatWidth, {
     minWidth: CHAT_PANEL_WIDTH_MIN,

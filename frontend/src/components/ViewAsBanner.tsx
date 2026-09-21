@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, IconButton } from '@mui/material'
@@ -18,11 +18,11 @@ export const ViewAsBanner: React.FC = () => {
   // SESSION (permitteer impersonation) needs no app state at all: the id_token itself says
   // the identity is acted (`act` names the operator), so the banner reads the token — the
   // one signal that cannot drift from what the session actually is.
-  const actor = oidcActor()
+  // Both read (and decode) the token store, so once per session rather than per render.
+  const { actor, endsAt } = useMemo(() => ({ actor: oidcActor(), endsAt: oidcSupportEndsAt() }), [user])
   const supportSession = !viewAsUser && !!actor && !!user
   // The session's end is the token's expiry (permitteer docs/desktop-support.md): shown so the
   // operator knows how long the view lasts — nothing renews it.
-  const endsAt = oidcSupportEndsAt()
   const until = endsAt ? new Date(endsAt).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit' }) : ''
   if (!viewAsUser && !supportSession) return null
   const email = viewAsUser?.email || user?.email || ''

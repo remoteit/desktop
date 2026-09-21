@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { useContainerWidth } from '../hooks/useContainerWidth'
+import { useContainerNarrowerThan } from '../hooks/useContainerWidth'
 import { MOBILE_WIDTH } from '../constants'
 import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -40,10 +40,9 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   const { sortService } = getSortOptions(useSelector(selectDeviceModelAttributes).sortServiceOption)
   const location = useLocation()
   const previousName = useRef<string>('')
-  const { containerRef, containerWidth } = useContainerWidth()
   // The panel this list sits in, not the whole app: a list squeezed into a narrow panel
   // is cramped even when the app overall is nowhere near mobile.
-  const mobile = containerWidth < MOBILE_WIDTH
+  const { containerRef, narrow: mobile } = useContainerNarrowerThan(MOBILE_WIDTH)
 
   const rows = devices.reduce((row, device) => {
     const hasFilter = applicationTypes?.length

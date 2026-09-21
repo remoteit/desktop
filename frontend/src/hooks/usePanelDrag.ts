@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { useViewportWidth } from './useViewportWidth'
+import { subscribeViewport } from './useViewportWidth'
 
 interface UsePanelDragOptions {
   minWidth: number
@@ -34,7 +34,6 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
   const handleRef = useRef<number>(initialWidth)
   const moveRef = useRef<number>(0)
   const [width, setWidth] = useState<number>(initialWidth)
-  const viewportWidth = useViewportWidth()
   const [grab, setGrab] = useState<boolean>(false)
 
   const measure = useCallback(() => {
@@ -91,11 +90,14 @@ export function usePanelDrag(initialWidth: number, options: UsePanelDragOptions)
     setWidth(initialWidth)
   }, [initialWidth])
 
-  // Re-clamp when the layout shifts or the window resizes — the shared viewport width
-  // is the resize signal, already coalesced to a frame and silent when nothing moved
+  // Re-clamp when the layout shifts or the window resizes. The resize is subscribed, not
+  // rendered: a frame that leaves the width inside its bounds renders nothing.
   useEffect(() => {
     measure()
-  }, [layoutDep, viewportWidth])
+  }, [layoutDep, measure])
+  const measureRef = useRef(measure)
+  measureRef.current = measure
+  useEffect(() => subscribeViewport(() => measureRef.current()), [])
 
   return { width, grab, onDown }
 }

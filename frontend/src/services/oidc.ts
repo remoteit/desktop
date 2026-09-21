@@ -466,10 +466,9 @@ export const oidcDeclaration = declarationFingerprint
 export async function oidcStart(
   opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; supportTicket?: string } = {}
 ): Promise<void> {
-  const d = await discover()
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
-  await refreshMcpDetailType()
+  const [d] = await Promise.all([discover(), refreshMcpDetailType()])
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
@@ -874,7 +873,10 @@ function cleanUrl() {
 // (desktop falls back to bearer; the portal client refuses, loudly).
 const DPOP_DB = 'remoteit-oidc'
 const DPOP_STORE = 'keys'
-let dpopPair: Promise<CryptoKeyPair | null> | undefined
+// The pair with its proof header: the header carries the public JWK, constant for the key's
+// lifetime, and every API call carries a proof — so it is encoded once, not per request.
+type DpopKey = { pair: CryptoKeyPair; header: string }
+let dpopPair: Promise<DpopKey | null> | undefined
 
 function idb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -893,16 +895,30 @@ async function idbReq<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) =
   })
 }
 
-async function dpopKey(): Promise<CryptoKeyPair | null> {
+const utf8 = (s: string) => new TextEncoder().encode(s)
+
+async function dpopKey(): Promise<DpopKey | null> {
   if (typeof crypto === 'undefined' || !crypto.subtle || typeof indexedDB === 'undefined') return null
   if (!dpopPair)
     dpopPair = (async () => {
       try {
         const existing = await idbReq<CryptoKeyPair | undefined>('readonly', s => s.get('dpop'))
-        if (existing?.privateKey) return existing
-        const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign'])
-        await idbReq('readwrite', s => s.put(pair, 'dpop'))
-        return pair
+        const pair = existing?.privateKey
+          ? existing
+          : await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign'])
+        if (!existing?.privateKey) await idbReq('readwrite', s => s.put(pair, 'dpop'))
+        const jwk = (await crypto.subtle.exportKey('jwk', pair.publicKey)) as {
+          kty: string
+          crv?: string
+          x?: string
+          y?: string
+        }
+        const header = toBase64url(
+          utf8(
+            JSON.stringify({ alg: 'ES256', typ: 'dpop+jwt', jwk: { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y } })
+          )
+        )
+        return { pair, header }
       } catch {
         return null
       }
@@ -920,21 +936,11 @@ async function clearDpopKey(): Promise<void> {
   }
 }
 
-const utf8 = (s: string) => new TextEncoder().encode(s)
-
 async function dpopProof(htm: string, htu: string, accessToken?: string): Promise<string | null> {
-  const pair = await dpopKey()
-  if (!pair) return null
-  const jwk = (await crypto.subtle.exportKey('jwk', pair.publicKey)) as {
-    kty: string
-    crv?: string
-    x?: string
-    y?: string
-  }
+  const key = await dpopKey()
+  if (!key) return null
+  const { pair, header } = key
   const u = new URL(htu)
-  const header = toBase64url(
-    utf8(JSON.stringify({ alg: 'ES256', typ: 'dpop+jwt', jwk: { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y } }))
-  )
   const payload = toBase64url(
     utf8(
       JSON.stringify({
@@ -996,7 +1002,8 @@ export async function oidcResourceRequest<T = any>(
 }
 
 async function tokenRequest(params: { [key: string]: string }): Promise<any> {
-  const d = await discover()
+  // Discovery and the key load are independent; the boot refresh sits on this path.
+  const [d] = await Promise.all([discover(), dpopKey()])
   const proof = await dpopProof('POST', d.token_endpoint)
   const response = await fetch(d.token_endpoint, {
     method: 'POST',
@@ -1105,3 +1112,10 @@ export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
   await oidcStart({ prompt: 'none', loginHint: e.email })
   return true
 }
+
+// Discovery and the DPoP key are needed before the first token of every boot (mcpDetailReady
+// above warms the third piece): fetched while the store rehydrates rather than after it. Last
+// in the module so every binding they touch exists. Failures are swallowed here and surface on
+// the call that actually needs them.
+void discover().catch(() => undefined)
+void dpopKey()

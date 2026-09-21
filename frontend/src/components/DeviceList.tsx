@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { useContainerWidth } from '../hooks/useContainerWidth'
+import { useContainerNarrowerThan } from '../hooks/useContainerWidth'
 import { MOBILE_WIDTH } from '../constants'
 import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
@@ -119,10 +119,9 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   select,
 }) => {
   const location = useLocation()
-  const { containerRef, containerWidth } = useContainerWidth()
   // The panel this list sits in, not the whole app: a list squeezed into a narrow panel
   // is cramped even when the app overall is nowhere near mobile.
-  const mobile = containerWidth < MOBILE_WIDTH
+  const { containerRef, narrow: mobile } = useContainerNarrowerThan(MOBILE_WIDTH)
   const dispatch = useDispatch<Dispatch>()
   const onFirstClick = useCallback(() => dispatch.ui.pop('deviceList'), [dispatch])
   const isScriptsPath = location.pathname.includes('scripts')

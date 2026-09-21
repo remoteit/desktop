@@ -1,8 +1,9 @@
+import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { selectLimitsLookup } from '../selectors/organizations'
 import browser from '../services/browser'
-import { useViewportWidth } from './useViewportWidth'
+import { useViewportSelect, useViewportWiderThan } from './useViewportWidth'
 import {
   CHAT_FEATURE,
   CHAT_PANEL_WIDTH,
@@ -35,22 +36,21 @@ export const useChatEnabled = (): boolean => useSelector((state: State) => !!sel
    sidebar into the hamburger exactly as narrowing the window would. This is also what
    keeps the column docked as the WINDOW shrinks: the chat gives up its own width first,
    down to CHAT_PANEL_WIDTH_MIN, rather than the app flipping to a full-screen chat. */
-export const useChatMaxWidth = (): number => {
-  const viewport = useViewportWidth()
-  // Two ceilings: what the window can spare, and what the transcript can actually use.
-  // The floor wins over both — a window too small for either still gets a usable column.
-  return Math.max(CHAT_PANEL_WIDTH_MIN, Math.min(CHAT_PANEL_WIDTH_MAX, viewport - CHAT_MIN_CONTENT_WIDTH))
-}
+// Two ceilings: what the window can spare, and what the transcript can actually use.
+// The floor wins over both — a window too small for either still gets a usable column.
+export const chatMaxWidth = (viewport: number): number =>
+  Math.max(CHAT_PANEL_WIDTH_MIN, Math.min(CHAT_PANEL_WIDTH_MAX, viewport - CHAT_MIN_CONTENT_WIDTH))
 
 /* Width the docked chat column occupies — single source for the fit-check
    below, App's reserved layout width, and ChatPanel's rendered width. The
    stored width is clamped to what fits, so a column dragged wide on a large
    display still docks (narrower) on a small one instead of sticking as an
    overlay the user has no handle to resize. */
+const chatWidthFor = (stored: number, viewport: number): number =>
+  Math.min(Math.max(stored || CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_MIN), chatMaxWidth(viewport))
 export const useChatWidth = (): number => {
   const stored = useSelector((state: State) => state.chat.width)
-  const max = useChatMaxWidth()
-  return Math.min(Math.max(stored || CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_MIN), max)
+  return useViewportSelect(w => chatWidthFor(stored, w))
 }
 
 /* Whether the open chat reserves layout width (docked) or covers the app as an
@@ -65,27 +65,36 @@ export const useChatWidth = (): number => {
 export const useChatDocked = (): boolean => {
   const enabled = useChatEnabled()
   const open = useSelector((state: State) => state.chat.open)
-  const viewport = useViewportWidth()
-  const fits = viewport >= CHAT_PANEL_WIDTH_MIN + CHAT_MIN_CONTENT_WIDTH
+  const fits = useViewportWiderThan(CHAT_PANEL_WIDTH_MIN + CHAT_MIN_CONTENT_WIDTH)
   return enabled && open && !browser.isMobile && fits
 }
 
-/* The width the app layout actually has left: the window minus the docked chat
-   column. Every layout breakpoint (sidebar, single/triple panel, mobile) measures
-   THIS instead of the raw window, so docking the chat reflows the app the same way
-   shrinking the window does. Consistency is arithmetic, not luck: docked guarantees
-   HIDE_TWO_PANEL_WIDTH remains, and a visible sidebar implies more than
-   HIDE_SIDEBAR_WIDTH remains — which more than covers sidebar chrome plus a panel. */
-export const useEffectiveWidth = (): number => {
-  const viewport = useViewportWidth()
+/* The layout's breakpoints, measured against the width the app actually has left: the
+   window minus the docked chat column. Every breakpoint (sidebar, single/triple panel,
+   mobile) measures THIS instead of the raw window, so docking the chat reflows the app
+   the same way shrinking the window does. Consistency is arithmetic, not luck: docked
+   guarantees HIDE_TWO_PANEL_WIDTH remains, and a visible sidebar implies more than
+   HIDE_SIDEBAR_WIDTH remains — which more than covers sidebar chrome plus a panel.
+   Subscribed as the packed answer, so App re-renders when a breakpoint flips, not on
+   every frame of a resize or a chat drag. */
+export const useLayoutBreakpoints = () => {
   const docked = useChatDocked()
-  const chatWidth = useChatWidth()
-  return docked ? viewport - chatWidth : viewport
+  const stored = useSelector((state: State) => state.chat.width)
+  const packed = useViewportSelect(w => layoutBreakpoints(docked ? w - chatWidthFor(stored, w) : w))
+  return useMemo(
+    () => ({
+      hideSidebar: !!(packed & 1),
+      singlePanel: !!(packed & 2),
+      triplePanel: !!(packed & 4),
+      mobile: !!(packed & 8),
+    }),
+    [packed]
+  )
 }
 
 /* max-width media query semantics (≤) against the effective width — shared by App
    and the components that mirror its sidebar breakpoint (Header, AvatarMenu…) */
-export const useHideSidebar = (): boolean => useEffectiveWidth() <= HIDE_SIDEBAR_WIDTH
+export const useHideSidebar = (): boolean => useLayoutBreakpoints().hideSidebar
 
 /* Width of the left chrome (sidebar + org bar) the layout reserves —
    shared by App's sidePanelWidth and the chat overlay's left edge */

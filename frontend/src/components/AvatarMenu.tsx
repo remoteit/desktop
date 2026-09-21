@@ -26,7 +26,7 @@ export const AvatarMenu: React.FC = () => {
   const history = useHistory()
   const [open, setOpen] = useState<boolean>(false)
   // The registry's accounts, re-read after each refresh of the browser's set on open.
-  const [accounts, setAccounts] = useState(oidcAccounts())
+  const [accounts, setAccounts] = useState(oidcAccounts)
   const [altMenu, setAltMenu] = useState<boolean>(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const enterTimer = useRef<number>()
@@ -43,7 +43,9 @@ export const AvatarMenu: React.FC = () => {
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
 
   const handleOpen = () => {
-    void oidcRefreshBrowserAccounts().then(() => setAccounts(oidcAccounts())).catch(() => setAccounts(oidcAccounts()))
+    void oidcRefreshBrowserAccounts()
+      .then(() => setAccounts(oidcAccounts()))
+      .catch(() => setAccounts(oidcAccounts()))
     window.addEventListener('keydown', checkAltMenu)
     setOpen(true)
   }
@@ -191,7 +193,13 @@ export const AvatarMenu: React.FC = () => {
             <ListItemSetting
               key={a.sub}
               label={a.name || a.email || a.sub}
-              subLabel={a.known ? t('nav.signedInOnBrowser', 'Signed in on this browser') : a.name && a.email ? a.email : undefined}
+              subLabel={
+                a.known
+                  ? t('nav.signedInOnBrowser', 'Signed in on this browser')
+                  : a.name && a.email
+                  ? a.email
+                  : undefined
+              }
               icon={
                 <MuiAvatar src={a.picture} sx={{ width: 24, height: 24, fontSize: 12 }}>
                   {(a.name || a.email || '?').charAt(0).toUpperCase()}

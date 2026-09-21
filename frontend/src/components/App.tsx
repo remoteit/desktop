@@ -9,7 +9,7 @@ import { useLocation } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
 import { selectResellerRef } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
-import { HIDE_TWO_PANEL_WIDTH, MOBILE_WIDTH, REGEX_FIRST_PATH, SHOW_TRIPLE_PANEL_WIDTH } from '../constants'
+import { REGEX_FIRST_PATH } from '../constants'
 import { State, Dispatch } from '../store'
 import { Box } from '@mui/material'
 import { InstallationNotice } from './InstallationNotice'
@@ -19,7 +19,7 @@ import { SidebarMenu } from './SidebarMenu'
 import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
-import { useChatEnabled, useSidebarWidth, useEffectiveWidth, useHideSidebar } from '../hooks/useChatEnabled'
+import { useChatEnabled, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
 import { useChatPopoutScope } from '../hooks/useChatSync'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
@@ -59,11 +59,7 @@ export const App: React.FC = () => {
   // Breakpoints measure the EFFECTIVE width — the window minus the docked chat
   // column — so opening or widening the chat reflows the app (sidebar → hamburger,
   // two panels → one) exactly the way shrinking the window does
-  const effectiveWidth = useEffectiveWidth()
-  const hideSidebar = useHideSidebar()
-  const singlePanel = effectiveWidth <= HIDE_TWO_PANEL_WIDTH
-  const triplePanel = effectiveWidth >= SHOW_TRIPLE_PANEL_WIDTH
-  const mobile = effectiveWidth <= MOBILE_WIDTH
+  const { hideSidebar, singlePanel, triplePanel, mobile } = useLayoutBreakpoints()
   /* Chrome the content panels have to share their row with. The chat is NOT in that
      row — it is a column beside the whole app side — so it must not be counted here:
      the panels' own parent already excludes it, and adding it back subtracted the chat

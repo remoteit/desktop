@@ -28,7 +28,9 @@ const onResize = () => {
   queued = requestAnimationFrame(measure)
 }
 
-const subscribe = (listener: () => void) => {
+/* The same listener for code that reacts to a resize without rendering it — a re-clamp, a
+   measurement. Returns the unsubscribe. */
+export const subscribeViewport = (listener: () => void) => {
   if (!listeners.size) window.addEventListener('resize', onResize)
   listeners.add(listener)
   return () => {
@@ -44,13 +46,20 @@ const subscribe = (listener: () => void) => {
 
 const getSnapshot = () => width
 
-export const useViewportWidth = (): number => useSyncExternalStore(subscribe, getSnapshot)
+/* The width right now, for event handlers that must not subscribe (a drag's own math). */
+export const getViewportWidth = (): number => width
 
-/* Is the window at least `threshold` wide? Same single listener, but the subscriber is
-   the ANSWER rather than the width, so a component that only wants a breakpoint
-   re-renders when the breakpoint FLIPS instead of on every frame of a resize. Reach for
-   this over useViewportWidth wherever the pixel value is not itself rendered — reading
-   the raw width to compute a boolean re-renders (and re-serializes every sx object) 60
-   times a second while someone drags the window edge. */
-export const useViewportWiderThan = (threshold: number): boolean =>
-  useSyncExternalStore(subscribe, () => width >= threshold)
+export const useViewportWidth = (): number => useSyncExternalStore(subscribeViewport, getSnapshot)
+
+/* Subscribe to a value DERIVED from the width — a breakpoint, a clamp. Same single
+   listener, but the subscriber is the ANSWER rather than the width, so a component that
+   only wants a breakpoint re-renders when the breakpoint FLIPS instead of on every frame
+   of a resize. Reach for this over useViewportWidth wherever the pixel value is not
+   itself rendered — reading the raw width to compute a boolean re-renders (and
+   re-serializes every sx object) 60 times a second while someone drags the window edge.
+   Primitives only: an object would be a fresh reference every frame. */
+export const useViewportSelect = <T extends string | number | boolean>(select: (width: number) => T): T =>
+  useSyncExternalStore(subscribeViewport, () => select(width))
+
+/* Is the window at least `threshold` wide? */
+export const useViewportWiderThan = (threshold: number): boolean => useViewportSelect(w => w >= threshold)

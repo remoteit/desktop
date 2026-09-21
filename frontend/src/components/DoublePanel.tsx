@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { getPanelWidthDefault, usePanelWidth } from '../hooks/usePanelWidth'
 import { usePanelDrag } from '../hooks/usePanelDrag'
-import { useViewportWidth } from '../hooks/useViewportWidth'
+import { subscribeViewport } from '../hooks/useViewportWidth'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useLocation } from 'react-router-dom'
 import { Box } from '@mui/material'
@@ -25,7 +25,6 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
   const secondaryMinWidth = getPanelWidthDefault(routeKey, undefined, MIN_WIDTH)
   const primaryRef = useRef<HTMLDivElement>(null)
   const [parentWidth, setParentWidth] = useState<number | undefined>()
-  const viewportWidth = useViewportWidth()
 
   const sidePanelWidth = layout.sidePanelWidth + PADDING
 
@@ -48,11 +47,12 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
     setParentWidth(parent)
   }, [sidePanelWidth])
 
-  // The shared viewport width stands in for a resize listener: it only changes when the
-  // window actually did, and at most once a frame
   useEffect(() => {
     measureParent()
-  }, [layout, drag.width, viewportWidth, measureParent])
+  }, [layout, drag.width, measureParent])
+  // The shared listener stands in for a resize listener: coalesced to a frame, silent when
+  // nothing moved, and no render of this panel until the measurement changes
+  useEffect(() => subscribeViewport(measureParent), [measureParent])
 
   const panelSx = {
     height: '100%',
