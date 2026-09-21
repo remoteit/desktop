@@ -56,7 +56,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   const display = (
     <Stack flexDirection="row" alignItems="center" gap={2}>
       <Stack flexDirection="row" alignItems="center" gap={0.7}>
-        <Icon name="user" size="sm" type="solid" color="gray" />
+        <Icon name="user" size="base" type="solid" color="gray" />
         {userLimit?.value == null
           ? t('seatsSetting.usersCount', {
               count: userLimit?.actual ?? 0,
