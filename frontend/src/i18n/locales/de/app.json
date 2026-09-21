@@ -1874,9 +1874,12 @@
     "confirmTitle": "Abrechnungsänderung bestätigen",
     "devicesCount_one": "{{count}} Gerät",
     "devicesCount_other": "{{count}} Geräte",
+    "devicesLimit": "In Ihrem Plan enthaltene Geräte",
     "label": "Lizenzierung",
+    "planLimits": "Planlimits",
     "usersCount_one": "{{count}} Benutzer",
     "usersCount_other": "{{count}} Benutzer",
+    "usersLimit": "In Ihrem Plan enthaltene Benutzerlizenzen",
     "warning": "Dadurch wird Ihre Abrechnung geändert."
   },
   "serviceAddPage": {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, deviceUserTotal } from '../models/plans'
-import { List, Stack } from '@mui/material'
+import { List, Stack, Tooltip, Typography } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
@@ -53,25 +53,42 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
 
   const display = (
-    <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginLeft: 0.7, marginRight: 2 } }}>
-      {limits.find(l => l.name === 'org-users')?.value}
-      <Icon name="user" size="xxs" type="solid" color="gray" />
-      {limits.find(l => l.name === 'iot-devices')?.value}
-      <Icon name="unknown" size="sm" platformIcon />
+    <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginRight: 2 } }}>
+      <Tooltip title={t('seatsSetting.usersLimit', 'User licenses included in your plan')} arrow>
+        <Stack flexDirection="row" alignItems="center" gap={0.7}>
+          {limits.find(l => l.name === 'org-users')?.value}
+          <Icon name="user" size="xxs" type="solid" color="gray" />
+        </Stack>
+      </Tooltip>
+      <Tooltip title={t('seatsSetting.devicesLimit', 'Devices included in your plan')} arrow>
+        <Stack flexDirection="row" alignItems="center" gap={0.7}>
+          {limits.find(l => l.name === 'iot-devices')?.value}
+          <Icon name="unknown" size="sm" platformIcon />
+        </Stack>
+      </Tooltip>
+    </Stack>
+  )
+
+  const labeled = (
+    <Stack flexDirection="row" alignItems="center" gap={2}>
+      <Typography variant="body2" color="textSecondary">
+        {t('seatsSetting.planLimits', 'Plan limits')}
+      </Typography>
+      {display}
     </Stack>
   )
 
   if (license?.custom)
     return (
       <>
-        <Gutters>{display}</Gutters>
+        <Gutters>{labeled}</Gutters>
         <Gutters size="sm">
           <NoticeCustomPlan />
         </Gutters>
       </>
     )
 
-  if (displayOnly) return <Gutters>{display}</Gutters>
+  if (displayOnly) return <Gutters>{labeled}</Gutters>
 
   return (
     <List>

@@ -1905,10 +1905,13 @@
     "devicesCount_one": "{{count}} dispositivo",
     "devicesCount_many": "{{count}} dispositivos",
     "devicesCount_other": "{{count}} dispositivos",
+    "devicesLimit": "Dispositivos incluidos en tu plan",
     "label": "Licencias",
+    "planLimits": "Límites del plan",
     "usersCount_one": "{{count}} usuario",
     "usersCount_many": "{{count}} usuarios",
     "usersCount_other": "{{count}} usuarios",
+    "usersLimit": "Licencias de usuario incluidas en tu plan",
     "warning": "Esto cambiará tu facturación."
   },
   "serviceAddPage": {
