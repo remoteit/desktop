@@ -56,7 +56,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   const display = (
     <Stack flexDirection="row" alignItems="center" gap={2}>
       <Stack flexDirection="row" alignItems="center" gap={0.7}>
-        <Icon name="user" size="xxs" type="solid" color="gray" />
+        <Icon name="user" size="sm" type="solid" color="gray" />
         {userLimit?.value == null
           ? t('seatsSetting.usersCount', {
               count: userLimit?.actual ?? 0,
@@ -71,7 +71,7 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
             })}
       </Stack>
       <Stack flexDirection="row" alignItems="center" gap={0.7}>
-        <Icon name="unknown" size="sm" platformIcon />
+        <Icon name="unknown" size="md" platformIcon />
         {deviceLimit?.value == null
           ? t('seatsSetting.devicesCount', {
               count: deviceLimit?.actual ?? 0,
