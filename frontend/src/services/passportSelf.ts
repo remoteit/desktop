@@ -1,4 +1,4 @@
-import { oidcAuthHeaders } from './oidc'
+import { oidcResourceRequest } from './oidc'
 import { OAUTH_PASSPORT_RESOURCE } from '../constants'
 
 /**
@@ -25,19 +25,16 @@ export type SelfContinuation = {
   error_description?: string
 }
 
-const call = async (path: string, body?: Record<string, string>): Promise<SelfContinuation & { httpStatus: number }> => {
-  const url = OAUTH_PASSPORT_RESOURCE + path
-  const method = body ? 'POST' : 'GET'
-  // Scheme-aware (plan D9): a DPoP-bound token presents as `DPoP` + an ath proof.
-  const auth = await oidcAuthHeaders(method, url, OAUTH_PASSPORT_RESOURCE)
-  if (!auth.authorization) return { httpStatus: 401, error: 'unauthorized' }
-  const response = await fetch(url, {
-    method,
-    headers: { ...auth, ...(body ? { 'content-type': 'application/json' } : {}) },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  })
-  const parsed = (await response.json().catch(() => ({}))) as SelfContinuation
-  return { ...parsed, httpStatus: response.status }
+const call = async (
+  path: string,
+  body?: Record<string, string>
+): Promise<SelfContinuation & { httpStatus: number }> => {
+  const r = await oidcResourceRequest<SelfContinuation>(
+    OAUTH_PASSPORT_RESOURCE,
+    path,
+    body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {}
+  )
+  return { ...(r.body ?? (r.status === 401 ? { error: 'unauthorized' } : {})), httpStatus: r.status }
 }
 
 export type MfaMethod = 'totp' | 'sms'
@@ -57,6 +54,9 @@ export const selfMfaPrefer = (password: string, method: MfaMethod) => call('/mfa
 export const selfMfaDisable = (password: string, method?: MfaMethod) =>
   call('/mfa/disable', { password, ...(method ? { method } : {}) })
 export const selfPasskeyRegister = (password: string) => call('/passkeys/register', { password })
-export const selfPasskeyConfirm = (challenge: string, attestation: { attestationObject: string; clientDataJSON: string }, name: string) =>
-  call('/passkeys/confirm', { challenge, ...attestation, name })
+export const selfPasskeyConfirm = (
+  challenge: string,
+  attestation: { attestationObject: string; clientDataJSON: string },
+  name: string
+) => call('/passkeys/confirm', { challenge, ...attestation, name })
 export const selfPasskeyDelete = (password: string, id: string) => call('/passkeys/delete', { password, id })

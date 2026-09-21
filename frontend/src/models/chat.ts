@@ -29,6 +29,8 @@ import { store } from '../store'
 import type { State } from '../store'
 import { CHAT_PANEL_WIDTH } from '../constants'
 import i18n from '../i18n'
+import sleep from '../helpers/sleep'
+import { formatReset } from '../helpers/dateHelper'
 
 export type ChatToolCall = {
   id: string
@@ -160,20 +162,16 @@ export const toChatHandoff = (chat: IChatState): ChatHandoff => ({
   orgId: chat.orgId,
 })
 
+/* The server transcript in the local shape: tool calls are not replayed, only the text. */
+const toTranscript = (messages: Array<{ role: string; content: string }>): ChatTranscriptMessage[] =>
+  messages.map(m =>
+    m.role === 'assistant' ? { role: 'assistant', text: m.content, toolCalls: [] } : { role: 'user', text: m.content }
+  )
+
 const authRequiredError = () =>
   i18n.t('notices:chat.authRequired', {
     defaultValue: 'The agent refused this session\u2019s credentials — refresh permissions to continue.',
   })
-
-/* A short, human reset time: a time-of-day within a day, else weekday + time. */
-export const formatReset = (iso: string | null): string => {
-  if (!iso) return ''
-  const at = new Date(iso)
-  const soon = at.getTime() - Date.now() < 24 * 60 * 60 * 1000
-  return soon
-    ? at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-    : at.toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
-}
 
 const usageLimitMessage = (e: UsageLimitError): string => {
   const when = formatReset(e.resetsAt)
@@ -399,11 +397,7 @@ export default createModel<RootModel>()({
         // completed turn from view. Re-read the LIVE store and compare against what is current.
         const current = store.getState().chat
         if (ticket !== generation || current.conversationId !== id || current.streaming) return
-        const messages = remote.messages.map(m =>
-          m.role === 'assistant'
-            ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
-            : { role: 'user' as const, text: m.content }
-        )
+        const messages = toTranscript(remote.messages)
         // Adopt the server copy when it DIFFERS, not only when it is longer: a popout hands back a
         // partially rendered reply the server then completes to the SAME message count, so a
         // length-only test leaves the partial on screen. Compare the last message's text too. Also
@@ -492,11 +486,7 @@ export default createModel<RootModel>()({
         streaming: false,
         pendingConfirmation: null,
         error: null,
-        messages: remote.messages.map(m =>
-          m.role === 'assistant'
-            ? { role: 'assistant' as const, text: m.content, toolCalls: [] }
-            : { role: 'user' as const, text: m.content }
-        ),
+        messages: toTranscript(remote.messages),
       })
     },
     /* Delete a conversation for real (D9). If it's the one on screen, clear to a new chat. */
@@ -547,7 +537,7 @@ export default createModel<RootModel>()({
       const who = state?.auth?.user?.id
       if (who && backgroundRevokedFor === who) return
       backgroundRevokedFor = who ?? null
-      await Promise.race([backgroundDisable().catch(() => {}), new Promise(resolve => setTimeout(resolve, 3000))])
+      await Promise.race([backgroundDisable().catch(() => {}), sleep(3000)])
     },
   }),
   reducers: {

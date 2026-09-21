@@ -1,4 +1,13 @@
-import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, TEST_HEADER, OAUTH_GRAPHQL_RESOURCE } from '../constants'
+import {
+  GRAPHQL_API,
+  GRAPHQL_BETA_API,
+  API_URL,
+  WEBSOCKET_BETA_URL,
+  WEBSOCKET_URL,
+  TEST_HEADER,
+  OAUTH_GRAPHQL_RESOURCE,
+  CLOUD_GRAPHQL_RE,
+} from '../constants'
 import { graphQLRentANode } from '../services/graphQLMutation'
 import { version } from './versionHelper'
 import { store } from '../store'
@@ -26,7 +35,7 @@ export function getApiURL(): string | undefined {
  *  Derived rather than stored, so a target typed by hand into Test Settings resolves the same way a
  *  picked one does, with no new persisted field to fall out of step. */
 export function resourceForApiURL(url: string): string {
-  return url.match(/^(https:\/\/cloud(?:\.[a-z0-9-]+)?\.remote\.it\/api)\/graphql$/)?.[1] ?? url
+  return url.match(CLOUD_GRAPHQL_RE)?.[1] ?? url
 }
 
 // D10 (permitteer docs/remoteit-desktop-login.md Phase 4c): the token's audience follows the

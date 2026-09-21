@@ -10,6 +10,7 @@ import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
 import { oidcAccessToken } from './oidc'
+import { LEGACY_EVENTS_RE } from '../constants'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -43,10 +44,9 @@ const connectTimes = new CloudTimes()
 // Do NOT widen this pattern to match the unified front. Minting for the socket URL there asks the AS
 // for a resource that does not exist and fails `invalid_target` — which is exactly how the e2e
 // suite discovered the same assumption on its own side.
-const EVENTS_RESOURCE = /^wss:\/\/ws(\.[a-z0-9-]+)?\.remote\.it\/v1$/
 async function wsAuthorization(): Promise<string> {
   const url = getWebSocketURL() || ''
-  if (!EVENTS_RESOURCE.test(url)) return await getToken()
+  if (!LEGACY_EVENTS_RE.test(url)) return await getToken()
   const token = await oidcAccessToken(url)
   return token ? 'Bearer ' + token : ''
 }
@@ -551,8 +551,8 @@ class CloudController {
               status: event.job.status,
               jobDevices: jobDevice
                 ? jobDevices.map(jd =>
-                  jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd
-                )
+                    jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd
+                  )
                 : jobDevices,
             },
           ],

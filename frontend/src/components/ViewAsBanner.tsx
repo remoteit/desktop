@@ -4,8 +4,9 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Box, Typography, IconButton } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { Icon } from './Icon'
-import { oidcActor, oidcSupportEndsAt, oidcClearLocal } from '../services/oidc'
+import { oidcActor, oidcSupportEndsAt, oidcEndSupportTab } from '../services/oidc'
 import { OAUTH_ISSUER } from '../constants'
+import { getLocale } from '../helpers/dateHelper'
 
 export const ViewAsBanner: React.FC = () => {
   const { t } = useTranslation()
@@ -22,7 +23,7 @@ export const ViewAsBanner: React.FC = () => {
   // The session's end is the token's expiry (permitteer docs/desktop-support.md): shown so the
   // operator knows how long the view lasts — nothing renews it.
   const endsAt = oidcSupportEndsAt()
-  const until = endsAt ? new Date(endsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+  const until = endsAt ? new Date(endsAt).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit' }) : ''
   if (!viewAsUser && !supportSession) return null
   const email = viewAsUser?.email || user?.email || ''
 
@@ -39,8 +40,7 @@ export const ViewAsBanner: React.FC = () => {
     window.setTimeout(() => {
       if (window.closed) return
       if (supportSession) {
-        oidcClearLocal()
-        try { window.sessionStorage.removeItem('oidc.support') } catch { /* nothing to clear */ }
+        oidcEndSupportTab()
         window.location.assign(`${OAUTH_ISSUER}/admin/console/users`)
       }
     }, 150)
@@ -62,7 +62,12 @@ export const ViewAsBanner: React.FC = () => {
     >
       <Typography variant="body2" sx={{ fontWeight: 500, flexGrow: 1, textAlign: 'center' }}>
         {supportSession
-          ? t('viewAsBanner.supportSession', { email, until, defaultValue: 'Support session — viewing as {{email}} until {{until}}. Tokens are stamped with your identity; the user can see and end this session.' })
+          ? t('viewAsBanner.supportSession', {
+              email,
+              until,
+              defaultValue:
+                'Support session — viewing as {{email}} until {{until}}. Tokens are stamped with your identity; the user can see and end this session.',
+            })
           : t('viewAsBanner.viewingAs', { email, defaultValue: 'Viewing as: {{email}}' })}
       </Typography>
       <IconButton

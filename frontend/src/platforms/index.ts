@@ -13,7 +13,6 @@ export interface IPlatform {
   hasScreenView?: boolean
   override?: React.FC<IPlatformOverrideProps>
   installation?: {
-    label?: string
     download?: boolean
     command?: boolean | string
     instructions?: string | React.ReactNode

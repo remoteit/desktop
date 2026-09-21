@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 const state: { ui: { apis: { agentURL?: string } } } = { ui: { apis: {} } }
 vi.mock('../store', () => ({ store: { getState: () => state } }))
 vi.mock('./oidc', () => ({ oidcAuthHeaders: vi.fn() }))
-vi.mock('../constants', () => ({ OAUTH_AGENT_RESOURCE: 'https://agent.remote.it' }))
+vi.mock('../constants', () => ({ OAUTH_AGENT_RESOURCE: 'https://agent.remote.it', AGENT_URL: '/agent' }))
 
 import { agentURL, isSecureAgentURL, streamChat, AgentStreamEndedError } from './agent'
 
@@ -97,13 +97,17 @@ describe('streamChat — SSE framing', () => {
      It used to resolve like a completion, leaving a truncated answer looking finished with
      the composer open for another send. */
   it('reports a clean EOF with no terminal event as a cut-off, after delivering what arrived', async () => {
-    const { events, outcome } = await run(['event: turn\ndata: {"turnId":"t1"}\n\nevent: text_delta\ndata: {"text":"half an"}\n\n'])
+    const { events, outcome } = await run([
+      'event: turn\ndata: {"turnId":"t1"}\n\nevent: text_delta\ndata: {"text":"half an"}\n\n',
+    ])
     expect(events).toEqual([turn, { type: 'text_delta', text: 'half an' }])
     expect(outcome).toBeInstanceOf(AgentStreamEndedError)
   })
 
   it('drops a torn tail rather than surfacing a parse error — and reports the cut-off', async () => {
-    const { events, outcome } = await run(['event: turn\ndata: {"turnId":"t1"}\n\nevent: text_delta\ndata: {"text":"tru'])
+    const { events, outcome } = await run([
+      'event: turn\ndata: {"turnId":"t1"}\n\nevent: text_delta\ndata: {"text":"tru',
+    ])
     expect(events).toEqual([turn])
     expect(outcome).toBeInstanceOf(AgentStreamEndedError)
   })

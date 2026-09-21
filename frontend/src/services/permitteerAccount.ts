@@ -3,12 +3,10 @@
  * the unit, and revoking it kills every refresh token minted from it. No graphql gateway:
  * the deleted Hydra façade is not coming back, and the AS view already carries names,
  * logos, per-action detail and honest revocation reach. */
-import { oidcAuthHeaders } from './oidc'
-import { OAUTH_ISSUER } from '../constants'
+import { oidcResourceRequest, OidcResourceResult } from './oidc'
+import { OAUTH_ACCOUNT_RESOURCE } from '../constants'
 
-const RESOURCE = `${OAUTH_ISSUER}/account/api`
-
-export type AccountApiResult<T = any> = { status: number; body?: T }
+export type AccountApiResult<T = any> = OidcResourceResult<T>
 
 /** The legal token targets for THIS client — the AS's allowlist joined to registry names
  *  (D10). The stage picker and the mint-time guardrail read the SAME source, so they can
@@ -18,24 +16,8 @@ export async function bindableResources(): Promise<Array<{ identifier: string; n
   return r.status === 200 && Array.isArray(r.body) ? r.body : []
 }
 
-async function call<T = any>(path: string, init: RequestInit = {}): Promise<AccountApiResult<T>> {
-  const url = `${RESOURCE}${path}`
-  // Scheme-aware (plan D9): a DPoP-bound token presents as `DPoP` + an ath proof; an
-  // unbound one stays Bearer. The AS decides which we hold.
-  const auth = await oidcAuthHeaders(init.method ?? 'GET', url, RESOURCE)
-  if (!auth.authorization) return { status: 401 }
-  const response = await fetch(url, {
-    ...init,
-    headers: { ...auth, ...(init.headers || {}) },
-  })
-  let body: T | undefined
-  try {
-    body = (await response.json()) as T
-  } catch {
-    body = undefined
-  }
-  return { status: response.status, body }
-}
+const call = <T = any>(path: string, init: RequestInit = {}) =>
+  oidcResourceRequest<T>(OAUTH_ACCOUNT_RESOURCE, path, init)
 
 /** "Sign out everywhere" (permitteer docs/remoteit-desktop-login.md Phase 4e): every session
  *  of the account at the AS — THIS one included — ended in one stroke, each with its refresh

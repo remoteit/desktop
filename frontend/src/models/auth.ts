@@ -37,6 +37,7 @@ import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import axios from 'axios'
 import i18n from '../i18n'
+import sleep from '../helpers/sleep'
 
 // One re-authorize attempt per browser session, keyed by the declaration it was made from
 // (healGrant below). sessionStorage rather than local: the bound is meant to survive reloads of
@@ -590,7 +591,6 @@ export default createModel<RootModel>()({
       // always follows — a miss is logged, never fatal. signOut itself stays LOCAL — a
       // failure-path or menu sign-out must never end the AS sessions.
       //
-      //
       // A SUPPORT session (an operator viewing as the person) holds no refresh token and can
       // mint for nothing but the data plane, and the account API refuses writes from an acted
       // token anyway — so there is nothing to call; the control is hidden for it (SecurityPage),
@@ -612,10 +612,7 @@ export default createModel<RootModel>()({
       // the AS is told nothing; that is the failure the mail and the account page can still show.
       try {
         const { signOutEverywhere } = await import('../services/permitteerAccount')
-        const r = await Promise.race([
-          signOutEverywhere(),
-          new Promise<null>(resolve => setTimeout(() => resolve(null), SIGN_OUT_EVERYWHERE_TIMEOUT)),
-        ])
+        const r = await Promise.race([signOutEverywhere(), sleep(SIGN_OUT_EVERYWHERE_TIMEOUT).then(() => null)])
         if (!r) console.warn('SIGN OUT EVERYWHERE timed out — signing out locally')
         else if (r.status === 200) console.log('SIGN OUT EVERYWHERE', r.body)
         else console.warn('SIGN OUT EVERYWHERE refused', r.status, r.body)

@@ -11,12 +11,13 @@ import {
   IconButton as MuiIconButton,
 } from '@mui/material'
 import { State } from '../../store'
-import { formatReset } from '../../models/chat'
+import { formatReset } from '../../helpers/dateHelper'
 import { UsageWindow } from '../../services/agent'
 import { radius } from '../../styling'
 
 const pct = (w: UsageWindow) =>
   w.unlimited || w.limitUsd <= 0 ? 0 : Math.min(100, Math.round((w.spentUsd / w.limitUsd) * 100))
+const usageColor = (used: number) => (used >= 90 ? 'error' : used >= 70 ? 'warning' : 'primary')
 
 /* One window's row in the popover: a labeled bar + reset time. */
 const WindowRow: React.FC<{ label: string; window: UsageWindow; gutterBottom?: boolean }> = ({
@@ -26,7 +27,7 @@ const WindowRow: React.FC<{ label: string; window: UsageWindow; gutterBottom?: b
 }) => {
   const { t } = useTranslation()
   const used = pct(window)
-  const color = used >= 90 ? 'error' : used >= 70 ? 'warning' : 'primary'
+  const color = usageColor(used)
   return (
     <Box sx={{ marginBottom: gutterBottom ? 2 : 0 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -86,7 +87,7 @@ export const ChatUsage: React.FC = () => {
   if (!usage || (usage.session.unlimited && usage.weekly.unlimited)) return null
 
   const worst = Math.max(pct(usage.session), pct(usage.weekly))
-  const color = worst >= 90 ? 'error' : worst >= 70 ? 'warning' : 'primary'
+  const color = usageColor(worst)
 
   return (
     <>

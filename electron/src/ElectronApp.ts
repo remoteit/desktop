@@ -203,8 +203,7 @@ export default class ElectronApp {
    * as "use the plain open". Two hops rather than getApplicationNameForProtocol because
    * that returns a DISPLAY name here ("Google Chrome"), which is not launchable. */
   private windowsDefaultBrowser(done: (exe: string) => void) {
-    const association =
-      'HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice'
+    const association = 'HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice'
     execFile('reg', ['query', association, '/v', 'ProgId'], (error, stdout) => {
       const progId = error ? undefined : /ProgId\s+REG_SZ\s+(\S+)/i.exec(stdout)?.[1]
       if (!progId) return done('')
@@ -324,15 +323,12 @@ export default class ElectronApp {
     this.window.webContents.setWindowOpenHandler(({ url }) => {
       // The dev chat panel pops out into its own window (?chatPopout on our
       // own origin); every other window.open goes to the system browser.
-      try {
-        const parsed = new URL(url)
-        if (parsed.origin === new URL(this.getStartUrl()).origin && parsed.searchParams.has(CHAT_POPOUT_PARAM)) {
-          return {
-            action: 'allow',
-            overrideBrowserWindowOptions: { ...CHAT_POPOUT_SIZE, autoHideMenuBar: true },
-          }
+      if (this.isAppOrigin(url) && new URL(url).searchParams.has(CHAT_POPOUT_PARAM)) {
+        return {
+          action: 'allow',
+          overrideBrowserWindowOptions: { ...CHAT_POPOUT_SIZE, autoHideMenuBar: true },
         }
-      } catch {}
+      }
       this.openExternal(url)
       return { action: 'deny' }
     })
@@ -347,9 +343,7 @@ export default class ElectronApp {
         return { action: 'deny' }
       })
       child.webContents.on('will-navigate', (event, url) => {
-        try {
-          if (new URL(url).origin === new URL(this.getStartUrl()).origin) return
-        } catch {}
+        if (this.isAppOrigin(url)) return
         event.preventDefault()
         this.openExternal(url)
       })
@@ -361,11 +355,7 @@ export default class ElectronApp {
       // password manager, passkeys and single sign-on session live. Keyed on origin,
       // not configuration: the packaged main process has no .env, so an issuer-based
       // match fails CLOSED into this window; an origin rule fails open to the browser.
-      let external = false
-      try {
-        external = new URL(url).origin !== new URL(this.getStartUrl()).origin
-      } catch {}
-      if (external) {
+      if (!this.isAppOrigin(url)) {
         Logger.info('EXTERNAL NAVIGATION -> SYSTEM BROWSER', { url })
         event.preventDefault()
         this.openAuthWindow(url)
@@ -454,6 +444,14 @@ export default class ElectronApp {
     this.window = undefined
     this.createMainWindow()
     lastWindow?.destroy()
+  }
+
+  private isAppOrigin(url: string): boolean {
+    try {
+      return new URL(url).origin === new URL(this.getStartUrl()).origin
+    } catch {
+      return false
+    }
   }
 
   private getStartUrl(): string {

@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import cloudSync from '../services/CloudSync'
-import { TEST_HEADER, GRAPHQL_API, OAUTH_AGENT_RESOURCE } from '../constants'
+import {
+  TEST_HEADER,
+  GRAPHQL_API,
+  OAUTH_AGENT_RESOURCE,
+  CLOUD_TREE_RE,
+  LEGACY_GRAPHQL_RE,
+  LEGACY_EVENTS_RE,
+  cloudTreeUrls,
+} from '../constants'
 import { Dispatch, State } from '../store'
+import { UIState } from '../models/ui'
 import { Typography, List, ListItem, Divider } from '@mui/material'
 import { getApiURL, getWebSocketURL, resourceForApiURL } from '../helpers/apiHelper'
 import { bindableResources } from '../services/permitteerAccount'
@@ -20,6 +29,7 @@ import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
+import sleep from '../helpers/sleep'
 
 export const TestPage: React.FC = () => {
   const { t } = useTranslation()
@@ -32,9 +42,9 @@ export const TestPage: React.FC = () => {
   const features = useSelector(selectFeatures)
   const overrides = useSelector((state: State) => state.ui.limitsOverride)
 
-  async function setAPIPreference(key: string, value: string | number | boolean) {
-    await dispatch.ui.setPersistent({ apis: { ...apis, [key]: value } })
-    emit('preferences', { [key]: value })
+  async function setAPIPreferences(values: UIState['apis']) {
+    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
+    emit('preferences', values)
   }
 
   // --- the stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c) ----
@@ -64,7 +74,7 @@ export const TestPage: React.FC = () => {
     await windowOpen(backgroundConnectUrl(), '_blank', true)
     // The ceremony finishes in the browser — poll briefly for the verdict.
     for (let i = 0; i < 30; i++) {
-      await new Promise(r => setTimeout(r, 2000))
+      await sleep(2000)
       if (await backgroundStatus()) break
     }
     setBackgroundEnrolled(await backgroundStatus())
@@ -89,20 +99,19 @@ export const TestPage: React.FC = () => {
     for (const target of targets) {
       // The UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md). The identifier is not a URL to
       // call: graphql and the socket hang off it, and one audience covers both.
-      const cloud = target.identifier.match(/^https:\/\/cloud(?:\.([a-z0-9-]+))?\.remote\.it\/api$/)
+      const cloud = target.identifier.match(CLOUD_TREE_RE)
       if (cloud) {
         const key = `cloud:${cloud[1] || 'prod'}`
         pairs.set(key, {
           ...at(key, target.name),
           name: target.name,
-          graphql: `${target.identifier}/graphql`,
-          ws: `${target.identifier.replace(/^https:/, 'wss:')}/ws`,
+          ...cloudTreeUrls(target.identifier),
           resources: [target.identifier],
         })
         continue
       }
-      const gql = target.identifier.match(/^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/)
-      const ws = target.identifier.match(/^wss:\/\/ws(?:\.([a-z0-9-]+))?\.remote\.it\/v1$/)
+      const gql = target.identifier.match(LEGACY_GRAPHQL_RE)
+      const ws = target.identifier.match(LEGACY_EVENTS_RE)
       if (!gql && !ws) continue // passport / account-api entries are not switch targets
       const stage = (gql?.[1] ?? ws?.[1]) || 'prod'
       const key = `legacy:${stage}`
@@ -133,26 +142,22 @@ export const TestPage: React.FC = () => {
   async function selectCustom() {
     setMintError('')
     setCustomMode(true)
-    const values = {
+    await setAPIPreferences({
       switchApi: true,
       apiGraphqlURL: apis.apiGraphqlURL || getApiURL() || '',
       webSocketURL: apis.webSocketURL || getWebSocketURL() || '',
-    }
-    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
-    emit('preferences', values)
+    })
   }
 
   async function selectStage(pair: StagePair) {
     setMintError('')
     setCustomMode(false)
     const isDefault = pair.graphql === GRAPHQL_API
-    const values = {
+    await setAPIPreferences({
       switchApi: !isDefault,
       apiGraphqlURL: pair.graphql!,
       ...(pair.ws ? { webSocketURL: pair.ws } : {}),
-    }
-    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
-    emit('preferences', values)
+    })
     try {
       // One mint per RESOURCE, which is two on a legacy stage and one on the unified front — where
       // asking for the socket URL separately would answer invalid_target, correctly.
@@ -269,7 +274,7 @@ export const TestPage: React.FC = () => {
                 onSave={async result => {
                   const url = result.toString()
                   setMintError('')
-                  await setAPIPreference('apiGraphqlURL', url)
+                  await setAPIPreferences({ apiGraphqlURL: url })
                   try {
                     await oidcAccessToken(resourceForApiURL(url))
                   } catch (error) {
@@ -287,7 +292,7 @@ export const TestPage: React.FC = () => {
                 resetValue={getWebSocketURL()}
                 maxLength={200}
                 onSave={url => {
-                  setAPIPreference('webSocketURL', url)
+                  setAPIPreferences({ webSocketURL: url.toString() })
                   emit('binaries/install')
                 }}
                 hideIcon
@@ -331,7 +336,7 @@ export const TestPage: React.FC = () => {
                       setAgentError('')
                       // Reset (or entering the default) CLEARS the override so agentURL() falls back to the
                       // /agent proxy (dev) or VITE_AGENT_URL (build) — never pinning the OAuth audience as the transport.
-                      setAPIPreference('agentURL', url === OAUTH_AGENT_RESOURCE ? '' : url)
+                      setAPIPreferences({ agentURL: url === OAUTH_AGENT_RESOURCE ? '' : url })
                     }}
                     hideIcon
                   />

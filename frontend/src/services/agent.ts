@@ -12,21 +12,18 @@
  */
 import { store } from '../store'
 import { oidcAuthHeaders } from './oidc'
-import { OAUTH_AGENT_RESOURCE } from '../constants'
+import { OAUTH_AGENT_RESOURCE, AGENT_URL } from '../constants'
 
 /* The override must be https — the app's CSP blocks plain http. Shared with
    the Test Settings validation so what saves is exactly what engages. */
 export const isSecureAgentURL = (url: string): boolean => /^https:\/\//i.test(url)
 
 /* Base URL for the agent service, resolved per request. A Test UI override
-   wins (Test Settings → Agent service URL, https only). Otherwise dev rides the
-   vite proxy (same-origin, CSP-clean) even when VITE_AGENT_URL is set, staying
-   out of CORS; builds have no proxy and use the deployed agent domain from
-   VITE_AGENT_URL. */
+   wins (Test Settings → Agent service URL, https only); otherwise the build's AGENT_URL. */
 export function agentURL(): string {
   const override = store.getState().ui.apis.agentURL
   if (override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
-  return import.meta.env.DEV ? '/agent' : import.meta.env.VITE_AGENT_URL || '/agent'
+  return AGENT_URL
 }
 
 /* The agent rejected our credential (401 reauth_required) — sign in again */

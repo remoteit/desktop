@@ -3,9 +3,15 @@ import { useTranslation } from 'react-i18next'
 import { Box, Button, Chip, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
 import {
-  selfMe, selfPasskeyRegister, selfPasskeyConfirm, selfPasskeyDelete, selfChallenge,
-  MfaMethod, SelfContinuation,
+  selfMe,
+  selfPasskeyRegister,
+  selfPasskeyConfirm,
+  selfPasskeyDelete,
+  selfChallenge,
+  MfaMethod,
+  SelfContinuation,
 } from '../../services/passportSelf'
+import { toBase64url, fromBase64url } from '../../helpers/base64url'
 
 /**
  * Passkeys (plan Phase 2d): ONE store for both credential lanes — a passkey registered
@@ -14,16 +20,20 @@ import {
  * need a code factor first — sign-ins from older apps rely on it, and the copy says so.
  */
 
-const b64uToBuf = (s: string) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))
-const bufToB64u = (b: ArrayBuffer) =>
-  btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-
 type Key = { id: string; name: string; createdAt?: string; lastUsedAt?: string }
 
 type Step =
   | { at: 'view'; keys: Key[] }
   | { at: 'password'; mode: 'add' | 'remove'; keyId?: string; error?: string }
-  | { at: 'relay'; pending: { mode: 'add' | 'remove'; keyId?: string }; challenge: string; hint?: string; isSelect?: boolean; options?: MfaMethod[]; error?: string }
+  | {
+      at: 'relay'
+      pending: { mode: 'add' | 'remove'; keyId?: string }
+      challenge: string
+      hint?: string
+      isSelect?: boolean
+      options?: MfaMethod[]
+      error?: string
+    }
   | { at: 'naming'; codes?: string[] }
 
 export const PasskeysSettings: React.FC = () => {
@@ -36,7 +46,7 @@ export const PasskeysSettings: React.FC = () => {
 
   const refresh = async () => {
     const me = (await selfMe()) as SelfContinuation & { passkeys?: Key[]; httpStatus: number }
-    setStep({ at: 'view', keys: me.httpStatus === 200 ? (me.passkeys ?? []) : [] })
+    setStep({ at: 'view', keys: me.httpStatus === 200 ? me.passkeys ?? [] : [] })
   }
   useEffect(() => {
     refresh()
@@ -49,40 +59,64 @@ export const PasskeysSettings: React.FC = () => {
       const cred = (await navigator.credentials.create({
         publicKey: {
           ...options,
-          challenge: b64uToBuf(options.challenge),
-          user: { ...options.user, id: b64uToBuf(options.user.id) },
-          excludeCredentials: (options.excludeCredentials ?? []).map((c: any) => ({ ...c, id: b64uToBuf(c.id) })),
+          challenge: fromBase64url(options.challenge),
+          user: { ...options.user, id: fromBase64url(options.user.id) },
+          excludeCredentials: (options.excludeCredentials ?? []).map((c: any) => ({ ...c, id: fromBase64url(c.id) })),
         } as unknown as PublicKeyCredentialCreationOptions,
       })) as PublicKeyCredential
       const response = cred.response as AuthenticatorAttestationResponse
       const name = t('passkeys.defaultName', 'This device')
       const done = await selfPasskeyConfirm(
         String(r.challenge),
-        { attestationObject: bufToB64u(response.attestationObject), clientDataJSON: bufToB64u(response.clientDataJSON) },
+        {
+          attestationObject: toBase64url(response.attestationObject),
+          clientDataJSON: toBase64url(response.clientDataJSON),
+        },
         name
       )
       if (done.status === 'ok') setStep({ at: 'naming', codes: done.recovery_codes })
-      else setStep({ at: 'password', mode: 'add', error: done.error_description || t('passkeys.failed', 'Registration failed — try again.') })
+      else
+        setStep({
+          at: 'password',
+          mode: 'add',
+          error: done.error_description || t('passkeys.failed', 'Registration failed — try again.'),
+        })
     } catch (error: any) {
       // The user closing the platform prompt is a cancel, not an error worth shouting.
       if (error?.name === 'NotAllowedError') return refresh()
-      setStep({ at: 'password', mode: 'add', error: error?.message || t('passkeys.failed', 'Registration failed — try again.') })
+      setStep({
+        at: 'password',
+        mode: 'add',
+        error: error?.message || t('passkeys.failed', 'Registration failed — try again.'),
+      })
     }
   }
 
-  const follow = async (r: SelfContinuation & { httpStatus: number }, pending: { mode: 'add' | 'remove'; keyId?: string }) => {
+  const follow = async (
+    r: SelfContinuation & { httpStatus: number },
+    pending: { mode: 'add' | 'remove'; keyId?: string }
+  ) => {
     if (r.status === 'register') return ceremony(r)
     if (r.status === 'ok') return refresh()
     if ((r.status === 'mfa' || r.status === 'select') && r.challenge)
       return setStep({
-        at: 'relay', pending, challenge: r.challenge, hint: r.hint,
-        isSelect: r.status === 'select', options: (r.options as MfaMethod[]) ?? [],
+        at: 'relay',
+        pending,
+        challenge: r.challenge,
+        hint: r.hint,
+        isSelect: r.status === 'select',
+        options: (r.options as MfaMethod[]) ?? [],
       })
     setStep({
-      at: 'password', mode: pending.mode, keyId: pending.keyId,
-      error: r.error === 'invalid_password' ? t('mfa.wrongPassword', "That password didn't match.")
-        : r.error === 'pool_factor_required' ? r.error_description || t('passkeys.needFactor', 'Set up an authenticator or text codes first.')
-        : r.error_description || t('passkeys.failed', 'Something went wrong — try again.'),
+      at: 'password',
+      mode: pending.mode,
+      keyId: pending.keyId,
+      error:
+        r.error === 'invalid_password'
+          ? t('mfa.wrongPassword', "That password didn't match.")
+          : r.error === 'pool_factor_required'
+          ? r.error_description || t('passkeys.needFactor', 'Set up an authenticator or text codes first.')
+          : r.error_description || t('passkeys.failed', 'Something went wrong — try again.'),
     })
   }
 
@@ -143,16 +177,32 @@ export const PasskeysSettings: React.FC = () => {
         {title}
         <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
           <Typography variant="body2" gutterBottom>
-            {t('mfa.confirmPassword', 'Confirm your password to continue — changing a credential re-proves the one you hold.')}
+            {t(
+              'mfa.confirmPassword',
+              'Confirm your password to continue — changing a credential re-proves the one you hold.'
+            )}
           </Typography>
-          <TextField autoFocus variant="filled" type="password" label={t('changePassword.currentPassword', 'Current Password')} value={password} onChange={e => setPassword(e.target.value)} />
+          <TextField
+            autoFocus
+            variant="filled"
+            type="password"
+            label={t('changePassword.currentPassword', 'Current Password')}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
           {step.error && (
             <Typography variant="body2" color="error">
               {step.error}
             </Typography>
           )}
           <Box>
-            <Button variant="contained" color="primary" size="small" disabled={!password || busy} onClick={() => submitPassword(step.mode, step.keyId)}>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              disabled={!password || busy}
+              onClick={() => submitPassword(step.mode, step.keyId)}
+            >
               {t('common.continue', 'Continue')}
             </Button>
             <Button size="small" onClick={() => refresh()}>
@@ -172,10 +222,16 @@ export const PasskeysSettings: React.FC = () => {
             {step.isSelect
               ? t('mfa.choose', 'How would you like to get your code? (totp or sms)')
               : step.hint
-                ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: step.hint })
-                : t('mfa.relay', 'Enter the 6-digit code from your current second factor.')}
+              ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: step.hint })
+              : t('mfa.relay', 'Enter the 6-digit code from your current second factor.')}
           </Typography>
-          <TextField autoFocus variant="filled" label={step.isSelect ? t('mfa.method', 'Method') : t('changePassword.mfaCode', 'Authentication code')} value={code} onChange={e => setCode(e.target.value.trim())} />
+          <TextField
+            autoFocus
+            variant="filled"
+            label={step.isSelect ? t('mfa.method', 'Method') : t('changePassword.mfaCode', 'Authentication code')}
+            value={code}
+            onChange={e => setCode(e.target.value.trim())}
+          />
           {step.error && (
             <Typography variant="body2" color="error">
               {step.error}
@@ -203,7 +259,10 @@ export const PasskeysSettings: React.FC = () => {
         {step.codes?.length ? (
           <>
             <Typography variant="body2" gutterBottom>
-              {t('mfa.codesTitle', 'Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.')}
+              {t(
+                'mfa.codesTitle',
+                'Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.'
+              )}
             </Typography>
             <Box component="pre" sx={{ userSelect: 'all', fontFamily: 'monospace', fontSize: 13 }}>
               {step.codes.join('\n')}

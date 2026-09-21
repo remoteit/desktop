@@ -13,10 +13,17 @@ import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 import { Timestamp } from '../components/Timestamp'
 import { AgentAvatar } from '../components/ConnectedApps/AgentAvatar'
-import { enabledActions, revokeWindow } from '../components/ConnectedApps/helpers'
+import { humanizeDuration } from '../helpers/dateHelper'
 import { oidcStart, oidcClaims } from '../services/oidc'
 import { updateAccountApp } from '../services/permitteerAccount'
 import { spacing } from '../styling'
+
+const toggled = (set: Set<string>, key: string) => {
+  const next = new Set(set)
+  next.has(key) ? next.delete(key) : next.add(key)
+  return next
+}
+const sameSet = (set: Set<string>, list: string[]) => set.size === list.length && list.every(i => set.has(i))
 
 export const ConnectedAppDetailPage: React.FC = () => {
   const { t } = useTranslation()
@@ -71,34 +78,38 @@ export const ConnectedAppDetailPage: React.FC = () => {
   }
 
   const name = agent.app || agent.clientId
-  const actions = enabledActions(agent)
   const reach = agent.revokeReach
   const allActions = (agent.groups ?? []).flatMap(g => g.actions)
-  const kept = keepEdit ?? new Set(allActions.filter(a => a.enabled).map(a => a.key))
+  const actions = allActions.filter(a => a.enabled)
+  const kept = keepEdit ?? new Set(actions.map(a => a.key))
   const scopesKept = scopeEdit ?? new Set(agent.scopes ?? [])
   // The grant's reach (one scope constraint per grant; every scoped group carries the same)
   const reachGroup = (agent.groups ?? []).find(gr => gr.reach)?.reach ?? null
-  const reachNow = reachEdit ?? (reachGroup ? { all: reachGroup.all, ids: new Set(reachGroup.accounts.map(a => a.id)) } : null)
+  const reachNow =
+    reachEdit ?? (reachGroup ? { all: reachGroup.all, ids: new Set(reachGroup.accounts.map(a => a.id)) } : null)
   const reachDirty =
-    reachEdit !== null && reachGroup !== null &&
+    reachEdit !== null &&
+    reachGroup !== null &&
     (reachEdit.all !== reachGroup.all ||
-      reachEdit.ids.size !== reachGroup.accounts.length ||
-      reachGroup.accounts.some(a => !reachEdit.ids.has(a.id)))
+      !sameSet(
+        reachEdit.ids,
+        reachGroup.accounts.map(a => a.id)
+      ))
   const dirty =
-    (keepEdit !== null && (keepEdit.size !== actions.length || actions.some(a => !keepEdit.has(a.key)))) ||
-    (scopeEdit !== null && (scopeEdit.size !== (agent.scopes ?? []).length || (agent.scopes ?? []).some(sc => !scopeEdit.has(sc)))) ||
+    (keepEdit !== null &&
+      !sameSet(
+        keepEdit,
+        actions.map(a => a.key)
+      )) ||
+    (scopeEdit !== null && !sameSet(scopeEdit, agent.scopes ?? [])) ||
     reachDirty
   const toggleAction = (key: string) => {
     if (!agent.active || saving) return
-    const next = new Set(kept)
-    next.has(key) ? next.delete(key) : next.add(key)
-    setKeepEdit(next)
+    setKeepEdit(toggled(kept, key))
   }
   const toggleScope = (sc: string) => {
     if (!agent.active || saving) return
-    const next = new Set(scopesKept)
-    next.has(sc) ? next.delete(sc) : next.add(sc)
-    setScopeEdit(next)
+    setScopeEdit(toggled(scopesKept, sc))
   }
   const toggleReachAll = () => {
     // Offered wherever consent would have offered it, not only where it was accepted then.
@@ -122,9 +133,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
     // access and never named accounts, so choosing a different subset of your OWN accounts
     // adds no capability it did not request. The server bounds it by what you may actually
     // delegate today and asks for a recent sign-in before it lands.
-    const ids = new Set(reachNow.ids)
-    ids.has(id) ? ids.delete(id) : ids.add(id)
-    setReachEdit({ all: false, ids })
+    setReachEdit({ all: false, ids: toggled(reachNow.ids, id) })
   }
   // What this save would ADD beyond what was consented — an offered permission being taken
   // up, or an account this grant never reached. Everything else on this page removes access;
@@ -142,16 +151,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
   ]
 
   const save = async () => {
-    if (adding.length) {
-      const ok = window.confirm(
-        t('connectedAppDetailPage.confirmExtend', {
-          name,
-          list: adding.join(', '),
-          defaultValue: 'Give {{name}} access it does not have yet?\n\nAdding: {{list}}',
-        })
-      )
-      if (!ok) return
-    }
     setSaving(true)
     const r = await updateAccountApp(
       agent.id,
@@ -171,7 +170,9 @@ export const ConnectedAppDetailPage: React.FC = () => {
     }
     if (r.status >= 400) {
       setSaving(false)
-      setError((r.body as any)?.error_description || t('connectedAppDetailPage.saveFailed', 'That change could not be saved.'))
+      setError(
+        (r.body as any)?.error_description || t('connectedAppDetailPage.saveFailed', 'That change could not be saved.')
+      )
       return
     }
     setError(null)
@@ -196,7 +197,11 @@ export const ConnectedAppDetailPage: React.FC = () => {
               </Typography>
             ) : null}
             {!agent.active ? (
-              <Chip size="small" label={t('connectedAppDetailPage.revoked', 'revoked')} sx={{ marginLeft: 1.5, verticalAlign: 'middle' }} />
+              <Chip
+                size="small"
+                label={t('connectedAppDetailPage.revoked', 'revoked')}
+                sx={{ marginLeft: 1.5, verticalAlign: 'middle' }}
+              />
             ) : null}
           </Title>
         </Typography>
@@ -210,11 +215,13 @@ export const ConnectedAppDetailPage: React.FC = () => {
               {agent.active
                 ? t('connectedAppDetailPage.editHint', {
                     name,
-                    defaultValue: 'Granted when {{name}} signed in. Tap a permission to disable it — it stays listed so you can re-enable it later.',
+                    defaultValue:
+                      'Granted when {{name}} signed in. Tap a permission to disable it — it stays listed so you can re-enable it later.',
                   })
                 : t('connectedAppDetailPage.revokedHint', {
                     name,
-                    defaultValue: 'This access was revoked — shown for the record. {{name}} can request access again by signing in.',
+                    defaultValue:
+                      'This access was revoked — shown for the record. {{name}} can request access again by signing in.',
                   })}
             </Typography>
             {(agent.groups ?? []).map((group, i) => {
@@ -224,7 +231,8 @@ export const ConnectedAppDetailPage: React.FC = () => {
               // Consent's grammar: one row per <piece>, verbs as toggle chips; a limit
               // every action shares reads once under the group instead of on every chip.
               const limits = [...new Set(group.actions.map(a => a.limit).filter(Boolean))]
-              const sharedLimit = limits.length === 1 && group.actions.every(a => a.limit === limits[0]) ? limits[0] : null
+              const sharedLimit =
+                limits.length === 1 && group.actions.every(a => a.limit === limits[0]) ? limits[0] : null
               const pieces = [...new Set(group.actions.map(a => a.piece ?? null))]
               const chips = (actions: IGrantAction[]) =>
                 actions.map(action => {
@@ -242,10 +250,20 @@ export const ConnectedAppDetailPage: React.FC = () => {
                       color={on && agent.active ? 'primary' : undefined}
                       variant={on ? 'filled' : 'outlined'}
                       onClick={() => toggleAction(action.key)}
-                      label={offered ? t('connectedAppDetailPage.notGranted', { label: base, defaultValue: '{{label}} — not granted' }) : base}
+                      label={
+                        offered
+                          ? t('connectedAppDetailPage.notGranted', {
+                              label: base,
+                              defaultValue: '{{label}} — not granted',
+                            })
+                          : base
+                      }
                       title={
                         offered
-                          ? t('connectedAppDetailPage.notGrantedHint', 'This app asked for this and you did not grant it. You can turn it on here.')
+                          ? t(
+                              'connectedAppDetailPage.notGrantedHint',
+                              'This app asked for this and you did not grant it. You can turn it on here.'
+                            )
                           : action.description || undefined
                       }
                       sx={{ mr: 1, mb: 0.5, opacity: on ? 1 : 0.6, ...(offered ? { borderStyle: 'dashed' } : {}) }}
@@ -258,26 +276,40 @@ export const ConnectedAppDetailPage: React.FC = () => {
                     {group.typeLabel}
                     {where}
                     {group.apiHost ? (
-                      <Typography component="span" variant="caption" color="textSecondary" sx={{ textTransform: 'none', marginLeft: 1 }}>
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ textTransform: 'none', marginLeft: 1 }}
+                      >
                         {group.apiHost}
                       </Typography>
                     ) : null}
                   </Typography>
-                  {pieces.length > 1 ? (
-                    pieces.map(piece => (
-                      <Box key={piece ?? 'general'} sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, marginBottom: 0.5 }}>
-                        <Typography variant="caption" color="textSecondary" sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
-                          {piece ?? 'General'}
-                        </Typography>
-                        <Box>{chips(group.actions.filter(a => (a.piece ?? null) === piece))}</Box>
-                      </Box>
-                    ))
-                  ) : (
-                    chips(group.actions)
-                  )}
+                  {pieces.length > 1
+                    ? pieces.map(piece => (
+                        <Box
+                          key={piece ?? 'general'}
+                          sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, marginBottom: 0.5 }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="textSecondary"
+                            sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}
+                          >
+                            {piece ?? 'General'}
+                          </Typography>
+                          <Box>{chips(group.actions.filter(a => (a.piece ?? null) === piece))}</Box>
+                        </Box>
+                      ))
+                    : chips(group.actions)}
                   {group.reach && reachNow ? (
                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, marginBottom: 0.5 }}>
-                      <Typography variant="caption" color="textSecondary" sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}
+                      >
                         {t('connectedAppDetailPage.accounts', 'Accounts')}
                       </Typography>
                       <Box>
@@ -291,16 +323,26 @@ export const ConnectedAppDetailPage: React.FC = () => {
                             label={
                               group.reach.ceilingAll
                                 ? t('connectedAppDetailPage.allAccounts', 'All accounts, including ones added later')
-                                : t('connectedAppDetailPage.allAccountsAdd', 'All accounts, including ones added later — add')
+                                : t(
+                                    'connectedAppDetailPage.allAccountsAdd',
+                                    'All accounts, including ones added later — add'
+                                  )
                             }
-                            sx={{ mr: 1, mb: 0.5, opacity: reachNow.all ? 1 : 0.6, ...(group.reach.ceilingAll ? {} : { borderStyle: 'dashed' }) }}
+                            sx={{
+                              mr: 1,
+                              mb: 0.5,
+                              opacity: reachNow.all ? 1 : 0.6,
+                              ...(group.reach.ceilingAll ? {} : { borderStyle: 'dashed' }),
+                            }}
                           />
                         ) : null}
-                        {[...new Set([
-                          ...(group.reach.options ?? []).map(o => o.id),
-                          ...group.reach.accounts.map(a => a.id),
-                          ...(!group.reach.ceilingAll ? group.reach.ceilingIds : []),
-                        ])].map(id => {
+                        {[
+                          ...new Set([
+                            ...(group.reach.options ?? []).map(o => o.id),
+                            ...group.reach.accounts.map(a => a.id),
+                            ...(!group.reach.ceilingAll ? group.reach.ceilingIds : []),
+                          ]),
+                        ].map(id => {
                           const label = (group.reach!.options ?? []).find(o => o.id === id)?.label ?? id
                           const on = reachNow.all || reachNow.ids.has(id)
                           const editable = agent.active && !reachNow.all
@@ -315,8 +357,17 @@ export const ConnectedAppDetailPage: React.FC = () => {
                               color={on && agent.active && !reachNow.all ? 'primary' : undefined}
                               variant={on ? 'filled' : 'outlined'}
                               onClick={() => toggleReachId(id)}
-                              label={adding ? t('connectedAppDetailPage.addAccount', { label, defaultValue: '{{label}} — add' }) : label}
-                              sx={{ mr: 1, mb: 0.5, opacity: on ? (reachNow.all ? 0.7 : 1) : 0.6, ...(adding ? { borderStyle: 'dashed' } : {}) }}
+                              label={
+                                adding
+                                  ? t('connectedAppDetailPage.addAccount', { label, defaultValue: '{{label}} — add' })
+                                  : label
+                              }
+                              sx={{
+                                mr: 1,
+                                mb: 0.5,
+                                opacity: on ? (reachNow.all ? 0.7 : 1) : 0.6,
+                                ...(adding ? { borderStyle: 'dashed' } : {}),
+                              }}
                             />
                           )
                         })}
@@ -368,14 +419,37 @@ export const ConnectedAppDetailPage: React.FC = () => {
                     })}
                   </Typography>
                 ) : null}
-                <Button variant="contained" size="small" disabled={saving} onClick={save}>
-                  {saving ? t('common.saving', 'Saving…') : t('connectedAppDetailPage.save', 'Save changes')}
-                </Button>
+                <ConfirmButton
+                  confirm={adding.length > 0}
+                  title={saving ? t('common.saving', 'Saving…') : t('connectedAppDetailPage.save', 'Save changes')}
+                  color="primary"
+                  size="small"
+                  disabled={saving}
+                  onClick={save}
+                  confirmProps={{
+                    title: t('connectedAppDetailPage.save', 'Save changes'),
+                    action: t('connectedAppDetailPage.save', 'Save changes'),
+                    children: (
+                      <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+                        {t('connectedAppDetailPage.confirmExtend', {
+                          name,
+                          list: adding.join(', '),
+                          defaultValue: 'Give {{name}} access it does not have yet?\n\nAdding: {{list}}',
+                        })}
+                      </Typography>
+                    ),
+                  }}
+                />
                 <Button
                   size="small"
                   sx={{ marginLeft: 1 }}
                   disabled={saving}
-                  onClick={() => { setKeepEdit(null); setScopeEdit(null); setReachEdit(null); setError(null) }}
+                  onClick={() => {
+                    setKeepEdit(null)
+                    setScopeEdit(null)
+                    setReachEdit(null)
+                    setError(null)
+                  }}
                 >
                   {t('common.cancel', 'Cancel')}
                 </Button>
@@ -447,55 +521,59 @@ export const ConnectedAppDetailPage: React.FC = () => {
       </List>
 
       {agent.active ? (
-      <>
-      <Typography variant="subtitle1">{t('connectedAppDetailPage.revokeSection', 'Revoke access')}</Typography>
-      <Gutters top={null}>
-        <Typography variant="body2" color="textSecondary" sx={{ marginBottom: 1.5 }}>
-          {t('connectedAppDetailPage.revokeExplain', {
-            name,
-            defaultValue: 'Signs {{name}} out of your account and blocks it from getting new access. It can request access again by signing in.',
-          })}
-        </Typography>
-        <ConfirmButton
-          confirm
-          title={t('connectedAppDetailPage.revokeAccess', 'Revoke access')}
-          color="danger"
-          size="small"
-          loading={revoking}
-          disabled={revoking}
-          confirmProps={{
-            title: t('connectedAppDetailPage.revokeAccessConfirmTitle', 'Revoke access?'),
-            action: t('connectedAppDetailPage.revoke', 'Revoke'),
-            color: 'error',
-            children: (
-              <>
-                <Notice severity="error" gutterBottom fullWidth>
-                  <b>{name}</b>{' '}
-                  {t('connectedAppDetailPage.signOutBefore', 'will be signed out and can no longer get new access.')}
-                  {reach?.delayed?.length ? (
-                    <>
-                      {' '}
-                      {t('connectedAppDetailPage.delayedReach', {
-                        apis: reach.delayed.join(', '),
-                        window: revokeWindow(reach.delayMinutes),
-                        defaultValue: 'Access already in progress at {{apis}} ends within {{window}}.',
-                      })}
-                    </>
-                  ) : null}
-                </Notice>
-                <Typography variant="body2">
-                  {t('connectedAppDetailPage.requestAgain', 'It can request access again by signing in.')}
-                </Typography>
-              </>
-            ),
-          }}
-          onClick={async () => {
-            await dispatch.agents.revoke(agent.id)
-            back()
-          }}
-        />
-      </Gutters>
-      </>
+        <>
+          <Typography variant="subtitle1">{t('connectedAppDetailPage.revokeSection', 'Revoke access')}</Typography>
+          <Gutters top={null}>
+            <Typography variant="body2" color="textSecondary" sx={{ marginBottom: 1.5 }}>
+              {t('connectedAppDetailPage.revokeExplain', {
+                name,
+                defaultValue:
+                  'Signs {{name}} out of your account and blocks it from getting new access. It can request access again by signing in.',
+              })}
+            </Typography>
+            <ConfirmButton
+              confirm
+              title={t('connectedAppDetailPage.revokeAccess', 'Revoke access')}
+              color="danger"
+              size="small"
+              loading={revoking}
+              disabled={revoking}
+              confirmProps={{
+                title: t('connectedAppDetailPage.revokeAccessConfirmTitle', 'Revoke access?'),
+                action: t('connectedAppDetailPage.revoke', 'Revoke'),
+                color: 'error',
+                children: (
+                  <>
+                    <Notice severity="error" gutterBottom fullWidth>
+                      <b>{name}</b>{' '}
+                      {t(
+                        'connectedAppDetailPage.signOutBefore',
+                        'will be signed out and can no longer get new access.'
+                      )}
+                      {reach?.delayed?.length ? (
+                        <>
+                          {' '}
+                          {t('connectedAppDetailPage.delayedReach', {
+                            apis: reach.delayed.join(', '),
+                            window: humanizeDuration(reach.delayMinutes * 60_000, { units: ['m'], round: true }),
+                            defaultValue: 'Access already in progress at {{apis}} ends within {{window}}.',
+                          })}
+                        </>
+                      ) : null}
+                    </Notice>
+                    <Typography variant="body2">
+                      {t('connectedAppDetailPage.requestAgain', 'It can request access again by signing in.')}
+                    </Typography>
+                  </>
+                ),
+              }}
+              onClick={async () => {
+                await dispatch.agents.revoke(agent.id)
+                back()
+              }}
+            />
+          </Gutters>
+        </>
       ) : null}
     </Container>
   )

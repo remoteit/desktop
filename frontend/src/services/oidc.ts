@@ -8,8 +8,10 @@ import {
   OAUTH_MCP_RESOURCE,
   OAUTH_MCP_DETAIL,
   OAUTH_AGENT_ACTOR,
+  OAUTH_ACCOUNT_RESOURCE,
   PROTOCOL,
 } from '../constants'
+import { toBase64url, decodeBase64url } from '../helpers/base64url'
 
 /**
  * The renderer-owned OIDC client (permitteer docs/remoteit-desktop-login.md, D8):
@@ -236,15 +238,10 @@ const responseError = (response: Response, detail: string): OidcError => {
   return new OidcError('refused', detail)
 }
 
-const b64u = (bytes: Uint8Array) =>
-  btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-const randomB64u = (length: number) => b64u(crypto.getRandomValues(new Uint8Array(length)))
+const randomB64u = (length: number) => toBase64url(crypto.getRandomValues(new Uint8Array(length)))
 const decodeJwt = (jwt?: string): any => {
   try {
-    return jwt ? JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))) : undefined
+    return jwt ? JSON.parse(decodeBase64url(jwt.split('.')[1])) : undefined
   } catch {
     return undefined
   }
@@ -273,15 +270,24 @@ export const oidcIsSupportTab = (): boolean => {
     return false
   }
 }
-/** The launch ticket, ONCE — consumed by the authorize auth.init starts. */
-export function oidcTakeSupportTicket(): string | undefined {
+/** Read-and-remove a same-tab one-shot; storage that throws reads as absent. */
+const takeSession = (key: string): string | undefined => {
   try {
-    const t = sessionStorage.getItem(SUPPORT_TICKET_KEY) ?? undefined
-    sessionStorage.removeItem(SUPPORT_TICKET_KEY)
-    return t
+    const value = sessionStorage.getItem(key) || undefined
+    sessionStorage.removeItem(key)
+    return value
   } catch {
     return undefined
   }
+}
+/** The launch ticket, ONCE — consumed by the authorize auth.init starts. */
+export const oidcTakeSupportTicket = () => takeSession(SUPPORT_TICKET_KEY)
+/** Ends this tab's support state: the tokens it held and the flag that made it a support tab. */
+export function oidcEndSupportTab() {
+  clearLocal()
+  try {
+    sessionStorage.removeItem(SUPPORT_FLAG)
+  } catch {}
 }
 /** When the support session's token — and with it the session — ends (ms), for the banner. */
 export const oidcSupportEndsAt = (): number | undefined => {
@@ -404,7 +410,7 @@ const declared = (): Array<{
   // devices.write: "Sign out everywhere" (SecurityPage) — every session of the account, this
   // one included, ended in one call at the AS (permitteer docs/remoteit-desktop-login.md 4e).
   {
-    resource: `${OAUTH_ISSUER}/account/api`,
+    resource: OAUTH_ACCOUNT_RESOURCE,
     type: 'permitteer_account',
     actions: ['apps.read', 'apps.write', 'accounts.read', 'devices.write'],
   },
@@ -473,7 +479,7 @@ export async function oidcStart(
     client_id: OAUTH_CLIENT_ID,
     redirect_uri: flow.redirectUri,
     response_type: 'code',
-    code_challenge: b64u(new Uint8Array(digest)),
+    code_challenge: toBase64url(digest),
     code_challenge_method: 'S256',
     // `profile` rides for the account menus: name + the IdP avatar (the AS stamps the
     // session's picture into the id_token under profile — https-only, its one guard).
@@ -629,9 +635,9 @@ const REFRESH_LOCK_WAIT_MS = 10_000
 
 async function refresh(resource: string): Promise<string> {
   const locks = (navigator as { locks?: { request: Function } } | undefined)?.locks
-  if (!locks?.request || typeof AbortSignal?.timeout !== 'function') return refreshOnce(resource)
+  if (!locks?.request) return refreshOnce(resource)
   try {
-    return await locks.request(REFRESH_LOCK, { signal: AbortSignal.timeout(REFRESH_LOCK_WAIT_MS) }, () =>
+    return await locks.request(REFRESH_LOCK, { signal: timeoutSignal(REFRESH_LOCK_WAIT_MS) }, () =>
       refreshOnce(resource)
     )
   } catch (error: any) {
@@ -829,15 +835,7 @@ export function oidcAccounts(): OidcAccount[] {
  *  the hint names) before falling to the sign-in screen. sessionStorage: dies with the tab,
  *  and it is cleared before the attempt so a failed round can never loop. */
 const ACTIVATING_KEY = 'oidc.activating'
-export function oidcTakeActivationHint(): string | undefined {
-  try {
-    const email = sessionStorage.getItem(ACTIVATING_KEY) ?? undefined
-    sessionStorage.removeItem(ACTIVATING_KEY)
-    return email || undefined
-  } catch {
-    return undefined
-  }
-}
+export const oidcTakeActivationHint = () => takeSession(ACTIVATING_KEY)
 
 export function oidcActivateAccount(sub: string): boolean {
   const entry = readRegistry()[sub]
@@ -922,12 +920,6 @@ async function clearDpopKey(): Promise<void> {
   }
 }
 
-const dpopB64u = (bytes: ArrayBuffer | Uint8Array) => {
-  const a = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
-  let out = ''
-  for (let i = 0; i < a.length; i++) out += String.fromCharCode(a[i])
-  return btoa(out).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
 const utf8 = (s: string) => new TextEncoder().encode(s)
 
 async function dpopProof(htm: string, htu: string, accessToken?: string): Promise<string | null> {
@@ -940,17 +932,17 @@ async function dpopProof(htm: string, htu: string, accessToken?: string): Promis
     y?: string
   }
   const u = new URL(htu)
-  const header = dpopB64u(
+  const header = toBase64url(
     utf8(JSON.stringify({ alg: 'ES256', typ: 'dpop+jwt', jwk: { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y } }))
   )
-  const payload = dpopB64u(
+  const payload = toBase64url(
     utf8(
       JSON.stringify({
         htm,
         htu: u.origin + u.pathname,
         iat: Math.floor(Date.now() / 1000),
         jti: crypto.randomUUID(),
-        ...(accessToken ? { ath: dpopB64u(await crypto.subtle.digest('SHA-256', utf8(accessToken))) } : {}),
+        ...(accessToken ? { ath: toBase64url(await crypto.subtle.digest('SHA-256', utf8(accessToken))) } : {}),
       })
     )
   )
@@ -959,7 +951,7 @@ async function dpopProof(htm: string, htu: string, accessToken?: string): Promis
     pair.privateKey,
     utf8(`${header}.${payload}`)
   )
-  return `${header}.${payload}.${dpopB64u(sig)}`
+  return `${header}.${payload}.${toBase64url(sig)}`
 }
 
 /** Auth headers for an API call: the DPoP scheme + an ath proof when this audience's
@@ -986,6 +978,23 @@ export async function oidcAuthHeaders(
   return { authorization: `Bearer ${token}` }
 }
 
+export type OidcResourceResult<T = any> = { status: number; body?: T }
+
+/** One request against an OIDC resource, on the token minted for that audience (DPoP-bound or
+ *  Bearer — the AS decides which we hold). No token answers 401 without a round trip. */
+export async function oidcResourceRequest<T = any>(
+  resource: string,
+  path: string,
+  init: RequestInit = {}
+): Promise<OidcResourceResult<T>> {
+  const url = resource + path
+  const auth = await oidcAuthHeaders(init.method ?? 'GET', url, resource)
+  if (!auth.authorization) return { status: 401 }
+  const response = await fetch(url, { ...init, headers: { ...auth, ...(init.headers || {}) } })
+  const body = (await response.json().catch(() => undefined)) as T | undefined
+  return { status: response.status, body }
+}
+
 async function tokenRequest(params: { [key: string]: string }): Promise<any> {
   const d = await discover()
   const proof = await dpopProof('POST', d.token_endpoint)
@@ -1009,8 +1018,6 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
 // account API serves the set from this token's own session. Members this app holds no tokens
 // for are filed as KNOWN — identity only — and the menu offers them; picking one is a silent
 // selection (prompt=none + login_hint), which the AS answers for any live set member.
-const ACCOUNT_RESOURCE = `${OAUTH_ISSUER}/account/api`
-
 /** Why a refresh did not happen. `refused` is the one that used to be invisible: the menu
  *  kept rendering its cache while the AS was turning the call away, so a stale list and a
  *  broken one looked identical — on screen and in the console. */
@@ -1020,8 +1027,8 @@ export type BrowserAccountsRefresh =
 
 export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefresh> {
   if (oidcActor()) return { ok: false, reason: 'support-session' } // no set member, nothing to switch to
-  const url = `${ACCOUNT_RESOURCE}/accounts`
-  const headers = await oidcAuthHeaders('GET', url, ACCOUNT_RESOURCE)
+  const url = `${OAUTH_ACCOUNT_RESOURCE}/accounts`
+  const headers = await oidcAuthHeaders('GET', url, OAUTH_ACCOUNT_RESOURCE)
   if (!headers.authorization) return { ok: false, reason: 'no-token' }
   const r = await fetch(url, { headers })
   if (!r.ok) {
