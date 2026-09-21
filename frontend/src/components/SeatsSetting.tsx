@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import { PERSONAL_PLAN_ID, ENTERPRISE_PLAN_ID, deviceUserTotal } from '../models/plans'
-import { List, Stack, Tooltip, Typography } from '@mui/material'
+import { List, Stack } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { currencyFormatter } from '../helpers/utilHelper'
-import { selectRemoteitLicense, selectPlan, selectLimits } from '../selectors/organizations'
+import { selectRemoteitLicense, selectPlan, selectLimit } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { QuantitySelector } from './QuantitySelector'
 import { NoticeCustomPlan } from './NoticeCustomPlan'
@@ -19,7 +19,8 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const accountId = useSelector(selectActiveAccountId)
-  const limits = useSelector(selectLimits)
+  const userLimit = useSelector((state: State) => selectLimit(state, undefined, 'org-users'))
+  const deviceLimit = useSelector((state: State) => selectLimit(state, undefined, 'iot-devices'))
   const license = useSelector(selectRemoteitLicense) || null
   const plan = useSelector(selectPlan)
   const purchasing = useSelector((state: State) => !!state.plans.purchasing)
@@ -53,42 +54,41 @@ export const SeatsSetting: React.FC<{ context?: 'user' | 'device' }> = ({ contex
   if (license?.plan?.id === PERSONAL_PLAN_ID || enterprise || !browser.hasBilling) return null
 
   const display = (
-    <Stack flexDirection="row" alignItems="center" sx={{ '&>*': { marginRight: 2 } }}>
-      <Tooltip title={t('seatsSetting.usersLimit', 'User licenses included in your plan')} arrow>
-        <Stack flexDirection="row" alignItems="center" gap={0.7}>
-          {limits.find(l => l.name === 'org-users')?.value}
-          <Icon name="user" size="xxs" type="solid" color="gray" />
-        </Stack>
-      </Tooltip>
-      <Tooltip title={t('seatsSetting.devicesLimit', 'Devices included in your plan')} arrow>
-        <Stack flexDirection="row" alignItems="center" gap={0.7}>
-          {limits.find(l => l.name === 'iot-devices')?.value}
-          <Icon name="unknown" size="sm" platformIcon />
-        </Stack>
-      </Tooltip>
+    <Stack flexDirection="row" alignItems="center" gap={2}>
+      <Stack flexDirection="row" alignItems="center" gap={0.7}>
+        <Icon name="user" size="xxs" type="solid" color="gray" />
+        {t('seatsSetting.usersUsed', {
+          count: userLimit?.value ?? 0,
+          actual: userLimit?.actual ?? 0,
+          defaultValue_one: '{{actual}} of {{count}} user',
+          defaultValue_other: '{{actual}} of {{count}} users',
+        })}
+      </Stack>
+      <Stack flexDirection="row" alignItems="center" gap={0.7}>
+        <Icon name="unknown" size="sm" platformIcon />
+        {t('seatsSetting.devicesUsed', {
+          count: deviceLimit?.value ?? 0,
+          actual: deviceLimit?.actual ?? 0,
+          defaultValue_one: '{{actual}} of {{count}} device',
+          defaultValue_other: '{{actual}} of {{count}} devices',
+        })}
+      </Stack>
     </Stack>
   )
 
-  const labeled = (
-    <Stack flexDirection="row" alignItems="center" gap={2}>
-      <Typography variant="body2" color="textSecondary">
-        {t('seatsSetting.planLimits', 'Plan limits')}
-      </Typography>
-      {display}
-    </Stack>
-  )
+  const bare = <Gutters>{display}</Gutters>
 
   if (license?.custom)
     return (
       <>
-        <Gutters>{labeled}</Gutters>
+        {bare}
         <Gutters size="sm">
           <NoticeCustomPlan />
         </Gutters>
       </>
     )
 
-  if (displayOnly) return <Gutters>{labeled}</Gutters>
+  if (displayOnly) return bare
 
   return (
     <List>

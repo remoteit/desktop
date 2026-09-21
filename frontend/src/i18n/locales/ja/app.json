@@ -1843,11 +1843,10 @@
     "confirmBefore": "請求内容を次のように変更してよろしいですか:",
     "confirmTitle": "請求変更の確認",
     "devicesCount_other": "{{count}}台のデバイス",
-    "devicesLimit": "プランに含まれるデバイス数",
+    "devicesUsed_other": "{{count}}台中{{actual}}台のデバイス",
     "label": "ライセンス",
-    "planLimits": "プランの上限",
     "usersCount_other": "{{count}}名のユーザー",
-    "usersLimit": "プランに含まれるユーザーライセンス数",
+    "usersUsed_other": "{{count}}名中{{actual}}名のユーザー",
     "warning": "これにより請求内容が変更されます。"
   },
   "serviceAddPage": {
