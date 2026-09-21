@@ -51,11 +51,27 @@ export class UsageLimitError extends Error {
   }
 }
 
-async function agentHeaders(method: string, path: string, json = true): Promise<Record<string, string>> {
-  return {
-    ...(json ? { 'Content-Type': 'application/json' } : {}),
-    ...(await oidcAuthHeaders(method, `${OAUTH_AGENT_RESOURCE}${path}`, OAUTH_AGENT_RESOURCE)),
-  }
+/* Every call to the agent: the URL off agentURL(), the token minted for the agent AUDIENCE
+   (signed over the canonical resource, not the transport — a proxy or an override must not
+   break the proof), and a 401 as AgentAuthError. That refusal is the one server fact the chat
+   acts on (models/chat unauthorized), so it is recognised here for every endpoint rather than
+   at whichever call sites remembered to. */
+async function agentRequest(
+  method: string,
+  path: string,
+  init: { body?: unknown; signal?: AbortSignal } = {}
+): Promise<Response> {
+  const response = await fetch(`${agentURL()}${path}`, {
+    method,
+    headers: {
+      ...(init.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(await oidcAuthHeaders(method, `${OAUTH_AGENT_RESOURCE}${path}`, OAUTH_AGENT_RESOURCE)),
+    },
+    ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
+    signal: init.signal,
+  })
+  if (response.status === 401) throw new AgentAuthError()
+  return response
 }
 
 export type AgentEvent =
@@ -80,13 +96,7 @@ export async function streamChat(options: {
 }): Promise<void> {
   const { conversationId, text, org, signal, onEvent } = options
   const path = `/api/conversations/${encodeURIComponent(conversationId)}/messages`
-  const response = await fetch(`${agentURL()}${path}`, {
-    method: 'POST',
-    headers: await agentHeaders('POST', path),
-    body: JSON.stringify(org ? { text, org } : { text }),
-    signal,
-  })
-  if (response.status === 401) throw new AgentAuthError()
+  const response = await agentRequest('POST', path, { body: org ? { text, org } : { text }, signal })
   if (response.status === 429 || response.status === 503) {
     const body = (await response.json().catch(() => ({}))) as {
       error?: string
@@ -159,12 +169,9 @@ export async function streamChat(options: {
 /* Approve or deny a write tool the agent paused on — addressed to the TURN */
 export async function confirmTool(options: { turnId: string; toolUseId: string; approved: boolean }): Promise<void> {
   const path = `/api/turns/${encodeURIComponent(options.turnId)}/confirm`
-  const response = await fetch(`${agentURL()}${path}`, {
-    method: 'POST',
-    headers: await agentHeaders('POST', path),
-    body: JSON.stringify({ toolUseId: options.toolUseId, approved: options.approved }),
+  const response = await agentRequest('POST', path, {
+    body: { toolUseId: options.toolUseId, approved: options.approved },
   })
-  if (response.status === 401) throw new AgentAuthError()
   if (!response.ok) throw new Error(`Confirm failed (${response.status})`)
 }
 
@@ -172,15 +179,12 @@ export type AgentHealth = 'ok' | 'unauthorized' | 'unreachable'
 
 export async function agentHealth(): Promise<AgentHealth> {
   try {
-    const response = await fetch(`${agentURL()}/api/health`, {
-      headers: await agentHeaders('GET', '/api/health', false),
-    })
-    if (response.status === 401) return 'unauthorized'
+    const response = await agentRequest('GET', '/api/health')
     if (!response.ok) return 'unreachable'
     const body = (await response.json()) as { ok?: boolean }
     return body.ok ? 'ok' : 'unreachable'
-  } catch {
-    return 'unreachable'
+  } catch (error) {
+    return error instanceof AgentAuthError ? 'unauthorized' : 'unreachable'
   }
 }
 
@@ -188,10 +192,8 @@ export type ConversationSummary = { id: string; title: string | null; createdAt:
 
 /* The user's conversations, newest first (D11) — the history picker's source. */
 export async function listConversations(): Promise<ConversationSummary[]> {
-  const response = await fetch(`${agentURL()}/api/conversations`, {
-    headers: await agentHeaders('GET', '/api/conversations', false),
-  })
-  // Don't turn an auth/service failure (401/403/5xx) into an empty list — loadConversations would
+  const response = await agentRequest('GET', '/api/conversations')
+  // Don't turn a service failure (403/5xx) into an empty list — loadConversations would
   // overwrite the last-known history as though the user had none. Throw so its catch keeps it.
   if (!response.ok) throw new Error(`listConversations: ${response.status}`)
   return ((await response.json()) as { conversations: ConversationSummary[] }).conversations
@@ -202,7 +204,7 @@ export async function fetchConversation(
   conversationId: string
 ): Promise<{ title: string | null; messages: Array<{ role: string; content: string }> } | null> {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}`
-  const response = await fetch(`${agentURL()}${path}`, { headers: await agentHeaders('GET', path, false) })
+  const response = await agentRequest('GET', path)
   // null means GONE (callers clear the local copy). An auth/service failure is NOT a deletion —
   // throw it so callers preserve the transcript and report, instead of discarding a live chat.
   if (response.status === 404) return null
@@ -213,11 +215,7 @@ export async function fetchConversation(
 /* The delete that actually deletes (D9): messages, turns, journal all cascade server-side. */
 export async function deleteConversation(conversationId: string): Promise<boolean> {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}`
-  const response = await fetch(`${agentURL()}${path}`, {
-    method: 'DELETE',
-    headers: await agentHeaders('DELETE', path, false),
-  })
-  return response.ok
+  return (await agentRequest('DELETE', path)).ok
 }
 
 // --- Usage meter (permitteer docs/usage-limits.md D6) ---------------------------------
@@ -231,13 +229,15 @@ export type UsageWindow = {
 }
 export type Usage = { session: UsageWindow; weekly: UsageWindow }
 
-/* The user's two usage windows in dollars — drives the header meter. */
+/* The user's two usage windows in dollars — drives the header meter. null on any failure but a
+   refusal, which is the caller's to act on. */
 export async function fetchUsage(): Promise<Usage | null> {
   try {
-    const response = await fetch(`${agentURL()}/api/usage`, { headers: await agentHeaders('GET', '/api/usage', false) })
+    const response = await agentRequest('GET', '/api/usage')
     if (!response.ok) return null
     return (await response.json()) as Usage
-  } catch {
+  } catch (error) {
+    if (error instanceof AgentAuthError) throw error
     return null
   }
 }
@@ -251,9 +251,7 @@ export const backgroundConnectUrl = (): string => `${agentURL()}/oauth/connect`
 
 export async function backgroundStatus(): Promise<boolean> {
   try {
-    const response = await fetch(`${agentURL()}/api/enrollment`, {
-      headers: await agentHeaders('GET', '/api/enrollment', false),
-    })
+    const response = await agentRequest('GET', '/api/enrollment')
     if (!response.ok) return false
     return ((await response.json()) as { enrolled?: boolean }).enrolled === true
   } catch {
@@ -265,10 +263,7 @@ export async function backgroundStatus(): Promise<boolean> {
    Called from Background-work settings and from explicit sign-out (plan D8). */
 export async function backgroundDisable(): Promise<void> {
   try {
-    await fetch(`${agentURL()}/api/enrollment`, {
-      method: 'DELETE',
-      headers: await agentHeaders('DELETE', '/api/enrollment', false),
-    })
+    await agentRequest('DELETE', '/api/enrollment')
   } catch {
     /* best-effort by design */
   }

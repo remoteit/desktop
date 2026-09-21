@@ -31,6 +31,7 @@ import { CHAT_PANEL_WIDTH } from '../constants'
 import i18n from '../i18n'
 import sleep from '../helpers/sleep'
 import { formatReset } from '../helpers/dateHelper'
+import { oidcMarkGrantStale } from '../services/oidc'
 
 export type ChatToolCall = {
   id: string
@@ -119,17 +120,7 @@ function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
       state.pendingConfirmation = null
       break
     case 'error':
-      // The backend prefixes auth failures so the client knows a retry is
-      // pointless until the token is refreshed (e.g. it expired mid-turn).
-      if (event.message.startsWith('reauth_required')) {
-        state.error = i18n.t('notices:chat.sessionExpired', {
-          defaultValue:
-            'The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.',
-        })
-        state.health = 'unauthorized'
-      } else {
-        state.error = event.message
-      }
+      state.error = event.message
       state.streaming = false
       state.pendingConfirmation = null
       if (assistant) assistant.interrupted = true
@@ -176,6 +167,10 @@ const toTranscript = (messages: Array<{ role: string; content: string }>): ChatT
 const authRequiredError = () =>
   i18n.t('notices:chat.authRequired', {
     defaultValue: 'The agent refused this session\u2019s credentials — refresh permissions to continue.',
+  })
+const sessionExpiredError = () =>
+  i18n.t('notices:chat.sessionExpired', {
+    defaultValue: 'The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.',
   })
 
 const usageLimitMessage = (e: UsageLimitError): string => {
@@ -262,21 +257,19 @@ export default createModel<RootModel>()({
             } else {
               // Buffered text must land before the next non-text event
               flushDeltas()
-              // The agent saying the grant does not cover it is SERVER truth, newer than the
-              // fingerprint the heal marker was written from — so a refusal recorded earlier in
-              // this browser session stops standing in the way of trying again.
-              if (event.type === 'error' && event.message.startsWith('reauth_required'))
-                dispatch.auth.forgetGrantHealAttempt()
-              dispatch.chat.applyEvent(event)
+              // The backend prefixes auth failures so the client knows a retry is pointless
+              // until the grant is renewed (e.g. it expired mid-turn).
+              if (event.type === 'error' && event.message.startsWith('reauth_required')) {
+                dispatch.chat.unauthorized()
+                dispatch.chat.applyEvent({ type: 'error', message: sessionExpiredError() })
+              } else dispatch.chat.applyEvent(event)
             }
           },
         })
       } catch (error) {
         flushDeltas()
-        if (error instanceof AgentAuthError) {
-          dispatch.auth.forgetGrantHealAttempt() // same reason as the streamed reauth_required above
-          dispatch.chat.set({ error: authRequiredError(), health: 'unauthorized' })
-        } else if (error instanceof UsageLimitError)
+        if (error instanceof AgentAuthError) dispatch.chat.unauthorized(authRequiredError())
+        else if (error instanceof UsageLimitError)
           dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
         else if (error instanceof AgentStreamEndedError)
           // The error event marks the answer Interrupted and ends the turn — a cut-off must not
@@ -320,9 +313,10 @@ export default createModel<RootModel>()({
         })
       } catch (error) {
         // Restore the card so the decision isn't lost with the error
-        if (error instanceof AgentAuthError)
-          dispatch.chat.set({ pendingConfirmation: pending, error: authRequiredError(), health: 'unauthorized' })
-        else dispatch.chat.set({ pendingConfirmation: pending, error: (error as Error).message })
+        if (error instanceof AgentAuthError) {
+          dispatch.chat.set({ pendingConfirmation: pending })
+          dispatch.chat.unauthorized(authRequiredError())
+        } else dispatch.chat.set({ pendingConfirmation: pending, error: (error as Error).message })
       }
     },
     async stop(_: void, state) {
@@ -381,7 +375,19 @@ export default createModel<RootModel>()({
       // composer until the next reopen or network event, with the agent perfectly reachable.
       const probe = ++healthProbe
       const health = await agentHealth()
-      if (probe === healthProbe) dispatch.chat.set({ health })
+      if (probe !== healthProbe) return
+      if (health === 'unauthorized') dispatch.chat.unauthorized()
+      else dispatch.chat.set({ health })
+    },
+    /* The agent answering "this grant does not cover me" — a 401 on any endpoint, or reauth_required
+       mid-stream — is SERVER truth, newer than the client's declaration stamp: the declaration can
+       be unchanged while the registry behind it moved. The ONE place that fact lands: the stamp is
+       dropped so the next boot heals on its own and "Refresh permissions" has something to do, and
+       the composer shows the refusal. Re-authorizing from here would redirect the person mid-turn
+       and lose whatever they were typing, so it does not. */
+    async unauthorized(error?: string) {
+      oidcMarkGrantStale()
+      dispatch.chat.set({ health: 'unauthorized', ...(error ? { error } : {}) })
     },
     /* The server owns the transcript now (D11) — adopt its copy when it knows more than
        we do, which is exactly how a background turn's result appears after a reopen. */
@@ -447,16 +453,21 @@ export default createModel<RootModel>()({
        on open. Silent on failure; the last-known meter stands. */
     async loadUsage() {
       const load = ++usageLoad
-      const usage = await fetchUsage()
-      if (usage && load === usageLoad) dispatch.chat.set({ usage }) // latest wins
+      try {
+        const usage = await fetchUsage()
+        if (usage && load === usageLoad) dispatch.chat.set({ usage }) // latest wins
+      } catch (error) {
+        if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
+      }
     },
     async loadConversations() {
       const load = ++listLoad
       try {
         const conversations = await listConversations()
         if (load === listLoad) dispatch.chat.set({ conversations }) // latest wins
-      } catch {
-        /* offline — leave the last-known list */
+      } catch (error) {
+        if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
+        /* otherwise offline — leave the last-known list */
       }
     },
     /* Switch the panel to an existing conversation: adopt its server transcript, reset the

@@ -25,7 +25,6 @@ import {
   oidcActor,
   oidcTakeSupportTicket,
   oidcIsSupportTab,
-  oidcRefreshBrowserAccounts,
   oidcSelectKnownAccount,
   oidcClearAutoStarts,
   OidcClaims,
@@ -42,7 +41,6 @@ import sleep from '../helpers/sleep'
 // One re-authorize attempt per browser session, keyed by the declaration it was made from
 // (healGrant below). sessionStorage rather than local: the bound is meant to survive reloads of
 // this tab and nothing more, so a new tab is always a clean slate.
-const GRANT_HEAL_KEY = 'oidc.regrant'
 
 export interface AWSUser {
   authProvider: string
@@ -156,7 +154,7 @@ export default createModel<RootModel>()({
               // person lands back signed in with zero screens. The marker is one-shot;
               // a refused silent round falls to the ordinary sign-in screen.
               const hint = oidcTakeActivationHint()
-              if (hint) await oidcStart({ prompt: 'none', loginHint: hint })
+              if (hint) await oidcStart({ prompt: 'none', loginHint: hint, auto: `activate:${hint}` })
             }
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
@@ -191,44 +189,17 @@ export default createModel<RootModel>()({
         // rename the cached name is the OLD one until the boot metadata refresh lands. Wait for it
         // (bounded, resolved instantly thereafter) so this cannot call a renamed-away grant current.
         await oidcMcpDetailReady()
-        if (!oidcGrantStale()) {
-          window.sessionStorage.removeItem(GRANT_HEAL_KEY)
-          return
-        }
-        // FORCE is for a deliberate human action (the chat's "Refresh permissions" button). The
-        // loop-breaker below exists to stop an AUTOMATIC retry cycling someone through the browser
-        // forever; a person clicking a button is their own loop-breaker, and suppressing them makes
-        // the control inert with no feedback — which is exactly what it did, since the boot heal
-        // above spends the attempt before the button is ever shown.
-        //
-        // The marker records WHICH declaration was tried, not merely that something was, so a
-        // deploy that changes what this build asks for gets a fresh attempt instead of inheriting
-        // the previous refusal.
-        if (!options?.force && window.sessionStorage.getItem(GRANT_HEAL_KEY) === oidcDeclaration()) {
-          console.warn('AUTH: grant still stale after re-authorizing; not retrying this session')
-          return
-        }
+        if (!oidcGrantStale()) return
         console.log('AUTH: grant predates this build’s declaration — re-authorizing')
-        window.sessionStorage.setItem(GRANT_HEAL_KEY, oidcDeclaration())
-        await oidcStart({})
+        // FORCE is a deliberate human action (the chat's "Refresh permissions" button): a person is
+        // their own loop-breaker, so it skips the ledger that stops an AUTOMATIC retry cycling the
+        // tab through the AS. The automatic reason names the account AND the declaration, so a
+        // deploy that changes what this build asks for gets a fresh attempt, and one account's
+        // spent attempt never blocks another's in the same tab. A refusal the agent reports later
+        // clears the stamp (oidcMarkGrantStale) — that, not this, is what makes a retry due.
+        await oidcStart(options?.force ? {} : { auto: `heal:${oidcClaims()?.sub}:${oidcDeclaration()}` })
       } catch (error) {
         console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
-      }
-    },
-    /** A resource server answering "this grant does not cover me" is SERVER truth, and newer than
-     *  the client-side fingerprint the marker was written from — the declaration can be unchanged
-     *  while the registry behind it moved (2026-09-06: app.ai was repointed at a new MCP resource
-     *  hours before the actor was registered to act toward it, so the one automatic attempt was
-     *  spent on a refusal that a later apply fixed, and nothing could try again).
-     *
-     *  Deliberately only FORGETS the attempt. Re-authorizing from here would redirect the person to
-     *  the AS mid-turn and lose whatever they were typing; this just makes the button live and lets
-     *  the next boot heal on its own. */
-    async forgetGrantHealAttempt() {
-      try {
-        window.sessionStorage.removeItem(GRANT_HEAL_KEY)
-      } catch {
-        /* storage unavailable — the marker was never written either */
       }
     },
     // Leave for the AS (the whole login UX — email-first, org SSO, MFA, signup, forgot —
@@ -260,7 +231,9 @@ export default createModel<RootModel>()({
       if (await oidcSelectKnownAccount(sub)) return
       await dispatch.auth.switchAccount()
     },
-    async signIn(_: void) {
+    /** `auto` names a sign-in nobody clicked for (the web sign-in screen's own start) so the
+     *  ledger in oidcStart can bound it; a refused one leaves the screen as it was. */
+    async signIn(options?: { auto?: string }) {
       dispatch.auth.set({ signingIn: true, ...signInCleared })
       try {
         // Sign-in ALWAYS offers the CHOOSER (prompt=select_account), web and desktop alike.
@@ -268,7 +241,8 @@ export default createModel<RootModel>()({
         // PROMPTLESS authorize would silently SSO the last user straight back in — which is
         // exactly the "sign-out doesn't stick" bug. select_account also means that signing
         // out and reloading always lands on the picker, never a silent re-login.
-        await oidcStart({ prompt: 'select_account' })
+        if (!(await oidcStart({ prompt: 'select_account', auto: options?.auto })))
+          dispatch.auth.set({ signingIn: false })
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
         dispatch.auth.set(signInFailure(error))
@@ -402,8 +376,6 @@ export default createModel<RootModel>()({
       })
       await dispatch.auth.fetchUser()
       console.log('AUTHENTICATED SUCCESS')
-      // The other accounts signed in on this browser, for the avatar menu — best effort.
-      void oidcRefreshBrowserAccounts().catch(() => {})
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {

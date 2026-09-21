@@ -66,30 +66,47 @@ const ACCOUNTS_KEY = 'oidc.accounts'
 /* Authorizes this tab has started on its OWN — no click, nobody asked. This client is
    first-party skipConsent, so an automatic authorize shows the person NOTHING: a loop
    through it is invisible from the app and its only outward symptom is the AS
-   rate-limiting the whole address, which then locks out everyone behind it. The state
-   guards in the auth model are the real brakes; this is the backstop that holds when one
-   of them is missed. Cleared the moment an exchange completes. */
+   rate-limiting the whole address, which then locks out everyone behind it.
+
+   ONE ledger for every automatic start, keyed by the reason (`boot`, `heal:<sub>:<declaration>`,
+   `recover:<email>`, `activate:<email>`), and the brake sits inside oidcStart itself: a reason
+   already spent is refused there, so no caller can forget its own one-shot. Session-scoped —
+   it rides the round trip through the AS and dies with the tab. A completed exchange forgets
+   the ledger, except a grant heal: an authorize that came back with the grant STILL stale must
+   not be retried by the next boot, or the tab loops through the AS once per reload. A click is
+   never counted — a person is their own loop-breaker. */
 const AUTO_START_KEY = 'oidc.autoStarts'
-export const oidcAutoStartsSpent = (): number => {
+// Two boots, because one legitimate retry (a token that died mid-session) is normal and a third
+// in one tab never is; every other reason is one.
+const AUTO_START_LIMITS: { [reason: string]: number } = { boot: 2 }
+const readAutoStarts = (): { [reason: string]: number } => {
   try {
-    return Number(window.sessionStorage.getItem(AUTO_START_KEY)) || 0
+    return JSON.parse(window.sessionStorage.getItem(AUTO_START_KEY) || '{}')
   } catch {
-    return 0
+    return {}
   }
 }
-export const oidcCountAutoStart = (): void => {
+const writeAutoStarts = (spent: { [reason: string]: number }) => {
   try {
-    window.sessionStorage.setItem(AUTO_START_KEY, String(oidcAutoStartsSpent() + 1))
+    window.sessionStorage.setItem(AUTO_START_KEY, JSON.stringify(spent))
   } catch {
     /* blocked storage must not stop someone signing in */
   }
 }
+/** Has this reason used up its automatic starts? (The sign-in screen reads it to say so.) */
+export const oidcAutoStartExhausted = (reason: string): boolean =>
+  (readAutoStarts()[reason] ?? 0) >= (AUTO_START_LIMITS[reason] ?? 1)
+/** Spend one automatic start for `reason`; false when the ledger refuses. */
+const spendAutoStart = (reason: string): boolean => {
+  if (oidcAutoStartExhausted(reason)) return false
+  const spent = readAutoStarts()
+  spent[reason] = (spent[reason] ?? 0) + 1
+  writeAutoStarts(spent)
+  return true
+}
 export const oidcClearAutoStarts = (): void => {
-  try {
-    window.sessionStorage.removeItem(AUTO_START_KEY)
-  } catch {
-    /* non-fatal */
-  }
+  const kept = Object.fromEntries(Object.entries(readAutoStarts()).filter(([reason]) => reason.startsWith('heal:')))
+  writeAutoStarts(kept)
 }
 // A support TAB keeps its tokens in sessionStorage — per-tab — never in the shared
 // localStorage. The first cut CLEARED localStorage instead, and localStorage is
@@ -459,13 +476,43 @@ export function oidcGrantStale(): boolean {
 }
 
 /** The fingerprint itself, for a caller that must record WHICH declaration an attempt was made
- *  from rather than merely that one was (the grant-heal marker in models/auth.ts). Exported rather
- *  than recomputed there, so the two can never disagree about what "the same request" means. */
+ *  from rather than merely that one was (the grant-heal ledger key in models/auth.ts). Exported
+ *  rather than recomputed there, so the two can never disagree about what "the same request" means. */
 export const oidcDeclaration = declarationFingerprint
 
+/** A resource server answering "this grant does not cover me" is SERVER truth, newer than the
+ *  stamp: the declaration can be unchanged while the registry behind it moved (2026-09-06: app.ai
+ *  was repointed at a new MCP resource hours before the actor was registered to act toward it).
+ *  Drop the stamp — active AND this account's registry entry — so oidcGrantStale() answers true
+ *  and the next boot heals, or the person's "Refresh permissions" does, with nothing else to reset. */
+export function oidcMarkGrantStale(): void {
+  try {
+    tokenStore().removeItem(DECLARATION_KEY)
+    const sub = oidcClaims()?.sub
+    const reg = readRegistry()
+    if (sub && reg[sub]?.declaration) {
+      delete reg[sub].declaration
+      writeRegistry(reg)
+    }
+  } catch {
+    /* non-fatal — worst case is one redundant re-authorize */
+  }
+}
+
+/** Leave for the AS. `auto` names an authorize nobody clicked for (see the ledger above); it
+ *  resolves false, without leaving, when that reason has been spent. */
 export async function oidcStart(
-  opts: { prompt?: 'login' | 'select_account' | 'none'; loginHint?: string; supportTicket?: string } = {}
-): Promise<void> {
+  opts: {
+    prompt?: 'login' | 'select_account' | 'none'
+    loginHint?: string
+    supportTicket?: string
+    auto?: string
+  } = {}
+): Promise<boolean> {
+  if (opts.auto && !spendAutoStart(opts.auto)) {
+    console.warn(`OIDC: automatic sign-in (${opts.auto}) already attempted this session — not retrying`)
+    return false
+  }
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
   const [d] = await Promise.all([discover(), refreshMcpDetailType()])
@@ -512,6 +559,7 @@ export async function oidcStart(
   }
   for (const key in params) url.searchParams.set(key, params[key])
   window.location.assign(url.toString())
+  return true
 }
 
 /** Boot-time completion: when the URL carries ?code&state (web return or the desktop
@@ -689,9 +737,8 @@ async function refreshOnce(resource: string): Promise<string> {
       // second stale refusal for the same account within a minute means the silent round came
       // back refused (the AS cookie is gone while the tokens lingered), and that is a sign-out.
       const email = decodeJwt(current.id_token)?.email
-      if (/session was not ended/.test(String(error?.message)) && email && recoverOnce(email)) {
-        void oidcStart({ prompt: 'none', loginHint: email })
-        return ''
+      if (/session was not ended/.test(String(error?.message)) && email) {
+        if (await oidcStart({ prompt: 'none', loginHint: email, auto: `recover:${email}` })) return ''
       }
       // A dead grant (revoked / expired session / family revoked on reuse) ends the session;
       // transient network errors keep it and the next call retries.
@@ -771,21 +818,6 @@ function fileAccount(tokens: Stored) {
     declaration: reg[sub]?.declaration,
   }
   writeRegistry(reg)
-}
-
-/** The stale-copy recovery's loop-breaker: true the FIRST time an account asks within a minute,
- *  false for a repeat — sessionStorage, so it rides the same-tab round trip through the AS and
- *  dies with the tab. Storage refused → no recovery (a plain sign-out), never a loop. */
-const RECOVERING_KEY = 'oidc.recovering'
-function recoverOnce(email: string): boolean {
-  try {
-    const [who, at] = (sessionStorage.getItem(RECOVERING_KEY) ?? '').split('|')
-    if (who === email && Date.now() - Number(at) < 60_000) return false
-    sessionStorage.setItem(RECOVERING_KEY, `${email}|${Date.now()}`)
-    return true
-  } catch {
-    return false
-  }
 }
 
 /** A rotation that completed for an account no longer in the active store: put its successor on

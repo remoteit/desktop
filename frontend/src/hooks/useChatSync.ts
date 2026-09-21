@@ -55,29 +55,30 @@ export const useChatPopoutScope = (): void => {
 const useChatIdentity = (): string => useSelector((state: State) => state.auth.user?.id ?? '') // '' = not signed in: syncIdentity no-ops
 
 /* What both chat surfaces do on boot: follow the signed-in identity, clear what must not
-   survive a reload, and catch up with the server. */
-const useChatBoot = (): void => {
+   survive a reload, and — while SHOWN — catch up with the server. A licensed account with the
+   dock closed asks the agent for nothing: no list, no meter, no transcript. */
+const useChatBoot = (open: boolean): void => {
   const userId = useChatIdentity()
   const dispatch = useDispatch<Dispatch>()
 
   // Declared first so a persisted chat from a previous account is dropped before anything loads
-  // it. The list and the meter follow the identity — one load per account, the mount included.
+  // it (the identity sync no-ops for the same account, so it is safe to chase on every open). The
+  // list, the meter and the server's copy of the transcript follow: once per account per opening.
   useEffect(() => {
-    dispatch.chat.syncIdentity(userId).then(() => {
-      if (!userId) return
+    const synced = dispatch.chat.syncIdentity(userId)
+    if (!open || !userId) return
+    synced.then(() => {
+      dispatch.chat.syncTranscript()
       dispatch.chat.loadConversations()
       dispatch.chat.loadUsage()
     })
-  }, [userId])
+  }, [open, userId])
 
   useEffect(() => {
     // Mount-only: streaming state must not survive a reload, but reopening
     // the panel must not reset a still-running stream (closing the panel
     // deliberately leaves the stream running)
     dispatch.chat.resetTransient()
-    // The server owns the transcript: catch up on anything a background turn finished
-    // while this window was away (plan D6/D11).
-    dispatch.chat.syncTranscript()
   }, [])
 
   useAgentHealthOnReconnect(() => dispatch.chat.checkHealth())
@@ -87,7 +88,7 @@ export const useChatMainSync = (): void => {
   const open = useSelector((state: State) => state.chat.open)
   const activeId = useSelector((state: State) => state.accounts.activeId)
   const dispatch = useDispatch<Dispatch>()
-  useChatBoot()
+  useChatBoot(open)
 
   useEffect(() => {
     const handlers: PopoutMainHandlers = {
@@ -143,7 +144,7 @@ export const useChatMainSync = (): void => {
 export const useChatPopoutSync = (): void => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
-  useChatBoot()
+  useChatBoot(true)
 
   useEffect(() => {
     document.title = t('chat.windowTitle', 'remote.it chat')

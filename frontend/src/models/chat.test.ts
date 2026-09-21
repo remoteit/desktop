@@ -44,6 +44,7 @@ vi.mock('../services/chatPopout', () => ({
   openChatPopout,
   popIn: vi.fn(),
 }))
+vi.mock('../services/oidc', () => ({ oidcMarkGrantStale: vi.fn() }))
 vi.mock('../store', () => ({ store: { getState: () => storeState } }))
 vi.mock('../constants', () => ({ CHAT_PANEL_WIDTH: 400 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
@@ -67,10 +68,14 @@ const makeDispatch = () => ({
   },
 })
 // The wider snapshot send() reads (resolveChatOrg looks at the user and memberships)
-const sendable = (chat: Record<string, unknown> = {}) => ({ ...current(chat), user: { id: 'u' }, accounts: { membership: [] } })
+const sendable = (chat: Record<string, unknown> = {}) => ({
+  ...current(chat),
+  user: { id: 'u' },
+  accounts: { membership: [] },
+})
 
 // A fetch the test resolves by hand, to interleave user actions with an in-flight request.
-const deferred = <T,>() => {
+const deferred = <T>() => {
   let resolve!: (value: T) => void
   const promise = new Promise<T>(r => (resolve = r))
   return { promise, resolve }
@@ -80,7 +85,13 @@ const deferred = <T,>() => {
 const current = (over: Record<string, unknown> = {}) => ({
   chat: { conversationId: 'a', streaming: false, messages: [], title: '', ...over },
 })
-const remote = { messages: [{ role: 'user', content: 'hi' }, { role: 'assistant', content: 'yo' }], title: 'T' }
+const remote = {
+  messages: [
+    { role: 'user', content: 'hi' },
+    { role: 'assistant', content: 'yo' },
+  ],
+  title: 'T',
+}
 const remoteAsLocal = [
   { role: 'user', text: 'hi' },
   { role: 'assistant', text: 'yo', toolCalls: [] },

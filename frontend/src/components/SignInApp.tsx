@@ -3,7 +3,7 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { OidcErrorCode, oidcAutoStartsSpent, oidcCountAutoStart, oidcIsSupportTab } from '../services/oidc'
+import { OidcErrorCode, oidcAutoStartExhausted, oidcIsSupportTab } from '../services/oidc'
 import { MODE } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
@@ -85,10 +85,6 @@ const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?
   )
 }
 
-/* How many authorizes this tab may start with nobody asking. Two, because one legitimate
-   retry (a token that died mid-session) is normal and a third in one tab never is. */
-const AUTO_START_LIMIT = 2
-
 export function SignInApp() {
   const { t } = useTranslation()
   const { signInFailed, signInError, signInErrorCode, signInRetryAfter, signingIn, initialized } = useSelector(
@@ -111,12 +107,11 @@ export function SignInApp() {
   // the support view into their own account. auth.init drives the ticketed authorize; once the
   // session has ended, the tab says so and stops.
   const supportTab = oidcIsSupportTab()
-  const budgetSpent = oidcAutoStartsSpent() >= AUTO_START_LIMIT
+  const budgetSpent = oidcAutoStartExhausted('boot')
   const autoStart = !browser.isElectron && !signingIn && !signInFailed && !budgetSpent && !supportTab
   useEffect(() => {
     if (!autoStart) return
-    oidcCountAutoStart()
-    auth.signIn()
+    auth.signIn({ auto: 'boot' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart])
 
