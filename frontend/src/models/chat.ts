@@ -176,7 +176,8 @@ export default createModel<RootModel>()({
         // title, and loadConversations reconciles after the turn.
         ...(state.chat.title ? {} : { title: text.replace(/\s+/g, ' ').trim().slice(0, 80) }),
       })
-      abortController = new AbortController()
+      const controller = new AbortController()
+      abortController = controller
       // Same resolution the Current Org label renders, so the scope shown is
       // always the scope sent — membership decides, name falls back
       const resolved = resolveChatOrg(state)
@@ -188,6 +189,9 @@ export default createModel<RootModel>()({
       const flushDeltas = () => {
         if (flushTimer !== null) window.clearTimeout(flushTimer)
         flushTimer = null
+        // An abort (stop, sign-out) has already folded or cleared the reply; a delta still
+        // buffered here would open a second one, which landed as a stray message of its own.
+        if (controller.signal.aborted) deltaBuffer = ''
         if (deltaBuffer) {
           dispatch.chatLive.append(deltaBuffer)
           deltaBuffer = ''
@@ -198,7 +202,7 @@ export default createModel<RootModel>()({
           conversationId,
           text,
           org,
-          signal: abortController.signal,
+          signal: controller.signal,
           onEvent: event => {
             if (event.type === 'turn') {
               dispatch.chat.set({ turnId: event.turnId })
@@ -215,18 +219,21 @@ export default createModel<RootModel>()({
                   pendingConfirmation: { toolUseId: event.id, toolName: event.name, input: event.input },
                 })
               else if (event.type === 'done') dispatch.chat.endTurn()
-              // The backend prefixes auth failures so the client knows a retry is pointless
-              // until the grant is renewed (e.g. it expired mid-turn).
-              else if (event.message.startsWith('reauth_required')) {
-                dispatch.chat.unauthorized() // mid-stream, not an HTTP 401 — agentRequest cannot see it
-                dispatch.chat.endTurn(sessionExpiredError())
-              } else dispatch.chat.endTurn(event.message)
+              else if (event.type === 'error') {
+                const message = String(event.message ?? 'Agent error')
+                // The backend prefixes auth failures so the client knows a retry is pointless
+                // until the grant is renewed (e.g. it expired mid-turn).
+                if (message.startsWith('reauth_required')) {
+                  dispatch.chat.unauthorized() // mid-stream, not an HTTP 401 — agentRequest cannot see it
+                  dispatch.chat.endTurn(sessionExpiredError())
+                } else dispatch.chat.endTurn(message)
+              }
             }
           },
         })
       } catch (error) {
         flushDeltas()
-        if (error instanceof AgentAuthError) dispatch.chat.set({ error: authRequiredError() })
+        if (error instanceof AgentAuthError) dispatch.chat.endTurn(authRequiredError())
         else if (error instanceof UsageLimitError) dispatch.chat.endTurn(usageLimitMessage(error))
         else if (error instanceof AgentStreamEndedError)
           // An interruption, not a completion — a cut-off must not leave a truncated reply
@@ -240,13 +247,17 @@ export default createModel<RootModel>()({
         else if ((error as Error).name !== 'AbortError') dispatch.chat.endTurn((error as Error).message)
       } finally {
         flushDeltas()
-        abortController = null
-        // Whatever ended the turn — done, an error, an abort — the reply in flight lands once.
-        dispatch.chat.endTurn()
-        // A finished turn may have created (and titled) a new conversation — refresh the
-        // picker; and the spend just moved, so refresh the usage meter too.
-        dispatch.chat.loadConversations()
-        dispatch.chat.loadUsage()
+        if (abortController === controller) abortController = null
+        // An aborted turn was ended by whoever aborted it — stop() folded the reply, a sign-out
+        // cleared it — and nothing more is asked of the agent on its behalf.
+        if (!controller.signal.aborted) {
+          // Whatever else ended the turn — done or an error — the reply in flight lands once.
+          dispatch.chat.endTurn()
+          // A finished turn may have created (and titled) a new conversation — refresh the
+          // picker; and the spend just moved, so refresh the usage meter too.
+          dispatch.chat.loadConversations()
+          dispatch.chat.loadUsage()
+        }
       }
     },
     async confirm(approved: boolean, state) {
@@ -281,8 +292,9 @@ export default createModel<RootModel>()({
         confirmTool({ turnId, toolUseId: pendingConfirmation.toolUseId, approved: false }).catch(() => {})
       abortController?.abort()
       abortController = null
-      // Folded HERE, synchronously: the aborted send's own endTurn runs a microtask later, by which
-      // time a New Chat has cleared the conversation — the partial reply would land in the new one.
+      // Folded HERE, synchronously — the aborted send folds nothing of its own. Its catch and
+      // finally run a microtask later, by which time a New Chat has cleared the conversation, and
+      // a fold there would land the partial reply in the new one.
       dispatch.chat.endTurn()
     },
     /* The turn is over: the reply in flight (models/chatLive) joins the transcript — marked

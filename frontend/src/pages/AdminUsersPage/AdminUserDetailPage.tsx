@@ -10,9 +10,9 @@ import { Body } from '../../components/Body'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
-import { OAUTH_ISSUER } from '../../constants'
+import { OAUTH_ISSUER, PORTAL_URL } from '../../constants'
 import { Dispatch, State } from '../../store'
-import { windowOpen } from '../../services/browser'
+import browser, { windowOpen } from '../../services/browser'
 
 export const AdminUserDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
@@ -68,11 +68,13 @@ export const AdminUserDetailPage: React.FC = () => {
     // the authorizer joins them by email — and the AS resolves the user by email or id.
     // `origin` names THIS portal — the lane the operator is on (app.dev, app.evan, latest) — so
     // the support session lands here rather than on whichever redirect URI the client lists first
-    // (the AS validates it against the registration).
+    // (the AS validates it against the registration). The desktop app shows local backend data
+    // and its 127.0.0.1 origin is no portal's, so from there the session runs in the web portal.
+    const origin = browser.isElectron ? new URL(PORTAL_URL).origin : window.location.origin
     windowOpen(
       `${OAUTH_ISSUER}/elevate/launch?user=${encodeURIComponent(
         user.email || user.id
-      )}&client=remoteit_portal&origin=${encodeURIComponent(window.location.origin)}`
+      )}&client=remoteit_portal&origin=${encodeURIComponent(origin)}`
     )
   }
 

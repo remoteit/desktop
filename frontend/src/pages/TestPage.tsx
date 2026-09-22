@@ -48,7 +48,7 @@ export const TestPage: React.FC = () => {
     emit('preferences', values)
   }
 
-  // --- the stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c) ----
+  // The stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c).
   // The options come FROM the AS: the client's own allowlist joined to registry names, so the
   // picker and the mint-time guardrail can never disagree. Identifiers group into stage pairs
   // (graphql + events); one selection sets BOTH URLs and mints BOTH audiences immediately, so

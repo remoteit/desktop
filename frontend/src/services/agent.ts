@@ -213,7 +213,7 @@ export async function deleteConversation(conversationId: string): Promise<boolea
   return (await agentRequest('DELETE', path)).ok
 }
 
-// --- Usage meter (permitteer docs/usage-limits.md D6) ---------------------------------
+// Usage meter (permitteer docs/usage-limits.md D6).
 
 export type UsageWindow = {
   limitUsd: number
@@ -235,7 +235,7 @@ export async function fetchUsage(): Promise<Usage | null> {
   }
 }
 
-// --- Background work (permitteer docs/remoteit-ai-agent.md D6/Phase 6) -----------------
+// Background work (permitteer docs/remoteit-ai-agent.md D6/Phase 6).
 
 /* Where the enrollment ceremony starts — a top-level navigation to the agent, which
    redirects into the AS consent screen. Who enrolled is the AS's answer at the

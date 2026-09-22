@@ -46,7 +46,7 @@ export const resourceForApiURL = (url: string): string => url.match(CLOUD_GRAPHQ
  *  unified front (the socket is a path inside the /api resource — minting for the socket URL there
  *  answers invalid_target) and the legacy shared-domain URL (not a registered resource at all). */
 export const resourceForEventsURL = (url: string): string | undefined => (LEGACY_EVENTS_RE.test(url) ? url : undefined)
-export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.dev.remote.it/account/api'
+export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.remote.it/account/api'
 // The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
 // tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail
 // delegated onward to the service actor — which is what makes those tokens exchangeable.

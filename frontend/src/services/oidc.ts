@@ -271,6 +271,11 @@ const decodeJwt = (jwt?: string): any => {
   }
 }
 
+// The payload's exp when the access token is a JWT, else the response's expires_in. A token
+// cached with exp 0 is never fresh, and every call would rotate the refresh family to mint again.
+const tokenExpiry = (body: { access_token: string; expires_in?: number }): number =>
+  decodeJwt(body.access_token)?.exp ?? (body.expires_in ? Math.floor(Date.now() / 1000) + Number(body.expires_in) : 0)
+
 const stored = (): Stored | undefined => {
   try {
     const raw = tokenStore().getItem(TOKENS_KEY)
@@ -604,14 +609,13 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     }).catch(() => {})
   }
 
-  const at = decodeJwt(body.access_token)
   if (claims?.act) {
     // A SUPPORT session (docs/desktop-support.md): the AS mints no refresh token, and the access
     // token lives exactly as long as the session — so it is stored (tab-scoped) and used until
     // it expires; that expiry IS the end of the support session. Never filed as an account.
     persist({
       id_token: body.id_token,
-      support: { access_token: body.access_token, exp: at?.exp ?? 0, type: body.token_type },
+      support: { access_token: body.access_token, exp: tokenExpiry(body), type: body.token_type },
     })
   } else {
     persist({ refresh_token: body.refresh_token, id_token: body.id_token })
@@ -632,7 +636,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   } catch {
     /* non-fatal */
   }
-  access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
+  access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
   return claims
 }
 
@@ -647,7 +651,13 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
   // the tab store), never refreshed, and '' — the end — once it is gone. Other audiences have
   // nothing to mint from; their features fail closed, as writes do under `act`.
   const s = stored()
-  if (s?.support) return resource === OAUTH_GRAPHQL_RESOURCE && supportLive(s) ? s.support.access_token : ''
+  if (s?.support) {
+    if (resource !== OAUTH_GRAPHQL_RESOURCE || !supportLive(s)) return ''
+    // Cached with its scheme: oidcAuthHeaders reads the type from here, and a reloaded tab
+    // that served the bound token without it presented it as Bearer — which is refused.
+    access[resource] = { token: s.support.access_token, exp: s.support.exp, type: s.support.type }
+    return s.support.access_token
+  }
   const fresh = () => {
     const cached = access[resource]
     return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined
@@ -721,12 +731,14 @@ async function refreshOnce(resource: string): Promise<string> {
       return ''
     }
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
-    const at = decodeJwt(body.access_token)
-    access[resource] = { token: body.access_token, exp: at?.exp ?? 0, type: body.token_type }
+    access[resource] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
     return body.access_token
   } catch (error: any) {
     console.error('OIDC REFRESH FAILED', error?.message)
-    if (error?.oauthError === 'invalid_grant') {
+    // The same guard as the success path: a store that moved mid-flight belongs to another
+    // account (or to nobody), and this refusal is not its to answer — a recover round here
+    // would name the OLD account's login_hint, a clearLocal() would take the NEW tokens.
+    if (error?.oauthError === 'invalid_grant' && stored()?.refresh_token === current.refresh_token) {
       // The AS tells a STALE COPY apart from a dead grant: "…this copy is stale and the session was
       // not ended" means the family rotated on without this tab (a response lost to a navigation,
       // another tab) and the successor is spent too — this store holds nothing newer, but the AS
@@ -768,8 +780,10 @@ function clearLocal() {
     writeRegistry(reg)
   }
   // The one DPoP key binds EVERY saved account's refresh token, so it rotates only when
-  // the last account leaves — "key loss ≡ session loss" now means ALL sessions.
-  if (Object.keys(reg).length === 0) void clearDpopKey()
+  // the last account leaves — "key loss ≡ session loss" now means ALL sessions. A support
+  // tab's registry is its own empty sessionStorage, never the operator's accounts: ending
+  // it must not rotate the key their tabs' tokens are bound to.
+  if (Object.keys(reg).length === 0 && !oidcIsSupportTab()) void clearDpopKey()
   access = {}
   tokenStore().removeItem(TOKENS_KEY)
   tokenStore().removeItem(DECLARATION_KEY)
@@ -783,7 +797,7 @@ function persist(tokens: Stored) {
   fileAccount(tokens)
 }
 
-// --- the account registry (multi-account menu) ---------------------------------------
+// The account registry (multi-account menu).
 
 type RegistryEntry = Stored & { email?: string; name?: string; picture?: string; declaration?: string }
 
@@ -910,7 +924,7 @@ function cleanUrl() {
   window.history.replaceState({}, '', url.toString())
 }
 
-// --- DPoP (plan D9): sender-constrained tokens --------------------------------------
+// DPoP (plan D9): sender-constrained tokens.
 // The key is generated NON-EXTRACTABLE and lives as a CryptoKey in IndexedDB: an XSS can
 // use it while running in-page, but can never exfiltrate it — which is the entire browser
 // story. Every /token call carries a proof once a key exists (per-mint opt-in binding for
@@ -1066,7 +1080,7 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
   return body
 }
 
-// --- the browser's accounts (permitteer docs/browser-accounts.md) --------------------------
+// The browser's accounts (permitteer docs/browser-accounts.md).
 // The AS keeps a per-browser session SET, but its cookie never reaches this origin, so the
 // account API serves the set from this token's own session. Members this app holds no tokens
 // for are filed as KNOWN — identity only — and the menu offers them; picking one is a silent
@@ -1143,8 +1157,7 @@ export async function oidcRefreshBrowserAccounts(): Promise<void> {
 export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
   const e = readRegistry()[sub]
   if (!e || e.refresh_token || !e.email) return false
-  await oidcStart({ prompt: 'none', loginHint: e.email })
-  return true
+  return await oidcStart({ prompt: 'none', loginHint: e.email })
 }
 
 // Discovery and the DPoP key are needed before the first token of every boot (mcpDetailReady

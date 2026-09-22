@@ -69,6 +69,7 @@ const makeDispatch = () => ({
     // what send() touches around its (mocked, instantly-resolving) streamChat
     addUserMessage: vi.fn(),
     endTurn: vi.fn(),
+    unauthorized: vi.fn(),
     loadUsage: vi.fn(),
   },
   chatLive: { append: vi.fn(), toolStart: vi.fn(), toolResult: vi.fn(), clear: vi.fn() },
@@ -330,6 +331,57 @@ describe('chat model — stop() denies a pending approval', () => {
       effectsFor(dispatch).stop(undefined, current({ turnId: 'turn-1', pendingConfirmation: pending }))
     ).resolves.toBeUndefined()
     expect(dispatch.chat.endTurn).toHaveBeenCalled()
+  })
+})
+
+/* A stream whose abort lands AFTER stop() folded the reply: the delta still buffered (and the
+   flush timer still pending) must not re-open a reply that then lands as a stray message. */
+describe('chat model — a stop mid-stream folds the reply exactly once', () => {
+  // The stream as send() sees it: events arrive by hand, and an abort rejects the way fetch does.
+  const abortableStream = () => {
+    let onEvent!: (event: unknown) => void
+    streamChat.mockImplementation(
+      (options: any) =>
+        new Promise((_, reject) => {
+          onEvent = options.onEvent
+          options.signal.addEventListener('abort', () =>
+            reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+          )
+        })
+    )
+    return { deliver: (event: unknown) => onEvent(event) }
+  }
+
+  it('a delta buffered at the abort is dropped — not appended after the fold — and the finally asks the agent for nothing', async () => {
+    vi.useFakeTimers()
+    try {
+      const stream = abortableStream()
+      const dispatch = makeDispatch()
+      const fx = effectsFor(dispatch)
+      const sending = fx.send('hello', sendable())
+      stream.deliver({ type: 'text_delta', text: 'tail' }) // buffered behind the 50ms flush timer
+      await fx.stop(undefined, current({ streaming: true }))
+      await sending
+      vi.runAllTimers() // the flush timer fires after the fold
+      expect(dispatch.chatLive.append).not.toHaveBeenCalled()
+      expect(dispatch.chat.endTurn).toHaveBeenCalledTimes(1) // stop()'s own fold
+      expect(dispatch.chat.loadConversations).not.toHaveBeenCalled()
+      expect(dispatch.chat.loadUsage).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('an unknown event type is ignored rather than read as an error event', async () => {
+    const stream = abortableStream()
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const sending = fx.send('hello', sendable())
+    expect(() => stream.deliver({ type: 'ping', at: 1 })).not.toThrow()
+    stream.deliver({ type: 'error', message: 'reauth_required: expired' })
+    expect(dispatch.chat.endTurn).toHaveBeenCalledWith('notices:chat.sessionExpired')
+    await fx.stop(undefined, current({ streaming: true }))
+    await sending
   })
 })
 
