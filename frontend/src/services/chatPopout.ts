@@ -39,7 +39,6 @@ export type ChatHandoff = {
   messages: ChatTranscriptMessage[]
   conversationId: string
   title: string
-  orgId: string | null
 }
 
 // Every message except the broadcast 'signout' is directed: it carries the

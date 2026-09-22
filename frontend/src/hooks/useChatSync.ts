@@ -59,7 +59,14 @@ const useChatIdentity = (): string => useSelector((state: State) => state.auth.u
    dock closed asks the agent for nothing: no list, no meter, no transcript. */
 const useChatBoot = (open: boolean): void => {
   const userId = useChatIdentity()
+  const activeId = useSelector((state: State) => state.accounts.activeId)
   const dispatch = useDispatch<Dispatch>()
+
+  // The chat follows the app's active org: the sidebar selector here, the scope it was opened
+  // under in the popout (useChatPopoutScope sets it before this runs)
+  useEffect(() => {
+    dispatch.chat.syncOrg()
+  }, [activeId])
 
   // Declared first so a persisted chat from a previous account is dropped before anything loads
   // it (the identity sync no-ops for the same account, so it is safe to chase on every open). The
@@ -86,7 +93,6 @@ const useChatBoot = (open: boolean): void => {
 
 export const useChatMainSync = (): void => {
   const open = useSelector((state: State) => state.chat.open)
-  const activeId = useSelector((state: State) => state.accounts.activeId)
   const dispatch = useDispatch<Dispatch>()
   useChatBoot(open)
 
@@ -94,7 +100,7 @@ export const useChatMainSync = (): void => {
     const handlers: PopoutMainHandlers = {
       getHandoff: currentHandoff,
       adopt: payload => {
-        dispatch.chat.adoptTranscript(payload)
+        dispatch.chat.adoptHandoff(payload)
         dispatch.chat.set({ poppedOut: false, open: true })
         // The handback carries only the partial response rendered when the popout closed; the
         // server journals the rest of the turn, so pull its copy or the remainder is missing
@@ -131,11 +137,6 @@ export const useChatMainSync = (): void => {
   useEffect(() => {
     if (open) dispatch.chat.checkHealth()
   }, [open])
-
-  // The chat follows the app's active org from the sidebar selector
-  useEffect(() => {
-    dispatch.chat.syncOrg()
-  }, [activeId])
 }
 
 /* Popout-window chat lifecycle: adopt the handed-off conversation, answer
@@ -148,11 +149,9 @@ export const useChatPopoutSync = (): void => {
 
   useEffect(() => {
     document.title = t('chat.windowTitle', 'remote.it chat')
-    // No syncOrg here: the popout keeps the org handed off with the
-    // conversation (it has no sidebar to change it with)
     dispatch.chat.checkHealth()
     const unsubscribe = initChatPopoutWindow({
-      adopt: payload => dispatch.chat.adoptTranscript(payload),
+      adopt: payload => dispatch.chat.adoptHandoff(payload),
       getHandoff: currentHandoff,
       onSignout: () => window.close(),
     })

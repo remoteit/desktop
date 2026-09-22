@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import browser from '../services/browser'
 import useSafeArea from '../hooks/useSafeArea'
 import useCapacitor from '../hooks/useCapacitor'
-import { useViewAsUser } from '../hooks/useViewAsUser'
 import { persistor } from '../store'
 import { useLocation } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
@@ -80,7 +79,6 @@ export const App: React.FC = () => {
     sidePanelWidth: sidebarWidth,
   }
 
-  useViewAsUser()
   // Before the popout's entitlement gate below can be read, the window must run under the
   // account scope that opened it (otherwise it reads the personal account's license)
   useChatPopoutScope()

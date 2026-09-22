@@ -145,12 +145,14 @@ describe('chat model — openConversation applies only the latest selection', ()
   })
 
   it('a turn the user started meanwhile is not clobbered by the landing pick', async () => {
-    fetchConversation.mockImplementation(async () => {
-      storeState.chat.streaming = true // the composer stays enabled during a pick
-      return remote
-    })
+    const a = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => a.promise)
     const dispatch = makeDispatch()
-    await effectsFor(dispatch).openConversation('A', current())
+    const fx = effectsFor(dispatch)
+    const openA = fx.openConversation('A', current())
+    await fx.send('hello', sendable()) // the composer stays enabled during a pick; a send commits
+    a.resolve(remote)
+    await openA
     expect(dispatch.chat.set).not.toHaveBeenCalledWith(opened('A'))
   })
 
@@ -343,7 +345,7 @@ describe('chat model — popOut hands over the account scope', () => {
   it('passes the current org to openChatPopout', async () => {
     openChatPopout.mockReturnValue(true)
     const dispatch = makeDispatch()
-    await effectsFor(dispatch).popOut(undefined, { chat: { orgId: 'org-1' } })
+    await effectsFor(dispatch).popOut(undefined, { chat: {}, accounts: { activeId: 'org-1' } })
     expect(openChatPopout).toHaveBeenCalledWith('org-1')
     expect(dispatch.chat.set).not.toHaveBeenCalled() // no popup-blocked error
   })
@@ -351,26 +353,45 @@ describe('chat model — popOut hands over the account scope', () => {
 
 /* The fetch can outlive the conversation it was for. Applying its result against the
    invocation-time snapshot would drop the OLD transcript into whatever conversation is
-   on screen now — under that conversation's newer id — or repopulate one just cleared. */
+   on screen now — under that conversation's newer id — or repopulate one just cleared.
+   Every such event — a pick, a New Chat, a send, a handoff — advances the generation the
+   sync took its ticket from; that ticket is the whole check. */
 describe('chat model — syncTranscript discards a response for a conversation no longer active', () => {
   it('drops the response when the user moved to another conversation mid-fetch', async () => {
-    fetchConversation.mockImplementation(async () => {
-      storeState.chat.conversationId = 'b' // a history pick / New Chat while the fetch was in flight
-      return remote
-    })
+    const sync = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => sync.promise)
     const dispatch = makeDispatch()
-    await effectsFor(dispatch).syncTranscript(undefined, current())
+    const fx = effectsFor(dispatch)
+    const syncing = fx.syncTranscript(undefined, current())
+    await fx.newConversation() // a New Chat while the fetch was in flight
+    sync.resolve(remote)
+    await syncing
     expect(fetchConversation).toHaveBeenCalledWith('a')
     expect(dispatch.chat.set).not.toHaveBeenCalled()
   })
 
   it('drops the response when a turn started mid-fetch', async () => {
-    fetchConversation.mockImplementation(async () => {
-      storeState.chat.streaming = true
-      return remote
-    })
+    const sync = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => sync.promise)
     const dispatch = makeDispatch()
-    await effectsFor(dispatch).syncTranscript(undefined, current())
+    const fx = effectsFor(dispatch)
+    const syncing = fx.syncTranscript(undefined, current())
+    await fx.send('hello', sendable())
+    sync.resolve(remote)
+    await syncing
+    expect(dispatch.chat.set).not.toHaveBeenCalledWith(expect.objectContaining({ messages: remoteAsLocal }))
+  })
+
+  it('drops the response when the other window handed its conversation over mid-fetch', async () => {
+    const sync = deferred<any>()
+    fetchConversation.mockImplementationOnce(() => sync.promise)
+    const dispatch = { ...makeDispatch(), chat: { ...makeDispatch().chat, adoptTranscript: vi.fn() } }
+    const fx = effectsFor(dispatch)
+    const syncing = fx.syncTranscript(undefined, current())
+    await fx.adoptHandoff({ messages: [], conversationId: 'b', title: '' })
+    sync.resolve(remote)
+    await syncing
+    expect(dispatch.chat.adoptTranscript).toHaveBeenCalled()
     expect(dispatch.chat.set).not.toHaveBeenCalled()
   })
 

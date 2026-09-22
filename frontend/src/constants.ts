@@ -35,6 +35,11 @@ export const cloudTreeUrls = (tree: string) => ({
   graphql: `${tree}/graphql`,
   ws: `${tree.replace(/^https:/, 'wss:')}/ws`,
 })
+/** The RESOURCE (RFC 8707 audience) to mint for when calling a given GraphQL URL — the ONE rule,
+ *  whichever lane chose the URL. On the legacy per-stage hosts the identifier IS the graphql URL.
+ *  On the unified front one identifier covers graphql, the REST surface and the socket as PATHS
+ *  inside it; asking the AS for the leaf answers invalid_target, correctly, so the leaf comes off. */
+export const resourceForApiURL = (url: string): string => url.match(CLOUD_GRAPHQL_RE)?.[1] ?? url
 export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.dev.remote.it/account/api'
 // The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
 // tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail

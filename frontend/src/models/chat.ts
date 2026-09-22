@@ -150,7 +150,6 @@ export const toChatHandoff = (chat: IChatState): ChatHandoff => ({
   messages: chat.messages,
   conversationId: chat.conversationId,
   title: chat.title,
-  orgId: chat.orgId,
 })
 
 /* A turn is live while the agent streams or waits on a tool confirmation: no send, no handoff
@@ -202,9 +201,16 @@ const nextGeneration = () => ++generation
 /* Independent probes — health, the history list, the usage meter — are not scoped to the
    conversation, so they get their own latest-wins tickets instead: an older response that
    lands last must not overwrite a newer one. */
-let healthProbe = 0
-let listLoad = 0
-let usageLoad = 0
+const latestWins = () => {
+  let current = 0
+  return () => {
+    const ticket = ++current
+    return () => ticket === current
+  }
+}
+const healthProbe = latestWins()
+const listLoad = latestWins()
+const usageLoad = latestWins()
 
 export default createModel<RootModel>()({
   state: { ...defaultChatState },
@@ -293,9 +299,8 @@ export default createModel<RootModel>()({
         dispatch.chat.loadUsage()
       }
     },
-    /* The chat follows the app's active org (the sidebar selector) — the main
-       window mirrors it here whenever it changes. The popout window never
-       calls this: it keeps the org handed off with the conversation. */
+    /* The chat follows the app's active org (the sidebar selector) — both windows mirror it
+       whenever it changes; the popout's is the scope it was opened under (useChatPopoutScope). */
     async syncOrg(_: void, state) {
       dispatch.chat.set({ orgId: state.accounts.activeId || state.user.id })
     },
@@ -348,13 +353,21 @@ export default createModel<RootModel>()({
     async popOut(_: void, state) {
       if (selectTurnActive(state)) return
       // Hand over this window's account scope so the popout boots under it, not the personal
-      // account its unset activeId would default to (popoutScopeId explains the stakes)
-      if (!openChatPopout(state.chat.orgId || undefined))
+      // account its unset activeId would default to (popoutScopeId explains the stakes). The URL
+      // is the ONE carrier: the popout resolves its chat org from that scope exactly as this
+      // window does from the sidebar, so the two can never name different orgs.
+      if (!openChatPopout(state.accounts.activeId || undefined))
         dispatch.chat.set({
           error: i18n.t('notices:chat.popupBlocked', {
             defaultValue: 'Pop out was blocked — allow popups for this site and try again.',
           }),
         })
+    },
+    /* The other window's conversation replaces this one: an event that makes every load in flight
+       unwanted, so it takes a new generation like a pick or a New Chat does. */
+    async adoptHandoff(payload: ChatHandoff) {
+      nextGeneration()
+      dispatch.chat.adoptTranscript(payload)
     },
     /* Hand the conversation back to the main window and close this popout.
        Reads the handoff after stop() so the final flushed text is included. */
@@ -373,9 +386,9 @@ export default createModel<RootModel>()({
       // Latest probe wins: a slow probe started while connectivity was failing must not land after
       // the reconnect-triggered one and flip a fresh `ok` back to `unreachable` — which disabled the
       // composer until the next reopen or network event, with the agent perfectly reachable.
-      const probe = ++healthProbe
+      const isLatest = healthProbe()
       const health = await agentHealth()
-      if (probe !== healthProbe) return
+      if (!isLatest()) return
       if (health === 'unauthorized') dispatch.chat.unauthorized()
       else dispatch.chat.set({ health })
     },
@@ -401,15 +414,12 @@ export default createModel<RootModel>()({
       try {
         const remote = await fetchConversation(id)
         if (!remote) return
-        // The fetch may have outlived the conversation: a New Chat or a history pick while it
-        // was in flight leaves `state` describing a conversation no longer on screen, and
-        // applying against that snapshot would land the OLD transcript in the new conversation
-        // under its newer conversationId (or repopulate one just cleared). And a turn that
-        // started and FINISHED meanwhile leaves `streaming` false again with the same id — only
-        // the generation sees that, and without it the stale server snapshot removed the newly
-        // completed turn from view. Re-read the LIVE store and compare against what is current.
+        // The fetch may have outlived the conversation: a New Chat, a history pick, a send or a
+        // handoff while it was in flight has advanced the generation, and applying against that
+        // snapshot would land the OLD transcript in the new conversation (or repopulate one just
+        // cleared). Re-read the LIVE store for the comparison below.
+        if (ticket !== generation) return
         const current = store.getState().chat
-        if (ticket !== generation || current.conversationId !== id || current.streaming) return
         const messages = toTranscript(remote.messages)
         // Adopt the server copy when it DIFFERS, not only when it is longer: a popout hands back a
         // partially rendered reply the server then completes to the SAME message count, so a
@@ -421,8 +431,9 @@ export default createModel<RootModel>()({
         const title = remote.title || current.title
         if (differs) dispatch.chat.set({ messages, title })
         else if (title !== current.title) dispatch.chat.set({ title })
-      } catch {
-        /* offline or deleted — the local display cache stands */
+      } catch (error) {
+        if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
+        /* otherwise offline or deleted — the local display cache stands */
       }
     },
     /* The chat has no sign-in of its own anymore — it rides the app session
@@ -452,19 +463,19 @@ export default createModel<RootModel>()({
     /* The usage meter (docs/usage-limits.md D6) — refreshed on mount, after each turn, and
        on open. Silent on failure; the last-known meter stands. */
     async loadUsage() {
-      const load = ++usageLoad
+      const isLatest = usageLoad()
       try {
         const usage = await fetchUsage()
-        if (usage && load === usageLoad) dispatch.chat.set({ usage }) // latest wins
+        if (usage && isLatest()) dispatch.chat.set({ usage })
       } catch (error) {
         if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
       }
     },
     async loadConversations() {
-      const load = ++listLoad
+      const isLatest = listLoad()
       try {
         const conversations = await listConversations()
-        if (load === listLoad) dispatch.chat.set({ conversations }) // latest wins
+        if (isLatest()) dispatch.chat.set({ conversations })
       } catch (error) {
         if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
         /* otherwise offline — leave the last-known list */
@@ -478,7 +489,7 @@ export default createModel<RootModel>()({
       // may a New Chat, a send, a sign-out (all of which advance the generation) or a turn still
       // running meanwhile (the composer stays enabled) be clobbered by a load no longer wanted.
       const ticket = nextGeneration()
-      const superseded = () => ticket !== generation || store.getState().chat.streaming
+      const superseded = () => ticket !== generation
       let remote
       try {
         remote = await fetchConversation(id)
@@ -486,7 +497,8 @@ export default createModel<RootModel>()({
         // A service or auth failure is not a deletion: keep the transcript on screen and report,
         // rather than clearing to a new chat as if the conversation had vanished. Unless the
         // user has already moved on — then it is only noise about a thread they left.
-        if (!superseded()) dispatch.chat.set({ error: (error as Error).message })
+        if (error instanceof AgentAuthError) dispatch.chat.unauthorized(superseded() ? undefined : authRequiredError())
+        else if (!superseded()) dispatch.chat.set({ error: (error as Error).message })
         return
       }
       if (!remote) {
@@ -517,8 +529,8 @@ export default createModel<RootModel>()({
       let deleted = false
       try {
         deleted = await deleteConversation(id)
-      } catch {
-        deleted = false
+      } catch (error) {
+        if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
       }
       if (!deleted) {
         dispatch.chat.set({
@@ -578,12 +590,12 @@ export default createModel<RootModel>()({
       state.health = 'unknown'
       return state
     },
-    /* Hand-off: replace the conversation with the other window's copy */
+    /* Hand-off: replace the conversation with the other window's copy (adoptHandoff advances the
+       generation first — a load in flight for the old conversation must not land on this one). */
     adoptTranscript(state: IChatState, payload: ChatHandoff) {
       state.messages = payload.messages
       state.conversationId = payload.conversationId
       state.title = payload.title
-      state.orgId = payload.orgId
       return state
     },
     clearConversation(state: IChatState) {

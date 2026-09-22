@@ -16,12 +16,6 @@ export async function get(path: string = '') {
 
   const headers: any = { ...auth, ...getTestHeader() }
 
-  // Add x-r3-user header if in view-as mode
-  const viewAsUser = store.getState().ui.viewAsUser
-  if (viewAsUser) {
-    headers['X-R3-User'] = viewAsUser.id
-  }
-
   const request = {
     url,
     method: 'get',

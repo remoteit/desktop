@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { getApiURL, getTestHeader } from '../helpers/apiHelper'
 import { apiAuthHeaders } from './remoteit'
-import { store } from '../store'
 
 export type DeviceLogEntry = {
   jobDeviceId: string
@@ -43,9 +42,6 @@ export async function getJobLogs(jobId: string): Promise<GetJobLogsResult> {
   }
 
   const headers: any = { ...auth, ...getTestHeader() }
-  const viewAsUser = store.getState().ui.viewAsUser
-  if (viewAsUser) headers['X-R3-User'] = viewAsUser.id
-
   try {
     const response = await axios.get(url, { headers })
     return { kind: 'ok', data: response?.data as JobLogsResponse }

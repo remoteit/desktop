@@ -9,11 +9,12 @@ import {
   LEGACY_GRAPHQL_RE,
   LEGACY_EVENTS_RE,
   cloudTreeUrls,
+  resourceForApiURL,
 } from '../constants'
 import { Dispatch, State } from '../store'
 import { UIState } from '../models/ui'
 import { Typography, List, ListItem, Divider } from '@mui/material'
-import { getApiURL, getWebSocketURL, resourceForApiURL } from '../helpers/apiHelper'
+import { getApiURL, getWebSocketURL } from '../helpers/apiHelper'
 import { bindableResources } from '../services/permitteerAccount'
 import { oidcAccessToken } from '../services/oidc'
 import { isSecureAgentURL, backgroundConnectUrl, backgroundStatus, backgroundDisable } from '../services/agent'

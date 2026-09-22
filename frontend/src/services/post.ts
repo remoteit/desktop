@@ -23,12 +23,6 @@ export async function post(data: ILookup<any, string> = {}, path: string = '') {
 
   const headers: any = { ...auth, ...getTestHeader() }
 
-  // Add x-r3-user header if in view-as mode
-  const viewAsUser = store.getState().ui.viewAsUser
-  if (viewAsUser) {
-    headers['X-R3-User'] = viewAsUser.id
-  }
-
   const request = {
     url,
     method: 'post' as 'post',
