@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useTranslation } from 'react-i18next'
-import { Box, Button, Chip, Radio, RadioGroup, FormControlLabel, TextField, Typography } from '@mui/material'
+import { Box, Button, Chip, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
-import { CopyCodeBlock } from '../CopyCodeBlock'
+import { PasswordStep, CodeStep, ChoiceStep, RecoveryCodes } from './steps'
 import {
   selfMfaStanding,
   selfMfaEnroll,
@@ -223,13 +223,15 @@ export const MFASettings: React.FC = () => {
     return (
       <>
         {title}
-        <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
-          <Typography variant="body2" gutterBottom>
-            {t(
-              'mfa.confirmPassword',
-              'Confirm your password to continue — changing a credential re-proves the one you hold.'
-            )}
-          </Typography>
+        <PasswordStep
+          password={password}
+          onPassword={setPassword}
+          error={step.error}
+          busy={busy}
+          incomplete={needsPhone && !phone}
+          onSubmit={() => submitPassword(step.mode, step.method)}
+          onCancel={() => refresh()}
+        >
           {needsPhone && (
             <TextField
               autoFocus
@@ -240,34 +242,7 @@ export const MFASettings: React.FC = () => {
               onChange={e => setPhone(e.target.value.trim())}
             />
           )}
-          <TextField
-            autoFocus={!needsPhone}
-            variant="filled"
-            type="password"
-            label={t('changePassword.currentPassword', 'Current Password')}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-          {step.error && (
-            <Typography variant="body2" color="error">
-              {step.error}
-            </Typography>
-          )}
-          <Box>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              disabled={!password || busy || (needsPhone && !phone)}
-              onClick={() => submitPassword(step.mode, step.method)}
-            >
-              {t('common.continue', 'Continue')}
-            </Button>
-            <Button size="small" onClick={() => refresh()}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-          </Box>
-        </Gutters>
+        </PasswordStep>
       </>
     )
   }
@@ -276,29 +251,14 @@ export const MFASettings: React.FC = () => {
     return (
       <>
         {title}
-        <Gutters bottom="xl">
-          <Typography variant="body2" gutterBottom>
-            {t('mfa.choose', 'How would you like to get your code?')}
-          </Typography>
-          <RadioGroup value={choice} onChange={e => setChoice(e.target.value as MfaMethod)}>
-            {step.options.map(o => (
-              <FormControlLabel
-                key={o}
-                value={o}
-                control={<Radio size="small" />}
-                label={t(`mfa.method.${o}`, METHOD_LABEL[o] ?? o)}
-              />
-            ))}
-          </RadioGroup>
-          <Box marginTop={1}>
-            <Button variant="contained" color="primary" size="small" disabled={busy} onClick={submitChoice}>
-              {t('common.continue', 'Continue')}
-            </Button>
-            <Button size="small" onClick={() => refresh()}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-          </Box>
-        </Gutters>
+        <ChoiceStep
+          options={step.options}
+          choice={choice}
+          onChoice={setChoice}
+          busy={busy}
+          onSubmit={submitChoice}
+          onCancel={() => refresh()}
+        />
       </>
     )
 
@@ -306,81 +266,55 @@ export const MFASettings: React.FC = () => {
     return (
       <>
         {title}
-        <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
-          {step.at === 'scan' ? (
-            step.delivery === 'sms' ? (
-              <Typography variant="body2" gutterBottom>
-                {t('mfa.smsSent', 'We texted a code to your phone — enter it to finish turning on text-message codes.')}
-              </Typography>
-            ) : (
-              <>
+        <CodeStep
+          prompt={
+            step.at === 'scan' ? (
+              step.delivery === 'sms' ? (
                 <Typography variant="body2" gutterBottom>
-                  {t('mfa.scan', 'Scan with your authenticator app, then enter its 6-digit code.')}
+                  {t(
+                    'mfa.smsSent',
+                    'We texted a code to your phone — enter it to finish turning on text-message codes.'
+                  )}
                 </Typography>
-                {step.otpauth && (
-                  <Box marginY={2} bgcolor="white" padding={2} width="fit-content" borderRadius={1}>
-                    <QRCodeSVG value={step.otpauth} size={168} />
-                  </Box>
-                )}
-                {step.secret && (
-                  <Typography variant="caption" color="textSecondary" gutterBottom display="block">
-                    {t('mfa.secret', 'Or enter the key manually:')} <code>{step.secret}</code>
+              ) : (
+                <>
+                  <Typography variant="body2" gutterBottom>
+                    {t('mfa.scan', 'Scan with your authenticator app, then enter its 6-digit code.')}
                   </Typography>
-                )}
-              </>
+                  {step.otpauth && (
+                    <Box marginY={2} bgcolor="white" padding={2} width="fit-content" borderRadius={1}>
+                      <QRCodeSVG value={step.otpauth} size={168} />
+                    </Box>
+                  )}
+                  {step.secret && (
+                    <Typography variant="caption" color="textSecondary" gutterBottom display="block">
+                      {t('mfa.secret', 'Or enter the key manually:')} <code>{step.secret}</code>
+                    </Typography>
+                  )}
+                </>
+              )
+            ) : (
+              <Typography variant="body2" gutterBottom>
+                {step.hint
+                  ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: step.hint })
+                  : t('mfa.relay', 'Enter the 6-digit code from your current second factor.')}
+              </Typography>
             )
-          ) : (
-            <Typography variant="body2" gutterBottom>
-              {step.hint
-                ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: step.hint })
-                : t('mfa.relay', 'Enter the 6-digit code from your current second factor.')}
-            </Typography>
-          )}
-          <TextField
-            autoFocus
-            variant="filled"
-            label={t('changePassword.mfaCode', 'Authentication code')}
-            value={code}
-            onChange={e => setCode(e.target.value.trim())}
-          />
-          {step.error && (
-            <Typography variant="body2" color="error">
-              {step.error}
-            </Typography>
-          )}
-          <Box>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              disabled={code.length < 6 || busy}
-              onClick={submitCode}
-            >
-              {t('common.verify', 'Verify')}
-            </Button>
-            <Button size="small" onClick={() => refresh()}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-          </Box>
-        </Gutters>
+          }
+          code={code}
+          onCode={setCode}
+          error={step.error}
+          busy={busy}
+          onSubmit={submitCode}
+          onCancel={() => refresh()}
+        />
       </>
     )
 
   return (
     <>
       {title}
-      <Gutters bottom="xl">
-        <Typography variant="body2" gutterBottom>
-          {t(
-            'mfa.codesTitle',
-            'Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.'
-          )}
-        </Typography>
-        <CopyCodeBlock value={step.codes.join('\n')} sx={{ marginBottom: 2 }} />
-        <Button variant="contained" size="small" onClick={() => refresh()}>
-          {t('common.done', 'Done')}
-        </Button>
-      </Gutters>
+      <RecoveryCodes codes={step.codes} onDone={() => refresh()} />
     </>
   )
 }

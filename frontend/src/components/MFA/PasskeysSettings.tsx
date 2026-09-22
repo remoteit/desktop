@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Button, Chip, Radio, RadioGroup, FormControlLabel, TextField, Typography } from '@mui/material'
+import { Box, Button, Chip, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
-import { CopyCodeBlock } from '../CopyCodeBlock'
+import { PasswordStep, CodeStep, ChoiceStep, RecoveryCodes } from './steps'
 import {
   selfMe,
   selfPasskeyRegister,
@@ -10,7 +10,6 @@ import {
   selfPasskeyDelete,
   selfChallenge,
   MfaMethod,
-  METHOD_LABEL,
   SelfContinuation,
   SelfResult,
   Passkey,
@@ -175,41 +174,14 @@ export const PasskeysSettings: React.FC = () => {
     return (
       <>
         {title}
-        <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
-          <Typography variant="body2" gutterBottom>
-            {t(
-              'mfa.confirmPassword',
-              'Confirm your password to continue — changing a credential re-proves the one you hold.'
-            )}
-          </Typography>
-          <TextField
-            autoFocus
-            variant="filled"
-            type="password"
-            label={t('changePassword.currentPassword', 'Current Password')}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-          {step.error && (
-            <Typography variant="body2" color="error">
-              {step.error}
-            </Typography>
-          )}
-          <Box>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              disabled={!password || busy}
-              onClick={() => submitPassword(step.mode, step.keyId)}
-            >
-              {t('common.continue', 'Continue')}
-            </Button>
-            <Button size="small" onClick={() => refresh()}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-          </Box>
-        </Gutters>
+        <PasswordStep
+          password={password}
+          onPassword={setPassword}
+          error={step.error}
+          busy={busy}
+          onSubmit={() => submitPassword(step.mode, step.keyId)}
+          onCancel={() => refresh()}
+        />
       </>
     )
 
@@ -217,55 +189,33 @@ export const PasskeysSettings: React.FC = () => {
     return (
       <>
         {title}
-        <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
-          <Typography variant="body2" gutterBottom>
-            {step.isSelect
-              ? t('mfa.choose', 'How would you like to get your code?')
-              : step.hint
-              ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: step.hint })
-              : t('mfa.relay', 'Enter the 6-digit code from your current second factor.')}
-          </Typography>
-          {step.isSelect ? (
-            // The AS names the factors this account may choose from; offer exactly those.
-            <RadioGroup value={choice} onChange={e => setChoice(e.target.value as MfaMethod)}>
-              {(step.options ?? []).map(o => (
-                <FormControlLabel
-                  key={o}
-                  value={o}
-                  control={<Radio size="small" />}
-                  label={t(`mfa.method.${o}`, METHOD_LABEL[o] ?? o)}
-                />
-              ))}
-            </RadioGroup>
-          ) : (
-            <TextField
-              autoFocus
-              variant="filled"
-              label={t('changePassword.mfaCode', 'Authentication code')}
-              value={code}
-              onChange={e => setCode(e.target.value.trim())}
-            />
-          )}
-          {step.error && (
-            <Typography variant="body2" color="error">
-              {step.error}
-            </Typography>
-          )}
-          <Box>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              disabled={busy || (!step.isSelect && !code)}
-              onClick={submitCode}
-            >
-              {step.isSelect ? t('common.continue', 'Continue') : t('common.verify', 'Verify')}
-            </Button>
-            <Button size="small" onClick={() => refresh()}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-          </Box>
-        </Gutters>
+        {step.isSelect ? (
+          <ChoiceStep
+            options={step.options ?? []}
+            choice={choice}
+            onChoice={setChoice}
+            error={step.error}
+            busy={busy}
+            onSubmit={submitCode}
+            onCancel={() => refresh()}
+          />
+        ) : (
+          <CodeStep
+            prompt={
+              <Typography variant="body2" gutterBottom>
+                {step.hint
+                  ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: step.hint })
+                  : t('mfa.relay', 'Enter the 6-digit code from your current second factor.')}
+              </Typography>
+            }
+            code={code}
+            onCode={setCode}
+            error={step.error}
+            busy={busy}
+            onSubmit={submitCode}
+            onCancel={() => refresh()}
+          />
+        )}
       </>
     )
 
@@ -276,21 +226,16 @@ export const PasskeysSettings: React.FC = () => {
         <Typography variant="body2" gutterBottom>
           {t('passkeys.added', 'Passkey added — next sign-in, use it instead of typing a code.')}
         </Typography>
-        {step.codes?.length ? (
-          <>
-            <Typography variant="body2" gutterBottom>
-              {t(
-                'mfa.codesTitle',
-                'Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.'
-              )}
-            </Typography>
-            <CopyCodeBlock value={step.codes.join('\n')} sx={{ marginBottom: 2 }} />
-          </>
-        ) : null}
-        <Button variant="contained" size="small" onClick={() => refresh()}>
-          {t('common.done', 'Done')}
-        </Button>
       </Gutters>
+      {step.codes?.length ? (
+        <RecoveryCodes codes={step.codes} onDone={() => refresh()} />
+      ) : (
+        <Gutters bottom="xl">
+          <Button variant="contained" size="small" onClick={() => refresh()}>
+            {t('common.done', 'Done')}
+          </Button>
+        </Gutters>
+      )}
     </>
   )
 }

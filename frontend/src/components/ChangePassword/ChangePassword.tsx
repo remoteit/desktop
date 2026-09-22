@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ConfirmButton } from '../../buttons/ConfirmButton'
 import { Dispatch, State } from '../../store'
 import { Gutters } from '../Gutters'
+import { CodeStep } from '../MFA/steps'
 
 export const ChangePassword = () => {
   const { t } = useTranslation()
@@ -52,37 +53,23 @@ export const ChangePassword = () => {
         <Typography variant="subtitle1" gutterBottom>
           {t('changePassword.title', 'Change Password')}
         </Typography>
-        <Gutters sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
-          <Typography variant="body2" gutterBottom>
-            {passwordChallenge.hint
-              ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: passwordChallenge.hint })
-              : t(
-                  'changePassword.mfaPrompt',
-                  'Enter the 6-digit code from your authenticator to finish changing your password.'
-                )}
-          </Typography>
-          <TextField
-            autoFocus
-            variant="filled"
-            label={t('changePassword.mfaCode', 'Authentication code')}
-            value={code}
-            onChange={e => setCode(e.target.value.trim())}
-          />
-        </Gutters>
-        <Gutters bottom="xl">
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            disabled={code.length < 6 || saving}
-            onClick={verifyCode}
-          >
-            {t('common.verify', 'Verify')}
-          </Button>
-          <Button size="small" onClick={() => auth.set({ passwordChallenge: undefined })}>
-            {t('common.cancel', 'Cancel')}
-          </Button>
-        </Gutters>
+        <CodeStep
+          prompt={
+            <Typography variant="body2" gutterBottom>
+              {passwordChallenge.hint
+                ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: passwordChallenge.hint })
+                : t(
+                    'changePassword.mfaPrompt',
+                    'Enter the 6-digit code from your authenticator to finish changing your password.'
+                  )}
+            </Typography>
+          }
+          code={code}
+          onCode={setCode}
+          busy={saving}
+          onSubmit={verifyCode}
+          onCancel={() => auth.set({ passwordChallenge: undefined })}
+        />
       </>
     )
 
