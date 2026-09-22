@@ -57,10 +57,11 @@ export const ChatMessageItem = React.memo<Props>(({ message }) => {
               '& table': scrollbarStyles(theme, { background: 'grayLightest', width: SCROLLBAR_WIDTH_NARROW }),
             }),
             {
-              // No card: the agent's words sit on the panel itself, a hair off the
+              // No card: the agent's words sit on the panel itself, inset from the
               // column edge the user bubble hangs from. The user's turns are then the
               // only cards, which is what makes each of them stand out in a long thread.
-              padding: 0.5,
+              paddingX: 1.5,
+              paddingY: 1,
               fontSize: fontSizes.base,
               lineHeight: 1.7,
               wordBreak: 'break-word',
