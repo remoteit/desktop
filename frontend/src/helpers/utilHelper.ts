@@ -96,7 +96,6 @@ export function removeObjectAttribute<T, K extends keyof T>(obj: T, key: K): Omi
   return rest
 }
 
-
 export function createMemoDebugger(componentName) {
   return (prevProps, nextProps) => {
     Object.keys(prevProps).forEach(key => {
@@ -123,3 +122,8 @@ export function containsNonPrintableChars(text: string): boolean {
   // Calculate the ratio of non-printable characters in the text
   return nonPrintableCount / text.length > nonPrintableCharLimit
 }
+
+/** The value when it is an https URL, else undefined — the only scheme an external picture,
+ *  an agent override or a CSP-bound fetch may carry. */
+export const httpsOnly = (value: unknown): string | undefined =>
+  typeof value === 'string' && /^https:\/\//i.test(value) ? value : undefined

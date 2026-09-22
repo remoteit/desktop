@@ -12,6 +12,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { ADMIN_ADDONS_ROUTE } from '../../constants'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
@@ -33,8 +34,6 @@ import { Dispatch, State } from '../../store'
    one per add-on. The product is in the URL (/admin/add-ons/:productId) so a reload, a deep link
    and the sidebar's remembered route all land on the same list. ai-agent is the first product;
    the next one is a product row on the API and shows up in the selector with no change here. */
-
-export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
 
 const productLabel = (product?: AdminAddonProduct) =>
   product ? `${product.description || product.name}${product.enabled ? '' : ' (disabled)'}` : 'add-on'

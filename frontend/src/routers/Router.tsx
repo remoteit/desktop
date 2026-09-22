@@ -69,6 +69,7 @@ import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
 import { AdminRouteGuard } from './AdminRouteGuard'
+import { ADMIN_ADDONS_ROUTE } from '../constants'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const history = useHistory()
@@ -440,7 +441,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/admin/enterprise-licenses">
                 <AdminEnterpriseLicensesListPage />
               </Route>
-              <Route path="/admin/add-ons/:productId?">
+              <Route path={`${ADMIN_ADDONS_ROUTE}/:productId?`}>
                 <AdminAddonLicensesListPage />
               </Route>
               <Route path="/admin/notices/:noticeId?">

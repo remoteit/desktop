@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { Icon } from './Icon'
+import { ADMIN_ADDONS_ROUTE } from '../constants'
 
 export const AdminSidebarNav: React.FC = () => {
   const history = useHistory()
@@ -101,8 +102,8 @@ export const AdminSidebarNav: React.FC = () => {
 
       <ListItemButton
         dense
-        selected={currentPath.includes('/admin/add-ons')}
-        onClick={() => handleNavClick('/admin/add-ons')}
+        selected={currentPath.includes(ADMIN_ADDONS_ROUTE)}
+        onClick={() => handleNavClick(ADMIN_ADDONS_ROUTE)}
       >
         <ListItemIcon>
           <Icon name="puzzle-piece" size="md" />

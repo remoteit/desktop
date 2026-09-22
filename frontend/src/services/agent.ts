@@ -11,12 +11,13 @@
  * No agent-specific credentials exist anywhere anymore.
  */
 import { store } from '../store'
+import { httpsOnly } from '../helpers/utilHelper'
 import { oidcAuthHeaders } from './oidc'
 import { OAUTH_AGENT_RESOURCE, AGENT_URL } from '../constants'
 
 /* The override must be https — the app's CSP blocks plain http. Shared with
    the Test Settings validation so what saves is exactly what engages. */
-export const isSecureAgentURL = (url: string): boolean => /^https:\/\//i.test(url)
+export const isSecureAgentURL = (url: string): boolean => !!httpsOnly(url)
 
 /* Base URL for the agent service, resolved per request. A Test UI override
    wins (Test Settings → Agent service URL, https only); otherwise the build's AGENT_URL. */

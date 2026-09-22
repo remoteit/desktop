@@ -13,6 +13,7 @@ import {
   PROTOCOL,
 } from '../constants'
 import { toBase64url, decodeBase64url } from '../helpers/base64url'
+import { httpsOnly } from '../helpers/utilHelper'
 
 /**
  * The renderer-owned OIDC client (permitteer docs/remoteit-desktop-login.md, D8):
@@ -823,7 +824,7 @@ function fileAccount(tokens: Stored) {
     email: claims?.email,
     name: claims?.name,
     // Belt on the AS's own https-only guard — this string lands in an <img src>.
-    picture: typeof claims?.picture === 'string' && /^https:\/\//i.test(claims.picture) ? claims.picture : undefined,
+    picture: httpsOnly(claims?.picture),
     declaration: reg[sub]?.declaration,
   }
   writeRegistry(reg)
@@ -1111,7 +1112,7 @@ export async function oidcRefreshBrowserAccounts(): Promise<void> {
       ...(prev ?? {}),
       email: a.email ?? prev?.email,
       name: a.name ?? prev?.name,
-      picture: typeof a.picture === 'string' && /^https:\/\//i.test(a.picture) ? a.picture : prev?.picture,
+      picture: httpsOnly(a.picture) ?? prev?.picture,
     }
   }
   // The AS has just told us who is signed in on this browser, so that answer WINS: a member it

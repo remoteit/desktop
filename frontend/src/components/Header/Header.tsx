@@ -1,6 +1,6 @@
-import { REGEX_FIRST_PATH, CHAT_GUIDE_DATE } from '../../constants'
+import { REGEX_FIRST_PATH, CHAT_GUIDE_DATE, ADMIN_ADDONS_ROUTE } from '../../constants'
 import { useMobile } from '../../hooks/useMobile'
-import { useChatEnabled, useHideSidebar } from '../../hooks/useChatEnabled'
+import { useChatEnabled } from '../../hooks/useChatEnabled'
 import { GuideBubble } from '../GuideBubble'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -40,7 +40,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
 
   const navigateUp = useNavigationUp(panels)
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const sidebarHidden = useHideSidebar()
+  const sidebarHidden = layout.hideSidebar
   const mobile = useMobile()
   const inputRef = useRef<HTMLInputElement>(null)
   const dispatch = useDispatch<Dispatch>()
@@ -61,7 +61,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   ]
   // The add-ons page keys its product into the URL (/admin/add-ons/:productId): that is its root
   // list, not a detail with a level above it.
-  const isAdminRootPage = adminRootPages.includes(location.pathname) || location.pathname.startsWith('/admin/add-ons')
+  const isAdminRootPage = adminRootPages.includes(location.pathname) || location.pathname.startsWith(ADMIN_ADDONS_ROUTE)
   const isRootMenu = menu === location.pathname || isAdminRootPage
 
   return (

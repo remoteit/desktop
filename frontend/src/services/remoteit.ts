@@ -1,9 +1,9 @@
 import { oidcAccessToken, oidcAuthHeaders } from './oidc'
-import { getApiResource } from '../helpers/apiHelper'
+import { getApiResource, getTestHeader } from '../helpers/apiHelper'
 
 /**
- * The single token choke point every authenticated graphql call flows through. The token's
- * audience FOLLOWS the switcher (D10, permitteer docs/remoteit-desktop-login.md Phase 4c):
+ * The in-band bearer for liveness probes and the events subscribe envelope (apiAuthHeaders is
+ * what a graphql/REST call carries). The token's audience FOLLOWS the switcher (D10, permitteer docs/remoteit-desktop-login.md Phase 4c):
  * pointing the app at another stage mints for that stage instead of replaying a
  * wrong-audience token into ambient 403s. Resolves to 'Bearer …' or '' (callers no-op on
  * empty).
@@ -11,10 +11,6 @@ import { getApiResource } from '../helpers/apiHelper'
 export async function getToken(): Promise<string> {
   const token = await oidcAccessToken(getApiResource())
   return token ? 'Bearer ' + token : ''
-}
-
-export async function hasCredentials() {
-  return !!(await oidcAccessToken())
 }
 
 /** Scheme-aware auth headers for a graphql/REST call (permitteer docs — the container now
@@ -27,4 +23,12 @@ export async function hasCredentials() {
  */
 export async function apiAuthHeaders(method: string, url: string): Promise<Record<string, string>> {
   return await oidcAuthHeaders(method, url, getApiResource())
+}
+
+/** The headers a REST call carries — the scheme-aware auth plus the Test Settings header — or
+ *  undefined when there is no token to carry, so the caller can no-op. */
+export async function apiHeaders(method: string, url: string): Promise<Record<string, string> | undefined> {
+  const auth = await apiAuthHeaders(method, url)
+  if (!auth.authorization) return undefined
+  return { ...auth, ...getTestHeader() }
 }

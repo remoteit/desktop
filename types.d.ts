@@ -676,8 +676,8 @@ declare global {
     jobId?: string
     tag?: ITagFilter
     file?: File
-    argumentDefinitions?: IArgumentDefinition[]  // For script creation/edit
-    argumentValues?: IArgumentValue[]            // For running scripts
+    argumentDefinitions?: IArgumentDefinition[] // For script creation/edit
+    argumentValues?: IArgumentValue[] // For running scripts
   }
 
   type IJob = {
@@ -840,8 +840,9 @@ declare global {
     givenAt?: string
     updatedAt?: string
     lastUsedAt?: string | null
-    scopes: string[]
-    groups: {
+    // The AS shape: every list below may be absent on an older deployment
+    scopes?: string[]
+    groups?: {
       typeLabel?: string
       resourceLabel?: string
       api?: string | null
@@ -852,9 +853,9 @@ declare global {
         all: boolean
         accounts: { id: string; filter: string | null }[]
         ceilingAll: boolean
-      // "All accounts" is still on offer (consent would have offered it), even if this grant
-      // never took it — so the editor can present it as an addition.
-      offerAll?: boolean
+        // "All accounts" is still on offer (consent would have offered it), even if this grant
+        // never took it — so the editor can present it as an addition.
+        offerAll?: boolean
         ceilingIds: string[]
         options: { id: string; label: string }[] | null
       } | null
@@ -863,7 +864,7 @@ declare global {
     // The SCOPE lane, read-only: APIs the client may bind whose granted scopes they declare
     // (a first-party app's device access lives here, never in the detail groups).
     scopeGroups?: { api: string; actions: { key: string; label: string; description: string | null }[] }[]
-    links: { name: string; url: string }[]
+    links?: { name: string; url: string }[]
     revokeReach: { immediate: string[]; delayed: string[]; delayMinutes: number }
   }
 

@@ -12,6 +12,7 @@ export const MODE = env.MODE || 'development'
    AI portal defaulted the flag on ahead of the licence (PENDING_FEATURES / CHAT_ALWAYS_ON);
    now an account without the licence — a developer's included — sees no chat anywhere. */
 export const CHAT_FEATURE = 'ai-agent'
+export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
 
 // Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
 // web and desktop; the backend never touches auth.

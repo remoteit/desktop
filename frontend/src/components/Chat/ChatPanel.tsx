@@ -5,13 +5,7 @@ import { Box, Theme } from '@mui/material'
 import { State, Dispatch } from '../../store'
 import { CHAT_PANEL_WIDTH_MIN } from '../../constants'
 import { radius } from '../../styling'
-import {
-  useChatDocked,
-  useChatWidth,
-  useSidebarWidth,
-  layoutBreakpoints,
-  chatMaxWidth,
-} from '../../hooks/useChatEnabled'
+import { useChatDocked, useChatWidth, layoutBreakpoints, chatMaxWidth } from '../../hooks/useChatEnabled'
 import { getViewportWidth } from '../../hooks/useViewportWidth'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
@@ -41,7 +35,7 @@ export const ChatPanel: React.FC = () => {
   const turnActive = useSelector(selectTurnActive)
   const docked = useChatDocked()
   const chatWidth = useChatWidth()
-  const sidebarWidth = useSidebarWidth()
+  const sidebarWidth = layout.sidePanelWidth
   const dispatch = useDispatch<Dispatch>()
 
   useChatMainSync()

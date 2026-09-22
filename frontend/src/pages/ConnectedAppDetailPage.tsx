@@ -25,6 +25,39 @@ const toggled = (set: Set<string>, key: string) => {
 }
 const sameSet = (set: Set<string>, list: string[]) => set.size === list.length && list.every(i => set.has(i))
 
+/* A permission as a chip: filled while on, dashed when taking it would ADD access the grant
+   never carried, dimmed when the choice is made elsewhere (every account is already covered). */
+const ToggleChip: React.FC<{
+  on: boolean
+  editable: boolean
+  dashed?: boolean
+  muted?: boolean
+  label: React.ReactNode
+  title?: string
+  onClick: () => void
+}> = ({ on, editable, dashed, muted, label, title, onClick }) => (
+  <Chip
+    size="small"
+    clickable={editable}
+    color={on && editable ? 'primary' : undefined}
+    variant={on ? 'filled' : 'outlined'}
+    onClick={onClick}
+    label={label}
+    title={title}
+    sx={{ mr: 1, mb: 0.5, opacity: on ? (muted ? 0.7 : 1) : 0.6, ...(dashed ? { borderStyle: 'dashed' } : {}) }}
+  />
+)
+
+const RowLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Typography
+    variant="caption"
+    color="textSecondary"
+    sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}
+  >
+    {children}
+  </Typography>
+)
+
 export const ConnectedAppDetailPage: React.FC = () => {
   const { t } = useTranslation()
   const { clientId } = useParams<{ clientId: string }>()
@@ -79,12 +112,14 @@ export const ConnectedAppDetailPage: React.FC = () => {
 
   const name = agent.app || agent.clientId
   const reach = agent.revokeReach
-  const allActions = (agent.groups ?? []).flatMap(g => g.actions)
+  const groups = agent.groups ?? []
+  const scopes = agent.scopes ?? []
+  const allActions = groups.flatMap(g => g.actions)
   const actions = allActions.filter(a => a.enabled)
   const kept = keepEdit ?? new Set(actions.map(a => a.key))
-  const scopesKept = scopeEdit ?? new Set(agent.scopes ?? [])
+  const scopesKept = scopeEdit ?? new Set(scopes)
   // The grant's reach (one scope constraint per grant; every scoped group carries the same)
-  const reachGroup = (agent.groups ?? []).find(gr => gr.reach)?.reach ?? null
+  const reachGroup = groups.find(gr => gr.reach)?.reach ?? null
   const reachNow =
     reachEdit ?? (reachGroup ? { all: reachGroup.all, ids: new Set(reachGroup.accounts.map(a => a.id)) } : null)
   const reachDirty =
@@ -101,7 +136,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
         keepEdit,
         actions.map(a => a.key)
       )) ||
-    (scopeEdit !== null && !sameSet(scopeEdit, agent.scopes ?? [])) ||
+    (scopeEdit !== null && !sameSet(scopeEdit, scopes)) ||
     reachDirty
   const toggleAction = (key: string) => {
     if (!agent.active || saving) return
@@ -135,6 +170,19 @@ export const ConnectedAppDetailPage: React.FC = () => {
     // delegate today and asks for a recent sign-in before it lands.
     setReachEdit({ all: false, ids: toggled(reachNow.ids, id) })
   }
+  // The accounts the reach chips offer, their labels, and which of them lie OUTSIDE what was
+  // consented — still offerable, but turning one on shares it with this app for the first time.
+  const reachIds = reachGroup
+    ? [
+        ...new Set([
+          ...(reachGroup.options ?? []).map(o => o.id),
+          ...reachGroup.accounts.map(a => a.id),
+          ...(!reachGroup.ceilingAll ? reachGroup.ceilingIds : []),
+        ]),
+      ]
+    : []
+  const reachLabel = (id: string) => (reachGroup?.options ?? []).find(o => o.id === id)?.label ?? id
+  const outsideCeiling = (id: string) => !!reachGroup && !reachGroup.ceilingAll && !reachGroup.ceilingIds.includes(id)
   // What this save would ADD beyond what was consented — an offered permission being taken
   // up, or an account this grant never reached. Everything else on this page removes access;
   // these are the only choices that create it, so they are named before they are made.
@@ -143,12 +191,14 @@ export const ConnectedAppDetailPage: React.FC = () => {
     ...(reachGroup && reachNow?.all && !reachGroup.ceilingAll
       ? [t('connectedAppDetailPage.allAccountsPlain', 'every account, including ones you join later')]
       : []),
-    ...(reachGroup && reachNow && !reachNow.all
-      ? [...reachNow.ids]
-          .filter(id => !reachGroup.ceilingAll && !reachGroup.ceilingIds.includes(id))
-          .map(id => (reachGroup.options ?? []).find(o => o.id === id)?.label ?? id)
-      : []),
+    ...(reachNow && !reachNow.all ? [...reachNow.ids].filter(outsideCeiling).map(reachLabel) : []),
   ]
+  const discardEdits = () => {
+    setKeepEdit(null)
+    setScopeEdit(null)
+    setReachEdit(null)
+    setError(null)
+  }
 
   const save = async () => {
     setSaving(true)
@@ -175,11 +225,8 @@ export const ConnectedAppDetailPage: React.FC = () => {
       )
       return
     }
-    setError(null)
     await dispatch.agents.fetch()
-    setKeepEdit(null)
-    setScopeEdit(null)
-    setReachEdit(null)
+    discardEdits()
     setSaving(false)
   }
 
@@ -224,7 +271,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
                       'This access was revoked — shown for the record. {{name}} can request access again by signing in.',
                   })}
             </Typography>
-            {(agent.groups ?? []).map((group, i) => {
+            {groups.map((group, i) => {
               if (!group.actions.length) return null
               const where =
                 group.resourceLabel && group.resourceLabel !== '(all resources)' ? ` — ${group.resourceLabel}` : ''
@@ -243,12 +290,11 @@ export const ConnectedAppDetailPage: React.FC = () => {
                   const offered = !!action.offered
                   const base = !sharedLimit && action.limit ? `${action.label} (${action.limit})` : action.label
                   return (
-                    <Chip
+                    <ToggleChip
                       key={action.key}
-                      size="small"
-                      clickable={agent.active}
-                      color={on && agent.active ? 'primary' : undefined}
-                      variant={on ? 'filled' : 'outlined'}
+                      on={on}
+                      editable={agent.active}
+                      dashed={offered}
                       onClick={() => toggleAction(action.key)}
                       label={
                         offered
@@ -266,7 +312,6 @@ export const ConnectedAppDetailPage: React.FC = () => {
                             )
                           : action.description || undefined
                       }
-                      sx={{ mr: 1, mb: 0.5, opacity: on ? 1 : 0.6, ...(offered ? { borderStyle: 'dashed' } : {}) }}
                     />
                   )
                 })
@@ -292,33 +337,20 @@ export const ConnectedAppDetailPage: React.FC = () => {
                           key={piece ?? 'general'}
                           sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, marginBottom: 0.5 }}
                         >
-                          <Typography
-                            variant="caption"
-                            color="textSecondary"
-                            sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}
-                          >
-                            {piece ?? 'General'}
-                          </Typography>
+                          <RowLabel>{piece ?? 'General'}</RowLabel>
                           <Box>{chips(group.actions.filter(a => (a.piece ?? null) === piece))}</Box>
                         </Box>
                       ))
                     : chips(group.actions)}
                   {group.reach && reachNow ? (
                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, marginBottom: 0.5 }}>
-                      <Typography
-                        variant="caption"
-                        color="textSecondary"
-                        sx={{ flex: '0 0 90px', textTransform: 'uppercase', letterSpacing: '.05em' }}
-                      >
-                        {t('connectedAppDetailPage.accounts', 'Accounts')}
-                      </Typography>
+                      <RowLabel>{t('connectedAppDetailPage.accounts', 'Accounts')}</RowLabel>
                       <Box>
                         {group.reach.ceilingAll || group.reach.offerAll ? (
-                          <Chip
-                            size="small"
-                            clickable={agent.active}
-                            color={reachNow.all && agent.active ? 'primary' : undefined}
-                            variant={reachNow.all ? 'filled' : 'outlined'}
+                          <ToggleChip
+                            on={reachNow.all}
+                            editable={agent.active}
+                            dashed={!group.reach.ceilingAll}
                             onClick={toggleReachAll}
                             label={
                               group.reach.ceilingAll
@@ -328,46 +360,24 @@ export const ConnectedAppDetailPage: React.FC = () => {
                                     'All accounts, including ones added later — add'
                                   )
                             }
-                            sx={{
-                              mr: 1,
-                              mb: 0.5,
-                              opacity: reachNow.all ? 1 : 0.6,
-                              ...(group.reach.ceilingAll ? {} : { borderStyle: 'dashed' }),
-                            }}
                           />
                         ) : null}
-                        {[
-                          ...new Set([
-                            ...(group.reach.options ?? []).map(o => o.id),
-                            ...group.reach.accounts.map(a => a.id),
-                            ...(!group.reach.ceilingAll ? group.reach.ceilingIds : []),
-                          ]),
-                        ].map(id => {
-                          const label = (group.reach!.options ?? []).find(o => o.id === id)?.label ?? id
-                          const on = reachNow.all || reachNow.ids.has(id)
-                          const editable = agent.active && !reachNow.all
-                          // Outside what was consented: still offerable, but say so — turning
-                          // it on shares that account with this app for the first time.
-                          const adding = !group.reach!.ceilingAll && !group.reach!.ceilingIds.includes(id)
+                        {reachIds.map(id => {
+                          const label = reachLabel(id)
+                          const outside = outsideCeiling(id)
                           return (
-                            <Chip
+                            <ToggleChip
                               key={id}
-                              size="small"
-                              clickable={editable}
-                              color={on && agent.active && !reachNow.all ? 'primary' : undefined}
-                              variant={on ? 'filled' : 'outlined'}
+                              on={reachNow.all || reachNow.ids.has(id)}
+                              editable={agent.active && !reachNow.all}
+                              dashed={outside}
+                              muted={reachNow.all}
                               onClick={() => toggleReachId(id)}
                               label={
-                                adding
+                                outside
                                   ? t('connectedAppDetailPage.addAccount', { label, defaultValue: '{{label}} — add' })
                                   : label
                               }
-                              sx={{
-                                mr: 1,
-                                mb: 0.5,
-                                opacity: on ? (reachNow.all ? 0.7 : 1) : 0.6,
-                                ...(adding ? { borderStyle: 'dashed' } : {}),
-                              }}
                             />
                           )
                         })}
@@ -382,24 +392,15 @@ export const ConnectedAppDetailPage: React.FC = () => {
                 </React.Fragment>
               )
             })}
-            {(agent.scopes ?? []).length ? (
+            {scopes.length ? (
               <>
                 <Typography variant="overline" display="block" sx={{ marginTop: 1.5 }}>
                   {t('connectedAppDetailPage.signInScopes', 'Sign-in scopes')}
                 </Typography>
-                {(agent.scopes ?? []).map(sc => {
+                {scopes.map(sc => {
                   const on = scopesKept.has(sc)
                   return (
-                    <Chip
-                      key={sc}
-                      size="small"
-                      clickable={agent.active}
-                      color={on && agent.active ? 'primary' : undefined}
-                      variant={on ? 'filled' : 'outlined'}
-                      onClick={() => toggleScope(sc)}
-                      label={sc}
-                      sx={{ mr: 1, mb: 0.5, opacity: on ? 1 : 0.6 }}
-                    />
+                    <ToggleChip key={sc} on={on} editable={agent.active} onClick={() => toggleScope(sc)} label={sc} />
                   )
                 })}
               </>
@@ -440,17 +441,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
                     ),
                   }}
                 />
-                <Button
-                  size="small"
-                  sx={{ marginLeft: 1 }}
-                  disabled={saving}
-                  onClick={() => {
-                    setKeepEdit(null)
-                    setScopeEdit(null)
-                    setReachEdit(null)
-                    setError(null)
-                  }}
-                >
+                <Button size="small" sx={{ marginLeft: 1 }} disabled={saving} onClick={discardEdits}>
                   {t('common.cancel', 'Cancel')}
                 </Button>
               </Box>

@@ -5,7 +5,7 @@ import cloudController from '../../services/cloudController'
 import cloudSync from '../../services/CloudSync'
 import { emit } from '../../services/Controller'
 import { Dispatch, State } from '../../store'
-import { VALID_JOB_ID_LENGTH, GUIDE_START_DATE } from '../../constants'
+import { VALID_JOB_ID_LENGTH, GUIDE_START_DATE, ADMIN_ADDONS_ROUTE } from '../../constants'
 import { useParams, useRouteMatch } from 'react-router-dom'
 import { selectDeviceModelAttributes, selectDevice } from '../../selectors/devices'
 import { useDispatch, useSelector } from 'react-redux'
@@ -39,7 +39,7 @@ export const RefreshButton: React.FC<ButtonProps> = props => {
   const adminUsersPage = useRouteMatch('/admin/users')
   const adminPartnersPage = useRouteMatch('/admin/partners')
   const adminEnterpriseLicensesPage = useRouteMatch('/admin/enterprise-licenses')
-  const adminAddonLicensesPage = useRouteMatch<{ productId?: string }>('/admin/add-ons/:productId?')
+  const adminAddonLicensesPage = useRouteMatch<{ productId?: string }>(`${ADMIN_ADDONS_ROUTE}/:productId?`)
   const adminNoticesPage = useRouteMatch('/admin/notices')
   const scriptingPage = useRouteMatch(['/script', '/scripts', '/runs'])
   const runsPage = useRouteMatch<{ fileID?: string }>('/runs/:fileID?')
