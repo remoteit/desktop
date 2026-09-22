@@ -12,6 +12,7 @@ import {
   selfMfaDisable,
   selfChallenge,
   MfaMethod,
+  METHOD_LABEL,
   SelfContinuation,
 } from '../../services/passportSelf'
 import { OAUTH_PASSPORT_RESOURCE } from '../../constants'
@@ -35,8 +36,6 @@ type Step =
   | { at: 'select'; pending: { mode: Mode; method?: MfaMethod }; challenge: string; options: MfaMethod[] }
   | { at: 'scan'; challenge: string; secret?: string; otpauth?: string; delivery?: 'sms'; error?: string }
   | { at: 'codes'; codes: string[] }
-
-const METHOD_LABEL: Record<MfaMethod, string> = { totp: 'Authenticator app', sms: 'Text message' }
 
 export const MFASettings: React.FC = () => {
   const { t } = useTranslation()

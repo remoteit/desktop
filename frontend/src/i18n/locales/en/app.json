@@ -1151,7 +1151,7 @@
     "title": "Logs"
   },
   "mfa": {
-    "choose": "How would you like to get your code? (totp or sms)",
+    "choose": "How would you like to get your code?",
     "codesTitle": "Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.",
     "confirmPassword": "Confirm your password to continue — changing a credential re-proves the one you hold.",
     "disable": "Turn Off",

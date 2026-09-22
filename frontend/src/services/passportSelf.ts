@@ -38,6 +38,8 @@ const call = async (
 }
 
 export type MfaMethod = 'totp' | 'sms'
+// English fallbacks for the `mfa.method.<method>` catalog keys, shared by every surface that lists factors.
+export const METHOD_LABEL: Record<MfaMethod, string> = { totp: 'Authenticator app', sms: 'Text message' }
 export type MfaStanding = { methods: MfaMethod[]; preferred?: MfaMethod; available: MfaMethod[] }
 
 export const selfMe = () => call('')

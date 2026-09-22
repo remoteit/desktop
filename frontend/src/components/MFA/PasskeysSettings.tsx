@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Button, Chip, TextField, Typography } from '@mui/material'
+import { Box, Button, Chip, Radio, RadioGroup, FormControlLabel, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
 import { CopyCodeBlock } from '../CopyCodeBlock'
 import {
@@ -10,6 +10,7 @@ import {
   selfPasskeyDelete,
   selfChallenge,
   MfaMethod,
+  METHOD_LABEL,
   SelfContinuation,
 } from '../../services/passportSelf'
 import { toBase64url, fromBase64url } from '../../helpers/base64url'
@@ -42,6 +43,7 @@ export const PasskeysSettings: React.FC = () => {
   const [step, setStep] = useState<Step>({ at: 'view', keys: [] })
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
+  const [choice, setChoice] = useState<MfaMethod>('totp')
   const [busy, setBusy] = useState(false)
   const [supported] = useState(() => typeof window !== 'undefined' && !!window.PublicKeyCredential)
 
@@ -132,7 +134,7 @@ export const PasskeysSettings: React.FC = () => {
   const submitCode = async () => {
     const current = step as Extract<Step, { at: 'relay' }>
     setBusy(true)
-    const r = await selfChallenge(current.challenge, current.isSelect ? { choice: code as MfaMethod } : { code })
+    const r = await selfChallenge(current.challenge, current.isSelect ? { choice } : { code })
     setBusy(false)
     setCode('')
     await follow(r, current.pending)
@@ -221,26 +223,46 @@ export const PasskeysSettings: React.FC = () => {
         <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
           <Typography variant="body2" gutterBottom>
             {step.isSelect
-              ? t('mfa.choose', 'How would you like to get your code? (totp or sms)')
+              ? t('mfa.choose', 'How would you like to get your code?')
               : step.hint
               ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: step.hint })
               : t('mfa.relay', 'Enter the 6-digit code from your current second factor.')}
           </Typography>
-          <TextField
-            autoFocus
-            variant="filled"
-            label={step.isSelect ? t('mfa.method', 'Method') : t('changePassword.mfaCode', 'Authentication code')}
-            value={code}
-            onChange={e => setCode(e.target.value.trim())}
-          />
+          {step.isSelect ? (
+            // The AS names the factors this account may choose from; offer exactly those.
+            <RadioGroup value={choice} onChange={e => setChoice(e.target.value as MfaMethod)}>
+              {(step.options ?? []).map(o => (
+                <FormControlLabel
+                  key={o}
+                  value={o}
+                  control={<Radio size="small" />}
+                  label={t(`mfa.method.${o}`, METHOD_LABEL[o] ?? o)}
+                />
+              ))}
+            </RadioGroup>
+          ) : (
+            <TextField
+              autoFocus
+              variant="filled"
+              label={t('changePassword.mfaCode', 'Authentication code')}
+              value={code}
+              onChange={e => setCode(e.target.value.trim())}
+            />
+          )}
           {step.error && (
             <Typography variant="body2" color="error">
               {step.error}
             </Typography>
           )}
           <Box>
-            <Button variant="contained" color="primary" size="small" disabled={!code || busy} onClick={submitCode}>
-              {t('common.verify', 'Verify')}
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              disabled={busy || (!step.isSelect && !code)}
+              onClick={submitCode}
+            >
+              {step.isSelect ? t('common.continue', 'Continue') : t('common.verify', 'Verify')}
             </Button>
             <Button size="small" onClick={() => refresh()}>
               {t('common.cancel', 'Cancel')}

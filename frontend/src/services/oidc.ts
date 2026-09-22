@@ -1,4 +1,4 @@
-import browser from './browser'
+import browser, { windowOpen } from './browser'
 import i18n from '../i18n'
 import {
   OAUTH_ISSUER,
@@ -331,7 +331,11 @@ async function discover() {
   return discovery!
 }
 
-const redirectUri = () => (browser.isElectron ? PROTOCOL + 'authCallback' : window.location.origin + '/authCallback')
+// A NATIVE app — Electron or a Capacitor build — comes back through its private-use scheme, which
+// the registry lists for the desktop client; the WebView's own origin (capacitor://localhost) is
+// registered nowhere. On web the page's own /authCallback is the registered one.
+const redirectUri = () =>
+  browser.isElectron || browser.isMobile ? PROTOCOL + 'authCallback' : window.location.origin + '/authCallback'
 
 /** Leave for the AS. On web the page departs; on desktop the main process bounces the
  * issuer origin to the system browser and the window stays on the waiting panel. */
@@ -558,7 +562,12 @@ export async function oidcStart(
     params.prompt = opts.prompt
   }
   for (const key in params) url.searchParams.set(key, params[key])
-  window.location.assign(url.toString())
+  // On web the page departs; on desktop the main process bounces the issuer origin to the system
+  // browser and the window stays on the waiting panel. A native mobile app opens the system
+  // browser itself — the WebView cannot follow the AS's redirect to a private-use scheme — and
+  // the deep link brings the code back (hooks/useCapacitor reloads the WebView with it).
+  if (browser.isMobile) await windowOpen(url.toString())
+  else window.location.assign(url.toString())
   return true
 }
 
