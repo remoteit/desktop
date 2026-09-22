@@ -1,4 +1,5 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
+import { useResizeMeasure } from './useResizeMeasure'
 
 /**
  * Hook to track the width of a container element using ResizeObserver
@@ -8,7 +9,7 @@ import { useRef, useState, useEffect } from 'react'
 export function useContainerWidth() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState<number>(1000)
-  useContainerObserver(containerRef, setContainerWidth)
+  useResizeMeasure(containerRef, element => setContainerWidth(element.offsetWidth))
   return { containerRef, containerWidth }
 }
 
@@ -20,20 +21,6 @@ export function useContainerWidth() {
 export function useContainerNarrowerThan(threshold: number) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [narrow, setNarrow] = useState<boolean>(false)
-  useContainerObserver(containerRef, width => setNarrow(width < threshold))
+  useResizeMeasure(containerRef, element => setNarrow(element.offsetWidth < threshold))
   return { containerRef, narrow }
-}
-
-function useContainerObserver(containerRef: React.RefObject<HTMLDivElement>, onWidth: (width: number) => void) {
-  const latest = useRef(onWidth)
-  latest.current = onWidth
-  useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) latest.current(containerRef.current.offsetWidth)
-    }
-    updateWidth()
-    const resizeObserver = new ResizeObserver(updateWidth)
-    if (containerRef.current) resizeObserver.observe(containerRef.current)
-    return () => resizeObserver.disconnect()
-  }, [])
 }

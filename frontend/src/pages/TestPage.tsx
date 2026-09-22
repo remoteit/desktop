@@ -103,12 +103,7 @@ export const TestPage: React.FC = () => {
       const cloud = target.identifier.match(CLOUD_TREE_RE)
       if (cloud) {
         const key = `cloud:${cloud[1] || 'prod'}`
-        pairs.set(key, {
-          ...at(key, target.name),
-          name: target.name,
-          ...cloudTreeUrls(target.identifier),
-          resources: [target.identifier],
-        })
+        pairs.set(key, { key, name: target.name, ...cloudTreeUrls(target.identifier), resources: [target.identifier] })
         continue
       }
       const gql = target.identifier.match(LEGACY_GRAPHQL_RE)

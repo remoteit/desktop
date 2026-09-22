@@ -112,9 +112,7 @@ function fromCli() {
         'Check that the remote.it CLI is installed and signed in, or set R3_API_TOKEN and drop --cli.'
     )
   }
-  const data = unwrapCli(stdout)
-  if (!data.platformTypes) throw new Error('exec-gql returned no platformTypes')
-  return normalise(data.platformTypes, data.platformInstallations || [])
+  return fromData(unwrapCli(stdout), 'exec-gql')
 }
 
 async function fromApi() {
@@ -138,8 +136,13 @@ async function fromApi() {
     throw new Error(`${API} → HTTP ${res.status} but not JSON (edge/WAF page?): ${text.slice(0, 80)}`)
   }
   if (body.errors?.length) throw new Error(body.errors.map(e => e.message).join('; '))
-  if (!body.data?.platformTypes) throw new Error(`${API} returned no platformTypes`)
-  return normalise(body.data.platformTypes, body.data.platformInstallations || [])
+  return fromData(body.data, API)
+}
+
+// Either lane's answer: the two lists, or a clear complaint about which source came up empty.
+function fromData(data, source) {
+  if (!data?.platformTypes) throw new Error(`${source} returned no platformTypes`)
+  return normalise(data.platformTypes, data.platformInstallations || [])
 }
 
 // Drop null/undefined recursively; keep [] (it means "none", distinct from unset).

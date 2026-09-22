@@ -144,7 +144,6 @@ export const AdminAddonLicensesListPage: React.FC = () => {
   const [granting, setGranting] = useState(false)
   const [removeTarget, setRemoveTarget] = useState<AdminAddonCustomer | null>(null)
   const [removing, setRemoving] = useState(false)
-  const [searchInput, setSearchInput] = useState('')
 
   const products = useSelector((state: State) => state.adminAddonLicenses.products)
   const productsStatus = useSelector((state: State) => state.adminAddonLicenses.productsStatus)
@@ -155,6 +154,7 @@ export const AdminAddonLicensesListPage: React.FC = () => {
   const total = useSelector((state: State) => state.adminAddonLicenses.total)
   const hasMore = useSelector((state: State) => state.adminAddonLicenses.hasMore)
   const searchValue = useSelector((state: State) => state.adminAddonLicenses.searchValue)
+  const [searchInput, setSearchInput] = useState(searchValue)
 
   const product = products.find(p => p.id === productId)
   const label = productLabel(product)
@@ -196,10 +196,6 @@ export const AdminAddonLicensesListPage: React.FC = () => {
     []
   )
   const [required, attributes] = removeObject(listAttributes, a => a.required === true)
-
-  useEffect(() => {
-    setSearchInput(searchValue)
-  }, [])
 
   // The URL is the selection, and refresh is the one way in: on mount and on every move of the
   // product it re-reads the catalogue, checks the product against it, and fetches the list afresh

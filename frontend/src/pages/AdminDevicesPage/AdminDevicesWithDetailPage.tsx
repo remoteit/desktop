@@ -2,7 +2,7 @@ import { Box } from '@mui/material'
 import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
-import { useContainerWidth } from '../../hooks/useContainerWidth'
+import { useContainerNarrowerThan } from '../../hooks/useContainerWidth'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
 import { Dispatch, State } from '../../store'
 import { AdminDeviceDetailPage } from './AdminDeviceDetailPage'
@@ -51,11 +51,11 @@ export const AdminDevicesWithDetailPage: React.FC = () => {
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
   const hasRestoredRef = useRef(false)
 
-  const { containerRef, containerWidth } = useContainerWidth()
+  const { containerRef, narrow } = useContainerNarrowerThan(MIN_WIDTH * 2)
   const leftPanel = useResizablePanel(DEFAULT_LEFT_WIDTH, containerRef, { minWidth: MIN_WIDTH })
 
   // Below two panels' worth of width the detail takes over the whole area.
-  const twoPanel = !layout.singlePanel && containerWidth >= MIN_WIDTH * 2
+  const twoPanel = !layout.singlePanel && !narrow
 
   // Restore the previously selected device ONLY on initial mount
   useEffect(() => {

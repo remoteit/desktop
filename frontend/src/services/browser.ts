@@ -37,6 +37,8 @@ class Environment {
   isApple: boolean = false
   hasBackend: boolean = false
   hasBilling: boolean = false
+  // A NATIVE shell — Electron or a Capacitor build — with a private-use URL scheme of its own
+  isNative: boolean = false
 
   constructor() {
     this.isElectron = isElectron()
@@ -51,6 +53,7 @@ class Environment {
     this.isWindows = isWindows()
     this.isApple = this.isIOS || this.isMac
 
+    this.isNative = this.isElectron || this.isMobile
     this.hasBackend = !this.isPortal && !this.isMobile
     this.hasBilling = this.isPortal
 
@@ -176,6 +179,15 @@ export async function windowOpen(url?: string, windowName?: string, external?: b
     console.error('window.open error:', error)
     store.dispatch.ui.set({ errorMessage: `${error.message}: ${url}, ${windowName}` })
   }
+}
+
+/** A top-level departure to another origin — the sign-in journey. On web the page goes; on
+ *  desktop the page goes and the main process bounces it to the system browser; a native mobile
+ *  app opens the system browser itself, since its WebView cannot follow a redirect back to the
+ *  app's private-use scheme (the deep link reloads the WebView — hooks/useCapacitor). */
+export async function leaveTo(url: string) {
+  if (browser.isMobile) await windowOpen(url)
+  else window.location.assign(url)
 }
 
 export async function windowClose() {

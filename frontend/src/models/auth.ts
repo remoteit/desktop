@@ -428,6 +428,7 @@ export default createModel<RootModel>()({
          session. */
       await dispatch.auth.set({ user: undefined, ...signInCleared })
       dispatch.chat.reset()
+      dispatch.agents.reset()
       dispatch.user.reset()
       dispatch.organization.reset()
       dispatch.networks.reset()

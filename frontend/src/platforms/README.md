@@ -32,8 +32,7 @@ A `platforms/<id>/index.tsx` registers its **id and its code** — component, ov
 from the catalogue.
 
 Any **defined** field a local file sets wins over the catalogue, so a hot-fix in a local file
-takes effect; an undefined one (a capability flag that is off on this OS) falls through to the
-catalogue value. A route the catalogue has no row for — the hidden `android-screenview` deep link
+takes effect; an undefined one falls through to the catalogue value. A route the catalogue has no row for — the hidden `android-screenview` deep link
 — supplies all of its own data.
 
 ## Catalogue data vs client capability

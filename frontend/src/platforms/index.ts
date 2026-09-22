@@ -39,8 +39,8 @@ function defined<T extends object>(value?: T): Partial<T> {
 
 class Platforms {
   platforms: ILookup<IPlatform> = {}
-  lookup: INumberLookup<string> = {}
-  nameLookup: INumberLookup<string> = {}
+  private lookup: INumberLookup<string> = {}
+  private nameLookup: INumberLookup<string> = {}
   installed: string[] = [
     'advantech',
     'alpine',
@@ -105,13 +105,12 @@ class Platforms {
       // '[CODE]' and a template are substituted client-side; `true` shows the API's command.
       command: data.kind === 'command' ? data.commandTemplate ?? true : data.kind === 'code' ? '[CODE]' : undefined,
       // A code row WITH a link is a download too: install the app, the code is the fallback.
-      download: data.kind === 'download' || (data.kind === 'code' && !!data.link) || undefined,
+      download: data.kind === 'download' || (data.kind === 'code' && !!data.link),
       description: data.description,
       instructions: data.instructions,
       link: data.link,
     }
-    const hasInstallation = Object.values(installation).some(value => value !== undefined)
-    return { name: data.name, types, services: data.services, installation: hasInstallation ? installation : undefined }
+    return { name: data.name, types, services: data.services, installation }
   }
 
   register(local: IPlatformLocal) {
@@ -122,15 +121,14 @@ class Platforms {
         `platforms: "${local.id}" has no catalogue row and supplies no types — regenerate the snapshot (npm run platforms:generate)`
       )
     }
-    const catalogue = data && this.fromCatalogue(data)
-    const platform: IPlatform = catalogue
-      ? {
-          ...base,
-          ...defined(catalogue),
-          ...defined(local),
-          installation: { ...catalogue.installation, ...defined(local.installation) },
-        }
-      : base
+    const catalogue = data ? this.fromCatalogue(data) : undefined
+    // The catalogue's row underneath, the module's own fields on top: a local field wins only
+    // where it is set, so a page can override one thing without restating the rest.
+    const platform: IPlatform = {
+      ...base,
+      ...defined(catalogue),
+      installation: { ...catalogue?.installation, ...defined(local.installation) },
+    }
     platform.types = platform.types || {}
     platform.hasScreenView = platform.services?.some(s => s.application === 48)
     this.platforms[platform.id] = platform
@@ -149,14 +147,10 @@ class Platforms {
     return Object.fromEntries(Object.keys(this.lookup).map(type => [type, this.nameLookup[type]]))
   }
 
-  type(type: number): IPlatform {
-    return this.get(this.lookup[type])
-  }
-
   // A page covers several types, so the type's own label beats the page name: 10 is
   // "Windows Server", not "Windows". A type with no page still has a label.
   name(type: number): string {
-    return this.nameLookup[type] || this.type(type).name
+    return this.nameLookup[type] || this.get(this.lookup[type]).name
   }
 
   get(id: string = 'unknown'): IPlatform {

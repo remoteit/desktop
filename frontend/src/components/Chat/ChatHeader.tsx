@@ -20,6 +20,7 @@ import { Notice } from '../Notice'
 import { isChatPopout } from '../../services/chatPopout'
 import { ConversationSummary } from '../../services/agent'
 import { CHAT_GUIDE_DATE } from '../../constants'
+import { useResizeMeasure } from '../../hooks/useResizeMeasure'
 
 /* Control row shared by the docked panel and the popout window — the conversation's
    name sits at the left and doubles as the history picker; window-specific actions
@@ -107,15 +108,7 @@ export const HistoryButton: React.FC = () => {
   /* Fade the trailing edge only while the name is ACTUALLY cut off — an unconditional
      mask would dissolve the last characters of a name that fits. Observed rather than
      measured once, so dragging the panel narrower re-evaluates it. */
-  React.useEffect(() => {
-    const element = labelRef.current
-    if (!element) return
-    const measure = () => setCropped(element.scrollWidth > element.clientWidth + 1)
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [label])
+  useResizeMeasure(labelRef, element => setCropped(element.scrollWidth > element.clientWidth + 1), [label])
 
   const fade = 'linear-gradient(90deg, #000 calc(100% - 20px), transparent)'
 

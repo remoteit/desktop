@@ -2,6 +2,7 @@ import React from 'react'
 import browser from '../services/browser'
 import { Box, SxProps, Theme } from '@mui/material'
 import { spacing, toSxArray, scrollbarStyles, SCROLLBAR_WIDTH } from '../styling'
+import { useResizeMeasure } from '../hooks/useResizeMeasure'
 
 const FADE_SIZE = 30
 
@@ -29,16 +30,9 @@ const fadeMask = (direction: 'to bottom' | 'to right', fadeStart: boolean, gutte
    and that changes the content box, which is what ResizeObserver reports by default. */
 const useScrollbarGutter = (ref: React.RefObject<HTMLDivElement>): number => {
   const [gutter, setGutter] = React.useState(0)
-  React.useLayoutEffect(() => {
-    const element = ref.current
-    if (!element) return
-    const measure = () =>
-      setGutter(Math.max(element.offsetWidth - element.clientWidth, element.offsetHeight - element.clientHeight))
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
+  useResizeMeasure(ref, element =>
+    setGutter(Math.max(element.offsetWidth - element.clientWidth, element.offsetHeight - element.clientHeight))
+  )
   return gutter
 }
 

@@ -41,6 +41,11 @@ export const cloudTreeUrls = (tree: string) => ({
  *  On the unified front one identifier covers graphql, the REST surface and the socket as PATHS
  *  inside it; asking the AS for the leaf answers invalid_target, correctly, so the leaf comes off. */
 export const resourceForApiURL = (url: string): string => url.match(CLOUD_GRAPHQL_RE)?.[1] ?? url
+/** The audience the events socket is minted for where it is its OWN resource — the legacy per-stage
+ *  hosts, whose ws URL is the identifier. Undefined where the socket rides the API's token: the
+ *  unified front (the socket is a path inside the /api resource — minting for the socket URL there
+ *  answers invalid_target) and the legacy shared-domain URL (not a registered resource at all). */
+export const resourceForEventsURL = (url: string): string | undefined => (LEGACY_EVENTS_RE.test(url) ? url : undefined)
 export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.dev.remote.it/account/api'
 // The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
 // tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail

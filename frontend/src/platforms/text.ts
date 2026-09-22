@@ -19,15 +19,12 @@ export function platformText(t: TFunction, platform: IPlatform): PlatformText {
   // platform whose module has not loaded yet has no id — both would render as "<id>.name".
   if (!platform.id) return { name: platform.name ?? '', description, instructions }
 
+  // A field is translated only when it carries text — an empty default would render as its key.
+  const tr = (field: string, value?: string) => (value ? t(key(platform, field), value) : undefined)
   return {
-    name: platform.name ? t(key(platform, 'name'), platform.name) : '',
-    description: description ? t(key(platform, 'description'), description) : undefined,
-    instructions:
-      typeof instructions === 'string'
-        ? instructions
-          ? t(key(platform, 'instructions'), instructions)
-          : undefined
-        : instructions,
+    name: tr('name', platform.name) ?? '',
+    description: tr('description', description),
+    instructions: typeof instructions === 'string' ? tr('instructions', instructions) : instructions,
   }
 }
 

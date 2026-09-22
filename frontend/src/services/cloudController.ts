@@ -10,7 +10,7 @@ import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
 import { oidcAccessToken } from './oidc'
-import { LEGACY_EVENTS_RE } from '../constants'
+import { resourceForEventsURL } from '../constants'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -31,23 +31,13 @@ const stateTimes = new CloudTimes()
 const connectTimes = new CloudTimes()
 
 // D11a (permitteer docs/remoteit-desktop-login.md Phase 4c): the events stream is SOMETIMES its own
-// audience. Where it is, the WS URL IS the resource identifier (wss://ws.<stage>.remote.it/v1;
-// prod's bare wss://ws.remote.it/v1) and we mint for it. Where it is NOT, we present the graphql
-// token instead — and there are now two such cases, for different reasons:
-//
-//   * the legacy shared-domain URL (wss://ws.remote.it/<stage>), which is not a registered resource
-//     at all, admitted by the authorizer's dual-accept window until that contract retires;
-//   * the UNIFIED FRONT (wss://cloud.<stage>.remote.it/api/ws), where the socket lives INSIDE the
-//     merged /api resource — so the graphql token is not a stand-in, it is the right audience
-//     (graphql-permitteer docs/CLOUD-EDGE.md).
-//
-// Do NOT widen this pattern to match the unified front. Minting for the socket URL there asks the AS
-// for a resource that does not exist and fails `invalid_target` — which is exactly how the e2e
-// suite discovered the same assumption on its own side.
+// audience (resourceForEventsURL says when); otherwise it presents the graphql token — on the
+// unified front that is the right audience, not a stand-in, and on the legacy shared-domain URL the
+// authorizer's dual-accept window admits it until that contract retires.
 async function wsAuthorization(): Promise<string> {
-  const url = getWebSocketURL() || ''
-  if (!LEGACY_EVENTS_RE.test(url)) return await getToken()
-  const token = await oidcAccessToken(url)
+  const resource = resourceForEventsURL(getWebSocketURL() || '')
+  if (!resource) return await getToken()
+  const token = await oidcAccessToken(resource)
   return token ? 'Bearer ' + token : ''
 }
 
