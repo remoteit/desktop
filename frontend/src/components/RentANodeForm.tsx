@@ -23,7 +23,6 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
   const history = useHistory()
   const user = useSelector((state: State) => state.user)
   const organization = useSelector(selectOrganization)
-  const { AWSUser } = useSelector((state: State) => state.auth)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
     deviceName: '',
@@ -41,9 +40,9 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
 
     await rentANode([
       new Date().toISOString().slice(0, -1), // timestamp
-      AWSUser.given_name ? AWSUser.given_name + ' ' + AWSUser.family_name : 'Unknown', // name
+      'Unknown', // name
       user.email, // email
-      "'" + (form.phone ?? AWSUser.phone_number ?? ''), // phone
+      "'" + (form.phone ?? ''), // phone
       organization.name, // org-name
       user.email, // remoteit-email
       form.deviceName, // name
@@ -181,7 +180,9 @@ export const RentANodeForm: React.FC<Props> = ({ registrationCode }) => {
         color="primary"
         disabled={!!error.deviceName || !!error.phone || !form.deviceName || !form.sshPublicKey}
       >
-        {submitting ? t('rentANodeForm.submitting', 'Submitting...') : t('rentANodeForm.submitRequest', 'Submit Request')}
+        {submitting
+          ? t('rentANodeForm.submitting', 'Submitting...')
+          : t('rentANodeForm.submitRequest', 'Submit Request')}
       </Button>
     </form>
   )

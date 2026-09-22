@@ -7,8 +7,9 @@ type IAgentsState = {
   fetching: boolean
   updating?: string // the grant id currently being revoked (drives the revoke button spinner)
   agents: IAuthorizedAgent[]
-  // The session's token predates the connected-apps permission slice: one fresh sign-in
-  // (silent SSO — the AS session is alive) re-mints the grant with it. Drives the notice.
+  // The account API refused this session's token — the grant predates the connected-apps slice,
+  // or the registry moved under it. The remedy is the chat's: auth.healGrant with force, a silent
+  // same-account re-authorize that re-mints the grant. Drives the notice.
   needsReauth: boolean
 }
 

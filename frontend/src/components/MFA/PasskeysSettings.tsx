@@ -12,6 +12,8 @@ import {
   MfaMethod,
   METHOD_LABEL,
   SelfContinuation,
+  SelfResult,
+  Passkey,
 } from '../../services/passportSelf'
 import { toBase64url, fromBase64url } from '../../helpers/base64url'
 
@@ -22,10 +24,8 @@ import { toBase64url, fromBase64url } from '../../helpers/base64url'
  * need a code factor first — sign-ins from older apps rely on it, and the copy says so.
  */
 
-type Key = { id: string; name: string; createdAt?: string; lastUsedAt?: string }
-
 type Step =
-  | { at: 'view'; keys: Key[] }
+  | { at: 'view'; keys: Passkey[] }
   | { at: 'password'; mode: 'add' | 'remove'; keyId?: string; error?: string }
   | {
       at: 'relay'
@@ -48,7 +48,7 @@ export const PasskeysSettings: React.FC = () => {
   const [supported] = useState(() => typeof window !== 'undefined' && !!window.PublicKeyCredential)
 
   const refresh = async () => {
-    const me = (await selfMe()) as SelfContinuation & { passkeys?: Key[]; httpStatus: number }
+    const me = await selfMe()
     setStep({ at: 'view', keys: me.httpStatus === 200 ? me.passkeys ?? [] : [] })
   }
   useEffect(() => {
@@ -95,10 +95,7 @@ export const PasskeysSettings: React.FC = () => {
     }
   }
 
-  const follow = async (
-    r: SelfContinuation & { httpStatus: number },
-    pending: { mode: 'add' | 'remove'; keyId?: string }
-  ) => {
+  const follow = async (r: SelfResult, pending: { mode: 'add' | 'remove'; keyId?: string }) => {
     if (r.status === 'register') return ceremony(r)
     if (r.status === 'ok') return refresh()
     if ((r.status === 'mfa' || r.status === 'select') && r.challenge)

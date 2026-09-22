@@ -31,7 +31,6 @@ import { CHAT_PANEL_WIDTH } from '../constants'
 import i18n from '../i18n'
 import sleep from '../helpers/sleep'
 import { formatReset } from '../helpers/dateHelper'
-import { oidcMarkGrantStale } from '../services/oidc'
 
 export type ChatToolCall = {
   id: string
@@ -128,8 +127,6 @@ function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
   }
   return state
 }
-
-/* The agent service is stateless: resend the transcript as role/content pairs each turn */
 
 /* Single source of truth for the org the chat is scoped to (null = personal).
    Membership decides the scope, so the Current Org label and the org sent
@@ -266,7 +263,7 @@ export default createModel<RootModel>()({
               // The backend prefixes auth failures so the client knows a retry is pointless
               // until the grant is renewed (e.g. it expired mid-turn).
               if (event.type === 'error' && event.message.startsWith('reauth_required')) {
-                dispatch.chat.unauthorized()
+                dispatch.chat.unauthorized() // mid-stream, not an HTTP 401 — agentRequest cannot see it
                 dispatch.chat.applyEvent({ type: 'error', message: sessionExpiredError() })
               } else dispatch.chat.applyEvent(event)
             }
@@ -274,7 +271,7 @@ export default createModel<RootModel>()({
         })
       } catch (error) {
         flushDeltas()
-        if (error instanceof AgentAuthError) dispatch.chat.unauthorized(authRequiredError())
+        if (error instanceof AgentAuthError) dispatch.chat.set({ error: authRequiredError() })
         else if (error instanceof UsageLimitError)
           dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
         else if (error instanceof AgentStreamEndedError)
@@ -318,10 +315,10 @@ export default createModel<RootModel>()({
         })
       } catch (error) {
         // Restore the card so the decision isn't lost with the error
-        if (error instanceof AgentAuthError) {
-          dispatch.chat.set({ pendingConfirmation: pending })
-          dispatch.chat.unauthorized(authRequiredError())
-        } else dispatch.chat.set({ pendingConfirmation: pending, error: (error as Error).message })
+        dispatch.chat.set({
+          pendingConfirmation: pending,
+          error: error instanceof AgentAuthError ? authRequiredError() : (error as Error).message,
+        })
       }
     },
     async stop(_: void, state) {
@@ -388,18 +385,13 @@ export default createModel<RootModel>()({
       // composer until the next reopen or network event, with the agent perfectly reachable.
       const isLatest = healthProbe()
       const health = await agentHealth()
-      if (!isLatest()) return
-      if (health === 'unauthorized') dispatch.chat.unauthorized()
-      else dispatch.chat.set({ health })
+      if (isLatest()) dispatch.chat.set({ health })
     },
     /* The agent answering "this grant does not cover me" — a 401 on any endpoint, or reauth_required
-       mid-stream — is SERVER truth, newer than the client's declaration stamp: the declaration can
-       be unchanged while the registry behind it moved. The ONE place that fact lands: the stamp is
-       dropped so the next boot heals on its own and "Refresh permissions" has something to do, and
-       the composer shows the refusal. Re-authorizing from here would redirect the person mid-turn
-       and lose whatever they were typing, so it does not. */
+       mid-stream. A runtime fact, kept where it was seen: the composer shows the refusal and offers
+       "Refresh permissions" (auth.healGrant with force — a silent re-authorize). Re-authorizing from
+       here would redirect the person mid-turn and lose whatever they were typing, so it does not. */
     async unauthorized(error?: string) {
-      oidcMarkGrantStale()
       dispatch.chat.set({ health: 'unauthorized', ...(error ? { error } : {}) })
     },
     /* The server owns the transcript now (D11) — adopt its copy when it knows more than
@@ -431,9 +423,8 @@ export default createModel<RootModel>()({
         const title = remote.title || current.title
         if (differs) dispatch.chat.set({ messages, title })
         else if (title !== current.title) dispatch.chat.set({ title })
-      } catch (error) {
-        if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
-        /* otherwise offline or deleted — the local display cache stands */
+      } catch {
+        /* offline, refused or deleted — the local display cache stands */
       }
     },
     /* The chat has no sign-in of its own anymore — it rides the app session
@@ -448,13 +439,11 @@ export default createModel<RootModel>()({
       await dispatch.auth.healGrant({ force: true })
       await dispatch.chat.checkHealth()
     },
-    /* The history picker's list — refreshed on mount, after a turn, and after a delete. */
-    /* Reset the chat when the signed-in IDENTITY changes (not an org switch — that keeps
-       your account). The conversations, transcript, and usage all belong to the permitteer
-       subject the agent scopes by; a persisted chat from a previous account must not carry
-       over (posting to it 404s, and its history isn't yours). Same identity → no-op. */
-    /* A different signed-in account drops the persisted chat; the caller reloads the list and the
-       meter for whoever is signed in (useChatBoot), so a mount never asks twice. */
+    /* Reset the chat when the signed-in IDENTITY changes (not an org switch — that keeps your
+       account): the conversations, transcript and usage all belong to the permitteer subject the
+       agent scopes by, so a persisted chat from a previous account must not carry over (posting
+       to it 404s, and its history isn't yours). Same identity → no-op. The caller reloads the
+       list and the meter for whoever is signed in (useChatBoot), so a mount never asks twice. */
     async syncIdentity(userId: string, state) {
       if (!userId || state.chat.ownerId === userId) return
       await dispatch.chat.newConversation()
@@ -464,21 +453,17 @@ export default createModel<RootModel>()({
        on open. Silent on failure; the last-known meter stands. */
     async loadUsage() {
       const isLatest = usageLoad()
-      try {
-        const usage = await fetchUsage()
-        if (usage && isLatest()) dispatch.chat.set({ usage })
-      } catch (error) {
-        if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
-      }
+      const usage = await fetchUsage()
+      if (usage && isLatest()) dispatch.chat.set({ usage })
     },
+    /* The history picker's list — refreshed when shown, after a turn, and after a delete. */
     async loadConversations() {
       const isLatest = listLoad()
       try {
         const conversations = await listConversations()
         if (isLatest()) dispatch.chat.set({ conversations })
-      } catch (error) {
-        if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
-        /* otherwise offline — leave the last-known list */
+      } catch {
+        /* offline or refused — leave the last-known list */
       }
     },
     /* Switch the panel to an existing conversation: adopt its server transcript, reset the
@@ -497,8 +482,8 @@ export default createModel<RootModel>()({
         // A service or auth failure is not a deletion: keep the transcript on screen and report,
         // rather than clearing to a new chat as if the conversation had vanished. Unless the
         // user has already moved on — then it is only noise about a thread they left.
-        if (error instanceof AgentAuthError) dispatch.chat.unauthorized(superseded() ? undefined : authRequiredError())
-        else if (!superseded()) dispatch.chat.set({ error: (error as Error).message })
+        if (superseded()) return
+        dispatch.chat.set({ error: error instanceof AgentAuthError ? authRequiredError() : (error as Error).message })
         return
       }
       if (!remote) {
@@ -529,8 +514,8 @@ export default createModel<RootModel>()({
       let deleted = false
       try {
         deleted = await deleteConversation(id)
-      } catch (error) {
-        if (error instanceof AgentAuthError) dispatch.chat.unauthorized()
+      } catch {
+        /* a rejected request is the same failure as a refused one */
       }
       if (!deleted) {
         dispatch.chat.set({
@@ -546,10 +531,9 @@ export default createModel<RootModel>()({
       if (store.getState().chat.conversationId === id) await dispatch.chat.newConversation()
       await dispatch.chat.loadConversations()
     },
-    /* App sign-out: nothing agent-specific to revoke — the session's end IS the
-       chat's end. The transcript reset is dispatched by auth.signedOut alongside
-       the other model resets — dispatching it here would land in the
-       purge-to-reload window and re-persist the pre-signout state. */
+    /* App sign-out: ends the turn and revokes the background grant (below). The transcript
+       reset is dispatched by auth.signedOut alongside the other model resets — dispatching it
+       here would land in the purge-to-reload window and re-persist the pre-signout state. */
     async signOut(_: void, state) {
       broadcastChatSignout()
       // Aborting covers the STREAM; the generation covers every other load in flight. Without it a

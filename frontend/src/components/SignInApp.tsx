@@ -3,7 +3,7 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { OidcErrorCode, oidcAutoStartExhausted, oidcIsSupportTab } from '../services/oidc'
+import { OidcErrorCode, oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused } from '../services/oidc'
 import { MODE } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
@@ -11,8 +11,8 @@ import brand from '@common/brand/config'
 /**
  * The sign-in panel is a LAUNCHER now: the whole journey — email-first with org SSO
  * routing, password + MFA, Google, signup, forgot — lives at the authorization server
- * in the SYSTEM browser (permitteer docs/remoteit-desktop-login.md). The backend owns
- * the flow; this panel starts it and waits.
+ * in the SYSTEM browser (permitteer docs/remoteit-desktop-login.md). The renderer owns
+ * the flow (services/oidc); this panel starts it and waits.
  */
 
 /* What a failed sign-in tells the person to DO. Keyed by the reason rather than by the
@@ -102,13 +102,13 @@ export function SignInApp() {
      actually bit — a path that returns without recording the failure — since an automatic
      authorize renders nothing to a person and the first visible symptom is the AS
      rate-limiting the address. A click is never counted against it. */
-  // A SUPPORT tab (opened by the console's launch — permitteer docs/desktop-support.md) never
-  // auto-starts a plain sign-in: that would sign the operator in as THEMSELVES and quietly turn
-  // the support view into their own account. auth.init drives the ticketed authorize; once the
-  // session has ended, the tab says so and stops.
+  // A SUPPORT tab (opened by the console's launch — permitteer docs/desktop-support.md) says so
+  // below instead of offering a sign-in; auth.init drives its ticketed authorize, and oidcStart
+  // refuses every other start there (oidcLeaveRefused), so it can never sign the operator in as
+  // themselves.
   const supportTab = oidcIsSupportTab()
   const budgetSpent = oidcAutoStartExhausted('boot')
-  const autoStart = !browser.isElectron && !signingIn && !signInFailed && !budgetSpent && !supportTab
+  const autoStart = !browser.isElectron && !signingIn && !signInFailed && !budgetSpent && !oidcLeaveRefused()
   useEffect(() => {
     if (!autoStart) return
     auth.signIn({ auto: 'boot' })

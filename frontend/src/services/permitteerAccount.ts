@@ -6,8 +6,6 @@
 import { oidcResourceRequest, OidcResourceResult } from './oidc'
 import { OAUTH_ACCOUNT_RESOURCE } from '../constants'
 
-export type AccountApiResult<T = any> = OidcResourceResult<T>
-
 /** The legal token targets for THIS client — the AS's allowlist joined to registry names
  *  (D10). The stage picker and the mint-time guardrail read the SAME source, so they can
  *  never disagree; adding a stage to the tf allowlist puts it here on the next fetch. */
@@ -25,17 +23,17 @@ const call = <T = any>(path: string, init: RequestInit = {}) =>
  *  tokens for the person revoked as well (the legacy apps' sessions). `pool` reports that half:
  *  skipped (no pool on this stage), none, revoked, or failed. The token that makes this call is
  *  dead by the time the answer is read; the caller tears the app down right after. */
-export async function signOutEverywhere(): Promise<AccountApiResult<{ ended: number; pool: string }>> {
+export async function signOutEverywhere(): Promise<OidcResourceResult<{ ended: number; pool: string }>> {
   return await call('/devices/sign-out-all', { method: 'POST' })
 }
 
 /** The person's connected apps — the AS account API's own view rows, unreshaped. */
-export async function accountApps(): Promise<AccountApiResult<{ items: IAuthorizedAgent[] }>> {
+export async function accountApps(): Promise<OidcResourceResult<{ items: IAuthorizedAgent[] }>> {
   return await call('/apps')
 }
 
 /** Revoke one grant. Instant at the AS — the grant dies and every refresh token with it. */
-export async function revokeAccountApp(grantId: string): Promise<AccountApiResult> {
+export async function revokeAccountApp(grantId: string): Promise<OidcResourceResult> {
   return await call(`/apps/${encodeURIComponent(grantId)}`, { method: 'DELETE' })
 }
 
@@ -47,7 +45,7 @@ export async function updateAccountApp(
   keep: string[],
   keepScope: string[],
   reach?: { all?: boolean; accounts?: string[] }
-): Promise<AccountApiResult> {
+): Promise<OidcResourceResult> {
   return await call(`/apps/${encodeURIComponent(grantId)}`, {
     method: 'PATCH',
     headers: { 'content-type': 'application/json' },

@@ -59,10 +59,6 @@ export const App: React.FC = () => {
   // column — so opening or widening the chat reflows the app (sidebar → hamburger,
   // two panels → one) exactly the way shrinking the window does
   const { hideSidebar, singlePanel, triplePanel, mobile } = useLayoutBreakpoints()
-  /* Chrome the content panels have to share their row with. The chat is NOT in that
-     row — it is a column beside the whole app side — so it must not be counted here:
-     the panels' own parent already excludes it, and adding it back subtracted the chat
-     twice, which drove their max width below their minimum and froze the drag. */
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
   const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
   const needsUserHydration = authenticated && !user

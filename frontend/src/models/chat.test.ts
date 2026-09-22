@@ -44,7 +44,6 @@ vi.mock('../services/chatPopout', () => ({
   openChatPopout,
   popIn: vi.fn(),
 }))
-vi.mock('../services/oidc', () => ({ oidcMarkGrantStale: vi.fn() }))
 vi.mock('../store', () => ({ store: { getState: () => storeState } }))
 vi.mock('../constants', () => ({ CHAT_PANEL_WIDTH: 400 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))

@@ -96,8 +96,11 @@ export const useLayoutBreakpoints = () => {
    and the components that mirror its sidebar breakpoint (Header, AvatarMenu…) */
 export const useHideSidebar = (): boolean => useLayoutBreakpoints().hideSidebar
 
-/* Width of the left chrome (sidebar + org bar) the layout reserves —
-   shared by App's sidePanelWidth and the chat overlay's left edge */
+/* Width of the left chrome (sidebar + org bar) the layout reserves — App's sidePanelWidth, the
+   chrome the content panels share their row with, and the chat overlay's left edge. The docked
+   chat is NOT in that row (it is a column beside the whole app side) and must not be counted:
+   the panels' own parent already excludes it, and adding it back subtracted the chat twice,
+   which drove their max width below their minimum and froze the drag. */
 export const useSidebarWidth = (): number => {
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const hideSidebar = useHideSidebar()

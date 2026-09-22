@@ -26,7 +26,12 @@ export const ConnectedApps: React.FC = () => {
             'Sign in again to see your connected apps — your current session started before this page could ask for them.'
           )}
         </Notice>
-        <Button variant="contained" size="small" sx={{ marginTop: 2 }} onClick={() => dispatch.auth.signIn()}>
+        <Button
+          variant="contained"
+          size="small"
+          sx={{ marginTop: 2 }}
+          onClick={() => dispatch.auth.healGrant({ force: true }).then(() => dispatch.agents.fetch())}
+        >
           {t('connectedApps.reauthAction', 'Sign in again')}
         </Button>
       </Gutters>
@@ -54,7 +59,10 @@ export const ConnectedApps: React.FC = () => {
             <ListItemIcon>
               <Icon name="spinner-third" spin size="lg" color="grayDark" />
             </ListItemIcon>
-            <ListItemText primary={t('connectedApps.loading', 'Loading…')} primaryTypographyProps={{ color: 'textSecondary' }} />
+            <ListItemText
+              primary={t('connectedApps.loading', 'Loading…')}
+              primaryTypographyProps={{ color: 'textSecondary' }}
+            />
           </ListItem>
         </List>
       )}

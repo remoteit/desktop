@@ -58,8 +58,7 @@ export const AdminUserDetailPage: React.FC = () => {
 
   const handleViewAsUser = () => {
     // Permitteer lane: view-as is a SUPPORT SESSION, not a header (docs/remoteit-desktop-
-    // login.md Phase 4d). The X-R3-User lane is deliberately dead for these tokens (no
-    // `delegate` scope is minted), so the eye button is a NAVIGATION into the AS
+    // login.md Phase 4d), so the eye button is a NAVIGATION into the AS
     // (permitteer docs/as-elevation.md): the AS runs every launch gate on the operator's own
     // session — the kill-switch, the operator roster, the target (never an operator), and its
     // own elevation stamp — then either opens this portal as the user straight away or shows its
@@ -70,7 +69,11 @@ export const AdminUserDetailPage: React.FC = () => {
     // `origin` names THIS portal — the lane the operator is on (app.dev, app.evan, latest) — so
     // the support session lands here rather than on whichever redirect URI the client lists first
     // (the AS validates it against the registration).
-    windowOpen(`${OAUTH_ISSUER}/elevate/launch?user=${encodeURIComponent(user.email || user.id)}&client=remoteit_portal&origin=${encodeURIComponent(window.location.origin)}`)
+    windowOpen(
+      `${OAUTH_ISSUER}/elevate/launch?user=${encodeURIComponent(
+        user.email || user.id
+      )}&client=remoteit_portal&origin=${encodeURIComponent(window.location.origin)}`
+    )
   }
 
   return (
@@ -78,14 +81,16 @@ export const AdminUserDetailPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Box>
-          <Box sx={{ height: 45, display: 'flex', alignItems: 'center', paddingX: `${spacing.md}px`, marginTop: `${spacing.sm}px` }}>
-            <IconButton
-              icon="eye"
-              title="View as User"
-              onClick={handleViewAsUser}
-              size="md"
-              color="primary"
-            />
+          <Box
+            sx={{
+              height: 45,
+              display: 'flex',
+              alignItems: 'center',
+              paddingX: `${spacing.md}px`,
+              marginTop: `${spacing.sm}px`,
+            }}
+          >
+            <IconButton icon="eye" title="View as User" onClick={handleViewAsUser} size="md" color="primary" />
           </Box>
           <List>
             <ListItemLocation

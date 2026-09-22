@@ -7,10 +7,9 @@ import { fontSizes, radius, scrollbarStyles, SCROLLBAR_WIDTH_NARROW } from '../.
 import { ChatTranscriptMessage } from '../../models/chat'
 import { ChatToolCalls } from './ChatToolCalls'
 
-// Links open in a new tab: a bare anchor is a top-level navigation, which in
-// Electron replaces the app window with the external site (will-navigate only
-// guards auth.remote.it); target=_blank routes through setWindowOpenHandler →
-// shell.openExternal instead
+// Links open in a new tab: a bare anchor is a top-level navigation — will-navigate sends any
+// non-app origin to the system browser, but target=_blank routes through setWindowOpenHandler →
+// shell.openExternal without the window ever leaving the app
 const markdownComponents = {
   a: ({ node, ...props }: any) => <a {...props} target="_blank" rel="noopener noreferrer" />,
 }

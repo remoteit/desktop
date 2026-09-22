@@ -42,10 +42,10 @@ export const AvatarMenu: React.FC = () => {
   const activeUser = useSelector(selectActiveUser)
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
 
+  // handleOpen is reached from the hover timer, the click and every re-entry of the menu paper;
+  // the browser's accounts are asked for once per opening, not per pointer crossing.
   const handleOpen = () => {
-    void oidcRefreshBrowserAccounts()
-      .then(() => setAccounts(oidcAccounts()))
-      .catch(() => setAccounts(oidcAccounts()))
+    if (!open) void oidcRefreshBrowserAccounts().finally(() => setAccounts(oidcAccounts()))
     window.addEventListener('keydown', checkAltMenu)
     setOpen(true)
   }

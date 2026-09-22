@@ -12,6 +12,7 @@ import { Body } from '../Body'
 import { Icon } from '../Icon'
 import { GuideBubble } from '../GuideBubble'
 import { isChatPopout } from '../../services/chatPopout'
+import { oidcLeaveRefused } from '../../services/oidc'
 import { CHAT_GUIDE_DATE } from '../../constants'
 
 /* Everything below the chat header — shared by the docked panel and the
@@ -56,7 +57,7 @@ export const ChatBody: React.FC = () => {
             {t('chat.signInNeeded', 'The AI agent needs permissions your session doesn\u2019t carry yet.')}
             {isChatPopout && ` ${t('chat.signInFromMain', 'Refresh permissions from the main app window.')}`}
           </Typography>
-          {!isChatPopout && (
+          {!oidcLeaveRefused() && (
             <Button variant="contained" size="medium" onClick={() => dispatch.chat.signIn()}>
               {t('chat.signIn', 'Refresh permissions')}
             </Button>
@@ -109,17 +110,17 @@ export const ChatBody: React.FC = () => {
           </>
         }
       >
-      <ChatInput
-        disabled={!!pendingConfirmation || signedOut || unreachable}
-        placeholder={
-          pendingConfirmation
-            ? t('chat.waitingApproval', 'Waiting for approval…')
-            : t('chat.inputPlaceholder', 'Chat with Remote.It')
-        }
-        streaming={streaming}
-        onSend={text => dispatch.chat.send(text)}
-        onStop={() => dispatch.chat.stop()}
-      />
+        <ChatInput
+          disabled={!!pendingConfirmation || signedOut || unreachable}
+          placeholder={
+            pendingConfirmation
+              ? t('chat.waitingApproval', 'Waiting for approval…')
+              : t('chat.inputPlaceholder', 'Chat with Remote.It')
+          }
+          streaming={streaming}
+          onSend={text => dispatch.chat.send(text)}
+          onStop={() => dispatch.chat.stop()}
+        />
       </GuideBubble>
     </>
   )

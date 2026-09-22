@@ -13,7 +13,7 @@ import {
   selfChallenge,
   MfaMethod,
   METHOD_LABEL,
-  SelfContinuation,
+  SelfResult,
 } from '../../services/passportSelf'
 import { OAUTH_PASSPORT_RESOURCE } from '../../constants'
 
@@ -60,10 +60,7 @@ export const MFASettings: React.FC = () => {
     refresh()
   }, [])
 
-  const followContinuation = (
-    r: SelfContinuation & { httpStatus: number },
-    pending: { mode: Mode; method?: MfaMethod }
-  ): boolean => {
+  const followContinuation = (r: SelfResult, pending: { mode: Mode; method?: MfaMethod }): boolean => {
     if (r.status === 'ok') {
       if (r.recovery_codes?.length) setStep({ at: 'codes', codes: r.recovery_codes })
       else refresh()

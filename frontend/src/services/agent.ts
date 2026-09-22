@@ -33,8 +33,6 @@ export class AgentAuthError extends Error {
   }
 }
 
-/* A usage window (session/weekly) or the fleet is spent — the turn was refused before it ran.
-   Carries which window and when it resets so the UI can say "resets at 4:30pm". */
 /* The stream closed cleanly before a terminal event (done / error) — the server or an
    intermediary (a proxy idle timeout on a long turn, say) ended it mid-answer. Without this
    the turn resolved normally and a truncated answer looked complete. */
@@ -45,8 +43,10 @@ export class AgentStreamEndedError extends Error {
   }
 }
 
+/* A usage window (session/weekly) or the fleet is spent — the turn was refused before it ran.
+   Carries when it resets so the UI can say "resets at 4:30pm". */
 export class UsageLimitError extends Error {
-  constructor(message: string, readonly window: 'session' | 'weekly' | 'global', readonly resetsAt: string | null) {
+  constructor(message: string, readonly resetsAt: string | null) {
     super(message)
   }
 }
@@ -54,8 +54,8 @@ export class UsageLimitError extends Error {
 /* Every call to the agent: the URL off agentURL(), the token minted for the agent AUDIENCE
    (signed over the canonical resource, not the transport — a proxy or an override must not
    break the proof), and a 401 as AgentAuthError. That refusal is the one server fact the chat
-   acts on (models/chat unauthorized), so it is recognised here for every endpoint rather than
-   at whichever call sites remembered to. */
+   acts on, so it is recorded here (models/chat unauthorized) for every endpoint — the callers
+   add only what their own screen should say — rather than at whichever catch remembered to. */
 async function agentRequest(
   method: string,
   path: string,
@@ -70,7 +70,10 @@ async function agentRequest(
     ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
     signal: init.signal,
   })
-  if (response.status === 401) throw new AgentAuthError()
+  if (response.status === 401) {
+    store.dispatch.chat.unauthorized()
+    throw new AgentAuthError()
+  }
   return response
 }
 
@@ -98,18 +101,9 @@ export async function streamChat(options: {
   const path = `/api/conversations/${encodeURIComponent(conversationId)}/messages`
   const response = await agentRequest('POST', path, { body: org ? { text, org } : { text }, signal })
   if (response.status === 429 || response.status === 503) {
-    const body = (await response.json().catch(() => ({}))) as {
-      error?: string
-      code?: string
-      window?: string
-      resetsAt?: string
-    }
+    const body = (await response.json().catch(() => ({}))) as { error?: string; code?: string; resetsAt?: string }
     if (body.code === 'usage_limit')
-      throw new UsageLimitError(
-        body.error || 'Usage limit reached',
-        (body.window as 'session' | 'weekly' | 'global') ?? 'session',
-        body.resetsAt ?? null
-      )
+      throw new UsageLimitError(body.error || 'Usage limit reached', body.resetsAt ?? null)
   }
   if (!response.ok || !response.body) throw new Error(`Agent request failed (${response.status})`)
 
@@ -229,15 +223,13 @@ export type UsageWindow = {
 }
 export type Usage = { session: UsageWindow; weekly: UsageWindow }
 
-/* The user's two usage windows in dollars — drives the header meter. null on any failure but a
-   refusal, which is the caller's to act on. */
+/* The user's two usage windows in dollars — drives the header meter. null on any failure. */
 export async function fetchUsage(): Promise<Usage | null> {
   try {
     const response = await agentRequest('GET', '/api/usage')
     if (!response.ok) return null
     return (await response.json()) as Usage
-  } catch (error) {
-    if (error instanceof AgentAuthError) throw error
+  } catch {
     return null
   }
 }

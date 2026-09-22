@@ -1,4 +1,5 @@
 import browser, { windowOpen } from './browser'
+import { isChatPopout } from './chatPopout'
 import i18n from '../i18n'
 import {
   OAUTH_ISSUER,
@@ -68,13 +69,12 @@ const ACCOUNTS_KEY = 'oidc.accounts'
    through it is invisible from the app and its only outward symptom is the AS
    rate-limiting the whole address, which then locks out everyone behind it.
 
-   ONE ledger for every automatic start, keyed by the reason (`boot`, `heal:<sub>:<declaration>`,
-   `recover:<email>`, `activate:<email>`), and the brake sits inside oidcStart itself: a reason
-   already spent is refused there, so no caller can forget its own one-shot. Session-scoped —
-   it rides the round trip through the AS and dies with the tab. A completed exchange forgets
-   the ledger, except a grant heal: an authorize that came back with the grant STILL stale must
-   not be retried by the next boot, or the tab loops through the AS once per reload. A click is
-   never counted — a person is their own loop-breaker. */
+   ONE ledger for every automatic start, keyed by the reason (`boot`, `heal`, `recover:<email>`,
+   `activate:<email>`), and the brake sits inside oidcStart itself: a reason already spent is
+   refused there, so no caller can forget its own one-shot. Session-scoped — it rides the round
+   trip through the AS and dies with the tab — and a completed exchange forgets it: a healthy
+   session is proof the automatic path works. A click is never counted — a person is their own
+   loop-breaker. */
 const AUTO_START_KEY = 'oidc.autoStarts'
 // Two boots, because one legitimate retry (a token that died mid-session) is normal and a third
 // in one tab never is; every other reason is one.
@@ -105,8 +105,11 @@ const spendAutoStart = (reason: string): boolean => {
   return true
 }
 export const oidcClearAutoStarts = (): void => {
-  const kept = Object.fromEntries(Object.entries(readAutoStarts()).filter(([reason]) => reason.startsWith('heal:')))
-  writeAutoStarts(kept)
+  try {
+    window.sessionStorage.removeItem(AUTO_START_KEY)
+  } catch {
+    /* non-fatal */
+  }
 }
 // A support TAB keeps its tokens in sessionStorage — per-tab — never in the shared
 // localStorage. The first cut CLEARED localStorage instead, and localStorage is
@@ -218,6 +221,9 @@ export class OidcError extends Error {
   code: OidcErrorCode
   /** Seconds to wait, when the server told us (429). */
   retryAfter?: number
+  /** The AS's own error code (`login_required`, `invalid_grant`…) when it sent one — the thing to
+   *  branch on; the message is its wording, which may change. */
+  oauthError?: string
   constructor(code: OidcErrorCode, message: string, retryAfter?: number) {
     super(message)
     this.name = 'OidcError'
@@ -337,8 +343,6 @@ async function discover() {
 const redirectUri = () =>
   browser.isElectron || browser.isMobile ? PROTOCOL + 'authCallback' : window.location.origin + '/authCallback'
 
-/** Leave for the AS. On web the page departs; on desktop the main process bounces the
- * issuer origin to the system browser and the window stays on the waiting panel. */
 /** What this build asks for, per audience. ONE source of truth: the authorize request is
  *  built from it AND the boot check measures tokens against it, so a slice added in a deploy
  *  cannot end up requested-but-never-checked (or checked-but-never-requested).
@@ -377,7 +381,12 @@ const timeoutSignal = (ms: number): AbortSignal => {
   setTimeout(() => controller.abort(), ms)
   return controller.signal
 }
+// The boot warm-up (mcpDetailReady) and the authorize that follows it seconds later asked for the
+// same document twice, and every authorize waited on the fetch (up to its bound) before leaving.
+let mcpRefreshedAt = 0
+const MCP_REFRESH_TTL_MS = 60_000
 async function refreshMcpDetailType(): Promise<string> {
+  if (Date.now() - mcpRefreshedAt < MCP_REFRESH_TTL_MS) return mcpDetailType()
   try {
     const r = new URL(OAUTH_MCP_RESOURCE)
     const prm = `${r.origin}/.well-known/oauth-protected-resource${r.pathname}`
@@ -398,6 +407,7 @@ async function refreshMcpDetailType(): Promise<string> {
       names.find(n => !n.endsWith('_org'))
     if (picked) {
       mcpTypeMemo = picked
+      mcpRefreshedAt = Date.now()
       try {
         tokenStore().setItem(MCP_TYPE_KEY, picked)
       } catch {
@@ -479,32 +489,15 @@ export function oidcGrantStale(): boolean {
   }
 }
 
-/** The fingerprint itself, for a caller that must record WHICH declaration an attempt was made
- *  from rather than merely that one was (the grant-heal ledger key in models/auth.ts). Exported
- *  rather than recomputed there, so the two can never disagree about what "the same request" means. */
-export const oidcDeclaration = declarationFingerprint
+/** A window that must never leave for the AS on its own account. The chat POPOUT is a helper of
+ *  the main window, which owns the session. A SUPPORT tab holds an operator's acted session, and
+ *  any authorize but the ticketed launch would sign the operator in as THEMSELVES and quietly turn
+ *  the support view into their own account. Enforced where every authorize starts, so no lane —
+ *  boot, heal, recover, activate, a button — needs a guard of its own. */
+export const oidcLeaveRefused = (): boolean => isChatPopout || oidcIsSupportTab()
 
-/** A resource server answering "this grant does not cover me" is SERVER truth, newer than the
- *  stamp: the declaration can be unchanged while the registry behind it moved (2026-09-06: app.ai
- *  was repointed at a new MCP resource hours before the actor was registered to act toward it).
- *  Drop the stamp — active AND this account's registry entry — so oidcGrantStale() answers true
- *  and the next boot heals, or the person's "Refresh permissions" does, with nothing else to reset. */
-export function oidcMarkGrantStale(): void {
-  try {
-    tokenStore().removeItem(DECLARATION_KEY)
-    const sub = oidcClaims()?.sub
-    const reg = readRegistry()
-    if (sub && reg[sub]?.declaration) {
-      delete reg[sub].declaration
-      writeRegistry(reg)
-    }
-  } catch {
-    /* non-fatal — worst case is one redundant re-authorize */
-  }
-}
-
-/** Leave for the AS. `auto` names an authorize nobody clicked for (see the ledger above); it
- *  resolves false, without leaving, when that reason has been spent. */
+/** Leave for the AS. `auto` names an authorize nobody clicked for (see the ledger above). Resolves
+ *  false, without leaving, when that reason has been spent or this window may not leave. */
 export async function oidcStart(
   opts: {
     prompt?: 'login' | 'select_account' | 'none'
@@ -513,6 +506,10 @@ export async function oidcStart(
     auto?: string
   } = {}
 ): Promise<boolean> {
+  if (oidcLeaveRefused() && !opts.supportTicket) {
+    console.warn('OIDC: this window does not sign in on its own account')
+    return false
+  }
   if (opts.auto && !spendAutoStart(opts.auto)) {
     console.warn(`OIDC: automatic sign-in (${opts.auto}) already attempted this session — not retrying`)
     return false
@@ -581,12 +578,13 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
 
   const flow = takeFlow(state)
   cleanUrl()
-  // takeFlow already matches on `state` — the session copy explicitly, the shared copy by key —
-  // so the old flow.state check is now inside it. The typed error stays: the chat UI distinguishes
-  // an expired flow from a refused one.
   if (!flow) throw new OidcError('expired', 'Sign-in state mismatch')
   const error = query.get('error')
-  if (error) throw new OidcError('refused', query.get('error_description') || error)
+  if (error) {
+    const refused = new OidcError('refused', query.get('error_description') || error)
+    refused.oauthError = error
+    throw refused
+  }
 
   const body = await tokenRequest({
     grant_type: 'authorization_code',
@@ -624,6 +622,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   } else {
     persist({ refresh_token: body.refresh_token, id_token: body.id_token })
   }
+  clearActivationHint()
   // The authorize that just completed asked for DECLARED, and a skipConsent first-party grant
   // is merged from exactly that — so the grant now covers this build. Stamp it — active AND
   // this account's registry entry, so a later activation restores the right measurement.
@@ -669,7 +668,7 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
   return next
 }
 
-// CROSS-TAB single-flight. The `refreshing` guard above stops a tab racing itself, but the refresh
+// CROSS-TAB single-flight. The `minting` queue above stops a tab racing itself, but the refresh
 // token lives in localStorage and every tab of this origin shares it — so two tabs redeem the SAME
 // token, the AS sees a double-spend and answers as theft: the family is revoked and the person is
 // mailed "A sign-in was ended as a precaution". Not hypothetical — dev logged two reuse_detected
@@ -770,6 +769,7 @@ export function invalidateOidcToken() {
 export { clearLocal as oidcClearLocal }
 
 function clearLocal() {
+  clearActivationHint()
   const activeSub = oidcClaims()?.sub
   const reg = readRegistry()
   if (activeSub && reg[activeSub]) {
@@ -867,16 +867,30 @@ export function oidcAccounts(): OidcAccount[] {
     .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
 }
 
+/** WHO was just activated, so a boot that finds the saved tokens dead can try one silent recovery
+ *  (prompt=none + login_hint — the AS serves any live set member the hint names) before falling to
+ *  the sign-in screen. Data, not a brake: the ledger in oidcStart bounds the attempt; the hint is
+ *  cleared with the tokens (clearLocal) and by the exchange that completes. sessionStorage: dies
+ *  with the tab. */
+const ACTIVATING_KEY = 'oidc.activating'
+export const oidcActivationHint = (): string | undefined => {
+  try {
+    return sessionStorage.getItem(ACTIVATING_KEY) || undefined
+  } catch {
+    return undefined
+  }
+}
+const clearActivationHint = () => {
+  try {
+    sessionStorage.removeItem(ACTIVATING_KEY)
+  } catch {
+    /* nothing to clear */
+  }
+}
+
 /** Make a saved account the ACTIVE one. Storage-only — the caller reloads the app so
  *  every model boots as the new identity (a soft swap would bleed one account's data
  *  into the other's view). Returns false when the account is unknown. */
-/** One-shot marker: WHO was just activated, so a boot that finds the saved tokens dead can
- *  try ONE silent recovery (prompt=none + login_hint — the AS serves any live set member
- *  the hint names) before falling to the sign-in screen. sessionStorage: dies with the tab,
- *  and it is cleared before the attempt so a failed round can never loop. */
-const ACTIVATING_KEY = 'oidc.activating'
-export const oidcTakeActivationHint = () => takeSession(ACTIVATING_KEY)
-
 export function oidcActivateAccount(sub: string): boolean {
   const entry = readRegistry()[sub]
   if (!entry?.refresh_token) return false
@@ -1054,7 +1068,7 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
   const body: any = await response.json().catch(() => ({}))
   if (!response.ok || !body.access_token) {
     const detail = body.error_description || body.error || `token endpoint ${response.status}`
-    const error: any = responseError(response, detail)
+    const error = responseError(response, detail)
     error.oauthError = body.error
     throw error
   }
@@ -1066,28 +1080,9 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
 // account API serves the set from this token's own session. Members this app holds no tokens
 // for are filed as KNOWN — identity only — and the menu offers them; picking one is a silent
 // selection (prompt=none + login_hint), which the AS answers for any live set member.
-/** Why a refresh did not happen. `refused` is the one that used to be invisible: the menu
- *  kept rendering its cache while the AS was turning the call away, so a stale list and a
- *  broken one looked identical — on screen and in the console. */
-export type BrowserAccountsRefresh =
-  | { ok: true; multi: boolean; authoritative: boolean }
-  | { ok: false; reason: 'support-session' | 'no-token' | 'refused'; status?: number }
-
-export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefresh> {
-  if (oidcActor()) return { ok: false, reason: 'support-session' } // no set member, nothing to switch to
-  const url = `${OAUTH_ACCOUNT_RESOURCE}/accounts`
-  const headers = await oidcAuthHeaders('GET', url, OAUTH_ACCOUNT_RESOURCE)
-  if (!headers.authorization) return { ok: false, reason: 'no-token' }
-  const r = await fetch(url, { headers })
-  if (!r.ok) {
-    // Never silently: an unreconciled menu is showing accounts that may not exist and hiding
-    // ones that do, and the person has no way to tell. Say so where a bug report can find it.
-    console.warn(
-      `AUTH: the browser's accounts could not be refreshed (${r.status}) — the menu is showing its last known list`
-    )
-    return { ok: false, reason: 'refused', status: r.status }
-  }
-  const body = (await r.json()) as {
+export async function oidcRefreshBrowserAccounts(): Promise<void> {
+  if (oidcActor()) return // a support session is no set member — nothing to switch to
+  const { status, body } = await oidcResourceRequest<{
     multi?: boolean
     authoritative?: boolean
     accounts?: {
@@ -1097,6 +1092,14 @@ export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefre
       picture?: string | null
       current?: boolean
     }[]
+  }>(OAUTH_ACCOUNT_RESOURCE, '/accounts')
+  if (status !== 200 || !body) {
+    // Never silently: an unreconciled menu is showing accounts that may not exist and hiding
+    // ones that do, and the person has no way to tell. Say so where a bug report can find it.
+    console.warn(
+      `AUTH: the browser's accounts could not be refreshed (${status}) — the menu is showing its last known list`
+    )
+    return
   }
   const listed = new Set<string>()
   const reg = readRegistry()
@@ -1144,7 +1147,6 @@ export async function oidcRefreshBrowserAccounts(): Promise<BrowserAccountsRefre
     delete reg[sub]
   }
   writeRegistry(reg)
-  return { ok: true, multi, authoritative }
 }
 /** Pick a KNOWN account: silent selection through the AS. False when the sub is not a known entry. */
 export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {

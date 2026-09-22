@@ -6,15 +6,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // the hoisted vi.mock factory runs. `browser` and the live `store` state are hoisted MUTABLE
 // objects so individual tests can steer the electron/backend branch and what the effects
 // re-read from the store after a teardown.
-const { oidcStart, signOutEverywhere, oidcGrantStale, oidcMcpDetailReady, oidcActor, browser, storeState } = vi.hoisted(() => ({
-  oidcStart: vi.fn(),
-  signOutEverywhere: vi.fn(),
-  oidcGrantStale: vi.fn(),
-  oidcActor: vi.fn(),
-  oidcMcpDetailReady: vi.fn(),
-  browser: { isElectron: false, hasBackend: false },
-  storeState: { auth: {} as Record<string, unknown> },
-}))
+const { oidcStart, signOutEverywhere, oidcGrantStale, oidcMcpDetailReady, oidcActor, browser, storeState } = vi.hoisted(
+  () => ({
+    oidcStart: vi.fn(),
+    signOutEverywhere: vi.fn(),
+    oidcGrantStale: vi.fn(),
+    oidcActor: vi.fn(),
+    oidcMcpDetailReady: vi.fn(),
+    browser: { isElectron: false, hasBackend: false },
+    storeState: { auth: {} as Record<string, unknown> },
+  })
+)
 
 // signInFailure() tests `error instanceof OidcError`, so the mock must export a real class
 // (an undefined right-hand side of instanceof throws rather than returning false).
@@ -38,13 +40,22 @@ vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.f
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
 vi.mock('../store', () => ({ persistor: { purge: vi.fn() }, store: { getState: () => storeState } }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
-vi.mock('../constants', () => ({ API_URL: '', DEVELOPER_KEY: '', SIGN_OUT_BACKEND_TIMEOUT: 1000, SIGN_OUT_EVERYWHERE_TIMEOUT: 50 }))
+vi.mock('../constants', () => ({
+  API_URL: '',
+  DEVELOPER_KEY: '',
+  SIGN_OUT_BACKEND_TIMEOUT: 1000,
+  SIGN_OUT_EVERYWHERE_TIMEOUT: 50,
+}))
 vi.mock('axios', () => ({ default: {} }))
 
 // The effects are `dispatch => ({...})`; build them against a fake dispatch so each auth.*
 // call is an observable spy rather than a real reducer/effect.
 function makeDispatch() {
-  return { auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn() }, ui: { set: vi.fn() }, chat: { signOut: vi.fn() } }
+  return {
+    auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn() },
+    ui: { set: vi.fn() },
+    chat: { signOut: vi.fn() },
+  }
 }
 
 // The only shape SignInApp renders: it shows a message ONLY while signInFailed is true, and
@@ -159,12 +170,6 @@ describe('auth model — a backend rejection survives the sign-out teardown', ()
     expect(dispatch.auth.set.mock.invocationCallOrder[0]).toBeGreaterThan(
       dispatch.auth.signedOut.mock.invocationCallOrder[0]
     )
-  })
-
-  it('signInError writes the signInFailure shape, never a bare signInError string', async () => {
-    const dispatch = makeDispatch()
-    await effectsFor(dispatch).signInError('locked')
-    expect(dispatch.auth.set).toHaveBeenCalledWith(aFailureShowing('locked'))
   })
 })
 

@@ -78,7 +78,7 @@ export async function apiError(error: unknown) {
       await sleep(1000 * errorCount * errorCount)
       // The status rides along: under a SUPPORT session a 401 is terminal (no refresh token, the
       // session is gone) while a 403 is an ordinary refused write — checkSession tells them apart.
-      auth.checkSession({ silent: true, status: error.response?.status })
+      auth.checkSession({ status: error.response?.status })
     }
   }
 

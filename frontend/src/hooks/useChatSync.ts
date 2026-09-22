@@ -42,10 +42,6 @@ export const useChatPopoutScope = (): void => {
   }, [])
 }
 
-/* Main-window chat lifecycle — everything ChatPanel needs to happen but that
-   isn't display: adopting the server's transcript on mount, wiring the popout
-   handoff protocol, re-checking agent health when the dock opens, and
-   mirroring the app's active org. */
 /* The identity the chat is scoped by. auth.user, NOT the persisted `user` model: auth.user is
    fetched for the CURRENT tokens at sign-in (it is what lets App mount), while the user model
    is restored from storage and only catches up when the cloud sync lands. Activating a saved
@@ -91,6 +87,9 @@ const useChatBoot = (open: boolean): void => {
   useAgentHealthOnReconnect(() => dispatch.chat.checkHealth())
 }
 
+/* Main-window chat lifecycle — everything ChatPanel needs to happen but that isn't display:
+   the shared boot (useChatBoot), the popout handoff protocol, and re-checking agent health
+   when the dock opens. */
 export const useChatMainSync = (): void => {
   const open = useSelector((state: State) => state.chat.open)
   const dispatch = useDispatch<Dispatch>()

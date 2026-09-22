@@ -9,6 +9,13 @@ import { OAUTH_PASSPORT_RESOURCE } from '../constants'
  * console's re-authentication (permitteer docs/remoteit-desktop-login.md Phase 2b).
  */
 
+export type MfaMethod = 'totp' | 'sms'
+// English fallbacks for the `mfa.method.<method>` catalog keys, shared by every surface that lists factors.
+export const METHOD_LABEL: Record<MfaMethod, string> = { totp: 'Authenticator app', sms: 'Text message' }
+export type Passkey = { id: string; name: string }
+
+/* Every self-API answer in one shape: the continuation of a write (status/challenge/…), the MFA
+   standing (methods/preferred/available), the account (passkeys), or an error. */
 export type SelfContinuation = {
   status?: 'ok' | 'mfa' | 'confirm' | 'select' | 'register'
   challenge?: string
@@ -18,32 +25,27 @@ export type SelfContinuation = {
   delivery?: 'sms'
   options?: string[] | Record<string, any>
   name?: string
-  methods?: string[]
-  preferred?: string
+  methods?: MfaMethod[]
+  preferred?: MfaMethod
+  available?: MfaMethod[]
+  passkeys?: Passkey[]
   recovery_codes?: string[]
   error?: string
   error_description?: string
 }
+export type SelfResult = SelfContinuation & { httpStatus: number }
 
-const call = async (
-  path: string,
-  body?: Record<string, string>
-): Promise<SelfContinuation & { httpStatus: number }> => {
+const call = async (path: string, body?: Record<string, string>): Promise<SelfResult> => {
   const r = await oidcResourceRequest<SelfContinuation>(
     OAUTH_PASSPORT_RESOURCE,
     path,
     body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {}
   )
-  return { ...(r.body ?? (r.status === 401 ? { error: 'unauthorized' } : {})), httpStatus: r.status }
+  return { ...r.body, httpStatus: r.status }
 }
 
-export type MfaMethod = 'totp' | 'sms'
-// English fallbacks for the `mfa.method.<method>` catalog keys, shared by every surface that lists factors.
-export const METHOD_LABEL: Record<MfaMethod, string> = { totp: 'Authenticator app', sms: 'Text message' }
-export type MfaStanding = { methods: MfaMethod[]; preferred?: MfaMethod; available: MfaMethod[] }
-
 export const selfMe = () => call('')
-export const selfMfaStanding = () => call('/mfa') as Promise<MfaStanding & { httpStatus: number }>
+export const selfMfaStanding = () => call('/mfa')
 export const selfChangePassword = (current_password: string, new_password: string) =>
   call('/password', { current_password, new_password })
 /** Answer a pending challenge: a code — or, for a factor CHOICE (select), the method. */

@@ -44,12 +44,8 @@ export const subscribeViewport = (listener: () => void) => {
   }
 }
 
-const getSnapshot = () => width
-
 /* The width right now, for event handlers that must not subscribe (a drag's own math). */
 export const getViewportWidth = (): number => width
-
-export const useViewportWidth = (): number => useSyncExternalStore(subscribeViewport, getSnapshot)
 
 /* Subscribe to a value DERIVED from the width — a breakpoint, a clamp. Same single
    listener, but the subscriber is the ANSWER rather than the width, so a component that

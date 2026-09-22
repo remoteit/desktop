@@ -54,7 +54,12 @@ export const ChangePassword = () => {
         </Typography>
         <Gutters sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
           <Typography variant="body2" gutterBottom>
-            {t('changePassword.mfaPrompt', 'Enter the 6-digit code from your authenticator to finish changing your password.')}
+            {passwordChallenge.hint
+              ? t('mfa.relayHint', 'Enter the code sent to {{hint}}.', { hint: passwordChallenge.hint })
+              : t(
+                  'changePassword.mfaPrompt',
+                  'Enter the 6-digit code from your authenticator to finish changing your password.'
+                )}
           </Typography>
           <TextField
             autoFocus
@@ -65,7 +70,13 @@ export const ChangePassword = () => {
           />
         </Gutters>
         <Gutters bottom="xl">
-          <Button variant="contained" color="primary" size="small" disabled={code.length < 6 || saving} onClick={verifyCode}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            disabled={code.length < 6 || saving}
+            onClick={verifyCode}
+          >
             {t('common.verify', 'Verify')}
           </Button>
           <Button size="small" onClick={() => auth.set({ passwordChallenge: undefined })}>
@@ -109,7 +120,8 @@ export const ChangePassword = () => {
             children: (
               <>
                 <Typography variant="body2" gutterBottom>
-                  {t('changePassword.noticeBefore', 'Changing your password will')} <b>{t('changePassword.noticeEmphasis', 'NOT')}</b>{' '}
+                  {t('changePassword.noticeBefore', 'Changing your password will')}{' '}
+                  <b>{t('changePassword.noticeEmphasis', 'NOT')}</b>{' '}
                   {t('changePassword.noticeAfter', 'automatically sign you out of other sessions.')}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
