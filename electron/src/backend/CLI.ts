@@ -298,6 +298,20 @@ export default class CLI {
     return result?.version
   }
 
+  async agentReload(): Promise<{ version?: string; error?: Error }> {
+    let error: Error | undefined
+    const result = await this.exec({
+      cmds: [strings.agentReload()],
+      skipSignInCheck: true,
+      skipInstalledCheck: true,
+      quiet: true,
+      onError: e => {
+        error = e
+      },
+    })
+    return { version: result?.version, error }
+  }
+
   async exec({
     cmds,
     checkAuthHash = false,
@@ -324,17 +338,19 @@ export default class CLI {
     let commands = new Command({ admin, quiet })
     cmds.forEach(cmd => commands.push(`"${cliBinary.path}" ${cmd}`))
 
-    if (!skipInstalledCheck) {
-      commands.onError = async (e: Error) => {
-        if (!quiet) {
-          if (typeof onError === 'function') onError(e)
-          EventBus.emit(this.EVENTS.error, e.message)
-        }
-        // can't decrypt authHash
-        if (e.name === '11') await this.signOut()
-
-        binaryInstaller.check()
+    commands.onError = async (e: Error) => {
+      if (skipInstalledCheck) {
+        if (typeof onError === 'function') onError(e)
+        return
       }
+      if (!quiet) {
+        if (typeof onError === 'function') onError(e)
+        EventBus.emit(this.EVENTS.error, e.message)
+      }
+      // can't decrypt authHash
+      if (e.name === '11') await this.signOut()
+
+      binaryInstaller.check()
     }
 
     const result = await commands.exec()
