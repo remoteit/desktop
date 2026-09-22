@@ -8,8 +8,6 @@ import {
   initChatPopoutWindow,
   checkPopoutPresence,
   PopoutMainHandlers,
-  isChatPopout,
-  popoutScopeId,
 } from '../services/chatPopout'
 import network from '../services/Network'
 
@@ -28,20 +26,6 @@ const useAgentHealthOnReconnect = (check: () => void): void => {
 
 const currentHandoff = () => toChatHandoff(store.getState().chat)
 
-/* Popout boot: run under the account scope of the window that opened it. Everything org-scoped
-   — App's chat entitlement gate above all — resolves through accounts.activeId, which the
-   popout's no-op persistence leaves unset, i.e. the PERSONAL account: a chat licensed only for
-   an organization would be refused in its own popout. This must run OUTSIDE that gate
-   (ChatWindow's own hooks sit behind it), so App calls it unconditionally; it is a no-op in
-   the main window. accounts.parse clears a scope the user is no member of, so a hand-edited
-   URL can only ever land back on the personal account. */
-export const useChatPopoutScope = (): void => {
-  const dispatch = useDispatch<Dispatch>()
-  useEffect(() => {
-    if (isChatPopout && popoutScopeId) dispatch.accounts.set({ activeId: popoutScopeId })
-  }, [])
-}
-
 /* The identity the chat is scoped by. auth.user, NOT the persisted `user` model: auth.user is
    fetched for the CURRENT tokens at sign-in (it is what lets App mount), while the user model
    is restored from storage and only catches up when the cloud sync lands. Activating a saved
@@ -55,14 +39,7 @@ const useChatIdentity = (): string => useSelector((state: State) => state.auth.u
    dock closed asks the agent for nothing: no list, no meter, no transcript. */
 const useChatBoot = (open: boolean): void => {
   const userId = useChatIdentity()
-  const activeId = useSelector((state: State) => state.accounts.activeId)
   const dispatch = useDispatch<Dispatch>()
-
-  // The chat follows the app's active org: the sidebar selector here, the scope it was opened
-  // under in the popout (useChatPopoutScope sets it before this runs)
-  useEffect(() => {
-    dispatch.chat.syncOrg()
-  }, [activeId])
 
   // Declared first so a persisted chat from a previous account is dropped before anything loads
   // it (the identity sync no-ops for the same account, so it is safe to chase on every open). The
@@ -83,6 +60,10 @@ const useChatBoot = (open: boolean): void => {
     // deliberately leaves the stream running)
     dispatch.chat.resetTransient()
   }, [])
+
+  useEffect(() => {
+    if (open) dispatch.chat.checkHealth()
+  }, [open])
 
   useAgentHealthOnReconnect(() => dispatch.chat.checkHealth())
 }
@@ -132,10 +113,6 @@ export const useChatMainSync = (): void => {
       dispatch.chat.stop()
     }
   }, [])
-
-  useEffect(() => {
-    if (open) dispatch.chat.checkHealth()
-  }, [open])
 }
 
 /* Popout-window chat lifecycle: adopt the handed-off conversation, answer
@@ -148,7 +125,6 @@ export const useChatPopoutSync = (): void => {
 
   useEffect(() => {
     document.title = t('chat.windowTitle', 'remote.it chat')
-    dispatch.chat.checkHealth()
     const unsubscribe = initChatPopoutWindow({
       adopt: payload => dispatch.chat.adoptHandoff(payload),
       getHandoff: currentHandoff,

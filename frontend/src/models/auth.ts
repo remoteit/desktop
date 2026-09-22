@@ -34,7 +34,7 @@ import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import i18n from '../i18n'
-import sleep from '../helpers/sleep'
+import { withTimeout } from '../helpers/sleep'
 
 export interface AuthState {
   initialized: boolean
@@ -500,7 +500,7 @@ export default createModel<RootModel>()({
       // because the token service was half-open. Past the bound, the local sign-out proceeds and
       // the AS is told nothing; that is the failure the mail and the account page can still show.
       try {
-        const r = await Promise.race([signOutEverywhere(), sleep(SIGN_OUT_EVERYWHERE_TIMEOUT).then(() => null)])
+        const r = await withTimeout(signOutEverywhere(), SIGN_OUT_EVERYWHERE_TIMEOUT)
         if (!r) console.warn('SIGN OUT EVERYWHERE timed out — signing out locally')
         else if (r.status === 200) console.log('SIGN OUT EVERYWHERE', r.body)
         else console.warn('SIGN OUT EVERYWHERE refused', r.status, r.body)

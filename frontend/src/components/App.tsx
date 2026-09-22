@@ -19,7 +19,6 @@ import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
 import { useChatEnabled, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
-import { useChatPopoutScope } from '../hooks/useChatSync'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
@@ -77,7 +76,6 @@ export const App: React.FC = () => {
 
   // Before the popout's entitlement gate below can be read, the window must run under the
   // account scope that opened it (otherwise it reads the personal account's license)
-  useChatPopoutScope()
 
   useEffect(() => {
     hideSplashScreen()

@@ -23,12 +23,11 @@ export const isChatPopout = bootQuery.has(CHAT_POPOUT_PARAM)
 // it. Every main tab hears the shared channel, so directed messages carry
 // this id and non-owner tabs ignore them.
 const popoutId = bootQuery.get(CHAT_POPOUT_PARAM) || ''
-/* The account scope of the window that opened this popout, for the boot to adopt
-   (useChatPopoutScope). The popout persists nothing, so accounts.activeId starts unset and
-   every org-scoped read — the chat entitlement gate above all — falls back to the PERSONAL
-   account, refusing a chat that is licensed only for an organization. User-controlled like
-   the rest of the URL, and safe that way: a scope the user is no member of is cleared again
-   by accounts.parse, back to the personal account the gate would have read anyway. */
+/* The account scope of the window that opened this popout — the store's initial accounts.activeId
+   (store.ts). The popout persists nothing, so without it every org-scoped read — the chat
+   entitlement gate above all — would fall back to the PERSONAL account, refusing a chat that is
+   licensed only for an organization. User-controlled like the rest of the URL, and safe that way:
+   a scope the user is no member of is cleared again by accounts.parse. */
 export const popoutScopeId = bootQuery.get(SCOPE_PARAM) || ''
 
 // Per-tab (sessionStorage survives a reload of the owning tab, but no other
@@ -145,7 +144,10 @@ export function initChatPopoutMain(handlers: PopoutMainHandlers): () => void {
     }
   }
   channel.addEventListener('message', listener)
-  return () => channel.removeEventListener('message', listener)
+  return () => {
+    channel.removeEventListener('message', listener)
+    stopPolling()
+  }
 }
 
 /* Ask whether a popout survives from a previous page load; corrects a stale

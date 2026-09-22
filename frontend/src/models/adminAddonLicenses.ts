@@ -1,4 +1,5 @@
 import { createModel } from '@rematch/core'
+import { latestWins } from '../helpers/latestWins'
 import { graphQLAdminAddonCustomers, graphQLAdminAddonProducts } from '../services/graphQLRequest'
 import { getApiURL } from '../helpers/apiHelper'
 import type { RootModel } from '.'
@@ -77,8 +78,8 @@ type Page = { customers: AdminAddonCustomer[]; total: number; hasMore: boolean }
    the list it replaced. (Comparing the response's product and search to the store at resolve time
    would let exactly that through — they still match.) The product list has its own, invalidated
    only by sign-out: it is not scoped to a selection, and two of its responses say the same thing. */
-let listRequest = 0
-let productsRequest = 0
+const listRequest = latestWins()
+const productsRequest = latestWins()
 
 const emptiedList = { customers: [], total: 0, hasMore: false, listStatus: 'idle' as const }
 
@@ -113,7 +114,7 @@ export const adminAddonLicenses = createModel<RootModel>()({
   effects: dispatch => {
     // One page of the current product's customers: `from` 0 replaces the list, anything else appends.
     const loadPage = async (state: AdminAddonLicensesState, from: number) => {
-      const ticket = ++listRequest
+      const isLatest = listRequest.take()
       dispatch.adminAddonLicenses.setListStatus('loading')
 
       const result = await graphQLAdminAddonCustomers(
@@ -124,7 +125,7 @@ export const adminAddonLicenses = createModel<RootModel>()({
 
       // Superseded: a newer request, or an event that retired this one, owns the list (and its
       // status) now — this response describes a list nobody is looking at.
-      if (ticket !== listRequest) return
+      if (!isLatest()) return
 
       const data = result === 'ERROR' ? undefined : result?.data?.data?.admin?.addonCustomers
       if (!data) {
@@ -141,10 +142,10 @@ export const adminAddonLicenses = createModel<RootModel>()({
       /* The product catalogue. Resolves to the fresh list, or undefined when nothing answered — the
        products held stay, marked failed. */
       async fetchProducts(): Promise<AdminAddonProduct[] | undefined> {
-        const ticket = ++productsRequest
+        const isLatest = productsRequest.take()
         dispatch.adminAddonLicenses.setProductsStatus('loading')
         const result = await graphQLAdminAddonProducts()
-        if (ticket !== productsRequest) return undefined
+        if (!isLatest()) return undefined
 
         // No response at all (offline, no auth header yet) is not an empty list.
         const products: AdminAddonProduct[] | undefined =
@@ -173,7 +174,7 @@ export const adminAddonLicenses = createModel<RootModel>()({
         const target = getApiURL()
         // A page still in flight from the other target is retired with its rows — it would otherwise
         // pass the ticket check and refill the emptied list while the catalogue is awaited.
-        if (target !== rootState.adminAddonLicenses.target) ++listRequest
+        if (target !== rootState.adminAddonLicenses.target) listRequest.invalidate()
         dispatch.adminAddonLicenses.setTarget(target)
         const products = await dispatch.adminAddonLicenses.fetchProducts()
         if (!products) return
@@ -206,8 +207,8 @@ export const adminAddonLicenses = createModel<RootModel>()({
 
       // Sign-out: nothing in flight may land in the next session's state.
       async reset() {
-        ++listRequest
-        ++productsRequest
+        listRequest.invalidate()
+        productsRequest.invalidate()
         dispatch.adminAddonLicenses.resetState()
       },
     }

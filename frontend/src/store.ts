@@ -1,7 +1,7 @@
 import { numericVersion } from './helpers/versionHelper'
 import { models, RootModel } from './models'
 import { defaultChatState, IChatState } from './models/chat'
-import { isChatPopout } from './services/chatPopout'
+import { isChatPopout, popoutScopeId } from './services/chatPopout'
 import { createLogger, ReduxLoggerOptions } from 'redux-logger'
 import { init, RematchDispatch, RematchRootState } from '@rematch/core'
 import { createTransform, PersistConfig } from 'redux-persist'
@@ -23,7 +23,6 @@ const chatTransform = createTransform(
     messages: inbound.messages,
     conversationId: inbound.conversationId,
     title: inbound.title,
-    orgId: inbound.orgId,
     ownerId: inbound.ownerId,
     open: inbound.open,
     width: inbound.width,
@@ -74,8 +73,17 @@ const persistConfig: PersistConfig<RootModel> = {
 export const store = init<RootModel>({
   models,
   plugins: [immerPlugin(), persistPlugin(persistConfig)],
-  // @ts-ignore
-  redux: { middlewares: [createLogger(loggerConfig)] },
+  redux: {
+    // @ts-ignore
+    middlewares: [createLogger(loggerConfig)],
+    // The popout persists nothing, so its account scope — the one the opening window handed it on
+    // the URL — is its INITIAL state, exactly where a rehydrated main window's would come from.
+    // Every org-scoped read (the chat entitlement gate above all) then resolves the same way in
+    // both windows; accounts.parse still clears a scope the user is no member of.
+    ...(isChatPopout && popoutScopeId
+      ? { initialState: { accounts: { ...models.accounts.state, activeId: popoutScopeId } } }
+      : {}),
+  },
 })
 
 export const { dispatch } = store

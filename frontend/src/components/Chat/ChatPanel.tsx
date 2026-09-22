@@ -33,8 +33,8 @@ const INSET = 1
 export const ChatPanel: React.FC = () => {
   const { t } = useTranslation()
   const open = useSelector((state: State) => state.chat.open)
-  const insets = useSelector((state: State) => state.ui.layout.insets)
   const layout = useSelector((state: State) => state.ui.layout)
+  const insets = layout.insets
   // Popping out hands the conversation to a second window and stop()s this one. While a turn is
   // still streaming or an approval card is pending, the handoff can't carry/resume it — the popup
   // couldn't action the approval and the server-side turn would strand — so block it until idle.

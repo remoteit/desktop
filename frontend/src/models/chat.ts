@@ -29,8 +29,10 @@ import { store } from '../store'
 import type { State } from '../store'
 import { CHAT_PANEL_WIDTH } from '../constants'
 import i18n from '../i18n'
-import sleep from '../helpers/sleep'
+import { withTimeout } from '../helpers/sleep'
+import { latestWins } from '../helpers/latestWins'
 import { formatReset } from '../helpers/dateHelper'
+import { selectActiveAccountId, isUserAccount } from '../selectors/accounts'
 
 export type ChatToolCall = {
   id: string
@@ -57,7 +59,6 @@ export type IChatState = {
   /** The signed-in user id this chat belongs to — reset the chat when it changes. */
   ownerId: string
   /** Org the agent is scoped to; null = uninitialized, user id = personal */
-  orgId: string | null
   /** Conversation currently lives in the popout window (main window only) */
   poppedOut: boolean
   streaming: boolean
@@ -76,7 +77,6 @@ export const defaultChatState: IChatState = {
   conversations: [],
   usage: null,
   ownerId: '',
-  orgId: null,
   poppedOut: false,
   streaming: false,
   pendingConfirmation: null,
@@ -128,13 +128,14 @@ function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
   return state
 }
 
-/* Single source of truth for the org the chat is scoped to (null = personal).
-   Membership decides the scope, so the Current Org label and the org sent
-   with each turn can never disagree; the name falls back to the membership
-   record when organization.accounts hasn't loaded. */
+/* The org the chat is scoped to (null = personal): the app's active account, read from the same
+   selector the rest of the app uses — no copy of it to keep in step, in either window (the popout
+   boots under the scope it was opened with). Membership decides, so the Current Org label and the
+   org sent with each turn can never disagree; the name falls back to the membership record when
+   organization.accounts hasn't loaded. */
 export function resolveChatOrg(state: State): OrgSelection | null {
-  const orgId = state.chat.orgId
-  if (!orgId || orgId === state.user.id) return null
+  if (isUserAccount(state)) return null
+  const orgId = selectActiveAccountId(state)
   const membership = state.accounts.membership.find(m => m.account.id === orgId)
   if (!membership) return null
   const name = (state.organization.accounts[orgId]?.name || membership.name || '').trim()
@@ -198,13 +199,6 @@ const nextGeneration = () => ++generation
 /* Independent probes — health, the history list, the usage meter — are not scoped to the
    conversation, so they get their own latest-wins tickets instead: an older response that
    lands last must not overwrite a newer one. */
-const latestWins = () => {
-  let current = 0
-  return () => {
-    const ticket = ++current
-    return () => ticket === current
-  }
-}
 const healthProbe = latestWins()
 const listLoad = latestWins()
 const usageLoad = latestWins()
@@ -296,11 +290,6 @@ export default createModel<RootModel>()({
         dispatch.chat.loadUsage()
       }
     },
-    /* The chat follows the app's active org (the sidebar selector) — both windows mirror it
-       whenever it changes; the popout's is the scope it was opened under (useChatPopoutScope). */
-    async syncOrg(_: void, state) {
-      dispatch.chat.set({ orgId: state.accounts.activeId || state.user.id })
-    },
     async confirm(approved: boolean, state) {
       const pending = state.chat.pendingConfirmation
       if (!pending) return
@@ -383,7 +372,7 @@ export default createModel<RootModel>()({
       // Latest probe wins: a slow probe started while connectivity was failing must not land after
       // the reconnect-triggered one and flip a fresh `ok` back to `unreachable` — which disabled the
       // composer until the next reopen or network event, with the agent perfectly reachable.
-      const isLatest = healthProbe()
+      const isLatest = healthProbe.take()
       const health = await agentHealth()
       if (isLatest()) dispatch.chat.set({ health })
     },
@@ -452,13 +441,13 @@ export default createModel<RootModel>()({
     /* The usage meter (docs/usage-limits.md D6) — refreshed on mount, after each turn, and
        on open. Silent on failure; the last-known meter stands. */
     async loadUsage() {
-      const isLatest = usageLoad()
+      const isLatest = usageLoad.take()
       const usage = await fetchUsage()
       if (usage && isLatest()) dispatch.chat.set({ usage })
     },
     /* The history picker's list — refreshed when shown, after a turn, and after a delete. */
     async loadConversations() {
-      const isLatest = listLoad()
+      const isLatest = listLoad.take()
       try {
         const conversations = await listConversations()
         if (isLatest()) dispatch.chat.set({ conversations })
@@ -551,7 +540,10 @@ export default createModel<RootModel>()({
       const who = state?.auth?.user?.id
       if (who && backgroundRevokedFor === who) return
       backgroundRevokedFor = who ?? null
-      await Promise.race([backgroundDisable().catch(() => {}), sleep(3000)])
+      await withTimeout(
+        backgroundDisable().catch(() => {}),
+        3000
+      )
     },
   }),
   reducers: {

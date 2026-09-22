@@ -44,6 +44,12 @@ vi.mock('../services/chatPopout', () => ({
   openChatPopout,
   popIn: vi.fn(),
 }))
+// The org selector's real dependency chain (selectors/state → services/browser) is the app's;
+// the model test needs only its answer.
+vi.mock('../selectors/accounts', () => ({
+  selectActiveAccountId: (s: any) => s.accounts?.activeId || s.auth?.user?.id || '',
+  isUserAccount: (s: any) => !s.accounts?.activeId || s.accounts.activeId === s.auth?.user?.id,
+}))
 vi.mock('../store', () => ({ store: { getState: () => storeState } }))
 vi.mock('../constants', () => ({ CHAT_PANEL_WIDTH: 400 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
@@ -69,8 +75,9 @@ const makeDispatch = () => ({
 // The wider snapshot send() reads (resolveChatOrg looks at the user and memberships)
 const sendable = (chat: Record<string, unknown> = {}) => ({
   ...current(chat),
-  user: { id: 'u' },
-  accounts: { membership: [] },
+  auth: { user: { id: 'u' } },
+  accounts: { activeId: '', membership: [] },
+  organization: { accounts: {} },
 })
 
 // A fetch the test resolves by hand, to interleave user actions with an in-flight request.

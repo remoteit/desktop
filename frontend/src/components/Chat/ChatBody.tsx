@@ -17,6 +17,17 @@ import { CHAT_GUIDE_DATE } from '../../constants'
 
 /* Everything below the chat header — shared by the docked panel and the
    popout window */
+/* The chat's empty states: the agent mark, a sentence, and whatever the state offers. */
+const ChatEmpty: React.FC<{ message: React.ReactNode; children?: React.ReactNode }> = ({ message, children }) => (
+  <Body center>
+    <Icon name="remote-ai" size="xxxl" color="grayDark" />
+    <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
+      {message}
+    </Typography>
+    {children}
+  </Body>
+)
+
 export const ChatBody: React.FC = () => {
   const { t } = useTranslation()
   const messages = useSelector((state: State) => state.chat.messages)
@@ -51,25 +62,22 @@ export const ChatBody: React.FC = () => {
         </Notice>
       )}
       {signedOut ? (
-        <Body center>
-          <Icon name="remote-ai" size="xxxl" color="grayDark" />
-          <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
-            {t('chat.signInNeeded', 'The AI agent needs permissions your session doesn\u2019t carry yet.')}
-            {isChatPopout && ` ${t('chat.signInFromMain', 'Refresh permissions from the main app window.')}`}
-          </Typography>
+        <ChatEmpty
+          message={
+            <>
+              {t('chat.signInNeeded', 'The AI agent needs permissions your session doesn\u2019t carry yet.')}
+              {isChatPopout && ` ${t('chat.signInFromMain', 'Refresh permissions from the main app window.')}`}
+            </>
+          }
+        >
           {!oidcLeaveRefused() && (
             <Button variant="contained" size="medium" onClick={() => dispatch.chat.signIn()}>
               {t('chat.signIn', 'Refresh permissions')}
             </Button>
           )}
-        </Body>
+        </ChatEmpty>
       ) : unreachable && !messages.length ? (
-        <Body center>
-          <Icon name="remote-ai" size="xxxl" color="grayDark" />
-          <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 320, padding: 3 }}>
-            {unavailableMessage}
-          </Typography>
-        </Body>
+        <ChatEmpty message={unavailableMessage} />
       ) : !messages.length && !pendingConfirmation && !error ? (
         <ChatIntro />
       ) : (
