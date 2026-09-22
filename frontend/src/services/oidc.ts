@@ -646,11 +646,8 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
   // A support session's token IS the session: served until it expires (a reload restores it from
   // the tab store), never refreshed, and '' — the end — once it is gone. Other audiences have
   // nothing to mint from; their features fail closed, as writes do under `act`.
-  const support = stored()?.support
-  if (support)
-    return resource === OAUTH_GRAPHQL_RESOURCE && support.exp - Math.floor(Date.now() / 1000) > 0
-      ? support.access_token
-      : ''
+  const s = stored()
+  if (s?.support) return resource === OAUTH_GRAPHQL_RESOURCE && supportLive(s) ? s.support.access_token : ''
   const fresh = () => {
     const cached = access[resource]
     return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined

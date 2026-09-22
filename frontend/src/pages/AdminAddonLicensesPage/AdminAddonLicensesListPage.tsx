@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@mui/material'
 import { ADMIN_ADDONS_ROUTE } from '../../constants'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { Attribute } from '../../components/Attributes'
@@ -200,20 +200,28 @@ export const AdminAddonLicensesListPage: React.FC = () => {
   // The URL is the selection, and refresh is the one way in: on mount and on every move of the
   // product it re-reads the catalogue, checks the product against it, and fetches the list afresh
   // — so a stale link never fires a list request that can only be refused, and a remount never
-  // shows rows fetched from another API target.
+  // shows rows fetched from another API target. With no product in the URL the one last looked
+  // at is preferred (the sidebar's memory); the model falls back to the first add-on.
+  const saved = defaultSelection['admin']?.[ADMIN_ADDONS_ROUTE]
+  const remembered = saved?.startsWith(`${ADMIN_ADDONS_ROUTE}/`)
+    ? saved.slice(ADMIN_ADDONS_ROUTE.length + 1)
+    : undefined
+  const aligning = useRef(false)
   useEffect(() => {
-    dispatch.adminAddonLicenses.refresh(urlProductId)
+    // The URL just caught up with the model's own choice (below): the list is already loading.
+    if (aligning.current) {
+      aligning.current = false
+      return
+    }
+    dispatch.adminAddonLicenses.refresh(urlProductId ?? remembered)
   }, [urlProductId])
 
-  // No product in the URL, or one the API no longer lists: go to the product last looked at, else
-  // the first add-on. Waits for the catalogue so a deep link to a real product is never bounced.
+  // No product in the URL, or one the API no longer lists: the URL follows the model's choice.
   useEffect(() => {
-    if (productsStatus !== 'loaded' || !products.length) return
-    if (urlProductId && products.some(p => p.id === urlProductId)) return
-    const saved = defaultSelection['admin']?.[ADMIN_ADDONS_ROUTE]
-    const remembered = products.find(p => saved === `${ADMIN_ADDONS_ROUTE}/${p.id}`)
-    history.replace(`${ADMIN_ADDONS_ROUTE}/${(remembered || products[0]).id}`)
-  }, [urlProductId, productsStatus, products])
+    if (productsStatus !== 'loaded' || !productId || urlProductId === productId) return
+    aligning.current = true
+    history.replace(`${ADMIN_ADDONS_ROUTE}/${productId}`)
+  }, [urlProductId, productsStatus, productId])
 
   // Remember the product for the sidebar's Add-ons entry (AdminSidebarNav.handleNavClick)
   useEffect(() => {

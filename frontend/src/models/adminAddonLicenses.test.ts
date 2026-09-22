@@ -158,14 +158,14 @@ describe('adminAddonLicenses effects', () => {
     expect(dispatch.adminAddonLicenses.fetch).toHaveBeenCalledTimes(1)
   })
 
-  it('refresh clears a selection the catalogue no longer lists and asks for no list — the page picks a product that exists', async () => {
+  it('refresh replaces a selection the catalogue no longer lists with the first add-on, and loads it', async () => {
     const dispatch = makeDispatch()
     const effects = withRealEffects(dispatch, { productId: 'gone' })
     graphQLAdminAddonProducts.mockResolvedValueOnce(catalogue('A'))
+    graphQLAdminAddonCustomers.mockResolvedValueOnce(page([], 0, false))
     await effects.refresh('gone', stateWith({ productId: 'gone' }))
-    expect(dispatch.adminAddonLicenses.setProductId).toHaveBeenCalledWith(undefined)
-    expect(dispatch.adminAddonLicenses.fetch).not.toHaveBeenCalled()
-    expect(graphQLAdminAddonCustomers).not.toHaveBeenCalled()
+    expect(dispatch.adminAddonLicenses.setProductId).toHaveBeenCalledWith('A')
+    expect(dispatch.adminAddonLicenses.fetch).toHaveBeenCalledTimes(1)
   })
 
   it('refresh touches neither the selection nor the list when the catalogue did not answer', async () => {

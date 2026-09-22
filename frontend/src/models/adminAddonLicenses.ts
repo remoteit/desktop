@@ -179,9 +179,12 @@ export const adminAddonLicenses = createModel<RootModel>()({
         const products = await dispatch.adminAddonLicenses.fetchProducts()
         if (!products) return
 
+        // The selection: the URL's product when the catalogue lists it, else the one held, else the
+        // first add-on — chosen HERE so one refresh both selects and loads; the page then aligns the
+        // URL to the choice rather than asking for the catalogue a second time.
         const held = rootState.adminAddonLicenses.productId
         const listed = (id?: string) => !!id && products.some(p => p.id === id)
-        const productId = listed(preferredProductId) ? preferredProductId : listed(held) ? held : undefined
+        const productId = listed(preferredProductId) ? preferredProductId : listed(held) ? held : products[0]?.id
         dispatch.adminAddonLicenses.setProductId(productId)
         if (productId) await dispatch.adminAddonLicenses.fetch()
       },
