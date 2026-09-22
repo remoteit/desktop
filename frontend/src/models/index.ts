@@ -15,6 +15,7 @@ import billing from './billing'
 import binaries from './binaries'
 import bluetooth from './bluetooth'
 import chat from './chat'
+import chatLive from './chatLive'
 import connections from './connections'
 import contacts from './contacts'
 import devices from './devices'
@@ -53,6 +54,7 @@ export interface RootModel extends Models<RootModel> {
   binaries: typeof binaries
   bluetooth: typeof bluetooth
   chat: typeof chat
+  chatLive: typeof chatLive
   connections: typeof connections
   contacts: typeof contacts
   devices: typeof devices
@@ -92,6 +94,7 @@ export const models: RootModel = {
   binaries,
   bluetooth,
   chat,
+  chatLive,
   connections,
   contacts,
   devices,

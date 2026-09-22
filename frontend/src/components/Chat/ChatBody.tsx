@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { Button, Typography } from '@mui/material'
@@ -30,7 +30,11 @@ const ChatEmpty: React.FC<{ message: React.ReactNode; children?: React.ReactNode
 
 export const ChatBody: React.FC = () => {
   const { t } = useTranslation()
-  const messages = useSelector((state: State) => state.chat.messages)
+  const transcript = useSelector((state: State) => state.chat.messages)
+  const reply = useSelector((state: State) => state.chatLive.reply)
+  // The transcript plus the reply in flight (models/chatLive): one list for the screen, rebuilt
+  // only when either changes — during a turn that is the tail, and the tail alone re-renders.
+  const messages = useMemo(() => (reply ? [...transcript, reply] : transcript), [transcript, reply])
   const streaming = useSelector((state: State) => state.chat.streaming)
   const health = useSelector((state: State) => state.chat.health)
   const pendingConfirmation = useSelector((state: State) => state.chat.pendingConfirmation)

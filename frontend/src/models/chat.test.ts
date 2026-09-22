@@ -68,9 +68,10 @@ const makeDispatch = () => ({
     newConversation: vi.fn(),
     // what send() touches around its (mocked, instantly-resolving) streamChat
     addUserMessage: vi.fn(),
-    applyEvent: vi.fn(),
+    endTurn: vi.fn(),
     loadUsage: vi.fn(),
   },
+  chatLive: { append: vi.fn(), toolStart: vi.fn(), toolResult: vi.fn(), clear: vi.fn() },
 })
 // The wider snapshot send() reads (resolveChatOrg looks at the user and memberships)
 const sendable = (chat: Record<string, unknown> = {}) => ({
@@ -113,6 +114,7 @@ beforeEach(() => {
   agentHealth.mockReset()
   openChatPopout.mockReset()
   storeState.chat = { conversationId: 'a', streaming: false, messages: [], title: '' }
+  ;(storeState as any).chatLive = { reply: null }
 })
 
 // What openConversation writes for a loaded conversation — the shape the out-of-order tests
@@ -312,7 +314,7 @@ describe('chat model — stop() denies a pending approval', () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).stop(undefined, current({ turnId: 'turn-1', pendingConfirmation: pending }))
     expect(confirmTool).toHaveBeenCalledWith({ turnId: 'turn-1', toolUseId: 'tool-9', approved: false })
-    expect(dispatch.chat.set).toHaveBeenCalledWith({ streaming: false, pendingConfirmation: null })
+    expect(dispatch.chat.endTurn).toHaveBeenCalled() // turnEnded clears the pending approval
   })
 
   it('sends nothing when no approval is pending', async () => {
@@ -327,21 +329,18 @@ describe('chat model — stop() denies a pending approval', () => {
     await expect(
       effectsFor(dispatch).stop(undefined, current({ turnId: 'turn-1', pendingConfirmation: pending }))
     ).resolves.toBeUndefined()
-    expect(dispatch.chat.set).toHaveBeenCalledWith({ streaming: false, pendingConfirmation: null })
+    expect(dispatch.chat.endTurn).toHaveBeenCalled()
   })
 })
 
 /* A stream the server closed cleanly mid-answer must end the turn as an interruption — not
    resolve like a completion with a truncated reply on screen and the composer open. */
 describe('chat model — send() treats a cut-off stream as an interrupted turn', () => {
-  it('maps AgentStreamEndedError to an error event (which marks the reply Interrupted)', async () => {
+  it('ends the turn on AgentStreamEndedError with the cut-off as its error (which marks the reply Interrupted)', async () => {
     streamChat.mockRejectedValue(new AgentStreamEndedError())
     const dispatch = makeDispatch()
     await effectsFor(dispatch).send('hello', sendable())
-    expect(dispatch.chat.applyEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'error', message: 'notices:chat.streamEnded' })
-    )
-    expect(dispatch.chat.set).toHaveBeenCalledWith({ streaming: false })
+    expect(dispatch.chat.endTurn).toHaveBeenCalledWith('notices:chat.streamEnded')
   })
 })
 
@@ -447,5 +446,47 @@ describe('chat model — the background grant is revoked once per identity', () 
     await fx.signOut(undefined, signedInAs('bob'))
     expect(backgroundDisable).toHaveBeenCalledTimes(2)
     reducers.reset({})
+  })
+})
+
+/* The reply in flight lives in models/chatLive so the token stream never touches the persisted
+   chat slice; it joins the transcript exactly once, when the turn ends. */
+describe('chat model — the reply in flight lands once, when the turn ends', () => {
+  const partial = { role: 'assistant' as const, text: 'so far', toolCalls: [] }
+
+  it('endTurn folds the live reply into the transcript — Interrupted when an error ended the turn', async () => {
+    ;(storeState as any).chatLive = { reply: partial }
+    const dispatch = { ...makeDispatch(), chat: { ...makeDispatch().chat, turnEnded: vi.fn() } }
+    await effectsFor(dispatch).endTurn('cut off')
+    expect(dispatch.chatLive.clear).toHaveBeenCalled()
+    expect(dispatch.chat.turnEnded).toHaveBeenCalledWith({ reply: { ...partial, interrupted: true }, error: 'cut off' })
+  })
+
+  it('a completed turn folds the reply as it is; a second endTurn finds nothing in flight', async () => {
+    ;(storeState as any).chatLive = { reply: partial }
+    const dispatch = { ...makeDispatch(), chat: { ...makeDispatch().chat, turnEnded: vi.fn() } }
+    await effectsFor(dispatch).endTurn()
+    expect(dispatch.chat.turnEnded).toHaveBeenCalledWith({ reply: partial, error: undefined })
+    ;(storeState as any).chatLive = { reply: null }
+    await effectsFor(dispatch).endTurn()
+    expect(dispatch.chat.turnEnded).toHaveBeenLastCalledWith({ reply: null, error: undefined })
+    expect(dispatch.chatLive.clear).toHaveBeenCalledTimes(1)
+  })
+
+  it('turnEnded appends the reply and clears the turn state', () => {
+    const reducers = (chatModel as any).reducers
+    const before = {
+      ...reducers.reset({}),
+      messages: [{ role: 'user', text: 'hi' }],
+      streaming: true,
+      pendingConfirmation: { toolUseId: 't', toolName: 'n', input: {} },
+    }
+    const after = reducers.turnEnded(before, { reply: partial, error: undefined })
+    expect(after.messages).toEqual([{ role: 'user', text: 'hi' }, partial])
+    expect(after.streaming).toBe(false)
+    expect(after.pendingConfirmation).toBeNull()
+    const untouched = reducers.turnEnded({ ...before, messages: [] }, { reply: null, error: 'x' })
+    expect(untouched.messages).toEqual([])
+    expect(untouched.error).toBe('x')
   })
 })

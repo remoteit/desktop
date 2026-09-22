@@ -14,7 +14,6 @@ import {
   type Usage,
   agentHealth,
   AgentAuthError,
-  AgentEvent,
   AgentHealth,
   OrgSelection,
 } from '../services/agent'
@@ -42,9 +41,8 @@ export type ChatToolCall = {
   result?: string
 }
 
-export type ChatTranscriptMessage =
-  | { role: 'user'; text: string }
-  | { role: 'assistant'; text: string; toolCalls: ChatToolCall[]; interrupted?: boolean }
+export type ChatAssistantMessage = { role: 'assistant'; text: string; toolCalls: ChatToolCall[]; interrupted?: boolean }
+export type ChatTranscriptMessage = { role: 'user'; text: string } | ChatAssistantMessage
 
 export type IChatState = {
   open: boolean
@@ -82,50 +80,6 @@ export const defaultChatState: IChatState = {
   pendingConfirmation: null,
   error: null,
   health: 'unknown',
-}
-
-/* Reduce one agent stream event into chat state. Mutates the immer draft. */
-function applyAgentEvent(state: IChatState, event: AgentEvent): IChatState {
-  const last = state.messages[state.messages.length - 1]
-  let assistant = last?.role === 'assistant' ? last : undefined
-  const ensureAssistant = () => {
-    if (!assistant) {
-      assistant = { role: 'assistant', text: '', toolCalls: [] }
-      state.messages.push(assistant)
-    }
-    return assistant
-  }
-
-  switch (event.type) {
-    case 'text_delta':
-      ensureAssistant().text += event.text
-      break
-    case 'tool_call_start':
-      ensureAssistant().toolCalls.push({ id: event.id, name: event.name, input: event.input, status: 'running' })
-      break
-    case 'tool_call_result': {
-      const call = assistant?.toolCalls.find(c => c.id === event.id)
-      if (call) {
-        call.status = event.isError ? 'error' : 'done'
-        call.result = event.result
-      }
-      break
-    }
-    case 'confirmation_required':
-      state.pendingConfirmation = { toolUseId: event.id, toolName: event.name, input: event.input }
-      break
-    case 'done':
-      state.streaming = false
-      state.pendingConfirmation = null
-      break
-    case 'error':
-      state.error = event.message
-      state.streaming = false
-      state.pendingConfirmation = null
-      if (assistant) assistant.interrupted = true
-      break
-  }
-  return state
 }
 
 /* The org the chat is scoped to (null = personal): the app's active account, read from the same
@@ -235,7 +189,7 @@ export default createModel<RootModel>()({
         if (flushTimer !== null) window.clearTimeout(flushTimer)
         flushTimer = null
         if (deltaBuffer) {
-          dispatch.chat.applyEvent({ type: 'text_delta', text: deltaBuffer })
+          dispatch.chatLive.append(deltaBuffer)
           deltaBuffer = ''
         }
       }
@@ -254,36 +208,41 @@ export default createModel<RootModel>()({
             } else {
               // Buffered text must land before the next non-text event
               flushDeltas()
+              if (event.type === 'tool_call_start') dispatch.chatLive.toolStart(event)
+              else if (event.type === 'tool_call_result') dispatch.chatLive.toolResult(event)
+              else if (event.type === 'confirmation_required')
+                dispatch.chat.set({
+                  pendingConfirmation: { toolUseId: event.id, toolName: event.name, input: event.input },
+                })
+              else if (event.type === 'done') dispatch.chat.endTurn()
               // The backend prefixes auth failures so the client knows a retry is pointless
               // until the grant is renewed (e.g. it expired mid-turn).
-              if (event.type === 'error' && event.message.startsWith('reauth_required')) {
+              else if (event.message.startsWith('reauth_required')) {
                 dispatch.chat.unauthorized() // mid-stream, not an HTTP 401 — agentRequest cannot see it
-                dispatch.chat.applyEvent({ type: 'error', message: sessionExpiredError() })
-              } else dispatch.chat.applyEvent(event)
+                dispatch.chat.endTurn(sessionExpiredError())
+              } else dispatch.chat.endTurn(event.message)
             }
           },
         })
       } catch (error) {
         flushDeltas()
         if (error instanceof AgentAuthError) dispatch.chat.set({ error: authRequiredError() })
-        else if (error instanceof UsageLimitError)
-          dispatch.chat.applyEvent({ type: 'error', message: usageLimitMessage(error) })
+        else if (error instanceof UsageLimitError) dispatch.chat.endTurn(usageLimitMessage(error))
         else if (error instanceof AgentStreamEndedError)
-          // The error event marks the answer Interrupted and ends the turn — a cut-off must not
-          // leave a truncated reply looking complete with the composer open for another send.
-          dispatch.chat.applyEvent({
-            type: 'error',
-            message: i18n.t('notices:chat.streamEnded', {
+          // An interruption, not a completion — a cut-off must not leave a truncated reply
+          // looking complete with the composer open for another send.
+          dispatch.chat.endTurn(
+            i18n.t('notices:chat.streamEnded', {
               defaultValue:
                 'The connection to the agent closed before it finished — the answer may be incomplete. Try again.',
-            }),
-          })
-        else if ((error as Error).name !== 'AbortError')
-          dispatch.chat.applyEvent({ type: 'error', message: (error as Error).message })
+            })
+          )
+        else if ((error as Error).name !== 'AbortError') dispatch.chat.endTurn((error as Error).message)
       } finally {
         flushDeltas()
         abortController = null
-        dispatch.chat.set({ streaming: false })
+        // Whatever ended the turn — done, an error, an abort — the reply in flight lands once.
+        dispatch.chat.endTurn()
         // A finished turn may have created (and titled) a new conversation — refresh the
         // picker; and the spend just moved, so refresh the usage meter too.
         dispatch.chat.loadConversations()
@@ -322,7 +281,18 @@ export default createModel<RootModel>()({
         confirmTool({ turnId, toolUseId: pendingConfirmation.toolUseId, approved: false }).catch(() => {})
       abortController?.abort()
       abortController = null
-      dispatch.chat.set({ streaming: false, pendingConfirmation: null })
+      // Folded HERE, synchronously: the aborted send's own endTurn runs a microtask later, by which
+      // time a New Chat has cleared the conversation — the partial reply would land in the new one.
+      dispatch.chat.endTurn()
+    },
+    /* The turn is over: the reply in flight (models/chatLive) joins the transcript — marked
+       Interrupted when an error ended it — and the turn state clears. Safe to repeat: a second
+       call finds nothing in flight. */
+    async endTurn(error?: string) {
+      // The LIVE store, not the invocation snapshot: the reply grew after the effect was dispatched
+      const reply = store.getState().chatLive.reply
+      if (reply) dispatch.chatLive.clear()
+      dispatch.chat.turnEnded({ reply: reply && error !== undefined ? { ...reply, interrupted: true } : reply, error })
     },
     /* Discard the current conversation AND any in-flight turn together. clearConversation is a
        reducer, so it cannot abort the streamChat request on its own: a turn left running would
@@ -532,6 +502,7 @@ export default createModel<RootModel>()({
       nextGeneration()
       abortController?.abort()
       abortController = null
+      dispatch.chatLive.clear()
       // Explicit sign-out ends the background relationship (plan D8): revoke the agent's stored
       // grant BEFORE the session tokens vanish. AWAITED but BOUNDED — an unawaited revoke raced
       // oidcClearLocal(), so its authenticated DELETE minted no token and background AI access
@@ -555,8 +526,12 @@ export default createModel<RootModel>()({
       state.messages.push({ role: 'user', text })
       return state
     },
-    applyEvent(state: IChatState, event: AgentEvent) {
-      return applyAgentEvent(state, event)
+    turnEnded(state: IChatState, end: { reply: ChatAssistantMessage | null; error?: string }) {
+      if (end.reply) state.messages.push(end.reply)
+      if (end.error !== undefined) state.error = end.error
+      state.streaming = false
+      state.pendingConfirmation = null
+      return state
     },
     // Streaming state must not survive a reload — called when the panel mounts
     resetTransient(state: IChatState) {
