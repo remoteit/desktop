@@ -9,6 +9,8 @@ import { getAccountIds, accountFromDevice } from '../models/accounts'
 import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
+import { oidcAccessToken } from './oidc'
+import { resourceForEventsURL } from '../constants'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
@@ -27,6 +29,17 @@ import { emit } from './Controller'
 
 const stateTimes = new CloudTimes()
 const connectTimes = new CloudTimes()
+
+// D11a (permitteer docs/remoteit-desktop-login.md Phase 4c): the events stream is SOMETIMES its own
+// audience (resourceForEventsURL says when); otherwise it presents the graphql token — on the
+// unified front that is the right audience, not a stand-in, and on the legacy shared-domain URL the
+// authorizer's dual-accept window admits it until that contract retires.
+async function wsAuthorization(): Promise<string> {
+  const resource = resourceForEventsURL(getWebSocketURL() || '')
+  if (!resource) return await getToken()
+  const token = await oidcAccessToken(resource)
+  return token ? 'Bearer ' + token : ''
+}
 
 class CloudController {
   initialized: boolean = false
@@ -149,7 +162,7 @@ class CloudController {
       // this flag continue to receive single-event frames.
       supportsBatch: true,
       headers: {
-        authorization: await getToken(),
+        authorization: await wsAuthorization(),
         'User-Agent': `remoteit/${version} ${agent()}`,
         ...getTestHeader(),
       },
@@ -528,8 +541,8 @@ class CloudController {
               status: event.job.status,
               jobDevices: jobDevice
                 ? jobDevices.map(jd =>
-                  jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd
-                )
+                    jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd
+                  )
                 : jobDevices,
             },
           ],

@@ -2,8 +2,17 @@ import sleep from '../helpers/sleep'
 import browser from '../services/browser'
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
-import { parse as urlParse } from 'url'
 import { alphaSort, pickTruthy } from '../helpers/utilHelper'
+
+// Browser-native replacement for node's url.parse (which rode in on a dependency shim
+// that left with Amplify): same host/hostname/port fields, empty object on bad input.
+const urlParse = (value?: string): { host?: string; hostname?: string; port?: string } => {
+  try {
+    return value ? new URL(value) : {}
+  } catch {
+    return {}
+  }
+}
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
 import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
 import {

@@ -3,6 +3,7 @@ import { humanizeDays } from '../models/plans'
 import { LinearProgress, Typography, Box } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { spacing } from '../styling'
+import { CHAT_FEATURE } from '../constants'
 
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   const { t } = useTranslation()
@@ -37,6 +38,14 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       message = limit.value
         ? t('limitSetting.rolesAvailable', 'Custom roles are available')
         : t('limitSetting.rolesUnavailable', 'Custom roles are unavailable')
+      break
+    case CHAT_FEATURE:
+      // An alpha granted per account (graphql-api docs/AI-AGENT-LICENSE.md, decision 1): accounts
+      // that lack it are shown nothing, so there is no "unavailable" line — false renders no row.
+      if (limit.value) {
+        template = 'text'
+        message = t('limitSetting.aiAgentAvailable', 'AI agent is available')
+      }
       break
     case 'tagging':
       // ignore

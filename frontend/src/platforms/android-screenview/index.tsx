@@ -21,8 +21,7 @@ platforms.register({
   types: { 1213: 'Android ScreenView' },
   services: [{ application: 48 }],
   installation: {
-    label: 'Registration Code',
     command: '[CODE]',
-    qualifier: 'For Android ScreenView',
+    description: 'For the Android ScreenView app.',
   },
 })

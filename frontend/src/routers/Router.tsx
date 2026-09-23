@@ -63,11 +63,13 @@ import { AdminConfirmPage } from '../pages/AdminConfirmPage'
 import { AdminAdminsPage } from '../pages/AdminAdminsPage/AdminAdminsPage'
 import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { AdminEnterpriseLicensesListPage } from '../pages/AdminEnterpriseLicensesPage/AdminEnterpriseLicensesListPage'
+import { AdminAddonLicensesListPage } from '../pages/AdminAddonLicensesPage/AdminAddonLicensesListPage'
 import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
 import { AdminRouteGuard } from './AdminRouteGuard'
+import { ADMIN_ADDONS_ROUTE } from '../constants'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const history = useHistory()
@@ -438,6 +440,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
               <Route path="/admin/enterprise-licenses">
                 <AdminEnterpriseLicensesListPage />
+              </Route>
+              <Route path={`${ADMIN_ADDONS_ROUTE}/:productId?`}>
+                <AdminAddonLicensesListPage />
               </Route>
               <Route path="/admin/notices/:noticeId?">
                 <AdminNoticesPage />

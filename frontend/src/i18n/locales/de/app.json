@@ -50,7 +50,8 @@
     "sendPromotionRequest": "Beförderungsanfrage senden"
   },
   "addDevice": {
-    "codeExpiration": "Code läuft in {{hours}}\u00a0Stunden ab."
+    "codeExpiration": "Code läuft in {{hours}}\u00a0Stunden ab.",
+    "registrationCode": "Registrierungscode"
   },
   "addFromNetwork": {
     "scanForServices": "Nach Diensten suchen",
@@ -280,12 +281,64 @@
   },
   "changePassword": {
     "currentPassword": "Aktuelles Passwort",
+    "mfaCode": "",
+    "mfaPrompt": "",
     "noticeAfter": "automatisch von anderen Sitzungen abgemeldet.",
     "noticeBefore": "Durch das Ändern Ihres Passworts werden Sie",
     "noticeEmphasis": "NICHT",
     "noticeSignOut": "Sie können sich unten manuell von allen Sitzungen abmelden.",
     "noticeTitle": "Hinweis",
     "title": "Passwort ändern"
+  },
+  "chat": {
+    "approve": "",
+    "close": "",
+    "closeChat": "",
+    "deleteConfirmAction": "",
+    "deleteConfirmTitle": "",
+    "deleteConversation": "",
+    "deny": "",
+    "guideAgentBody": "",
+    "guideAgentTitle": "",
+    "guideComposeBody": "",
+    "guideComposeTitle": "",
+    "guideHistoryBody": "",
+    "guideHistoryTitle": "",
+    "history": "",
+    "historyEmpty": "",
+    "inputPlaceholder": "",
+    "interrupted": "",
+    "introBody": "",
+    "introTitle": "",
+    "newChat": "",
+    "newPrompt1": "",
+    "newPrompt2": "",
+    "newPrompt3": "",
+    "newSession": "",
+    "notLicensed": "",
+    "popIn": "",
+    "popOut": "",
+    "prompt1": "",
+    "prompt2": "",
+    "prompt3": "",
+    "send": "",
+    "signIn": "",
+    "signInFromMain": "",
+    "signInNeeded": "",
+    "stop": "",
+    "toolRequest": "",
+    "toolsUsed_one": "",
+    "toolsUsed_other": "",
+    "unavailable": "",
+    "untitled": "",
+    "usage": "",
+    "usageResets": "",
+    "usageSession": "",
+    "usageTitle": "",
+    "usageUnlimited": "",
+    "usageWeekly": "",
+    "waitingApproval": "",
+    "windowTitle": ""
   },
   "claimDevice": {
     "claim": "Beanspruchen",
@@ -404,6 +457,7 @@
     "close": "Schließen",
     "confirm": "Bestätigen",
     "confirmingEllipsis": "Wird bestätigt...",
+    "continue": "",
     "delete": "Löschen",
     "disable": "Deaktivieren",
     "done": "Fertig",
@@ -420,6 +474,7 @@
     "saved": "Gespeichert",
     "saving": "Wird gespeichert",
     "savingEllipsis": "Wird gespeichert...",
+    "verify": "",
     "yes": "Ja"
   },
   "connect": {
@@ -445,26 +500,48 @@
     "resetConnection": "Verbindung zurücksetzen"
   },
   "connectedAppDetailPage": {
+    "accounts": "",
+    "addAccount": "",
+    "allAccounts": "",
+    "allAccountsAdd": "",
+    "allAccountsPlain": "",
     "authorized": "Autorisiert",
+    "confirmExtend": "",
+    "delayedReach": "",
     "details": "Details",
     "deviceAccess": "Gerätezugriff",
+    "editHint": "",
     "grantedWhenSignedIn": "Gewährt, als {{name}} sich angemeldet hat. Um sie zu ändern, widerrufen Sie den Zugriff und melden Sie sich erneut an.",
     "lastActive": "Zuletzt aktiv",
+    "lastUsed": "",
     "noActivityYet": "Noch keine Aktivität",
     "noDeviceAccess": "Kein Gerätezugriff – die App kann Ihre Identität bestätigen, aber keine Geräte sehen oder steuern.",
     "noLongerAuthorized": "Diese App ist nicht mehr autorisiert.",
+    "notGranted": "",
+    "notGrantedHint": "",
     "permissions": "Berechtigungen",
     "requestAgain": "Sie kann durch erneutes Anmelden erneut Zugriff anfordern.",
     "revoke": "Widerrufen",
     "revokeAccess": "Zugriff widerrufen",
     "revokeAccessConfirmTitle": "Zugriff widerrufen?",
+    "revoked": "",
+    "revokedHint": "",
+    "revokeExplain": "",
+    "revokeSection": "",
+    "save": "",
+    "saveFailed": "",
     "service": "Dienst",
+    "signInOnly": "",
+    "signInScopes": "",
     "signOutBefore": "wird abgemeldet. Neuer Zugriff wird sofort blockiert; bereits laufende Sitzungen enden innerhalb von",
-    "title": "Verbundene App"
+    "title": "Verbundene App",
+    "willAdd": ""
   },
   "connectedApps": {
     "empty": "Sie haben noch keine Apps autorisiert.",
     "loading": "Wird geladen…",
+    "reauth": "",
+    "reauthAction": "",
     "title": "Apps & KI-Agenten"
   },
   "connectedAppsPage": {
@@ -897,6 +974,7 @@
     "dismissAll": "alle ausblenden"
   },
   "header": {
+    "aiAgent": "",
     "back": "Zurück",
     "create": "",
     "deviceSearch": "Gerätesuche",
@@ -1030,11 +1108,13 @@
     "title": "Lizenz"
   },
   "licensingSetting": {
+    "expires": "",
     "notSubscribed": "Nicht abonniert",
     "plan": "Plan",
     "renews": "Verlängert sich"
   },
   "limitSetting": {
+    "aiAgentAvailable": "",
     "emailSupport": "E-Mail-Support verfügbar",
     "evaluationPeriod": "Diensten wird ein Testzeitraum von {{period}} gewährt",
     "forumSupport": "Nur Forum-Support",
@@ -1069,6 +1149,32 @@
   },
   "logsPage": {
     "title": "Protokolle"
+  },
+  "mfa": {
+    "choose": "",
+    "codesTitle": "",
+    "confirmPassword": "",
+    "disable": "",
+    "enable": "",
+    "failed": "",
+    "federated": "",
+    "method": "",
+    "off": "",
+    "on": "",
+    "phone": "",
+    "prefer": "",
+    "preferred": "",
+    "protects": "",
+    "relay": "",
+    "relayHint": "",
+    "scan": "",
+    "secret": "",
+    "setPassword": "",
+    "smsSent": "",
+    "suggest": "",
+    "title": "",
+    "wrongCode": "",
+    "wrongPassword": ""
   },
   "mfaConfigureApp": {
     "code": "Code: {{code}}",
@@ -1147,10 +1253,12 @@
     "quitConfirm": "Das Beenden schließt Ihre Verbindungen nicht.",
     "scripting": "Skripte",
     "settings": "Einstellungen",
+    "signedInOnBrowser": "In diesem Browser angemeldet",
     "signOut": "Abmelden",
     "signOutConfirm": "Durch das Abmelden kann dieses Gerät übertragen oder ein anderer Benutzer angemeldet werden. Dadurch werden alle Verbindungen beendet.",
     "support": "Support",
     "supportForum": "Support-Forum",
+    "switchAccount": "",
     "testUI": "Test-UI",
     "testUIConfirm": "Das Aktivieren von Alpha-Funktionen kann zu Instabilität führen. Dies ist nur für Test- und Entwicklungszwecke vorgesehen.",
     "thisDevice": "Dieses Gerät",
@@ -1497,6 +1605,15 @@
     "noMatchingPartners": "Keine passenden Partner",
     "noPartnersFound": "Keine Partner gefunden",
     "searchPlaceholder": "Partner suchen..."
+  },
+  "passkeys": {
+    "add": "",
+    "added": "",
+    "defaultName": "",
+    "explainer": "",
+    "failed": "",
+    "needFactor": "",
+    "title": ""
   },
   "passwordStrengthInput": {
     "confirmNewPassword": "Neues Passwort bestätigen",
@@ -2059,6 +2176,24 @@
     "chooseServices": "Wählen Sie die Dienste aus, für die Sie Zugriff gewähren möchten.",
     "services": "Dienste"
   },
+  "signIn": {
+    "autoStopped": "",
+    "button": "",
+    "cancel": "",
+    "errorExpired": "",
+    "errorRateLimited": "",
+    "errorRateLimitedWait_one": "",
+    "errorRateLimitedWait_other": "",
+    "errorRefused": "",
+    "errorUnavailable": "",
+    "errorUnknown": "",
+    "errorUnreachable": "",
+    "redirecting": "",
+    "retry": "",
+    "subtitle": "",
+    "title": "",
+    "waiting": ""
+  },
   "statusChip": {
     "connected": "Verbunden",
     "idle": "Inaktiv",
@@ -2109,8 +2244,20 @@
   "testPage": {
     "addQueryHeader": "Abfrage-Header hinzufügen",
     "addQueryHeaderPlaceholder": "Beispiel: \"key:value\"",
+    "agentURL": "",
+    "agentURLInvalid": "",
+    "aiAgent": "",
+    "apiTarget": "API-Ziel",
+    "backgroundWork": "",
+    "backgroundWorkOff": "",
+    "backgroundWorkOn": "",
+    "backgroundWorkUnknown": "",
     "clearViewedAnnouncements": "Angesehene Ankündigungen löschen",
     "clearViewedAnnouncementsHint": "Markiert alle geladenen Ankündigungen für dieses Konto als ungelesen.",
+    "customAPITarget": "Benutzerdefiniert",
+    "customAPITargetHint": "Auf eine URL zeigen, die der Autorisierungsserver nicht registriert hat.",
+    "customGraphQLURL": "Benutzerdefinierte GraphQL-URL (erweitert)",
+    "customWebSocketURL": "Benutzerdefinierte WebSocket-URL (erweitert)",
     "disableTestUI": "Test-UI deaktivieren",
     "disableTestUIHint": "Um die Alpha-UI wieder zu aktivieren, müssen Sie das Avatar-Menü bei gedrückter Alt-Umschalt-Taste auswählen.",
     "featureLabel": "{{name}} (Standard {{state}})",
@@ -2118,6 +2265,7 @@
     "hideTestUIBackgrounds": "Test-UI-Hintergründe ausblenden",
     "licenseMessageCleared": "Lizenzmeldung gelöscht",
     "licensingOptions": "Lizenzierungsoptionen",
+    "mintError": "Dieses Ziel wurde beim Token-Mint abgelehnt: {{error}}",
     "overrideDefaultAPIs": "Standard-APIs überschreiben",
     "overrideLicensesAndLimits": "Lizenzen und Limits überschreiben",
     "reset": "Zurücksetzen",
@@ -2194,6 +2342,7 @@
   },
   "viewAsBanner": {
     "exit": "Ansichtsmodus verlassen",
+    "supportSession": "Support-Sitzung — Ansicht als {{email}} bis {{until}}. Tokens tragen Ihre Identität; die Person kann diese Sitzung sehen und beenden.",
     "viewingAs": "Anzeige als: {{email}}"
   }
 }

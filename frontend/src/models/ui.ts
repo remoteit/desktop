@@ -48,6 +48,8 @@ export type UIState = {
     apiGraphqlURL?: IPreferences['apiGraphqlURL']
     webSocketURL?: IPreferences['webSocketURL']
     apiURL?: IPreferences['apiURL']
+    // Test UI: point the Remote.It AI chat at a deployed agent (https only)
+    agentURL?: string
   }
   layout: ILayout
   silent: string | null
@@ -119,7 +121,6 @@ export type UIState = {
   showDesktopNotice: boolean
   scriptForm?: IFileForm
   scriptRunForms: ILookup<IFileForm>
-  viewAsUser: { id: string; email: string } | null
   logsFilters: LogsFiltersByAccount
   announcementPresentationTest?: number
 }
@@ -213,7 +214,6 @@ export const defaultState: UIState = {
   showDesktopNotice: true,
   scriptForm: undefined,
   scriptRunForms: {},
-  viewAsUser: null,
   logsFilters: {},
   announcementPresentationTest: undefined,
 }

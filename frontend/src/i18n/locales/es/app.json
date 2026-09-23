@@ -50,7 +50,8 @@
     "sendPromotionRequest": "Enviar solicitud de promoción"
   },
   "addDevice": {
-    "codeExpiration": "El código caduca en {{hours}}\u00a0horas."
+    "codeExpiration": "El código caduca en {{hours}}\u00a0horas.",
+    "registrationCode": "Código de registro"
   },
   "addFromNetwork": {
     "scanForServices": "Buscar servicios",
@@ -283,12 +284,65 @@
   },
   "changePassword": {
     "currentPassword": "Contraseña actual",
+    "mfaCode": "",
+    "mfaPrompt": "",
     "noticeAfter": "cerrará automáticamente tu sesión en otros dispositivos.",
     "noticeBefore": "Cambiar tu contraseña",
     "noticeEmphasis": "NO",
     "noticeSignOut": "Puedes cerrar sesión manualmente en todos los dispositivos a continuación.",
     "noticeTitle": "Aviso",
     "title": "Cambiar contraseña"
+  },
+  "chat": {
+    "approve": "",
+    "close": "",
+    "closeChat": "",
+    "deleteConfirmAction": "",
+    "deleteConfirmTitle": "",
+    "deleteConversation": "",
+    "deny": "",
+    "guideAgentBody": "",
+    "guideAgentTitle": "",
+    "guideComposeBody": "",
+    "guideComposeTitle": "",
+    "guideHistoryBody": "",
+    "guideHistoryTitle": "",
+    "history": "",
+    "historyEmpty": "",
+    "inputPlaceholder": "",
+    "interrupted": "",
+    "introBody": "",
+    "introTitle": "",
+    "newChat": "",
+    "newPrompt1": "",
+    "newPrompt2": "",
+    "newPrompt3": "",
+    "newSession": "",
+    "notLicensed": "",
+    "popIn": "",
+    "popOut": "",
+    "prompt1": "",
+    "prompt2": "",
+    "prompt3": "",
+    "send": "",
+    "signIn": "",
+    "signInFromMain": "",
+    "signInNeeded": "",
+    "stop": "",
+    "toolRequest": "",
+    "toolsUsed_one": "",
+    "toolsUsed_many": "",
+    "toolsUsed_other": "",
+    "unavailable": "",
+    "untitled": "",
+    "usage": "",
+    "usageResets": "",
+    "usageSession": "",
+    "usageTitle": "",
+    "usageUnlimited": "",
+    "usageWeekly": "",
+    "waitingApproval": "",
+    "windowTitle": ""
   },
   "claimDevice": {
     "claim": "Reclamar",
@@ -407,6 +461,7 @@
     "close": "Cerrar",
     "confirm": "Confirmar",
     "confirmingEllipsis": "Confirmando...",
+    "continue": "",
     "delete": "Eliminar",
     "disable": "Deshabilitar",
     "done": "Listo",
@@ -423,6 +478,7 @@
     "saved": "Guardado",
     "saving": "Guardando",
     "savingEllipsis": "Guardando...",
+    "verify": "",
     "yes": "Sí"
   },
   "connect": {
@@ -448,26 +504,48 @@
     "resetConnection": "Restablecer conexión"
   },
   "connectedAppDetailPage": {
+    "accounts": "",
+    "addAccount": "",
+    "allAccounts": "",
+    "allAccountsAdd": "",
+    "allAccountsPlain": "",
     "authorized": "Autorizado",
+    "confirmExtend": "",
+    "delayedReach": "",
     "details": "Detalles",
     "deviceAccess": "Acceso a dispositivos",
+    "editHint": "",
     "grantedWhenSignedIn": "Concedido cuando {{name}} inició sesión. Para cambiarlos, revoca el acceso y haz que vuelva a iniciar sesión.",
     "lastActive": "Última actividad",
+    "lastUsed": "",
     "noActivityYet": "Aún sin actividad",
     "noDeviceAccess": "Sin acceso a dispositivos: puede confirmar tu identidad, pero no puede ver ni controlar ningún dispositivo.",
     "noLongerAuthorized": "Esta aplicación ya no está autorizada.",
+    "notGranted": "",
+    "notGrantedHint": "",
     "permissions": "Permisos",
     "requestAgain": "Puede solicitar acceso nuevamente al iniciar sesión.",
     "revoke": "Revocar",
     "revokeAccess": "Revocar acceso",
     "revokeAccessConfirmTitle": "¿Revocar el acceso?",
+    "revoked": "",
+    "revokedHint": "",
+    "revokeExplain": "",
+    "revokeSection": "",
+    "save": "",
+    "saveFailed": "",
     "service": "Servicio",
+    "signInOnly": "",
+    "signInScopes": "",
     "signOutBefore": "cerrará sesión. El nuevo acceso se bloquea de inmediato; cualquier sesión ya en curso finaliza dentro de",
-    "title": "Aplicación conectada"
+    "title": "Aplicación conectada",
+    "willAdd": ""
   },
   "connectedApps": {
     "empty": "Aún no has autorizado ninguna aplicación.",
     "loading": "Cargando…",
+    "reauth": "",
+    "reauthAction": "",
     "title": "Aplicaciones y agentes de IA"
   },
   "connectedAppsPage": {
@@ -906,6 +984,7 @@
     "dismissAll": "descartar todo"
   },
   "header": {
+    "aiAgent": "",
     "back": "Atrás",
     "create": "",
     "deviceSearch": "Búsqueda de dispositivos",
@@ -1040,11 +1119,13 @@
     "title": "Licencia"
   },
   "licensingSetting": {
+    "expires": "",
     "notSubscribed": "Sin suscripción",
     "plan": "plan",
     "renews": "Se renueva"
   },
   "limitSetting": {
+    "aiAgentAvailable": "",
     "emailSupport": "Soporte por correo electrónico disponible",
     "evaluationPeriod": "Los servicios reciben un período de evaluación de {{period}}",
     "forumSupport": "Solo soporte en el foro",
@@ -1081,6 +1162,32 @@
   },
   "logsPage": {
     "title": "Registros"
+  },
+  "mfa": {
+    "choose": "",
+    "codesTitle": "",
+    "confirmPassword": "",
+    "disable": "",
+    "enable": "",
+    "failed": "",
+    "federated": "",
+    "method": "",
+    "off": "",
+    "on": "",
+    "phone": "",
+    "prefer": "",
+    "preferred": "",
+    "protects": "",
+    "relay": "",
+    "relayHint": "",
+    "scan": "",
+    "secret": "",
+    "setPassword": "",
+    "smsSent": "",
+    "suggest": "",
+    "title": "",
+    "wrongCode": "",
+    "wrongPassword": ""
   },
   "mfaConfigureApp": {
     "code": "Código: {{code}}",
@@ -1159,10 +1266,12 @@
     "quitConfirm": "Salir no cerrará tus conexiones.",
     "scripting": "Scripts",
     "settings": "Configuración",
+    "signedInOnBrowser": "Con sesión iniciada en este navegador",
     "signOut": "Cerrar sesión",
     "signOutConfirm": "Al cerrar sesión, este dispositivo podrá transferirse o permitir que otro usuario inicie sesión. Esto detendrá todas las conexiones.",
     "support": "Soporte",
     "supportForum": "Foro de soporte",
+    "switchAccount": "",
     "testUI": "UI de prueba",
     "testUIConfirm": "Activar las funciones alfa puede provocar inestabilidad. Está pensado únicamente para pruebas y desarrollo.",
     "thisDevice": "Este dispositivo",
@@ -1516,6 +1625,15 @@
     "noMatchingPartners": "No hay socios coincidentes",
     "noPartnersFound": "No se encontraron socios",
     "searchPlaceholder": "Buscar socios..."
+  },
+  "passkeys": {
+    "add": "",
+    "added": "",
+    "defaultName": "",
+    "explainer": "",
+    "failed": "",
+    "needFactor": "",
+    "title": ""
   },
   "passwordStrengthInput": {
     "confirmNewPassword": "Confirmar nueva contraseña",
@@ -2094,6 +2212,25 @@
     "chooseServices": "Elige los servicios a los que deseas dar acceso.",
     "services": "Servicios"
   },
+  "signIn": {
+    "autoStopped": "",
+    "button": "",
+    "cancel": "",
+    "errorExpired": "",
+    "errorRateLimited": "",
+    "errorRateLimitedWait_one": "",
+    "errorRateLimitedWait_many": "",
+    "errorRateLimitedWait_other": "",
+    "errorRefused": "",
+    "errorUnavailable": "",
+    "errorUnknown": "",
+    "errorUnreachable": "",
+    "redirecting": "",
+    "retry": "",
+    "subtitle": "",
+    "title": "",
+    "waiting": ""
+  },
   "statusChip": {
     "connected": "Conectado",
     "idle": "Inactivo",
@@ -2146,8 +2283,20 @@
   "testPage": {
     "addQueryHeader": "Agregar encabezado de consulta",
     "addQueryHeaderPlaceholder": "Ejemplo: \"key:value\"",
+    "agentURL": "",
+    "agentURLInvalid": "",
+    "aiAgent": "",
+    "apiTarget": "Destino de la API",
+    "backgroundWork": "",
+    "backgroundWorkOff": "",
+    "backgroundWorkOn": "",
+    "backgroundWorkUnknown": "",
     "clearViewedAnnouncements": "Borrar anuncios vistos",
     "clearViewedAnnouncementsHint": "Marca todos los anuncios cargados como no leídos para esta cuenta.",
+    "customAPITarget": "Personalizado",
+    "customAPITargetHint": "Apuntar a una URL que el servidor de autorización no ha registrado.",
+    "customGraphQLURL": "URL de GraphQL personalizada (avanzado)",
+    "customWebSocketURL": "URL de WebSocket personalizada (avanzado)",
     "disableTestUI": "Deshabilitar la interfaz de prueba",
     "disableTestUIHint": "Para volver a habilitar la interfaz alfa, debes seleccionar el menú de avatar mientras mantienes presionado alt-shift.",
     "featureLabel": "{{name}} (predeterminado {{state}})",
@@ -2155,6 +2304,7 @@
     "hideTestUIBackgrounds": "Ocultar fondos de la interfaz de prueba",
     "licenseMessageCleared": "Mensaje de licencia borrado",
     "licensingOptions": "Opciones de licencia",
+    "mintError": "Este destino fue rechazado al emitir el token: {{error}}",
     "overrideDefaultAPIs": "Anular las API predeterminadas",
     "overrideLicensesAndLimits": "Anular licencias y límites",
     "reset": "Restablecer",
@@ -2234,6 +2384,7 @@
   },
   "viewAsBanner": {
     "exit": "Salir del modo de vista como",
+    "supportSession": "Sesión de soporte — viendo como {{email}} hasta {{until}}. Los tokens llevan tu identidad; la persona puede ver y finalizar esta sesión.",
     "viewingAs": "Viendo como: {{email}}"
   }
 }

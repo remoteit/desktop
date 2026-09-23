@@ -38,3 +38,15 @@ jobs:
 
       - name: Run typecheck
         run: npm run typecheck
+
+      # Catalog COVERAGE + parity. i18n:check alone only compares the catalogs to each other, so a
+      # t() key missing from ALL of them (a new UI string shipped on its inline default) passes
+      # unnoticed and renders untranslated for ja/de/es. So first re-extract from source: any
+      # missing key changes a catalog and the clean-diff check fails until it is committed. Then
+      # i18n:check verifies parity, no dead keys, and non-empty English. After typecheck so a
+      # broken build reports first.
+      - name: Check translation catalogs
+        run: |
+          npm run i18n:extract -w=frontend
+          git diff --exit-code -- frontend/src/i18n/locales || (echo "::error::Untracked i18n keys — run 'npm run i18n:extract -w frontend' and commit." && exit 1)
+          npm run i18n:check -w=frontend

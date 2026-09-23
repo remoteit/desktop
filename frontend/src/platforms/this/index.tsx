@@ -25,6 +25,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'this',
-  name: 'This system',
   component: Component,
 })

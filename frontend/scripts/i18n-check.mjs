@@ -4,7 +4,9 @@
 //   - a non-English catalog is missing a key that English has
 //   - a non-English catalog has a key English no longer has (dead key)
 //   - an English value is empty (extracted but no source text supplied)
-// Run: npm run i18n:check  (also used in CI)
+// Run: npm run i18n:check  (CI: .github/workflows/typecheck.yml)
+// Does NOT detect a translation whose English changed after it was translated — dropped
+// deliberately, see git log for scripts/translated-from.json.
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'

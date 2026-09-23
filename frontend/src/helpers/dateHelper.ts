@@ -11,6 +11,16 @@ export const getLocale = () => i18n.resolvedLanguage || window.navigator.languag
 export const humanizeDuration = (ms: number, options: HumanizerOptions = {}) =>
   humanize(ms, { language: getLocale(), fallbacks: ['en'], ...options })
 
+// A short, human reset time: a time-of-day within a day, else weekday + time.
+export const formatReset = (iso: string | null): string => {
+  if (!iso) return ''
+  const at = new Date(iso)
+  const soon = at.getTime() - Date.now() < 24 * 60 * 60 * 1000
+  return soon
+    ? at.toLocaleTimeString(getLocale(), { hour: 'numeric', minute: '2-digit' })
+    : at.toLocaleString(getLocale(), { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+}
+
 // Wrap a humanized duration as a localized relative-past phrase. Word order is
 // language-specific (en "3 days ago", de "vor 3 Tagen", ja "3日前", es "hace 3 días"),
 // so the ordering lives in the catalog rather than a hard-coded English suffix.

@@ -89,15 +89,32 @@ export const selectLimit = createSelector(
   (limits, limitName): ILimit | undefined => limits.find(limit => limit.name === limitName)
 )
 
+/* Every feature gate in the app reads this: the account's licensed limits, with the
+   Test page's overrides applied on top. Overrides are a PERSONAL-account tool — an
+   organization's real entitlements are never faked, so what you see on an org is what
+   its license actually grants. */
 export const selectLimitsLookup = createSelector(
   [selectLimits, isUserAccount, getLimitsOverride],
   (baseLimits, isUserAccount, limitsOverride): ILookup<ILimit['value']> => {
-    let result: ILookup<boolean> = {}
-    baseLimits.forEach(l => {
-      result[l.name] = limitsOverride[l.name] === undefined || !isUserAccount ? l.value : limitsOverride[l.name]
-    })
+    const result: ILookup<ILimit['value']> = {}
+    // Built FROM the limits the API returned: a name no license has mentioned is simply
+    // absent (falsy), and there is nothing for a Test page override to attach to.
+    baseLimits.forEach(l => (result[l.name] = l.value))
+    if (isUserAccount)
+      Object.keys(result).forEach(name => {
+        if (limitsOverride[name] !== undefined) result[name] = limitsOverride[name]
+      })
     return result
   }
+)
+
+export type IFeature = { name: string; value: boolean }
+
+/* The boolean features the Test page lists: exactly the ones this account's license
+   mentions. A feature no license carries has no row — it is granted (Admin → Add-ons for
+   the add-ons), not switched on here. */
+export const selectFeatures = createSelector([selectLimits], (limits): IFeature[] =>
+  limits.filter(l => typeof l.value === 'boolean').map(l => ({ name: l.name, value: l.value as boolean }))
 )
 
 export const selectLicensesWithLimits = createSelector([selectLicenses, selectLimits], (licenses, limits) => {

@@ -1,23 +1,26 @@
 import React from 'react'
+import { DEVICE_SETUP_PATH } from '../constants'
 import browser, { windowOpen } from '../services/browser'
 import { safeHostname } from '@common/nameHelper'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { Button, Typography } from '@mui/material'
 import { IPlatform } from '../platforms'
+import { usePlatformText } from '../platforms/text'
 import { Link } from './Link'
 import { Icon } from './Icon'
 
 export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => {
+  const text = usePlatformText(platform)
   const hostname = useSelector((state: State) => safeHostname(state.backend.environment.hostname, []))
   const openDownloads = () => windowOpen(platform.installation?.link, '_blank', browser.isAndroid)
 
   return (
     <>
       <Typography variant="body2" color="textSecondary">
-        {platform.installation?.qualifier}
+        {text.description}
       </Typography>
-      <Typography variant="h3">{platform.installation?.instructions}</Typography>
+      <Typography variant="h3">{text.instructions}</Typography>
       <Button
         color="primary"
         variant="contained"
@@ -35,9 +38,9 @@ export const AddDownload: React.FC<{ platform: IPlatform }> = ({ platform }) => 
       >
         {browser.isAndroid ? 'Install' : browser.hasBackend ? 'Downloads Page' : 'View'}
       </Button>
-      {platform.installation?.altLink && (
+      {platform.installation?.addThisDevice && (
         <Typography variant="body2" color="textSecondary">
-          or add<Link to={platform.installation.altLink}>this device ({hostname})</Link>
+          or add<Link to={DEVICE_SETUP_PATH}>this device ({hostname})</Link>
         </Typography>
       )}
     </>
