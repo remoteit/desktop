@@ -14,6 +14,12 @@ describe('Test framework is working', () => {
   expect(true).toBeTruthy()
 })
 
+const refusal = (code: string, message = 'refused') => {
+  const error = new Error(message)
+  error.name = code
+  return error
+}
+
 describe('backend/binaryInstaller', () => {
   const version = '0.37.6'
   const agentVersion = '0.37.6'
@@ -126,11 +132,14 @@ describe('backend/binaryInstaller', () => {
     let agentVersionSpy: jest.SpyInstance
     let prefSpy: jest.SpyInstance
     let agentSpy: jest.SpyInstance
+    let reloadSpy: jest.SpyInstance
+    let updateSpy: jest.SpyInstance
     let binary: Binary
     let path: string
 
     beforeAll(() => {
       environment.isWindows = false
+      environment.isHeadless = false
       binary = new Binary({ name, version })
       path = binary.path
     })
@@ -144,8 +153,11 @@ describe('backend/binaryInstaller', () => {
       agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(true))
       versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(version))
       agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(agentVersion))
+      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ error: refusal('410') }))
+      updateSpy = jest.spyOn(preferences, 'set').mockImplementation()
       jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
       environment.version = desktopVersion
+      binaryInstaller.reloadRefusedBy = undefined
     })
 
     afterEach(() => {
@@ -155,6 +167,92 @@ describe('backend/binaryInstaller', () => {
       versionSpy.mockClear()
       agentVersionSpy.mockClear()
       agentSpy.mockClear()
+      reloadSpy.mockClear()
+      updateSpy.mockClear()
+    })
+
+    test('reloads the running agent instead of prompting when only the agent version differs', async () => {
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ version }))
+
+      await binaryInstaller.check()
+
+      expect(reloadSpy).toBeCalledTimes(1)
+      expect(installSpy).toBeCalledTimes(0)
+      expect(eventSpy).toBeCalledWith('binary/installed', { path, version, name, installedVersion: version })
+      expect(eventSpy).not.toBeCalledWith('binary/not-installed', expect.anything())
+      expect(updateSpy).toBeCalledWith({ version: desktopVersion, cliVersion: version })
+      expect(binaryInstaller.inProgress).toBe(false)
+    })
+
+    test('does not latch a reload that failed because the agent was unreachable', async () => {
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest
+        .spyOn(cli, 'agentReload')
+        .mockImplementation(() => Promise.resolve({ error: refusal('101', 'agent not reachable') }))
+
+      await binaryInstaller.check()
+      expect(binaryInstaller.reloadRefusedBy).toBeUndefined()
+
+      await binaryInstaller.check()
+      expect(reloadSpy).toBeCalledTimes(2)
+    })
+
+    test('latches a refusal the agent will repeat', async () => {
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest
+        .spyOn(cli, 'agentReload')
+        .mockImplementation(() => Promise.resolve({ error: refusal('3', 'UNKNOWN-MESSAGE: {}') }))
+
+      await binaryInstaller.check()
+      await binaryInstaller.check()
+
+      expect(reloadSpy).toBeCalledTimes(1)
+      expect(binaryInstaller.reloadRefusedBy).toBe('2.0.0')
+    })
+
+    test('treats a reload that leaves another version running as refused', async () => {
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ version: '2.0.0' }))
+
+      await binaryInstaller.check()
+
+      expect(reloadSpy).toBeCalledTimes(1)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ agentMismatched: true }))
+      expect(eventSpy).not.toBeCalledWith('binary/installed', expect.anything())
+      expect(binaryInstaller.reloadRefusedBy).toBe('2.0.0')
+    })
+
+    test('does not retry a refused reload until the agent itself changes', async () => {
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+
+      await binaryInstaller.check()
+      await binaryInstaller.check()
+      expect(reloadSpy).toBeCalledTimes(1)
+      expect(eventSpy).toBeCalledTimes(2)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ agentMismatched: true }))
+
+      agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(false))
+      await binaryInstaller.check()
+      agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(true))
+      await binaryInstaller.check()
+      expect(reloadSpy).toBeCalledTimes(1)
+      expect(binaryInstaller.reloadRefusedBy).toBe('2.0.0')
+
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('3.0.0'))
+      await binaryInstaller.check()
+      expect(reloadSpy).toBeCalledTimes(2)
+    })
+
+    test('clears a refusal once the agent has been brought current', async () => {
+      binaryInstaller.reloadRefusedBy = '1.0.0'
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ version }))
+
+      await binaryInstaller.check()
+
+      expect(binaryInstaller.reloadRefusedBy).toBeUndefined()
+      expect(eventSpy).toBeCalledWith('binary/installed', expect.anything())
     })
 
     test('should notify if installed', async () => {
@@ -186,6 +284,7 @@ describe('backend/binaryInstaller', () => {
         desktopUpdated: false,
       })
       expect(versionSpy).toBeCalledTimes(1)
+      expect(reloadSpy).toBeCalledTimes(0)
     })
 
     test('should notify if agent version is wrong', async () => {
@@ -206,6 +305,7 @@ describe('backend/binaryInstaller', () => {
         desktopUpdated: false,
       })
       expect(agentVersionSpy).toBeCalledTimes(1)
+      expect(reloadSpy).toBeCalledTimes(1)
     })
 
     test('should notify with different installed cli version', async () => {
@@ -240,6 +340,7 @@ describe('backend/binaryInstaller', () => {
         desktopUpdated: false,
       })
       expect(versionSpy).toBeCalledTimes(1)
+      expect(reloadSpy).toBeCalledTimes(0)
     })
 
     test('should notify if desktop version updated', async () => {

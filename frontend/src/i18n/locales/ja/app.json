@@ -1959,8 +1959,10 @@
     "confirmBefore": "請求内容を次のように変更してよろしいですか:",
     "confirmTitle": "請求変更の確認",
     "devicesCount_other": "{{count}}台のデバイス",
+    "devicesUsed_other": "{{count}}台中{{actual}}台のデバイス",
     "label": "ライセンス",
     "usersCount_other": "{{count}}名のユーザー",
+    "usersUsed_other": "{{count}}名中{{actual}}名のユーザー",
     "warning": "これにより請求内容が変更されます。"
   },
   "serviceAddPage": {
