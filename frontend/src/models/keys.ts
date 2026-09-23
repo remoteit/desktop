@@ -31,47 +31,46 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async init(_: void, globalState) {
       if (globalState.keys.init) return
-      await dispatch.keys.fetch()
-      dispatch.keys.set({ init: true })
+      if (await dispatch.keys.fetch()) dispatch.keys.set({ init: true })
     },
     async fetch() {
       const result = await graphQLGetAccessKeys()
-      if (result === 'ERROR') return
+      if (!result || result === 'ERROR') return false
       const { apiKey, accessKeys } = await dispatch.keys.parse(result)
       dispatch.keys.set({ apiKey, accessKeys })
+      return true
     },
-    async parse(result: AxiosResponse<any> | undefined) {
-      const data = result?.data?.data?.login
+    async parse(result: AxiosResponse<any>) {
+      const data = result.data?.data?.login
       const parsed = {
         apiKey: data?.apiKey?.key,
         accessKeys: data?.accessKeys?.map(k => ({
           ...k,
           created: new Date(k.created),
           lastUsed: k.lastUsed && new Date(k.lastUsed),
-        })),
+        })) ?? [],
       }
       return parsed
     },
     async toggleAccessKeys(properties: { key: string; enabled: boolean }) {
       dispatch.keys.set({ updating: properties.key })
       const result = await graphQLToggleAccessKeys(properties)
-      if (result === 'ERROR') return
-      await dispatch.keys.fetch()
+      if (result !== 'ERROR') await dispatch.keys.fetch()
       dispatch.keys.set({ updating: undefined })
     },
     async deleteAccessKeys(key: string) {
       dispatch.keys.set({ updating: key })
       const result = await graphQLDeleteAccessKeys(key)
-      if (result === 'ERROR') return
-      await dispatch.keys.fetch()
+      if (result !== 'ERROR') await dispatch.keys.fetch()
       dispatch.keys.set({ updating: undefined })
     },
     async createAccessKey() {
       const result = await graphQLCreateAccessKey()
-      if (result === 'ERROR') return
-      const data = result?.data.data.createAccessKey
+      const data = result && result !== 'ERROR' && result.data?.data?.createAccessKey
+      if (!data) return false
       await dispatch.keys.set({ key: data.key, secretKey: data.secret })
       dispatch.keys.fetch()
+      return true
     },
   }),
   reducers: {

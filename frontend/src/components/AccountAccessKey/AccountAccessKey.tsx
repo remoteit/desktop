@@ -51,9 +51,9 @@ export const AccountAccessKey: React.FC = () => {
             color="primary"
             size="small"
             disabled={accessKeys.length > 1}
-            onClick={() => {
-              dispatch.keys.createAccessKey()
+            onClick={async () => {
               setShowDialog(true)
+              if (!(await dispatch.keys.createAccessKey())) setShowDialog(false)
             }}
           >
             {t('accountAccessKey.generateCredentials', 'Generate Credentials')}
