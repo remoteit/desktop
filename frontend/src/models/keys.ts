@@ -36,7 +36,7 @@ export default createModel<RootModel>()({
     },
     async fetch() {
       const result = await graphQLGetAccessKeys()
-      if (result === 'ERROR') return
+      if (!result || result === 'ERROR') return
       const { apiKey, accessKeys } = await dispatch.keys.parse(result)
       dispatch.keys.set({ apiKey, accessKeys })
     },
@@ -48,7 +48,7 @@ export default createModel<RootModel>()({
           ...k,
           created: new Date(k.created),
           lastUsed: k.lastUsed && new Date(k.lastUsed),
-        })),
+        })) ?? [],
       }
       return parsed
     },
