@@ -445,6 +445,7 @@ export default createModel<RootModel>()({
       dispatch.billing.reset()
       dispatch.backend.reset()
       dispatch.files.reset()
+      dispatch.keys.reset()
       dispatch.jobs.reset()
       dispatch.tags.reset()
       dispatch.ui.reset()
