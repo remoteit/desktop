@@ -80,7 +80,7 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
         setRegistrationCommand(result.registrationCommand)
       }
 
-      if (!redirect || redirected) return
+      if (!result || !redirect || redirected) return
 
       try {
         setRedirected(true)

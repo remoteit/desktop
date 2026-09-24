@@ -166,8 +166,7 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ creating: true })
       tag.color = tag.color || getNextLabel(state)
       const result = await graphQLSetTag({ name: tag.name, color: tag.color }, accountId)
-      if (result === 'ERROR') return
-      dispatch.tags.setTags({ tags: [...tags, tag], accountId })
+      if (result !== 'ERROR') dispatch.tags.setTags({ tags: [...tags, tag], accountId })
       dispatch.tags.set({ creating: false })
     },
 
@@ -175,7 +174,10 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ updating: tag.name })
       const tags = structuredClone(selectTags(state, accountId))
       const result = await graphQLSetTag({ name: tag.name, color: tag.color }, accountId)
-      if (result === 'ERROR') return
+      if (result === 'ERROR') {
+        dispatch.tags.set({ updating: undefined })
+        return
+      }
       const index = findTagIndex(tags, tag.name)
       tags[index] = tag
       dispatch.tags.setTags({ tags, accountId })
@@ -191,7 +193,10 @@ export default createModel<RootModel>()({
       if (found >= 0 && tag.name.toLowerCase() !== name.toLowerCase()) {
         // merge
         const result = await graphQLMergeTag(tag.name, name, accountId)
-        if (result === 'ERROR') return
+        if (result === 'ERROR') {
+          dispatch.tags.set({ updating: undefined })
+          return
+        }
         tags.splice(index, 1)
         dispatch.ui.set({
           noticeMessage: i18n.t('notices:tag.merged', {
@@ -209,6 +214,7 @@ export default createModel<RootModel>()({
               defaultValue: 'Your tag ({{name}}) could not be renamed.',
             }),
           })
+          dispatch.tags.set({ updating: undefined })
           return
         }
         tags[index].name = name
@@ -222,7 +228,10 @@ export default createModel<RootModel>()({
       const tags = [...selectTags(state)]
       dispatch.tags.set({ deleting: tag.name })
       const result = await graphQLDeleteTag(tag.name, accountId)
-      if (result === 'ERROR') return
+      if (result === 'ERROR') {
+        dispatch.tags.set({ deleting: undefined })
+        return
+      }
       const index = findTagIndex(tags, tag.name)
       tags.splice(index, 1)
       dispatch.tags.setTags({ tags, accountId })

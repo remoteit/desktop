@@ -151,7 +151,11 @@ export default createModel<RootModel>()({
     async fetchGuests(_: void, state) {
       const accountId = selectActiveAccountId(state)
       const result = await graphQLFetchGuests(accountId)
-      if (result === 'ERROR') return
+      if (result === 'ERROR') {
+        // Without guestsLoaded, OrganizationGuestList shows its spinner until remount.
+        await dispatch.organization.setActive({ guestsLoaded: true, id: accountId })
+        return
+      }
       const guests = parseGuests(result)
       console.log('LOAD GUESTS', accountId, guests)
       await dispatch.organization.setActive({ guests, guestsLoaded: true, id: accountId })

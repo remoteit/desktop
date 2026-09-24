@@ -595,8 +595,8 @@ export default createModel<RootModel>()({
             }),
           })
         }
-        dispatch.ui.set({ claiming: false })
       }
+      dispatch.ui.set({ claiming: false })
     },
 
     async createRegistration({

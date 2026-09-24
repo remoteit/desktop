@@ -40,8 +40,7 @@ export default createModel<RootModel>()({
             }
           }`
       )
-      if (result === 'ERROR') return
-      dispatch.billing.parse(result)
+      if (result !== 'ERROR') dispatch.billing.parse(result)
       dispatch.billing.set({ loading: false })
     },
     async parse(result: AxiosResponse<any> | undefined) {

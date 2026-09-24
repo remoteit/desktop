@@ -115,7 +115,10 @@ export default createModel<RootModel>()({
       dispatch.networks.set({ loading: true })
       const response = await graphQLPreloadNetworks(accountId)
 
-      if (response === 'ERROR') return
+      if (response === 'ERROR') {
+        dispatch.networks.set({ loading: false })
+        return
+      }
 
       const networks = await dispatch.networks.parse({ response, accountId })
       await dispatch.networks.preloadNetworkDevices({
@@ -141,6 +144,7 @@ export default createModel<RootModel>()({
       const gqlResponse = await graphQLFetchNetworkSingle(network.id)
 
       if (gqlResponse === 'ERROR') {
+        dispatch.devices.set({ fetching: false, accountId })
         if (redirect) dispatch.ui.set({ redirect })
         return
       }
