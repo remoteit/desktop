@@ -69,8 +69,6 @@ export const AnnouncementDialog: React.FC = () => {
       TransitionComponent={Grow}
       TransitionProps={{ onExited: handleExited }}
       sx={{
-        // Guide bubbles are MUI Tooltips, which sit above modals by default
-        zIndex: theme => theme.zIndex.tooltip + 1,
         '& .MuiDialog-paper': { backgroundColor: 'transparent', boxShadow: 'none' },
         '& .MuiBackdrop-root': {
           backgroundColor: theme => alpha(theme.palette.darken.main, 0.2),
