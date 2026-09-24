@@ -141,7 +141,7 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
       const result = await graphQLFetchOrganizations(ids)
-      if (result === 'ERROR' || !result?.data?.data?.login) return
+      if (result === 'ERROR') return
       const accounts = await dispatch.organization.parse({ result, ids })
       console.log('ORGANIZATION FETCH', accounts)
       if (accounts) await dispatch.organization.set({ accounts, initialized: true })
