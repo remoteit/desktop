@@ -101,7 +101,7 @@ export default createModel<RootModel>()({
     },
     async download(fileId: string) {
       const result = await get(`/file/download/${fileId}`)
-      if (!result || result === 'ERROR') return
+      if (result === 'ERROR') return
 
       const contentType = result.headers['content-type']
       if (!result.data && contentType === 'application/octet-stream') {

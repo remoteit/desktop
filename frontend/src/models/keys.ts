@@ -35,7 +35,7 @@ export default createModel<RootModel>()({
     },
     async fetch() {
       const result = await graphQLGetAccessKeys()
-      if (!result || result === 'ERROR') return false
+      if (result === 'ERROR') return false
       const { apiKey, accessKeys } = await dispatch.keys.parse(result)
       dispatch.keys.set({ apiKey, accessKeys })
       return true
@@ -66,7 +66,7 @@ export default createModel<RootModel>()({
     },
     async createAccessKey() {
       const result = await graphQLCreateAccessKey()
-      const data = result && result !== 'ERROR' && result.data?.data?.createAccessKey
+      const data = result !== 'ERROR' && result.data?.data?.createAccessKey
       if (!data) return false
       await dispatch.keys.set({ key: data.key, secretKey: data.secret })
       dispatch.keys.fetch()
