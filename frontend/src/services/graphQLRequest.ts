@@ -1,4 +1,4 @@
-import { graphQLBasicRequest } from './graphQL'
+import { graphQLBasicRequest, graphQLPartialRequest } from './graphQL'
 
 export async function graphQLLogin() {
   return await graphQLBasicRequest(
@@ -342,7 +342,7 @@ export async function graphQLFetchPlans() {
 }
 
 export async function graphQLFetchOrganizations(ids: string[]) {
-  return await graphQLBasicRequest(
+  return await graphQLPartialRequest(
     ` query Organizations {
         login {
           ${ids

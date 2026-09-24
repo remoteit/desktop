@@ -11,6 +11,16 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
   return errors ? 'ERROR' : response
 }
 
+// For batched per-account queries: one account the token can't read must not discard the ones that resolved.
+export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return response
+  graphQLGetErrors(response, false, { query, variables })
+  const fields = Object.values(response.data?.data || {})
+  const resolved = fields.some(field => Object.values(field || {}).some(alias => alias != null))
+  return resolved ? response : 'ERROR'
+}
+
 export function graphQLGetErrors(
   response: AxiosResponse,
   silent?: boolean,

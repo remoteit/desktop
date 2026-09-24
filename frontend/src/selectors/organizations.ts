@@ -1,7 +1,9 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
+import { byName } from '../helpers/utilHelper'
 import {
   getUser,
+  getMemberships,
   getOrganizations,
   getPlans,
   getLimitsOverride,
@@ -23,6 +25,24 @@ export const selectOrganization = createSelector(
       membership,
     }
   }
+)
+
+export const selectOrganizationOptions = createSelector(
+  [getMemberships, getOrganizations],
+  (memberships, organizations) =>
+    memberships
+      .map(m => {
+        const org = organizations[m.account.id] || defaultState
+        return {
+          id: m.account.id,
+          email: m.account.email,
+          name: org.name || m.name,
+          roleId: m.roleId,
+          roleName: m.roleName,
+          disabled: !org.id,
+        }
+      })
+      .sort(byName)
 )
 
 export const selectOrganizationName = createSelector(
