@@ -334,6 +334,7 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') {
         connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
         setConnection(connection)
+        dispatch.ui.clearAutoLaunch(connection.id)
         if (connection.deviceID) dispatch.devices.fetchSingleFull({ id: connection.deviceID })
       } else {
         const data = result?.data?.data?.connect
@@ -358,6 +359,7 @@ export default createModel<RootModel>()({
       const disconnecting = {
         ...connection,
         enabled: false,
+        ready: false,
         disconnecting: true,
         connecting: false,
         starting: false,
@@ -453,6 +455,7 @@ export default createModel<RootModel>()({
       connection = structuredClone(connection)
       const [service] = selectById(state, undefined, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: connection.id })
+      else dispatch.ui.clearAutoLaunch(connection.id)
       connection.online = service ? service?.state === 'active' : connection.online
       connection.host = undefined
       connection.error = undefined
@@ -489,6 +492,7 @@ export default createModel<RootModel>()({
         connecting: connection.connecting,
         starting: connection.starting,
       })
+      dispatch.ui.clearAutoLaunch(connection.id)
 
       if (connection.public || !browser.hasBackend) {
         dispatch.connections.proxyDisconnect(connection)

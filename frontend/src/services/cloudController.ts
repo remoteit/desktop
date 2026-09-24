@@ -459,7 +459,9 @@ class CloudController {
           if (connectTimes.outdated(event.timestamp, target.id)) return
 
           // Local connection state
-          if (target.connection) {
+          // proxyConnect owns an in-flight public connect: this host-less copy made auto launch prompt for the host,
+          // and on desktop it can land after the connect result and overwrite it
+          if (target.connection && !(target.connection.public && target.connection.connecting)) {
             if (target.connection.public) {
               target.connection.enabled = event.state === 'connected'
               if (event.state !== 'connected') target.connection.endTime = Date.now()
