@@ -11,10 +11,10 @@ export const DeviceLoadMore: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const count = searched ? results : total
 
-  const onLoadMore = () => {
+  const onLoadMore = async () => {
     const nextFrom = (Math.floor(from / size) + 1) * size
     dispatch.devices.set({ from: nextFrom, append: true })
-    dispatch.devices.fetchList()
+    if (!(await dispatch.devices.fetchList())) dispatch.devices.set({ from })
   }
 
   return <LoadMore {...{ from, size, count, fetching, onLoadMore }} />
