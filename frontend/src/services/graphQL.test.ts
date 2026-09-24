@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const { state, uiSet, apiHeaders, request } = vi.hoisted(() => ({
   state: { ui: { offline: undefined as object | undefined } },
@@ -25,6 +25,10 @@ beforeEach(() => {
   apiHeaders.mockReset().mockResolvedValue({ authorization: 'token' })
   request.mockReset()
   uiSet.mockReset()
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('a request that is never sent', () => {
