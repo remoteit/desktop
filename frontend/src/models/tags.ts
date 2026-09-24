@@ -66,8 +66,8 @@ export default createModel<RootModel>()({
       if (!state.tags.all[accountId]) dispatch.tags.fetch(accountId)
     },
 
-    async parse(result: AxiosResponse<any> | undefined) {
-      const all = result?.data?.data?.login?.account?.tags
+    async parse(result: AxiosResponse<any>) {
+      const all = result.data?.data?.login?.account?.tags
       if (!all) return
       const parsed: ITag[] = all.map(t => ({
         name: t.name,

@@ -867,10 +867,10 @@ export default createModel<RootModel>()({
   },
 })
 
-function graphQLMetadata(gqlData?: AxiosResponse) {
-  const total = gqlData?.data?.data?.login?.account?.devices?.total || 0
-  const devices = gqlData?.data?.data?.login?.account?.devices?.items || []
-  const id = gqlData?.data?.data?.login?.id
+function graphQLMetadata(gqlData: AxiosResponse) {
+  const total = gqlData.data?.data?.login?.account?.devices?.total || 0
+  const devices = gqlData.data?.data?.login?.account?.devices?.items || []
+  const id = gqlData.data?.data?.login?.id
   return [devices, total, id]
 }
 

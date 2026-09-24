@@ -100,8 +100,8 @@ export default createModel<RootModel>()({
       accountId = accountId || selectActiveAccountId(state)
       if (!state.jobs.all[accountId]) dispatch.jobs.fetch({ accountId })
     },
-    async parse(result: AxiosResponse<any> | undefined): Promise<IJob[]> {
-      const data = result?.data?.data?.login?.account
+    async parse(result: AxiosResponse<any>): Promise<IJob[]> {
+      const data = result.data?.data?.login?.account
       return (
         data?.jobs.items.map(j => ({
           ...j,

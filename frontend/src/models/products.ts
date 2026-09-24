@@ -132,15 +132,14 @@ export default createModel<RootModel>()({
     async delete(id: string, state) {
       const accountId = selectActiveAccountId(state)
       const response = await graphQLDeleteDeviceProduct(id)
-      if (response !== 'ERROR') {
-        const productModel = getProductModel(state, accountId)
-        dispatch.products.set({
-          all: productModel.all.filter(p => p.id !== id),
-          selected: productModel.selected.filter(s => s !== id),
-          accountId,
-        })
-      }
-      return response !== 'ERROR'
+      if (response === 'ERROR') return false
+      const productModel = getProductModel(state, accountId)
+      dispatch.products.set({
+        all: productModel.all.filter(p => p.id !== id),
+        selected: productModel.selected.filter(s => s !== id),
+        accountId,
+      })
+      return true
     },
 
     async deleteSelected(_: void, state) {

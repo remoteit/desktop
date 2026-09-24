@@ -185,8 +185,8 @@ export default createModel<RootModel>()({
       }
     },
 
-    async parse({ response, accountId }: { response: AxiosResponse<any> | undefined; accountId: string }) {
-      const networks = response?.data?.data?.login?.account?.networks || []
+    async parse({ response, accountId }: { response: AxiosResponse<any>; accountId: string }) {
+      const networks = response.data?.data?.login?.account?.networks || []
 
       const parsed: INetwork[] = networks.map(n => ({
         ...DEFAULT_NETWORK,
