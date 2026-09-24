@@ -14,7 +14,7 @@ const boxSx = (highlight?: boolean) => (theme: Theme) => ({
 
 const arrowSx = (theme: Theme) => ({ color: theme.palette.guide.main })
 
-// MUI stacks tooltips above modals, which left bubbles floating over dialogs and menus
+// MUI stacks tooltips above modals; without this, bubbles float over dialogs and menus
 const popperSx = (theme: Theme) => ({ zIndex: theme.zIndex.modal - 1 })
 
 const tipSx = (theme: Theme) => ({
