@@ -53,6 +53,18 @@ describe('PromptModal', () => {
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
+  it('submits the typed value for a token that is still missing', () => {
+    render({})
+    const input = document.querySelector('input') as HTMLInputElement
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, 'my-host')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    save()
+    expect(onSubmit).toHaveBeenCalledWith({ host: 'my-host' })
+  })
+
   it('follows the host arriving while open instead of keeping its empty field', () => {
     render({})
     render({ host: 'abc.p021.r3proxy.com' })

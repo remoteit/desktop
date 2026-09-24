@@ -32,7 +32,6 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
   const missing: ILookup<string> = Object.fromEntries(app.missingTokens.map(token => [token, tokens[token] || '']))
 
   useEffect(() => {
-    if (!open) return
     setTokens({})
     setError(undefined)
   }, [open])
