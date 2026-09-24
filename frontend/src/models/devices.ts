@@ -246,7 +246,7 @@ export default createModel<RootModel>()({
           suppressAdd: newDevice && !matchesFilter,
         })
       } else {
-        if (!isService && state.ui.silent !== id)
+        if (gqlResponse !== 'ERROR' && !isService && state.ui.silent !== id)
           dispatch.ui.set({
             noticeMessage: isService
               ? i18n.t('notices:access.noService', {
