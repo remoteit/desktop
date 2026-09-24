@@ -14,6 +14,9 @@ const boxSx = (highlight?: boolean) => (theme: Theme) => ({
 
 const arrowSx = (theme: Theme) => ({ color: theme.palette.guide.main })
 
+// MUI stacks tooltips above modals; without this, bubbles float over dialogs and menus
+const popperSx = (theme: Theme) => ({ zIndex: theme.zIndex.modal - 1 })
+
 const tipSx = (theme: Theme) => ({
   backgroundColor: theme.palette.guide.main,
   color: theme.palette.white.main,
@@ -184,7 +187,7 @@ export const GuideBubble: React.FC<Props> = ({
 
   return (
     <Tooltip
-      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx } }}
+      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx }, popper: { sx: popperSx } }}
       open={open}
       arrow={!hideArrow}
       placement={placement || 'top'}
