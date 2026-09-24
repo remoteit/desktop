@@ -64,4 +64,11 @@ describe('LaunchButton auto launch', () => {
     expect(windowOpen).toHaveBeenCalledExactlyOnceWith('https://abc.p021.r3proxy.com', '_blank', false)
     expect(state.ui.autoLaunch).toBeUndefined()
   })
+
+  it('does not launch an idle connection that is ready but not connected', () => {
+    render({ connected: false, ready: true, host: 'abc.p021.r3proxy.com' })
+
+    expect(windowOpen).not.toHaveBeenCalled()
+    expect(state.ui.autoLaunch).toBe(connection.id)
+  })
 })
