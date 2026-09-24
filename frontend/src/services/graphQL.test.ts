@@ -16,7 +16,13 @@ describe('graphQLPartialRequest', () => {
     expect(await graphQLPartialRequest('query')).toBe(response)
   })
 
-  it('fails when nothing resolved', async () => {
+  it('fails when every account alias errored', async () => {
+    post.mockResolvedValue({ data: { data: { login: { _0: null, _1: null } }, errors: [{ message: 'forbidden' }] } })
+
+    expect(await graphQLPartialRequest('query')).toBe('ERROR')
+  })
+
+  it('fails when the whole query errored', async () => {
     post.mockResolvedValue({ data: { data: { login: null }, errors: [{ message: 'unauthorized' }] } })
 
     expect(await graphQLPartialRequest('query')).toBe('ERROR')

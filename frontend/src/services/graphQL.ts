@@ -15,8 +15,9 @@ export async function graphQLPartialRequest(query: String, variables: ILookup<an
   const response = await post({ query, variables })
   graphQLGetErrors(response, false, { query, variables })
   if (!response || response === 'ERROR') return 'ERROR'
-  const data = response.data?.data
-  return data && Object.values(data).some(value => value != null) ? response : 'ERROR'
+  const fields = Object.values(response.data?.data || {})
+  const resolved = fields.some(field => Object.values(field || {}).some(alias => alias != null))
+  return resolved ? response : 'ERROR'
 }
 
 export function graphQLGetErrors(
