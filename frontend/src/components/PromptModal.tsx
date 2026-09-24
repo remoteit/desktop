@@ -27,11 +27,14 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
   const { t } = useTranslation()
   const [tokens, setTokens] = useState<ILookup<string>>({})
   const [error, setError] = useState<string>()
-  // Tokens can resolve while open (the host arriving); stale empty entries blocked Save and would blank them on submit
+  // Derived each render, not seeded into state on open: the host can arrive while open, and a seeded empty entry
+  // blocked Save and would have blanked the host on submit
   const missing: ILookup<string> = Object.fromEntries(app.missingTokens.map(token => [token, tokens[token] || '']))
 
   useEffect(() => {
+    if (!open) return
     setTokens({})
+    setError(undefined)
   }, [open])
 
   const update = (token: string, value: string) => setTokens({ ...tokens, [token]: value })
@@ -50,14 +53,14 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
         <DialogContent>
           <Typography variant="h4">{app.preview(missing)}</Typography>
           <List dense>
-            {app.missingTokens.map((token, index) =>
+            {Object.keys(missing).map((token, index) =>
               isFileToken(token) && browser.hasBackend ? (
                 <InlineFileFieldSetting
                   key={token}
                   token={token}
                   disableGutters
                   label={t('promptModal.applicationPath', 'Application path')}
-                  value={app.value(token)}
+                  value={missing[token]}
                   variant="filled"
                   onSave={value => update(token, value || '')}
                 />
@@ -70,7 +73,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                     label={token}
                     value={missing[token]}
                     error={token === error}
-                    onChange={event => setTokens({ ...tokens, [token]: event.target.value })}
+                    onChange={event => update(token, event.target.value)}
                   />
                 </ListItem>
               )

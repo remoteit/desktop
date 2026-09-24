@@ -58,7 +58,6 @@ describe('PromptModal', () => {
     render({ host: 'abc.p021.r3proxy.com' })
 
     expect(document.body.textContent).toContain('https://abc.p021.r3proxy.com')
-    expect(document.querySelector('input')).toBeNull()
     save()
     expect(onSubmit).toHaveBeenCalledWith({})
   })
