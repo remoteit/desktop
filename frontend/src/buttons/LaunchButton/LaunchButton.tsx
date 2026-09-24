@@ -44,7 +44,7 @@ export const LaunchButton: React.FC<Props> = ({
   const autoLaunch = useSelector((state: State) => state.ui.autoLaunch === connection?.id && connection?.autoLaunch)
 
   useEffect(() => {
-    // Portal socket events set connected before the host arrives; launching then opens the missing-info prompt
+    // Cloud socket events can set connected before a public proxy's host arrives, which opened the missing-info prompt
     if (autoLaunch && !launchDisabled(connection) && ready && connected) {
       dispatch.ui.set({ autoLaunch: undefined })
       clickHandler()
