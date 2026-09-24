@@ -6,6 +6,7 @@ const CLIENT_DEPRECATED = '121'
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   const response = await post({ query, variables })
+  if (response === 'ERROR') return response
   const errors = graphQLGetErrors(response, false, { query, variables })
   return errors ? 'ERROR' : response
 }
@@ -13,23 +14,22 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 // For batched per-account queries: one account the token can't read must not discard the ones that resolved.
 export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
   const response = await post({ query, variables })
+  if (response === 'ERROR') return response
   graphQLGetErrors(response, false, { query, variables })
-  if (!response || response === 'ERROR') return 'ERROR'
   const fields = Object.values(response.data?.data || {})
   const resolved = fields.some(field => Object.values(field || {}).some(alias => alias != null))
   return resolved ? response : 'ERROR'
 }
 
 export function graphQLGetErrors(
-  response: AxiosResponse | 'ERROR' | void,
+  response: AxiosResponse,
   silent?: boolean,
   details?: { query: String; variables: ILookup<any> }
 ) {
-  if (!response || response === 'ERROR') return
   const { ui } = store.dispatch
 
-  const errors: undefined | Error[] = response?.data?.errors
-  const warning: undefined | string = response?.headers?.['X-R3-Warning']
+  const errors: undefined | Error[] = response.data?.errors
+  const warning: undefined | string = response.headers?.['X-R3-Warning']
 
   if (warning) {
     const code = warning.split(' ')[0]

@@ -11,7 +11,6 @@ import {
   graphQLCreateDeviceProductFromRegistration,
   graphQLUpdateDeviceProduct,
 } from '../services/graphQLDeviceProducts'
-import { graphQLGetErrors } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { State } from '../store'
 
@@ -72,7 +71,7 @@ export default createModel<RootModel>()({
       const accountId = selectActiveAccountId(state)
       dispatch.products.set({ fetching: true, accountId })
       const response = await graphQLDeviceProducts({ accountId })
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const products = response?.data?.data?.login?.account?.deviceProducts?.items || []
         console.log('LOADED PRODUCTS', products)
         dispatch.products.set({ all: products, initialized: true, accountId })
@@ -93,7 +92,7 @@ export default createModel<RootModel>()({
       const accountId = selectActiveAccountId(state)
       dispatch.products.set({ fetching: true, accountId })
       const response = await graphQLDeviceProduct(id, accountId)
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const items = response?.data?.data?.login?.account?.deviceProducts?.items || []
         const product = items[0]
         if (product) {
@@ -116,7 +115,7 @@ export default createModel<RootModel>()({
     async create(input: { name: string; platform: string }, state) {
       const accountId = selectActiveAccountId(state)
       const response = await graphQLCreateDeviceProduct({ ...input, accountId })
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const newProduct = response?.data?.data?.createDeviceProduct
         if (newProduct) {
           const productModel = getProductModel(state, accountId)
@@ -133,15 +132,14 @@ export default createModel<RootModel>()({
     async delete(id: string, state) {
       const accountId = selectActiveAccountId(state)
       const response = await graphQLDeleteDeviceProduct(id)
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
-        const productModel = getProductModel(state, accountId)
-        dispatch.products.set({
-          all: productModel.all.filter(p => p.id !== id),
-          selected: productModel.selected.filter(s => s !== id),
-          accountId,
-        })
-      }
-      return !graphQLGetErrors(response)
+      if (response === 'ERROR') return false
+      const productModel = getProductModel(state, accountId)
+      dispatch.products.set({
+        all: productModel.all.filter(p => p.id !== id),
+        selected: productModel.selected.filter(s => s !== id),
+        accountId,
+      })
+      return true
     },
 
     async deleteSelected(_: void, state) {
@@ -154,7 +152,7 @@ export default createModel<RootModel>()({
         selected.map(id => graphQLDeleteDeviceProduct(id))
       )
 
-      const successIds = selected.filter((_id, i) => !graphQLGetErrors(results[i]))
+      const successIds = selected.filter((_id, i) => results[i] !== 'ERROR')
 
       dispatch.products.set({
         all: all.filter(p => !successIds.includes(p.id)),
@@ -194,7 +192,7 @@ export default createModel<RootModel>()({
     ) {
       const accountId = selectActiveAccountId(state)
       const response = await graphQLAddDeviceProductService(productId, input)
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const newService = response?.data?.data?.addDeviceProductService
         if (newService) {
           const productModel = getProductModel(state, accountId)
@@ -220,7 +218,7 @@ export default createModel<RootModel>()({
     ) {
       const accountId = selectActiveAccountId(state)
       const response = await graphQLCreateDeviceProductFromRegistration({ ...input, accountId })
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const newProduct = response?.data?.data?.createDeviceProductFromRegistration
         if (newProduct) {
           const productModel = getProductModel(state, accountId)
@@ -240,7 +238,7 @@ export default createModel<RootModel>()({
     ) {
       const accountId = selectActiveAccountId(state)
       const response = await graphQLUpdateDeviceProduct(id, input)
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const updatedProduct = response?.data?.data?.updateDeviceProduct
         if (updatedProduct) {
           const productModel = getProductModel(state, accountId)
@@ -257,7 +255,7 @@ export default createModel<RootModel>()({
     async removeService({ productId, serviceId }: { productId: string; serviceId: string }, state) {
       const accountId = selectActiveAccountId(state)
       const response = await graphQLRemoveDeviceProductService(serviceId)
-      if (!graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const productModel = getProductModel(state, accountId)
         dispatch.products.set({
           all: productModel.all.map(p =>
@@ -280,7 +278,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ transferring: true })
       const response = await graphQLTransferDeviceProduct(productId, email)
 
-      if (!graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         // Remove product from local state
         dispatch.products.set({
           all: productModel.all.filter(p => p.id !== productId),

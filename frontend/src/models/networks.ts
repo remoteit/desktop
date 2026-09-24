@@ -115,7 +115,10 @@ export default createModel<RootModel>()({
       dispatch.networks.set({ loading: true })
       const response = await graphQLPreloadNetworks(accountId)
 
-      if (response === 'ERROR') return
+      if (response === 'ERROR') {
+        dispatch.networks.set({ loading: false, initialized: true })
+        return
+      }
 
       const networks = await dispatch.networks.parse({ response, accountId })
       await dispatch.networks.preloadNetworkDevices({
@@ -141,6 +144,7 @@ export default createModel<RootModel>()({
       const gqlResponse = await graphQLFetchNetworkSingle(network.id)
 
       if (gqlResponse === 'ERROR') {
+        dispatch.devices.set({ fetching: false, accountId })
         if (redirect) dispatch.ui.set({ redirect })
         return
       }
@@ -181,8 +185,8 @@ export default createModel<RootModel>()({
       }
     },
 
-    async parse({ response, accountId }: { response: AxiosResponse<any> | undefined; accountId: string }) {
-      const networks = response?.data?.data?.login?.account?.networks || []
+    async parse({ response, accountId }: { response: AxiosResponse<any>; accountId: string }) {
+      const networks = response.data?.data?.login?.account?.networks || []
 
       const parsed: INetwork[] = networks.map(n => ({
         ...DEFAULT_NETWORK,

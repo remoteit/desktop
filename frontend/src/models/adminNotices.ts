@@ -24,7 +24,8 @@ export default createModel<RootModel>()({
       dispatch.adminNotices.set({ loading: true })
       const response = await graphQLAllNotices()
       if (response === 'ERROR') {
-        dispatch.adminNotices.set({ loading: false })
+        // Without initialized, a deep-linked AdminNoticeDetailPanel shows "Loading notice..." forever.
+        dispatch.adminNotices.set({ loading: false, initialized: true })
         return
       }
       const notices = parse(response?.data?.data?.allNotices)

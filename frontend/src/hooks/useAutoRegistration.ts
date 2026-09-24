@@ -73,18 +73,17 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
       }
 
       const result = await dispatch.devices.createRegistration(options)
+      if (!result) return
 
-      if (result) {
-        sessionCodeRef.current = result.registrationCode
-        setRegistrationCode(result.registrationCode)
-        setRegistrationCommand(result.registrationCommand)
-      }
+      sessionCodeRef.current = result.registrationCode
+      setRegistrationCode(result.registrationCode)
+      setRegistrationCommand(result.registrationCommand)
 
       if (!redirect || redirected) return
 
       try {
         setRedirected(true)
-        const url = getRedirect(redirect, result?.registrationCode)
+        const url = getRedirect(redirect, result.registrationCode)
         console.log('REDIRECT TO:', url)
         windowOpen(url, '_blank', true)
       } catch (error) {

@@ -45,8 +45,8 @@ export default createModel<RootModel>()({
         dispatch.ui.setLanguage((data.attributes?.language ?? 'system') as LanguageMode)
       }
     },
-    async parse(result: AxiosResponse<any> | undefined) {
-      const data = result?.data?.data?.login?.account
+    async parse(result: AxiosResponse<any>) {
+      const data = result.data?.data?.login?.account
       console.log('USER DATA', data)
       // No account in the payload (a failed or foreign-stage query) is NOT a user: writing
       // `{created: Invalid Date}` into state persisted as `created: null` (redux-persist

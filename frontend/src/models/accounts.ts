@@ -46,8 +46,8 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') return
       await dispatch.accounts.parse(result)
     },
-    async parse(gqlResponse: AxiosResponse<any> | undefined, state) {
-      const gqlData = gqlResponse?.data?.data?.login
+    async parse(gqlResponse: AxiosResponse<any>, state) {
+      const gqlData = gqlResponse.data?.data?.login
       console.log('MEMBERSHIPS', gqlData)
       if (!gqlData) return
       const membership = gqlData.membership || []

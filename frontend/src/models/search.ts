@@ -86,7 +86,10 @@ export default createModel<RootModel>()({
         }
       )
 
-      if (response === 'ERROR') return
+      if (response === 'ERROR') {
+        dispatch.search.set({ fetching: false })
+        return
+      }
       const search = await dispatch.search.parse({ response, id })
       await dispatch.search.set({ search })
       dispatch.search.set({ fetching: false })

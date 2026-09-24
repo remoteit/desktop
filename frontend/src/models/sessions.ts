@@ -31,9 +31,8 @@ export default createModel<RootModel>()({
       dispatch.sessions.set({ all })
     },
 
-    async parse({ result, ids }: { result: AxiosResponse<any> | undefined; ids: string[] }): Promise<ISession[]> {
-      if (!result) return []
-      const data = result?.data?.data?.login
+    async parse({ result, ids }: { result: AxiosResponse<any>; ids: string[] }): Promise<ISession[]> {
+      const data = result.data?.data?.login
       let all: ISession[] = []
       for (let index = 0; index < ids.length; index++) {
         const accountId = ids[index]
