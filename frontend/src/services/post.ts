@@ -12,13 +12,13 @@ export function resetErrorCount() {
 }
 
 export async function post(data: ILookup<any, string> = {}, path: string = '') {
-  if (store.getState().ui.offline) return
+  if (store.getState().ui.offline) return 'ERROR'
 
   const url = getApiURL() + path
   const headers = await apiHeaders('POST', url)
   if (!headers) {
     console.warn('Unable to get token for API request.', data)
-    return
+    return 'ERROR'
   }
 
   const request = {
