@@ -359,16 +359,16 @@ export default createModel<RootModel>()({
       const disconnecting = {
         ...connection,
         enabled: false,
-        ready: false,
         disconnecting: true,
         connecting: false,
         starting: false,
       }
+      const disconnected = { ...disconnecting, connected: false, disconnecting: false, ready: false }
       setConnection(disconnecting)
 
       if (!connection.sessionId) {
         console.warn('No sessionId for connection to proxy disconnect', connection)
-        setConnection({ ...disconnecting, connected: false, disconnecting: false })
+        setConnection(disconnected)
         return
       }
 
@@ -377,7 +377,7 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') {
         setConnection(connection)
       } else {
-        setConnection({ ...disconnecting, connected: false, disconnecting: false })
+        setConnection(disconnected)
         console.log('PROXY DISCONNECTED', result)
       }
     },
