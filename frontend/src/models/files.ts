@@ -45,7 +45,7 @@ export default createModel<RootModel>()({
       accountId = accountId || selectActiveAccountId(state)
       const result = await graphQLFiles(accountId)
       if (result === 'ERROR') {
-        dispatch.files.set({ fetching: false })
+        dispatch.files.set({ fetching: false, initialized: true })
         return
       }
       const files = await dispatch.files.parse(result)

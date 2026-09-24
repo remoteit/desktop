@@ -116,7 +116,7 @@ export default createModel<RootModel>()({
       const response = await graphQLPreloadNetworks(accountId)
 
       if (response === 'ERROR') {
-        dispatch.networks.set({ loading: false })
+        dispatch.networks.set({ loading: false, initialized: true })
         return
       }
 
