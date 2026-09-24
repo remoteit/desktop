@@ -395,7 +395,7 @@ export default createModel<RootModel>()({
 
     async graphQLListProcessor(options: gqlOptions) {
       const gqlResponse = await graphQLFetchDeviceList(options)
-      if (gqlResponse === 'ERROR') return
+      if (!gqlResponse || gqlResponse === 'ERROR') return
 
       const [gqlDevices, total] = graphQLMetadata(gqlResponse)
       const devices = graphQLDeviceAdaptor({

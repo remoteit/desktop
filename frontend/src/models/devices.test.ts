@@ -36,10 +36,14 @@ beforeEach(() => {
 })
 
 describe('a failed device list fetch keeps the held list', () => {
-  it.each([{ query: 'new' }, { searched: true, append: true }])(
-    'writes no devices, totals, initialized or appliedName and reports failure (%o)',
-    async over => {
-      graphQLFetchDeviceList.mockResolvedValue('ERROR')
+  it.each([
+    { response: 'ERROR', over: { query: 'new' } },
+    { response: 'ERROR', over: { searched: true, append: true } },
+    { response: undefined, over: {} },
+  ])(
+    'writes no devices, totals, initialized or appliedName and reports failure ($response, $over)',
+    async ({ response, over }) => {
+      graphQLFetchDeviceList.mockResolvedValue(response)
       expect(await effects().fetchList(undefined, stateWith(over))).toBe(false)
       expect(dispatch.devices.set.mock.calls).toEqual([
         [{ fetching: true, accountId: 'acct' }],
