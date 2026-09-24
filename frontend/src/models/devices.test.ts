@@ -64,12 +64,17 @@ describe('a failed device list fetch keeps the held list', () => {
     ])
   })
 
-  it('fetchPage puts the held page back when its fetch fails', async () => {
+  it('fetchPage puts the held page back only when its fetch fails', async () => {
     dispatch.devices.fetchList.mockResolvedValue(false)
     await effects().fetchPage({ from: 100, append: true }, stateWith({ from: 50 }))
     expect(dispatch.devices.set.mock.calls).toEqual([
       [{ from: 100, append: true, accountId: 'acct' }],
       [{ from: 50, accountId: 'acct' }],
     ])
+
+    dispatch.devices.set.mockClear()
+    dispatch.devices.fetchList.mockResolvedValue(true)
+    await effects().fetchPage({ from: 100, append: true }, stateWith({ from: 50 }))
+    expect(dispatch.devices.set.mock.calls).toEqual([[{ from: 100, append: true, accountId: 'acct' }]])
   })
 })
