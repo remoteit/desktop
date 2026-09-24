@@ -29,7 +29,9 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
   const [error, setError] = useState<string>()
   // Derived each render, not seeded into state on open: the host can arrive while open, and a seeded empty entry
   // blocked Save and would have blanked the host on submit
-  const missing: ILookup<string> = Object.fromEntries(app.missingTokens.map(token => [token, tokens[token] || '']))
+  const missing: ILookup<string> = Object.fromEntries(
+    app.missingTokens.map(token => [token, typeof tokens[token] === 'string' ? tokens[token] : ''])
+  )
 
   useEffect(() => {
     setTokens({})

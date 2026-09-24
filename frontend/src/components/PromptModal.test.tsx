@@ -65,6 +65,14 @@ describe('PromptModal', () => {
     expect(onSubmit).toHaveBeenCalledWith({ host: 'my-host' })
   })
 
+  it('does not treat a token named after an Object member as filled', () => {
+    const app = { missingTokens: ['constructor'], preview: () => '' } as any
+    act(() => root.render(<PromptModal app={app} open onClose={vi.fn()} onSubmit={onSubmit} />))
+
+    save()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
   it('follows the host arriving while open instead of keeping its empty field', () => {
     render({})
     render({ host: 'abc.p021.r3proxy.com' })
