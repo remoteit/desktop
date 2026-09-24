@@ -25,38 +25,30 @@ type Props = {
 
 export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) => {
   const { t } = useTranslation()
-  const toLookup = () => app.missingTokens.reduce((obj, item) => ({ ...obj, [item]: '' }), {})
-  const [tokens, setTokens] = useState<ILookup<string>>(toLookup())
+  const [tokens, setTokens] = useState<ILookup<string>>({})
   const [error, setError] = useState<string>()
+  // Tokens can resolve while open (the host arriving); stale empty entries blocked Save and would blank them on submit
+  const missing: ILookup<string> = Object.fromEntries(app.missingTokens.map(token => [token, tokens[token] || '']))
 
   useEffect(() => {
-    setTokens(toLookup())
+    setTokens({})
   }, [open])
 
-  const update = (token: string, value: string) => {
-    let updated: ILookup<string> = { ...tokens, [token]: value }
-    if (!value) delete updated[token]
-    setTokens(updated)
-  }
+  const update = (token: string, value: string) => setTokens({ ...tokens, [token]: value })
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <form
         onSubmit={event => {
           event.preventDefault()
-          let foundError = false
-          Object.keys(tokens).forEach(key => {
-            if (!tokens[key]) {
-              setError(key)
-              foundError = true
-            }
-          })
-          if (!foundError) onSubmit(tokens)
+          const empty = Object.keys(missing).find(key => !missing[key])
+          if (empty) setError(empty)
+          else onSubmit(missing)
         }}
       >
         <DialogTitle>{t('promptModal.title', 'Missing info found')}</DialogTitle>
         <DialogContent>
-          <Typography variant="h4">{app.preview(tokens)}</Typography>
+          <Typography variant="h4">{app.preview(missing)}</Typography>
           <List dense>
             {app.missingTokens.map((token, index) =>
               isFileToken(token) && browser.hasBackend ? (
@@ -76,7 +68,7 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                     autoFocus={index === 0}
                     variant="filled"
                     label={token}
-                    value={tokens[token]}
+                    value={missing[token]}
                     error={token === error}
                     onChange={event => setTokens({ ...tokens, [token]: event.target.value })}
                   />
