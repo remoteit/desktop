@@ -39,9 +39,8 @@ export default createModel<RootModel>()({
       // historical backlog full-screen. Only notices published after this point auto-present.
       if (state.announcements.presentedThrough === undefined) dispatch.announcements.setPresentedThrough(Date.now())
     },
-    async parse(response: AxiosResponse<any> | void): Promise<IAnnouncement[]> {
-      if (!response) return []
-      const all = response?.data?.data?.notices
+    async parse(response: AxiosResponse<any>): Promise<IAnnouncement[]> {
+      const all = response.data?.data?.notices
       if (!all) return []
       console.log('ANNOUNCEMENTS', all)
       return all.map(n => ({

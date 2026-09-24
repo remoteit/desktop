@@ -246,7 +246,7 @@ export default createModel<RootModel>()({
           suppressAdd: newDevice && !matchesFilter,
         })
       } else {
-        if (!isService && state.ui.silent !== id)
+        if (gqlResponse !== 'ERROR' && !isService && state.ui.silent !== id)
           dispatch.ui.set({
             noticeMessage: isService
               ? i18n.t('notices:access.noService', {
@@ -595,8 +595,8 @@ export default createModel<RootModel>()({
             }),
           })
         }
-        dispatch.ui.set({ claiming: false })
       }
+      dispatch.ui.set({ claiming: false })
     },
 
     async createRegistration({
@@ -867,10 +867,10 @@ export default createModel<RootModel>()({
   },
 })
 
-function graphQLMetadata(gqlData?: AxiosResponse) {
-  const total = gqlData?.data?.data?.login?.account?.devices?.total || 0
-  const devices = gqlData?.data?.data?.login?.account?.devices?.items || []
-  const id = gqlData?.data?.data?.login?.id
+function graphQLMetadata(gqlData: AxiosResponse) {
+  const total = gqlData.data?.data?.login?.account?.devices?.total || 0
+  const devices = gqlData.data?.data?.login?.account?.devices?.items || []
+  const id = gqlData.data?.data?.login?.id
   return [devices, total, id]
 }
 

@@ -6,20 +6,20 @@ const CLIENT_DEPRECATED = '121'
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
   const response = await post({ query, variables })
+  if (response === 'ERROR') return response
   const errors = graphQLGetErrors(response, false, { query, variables })
   return errors ? 'ERROR' : response
 }
 
 export function graphQLGetErrors(
-  response: AxiosResponse | 'ERROR' | void,
+  response: AxiosResponse,
   silent?: boolean,
   details?: { query: String; variables: ILookup<any> }
 ) {
-  if (!response || response === 'ERROR') return
   const { ui } = store.dispatch
 
-  const errors: undefined | Error[] = response?.data?.errors
-  const warning: undefined | string = response?.headers?.['X-R3-Warning']
+  const errors: undefined | Error[] = response.data?.errors
+  const warning: undefined | string = response.headers?.['X-R3-Warning']
 
   if (warning) {
     const code = warning.split(' ')[0]

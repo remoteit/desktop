@@ -5,13 +5,13 @@ import { apiError } from './post'
 import { store } from '../store'
 
 export async function get(path: string = '') {
-  if (store.getState().ui.offline) return
+  if (store.getState().ui.offline) return 'ERROR'
 
   const url = getApiURL() + path
   const headers = await apiHeaders('GET', url)
   if (!headers) {
     console.warn('Unable to get token for API request.')
-    return
+    return 'ERROR'
   }
 
   const request = {

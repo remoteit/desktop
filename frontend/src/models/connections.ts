@@ -87,7 +87,10 @@ export default createModel<RootModel>()({
       const accountId = state.auth.user?.id || state.user.id
       const serviceIds = getFetchConnectionIds(state)
       const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
-      if (gqlResponse === 'ERROR') return
+      if (gqlResponse === 'ERROR') {
+        await dispatch.connections.set({ initialized: true })
+        return
+      }
 
       const gqlDevices = gqlResponse?.data?.data?.login?.device || []
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })

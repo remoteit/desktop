@@ -44,7 +44,10 @@ export default createModel<RootModel>()({
       dispatch.files.set({ fetching: true })
       accountId = accountId || selectActiveAccountId(state)
       const result = await graphQLFiles(accountId)
-      if (result === 'ERROR') return
+      if (result === 'ERROR') {
+        dispatch.files.set({ fetching: false, initialized: true })
+        return
+      }
       const files = await dispatch.files.parse(result)
       console.log('LOADED FILES', accountId, files)
       dispatch.files.setAccount({ accountId, files })
@@ -68,8 +71,8 @@ export default createModel<RootModel>()({
       accountId = accountId || selectActiveAccountId(state)
       if (!state.files.all[accountId]) dispatch.files.fetch(accountId)
     },
-    async parse(result: AxiosResponse<any> | undefined): Promise<IFile[]> {
-      const data = result?.data?.data?.login?.account
+    async parse(result: AxiosResponse<any>): Promise<IFile[]> {
+      const data = result.data?.data?.login?.account
       return data?.files.map(file => ({ ...file, versions: file.versions.items }))
     },
     async upload(form: IFileForm, state): Promise<string> {
@@ -98,7 +101,7 @@ export default createModel<RootModel>()({
     },
     async download(fileId: string) {
       const result = await get(`/file/download/${fileId}`)
-      if (!result || result === 'ERROR') return
+      if (result === 'ERROR') return
 
       const contentType = result.headers['content-type']
       if (!result.data && contentType === 'application/octet-stream') {

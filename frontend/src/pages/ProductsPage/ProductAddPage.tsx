@@ -10,7 +10,6 @@ import { Notice } from '../../components/Notice'
 import { Gutters } from '../../components/Gutters'
 import { dispatch } from '../../store'
 import { graphQLPlatformTypes } from '../../services/graphQLDeviceProducts'
-import { graphQLGetErrors } from '../../services/graphQL'
 import { selectPermissions } from '../../selectors/organizations'
 import { byName } from '../../helpers/utilHelper'
 
@@ -33,7 +32,7 @@ export const ProductAddPage: React.FC = () => {
   useEffect(() => {
     const fetchPlatforms = async () => {
       const response = await graphQLPlatformTypes()
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const types: IPlatformType[] = response?.data?.data?.platformTypes || []
         setPlatformTypes(types.filter(p => p.visible).sort(byName))
       }

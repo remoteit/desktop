@@ -139,6 +139,10 @@ export default createModel<RootModel>()({
             host: t.host,
           })),
         })) || {}
+      if (!code) {
+        dispatch.ui.set({ setupRegisteringDevice: false })
+        return
+      }
       emit('registration', code)
     },
     async setUpdateNotice(updateVersion: string | undefined, state) {

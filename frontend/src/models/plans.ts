@@ -165,9 +165,8 @@ export default createModel<RootModel>()({
       await dispatch.plans.parse(result)
     },
 
-    async parse(gqlResponse: AxiosResponse<any> | void) {
-      if (!gqlResponse) return
-      const data = gqlResponse?.data?.data
+    async parse(gqlResponse: AxiosResponse<any>) {
+      const data = gqlResponse.data?.data
       await dispatch.plans.set({
         plans: data.plans,
         updating: undefined,
