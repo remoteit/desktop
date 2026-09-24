@@ -15,7 +15,7 @@ vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 import organization from './organization'
 
 describe('organization.fetch', () => {
-  it('keeps the orgs that resolved when another account errors', async () => {
+  it('applies the orgs that resolved and keeps what the failed ones had', async () => {
     const dispatch: any = { organization: { set: vi.fn() } }
     const effects = (organization as any).effects(dispatch)
     dispatch.organization.parse = (params: any) => effects.parse(params)
@@ -32,10 +32,12 @@ describe('organization.fetch', () => {
       },
     })
 
-    await effects.fetch(undefined, {})
+    const loaded = { id: 'org-b', name: 'Press Demo' }
+    await effects.fetch(undefined, { organization: { accounts: { 'org-b': loaded } } })
 
     const { accounts } = dispatch.organization.set.mock.calls[0][0]
-    expect(Object.keys(accounts)).toEqual(['org-a'])
+    expect(Object.keys(accounts).sort()).toEqual(['org-a', 'org-b'])
     expect(accounts['org-a'].name).toBe('Cat Demo')
+    expect(accounts['org-b']).toBe(loaded)
   })
 })

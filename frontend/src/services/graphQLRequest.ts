@@ -517,7 +517,7 @@ export async function graphQLFetchGuests(accountId: string) {
 }
 
 export async function graphQLFetchSessions(ids: string[]) {
-  return await graphQLPartialRequest(
+  return await graphQLBasicRequest(
     ` query Sessions {
         login {
           ${ids
