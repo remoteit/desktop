@@ -113,7 +113,7 @@ export const OrganizationSelect: React.FC = () => {
     return {
       id: m.account.id,
       email: m.account.email,
-      name: org.name,
+      name: org.name || m.name || '',
       roleId: m.roleId,
       roleName: m.roleName,
       disabled: !org.id,

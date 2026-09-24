@@ -1,4 +1,5 @@
-import { graphQLBasicRequest } from './graphQL'
+import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
+import { post } from './post'
 
 export async function graphQLLogin() {
   return await graphQLBasicRequest(
@@ -342,8 +343,7 @@ export async function graphQLFetchPlans() {
 }
 
 export async function graphQLFetchOrganizations(ids: string[]) {
-  return await graphQLBasicRequest(
-    ` query Organizations {
+  const query = ` query Organizations {
         login {
           ${ids
       .map(
@@ -420,7 +420,10 @@ export async function graphQLFetchOrganizations(ids: string[]) {
       .join('\n')}
         }
       }`
-  )
+  // One account the token can't read must not blank every other org, so keep the aliases that resolved.
+  const response = await post({ query, variables: {} })
+  graphQLGetErrors(response, false, { query, variables: {} })
+  return response
 }
 
 export async function graphQLAdminUsers(
