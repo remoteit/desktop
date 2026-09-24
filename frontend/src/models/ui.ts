@@ -34,7 +34,6 @@ const SAVED_ACROSS_LOGOUT = [
   'deviceTimeSeries',
   'serviceTimeSeries',
   'showDesktopNotice',
-  'mobileWelcome',
   'logsFilters',
 ]
 
@@ -117,7 +116,6 @@ export type UIState = {
   deviceTimeSeries?: ITimeSeriesOptions
   serviceTimeSeries?: ITimeSeriesOptions
   connectThisDevice: boolean
-  mobileWelcome: boolean
   showDesktopNotice: boolean
   scriptForm?: IFileForm
   scriptRunForms: ILookup<IFileForm>
@@ -210,7 +208,6 @@ export const defaultState: UIState = {
   deviceTimeSeries: undefined,
   serviceTimeSeries: undefined,
   connectThisDevice: false,
-  mobileWelcome: true,
   showDesktopNotice: true,
   scriptForm: undefined,
   scriptRunForms: {},
