@@ -424,7 +424,8 @@ class CloudController {
           }
 
           // Update connection state
-          if (target.connection) {
+          // Only on change: on desktop this store copy can be older than the backend's and would overwrite it
+          if (target.connection && target.connection.online !== (onlineState === 'active')) {
             target.connection.online = onlineState === 'active'
             setConnection(target.connection)
           }
@@ -459,10 +460,15 @@ class CloudController {
           if (connectTimes.outdated(event.timestamp, target.id)) return
 
           // Local connection state
-          if (target.connection) {
+          // proxyConnect owns an in-flight public connect: this host-less copy made auto launch prompt for the host,
+          // and on desktop it can land after the connect result and overwrite it
+          if (target.connection && !(target.connection.public && target.connection.connecting)) {
             if (target.connection.public) {
               target.connection.enabled = event.state === 'connected'
-              if (event.state !== 'connected') target.connection.endTime = Date.now()
+              if (event.state !== 'connected') {
+                target.connection.endTime = Date.now()
+                target.connection.ready = false
+              }
             }
             target.connection.connected = event.state === 'connected'
             target.connection.connecting = false
