@@ -135,6 +135,13 @@ export default createModel<RootModel>()({
       set({ fetching: true, accountId })
       const { devices, total, error } = await graphQLListProcessor(options)
 
+      // A failed fetch must not mark the account initialized: DevicesPage reads an
+      // initialized empty list as "no devices" and redirects to /add.
+      if (error) {
+        set({ fetching: false, append: false, accountId })
+        return false
+      }
+
       if (searched) set({ results: total, accountId })
       else set({ total, accountId })
 
@@ -144,10 +151,11 @@ export default createModel<RootModel>()({
         await truncateMergeDevices({ devices, accountId })
       }
 
-      if (!error) dispatch.search.updateSearch()
+      dispatch.search.updateSearch()
       // Record the name the current list was actually filtered by (the live `query` can
       // be ahead of the results until re-submitted) so new devices match the same view.
       set({ fetching: false, append: false, initialized: true, appliedName: query, accountId })
+      return true
     },
 
     async fetchIfEmpty(_: void, state) {
