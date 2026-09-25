@@ -97,8 +97,9 @@ jobs:
   release:
     needs: prepare
     runs-on: ${{ matrix.os }}
-    # Azure's federated credential is keyed on this environment name; a tag ref changes every release.
-    environment: signing
+    # Azure's federated credential trusts OIDC tokens whose subject names the `signing` environment (a tag ref
+    # changes every release), so only the leg that signs with Azure runs there; the others cannot mint such a token.
+    environment: ${{ matrix.os == 'windows-latest' && !inputs.skip_signing && vars.AZURE_SIGN_ENDPOINT != '' && 'signing' || 'build' }}
     permissions:
       contents: write
       id-token: write

@@ -9,7 +9,7 @@ const os = require('os')
 const path = require('path')
 const { spawnSync } = require('child_process')
 const { archsOf, binaryNames } = require('./verify-binaries')
-const { signingMode, expectedPublishers, publisherMatches } = require('./win-signing')
+const { signingMode, expectedPublisher, publisherMatches } = require('./win-signing')
 
 const NSIS7Z_CODERS = new Set([
   'LZMA',
@@ -39,7 +39,7 @@ const MODE = signingMode(process.env)
 const CHECK_SIGNATURES = MODE !== 'skip' && process.platform === 'win32'
 // eSigner bills per signature: under SSL.com a signature finding is reported, never a reason to re-sign.
 const ENFORCE_SIGNATURES = MODE === 'azure'
-const PUBLISHERS = MODE === 'skip' ? [] : expectedPublishers(process.env)
+const PUBLISHER = MODE === 'skip' ? null : expectedPublisher(process.env)
 
 function sevenZip() {
   if (process.env.SEVEN_ZIP) return process.env.SEVEN_ZIP
@@ -117,9 +117,8 @@ function signatureProblems(tool, installer, payload, dir) {
   return files.flatMap(([, label], i) => {
     const s = signatures[i]
     if (s.Status !== 0) return [`${label}: signature ${s.StatusMessage || s.Status}`]
-    if (!publisherMatches(s.Subject, PUBLISHERS)) {
-      return [`${label}: signed by "${s.Subject}", expected ${PUBLISHERS.map(p => `"${p}"`).join(' or ')}`]
-    }
+    if (!publisherMatches(s.Subject, [PUBLISHER]))
+      return [`${label}: signed by "${s.Subject}", expected "${PUBLISHER}"`]
     if (!s.TimeStamped) return [`${label}: no timestamp countersignature`]
     return []
   })

@@ -26,10 +26,10 @@ function signingMode(env) {
   return azureSignOptions(env) ? 'azure' : 'signtool'
 }
 
-/** Publisher names a build under `env` must be signed by. */
-function expectedPublishers(env) {
+/** The one publisher a build under `env` must be signed by. */
+function expectedPublisher(env) {
   const azure = azureSignOptions(env)
-  return azure ? [azure.publisherName, LEGACY_PUBLISHER] : [LEGACY_PUBLISHER]
+  return azure ? azure.publisherName : LEGACY_PUBLISHER
 }
 
 // electron-updater's rule (windowsExecutableCodeSignatureVerifier): a full DN matches when every
@@ -54,8 +54,8 @@ function withSigning(base, env) {
     win: { ...win, azureSignOptions: azure },
     // Lands in app-update.yml as the list an installed app verifies its NEXT update against. The
     // SSL.com name stays until that certificate is retired so a hotfix signed with it still installs.
-    publish: { provider: 'github', ...base.publish, publisherName: expectedPublishers(env) },
+    publish: { provider: 'github', ...base.publish, publisherName: [azure.publisherName, LEGACY_PUBLISHER] },
   }
 }
 
-module.exports = { LEGACY_PUBLISHER, signingMode, expectedPublishers, publisherMatches, withSigning }
+module.exports = { LEGACY_PUBLISHER, signingMode, expectedPublisher, publisherMatches, withSigning }

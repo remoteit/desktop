@@ -265,8 +265,10 @@ annotation only, because eSigner bills per signature and a finding must never
 force a re-sign. This is the guard; electron-builder's `forceCodeSigning` cannot
 be, since it only fires when no signing configuration exists at all. The
 expected publisher is `AZURE_SIGN_PUBLISHER` when set and the SSL.com name
-otherwise, matched by electron-updater's rule: a full distinguished name must
-agree on every attribute it lists, a bare name must equal the certificate's CN.
+otherwise — under Azure the SSL.com name is *not* accepted, so a build that was
+still signed by eSigner cannot pass as migrated — matched by electron-updater's
+rule: a full distinguished name must agree on every attribute it lists, a bare
+name must equal the certificate's CN.
 
 ## Windows installer payloads
 

@@ -2,7 +2,7 @@
 const {
   LEGACY_PUBLISHER,
   signingMode,
-  expectedPublishers,
+  expectedPublisher,
   publisherMatches,
   withSigning,
 } = require('../../scripts/win-signing')
@@ -75,14 +75,22 @@ describe('withSigning', () => {
   })
 })
 
-describe('expectedPublishers', () => {
-  test('the SSL.com name alone, or the Azure subject first', () => {
-    expect(expectedPublishers({})).toEqual([LEGACY_PUBLISHER])
-    expect(expectedPublishers(AZURE)).toEqual([AZURE_PUBLISHER, LEGACY_PUBLISHER])
+describe('expectedPublisher', () => {
+  test('the SSL.com name, or under Azure the Azure subject alone', () => {
+    expect(expectedPublisher({})).toBe(LEGACY_PUBLISHER)
+    expect(expectedPublisher(AZURE)).toBe(AZURE_PUBLISHER)
   })
 })
 
 describe('publisherMatches', () => {
+  test('the subject as Windows PowerShell renders it, OID attributes first', () => {
+    const windows =
+      'OID.1.3.6.1.4.1.311.60.2.1.3=US, OID.1.3.6.1.4.1.311.60.2.1.2=Delaware, OID.2.5.4.15=Private Organization, CN="remot3.it, Inc.", SERIALNUMBER=4797542, O="remot3.it, Inc.", L=Palo Alto, S=California, C=US'
+    expect(publisherMatches(windows, [LEGACY_PUBLISHER])).toBe(true)
+    expect(publisherMatches(windows, [AZURE_PUBLISHER])).toBe(true)
+    expect(publisherMatches(windows, ['CN=Someone Else'])).toBe(false)
+  })
+
   test('a bare name matches the CN only', () => {
     expect(publisherMatches(SSL_SUBJECT, ['remot3.it, Inc.'])).toBe(true)
     expect(publisherMatches(SSL_SUBJECT, ['remot3.it, Inc'])).toBe(false)
