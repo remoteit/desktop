@@ -87,6 +87,8 @@ defaults to `remoteit`; **uncheck `skip_signing`** for a real release, since it
 defaults to `true`. Only a tag build creates the draft and publishes into it; a
 branch build compiles and discards everything, so with `skip_signing` off the
 `prepare` job refuses to start rather than pay for signatures nobody receives.
+Which certificate signs a Windows build, and how the result is checked, is under
+[Windows code signing](#windows-code-signing).
 
 A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
@@ -218,6 +220,55 @@ back into `main` first.
 
 Amplify builds the branch. Its build settings live in the Amplify console, not
 in this repo, so there is no `amplify.yml` here to change.
+
+## Windows code signing
+
+electron-builder reads a config file _instead of_ package.json's `build`, never
+both, so `electron/electron-builder.config.js` spreads the branded `build` and
+adds only the signing part, chosen from the environment by
+`electron/scripts/win-signing.js`:
+
+- **`SKIP_SIGNING=true`** (the `skip_signing` input): no signing configuration
+  at all. Nothing is signed and nothing is verified. The config file also loads
+  `electron/.env`, which electron-builder itself would not, so a local build
+  that sets it there is unsigned too.
+- **`AZURE_SIGN_*` set**: `win.azureSignOptions` — Microsoft Artifact Signing.
+- **Otherwise**: package.json's `build` untouched, i.e. the SSL.com eSigner hook
+  in `scripts/sign.js`.
+
+The Azure side is four repository **variables** — `AZURE_SIGN_ENDPOINT` (the
+per-region URL, e.g. `https://wus2.codesigning.azure.net`), `AZURE_SIGN_ACCOUNT`,
+`AZURE_SIGN_PROFILE`, and `AZURE_SIGN_PUBLISHER` (the certificate subject,
+verbatim) — and three **secrets** for `azure/login`: `AZURE_CLIENT_ID`,
+`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`. Login is OIDC through the `signing`
+environment the `release` job runs in, so there is no client secret anywhere.
+Setting all four variables is the switch; unset, SSL.com keeps signing; set only
+some of them and the build fails rather than guess.
+
+An Azure-signed build also writes `publisherName` into the app's
+`app-update.yml`: the new subject and the SSL.com name `remot3.it, Inc.`. From
+that build on, the updater verifies the **next** installer's signature against
+that list before running it. Nothing shipped since 3.15 verifies anything today
+(the eSigner hook gave electron-builder no certificate to derive a name from), so
+the first Azure-signed release installs everywhere and the second is the one that
+proves the list. Keep the SSL.com name in the list until that certificate is
+retired, so a hotfix signed with it still installs over an Azure-signed release.
+
+After every signed Windows build, `verify-win-installers.js` runs
+`Get-AuthenticodeSignature` — the cmdlet electron-updater's own check is built
+on — over each installer and the executables inside its payload
+(`Remote.It.exe`, `remoteit.exe`, `connectd.exe`, `muxer.exe`, `demuxer.exe`;
+electron-builder signs all of them) and reports any signature that is not valid,
+timestamped, and from an expected publisher. Under Azure that fails the build
+and removes the installers from the draft; under SSL.com it is a `::warning::`
+annotation only, because eSigner bills per signature and a finding must never
+force a re-sign. This is the guard; electron-builder's `forceCodeSigning` cannot
+be, since it only fires when no signing configuration exists at all. The
+expected publisher is `AZURE_SIGN_PUBLISHER` when set and the SSL.com name
+otherwise — under Azure the SSL.com name is *not* accepted, so a build that was
+still signed by eSigner cannot pass as migrated — matched by electron-updater's
+rule: a full distinguished name must agree on every attribute it lists, a bare
+name must equal the certificate's CN.
 
 ## Windows installer payloads
 
