@@ -19,7 +19,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write # azure/login (Windows signing) authenticates with an OIDC token, no client secret
 
 defaults:
   run:
@@ -100,11 +99,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     # Azure's federated credential is keyed on this environment name; a tag ref changes every release.
     environment: signing
+    permissions:
+      contents: write
+      id-token: write
     env:
       GH_TOKEN: ${{ needs.prepare.outputs.release_repo != github.repository && secrets.RELEASE_TOKEN || secrets.github_token }}
       VERSION: ${{ needs.prepare.outputs.version }}
       RELEASE_REPO: ${{ needs.prepare.outputs.release_repo }}
-      # Set all four to sign Windows builds with Microsoft Artifact Signing; unset, SSL.com signs. See RELEASE.md.
+      # See RELEASE.md, "Windows code signing".
       AZURE_SIGN_ENDPOINT: ${{ vars.AZURE_SIGN_ENDPOINT }}
       AZURE_SIGN_ACCOUNT: ${{ vars.AZURE_SIGN_ACCOUNT }}
       AZURE_SIGN_PROFILE: ${{ vars.AZURE_SIGN_PROFILE }}

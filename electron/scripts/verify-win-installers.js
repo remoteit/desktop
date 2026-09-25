@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
 // nsis7z (built 2019) silently skips payload entries it cannot decode; 3.47.1 and 3.48.1 lost
-// every executable on Windows ARM64 that way. See RELEASE.md, "Windows installer payloads".
-// On a signed build, every executable's signature is also checked the way electron-updater checks
-// an installer before running it. See RELEASE.md, "Windows code signing".
+// every executable on Windows ARM64 that way. See RELEASE.md, "Windows installer payloads" and
+// "Windows code signing".
 
 const fs = require('fs')
 const os = require('os')
@@ -36,7 +35,8 @@ const INSTALLER = new RegExp(
 const EXECUTABLES = [`${PRODUCT_NAME}.exe`, ...binaryNames.map(name => `resources/${name}.exe`)]
 const REQUIRED = [...EXECUTABLES, 'resources/app.asar']
 const SEVEN_Z_MAGIC = Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c])
-const CHECK_SIGNATURES = signingMode(process.env) !== 'skip'
+const SIGNED = signingMode(process.env) !== 'skip'
+const CHECK_SIGNATURES = SIGNED && process.platform === 'win32'
 const PUBLISHERS = expectedPublishers(process.env)
 
 function sevenZip() {
@@ -78,27 +78,21 @@ function listEntries(tool, archive) {
   return entries
 }
 
-// The command electron-updater runs on a downloaded installer (windowsExecutableCodeSignatureVerifier).
-function authenticode(file) {
-  const command = `Get-AuthenticodeSignature -LiteralPath '${file.replace(/'/g, "''")}' | ConvertTo-Json -Compress`
+// The cmdlet electron-updater's own check is built on (windowsExecutableCodeSignatureVerifier);
+// one PowerShell start covers every file of an installer.
+function authenticode(files) {
+  const list = files.map(f => `'${f.replace(/'/g, "''")}'`).join(',')
+  const command =
+    '[Console]::OutputEncoding = [Text.Encoding]::UTF8; ' +
+    `ConvertTo-Json -Compress -InputObject @(Get-AuthenticodeSignature -LiteralPath ${list} | ` +
+    "Select-Object Path, Status, StatusMessage, @{n='Subject';e={$_.SignerCertificate.Subject}}, " +
+    "@{n='TimeStamped';e={$null -ne $_.TimeStamperCertificate}})"
   const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command], {
     encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
+    timeout: 120000,
   })
-  if (result.status !== 0)
-    throw new Error(`Get-AuthenticodeSignature failed for ${file}: ${result.stderr || result.stdout}`)
-  return JSON.parse(result.stdout)
-}
-
-function signatureProblem(file, label) {
-  const signature = authenticode(file)
-  const subject = signature.SignerCertificate && signature.SignerCertificate.Subject
-  if (signature.Status !== 0) return `${label}: signature ${signature.StatusMessage || signature.Status}`
-  if (!publisherMatches(subject, PUBLISHERS)) {
-    return `${label}: signed by "${subject}", expected ${PUBLISHERS.map(p => `"${p}"`).join(' or ')}`
-  }
-  if (!signature.TimeStamperCertificate) return `${label}: no timestamp countersignature`
-  return null
+  if (result.status !== 0) throw new Error(`Get-AuthenticodeSignature failed: ${result.stderr || result.stdout}`)
+  return new Map(JSON.parse(result.stdout).map(s => [s.Path.toLowerCase(), s]))
 }
 
 function signatureProblems(tool, installer, payload, dir) {
@@ -107,7 +101,17 @@ function signatureProblems(tool, installer, payload, dir) {
   const result = spawnSync(tool, ['e', '-y', `-o${out}`, payload, ...names], { encoding: 'utf8' })
   if (result.status !== 0) throw new Error(`${tool} e failed for ${payload}: ${result.stderr || result.stdout}`)
   const files = [[installer, path.basename(installer)], ...EXECUTABLES.map(f => [path.join(out, path.basename(f)), f])]
-  return files.map(([file, label]) => signatureProblem(file, label)).filter(Boolean)
+  const signatures = authenticode(files.map(([file]) => file))
+  return files.flatMap(([file, label]) => {
+    const s = signatures.get(path.resolve(file).toLowerCase())
+    if (!s) return [`${label}: no signature result`]
+    if (s.Status !== 0) return [`${label}: signature ${s.StatusMessage || s.Status}`]
+    if (!publisherMatches(s.Subject, PUBLISHERS)) {
+      return [`${label}: signed by "${s.Subject}", expected ${PUBLISHERS.map(p => `"${p}"`).join(' or ')}`]
+    }
+    if (!s.TimeStamped) return [`${label}: no timestamp countersignature`]
+    return []
+  })
 }
 
 function verify(tool, installer, dir) {
@@ -123,8 +127,7 @@ function verify(tool, installer, dir) {
   }
   const present = new Set(entries.map(e => e.path))
   for (const f of REQUIRED) if (!present.has(f)) problems.push(`${f}: missing from payload`)
-  if (CHECK_SIGNATURES && process.platform === 'win32')
-    problems.push(...signatureProblems(tool, installer, payload, dir))
+  if (CHECK_SIGNATURES) problems.push(...signatureProblems(tool, installer, payload, dir))
   const coders = [...new Set(entries.flatMap(e => e.method.split(' ').map(t => t.split(':')[0])))].sort().join(' ')
   return { entries: entries.length, coders, problems }
 }
@@ -135,7 +138,7 @@ if (installers.length === 0) {
   console.error(`[verify-win-installers] no ${PRODUCT_NAME}-Installer-*.exe in ${distDir}`)
   process.exit(1)
 }
-if (CHECK_SIGNATURES && process.platform !== 'win32') {
+if (SIGNED && !CHECK_SIGNATURES) {
   console.log(
     '[verify-win-installers] signatures are checked on Windows only (Get-AuthenticodeSignature); skipping that part'
   )
@@ -152,7 +155,7 @@ try {
       console.error(`[verify-win-installers] ${name}: ${entries} entries, coders: ${coders}`)
       for (const p of problems) console.error(`  - ${p}`)
     } else {
-      const signed = CHECK_SIGNATURES && process.platform === 'win32' ? `, signed by ${PUBLISHERS[0]}` : ''
+      const signed = CHECK_SIGNATURES ? `, signed by ${PUBLISHERS[0]}` : ''
       console.log(`[verify-win-installers] ${name}: OK (${entries} entries, coders: ${coders}${signed})`)
     }
   }

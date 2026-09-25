@@ -229,11 +229,12 @@ adds only the signing part, chosen from the environment by
 `electron/scripts/win-signing.js`:
 
 - **`SKIP_SIGNING=true`** (the `skip_signing` input): no signing configuration
-  at all. Nothing is signed and nothing is verified.
-- **`AZURE_SIGN_*` set**: `win.azureSignOptions` — Microsoft Artifact Signing —
-  plus `forceCodeSigning`, so an artifact the service did not sign fails the build.
-- **Otherwise**: the SSL.com eSigner hook in `scripts/sign.js`, as before, plus
-  `forceCodeSigning`.
+  at all. Nothing is signed and nothing is verified. The config file also loads
+  `electron/.env`, which electron-builder itself would not, so a local build
+  that sets it there is unsigned too.
+- **`AZURE_SIGN_*` set**: `win.azureSignOptions` — Microsoft Artifact Signing.
+- **Otherwise**: package.json's `build` untouched, i.e. the SSL.com eSigner hook
+  in `scripts/sign.js`.
 
 The Azure side is four repository **variables** — `AZURE_SIGN_ENDPOINT` (the
 per-region URL, e.g. `https://wus2.codesigning.azure.net`), `AZURE_SIGN_ACCOUNT`,
@@ -254,12 +255,14 @@ proves the list. Keep the SSL.com name in the list until that certificate is
 retired, so a hotfix signed with it still installs over an Azure-signed release.
 
 After every signed Windows build, `verify-win-installers.js` runs
-`Get-AuthenticodeSignature` — the same call electron-updater makes — on each
-installer and on the executables inside its payload (`Remote.It.exe`,
-`remoteit.exe`, `connectd.exe`, `muxer.exe`, `demuxer.exe`; electron-builder
-signs all of them) and fails the build, removing the installers from the draft,
-unless every signature is valid, timestamped, and from an expected publisher.
-The expected publisher is `AZURE_SIGN_PUBLISHER` when set and the SSL.com name
+`Get-AuthenticodeSignature` — the cmdlet electron-updater's own check is built
+on — over each installer and the executables inside its payload
+(`Remote.It.exe`, `remoteit.exe`, `connectd.exe`, `muxer.exe`, `demuxer.exe`;
+electron-builder signs all of them) and fails the build, removing the installers
+from the draft, unless every signature is valid, timestamped, and from an
+expected publisher. This is the guard; electron-builder's `forceCodeSigning`
+cannot be, since it only fires when no signing configuration exists at all. The
+expected publisher is `AZURE_SIGN_PUBLISHER` when set and the SSL.com name
 otherwise, matched by electron-updater's rule: a full distinguished name must
 agree on every attribute it lists, a bare name must equal the certificate's CN.
 

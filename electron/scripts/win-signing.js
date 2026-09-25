@@ -1,4 +1,3 @@
-// Windows signer selection, shared by electron-builder.config.js and verify-win-installers.js.
 // See RELEASE.md, "Windows code signing".
 
 const { parseDn } = require('builder-util-runtime')
@@ -14,16 +13,11 @@ const AZURE_VARS = {
 }
 
 function azureSignOptions(env) {
-  const given = Object.entries(AZURE_VARS).filter(([, name]) => env[name])
-  if (given.length === 0) return null
-  const missing = Object.values(AZURE_VARS).filter(name => !env[name])
+  const options = Object.entries(AZURE_VARS).map(([key, name]) => [key, env[name]])
+  const missing = options.filter(([, value]) => !value).map(([key]) => AZURE_VARS[key])
+  if (missing.length === options.length) return null
   if (missing.length) throw new Error(`Azure signing is configured but ${missing.join(', ')} not set`)
-  return {
-    ...Object.fromEntries(given.map(([key, name]) => [key, env[name]])),
-    fileDigest: 'SHA256',
-    timestampRfc3161: 'http://timestamp.acs.microsoft.com',
-    timestampDigest: 'SHA256',
-  }
+  return Object.fromEntries(options)
 }
 
 /** 'skip' | 'azure' | 'signtool' */
@@ -50,23 +44,17 @@ function publisherMatches(subject, names) {
 
 /** The electron-builder config for this build; `base` is package.json's `build` after branding. */
 function withSigning(base, env) {
-  const { signtoolOptions, ...win } = base.win
-  switch (signingMode(env)) {
-    case 'skip':
-      return { ...base, win }
-    case 'azure': {
-      const azure = azureSignOptions(env)
-      return {
-        ...base,
-        forceCodeSigning: true,
-        win: { ...win, azureSignOptions: azure },
-        // Lands in app-update.yml as the list an installed app verifies its NEXT update against. The
-        // SSL.com name stays until that certificate is retired so a hotfix signed with it still installs.
-        publish: { provider: 'github', publisherName: [azure.publisherName, LEGACY_PUBLISHER] },
-      }
-    }
-    default:
-      return { ...base, forceCodeSigning: true, win: { ...win, signtoolOptions } }
+  const win = { ...base.win }
+  delete win.signtoolOptions
+  if (env.SKIP_SIGNING === 'true') return { ...base, win }
+  const azure = azureSignOptions(env)
+  if (!azure) return base
+  return {
+    ...base,
+    win: { ...win, azureSignOptions: azure },
+    // Lands in app-update.yml as the list an installed app verifies its NEXT update against. The
+    // SSL.com name stays until that certificate is retired so a hotfix signed with it still installs.
+    publish: { provider: 'github', ...base.publish, publisherName: expectedPublishers(env) },
   }
 }
 

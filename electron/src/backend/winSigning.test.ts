@@ -39,36 +39,39 @@ describe('signingMode', () => {
 })
 
 describe('withSigning', () => {
-  test('skip removes the signing hook and does not force signing', () => {
+  test('skip removes the signing hook and nothing else', () => {
     const config = withSigning(BASE, { SKIP_SIGNING: 'true' })
-    expect(config.win.signtoolOptions).toBeUndefined()
-    expect(config.win.azureSignOptions).toBeUndefined()
-    expect(config.forceCodeSigning).toBeUndefined()
-    expect(config.win.target).toEqual(['nsis'])
+    expect(config.win).toEqual({ target: ['nsis'] })
+    expect(config.productName).toBe('Remote.It')
   })
 
-  test('signtool keeps the hook and forces signing', () => {
-    const config = withSigning(BASE, {})
-    expect(config.win.signtoolOptions).toEqual(BASE.win.signtoolOptions)
-    expect(config.forceCodeSigning).toBe(true)
-    expect(config.publish).toBeUndefined()
+  test('signtool is the package.json config untouched', () => {
+    expect(withSigning(BASE, {})).toBe(BASE)
   })
 
-  test('azure replaces the hook, forces signing and lists both publishers, new one first', () => {
+  test('azure replaces the hook and lists both publishers, new one first', () => {
     const config = withSigning(BASE, AZURE)
-    expect(config.win.signtoolOptions).toBeUndefined()
-    expect(config.win.azureSignOptions).toEqual({
-      endpoint: AZURE.AZURE_SIGN_ENDPOINT,
-      codeSigningAccountName: 'remoteit',
-      certificateProfileName: 'remoteit-public',
-      publisherName: AZURE_PUBLISHER,
-      fileDigest: 'SHA256',
-      timestampRfc3161: 'http://timestamp.acs.microsoft.com',
-      timestampDigest: 'SHA256',
+    expect(config.win).toEqual({
+      target: ['nsis'],
+      azureSignOptions: {
+        endpoint: AZURE.AZURE_SIGN_ENDPOINT,
+        codeSigningAccountName: 'remoteit',
+        certificateProfileName: 'remoteit-public',
+        publisherName: AZURE_PUBLISHER,
+      },
     })
-    expect(config.forceCodeSigning).toBe(true)
     expect(config.publish).toEqual({ provider: 'github', publisherName: [AZURE_PUBLISHER, LEGACY_PUBLISHER] })
     expect(config.productName).toBe('Remote.It')
+  })
+
+  test('azure keeps a publish block a brand may have set', () => {
+    const config = withSigning({ ...BASE, publish: { provider: 'github', owner: 'cachengo', repo: 'desktop' } }, AZURE)
+    expect(config.publish).toEqual({
+      provider: 'github',
+      owner: 'cachengo',
+      repo: 'desktop',
+      publisherName: [AZURE_PUBLISHER, LEGACY_PUBLISHER],
+    })
   })
 })
 
