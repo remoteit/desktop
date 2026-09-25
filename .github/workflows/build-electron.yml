@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write # azure/login (Windows signing) authenticates with an OIDC token, no client secret
 
 defaults:
   run:
@@ -97,10 +98,17 @@ jobs:
   release:
     needs: prepare
     runs-on: ${{ matrix.os }}
+    # Azure's federated credential is keyed on this environment name; a tag ref changes every release.
+    environment: signing
     env:
       GH_TOKEN: ${{ needs.prepare.outputs.release_repo != github.repository && secrets.RELEASE_TOKEN || secrets.github_token }}
       VERSION: ${{ needs.prepare.outputs.version }}
       RELEASE_REPO: ${{ needs.prepare.outputs.release_repo }}
+      # Set all four to sign Windows builds with Microsoft Artifact Signing; unset, SSL.com signs. See RELEASE.md.
+      AZURE_SIGN_ENDPOINT: ${{ vars.AZURE_SIGN_ENDPOINT }}
+      AZURE_SIGN_ACCOUNT: ${{ vars.AZURE_SIGN_ACCOUNT }}
+      AZURE_SIGN_PROFILE: ${{ vars.AZURE_SIGN_PROFILE }}
+      AZURE_SIGN_PUBLISHER: ${{ vars.AZURE_SIGN_PUBLISHER }}
 
     strategy:
       # One platform failing should not cancel the others - a Linux packaging
@@ -132,10 +140,18 @@ jobs:
 
       - name: Install SSL.com Sign Tool on Windows
         shell: bash
-        if: matrix.os == 'windows-latest' && !inputs.skip_signing
+        if: matrix.os == 'windows-latest' && !inputs.skip_signing && vars.AZURE_SIGN_ENDPOINT == ''
         run: |
           curl https://www.ssl.com/download/codesigntool-for-windows/ --output ~/Downloads/CodeSignTool.zip
           unzip ~/Downloads/CodeSignTool.zip -d ~/CodeSignTool
+
+      - name: Sign in to Azure for Windows signing
+        if: matrix.os == 'windows-latest' && !inputs.skip_signing && vars.AZURE_SIGN_ENDPOINT != ''
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Install dependencies and build web assets
         run: |
@@ -165,9 +181,10 @@ jobs:
           cd electron
           npm run build
 
-      # nsis7z silently skips payload entries it cannot decode (3.47.1/3.48.1 ARM64). electron-builder
-      # has already attached the installers to the draft, so a failure pulls them back out.
-      - name: Verify Windows installers extract with nsis7z
+      # nsis7z silently skips payload entries it cannot decode (3.47.1/3.48.1 ARM64), and a signed build
+      # must be signed by the expected publisher throughout. electron-builder has already attached the
+      # installers to the draft, so a failure pulls them back out.
+      - name: Verify Windows installers (payload, signatures)
         if: matrix.os == 'windows-latest'
         run: |
           cd electron
@@ -176,7 +193,7 @@ jobs:
               for f in dist/*-Installer-*.exe dist/*-Installer-*.exe.blockmap dist/latest.yml; do
                 [ -e "$f" ] && gh release delete-asset "$VERSION" "$(basename "$f")" --repo "$RELEASE_REPO" --yes 2>/dev/null || true
               done
-              echo "::error::Windows installers removed from draft $VERSION in $RELEASE_REPO - their payload cannot be extracted by nsis7z (see above)"
+              echo "::error::Windows installers removed from draft $VERSION in $RELEASE_REPO - they failed verification (see above)"
             fi
             exit 1
           fi
