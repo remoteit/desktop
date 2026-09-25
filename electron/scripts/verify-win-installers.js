@@ -37,7 +37,7 @@ const REQUIRED = [...EXECUTABLES, 'resources/app.asar']
 const SEVEN_Z_MAGIC = Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c])
 const SIGNED = signingMode(process.env) !== 'skip'
 const CHECK_SIGNATURES = SIGNED && process.platform === 'win32'
-const PUBLISHERS = expectedPublishers(process.env)
+const PUBLISHERS = SIGNED ? expectedPublishers(process.env) : []
 
 function sevenZip() {
   if (process.env.SEVEN_ZIP) return process.env.SEVEN_ZIP
@@ -78,21 +78,31 @@ function listEntries(tool, archive) {
   return entries
 }
 
-// The cmdlet electron-updater's own check is built on (windowsExecutableCodeSignatureVerifier);
-// one PowerShell start covers every file of an installer.
+// The cmdlet electron-updater's own check is built on (windowsExecutableCodeSignatureVerifier); one
+// PowerShell start covers every file of an installer, and the results come back in input order.
 function authenticode(files) {
   const list = files.map(f => `'${f.replace(/'/g, "''")}'`).join(',')
   const command =
-    '[Console]::OutputEncoding = [Text.Encoding]::UTF8; ' +
+    '[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false; ' +
     `ConvertTo-Json -Compress -InputObject @(Get-AuthenticodeSignature -LiteralPath ${list} | ` +
-    "Select-Object Path, Status, StatusMessage, @{n='Subject';e={$_.SignerCertificate.Subject}}, " +
+    "Select-Object Status, StatusMessage, @{n='Subject';e={$_.SignerCertificate.Subject}}, " +
     "@{n='TimeStamped';e={$null -ne $_.TimeStamperCertificate}})"
-  const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command], {
-    encoding: 'utf8',
-    timeout: 120000,
-  })
-  if (result.status !== 0) throw new Error(`Get-AuthenticodeSignature failed: ${result.stderr || result.stdout}`)
-  return new Map(JSON.parse(result.stdout).map(s => [s.Path.toLowerCase(), s]))
+  const result = spawnSync(
+    'powershell.exe',
+    ['-NoProfile', '-NonInteractive', '-InputFormat', 'None', '-Command', command],
+    {
+      encoding: 'utf8',
+      timeout: 120000,
+    }
+  )
+  if (result.status !== 0) {
+    throw new Error(`Get-AuthenticodeSignature failed: ${result.error || result.stderr || result.stdout}`)
+  }
+  const signatures = JSON.parse(result.stdout.replace(/^\uFEFF/, ''))
+  if (signatures.length !== files.length) {
+    throw new Error(`Get-AuthenticodeSignature returned ${signatures.length} results for ${files.length} files`)
+  }
+  return signatures
 }
 
 function signatureProblems(tool, installer, payload, dir) {
@@ -102,9 +112,8 @@ function signatureProblems(tool, installer, payload, dir) {
   if (result.status !== 0) throw new Error(`${tool} e failed for ${payload}: ${result.stderr || result.stdout}`)
   const files = [[installer, path.basename(installer)], ...EXECUTABLES.map(f => [path.join(out, path.basename(f)), f])]
   const signatures = authenticode(files.map(([file]) => file))
-  return files.flatMap(([file, label]) => {
-    const s = signatures.get(path.resolve(file).toLowerCase())
-    if (!s) return [`${label}: no signature result`]
+  return files.flatMap(([, label], i) => {
+    const s = signatures[i]
     if (s.Status !== 0) return [`${label}: signature ${s.StatusMessage || s.Status}`]
     if (!publisherMatches(s.Subject, PUBLISHERS)) {
       return [`${label}: signed by "${s.Subject}", expected ${PUBLISHERS.map(p => `"${p}"`).join(' or ')}`]
@@ -127,7 +136,7 @@ function verify(tool, installer, dir) {
   }
   const present = new Set(entries.map(e => e.path))
   for (const f of REQUIRED) if (!present.has(f)) problems.push(`${f}: missing from payload`)
-  if (CHECK_SIGNATURES) problems.push(...signatureProblems(tool, installer, payload, dir))
+  if (CHECK_SIGNATURES && problems.length === 0) problems.push(...signatureProblems(tool, installer, payload, dir))
   const coders = [...new Set(entries.flatMap(e => e.method.split(' ').map(t => t.split(':')[0])))].sort().join(' ')
   return { entries: entries.length, coders, problems }
 }
@@ -155,7 +164,7 @@ try {
       console.error(`[verify-win-installers] ${name}: ${entries} entries, coders: ${coders}`)
       for (const p of problems) console.error(`  - ${p}`)
     } else {
-      const signed = CHECK_SIGNATURES ? `, signed by ${PUBLISHERS[0]}` : ''
+      const signed = CHECK_SIGNATURES ? ', signatures verified' : ''
       console.log(`[verify-win-installers] ${name}: OK (${entries} entries, coders: ${coders}${signed})`)
     }
   }
