@@ -110,9 +110,9 @@ function authenticode(files) {
 function signatureProblems(tool, installer, payload, dir) {
   const out = path.join(dir, path.basename(installer, '.exe'))
   const names = EXECUTABLES.map(f => f.split('/').join(path.sep))
-  const result = spawnSync(tool, ['e', '-y', `-o${out}`, payload, ...names], { encoding: 'utf8' })
-  if (result.status !== 0) throw new Error(`${tool} e failed for ${payload}: ${result.stderr || result.stdout}`)
-  const files = [[installer, path.basename(installer)], ...EXECUTABLES.map(f => [path.join(out, path.basename(f)), f])]
+  const result = spawnSync(tool, ['x', '-y', `-o${out}`, payload, ...names], { encoding: 'utf8' })
+  if (result.status !== 0) throw new Error(`${tool} x failed for ${payload}: ${result.stderr || result.stdout}`)
+  const files = [[installer, path.basename(installer)], ...EXECUTABLES.map(f => [path.join(out, ...f.split('/')), f])]
   const signatures = authenticode(files.map(([file]) => file))
   return files.flatMap(([, label], i) => {
     const s = signatures[i]
