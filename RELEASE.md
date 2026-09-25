@@ -258,10 +258,12 @@ After every signed Windows build, `verify-win-installers.js` runs
 `Get-AuthenticodeSignature` — the cmdlet electron-updater's own check is built
 on — over each installer and the executables inside its payload
 (`Remote.It.exe`, `remoteit.exe`, `connectd.exe`, `muxer.exe`, `demuxer.exe`;
-electron-builder signs all of them) and fails the build, removing the installers
-from the draft, unless every signature is valid, timestamped, and from an
-expected publisher. This is the guard; electron-builder's `forceCodeSigning`
-cannot be, since it only fires when no signing configuration exists at all. The
+electron-builder signs all of them) and reports any signature that is not valid,
+timestamped, and from an expected publisher. Under Azure that fails the build
+and removes the installers from the draft; under SSL.com it is a `::warning::`
+annotation only, because eSigner bills per signature and a finding must never
+force a re-sign. This is the guard; electron-builder's `forceCodeSigning` cannot
+be, since it only fires when no signing configuration exists at all. The
 expected publisher is `AZURE_SIGN_PUBLISHER` when set and the SSL.com name
 otherwise, matched by electron-updater's rule: a full distinguished name must
 agree on every attribute it lists, a bare name must equal the certificate's CN.

@@ -35,9 +35,11 @@ const INSTALLER = new RegExp(
 const EXECUTABLES = [`${PRODUCT_NAME}.exe`, ...binaryNames.map(name => `resources/${name}.exe`)]
 const REQUIRED = [...EXECUTABLES, 'resources/app.asar']
 const SEVEN_Z_MAGIC = Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c])
-const SIGNED = signingMode(process.env) !== 'skip'
-const CHECK_SIGNATURES = SIGNED && process.platform === 'win32'
-const PUBLISHERS = SIGNED ? expectedPublishers(process.env) : []
+const MODE = signingMode(process.env)
+const CHECK_SIGNATURES = MODE !== 'skip' && process.platform === 'win32'
+// eSigner bills per signature: under SSL.com a signature finding is reported, never a reason to re-sign.
+const ENFORCE_SIGNATURES = MODE === 'azure'
+const PUBLISHERS = MODE === 'skip' ? [] : expectedPublishers(process.env)
 
 function sevenZip() {
   if (process.env.SEVEN_ZIP) return process.env.SEVEN_ZIP
@@ -136,9 +138,12 @@ function verify(tool, installer, dir) {
   }
   const present = new Set(entries.map(e => e.path))
   for (const f of REQUIRED) if (!present.has(f)) problems.push(`${f}: missing from payload`)
-  if (CHECK_SIGNATURES && problems.length === 0) problems.push(...signatureProblems(tool, installer, payload, dir))
+  const warnings = []
+  if (CHECK_SIGNATURES && problems.length === 0) {
+    ;(ENFORCE_SIGNATURES ? problems : warnings).push(...signatureProblems(tool, installer, payload, dir))
+  }
   const coders = [...new Set(entries.flatMap(e => e.method.split(' ').map(t => t.split(':')[0])))].sort().join(' ')
-  return { entries: entries.length, coders, problems }
+  return { entries: entries.length, coders, problems, warnings }
 }
 
 const distDir = path.resolve(process.argv[2] || 'dist')
@@ -147,7 +152,7 @@ if (installers.length === 0) {
   console.error(`[verify-win-installers] no ${PRODUCT_NAME}-Installer-*.exe in ${distDir}`)
   process.exit(1)
 }
-if (SIGNED && !CHECK_SIGNATURES) {
+if (MODE !== 'skip' && !CHECK_SIGNATURES) {
   console.log(
     '[verify-win-installers] signatures are checked on Windows only (Get-AuthenticodeSignature); skipping that part'
   )
@@ -158,13 +163,14 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'win-installers-'))
 let failed = false
 try {
   for (const name of installers) {
-    const { entries, coders, problems } = verify(tool, path.join(distDir, name), tmp)
+    const { entries, coders, problems, warnings } = verify(tool, path.join(distDir, name), tmp)
+    for (const w of warnings) console.log(`::warning::[verify-win-installers] ${name}: ${w}`)
     if (problems.length) {
       failed = true
       console.error(`[verify-win-installers] ${name}: ${entries} entries, coders: ${coders}`)
       for (const p of problems) console.error(`  - ${p}`)
     } else {
-      const signed = CHECK_SIGNATURES ? ', signatures verified' : ''
+      const signed = !CHECK_SIGNATURES ? '' : warnings.length ? ', signature warnings above' : ', signatures verified'
       console.log(`[verify-win-installers] ${name}: OK (${entries} entries, coders: ${coders}${signed})`)
     }
   }
