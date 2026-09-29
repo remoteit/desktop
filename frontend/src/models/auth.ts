@@ -2,6 +2,7 @@ import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
+import pushNotifications from '../services/pushNotifications'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
@@ -379,6 +380,7 @@ export default createModel<RootModel>()({
       cloudController.init()
       cloudSync.init()
       network.tick()
+      pushNotifications.register()
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(_: void, state) {
@@ -416,6 +418,7 @@ export default createModel<RootModel>()({
       // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
       await dispatch.chat.signOut()
+      await pushNotifications.unregister()
       await persistor.purge()
       // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
       // signing out of the app must not sign the user out of login.* (their browser

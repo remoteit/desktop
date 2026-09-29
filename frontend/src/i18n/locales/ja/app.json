@@ -1322,6 +1322,7 @@
     "custom": "カスタム",
     "email": "メール",
     "globalSettings": "グローバル設定",
+    "push": "モバイルプッシュ",
     "systemNotification": "システム通知",
     "title": "デバイス通知"
   },
@@ -1760,6 +1761,16 @@
     "none": "なし",
     "openHelp": "接続がアクティブな間は、どのデバイスでも接続できます。"
   },
+  "push": {
+    "channel": "通知"
+  },
+  "pushCategories": {
+    "access": "アクセスの変更",
+    "account": "アカウントのセキュリティ",
+    "connect": "接続",
+    "jobs": "スクリプト",
+    "state": "オンライン / オフライン"
+  },
   "qualityDetails": {
     "availability": "可用性:",
     "availabilityCaption": "1日あたりの平均オンライン時間。",
@@ -2090,6 +2101,7 @@
     "notificationMethod": "方法",
     "notifications": "通知",
     "notifyEmail": "メール",
+    "notifyPush": "モバイルプッシュ",
     "notifySystem": "システム通知",
     "notifyWebhook": "Webhook",
     "profile": "プロフィール",
@@ -2209,6 +2221,11 @@
     "agentURLInvalid": "",
     "aiAgent": "",
     "apiTarget": "APIターゲット",
+    "apnsEnvironment": "プッシュ環境",
+    "apnsProduction": "APNs本番",
+    "apnsProductionHint": "TestFlightとApp Storeのビルド",
+    "apnsSandbox": "APNsサンドボックス",
+    "apnsSandboxHint": "開発用に署名されたビルドとシミュレーター",
     "backgroundWork": "",
     "backgroundWorkOff": "",
     "backgroundWorkOn": "",

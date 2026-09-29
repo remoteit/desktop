@@ -13,18 +13,22 @@ export async function graphQLSetAttributes(attributes: ILookup<string | number |
 export async function graphQLSetDeviceNotification(
   deviceID: string,
   emailNotifications?: boolean | null,
-  desktopNotifications?: boolean | null
+  desktopNotifications?: boolean | null,
+  pushNotifications?: boolean | null,
+  pushCategories?: IPushCategory[] | null
 ) {
   return await graphQLBasicRequest(
-    ` mutation SetDeviceNotification($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean ){
+    ` mutation SetDeviceNotification($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean, $pushNotifications: Boolean, $pushCategories: [String!] ){
         setNotificationSettings(
           serviceId: $deviceID, 
           emailNotifications: $emailNotifications, 
-          desktopNotifications: $desktopNotifications
+          desktopNotifications: $desktopNotifications,
+          pushNotifications: $pushNotifications,
+          pushCategories: $pushCategories
         )
       }
     `,
-    { emailNotifications, desktopNotifications, deviceID }
+    { emailNotifications, desktopNotifications, pushNotifications, pushCategories, deviceID }
   )
 }
 
@@ -447,15 +451,42 @@ export async function graphQLDeleteTag(name: string, accountId: string) {
 
 export async function graphQLNotificationSettings(params: INotificationSetting) {
   return await graphQLBasicRequest(
-    ` mutation NotificationSettings($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String) {
+    ` mutation NotificationSettings($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String, $pushNotifications: Boolean, $pushCategories: [String!]) {
         setNotificationSettings(
           emailNotifications: $emailNotifications, 
           desktopNotifications: $desktopNotifications, 
           urlNotifications: $urlNotifications, 
-          notificationUrl: $notificationUrl
+          notificationUrl: $notificationUrl,
+          pushNotifications: $pushNotifications,
+          pushCategories: $pushCategories
         )
       }`,
     params
+  )
+}
+
+export async function graphQLRegisterPushToken(
+  platform: 'ios' | 'android',
+  token: string,
+  apnsEnvironment: IApnsEnvironment,
+  appVersion: string
+) {
+  return await graphQLBasicRequest(
+    ` mutation RegisterPushToken($platform: String!, $token: String!, $apnsEnvironment: String!, $appVersion: String!) {
+        registerPushToken(platform: $platform, token: $token, apnsEnvironment: $apnsEnvironment, appVersion: $appVersion)
+      }`,
+    { platform, token, apnsEnvironment, appVersion },
+    true
+  )
+}
+
+export async function graphQLUnregisterPushToken(token: string) {
+  return await graphQLBasicRequest(
+    ` mutation UnregisterPushToken($token: String!) {
+        unregisterPushToken(token: $token)
+      }`,
+    { token },
+    true
   )
 }
 

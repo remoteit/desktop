@@ -3,18 +3,28 @@ import { TextField, Button, List, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { Gutters } from '../../components/Gutters'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { Link } from '../../components/Link'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
+import { DEFAULT_PUSH_CATEGORIES, PUSH_CATEGORIES } from '../../constants'
+import { usePushCategoryLabels } from '../../hooks/usePushCategoryLabels'
+import browser from '../../services/browser'
 import isURL from 'validator/lib/isURL'
 
 export const NotificationMode: React.FC = () => {
-  const { notificationUrl, urlNotifications, emailNotifications, desktopNotifications } = useSelector(
-    (state: State) => state.user.notificationSettings
-  )
+  const {
+    notificationUrl,
+    urlNotifications,
+    emailNotifications,
+    desktopNotifications,
+    pushNotifications,
+    pushCategories,
+  } = useSelector((state: State) => state.user.notificationSettings)
   const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
+  const pushCategoryLabels = usePushCategoryLabels()
   const { updateNotificationSettings } = dispatch.user
   const [webHookUrl, setWebhookUrl] = useState<string>(notificationUrl || '')
   const [loading, setLoading] = useState<boolean>(false)
@@ -25,7 +35,11 @@ export const NotificationMode: React.FC = () => {
     emailNotifications: emailNotifications,
     urlNotifications: urlNotifications,
     notificationUrl: webHookUrl,
+    pushNotifications,
+    pushCategories,
   }
+  const pushOn = pushNotifications !== false
+  const pushEnabled = pushCategories ?? DEFAULT_PUSH_CATEGORIES
 
   useEffect(() => {
     setWebhookUrl(notificationUrl || '')
@@ -37,6 +51,19 @@ export const NotificationMode: React.FC = () => {
 
   const onSystemChange = (value: boolean) => {
     updateNotificationSettings({ ...metadata, desktopNotifications: value })
+  }
+
+  const onPushChange = (value: boolean) => {
+    updateNotificationSettings({ ...metadata, pushNotifications: value })
+  }
+
+  const onPushCategoryChange = (category: IPushCategory) => {
+    updateNotificationSettings({
+      ...metadata,
+      pushCategories: pushEnabled.includes(category)
+        ? pushEnabled.filter(c => c !== category)
+        : [...pushEnabled, category],
+    })
   }
 
   const onWebChange = (value: boolean) => {
@@ -71,11 +98,24 @@ export const NotificationMode: React.FC = () => {
   return (
     <>
       <List>
-        <ListItemSwitch
-          label={t('settings.notifySystem', 'System notification')}
-          checked={desktopNotifications}
-          onClick={onSystemChange}
-        />
+        {!browser.isMobile && (
+          <ListItemSwitch
+            label={t('settings.notifySystem', 'System notification')}
+            checked={desktopNotifications}
+            onClick={onSystemChange}
+          />
+        )}
+        <ListItemSwitch label={t('settings.notifyPush', 'Mobile push')} checked={pushOn} onClick={onPushChange} />
+        {PUSH_CATEGORIES.map(category => (
+          <ListItemSetting
+            key={category}
+            quote
+            label={pushCategoryLabels[category]}
+            toggle={pushEnabled.includes(category)}
+            disabled={!pushOn}
+            onClick={() => onPushCategoryChange(category)}
+          />
+        ))}
         <ListItemSwitch label={t('settings.notifyEmail', 'Email')} checked={emailNotifications} onClick={onEmailChange} />
         <ListItemSwitch label={t('settings.notifyWebhook', 'Webhook')} checked={urlNotifications} onClick={onWebChange} />
       </List>

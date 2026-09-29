@@ -448,7 +448,9 @@ export default createModel<RootModel>()({
       graphQLSetDeviceNotification(
         device.id,
         device.notificationSettings.emailNotifications,
-        device.notificationSettings.desktopNotifications
+        device.notificationSettings.desktopNotifications,
+        device.notificationSettings.pushNotifications,
+        device.notificationSettings.pushCategories
       )
       dispatch.accounts.setDevice({ id: device.id, device })
     },

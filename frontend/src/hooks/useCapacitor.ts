@@ -1,4 +1,5 @@
 import network from '../services/Network'
+import pushNotifications from '../services/pushNotifications'
 import browser, { windowClose } from '../services/browser'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
@@ -22,10 +23,12 @@ function useCapacitor() {
     console.log('INITIALIZING CAPACITOR')
     await App.addListener('appUrlOpen', urlOpen)
     await App.addListener('appStateChange', handleAppStateChange)
+    await pushNotifications.listen()
   }
 
   function teardown() {
     App.removeAllListeners()
+    pushNotifications.teardown()
   }
 
   function handleAppStateChange(state: AppState) {
@@ -34,6 +37,7 @@ function useCapacitor() {
       network.focus()
       setTimeout(() => dispatch.ui.setTheme(undefined), 1000)
       if (state.isActive) dispatch.bluetooth.restartNotifications()
+      pushNotifications.register()
     }
   }
 

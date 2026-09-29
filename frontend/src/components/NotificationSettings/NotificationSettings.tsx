@@ -6,6 +6,7 @@ import { State, Dispatch } from '../../store'
 import {
   Chip,
   List,
+  ListItem,
   ListItemIcon,
   ListItemButton,
   ListItemSecondaryAction,
@@ -14,8 +15,12 @@ import {
   Typography,
 } from '@mui/material'
 import { IconButton } from '../../buttons/IconButton'
+import { ListItemSetting } from '../ListItemSetting'
 import { Title } from '../Title'
 import { Icon } from '../Icon'
+import { DEFAULT_PUSH_CATEGORIES, DEVICE_PUSH_CATEGORIES } from '../../constants'
+import { usePushCategoryLabels } from '../../hooks/usePushCategoryLabels'
+import browser from '../../services/browser'
 
 export const NotificationSettings: React.FC = () => {
   const { t } = useTranslation()
@@ -23,6 +28,9 @@ export const NotificationSettings: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
   const globalNotificationEmail = useSelector((state: State) => state.user.notificationSettings?.emailNotifications)
   const globalNotificationSystem = useSelector((state: State) => state.user.notificationSettings?.desktopNotifications)
+  const globalPushNotifications = useSelector((state: State) => state.user.notificationSettings?.pushNotifications)
+  const globalPushCategories = useSelector((state: State) => state.user.notificationSettings?.pushCategories)
+  const pushCategoryLabels = usePushCategoryLabels()
   const [emailNotification, setEmailNotification] = useState<boolean | undefined | null>(
     device?.notificationSettings?.emailNotifications
   )
@@ -68,6 +76,23 @@ export const NotificationSettings: React.FC = () => {
     await devices.setNotificationDevice(item)
   }
 
+  const pushOverride = device.notificationSettings?.pushCategories
+  const pushEnabled = (pushOverride ?? globalPushCategories ?? DEFAULT_PUSH_CATEGORIES).filter(category =>
+    DEVICE_PUSH_CATEGORIES.includes(category)
+  )
+  const pushOn = globalPushNotifications !== false
+
+  const setPushCategories = (pushCategories: IPushCategory[] | null) =>
+    devices.setNotificationDevice({
+      ...device,
+      notificationSettings: { ...device.notificationSettings, pushCategories },
+    })
+
+  const handlePushCategory = (category: IPushCategory) =>
+    setPushCategories(
+      pushEnabled.includes(category) ? pushEnabled.filter(c => c !== category) : [...pushEnabled, category]
+    )
+
   const onClose = (value: string) => {
     switch (value) {
       case 'inapp':
@@ -76,6 +101,7 @@ export const NotificationSettings: React.FC = () => {
         const itemInApp = {
           ...device,
           notificationSettings: {
+            ...device.notificationSettings,
             desktopNotifications: null,
           },
         }
@@ -88,10 +114,15 @@ export const NotificationSettings: React.FC = () => {
         const itemEmail = {
           ...device,
           notificationSettings: {
+            ...device.notificationSettings,
             emailNotifications: null,
           },
         }
         devices.setNotificationDevice(itemEmail)
+        break
+
+      case 'push':
+        setPushCategories(null)
         break
     }
   }
@@ -126,16 +157,35 @@ export const NotificationSettings: React.FC = () => {
         />
       </Typography>
       <List>
-        <ListItemButton onClick={handleInAppNotifications} dense>
+        {!browser.isMobile && (
+          <ListItemButton onClick={handleInAppNotifications} dense>
+            <ListItemIcon>
+              <Icon name={inapp ? 'bell-on' : 'bell-slash'} size="md" />
+            </ListItemIcon>
+            <ListItemText primary={t('notificationSettings.systemNotification', 'System notification')} />
+            <ListItemSecondaryAction>
+              {inAppOverridden && chipOverridden('inapp')}
+              <Switch edge="end" color="primary" checked={inapp} onClick={handleInAppNotifications} />
+            </ListItemSecondaryAction>
+          </ListItemButton>
+        )}
+        <ListItem dense>
           <ListItemIcon>
-            <Icon name={inapp ? 'bell-on' : 'bell-slash'} size="md" />
+            <Icon name={pushOn && pushEnabled.length ? 'bell-on' : 'bell-slash'} size="md" />
           </ListItemIcon>
-          <ListItemText primary={t('notificationSettings.systemNotification', 'System notification')} />
-          <ListItemSecondaryAction>
-            {inAppOverridden && chipOverridden('inapp')}
-            <Switch edge="end" color="primary" checked={inapp} onClick={handleInAppNotifications} />
-          </ListItemSecondaryAction>
-        </ListItemButton>
+          <ListItemText primary={t('notificationSettings.push', 'Mobile push')} />
+          <ListItemSecondaryAction>{pushOverride && chipOverridden('push')}</ListItemSecondaryAction>
+        </ListItem>
+        {DEVICE_PUSH_CATEGORIES.map(category => (
+          <ListItemSetting
+            key={category}
+            quote
+            label={pushCategoryLabels[category]}
+            toggle={pushEnabled.includes(category)}
+            disabled={!pushOn}
+            onClick={() => handlePushCategory(category)}
+          />
+        ))}
         <ListItemButton onClick={handleEmailNotifications} dense>
           <ListItemIcon>
             <Icon name={email ? 'bell-on' : 'bell-slash'} size="md" />

@@ -4,10 +4,10 @@ import { store } from '../store'
 
 const CLIENT_DEPRECATED = '121'
 
-export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
+export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}, silent = false) {
   const response = await post({ query, variables })
   if (response === 'ERROR') return response
-  const errors = graphQLGetErrors(response, false, { query, variables })
+  const errors = graphQLGetErrors(response, silent, { query, variables })
   return errors ? 'ERROR' : response
 }
 
