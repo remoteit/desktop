@@ -18,6 +18,8 @@ type IUserState = {
   admin: boolean
 }
 
+let notificationWrites: Promise<unknown> = Promise.resolve()
+
 const defaultState: IUserState = {
   id: '',
   email: '',
@@ -86,8 +88,10 @@ export default createModel<RootModel>()({
     async updateNotificationSettings(metadata: INotificationSetting) {
       // Stored before the request: a second switch flipped while it is in flight builds on this one, not the stale store
       dispatch.user.set({ notificationSettings: metadata })
-      const result = await graphQLNotificationSettings(metadata)
-      if (result === 'ERROR') await dispatch.user.fetch()
+      // Each write is a full snapshot, so they go out in order: an earlier one landing last would undo the later
+      const write = notificationWrites.then(() => graphQLNotificationSettings(metadata))
+      notificationWrites = write.catch(() => {})
+      if ((await write) === 'ERROR') await dispatch.user.fetch()
     },
     async changeLanguage(language: string) {
       await axios.post(

@@ -47,10 +47,10 @@ function save({ value }: Token) {
 
 async function saveToken(token: string) {
   if (closed || !store.getState().auth.user) return
-  const apnsEnvironment = store.getState().ui.apis.apnsEnvironment || APNS_ENVIRONMENT
-  const result = await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', token, apnsEnvironment, version)
-  if (result === 'ERROR') return
+  // Kept whatever the answer: a lost response may still have registered it, and sign-out has to clean it up
   window.localStorage.setItem(TOKEN_KEY, token)
+  const apnsEnvironment = store.getState().ui.apis.apnsEnvironment || APNS_ENVIRONMENT
+  await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', token, apnsEnvironment, version)
 }
 
 function register() {
@@ -87,13 +87,16 @@ async function requestToken() {
 
 async function unregister() {
   closed = true
-  try {
-    if (await withTimeout(dropToken(), PUSH_UNREGISTER_TIMEOUT)) return
-    // Nothing can retry once signed out, so kill the token on the phone or the account's pushes keep arriving
-    await PushNotifications.unregister()
-  } catch (error) {
-    console.warn('PUSH UNREGISTER FAILED', error)
-  }
+  const dropped = await withTimeout(
+    dropToken().catch(error => {
+      console.warn('PUSH UNREGISTER FAILED', error)
+      return false
+    }),
+    PUSH_UNREGISTER_TIMEOUT
+  )
+  if (dropped) return
+  // Nothing can retry once signed out, so kill the token on the phone or the account's pushes keep arriving
+  await PushNotifications.unregister().catch(error => console.warn('PUSH NATIVE UNREGISTER FAILED', error))
 }
 
 async function dropToken() {

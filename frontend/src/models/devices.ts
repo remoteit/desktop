@@ -100,6 +100,8 @@ type IDeviceAccountState = {
   [accountId: string]: IDeviceState
 }
 
+let notificationWrites: Promise<unknown> = Promise.resolve()
+
 const defaultAccountState: IDeviceAccountState = {
   default: { ...defaultState },
 }
@@ -445,7 +447,10 @@ export default createModel<RootModel>()({
     },
 
     async setNotificationDevice({ device, settings }: { device: IDevice; settings: IDevice['notificationSettings'] }) {
-      graphQLSetDeviceNotification(device.id, settings)
+      // In order: a category change sends the whole list, so an earlier one landing last would undo the later
+      notificationWrites = notificationWrites
+        .then(() => graphQLSetDeviceNotification(device.id, settings))
+        .catch(() => {})
       dispatch.accounts.setDevice({
         id: device.id,
         device: { ...device, notificationSettings: { ...device.notificationSettings, ...settings } },

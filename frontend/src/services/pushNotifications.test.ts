@@ -104,12 +104,12 @@ describe('register', () => {
     expect(register).toHaveBeenCalledWith('ios', 'apns-token', 'production', '3.48.10')
   })
 
-  it('does not keep a token the server refused', async () => {
+  it('keeps a token whose registration failed, since a lost response may have registered it', async () => {
     register.mockResolvedValueOnce('ERROR' as any)
     await pushNotifications.register()
     await listeners.registration({ value: 'apns-token' })
 
-    expect(window.localStorage.getItem('app:pushToken')).toBeNull()
+    expect(window.localStorage.getItem('app:pushToken')).toBe('apns-token')
   })
 
   it('never touches the plugin on an Android build without Firebase', async () => {
@@ -249,5 +249,6 @@ describe('unregister', () => {
     window.localStorage.setItem('app:pushToken', 'apns-token')
     unregister.mockRejectedValueOnce(new Error('no token'))
     await expect(pushNotifications.unregister()).resolves.toBeUndefined()
+    expect(plugin.unregister).toHaveBeenCalled()
   })
 })
