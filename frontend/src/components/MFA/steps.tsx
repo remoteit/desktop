@@ -3,12 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { Box, Button, Radio, RadioGroup, FormControlLabel, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
 import { CopyCodeBlock } from '../CopyCodeBlock'
-import { MfaMethod, METHOD_LABEL } from '../../services/passportSelf'
+import { FactorKind, KIND_LABEL } from '../../services/accountSecurity'
 
-/* The steps every credential change walks through — re-proving the password, answering a
-   relayed code, choosing a factor, keeping the recovery codes — rendered the same way whether
-   the change is an MFA method, a passkey or the password itself. Each surface keeps its own
-   step machine and hands these the state. */
+/* The steps a sign-in factor change walks through — a password where the credential store asks for
+   one, a code, a choice of factor, keeping the recovery codes — rendered the same way for every
+   change. The surface keeps its own step machine and hands these the state. */
 
 const Buttons: React.FC<{ primary: string; disabled: boolean; onPrimary: () => void; onCancel: () => void }> = ({
   primary,
@@ -36,8 +35,11 @@ const ErrorLine: React.FC<{ error?: string }> = ({ error }) =>
     </Typography>
   ) : null
 
-/** Re-prove the password. `children` are fields the change needs first (a phone number). */
+/** A password, with what it is for. `children` are fields the change needs first (a phone number). */
 export const PasswordStep: React.FC<{
+  prompt: string
+  label?: string
+  autoComplete?: string
   password: string
   onPassword: (value: string) => void
   error?: string
@@ -46,22 +48,20 @@ export const PasswordStep: React.FC<{
   onSubmit: () => void
   onCancel: () => void
   children?: React.ReactNode
-}> = ({ password, onPassword, error, busy, incomplete, onSubmit, onCancel, children }) => {
+}> = ({ prompt, label, autoComplete, password, onPassword, error, busy, incomplete, onSubmit, onCancel, children }) => {
   const { t } = useTranslation()
   return (
     <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
       <Typography variant="body2" gutterBottom>
-        {t(
-          'mfa.confirmPassword',
-          'Confirm your password to continue — changing a credential re-proves the one you hold.'
-        )}
+        {prompt}
       </Typography>
       {children}
       <TextField
         autoFocus={!children}
         variant="filled"
         type="password"
-        label={t('changePassword.currentPassword', 'Current Password')}
+        label={label ?? t('changePassword.currentPassword', 'Current Password')}
+        inputProps={{ autoComplete: autoComplete ?? 'current-password' }}
         value={password}
         onChange={e => onPassword(e.target.value)}
       />
@@ -93,7 +93,8 @@ export const CodeStep: React.FC<{
       <TextField
         autoFocus
         variant="filled"
-        label={t('changePassword.mfaCode', 'Authentication code')}
+        label={t('mfa.code', 'Code')}
+        inputProps={{ inputMode: 'numeric', autoComplete: 'one-time-code' }}
         value={code}
         onChange={e => onCode(e.target.value.trim())}
       />
@@ -110,9 +111,9 @@ export const CodeStep: React.FC<{
 
 /** Choose a factor from the ones the AS offers this account. */
 export const ChoiceStep: React.FC<{
-  options: MfaMethod[]
-  choice: MfaMethod
-  onChoice: (value: MfaMethod) => void
+  options: FactorKind[]
+  choice: FactorKind
+  onChoice: (value: FactorKind) => void
   error?: string
   busy: boolean
   onSubmit: () => void
@@ -124,13 +125,13 @@ export const ChoiceStep: React.FC<{
       <Typography variant="body2" gutterBottom>
         {t('mfa.choose', 'How would you like to get your code?')}
       </Typography>
-      <RadioGroup value={choice} onChange={e => onChoice(e.target.value as MfaMethod)}>
+      <RadioGroup value={choice} onChange={e => onChoice(e.target.value as FactorKind)}>
         {options.map(o => (
           <FormControlLabel
             key={o}
             value={o}
             control={<Radio size="small" />}
-            label={t(`mfa.method.${o}`, METHOD_LABEL[o] ?? o)}
+            label={t(`mfa.method.${o}`, KIND_LABEL[o] ?? o)}
           />
         ))}
       </RadioGroup>
@@ -150,7 +151,7 @@ export const RecoveryCodes: React.FC<{ codes: string[]; onDone: () => void }> = 
       <Typography variant="body2" gutterBottom>
         {t(
           'mfa.codesTitle',
-          'Save your recovery codes — each can be used once if you lose your authenticator. They will not be shown again.'
+          'Save your recovery codes — each manages one change when your phone or key is gone. They will not be shown again.'
         )}
       </Typography>
       <CopyCodeBlock value={codes.join('\n')} sx={{ marginBottom: 2 }} />

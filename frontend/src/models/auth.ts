@@ -9,7 +9,7 @@ import { SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT } from '../consta
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { selfChangePassword, selfChallenge } from '../services/passportSelf'
+import { changePassword as changeAccountPassword } from '../services/accountSecurity'
 import { signOutEverywhere } from '../services/permitteerAccount'
 import {
   oidcConfigured,
@@ -52,8 +52,29 @@ export interface AuthState {
   /** Seconds the server asked us to wait, when it said so (429). */
   signInRetryAfter?: number
   signingIn?: boolean
-  passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
+}
+
+/** What a refused password change means, in the person's words. The AS's own sentence is the
+ *  fallback: it names the policy a weak password missed. */
+function passwordError(error: string, description?: string): string {
+  switch (error) {
+    case 'bad_password':
+      return i18n.t('notices:auth.passwordIncorrect', { defaultValue: 'Current password is incorrect.' })
+    case 'locked':
+      return i18n.t('notices:auth.passwordLocked', {
+        defaultValue: 'Too many wrong attempts. Try again in a few minutes.',
+      })
+    case 'weak_password':
+      return description || i18n.t('notices:auth.passwordWeak', { defaultValue: 'Choose a stronger password.' })
+    case 'no_password_set':
+    case 'no_credential':
+      return i18n.t('notices:auth.passwordNotHeld', {
+        defaultValue: 'This account has no password yet — set one from the link we email you.',
+      })
+    default:
+      return description || i18n.t('notices:auth.passwordFailed', { defaultValue: 'Something went wrong — try again.' })
+  }
 }
 
 const defaultState: AuthState = {
@@ -232,49 +253,18 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: i18n.t('notices:auth.loginFailed', { defaultValue: 'Login failed.' }) })
       }
     },
-    // Native password change over the Passport self-API (Phase 2b): the current password
-    // is the proof of possession; accounts whose store challenges (pool MFA) get a code
-    // continuation the ChangePassword form renders.
+    // The password, on the AS's account API (permitteer docs/unified-idp.md): the current password
+    // is the proof, and nothing is relayed — a store that would challenge a factor here is taken as
+    // having accepted the password. It signs no other session out; the confirm dialog says so.
     async changePassword(passwordValues: IPasswordValue): Promise<boolean> {
-      const r = await selfChangePassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
-      if (r.status === 'ok') {
-        dispatch.auth.set({ passwordChallenge: undefined })
+      const r = await changeAccountPassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
+      if (r.ok) {
         dispatch.ui.set({
           successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
         })
         return true
       }
-      if (r.status === 'mfa' && r.challenge) {
-        dispatch.auth.set({ passwordChallenge: { challenge: r.challenge, hint: r.hint } })
-        return false
-      }
-      dispatch.ui.set({
-        errorMessage:
-          r.error === 'invalid_password'
-            ? 'Current password is incorrect.'
-            : r.error === 'weak_password'
-            ? r.error_description || 'New password does not meet the requirements.'
-            : r.error_description || 'An unexpected error occurred. Please try again.',
-      })
-      return false
-    },
-    /** Answer the store's second-factor challenge raised by changePassword. */
-    async completePasswordChallenge(code: string, state): Promise<boolean> {
-      const pending = state.auth.passwordChallenge
-      if (!pending) return false
-      const r = await selfChallenge(pending.challenge, { code })
-      if (r.status === 'ok') {
-        dispatch.auth.set({ passwordChallenge: undefined })
-        dispatch.ui.set({
-          successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
-        })
-        return true
-      }
-      // invalid_code re-arms the SAME step under a fresh handle — a typo never restarts.
-      dispatch.auth.set({ passwordChallenge: r.challenge ? { challenge: r.challenge, hint: pending.hint } : undefined })
-      dispatch.ui.set({
-        errorMessage: r.challenge ? 'That code didn’t match — try again.' : 'The request expired — start over.',
-      })
+      dispatch.ui.set({ errorMessage: passwordError(r.error, r.description) })
       return false
     },
     // The 401 recovery path (services/post.ts): drop the renderer cache and let the

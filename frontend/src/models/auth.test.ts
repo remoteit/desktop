@@ -6,17 +6,25 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // the hoisted vi.mock factory runs. `browser` and the live `store` state are hoisted MUTABLE
 // objects so individual tests can steer the electron/backend branch and what the effects
 // re-read from the store after a teardown.
-const { oidcStart, signOutEverywhere, oidcGrantStale, oidcMcpDetailReady, oidcActor, browser, storeState } = vi.hoisted(
-  () => ({
-    oidcStart: vi.fn(),
-    signOutEverywhere: vi.fn(),
-    oidcGrantStale: vi.fn(),
-    oidcActor: vi.fn(),
-    oidcMcpDetailReady: vi.fn(),
-    browser: { isElectron: false, hasBackend: false },
-    storeState: { auth: {} as Record<string, unknown> },
-  })
-)
+const {
+  oidcStart,
+  signOutEverywhere,
+  changePassword,
+  oidcGrantStale,
+  oidcMcpDetailReady,
+  oidcActor,
+  browser,
+  storeState,
+} = vi.hoisted(() => ({
+  oidcStart: vi.fn(),
+  changePassword: vi.fn(),
+  signOutEverywhere: vi.fn(),
+  oidcGrantStale: vi.fn(),
+  oidcActor: vi.fn(),
+  oidcMcpDetailReady: vi.fn(),
+  browser: { isElectron: false, hasBackend: false },
+  storeState: { auth: {} as Record<string, unknown> },
+}))
 
 // signInFailure() tests `error instanceof OidcError`, so the mock must export a real class
 // (an undefined right-hand side of instanceof throws rather than returning false).
@@ -28,6 +36,7 @@ vi.mock('../services/oidc', () => ({
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
+vi.mock('../services/accountSecurity', () => ({ changePassword }))
 vi.mock('../services/Controller', () => ({ default: {}, emit: vi.fn(() => false) }))
 vi.mock('../services/CloudSync', () => ({ default: {} }))
 vi.mock('../services/cloudController', () => ({ default: {} }))
@@ -69,6 +78,7 @@ const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
 beforeEach(() => {
   oidcStart.mockReset()
+  changePassword.mockReset()
   signOutEverywhere.mockReset().mockResolvedValue({ status: 200, body: { ended: 1, pool: 'skipped' } })
   oidcActor.mockReset().mockReturnValue(null)
   oidcGrantStale.mockReset()
@@ -217,5 +227,38 @@ describe('auth model — a dropped, unauthenticated backend socket still explain
     await effectsFor(dispatch).disconnect(undefined, unauthenticated)
     expect(dispatch.auth.set).toHaveBeenCalledWith(aFailureShowing('backend said no'))
     expect(dispatch.auth.set).not.toHaveBeenCalledWith(aFailureShowing('Sign in failed, please try again.'))
+  })
+})
+
+/* The password lives on the AS's account API: the current password is the whole proof, so a change
+   either lands or is refused with a reason — there is no challenge to carry between two calls. */
+describe('auth model — the password change is one call to the AS', () => {
+  const values = { currentPassword: 'old-one', password: 'new-one' }
+
+  it('changes the password and says so', async () => {
+    changePassword.mockResolvedValue({ ok: true, data: { changed: true } })
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).changePassword(values)).toBe(true)
+    expect(changePassword).toHaveBeenCalledWith('old-one', 'new-one')
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ successMessage: 'notices:auth.passwordChanged' })
+  })
+
+  it('names a wrong current password rather than repeating the server', async () => {
+    changePassword.mockResolvedValue({ ok: false, status: 403, error: 'bad_password', description: 'nope' })
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).changePassword(values)).toBe(false)
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.passwordIncorrect' })
+  })
+
+  it('keeps the AS’s sentence for a weak password — it names the rule that was missed', async () => {
+    changePassword.mockResolvedValue({
+      ok: false,
+      status: 400,
+      error: 'weak_password',
+      description: 'Choose a password of at least 12 characters.',
+    })
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).changePassword(values)
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'Choose a password of at least 12 characters.' })
   })
 })

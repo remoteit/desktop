@@ -7,7 +7,12 @@
     "emailModified": "Correo electrónico modificado correctamente.",
     "invalidFormat": "Formato no válido.",
     "loginFailed": "Error al iniciar sesión.",
-    "passwordChanged": "Contraseña cambiada correctamente."
+    "passwordChanged": "Contraseña cambiada correctamente.",
+    "passwordFailed": "Algo salió mal; inténtalo de nuevo.",
+    "passwordIncorrect": "La contraseña actual es incorrecta.",
+    "passwordLocked": "Demasiados intentos fallidos. Inténtalo de nuevo en unos minutos.",
+    "passwordNotHeld": "Esta cuenta aún no tiene contraseña; créala desde el enlace que te enviamos por correo.",
+    "passwordWeak": "Elige una contraseña más segura."
   },
   "chat": {
     "authRequired": "Se requiere autenticación del agente — inicie sesión para continuar.",

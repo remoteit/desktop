@@ -7,7 +7,12 @@
     "emailModified": "メールアドレスを変更しました。",
     "invalidFormat": "形式が正しくありません。",
     "loginFailed": "ログインに失敗しました。",
-    "passwordChanged": "パスワードを変更しました。"
+    "passwordChanged": "パスワードを変更しました。",
+    "passwordFailed": "問題が発生しました。もう一度お試しください。",
+    "passwordIncorrect": "現在のパスワードが正しくありません。",
+    "passwordLocked": "失敗回数が多すぎます。数分後にもう一度お試しください。",
+    "passwordNotHeld": "このアカウントにはまだパスワードがありません。メールでお送りするリンクから設定してください。",
+    "passwordWeak": "より強力なパスワードを選んでください。"
   },
   "chat": {
     "authRequired": "エージェントの認証が必要です — サインインして続行してください。",
