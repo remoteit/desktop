@@ -84,9 +84,10 @@ export default createModel<RootModel>()({
       dispatch.ui.setLanguage(language as LanguageMode)
     },
     async updateNotificationSettings(metadata: INotificationSetting) {
-      const result = await graphQLNotificationSettings(metadata)
-      if (result === 'ERROR') return
+      // Stored before the request: a second switch flipped while it is in flight builds on this one, not the stale store
       dispatch.user.set({ notificationSettings: metadata })
+      const result = await graphQLNotificationSettings(metadata)
+      if (result === 'ERROR') await dispatch.user.fetch()
     },
     async changeLanguage(language: string) {
       await axios.post(

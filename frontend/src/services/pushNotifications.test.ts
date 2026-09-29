@@ -14,6 +14,7 @@ const { plugin, listeners, state, set, browser, constants, register, unregister,
       requestPermissions: vi.fn(),
       createChannel: vi.fn(async () => {}),
       register: vi.fn(async () => {}),
+      unregister: vi.fn(async () => {}),
     },
     state: { auth: { user: { id: 'user-1' } as any }, ui: { apis: {} as { apnsEnvironment?: string } } },
     set: vi.fn(),
@@ -189,11 +190,32 @@ describe('unregister', () => {
 
     expect(unregister).toHaveBeenCalledWith('apns-token')
     expect(window.localStorage.getItem('app:pushToken')).toBeNull()
+    expect(plugin.unregister).not.toHaveBeenCalled()
   })
 
   it('does nothing without a token', async () => {
     await pushNotifications.unregister()
     expect(unregister).not.toHaveBeenCalled()
+    expect(plugin.unregister).not.toHaveBeenCalled()
+  })
+
+  it('kills the token on the phone when the server keeps it', async () => {
+    window.localStorage.setItem('app:pushToken', 'apns-token')
+    unregister.mockResolvedValueOnce('ERROR' as any)
+    await pushNotifications.unregister()
+
+    expect(plugin.unregister).toHaveBeenCalled()
+  })
+
+  it('ignores a token that arrives once sign-out has begun, until the next sign-in', async () => {
+    await pushNotifications.register()
+    await pushNotifications.unregister()
+    await listeners.registration({ value: 'late-token' })
+    expect(register).not.toHaveBeenCalled()
+
+    await pushNotifications.register()
+    await listeners.registration({ value: 'next-token' })
+    expect(register).toHaveBeenCalledWith('ios', 'next-token', 'sandbox', '3.48.10')
   })
 
   it('gives up on a stalled server', async () => {
@@ -204,13 +226,15 @@ describe('unregister', () => {
     await vi.advanceTimersByTimeAsync(3000)
 
     await expect(done).resolves.toBeUndefined()
+    expect(plugin.unregister).toHaveBeenCalled()
   })
 
   it('waits for a registration still in flight, so it cannot land after sign-out', async () => {
     let finish: (value: any) => void = () => {}
     register.mockReturnValueOnce(new Promise(resolve => (finish = resolve)))
-    await pushNotifications.listen()
+    await pushNotifications.register()
     listeners.registration({ value: 'apns-token' })
+    await vi.waitFor(() => expect(register).toHaveBeenCalled())
     const done = pushNotifications.unregister()
     await Promise.resolve()
     expect(unregister).not.toHaveBeenCalled()

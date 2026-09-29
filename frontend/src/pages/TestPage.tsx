@@ -54,7 +54,7 @@ export const TestPage: React.FC = () => {
 
   async function setApnsEnvironment(value: IApnsEnvironment) {
     await setAPIPreferences({ apnsEnvironment: value === APNS_ENVIRONMENT ? undefined : value })
-    pushNotifications.register()
+    pushNotifications.refresh()
   }
 
   // The stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c).

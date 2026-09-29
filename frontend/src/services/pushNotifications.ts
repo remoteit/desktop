@@ -13,6 +13,8 @@ const TOKEN_KEY = 'app:pushToken'
 let listening: Promise<unknown> | undefined
 let registering: Promise<void> | undefined
 let saving: Promise<void> = Promise.resolve()
+// Set by sign-out, cleared only by the next sign-in: a token callback in between would re-register a signed-out phone
+let closed = false
 
 function listen() {
   listening ??= Promise.all([
@@ -44,15 +46,20 @@ function save({ value }: Token) {
 }
 
 async function saveToken(token: string) {
-  if (!store.getState().auth.user) return
+  if (closed || !store.getState().auth.user) return
   const apnsEnvironment = store.getState().ui.apis.apnsEnvironment || APNS_ENVIRONMENT
   const result = await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', token, apnsEnvironment, version)
   if (result === 'ERROR') return
   window.localStorage.setItem(TOKEN_KEY, token)
 }
 
-// The permission prompt deactivates and reactivates the app, whose foreground handler registers again
 function register() {
+  closed = false
+  return refresh()
+}
+
+// The permission prompt deactivates and reactivates the app, whose foreground handler registers again
+function refresh() {
   registering ??= requestToken().finally(() => (registering = undefined))
   return registering
 }
@@ -79,8 +86,11 @@ async function requestToken() {
 }
 
 async function unregister() {
+  closed = true
   try {
-    await withTimeout(dropToken(), PUSH_UNREGISTER_TIMEOUT)
+    if (await withTimeout(dropToken(), PUSH_UNREGISTER_TIMEOUT)) return
+    // Nothing can retry once signed out, so kill the token on the phone or the account's pushes keep arriving
+    await PushNotifications.unregister()
   } catch (error) {
     console.warn('PUSH UNREGISTER FAILED', error)
   }
@@ -89,9 +99,9 @@ async function unregister() {
 async function dropToken() {
   await saving
   const token = window.localStorage.getItem(TOKEN_KEY)
-  if (!token) return
+  if (!token) return true
   window.localStorage.removeItem(TOKEN_KEY)
-  await graphQLUnregisterPushToken(token)
+  return (await graphQLUnregisterPushToken(token)) !== 'ERROR'
 }
 
-export default { listen, teardown, register, unregister }
+export default { listen, teardown, register, refresh, unregister }
