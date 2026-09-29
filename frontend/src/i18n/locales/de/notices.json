@@ -7,7 +7,12 @@
     "emailModified": "E-Mail-Adresse erfolgreich geändert.",
     "invalidFormat": "Ungültiges Format.",
     "loginFailed": "Anmeldung fehlgeschlagen.",
-    "passwordChanged": "Passwort erfolgreich geändert."
+    "passwordChanged": "Passwort erfolgreich geändert.",
+    "passwordFailed": "Etwas ist schiefgelaufen – bitte erneut versuchen.",
+    "passwordIncorrect": "Das aktuelle Passwort ist falsch.",
+    "passwordLocked": "Zu viele Fehlversuche. Bitte in ein paar Minuten erneut versuchen.",
+    "passwordNotHeld": "Dieses Konto hat noch kein Passwort – lege eines über den Link fest, den wir dir per E-Mail senden.",
+    "passwordWeak": "Wähle ein stärkeres Passwort."
   },
   "chat": {
     "authRequired": "Agentenauthentifizierung erforderlich — melden Sie sich an, um fortzufahren.",

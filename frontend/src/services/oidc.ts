@@ -5,7 +5,6 @@ import {
   OAUTH_ISSUER,
   OAUTH_CLIENT_ID,
   OAUTH_GRAPHQL_RESOURCE,
-  OAUTH_PASSPORT_RESOURCE,
   OAUTH_MCP_RESOURCE,
   OAUTH_MCP_DETAIL,
   OAUTH_AGENT_ACTOR,
@@ -49,7 +48,7 @@ const FLOW_KEY = 'oidc.flow'
 // fast path; the shared record is the fallback, single-use, pruned after FLOW_TTL_MS. A support
 // tab keeps its flow tab-scoped, like its tokens — a support launch never arrives by email.
 const FLOW_SHARED_PREFIX = 'oidc.flow:'
-const FLOW_TTL_MS = 24 * 60 * 60 * 1000 // the set-password link's own life (Passport mints it for 24h)
+const FLOW_TTL_MS = 24 * 60 * 60 * 1000 // the set-password link's own life (the AS mints it for 24h)
 const TOKENS_KEY = 'oidc.tokens'
 // What the grant behind those tokens was last written from (see oidcGrantStale).
 const DECLARATION_KEY = 'oidc.declaration'
@@ -350,8 +349,8 @@ const redirectUri = () => (browser.isNative ? PROTOCOL + 'authCallback' : window
 /** What this build asks for, per audience. ONE source of truth: the authorize request is
  *  built from it AND the boot check measures tokens against it, so a slice added in a deploy
  *  cannot end up requested-but-never-checked (or checked-but-never-requested).
- *  `passport_account` gates the native security settings; `permitteer_account` is Connected
- *  Apps against the AS's own account API (plan D6) — list + revoke. The graphql audience
+ *  `permitteer_account` is the AS's own account API: Connected Apps (plan D6), and the Security
+ *  page's password and sign-in factors (permitteer docs/unified-idp.md). The graphql audience
  *  stays pure scope-`full` and carries no details, so it is not listed here. */
 // The MCP detail-type NAME is the resource's to declare, not this bundle's to pin: it is
 // DISCOVERED from the MCP PRM (RFC 9728 — authorization_details_types_supported and the rich
@@ -439,15 +438,25 @@ const declared = (): Array<{
   actor?: string
   locations?: string[]
 }> => [
-  { resource: OAUTH_PASSPORT_RESOURCE, type: 'passport_account', actions: ['profile.read', 'credentials.write'] },
   // accounts.read: the OTHER accounts signed in on this browser, served by the account API from
   // this token's session — first-party apps only (permitteer docs/browser-accounts.md).
   // devices.write: "Sign out everywhere" (SecurityPage) — every session of the account, this
   // one included, ended in one call at the AS (permitteer docs/remoteit-desktop-login.md 4e).
+  // credentials.*: the password the AS holds; elevation.*: the factors that prove it's you and the
+  // proof itself — first-party apps only (permitteer docs/as-elevation.md).
   {
     resource: OAUTH_ACCOUNT_RESOURCE,
     type: 'permitteer_account',
-    actions: ['apps.read', 'apps.write', 'accounts.read', 'devices.write'],
+    actions: [
+      'apps.read',
+      'apps.write',
+      'accounts.read',
+      'devices.write',
+      'credentials.read',
+      'credentials.write',
+      'elevation.read',
+      'elevation.write',
+    ],
   },
   // The AI agent's slice (remoteit-ai-agent.md D5): the stage's MCP detail, delegated
   // ONWARD to the agent service — `actor` is what stamps may_act into this session's
@@ -536,9 +545,9 @@ export async function oidcStart(
     // session's picture into the id_token under profile — https-only, its one guard).
     scope: 'openid email profile full',
     // First-party clients declare their own details (no consent screen — skipConsent):
-    // the passport-audience token minted later via refresh carries this slice, gating the
-    // native security settings (credentials.write); the graphql audience stays pure
-    // scope-`full` (an uncovered resource yields audience-only tokens).
+    // the account-API token minted later via refresh carries its slice, gating Connected Apps and
+    // the Security page; the graphql audience stays pure scope-`full` (an uncovered resource
+    // yields audience-only tokens).
     authorization_details: JSON.stringify(
       declared().map(d => ({
         type: d.type,
