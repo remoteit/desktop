@@ -44,7 +44,7 @@ import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import { State } from '../store'
+import { State, store } from '../store'
 
 export type IDeviceState = {
   all: IDevice[]
@@ -446,10 +446,16 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async setNotificationDevice({ device, settings }: { device: IDevice; settings: IDevice['notificationSettings'] }) {
+    async setNotificationDevice(
+      { device, settings }: { device: IDevice; settings: IDevice['notificationSettings'] },
+      state
+    ) {
+      const account = state.auth.user?.id
       // In order: a category change sends the whole list, so an earlier one landing last would undo the later
       notificationWrites = notificationWrites
-        .then(() => graphQLSetDeviceNotification(device.id, settings))
+        .then(async () => {
+          if (store.getState().auth.user?.id === account) await graphQLSetDeviceNotification(device.id, settings)
+        })
         .catch(() => {})
       dispatch.accounts.setDevice({
         id: device.id,
