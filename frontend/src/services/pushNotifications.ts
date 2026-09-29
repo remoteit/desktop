@@ -12,6 +12,7 @@ const TOKEN_KEY = 'app:pushToken'
 
 let listening: Promise<unknown> | undefined
 let registering: Promise<void> | undefined
+let saving: Promise<void> = Promise.resolve()
 
 function listen() {
   listening ??= Promise.all([
@@ -36,11 +37,18 @@ function open({ notification }: ActionPerformed) {
   store.dispatch.ui.set({ redirect: url })
 }
 
-async function save({ value }: Token) {
+// Chained so unregister can wait out a registration still in flight: landing after it would re-register a signed-out phone
+function save({ value }: Token) {
+  saving = saving.then(() => saveToken(value)).catch(error => console.warn('PUSH SAVE FAILED', error))
+  return saving
+}
+
+async function saveToken(token: string) {
+  if (!store.getState().auth.user) return
   const apnsEnvironment = store.getState().ui.apis.apnsEnvironment || APNS_ENVIRONMENT
-  const result = await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', value, apnsEnvironment, version)
+  const result = await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', token, apnsEnvironment, version)
   if (result === 'ERROR') return
-  window.localStorage.setItem(TOKEN_KEY, value)
+  window.localStorage.setItem(TOKEN_KEY, token)
 }
 
 // The permission prompt deactivates and reactivates the app, whose foreground handler registers again
@@ -58,8 +66,12 @@ async function requestToken() {
     let { receive } = await PushNotifications.checkPermissions()
     if (receive === 'prompt') ({ receive } = await PushNotifications.requestPermissions())
     if (receive !== 'granted') return
+    // Android before 8.0 has no channels and the plugin rejects there, which must not stop register()
     if (browser.isAndroid)
-      await PushNotifications.createChannel({ id: PUSH_CHANNEL_ID, name: i18n.t('push.channel', 'Notifications') })
+      await PushNotifications.createChannel({
+        id: PUSH_CHANNEL_ID,
+        name: i18n.t('push.channel', 'Notifications'),
+      }).catch(() => {})
     await PushNotifications.register()
   } catch (error) {
     console.warn('PUSH REGISTER FAILED', error)
@@ -67,10 +79,19 @@ async function requestToken() {
 }
 
 async function unregister() {
+  try {
+    await withTimeout(dropToken(), PUSH_UNREGISTER_TIMEOUT)
+  } catch (error) {
+    console.warn('PUSH UNREGISTER FAILED', error)
+  }
+}
+
+async function dropToken() {
+  await saving
   const token = window.localStorage.getItem(TOKEN_KEY)
   if (!token) return
   window.localStorage.removeItem(TOKEN_KEY)
-  await withTimeout(graphQLUnregisterPushToken(token), PUSH_UNREGISTER_TIMEOUT)
+  await graphQLUnregisterPushToken(token)
 }
 
 export default { listen, teardown, register, unregister }

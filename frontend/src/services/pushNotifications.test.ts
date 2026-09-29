@@ -51,7 +51,10 @@ beforeEach(() => {
   plugin.checkPermissions.mockResolvedValue({ receive: 'granted' })
 })
 
-afterEach(() => pushNotifications.teardown())
+afterEach(() => {
+  vi.useRealTimers()
+  pushNotifications.teardown()
+})
 
 describe('tap routing', () => {
   it('routes a running app and survives a sign-in reload', async () => {
@@ -155,6 +158,24 @@ describe('register', () => {
     expect(plugin.register).toHaveBeenCalledTimes(2)
   })
 
+  it('registers below Android 8, where the plugin refuses to create channels', async () => {
+    Object.assign(browser, { isIOS: false, isAndroid: true })
+    constants.FIREBASE_CONFIGURED = true
+    plugin.createChannel.mockRejectedValueOnce(new Error('unavailable'))
+    await pushNotifications.register()
+
+    expect(plugin.register).toHaveBeenCalled()
+  })
+
+  it('does not register a token that arrives after sign-out', async () => {
+    await pushNotifications.listen()
+    state.auth.user = undefined
+    listeners.registration({ value: 'apns-token' })
+    await pushNotifications.unregister()
+
+    expect(register).not.toHaveBeenCalled()
+  })
+
   it('never throws into sign-in', async () => {
     plugin.checkPermissions.mockRejectedValue(new Error('not implemented'))
     await expect(pushNotifications.register()).resolves.toBeUndefined()
@@ -183,6 +204,26 @@ describe('unregister', () => {
     await vi.advanceTimersByTimeAsync(3000)
 
     await expect(done).resolves.toBeUndefined()
-    vi.useRealTimers()
+  })
+
+  it('waits for a registration still in flight, so it cannot land after sign-out', async () => {
+    let finish: (value: any) => void = () => {}
+    register.mockReturnValueOnce(new Promise(resolve => (finish = resolve)))
+    await pushNotifications.listen()
+    listeners.registration({ value: 'apns-token' })
+    const done = pushNotifications.unregister()
+    await Promise.resolve()
+    expect(unregister).not.toHaveBeenCalled()
+
+    finish({ data: {} })
+    await done
+    expect(unregister).toHaveBeenCalledWith('apns-token')
+    expect(window.localStorage.getItem('app:pushToken')).toBeNull()
+  })
+
+  it('never rejects into sign-out', async () => {
+    window.localStorage.setItem('app:pushToken', 'apns-token')
+    unregister.mockRejectedValueOnce(new Error('no token'))
+    await expect(pushNotifications.unregister()).resolves.toBeUndefined()
   })
 })

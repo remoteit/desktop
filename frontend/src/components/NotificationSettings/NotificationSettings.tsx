@@ -68,6 +68,7 @@ export const NotificationSettings: React.FC = () => {
     DEVICE_PUSH_CATEGORIES.includes(category)
   )
   const pushOn = (device.notificationSettings?.pushNotifications ?? globalPushNotifications) !== false
+  const pushOverridden = pushOverride != null || device.notificationSettings?.pushNotifications != null
 
   const onClose = (value: string) => {
     switch (value) {
@@ -84,7 +85,7 @@ export const NotificationSettings: React.FC = () => {
         break
 
       case 'push':
-        saveSettings({ pushCategories: null })
+        saveSettings({ pushNotifications: null, pushCategories: null })
         break
     }
   }
@@ -134,7 +135,7 @@ export const NotificationSettings: React.FC = () => {
         <ListItemSetting
           icon={pushOn && pushEnabled.length ? 'bell-on' : 'bell-slash'}
           label={t('notificationSettings.push', 'Mobile push')}
-          secondaryContent={pushOverride ? chipOverridden('push') : undefined}
+          secondaryContent={pushOverridden ? chipOverridden('push') : undefined}
           secondaryContentWidth="100px"
         />
         <PushCategoryList
