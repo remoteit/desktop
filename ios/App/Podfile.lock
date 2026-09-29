@@ -14,6 +14,8 @@ PODS:
   - CapacitorCordova (7.4.2)
   - CapacitorPluginSafeArea (4.0.0):
     - Capacitor
+  - CapacitorPushNotifications (7.0.7):
+    - Capacitor
   - CapacitorSplashScreen (7.0.1):
     - Capacitor
   - CapacitorStatusBar (7.0.1):
@@ -28,6 +30,7 @@ DEPENDENCIES:
   - "CapacitorCommunityBluetoothLe (from `../../node_modules/@capacitor-community/bluetooth-le`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - CapacitorPluginSafeArea (from `../../node_modules/capacitor-plugin-safe-area`)
+  - "CapacitorPushNotifications (from `../../node_modules/@capacitor/push-notifications`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
 
@@ -48,6 +51,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorPluginSafeArea:
     :path: "../../node_modules/capacitor-plugin-safe-area"
+  CapacitorPushNotifications:
+    :path: "../../node_modules/@capacitor/push-notifications"
   CapacitorSplashScreen:
     :path: "../../node_modules/@capacitor/splash-screen"
   CapacitorStatusBar:
@@ -62,9 +67,10 @@ SPEC CHECKSUMS:
   CapacitorCommunityBluetoothLe: 3a65ed12464f16189772c1a8c247cb0b91186114
   CapacitorCordova: 5e58d04631bc5094894ac106e2bf1da18a9e6151
   CapacitorPluginSafeArea: 22031c3436269ca80fac90ec2c94bc7c1e59a81d
+  CapacitorPushNotifications: 0527809a9619ed775439d5ab2c2d996122b48319
   CapacitorSplashScreen: 1d67815a422a9b61539c94f283c08ed56667c0fc
   CapacitorStatusBar: 6e7af040d8fc4dd655999819625cae9c2d74c36f
 
-PODFILE CHECKSUM: e6bb4690dd8321387a19f62a1512c05eee5345ec
+PODFILE CHECKSUM: ca2fb8a22d029e9672e98a017dfdf80599ead029
 
 COCOAPODS: 1.16.2
