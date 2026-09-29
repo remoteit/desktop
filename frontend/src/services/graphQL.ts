@@ -5,7 +5,7 @@ import { store } from '../store'
 const CLIENT_DEPRECATED = '121'
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}, silent = false) {
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', silent)
   if (response === 'ERROR') return response
   const errors = graphQLGetErrors(response, silent, { query, variables })
   return errors ? 'ERROR' : response

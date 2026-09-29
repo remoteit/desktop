@@ -444,15 +444,12 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async setNotificationDevice(device: IDevice) {
-      graphQLSetDeviceNotification(
-        device.id,
-        device.notificationSettings.emailNotifications,
-        device.notificationSettings.desktopNotifications,
-        device.notificationSettings.pushNotifications,
-        device.notificationSettings.pushCategories
-      )
-      dispatch.accounts.setDevice({ id: device.id, device })
+    async setNotificationDevice({ device, settings }: { device: IDevice; settings: IDevice['notificationSettings'] }) {
+      graphQLSetDeviceNotification(device.id, settings)
+      dispatch.accounts.setDevice({
+        id: device.id,
+        device: { ...device, notificationSettings: { ...device.notificationSettings, ...settings } },
+      })
     },
 
     async setServiceAttributes(service: IService, state) {

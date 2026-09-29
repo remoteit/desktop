@@ -147,6 +147,14 @@ describe('register', () => {
     expect(plugin.requestPermissions).toHaveBeenCalledTimes(1)
   })
 
+  it('shares one registration between overlapping calls', async () => {
+    await Promise.all([pushNotifications.register(), pushNotifications.register()])
+    expect(plugin.register).toHaveBeenCalledTimes(1)
+
+    await pushNotifications.register()
+    expect(plugin.register).toHaveBeenCalledTimes(2)
+  })
+
   it('never throws into sign-in', async () => {
     plugin.checkPermissions.mockRejectedValue(new Error('not implemented'))
     await expect(pushNotifications.register()).resolves.toBeUndefined()

@@ -35,10 +35,10 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react()],
     define: {
-      // Gradle applies Firebase only when this file exists, and without Firebase the push
+      // Gradle applies Firebase only when this file has content, and without Firebase the push
       // plugin's register() crashes the Android app (Capacitor rethrows the native exception)
       'import.meta.env.VITE_FIREBASE_CONFIGURED': JSON.stringify(
-        fs.existsSync(path.resolve(__dirname, '../android/app/google-services.json'))
+        !!fs.statSync(path.resolve(__dirname, '../android/app/google-services.json'), { throwIfNoEntry: false })?.size
       ),
     },
     resolve: {

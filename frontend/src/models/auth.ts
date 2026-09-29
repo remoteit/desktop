@@ -417,8 +417,7 @@ export default createModel<RootModel>()({
       // AWAIT the chat sign-out: it revokes the background-agent grant, whose authenticated DELETE
       // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
-      await dispatch.chat.signOut()
-      await pushNotifications.unregister()
+      await Promise.all([dispatch.chat.signOut(), pushNotifications.unregister()])
       await persistor.purge()
       // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
       // signing out of the app must not sign the user out of login.* (their browser

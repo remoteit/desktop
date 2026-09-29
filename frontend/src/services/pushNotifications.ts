@@ -11,6 +11,7 @@ import i18n from '../i18n'
 const TOKEN_KEY = 'app:pushToken'
 
 let listening: Promise<unknown> | undefined
+let registering: Promise<void> | undefined
 
 function listen() {
   listening ??= Promise.all([
@@ -35,17 +36,20 @@ function open({ notification }: ActionPerformed) {
   store.dispatch.ui.set({ redirect: url })
 }
 
-function apnsEnvironment(): IApnsEnvironment {
-  return store.getState().ui.apis.apnsEnvironment || APNS_ENVIRONMENT
-}
-
 async function save({ value }: Token) {
-  const result = await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', value, apnsEnvironment(), version)
+  const apnsEnvironment = store.getState().ui.apis.apnsEnvironment || APNS_ENVIRONMENT
+  const result = await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', value, apnsEnvironment, version)
   if (result === 'ERROR') return
   window.localStorage.setItem(TOKEN_KEY, value)
 }
 
-async function register() {
+// The permission prompt deactivates and reactivates the app, whose foreground handler registers again
+function register() {
+  registering ??= requestToken().finally(() => (registering = undefined))
+  return registering
+}
+
+async function requestToken() {
   if (!browser.isMobile || (browser.isAndroid && !FIREBASE_CONFIGURED)) return
   // A support session is someone else's account: their pushes must not reach this phone
   if (!store.getState().auth.user || oidcActor()) return

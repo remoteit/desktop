@@ -6,7 +6,6 @@ import { State, Dispatch } from '../../store'
 import {
   Chip,
   List,
-  ListItem,
   ListItemIcon,
   ListItemButton,
   ListItemSecondaryAction,
@@ -16,10 +15,10 @@ import {
 } from '@mui/material'
 import { IconButton } from '../../buttons/IconButton'
 import { ListItemSetting } from '../ListItemSetting'
+import { PushCategoryList } from '../PushCategoryList'
 import { Title } from '../Title'
 import { Icon } from '../Icon'
 import { DEFAULT_PUSH_CATEGORIES, DEVICE_PUSH_CATEGORIES } from '../../constants'
-import { usePushCategoryLabels } from '../../hooks/usePushCategoryLabels'
 import browser from '../../services/browser'
 
 export const NotificationSettings: React.FC = () => {
@@ -30,7 +29,6 @@ export const NotificationSettings: React.FC = () => {
   const globalNotificationSystem = useSelector((state: State) => state.user.notificationSettings?.desktopNotifications)
   const globalPushNotifications = useSelector((state: State) => state.user.notificationSettings?.pushNotifications)
   const globalPushCategories = useSelector((state: State) => state.user.notificationSettings?.pushCategories)
-  const pushCategoryLabels = usePushCategoryLabels()
   const [emailNotification, setEmailNotification] = useState<boolean | undefined | null>(
     device?.notificationSettings?.emailNotifications
   )
@@ -50,79 +48,43 @@ export const NotificationSettings: React.FC = () => {
 
   if (!device) return null // TODO refactor and make undefined check in devicerouter
 
+  const saveSettings = (settings: IDevice['notificationSettings']) =>
+    devices.setNotificationDevice({ device, settings })
+
   const handleEmailNotifications = async () => {
     const currentEmailNotification = emailOverridden ? emailNotification || false : globalNotificationEmail
     setEmailNotification(!currentEmailNotification)
-    const item = {
-      ...device,
-      notificationSettings: {
-        ...device.notificationSettings,
-        emailNotifications: !currentEmailNotification,
-      },
-    }
-    await devices.setNotificationDevice(item)
+    await saveSettings({ emailNotifications: !currentEmailNotification })
   }
 
   const handleInAppNotifications = async () => {
     const currentDesktopNotification = inAppOverridden ? inAppNotification || false : globalNotificationSystem
     setInAppNotification(!currentDesktopNotification)
-    const item = {
-      ...device,
-      notificationSettings: {
-        ...device.notificationSettings,
-        desktopNotifications: !currentDesktopNotification,
-      },
-    }
-    await devices.setNotificationDevice(item)
+    await saveSettings({ desktopNotifications: !currentDesktopNotification })
   }
 
   const pushOverride = device.notificationSettings?.pushCategories
   const pushEnabled = (pushOverride ?? globalPushCategories ?? DEFAULT_PUSH_CATEGORIES).filter(category =>
     DEVICE_PUSH_CATEGORIES.includes(category)
   )
-  const pushOn = globalPushNotifications !== false
-
-  const setPushCategories = (pushCategories: IPushCategory[] | null) =>
-    devices.setNotificationDevice({
-      ...device,
-      notificationSettings: { ...device.notificationSettings, pushCategories },
-    })
-
-  const handlePushCategory = (category: IPushCategory) =>
-    setPushCategories(
-      pushEnabled.includes(category) ? pushEnabled.filter(c => c !== category) : [...pushEnabled, category]
-    )
+  const pushOn = (device.notificationSettings?.pushNotifications ?? globalPushNotifications) !== false
 
   const onClose = (value: string) => {
     switch (value) {
       case 'inapp':
         setInAppOverridden(false)
         setInAppNotification(undefined)
-        const itemInApp = {
-          ...device,
-          notificationSettings: {
-            ...device.notificationSettings,
-            desktopNotifications: null,
-          },
-        }
-        devices.setNotificationDevice(itemInApp)
+        saveSettings({ desktopNotifications: null })
         break
 
       case 'email':
         setEmailOverridden(false)
         setEmailNotification(undefined)
-        const itemEmail = {
-          ...device,
-          notificationSettings: {
-            ...device.notificationSettings,
-            emailNotifications: null,
-          },
-        }
-        devices.setNotificationDevice(itemEmail)
+        saveSettings({ emailNotifications: null })
         break
 
       case 'push':
-        setPushCategories(null)
+        saveSettings({ pushCategories: null })
         break
     }
   }
@@ -169,23 +131,18 @@ export const NotificationSettings: React.FC = () => {
             </ListItemSecondaryAction>
           </ListItemButton>
         )}
-        <ListItem dense>
-          <ListItemIcon>
-            <Icon name={pushOn && pushEnabled.length ? 'bell-on' : 'bell-slash'} size="md" />
-          </ListItemIcon>
-          <ListItemText primary={t('notificationSettings.push', 'Mobile push')} />
-          <ListItemSecondaryAction>{pushOverride && chipOverridden('push')}</ListItemSecondaryAction>
-        </ListItem>
-        {DEVICE_PUSH_CATEGORIES.map(category => (
-          <ListItemSetting
-            key={category}
-            quote
-            label={pushCategoryLabels[category]}
-            toggle={pushEnabled.includes(category)}
-            disabled={!pushOn}
-            onClick={() => handlePushCategory(category)}
-          />
-        ))}
+        <ListItemSetting
+          icon={pushOn && pushEnabled.length ? 'bell-on' : 'bell-slash'}
+          label={t('notificationSettings.push', 'Mobile push')}
+          secondaryContent={pushOverride ? chipOverridden('push') : undefined}
+          secondaryContentWidth="100px"
+        />
+        <PushCategoryList
+          categories={DEVICE_PUSH_CATEGORIES}
+          enabled={pushEnabled}
+          disabled={!pushOn}
+          onChange={pushCategories => saveSettings({ pushCategories })}
+        />
         <ListItemButton onClick={handleEmailNotifications} dense>
           <ListItemIcon>
             <Icon name={email ? 'bell-on' : 'bell-slash'} size="md" />

@@ -50,10 +50,10 @@ export const TestPage: React.FC = () => {
     emit('preferences', values)
   }
 
-  async function setApnsEnvironment(apnsEnvironment: IApnsEnvironment) {
-    await dispatch.ui.setPersistent({
-      apis: { ...apis, apnsEnvironment: apnsEnvironment === APNS_ENVIRONMENT ? undefined : apnsEnvironment },
-    })
+  const apnsEnvironment = apis.apnsEnvironment || APNS_ENVIRONMENT
+
+  async function setApnsEnvironment(value: IApnsEnvironment) {
+    await setAPIPreferences({ apnsEnvironment: value === APNS_ENVIRONMENT ? undefined : value })
     pushNotifications.register()
   }
 
@@ -314,13 +314,13 @@ export const TestPage: React.FC = () => {
             <ListItemRadio
               label={t('testPage.apnsSandbox', 'APNs sandbox')}
               subLabel={t('testPage.apnsSandboxHint', 'Development-signed builds and the simulator')}
-              checked={(apis.apnsEnvironment || APNS_ENVIRONMENT) === 'sandbox'}
+              checked={apnsEnvironment === 'sandbox'}
               onClick={() => setApnsEnvironment('sandbox')}
             />
             <ListItemRadio
               label={t('testPage.apnsProduction', 'APNs production')}
               subLabel={t('testPage.apnsProductionHint', 'TestFlight and App Store builds')}
-              checked={(apis.apnsEnvironment || APNS_ENVIRONMENT) === 'production'}
+              checked={apnsEnvironment === 'production'}
               onClick={() => setApnsEnvironment('production')}
             />
           </List>

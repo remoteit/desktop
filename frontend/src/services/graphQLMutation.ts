@@ -10,13 +10,7 @@ export async function graphQLSetAttributes(attributes: ILookup<string | number |
   )
 }
 
-export async function graphQLSetDeviceNotification(
-  deviceID: string,
-  emailNotifications?: boolean | null,
-  desktopNotifications?: boolean | null,
-  pushNotifications?: boolean | null,
-  pushCategories?: IPushCategory[] | null
-) {
+export async function graphQLSetDeviceNotification(deviceID: string, settings: IDevice['notificationSettings']) {
   return await graphQLBasicRequest(
     ` mutation SetDeviceNotification($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean, $pushNotifications: Boolean, $pushCategories: [String!] ){
         setNotificationSettings(
@@ -28,7 +22,7 @@ export async function graphQLSetDeviceNotification(
         )
       }
     `,
-    { emailNotifications, desktopNotifications, pushNotifications, pushCategories, deviceID }
+    { ...settings, deviceID }
   )
 }
 
