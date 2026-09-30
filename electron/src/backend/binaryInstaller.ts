@@ -11,9 +11,10 @@ import Binary, { binaries, cliBinary } from './Binary'
 import { existsSync, lstatSync } from 'fs'
 import Logger from './Logger'
 
-// Refusals the running agent will give again: unsupported platform, a service definition that
-// predates staging, a signature it will not accept, and a daemon too old to know the command.
-const PERMANENT_REFUSAL_CODES = ['409', '410', '411']
+// Refusals the running agent will give again: unsupported platform, a daemon that came back on
+// another install, a signature it will not accept, a service definition that predates staging, and
+// a daemon too old to know the command.
+const PERMANENT_REFUSAL_CODES = ['409', '410', '411', '414']
 
 function permanentRefusal(error?: Error) {
   if (!error) return false
