@@ -18,13 +18,19 @@ devices belong to, and a device's **user mode**. All of it hidden behind one tes
    rollback.
 3. **The DNS name on the main device list**, from the user's view: the user (and their devices in user mode) reach
    every device they can access, so every device they can see has a name for them.
-4. **A new Networks page** for device networks, for now — not folded into the existing Networks area. A graphical view
-   of a network; adding and removing devices and services.
+4. **A new Networks page.** With the flag on it **replaces** the current Networks page (same name, same place in the
+   navigation); with it off, the current page stays. A graphical view of a network; adding and removing devices and
+   services.
 5. **User mode is a mode a device is in, not a privilege.** Laptops and phones will run in it all the time. No mailed
    code, no step-up.
 6. **User mode is initiator-side only.** A device in user mode *reaches* what its user can; how others reach *it* — its
    services, as a target — stays in its networks as before.
 7. **User-mode devices show on the Networks page**, in a side list ("full access").
+8. **User mode adds to the device's own initiator grants** (the union). A user's rights do not cover everything a
+   device may have been granted: a cross-owner membership is granted to the *device* (the other owner approved the
+   device, not its user), and any-port reach is only ever a network's grant, never a person's.
+9. **An organization's device in user mode acts for the member who switched it on.**
+10. **Addresses are per device, allocated by the device** (see "Names and addresses on demand").
 
 ## The flag
 
@@ -72,8 +78,8 @@ desktop for now.
 
 ## 3. The Networks page (new)
 
-A new page, `/device-networks` (the name is open), listing networks of devices, and a network's page with two views of
-the same thing:
+**Networks** — with the flag on, this page takes the Networks item and route (`/networks`); off, the current page stays.
+It lists networks of devices, and a network's page has two views of the same thing:
 
 **List view** — built first:
 
@@ -105,27 +111,43 @@ the same thing:
      `setDeviceUserMode(deviceId, on)` — acting for the caller. `clearDeviceActsFor` becomes its off.
   2. **Initiator side only** — already so: user mode changes what the device may reach (`DevicePrincipal.permissions`,
      `subnetPlan`); whether others reach it is still its target memberships.
-  3. **Add to, not replace, its own grants** — see the open question.
+  3. **Add to, not replace, its own grants** (decision 8): today user mode *replaces* them — `DevicePrincipal`
+     returns early for an acts-for device, and `subnetPlan` / `anyPortReach` skip its memberships. It becomes the
+     union: the user's rights, and the device's own initiator grants.
+  4. An organization's device acts for the member who switched it on (decision 9).
+
+## Names and addresses on demand (backend, its own project)
+
+Today a device's subnet plan lists every device it reaches — names and addresses — and is pushed whole in its desired
+state; IPv4 addresses are per viewer, from a server-side table. In user mode that list is everything the user can
+reach: heavy for an organization of thousands.
+
+Evan (2026-09-30): **each device gets its own subnet; addresses need not match across devices.** That lets the list go:
+
+- The daemon owns its range and allocates as names are **looked up**: a query for `web-1.bob.on.remote.it` asks presence
+  "may I reach this?"; yes → the next free address in its own range, answered and remembered (kept on disk, so stable
+  on that machine); no → NXDOMAIN.
+- The plan shrinks to: on the subnet or not, its range, its mode. No per-target list, no server-side address table
+  (`DeviceAddress`), no re-sent plan when access changes; every connect is still checked live.
+- Costs: a name's first lookup waits one round trip; an address means something only on its own machine (names are the
+  interface); IPv6 goes per device too.
+- For every device, not only user mode — one mechanism.
+- Work: connectd (resolver + local allocation), presence (a name-lookup call), graphql (answer it; drop the address
+  table and the per-target plan).
+
+Desktop is unaffected except that it shows **names**, never addresses.
 
 ## Open questions
 
-1. **User mode: add to the device's own initiator grants, or replace them?** Today it **replaces** them: in user mode
-   the device's initiator memberships — a cross-owner invite accepted for the device, any-port reach — are ignored.
-   Recommended: **add** (the union — grants are allow-only everywhere else). Switching the mode on then loses nothing,
-   and a laptop keeps a link another owner gave it.
-2. **Who a device in user mode acts for** when it is an organization's: the member who switched it on (proposed), or
-   its owner.
-3. **Plan size in user mode.** A user-mode device's subnet plan names every device its user can reach, carried whole in
-   its desired state — fine for most users, heavy for an organization of thousands. Backend: a size limit, or names
-   resolved on demand, later.
-4. **The page's name and place** in the navigation, while it sits beside the existing Networks area.
+1. **Plan size** — answered by "Names and addresses on demand", which needs its own design and build before user mode
+   is used by large organizations.
 
 ## Order
 
 1. The flag (`ui.deviceSessions`, the Test page toggle, `useDeviceSessions`) and the **Device agent** section — the
    backend is done.
 2. The **Name** column — after `Device.subnetName` in graphql.
-3. **User mode** — after the graphql change to one call (and the add-or-replace decision).
+3. **User mode** — after the graphql changes (one call; the union; acting for the member).
 4. The **Networks page**, list view.
 5. The **graph view**.
 
