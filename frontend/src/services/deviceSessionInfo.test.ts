@@ -9,31 +9,36 @@ vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/grap
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
 
-import { requestSubnetName, resetSubnetNames, subnetName, subscribeSubnetNames } from './subnetNames'
+import {
+  deviceSessionInfo,
+  requestDeviceSessionInfo,
+  resetDeviceSessionInfo,
+  subscribeDeviceSessionInfo,
+} from './deviceSessionInfo'
 
 const settled = () =>
   new Promise<void>(resolve => {
-    const stop = subscribeSubnetNames(() => {
+    const stop = subscribeDeviceSessionInfo(() => {
       stop()
       resolve()
     })
   })
 
 beforeEach(() => {
-  resetSubnetNames()
+  resetDeviceSessionInfo()
   request.mockReset()
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
-describe('subnet names', () => {
+describe('device session info', () => {
   it('reads every row that asks in the same moment in one query, and keeps them', async () => {
     request.mockResolvedValue({
       data: {
         data: {
           login: {
             device: [
-              { id: 'A', subnetName: 'kitchen-pi.acme.on.remote.it' },
-              { id: 'B', subnetName: 'laptop.acme.on.remote.it' },
+              { id: 'A', subnetName: 'kitchen-pi.acme.on.remote.it', actsFor: null },
+              { id: 'B', subnetName: 'laptop.acme.on.remote.it', actsFor: { email: 'ada@acme.test' } },
             ],
           },
         },
@@ -41,30 +46,31 @@ describe('subnet names', () => {
       headers: {},
     })
     const done = settled()
-    requestSubnetName('A')
-    requestSubnetName('B')
-    requestSubnetName('C')
+    requestDeviceSessionInfo('A')
+    requestDeviceSessionInfo('B')
+    requestDeviceSessionInfo('C')
     await done
     expect(request).toHaveBeenCalledTimes(1)
     expect(request.mock.calls[0][0].data.query).toContain('["A","B","C"]')
-    expect(subnetName('A')).toBe('kitchen-pi.acme.on.remote.it')
-    expect(subnetName('C')).toBe(null) // asked, not answered: none, and not asked again
-    requestSubnetName('A')
-    requestSubnetName('C')
+    expect(deviceSessionInfo('A')).toEqual({ subnetName: 'kitchen-pi.acme.on.remote.it', actsFor: null })
+    expect(deviceSessionInfo('B')).toEqual({ subnetName: 'laptop.acme.on.remote.it', actsFor: 'ada@acme.test' })
+    expect(deviceSessionInfo('C')).toEqual({ subnetName: null, actsFor: null }) // asked, not answered: none, and not asked again
+    requestDeviceSessionInfo('A')
+    requestDeviceSessionInfo('C')
     await new Promise(resolve => setTimeout(resolve, 5))
     expect(request).toHaveBeenCalledTimes(1)
   })
 
   it('an API without the field is asked once', async () => {
     request.mockResolvedValue({
-      data: { errors: [{ message: 'Cannot query field "subnetName" on type "Device".' }] },
+      data: { errors: [{ message: 'Cannot query field "actsFor" on type "Device".' }] },
       headers: {},
     })
     const done = settled()
-    requestSubnetName('A')
+    requestDeviceSessionInfo('A')
     await done
-    expect(subnetName('A')).toBe(null)
-    requestSubnetName('B')
+    expect(deviceSessionInfo('A')).toEqual({ subnetName: null, actsFor: null })
+    requestDeviceSessionInfo('B')
     await new Promise(resolve => setTimeout(resolve, 5))
     expect(request).toHaveBeenCalledTimes(1)
   })

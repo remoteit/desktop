@@ -875,6 +875,12 @@
     "transferInfo": "Die Geräteübertragung dauert in der Regel nur wenige Sekunden. Sobald der Vorgang abgeschlossen ist, erhalten Sie und der neue Eigentümer eine E-Mail.",
     "transferringTo": "Sie übertragen „{{name}}“ an einen neuen Eigentümer."
   },
+  "deviceUserMode": {
+    "label": "",
+    "off": "",
+    "onOther": "",
+    "onYou": ""
+  },
   "duration": {
     "ago": "vor {{duration}}"
   },
@@ -2257,6 +2263,9 @@
   },
   "subdomainSetting": {
     "subdomain": "Subdomain"
+  },
+  "subnetName": {
+    "userMode": ""
   },
   "tagEditor": {
     "keyboardShortcut": "Tastenkombination „#“",

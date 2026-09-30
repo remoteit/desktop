@@ -884,6 +884,12 @@
     "transferInfo": "La transferencia del dispositivo suele completarse en unos segundos. Se enviará un correo electrónico a ti y al nuevo propietario cuando finalice el proceso.",
     "transferringTo": "Estás transfiriendo \"{{name}}\" a un nuevo propietario."
   },
+  "deviceUserMode": {
+    "label": "",
+    "off": "",
+    "onOther": "",
+    "onYou": ""
+  },
   "duration": {
     "ago": "hace {{duration}}"
   },
@@ -2294,6 +2300,9 @@
   },
   "subdomainSetting": {
     "subdomain": "Subdominio"
+  },
+  "subnetName": {
+    "userMode": ""
   },
   "tagEditor": {
     "keyboardShortcut": "Atajo de teclado \"#\"",

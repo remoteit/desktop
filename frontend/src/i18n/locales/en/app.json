@@ -875,6 +875,12 @@
     "transferInfo": "Device transfer typically takes a few seconds to complete. An email will be sent to you and the new owner when the process is completed.",
     "transferringTo": "You are transferring \"{{name}}\" to a new owner."
   },
+  "deviceUserMode": {
+    "label": "User mode",
+    "off": "Reaches only what its networks grant it. On, it reaches everything you can too.",
+    "onOther": "Reaches everything {{email}} can, as well as what its networks grant it",
+    "onYou": "Reaches everything you can, as well as what its networks grant it"
+  },
   "duration": {
     "ago": "{{duration}} ago"
   },
@@ -2257,6 +2263,9 @@
   },
   "subdomainSetting": {
     "subdomain": "Subdomain"
+  },
+  "subnetName": {
+    "userMode": "User mode: reaches what {{email}} can"
   },
   "tagEditor": {
     "keyboardShortcut": "Keyboard shortcut '#'",

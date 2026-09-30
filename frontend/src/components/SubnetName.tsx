@@ -1,25 +1,35 @@
-import React, { useEffect, useSyncExternalStore } from 'react'
-import { Box, Typography } from '@mui/material'
-import { requestSubnetName, subnetName, subscribeSubnetNames } from '../services/subnetNames'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { Box, Tooltip, Typography } from '@mui/material'
+import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import { CopyIconButton } from '../buttons/CopyIconButton'
+import { Icon } from './Icon'
 
-/* A device's name in device subnets — what its owner's devices, and theirs in user mode, resolve — with a copy
-   button. Nothing while it is being read, or where there is none. */
+/* A device's name in device subnets — what its owner's devices, and theirs in user mode, resolve — marked when the
+   device itself is in user mode, with a copy button where asked. Nothing while it is being read, or where there is
+   none. */
 export const SubnetName: React.FC<{ deviceId?: string; copy?: boolean }> = ({ deviceId, copy }) => {
-  const name = useSyncExternalStore(subscribeSubnetNames, () => (deviceId ? subnetName(deviceId) : null))
+  const { t } = useTranslation()
+  const info = useDeviceSessionInfo(deviceId)
 
-  useEffect(() => {
-    if (deviceId) requestSubnetName(deviceId)
-  }, [deviceId])
-
-  if (!name) return null
+  if (!info?.subnetName) return null
 
   return (
-    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', minWidth: 0 }}>
+    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', minWidth: 0, gap: 0.5 }}>
+      {info.actsFor && (
+        <Tooltip
+          title={t('subnetName.userMode', 'User mode: reaches what {{email}} can', { email: info.actsFor })}
+          arrow
+        >
+          <span>
+            <Icon name="user" size="xs" color="primary" />
+          </span>
+        </Tooltip>
+      )}
       <Typography component="span" variant="caption" noWrap>
-        {name}
+        {info.subnetName}
       </Typography>
-      {copy && <CopyIconButton sx={{ marginY: -1 }} size="sm" color="gray" value={name} />}
+      {copy && <CopyIconButton sx={{ marginY: -1 }} size="sm" color="gray" value={info.subnetName} />}
     </Box>
   )
 }
