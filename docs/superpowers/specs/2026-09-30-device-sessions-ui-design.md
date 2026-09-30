@@ -42,6 +42,13 @@ devices belong to, and a device's **user mode**. All of it hidden behind one tes
       the device, any port only the device.
     - A person reaches any port of a device when the setting is on and they manage the device (so user mode covers it);
       a share with an any-port switch can come later.
+13. **People are initiators too.** Who may connect to or manage a network is what graphql already decides
+    (`network-authorization.ts`): an organization member's role gives VIEW / CONNECT / MANAGE on its networks (all, or
+    by tag), and a network share gives a non-member VIEW + CONNECT. A person with **connect** on a network reaches what
+    its targets expose, as an initiator device does — from their devices in user mode, or anywhere they connect as
+    themselves. Today a person's reach (`person-reach.ts`) takes a network's service connections but not its device
+    targets; that changes. Roles stay shared between devices and networks for now (adding a device needs manage on it
+    anyway); a network-only permission set is a later option.
 
 ## The flag
 
@@ -100,13 +107,14 @@ It lists networks of devices, and a network's page has two views of the same thi
   its connections at once.
 - **Tag rules** — membership by tag, one per role (`setNetworkDeviceRule` / `removeNetworkDeviceRule`; account admins).
 - **Links** — a direct device-to-device link is a two-member network (`createDeviceLink`); listed, members fixed.
-- A side panel, **Full access**: the user's devices in user mode, which reach everything the user can — so the page
-  does not suggest a network is all a laptop reaches.
+- **People** (decision 13): who can connect and who can manage, by role or share — each with their devices in user
+  mode under them ("full access": they reach everything their person can, not only this network). Managing who is
+  here is the existing share / role machinery.
 
 **Graph view** — built on the list:
 
-- Initiators on one side, targets on the other, each target's exposed services under it; an edge where an initiator
-  reaches a target through this network. User-mode devices in their own lane, "full access".
+- Initiators on one side — devices, and people with their user-mode devices — targets on the other, each target's
+  exposed services under it; an edge where an initiator reaches a target through this network.
 - Drag a device in to add it; draw an edge to make a link; select a member or an edge to change or remove it.
 - [React Flow](https://reactflow.dev) (`@xyflow/react`) — the usual choice for an editable node graph in React; it sits
   alongside MUI.
@@ -128,7 +136,8 @@ It lists networks of devices, and a network's page has two views of the same thi
   decline); `addNetworkDevice` requires manage on the device and the network; the device-level Any port setting;
   membership exposure = chosen + `allServices` + `anyPort` switches (replacing the per-membership `anyTcp`/`anyUdp`
   ranges); one authorization path for a port (grant + device setting) in place of `anyPortGrant` / `anyPortReach`;
-  a person managing a device reaches its any port.
+  a person managing a device reaches its any port; a person's reach includes the device targets of every network they
+  can connect to (decision 13).
 
 ## Names and addresses on demand (backend, its own project)
 
