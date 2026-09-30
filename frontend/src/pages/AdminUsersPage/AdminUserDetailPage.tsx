@@ -61,9 +61,9 @@ export const AdminUserDetailPage: React.FC = () => {
     // login.md Phase 4d), so the eye button is a NAVIGATION into the AS
     // (permitteer docs/as-elevation.md): the AS runs every launch gate on the operator's own
     // session — the kill-switch, the operator roster, the target (any account, an operator's
-    // included), and its own elevation stamp — then either opens this portal as the user straight away or shows its
-    // "confirm it's you" page first (one tap with a factor, or the first factor's set-up) and
-    // opens the portal from there. No admin console in between.
+    // included), and its own elevation stamp — then either opens this portal as the user
+    // straight away or shows its "confirm it's you" page first (one tap with a factor, or the
+    // first factor's set-up) and opens the portal from there. No admin console in between.
     // The EMAIL is the key both worlds share: permitteer subjects are sub_<hex>, not r3 GUIDs —
     // the authorizer joins them by email — and the AS resolves the user by email or id.
     // `origin` names THIS portal — the lane the operator is on (app.dev, app.evan, latest) — so
