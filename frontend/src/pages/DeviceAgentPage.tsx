@@ -8,6 +8,7 @@ import {
   UNSUPPORTED,
   graphQLDeviceDaemon,
   graphQLSetDeviceDaemon,
+  runningVersion,
   updating,
 } from '../services/graphQLDaemon'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
@@ -98,16 +99,17 @@ export const DeviceAgentPage: React.FC = () => {
       )
 
     const failed = daemon.update && ['failed', 'refused'].includes(daemon.update.state)
-    const upToDate = !daemon.update && (!daemon.target || daemon.target.version === daemon.running)
+    const running = runningVersion(daemon)
+    const upToDate = !daemon.update && (!daemon.target || daemon.target.version === running)
 
     return (
       <>
         <List>
           <ListItemSetting
             icon="microchip"
-            label={daemon.running || t('deviceAgent.notReported', 'Not reported')}
+            label={running || t('deviceAgent.notReported', 'Not reported')}
             subLabel={
-              daemon.running
+              running
                 ? t('deviceAgent.runs', 'The version it runs')
                 : t(
                     'deviceAgent.notReportedHint',

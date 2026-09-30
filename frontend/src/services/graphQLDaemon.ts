@@ -28,6 +28,9 @@ export type DeviceDaemon = {
 
 export type DaemonSettings = { autoUpdate: boolean; channel: string }
 
+// The version a device reports it runs, without the daemon's name ("connectd-go 5.6.1.20261001" → "5.6.1.20261001").
+export const runningVersion = (daemon?: DeviceDaemon | null) => daemon?.running?.replace(/^connectd-go\s+/, '') || null
+
 // An upgrade under way: worth watching until it settles.
 export const updating = (daemon?: DeviceDaemon | null) =>
   !!daemon?.update && ['pending', 'started', 'downloading', 'installing'].includes(daemon.update.state)

@@ -9,7 +9,7 @@ vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/grap
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
 
-import { UNSUPPORTED, graphQLDeviceDaemon, updating } from './graphQLDaemon'
+import { UNSUPPORTED, graphQLDeviceDaemon, runningVersion, updating } from './graphQLDaemon'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 
 const daemon = {
@@ -46,6 +46,13 @@ describe('reading the device agent', () => {
     request.mockResolvedValue({ data: { errors: [{ message: 'boom' }] }, headers: {} })
     expect(await graphQLDeviceDaemon(daemon.deviceId)).toBe('ERROR')
     expect(uiSet).not.toHaveBeenCalled()
+  })
+})
+
+describe('runningVersion', () => {
+  it("drops the daemon's name", () => {
+    expect(runningVersion({ ...daemon, running: 'connectd-go 5.6.1.20261001' } as any)).toBe('5.6.1.20261001')
+    expect(runningVersion({ ...daemon, running: null } as any)).toBe(null)
   })
 })
 
