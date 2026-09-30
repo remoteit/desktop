@@ -745,6 +745,11 @@
     "upgrades": "",
     "upToDate": ""
   },
+  "deviceAnyPort": {
+    "placeholder": "",
+    "tcp": "",
+    "udp": ""
+  },
   "deviceBulkTransferPage": {
     "blockedCount_other": "選択したデバイスのうち{{count}}台は譲渡できません。",
     "blockedNames": "所有しているデバイスのみ譲渡できます: {{names}}。",
@@ -809,6 +814,48 @@
   },
   "deviceNameSetting": {
     "label": "デバイス名"
+  },
+  "deviceNetwork": {
+    "add": "",
+    "addDevice": "",
+    "allServices": "",
+    "allServicesAddHint": "",
+    "allServicesHint": "",
+    "alsoTarget": "",
+    "anyPort": "",
+    "anyPortAddHint": "",
+    "anyPortHint": "",
+    "connects": "",
+    "device": "",
+    "fullAccess": "",
+    "initiators": "",
+    "link": "",
+    "listed": "",
+    "listedServices_other": "",
+    "noChoices": "",
+    "noInitiators": "",
+    "none": "",
+    "noTargets": "",
+    "owner": "",
+    "people": "",
+    "remove": "",
+    "role": "",
+    "roleBoth": "",
+    "roleInitiator": "",
+    "roleTarget": "",
+    "rule": "",
+    "rules": "",
+    "share": "",
+    "targets": "",
+    "title": ""
+  },
+  "deviceNetworks": {
+    "add": "",
+    "empty": "",
+    "error": "",
+    "summary": "",
+    "title": "",
+    "unsupported": ""
   },
   "deviceOptionMenu": {
     "adminRequired": "",

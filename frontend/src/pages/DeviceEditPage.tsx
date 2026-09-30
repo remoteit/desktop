@@ -3,6 +3,7 @@ import { DeviceContext } from '../services/Context'
 import { DeviceDescriptionSetting } from '../components/DeviceDescriptionSetting'
 import { DevicePresenceSetting } from '../components/DevicePresenceSetting'
 import { DeviceUserModeSetting } from '../components/DeviceUserModeSetting'
+import { DeviceAnyPortSetting } from '../components/DeviceAnyPortSetting'
 import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
@@ -21,6 +22,7 @@ export const DeviceEditPage: React.FC = () => {
             <DeviceDescriptionSetting />
             <DevicePresenceSetting />
             <DeviceUserModeSetting />
+            <DeviceAnyPortSetting />
           </List>
         </Gutters>
       )}

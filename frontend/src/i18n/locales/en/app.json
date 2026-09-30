@@ -749,6 +749,11 @@
     "upgrades": "Upgrades",
     "upToDate": "Up to date"
   },
+  "deviceAnyPort": {
+    "placeholder": "* or 502,20000-20100 — empty for none",
+    "tcp": "Any port (TCP)",
+    "udp": "Any port (UDP)"
+  },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} of the selected device cannot be transferred.",
     "blockedCount_other": "{{count}} of the selected devices cannot be transferred.",
@@ -816,6 +821,49 @@
   },
   "deviceNameSetting": {
     "label": "Device Name"
+  },
+  "deviceNetwork": {
+    "add": "Add",
+    "addDevice": "Add a device",
+    "allServices": "All services",
+    "allServicesAddHint": "Off: only the services you list on the network",
+    "allServicesHint": "Every service it has, including ones added later",
+    "alsoTarget": "Also a target",
+    "anyPort": "Any port",
+    "anyPortAddHint": "Needs the device's Any port setting on first",
+    "anyPortHint": "Any port of the device itself, within its Any port setting (the device's Configure page)",
+    "connects": "Reaches what its targets expose",
+    "device": "Device",
+    "fullAccess": "User mode: full access",
+    "initiators": "Initiating devices",
+    "link": "Link",
+    "listed": "Listed services",
+    "listedServices_one": "{{count}} listed services",
+    "listedServices_other": "{{count}} listed services",
+    "noChoices": "Only devices you manage can be added.",
+    "noInitiators": "No device initiates on this network",
+    "none": "No such network, or it is not shown on this API.",
+    "noTargets": "No device is a target on this network",
+    "owner": "Owner: manages it, and reaches what its targets expose",
+    "people": "People",
+    "remove": "Remove from the network",
+    "role": "Role",
+    "roleBoth": "Initiator and target",
+    "roleInitiator": "Initiator",
+    "roleTarget": "Target",
+    "rule": "Devices tagged {{tags}} are {{role}}",
+    "rules": "Tag rules",
+    "share": "Share the network",
+    "targets": "Target devices",
+    "title": "Network"
+  },
+  "deviceNetworks": {
+    "add": "Add network",
+    "empty": "No networks yet.",
+    "error": "Could not read the networks.",
+    "summary": "{{initiators}} initiating · {{targets}} targets · {{people}} people",
+    "title": "Networks",
+    "unsupported": "This API does not serve device networks. Point Test Settings → API Target at a stage that does (local or dev)."
   },
   "deviceOptionMenu": {
     "adminRequired": "Admin permissions required",

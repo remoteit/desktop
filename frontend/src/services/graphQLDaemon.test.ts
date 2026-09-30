@@ -11,6 +11,7 @@ vi.mock('axios', () => ({ default: { request } }))
 
 import { UNSUPPORTED, graphQLDeviceDaemon, runningVersion, updating } from './graphQLDaemon'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
+import { graphQLDeviceNetworks, initiates, targeted } from './graphQLDeviceNetworks'
 
 const daemon = {
   deviceId: '80:00:00:00:00:00:00:01',
@@ -73,5 +74,30 @@ describe('the device-sessions flag', () => {
     expect(at({ testUI: 'ON', deviceSessions: true })).toBe(true)
     expect(at({ testUI: undefined, deviceSessions: true })).toBe(false)
     expect(at({ testUI: 'ON', deviceSessions: undefined })).toBe(false)
+  })
+})
+
+describe('device networks', () => {
+  it("reads the account's networks, and an API without device networks is UNSUPPORTED, silently", async () => {
+    const network = {
+      id: 'N',
+      name: 'factory',
+      kind: 'NETWORK',
+      devices: [{ deviceId: 'A', role: 'BOTH', scope: 'ALL', anyPort: true }],
+    }
+    request.mockResolvedValue({ data: { data: { login: { account: { networks: [network] } } } }, headers: {} })
+    expect(await graphQLDeviceNetworks('ACCOUNT')).toEqual([network])
+
+    request.mockResolvedValue({
+      data: { errors: [{ message: 'Cannot query field "devices" on type "Network".' }] },
+      headers: {},
+    })
+    expect(await graphQLDeviceNetworks('ACCOUNT')).toBe(UNSUPPORTED)
+    expect(uiSet).not.toHaveBeenCalled()
+  })
+
+  it('a device that is both initiates and is a target', () => {
+    expect([initiates({ role: 'BOTH' }), targeted({ role: 'BOTH' })]).toEqual([true, true])
+    expect([initiates({ role: 'TARGET' }), targeted({ role: 'INITIATOR' })]).toEqual([false, false])
   })
 })

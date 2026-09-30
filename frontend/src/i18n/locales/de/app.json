@@ -749,6 +749,11 @@
     "upgrades": "",
     "upToDate": ""
   },
+  "deviceAnyPort": {
+    "placeholder": "",
+    "tcp": "",
+    "udp": ""
+  },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} der ausgewählten Geräte kann nicht übertragen werden.",
     "blockedCount_other": "{{count}} der ausgewählten Geräte können nicht übertragen werden.",
@@ -816,6 +821,49 @@
   },
   "deviceNameSetting": {
     "label": "Gerätename"
+  },
+  "deviceNetwork": {
+    "add": "",
+    "addDevice": "",
+    "allServices": "",
+    "allServicesAddHint": "",
+    "allServicesHint": "",
+    "alsoTarget": "",
+    "anyPort": "",
+    "anyPortAddHint": "",
+    "anyPortHint": "",
+    "connects": "",
+    "device": "",
+    "fullAccess": "",
+    "initiators": "",
+    "link": "",
+    "listed": "",
+    "listedServices_one": "",
+    "listedServices_other": "",
+    "noChoices": "",
+    "noInitiators": "",
+    "none": "",
+    "noTargets": "",
+    "owner": "",
+    "people": "",
+    "remove": "",
+    "role": "",
+    "roleBoth": "",
+    "roleInitiator": "",
+    "roleTarget": "",
+    "rule": "",
+    "rules": "",
+    "share": "",
+    "targets": "",
+    "title": ""
+  },
+  "deviceNetworks": {
+    "add": "",
+    "empty": "",
+    "error": "",
+    "summary": "",
+    "title": "",
+    "unsupported": ""
   },
   "deviceOptionMenu": {
     "adminRequired": "",

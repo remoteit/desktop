@@ -8,11 +8,17 @@ import { NetworkAddPage } from '../pages/NetworkAddPage'
 import { NetworkPage } from '../pages/NetworkPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { DynamicPanel } from '../components/DynamicPanel'
+import { DeviceNetworksPage } from '../pages/DeviceNetworksPage'
+import { DeviceNetworkPage } from '../pages/DeviceNetworkPage'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 
+// With the device-sessions flag on, Networks are device networks: the list and a network's page are theirs, and the
+// rest (adding one, sharing it, its people) is as before.
 export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
+  const deviceSessions = useDeviceSessions()
   return (
     <DynamicPanel
-      primary={<NetworksPage />}
+      primary={deviceSessions ? <DeviceNetworksPage /> : <NetworksPage />}
       secondary={
         <Switch>
           <Route path="/networks/add">
@@ -35,9 +41,7 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             <ServiceRouter basename="/networks/:networkID/:serviceID" />
           </Route>
 
-          <Route path="/networks/:networkID">
-            <NetworkPage />
-          </Route>
+          <Route path="/networks/:networkID">{deviceSessions ? <DeviceNetworkPage /> : <NetworkPage />}</Route>
 
           <Route path="/networks">
             <ServiceRouter basename="/networks/:serviceID?/:sessionID?" />
