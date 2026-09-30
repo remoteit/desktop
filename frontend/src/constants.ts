@@ -179,6 +179,9 @@ export const SIGN_OUT_BACKEND_TIMEOUT = 3000
 // How long "Sign out everywhere" waits for the AS to end every session before signing out
 // locally regardless — a stalled token mint must never leave the person signed in here.
 export const SIGN_OUT_EVERYWHERE_TIMEOUT = 10000
+// How long sign out waits for the AS to end this account's session: one request, no token mint,
+// and the person is watching the button — past this the app signs out locally regardless.
+export const SIGN_OUT_SESSION_TIMEOUT = 5000
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250

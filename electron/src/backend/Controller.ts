@@ -30,7 +30,7 @@ class Controller {
     this.pool = pool
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
-    EventBus.on(electronInterface.EVENTS.signOut, this.signOut)
+    EventBus.on(electronInterface.EVENTS.signOut, this.signOutRequested)
 
     let eventNames = [
       ...Object.values(User.EVENTS),
@@ -210,6 +210,15 @@ class Controller {
   quit = () => {
     Logger.info('WEB UI QUIT')
     app.quit()
+  }
+
+  /* The tray's Sign out. The relay already carries it to the renderer, which owns the OIDC
+     session: it ends the account's AS session, then comes back with user/sign-out. Only with
+     no renderer connected does the backend clear the credentials on its own. */
+  signOutRequested = async () => {
+    if (server.socket?.connected) return
+    Logger.info('SIGN OUT REQUESTED WITHOUT A RENDERER')
+    await this.signOut()
   }
 
   signOut = async () => {
