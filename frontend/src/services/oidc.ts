@@ -772,12 +772,29 @@ export function invalidateOidcToken() {
   access = {}
 }
 
-/** Local-only teardown: clears the ACTIVE account's tokens (and its registry entry) and
- * NOTHING else. App sign-out never ends the AS session (user directive — the browser
- * session at the AS belongs to the user, not to this app's error handling), and it never
- * touches the OTHER saved accounts — signing out one identity is not signing out of the
- * app's memory of the rest. The explicit "Sign out everywhere" (models/auth globalSignOut)
- * ends the sessions at the AS through the account API before it lands here. */
+/** Ends the ACTIVE account's session at the AS — the one its id_token's `sid` names — over the
+ * silent logout lane (`end_session_api_endpoint`): no navigation, so Electron never fronts a
+ * browser window to sign out. That session is this account's single sign-on, so every app
+ * that signed in through it goes with it; the other accounts in the browser's chooser, this
+ * app's other saved accounts, and the account's sessions on other devices are separate
+ * sessions and stay. Nothing to end for a support session (the operator's console owns it) or
+ * with no id_token. Resolves the AS's status; a network error rejects. */
+export async function oidcEndSession(): Promise<number | undefined> {
+  const hint = stored()?.id_token
+  if (!hint || oidcActor()) return undefined
+  const r = await fetch(`${OAUTH_ISSUER}/session/end`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ id_token_hint: hint }),
+  })
+  return r.status
+}
+
+/** Local teardown: clears the ACTIVE account's tokens (and its registry entry) and NOTHING
+ * else. It never touches the AS — the failure paths land here and a dead refresh token is not
+ * a reason to end a session — and never the OTHER saved accounts: signing out one identity is
+ * not signing out of the app's memory of the rest. The person's own sign-out ends the AS
+ * session first (oidcEndSession, models/auth signOut). */
 export { clearLocal as oidcClearLocal }
 
 function clearLocal() {

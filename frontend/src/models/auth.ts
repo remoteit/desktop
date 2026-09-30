@@ -5,7 +5,7 @@ import network from '../services/Network'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT } from '../constants'
+import { SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT, SIGN_OUT_SESSION_TIMEOUT } from '../constants'
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
@@ -17,6 +17,7 @@ import {
   oidcClaims,
   oidcStart,
   oidcClearLocal,
+  oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
   oidcActivationHint,
@@ -371,12 +372,29 @@ export default createModel<RootModel>()({
       network.tick()
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
-    async signOut(_: void, state) {
-      // Sign-out is LOCAL to this app: drop this app's tokens/session (dispatch.auth.signedOut
-      // below). The AS browser session belongs to the user and is NOT ended here — a true
-      // "sign out everywhere" is a separate, explicit action (globalSignOut). Because signIn
-      // always uses prompt=select_account, the next sign-in and any reload land on the AS
-      // chooser rather than silently SSO-ing back in, so no login-prompt guard is needed.
+    async signOut(options: { keepSession?: boolean } | void, state) {
+      // The person signing out ends this account's single sign-on too: the AS session its
+      // id_token names, so the next sign-in here — or in any app that shared that session —
+      // asks who they are instead of passing them straight through. Only THIS account's
+      // session: the browser's other accounts, this app's other saved accounts and the
+      // account's other devices each hold their own. It runs first, while the id_token is
+      // still stored, and it is BOUNDED and best-effort: an unreachable AS must never leave
+      // the person signed in here, so the local sign-out always follows.
+      // The failure paths (dead refresh token, backend sign-out) go straight to signedOut()
+      // and never reach the AS; globalSignOut has already ended every session and passes
+      // keepSession so a down AS is not waited on twice.
+      if (!options?.keepSession) {
+        // The agent's background grant goes FIRST, as in globalSignOut: its revoke mints a token
+        // from the session about to end. It revokes once per identity, so the chat.signOut in
+        // signedOut() is a no-op afterwards.
+        await dispatch.chat.signOut()
+        try {
+          const status = await withTimeout(oidcEndSession(), SIGN_OUT_SESSION_TIMEOUT)
+          if (status && status !== 204) console.warn('SIGN OUT: AS session end refused', status)
+        } catch (error) {
+          console.warn('SIGN OUT: AS session end failed — signing out locally', error)
+        }
+      }
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
@@ -407,9 +425,8 @@ export default createModel<RootModel>()({
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
       await dispatch.chat.signOut()
       await persistor.purge()
-      // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
-      // signing out of the app must not sign the user out of login.* (their browser
-      // session is theirs; the explicit "sign out everywhere" is globalSignOut).
+      // Drop this app's tokens. The AS is never called from here — the failure paths land here
+      // too; the person's own sign-out ended the AS session in signOut before this.
       oidcClearLocal()
       /* signInCleared as well as the user: a failure recorded while SIGNED IN — a refused
          account switch, say — would otherwise survive into the signed-out screen, where
@@ -469,8 +486,8 @@ export default createModel<RootModel>()({
       // security control does what it reports, and it needs only the access token this app
       // already holds. Best-effort by design: the refusal or outage that a person hits while
       // reaching for the panic button must not leave them signed in here, so the local sign-out
-      // always follows — a miss is logged, never fatal. signOut itself stays LOCAL — a
-      // failure-path or menu sign-out must never end the AS sessions.
+      // always follows — a miss is logged, never fatal. The menu sign-out ends only THIS
+      // account's session (signOut).
       //
       // A SUPPORT session (an operator viewing as the person) holds no refresh token and can
       // mint for nothing but the data plane, and the account API refuses writes from an acted
@@ -478,7 +495,7 @@ export default createModel<RootModel>()({
       // and this is the backstop: straight to the local teardown. Ending the support session
       // itself is the operator's console or the person's account page, never this button.
       if (oidcActor()) {
-        dispatch.auth.signOut()
+        dispatch.auth.signOut({ keepSession: true })
         return
       }
       // The agent's background grant goes FIRST: chat.signOut revokes it through the agent
@@ -499,7 +516,7 @@ export default createModel<RootModel>()({
       } catch (error) {
         console.warn('SIGN OUT EVERYWHERE FAILED', error)
       }
-      dispatch.auth.signOut()
+      dispatch.auth.signOut({ keepSession: true })
     },
   }),
   reducers: {

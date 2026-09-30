@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // re-read from the store after a teardown.
 const {
   oidcStart,
+  oidcEndSession,
   signOutEverywhere,
   changePassword,
   oidcGrantStale,
@@ -17,6 +18,7 @@ const {
   storeState,
 } = vi.hoisted(() => ({
   oidcStart: vi.fn(),
+  oidcEndSession: vi.fn(),
   changePassword: vi.fn(),
   signOutEverywhere: vi.fn(),
   oidcGrantStale: vi.fn(),
@@ -30,6 +32,7 @@ const {
 // (an undefined right-hand side of instanceof throws rather than returning false).
 vi.mock('../services/oidc', () => ({
   oidcStart,
+  oidcEndSession,
   oidcGrantStale,
   oidcMcpDetailReady,
   oidcActor,
@@ -54,6 +57,7 @@ vi.mock('../constants', () => ({
   DEVELOPER_KEY: '',
   SIGN_OUT_BACKEND_TIMEOUT: 1000,
   SIGN_OUT_EVERYWHERE_TIMEOUT: 50,
+  SIGN_OUT_SESSION_TIMEOUT: 50,
 }))
 vi.mock('axios', () => ({ default: {} }))
 
@@ -78,6 +82,7 @@ const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
 beforeEach(() => {
   oidcStart.mockReset()
+  oidcEndSession.mockReset().mockResolvedValue(204)
   changePassword.mockReset()
   signOutEverywhere.mockReset().mockResolvedValue({ status: 200, body: { ended: 1, pool: 'skipped' } })
   oidcActor.mockReset().mockReturnValue(null)
@@ -94,12 +99,45 @@ describe('auth model — sign-in always offers the chooser', () => {
   })
 })
 
-describe('auth model — sign-out is local to the app', () => {
-  it('signOut does NOT end the AS sessions (no signOutEverywhere)', async () => {
+/* The person's sign-out ends this account's session at the AS too — its single sign-on — and
+   nothing wider: never sign-out-all. The background grant's revoke mints from that session, so it
+   goes first; the AS call is bounded and best-effort, so the local teardown always follows. */
+describe('auth model — sign-out ends this account’s AS session, then the local teardown', () => {
+  const signedIn = { auth: { backendAuthenticated: false } }
+
+  it('revokes the background grant, ends the AS session, THEN signs out locally', async () => {
     const dispatch = makeDispatch()
-    await effectsFor(dispatch).signOut(undefined, { auth: { backendAuthenticated: false } })
+    await effectsFor(dispatch).signOut(undefined, signedIn)
+    expect(oidcEndSession).toHaveBeenCalledTimes(1)
     expect(signOutEverywhere).not.toHaveBeenCalled()
-    // Local teardown still happens.
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    const [grant, session, local] = [
+      dispatch.chat.signOut.mock.invocationCallOrder[0],
+      oidcEndSession.mock.invocationCallOrder[0],
+      dispatch.auth.signedOut.mock.invocationCallOrder[0],
+    ]
+    expect(grant).toBeLessThan(session)
+    expect(session).toBeLessThan(local)
+  })
+
+  it('an AS that refuses, fails, or never answers still signs the app out locally', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    for (const outcome of [
+      Promise.resolve(400),
+      Promise.reject(new Error('network down')),
+      new Promise(() => {}), // never settles — cut off at the bound
+    ]) {
+      oidcEndSession.mockReturnValueOnce(outcome)
+      const dispatch = makeDispatch()
+      await effectsFor(dispatch).signOut(undefined, signedIn)
+      expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    }
+  })
+
+  it('keepSession skips the AS entirely — the caller has already dealt with it', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).signOut({ keepSession: true }, signedIn)
+    expect(oidcEndSession).not.toHaveBeenCalled()
     expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
   })
 })
@@ -123,6 +161,8 @@ describe('auth model — "Sign out everywhere" is one AS call, then the local te
     ]
     expect(grant).toBeLessThan(everywhere)
     expect(everywhere).toBeLessThan(local)
+    // Every session is already ended — the sign-out that follows does not ask the AS again.
+    expect(dispatch.auth.signOut).toHaveBeenCalledWith({ keepSession: true })
   })
 
   it('a refused sign-out-all still signs the app out locally', async () => {
