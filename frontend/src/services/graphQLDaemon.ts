@@ -1,0 +1,95 @@
+import { post } from './post'
+import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
+
+/* The device agent's upgrades (graphql's daemon-release resolver). These calls exist only where the API serves device
+   sessions (DEVICE_SESSION_API: local, dev) — so a read is silent, and an API without them answers UNSUPPORTED for the
+   caller to hide itself, rather than raising the app's error banner. */
+
+export const UNSUPPORTED = 'UNSUPPORTED'
+export const DAEMON_CHANNELS = ['stable', 'beta']
+
+export type DaemonUpdateState =
+  | 'pending'
+  | 'started'
+  | 'downloading'
+  | 'installing'
+  | 'installed'
+  | 'failed'
+  | 'refused'
+
+export type DeviceDaemon = {
+  deviceId: string
+  running: string | null // what the device reports it runs; none when no device-session daemon reports
+  target: { version: string; rollback: boolean } | null // what it should run; none leaves it on what it runs
+  update: { version: string; state: DaemonUpdateState; detail?: string | null } | null
+  channel: string
+  hold: boolean
+}
+
+export type DaemonSettings = { autoUpdate: boolean; channel: string }
+
+// An upgrade under way: worth watching until it settles.
+export const updating = (daemon?: DeviceDaemon | null) =>
+  !!daemon?.update && ['pending', 'started', 'downloading', 'installing'].includes(daemon.update.state)
+
+// The schema's own refusal of a field or type it does not have.
+const unsupported = (errors?: { message?: string }[]) =>
+  !!errors?.some(error => /Cannot query field|Unknown (argument|type)/.test(error.message || ''))
+
+async function read<T>(
+  query: string,
+  variables: ILookup<any>,
+  field: string
+): Promise<T | null | 'ERROR' | typeof UNSUPPORTED> {
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  const errors = graphQLGetErrors(response, true, { query, variables })
+  if (unsupported(errors)) return UNSUPPORTED
+  if (errors) return 'ERROR'
+  return response.data?.data?.[field] ?? null
+}
+
+export const graphQLDeviceDaemon = (deviceId: string) =>
+  read<DeviceDaemon>(
+    `query DeviceDaemon($deviceId: String!) {
+      deviceDaemon(deviceId: $deviceId) {
+        deviceId
+        running
+        target { version rollback }
+        update { version state detail }
+        channel
+        hold
+      }
+    }`,
+    { deviceId },
+    'deviceDaemon'
+  )
+
+export const graphQLDaemonSettings = (accountId?: string) =>
+  read<DaemonSettings>(
+    `query DaemonSettings($accountId: String) {
+      daemonSettings(accountId: $accountId) { autoUpdate channel }
+    }`,
+    { accountId },
+    'daemonSettings'
+  )
+
+// A channel of the device's own, '' to follow its account's; or held at what it runs.
+export const graphQLSetDeviceDaemon = (deviceId: string, set: { channel?: string; hold?: boolean }) =>
+  graphQLBasicRequest(
+    `mutation SetDeviceDaemon($deviceId: String!, $channel: String, $hold: Boolean) {
+      setDeviceDaemon(deviceId: $deviceId, channel: $channel, hold: $hold)
+    }`,
+    { deviceId, ...set }
+  )
+
+export const graphQLSetDaemonSettings = (
+  accountId: string | undefined,
+  set: { autoUpdate?: boolean; channel?: string }
+) =>
+  graphQLBasicRequest(
+    `mutation SetDaemonSettings($accountId: String, $autoUpdate: Boolean, $channel: String) {
+      setDaemonSettings(accountId: $accountId, autoUpdate: $autoUpdate, channel: $channel) { autoUpdate channel }
+    }`,
+    { accountId, ...set }
+  )

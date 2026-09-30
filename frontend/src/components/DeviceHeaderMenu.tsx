@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { Box, Typography } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { LoadingMessage } from './LoadingMessage'
@@ -15,6 +16,7 @@ import { Title } from './Title'
 export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNode }> = ({ header, children }) => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
+  const deviceSessions = useDeviceSessions()
 
   if (!device) return <LoadingMessage />
 
@@ -61,6 +63,15 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               dense
             />
             <UsersTab instance={device} to={`/devices/${device.id}/users`} />
+            {deviceSessions && (
+              <ListItemLocation
+                title={t('deviceHeaderMenu.agent', 'Agent')}
+                icon="microchip"
+                iconColor="grayDarker"
+                to={`/devices/${device.id}/agent`}
+                dense
+              />
+            )}
             <ListItemLocation
               title={t('deviceHeaderMenu.logs', 'Logs')}
               icon="file-alt"

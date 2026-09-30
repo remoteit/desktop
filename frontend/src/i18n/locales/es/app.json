@@ -677,6 +677,12 @@
   "customerPlansPage": {
     "selectPlanFor": "Selecciona un plan para"
   },
+  "daemonSettings": {
+    "autoUpdate": "",
+    "autoUpdateHint": "",
+    "channel": "",
+    "title": ""
+  },
   "deleteAccessKey": {
     "confirmLabel": "Escribe DELETE para confirmar",
     "confirmText": "¿Deseas eliminar la clave",
@@ -717,6 +723,34 @@
     "unregisterWarning": "Estás a punto de eliminar permanentemente este dispositivo y todos sus servicios.",
     "warning": "Eliminar dispositivos no se puede deshacer, por lo que es posible que necesites acceso físico al dispositivo si deseas recuperarlo."
   },
+  "deviceAgent": {
+    "channel": "",
+    "downloading": "",
+    "error": "",
+    "failed": "",
+    "follow": "",
+    "followAccount": "",
+    "followAccountHint": "",
+    "hold": "",
+    "holdHint": "",
+    "installed": "",
+    "installing": "",
+    "none": "",
+    "noTarget": "",
+    "noTargetHint": "",
+    "notReported": "",
+    "notReportedHint": "",
+    "noUpdate": "",
+    "pending": "",
+    "refused": "",
+    "runs": "",
+    "started": "",
+    "target": "",
+    "targetRollback": "",
+    "unsupported": "",
+    "upgrades": "",
+    "upToDate": ""
+  },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} del dispositivo seleccionado no se puede transferir.",
     "blockedCount_many": "{{count}} de los dispositivos seleccionados no se pueden transferir.",
@@ -742,6 +776,7 @@
     "title": "Gráfico del dispositivo"
   },
   "deviceHeaderMenu": {
+    "agent": "",
     "configure": "Configurar",
     "details": "Detalles",
     "logs": "Registros",
@@ -2310,8 +2345,11 @@
     "customAPITargetHint": "Apuntar a una URL que el servidor de autorización no ha registrado.",
     "customGraphQLURL": "URL de GraphQL personalizada (avanzado)",
     "customWebSocketURL": "URL de WebSocket personalizada (avanzado)",
+    "deviceSessions": "",
+    "deviceSessionsHint": "",
     "disableTestUI": "Deshabilitar la interfaz de prueba",
     "disableTestUIHint": "Para volver a habilitar la interfaz alfa, debes seleccionar el menú de avatar mientras mantienes presionado alt-shift.",
+    "experimental": "",
     "featureLabel": "{{name}} (predeterminado {{state}})",
     "features": "Funciones",
     "hideTestUIBackgrounds": "Ocultar fondos de la interfaz de prueba",

@@ -673,6 +673,12 @@
   "customerPlansPage": {
     "selectPlanFor": "Wählen Sie einen Plan für"
   },
+  "daemonSettings": {
+    "autoUpdate": "",
+    "autoUpdateHint": "",
+    "channel": "",
+    "title": ""
+  },
   "deleteAccessKey": {
     "confirmLabel": "Geben Sie zur Bestätigung DELETE ein",
     "confirmText": "Möchten Sie den Schlüssel löschen",
@@ -713,6 +719,34 @@
     "unregisterWarning": "Sie sind dabei, dieses Gerät und alle zugehörigen Dienste dauerhaft zu entfernen.",
     "warning": "Das Löschen von Geräten kann nicht rückgängig gemacht werden. Um es wiederherzustellen, benötigen Sie möglicherweise physischen Zugriff darauf."
   },
+  "deviceAgent": {
+    "channel": "",
+    "downloading": "",
+    "error": "",
+    "failed": "",
+    "follow": "",
+    "followAccount": "",
+    "followAccountHint": "",
+    "hold": "",
+    "holdHint": "",
+    "installed": "",
+    "installing": "",
+    "none": "",
+    "noTarget": "",
+    "noTargetHint": "",
+    "notReported": "",
+    "notReportedHint": "",
+    "noUpdate": "",
+    "pending": "",
+    "refused": "",
+    "runs": "",
+    "started": "",
+    "target": "",
+    "targetRollback": "",
+    "unsupported": "",
+    "upgrades": "",
+    "upToDate": ""
+  },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} der ausgewählten Geräte kann nicht übertragen werden.",
     "blockedCount_other": "{{count}} der ausgewählten Geräte können nicht übertragen werden.",
@@ -735,6 +769,7 @@
     "title": "Gerätediagramm"
   },
   "deviceHeaderMenu": {
+    "agent": "",
     "configure": "Konfigurieren",
     "details": "Details",
     "logs": "Protokolle",
@@ -2271,8 +2306,11 @@
     "customAPITargetHint": "Auf eine URL zeigen, die der Autorisierungsserver nicht registriert hat.",
     "customGraphQLURL": "Benutzerdefinierte GraphQL-URL (erweitert)",
     "customWebSocketURL": "Benutzerdefinierte WebSocket-URL (erweitert)",
+    "deviceSessions": "",
+    "deviceSessionsHint": "",
     "disableTestUI": "Test-UI deaktivieren",
     "disableTestUIHint": "Um die Alpha-UI wieder zu aktivieren, müssen Sie das Avatar-Menü bei gedrückter Alt-Umschalt-Taste auswählen.",
+    "experimental": "",
     "featureLabel": "{{name}} (Standard {{state}})",
     "features": "Funktionen",
     "hideTestUIBackgrounds": "Test-UI-Hintergründe ausblenden",

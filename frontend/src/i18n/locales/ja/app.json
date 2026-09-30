@@ -669,6 +669,12 @@
   "customerPlansPage": {
     "selectPlanFor": "プランを選択:"
   },
+  "daemonSettings": {
+    "autoUpdate": "",
+    "autoUpdateHint": "",
+    "channel": "",
+    "title": ""
+  },
   "deleteAccessKey": {
     "confirmLabel": "確認のため「DELETE」と入力してください",
     "confirmText": "このキーを削除しますか",
@@ -709,6 +715,34 @@
     "unregisterWarning": "このデバイスとそのすべてのサービスを完全に削除しようとしています。",
     "warning": "デバイスの削除は元に戻せないため、復元するにはデバイスに物理的にアクセスする必要がある場合があります。"
   },
+  "deviceAgent": {
+    "channel": "",
+    "downloading": "",
+    "error": "",
+    "failed": "",
+    "follow": "",
+    "followAccount": "",
+    "followAccountHint": "",
+    "hold": "",
+    "holdHint": "",
+    "installed": "",
+    "installing": "",
+    "none": "",
+    "noTarget": "",
+    "noTargetHint": "",
+    "notReported": "",
+    "notReportedHint": "",
+    "noUpdate": "",
+    "pending": "",
+    "refused": "",
+    "runs": "",
+    "started": "",
+    "target": "",
+    "targetRollback": "",
+    "unsupported": "",
+    "upgrades": "",
+    "upToDate": ""
+  },
   "deviceBulkTransferPage": {
     "blockedCount_other": "選択したデバイスのうち{{count}}台は譲渡できません。",
     "blockedNames": "所有しているデバイスのみ譲渡できます: {{names}}。",
@@ -728,6 +762,7 @@
     "title": "デバイスグラフ"
   },
   "deviceHeaderMenu": {
+    "agent": "",
     "configure": "設定",
     "details": "詳細",
     "logs": "ログ",
@@ -2232,8 +2267,11 @@
     "customAPITargetHint": "認可サーバーに登録されていないURLを指定します。",
     "customGraphQLURL": "カスタムGraphQL URL（詳細設定）",
     "customWebSocketURL": "カスタムWebSocket URL（詳細設定）",
+    "deviceSessions": "",
+    "deviceSessionsHint": "",
     "disableTestUI": "テストUIを無効にする",
     "disableTestUIHint": "アルファUIを再度有効にするには、alt-shiftを押しながらアバターメニューを選択する必要があります。",
+    "experimental": "",
     "featureLabel": "{{name}}(デフォルト: {{state}})",
     "features": "機能",
     "hideTestUIBackgrounds": "テストUIの背景を非表示にする",

@@ -30,6 +30,7 @@ const SAVED_ACROSS_LOGOUT = [
   'limitsOverride',
   'defaultService',
   'testUI',
+  'deviceSessions',
   'updateNoticeCleared',
   'deviceTimeSeries',
   'serviceTimeSeries',
@@ -42,6 +43,8 @@ export type UIState = {
   themeDark: boolean
   language: LanguageMode
   testUI?: 'ON' | 'HIGHLIGHT'
+  // Test UI → Experimental: the device-session features (useDeviceSessions)
+  deviceSessions?: boolean
   apis: {
     switchApi?: IPreferences['switchApi']
     apiGraphqlURL?: IPreferences['apiGraphqlURL']
@@ -128,6 +131,7 @@ export const defaultState: UIState = {
   themeDark: isDarkMode(),
   language: 'system',
   testUI: undefined,
+  deviceSessions: undefined,
   apis: {},
   layout: {
     mobile: false,

@@ -11,6 +11,8 @@ import { DeviceDetailPage } from '../pages/DeviceDetailPage'
 import { DeviceUsersPage } from '../pages/DeviceUsersPage'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
+import { DeviceAgentPage } from '../pages/DeviceAgentPage'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
 import { SharePage } from '../pages/SharePage'
@@ -24,6 +26,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { fetching, initialized } = useSelector(selectDeviceModelAttributes)
   const defaultServiceLookup = useSelector((state: State) => state.ui.defaultService)
   const waiting = fetching || !initialized
+  const deviceSessions = useDeviceSessions()
 
   const defaultService = () => {
     const lookupResult = defaultServiceLookup[deviceID || '']
@@ -67,6 +70,11 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/devices/:deviceID/logs">
             <DeviceLogPage device={device} />
           </Route>
+          {deviceSessions && (
+            <Route path="/devices/:deviceID/agent">
+              <DeviceAgentPage />
+            </Route>
+          )}
           <Route path="/devices/:deviceID/details">
             <DeviceDetailPage />
           </Route>

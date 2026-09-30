@@ -17,6 +17,7 @@ import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { spacing } from '../styling'
+import { DaemonSettingsList } from '../components/DaemonSettingsList'
 
 export const ProfilePage: React.FC = () => {
   const { paidPlan, user, deleteAccount } = useSelector((state: State) => ({
@@ -86,6 +87,7 @@ export const ProfilePage: React.FC = () => {
           onChange={value => dispatch.user.changeLanguage(value)}
         />
       </List>
+      <DaemonSettingsList />
       <Typography variant="subtitle1">{t('settings.accountDeletion', 'Account deletion')}</Typography>
       <DeleteAccountSection user={user} paidPlan={paidPlan} deleteAccount={deleteAccount} />
     </Container>

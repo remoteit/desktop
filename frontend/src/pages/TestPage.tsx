@@ -67,6 +67,7 @@ export const TestPage: React.FC = () => {
   // (not gated on the licence) lists and revokes it — killing every token minted from it — whether
   // or not this account still has Remote.It AI, and whether or not the agent service answers.
   const chatEnabled = useChatEnabled()
+  const deviceSessions = useSelector((state: State) => !!state.ui.deviceSessions)
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {
     if (chatEnabled) backgroundStatus().then(setBackgroundEnrolled)
@@ -349,6 +350,19 @@ export const TestPage: React.FC = () => {
           </List>
         </>
       )}
+      <Typography variant="subtitle1">{t('testPage.experimental', 'Experimental')}</Typography>
+      <List>
+        <ListItemSetting
+          hideIcon
+          label={t('testPage.deviceSessions', 'Device sessions')}
+          subLabel={t(
+            'testPage.deviceSessionsHint',
+            "The device agent's status and upgrades. Needs an API that serves device sessions (local or dev)."
+          )}
+          toggle={deviceSessions}
+          onClick={() => dispatch.ui.setPersistent({ deviceSessions: !deviceSessions })}
+        />
+      </List>
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>
       <List>
         {features.map(f => (

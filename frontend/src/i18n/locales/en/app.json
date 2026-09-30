@@ -673,6 +673,12 @@
   "customerPlansPage": {
     "selectPlanFor": "Select a plan for"
   },
+  "daemonSettings": {
+    "autoUpdate": "Automatic updates",
+    "autoUpdateHint": "Devices upgrade themselves to their channel's release",
+    "channel": "Channel",
+    "title": "Device agent updates"
+  },
   "deleteAccessKey": {
     "confirmLabel": "Type DELETE to confirm",
     "confirmText": "Do you wish to delete key",
@@ -713,6 +719,34 @@
     "unregisterWarning": "You are about to permanently remove this device and all of its services.",
     "warning": "Deleting devices can't be undone so may require you to physically access the device if you wish to recover it."
   },
+  "deviceAgent": {
+    "channel": "Channel",
+    "downloading": "Downloading {{version}}",
+    "error": "Could not read the device agent.",
+    "failed": "Upgrade to {{version}} failed",
+    "follow": "Follow",
+    "followAccount": "Follow the account's channel",
+    "followAccountHint": "Drop a channel set for this device alone",
+    "hold": "Hold at this version",
+    "holdHint": "It takes no upgrades until released",
+    "installed": "Installed {{version}}",
+    "installing": "Installing {{version}}",
+    "none": "No device agent to show for this device.",
+    "noTarget": "What it runs",
+    "noTargetHint": "Its channel names no release",
+    "notReported": "Not reported",
+    "notReportedHint": "A legacy agent — it upgrades by reinstalling — or a device agent that has not signed in",
+    "noUpdate": "No upgrade reported",
+    "pending": "Waiting its turn to upgrade to {{version}}",
+    "refused": "Refused {{version}}",
+    "runs": "The version it runs",
+    "started": "Upgrade to {{version}} started",
+    "target": "The version it should run",
+    "targetRollback": "{{version}} (a rollback)",
+    "unsupported": "This API does not serve device sessions. Point Test Settings → API Target at a stage that does (local or dev).",
+    "upgrades": "Upgrades",
+    "upToDate": "Up to date"
+  },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} of the selected device cannot be transferred.",
     "blockedCount_other": "{{count}} of the selected devices cannot be transferred.",
@@ -735,6 +769,7 @@
     "title": "Device Graph"
   },
   "deviceHeaderMenu": {
+    "agent": "Agent",
     "configure": "Configure",
     "details": "Details",
     "logs": "Logs",
@@ -2271,8 +2306,11 @@
     "customAPITargetHint": "Point at a URL the authorization server has not registered.",
     "customGraphQLURL": "Custom GraphQL URL (advanced)",
     "customWebSocketURL": "Custom WebSocket URL (advanced)",
+    "deviceSessions": "Device sessions",
+    "deviceSessionsHint": "The device agent's status and upgrades. Needs an API that serves device sessions (local or dev).",
     "disableTestUI": "Disable Test UI",
     "disableTestUIHint": "To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift.",
+    "experimental": "Experimental",
     "featureLabel": "{{name}} (default {{state}})",
     "features": "Features",
     "hideTestUIBackgrounds": "Hide test UI backgrounds",
