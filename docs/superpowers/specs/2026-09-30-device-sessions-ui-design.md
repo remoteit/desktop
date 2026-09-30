@@ -3,7 +3,7 @@
 **Date:** 2026-09-30
 **Repos:** `remoteit/desktop` (frontend); backend changes in `graphql-api` (branch `feat/device-subnet`, local)
 **Branch:** `feat/device-sessions-ui`
-**Status:** planning — nothing built
+**Status:** built 2026-09-30, behind the flag, local commits (see "As built" at the end)
 
 ## Purpose
 
@@ -175,3 +175,18 @@ Desktop is unaffected except that it shows **names**, never addresses.
 5. The **graph view**.
 
 Each step lands behind the flag and is testable against r3-local (Test page → API target → local).
+
+## As built (2026-09-30)
+
+| Step | desktop | backend |
+|---|---|---|
+| 1. The flag; the device agent | 3a950150, bff5a1ab | — |
+| 2. The DNS name | df548434 | graphql 9cd408b5 (`Device.subnetName`, batched) |
+| 3. User mode | 2a347896 | graphql a3f90ff9 (`setDeviceUserMode`, the union) |
+| 4. Networks, list view; Any port setting | bfa1f9e1 | graphql a900df7e (no invites, any-port setting + switch, people reach targets) |
+| 5. The graph view | be8c1f2d | — |
+
+Every read of the device-session API is silent and hides (or says so) where the API does not serve it. Not built:
+**per-device rollback** (rollback is a channel's; a device's needs graphql to pin a release, and to know which one to
+go back to), the **standby / active** badge (presence does not expose it; it lasts seconds), a **service's host
+name** behind a device, **names and addresses on demand**, and editing tag rules (shown, not edited).
