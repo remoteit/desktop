@@ -443,6 +443,8 @@
     "statusC": "Estado C",
     "statusD": "Estado D",
     "statusE": "Estado E",
+    "subnetName": "DNS Name",
+    "subnetNameDetail": "DNS Name",
     "tags": "Etiquetas",
     "targetPlatform": "Plataforma",
     "title": "Título",

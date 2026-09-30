@@ -439,6 +439,8 @@
     "statusC": "Status C",
     "statusD": "Status D",
     "statusE": "Status E",
+    "subnetName": "DNS Name",
+    "subnetNameDetail": "DNS Name",
     "tags": "Tags",
     "targetPlatform": "Plattform",
     "title": "Titel",

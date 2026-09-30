@@ -27,6 +27,7 @@ import { StatusChip } from './StatusChip'
 import { TargetPlatform } from './TargetPlatform'
 import { TimeSeries } from './TimeSeries'
 import { Timestamp } from './Timestamp'
+import { SubnetName } from './SubnetName'
 
 export class Attribute<TOptions = IDataOptions> {
   id: string = ''
@@ -238,6 +239,25 @@ export const attributes: Attribute[] = [
     label: 'Quality',
     defaultWidth: 120,
     value: ({ device }) => <QualityDetails device={device} small />,
+  }),
+  // Its name in device subnets: read on its own (services/subnetNames), never in the device list's query — `query`
+  // names a field that query already has. Behind the device-sessions flag (selectAttributeFeatures).
+  new DeviceAttribute({
+    id: 'subnetName',
+    label: 'DNS Name',
+    query: 'deviceName',
+    defaultWidth: 240,
+    details: false,
+    feature: 'deviceSessions',
+    value: ({ device }) => <SubnetName deviceId={device?.id} />,
+  }),
+  new DeviceAttribute({
+    id: 'subnetNameDetail',
+    label: 'DNS Name',
+    query: 'deviceName',
+    column: false,
+    feature: 'deviceSessions',
+    value: ({ device }) => <SubnetName deviceId={device?.id} copy />,
   }),
   new DeviceAttribute({
     id: 'services',

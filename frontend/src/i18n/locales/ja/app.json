@@ -435,6 +435,8 @@
     "statusC": "ステータスC",
     "statusD": "ステータスD",
     "statusE": "ステータスE",
+    "subnetName": "DNS Name",
+    "subnetNameDetail": "DNS Name",
     "tags": "タグ",
     "targetPlatform": "プラットフォーム",
     "title": "タイトル",

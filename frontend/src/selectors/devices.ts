@@ -7,6 +7,7 @@ import { getUserId, getDevicesState, getColumns, optionalId, optionalSecondParam
 import { deviceAttributes, DeviceAttribute, deviceAttributesAll, serviceAttributesAll } from '../components/Attributes'
 import { selectLimitsLookup } from './organizations'
 import { Attribute } from '../components/Attribute'
+import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 
 export function getDeviceModelFn(devices: State['devices'], activeAccountId: string, accountId?: string) {
   return devices[accountId || activeAccountId] || devices.default
@@ -68,7 +69,16 @@ export const selectById = createSelector([getDevices, getAllDevices, optionalId]
   return result[0] || result[1] ? result : findById(allDevices, id)
 })
 
-export const selectAllDeviceAttributes = createSelector([selectLimitsLookup], limitsLookup =>
+// The account's license features, and the device-sessions test flag as one more: what decides which attributes show.
+export const selectAttributeFeatures = createSelector(
+  [selectLimitsLookup, selectDeviceSessions],
+  (limits, deviceSessions) => ({
+    ...limits,
+    deviceSessions,
+  })
+)
+
+export const selectAllDeviceAttributes = createSelector([selectAttributeFeatures], limitsLookup =>
   deviceAttributesAll.filter(a => a.show(limitsLookup))
 )
 
@@ -82,7 +92,7 @@ export const selectDeviceColumns = createSelector([selectDeviceAttributes], devi
 )
 
 export const selectAllActiveAttributes = createSelector(
-  [selectLimitsLookup, selectDeviceModelAttributes],
+  [selectAttributeFeatures, selectDeviceModelAttributes],
   (limitsLookup, deviceModelAttributes) =>
     (deviceModelAttributes.applicationTypes?.length ? serviceAttributesAll : deviceAttributesAll).filter(a =>
       a.show(limitsLookup)
