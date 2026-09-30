@@ -26,11 +26,22 @@ devices belong to, and a device's **user mode**. All of it hidden behind one tes
 6. **User mode is initiator-side only.** A device in user mode *reaches* what its user can; how others reach *it* — its
    services, as a target — stays in its networks as before.
 7. **User-mode devices show on the Networks page**, in a side list ("full access").
-8. **User mode adds to the device's own initiator grants** (the union). A user's rights do not cover everything a
-   device may have been granted: a cross-owner membership is granted to the *device* (the other owner approved the
-   device, not its user), and any-port reach is only ever a network's grant, never a person's.
+8. **User mode adds to the device's own initiator grants** (the union): an organization admin may put a member's
+   laptop on a network whose targets the member cannot reach in person, and user mode must not cut that off.
 9. **An organization's device in user mode acts for the member who switched it on.**
 10. **Addresses are per device, allocated by the device** (see "Names and addresses on demand").
+11. **No cross-owner membership.** A device joins a network only when the person adding it can manage **both** the
+    device (owner, admin or manager) and the network. No invites. Another owner's machine reaches your services by
+    joining your organization; a person's devices, through what is shared with them and user mode.
+12. **"All services" and "any port" are special states, not services.** Services are licensed, counted and listed
+    everywhere; a pseudo-service would have to be excluded from all of it.
+    - A **device setting, Any port** (TCP/UDP ranges, off by default) — the ceiling; the daemon enforces it.
+    - A grant — a network target membership — exposes **chosen services**, plus two independent switches: **All
+      services** (every defined service, including ones added later) and **Any port** (any port of the device itself,
+      within its ranges; only when the device setting is on). They do not overlap: all services reaches LAN hosts behind
+      the device, any port only the device.
+    - A person reaches any port of a device when the setting is on and they manage the device (so user mode covers it);
+      a share with an any-port switch can come later.
 
 ## The flag
 
@@ -84,12 +95,10 @@ It lists networks of devices, and a network's page has two views of the same thi
 **List view** — built first:
 
 - Members: each device with its **role** (initiator, target, both) and, for a target, what it exposes: **chosen
-  services**, **all** (including ones added later), or **any port** (TCP/UDP ranges).
+  services**, **All services**, **Any port** (decision 12). Only devices the user manages can be added.
 - Add a device (`addNetworkDevice`), change its role or exposure, remove it (`removeNetworkDevice`) — removal closes
   its connections at once.
 - **Tag rules** — membership by tag, one per role (`setNetworkDeviceRule` / `removeNetworkDeviceRule`; account admins).
-- **Invites** across owners — a device of someone else's joins only when its owner accepts (`inviteNetworkDevice`,
-  `networkDeviceInvites`, `acceptNetworkDeviceInvite`, `declineNetworkDeviceInvite`).
 - **Links** — a direct device-to-device link is a two-member network (`createDeviceLink`); listed, members fixed.
 - A side panel, **Full access**: the user's devices in user mode, which reach everything the user can — so the page
   does not suggest a network is all a laptop reaches.
@@ -115,6 +124,11 @@ It lists networks of devices, and a network's page has two views of the same thi
      returns early for an acts-for device, and `subnetPlan` / `anyPortReach` skip its memberships. It becomes the
      union: the user's rights, and the device's own initiator grants.
   4. An organization's device acts for the member who switched it on (decision 9).
+- **Backend changes for networks** (decisions 11, 12): drop the invites (`r3_NetworkDeviceInvites`, invite / accept /
+  decline); `addNetworkDevice` requires manage on the device and the network; the device-level Any port setting;
+  membership exposure = chosen + `allServices` + `anyPort` switches (replacing the per-membership `anyTcp`/`anyUdp`
+  ranges); one authorization path for a port (grant + device setting) in place of `anyPortGrant` / `anyPortReach`;
+  a person managing a device reaches its any port.
 
 ## Names and addresses on demand (backend, its own project)
 
