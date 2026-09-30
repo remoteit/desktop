@@ -15,6 +15,8 @@ import {
   ListSubheader,
   MenuItem,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material'
 import {
@@ -39,6 +41,7 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { DeviceNetworkGraph } from '../components/DeviceNetworkGraph'
 
 const ROLES: NetworkDeviceRole[] = ['INITIATOR', 'TARGET', 'BOTH']
 
@@ -53,6 +56,7 @@ export const DeviceNetworkPage: React.FC = () => {
   const { networks, reload } = useDeviceNetworks()
   const devices = useSelector(getAllDevices)
   const [busy, setBusy] = useState(false)
+  const [view, setView] = useState<'list' | 'graph'>('list')
 
   const network = Array.isArray(networks) ? networks.find(n => n.id === networkID) : undefined
   if (networks === undefined) return <LoadingMessage />
@@ -112,137 +116,157 @@ export const DeviceNetworkPage: React.FC = () => {
         <Typography variant="h1">
           <Title>{network.name}</Title>
           {link && <Chip size="small" label={t('deviceNetwork.link', 'Link')} sx={{ marginLeft: 1 }} />}
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={view}
+            onChange={(_, value) => value && setView(value)}
+            sx={{ marginLeft: 'auto' }}
+          >
+            <ToggleButton value="list">{t('deviceNetwork.list', 'List')}</ToggleButton>
+            <ToggleButton value="graph">{t('deviceNetwork.graph', 'Graph')}</ToggleButton>
+          </ToggleButtonGroup>
         </Typography>
       }
     >
-      <List>
-        <ListSubheader>{t('deviceNetwork.initiators', 'Initiating devices')}</ListSubheader>
-        {!initiators.length && <Empty text={t('deviceNetwork.noInitiators', 'No device initiates on this network')} />}
-        {initiators.map(member => (
-          <MemberItem
-            key={member.deviceId}
-            name={nameOf(member.deviceId)}
-            member={member}
-            detail={member.role === 'BOTH' ? t('deviceNetwork.alsoTarget', 'Also a target') : undefined}
-            removable={manage && !busy}
-            onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
-          />
-        ))}
-      </List>
-
-      <List>
-        <ListSubheader>{t('deviceNetwork.targets', 'Target devices')}</ListSubheader>
-        {!targets.length && <Empty text={t('deviceNetwork.noTargets', 'No device is a target on this network')} />}
-        {targets.map(member => (
-          <Box key={member.deviceId}>
-            <MemberItem
-              name={nameOf(member.deviceId)}
-              member={member}
-              detail={exposure(member)}
-              removable={manage && !busy}
-              onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
-            />
-            {manage && !link && (
-              <Box sx={{ paddingLeft: 6 }}>
-                <ListItemSetting
-                  hideIcon
-                  size="small"
-                  label={t('deviceNetwork.allServices', 'All services')}
-                  subLabel={t('deviceNetwork.allServicesHint', 'Every service it has, including ones added later')}
-                  toggle={member.scope === 'ALL'}
-                  disabled={busy}
-                  onClick={() => change(member, { scope: member.scope === 'ALL' ? 'LISTED' : 'ALL' })}
-                />
-                <ListItemSetting
-                  hideIcon
-                  size="small"
-                  label={t('deviceNetwork.anyPort', 'Any port')}
-                  subLabel={t(
-                    'deviceNetwork.anyPortHint',
-                    "Any port of the device itself, within its Any port setting (the device's Configure page)"
-                  )}
-                  toggle={member.anyPort}
-                  disabled={busy}
-                  onClick={() => change(member, { anyPort: !member.anyPort })}
-                />
-                {member.scope === 'LISTED' &&
-                  (deviceById.get(member.deviceId)?.services || []).map(service => (
-                    <ListItem key={service.id} dense disableGutters>
-                      <ListItemIcon>
-                        <Checkbox
-                          size="small"
-                          checked={listed.has(service.id)}
-                          disabled={busy}
-                          onChange={() =>
-                            act(() => graphQLListNetworkService(network.id, service.id, !listed.has(service.id)))
-                          }
-                        />
-                      </ListItemIcon>
-                      <ListItemText primary={service.name} />
-                    </ListItem>
-                  ))}
-              </Box>
+      {view === 'graph' ? (
+        <Gutters>
+          <DeviceNetworkGraph network={network} devices={devices} manage={manage} exposure={exposure} act={act} />
+        </Gutters>
+      ) : (
+        <>
+          <List>
+            <ListSubheader>{t('deviceNetwork.initiators', 'Initiating devices')}</ListSubheader>
+            {!initiators.length && (
+              <Empty text={t('deviceNetwork.noInitiators', 'No device initiates on this network')} />
             )}
-          </Box>
-        ))}
-      </List>
+            {initiators.map(member => (
+              <MemberItem
+                key={member.deviceId}
+                name={nameOf(member.deviceId)}
+                member={member}
+                detail={member.role === 'BOTH' ? t('deviceNetwork.alsoTarget', 'Also a target') : undefined}
+                removable={manage && !busy}
+                onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
+              />
+            ))}
+          </List>
 
-      <List>
-        <ListSubheader>
-          {t('deviceNetwork.people', 'People')}
-          {manage && (
-            <IconButton
-              icon="user-plus"
-              title={t('deviceNetwork.share', 'Share the network')}
-              to={`/networks/${network.id}/share`}
-              size="sm"
-            />
+          <List>
+            <ListSubheader>{t('deviceNetwork.targets', 'Target devices')}</ListSubheader>
+            {!targets.length && <Empty text={t('deviceNetwork.noTargets', 'No device is a target on this network')} />}
+            {targets.map(member => (
+              <Box key={member.deviceId}>
+                <MemberItem
+                  name={nameOf(member.deviceId)}
+                  member={member}
+                  detail={exposure(member)}
+                  removable={manage && !busy}
+                  onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
+                />
+                {manage && !link && (
+                  <Box sx={{ paddingLeft: 6 }}>
+                    <ListItemSetting
+                      hideIcon
+                      size="small"
+                      label={t('deviceNetwork.allServices', 'All services')}
+                      subLabel={t('deviceNetwork.allServicesHint', 'Every service it has, including ones added later')}
+                      toggle={member.scope === 'ALL'}
+                      disabled={busy}
+                      onClick={() => change(member, { scope: member.scope === 'ALL' ? 'LISTED' : 'ALL' })}
+                    />
+                    <ListItemSetting
+                      hideIcon
+                      size="small"
+                      label={t('deviceNetwork.anyPort', 'Any port')}
+                      subLabel={t(
+                        'deviceNetwork.anyPortHint',
+                        "Any port of the device itself, within its Any port setting (the device's Configure page)"
+                      )}
+                      toggle={member.anyPort}
+                      disabled={busy}
+                      onClick={() => change(member, { anyPort: !member.anyPort })}
+                    />
+                    {member.scope === 'LISTED' &&
+                      (deviceById.get(member.deviceId)?.services || []).map(service => (
+                        <ListItem key={service.id} dense disableGutters>
+                          <ListItemIcon>
+                            <Checkbox
+                              size="small"
+                              checked={listed.has(service.id)}
+                              disabled={busy}
+                              onChange={() =>
+                                act(() => graphQLListNetworkService(network.id, service.id, !listed.has(service.id)))
+                              }
+                            />
+                          </ListItemIcon>
+                          <ListItemText primary={service.name} />
+                        </ListItem>
+                      ))}
+                  </Box>
+                )}
+              </Box>
+            ))}
+          </List>
+
+          <List>
+            <ListSubheader>
+              {t('deviceNetwork.people', 'People')}
+              {manage && (
+                <IconButton
+                  icon="user-plus"
+                  title={t('deviceNetwork.share', 'Share the network')}
+                  to={`/networks/${network.id}/share`}
+                  size="sm"
+                />
+              )}
+            </ListSubheader>
+            {people.map(person => (
+              <Box key={person.id}>
+                <ListItem dense>
+                  <ListItemIcon>
+                    <Icon name="user" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={person.email}
+                    secondary={
+                      person.manages
+                        ? t('deviceNetwork.owner', 'Owner: manages it, and reaches what its targets expose')
+                        : t('deviceNetwork.connects', 'Reaches what its targets expose')
+                    }
+                  />
+                </ListItem>
+                <UserModeDevices email={person.email} devices={devices} />
+              </Box>
+            ))}
+          </List>
+
+          {!!network.deviceRules.length && (
+            <List>
+              <ListSubheader>{t('deviceNetwork.rules', 'Tag rules')}</ListSubheader>
+              {network.deviceRules.map(rule => (
+                <ListItem key={rule.role} dense>
+                  <ListItemText
+                    primary={t('deviceNetwork.rule', 'Devices tagged {{tags}} are {{role}}', {
+                      tags: rule.tags.join(rule.operator === 'ALL' ? ' and ' : ' or '),
+                      role: roleLabel(t, rule.role),
+                    })}
+                    secondary={
+                      targeted(rule)
+                        ? rule.scope === 'ALL'
+                          ? t('deviceNetwork.allServices', 'All services')
+                          : t('deviceNetwork.listed', 'Listed services')
+                        : undefined
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
           )}
-        </ListSubheader>
-        {people.map(person => (
-          <Box key={person.id}>
-            <ListItem dense>
-              <ListItemIcon>
-                <Icon name="user" />
-              </ListItemIcon>
-              <ListItemText
-                primary={person.email}
-                secondary={
-                  person.manages
-                    ? t('deviceNetwork.owner', 'Owner: manages it, and reaches what its targets expose')
-                    : t('deviceNetwork.connects', 'Reaches what its targets expose')
-                }
-              />
-            </ListItem>
-            <UserModeDevices email={person.email} devices={devices} />
-          </Box>
-        ))}
-      </List>
 
-      {!!network.deviceRules.length && (
-        <List>
-          <ListSubheader>{t('deviceNetwork.rules', 'Tag rules')}</ListSubheader>
-          {network.deviceRules.map(rule => (
-            <ListItem key={rule.role} dense>
-              <ListItemText
-                primary={t('deviceNetwork.rule', 'Devices tagged {{tags}} are {{role}}', {
-                  tags: rule.tags.join(rule.operator === 'ALL' ? ' and ' : ' or '),
-                  role: roleLabel(t, rule.role),
-                })}
-                secondary={
-                  targeted(rule)
-                    ? rule.scope === 'ALL'
-                      ? t('deviceNetwork.allServices', 'All services')
-                      : t('deviceNetwork.listed', 'Listed services')
-                    : undefined
-                }
-              />
-            </ListItem>
-          ))}
-        </List>
+          {manage && !link && <AddDevice network={network} devices={devices} busy={busy} act={act} />}
+        </>
       )}
-
-      {manage && !link && <AddDevice network={network} devices={devices} busy={busy} act={act} />}
     </Container>
   )
 }

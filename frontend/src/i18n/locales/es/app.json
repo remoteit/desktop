@@ -842,8 +842,10 @@
     "connects": "",
     "device": "",
     "fullAccess": "",
+    "graph": "",
     "initiators": "",
     "link": "",
+    "list": "",
     "listed": "",
     "listedServices_one": "",
     "listedServices_many": "",
@@ -864,6 +866,12 @@
     "share": "",
     "targets": "",
     "title": ""
+  },
+  "deviceNetworkGraph": {
+    "both": "",
+    "confirmRemove": "",
+    "drag": "",
+    "noneToAdd": ""
   },
   "deviceNetworks": {
     "add": "",

@@ -835,8 +835,10 @@
     "connects": "Reaches what its targets expose",
     "device": "Device",
     "fullAccess": "User mode: full access",
+    "graph": "Graph",
     "initiators": "Initiating devices",
     "link": "Link",
+    "list": "List",
     "listed": "Listed services",
     "listedServices_one": "{{count}} listed services",
     "listedServices_other": "{{count}} listed services",
@@ -856,6 +858,12 @@
     "share": "Share the network",
     "targets": "Target devices",
     "title": "Network"
+  },
+  "deviceNetworkGraph": {
+    "both": "also initiates",
+    "confirmRemove": "Remove {{name}} from the network?",
+    "drag": "Drag in to add",
+    "noneToAdd": "No other device you manage"
   },
   "deviceNetworks": {
     "add": "Add network",
