@@ -20,6 +20,8 @@ export const ServiceConnectButton: React.FC = () => {
   // A name that works on this machine needs no connection: it is shown in place of Connect, the proxy one step away.
   const local = useLocalSubnetName(device?.id, service?.id)
   const [proxy, setProxy] = useState(false)
+  // The name in use, the proxy is not: an error a proxy connection left behind is not shown over it.
+  const named = !!local && !proxy
 
   return (
     <Collapse in={!connection.connectLink} timeout={800}>
@@ -69,7 +71,7 @@ export const ServiceConnectButton: React.FC = () => {
           }
         >
           <Gutters size="md" sx={{ display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }} bottom={null}>
-            {local && !proxy ? (
+            {named ? (
               <Box sx={{ width: '100%' }}>
                 <LocalSubnetConnect local={local} service={service} connection={connection} />
                 <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
@@ -93,7 +95,7 @@ export const ServiceConnectButton: React.FC = () => {
             )}
           </Gutters>
         </GuideBubble>
-        <ConnectionErrorMessage connection={connection} visible={showError} />
+        <ConnectionErrorMessage connection={connection} visible={showError && !named} />
       </Gutters>
     </Collapse>
   )
