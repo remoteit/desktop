@@ -330,6 +330,8 @@ const Empty: React.FC<{ text: string }> = ({ text }) => (
 const INLINE = 8
 const SHOWN = 6
 const FILTER = 10
+// The device's name, beside its chips; its services and summary line up under the chips.
+const NAME_WIDTH = 180
 
 /* A device on the network, in two rows of chips: Initiator, All services and Any port, then its services in their own
    order — highlighted when exposed, all of them when All services or Any port is on. A long list folds to its first
@@ -372,9 +374,9 @@ const MemberRow: React.FC<{
   return (
     <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-        <ListItemLocation to={`/devices/${member.deviceId}`} icon="hdd" dense sx={{ flex: '0 0 auto', minWidth: 200 }}>
-          <ListItemText primary={name} />
-        </ListItemLocation>
+        <Typography variant="body2" noWrap sx={{ width: NAME_WIDTH, fontWeight: 500 }} title={name}>
+          {name}
+        </Typography>
         {toggle(t('deviceNetwork.initiatorToggle', 'Initiator'), initiates(member), on.onInitiator)}
         <Typography variant="caption" color="textSecondary">
           ·
@@ -392,7 +394,16 @@ const MemberRow: React.FC<{
           )}
         </Box>
       </Box>
-      <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', marginTop: 1, paddingLeft: 7 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 0.75,
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          marginTop: 1,
+          paddingLeft: `${NAME_WIDTH + 8}px`,
+        }}
+      >
         {open && services.length > FILTER && (
           <TextField
             size="small"
@@ -438,7 +449,12 @@ const MemberRow: React.FC<{
           </Typography>
         )}
       </Box>
-      <Typography variant="caption" color="textSecondary" component="div" sx={{ marginTop: 0.5, paddingLeft: 7 }}>
+      <Typography
+        variant="caption"
+        color="textSecondary"
+        component="div"
+        sx={{ marginTop: 0.5, paddingLeft: `${NAME_WIDTH + 8}px` }}
+      >
         {summary}
       </Typography>
     </Box>
