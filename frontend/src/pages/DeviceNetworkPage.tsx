@@ -289,7 +289,7 @@ export const DeviceNetworkPage: React.FC = () => {
                       alignItems: 'center',
                       gap: 1,
                       paddingX: 2,
-                      paddingY: 1.25,
+                      paddingY: 1,
                       borderTop: 1,
                       borderColor: 'grayLight.main',
                       bgcolor: accountColor(index, dark).background,
@@ -297,7 +297,7 @@ export const DeviceNetworkPage: React.FC = () => {
                     }}
                   >
                     <Icon name="building" size="sm" color={accountColor(index, dark).text} />
-                    <Typography variant="subtitle1" sx={{ fontWeight: 500, color: 'inherit' }} noWrap>
+                    <Typography variant="body1" sx={{ fontWeight: 500, color: 'inherit' }} noWrap>
                       {account.name}
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'inherit', opacity: 0.8 }} noWrap>
@@ -408,7 +408,7 @@ export const DeviceNetworkPage: React.FC = () => {
                         gap: 0.75,
                         paddingX: 2,
                         paddingY: 1,
-                        paddingLeft: 4,
+                        paddingLeft: GROUP_INDENT,
                         borderTop: 1,
                         borderColor: 'grayLighter.main',
                         bgcolor: 'grayLightest.main',
@@ -544,6 +544,11 @@ const SHOWN = 6
 const FILTER = 10
 // The device's name, with what it is under it, beside its chips.
 const NAME_WIDTH = 180
+// Under an account's heading: its groups' headings one step in, their devices two — so every device's chips start
+// in one column, and a group's switches line up above its devices' chips.
+const GROUP_INDENT = 4
+const ROW_INDENT = 6
+const HEADING_WIDTH = `calc(${NAME_WIDTH}px + 16px)` // NAME_WIDTH + the step from GROUP_INDENT to ROW_INDENT
 
 /* A device on the network, in two rows of chips: Initiator, All services and Any port, then its services in their own
    order — highlighted when exposed, all of them when All services or Any port is on. A long list folds to its first
@@ -584,7 +589,17 @@ const MemberRow: React.FC<{
     : services.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()))
 
   return (
-    <Box sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        gap: 1,
+        paddingX: 2,
+        paddingLeft: ROW_INDENT,
+        paddingY: 1,
+        borderTop: 1,
+        borderColor: 'grayLighter.main',
+      }}
+    >
       <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0, paddingTop: 0.25 }}>
         <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={name}>
           {name}
@@ -857,132 +872,136 @@ const TagGroup: React.FC<{
 
   return (
     <Box sx={{ borderTop: 1, borderColor: 'grayLighter.main' }}>
-      <Box sx={{ display: 'flex', gap: 1, paddingX: 2, paddingLeft: 4, paddingY: 1, bgcolor: 'grayLightest.main' }}>
-        <Box sx={{ width: NAME_WIDTH + 40, flex: '0 0 auto', minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-            <Icon name="tag" size="sm" color="grayDark" />
-            {rule.tags.map((tag, index) => (
-              <React.Fragment key={tag}>
-                {!!index && (
-                  <Typography variant="caption" color="textSecondary">
-                    {rule.operator === 'ALL' ? t('deviceNetwork.and', 'and') : t('deviceNetwork.or', 'or')}
-                  </Typography>
-                )}
+      <Box sx={{ paddingX: 2, paddingLeft: GROUP_INDENT, paddingY: 1, bgcolor: 'grayLightest.main' }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ width: HEADING_WIDTH, flex: '0 0 auto', minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+              <Icon name="tag" size="sm" color="grayDark" />
+              {rule.tags.map((tag, index) => (
+                <React.Fragment key={tag}>
+                  {!!index && (
+                    <Typography variant="caption" color="textSecondary">
+                      {rule.operator === 'ALL' ? t('deviceNetwork.and', 'and') : t('deviceNetwork.or', 'or')}
+                    </Typography>
+                  )}
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    icon={
+                      <Box
+                        component="span"
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          bgcolor: colorOf(tag),
+                          marginLeft: '8px !important',
+                        }}
+                      />
+                    }
+                    label={tag}
+                    onDelete={
+                      editable && rule.tags.length > 1
+                        ? () => onChange({ tags: rule.tags.filter(name => name !== tag) })
+                        : undefined
+                    }
+                  />
+                </React.Fragment>
+              ))}
+              {editable && (
                 <Chip
                   size="small"
                   variant="outlined"
-                  icon={
-                    <Box
-                      component="span"
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        bgcolor: colorOf(tag),
-                        marginLeft: '8px !important',
-                      }}
-                    />
-                  }
-                  label={tag}
-                  onDelete={
-                    editable && rule.tags.length > 1
-                      ? () => onChange({ tags: rule.tags.filter(name => name !== tag) })
-                      : undefined
-                  }
+                  label={t('deviceNetwork.addTag', '+ tag')}
+                  onClick={() => setPicking(!picking)}
+                  sx={{ borderStyle: 'dashed' }}
                 />
-              </React.Fragment>
-            ))}
-            {editable && (
-              <Chip
+              )}
+            </Box>
+            {picking && (
+              <TextField
+                select
+                fullWidth
                 size="small"
-                variant="outlined"
-                label={t('deviceNetwork.addTag', '+ tag')}
-                onClick={() => setPicking(!picking)}
-                sx={{ borderStyle: 'dashed' }}
-              />
+                value=""
+                label={t('deviceNetwork.chooseTag', 'Devices tagged')}
+                sx={{ marginTop: 1 }}
+                onChange={event => {
+                  setPicking(false)
+                  onChange({ tags: [...rule.tags, event.target.value] })
+                }}
+              >
+                {choices
+                  .filter(tag => !rule.tags.includes(tag))
+                  .map(tag => (
+                    <MenuItem key={tag} value={tag}>
+                      {tag}
+                    </MenuItem>
+                  ))}
+              </TextField>
             )}
           </Box>
-          {picking && (
-            <TextField
-              select
-              fullWidth
-              size="small"
-              value=""
-              label={t('deviceNetwork.chooseTag', 'Devices tagged')}
-              sx={{ marginTop: 1 }}
-              onChange={event => {
-                setPicking(false)
-                onChange({ tags: [...rule.tags, event.target.value] })
-              }}
-            >
-              {choices
-                .filter(tag => !rule.tags.includes(tag))
-                .map(tag => (
-                  <MenuItem key={tag} value={tag}>
-                    {tag}
-                  </MenuItem>
-                ))}
-            </TextField>
-          )}
-          <Typography variant="caption" color="textSecondary" component="div" sx={{ marginTop: 0.5 }}>
-            {[
-              rule.devices.length === 1
-                ? t('deviceNetwork.groupDevice', '1 device')
-                : t('deviceNetwork.groupDevices', '{{count}} devices', { count: rule.devices.length }),
-              ...summary,
-            ].join(' · ') || t('deviceNetwork.nothingChosen', 'Nothing chosen yet')}
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            flexWrap: 'wrap',
-            alignSelf: 'flex-start',
-          }}
-        >
-          {toggle(t('deviceNetwork.initiatorToggle', 'Initiator'), rule.initiator, () =>
-            onChange({ initiator: !rule.initiator })
-          )}
-          <Typography variant="caption" color="textSecondary">
-            ·
-          </Typography>
-          {toggle(t('deviceNetwork.allServices', 'All services'), rule.allServices || rule.anyPort, () =>
-            onChange(rule.allServices || rule.anyPort ? { allServices: false, anyPort: false } : { allServices: true })
-          )}
-          {toggle(t('deviceNetwork.anyPort', 'Any port'), rule.anyPort, () =>
-            onChange(rule.anyPort ? { anyPort: false } : { anyPort: true, allServices: true })
-          )}
-          {rule.tags.length > 1 && (
-            <>
-              <Typography variant="caption" color="textSecondary">
-                ·
-              </Typography>
-              {toggle(t('deviceNetwork.anyTag', 'Any tag'), rule.operator === 'ANY', () =>
-                onChange({ operator: 'ANY' })
-              )}
-              {toggle(t('deviceNetwork.allTags', 'All tags'), rule.operator === 'ALL', () =>
-                onChange({ operator: 'ALL' })
-              )}
-            </>
-          )}
-          <Box sx={{ marginLeft: 'auto' }}>
-            {(editable || removable) && (
-              <IconButton
-                icon="times"
-                title={t('deviceNetwork.removeGroup', 'Remove the devices by tag')}
-                size="sm"
-                onClick={onRemove}
-              />
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              flexWrap: 'wrap',
+              alignSelf: 'flex-start',
+            }}
+          >
+            {toggle(t('deviceNetwork.initiatorToggle', 'Initiator'), rule.initiator, () =>
+              onChange({ initiator: !rule.initiator })
             )}
+            <Typography variant="caption" color="textSecondary">
+              ·
+            </Typography>
+            {toggle(t('deviceNetwork.allServices', 'All services'), rule.allServices || rule.anyPort, () =>
+              onChange(
+                rule.allServices || rule.anyPort ? { allServices: false, anyPort: false } : { allServices: true }
+              )
+            )}
+            {toggle(t('deviceNetwork.anyPort', 'Any port'), rule.anyPort, () =>
+              onChange(rule.anyPort ? { anyPort: false } : { anyPort: true, allServices: true })
+            )}
+            {rule.tags.length > 1 && (
+              <>
+                <Typography variant="caption" color="textSecondary">
+                  ·
+                </Typography>
+                {toggle(t('deviceNetwork.anyTag', 'Any tag'), rule.operator === 'ANY', () =>
+                  onChange({ operator: 'ANY' })
+                )}
+                {toggle(t('deviceNetwork.allTags', 'All tags'), rule.operator === 'ALL', () =>
+                  onChange({ operator: 'ALL' })
+                )}
+              </>
+            )}
+            <Box sx={{ marginLeft: 'auto' }}>
+              {(editable || removable) && (
+                <IconButton
+                  icon="times"
+                  title={t('deviceNetwork.removeGroup', 'Remove the devices by tag')}
+                  size="sm"
+                  onClick={onRemove}
+                />
+              )}
+            </Box>
           </Box>
         </Box>
+        <Typography variant="caption" color="textSecondary" component="div" sx={{ marginTop: 0.5 }}>
+          {[
+            rule.devices.length === 1
+              ? t('deviceNetwork.groupDevice', '1 device')
+              : t('deviceNetwork.groupDevices', '{{count}} devices', { count: rule.devices.length }),
+            ...summary,
+          ].join(' · ') || t('deviceNetwork.nothingChosen', 'Nothing chosen yet')}
+        </Typography>
       </Box>
       {open && devices.length > FILTER && (
-        <Box sx={{ paddingX: 2, paddingTop: 1, paddingLeft: 5 }}>
+        <Box sx={{ paddingX: 2, paddingTop: 1, paddingLeft: ROW_INDENT }}>
           <TextField
             size="small"
             fullWidth
@@ -993,7 +1012,7 @@ const TagGroup: React.FC<{
         </Box>
       )}
       {!rule.holds && (
-        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: 5, borderTop: 1, borderColor: 'grayLighter.main' }}>
+        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: ROW_INDENT, borderTop: 1, borderColor: 'grayLighter.main' }}>
           <Typography variant="caption" color="error">
             {t(
               'deviceNetwork.groupStopped',
@@ -1004,7 +1023,7 @@ const TagGroup: React.FC<{
         </Box>
       )}
       {rule.holds && !devices.length && !rule.overridden.length && (
-        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: 5 }}>
+        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: ROW_INDENT }}>
           <Typography variant="caption" color="textSecondary">
             {t('deviceNetwork.noMatches', 'No devices carry these tags')}
           </Typography>
@@ -1018,12 +1037,12 @@ const TagGroup: React.FC<{
             gap: 1,
             paddingX: 2,
             paddingY: 1,
-            paddingLeft: 5,
+            paddingLeft: ROW_INDENT,
             borderTop: 1,
             borderColor: 'grayLighter.main',
           }}
         >
-          <Box sx={{ width: NAME_WIDTH - 16, flex: '0 0 auto', minWidth: 0 }}>
+          <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0 }}>
             <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={nameOf(id)}>
               {nameOf(id)}
             </Typography>
@@ -1067,7 +1086,7 @@ const TagGroup: React.FC<{
         </Box>
       ))}
       {devices.length > GROUP_SHOWN && (
-        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: 5, borderTop: 1, borderColor: 'grayLighter.main' }}>
+        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: ROW_INDENT, borderTop: 1, borderColor: 'grayLighter.main' }}>
           <Typography
             variant="caption"
             color="primary"
@@ -1086,7 +1105,7 @@ const TagGroup: React.FC<{
       {rule.overridden.map(id => (
         <Box
           key={id}
-          sx={{ paddingX: 2, paddingY: 0.75, paddingLeft: 5, borderTop: 1, borderColor: 'grayLighter.main' }}
+          sx={{ paddingX: 2, paddingY: 0.75, paddingLeft: ROW_INDENT, borderTop: 1, borderColor: 'grayLighter.main' }}
         >
           <Typography variant="caption" color="textSecondary">
             {t('deviceNetwork.overridden', '{{name}} carries these tags but is set on its own below', {
@@ -1231,7 +1250,14 @@ const RoleRow: React.FC<{
           return (
             <Box
               key={member.id}
-              sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 0.75, paddingLeft: 5, alignItems: 'center' }}
+              sx={{
+                display: 'flex',
+                gap: 1,
+                paddingX: 2,
+                paddingY: 0.75,
+                paddingLeft: ROW_INDENT,
+                alignItems: 'center',
+              }}
             >
               <Typography variant="body2" noWrap sx={{ width: NAME_WIDTH - 24, flex: '0 0 auto' }} title={member.email}>
                 {member.email}
@@ -1251,7 +1277,7 @@ const RoleRow: React.FC<{
           )
         })}
       {open && count > INLINE && (
-        <Box sx={{ paddingX: 2, paddingBottom: 1, paddingLeft: 5 }}>
+        <Box sx={{ paddingX: 2, paddingBottom: 1, paddingLeft: ROW_INDENT }}>
           <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }} onClick={() => setAll(!all)}>
             {all
               ? t('deviceNetwork.showLess', 'Show less')
