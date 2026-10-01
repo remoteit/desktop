@@ -16,7 +16,7 @@ export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
 
 // Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
 // web and desktop; the backend never touches auth.
-export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || ''
+export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || 'https://login.remote.it'
 export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
 export const OAUTH_ACCOUNT_RESOURCE = `${OAUTH_ISSUER}/account/api`
 // The dev stage's UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md). The identifier is the
