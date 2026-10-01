@@ -271,7 +271,26 @@ export const DeviceNetworkPage: React.FC = () => {
               />
             ))}
             {!!(network.deviceRules || []).length && !!network.devices.length && (
-              <ListSubheader sx={{ lineHeight: 2.5 }}>{t('deviceNetwork.oneByOne', 'Added one by one')}</ListSubheader>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  paddingX: 2,
+                  paddingY: 1,
+                  borderTop: 1,
+                  borderColor: 'grayLighter.main',
+                  bgcolor: 'grayLightest.main',
+                }}
+              >
+                <Icon name="laptop" size="sm" color="grayDark" />
+                <Typography variant="body2">{t('deviceNetwork.oneByOne', 'Added one by one')}</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  {network.devices.length === 1
+                    ? t('deviceNetwork.groupDevice', '1 device')
+                    : t('deviceNetwork.groupDevices', '{{count}} devices', { count: network.devices.length })}
+                </Typography>
+              </Box>
             )}
             {adding === 'device' && (
               <Gutters>
