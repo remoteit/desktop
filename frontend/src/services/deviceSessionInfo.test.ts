@@ -37,8 +37,13 @@ describe('device session info', () => {
         data: {
           login: {
             device: [
-              { id: 'A', subnetName: 'kitchen-pi.acme.on.remote.it', actsFor: null },
-              { id: 'B', subnetName: 'laptop.acme.on.remote.it', actsFor: { email: 'ada@acme.test' } },
+              {
+                id: 'A',
+                subnetName: 'kitchen-pi.acme.on.remote.it',
+                actsFor: null,
+                agent: { running: 'connectd-go 5.6.1.1', update: null },
+              },
+              { id: 'B', subnetName: 'laptop.acme.on.remote.it', actsFor: { email: 'ada@acme.test' }, agent: null },
             ],
           },
         },
@@ -52,9 +57,17 @@ describe('device session info', () => {
     await done
     expect(request).toHaveBeenCalledTimes(1)
     expect(request.mock.calls[0][0].data.query).toContain('["A","B","C"]')
-    expect(deviceSessionInfo('A')).toEqual({ subnetName: 'kitchen-pi.acme.on.remote.it', actsFor: null })
-    expect(deviceSessionInfo('B')).toEqual({ subnetName: 'laptop.acme.on.remote.it', actsFor: 'ada@acme.test' })
-    expect(deviceSessionInfo('C')).toEqual({ subnetName: null, actsFor: null }) // asked, not answered: none, and not asked again
+    expect(deviceSessionInfo('A')).toEqual({
+      subnetName: 'kitchen-pi.acme.on.remote.it',
+      actsFor: null,
+      agent: { running: 'connectd-go 5.6.1.1', update: null },
+    })
+    expect(deviceSessionInfo('B')).toEqual({
+      subnetName: 'laptop.acme.on.remote.it',
+      actsFor: 'ada@acme.test',
+      agent: null,
+    })
+    expect(deviceSessionInfo('C')).toEqual({ subnetName: null, actsFor: null, agent: null }) // asked, not answered: none, and not asked again
     requestDeviceSessionInfo('A')
     requestDeviceSessionInfo('C')
     await new Promise(resolve => setTimeout(resolve, 5))
@@ -69,7 +82,7 @@ describe('device session info', () => {
     const done = settled()
     requestDeviceSessionInfo('A')
     await done
-    expect(deviceSessionInfo('A')).toEqual({ subnetName: null, actsFor: null })
+    expect(deviceSessionInfo('A')).toEqual({ subnetName: null, actsFor: null, agent: null })
     requestDeviceSessionInfo('B')
     await new Promise(resolve => setTimeout(resolve, 5))
     expect(request).toHaveBeenCalledTimes(1)

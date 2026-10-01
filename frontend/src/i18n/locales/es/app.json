@@ -107,6 +107,9 @@
     "summaryNone": "{{name}} no puede acceder a ningún dispositivo.",
     "summaryUnlimited": "{{name}} puede acceder a todos los dispositivos de todas las organizaciones a las que perteneces."
   },
+  "agentStatus": {
+    "update": ""
+  },
   "androidSetup": {
     "guideBody": "Puedes configurar tu dispositivo Android o seguir las sencillas instrucciones para configurar una de las plataformas más utilizadas.",
     "guideTitle": "Selecciona un dispositivo",
@@ -353,6 +356,7 @@
   },
   "columns": {
     "access": "Invitados",
+    "agent": "Agent",
     "bind": "Dirección de enlace",
     "body": "Cuerpo",
     "categoryA": "Categoría A",

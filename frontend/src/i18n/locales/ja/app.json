@@ -103,6 +103,9 @@
     "summaryNone": "{{name}} はどのデバイスにもアクセスできません。",
     "summaryUnlimited": "{{name}} は、所属するすべての組織のすべてのデバイスにアクセスできます。"
   },
+  "agentStatus": {
+    "update": ""
+  },
   "androidSetup": {
     "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
     "guideTitle": "デバイスを選択",
@@ -345,6 +348,7 @@
   },
   "columns": {
     "access": "ゲスト",
+    "agent": "Agent",
     "bind": "バインドアドレス",
     "body": "本文",
     "categoryA": "カテゴリーA",

@@ -2,16 +2,22 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 
 /* What the device-session API says of each device, for the device list and a device's pages: its name in device
-   subnets (Device.subnetName, <device>.<owner slug>.on.remote.it) and who it acts for in user mode (Device.actsFor).
+   subnets (Device.subnetName, <device>.<owner slug>.on.remote.it), who it acts for in user mode (Device.actsFor), and
+   what its daemon last reported — the version it runs and where an upgrade stands (Device.agent).
    Not in the device list's own query: that query runs on every API, and only one that serves device sessions has these
    fields. So they are read on their own — batched, one query for every row that asks in the same moment, kept for the
    session — and an API without them is asked once. */
 
-export type DeviceSessionInfo = { subnetName: string | null; actsFor: string | null }
+export type DeviceAgent = {
+  running: string | null
+  update: { version: string; state: string; detail?: string | null } | null
+}
+
+export type DeviceSessionInfo = { subnetName: string | null; actsFor: string | null; agent: DeviceAgent | null }
 
 type Listener = () => void
 
-const NONE: DeviceSessionInfo = { subnetName: null, actsFor: null }
+const NONE: DeviceSessionInfo = { subnetName: null, actsFor: null, agent: null }
 const info = new Map<string, DeviceSessionInfo>()
 const listeners = new Set<Listener>()
 let wanted = new Set<string>()
@@ -43,14 +49,18 @@ async function flush() {
 
   const query = `query DeviceSessionInfo { login { device(id: ${JSON.stringify(
     ids
-  )}) { id subnetName actsFor { email } } } }`
+  )}) { id subnetName actsFor { email } agent { running update { version state detail } } } } }`
   const response = await post({ query })
   if (response !== 'ERROR') {
     const errors = graphQLGetErrors(response, true, { query, variables: {} })
     if (errors?.some(error => /Cannot query field/.test(error.message || ''))) unsupported = true
     else if (!errors)
       for (const device of response.data?.data?.login?.device || [])
-        info.set(device.id, { subnetName: device.subnetName ?? null, actsFor: device.actsFor?.email ?? null })
+        info.set(device.id, {
+          subnetName: device.subnetName ?? null,
+          actsFor: device.actsFor?.email ?? null,
+          agent: device.agent ?? null,
+        })
   }
   // Asked and not answered (unsupported, an error, not visible): none, so the row stops asking.
   for (const id of ids) if (!info.has(id)) info.set(id, NONE)

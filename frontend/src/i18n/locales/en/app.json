@@ -105,6 +105,9 @@
     "summaryNone": "{{name}} cannot reach any devices.",
     "summaryUnlimited": "{{name}} can reach all devices in every organization you belong to."
   },
+  "agentStatus": {
+    "update": "{{state}} {{version}}"
+  },
   "androidSetup": {
     "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
     "guideTitle": "Select a device",
@@ -349,6 +352,7 @@
   },
   "columns": {
     "access": "Guests",
+    "agent": "Agent",
     "bind": "Bind Address",
     "body": "Body",
     "categoryA": "Category A",

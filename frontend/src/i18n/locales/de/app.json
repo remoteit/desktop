@@ -105,6 +105,9 @@
     "summaryNone": "{{name}} kann keine Geräte erreichen.",
     "summaryUnlimited": "{{name}} kann alle Geräte in jeder Organisation erreichen, der Sie angehören."
   },
+  "agentStatus": {
+    "update": ""
+  },
   "androidSetup": {
     "guideBody": "Sie können Ihr Android-Gerät einrichten oder den einfachen Anweisungen folgen, um eine der gängigen Plattformen einzurichten.",
     "guideTitle": "Gerät auswählen",
@@ -349,6 +352,7 @@
   },
   "columns": {
     "access": "Gäste",
+    "agent": "Agent",
     "bind": "Bind-Adresse",
     "body": "Text",
     "categoryA": "Kategorie A",

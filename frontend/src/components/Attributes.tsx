@@ -28,6 +28,7 @@ import { TargetPlatform } from './TargetPlatform'
 import { TimeSeries } from './TimeSeries'
 import { Timestamp } from './Timestamp'
 import { SubnetName } from './SubnetName'
+import { AgentStatus } from './AgentStatus'
 
 export class Attribute<TOptions = IDataOptions> {
   id: string = ''
@@ -250,6 +251,15 @@ export const attributes: Attribute[] = [
     details: false,
     feature: 'deviceSessions',
     value: ({ device }) => <SubnetName deviceId={device?.id} />,
+  }),
+  new DeviceAttribute({
+    id: 'agent',
+    label: 'Agent',
+    query: 'deviceName',
+    defaultWidth: 160,
+    details: false,
+    feature: 'deviceSessions',
+    value: ({ device }) => <AgentStatus deviceId={device?.id} />,
   }),
   new DeviceAttribute({
     id: 'subnetNameDetail',
