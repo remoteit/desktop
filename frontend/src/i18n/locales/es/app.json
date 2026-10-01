@@ -1400,6 +1400,10 @@
     "title": "Selecciona los servicios encontrados para la configuración automática",
     "typeAndPort": "{{type}} - {{port}}"
   },
+  "localSubnetConnect": {
+    "address": "",
+    "title": ""
+  },
   "logsPage": {
     "title": "Registros"
   },
@@ -2323,7 +2327,8 @@
     "guideBodyBrowser": "Crea una conexión a este servicio con el botón de conexión.",
     "guideBodyDesktop": "Empieza a escuchar solicitudes de red en este endpoint. Cuando llegue una solicitud, la conexión se crea automáticamente y se cierra cuando está inactiva.",
     "guideTitleBrowser": "Iniciar una conexión",
-    "guideTitleDesktop": "Conexión bajo demanda"
+    "guideTitleDesktop": "Conexión bajo demanda",
+    "useProxy": ""
   },
   "serviceDefaultsPage": {
     "defaults": "Valores predeterminados",

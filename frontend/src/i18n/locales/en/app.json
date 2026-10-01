@@ -1372,6 +1372,10 @@
     "title": "Select any found services to auto setup",
     "typeAndPort": "{{type}} - {{port}}"
   },
+  "localSubnetConnect": {
+    "address": "resolves here to {{address}}",
+    "title": "On this machine — no connection to start"
+  },
   "logsPage": {
     "title": "Logs"
   },
@@ -2272,7 +2276,8 @@
     "guideBodyBrowser": "Create a connection to this service with the connect button.",
     "guideBodyDesktop": "Start listening on this endpoint for network requests. On request, automatically create the connection and disconnect when idle.",
     "guideTitleBrowser": "Starting a connection",
-    "guideTitleDesktop": "Connect on demand"
+    "guideTitleDesktop": "Connect on demand",
+    "useProxy": "Connect through the proxy instead"
   },
   "serviceDefaultsPage": {
     "defaults": "Defaults",

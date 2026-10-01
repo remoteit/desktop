@@ -1344,6 +1344,10 @@
     "title": "自動設定するサービスを選択してください",
     "typeAndPort": "{{type}} - {{port}}"
   },
+  "localSubnetConnect": {
+    "address": "",
+    "title": ""
+  },
   "logsPage": {
     "title": "ログ"
   },
@@ -2221,7 +2225,8 @@
     "guideBodyBrowser": "接続ボタンでこのサービスへの接続を作成します。",
     "guideBodyDesktop": "このエンドポイントでネットワークリクエストの待ち受けを開始します。リクエストがあると自動的に接続し、アイドル状態になると切断します。",
     "guideTitleBrowser": "接続の開始",
-    "guideTitleDesktop": "オンデマンド接続"
+    "guideTitleDesktop": "オンデマンド接続",
+    "useProxy": ""
   },
   "serviceDefaultsPage": {
     "defaults": "デフォルト",

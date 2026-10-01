@@ -1372,6 +1372,10 @@
     "title": "Wählen Sie gefundene Dienste für die automatische Einrichtung aus",
     "typeAndPort": "{{type}} - {{port}}"
   },
+  "localSubnetConnect": {
+    "address": "",
+    "title": ""
+  },
   "logsPage": {
     "title": "Protokolle"
   },
@@ -2272,7 +2276,8 @@
     "guideBodyBrowser": "Erstellen Sie mit der Verbinden-Schaltfläche eine Verbindung zu diesem Dienst.",
     "guideBodyDesktop": "Beginnen Sie, an diesem Endpunkt auf Netzwerkanfragen zu warten. Bei einer Anfrage wird die Verbindung automatisch hergestellt und bei Inaktivität wieder getrennt.",
     "guideTitleBrowser": "Eine Verbindung starten",
-    "guideTitleDesktop": "Bei Bedarf verbinden"
+    "guideTitleDesktop": "Bei Bedarf verbinden",
+    "useProxy": ""
   },
   "serviceDefaultsPage": {
     "defaults": "Standardwerte",
