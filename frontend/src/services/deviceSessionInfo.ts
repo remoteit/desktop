@@ -3,7 +3,7 @@ import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { withoutDeviceSessions } from './graphQLDaemon'
 
 /* What the device-session API says of each device, for the device list and a device's pages: its name in device
-   subnets (Device.subnetName, <device>.<owner slug>.on.remote.it), who it acts for in user mode (Device.actsFor), and
+   subnets (Device.subnetName, <name>-<owner slug>.on.remote.it), who it acts for in user mode (Device.actsFor), and
    what its daemon last reported — the version it runs and where an upgrade stands (Device.agent).
    Not in the device list's own query: that query runs on every API, and only one that serves device sessions has these
    fields. So they are read on their own — batched, one query for every row that asks in the same moment, kept for the
