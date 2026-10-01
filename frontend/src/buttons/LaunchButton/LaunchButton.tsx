@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import heartbeat from '../../services/Heartbeat'
 import { MenuItem, ListItemIcon, ListItemText } from '@mui/material'
-import { updateConnection, launchDisabled } from '../../helpers/connectionHelper'
+import { updateConnection, launchDisabled, saveLaunchTokens } from '../../helpers/connectionHelper'
 import { State, Dispatch } from '../../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { IconButton, ButtonProps } from '../../buttons/IconButton'
@@ -69,6 +69,7 @@ export const LaunchButton: React.FC<Props> = ({
   const onSubmit = (tokens: ILookup<string>) => {
     if (!app.connection) return
     updateConnection(app, { ...app.connection, ...tokens })
+    saveLaunchTokens(app.service?.id || app.connection.id, tokens)
     launch()
     close()
   }

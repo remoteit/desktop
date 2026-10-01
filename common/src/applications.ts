@@ -85,6 +85,9 @@ export class Application {
   defaultAppTokens: string[] = ['host', 'port', 'id']
   defaultTokenData: ILookup<string> = {}
   globalDefaults: ILookup<any> = {}
+  // What this person entered for this service when a launch asked (the user's cloud attributes): it fills what the
+  // connection leaves empty, ahead of their defaults for the type.
+  savedTokens: ILookup<string> = {}
   cloudData?: IApplicationType
   localhost?: boolean
   helpMessage?: string
@@ -256,7 +259,10 @@ export class Application {
   get lookup() {
     let lookup: ILookup<any> = { ...this.defaultTokenData, ...this.globalDefaults }
     if (this.service) lookup = { ...lookup, ...this.service.attributes }
+    lookup = { ...lookup, ...this.savedTokens }
     if (this.connection) lookup = { ...lookup, ...this.connection }
+    for (const [token, value] of Object.entries(this.savedTokens))
+      if (lookup[token] === undefined || lookup[token] === '') lookup[token] = value
     return lookup
   }
 

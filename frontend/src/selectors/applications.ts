@@ -1,11 +1,21 @@
 import { createSelector } from 'reselect'
 import { getApplication } from '@common/applications'
-import { getConnectionDefaults, getApplicationService, getApplicationConnection, getApplicationTypes } from './state'
+import {
+  getConnectionDefaults,
+  getLaunchTokens,
+  getApplicationService,
+  getApplicationConnection,
+  getApplicationTypes,
+} from './state'
 import { selectActiveAccountId } from './accounts'
 
 export const selectApplication = createSelector(
-  [getConnectionDefaults, getApplicationService, getApplicationConnection],
-  (globalDefaults, service, connection) => getApplication(service, connection, globalDefaults)
+  [getConnectionDefaults, getLaunchTokens, getApplicationService, getApplicationConnection],
+  (globalDefaults, launchTokens, service, connection) => {
+    const app = getApplication(service, connection, globalDefaults)
+    app.savedTokens = launchTokens[service?.id || connection?.id || ''] || {}
+    return app
+  }
 )
 
 export const selectApplicationTypesGrouped = createSelector(

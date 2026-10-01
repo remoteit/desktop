@@ -51,6 +51,15 @@ export function isFileToken(token: string) {
   return token === 'path' || token === 'app' || token.toLowerCase().includes('file')
 }
 
+// What a launch asked for and was given — an ssh username — kept with the person, in their cloud attributes, so the
+// next launch of this service asks again nowhere. A file path is this machine's alone, and stays out.
+export function saveLaunchTokens(serviceId: string | undefined, tokens: ILookup<string>) {
+  const kept = Object.fromEntries(Object.entries(tokens).filter(([token, value]) => value && !isFileToken(token)))
+  if (!serviceId || !Object.keys(kept).length) return
+  const launch: ILookup<ILookup<string>> = store.getState().user.attributes?.launch || {}
+  store.dispatch.user.setAttribute({ launch: { ...launch, [serviceId]: { ...launch[serviceId], ...kept } } })
+}
+
 export function findLocalConnection(state: State, id: string, sessionId: string | undefined) {
   return state.connections.all.find(c => c.id === id || c.sessionId === sessionId)
 }

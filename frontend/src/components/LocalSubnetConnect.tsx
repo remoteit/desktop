@@ -7,6 +7,7 @@ import { windowOpen } from '../services/browser'
 import { emit } from '../services/Controller'
 import { LocalSubnetName } from '../services/localSubnet'
 import { useApplication } from '../hooks/useApplication'
+import { saveLaunchTokens } from '../helpers/connectionHelper'
 import { PromptModal } from './PromptModal'
 import { Icon } from './Icon'
 
@@ -35,6 +36,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection
   const launch = (tokens: ILookup<string> = {}) => {
     setPrompt(false)
     if (web) return windowOpen(`https://${local.name}/`, '_blank')
+    saveLaunchTokens(service?.id, tokens)
     const command = app.preview(tokens)
     if (app.launchType === 'URL') windowOpen(command, '_blank', !command.startsWith('http'))
     else emit('launch/app', Object.keys(tokens).length ? command : app.sshConfigString, app.launchType)
