@@ -75,7 +75,8 @@ export const DeviceNetworkPage: React.FC = () => {
     )
 
   const manage = network.permissions.includes('MANAGE')
-  // Devices by tag select among all the owner's devices: its account's administrators set them.
+  // Its administrators — the owner, the owning account's admins, admin shares — set who holds each tier and its
+  // devices by tag.
   const admin = network.permissions.includes('ADMIN')
   const link = network.kind === 'LINK'
   const deviceById = new Map(devices.map(device => [device.id, device]))
@@ -210,8 +211,13 @@ export const DeviceNetworkPage: React.FC = () => {
         : a.accountName.localeCompare(b.accountName)
     )
   const people = [
-    { ...network.owner, owner: true, role: 'MANAGE' as ShareRole },
-    ...network.access.map(a => ({ ...a.user, owner: false, role: a.role || ('CONNECT' as ShareRole) })),
+    { ...network.owner, owner: true, role: 'ADMIN' as ShareRole },
+    ...network.access.map(a => ({
+      ...a.user,
+      owner: false,
+      role: a.role || ('CONNECT' as ShareRole),
+      organizationName: a.organizationName,
+    })),
   ]
 
   return (
@@ -399,7 +405,7 @@ export const DeviceNetworkPage: React.FC = () => {
           <List>
             <ListSubheader>
               {t('deviceNetwork.people', 'People')}
-              {manage && (
+              {admin && (
                 <IconButton
                   icon="user-plus"
                   title={t('deviceNetwork.share', 'Share the network')}
@@ -412,10 +418,11 @@ export const DeviceNetworkPage: React.FC = () => {
               <PersonRow
                 key={person.id}
                 email={person.email}
+                organizationName={'organizationName' in person ? person.organizationName : undefined}
                 owner={person.owner}
                 role={person.role}
                 devices={(network.userModeDevices || []).filter(device => device.userId === person.id)}
-                editable={manage && !person.owner && !busy}
+                editable={admin && !person.owner && !busy}
                 onRole={role => act(() => graphQLSetNetworkShareRole(network.id, person.email, role))}
                 onRemove={() => act(() => graphQLRemoveNetworkShare(network.id, person.email))}
               />
@@ -571,13 +578,14 @@ const MemberRow: React.FC<{
    first 6 and "+N more". Removing a person unshares the network with them; its owner stays. */
 const PersonRow: React.FC<{
   email: string
+  organizationName?: string | null // a share with an organization's account: its members hold the tier too
   owner: boolean
   role: ShareRole
   devices: { deviceId: string; name: string }[]
   editable: boolean
   onRole: (role: ShareRole) => void
   onRemove: () => void
-}> = ({ email, owner, role, devices, editable, onRole, onRemove }) => {
+}> = ({ email, organizationName, owner, role, devices, editable, onRole, onRemove }) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const folded = devices.length > INLINE && !open
@@ -589,6 +597,11 @@ const PersonRow: React.FC<{
         <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={email}>
           {email}
         </Typography>
+        {organizationName && !owner && (
+          <Typography variant="caption" color="textSecondary" component="div">
+            {t('deviceNetwork.orgShare', '{{name}} and its members, as their roles allow', { name: organizationName })}
+          </Typography>
+        )}
         <Typography variant="caption" color="textSecondary" component="div">
           {devices.length === 1
             ? t('deviceNetwork.deviceInUserMode', '1 device in user mode')
@@ -600,7 +613,11 @@ const PersonRow: React.FC<{
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {/* What they may do, as words — not a pill, which here means a device. */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minHeight: 28 }}>
-          <Icon name={owner ? 'crown' : role === 'MANAGE' ? 'sliders' : 'plug'} size="sm" color="grayDark" />
+          <Icon
+            name={owner ? 'crown' : role === 'ADMIN' ? 'user-shield' : role === 'MANAGE' ? 'sliders' : 'plug'}
+            size="sm"
+            color="grayDark"
+          />
           {editable ? (
             <TextField
               select
@@ -614,11 +631,14 @@ const PersonRow: React.FC<{
             >
               <MenuItem value="CONNECT">{t('deviceNetwork.roleConnect', 'Can connect')}</MenuItem>
               <MenuItem value="MANAGE">{t('deviceNetwork.roleManage', 'Can manage')}</MenuItem>
+              <MenuItem value="ADMIN">{t('deviceNetwork.roleAdmin', 'Admin')}</MenuItem>
             </TextField>
           ) : (
             <Typography variant="body2">
               {owner
-                ? t('deviceNetwork.ownerRole', 'Owner · manages it')
+                ? t('deviceNetwork.ownerRole', 'Owner · admin')
+                : role === 'ADMIN'
+                ? t('deviceNetwork.roleAdmin', 'Admin')
                 : role === 'MANAGE'
                 ? t('deviceNetwork.roleManage', 'Can manage')
                 : t('deviceNetwork.roleConnect', 'Can connect')}

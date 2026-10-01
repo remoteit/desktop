@@ -56,12 +56,14 @@ export type DeviceNetwork = {
   deviceRules: NetworkRule[]
   ruleAccounts: RuleAccount[]
   connections: { service: { id: string; name: string; device: { id: string; name: string } } }[]
-  access: { user: { id: string; email: string }; role: ShareRole }[]
+  access: { user: { id: string; email: string }; role: ShareRole; organizationName?: string | null }[]
   userModeDevices: { userId: string; deviceId: string; name: string }[] // its people's devices in user mode
 }
 
-// What someone a network is shared with may do: connect to what it reaches, or manage it as well.
-export type ShareRole = 'CONNECT' | 'MANAGE'
+// What someone a network is shared with may do: connect to what it reaches; manage it as well — its devices, services
+// and switches; or administer it — its people (granting any tier, admin too) and devices by tag. Deleting and
+// transferring it are its owner's. A network may be shared with an organization, for its members as their roles allow.
+export type ShareRole = 'CONNECT' | 'MANAGE' | 'ADMIN'
 
 export const initiates = (member: { role: NetworkDeviceRole }) => member.role !== 'TARGET'
 export const targeted = (member: { role: NetworkDeviceRole }) => member.role !== 'INITIATOR'
@@ -105,7 +107,7 @@ export async function graphQLDeviceNetworks(
           deviceRules { id accountId accountName holds editable addedByEmail tags tagColors { name color } operator initiator allServices anyPort devices overridden named { id name services { id name } } }
           ruleAccounts { id name tags }
           connections { service { id name device { id name } } }
-          access { user { id email } role }
+          access { user { id email } role organizationName }
           userModeDevices { userId deviceId name }
         }
       }
