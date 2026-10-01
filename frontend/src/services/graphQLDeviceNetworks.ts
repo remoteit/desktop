@@ -39,6 +39,17 @@ export type DeviceNetwork = {
 export const initiates = (member: { role: NetworkDeviceRole }) => member.role !== 'TARGET'
 export const targeted = (member: { role: NetworkDeviceRole }) => member.role !== 'INITIATOR'
 
+// Whether a member exposes anything — all its services, any port, or services the network lists — and so is a target.
+// A device added with nothing chosen yet is a member exposing nothing.
+export const exposes = (network: Pick<DeviceNetwork, 'connections'>, member: NetworkMember) =>
+  targeted(member) &&
+  (member.scope === 'ALL' || member.anyPort || network.connections.some(c => c.service.device?.id === member.deviceId))
+
+// The role a member's choices make: an initiator when switched on, a target when it exposes something. Neither yet:
+// kept as a target exposing nothing, which reaches nothing and is reached by nothing.
+export const roleFor = (initiator: boolean, exposing: boolean): NetworkDeviceRole =>
+  initiator && exposing ? 'BOTH' : initiator ? 'INITIATOR' : 'TARGET'
+
 export async function graphQLDeviceNetworks(
   accountId?: string
 ): Promise<DeviceNetwork[] | 'ERROR' | typeof UNSUPPORTED> {

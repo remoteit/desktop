@@ -11,7 +11,7 @@ vi.mock('axios', () => ({ default: { request } }))
 
 import { UNSUPPORTED, graphQLDeviceDaemon, runningVersion, updating } from './graphQLDaemon'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
-import { graphQLDeviceNetworks, initiates, targeted } from './graphQLDeviceNetworks'
+import { exposes, graphQLDeviceNetworks, initiates, roleFor, targeted } from './graphQLDeviceNetworks'
 
 const daemon = {
   deviceId: '80:00:00:00:00:00:00:01',
@@ -99,5 +99,30 @@ describe('device networks', () => {
   it('a device that is both initiates and is a target', () => {
     expect([initiates({ role: 'BOTH' }), targeted({ role: 'BOTH' })]).toEqual([true, true])
     expect([initiates({ role: 'TARGET' }), targeted({ role: 'INITIATOR' })]).toEqual([false, false])
+  })
+})
+
+describe("a network member's choices", () => {
+  const member = (fields: object) =>
+    ({ deviceId: 'A', role: 'TARGET', scope: 'LISTED', anyPort: false, ...fields } as any)
+  const network = (listed: string[] = []) =>
+    ({ connections: listed.map(id => ({ service: { id: `${id}-S`, device: { id } } })) } as any)
+
+  it('is a target once it exposes something: all its services, any port, or a service the network lists', () => {
+    expect(exposes(network(), member({}))).toBe(false) // just added: nothing chosen
+    expect(exposes(network(), member({ scope: 'ALL' }))).toBe(true)
+    expect(exposes(network(), member({ anyPort: true }))).toBe(true)
+    expect(exposes(network(['A']), member({}))).toBe(true)
+    expect(exposes(network(['B']), member({}))).toBe(false)
+    expect(exposes(network(), member({ role: 'INITIATOR', scope: 'ALL' }))).toBe(false) // an initiator's stored scope
+  })
+
+  it('makes the role: initiator switched on, target when exposing, both, or a target exposing nothing', () => {
+    expect([roleFor(true, true), roleFor(true, false), roleFor(false, true), roleFor(false, false)]).toEqual([
+      'BOTH',
+      'INITIATOR',
+      'TARGET',
+      'TARGET',
+    ])
   })
 })

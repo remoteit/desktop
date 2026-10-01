@@ -11,6 +11,7 @@ import {
   NetworkMember,
   graphQLAddNetworkDevice,
   graphQLRemoveNetworkDevice,
+  exposes,
   initiates,
   targeted,
 } from '../services/graphQLDeviceNetworks'
@@ -114,14 +115,16 @@ const Graph: React.FC<Props> = ({ network, devices, manage, exposure, act }) => 
         markerEnd: arrow,
         deletable: false,
       })),
-      ...targets.map(member => ({
-        id: `network->${member.deviceId}`,
-        source: 'network',
-        target: `device:${member.deviceId}`,
-        markerEnd: arrow,
-        label: member.role === 'BOTH' ? t('deviceNetworkGraph.both', 'also initiates') : undefined,
-        deletable: false,
-      })),
+      ...targets
+        .filter(member => exposes(network, member))
+        .map(member => ({
+          id: `network->${member.deviceId}`,
+          source: 'network',
+          target: `device:${member.deviceId}`,
+          markerEnd: arrow,
+          label: member.role === 'BOTH' ? t('deviceNetworkGraph.both', 'also initiates') : undefined,
+          deletable: false,
+        })),
     ]
     return { nodes, edges }
   }, [network, people, initiators, targets, nameOf, exposure, manage, t])

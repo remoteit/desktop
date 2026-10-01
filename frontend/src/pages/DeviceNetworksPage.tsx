@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { List, ListItemText, Typography } from '@mui/material'
-import { initiates, targeted } from '../services/graphQLDeviceNetworks'
+import { exposes, initiates } from '../services/graphQLDeviceNetworks'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { selectPermissions } from '../selectors/organizations'
 import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
@@ -69,7 +69,7 @@ export const DeviceNetworksPage: React.FC = () => {
                   '{{initiators}} initiating · {{targets}} targets · {{people}} people',
                   {
                     initiators: network.devices.filter(initiates).length,
-                    targets: network.devices.filter(targeted).length,
+                    targets: network.devices.filter(member => exposes(network, member)).length,
                     people: network.access.length + 1,
                   }
                 )}

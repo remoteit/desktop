@@ -29,7 +29,9 @@ import {
   graphQLRemoveNetworkDevice,
   graphQLRemoveNetworkDeviceRule,
   graphQLSetNetworkDeviceRule,
+  exposes,
   initiates,
+  roleFor,
   targeted,
 } from '../services/graphQLDeviceNetworks'
 import { getAllDevices } from '../selectors/devices'
@@ -49,11 +51,11 @@ import { DeviceNetworkGraph } from '../components/DeviceNetworkGraph'
 
 const ROLES: NetworkDeviceRole[] = ['INITIATOR', 'TARGET', 'BOTH']
 
-/* A network of devices (docs/superpowers/specs/2026-09-30-device-sessions-ui-design.md §3): its initiators, its
-   targets and what each exposes — the services the network lists, all of them, any port of its own — the people who
-   may connect to it (who reach what its targets expose, as initiators do) with their devices in user mode, and its tag
-   rules. A device joins only when you manage both it and the network. In place of the network page while the
-   device-sessions flag is on. */
+/* A network of devices (docs/superpowers/specs/2026-09-30-device-sessions-ui-design.md §3): its devices, each an
+   initiator (a switch) and a target as soon as it exposes something — all its services, any port of its own, or
+   services chosen one by one — the people who may connect to it (who reach what its targets expose, as initiators
+   do) with their devices in user mode, and its tag rules. A device is added with + and set up in place; one joins only
+   when you manage both it and the network. In place of the network page while the device-sessions flag is on. */
 export const DeviceNetworkPage: React.FC = () => {
   const { t } = useTranslation()
   const { networkID } = useParams<{ networkID?: string }>()
@@ -61,6 +63,7 @@ export const DeviceNetworkPage: React.FC = () => {
   const devices = useSelector(getAllDevices)
   const [busy, setBusy] = useState(false)
   const [view, setView] = useState<'list' | 'graph'>('list')
+  const [adding, setAdding] = useState(false)
 
   const network = Array.isArray(networks) ? networks.find(n => n.id === networkID) : undefined
   if (networks === undefined) return <LoadingMessage />
@@ -87,29 +90,60 @@ export const DeviceNetworkPage: React.FC = () => {
     await reload()
     setBusy(false)
   }
-  const change = (member: NetworkMember, set: Partial<NetworkMember>) =>
-    act(() =>
-      graphQLAddNetworkDevice(network.id, member.deviceId, {
-        role: set.role ?? member.role,
-        scope: set.scope ?? member.scope,
-        anyPort: set.anyPort ?? member.anyPort,
-      })
-    )
+  // The services of a member the network lists.
+  const listedOf = (member: NetworkMember) =>
+    network.connections.filter(connection => connection.service.device?.id === member.deviceId).length
 
+  // A member's choices, saved with the role they make: an initiator when switched on, a target when it exposes
+  // something (all services, any port, or a listed service).
+  const change = (
+    member: NetworkMember,
+    set: { initiator?: boolean; scope?: NetworkMember['scope']; anyPort?: boolean }
+  ) => {
+    const scope = set.scope ?? member.scope
+    const anyPort = set.anyPort ?? (targeted(member) && member.anyPort)
+    const initiator = set.initiator ?? initiates(member)
+    const exposing = scope === 'ALL' || anyPort || (targeted(member) && listedOf(member) > 0)
+    return act(() =>
+      graphQLAddNetworkDevice(network.id, member.deviceId, { role: roleFor(initiator, exposing), scope, anyPort })
+    )
+  }
+  // A service listed or not; the member becomes a target with its first, and stops being one with its last.
+  const list = (member: NetworkMember, serviceId: string) =>
+    act(async () => {
+      const listing = !listed.has(serviceId)
+      await graphQLListNetworkService(network.id, serviceId, listing)
+      // What it exposes now, as a target: an initiator's stored scope and any port do not count.
+      const all = targeted(member) && member.scope === 'ALL'
+      const anyPort = targeted(member) && member.anyPort
+      const exposing = all || anyPort || listedOf(member) + (listing ? 1 : -1) > 0
+      const role = roleFor(initiates(member), exposing)
+      if (role !== member.role)
+        await graphQLAddNetworkDevice(network.id, member.deviceId, { role, scope: all ? 'ALL' : 'LISTED', anyPort })
+    })
+
+  // What a member is: an initiator, a target exposing what, or nothing chosen yet.
   const exposure = (member: NetworkMember) => {
+    if (!exposes(network, member)) return t('deviceNetwork.exposesNothing', 'Exposes nothing')
     const parts = [
       member.scope === 'ALL'
         ? t('deviceNetwork.allServices', 'All services')
-        : t('deviceNetwork.listedServices', '{{count}} listed services', {
-            count: (deviceById.get(member.deviceId)?.services || []).filter(s => listed.has(s.id)).length,
-          }),
+        : t('deviceNetwork.listedServices', '{{count}} listed services', { count: listedOf(member) }),
     ]
     if (member.anyPort) parts.push(t('deviceNetwork.anyPort', 'Any port'))
     return parts.join(' · ')
   }
+  const summary = (member: NetworkMember) => {
+    const parts: string[] = []
+    if (initiates(member)) parts.push(t('deviceNetwork.initiator', 'Initiator'))
+    if (exposes(network, member))
+      parts.push(t('deviceNetwork.targetExposing', 'Target: {{what}}', { what: exposure(member) }))
+    return parts.length ? parts.join(' · ') : t('deviceNetwork.nothingChosen', 'Nothing chosen yet')
+  }
 
-  const initiators = network.devices.filter(initiates)
-  const targets = network.devices.filter(targeted)
+  const addable = devices.filter(
+    device => device.permissions.includes('MANAGE') && !network.devices.some(member => member.deviceId === device.id)
+  )
   const people = [{ ...network.owner, manages: true }, ...network.access.map(a => ({ ...a.user, manages: false }))]
 
   return (
@@ -140,77 +174,113 @@ export const DeviceNetworkPage: React.FC = () => {
       ) : (
         <>
           <List>
-            <ListSubheader>{t('deviceNetwork.initiators', 'Initiating devices')}</ListSubheader>
-            {!initiators.length && (
-              <Empty text={t('deviceNetwork.noInitiators', 'No device initiates on this network')} />
-            )}
-            {initiators.map(member => (
-              <MemberItem
-                key={member.deviceId}
-                name={nameOf(member.deviceId)}
-                member={member}
-                detail={member.role === 'BOTH' ? t('deviceNetwork.alsoTarget', 'Also a target') : undefined}
-                removable={manage && !busy}
-                onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
-              />
-            ))}
-          </List>
-
-          <List>
-            <ListSubheader>{t('deviceNetwork.targets', 'Target devices')}</ListSubheader>
-            {!targets.length && <Empty text={t('deviceNetwork.noTargets', 'No device is a target on this network')} />}
-            {targets.map(member => (
-              <Box key={member.deviceId}>
-                <MemberItem
-                  name={nameOf(member.deviceId)}
-                  member={member}
-                  detail={exposure(member)}
-                  removable={manage && !busy}
-                  onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
+            <ListSubheader>
+              {t('deviceNetwork.devices', 'Devices')}
+              {manage && !link && (
+                <IconButton
+                  icon="plus"
+                  title={t('deviceNetwork.addDevice', 'Add a device')}
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => setAdding(!adding)}
                 />
-                {manage && !link && (
-                  <Box sx={{ paddingLeft: 6 }}>
-                    <ListItemSetting
-                      hideIcon
-                      size="small"
-                      label={t('deviceNetwork.allServices', 'All services')}
-                      subLabel={t('deviceNetwork.allServicesHint', 'Every service it has, including ones added later')}
-                      toggle={member.scope === 'ALL'}
-                      disabled={busy}
-                      onClick={() => change(member, { scope: member.scope === 'ALL' ? 'LISTED' : 'ALL' })}
-                    />
-                    <ListItemSetting
-                      hideIcon
-                      size="small"
-                      label={t('deviceNetwork.anyPort', 'Any port')}
-                      subLabel={t(
-                        'deviceNetwork.anyPortHint',
-                        "Any port of the device itself, within its Any port setting (the device's Configure page)"
-                      )}
-                      toggle={member.anyPort}
-                      disabled={busy}
-                      onClick={() => change(member, { anyPort: !member.anyPort })}
-                    />
-                    {member.scope === 'LISTED' &&
-                      (deviceById.get(member.deviceId)?.services || []).map(service => (
-                        <ListItem key={service.id} dense disableGutters>
-                          <ListItemIcon>
-                            <Checkbox
-                              size="small"
-                              checked={listed.has(service.id)}
-                              disabled={busy}
-                              onChange={() =>
-                                act(() => graphQLListNetworkService(network.id, service.id, !listed.has(service.id)))
-                              }
-                            />
-                          </ListItemIcon>
-                          <ListItemText primary={service.name} />
-                        </ListItem>
-                      ))}
-                  </Box>
-                )}
-              </Box>
-            ))}
+              )}
+            </ListSubheader>
+            {adding && (
+              <Gutters>
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  label={t('deviceNetwork.chooseDevice', 'Device to add')}
+                  value=""
+                  helperText={
+                    !addable.length ? t('deviceNetwork.noChoices', 'Only devices you manage can be added.') : undefined
+                  }
+                  onChange={event => {
+                    const deviceId = event.target.value
+                    setAdding(false)
+                    // Added exposing nothing and initiating nothing: its choices are made here, in place.
+                    act(() =>
+                      graphQLAddNetworkDevice(network.id, deviceId, { role: 'TARGET', scope: 'LISTED', anyPort: false })
+                    )
+                  }}
+                >
+                  {addable.map(device => (
+                    <MenuItem key={device.id} value={device.id}>
+                      {device.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Gutters>
+            )}
+            {!network.devices.length && <Empty text={t('deviceNetwork.noDevices', 'No devices on this network yet')} />}
+            {[...network.devices]
+              .sort((a, b) => nameOf(a.deviceId).localeCompare(nameOf(b.deviceId)))
+              .map(member => (
+                <Box key={member.deviceId}>
+                  <MemberItem
+                    name={nameOf(member.deviceId)}
+                    member={member}
+                    detail={summary(member)}
+                    removable={manage && !busy}
+                    onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
+                  />
+                  {manage && !link && (
+                    <Box sx={{ paddingLeft: 6 }}>
+                      <ListItemSetting
+                        hideIcon
+                        size="small"
+                        label={t('deviceNetwork.initiatorToggle', 'Initiator')}
+                        subLabel={t('deviceNetwork.initiatorHint', "Reaches what this network's targets expose")}
+                        toggle={initiates(member)}
+                        disabled={busy}
+                        onClick={() => change(member, { initiator: !initiates(member) })}
+                      />
+                      <ListItemSetting
+                        hideIcon
+                        size="small"
+                        label={t('deviceNetwork.allServices', 'All services')}
+                        subLabel={t(
+                          'deviceNetwork.allServicesHint',
+                          'Every service it has, including ones added later'
+                        )}
+                        toggle={targeted(member) && member.scope === 'ALL'}
+                        disabled={busy}
+                        onClick={() =>
+                          change(member, { scope: targeted(member) && member.scope === 'ALL' ? 'LISTED' : 'ALL' })
+                        }
+                      />
+                      <ListItemSetting
+                        hideIcon
+                        size="small"
+                        label={t('deviceNetwork.anyPort', 'Any port')}
+                        subLabel={t(
+                          'deviceNetwork.anyPortHint',
+                          "Any port of the device itself, within its Any port setting (the device's Configure page)"
+                        )}
+                        toggle={targeted(member) && member.anyPort}
+                        disabled={busy}
+                        onClick={() => change(member, { anyPort: !(targeted(member) && member.anyPort) })}
+                      />
+                      {!(targeted(member) && member.scope === 'ALL') &&
+                        (deviceById.get(member.deviceId)?.services || []).map(service => (
+                          <ListItem key={service.id} dense disableGutters>
+                            <ListItemIcon>
+                              <Checkbox
+                                size="small"
+                                checked={listed.has(service.id)}
+                                disabled={busy}
+                                onChange={() => list(member, service.id)}
+                              />
+                            </ListItemIcon>
+                            <ListItemText primary={service.name} />
+                          </ListItem>
+                        ))}
+                    </Box>
+                  )}
+                </Box>
+              ))}
           </List>
 
           <List>
@@ -246,8 +316,6 @@ export const DeviceNetworkPage: React.FC = () => {
           </List>
 
           <TagRules network={network} busy={busy} act={act} />
-
-          {manage && !link && <AddDevice network={network} devices={devices} busy={busy} act={act} />}
         </>
       )}
     </Container>
@@ -312,104 +380,6 @@ const UserModeDevice: React.FC<{ device: IDevice; email: string }> = ({ device, 
     <ListItemLocation to={`/devices/${device.id}`} icon="laptop" inset={1.5} dense>
       <ListItemText primary={device.name} secondary={t('deviceNetwork.fullAccess', 'User mode: full access')} />
     </ListItemLocation>
-  )
-}
-
-// A device you manage onto the network: its role, and — as a target — what it exposes.
-const AddDevice: React.FC<{
-  network: DeviceNetwork
-  devices: IDevice[]
-  busy: boolean
-  act: (change: () => Promise<unknown>) => Promise<void>
-}> = ({ network, devices, busy, act }) => {
-  const { t } = useTranslation()
-  const [deviceId, setDeviceId] = useState('')
-  const [role, setRole] = useState<NetworkDeviceRole>('TARGET')
-  const [all, setAll] = useState(true)
-  const [anyPort, setAnyPort] = useState(false)
-  const members = new Set(network.devices.map(member => member.deviceId))
-  const choices = devices.filter(device => device.permissions.includes('MANAGE') && !members.has(device.id))
-
-  return (
-    <List>
-      <ListSubheader>{t('deviceNetwork.addDevice', 'Add a device')}</ListSubheader>
-      <Gutters>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-          <TextField
-            select
-            size="small"
-            label={t('deviceNetwork.device', 'Device')}
-            value={deviceId}
-            onChange={event => setDeviceId(event.target.value)}
-            sx={{ minWidth: 220 }}
-          >
-            {choices.map(device => (
-              <MenuItem key={device.id} value={device.id}>
-                {device.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            size="small"
-            label={t('deviceNetwork.role', 'Role')}
-            value={role}
-            onChange={event => setRole(event.target.value as NetworkDeviceRole)}
-            sx={{ minWidth: 180 }}
-          >
-            {ROLES.map(value => (
-              <MenuItem key={value} value={value}>
-                {roleLabel(t, value)}
-              </MenuItem>
-            ))}
-          </TextField>
-          <Button
-            variant="contained"
-            size="small"
-            disabled={!deviceId || busy}
-            onClick={() =>
-              act(async () => {
-                await graphQLAddNetworkDevice(network.id, deviceId, {
-                  role,
-                  scope: all ? 'ALL' : 'LISTED',
-                  anyPort: role !== 'INITIATOR' && anyPort,
-                })
-                setDeviceId('')
-              })
-            }
-          >
-            {t('deviceNetwork.add', 'Add')}
-          </Button>
-        </Box>
-      </Gutters>
-      {role !== 'INITIATOR' && (
-        <>
-          <ListItemSetting
-            hideIcon
-            size="small"
-            label={t('deviceNetwork.allServices', 'All services')}
-            subLabel={t('deviceNetwork.allServicesAddHint', 'Off: only the services you list on the network')}
-            toggle={all}
-            onClick={() => setAll(!all)}
-          />
-          <ListItemSetting
-            hideIcon
-            size="small"
-            label={t('deviceNetwork.anyPort', 'Any port')}
-            subLabel={t('deviceNetwork.anyPortAddHint', "Needs the device's Any port setting on first")}
-            toggle={anyPort}
-            onClick={() => setAnyPort(!anyPort)}
-          />
-        </>
-      )}
-      {!choices.length && (
-        <Gutters>
-          <Typography variant="caption" color="textSecondary">
-            {t('deviceNetwork.noChoices', 'Only devices you manage can be added.')}
-          </Typography>
-        </Gutters>
-      )}
-    </List>
   )
 }
 
