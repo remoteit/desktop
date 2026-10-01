@@ -14,8 +14,8 @@ devices belong to, and a device's **user mode**. All of it hidden behind one tes
 ## Decisions (Evan, 2026-09-30)
 
 1. **One flag for everything**, a setting on the Test UI page.
-2. **Device status and remote-upgrade controls:** standby/active, version, update state; channel, auto-update, hold,
-   rollback.
+2. **Device status and remote-upgrade controls:** version, update state; channel, auto-update, hold, rollback. (No
+   standby/active badge — Evan, 2026-09-30: a handover lasts seconds.)
 3. **The DNS name on the main device list**, from the user's view: the user (and their devices in user mode) reach
    every device they can access, so every device they can see has a name for them.
 4. **A new Networks page.** With the flag on it **replaces** the current Networks page (same name, same place in the
@@ -72,7 +72,6 @@ On the device detail page, a **Device agent** section:
 | The version it runs, and the one it should | `deviceDaemon` |
 | Whether it is a device-session daemon or a legacy agent | `deviceDaemon` (none for a legacy agent) |
 | The upgrade: pending, downloading, installing, installed, failed (why), refused (why: "older than the running …", "does not take updates", "cannot upgrade itself") | the report's `update` via `deviceDaemon` |
-| Standby / active | a badge, only during a handover — it lasts seconds |
 
 Controls, for a device the user manages:
 
@@ -188,5 +187,7 @@ Each step lands behind the flag and is testable against r3-local (Test page → 
 
 Every read of the device-session API is silent and hides (or says so) where the API does not serve it. Not built:
 **per-device rollback** (rollback is a channel's; a device's needs graphql to pin a release, and to know which one to
-go back to), the **standby / active** badge (presence does not expose it; it lasts seconds), a **service's host
+go back to), a **service's host
 name** behind a device, **names and addresses on demand**, and editing tag rules (shown, not edited).
+Next, proposed: an **Agent column** in the device list — version and upgrade status (upgrading, failed or refused with
+the reason on hover), sortable and filterable — on a batched `Device` field for the agent's status in graphql.
