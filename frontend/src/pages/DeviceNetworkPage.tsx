@@ -66,6 +66,8 @@ export const DeviceNetworkPage: React.FC = () => {
   // What is being added, and from which account: a device one by one, devices by tag, or another account's heading.
   const [adding, setAdding] = useState<{ accountId: string; kind: 'device' | 'tag' } | 'account' | false>(false)
   const [extra, setExtra] = useState<string[]>([]) // accounts opened to add from, with nothing on the network yet
+  // Which devices the list shows: all, those that initiate, or those that are targets (exposing something).
+  const [show, setShow] = useState<'ALL' | 'INITIATORS' | 'TARGETS'>('ALL')
   const tags = useSelector(selectTags)
   const dark = useSelector((state: State) => state.ui.themeDark)
 
@@ -210,15 +212,21 @@ export const DeviceNetworkPage: React.FC = () => {
     ...network.devices.map(member => member.accountId || network.owner.id),
     ...extra,
   ].filter((id, index, all) => all.indexOf(id) === index)
+  const memberShown = (member: NetworkMember) =>
+    show === 'ALL' || (show === 'INITIATORS' ? initiates(member) : exposes(network, member))
+  const ruleShown = (rule: NetworkRule) =>
+    show === 'ALL' || (show === 'INITIATORS' ? rule.initiator : rule.allServices || rule.anyPort)
   const accounts = accountIds
     .map(id => {
       const members = network.devices
-        .filter(member => (member.accountId || network.owner.id) === id)
+        .filter(member => (member.accountId || network.owner.id) === id && memberShown(member))
         .sort((a, b) => nameOf(a.deviceId).localeCompare(nameOf(b.deviceId)))
-      const groups = rules.filter(rule => rule.accountId === id)
+      const groups = rules.filter(rule => rule.accountId === id && ruleShown(rule))
       const count = new Set([...groups.flatMap(rule => rule.devices), ...members.map(member => member.deviceId)]).size
       return { id, name: accountName(id), members, rules: groups, count }
     })
+    // Filtered, an account with nothing of that kind is left out.
+    .filter(account => show === 'ALL' || account.count > 0 || account.rules.length > 0)
     .sort((a, b) => (a.id === network.owner.id ? -1 : b.id === network.owner.id ? 1 : a.name.localeCompare(b.name)))
   // Accounts you could add from that are not shown yet: those whose tags you may use, or whose devices you manage.
   const others = [
@@ -266,7 +274,29 @@ export const DeviceNetworkPage: React.FC = () => {
       ) : (
         <>
           <List>
-            <ListSubheader>{t('deviceNetwork.devices', 'Devices')}</ListSubheader>
+            <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {t('deviceNetwork.devices', 'Devices')}
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={show}
+                onChange={(_, value) => value && setShow(value)}
+                sx={{ '& .MuiToggleButton-root': { paddingY: 0.25, paddingX: 1.25, fontSize: 11 } }}
+              >
+                <ToggleButton value="ALL">{t('deviceNetwork.showAll', 'All')}</ToggleButton>
+                <ToggleButton value="INITIATORS">{t('deviceNetwork.showInitiators', 'Initiators')}</ToggleButton>
+                <ToggleButton value="TARGETS">{t('deviceNetwork.showTargets', 'Targets')}</ToggleButton>
+              </ToggleButtonGroup>
+            </ListSubheader>
+            {show !== 'ALL' && !accounts.length && (
+              <Empty
+                text={
+                  show === 'INITIATORS'
+                    ? t('deviceNetwork.noInitiators', 'No device initiates on this network')
+                    : t('deviceNetwork.noTargets', 'No device is a target on this network')
+                }
+              />
+            )}
             {!network.devices.length && !rules.length && !manage && (
               <Empty text={t('deviceNetwork.noDevices', 'No devices on this network yet')} />
             )}
