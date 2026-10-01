@@ -996,10 +996,14 @@
     "drag": "",
     "legendBoth": "",
     "legendDevices": "",
+    "legendInitiator": "",
     "legendPeople": "",
+    "legendTarget": "",
+    "legendUserMode": "",
     "manage": "",
     "noneToAdd": "",
-    "owner": ""
+    "owner": "",
+    "userMode": ""
   },
   "deviceNetworks": {
     "add": "",

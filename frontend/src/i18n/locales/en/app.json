@@ -976,10 +976,14 @@
     "drag": "Drag in to add",
     "legendBoth": "⟷ initiates and is a target",
     "legendDevices": "—— devices",
+    "legendInitiator": "Initiator",
     "legendPeople": "- - - people",
+    "legendTarget": "Target",
+    "legendUserMode": "Device in user mode",
     "manage": "Can manage",
     "noneToAdd": "No other device you manage",
-    "owner": "Owner"
+    "owner": "Owner",
+    "userMode": "User mode · {{email}}"
   },
   "deviceNetworks": {
     "add": "Add network",
