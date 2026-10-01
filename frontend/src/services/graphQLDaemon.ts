@@ -24,6 +24,8 @@ export type DeviceDaemon = {
   update: { version: string; state: DaemonUpdateState; detail?: string | null } | null
   channel: string
   hold: boolean
+  pinned?: { version: string } | null // rolled back: pinned to this release until released
+  rollbackTo?: { version: string } | null // where a rollback would take it
 }
 
 export type DaemonSettings = { autoUpdate: boolean; channel: string }
@@ -63,6 +65,8 @@ export const graphQLDeviceDaemon = (deviceId: string) =>
         update { version state detail }
         channel
         hold
+        pinned { version }
+        rollbackTo { version }
       }
     }`,
     { deviceId },
@@ -78,11 +82,15 @@ export const graphQLDaemonSettings = (accountId?: string) =>
     'daemonSettings'
   )
 
-// A channel of the device's own, '' to follow its account's; or held at what it runs.
-export const graphQLSetDeviceDaemon = (deviceId: string, set: { channel?: string; hold?: boolean }) =>
+// A channel of the device's own, '' to follow its account's; held at what it runs; or rolled back to the release before
+// the one its channel gives it (false releases it).
+export const graphQLSetDeviceDaemon = (
+  deviceId: string,
+  set: { channel?: string; hold?: boolean; rollback?: boolean }
+) =>
   graphQLBasicRequest(
-    `mutation SetDeviceDaemon($deviceId: String!, $channel: String, $hold: Boolean) {
-      setDeviceDaemon(deviceId: $deviceId, channel: $channel, hold: $hold)
+    `mutation SetDeviceDaemon($deviceId: String!, $channel: String, $hold: Boolean, $rollback: Boolean) {
+      setDeviceDaemon(deviceId: $deviceId, channel: $channel, hold: $hold, rollback: $rollback)
     }`,
     { deviceId, ...set }
   )

@@ -46,7 +46,7 @@ export const DeviceAgentPage: React.FC = () => {
 
   const manage = device.permissions.includes('MANAGE')
 
-  const save = async (set: { channel?: string; hold?: boolean }) => {
+  const save = async (set: { channel?: string; hold?: boolean; rollback?: boolean }) => {
     setSaving(true)
     if ((await graphQLSetDeviceDaemon(device.id, set)) !== 'ERROR') await load()
     setSaving(false)
@@ -163,6 +163,37 @@ export const DeviceAgentPage: React.FC = () => {
             disabled={!manage || saving}
             onButtonClick={() => save({ channel: '' })}
           />
+          {daemon.pinned ? (
+            <ListItemSetting
+              icon="clock-rotate-left"
+              label={t('deviceAgent.pinned', 'Rolled back to {{version}}', { version: daemon.pinned.version })}
+              subLabel={t('deviceAgent.pinnedHint', 'It stays there, whatever its channel says, until released')}
+              button={t('deviceAgent.release', 'Release')}
+              disabled={!manage || saving}
+              onButtonClick={() => save({ rollback: false })}
+            />
+          ) : (
+            daemon.rollbackTo && (
+              <ListItemSetting
+                icon="clock-rotate-left"
+                label={t('deviceAgent.rollback', 'Roll back to {{version}}', { version: daemon.rollbackTo.version })}
+                subLabel={t('deviceAgent.rollbackHint', 'The release before the one its channel gives it')}
+                disabled={!manage || saving}
+                confirm
+                confirmProps={{
+                  title: t('deviceAgent.rollbackConfirm', 'Roll back to {{version}}?', {
+                    version: daemon.rollbackTo.version,
+                  }),
+                  children: t(
+                    'deviceAgent.rollbackConfirmBody',
+                    'The device goes back to {{version}} by a handover, and stays there until you release it.',
+                    { version: daemon.rollbackTo.version }
+                  ),
+                }}
+                onClick={() => save({ rollback: true })}
+              />
+            )
+          )}
           <ListItemSetting
             icon="pause"
             label={t('deviceAgent.hold', 'Hold at this version')}
