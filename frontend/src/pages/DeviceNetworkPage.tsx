@@ -27,6 +27,8 @@ import {
   graphQLRemoveNetworkDevice,
   graphQLRemoveNetworkDeviceRule,
   graphQLSetNetworkDeviceRule,
+  graphQLSetNetworkShareRole,
+  ShareRole,
   exposes,
   initiates,
   roleFor,
@@ -35,7 +37,6 @@ import {
 import { getAllDevices } from '../selectors/devices'
 import { selectTags } from '../selectors/tags'
 import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
-import { useActsFor } from '../hooks/useDeviceSessionInfo'
 import { graphQLRemoveNetworkShare } from '../services/graphQLMutation'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { ListItemSetting } from '../components/ListItemSetting'
@@ -59,7 +60,6 @@ export const DeviceNetworkPage: React.FC = () => {
   const { networkID } = useParams<{ networkID?: string }>()
   const { networks, reload } = useDeviceNetworks()
   const devices = useSelector(getAllDevices)
-  const actsFor = useActsFor(devices.map(device => device.id))
   const [busy, setBusy] = useState(false)
   const [view, setView] = useState<'list' | 'graph'>('list')
   const [adding, setAdding] = useState(false)
@@ -182,7 +182,10 @@ export const DeviceNetworkPage: React.FC = () => {
   const addable = devices.filter(
     device => device.permissions.includes('MANAGE') && !network.devices.some(member => member.deviceId === device.id)
   )
-  const people = [{ ...network.owner, manages: true }, ...network.access.map(a => ({ ...a.user, manages: false }))]
+  const people = [
+    { ...network.owner, owner: true, role: 'MANAGE' as ShareRole },
+    ...network.access.map(a => ({ ...a.user, owner: false, role: a.role || ('CONNECT' as ShareRole) })),
+  ]
 
   return (
     <Container
@@ -290,9 +293,11 @@ export const DeviceNetworkPage: React.FC = () => {
               <PersonRow
                 key={person.id}
                 email={person.email}
-                owner={person.manages}
-                devices={devices.filter(device => actsFor.get(device.id) === person.email)}
-                removable={manage && !person.manages && !busy}
+                owner={person.owner}
+                role={person.role}
+                devices={(network.userModeDevices || []).filter(device => device.userId === person.id)}
+                editable={manage && !person.owner && !busy}
+                onRole={role => act(() => graphQLSetNetworkShareRole(network.id, person.email, role))}
                 onRemove={() => act(() => graphQLRemoveNetworkShare(network.id, person.email))}
               />
             ))}
@@ -457,10 +462,12 @@ const MemberRow: React.FC<{
 const PersonRow: React.FC<{
   email: string
   owner: boolean
-  devices: IDevice[]
-  removable: boolean
+  role: ShareRole
+  devices: { deviceId: string; name: string }[]
+  editable: boolean
+  onRole: (role: ShareRole) => void
   onRemove: () => void
-}> = ({ email, owner, devices, removable, onRemove }) => {
+}> = ({ email, owner, role, devices, editable, onRole, onRemove }) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const folded = devices.length > INLINE && !open
@@ -481,12 +488,30 @@ const PersonRow: React.FC<{
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {/* What they may do, as words — not a pill, which here means a device. */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minHeight: 28 }}>
-          <Icon name={owner ? 'crown' : 'plug'} size="sm" color="grayDark" />
-          <Typography variant="body2">
-            {owner ? t('deviceNetwork.ownerRole', 'Owner · manages it') : t('deviceNetwork.roleConnect', 'Can connect')}
-          </Typography>
+          <Icon name={owner ? 'crown' : role === 'MANAGE' ? 'sliders' : 'plug'} size="sm" color="grayDark" />
+          {editable ? (
+            <TextField
+              select
+              size="small"
+              variant="standard"
+              value={role}
+              onChange={event => onRole(event.target.value as ShareRole)}
+              InputProps={{ disableUnderline: true }}
+            >
+              <MenuItem value="CONNECT">{t('deviceNetwork.roleConnect', 'Can connect')}</MenuItem>
+              <MenuItem value="MANAGE">{t('deviceNetwork.roleManage', 'Can manage')}</MenuItem>
+            </TextField>
+          ) : (
+            <Typography variant="body2">
+              {owner
+                ? t('deviceNetwork.ownerRole', 'Owner · manages it')
+                : role === 'MANAGE'
+                ? t('deviceNetwork.roleManage', 'Can manage')
+                : t('deviceNetwork.roleConnect', 'Can connect')}
+            </Typography>
+          )}
           <Box sx={{ marginLeft: 'auto' }}>
-            {removable && (
+            {editable && (
               <IconButton
                 icon="times"
                 title={t('deviceNetwork.removePerson', 'Remove {{email}} from the network', { email })}
@@ -500,7 +525,7 @@ const PersonRow: React.FC<{
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', marginTop: 0.75 }}>
             {shown.map(device => (
               <Chip
-                key={device.id}
+                key={device.deviceId}
                 size="small"
                 color="primary"
                 icon={<Icon name="laptop" size="xs" />}

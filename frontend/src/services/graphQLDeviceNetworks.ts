@@ -33,8 +33,12 @@ export type DeviceNetwork = {
   devices: NetworkMember[]
   deviceRules: NetworkRule[]
   connections: { service: { id: string; name: string; device: { id: string; name: string } } }[]
-  access: { user: { id: string; email: string } }[]
+  access: { user: { id: string; email: string }; role: ShareRole }[]
+  userModeDevices: { userId: string; deviceId: string; name: string }[] // its people's devices in user mode
 }
+
+// What someone a network is shared with may do: connect to what it reaches, or manage it as well.
+export type ShareRole = 'CONNECT' | 'MANAGE'
 
 export const initiates = (member: { role: NetworkDeviceRole }) => member.role !== 'TARGET'
 export const targeted = (member: { role: NetworkDeviceRole }) => member.role !== 'INITIATOR'
@@ -65,7 +69,8 @@ export async function graphQLDeviceNetworks(
           devices { deviceId role scope anyPort }
           deviceRules { role scope operator tags }
           connections { service { id name device { id name } } }
-          access { user { id email } }
+          access { user { id email } role }
+          userModeDevices { userId deviceId name }
         }
       }
     }
@@ -151,4 +156,12 @@ export const graphQLRemoveNetworkDeviceRule = (networkId: string, role: NetworkD
       removeNetworkDeviceRule(networkId: $networkId, role: $role)
     }`,
     { networkId, role }
+  )
+
+export const graphQLSetNetworkShareRole = (networkId: string, email: string, role: ShareRole) =>
+  graphQLBasicRequest(
+    `mutation SetNetworkShareRole($networkId: String!, $email: String!, $role: String!) {
+      setNetworkShareRole(networkId: $networkId, email: $email, role: $role)
+    }`,
+    { networkId, email, role }
   )

@@ -891,6 +891,7 @@
     "roleBoth": "Initiator and target",
     "roleConnect": "Can connect",
     "roleInitiator": "Initiator",
+    "roleManage": "Can manage",
     "roleOwner": "Owner",
     "roleTarget": "Target",
     "rule": "Devices tagged {{tags}} are {{role}}",
