@@ -657,7 +657,8 @@ const TagGroup: React.FC<{
   const [open, setOpen] = useState(false)
   const [picking, setPicking] = useState(false)
   const [filter, setFilter] = useState('')
-  const colorOf = (name: string) => getColor(tags.find(tag => tag.name === name)?.color ?? 0)
+  const colorOf = (name: string) =>
+    getColor(rule.tagColors?.find(tag => tag.name === name)?.color ?? tags.find(tag => tag.name === name)?.color ?? 0)
   const nameOf = (id: string) => deviceById.get(id)?.name || rule.named?.find(device => device.id === id)?.name || id
   const target = rule.allServices || rule.anyPort
   const toggle = (label: React.ReactNode, active: boolean, onClick?: () => void) => (
@@ -888,7 +889,7 @@ const TagGroup: React.FC<{
               >
                 <Icon name="tag" size="xs" />{' '}
                 {foreign
-                  ? t('deviceNetwork.fromAccountTags', "from {{account}}'s tags", { account: rule.accountName })
+                  ? t('deviceNetwork.fromAccountTags', 'from {{account}} tags', { account: rule.accountName })
                   : t('deviceNetwork.fromTags', 'from the tags')}
               </Typography>
             </Box>

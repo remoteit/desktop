@@ -27,6 +27,7 @@ export type NetworkRule = {
   editable: boolean // you manage the network and administer both accounts
   addedByEmail?: string
   tags: string[]
+  tagColors: { name: string; color: number | null }[] // its account's colours, which may not be the viewer's
   operator: 'ANY' | 'ALL'
   initiator: boolean
   allServices: boolean
@@ -97,7 +98,7 @@ export async function graphQLDeviceNetworks(
           permissions
           owner { id email }
           devices { deviceId role scope anyPort }
-          deviceRules { id accountId accountName holds editable addedByEmail tags operator initiator allServices anyPort devices overridden named { id name } }
+          deviceRules { id accountId accountName holds editable addedByEmail tags tagColors { name color } operator initiator allServices anyPort devices overridden named { id name } }
           ruleAccounts { id name tags }
           connections { service { id name device { id name } } }
           access { user { id email } role }

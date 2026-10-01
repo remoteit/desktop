@@ -865,7 +865,7 @@
     "filterDevices_other": "Filter {{count}} devices",
     "filterServices_one": "Filter {{count}} services",
     "filterServices_other": "Filter {{count}} services",
-    "fromAccountTags": "from {{account}}'s tags",
+    "fromAccountTags": "from {{account}} tags",
     "fromTags": "from the tags",
     "fullAccess": "User mode: full access",
     "graph": "Graph",
