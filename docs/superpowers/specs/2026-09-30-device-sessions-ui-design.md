@@ -195,6 +195,7 @@ Then, the same day:
 | A service's DNS name (its LAN host's) | 39fe886c | graphql 9e8f780d (`Service.subnetName`) |
 | Per-device rollback | bd48fdf9 | graphql 2079e6e8 (a pin; the channel keeps its previous release) |
 | Devices by tag: a group per rule, several per network, a device's own row wins | b1d50306 | graphql 27d0e810 (rules by id; `devices`, `overridden`) |
+| Devices by tag from another account you administer (holds while you do; either side withdraws) | fac24642 | graphql b4611bd6 (`accountId`, `holds`, `ruleAccounts`, `taggedInto`) |
 
 Every read of the device-session API is silent and hides (or says so) where the API does not serve it. No
 standby/active badge (Evan). Not built: **names and addresses on demand** (its own backend project; addresses stable
