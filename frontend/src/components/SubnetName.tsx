@@ -7,12 +7,17 @@ import { Icon } from './Icon'
 
 /* A device's name in device subnets — what its owner's devices, and theirs in user mode, resolve — marked when the
    device itself is in user mode, with a copy button where asked. Nothing while it is being read, or where there is
-   none. */
-export const SubnetName: React.FC<{ deviceId?: string; copy?: boolean }> = ({ deviceId, copy }) => {
+   none. With a service, the service's name: its device's, or its LAN host's. */
+export const SubnetName: React.FC<{ deviceId?: string; serviceId?: string; copy?: boolean }> = ({
+  deviceId,
+  serviceId,
+  copy,
+}) => {
   const { t } = useTranslation()
   const info = useDeviceSessionInfo(deviceId)
+  const name = serviceId ? info?.services?.[serviceId] : info?.subnetName
 
-  if (!info?.subnetName) return null
+  if (!info || !name) return null
 
   return (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', minWidth: 0, gap: 0.5 }}>
@@ -27,9 +32,9 @@ export const SubnetName: React.FC<{ deviceId?: string; copy?: boolean }> = ({ de
         </Tooltip>
       )}
       <Typography component="span" variant="caption" noWrap>
-        {info.subnetName}
+        {name}
       </Typography>
-      {copy && <CopyIconButton sx={{ marginY: -1 }} size="sm" color="gray" value={info.subnetName} />}
+      {copy && <CopyIconButton sx={{ marginY: -1 }} size="sm" color="gray" value={name} />}
     </Box>
   )
 }

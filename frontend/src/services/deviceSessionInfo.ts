@@ -13,7 +13,12 @@ export type DeviceAgent = {
   update: { version: string; state: string; detail?: string | null } | null
 }
 
-export type DeviceSessionInfo = { subnetName: string | null; actsFor: string | null; agent: DeviceAgent | null }
+export type DeviceSessionInfo = {
+  subnetName: string | null
+  actsFor: string | null
+  agent: DeviceAgent | null
+  services?: ILookup<string | null> // each service's name: the device's, or its LAN host's (Service.subnetName)
+}
 
 type Listener = () => void
 
@@ -49,7 +54,7 @@ async function flush() {
 
   const query = `query DeviceSessionInfo { login { device(id: ${JSON.stringify(
     ids
-  )}) { id subnetName actsFor { email } agent { running update { version state detail } } } } }`
+  )}) { id subnetName actsFor { email } agent { running update { version state detail } } services { id subnetName } } } }`
   const response = await post({ query })
   if (response !== 'ERROR') {
     const errors = graphQLGetErrors(response, true, { query, variables: {} })
@@ -60,6 +65,7 @@ async function flush() {
           subnetName: device.subnetName ?? null,
           actsFor: device.actsFor?.email ?? null,
           agent: device.agent ?? null,
+          services: Object.fromEntries((device.services || []).map((s: any) => [s.id, s.subnetName ?? null])),
         })
   }
   // Asked and not answered (unsupported, an error, not visible): none, so the row stops asking.

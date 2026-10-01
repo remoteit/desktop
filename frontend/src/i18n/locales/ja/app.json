@@ -429,6 +429,7 @@
     "services": "サービス",
     "serviceState": "種類",
     "serviceStatus": "ステータス",
+    "serviceSubnetName": "DNS Name",
     "serviceType": "サービスタイプ",
     "session": "コネクト",
     "stage": "ステージ",

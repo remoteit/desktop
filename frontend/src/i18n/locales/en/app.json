@@ -433,6 +433,7 @@
     "services": "Services",
     "serviceState": "Type",
     "serviceStatus": "Status",
+    "serviceSubnetName": "DNS Name",
     "serviceType": "Service Type",
     "session": "Connection",
     "stage": "Stage",

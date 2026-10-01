@@ -43,7 +43,13 @@ describe('device session info', () => {
                 actsFor: null,
                 agent: { running: 'connectd-go 5.6.1.1', update: null },
               },
-              { id: 'B', subnetName: 'laptop.acme.on.remote.it', actsFor: { email: 'ada@acme.test' }, agent: null },
+              {
+                id: 'B',
+                subnetName: 'laptop.acme.on.remote.it',
+                actsFor: { email: 'ada@acme.test' },
+                agent: null,
+                services: [{ id: 'B-WEB', subnetName: 'web.laptop.acme.on.remote.it' }],
+              },
             ],
           },
         },
@@ -61,11 +67,13 @@ describe('device session info', () => {
       subnetName: 'kitchen-pi.acme.on.remote.it',
       actsFor: null,
       agent: { running: 'connectd-go 5.6.1.1', update: null },
+      services: {},
     })
     expect(deviceSessionInfo('B')).toEqual({
       subnetName: 'laptop.acme.on.remote.it',
       actsFor: 'ada@acme.test',
       agent: null,
+      services: { 'B-WEB': 'web.laptop.acme.on.remote.it' },
     })
     expect(deviceSessionInfo('C')).toEqual({ subnetName: null, actsFor: null, agent: null }) // asked, not answered: none, and not asked again
     requestDeviceSessionInfo('A')

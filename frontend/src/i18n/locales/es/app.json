@@ -437,6 +437,7 @@
     "services": "Servicios",
     "serviceState": "Tipo",
     "serviceStatus": "Estado",
+    "serviceSubnetName": "DNS Name",
     "serviceType": "Tipo de servicio",
     "session": "Conexión",
     "stage": "Etapa",

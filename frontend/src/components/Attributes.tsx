@@ -252,6 +252,13 @@ export const attributes: Attribute[] = [
     feature: 'deviceSessions',
     value: ({ device }) => <SubnetName deviceId={device?.id} />,
   }),
+  new ServiceAttribute({
+    id: 'serviceSubnetName',
+    label: 'DNS Name',
+    column: false,
+    feature: 'deviceSessions',
+    value: ({ service }) => <SubnetName deviceId={service?.deviceID} serviceId={service?.id} copy />,
+  }),
   new DeviceAttribute({
     id: 'agent',
     label: 'Agent',
