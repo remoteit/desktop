@@ -473,60 +473,56 @@ const PersonRow: React.FC<{
           {email}
         </Typography>
         <Typography variant="caption" color="textSecondary" component="div">
-          {[
-            owner
-              ? t('deviceNetwork.ownerSummary', 'Manages it · reaches its targets')
-              : t('deviceNetwork.connectsSummary', 'Reaches its targets'),
-            ...(devices.length
-              ? [t('deviceNetwork.inUserMode', '{{count}} in user mode', { count: devices.length })]
-              : []),
-          ].join(' · ')}
+          {devices.length
+            ? t('deviceNetwork.devicesInUserMode', '{{count}} devices in user mode', { count: devices.length })
+            : t('deviceNetwork.noUserMode', 'No devices in user mode')}
         </Typography>
       </Box>
-      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-        <Chip
-          size="small"
-          variant="outlined"
-          label={owner ? t('deviceNetwork.roleOwner', 'Owner') : t('deviceNetwork.roleConnect', 'Can connect')}
-        />
-        {!devices.length && (
-          <Typography variant="caption" color="textSecondary">
-            {t('deviceNetwork.noUserMode', 'No devices in user mode')}
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        {/* What they may do, as words — not a pill, which here means a device. */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minHeight: 28 }}>
+          <Icon name={owner ? 'crown' : 'plug'} size="sm" color="grayDark" />
+          <Typography variant="body2">
+            {owner ? t('deviceNetwork.ownerRole', 'Owner · manages it') : t('deviceNetwork.roleConnect', 'Can connect')}
           </Typography>
-        )}
-        {shown.map(device => (
-          <Chip
-            key={device.id}
-            size="small"
-            color="primary"
-            icon={<Icon name="laptop" size="xs" />}
-            label={device.name}
-          />
-        ))}
-        {folded && (
-          <Chip
-            size="small"
-            variant="outlined"
-            label={t('deviceNetwork.more', '+{{count}} more', { count: devices.length - SHOWN })}
-            onClick={() => setOpen(true)}
-            sx={{ borderStyle: 'dashed' }}
-          />
-        )}
-        {open && devices.length > INLINE && (
-          <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }} onClick={() => setOpen(false)}>
-            {t('deviceNetwork.showLess', 'Show less')}
-          </Typography>
-        )}
-        <Box sx={{ marginLeft: 'auto' }}>
-          {removable && (
-            <IconButton
-              icon="times"
-              title={t('deviceNetwork.removePerson', 'Remove {{email}} from the network', { email })}
-              size="sm"
-              onClick={onRemove}
-            />
-          )}
+          <Box sx={{ marginLeft: 'auto' }}>
+            {removable && (
+              <IconButton
+                icon="times"
+                title={t('deviceNetwork.removePerson', 'Remove {{email}} from the network', { email })}
+                size="sm"
+                onClick={onRemove}
+              />
+            )}
+          </Box>
         </Box>
+        {!!devices.length && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', marginTop: 0.75 }}>
+            {shown.map(device => (
+              <Chip
+                key={device.id}
+                size="small"
+                color="primary"
+                icon={<Icon name="laptop" size="xs" />}
+                label={device.name}
+              />
+            ))}
+            {folded && (
+              <Chip
+                size="small"
+                variant="outlined"
+                label={t('deviceNetwork.more', '+{{count}} more', { count: devices.length - SHOWN })}
+                onClick={() => setOpen(true)}
+                sx={{ borderStyle: 'dashed' }}
+              />
+            )}
+            {open && devices.length > INLINE && (
+              <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }} onClick={() => setOpen(false)}>
+                {t('deviceNetwork.showLess', 'Show less')}
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
     </Box>
   )
