@@ -58,6 +58,20 @@ export type DeviceNetwork = {
   connections: { service: { id: string; name: string; device: { id: string; name: string } } }[]
   access: { user: { id: string; email: string }; role: ShareRole; organizationName?: string | null }[]
   userModeDevices: { userId: string; deviceId: string; name: string }[] // its people's devices in user mode
+  tags: { name: string; color: number | null }[]
+  tagsEditable: boolean // the owning account's administrators: its tags decide which members reach it
+  roleAccess: RoleAccess[] // the owning organization's roles reaching it at connect or more (its managers see them)
+}
+
+// An organization role reaching a network — all networks, or those carrying its tags — at a tier, with its members.
+export type RoleAccess = {
+  roleId: string
+  roleName: string
+  tier: ShareRole
+  byTag: boolean
+  tags: string[]
+  operator: 'ANY' | 'ALL'
+  members: { id: string; email: string }[]
 }
 
 // What someone a network is shared with may do: connect to what it reaches; manage it as well — its devices, services
@@ -109,6 +123,9 @@ export async function graphQLDeviceNetworks(
           connections { service { id name device { id name } } }
           access { user { id email } role organizationName }
           userModeDevices { userId deviceId name }
+          tags { name color }
+          tagsEditable
+          roleAccess { roleId roleName tier byTag tags operator members { id email } }
         }
       }
     }

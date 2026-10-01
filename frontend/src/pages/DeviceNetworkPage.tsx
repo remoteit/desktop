@@ -24,6 +24,7 @@ import {
   graphQLRemoveNetworkDeviceRule,
   graphQLUpdateNetworkDeviceRule,
   NetworkRule,
+  RoleAccess,
   RuleChoices,
   graphQLSetNetworkShareRole,
   ShareRole,
@@ -36,7 +37,8 @@ import { getAllDevices } from '../selectors/devices'
 import { selectTags } from '../selectors/tags'
 import { useLabel } from '../hooks/useLabel'
 import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
-import { graphQLRemoveNetworkShare } from '../services/graphQLMutation'
+import { graphQLAddNetworkTag, graphQLRemoveNetworkShare, graphQLRemoveNetworkTag } from '../services/graphQLMutation'
+import { Link } from '../components/Link'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -241,6 +243,18 @@ export const DeviceNetworkPage: React.FC = () => {
         </Typography>
       }
     >
+      {(!!network.tags?.length || network.tagsEditable) && (
+        <NetworkTags
+          names={network.tags.map(tag => tag.name)}
+          colorOf={name =>
+            network.tags.find(tag => tag.name === name)?.color ?? tags.find(tag => tag.name === name)?.color ?? 0
+          }
+          choices={tags.map(tag => tag.name)}
+          editable={network.tagsEditable && !busy}
+          onAdd={name => act(() => graphQLAddNetworkTag(network.id, [name]))}
+          onRemove={name => act(() => graphQLRemoveNetworkTag(network.id, name))}
+        />
+      )}
       {view === 'graph' ? (
         <Gutters>
           <DeviceNetworkGraph network={network} devices={devices} manage={manage} exposure={exposure} act={act} />
@@ -427,6 +441,25 @@ export const DeviceNetworkPage: React.FC = () => {
                 onRemove={() => act(() => graphQLRemoveNetworkShare(network.id, person.email))}
               />
             ))}
+            {(network.roleAccess || []).map(access => (
+              <RoleRow
+                key={`${access.roleId}/${access.tier}`}
+                access={access}
+                devices={network.userModeDevices || []}
+              />
+            ))}
+            {!!network.roleAccess?.length && (
+              <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
+                <Typography variant="caption" color="textSecondary">
+                  {t(
+                    'deviceNetwork.rolesNote',
+                    "{{owner}}'s roles reach this network — all networks, or those carrying their tags.",
+                    { owner: network.owner.email }
+                  )}{' '}
+                  <Link to="/organization/roles">{t('deviceNetwork.editRoles', 'Edit roles')}</Link>
+                </Typography>
+              </Box>
+            )}
           </List>
         </>
       )}
@@ -690,14 +723,15 @@ const PersonRow: React.FC<{
 // Past this many matching devices, a group shows the first SHOWN and "+N more devices".
 const GROUP_SHOWN = 6
 
-/* Devices by tag: a heading — its tags (removable, and "+ tag" to add one), Initiator, All services, Any port, and Any
-   tag / All tags when it has several — and a row for each device it makes a member, showing what the heading gives it
-   (set on the heading, not per device). A device it matches but that is added on its own is a line saying so: its own
-   row is what it is. Folds past GROUP_SHOWN devices. */
 // The tags and summary sit under the account's name, in line with it past the tag icon.
 const TAG_INDENT = 2.75
 
 type ServiceRef = { id: string; name: string }
+
+/* Devices by tag: a heading — its tags (removable, and "+ tag" to add one), Initiator, All services, Any port, and Any
+   tag / All tags when it has several — and a row for each device it makes a member, showing what the heading gives it
+   (set on the heading, not per device). A device it matches but that is added on its own is a line saying so: its own
+   row is what it is. Folds past GROUP_SHOWN devices. */
 
 const TagGroup: React.FC<{
   rule: NetworkRule
@@ -999,6 +1033,170 @@ const TagGroup: React.FC<{
           </Typography>
         </Box>
       ))}
+    </Box>
+  )
+}
+
+/* The network's tags, under its name: an organization role with access by tag reaches the networks carrying its tags,
+   so they decide which members reach this one. The owning account's administrators change them. */
+const NetworkTags: React.FC<{
+  names: string[]
+  colorOf: (name: string) => number
+  choices: string[]
+  editable: boolean
+  onAdd: (name: string) => void
+  onRemove: (name: string) => void
+}> = ({ names, colorOf, choices, editable, onAdd, onRemove }) => {
+  const { t } = useTranslation()
+  const getColor = useLabel()
+  const [picking, setPicking] = useState(false)
+  return (
+    <Gutters>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+        <Icon name="tag" size="sm" color="grayDark" />
+        {names.map(name => (
+          <Chip
+            key={name}
+            size="small"
+            variant="outlined"
+            icon={
+              <Box
+                component="span"
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: getColor(colorOf(name)),
+                  marginLeft: '8px !important',
+                }}
+              />
+            }
+            label={name}
+            onDelete={editable ? () => onRemove(name) : undefined}
+          />
+        ))}
+        {editable && (
+          <Chip
+            size="small"
+            variant="outlined"
+            label={t('deviceNetwork.addTag', '+ tag')}
+            onClick={() => setPicking(!picking)}
+            sx={{ borderStyle: 'dashed' }}
+          />
+        )}
+        <Typography variant="caption" color="textSecondary">
+          {t('deviceNetwork.tagsHint', 'Roles with access by tag reach the networks carrying their tags')}
+        </Typography>
+      </Box>
+      {picking && (
+        <TextField
+          select
+          size="small"
+          value=""
+          label={t('deviceNetwork.chooseNetworkTag', 'Tag the network')}
+          sx={{ marginTop: 1, minWidth: 240 }}
+          onChange={event => {
+            setPicking(false)
+            onAdd(event.target.value)
+          }}
+        >
+          {choices
+            .filter(name => !names.includes(name))
+            .map(name => (
+              <MenuItem key={name} value={name}>
+                {name}
+              </MenuItem>
+            ))}
+        </TextField>
+      )}
+    </Gutters>
+  )
+}
+
+/* An organization role reaching the network at connect or more — every network, or those carrying its tags — with
+   its members, folded: open, each member with their devices in user mode. Changed on the organization's Roles page,
+   not here. */
+const RoleRow: React.FC<{
+  access: RoleAccess
+  devices: { userId: string; deviceId: string; name: string }[]
+}> = ({ access, devices }) => {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const [all, setAll] = useState(false)
+  const count = access.members.length
+  const members = all ? access.members : access.members.slice(0, INLINE)
+  const reach = access.byTag
+    ? t('deviceNetwork.roleByTag', 'Networks tagged {{tags}}', {
+        tags: access.tags.join(access.operator === 'ALL' ? ' + ' : ' or '),
+      })
+    : t('deviceNetwork.roleAll', 'All networks')
+  const tier =
+    access.tier === 'ADMIN'
+      ? t('deviceNetwork.roleAdmin', 'Admin')
+      : access.tier === 'MANAGE'
+      ? t('deviceNetwork.roleManage', 'Can manage')
+      : t('deviceNetwork.roleConnect', 'Can connect')
+
+  return (
+    <Box sx={{ borderTop: 1, borderColor: 'grayLighter.main' }}>
+      <Box sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 1, cursor: 'pointer' }} onClick={() => setOpen(!open)}>
+        <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0, paddingTop: 0.25 }}>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={access.roleName}>
+            <Icon name={open ? 'chevron-down' : 'chevron-right'} size="xs" /> {access.roleName}
+          </Typography>
+          <Typography variant="caption" color="textSecondary" component="div">
+            {reach}
+          </Typography>
+        </Box>
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.75, minHeight: 28 }}>
+          <Icon
+            name={access.tier === 'ADMIN' ? 'user-shield' : access.tier === 'MANAGE' ? 'sliders' : 'plug'}
+            size="sm"
+            color="grayDark"
+          />
+          <Typography variant="body2">{tier}</Typography>
+          <Typography variant="caption" color="textSecondary">
+            ·{' '}
+            {count === 1
+              ? t('deviceNetwork.onePerson', '1 person')
+              : t('deviceNetwork.peopleCount', '{{count}} people', { count })}
+          </Typography>
+        </Box>
+      </Box>
+      {open &&
+        members.map(member => {
+          const own = devices.filter(device => device.userId === member.id)
+          return (
+            <Box
+              key={member.id}
+              sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 0.75, paddingLeft: 5, alignItems: 'center' }}
+            >
+              <Typography variant="body2" noWrap sx={{ width: NAME_WIDTH - 24, flex: '0 0 auto' }} title={member.email}>
+                {member.email}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                {own.map(device => (
+                  <Chip
+                    key={device.deviceId}
+                    size="small"
+                    color="primary"
+                    icon={<Icon name="laptop" size="xs" />}
+                    label={device.name}
+                  />
+                ))}
+              </Box>
+            </Box>
+          )
+        })}
+      {open && count > INLINE && (
+        <Box sx={{ paddingX: 2, paddingBottom: 1, paddingLeft: 5 }}>
+          <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }} onClick={() => setAll(!all)}>
+            {all
+              ? t('deviceNetwork.showLess', 'Show less')
+              : t('deviceNetwork.morePeople', '+{{count}} more people', { count: count - INLINE })}
+          </Typography>
+        </Box>
+      )}
     </Box>
   )
 }
