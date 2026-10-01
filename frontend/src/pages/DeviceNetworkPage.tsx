@@ -6,7 +6,6 @@ import {
   Autocomplete,
   Box,
   Button,
-  Checkbox,
   Chip,
   List,
   ListItem,
@@ -122,13 +121,52 @@ export const DeviceNetworkPage: React.FC = () => {
         await graphQLAddNetworkDevice(network.id, member.deviceId, { role, scope: all ? 'ALL' : 'LISTED', anyPort })
     })
 
+  // A target exposing all its services — All services, or Any port, which takes them all with it.
+  const allOn = (member: NetworkMember) => targeted(member) && (member.scope === 'ALL' || member.anyPort)
+  const servicesOf = (member: NetworkMember) => deviceById.get(member.deviceId)?.services || []
+
+  // All services off: every service unlisted, and any port off with it.
+  const setAll = (member: NetworkMember, on: boolean) =>
+    on
+      ? change(member, { scope: 'ALL' })
+      : act(async () => {
+          for (const service of servicesOf(member))
+            if (listed.has(service.id)) await graphQLListNetworkService(network.id, service.id, false)
+          await graphQLAddNetworkDevice(network.id, member.deviceId, {
+            role: roleFor(initiates(member), false),
+            scope: 'LISTED',
+            anyPort: false,
+          })
+        })
+  // Any port on takes all services with it; off leaves them.
+  const setAnyPort = (member: NetworkMember, on: boolean) =>
+    change(member, on ? { scope: 'ALL', anyPort: true } : { anyPort: false })
+  // A service on or off. Off while all are on: the rest are listed one by one, and All services and Any port go off.
+  const setService = (member: NetworkMember, serviceId: string) => {
+    if (!allOn(member)) return list(member, serviceId)
+    return act(async () => {
+      const rest = servicesOf(member).filter(service => service.id !== serviceId)
+      for (const service of rest)
+        if (!listed.has(service.id)) await graphQLListNetworkService(network.id, service.id, true)
+      if (listed.has(serviceId)) await graphQLListNetworkService(network.id, serviceId, false)
+      await graphQLAddNetworkDevice(network.id, member.deviceId, {
+        role: roleFor(initiates(member), rest.length > 0),
+        scope: 'LISTED',
+        anyPort: false,
+      })
+    })
+  }
+
   // What a member is: an initiator, a target exposing what, or nothing chosen yet.
   const exposure = (member: NetworkMember) => {
     if (!exposes(network, member)) return t('deviceNetwork.exposesNothing', 'Exposes nothing')
     const parts = [
-      member.scope === 'ALL'
+      allOn(member)
         ? t('deviceNetwork.allServices', 'All services')
-        : t('deviceNetwork.listedServices', '{{count}} listed services', { count: listedOf(member) }),
+        : t('deviceNetwork.listedServices', '{{count}} of {{total}} services', {
+            count: listedOf(member),
+            total: servicesOf(member).length,
+          }),
     ]
     if (member.anyPort) parts.push(t('deviceNetwork.anyPort', 'Any port'))
     return parts.join(' · ')
@@ -218,68 +256,21 @@ export const DeviceNetworkPage: React.FC = () => {
             {[...network.devices]
               .sort((a, b) => nameOf(a.deviceId).localeCompare(nameOf(b.deviceId)))
               .map(member => (
-                <Box key={member.deviceId}>
-                  <MemberItem
-                    name={nameOf(member.deviceId)}
-                    member={member}
-                    detail={summary(member)}
-                    removable={manage && !busy}
-                    onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
-                  />
-                  {manage && !link && (
-                    <Box sx={{ paddingLeft: 6 }}>
-                      <ListItemSetting
-                        hideIcon
-                        size="small"
-                        label={t('deviceNetwork.initiatorToggle', 'Initiator')}
-                        subLabel={t('deviceNetwork.initiatorHint', "Reaches what this network's targets expose")}
-                        toggle={initiates(member)}
-                        disabled={busy}
-                        onClick={() => change(member, { initiator: !initiates(member) })}
-                      />
-                      <ListItemSetting
-                        hideIcon
-                        size="small"
-                        label={t('deviceNetwork.allServices', 'All services')}
-                        subLabel={t(
-                          'deviceNetwork.allServicesHint',
-                          'Every service it has, including ones added later'
-                        )}
-                        toggle={targeted(member) && member.scope === 'ALL'}
-                        disabled={busy}
-                        onClick={() =>
-                          change(member, { scope: targeted(member) && member.scope === 'ALL' ? 'LISTED' : 'ALL' })
-                        }
-                      />
-                      <ListItemSetting
-                        hideIcon
-                        size="small"
-                        label={t('deviceNetwork.anyPort', 'Any port')}
-                        subLabel={t(
-                          'deviceNetwork.anyPortHint',
-                          "Any port of the device itself, within its Any port setting (the device's Configure page)"
-                        )}
-                        toggle={targeted(member) && member.anyPort}
-                        disabled={busy}
-                        onClick={() => change(member, { anyPort: !(targeted(member) && member.anyPort) })}
-                      />
-                      {!(targeted(member) && member.scope === 'ALL') &&
-                        (deviceById.get(member.deviceId)?.services || []).map(service => (
-                          <ListItem key={service.id} dense disableGutters>
-                            <ListItemIcon>
-                              <Checkbox
-                                size="small"
-                                checked={listed.has(service.id)}
-                                disabled={busy}
-                                onChange={() => list(member, service.id)}
-                              />
-                            </ListItemIcon>
-                            <ListItemText primary={service.name} />
-                          </ListItem>
-                        ))}
-                    </Box>
-                  )}
-                </Box>
+                <MemberRow
+                  key={member.deviceId}
+                  name={nameOf(member.deviceId)}
+                  member={member}
+                  services={servicesOf(member)}
+                  listed={listed}
+                  allOn={allOn(member)}
+                  summary={summary(member)}
+                  editable={manage && !link && !busy}
+                  onInitiator={() => change(member, { initiator: !initiates(member) })}
+                  onAll={() => setAll(member, !allOn(member))}
+                  onAnyPort={() => setAnyPort(member, !(targeted(member) && member.anyPort))}
+                  onService={serviceId => setService(member, serviceId)}
+                  onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
+                />
               ))}
           </List>
 
@@ -335,31 +326,122 @@ const Empty: React.FC<{ text: string }> = ({ text }) => (
   </ListItem>
 )
 
-const MemberItem: React.FC<{
+// Shown in place up to this many services; past it, the first SHOWN and a count, with a filter past FILTER.
+const INLINE = 8
+const SHOWN = 6
+const FILTER = 10
+
+/* A device on the network, in two rows of chips: Initiator, All services and Any port, then its services in their own
+   order — highlighted when exposed, all of them when All services or Any port is on. A long list folds to its first
+   few and "+N more"; open, it can be filtered. */
+const MemberRow: React.FC<{
   name: string
   member: NetworkMember
-  detail?: string
-  removable: boolean
+  services: IService[]
+  listed: Set<string>
+  allOn: boolean
+  summary: string
+  editable: boolean
+  onInitiator: () => void
+  onAll: () => void
+  onAnyPort: () => void
+  onService: (serviceId: string) => void
   onRemove: () => void
-}> = ({ name, member, detail, removable, onRemove }) => {
+}> = ({ name, member, services, listed, allOn, summary, editable, ...on }) => {
   const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const [filter, setFilter] = useState('')
+  const exposed = (service: IService) => allOn || (targeted(member) && listed.has(service.id))
+  const toggle = (label: React.ReactNode, active: boolean, onClick?: () => void, dashed?: boolean) => (
+    <Chip
+      size="small"
+      label={label}
+      color={active ? 'primary' : 'default'}
+      variant={active ? 'filled' : 'outlined'}
+      onClick={editable ? onClick : undefined}
+      sx={dashed ? { borderStyle: 'dashed' } : undefined}
+    />
+  )
+
+  const folded = services.length > INLINE && !open
+  const hidden = folded ? services.slice(SHOWN) : []
+  const shown = folded
+    ? services.slice(0, SHOWN)
+    : services.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()))
+
   return (
-    <ListItemLocation to={`/devices/${member.deviceId}`} icon="hdd" dense>
-      <ListItemText primary={name} secondary={detail} />
-      {removable && (
-        <ListItemSecondaryAction>
-          <IconButton
-            icon="times"
-            title={t('deviceNetwork.remove', 'Remove from the network')}
-            size="sm"
-            onClick={event => {
-              event.stopPropagation()
-              onRemove()
-            }}
+    <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+        <ListItemLocation to={`/devices/${member.deviceId}`} icon="hdd" dense sx={{ flex: '0 0 auto', minWidth: 200 }}>
+          <ListItemText primary={name} />
+        </ListItemLocation>
+        {toggle(t('deviceNetwork.initiatorToggle', 'Initiator'), initiates(member), on.onInitiator)}
+        <Typography variant="caption" color="textSecondary">
+          ·
+        </Typography>
+        {toggle(t('deviceNetwork.allServices', 'All services'), allOn, on.onAll)}
+        {toggle(t('deviceNetwork.anyPort', 'Any port'), targeted(member) && member.anyPort, on.onAnyPort)}
+        <Box sx={{ marginLeft: 'auto' }}>
+          {editable && (
+            <IconButton
+              icon="times"
+              title={t('deviceNetwork.remove', 'Remove from the network')}
+              size="sm"
+              onClick={on.onRemove}
+            />
+          )}
+        </Box>
+      </Box>
+      <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', marginTop: 1, paddingLeft: 7 }}>
+        {open && services.length > FILTER && (
+          <TextField
+            size="small"
+            fullWidth
+            placeholder={t('deviceNetwork.filterServices', 'Filter {{count}} services', { count: services.length })}
+            value={filter}
+            onChange={event => setFilter(event.target.value)}
           />
-        </ListItemSecondaryAction>
-      )}
-    </ListItemLocation>
+        )}
+        {folded && allOn
+          ? toggle(t('deviceNetwork.allCount', 'All {{count}} services', { count: services.length }), true, () =>
+              setOpen(true)
+            )
+          : shown.map(service => (
+              <React.Fragment key={service.id}>
+                {toggle(service.name, exposed(service), () => on.onService(service.id))}
+              </React.Fragment>
+            ))}
+        {folded &&
+          !allOn &&
+          toggle(
+            hidden.some(exposed)
+              ? t('deviceNetwork.moreSelected', '+{{count}} more · {{selected}} selected', {
+                  count: hidden.length,
+                  selected: hidden.filter(exposed).length,
+                })
+              : t('deviceNetwork.more', '+{{count}} more', { count: hidden.length }),
+            false,
+            () => setOpen(true),
+            true
+          )}
+        {open && services.length > INLINE && (
+          <Typography
+            variant="caption"
+            color="primary"
+            sx={{ cursor: 'pointer' }}
+            onClick={() => {
+              setOpen(false)
+              setFilter('')
+            }}
+          >
+            {t('deviceNetwork.showLess', 'Show less')}
+          </Typography>
+        )}
+      </Box>
+      <Typography variant="caption" color="textSecondary" component="div" sx={{ marginTop: 0.5, paddingLeft: 7 }}>
+        {summary}
+      </Typography>
+    </Box>
   )
 }
 

@@ -830,6 +830,7 @@
   "deviceNetwork": {
     "add": "",
     "addDevice": "",
+    "allCount_other": "",
     "allServices": "",
     "allServicesAddHint": "",
     "allServicesHint": "",
@@ -842,6 +843,7 @@
     "device": "",
     "devices": "",
     "exposesNothing": "",
+    "filterServices_other": "",
     "fullAccess": "",
     "graph": "",
     "initiator": "",
@@ -852,6 +854,8 @@
     "list": "",
     "listed": "",
     "listedServices_other": "",
+    "more_other": "",
+    "moreSelected_other": "",
     "noChoices": "",
     "noDevices": "",
     "noInitiators": "",
@@ -875,6 +879,7 @@
     "ruleTags": "",
     "setRule": "",
     "share": "",
+    "showLess": "",
     "targetExposing": "",
     "targets": "",
     "title": ""
