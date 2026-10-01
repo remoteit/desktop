@@ -323,6 +323,10 @@ export const oidcSupportEndsAt = (): number | undefined => {
   return s ? s.exp * 1000 : undefined
 }
 export const oidcClaims = (): OidcClaims | undefined => decodeJwt(stored()?.id_token)
+/** The signed-in account's id_token, as the AS's own pages take it for `id_token_hint`: it tells a
+ *  page opened in the browser WHICH of that browser's accounts is asking, when several are
+ *  signed in and another one is active there. */
+export const oidcIdToken = (): string | undefined => stored()?.id_token
 /** The support-session marker: permitteer stamps `act` (the OPERATOR acting as this
  *  subject) into every token of an impersonated session, the id_token included — the
  *  app-readable artifact. Null on an ordinary session. */
