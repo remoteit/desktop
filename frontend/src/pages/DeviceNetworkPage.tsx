@@ -9,7 +9,6 @@ import {
   Chip,
   List,
   ListItem,
-  ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
   ListSubheader,
@@ -36,8 +35,8 @@ import {
 import { getAllDevices } from '../selectors/devices'
 import { selectTags } from '../selectors/tags'
 import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
-import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
-import { ListItemLocation } from '../components/ListItemLocation'
+import { useActsFor } from '../hooks/useDeviceSessionInfo'
+import { graphQLRemoveNetworkShare } from '../services/graphQLMutation'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { IconButton } from '../buttons/IconButton'
@@ -60,6 +59,7 @@ export const DeviceNetworkPage: React.FC = () => {
   const { networkID } = useParams<{ networkID?: string }>()
   const { networks, reload } = useDeviceNetworks()
   const devices = useSelector(getAllDevices)
+  const actsFor = useActsFor(devices.map(device => device.id))
   const [busy, setBusy] = useState(false)
   const [view, setView] = useState<'list' | 'graph'>('list')
   const [adding, setAdding] = useState(false)
@@ -287,22 +287,14 @@ export const DeviceNetworkPage: React.FC = () => {
               )}
             </ListSubheader>
             {people.map(person => (
-              <Box key={person.id}>
-                <ListItem dense>
-                  <ListItemIcon>
-                    <Icon name="user" />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={person.email}
-                    secondary={
-                      person.manages
-                        ? t('deviceNetwork.owner', 'Owner: manages it, and reaches what its targets expose')
-                        : t('deviceNetwork.connects', 'Reaches what its targets expose')
-                    }
-                  />
-                </ListItem>
-                <UserModeDevices email={person.email} devices={devices} />
-              </Box>
+              <PersonRow
+                key={person.id}
+                email={person.email}
+                owner={person.manages}
+                devices={devices.filter(device => actsFor.get(device.id) === person.email)}
+                removable={manage && !person.manages && !busy}
+                onRemove={() => act(() => graphQLRemoveNetworkShare(network.id, person.email))}
+              />
             ))}
           </List>
 
@@ -459,23 +451,84 @@ const MemberRow: React.FC<{
   )
 }
 
-// A person's devices in user mode: full access — they reach everything the person can, not only this network.
-const UserModeDevices: React.FC<{ email: string; devices: IDevice[] }> = ({ email, devices }) => (
-  <>
-    {devices.map(device => (
-      <UserModeDevice key={device.id} device={device} email={email} />
-    ))}
-  </>
-)
-
-const UserModeDevice: React.FC<{ device: IDevice; email: string }> = ({ device, email }) => {
+/* A person the network is shared with, or its owner, beside the devices they have in user mode — full access: those
+   reach everything the person can, this network's targets with the rest. The pills show; they do nothing. Past 8, the
+   first 6 and "+N more". Removing a person unshares the network with them; its owner stays. */
+const PersonRow: React.FC<{
+  email: string
+  owner: boolean
+  devices: IDevice[]
+  removable: boolean
+  onRemove: () => void
+}> = ({ email, owner, devices, removable, onRemove }) => {
   const { t } = useTranslation()
-  const info = useDeviceSessionInfo(device.id)
-  if (info?.actsFor !== email) return null
+  const [open, setOpen] = useState(false)
+  const folded = devices.length > INLINE && !open
+  const shown = folded ? devices.slice(0, SHOWN) : devices
+
   return (
-    <ListItemLocation to={`/devices/${device.id}`} icon="laptop" inset={1.5} dense>
-      <ListItemText primary={device.name} secondary={t('deviceNetwork.fullAccess', 'User mode: full access')} />
-    </ListItemLocation>
+    <Box sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
+      <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0, paddingTop: 0.25 }}>
+        <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={email}>
+          {email}
+        </Typography>
+        <Typography variant="caption" color="textSecondary" component="div">
+          {[
+            owner
+              ? t('deviceNetwork.ownerSummary', 'Manages it · reaches its targets')
+              : t('deviceNetwork.connectsSummary', 'Reaches its targets'),
+            ...(devices.length
+              ? [t('deviceNetwork.inUserMode', '{{count}} in user mode', { count: devices.length })]
+              : []),
+          ].join(' · ')}
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+        <Chip
+          size="small"
+          variant="outlined"
+          label={owner ? t('deviceNetwork.roleOwner', 'Owner') : t('deviceNetwork.roleConnect', 'Can connect')}
+        />
+        {!devices.length && (
+          <Typography variant="caption" color="textSecondary">
+            {t('deviceNetwork.noUserMode', 'No devices in user mode')}
+          </Typography>
+        )}
+        {shown.map(device => (
+          <Chip
+            key={device.id}
+            size="small"
+            color="primary"
+            icon={<Icon name="laptop" size="xs" />}
+            label={device.name}
+          />
+        ))}
+        {folded && (
+          <Chip
+            size="small"
+            variant="outlined"
+            label={t('deviceNetwork.more', '+{{count}} more', { count: devices.length - SHOWN })}
+            onClick={() => setOpen(true)}
+            sx={{ borderStyle: 'dashed' }}
+          />
+        )}
+        {open && devices.length > INLINE && (
+          <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }} onClick={() => setOpen(false)}>
+            {t('deviceNetwork.showLess', 'Show less')}
+          </Typography>
+        )}
+        <Box sx={{ marginLeft: 'auto' }}>
+          {removable && (
+            <IconButton
+              icon="times"
+              title={t('deviceNetwork.removePerson', 'Remove {{email}} from the network', { email })}
+              size="sm"
+              onClick={onRemove}
+            />
+          )}
+        </Box>
+      </Box>
+    </Box>
   )
 }
 
