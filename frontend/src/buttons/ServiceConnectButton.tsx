@@ -71,7 +71,7 @@ export const ServiceConnectButton: React.FC = () => {
           <Gutters size="md" sx={{ display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }} bottom={null}>
             {local && !proxy ? (
               <Box sx={{ width: '100%' }}>
-                <LocalSubnetConnect local={local} port={service?.port} />
+                <LocalSubnetConnect local={local} service={service} connection={connection} />
                 <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
                   <Link onClick={() => setProxy(true)}>
                     {t('serviceConnectButton.useProxy', 'Connect through the proxy instead')}

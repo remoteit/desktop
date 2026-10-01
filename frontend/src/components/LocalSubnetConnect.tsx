@@ -1,15 +1,44 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
 import { CopyIconButton } from '../buttons/CopyIconButton'
+import { IconButton } from '../buttons/IconButton'
+import { windowOpen } from '../services/browser'
+import { emit } from '../services/Controller'
 import { LocalSubnetName } from '../services/localSubnet'
+import { useApplication } from '../hooks/useApplication'
+import { PromptModal } from './PromptModal'
 import { Icon } from './Icon'
 
 /* A service reached by its name on this machine: the device daemon here resolves it (services/localSubnet), so there
-   is nothing to start — the name and port are the connection. Copy it into ssh, a browser, a database client. */
-export const LocalSubnetConnect: React.FC<{ local: LocalSubnetName; port?: number }> = ({ local, port }) => {
+   is nothing to start — the name and port are the connection. Copy it into ssh, a browser, a database client, or
+   launch it as its type would a connection — the same templates and launch methods, the name as the host and the
+   service's own port. A web service launches as https://<name>/: port 443 on a name is the host's web service, under
+   the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md). */
+type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection }
+
+export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection }) => {
   const { t } = useTranslation()
+  const port = service?.port
   const endpoint = port ? `${local.name}:${port}` : local.name
+  // The service's connection with the name in place of the proxy's address: never saved, only launched from.
+  const here = useMemo<IConnection | undefined>(
+    () =>
+      connection && { ...connection, host: local.name, port, connected: true, ready: true, enabled: true, online: true },
+    [connection, local.name, port]
+  )
+  const app = useApplication(service, here)
+  const [prompt, setPrompt] = useState(false)
+  const web = app.urlForm
+  const launchable = web || app.canLaunch
+
+  const launch = (tokens: ILookup<string> = {}) => {
+    setPrompt(false)
+    if (web) return windowOpen(`https://${local.name}/`, '_blank')
+    const command = app.preview(tokens)
+    if (app.launchType === 'URL') windowOpen(command, '_blank', !command.startsWith('http'))
+    else emit('launch/app', Object.keys(tokens).length ? command : app.sshConfigString, app.launchType)
+  }
 
   return (
     <Box
@@ -37,6 +66,15 @@ export const LocalSubnetConnect: React.FC<{ local: LocalSubnetName; port?: numbe
           </Typography>
         )}
       </Box>
+      {launchable && (
+        <IconButton
+          icon="launch"
+          color="primary"
+          title={web ? t('localSubnetConnect.launch', 'Open in the browser') : app.contextTitle}
+          onClick={() => (!web && app.prompt ? setPrompt(true) : launch())}
+        />
+      )}
+      {launchable && <PromptModal app={app} open={prompt} onClose={() => setPrompt(false)} onSubmit={launch} />}
       <CopyIconButton value={endpoint} color="primary" />
     </Box>
   )

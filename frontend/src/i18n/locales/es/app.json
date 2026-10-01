@@ -1402,6 +1402,7 @@
   },
   "localSubnetConnect": {
     "address": "",
+    "launch": "",
     "title": ""
   },
   "logsPage": {

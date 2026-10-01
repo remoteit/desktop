@@ -1374,6 +1374,7 @@
   },
   "localSubnetConnect": {
     "address": "resolves here to {{address}}",
+    "launch": "Open in the browser",
     "title": "On this machine — no connection to start"
   },
   "logsPage": {
