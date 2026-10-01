@@ -17,12 +17,19 @@ export type NetworkMember = {
   anyPort: boolean
 }
 
+// A network's devices by tag: the owner's devices carrying any (or all) of its tags are members as it says.
 export type NetworkRule = {
-  role: NetworkDeviceRole
-  scope: NetworkDeviceScope
-  operator: 'ANY' | 'ALL'
+  id: string
   tags: string[]
+  operator: 'ANY' | 'ALL'
+  initiator: boolean
+  allServices: boolean
+  anyPort: boolean
+  devices: string[] // the devices it makes members
+  overridden: string[] // those it matches that are added on their own, which it does not apply to
 }
+
+export type RuleChoices = Partial<Pick<NetworkRule, 'tags' | 'operator' | 'initiator' | 'allServices' | 'anyPort'>>
 
 export type DeviceNetwork = {
   id: string
@@ -49,6 +56,18 @@ export const exposes = (network: Pick<DeviceNetwork, 'connections'>, member: Net
   targeted(member) &&
   (member.scope === 'ALL' || member.anyPort || network.connections.some(c => c.service.device?.id === member.deviceId))
 
+// A network's devices, listed or by tag: how many initiate, and how many are targets exposing something.
+export const memberCounts = (network: DeviceNetwork) => ({
+  initiators:
+    network.devices.filter(initiates).length +
+    (network.deviceRules || []).filter(rule => rule.initiator).reduce((sum, rule) => sum + rule.devices.length, 0),
+  targets:
+    network.devices.filter(member => exposes(network, member)).length +
+    (network.deviceRules || [])
+      .filter(rule => rule.allServices || rule.anyPort)
+      .reduce((sum, rule) => sum + rule.devices.length, 0),
+})
+
 // The role a member's choices make: an initiator when switched on, a target when it exposes something. Neither yet:
 // kept as a target exposing nothing, which reaches nothing and is reached by nothing.
 export const roleFor = (initiator: boolean, exposing: boolean): NetworkDeviceRole =>
@@ -67,7 +86,7 @@ export async function graphQLDeviceNetworks(
           permissions
           owner { id email }
           devices { deviceId role scope anyPort }
-          deviceRules { role scope operator tags }
+          deviceRules { id tags operator initiator allServices anyPort devices overridden }
           connections { service { id name device { id name } } }
           access { user { id email } role }
           userModeDevices { userId deviceId name }
@@ -137,25 +156,30 @@ export async function graphQLDeviceAnyPort(deviceId: string) {
   return (response.data?.data?.login?.device?.[0]?.anyPort ?? null) as { tcp: string | null; udp: string | null } | null
 }
 
-// A network's device membership by tag, one rule per role (replacing the role's): the owner's devices carrying any —
-// or all — of the tags. Account administrators only.
-export const graphQLSetNetworkDeviceRule = (
-  networkId: string,
-  rule: { role: NetworkDeviceRole; tags: string[]; operator: 'ANY' | 'ALL'; scope?: NetworkDeviceScope }
-) =>
+// Devices by tag, for the owning account's administrators: a new rule, a change to one (fields left out keep what they
+// were), or one gone.
+export const graphQLCreateNetworkDeviceRule = (networkId: string, rule: RuleChoices & { tags: string[] }) =>
   graphQLBasicRequest(
-    `mutation SetNetworkDeviceRule($networkId: String!, $role: NetworkDeviceRole!, $tags: [String!]!, $operator: ListOperator, $scope: NetworkDeviceScope) {
-      setNetworkDeviceRule(networkId: $networkId, role: $role, tags: $tags, operator: $operator, scope: $scope) { role }
+    `mutation CreateNetworkDeviceRule($networkId: String!, $tags: [String!]!, $operator: ListOperator, $initiator: Boolean, $allServices: Boolean, $anyPort: Boolean) {
+      createNetworkDeviceRule(networkId: $networkId, tags: $tags, operator: $operator, initiator: $initiator, allServices: $allServices, anyPort: $anyPort) { id }
     }`,
     { networkId, ...rule }
   )
 
-export const graphQLRemoveNetworkDeviceRule = (networkId: string, role: NetworkDeviceRole) =>
+export const graphQLUpdateNetworkDeviceRule = (ruleId: string, rule: RuleChoices) =>
   graphQLBasicRequest(
-    `mutation RemoveNetworkDeviceRule($networkId: String!, $role: NetworkDeviceRole!) {
-      removeNetworkDeviceRule(networkId: $networkId, role: $role)
+    `mutation UpdateNetworkDeviceRule($ruleId: String!, $tags: [String!], $operator: ListOperator, $initiator: Boolean, $allServices: Boolean, $anyPort: Boolean) {
+      updateNetworkDeviceRule(ruleId: $ruleId, tags: $tags, operator: $operator, initiator: $initiator, allServices: $allServices, anyPort: $anyPort) { id }
     }`,
-    { networkId, role }
+    { ruleId, ...rule }
+  )
+
+export const graphQLRemoveNetworkDeviceRule = (ruleId: string) =>
+  graphQLBasicRequest(
+    `mutation RemoveNetworkDeviceRule($ruleId: String!) {
+      removeNetworkDeviceRule(ruleId: $ruleId)
+    }`,
+    { ruleId }
   )
 
 export const graphQLSetNetworkShareRole = (networkId: string, email: string, role: ShareRole) =>
