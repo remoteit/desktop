@@ -31,9 +31,11 @@ export const LocalSubnetConnect: React.FC<{ local: LocalSubnetName; port?: numbe
         <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap title={endpoint}>
           {endpoint}
         </Typography>
-        <Typography variant="caption" color="textSecondary" component="div">
-          {t('localSubnetConnect.address', 'resolves here to {{address}}', { address: local.address })}
-        </Typography>
+        {local.address && (
+          <Typography variant="caption" color="textSecondary" component="div">
+            {t('localSubnetConnect.address', 'resolves here to {{address}}', { address: local.address })}
+          </Typography>
+        )}
       </Box>
       <CopyIconButton value={endpoint} color="primary" />
     </Box>

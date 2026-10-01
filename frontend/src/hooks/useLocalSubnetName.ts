@@ -9,19 +9,20 @@ export const useLocalSubnetName = (deviceId?: string, serviceId?: string): Local
   const enabled = useDeviceSessions()
   const info = useDeviceSessionInfo(enabled ? deviceId : undefined)
   const name = serviceId ? info?.services?.[serviceId] : info?.subnetName
+  const id = serviceId || deviceId
   const [local, setLocal] = useState<LocalSubnetName>()
 
   useEffect(() => {
     setLocal(undefined)
-    if (!enabled || !name) return
+    if (!enabled || !name || !id) return
     let current = true
-    localSubnetName(name).then(answer => {
+    localSubnetName(id, name).then(answer => {
       if (current && answer) setLocal(answer)
     })
     return () => {
       current = false
     }
-  }, [enabled, name])
+  }, [enabled, id, name])
 
   return local
 }
