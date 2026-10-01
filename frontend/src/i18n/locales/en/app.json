@@ -940,6 +940,7 @@
     "targetAllAny": "Target: all services · any port",
     "targetExposing": "Target: {{what}}",
     "targets": "Target devices",
+    "thisNetworks": "this network's",
     "title": "Network"
   },
   "deviceNetworkGraph": {

@@ -641,6 +641,9 @@ const GROUP_SHOWN = 6
    tag / All tags when it has several — and a row for each device it makes a member, showing what the heading gives it
    (set on the heading, not per device). A device it matches but that is added on its own is a line saying so: its own
    row is what it is. Folds past GROUP_SHOWN devices. */
+// The tags and summary sit under the account's name, in line with it past the tag icon.
+const TAG_INDENT = 2.75
+
 const TagGroup: React.FC<{
   rule: NetworkRule
   tags: ITag[] // the active account's, for colours: empty for another account's group
@@ -690,9 +693,18 @@ const TagGroup: React.FC<{
     <Box sx={{ borderTop: 1, borderColor: 'grayLighter.main' }}>
       <Box sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 1, bgcolor: 'grayLightest.main' }}>
         <Box sx={{ width: NAME_WIDTH + 40, flex: '0 0 auto', minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, marginBottom: 0.75 }}>
             <Icon name="tag" size="sm" color="grayDark" />
-            {foreign && <Chip size="small" color="secondary" label={rule.accountName} />}
+            <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
+              {rule.accountName}
+            </Typography>
+            {!foreign && (
+              <Typography variant="caption" color="textSecondary" noWrap>
+                · {t('deviceNetwork.thisNetworks', "this network's")}
+              </Typography>
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', paddingLeft: TAG_INDENT }}>
             {rule.tags.map((tag, index) => (
               <React.Fragment key={tag}>
                 {!!index && (
@@ -741,7 +753,7 @@ const TagGroup: React.FC<{
               size="small"
               value=""
               label={t('deviceNetwork.chooseTag', 'Devices tagged')}
-              sx={{ marginTop: 1 }}
+              sx={{ marginTop: 1, paddingLeft: TAG_INDENT }}
               onChange={event => {
                 setPicking(false)
                 onChange({ tags: [...rule.tags, event.target.value] })
@@ -756,7 +768,12 @@ const TagGroup: React.FC<{
                 ))}
             </TextField>
           )}
-          <Typography variant="caption" color="textSecondary" component="div">
+          <Typography
+            variant="caption"
+            color="textSecondary"
+            component="div"
+            sx={{ paddingLeft: TAG_INDENT, marginTop: 0.5 }}
+          >
             {[
               rule.devices.length === 1
                 ? t('deviceNetwork.groupDevice', '1 device')
