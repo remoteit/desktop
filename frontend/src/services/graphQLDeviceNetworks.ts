@@ -120,3 +120,24 @@ export async function graphQLDeviceAnyPort(deviceId: string) {
   if (errors) return 'ERROR'
   return (response.data?.data?.login?.device?.[0]?.anyPort ?? null) as { tcp: string | null; udp: string | null } | null
 }
+
+// A network's device membership by tag, one rule per role (replacing the role's): the owner's devices carrying any —
+// or all — of the tags. Account administrators only.
+export const graphQLSetNetworkDeviceRule = (
+  networkId: string,
+  rule: { role: NetworkDeviceRole; tags: string[]; operator: 'ANY' | 'ALL'; scope?: NetworkDeviceScope }
+) =>
+  graphQLBasicRequest(
+    `mutation SetNetworkDeviceRule($networkId: String!, $role: NetworkDeviceRole!, $tags: [String!]!, $operator: ListOperator, $scope: NetworkDeviceScope) {
+      setNetworkDeviceRule(networkId: $networkId, role: $role, tags: $tags, operator: $operator, scope: $scope) { role }
+    }`,
+    { networkId, ...rule }
+  )
+
+export const graphQLRemoveNetworkDeviceRule = (networkId: string, role: NetworkDeviceRole) =>
+  graphQLBasicRequest(
+    `mutation RemoveNetworkDeviceRule($networkId: String!, $role: NetworkDeviceRole!) {
+      removeNetworkDeviceRule(networkId: $networkId, role: $role)
+    }`,
+    { networkId, role }
+  )

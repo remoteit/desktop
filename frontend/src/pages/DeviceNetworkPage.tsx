@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import {
+  Autocomplete,
   Box,
   Button,
   Checkbox,
@@ -26,10 +27,13 @@ import {
   graphQLAddNetworkDevice,
   graphQLListNetworkService,
   graphQLRemoveNetworkDevice,
+  graphQLRemoveNetworkDeviceRule,
+  graphQLSetNetworkDeviceRule,
   initiates,
   targeted,
 } from '../services/graphQLDeviceNetworks'
 import { getAllDevices } from '../selectors/devices'
+import { selectTags } from '../selectors/tags'
 import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
 import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -241,28 +245,7 @@ export const DeviceNetworkPage: React.FC = () => {
             ))}
           </List>
 
-          {!!network.deviceRules.length && (
-            <List>
-              <ListSubheader>{t('deviceNetwork.rules', 'Tag rules')}</ListSubheader>
-              {network.deviceRules.map(rule => (
-                <ListItem key={rule.role} dense>
-                  <ListItemText
-                    primary={t('deviceNetwork.rule', 'Devices tagged {{tags}} are {{role}}', {
-                      tags: rule.tags.join(rule.operator === 'ALL' ? ' and ' : ' or '),
-                      role: roleLabel(t, rule.role),
-                    })}
-                    secondary={
-                      targeted(rule)
-                        ? rule.scope === 'ALL'
-                          ? t('deviceNetwork.allServices', 'All services')
-                          : t('deviceNetwork.listed', 'Listed services')
-                        : undefined
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
+          <TagRules network={network} busy={busy} act={act} />
 
           {manage && !link && <AddDevice network={network} devices={devices} busy={busy} act={act} />}
         </>
@@ -423,6 +406,129 @@ const AddDevice: React.FC<{
         <Gutters>
           <Typography variant="caption" color="textSecondary">
             {t('deviceNetwork.noChoices', 'Only devices you manage can be added.')}
+          </Typography>
+        </Gutters>
+      )}
+    </List>
+  )
+}
+
+// A network's membership by tag, one rule per role: the owner's devices carrying any (or all) of the tags take the
+// role, joining and leaving as they gain and lose them. Shown to anyone who sees the network; set by the owning
+// account's administrators.
+const TagRules: React.FC<{
+  network: DeviceNetwork
+  busy: boolean
+  act: (change: () => Promise<unknown>) => Promise<void>
+}> = ({ network, busy, act }) => {
+  const { t } = useTranslation()
+  const tags = useSelector(selectTags)
+  const admin = network.permissions.includes('ADMIN') && network.kind !== 'LINK'
+  const [role, setRole] = useState<NetworkDeviceRole>('TARGET')
+  const [chosen, setChosen] = useState<string[]>([])
+  const [operator, setOperator] = useState<'ANY' | 'ALL'>('ANY')
+  const [all, setAll] = useState(true)
+
+  if (!admin && !network.deviceRules.length) return null
+
+  return (
+    <List>
+      <ListSubheader>{t('deviceNetwork.rules', 'Tag rules')}</ListSubheader>
+      {network.deviceRules.map(rule => (
+        <ListItem key={rule.role} dense>
+          <ListItemText
+            primary={t('deviceNetwork.rule', 'Devices tagged {{tags}} are {{role}}', {
+              tags: rule.tags.join(rule.operator === 'ALL' ? ' and ' : ' or '),
+              role: roleLabel(t, rule.role),
+            })}
+            secondary={
+              targeted(rule)
+                ? rule.scope === 'ALL'
+                  ? t('deviceNetwork.allServices', 'All services')
+                  : t('deviceNetwork.listed', 'Listed services')
+                : undefined
+            }
+          />
+          {admin && (
+            <ListItemSecondaryAction>
+              <IconButton
+                icon="times"
+                title={t('deviceNetwork.removeRule', 'Remove the rule')}
+                size="sm"
+                disabled={busy}
+                onClick={() => act(() => graphQLRemoveNetworkDeviceRule(network.id, rule.role))}
+              />
+            </ListItemSecondaryAction>
+          )}
+        </ListItem>
+      ))}
+      {admin && (
+        <Gutters>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Autocomplete
+              multiple
+              size="small"
+              options={tags.map(tag => tag.name)}
+              value={chosen}
+              onChange={(_, value) => setChosen(value)}
+              renderInput={params => <TextField {...params} label={t('deviceNetwork.ruleTags', 'Tags')} />}
+              sx={{ minWidth: 220 }}
+            />
+            <TextField
+              select
+              size="small"
+              label={t('deviceNetwork.ruleOperator', 'Match')}
+              value={operator}
+              onChange={event => setOperator(event.target.value as 'ANY' | 'ALL')}
+            >
+              <MenuItem value="ANY">{t('deviceNetwork.ruleAny', 'Any of them')}</MenuItem>
+              <MenuItem value="ALL">{t('deviceNetwork.ruleAll', 'All of them')}</MenuItem>
+            </TextField>
+            <TextField
+              select
+              size="small"
+              label={t('deviceNetwork.role', 'Role')}
+              value={role}
+              onChange={event => setRole(event.target.value as NetworkDeviceRole)}
+              sx={{ minWidth: 180 }}
+            >
+              {ROLES.map(value => (
+                <MenuItem key={value} value={value}>
+                  {roleLabel(t, value)}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Button
+              variant="contained"
+              size="small"
+              disabled={!chosen.length || busy}
+              onClick={() =>
+                act(async () => {
+                  await graphQLSetNetworkDeviceRule(network.id, {
+                    role,
+                    tags: chosen,
+                    operator,
+                    scope: role === 'INITIATOR' ? undefined : all ? 'ALL' : 'LISTED',
+                  })
+                  setChosen([])
+                })
+              }
+            >
+              {t('deviceNetwork.setRule', 'Set rule')}
+            </Button>
+          </Box>
+          {role !== 'INITIATOR' && (
+            <ListItemSetting
+              hideIcon
+              size="small"
+              label={t('deviceNetwork.allServices', 'All services')}
+              subLabel={t('deviceNetwork.allServicesAddHint', 'Off: only the services you list on the network')}
+              toggle={all}
+              onClick={() => setAll(!all)}
+            />
+          )}
+          <Typography variant="caption" color="textSecondary">
+            {t('deviceNetwork.ruleHint', "One rule per role: setting a role's rule replaces it.")}
           </Typography>
         </Gutters>
       )}
