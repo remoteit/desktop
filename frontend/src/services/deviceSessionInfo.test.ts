@@ -84,7 +84,7 @@ describe('device session info', () => {
 
   it('an API without the field is asked once', async () => {
     request.mockResolvedValue({
-      data: { errors: [{ message: 'Cannot query field "actsFor" on type "Device".' }] },
+      data: { errors: [{ message: 'Cannot query field "subnetName" on type "Device".' }] },
       headers: {},
     })
     const done = settled()

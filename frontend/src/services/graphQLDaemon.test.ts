@@ -43,6 +43,14 @@ describe('reading the device agent', () => {
     expect(uiSet).not.toHaveBeenCalled()
   })
 
+  it('a field this build asks for that the API lacks, beside device sessions: ERROR, not UNSUPPORTED', async () => {
+    request.mockResolvedValue({
+      data: { errors: [{ message: 'Cannot query field "pinned" on type "DeviceDaemon".' }] },
+      headers: {},
+    })
+    expect(await graphQLDeviceDaemon(daemon.deviceId)).toBe('ERROR')
+  })
+
   it('any other error: ERROR, still silent', async () => {
     request.mockResolvedValue({ data: { errors: [{ message: 'boom' }] }, headers: {} })
     expect(await graphQLDeviceDaemon(daemon.deviceId)).toBe('ERROR')
@@ -78,7 +86,7 @@ describe('the device-sessions flag', () => {
 })
 
 describe('device networks', () => {
-  it("reads the account's networks, and an API without device networks is UNSUPPORTED, silently", async () => {
+  it("reads the account's networks; an API without device networks is UNSUPPORTED, silently; any other refused field is an ERROR", async () => {
     const network = {
       id: 'N',
       name: 'factory',
@@ -89,11 +97,23 @@ describe('device networks', () => {
     expect(await graphQLDeviceNetworks('ACCOUNT')).toEqual([network])
 
     request.mockResolvedValue({
-      data: { errors: [{ message: 'Cannot query field "devices" on type "Network".' }] },
+      data: {
+        errors: [
+          { message: 'Cannot query field "kind" on type "Network".' },
+          { message: 'Cannot query field "devices" on type "Network".' },
+        ],
+      },
       headers: {},
     })
     expect(await graphQLDeviceNetworks('ACCOUNT')).toBe(UNSUPPORTED)
     expect(uiSet).not.toHaveBeenCalled()
+
+    // An API with device networks that lacks one field this build asks for: the build and the API disagree.
+    request.mockResolvedValue({
+      data: { errors: [{ message: 'Cannot query field "tagsEditable" on type "Network".' }] },
+      headers: {},
+    })
+    expect(await graphQLDeviceNetworks('ACCOUNT')).toBe('ERROR')
   })
 
   it('a device that is both initiates and is a target', () => {

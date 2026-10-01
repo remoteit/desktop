@@ -1,5 +1,6 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
+import { withoutDeviceSessions } from './graphQLDaemon'
 
 /* What the device-session API says of each device, for the device list and a device's pages: its name in device
    subnets (Device.subnetName, <device>.<owner slug>.on.remote.it), who it acts for in user mode (Device.actsFor), and
@@ -58,7 +59,7 @@ async function flush() {
   const response = await post({ query })
   if (response !== 'ERROR') {
     const errors = graphQLGetErrors(response, true, { query, variables: {} })
-    if (errors?.some(error => /Cannot query field/.test(error.message || ''))) unsupported = true
+    if (withoutDeviceSessions(errors, 'subnetName')) unsupported = true
     else if (!errors)
       for (const device of response.data?.data?.login?.device || [])
         info.set(device.id, {

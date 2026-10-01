@@ -1,6 +1,6 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
-import { UNSUPPORTED } from './graphQLDaemon'
+import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 
 /* Networks of devices (presence-server docs/device-principals.md §2, §8): each network's devices — initiators, targets
    or both, and what a target exposes (the services the network lists, all of them, any port of its own) — its tag
@@ -144,7 +144,7 @@ export async function graphQLDeviceNetworks(
   const response = await post({ query, variables })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
-  if (errors?.some(error => /Cannot query field/.test(error.message || ''))) return UNSUPPORTED
+  if (withoutDeviceSessions(errors, 'kind')) return UNSUPPORTED
   if (errors) return 'ERROR'
   return response.data?.data?.login?.account?.networks ?? []
 }
@@ -197,7 +197,7 @@ export async function graphQLDeviceAnyPort(deviceId: string) {
   const response = await post({ query })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables: {} })
-  if (errors?.some(error => /Cannot query field/.test(error.message || ''))) return UNSUPPORTED
+  if (withoutDeviceSessions(errors, 'anyPort')) return UNSUPPORTED
   if (errors) return 'ERROR'
   return (response.data?.data?.login?.device?.[0]?.anyPort ?? null) as { tcp: string | null; udp: string | null } | null
 }
@@ -265,7 +265,7 @@ export async function graphQLTaggedInto(accountId: string): Promise<TaggedInto[]
   const response = await post({ query, variables })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
-  if (errors?.some(error => /Cannot query field/.test(error.message || ''))) return UNSUPPORTED
+  if (withoutDeviceSessions(errors, 'taggedInto')) return UNSUPPORTED
   if (errors) return 'ERROR'
   return response.data?.data?.login?.account?.taggedInto ?? []
 }

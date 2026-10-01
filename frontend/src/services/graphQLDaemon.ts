@@ -38,9 +38,10 @@ export const runningVersion = (daemon?: { running?: string | null } | null) =>
 export const updating = (daemon?: { update?: { state: string } | null } | null) =>
   !!daemon?.update && ['pending', 'started', 'downloading', 'installing'].includes(daemon.update.state)
 
-// The schema's own refusal of a field or type it does not have.
-const unsupported = (errors?: { message?: string }[]) =>
-  !!errors?.some(error => /Cannot query field|Unknown (argument|type)/.test(error.message || ''))
+// Whether the API lacks the device-session API as a whole: it refuses a marker field that only that API has. Any other
+// refused field is this build and the API disagreeing — an error to report, not a feature to hide.
+export const withoutDeviceSessions = (errors: { message?: string }[] | undefined, marker: string) =>
+  !!errors?.some(error => (error.message || '').startsWith(`Cannot query field "${marker}"`))
 
 async function read<T>(
   query: string,
@@ -50,7 +51,7 @@ async function read<T>(
   const response = await post({ query, variables })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
-  if (unsupported(errors)) return UNSUPPORTED
+  if (withoutDeviceSessions(errors, field)) return UNSUPPORTED
   if (errors) return 'ERROR'
   return response.data?.data?.[field] ?? null
 }
