@@ -261,7 +261,7 @@ export const DeviceNetworkPage: React.FC = () => {
     >
       {view === 'graph' ? (
         <Gutters>
-          <DeviceNetworkGraph network={network} devices={devices} manage={manage} exposure={exposure} act={act} />
+          <DeviceNetworkGraph network={network} devices={devices} exposure={exposure} />
         </Gutters>
       ) : (
         <>

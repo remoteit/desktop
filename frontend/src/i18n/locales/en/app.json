@@ -966,10 +966,20 @@
     "unshareOrg": "Stop sharing with {{name}}"
   },
   "deviceNetworkGraph": {
+    "admin": "Admin",
+    "allServices": "All services",
+    "anyPort": "Any port",
     "both": "also initiates",
+    "byTag": "by tag",
     "confirmRemove": "Remove {{name}} from the network?",
+    "connect": "Can connect",
     "drag": "Drag in to add",
-    "noneToAdd": "No other device you manage"
+    "legendBoth": "⟷ initiates and is a target",
+    "legendDevices": "—— devices",
+    "legendPeople": "- - - people",
+    "manage": "Can manage",
+    "noneToAdd": "No other device you manage",
+    "owner": "Owner"
   },
   "deviceNetworks": {
     "add": "Add network",

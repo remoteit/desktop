@@ -946,10 +946,20 @@
     "unshareOrg": ""
   },
   "deviceNetworkGraph": {
+    "admin": "",
+    "allServices": "",
+    "anyPort": "",
     "both": "",
+    "byTag": "",
     "confirmRemove": "",
+    "connect": "",
     "drag": "",
-    "noneToAdd": ""
+    "legendBoth": "",
+    "legendDevices": "",
+    "legendPeople": "",
+    "manage": "",
+    "noneToAdd": "",
+    "owner": ""
   },
   "deviceNetworks": {
     "add": "",
