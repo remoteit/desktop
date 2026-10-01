@@ -185,9 +185,16 @@ Each step lands behind the flag and is testable against r3-local (Test page → 
 | 4. Networks, list view; Any port setting | bfa1f9e1 | graphql a900df7e (no invites, any-port setting + switch, people reach targets) |
 | 5. The graph view | be8c1f2d | — |
 
-Every read of the device-session API is silent and hides (or says so) where the API does not serve it. Not built:
-**per-device rollback** (rollback is a channel's; a device's needs graphql to pin a release, and to know which one to
-go back to), a **service's host
-name** behind a device, **names and addresses on demand**, and editing tag rules (shown, not edited).
-Next, proposed: an **Agent column** in the device list — version and upgrade status (upgrading, failed or refused with
-the reason on hover), sortable and filterable — on a batched `Device` field for the agent's status in graphql.
+Then, the same day:
+
+| Item | desktop | backend |
+|---|---|---|
+| Agent column (version, upgrade status) | dddc10a2 | graphql 22972be6 (`Device.agent`, batched); presence dfbe198 (`POST /v1/devices/reports`) |
+| Tag rule editing | df8376f6 | — (existed) |
+| A service's DNS name (its LAN host's) | 39fe886c | graphql 9e8f780d (`Service.subnetName`) |
+| Per-device rollback | bd48fdf9 | graphql 2079e6e8 (a pin; the channel keeps its previous release) |
+
+Every read of the device-session API is silent and hides (or says so) where the API does not serve it. No
+standby/active badge (Evan). Not built: **names and addresses on demand** (its own backend project; addresses stable
+per device — IPv6 from the target's hash, IPv4 a hashed first choice kept on disk), and sorting or filtering the
+device list by the Agent column (the list sorts on the server, which does not know it).
