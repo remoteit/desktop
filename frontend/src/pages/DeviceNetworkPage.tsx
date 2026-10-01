@@ -79,7 +79,8 @@ export const DeviceNetworkPage: React.FC = () => {
   const admin = network.permissions.includes('ADMIN')
   const link = network.kind === 'LINK'
   const deviceById = new Map(devices.map(device => [device.id, device]))
-  const nameOf = (id: string) => deviceById.get(id)?.name || id
+  const nameOf = (id: string) =>
+    deviceById.get(id)?.name || network.devices.find(member => member.deviceId === id)?.name || id
   const listed = new Set(network.connections.map(connection => connection.service.id))
   // The accounts whose devices you may add by tag: the owner's, and others you administer.
   const ruleAccounts = network.ruleAccounts || []
@@ -183,6 +184,29 @@ export const DeviceNetworkPage: React.FC = () => {
   const addable = devices.filter(
     device => device.permissions.includes('MANAGE') && !network.devices.some(member => member.deviceId === device.id)
   )
+  // The devices added one by one, by the account they come from: the network owner's first, then each other one.
+  const byAccount = Object.values(
+    network.devices.reduce<Record<string, { accountId: string; accountName: string; members: NetworkMember[] }>>(
+      (groups, member) => {
+        const accountId = member.accountId || network.owner.id
+        groups[accountId] ??= { accountId, accountName: member.accountName || accountId, members: [] }
+        groups[accountId].members.push(member)
+        return groups
+      },
+      {}
+    )
+  )
+    .map(group => ({
+      ...group,
+      members: group.members.sort((a, b) => nameOf(a.deviceId).localeCompare(nameOf(b.deviceId))),
+    }))
+    .sort((a, b) =>
+      a.accountId === network.owner.id
+        ? -1
+        : b.accountId === network.owner.id
+        ? 1
+        : a.accountName.localeCompare(b.accountName)
+    )
   const people = [
     { ...network.owner, owner: true, role: 'MANAGE' as ShareRole },
     ...network.access.map(a => ({ ...a.user, owner: false, role: a.role || ('CONNECT' as ShareRole) })),
@@ -289,28 +313,6 @@ export const DeviceNetworkPage: React.FC = () => {
                 onRemove={() => act(() => graphQLRemoveNetworkDeviceRule(rule.id))}
               />
             ))}
-            {!!(network.deviceRules || []).length && !!network.devices.length && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  paddingX: 2,
-                  paddingY: 1,
-                  borderTop: 1,
-                  borderColor: 'grayLighter.main',
-                  bgcolor: 'grayLightest.main',
-                }}
-              >
-                <Icon name="laptop" size="sm" color="grayDark" />
-                <Typography variant="body2">{t('deviceNetwork.oneByOne', 'Added one by one')}</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  {network.devices.length === 1
-                    ? t('deviceNetwork.groupDevice', '1 device')
-                    : t('deviceNetwork.groupDevices', '{{count}} devices', { count: network.devices.length })}
-                </Typography>
-              </Box>
-            )}
             {adding === 'device' && (
               <Gutters>
                 <TextField
@@ -342,25 +344,54 @@ export const DeviceNetworkPage: React.FC = () => {
             {!network.devices.length && !(network.deviceRules || []).length && (
               <Empty text={t('deviceNetwork.noDevices', 'No devices on this network yet')} />
             )}
-            {[...network.devices]
-              .sort((a, b) => nameOf(a.deviceId).localeCompare(nameOf(b.deviceId)))
-              .map(member => (
-                <MemberRow
-                  key={member.deviceId}
-                  name={nameOf(member.deviceId)}
-                  member={member}
-                  services={servicesOf(member)}
-                  listed={listed}
-                  allOn={allOn(member)}
-                  summary={summary(member)}
-                  editable={manage && !link && !busy}
-                  onInitiator={() => change(member, { initiator: !initiates(member) })}
-                  onAll={() => setAll(member, !allOn(member))}
-                  onAnyPort={() => setAnyPort(member, !(targeted(member) && member.anyPort))}
-                  onService={serviceId => setService(member, serviceId)}
-                  onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
-                />
-              ))}
+            {byAccount.map(group => (
+              <React.Fragment key={group.accountId}>
+                <Box
+                  sx={{
+                    paddingX: 2,
+                    paddingY: 1,
+                    borderTop: 1,
+                    borderColor: 'grayLighter.main',
+                    bgcolor: 'grayLightest.main',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Icon name="laptop" size="sm" color="grayDark" />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
+                      {group.accountName}
+                    </Typography>
+                    {group.accountId === network.owner.id && (
+                      <Typography variant="caption" color="textSecondary" noWrap>
+                        · {t('deviceNetwork.thisNetworks', "this network's")}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Typography variant="caption" color="textSecondary" component="div" sx={{ paddingLeft: TAG_INDENT }}>
+                    {t('deviceNetwork.oneByOne', 'Added one by one')} ·{' '}
+                    {group.members.length === 1
+                      ? t('deviceNetwork.groupDevice', '1 device')
+                      : t('deviceNetwork.groupDevices', '{{count}} devices', { count: group.members.length })}
+                  </Typography>
+                </Box>
+                {group.members.map(member => (
+                  <MemberRow
+                    key={member.deviceId}
+                    name={nameOf(member.deviceId)}
+                    member={member}
+                    services={servicesOf(member)}
+                    listed={listed}
+                    allOn={allOn(member)}
+                    summary={summary(member)}
+                    editable={manage && !link && !busy}
+                    onInitiator={() => change(member, { initiator: !initiates(member) })}
+                    onAll={() => setAll(member, !allOn(member))}
+                    onAnyPort={() => setAnyPort(member, !(targeted(member) && member.anyPort))}
+                    onService={serviceId => setService(member, serviceId)}
+                    onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
+                  />
+                ))}
+              </React.Fragment>
+            ))}
           </List>
 
           <List>

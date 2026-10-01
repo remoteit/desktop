@@ -12,6 +12,9 @@ export type NetworkDeviceScope = 'LISTED' | 'ALL'
 
 export type NetworkMember = {
   deviceId: string
+  name?: string // another account's devices are not in your device list
+  accountId?: string // the account that owns it
+  accountName?: string
   role: NetworkDeviceRole
   scope: NetworkDeviceScope
   anyPort: boolean
@@ -97,7 +100,7 @@ export async function graphQLDeviceNetworks(
           kind
           permissions
           owner { id email }
-          devices { deviceId role scope anyPort }
+          devices { deviceId role scope anyPort name accountId accountName }
           deviceRules { id accountId accountName holds editable addedByEmail tags tagColors { name color } operator initiator allServices anyPort devices overridden named { id name } }
           ruleAccounts { id name tags }
           connections { service { id name device { id name } } }
