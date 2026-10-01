@@ -15,6 +15,7 @@ export type NetworkMember = {
   name?: string // another account's devices are not in your device list
   accountId?: string // the account that owns it
   accountName?: string
+  services?: { id: string; name: string }[]
   role: NetworkDeviceRole
   scope: NetworkDeviceScope
   anyPort: boolean
@@ -37,7 +38,7 @@ export type NetworkRule = {
   anyPort: boolean
   devices: string[] // the devices it makes members
   overridden: string[] // those it matches that are added on their own, which it does not apply to
-  named: { id: string; name: string }[] // both, named: another account's devices are not in your device list
+  named: { id: string; name: string; services: { id: string; name: string }[] }[] // both, named, with services: another account's devices are not in your device list
 }
 
 // An account whose devices you may add to a network by its tags.
@@ -100,8 +101,8 @@ export async function graphQLDeviceNetworks(
           kind
           permissions
           owner { id email }
-          devices { deviceId role scope anyPort name accountId accountName }
-          deviceRules { id accountId accountName holds editable addedByEmail tags tagColors { name color } operator initiator allServices anyPort devices overridden named { id name } }
+          devices { deviceId role scope anyPort name accountId accountName services { id name } }
+          deviceRules { id accountId accountName holds editable addedByEmail tags tagColors { name color } operator initiator allServices anyPort devices overridden named { id name services { id name } } }
           ruleAccounts { id name tags }
           connections { service { id name device { id name } } }
           access { user { id email } role }

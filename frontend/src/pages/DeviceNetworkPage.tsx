@@ -125,7 +125,9 @@ export const DeviceNetworkPage: React.FC = () => {
 
   // A target exposing all its services — All services, or Any port, which takes them all with it.
   const allOn = (member: NetworkMember) => targeted(member) && (member.scope === 'ALL' || member.anyPort)
-  const servicesOf = (member: NetworkMember) => deviceById.get(member.deviceId)?.services || []
+  // Another account's devices are not in your list: their services come with the network.
+  const servicesOf = (member: NetworkMember): ServiceRef[] =>
+    deviceById.get(member.deviceId)?.services || member.services || []
 
   // All services off: every service unlisted, and any port off with it.
   const setAll = (member: NetworkMember, on: boolean) =>
@@ -444,7 +446,7 @@ const NAME_WIDTH = 180
 const MemberRow: React.FC<{
   name: string
   member: NetworkMember
-  services: IService[]
+  services: ServiceRef[]
   listed: Set<string>
   allOn: boolean
   summary: string
@@ -458,7 +460,7 @@ const MemberRow: React.FC<{
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
-  const exposed = (service: IService) => allOn || (targeted(member) && listed.has(service.id))
+  const exposed = (service: ServiceRef) => allOn || (targeted(member) && listed.has(service.id))
   const toggle = (label: React.ReactNode, active: boolean, onClick?: () => void, dashed?: boolean) => (
     <Chip
       size="small"
@@ -674,6 +676,8 @@ const GROUP_SHOWN = 6
    row is what it is. Folds past GROUP_SHOWN devices. */
 // The tags and summary sit under the account's name, in line with it past the tag icon.
 const TAG_INDENT = 2.75
+
+type ServiceRef = { id: string; name: string }
 
 const TagGroup: React.FC<{
   rule: NetworkRule
@@ -921,15 +925,17 @@ const TagGroup: React.FC<{
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-              {(deviceById.get(id)?.services || []).map(service => (
-                <Chip
-                  key={service.id}
-                  size="small"
-                  label={service.name}
-                  color={target ? 'primary' : 'default'}
-                  variant={target ? 'filled' : 'outlined'}
-                />
-              ))}
+              {(deviceById.get(id)?.services || rule.named?.find(device => device.id === id)?.services || []).map(
+                service => (
+                  <Chip
+                    key={service.id}
+                    size="small"
+                    label={service.name}
+                    color={target ? 'primary' : 'default'}
+                    variant={target ? 'filled' : 'outlined'}
+                  />
+                )
+              )}
               <Typography
                 variant="caption"
                 color="textSecondary"
