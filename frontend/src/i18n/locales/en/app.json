@@ -981,7 +981,7 @@
     "confirmRemove": "Remove {{name}} from the network?",
     "connect": "Can connect",
     "drag": "Drag in to add",
-    "legendBoth": "⟷ initiates and is a target",
+    "legendBoth": "Initiator and target",
     "legendDevices": "—— devices",
     "legendInitiator": "Initiator",
     "legendPeople": "- - - people",

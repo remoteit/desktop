@@ -29,8 +29,14 @@ type Props = {
 }
 
 // Where each lane sits, and how far apart its nodes are.
-const LANE = { userMode: 0, initiators: 260, hub: 540, targets: 820 }
-const ROW = 76
+// Where each group starts, around the network at the origin: devices in user mode in a column to the left, initiators
+// in rows above, targets in a column to the right, devices that are both in rows below. Boxes can be moved from there.
+const BOX = 190 // a device's box width
+const HUB = 150 // the network's box width
+const ROW = 66 // between boxes in a column
+const LEFT = -(BOX + 330)
+const RIGHT = HUB + 330
+const GRID = { across: 3, gapX: BOX + 30, gapY: 70, offset: 130 } // rows above and below
 
 // One colour per kind of line: a device initiating, a target, a device that is both. They read in light and dark.
 const COLOR = { initiator: '#1D9E75', target: '#378ADD', both: '#7F77DD' }
@@ -135,31 +141,43 @@ const Graph: React.FC<Props> = ({ network, devices, exposure }) => {
     initiators.sort(byName)
     targets.sort((a, b) => Number(a.both) - Number(b.both) || byName(a, b))
 
-    // Each column centred on the network.
-    const tallest = Math.max(userMode.length, initiators.length, targets.length, 1)
-    const middle = ((tallest - 1) * ROW) / 2
-    const column = (count: number, index: number) => middle - ((count - 1) * ROW) / 2 + index * ROW
-    const box = { fontSize: 12, width: 190, padding: 6 }
+    const box = { fontSize: 12, width: BOX, padding: 6 }
     const node = (item: Item, x: number, y: number, style: React.CSSProperties = box): Node => ({
       id: item.id,
       position: { x, y },
       data: { label: item.label },
       style,
     })
+    // A column centred on the network's height.
+    const column = (count: number, index: number) => -((count - 1) * ROW) / 2 + index * ROW
+    // Rows centred on the network's middle, growing away from it: up (-1) or down (1).
+    const grid = (count: number, index: number, direction: -1 | 1) => {
+      const across = Math.min(count, GRID.across)
+      const row = Math.floor(index / GRID.across)
+      const inRow = Math.min(across, count - row * GRID.across)
+      const x = HUB / 2 - (inRow * GRID.gapX - (GRID.gapX - BOX)) / 2 + (index % GRID.across) * GRID.gapX
+      return { x, y: direction * (GRID.offset + row * GRID.gapY) }
+    }
+    const plain = targets.filter(item => !item.both)
+    const both = targets.filter(item => item.both)
 
     const nodes: Node[] = [
       {
         id: 'network',
-        position: { x: LANE.hub, y: middle },
+        position: { x: 0, y: 0 },
         data: { label: network.name },
-        draggable: false,
-        style: { ...box, fontWeight: 600, borderWidth: 2, width: 150 },
+        style: { ...box, fontWeight: 600, borderWidth: 2, width: HUB },
       },
-      ...userMode.map((item, index) => node(item, LANE.userMode, column(userMode.length, index))),
-      ...initiators.map((item, index) => node(item, LANE.initiators, column(initiators.length, index))),
-      ...targets.map((item, index) =>
-        node(item, LANE.targets, column(targets.length, index), item.both ? { ...box, borderColor: COLOR.both } : box)
-      ),
+      ...userMode.map((item, index) => node(item, LEFT, column(userMode.length, index))),
+      ...initiators.map((item, index) => {
+        const at = grid(initiators.length, index, -1)
+        return node(item, at.x, at.y)
+      }),
+      ...plain.map((item, index) => node(item, RIGHT, column(plain.length, index))),
+      ...both.map((item, index) => {
+        const at = grid(both.length, index, 1)
+        return node(item, at.x, at.y, { ...box, borderColor: COLOR.both })
+      }),
     ]
 
     const marker = (color: string) => ({ type: MarkerType.ArrowClosed, color })
@@ -226,7 +244,7 @@ const Graph: React.FC<Props> = ({ network, devices, exposure }) => {
         <Legend color={COLOR.initiator} text={t('deviceNetworkGraph.legendInitiator', 'Initiator')} />
         <Legend color={COLOR.initiator} dashed text={t('deviceNetworkGraph.legendUserMode', 'Device in user mode')} />
         <Legend color={COLOR.target} text={t('deviceNetworkGraph.legendTarget', 'Target')} />
-        <Legend color={COLOR.both} text={t('deviceNetworkGraph.legendBoth', 'Both')} />
+        <Legend color={COLOR.both} text={t('deviceNetworkGraph.legendBoth', 'Initiator and target')} />
       </Box>
     </Box>
   )
