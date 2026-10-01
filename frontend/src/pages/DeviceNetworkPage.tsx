@@ -33,6 +33,7 @@ import {
   roleFor,
   targeted,
 } from '../services/graphQLDeviceNetworks'
+import { State } from '../store'
 import { getAllDevices } from '../selectors/devices'
 import { selectTags } from '../selectors/tags'
 import { useLabel } from '../hooks/useLabel'
@@ -64,6 +65,7 @@ export const DeviceNetworkPage: React.FC = () => {
   const [adding, setAdding] = useState<{ accountId: string; kind: 'device' | 'tag' } | 'account' | false>(false)
   const [extra, setExtra] = useState<string[]>([]) // accounts opened to add from, with nothing on the network yet
   const tags = useSelector(selectTags)
+  const dark = useSelector((state: State) => state.ui.themeDark)
 
   const network = Array.isArray(networks) ? networks.find(n => n.id === networkID) : undefined
   if (networks === undefined) return <LoadingMessage />
@@ -275,7 +277,7 @@ export const DeviceNetworkPage: React.FC = () => {
             {!network.devices.length && !rules.length && !manage && (
               <Empty text={t('deviceNetwork.noDevices', 'No devices on this network yet')} />
             )}
-            {accounts.map(account => {
+            {accounts.map((account, index) => {
               const tagChoices = ruleAccounts.find(choice => choice.id === account.id)?.tags || []
               const deviceChoices = addable.filter(device => ownerOf(device) === account.id)
               const open = adding && adding !== 'account' && adding.accountId === account.id ? adding.kind : false
@@ -290,13 +292,15 @@ export const DeviceNetworkPage: React.FC = () => {
                       paddingY: 1.25,
                       borderTop: 1,
                       borderColor: 'grayLight.main',
+                      bgcolor: accountColor(index, dark).background,
+                      color: accountColor(index, dark).text,
                     }}
                   >
-                    <Icon name="building" size="sm" color="grayDark" />
-                    <Typography variant="subtitle1" sx={{ fontWeight: 500 }} noWrap>
+                    <Icon name="building" size="sm" color={accountColor(index, dark).text} />
+                    <Typography variant="subtitle1" sx={{ fontWeight: 500, color: 'inherit' }} noWrap>
                       {account.name}
                     </Typography>
-                    <Typography variant="caption" color="textSecondary" noWrap>
+                    <Typography variant="caption" sx={{ color: 'inherit', opacity: 0.8 }} noWrap>
                       ·{' '}
                       {account.count === 1
                         ? t('deviceNetwork.groupDevice', '1 device')
@@ -785,6 +789,21 @@ const PersonRow: React.FC<{
 const GROUP_SHOWN = 6
 
 type ServiceRef = { id: string; name: string }
+
+// An account's colour on its heading, by its place on the page — the owner's first — so the accounts on one network
+// never share one: muted colours chosen to stay clear of the tag colours, a light tint with dark text (in dark mode, a
+// deep tint with light text).
+const ACCOUNT_COLORS = [
+  { light: '#EEEDFE', text: '#3C3489', deep: '#3C3489', lightText: '#CECBF6' }, // purple
+  { light: '#E1F5EE', text: '#085041', deep: '#085041', lightText: '#9FE1CB' }, // teal
+  { light: '#FAECE7', text: '#712B13', deep: '#712B13', lightText: '#F5C4B3' }, // coral
+  { light: '#FBEAF0', text: '#72243E', deep: '#72243E', lightText: '#F4C0D1' }, // pink
+  { light: '#E6F1FB', text: '#0C447C', deep: '#0C447C', lightText: '#B5D4F4' }, // blue
+]
+const accountColor = (index: number, dark: boolean) => {
+  const color = ACCOUNT_COLORS[index % ACCOUNT_COLORS.length]
+  return dark ? { background: color.deep, text: color.lightText } : { background: color.light, text: color.text }
+}
 
 /* Devices by tag: a heading — its tags (removable, and "+ tag" to add one), Initiator, All services, Any port, and Any
    tag / All tags when it has several — and a row for each device it makes a member, showing what the heading gives it
