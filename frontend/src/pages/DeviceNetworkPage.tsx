@@ -330,7 +330,7 @@ const Empty: React.FC<{ text: string }> = ({ text }) => (
 const INLINE = 8
 const SHOWN = 6
 const FILTER = 10
-// The device's name, beside its chips; its services and summary line up under the chips.
+// The device's name, with what it is under it, beside its chips.
 const NAME_WIDTH = 180
 
 /* A device on the network, in two rows of chips: Initiator, All services and Any port, then its services in their own
@@ -372,91 +372,89 @@ const MemberRow: React.FC<{
     : services.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()))
 
   return (
-    <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-        <Typography variant="body2" noWrap sx={{ width: NAME_WIDTH, fontWeight: 500 }} title={name}>
+    <Box sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
+      <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0, paddingTop: 0.25 }}>
+        <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={name}>
           {name}
         </Typography>
-        {toggle(t('deviceNetwork.initiatorToggle', 'Initiator'), initiates(member), on.onInitiator)}
-        <Typography variant="caption" color="textSecondary">
-          ·
+        <Typography variant="caption" color="textSecondary" component="div">
+          {summary}
         </Typography>
-        {toggle(t('deviceNetwork.allServices', 'All services'), allOn, on.onAll)}
-        {toggle(t('deviceNetwork.anyPort', 'Any port'), targeted(member) && member.anyPort, on.onAnyPort)}
-        <Box sx={{ marginLeft: 'auto' }}>
-          {editable && (
-            <IconButton
-              icon="times"
-              title={t('deviceNetwork.remove', 'Remove from the network')}
-              size="sm"
-              onClick={on.onRemove}
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          {toggle(t('deviceNetwork.initiatorToggle', 'Initiator'), initiates(member), on.onInitiator)}
+          <Typography variant="caption" color="textSecondary">
+            ·
+          </Typography>
+          {toggle(t('deviceNetwork.allServices', 'All services'), allOn, on.onAll)}
+          {toggle(t('deviceNetwork.anyPort', 'Any port'), targeted(member) && member.anyPort, on.onAnyPort)}
+          <Box sx={{ marginLeft: 'auto' }}>
+            {editable && (
+              <IconButton
+                icon="times"
+                title={t('deviceNetwork.remove', 'Remove from the network')}
+                size="sm"
+                onClick={on.onRemove}
+              />
+            )}
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 0.75,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            marginTop: 1,
+          }}
+        >
+          {open && services.length > FILTER && (
+            <TextField
+              size="small"
+              fullWidth
+              placeholder={t('deviceNetwork.filterServices', 'Filter {{count}} services', { count: services.length })}
+              value={filter}
+              onChange={event => setFilter(event.target.value)}
             />
+          )}
+          {folded && allOn
+            ? toggle(t('deviceNetwork.allCount', 'All {{count}} services', { count: services.length }), true, () =>
+                setOpen(true)
+              )
+            : shown.map(service => (
+                <React.Fragment key={service.id}>
+                  {toggle(service.name, exposed(service), () => on.onService(service.id))}
+                </React.Fragment>
+              ))}
+          {folded &&
+            !allOn &&
+            toggle(
+              hidden.some(exposed)
+                ? t('deviceNetwork.moreSelected', '+{{count}} more · {{selected}} selected', {
+                    count: hidden.length,
+                    selected: hidden.filter(exposed).length,
+                  })
+                : t('deviceNetwork.more', '+{{count}} more', { count: hidden.length }),
+              false,
+              () => setOpen(true),
+              true
+            )}
+          {open && services.length > INLINE && (
+            <Typography
+              variant="caption"
+              color="primary"
+              sx={{ cursor: 'pointer' }}
+              onClick={() => {
+                setOpen(false)
+                setFilter('')
+              }}
+            >
+              {t('deviceNetwork.showLess', 'Show less')}
+            </Typography>
           )}
         </Box>
       </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 0.75,
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          marginTop: 1,
-          paddingLeft: `${NAME_WIDTH + 8}px`,
-        }}
-      >
-        {open && services.length > FILTER && (
-          <TextField
-            size="small"
-            fullWidth
-            placeholder={t('deviceNetwork.filterServices', 'Filter {{count}} services', { count: services.length })}
-            value={filter}
-            onChange={event => setFilter(event.target.value)}
-          />
-        )}
-        {folded && allOn
-          ? toggle(t('deviceNetwork.allCount', 'All {{count}} services', { count: services.length }), true, () =>
-              setOpen(true)
-            )
-          : shown.map(service => (
-              <React.Fragment key={service.id}>
-                {toggle(service.name, exposed(service), () => on.onService(service.id))}
-              </React.Fragment>
-            ))}
-        {folded &&
-          !allOn &&
-          toggle(
-            hidden.some(exposed)
-              ? t('deviceNetwork.moreSelected', '+{{count}} more · {{selected}} selected', {
-                  count: hidden.length,
-                  selected: hidden.filter(exposed).length,
-                })
-              : t('deviceNetwork.more', '+{{count}} more', { count: hidden.length }),
-            false,
-            () => setOpen(true),
-            true
-          )}
-        {open && services.length > INLINE && (
-          <Typography
-            variant="caption"
-            color="primary"
-            sx={{ cursor: 'pointer' }}
-            onClick={() => {
-              setOpen(false)
-              setFilter('')
-            }}
-          >
-            {t('deviceNetwork.showLess', 'Show less')}
-          </Typography>
-        )}
-      </Box>
-      <Typography
-        variant="caption"
-        color="textSecondary"
-        component="div"
-        sx={{ marginTop: 0.5, paddingLeft: `${NAME_WIDTH + 8}px` }}
-      >
-        {summary}
-      </Typography>
     </Box>
   )
 }
