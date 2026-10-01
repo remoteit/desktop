@@ -104,7 +104,8 @@ It lists networks of devices, and a network's page has two views of the same thi
   services**, **All services**, **Any port** (decision 12). Only devices the user manages can be added.
 - Add a device (`addNetworkDevice`), change its role or exposure, remove it (`removeNetworkDevice`) — removal closes
   its connections at once.
-- **Tag rules** — membership by tag, one per role (`setNetworkDeviceRule` / `removeNetworkDeviceRule`; account admins).
+- **Devices by tag** — a group per tag rule (several per network; account admins): its tags, Initiator / All
+  services / Any port, the devices it matches under it. A device also added on its own is set by its own row.
 - **Links** — a direct device-to-device link is a two-member network (`createDeviceLink`); listed, members fixed.
 - **People** (decision 13): who can connect and who can manage, by role or share — each with their devices in user
   mode under them ("full access": they reach everything their person can, not only this network). Managing who is
@@ -193,6 +194,7 @@ Then, the same day:
 | Tag rule editing | df8376f6 | — (existed) |
 | A service's DNS name (its LAN host's) | 39fe886c | graphql 9e8f780d (`Service.subnetName`) |
 | Per-device rollback | bd48fdf9 | graphql 2079e6e8 (a pin; the channel keeps its previous release) |
+| Devices by tag: a group per rule, several per network, a device's own row wins | b1d50306 | graphql 27d0e810 (rules by id; `devices`, `overridden`) |
 
 Every read of the device-session API is silent and hides (or says so) where the API does not serve it. No
 standby/active badge (Evan). Not built: **names and addresses on demand** (its own backend project; addresses stable
