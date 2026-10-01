@@ -67,6 +67,9 @@ describe('backend/Command', () => {
       ['12', 'config - you must be signed in to perform this operation'],
       ['101', 'agent not reachable'],
       ['101001', 'agent version mismatch, client=4.1.0, agent=4.0.9'],
+      ['409', 'control - reload is not supported on this platform, use agent restart'],
+      ['410', 'control - the agent runs from another install, run agent install'],
+      ['414', 'control - agent service predates reload support, run agent install'],
       ['7003', 'cmd - you must run this command with elevated privileges'],
     ])('does not report expected CLI code %s', async (code, message) => {
       failWith(`{"code":${code},"message":"${message}"}`)

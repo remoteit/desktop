@@ -117,7 +117,7 @@ export const TestPage: React.FC = () => {
       }
       const gql = target.identifier.match(LEGACY_GRAPHQL_RE)
       const ws = target.identifier.match(LEGACY_EVENTS_RE)
-      if (!gql && !ws) continue // passport / account-api entries are not switch targets
+      if (!gql && !ws) continue // account-api entries are not switch targets
       const stage = (gql?.[1] ?? ws?.[1]) || 'prod'
       const key = `legacy:${stage}`
       const pair = at(key, stage)

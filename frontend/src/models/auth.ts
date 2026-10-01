@@ -6,11 +6,11 @@ import pushNotifications from '../services/pushNotifications'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT } from '../constants'
+import { SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT, SIGN_OUT_SESSION_TIMEOUT } from '../constants'
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { selfChangePassword, selfChallenge } from '../services/passportSelf'
+import { changePassword as changeAccountPassword } from '../services/accountSecurity'
 import { signOutEverywhere } from '../services/permitteerAccount'
 import {
   oidcConfigured,
@@ -18,6 +18,7 @@ import {
   oidcClaims,
   oidcStart,
   oidcClearLocal,
+  oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
   oidcActivationHint,
@@ -53,8 +54,29 @@ export interface AuthState {
   /** Seconds the server asked us to wait, when it said so (429). */
   signInRetryAfter?: number
   signingIn?: boolean
-  passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
+}
+
+/** What a refused password change means, in the person's words. The AS's own sentence is the
+ *  fallback: it names the policy a weak password missed. */
+function passwordError(error: string, description?: string): string {
+  switch (error) {
+    case 'bad_password':
+      return i18n.t('notices:auth.passwordIncorrect', { defaultValue: 'Current password is incorrect.' })
+    case 'locked':
+      return i18n.t('notices:auth.passwordLocked', {
+        defaultValue: 'Too many wrong attempts. Try again in a few minutes.',
+      })
+    case 'weak_password':
+      return description || i18n.t('notices:auth.passwordWeak', { defaultValue: 'Choose a stronger password.' })
+    case 'no_password_set':
+    case 'no_credential':
+      return i18n.t('notices:auth.passwordNotHeld', {
+        defaultValue: 'This account has no password yet — set one from the link we email you.',
+      })
+    default:
+      return description || i18n.t('notices:auth.passwordFailed', { defaultValue: 'Something went wrong — try again.' })
+  }
 }
 
 const defaultState: AuthState = {
@@ -233,49 +255,18 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: i18n.t('notices:auth.loginFailed', { defaultValue: 'Login failed.' }) })
       }
     },
-    // Native password change over the Passport self-API (Phase 2b): the current password
-    // is the proof of possession; accounts whose store challenges (pool MFA) get a code
-    // continuation the ChangePassword form renders.
+    // The password, on the AS's account API (permitteer docs/unified-idp.md): the current password
+    // is the proof, and nothing is relayed — a store that would challenge a factor here is taken as
+    // having accepted the password. It signs no other session out; the confirm dialog says so.
     async changePassword(passwordValues: IPasswordValue): Promise<boolean> {
-      const r = await selfChangePassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
-      if (r.status === 'ok') {
-        dispatch.auth.set({ passwordChallenge: undefined })
+      const r = await changeAccountPassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
+      if (r.ok) {
         dispatch.ui.set({
           successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
         })
         return true
       }
-      if (r.status === 'mfa' && r.challenge) {
-        dispatch.auth.set({ passwordChallenge: { challenge: r.challenge, hint: r.hint } })
-        return false
-      }
-      dispatch.ui.set({
-        errorMessage:
-          r.error === 'invalid_password'
-            ? 'Current password is incorrect.'
-            : r.error === 'weak_password'
-            ? r.error_description || 'New password does not meet the requirements.'
-            : r.error_description || 'An unexpected error occurred. Please try again.',
-      })
-      return false
-    },
-    /** Answer the store's second-factor challenge raised by changePassword. */
-    async completePasswordChallenge(code: string, state): Promise<boolean> {
-      const pending = state.auth.passwordChallenge
-      if (!pending) return false
-      const r = await selfChallenge(pending.challenge, { code })
-      if (r.status === 'ok') {
-        dispatch.auth.set({ passwordChallenge: undefined })
-        dispatch.ui.set({
-          successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
-        })
-        return true
-      }
-      // invalid_code re-arms the SAME step under a fresh handle — a typo never restarts.
-      dispatch.auth.set({ passwordChallenge: r.challenge ? { challenge: r.challenge, hint: pending.hint } : undefined })
-      dispatch.ui.set({
-        errorMessage: r.challenge ? 'That code didn’t match — try again.' : 'The request expired — start over.',
-      })
+      dispatch.ui.set({ errorMessage: passwordError(r.error, r.description) })
       return false
     },
     // The 401 recovery path (services/post.ts): drop the renderer cache and let the
@@ -383,12 +374,29 @@ export default createModel<RootModel>()({
       pushNotifications.register()
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
-    async signOut(_: void, state) {
-      // Sign-out is LOCAL to this app: drop this app's tokens/session (dispatch.auth.signedOut
-      // below). The AS browser session belongs to the user and is NOT ended here — a true
-      // "sign out everywhere" is a separate, explicit action (globalSignOut). Because signIn
-      // always uses prompt=select_account, the next sign-in and any reload land on the AS
-      // chooser rather than silently SSO-ing back in, so no login-prompt guard is needed.
+    async signOut(options: { keepSession?: boolean } | void, state) {
+      // The person signing out ends this account's single sign-on too: the AS session its
+      // id_token names, so the next sign-in here — or in any app that shared that session —
+      // asks who they are instead of passing them straight through. Only THIS account's
+      // session: the browser's other accounts, this app's other saved accounts and the
+      // account's other devices each hold their own. It runs first, while the id_token is
+      // still stored, and it is BOUNDED and best-effort: an unreachable AS must never leave
+      // the person signed in here, so the local sign-out always follows.
+      // The failure paths (dead refresh token, backend sign-out) go straight to signedOut()
+      // and never reach the AS; globalSignOut has already ended every session and passes
+      // keepSession so a down AS is not waited on twice.
+      if (!options?.keepSession) {
+        // The agent's background grant and this phone's push token go FIRST, as in globalSignOut:
+        // each call mints a token from the session about to end. Each runs once, so the ones in
+        // signedOut() are no-ops afterwards.
+        await Promise.all([dispatch.chat.signOut(), pushNotifications.unregister()])
+        try {
+          const status = await withTimeout(oidcEndSession(), SIGN_OUT_SESSION_TIMEOUT)
+          if (status && status !== 204) console.warn('SIGN OUT: AS session end refused', status)
+        } catch (error) {
+          console.warn('SIGN OUT: AS session end failed — signing out locally', error)
+        }
+      }
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
@@ -419,9 +427,8 @@ export default createModel<RootModel>()({
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
       await Promise.all([dispatch.chat.signOut(), pushNotifications.unregister()])
       await persistor.purge()
-      // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
-      // signing out of the app must not sign the user out of login.* (their browser
-      // session is theirs; the explicit "sign out everywhere" is globalSignOut).
+      // Drop this app's tokens. The AS is never called from here — the failure paths land here
+      // too; the person's own sign-out ended the AS session in signOut before this.
       oidcClearLocal()
       /* signInCleared as well as the user: a failure recorded while SIGNED IN — a refused
          account switch, say — would otherwise survive into the signed-out screen, where
@@ -481,8 +488,8 @@ export default createModel<RootModel>()({
       // security control does what it reports, and it needs only the access token this app
       // already holds. Best-effort by design: the refusal or outage that a person hits while
       // reaching for the panic button must not leave them signed in here, so the local sign-out
-      // always follows — a miss is logged, never fatal. signOut itself stays LOCAL — a
-      // failure-path or menu sign-out must never end the AS sessions.
+      // always follows — a miss is logged, never fatal. The menu sign-out ends only THIS
+      // account's session (signOut).
       //
       // A SUPPORT session (an operator viewing as the person) holds no refresh token and can
       // mint for nothing but the data plane, and the account API refuses writes from an acted
@@ -490,14 +497,15 @@ export default createModel<RootModel>()({
       // and this is the backstop: straight to the local teardown. Ending the support session
       // itself is the operator's console or the person's account page, never this button.
       if (oidcActor()) {
-        dispatch.auth.signOut()
+        dispatch.auth.signOut({ keepSession: true })
         return
       }
       // The agent's background grant goes FIRST: chat.signOut revokes it through the agent
       // service with a token minted from THIS session, and once the AS has ended the session no
       // token can be minted for that call. It revokes once per identity, so the chat.signOut
-      // inside signedOut() is a real no-op on the far side.
-      await dispatch.chat.signOut()
+      // inside signedOut() is a real no-op on the far side. This phone's push token goes with it,
+      // for the same reason.
+      await Promise.all([dispatch.chat.signOut(), pushNotifications.unregister()])
       // BOUNDED, like the revoke above. Audience mints serialize through one shared promise
       // (services/oidc), so a mint the revoke abandoned mid-stall would otherwise queue this call
       // behind it indefinitely — and the panic button must never leave the person signed in here
@@ -511,7 +519,7 @@ export default createModel<RootModel>()({
       } catch (error) {
         console.warn('SIGN OUT EVERYWHERE FAILED', error)
       }
-      dispatch.auth.signOut()
+      dispatch.auth.signOut({ keepSession: true })
     },
   }),
   reducers: {

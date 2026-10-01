@@ -46,7 +46,6 @@ export const resourceForApiURL = (url: string): string => url.match(CLOUD_GRAPHQ
  *  unified front (the socket is a path inside the /api resource — minting for the socket URL there
  *  answers invalid_target) and the legacy shared-domain URL (not a registered resource at all). */
 export const resourceForEventsURL = (url: string): string | undefined => (LEGACY_EVENTS_RE.test(url) ? url : undefined)
-export const OAUTH_PASSPORT_RESOURCE = env.VITE_OAUTH_PASSPORT_RESOURCE || 'https://passport.remote.it/account/api'
 // The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
 // tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail
 // delegated onward to the service actor — which is what makes those tokens exchangeable.
@@ -180,6 +179,9 @@ export const SIGN_OUT_BACKEND_TIMEOUT = 3000
 // How long "Sign out everywhere" waits for the AS to end every session before signing out
 // locally regardless — a stalled token mint must never leave the person signed in here.
 export const SIGN_OUT_EVERYWHERE_TIMEOUT = 10000
+// How long sign out waits for the AS to end this account's session: one request, no token mint,
+// and the person is watching the button — past this the app signs out locally regardless.
+export const SIGN_OUT_SESSION_TIMEOUT = 5000
 export const PUSH_UNREGISTER_TIMEOUT = 3000
 
 // The APNs environment follows the build's signing, not the API it talks to: a development

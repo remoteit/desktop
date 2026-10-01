@@ -211,6 +211,9 @@ function getEventHandlers() {
 
     'signed-out': () => auth.signedOut(),
 
+    // The tray's Sign out: the same sign-out as the avatar menu, AS session included.
+    'sign-out': () => auth.signOut(),
+
     pool: (result: IConnection[]) => {
       controller.log('event: socket pool', result)
       connections.restoreConnections(result)
