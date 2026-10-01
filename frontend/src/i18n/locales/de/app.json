@@ -865,6 +865,7 @@
     "filterDevices_other": "",
     "filterServices_one": "",
     "filterServices_other": "",
+    "fromAccountTags": "",
     "fromTags": "",
     "fullAccess": "",
     "graph": "",
@@ -877,6 +878,7 @@
     "groupOverridden_one": "",
     "groupOverridden_other": "",
     "groupOverriddenOne": "",
+    "groupStopped": "",
     "initiator": "",
     "initiatorHint": "",
     "initiators": "",
@@ -904,6 +906,7 @@
     "nothingChosen": "",
     "nothingYet": "",
     "noUserMode": "",
+    "oneAccount": "",
     "oneByOne": "",
     "or": "",
     "overridden": "",
@@ -2423,6 +2426,13 @@
     "selectedCount_other": "{{count}} ausgewählt",
     "selectedDevices": "Ausgewählte Geräte",
     "tagged": "Getaggt"
+  },
+  "taggedInto": {
+    "addedBy": "",
+    "confirm": "",
+    "rule": "",
+    "title": "",
+    "withdraw": ""
   },
   "tagsPage": {
     "addTag": "Tag hinzufügen",

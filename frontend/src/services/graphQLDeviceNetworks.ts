@@ -17,9 +17,15 @@ export type NetworkMember = {
   anyPort: boolean
 }
 
-// A network's devices by tag: the owner's devices carrying any (or all) of its tags are members as it says.
+// A network's devices by tag: an account's devices carrying any (or all) of its tags are members as it says. The
+// account is the network owner's, or another whose administrator set the rule — which holds while they still are one.
 export type NetworkRule = {
   id: string
+  accountId: string
+  accountName: string
+  holds: boolean
+  editable: boolean // you manage the network and administer both accounts
+  addedByEmail?: string
   tags: string[]
   operator: 'ANY' | 'ALL'
   initiator: boolean
@@ -27,7 +33,11 @@ export type NetworkRule = {
   anyPort: boolean
   devices: string[] // the devices it makes members
   overridden: string[] // those it matches that are added on their own, which it does not apply to
+  named: { id: string; name: string }[] // both, named: another account's devices are not in your device list
 }
+
+// An account whose devices you may add to a network by its tags.
+export type RuleAccount = { id: string; name: string; tags: string[] }
 
 export type RuleChoices = Partial<Pick<NetworkRule, 'tags' | 'operator' | 'initiator' | 'allServices' | 'anyPort'>>
 
@@ -39,6 +49,7 @@ export type DeviceNetwork = {
   owner: { id: string; email: string }
   devices: NetworkMember[]
   deviceRules: NetworkRule[]
+  ruleAccounts: RuleAccount[]
   connections: { service: { id: string; name: string; device: { id: string; name: string } } }[]
   access: { user: { id: string; email: string }; role: ShareRole }[]
   userModeDevices: { userId: string; deviceId: string; name: string }[] // its people's devices in user mode
@@ -86,7 +97,8 @@ export async function graphQLDeviceNetworks(
           permissions
           owner { id email }
           devices { deviceId role scope anyPort }
-          deviceRules { id tags operator initiator allServices anyPort devices overridden }
+          deviceRules { id accountId accountName holds editable addedByEmail tags operator initiator allServices anyPort devices overridden named { id name } }
+          ruleAccounts { id name tags }
           connections { service { id name device { id name } } }
           access { user { id email } role }
           userModeDevices { userId deviceId name }
@@ -158,10 +170,13 @@ export async function graphQLDeviceAnyPort(deviceId: string) {
 
 // Devices by tag, for the owning account's administrators: a new rule, a change to one (fields left out keep what they
 // were), or one gone.
-export const graphQLCreateNetworkDeviceRule = (networkId: string, rule: RuleChoices & { tags: string[] }) =>
+export const graphQLCreateNetworkDeviceRule = (
+  networkId: string,
+  rule: RuleChoices & { tags: string[]; accountId?: string }
+) =>
   graphQLBasicRequest(
-    `mutation CreateNetworkDeviceRule($networkId: String!, $tags: [String!]!, $operator: ListOperator, $initiator: Boolean, $allServices: Boolean, $anyPort: Boolean) {
-      createNetworkDeviceRule(networkId: $networkId, tags: $tags, operator: $operator, initiator: $initiator, allServices: $allServices, anyPort: $anyPort) { id }
+    `mutation CreateNetworkDeviceRule($networkId: String!, $tags: [String!]!, $operator: ListOperator, $initiator: Boolean, $allServices: Boolean, $anyPort: Boolean, $accountId: String) {
+      createNetworkDeviceRule(networkId: $networkId, tags: $tags, operator: $operator, initiator: $initiator, allServices: $allServices, anyPort: $anyPort, accountId: $accountId) { id }
     }`,
     { networkId, ...rule }
   )
@@ -174,6 +189,7 @@ export const graphQLUpdateNetworkDeviceRule = (ruleId: string, rule: RuleChoices
     { ruleId, ...rule }
   )
 
+// Either side may end a rule: the network's, or an administrator of the account whose devices it takes (withdrawing).
 export const graphQLRemoveNetworkDeviceRule = (ruleId: string) =>
   graphQLBasicRequest(
     `mutation RemoveNetworkDeviceRule($ruleId: String!) {
@@ -189,3 +205,33 @@ export const graphQLSetNetworkShareRole = (networkId: string, email: string, rol
     }`,
     { networkId, email, role }
   )
+
+// Other accounts' networks taking this account's devices by its tags: what its administrators see, and may withdraw.
+export type TaggedInto = {
+  id: string
+  tags: string[]
+  operator: 'ANY' | 'ALL'
+  initiator: boolean
+  allServices: boolean
+  anyPort: boolean
+  devices: string[]
+  addedByEmail?: string
+  network: { id: string; name: string; owner: { email: string } } | null
+}
+
+export async function graphQLTaggedInto(accountId: string): Promise<TaggedInto[] | 'ERROR' | typeof UNSUPPORTED> {
+  const query = `query TaggedInto($accountId: String) {
+    login {
+      account(id: $accountId) {
+        taggedInto { id tags operator initiator allServices anyPort devices addedByEmail network { id name owner { email } } }
+      }
+    }
+  }`
+  const variables = { accountId }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  const errors = graphQLGetErrors(response, true, { query, variables })
+  if (errors?.some(error => /Cannot query field/.test(error.message || ''))) return UNSUPPORTED
+  if (errors) return 'ERROR'
+  return response.data?.data?.login?.account?.taggedInto ?? []
+}

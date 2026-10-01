@@ -49,7 +49,7 @@ import { DeviceNetworkGraph } from '../components/DeviceNetworkGraph'
 /* A network of devices (docs/superpowers/specs/2026-09-30-device-sessions-ui-design.md §3): its devices, each an
    initiator (a switch) and a target as soon as it exposes something — all its services, any port of its own, or
    services chosen one by one — the people who may connect to it (who reach what its targets expose, as initiators
-   do) with their devices in user mode, and its tag rules. A device is added with + and set up in place; one joins only
+   do) with their devices in user mode, and its devices by tag — the owner's, or another account's you administer. A device is added with + and set up in place; one joins only
    when you manage both it and the network. In place of the network page while the device-sessions flag is on. */
 export const DeviceNetworkPage: React.FC = () => {
   const { t } = useTranslation()
@@ -81,6 +81,8 @@ export const DeviceNetworkPage: React.FC = () => {
   const deviceById = new Map(devices.map(device => [device.id, device]))
   const nameOf = (id: string) => deviceById.get(id)?.name || id
   const listed = new Set(network.connections.map(connection => connection.service.id))
+  // The accounts whose devices you may add by tag: the owner's, and others you administer.
+  const ruleAccounts = network.ruleAccounts || []
 
   const act = async (change: () => Promise<unknown>) => {
     setBusy(true)
@@ -225,7 +227,7 @@ export const DeviceNetworkPage: React.FC = () => {
                   onClick={() => setAdding(adding === 'device' ? false : 'device')}
                 />
               )}
-              {admin && !link && (
+              {!!ruleAccounts.length && !link && (
                 <IconButton
                   icon="tag"
                   title={t('deviceNetwork.addByTag', 'Add devices by tag')}
@@ -243,19 +245,33 @@ export const DeviceNetworkPage: React.FC = () => {
                   size="small"
                   label={t('deviceNetwork.chooseTag', 'Devices tagged')}
                   value=""
-                  helperText={!tags.length ? t('deviceNetwork.noTags', 'Tag devices first.') : undefined}
+                  helperText={
+                    !ruleAccounts.some(account => account.tags.length)
+                      ? t('deviceNetwork.noTags', 'Tag devices first.')
+                      : t('deviceNetwork.oneAccount', "A group takes one account's tags")
+                  }
                   onChange={event => {
-                    const tag = event.target.value
+                    const [accountId, tag] = String(event.target.value).split('\n')
                     setAdding(false)
                     // A group starts with its tag and nothing chosen: its choices are made on its heading.
-                    act(() => graphQLCreateNetworkDeviceRule(network.id, { tags: [tag] }))
+                    act(() =>
+                      graphQLCreateNetworkDeviceRule(network.id, {
+                        tags: [tag],
+                        accountId: accountId === network.owner.id ? undefined : accountId,
+                      })
+                    )
                   }}
                 >
-                  {tags.map(tag => (
-                    <MenuItem key={tag.name} value={tag.name}>
-                      {tag.name}
-                    </MenuItem>
-                  ))}
+                  {ruleAccounts
+                    .filter(account => account.tags.length)
+                    .flatMap(account => [
+                      <ListSubheader key={account.id}>{account.name}</ListSubheader>,
+                      ...account.tags.map(tag => (
+                        <MenuItem key={`${account.id}/${tag}`} value={`${account.id}\n${tag}`}>
+                          {tag}
+                        </MenuItem>
+                      )),
+                    ])}
                 </TextField>
               </Gutters>
             )}
@@ -263,9 +279,12 @@ export const DeviceNetworkPage: React.FC = () => {
               <TagGroup
                 key={rule.id}
                 rule={rule}
-                tags={tags}
+                tags={rule.accountId === network.owner.id ? tags : []}
+                choices={ruleAccounts.find(account => account.id === rule.accountId)?.tags || []}
+                foreign={rule.accountId !== network.owner.id}
                 deviceById={deviceById}
-                editable={admin && !link && !busy}
+                editable={rule.editable && !link && !busy}
+                removable={admin && !link && !busy}
                 onChange={set => act(() => graphQLUpdateNetworkDeviceRule(rule.id, set))}
                 onRemove={() => act(() => graphQLRemoveNetworkDeviceRule(rule.id))}
               />
@@ -624,19 +643,22 @@ const GROUP_SHOWN = 6
    row is what it is. Folds past GROUP_SHOWN devices. */
 const TagGroup: React.FC<{
   rule: NetworkRule
-  tags: ITag[]
+  tags: ITag[] // the active account's, for colours: empty for another account's group
+  choices: string[] // the tag names its account has, to add
+  foreign: boolean // another account's devices, named on the heading
   deviceById: Map<string, IDevice>
   editable: boolean
+  removable: boolean
   onChange: (set: RuleChoices) => void
   onRemove: () => void
-}> = ({ rule, tags, deviceById, editable, onChange, onRemove }) => {
+}> = ({ rule, tags, choices, foreign, deviceById, editable, removable, onChange, onRemove }) => {
   const { t } = useTranslation()
   const getColor = useLabel()
   const [open, setOpen] = useState(false)
   const [picking, setPicking] = useState(false)
   const [filter, setFilter] = useState('')
   const colorOf = (name: string) => getColor(tags.find(tag => tag.name === name)?.color ?? 0)
-  const nameOf = (id: string) => deviceById.get(id)?.name || id
+  const nameOf = (id: string) => deviceById.get(id)?.name || rule.named?.find(device => device.id === id)?.name || id
   const target = rule.allServices || rule.anyPort
   const toggle = (label: React.ReactNode, active: boolean, onClick?: () => void) => (
     <Chip
@@ -669,6 +691,7 @@ const TagGroup: React.FC<{
         <Box sx={{ width: NAME_WIDTH + 40, flex: '0 0 auto', minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
             <Icon name="tag" size="sm" color="grayDark" />
+            {foreign && <Chip size="small" color="secondary" label={rule.accountName} />}
             {rule.tags.map((tag, index) => (
               <React.Fragment key={tag}>
                 {!!index && (
@@ -723,11 +746,11 @@ const TagGroup: React.FC<{
                 onChange({ tags: [...rule.tags, event.target.value] })
               }}
             >
-              {tags
-                .filter(tag => !rule.tags.includes(tag.name))
+              {choices
+                .filter(tag => !rule.tags.includes(tag))
                 .map(tag => (
-                  <MenuItem key={tag.name} value={tag.name}>
-                    {tag.name}
+                  <MenuItem key={tag} value={tag}>
+                    {tag}
                   </MenuItem>
                 ))}
             </TextField>
@@ -778,7 +801,7 @@ const TagGroup: React.FC<{
             </>
           )}
           <Box sx={{ marginLeft: 'auto' }}>
-            {editable && (
+            {(editable || removable) && (
               <IconButton
                 icon="times"
                 title={t('deviceNetwork.removeGroup', 'Remove the devices by tag')}
@@ -800,7 +823,18 @@ const TagGroup: React.FC<{
           />
         </Box>
       )}
-      {!devices.length && !rule.overridden.length && (
+      {!rule.holds && (
+        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: 5, borderTop: 1, borderColor: 'grayLighter.main' }}>
+          <Typography variant="caption" color="error">
+            {t(
+              'deviceNetwork.groupStopped',
+              'Stopped: {{email}} no longer administers {{account}}, so its devices are off this network. Someone who administers both can set it again.',
+              { email: rule.addedByEmail || '?', account: rule.accountName }
+            )}
+          </Typography>
+        </Box>
+      )}
+      {rule.holds && !devices.length && !rule.overridden.length && (
         <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: 5 }}>
           <Typography variant="caption" color="textSecondary">
             {t('deviceNetwork.noMatches', 'No devices carry these tags')}
@@ -852,7 +886,10 @@ const TagGroup: React.FC<{
                 color="textSecondary"
                 sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
               >
-                <Icon name="tag" size="xs" /> {t('deviceNetwork.fromTags', 'from the tags')}
+                <Icon name="tag" size="xs" />{' '}
+                {foreign
+                  ? t('deviceNetwork.fromAccountTags', "from {{account}}'s tags", { account: rule.accountName })
+                  : t('deviceNetwork.fromTags', 'from the tags')}
               </Typography>
             </Box>
           </Box>

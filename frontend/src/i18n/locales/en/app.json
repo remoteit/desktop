@@ -865,6 +865,7 @@
     "filterDevices_other": "Filter {{count}} devices",
     "filterServices_one": "Filter {{count}} services",
     "filterServices_other": "Filter {{count}} services",
+    "fromAccountTags": "from {{account}}'s tags",
     "fromTags": "from the tags",
     "fullAccess": "User mode: full access",
     "graph": "Graph",
@@ -877,6 +878,7 @@
     "groupOverridden_one": "{{count}} set on their own",
     "groupOverridden_other": "{{count}} set on their own",
     "groupOverriddenOne": "1 set on its own",
+    "groupStopped": "Stopped: {{email}} no longer administers {{account}}, so its devices are off this network. Someone who administers both can set it again.",
     "initiator": "Initiator",
     "initiatorHint": "Reaches what this network's targets expose",
     "initiators": "Initiating devices",
@@ -904,6 +906,7 @@
     "nothingChosen": "Nothing chosen yet",
     "nothingYet": "Nothing yet",
     "noUserMode": "No devices in user mode",
+    "oneAccount": "A group takes one account's tags",
     "oneByOne": "Added one by one",
     "or": "or",
     "overridden": "{{name}} carries these tags but is set on its own below",
@@ -2423,6 +2426,13 @@
     "selectedCount_other": "{{count}} selected",
     "selectedDevices": "Selected Devices",
     "tagged": "Tagged"
+  },
+  "taggedInto": {
+    "addedBy": "added by {{email}}",
+    "confirm": "Take these devices off {{name}}?",
+    "rule": "{{tags}} → {{network}} ({{owner}})",
+    "title": "Your tags feed these networks",
+    "withdraw": "Withdraw"
   },
   "tagsPage": {
     "addTag": "Add Tag",

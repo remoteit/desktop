@@ -18,6 +18,7 @@ import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { spacing } from '../styling'
 import { DaemonSettingsList } from '../components/DaemonSettingsList'
+import { TaggedIntoList } from '../components/TaggedIntoList'
 
 export const ProfilePage: React.FC = () => {
   const { paidPlan, user, deleteAccount } = useSelector((state: State) => ({
@@ -88,6 +89,7 @@ export const ProfilePage: React.FC = () => {
         />
       </List>
       <DaemonSettingsList />
+      <TaggedIntoList />
       <Typography variant="subtitle1">{t('settings.accountDeletion', 'Account deletion')}</Typography>
       <DeleteAccountSection user={user} paidPlan={paidPlan} deleteAccount={deleteAccount} />
     </Container>

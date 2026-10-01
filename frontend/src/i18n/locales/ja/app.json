@@ -854,6 +854,7 @@
     "exposesNothing": "",
     "filterDevices_other": "",
     "filterServices_other": "",
+    "fromAccountTags": "",
     "fromTags": "",
     "fullAccess": "",
     "graph": "",
@@ -864,6 +865,7 @@
     "groupInitiators": "",
     "groupOverridden_other": "",
     "groupOverriddenOne": "",
+    "groupStopped": "",
     "initiator": "",
     "initiatorHint": "",
     "initiators": "",
@@ -886,6 +888,7 @@
     "nothingChosen": "",
     "nothingYet": "",
     "noUserMode": "",
+    "oneAccount": "",
     "oneByOne": "",
     "or": "",
     "overridden": "",
@@ -2373,6 +2376,13 @@
     "selectedCount_other": "{{count}}件選択済み",
     "selectedDevices": "選択済みのデバイス",
     "tagged": "タグ付き"
+  },
+  "taggedInto": {
+    "addedBy": "",
+    "confirm": "",
+    "rule": "",
+    "title": "",
+    "withdraw": ""
   },
   "tagsPage": {
     "addTag": "タグを追加",

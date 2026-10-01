@@ -9,6 +9,7 @@ import { OrganizationSAMLSettings } from '../components/OrganizationSAMLSettings
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ResellerSettings } from '../components/ResellerSettings'
 import { DaemonSettingsList } from '../components/DaemonSettingsList'
+import { TaggedIntoList } from '../components/TaggedIntoList'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
@@ -65,6 +66,7 @@ export const OrganizationSettingsPage: React.FC = () => {
       </List>
       <OrganizationSAMLSettings />
       <DaemonSettingsList accountId={organization.id} />
+      <TaggedIntoList accountId={organization.id} />
     </Container>
   )
 }
