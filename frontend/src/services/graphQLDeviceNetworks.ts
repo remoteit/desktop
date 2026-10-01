@@ -58,8 +58,6 @@ export type DeviceNetwork = {
   connections: { service: { id: string; name: string; device: { id: string; name: string } } }[]
   access: { user: { id: string; email: string }; role: ShareRole; organizationName?: string | null }[]
   userModeDevices: { userId: string; deviceId: string; name: string }[] // its people's devices in user mode
-  tags: { name: string; color: number | null }[]
-  tagsEditable: boolean // the owning account's administrators: its tags decide which members reach it
   accountAccess: AccountAccess[] // who reaches it through an organization: the owner's, and each one it is shared with
 }
 
@@ -137,8 +135,6 @@ export async function graphQLDeviceNetworks(
           connections { service { id name device { id name } } }
           access { user { id email } role organizationName }
           userModeDevices { userId deviceId name }
-          tags { name color }
-          tagsEditable
           accountAccess { accountId accountName email owner tier tags { name color } tagsEditable tagChoices roles { roleId roleName tier byTag tags operator members { id email } } }
         }
       }
