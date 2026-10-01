@@ -60,7 +60,7 @@ export type DeviceNetwork = {
   userModeDevices: { userId: string; deviceId: string; name: string }[] // its people's devices in user mode
   tags: { name: string; color: number | null }[]
   tagsEditable: boolean // the owning account's administrators: its tags decide which members reach it
-  roleAccess: RoleAccess[] // the owning organization's roles reaching it at connect or more (its managers see them)
+  accountAccess: AccountAccess[] // who reaches it through an organization: the owner's, and each one it is shared with
 }
 
 // An organization role reaching a network — all networks, or those carrying its tags — at a tier, with its members.
@@ -72,6 +72,20 @@ export type RoleAccess = {
   tags: string[]
   operator: 'ANY' | 'ALL'
   members: { id: string; email: string }[]
+}
+
+// An organization through which people reach a network: the owning one — its owner and roles — or one it is shared
+// with, at a tier that caps its members, whose roles (by its own tags on the network) decide which of them get in.
+export type AccountAccess = {
+  accountId: string
+  accountName: string
+  email: string // an organization's account email is its owner's
+  owner: boolean
+  tier: ShareRole
+  tags: { name: string; color: number | null }[]
+  tagsEditable: boolean
+  tagChoices: string[]
+  roles: RoleAccess[]
 }
 
 // What someone a network is shared with may do: connect to what it reaches; manage it as well — its devices, services
@@ -125,7 +139,7 @@ export async function graphQLDeviceNetworks(
           userModeDevices { userId deviceId name }
           tags { name color }
           tagsEditable
-          roleAccess { roleId roleName tier byTag tags operator members { id email } }
+          accountAccess { accountId accountName email owner tier tags { name color } tagsEditable tagChoices roles { roleId roleName tier byTag tags operator members { id email } } }
         }
       }
     }
@@ -259,3 +273,17 @@ export async function graphQLTaggedInto(accountId: string): Promise<TaggedInto[]
   if (errors) return 'ERROR'
   return response.data?.data?.login?.account?.taggedInto ?? []
 }
+
+// An account's tags on a network — the owner's, or an organization's it is shared with — which decide which of its
+// members reach it by role.
+export const graphQLNetworkTag = (networkId: string, accountId: string, name: string, on: boolean) =>
+  graphQLBasicRequest(
+    on
+      ? `mutation AddNetworkTag($networkId: String!, $name: [String!]!, $accountId: String) {
+          addNetworkTag(networkId: $networkId, name: $name, accountId: $accountId)
+        }`
+      : `mutation RemoveNetworkTag($networkId: String!, $name: [String!]!, $accountId: String) {
+          removeNetworkTag(networkId: $networkId, name: $name, accountId: $accountId)
+        }`,
+    { networkId, name: [name], accountId }
+  )

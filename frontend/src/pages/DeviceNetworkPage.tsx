@@ -25,6 +25,8 @@ import {
   graphQLUpdateNetworkDeviceRule,
   NetworkRule,
   RoleAccess,
+  AccountAccess,
+  graphQLNetworkTag,
   RuleChoices,
   graphQLSetNetworkShareRole,
   ShareRole,
@@ -38,7 +40,7 @@ import { getAllDevices } from '../selectors/devices'
 import { selectTags } from '../selectors/tags'
 import { useLabel } from '../hooks/useLabel'
 import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
-import { graphQLAddNetworkTag, graphQLRemoveNetworkShare, graphQLRemoveNetworkTag } from '../services/graphQLMutation'
+import { graphQLRemoveNetworkShare } from '../services/graphQLMutation'
 import { Link } from '../components/Link'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { IconButton } from '../buttons/IconButton'
@@ -223,15 +225,18 @@ export const DeviceNetworkPage: React.FC = () => {
     ...ruleAccounts.filter(account => account.tags.length).map(account => account.id),
     ...addable.map(ownerOf),
   ].filter((id, index, all) => all.indexOf(id) === index && !accountIds.includes(id))
-  const people = [
-    { ...network.owner, owner: true, role: 'ADMIN' as ShareRole },
-    ...network.access.map(a => ({
-      ...a.user,
-      owner: false,
-      role: a.role || ('CONNECT' as ShareRole),
-      organizationName: a.organizationName,
-    })),
-  ]
+  // People shared with on their own: a share whose account is no organization (an organization's is under its heading).
+  const individuals = network.access
+    .filter(a => !a.organizationName && !network.accountAccess?.some(section => section.accountId === a.user.id))
+    .map(a => ({ ...a.user, role: a.role || ('CONNECT' as ShareRole) }))
+  // One colour per account across Devices and People: the devices' accounts in their order, then any other, then
+  // Individuals.
+  const colorOrder = [
+    ...accounts.map(account => account.id),
+    ...(network.accountAccess || []).map(section => section.accountId),
+    INDIVIDUALS,
+  ].filter((id, index, all) => all.indexOf(id) === index)
+  const colorOf = (accountId: string) => colorOrder.indexOf(accountId)
 
   return (
     <Container
@@ -254,18 +259,6 @@ export const DeviceNetworkPage: React.FC = () => {
         </Typography>
       }
     >
-      {(!!network.tags?.length || network.tagsEditable) && (
-        <NetworkTags
-          names={network.tags.map(tag => tag.name)}
-          colorOf={name =>
-            network.tags.find(tag => tag.name === name)?.color ?? tags.find(tag => tag.name === name)?.color ?? 0
-          }
-          choices={tags.map(tag => tag.name)}
-          editable={network.tagsEditable && !busy}
-          onAdd={name => act(() => graphQLAddNetworkTag(network.id, [name]))}
-          onRemove={name => act(() => graphQLRemoveNetworkTag(network.id, name))}
-        />
-      )}
       {view === 'graph' ? (
         <Gutters>
           <DeviceNetworkGraph network={network} devices={devices} manage={manage} exposure={exposure} act={act} />
@@ -277,58 +270,41 @@ export const DeviceNetworkPage: React.FC = () => {
             {!network.devices.length && !rules.length && !manage && (
               <Empty text={t('deviceNetwork.noDevices', 'No devices on this network yet')} />
             )}
-            {accounts.map((account, index) => {
+            {accounts.map(account => {
               const tagChoices = ruleAccounts.find(choice => choice.id === account.id)?.tags || []
               const deviceChoices = addable.filter(device => ownerOf(device) === account.id)
               const open = adding && adding !== 'account' && adding.accountId === account.id ? adding.kind : false
               return (
                 <React.Fragment key={account.id}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      paddingX: 2,
-                      paddingY: 1,
-                      borderTop: 1,
-                      borderColor: 'grayLight.main',
-                      bgcolor: accountColor(index, dark).background,
-                      color: accountColor(index, dark).text,
-                    }}
-                  >
-                    <Icon name="building" size="sm" color={accountColor(index, dark).text} />
-                    <Typography variant="body1" sx={{ fontWeight: 500, color: 'inherit' }} noWrap>
-                      {account.name}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'inherit', opacity: 0.8 }} noWrap>
-                      ·{' '}
-                      {account.count === 1
+                  <AccountHeadingBand
+                    icon="building"
+                    name={account.name}
+                    color={accountColor(colorOf(account.id), dark)}
+                    detail={
+                      account.count === 1
                         ? t('deviceNetwork.groupDevice', '1 device')
-                        : t('deviceNetwork.groupDevices', '{{count}} devices', { count: account.count })}
-                    </Typography>
-                    <Box sx={{ marginLeft: 'auto' }}>
-                      {!link && !!tagChoices.length && (
-                        <IconButton
-                          icon="tag"
-                          title={t('deviceNetwork.addByTag', 'Add devices by tag')}
-                          size="sm"
-                          disabled={busy}
-                          onClick={() => setAdding(open === 'tag' ? false : { accountId: account.id, kind: 'tag' })}
-                        />
-                      )}
-                      {manage && !link && !!deviceChoices.length && (
-                        <IconButton
-                          icon="plus"
-                          title={t('deviceNetwork.addDevice', 'Add a device')}
-                          size="sm"
-                          disabled={busy}
-                          onClick={() =>
-                            setAdding(open === 'device' ? false : { accountId: account.id, kind: 'device' })
-                          }
-                        />
-                      )}
-                    </Box>
-                  </Box>
+                        : t('deviceNetwork.groupDevices', '{{count}} devices', { count: account.count })
+                    }
+                  >
+                    {!link && !!tagChoices.length && (
+                      <IconButton
+                        icon="tag"
+                        title={t('deviceNetwork.addByTag', 'Add devices by tag')}
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => setAdding(open === 'tag' ? false : { accountId: account.id, kind: 'tag' })}
+                      />
+                    )}
+                    {manage && !link && !!deviceChoices.length && (
+                      <IconButton
+                        icon="plus"
+                        title={t('deviceNetwork.addDevice', 'Add a device')}
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => setAdding(open === 'device' ? false : { accountId: account.id, kind: 'device' })}
+                      />
+                    )}
+                  </AccountHeadingBand>
                   {open === 'tag' && (
                     <Gutters>
                       <TextField
@@ -493,33 +469,59 @@ export const DeviceNetworkPage: React.FC = () => {
                 />
               )}
             </ListSubheader>
-            {people.map(person => (
+            {(network.accountAccess || []).map(section => (
+              <AccountPeople
+                key={section.accountId}
+                section={section}
+                color={accountColor(colorOf(section.accountId), dark)}
+                devices={network.userModeDevices || []}
+                admin={admin && !busy}
+                onTier={role => act(() => graphQLSetNetworkShareRole(network.id, section.email, role))}
+                onUnshare={() => act(() => graphQLRemoveNetworkShare(network.id, section.email))}
+                onTag={(name, on) => act(() => graphQLNetworkTag(network.id, section.accountId, name, on))}
+              />
+            ))}
+            {!network.accountAccess?.length && (
+              <PersonRow
+                email={network.owner.email}
+                owner
+                role="ADMIN"
+                devices={(network.userModeDevices || []).filter(device => device.userId === network.owner.id)}
+                editable={false}
+                onRole={() => undefined}
+                onRemove={() => undefined}
+              />
+            )}
+            {!!individuals.length && (
+              <AccountHeadingBand
+                icon="users"
+                name={t('deviceNetwork.individuals', 'Individuals')}
+                color={accountColor(colorOf(INDIVIDUALS), dark)}
+                detail={
+                  individuals.length === 1
+                    ? t('deviceNetwork.onePerson', '1 person')
+                    : t('deviceNetwork.peopleCount', '{{count}} people', { count: individuals.length })
+                }
+              />
+            )}
+            {individuals.map(person => (
               <PersonRow
                 key={person.id}
                 email={person.email}
-                organizationName={'organizationName' in person ? person.organizationName : undefined}
-                owner={person.owner}
+                owner={false}
                 role={person.role}
                 devices={(network.userModeDevices || []).filter(device => device.userId === person.id)}
-                editable={admin && !person.owner && !busy}
+                editable={admin && !busy}
                 onRole={role => act(() => graphQLSetNetworkShareRole(network.id, person.email, role))}
                 onRemove={() => act(() => graphQLRemoveNetworkShare(network.id, person.email))}
               />
             ))}
-            {(network.roleAccess || []).map(access => (
-              <RoleRow
-                key={`${access.roleId}/${access.tier}`}
-                access={access}
-                devices={network.userModeDevices || []}
-              />
-            ))}
-            {!!network.roleAccess?.length && (
+            {!!network.accountAccess?.some(section => section.roles.length) && (
               <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
                 <Typography variant="caption" color="textSecondary">
                   {t(
                     'deviceNetwork.rolesNote',
-                    "{{owner}}'s roles reach this network — all networks, or those carrying their tags.",
-                    { owner: network.owner.email }
+                    "An organization's roles decide which of its people reach this network — all networks, or those it has tagged — up to the tier it holds."
                   )}{' '}
                   <Link to="/organization/roles">{t('deviceNetwork.editRoles', 'Edit roles')}</Link>
                 </Typography>
@@ -691,28 +693,38 @@ const MemberRow: React.FC<{
    first 6 and "+N more". Removing a person unshares the network with them; its owner stays. */
 const PersonRow: React.FC<{
   email: string
-  organizationName?: string | null // a share with an organization's account: its members hold the tier too
+  caption?: string
   owner: boolean
   role: ShareRole
   devices: { deviceId: string; name: string }[]
   editable: boolean
   onRole: (role: ShareRole) => void
   onRemove: () => void
-}> = ({ email, organizationName, owner, role, devices, editable, onRole, onRemove }) => {
+}> = ({ email, caption, owner, role, devices, editable, onRole, onRemove }) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const folded = devices.length > INLINE && !open
   const shown = folded ? devices.slice(0, SHOWN) : devices
 
   return (
-    <Box sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        gap: 1,
+        paddingX: 2,
+        paddingLeft: GROUP_INDENT,
+        paddingY: 1,
+        borderTop: 1,
+        borderColor: 'grayLighter.main',
+      }}
+    >
       <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0, paddingTop: 0.25 }}>
         <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={email}>
           {email}
         </Typography>
-        {organizationName && !owner && (
+        {caption && (
           <Typography variant="caption" color="textSecondary" component="div">
-            {t('deviceNetwork.orgShare', '{{name}} and its members, as their roles allow', { name: organizationName })}
+            {caption}
           </Typography>
         )}
         <Typography variant="caption" color="textSecondary" component="div">
@@ -799,6 +811,148 @@ const PersonRow: React.FC<{
     </Box>
   )
 }
+
+const INDIVIDUALS = 'individuals'
+
+// An account's heading band, in its colour: the same in Devices and People.
+const AccountHeadingBand: React.FC<{
+  icon: string
+  name: string
+  color: { background: string; text: string }
+  detail?: React.ReactNode
+  children?: React.ReactNode
+}> = ({ icon, name, color, detail, children }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 1,
+      paddingX: 2,
+      paddingY: 1,
+      borderTop: 1,
+      borderColor: 'grayLight.main',
+      bgcolor: color.background,
+      color: color.text,
+    }}
+  >
+    <Icon name={icon} size="sm" color={color.text} />
+    <Typography variant="body1" sx={{ fontWeight: 500, color: 'inherit' }} noWrap>
+      {name}
+    </Typography>
+    {detail && (
+      <Typography
+        variant="caption"
+        component="div"
+        sx={{ color: 'inherit', opacity: 0.85, display: 'flex', alignItems: 'center', gap: 0.5 }}
+      >
+        · {detail}
+      </Typography>
+    )}
+    <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>{children}</Box>
+  </Box>
+)
+
+/* The people reaching the network through one organization: the owning one — its owner and its roles — or one it is
+   shared with, whose heading carries the share (its tier, a ceiling for its members, and unsharing) and whose roles,
+   by its own tags on the network, decide which of its people get in. Its tags on the network are set here, by its
+   administrators. */
+const AccountPeople: React.FC<{
+  section: AccountAccess
+  color: { background: string; text: string }
+  devices: { userId: string; deviceId: string; name: string }[]
+  admin: boolean
+  onTier: (role: ShareRole) => void
+  onUnshare: () => void
+  onTag: (name: string, on: boolean) => void
+}> = ({ section, color, devices, admin, onTier, onUnshare, onTag }) => {
+  const { t } = useTranslation()
+  const getColor = useLabel()
+  const count = new Set([section.accountId, ...section.roles.flatMap(role => role.members.map(member => member.id))])
+    .size
+  const people =
+    count === 1
+      ? t('deviceNetwork.onePerson', '1 person')
+      : t('deviceNetwork.peopleCount', '{{count}} people', { count })
+  return (
+    <>
+      <AccountHeadingBand
+        icon="building"
+        name={section.accountName}
+        color={color}
+        detail={
+          section.owner ? (
+            <>
+              {t('deviceNetwork.owner', 'owner')} · {people}
+            </>
+          ) : (
+            <>
+              {t('deviceNetwork.sharedUpTo', 'shared · up to')}{' '}
+              {admin ? (
+                <TextField
+                  select
+                  size="small"
+                  variant="standard"
+                  value={section.tier}
+                  onChange={event => onTier(event.target.value as ShareRole)}
+                  InputProps={{ disableUnderline: true }}
+                  SelectProps={{ sx: { paddingRight: '24px !important', fontSize: 12, color: color.text } }}
+                >
+                  <MenuItem value="CONNECT">{t('deviceNetwork.roleConnect', 'Can connect')}</MenuItem>
+                  <MenuItem value="MANAGE">{t('deviceNetwork.roleManage', 'Can manage')}</MenuItem>
+                  <MenuItem value="ADMIN">{t('deviceNetwork.roleAdmin', 'Admin')}</MenuItem>
+                </TextField>
+              ) : (
+                tierLabel(t, section.tier)
+              )}{' '}
+              · {people}
+            </>
+          )
+        }
+      >
+        {!section.owner && admin && (
+          <IconButton
+            icon="times"
+            title={t('deviceNetwork.unshareOrg', 'Stop sharing with {{name}}', { name: section.accountName })}
+            size="sm"
+            color={color.text}
+            onClick={onUnshare}
+          />
+        )}
+      </AccountHeadingBand>
+      {(!!section.tags.length || section.tagsEditable) && (
+        <NetworkTags
+          label={t('deviceNetwork.taggedIn', 'Its tags here')}
+          names={section.tags.map(tag => tag.name)}
+          colorOf={name => getColor(section.tags.find(tag => tag.name === name)?.color ?? 0)}
+          choices={section.tagChoices}
+          editable={section.tagsEditable}
+          onAdd={name => onTag(name, true)}
+          onRemove={name => onTag(name, false)}
+        />
+      )}
+      <PersonRow
+        email={section.email}
+        owner={section.owner}
+        role={section.tier}
+        caption={section.owner ? undefined : t('deviceNetwork.itsOwner', 'Its owner')}
+        devices={devices.filter(device => device.userId === section.accountId)}
+        editable={false}
+        onRole={() => undefined}
+        onRemove={() => undefined}
+      />
+      {section.roles.map(access => (
+        <RoleRow key={`${access.roleId}/${access.tier}`} access={access} devices={devices} />
+      ))}
+    </>
+  )
+}
+
+const tierLabel = (t: (key: string, fallback: string) => string, tier: ShareRole) =>
+  tier === 'ADMIN'
+    ? t('deviceNetwork.roleAdmin', 'Admin')
+    : tier === 'MANAGE'
+    ? t('deviceNetwork.roleManage', 'Can manage')
+    : t('deviceNetwork.roleConnect', 'Can connect')
 
 // Past this many matching devices, a group shows the first SHOWN and "+N more devices".
 const GROUP_SHOWN = 6
@@ -1118,23 +1272,26 @@ const TagGroup: React.FC<{
   )
 }
 
-/* The network's tags, under its name: an organization role with access by tag reaches the networks carrying its tags,
-   so they decide which members reach this one. The owning account's administrators change them. */
+/* An account's tags on the network: an organization role with access by tag reaches the networks carrying its tags,
+   so they decide which of its members reach this one. That account's administrators change them. */
 const NetworkTags: React.FC<{
+  label: string
   names: string[]
-  colorOf: (name: string) => number
+  colorOf: (name: string) => string
   choices: string[]
   editable: boolean
   onAdd: (name: string) => void
   onRemove: (name: string) => void
-}> = ({ names, colorOf, choices, editable, onAdd, onRemove }) => {
+}> = ({ label, names, colorOf, choices, editable, onAdd, onRemove }) => {
   const { t } = useTranslation()
-  const getColor = useLabel()
   const [picking, setPicking] = useState(false)
   return (
-    <Gutters>
+    <Box sx={{ paddingX: 2, paddingLeft: GROUP_INDENT, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
         <Icon name="tag" size="sm" color="grayDark" />
+        <Typography variant="caption" color="textSecondary">
+          {label}
+        </Typography>
         {names.map(name => (
           <Chip
             key={name}
@@ -1147,7 +1304,7 @@ const NetworkTags: React.FC<{
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  bgcolor: getColor(colorOf(name)),
+                  bgcolor: colorOf(name),
                   marginLeft: '8px !important',
                 }}
               />
@@ -1165,9 +1322,11 @@ const NetworkTags: React.FC<{
             sx={{ borderStyle: 'dashed' }}
           />
         )}
-        <Typography variant="caption" color="textSecondary">
-          {t('deviceNetwork.tagsHint', 'Roles with access by tag reach the networks carrying their tags')}
-        </Typography>
+        {!names.length && (
+          <Typography variant="caption" color="textSecondary">
+            {t('deviceNetwork.noNetworkTags', 'none')}
+          </Typography>
+        )}
       </Box>
       {picking && (
         <TextField
@@ -1190,7 +1349,7 @@ const NetworkTags: React.FC<{
             ))}
         </TextField>
       )}
-    </Gutters>
+    </Box>
   )
 }
 
@@ -1220,7 +1379,10 @@ const RoleRow: React.FC<{
 
   return (
     <Box sx={{ borderTop: 1, borderColor: 'grayLighter.main' }}>
-      <Box sx={{ display: 'flex', gap: 1, paddingX: 2, paddingY: 1, cursor: 'pointer' }} onClick={() => setOpen(!open)}>
+      <Box
+        sx={{ display: 'flex', gap: 1, paddingX: 2, paddingLeft: GROUP_INDENT, paddingY: 1, cursor: 'pointer' }}
+        onClick={() => setOpen(!open)}
+      >
         <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0, paddingTop: 0.25 }}>
           <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={access.roleName}>
             <Icon name={open ? 'chevron-down' : 'chevron-right'} size="xs" /> {access.roleName}
