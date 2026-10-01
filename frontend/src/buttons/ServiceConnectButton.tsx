@@ -1,4 +1,5 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
+import { clearConnectionError } from '../helpers/connectionHelper'
 import { useTranslation } from 'react-i18next'
 import { GUIDE_START_DATE } from '../constants'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
@@ -20,8 +21,13 @@ export const ServiceConnectButton: React.FC = () => {
   // A name that works on this machine needs no connection: it is shown in place of Connect, the proxy one step away.
   const local = useLocalSubnetName(device?.id, service?.id)
   const [proxy, setProxy] = useState(false)
-  // The name in use, the proxy is not: an error a proxy connection left behind is not shown over it.
   const named = !!local && !proxy
+  // The name works here, so the proxy is not in use: an error an earlier proxy attempt left on the connection — saved
+  // with it, so back on every reload, and red on the service — is stale, and cleared. A proxy attempt asked for after
+  // this sets its own.
+  useEffect(() => {
+    if (named && connection?.error) clearConnectionError(connection)
+  }, [named, connection?.error])
 
   return (
     <Collapse in={!connection.connectLink} timeout={800}>
@@ -95,7 +101,7 @@ export const ServiceConnectButton: React.FC = () => {
             )}
           </Gutters>
         </GuideBubble>
-        <ConnectionErrorMessage connection={connection} visible={showError && !named} />
+        <ConnectionErrorMessage connection={connection} visible={showError} />
       </Gutters>
     </Collapse>
   )
