@@ -1740,6 +1740,19 @@
     "service": "Service",
     "unknown": "Unknown"
   },
+  "productRegistrationCodes": {
+    "current": "Current",
+    "description": "Rotating issues a new code for the registration command. Earlier codes keep registering devices until you revoke them; devices already registered are not affected.",
+    "issued": "Issued",
+    "revoke": "Revoke Code",
+    "revokeAction": "Revoke Code",
+    "revokeBody": "No device can register with this code from now on, and devices can no longer register with a service ID of this product. Devices already registered are not affected. This cannot be undone.",
+    "revoked": "Revoked",
+    "revokeLast": "Rotate first: this is the only code in force",
+    "revokeTitle": "Revoke registration code?",
+    "rotate": "Rotate Code",
+    "title": "Registration Codes"
+  },
   "productsActionBar": {
     "adminRequired": "Admin permissions required",
     "clearSelection": "Clear selection",

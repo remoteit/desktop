@@ -1719,6 +1719,19 @@
     "service": "サービス",
     "unknown": "不明"
   },
+  "productRegistrationCodes": {
+    "current": "現在",
+    "description": "ローテーションすると、登録コマンド用の新しいコードが発行されます。以前のコードは取り消すまでデバイスを登録し続けます。登録済みのデバイスには影響しません。",
+    "issued": "発行日",
+    "revoke": "コードを取り消す",
+    "revokeAction": "コードを取り消す",
+    "revokeBody": "今後、このコードでデバイスを登録することはできません。また、このプロダクトのサービスIDでデバイスを登録することもできなくなります。登録済みのデバイスには影響しません。この操作は元に戻せません。",
+    "revoked": "取り消し日",
+    "revokeLast": "先にローテーションしてください: これが唯一の有効なコードです",
+    "revokeTitle": "登録コードを取り消しますか?",
+    "rotate": "コードをローテーション",
+    "title": "登録コード"
+  },
   "productsActionBar": {
     "adminRequired": "",
     "clearSelection": "選択を解除",
