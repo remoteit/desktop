@@ -45,6 +45,8 @@ class Controller {
     ]
 
     new EventRelay(eventNames, EventBus, this.clients)
+    // After the relay, so the signed-out broadcast still reaches the sockets it removes.
+    EventBus.on(User.EVENTS.signedOut, () => this.clients.socketsLeave(AUTHENTICATED))
   }
 
   openSockets = () => {
