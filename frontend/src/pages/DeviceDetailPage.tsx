@@ -9,6 +9,7 @@ import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { DataDisplay } from '../components/DataDisplay'
 import { GraphItem } from '../components/GraphItem'
 import { Gutters } from '../components/Gutters'
+import { DeviceAbout } from '../components/DeviceAbout'
 
 export const DeviceDetailPage: React.FC = () => {
   const { device } = useContext(DeviceContext)
@@ -22,6 +23,7 @@ export const DeviceDetailPage: React.FC = () => {
       <GraphItem device={device} />
       <Gutters>
         <DataDisplay attributes={attributes} device={device} instance={device} limits={limits} />
+        {deviceSessions && device && <DeviceAbout deviceId={device.id} />}
       </Gutters>
     </DeviceHeaderMenu>
   )
