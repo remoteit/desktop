@@ -12,9 +12,11 @@ import { oidcReconcileIssuer, oidcSignedIn, oidcAccounts } from './oidc'
 import { OAUTH_ISSUER } from '../constants'
 
 const OTHER = 'https://login.other.test'
-const idToken = (sub: string, iss?: string) =>
-  ['e30', btoa(JSON.stringify({ sub, iss, email: `${sub}@x.test` })).replace(/=+$/, ''), 'sig'].join('.')
-const signIn = (active: string | undefined = OAUTH_ISSUER, saved: string | undefined = OAUTH_ISSUER) => {
+const idToken = (sub: string, iss: string | null) =>
+  ['e30', btoa(JSON.stringify({ sub, iss: iss ?? undefined, email: `${sub}@x.test` })).replace(/=+$/, ''), 'sig'].join(
+    '.'
+  )
+const signIn = (active: string | null = OAUTH_ISSUER, saved: string | null = OAUTH_ISSUER) => {
   window.localStorage.setItem('oidc.tokens', JSON.stringify({ refresh_token: 'r1', id_token: idToken('a', active) }))
   window.localStorage.setItem(
     'oidc.accounts',
@@ -45,7 +47,7 @@ describe('oidcReconcileIssuer', () => {
   })
 
   it('adopts tokens that carry no issuer at all', () => {
-    signIn(undefined, undefined)
+    signIn(null, null)
     oidcReconcileIssuer()
     expect(oidcSignedIn()).toBe(true)
     expect(oidcAccounts()).toHaveLength(2)
