@@ -11,7 +11,9 @@ import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from '../components/DesktopUI'
 import { Gutters } from '../components/Gutters'
 import { LocalSubnetConnect } from '../components/LocalSubnetConnect'
-import { useLocalSubnetName } from '../hooks/useLocalSubnetName'
+import { useSubnetReach } from '../hooks/useLocalSubnetName'
+import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
+import { useApplication } from '../hooks/useApplication'
 import { Link } from '../components/Link'
 
 export const ServiceConnectButton: React.FC = () => {
@@ -19,9 +21,14 @@ export const ServiceConnectButton: React.FC = () => {
   const { device, service, connection, instance } = useContext(DeviceContext)
   const [showError, setShowError] = useState<boolean>(true)
   // A name that works on this machine needs no connection: it is shown in place of Connect, the proxy one step away.
-  const local = useLocalSubnetName(device?.id, service?.id)
+  const reach = useSubnetReach(device?.id, service?.id)
+  const local = reach.local
   const [proxy, setProxy] = useState(false)
-  const named = !!local && !proxy
+  // No agent here reaches it, but it has a name and serves the web: this browser's client can open it in its own tab
+  // (services/browserGateway), the proxy one step away as for a local name.
+  const web = useApplication(service, connection).urlForm
+  const gateway = !local && reach.checked && !!reach.name && !!web && !proxy
+  const named = (!!local && !proxy) || gateway
   // The name works here, so the proxy is not in use: an error an earlier proxy attempt left on the connection — saved
   // with it, so back on every reload, and red on the service — is stale, and cleared. A proxy attempt asked for after
   // this sets its own.
@@ -79,7 +86,11 @@ export const ServiceConnectButton: React.FC = () => {
           <Gutters size="md" sx={{ display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }} bottom={null}>
             {named ? (
               <Box sx={{ width: '100%' }}>
-                <LocalSubnetConnect local={local} service={service} connection={connection} />
+                {local ? (
+                  <LocalSubnetConnect local={local} service={service} connection={connection} />
+                ) : (
+                  <BrowserGatewayConnect name={reach.name!} service={service} />
+                )}
                 <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
                   <Link onClick={() => setProxy(true)}>
                     {t('serviceConnectButton.useProxy', 'Connect through the proxy instead')}

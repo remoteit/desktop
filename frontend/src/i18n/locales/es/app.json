@@ -273,6 +273,11 @@
   "billingPage": {
     "title": "Facturación"
   },
+  "browserGatewayConnect": {
+    "failed": "",
+    "launch": "",
+    "title": ""
+  },
   "changeEmailDialog": {
     "cancel": "Cancelar",
     "currentEmail": "Correo electrónico actual:",

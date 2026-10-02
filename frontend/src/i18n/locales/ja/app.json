@@ -267,6 +267,11 @@
   "billingPage": {
     "title": "請求"
   },
+  "browserGatewayConnect": {
+    "failed": "",
+    "launch": "",
+    "title": ""
+  },
   "changeEmailDialog": {
     "cancel": "キャンセル",
     "currentEmail": "現在のメールアドレス:",

@@ -270,6 +270,11 @@
   "billingPage": {
     "title": "Billing"
   },
+  "browserGatewayConnect": {
+    "failed": "Could not open it: try again",
+    "launch": "Open in a new tab",
+    "title": "In this browser — nothing to install"
+  },
   "changeEmailDialog": {
     "cancel": "Cancel",
     "currentEmail": "Current email:",

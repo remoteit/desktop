@@ -270,6 +270,11 @@
   "billingPage": {
     "title": "Abrechnung"
   },
+  "browserGatewayConnect": {
+    "failed": "",
+    "launch": "",
+    "title": ""
+  },
   "changeEmailDialog": {
     "cancel": "Abbrechen",
     "currentEmail": "Aktuelle E-Mail:",
