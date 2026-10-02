@@ -15,18 +15,18 @@ import PortScanner from './PortScanner'
 import environment from './environment'
 import Binary from './Binary'
 import EventBus from './EventBus'
-import server from './server'
+import server, { AUTHENTICATED } from './server'
 import user, { User } from './User'
 import launch from './launch'
 
 const DEFAULT_SOCKETS_LENGTH = 3
 
 class Controller {
-  private io: SocketIO.Server
+  private clients: ReturnType<SocketIO.Server['to']>
   private pool: ConnectionPool
 
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
-    this.io = io
+    this.clients = io.to(AUTHENTICATED)
     this.pool = pool
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
@@ -44,7 +44,9 @@ class Controller {
       ...Object.values(preferences.EVENTS),
     ]
 
-    new EventRelay(eventNames, EventBus, this.io.sockets)
+    new EventRelay(eventNames, EventBus, this.clients)
+    // After the relay, so the signed-out broadcast still reaches the sockets it removes.
+    EventBus.on(User.EVENTS.signedOut, () => this.clients.socketsLeave(AUTHENTICATED))
   }
 
   openSockets = () => {
@@ -102,7 +104,7 @@ class Controller {
 
   recapitate = () => {
     // environment changes after recapitation
-    this.io.emit(environment.EVENTS.send, environment.frontend)
+    this.clients.emit(environment.EVENTS.send, environment.frontend)
   }
 
   check = (all?: boolean) => {
@@ -133,17 +135,17 @@ class Controller {
 
   device = async () => {
     await cli.set('device')
-    this.io.emit('device', cli.data.device?.uid)
+    this.clients.emit('device', cli.data.device?.uid)
   }
 
   registration = async (code: string) => {
     await cli.set('registration', code)
-    this.io.emit('device', cli.data.device?.uid)
+    this.clients.emit('device', cli.data.device?.uid)
   }
 
   restore = async (deviceId: string) => {
     await cli.restore(deviceId)
-    this.io.emit('device', cli.data.device?.uid)
+    this.clients.emit('device', cli.data.device?.uid)
   }
 
   forceUnregister = async (code: string) => {
@@ -152,22 +154,22 @@ class Controller {
 
   interfaces = async () => {
     await lan.getInterfaces()
-    this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
+    this.clients.emit(lan.EVENTS.interfaces, lan.interfaces)
   }
 
   scan = async (interfaceName: string) => {
     await lan.scan(interfaceName)
-    this.io.emit('scan', lan.data)
+    this.clients.emit('scan', lan.data)
   }
 
   freePort = async () => {
     const freePort = await this.pool.nextFreePort()
-    this.io.emit(PortScanner.EVENTS.freePort, freePort)
+    this.clients.emit(PortScanner.EVENTS.freePort, freePort)
   }
 
   isReachablePort = async (data: IReachablePort) => {
     const result = await PortScanner.isPortReachable(data.port, data.host)
-    this.io.emit(PortScanner.EVENTS.reachablePort, result)
+    this.clients.emit(PortScanner.EVENTS.reachablePort, result)
   }
 
   useCertificate = async (use: boolean) => {
@@ -185,7 +187,7 @@ class Controller {
     this.pool.init()
     sshConfig.init()
     this.refresh()
-    this.io.emit('appReady')
+    this.clients.emit('appReady')
     Logger.info('DATA READY')
   }
 
@@ -193,12 +195,12 @@ class Controller {
     cli.read()
     this.check()
     this.freePort()
-    this.io.emit('device', cli.data.device?.uid)
-    this.io.emit('scan', lan.data)
-    this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
-    this.io.emit(ConnectionPool.EVENTS.pool, this.pool.toJSON())
-    this.io.emit(environment.EVENTS.send, environment.frontend)
-    this.io.emit('preferences', preferences.data)
+    this.clients.emit('device', cli.data.device?.uid)
+    this.clients.emit('scan', lan.data)
+    this.clients.emit(lan.EVENTS.interfaces, lan.interfaces)
+    this.clients.emit(ConnectionPool.EVENTS.pool, this.pool.toJSON())
+    this.clients.emit(environment.EVENTS.send, environment.frontend)
+    this.clients.emit('preferences', preferences.data)
     EventBus.emit(electronInterface.EVENTS.navigate, 'STATUS')
   }
 
@@ -214,9 +216,9 @@ class Controller {
 
   /* The tray's Sign out. The relay already carries it to the renderer, which owns the OIDC
      session: it ends the account's AS session, then comes back with user/sign-out. Only with
-     no renderer connected does the backend clear the credentials on its own. */
+     no signed-in renderer for the relay to reach does the backend clear the credentials on its own. */
   signOutRequested = async () => {
-    if (server.socket?.connected) return
+    if ((await this.clients.fetchSockets()).length) return
     Logger.info('SIGN OUT REQUESTED WITHOUT A RENDERER')
     await this.signOut()
   }
