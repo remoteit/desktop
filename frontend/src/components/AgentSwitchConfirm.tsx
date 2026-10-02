@@ -21,7 +21,7 @@ export const AgentSwitchConfirm: React.FC = () => {
       onDeny={() => auth.keepAgent()}
     >
       <Typography variant="body2">
-        {t('agentSwitch.message', "You'll lose the connections you've set up on this computer.")}
+        {t('agentSwitch.message', 'Switching accounts will stop all connections.')}
       </Typography>
     </Confirm>
   )

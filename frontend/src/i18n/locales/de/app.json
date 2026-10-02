@@ -107,7 +107,7 @@
   },
   "agentSwitch": {
     "keep": "Zurück zu {{owner}}",
-    "message": "Die Verbindungen, die Sie auf diesem Computer eingerichtet haben, gehen verloren.",
+    "message": "Durch den Kontowechsel werden alle Verbindungen beendet.",
     "switch": "Wechseln",
     "title": "Konto wechseln?"
   },

@@ -109,7 +109,7 @@
   },
   "agentSwitch": {
     "keep": "Volver a {{owner}}",
-    "message": "Perderás las conexiones que configuraste en esta computadora.",
+    "message": "Al cambiar de cuenta, se detendrán todas las conexiones.",
     "switch": "Cambiar",
     "title": "¿Cambiar de cuenta?"
   },

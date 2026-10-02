@@ -107,7 +107,7 @@
   },
   "agentSwitch": {
     "keep": "Go back to {{owner}}",
-    "message": "You'll lose the connections you've set up on this computer.",
+    "message": "Switching accounts will stop all connections.",
     "switch": "Switch",
     "title": "Switch accounts?"
   },
