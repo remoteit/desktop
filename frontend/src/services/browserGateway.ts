@@ -6,14 +6,11 @@ import { graphQLBasicRequest } from './graphQL'
    it when no agent here does. The first tab registers the browser's client with a one-time code, passed in the URL's
    fragment with where to sign in (no server sees a fragment); a browser whose client is registered ignores it.
 
-   Locally, this Mac's agent answers *.on.local.remote.it, so the gateway's names are one label under the proxy's
-   certificate: w<port>-<name>-<owner>.local.remote.it. On a stage, the device's own name — the port a name means
-   there is still to be settled; until then it is the web port. */
+   The tab is the service's name — w<port>--<name> for its port (no name has a double hyphen) — so the same link
+   reaches it through an agent here, when there is one, and through the gateway otherwise. */
 
 export function gatewayURL(name: string, port?: number): string {
-  const local = /^([a-z0-9]+(?:-[a-z0-9]+)+)\.on\.local\.remote\.it$/.exec(name)
-  if (local) return `https://w${port || 80}-${local[1]}.local.remote.it/`
-  return `https://${name}/`
+  return port ? `https://w${port}--${name}/` : `https://${name}/`
 }
 
 type Handoff = { code: string; presence: string[]; reflector: string }
