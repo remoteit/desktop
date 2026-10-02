@@ -1740,6 +1740,19 @@
     "service": "Dienst",
     "unknown": "Unbekannt"
   },
+  "productRegistrationCodes": {
+    "current": "Aktuell",
+    "description": "Beim Rotieren wird ein neuer Code für den Registrierungsbefehl ausgegeben. Frühere Codes registrieren weiterhin Geräte, bis Sie sie widerrufen; bereits registrierte Geräte sind nicht betroffen.",
+    "issued": "Ausgegeben",
+    "revoke": "Code widerrufen",
+    "revokeAction": "Code widerrufen",
+    "revokeBody": "Ab jetzt kann sich kein Gerät mehr mit diesem Code registrieren, und Geräte können sich nicht mehr mit einer Dienst-ID dieses Produkts registrieren. Bereits registrierte Geräte sind nicht betroffen. Dies kann nicht rückgängig gemacht werden.",
+    "revoked": "Widerrufen",
+    "revokeLast": "Zuerst rotieren: Dies ist der einzige gültige Code",
+    "revokeTitle": "Registrierungscode widerrufen?",
+    "rotate": "Code rotieren",
+    "title": "Registrierungscodes"
+  },
   "productsActionBar": {
     "adminRequired": "",
     "clearSelection": "Auswahl aufheben",

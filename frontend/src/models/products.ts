@@ -10,6 +10,8 @@ import {
   graphQLTransferDeviceProduct,
   graphQLCreateDeviceProductFromRegistration,
   graphQLUpdateDeviceProduct,
+  graphQLRotateDeviceProductCode,
+  graphQLRevokeDeviceProductCode,
 } from '../services/graphQLDeviceProducts'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { State } from '../store'
@@ -22,6 +24,12 @@ export interface IProductService {
   enabled: boolean
 }
 
+export interface IDeviceProductCode {
+  code: string
+  created: string
+  revoked?: string | null
+}
+
 export interface IDeviceProduct {
   id: string
   name: string
@@ -29,6 +37,7 @@ export interface IDeviceProduct {
   status: 'NEW' | 'LOCKED'
   registrationCode?: string
   registrationCommand?: string
+  registrationCodes?: IDeviceProductCode[]
   tags?: string[]
   source?: string
   created: string
@@ -127,6 +136,22 @@ export default createModel<RootModel>()({
         }
       }
       return null
+    },
+
+    // A new code becomes the product's current one; the earlier codes keep working until revoked. The product is read
+    // again after either change, so its command and its list of codes come from graphql together.
+    async rotateCode(productId: string) {
+      const response = await graphQLRotateDeviceProductCode(productId)
+      if (response === 'ERROR' || !response?.data?.data?.rotateDeviceProductCode) return false
+      await dispatch.products.fetchSingle(productId)
+      return true
+    },
+
+    async revokeCode({ productId, code }: { productId: string; code: string }) {
+      const response = await graphQLRevokeDeviceProductCode(productId, code)
+      if (response === 'ERROR' || !response?.data?.data?.revokeDeviceProductCode) return false
+      await dispatch.products.fetchSingle(productId)
+      return true
     },
 
     async delete(id: string, state) {

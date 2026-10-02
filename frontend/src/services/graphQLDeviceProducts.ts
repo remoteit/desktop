@@ -66,6 +66,11 @@ export async function graphQLDeviceProduct(id: string, accountId?: string) {
                 status
                 registrationCode
                 registrationCommand
+                registrationCodes {
+                  code
+                  created
+                  revoked
+                }
                 tags
                 source
                 created
@@ -174,6 +179,32 @@ export async function graphQLRemoveDeviceProductService(id: string) {
         removeDeviceProductService(id: $id)
       }`,
     { id }
+  )
+}
+
+export async function graphQLRotateDeviceProductCode(productId: string) {
+  return await graphQLBasicRequest(
+    ` mutation RotateDeviceProductCode($productId: ID!) {
+        rotateDeviceProductCode(productId: $productId) {
+          code
+          created
+          revoked
+        }
+      }`,
+    { productId }
+  )
+}
+
+export async function graphQLRevokeDeviceProductCode(productId: string, code: string) {
+  return await graphQLBasicRequest(
+    ` mutation RevokeDeviceProductCode($productId: ID!, $code: String!) {
+        revokeDeviceProductCode(productId: $productId, code: $code) {
+          code
+          created
+          revoked
+        }
+      }`,
+    { productId, code }
   )
 }
 

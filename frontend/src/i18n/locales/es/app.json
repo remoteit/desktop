@@ -1761,6 +1761,19 @@
     "service": "Servicio",
     "unknown": "Desconocido"
   },
+  "productRegistrationCodes": {
+    "current": "Actual",
+    "description": "Al rotar se emite un código nuevo para el comando de registro. Los códigos anteriores siguen registrando dispositivos hasta que los revoque; los dispositivos ya registrados no se ven afectados.",
+    "issued": "Emitido",
+    "revoke": "Revocar código",
+    "revokeAction": "Revocar código",
+    "revokeBody": "A partir de ahora ningún dispositivo podrá registrarse con este código, y los dispositivos ya no podrán registrarse con un ID de servicio de este producto. Los dispositivos ya registrados no se ven afectados. Esto no se puede deshacer.",
+    "revoked": "Revocado",
+    "revokeLast": "Rote primero: este es el único código vigente",
+    "revokeTitle": "¿Revocar el código de registro?",
+    "rotate": "Rotar código",
+    "title": "Códigos de registro"
+  },
   "productsActionBar": {
     "adminRequired": "",
     "clearSelection": "Borrar selección",
