@@ -15,6 +15,7 @@ import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { oidcAccounts, oidcRefreshBrowserAccounts } from '../services/oidc'
 import { emit } from '../services/Controller'
+import { DESKTOP_HELP_LINK } from '../constants'
 
 const ENTER_DELAY = 300
 const LEAVE_DELAY = 400 // must be longer than transition duration
@@ -122,7 +123,7 @@ export const AvatarMenu: React.FC = () => {
         <ListItemLink
           title={t('nav.support', 'Support')}
           icon="life-ring"
-          href="https://link.remote.it/documentation-desktop/overview"
+          href={DESKTOP_HELP_LINK}
           dense
         />
         <ListItemLink title={t('nav.apis', 'APIs')} icon="books" href="https://link.remote.it/docs/api" dense />

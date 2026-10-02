@@ -194,6 +194,7 @@ export const SCREEN_VIEW_APP_LINK =
 
 // Client capabilities, not catalogue data — see platforms/README.md.
 export const OEM_GUIDE_LINK = 'https://link.remote.it/docs/oem-overview'
+export const DESKTOP_HELP_LINK = 'https://link.remote.it/documentation-desktop/overview'
 export const DEVICE_SETUP_PATH = '/devices/setup'
 export const DEMO_SCRIPT_URL =
   'https://raw.githubusercontent.com/remoteit/code_samples/refs/heads/main/scripts/linux/script_demo.sh'

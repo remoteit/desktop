@@ -3,7 +3,7 @@ import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { agentOwnedMessage } from '@common/agentOwner'
 
-const auth = { signIn: vi.fn(), set: vi.fn(), switchStage: vi.fn() }
+const auth = { signIn: vi.fn(), reopenSignIn: vi.fn(), set: vi.fn(), switchStage: vi.fn() }
 let authState: any
 
 vi.mock('react-i18next', () => ({
@@ -27,12 +27,15 @@ import { SignInApp } from './SignInApp'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
-const owner = { username: 'jamie@remote.it', canSwitch: false, command: 'sudo remoteit signout' }
 const screens: Record<string, any> = {
   ready: {},
   waiting: { signingIn: true },
   failed: { signInFailed: true },
-  agentOwned: { signInFailed: true, signInErrorCode: 'agentOwned', signInError: agentOwnedMessage(owner) },
+  agentOwned: {
+    signInFailed: true,
+    signInErrorCode: 'agentOwned',
+    signInError: agentOwnedMessage({ username: 'jamie@remote.it', canSwitch: false, command: 'sudo remoteit signout' }),
+  },
 }
 
 describe('SignInApp', () => {
@@ -50,7 +53,7 @@ describe('SignInApp', () => {
     container = document.createElement('div')
     document.body.appendChild(container)
     root = createRoot(container)
-    Object.values(auth).forEach(fn => fn.mockClear())
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
@@ -63,15 +66,16 @@ describe('SignInApp', () => {
     expect(container.querySelectorAll('.MuiButton-contained')).toHaveLength(1)
   })
 
-  it('while waiting, puts Cancel before the primary button that reopens the browser', () => {
+  it('while waiting, puts Cancel before the primary button that reopens the outstanding sign-in', () => {
     render(screens.waiting)
-    const reopen = button('Open browser again')!
+    const reopen = container.querySelector<HTMLButtonElement>('.MuiButton-contained')!
     const cancel = button('Cancel')!
-    expect(reopen.className).toContain('MuiButton-contained')
+    expect(reopen.textContent).toBe('Open browser again')
     expect(buttons().indexOf(cancel)).toBeLessThan(buttons().indexOf(reopen))
 
     act(() => reopen.click())
-    expect(auth.signIn).toHaveBeenCalledTimes(1)
+    expect(auth.reopenSignIn).toHaveBeenCalledTimes(1)
+    expect(auth.signIn).not.toHaveBeenCalled()
     act(() => cancel.click())
     expect(auth.set).toHaveBeenCalledWith({ signingIn: false })
   })
