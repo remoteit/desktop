@@ -63,7 +63,6 @@ export type UIState = {
   fetching: boolean
   destroying: boolean
   transferring: boolean
-  deleteAccount: boolean
   routingLock?: IRouteType
   routingMessage?: string
   sidebarMenu: boolean
@@ -151,7 +150,6 @@ export const defaultState: UIState = {
   fetching: false,
   destroying: false,
   transferring: false,
-  deleteAccount: false,
   routingLock: undefined,
   routingMessage: undefined,
   sidebarMenu: false,

@@ -450,6 +450,7 @@
   "common": {
     "actionCannotBeUndone": "This action cannot be undone.",
     "areYouSure": "Are you sure?",
+    "back": "Back",
     "cancel": "Cancel",
     "cannotBeUndone": "This action cannot be undone.",
     "clear": "Clear",
@@ -679,17 +680,50 @@
     "title": "Delete Access Key",
     "warning": "This action is permanent and cannot be undone."
   },
+  "deleteAccountDialog": {
+    "acknowledge": "I understand that Remote.It stays installed and running on my devices, and deleting my account won't remove it.",
+    "codeIntro": "To confirm, we'll email a code to {{email}}.",
+    "codeLabel": "Confirmation code",
+    "codePlaceholder": "Code",
+    "codeSent": "Enter the code we sent to {{email}}. It expires in 10 minutes.",
+    "confirmTitle": "Delete your account",
+    "consequenceDevices": "The devices you own are removed from your account",
+    "consequenceOrganization": "Your organization and its roles are deleted",
+    "consequenceShares": "Devices shared with you and your memberships in other organizations are removed",
+    "consequenceSignIn": "Your sign-in and access keys stop working",
+    "deleteButton": "Delete account permanently",
+    "deleting": "Deleting…",
+    "devicesBody": "Deleting your account removes your devices from it, but it doesn't uninstall Remote.It. The software keeps running on every device it's installed on until you remove it.",
+    "devicesFailed": "Your devices couldn't be loaded. Close this and try again.",
+    "devicesLoading": "Loading your devices…",
+    "devicesOwned_one": "You own {{count}} device",
+    "devicesOwned_other": "You own {{count}} devices",
+    "devicesTitle": "Remote.It will keep running on your devices",
+    "doneBody": "Thank you for using Remote.It. Signing you out…",
+    "doneTitle": "Your account has been deleted",
+    "feedbackOptional": "Optional — telling us why it didn't work out helps us improve.",
+    "feedbackTitle": "Why are you leaving?",
+    "genericError": "Something went wrong. Please try again.",
+    "invalidCode": "That code is incorrect or has expired.",
+    "permanent": "This happens immediately and can't be undone.",
+    "resendCode": "Send a new code",
+    "sendCode": "Email me a code",
+    "sending": "Sending…",
+    "tooManyAttempts": "Too many incorrect codes. Request a new code to try again.",
+    "unregisterFailed": "This device couldn't be unregistered, so your account was not deleted. Try again, or unregister this device from its device page first.",
+    "unregistering": "Unregistering this device…"
+  },
   "deleteAccountSection": {
-    "confirmHelp": "Please help us improve by telling us why it didn't work out.",
     "confirmSorry": "We are sorry to see you go!",
-    "confirmTitle": "Why do you want to delete your account?",
     "contactMeLabel": "I'm open to having someone contact me about my feedback.",
     "deleteButton": "Delete my account",
-    "description": "If you no longer want/need your Remote.It account, you can request an account deletion. Once your delete request is processed, all your account information is removed permanently.",
+    "description": "Deleting your account is immediate and permanent. It doesn't uninstall Remote.It from your devices, so remove it from each device first.",
+    "membersNotice_one": "Your organization has {{count}} other member.",
+    "membersNotice_other": "Your organization has {{count}} other members.",
+    "membersRemove": "Transfer ownership or remove them before deleting your account.",
     "otherReasonLabel": "Other Reason",
-    "paidPlanDowngrade": "Please downgrade to Personal to request an account deletion.",
+    "paidPlanCancel": "Cancel it before deleting your account.",
     "paidPlanNotice": "You have a paid subscription plan.",
-    "permanentWarning": "I understand that this is permanent and that accounts and related devices can not be recovered.",
     "reasonAnotherAccount": "Have another account",
     "reasonConnectionQuality": "Connection quality or performance issues",
     "reasonCost": "Cost of service",
@@ -701,8 +735,7 @@
     "reasonTooHard": "Too hard to use",
     "reasonUnsupportedDevice": "My device isn’t supported",
     "reasonUsingSomethingElse": "Using something else",
-    "snackbar": "Your account delete request has been sent.",
-    "turnaround": "Deletion requests take 3 to 5 business days to complete."
+    "removeButton": "How to remove Remote.It"
   },
   "deleteDevice": {
     "deletingDevices": "deleting devices.",
@@ -1588,6 +1621,11 @@
     "removeMembersWarning": "This will remove all your members and their access to your devices.",
     "settings": "Settings"
   },
+  "ownedDevicesList": {
+    "more_one": "and {{count}} more",
+    "more_other": "and {{count}} more",
+    "thisDevice": "This device is unregistered automatically when you delete your account."
+  },
   "partnerStatsDetailPanel": {
     "activated": "Activated",
     "activeLast30Days": "Active (Last 30 Days)",
@@ -1843,6 +1881,20 @@
     "guideRegistersBefore": "Your device will automatically register and appear on the",
     "guideTitle": "Add a device",
     "managePermissionRequired": "Manage permission required to add a device to this organization."
+  },
+  "removeRemoteitDialog": {
+    "debian": "Raspberry Pi, Ubuntu and other Debian Linux",
+    "desktopMacLinux": "Desktop app on macOS or Linux",
+    "desktopMacLinuxSteps": "Open Settings, then Application, expand Advanced, and select Uninstall.",
+    "desktopWindows": "Desktop app on Windows",
+    "desktopWindowsSteps": "Uninstall Remote.It from Windows Settings, under Apps.",
+    "intro": "Deleting your account doesn't uninstall Remote.It. Remove it from each device you own before you delete your account.",
+    "localAccess": "Uninstall from the device itself or over your local network. Removing Remote.It through a Remote.It connection ends that connection right away.",
+    "openwrt": "OpenWrt",
+    "otherDevices": "Instructions for other devices",
+    "title": "Remove Remote.It from your devices",
+    "yourDevices_one": "Your devices ({{count}})",
+    "yourDevices_other": "Your devices ({{count}})"
   },
   "rentANodeForm": {
     "addDns": "Add a public DNS address",
