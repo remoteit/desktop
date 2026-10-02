@@ -15,7 +15,7 @@ jest.mock('./index', () => ({ __esModule: true, default: {} }))
 jest.mock('./Logger', () => ({ __esModule: true, default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }))
 jest.mock('./cliInterface', () => ({
   __esModule: true,
-  default: { readUser: jest.fn(), signOut: jest.fn(), data: {}, EVENTS: {} },
+  default: { readUser: jest.fn(), signOut: jest.fn(), isSignedOut: () => true, data: {}, EVENTS: {} },
 }))
 jest.mock('./LAN', () => ({ __esModule: true, default: { EVENTS: {} } }))
 // user.signOut deletes the real user.json under environment.userPath
@@ -146,5 +146,17 @@ describe('backend/server broadcasts', () => {
     EventBus.emit(electronInterface.EVENTS.signOut)
     await new Promise(resolve => setImmediate(resolve))
     expect(signOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('releasing the agent disconnects the signed-in windows and keeps the one still authenticating', async () => {
+    Object.assign(user, credentials)
+    const owner = await open()
+    expect(await authenticate(owner, credentials)).toBe('authenticated')
+    const switching = await open()
+    const [ownerId, switchingId] = [owner.id, switching.id]
+
+    expect(await server.releaseAgent?.()).toBe(true)
+    expect(io.sockets.sockets.has(ownerId!)).toBe(false)
+    expect(io.sockets.sockets.has(switchingId!)).toBe(true)
   })
 })

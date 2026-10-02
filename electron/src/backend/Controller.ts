@@ -18,7 +18,6 @@ import EventBus from './EventBus'
 import server, { AUTHENTICATED } from './server'
 import user, { User } from './User'
 import launch from './launch'
-import { disconnectAuthenticated } from './sockets'
 
 const DEFAULT_SOCKETS_LENGTH = 3
 
@@ -232,8 +231,8 @@ class Controller {
     await this.pool.clearMemory()
   }
 
-  // No signed-out broadcast: socketio-auth 0.1.1 cannot fence unauthenticated sockets under socket.io 4,
-  // so it would reach the renderer whose switch this is and sign that account out too.
+  // Disconnects instead of broadcasting signed-out: the old owner's chat popout would sign out, clearing the active
+  // tokens from the localStorage it shares with the main window, which by now holds the new account's.
   releaseAgent = async () => {
     Logger.info('RELEASE AGENT')
     await cli.signOut()
@@ -242,7 +241,7 @@ class Controller {
       return false
     }
     user.clear()
-    disconnectAuthenticated(this.io.sockets.sockets.values() as Iterable<SocketIO.Socket & { auth?: boolean }>)
+    this.clients.disconnectSockets(true)
     await this.pool.clearMemory()
     return true
   }
