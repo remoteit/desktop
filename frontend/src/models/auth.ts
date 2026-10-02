@@ -357,7 +357,7 @@ export default createModel<RootModel>()({
       await dispatch.auth.signedOut()
       dispatch.auth.set({
         ...signInFailure(new Error(signInError)),
-        ...(owner && { signInErrorCode: 'agentOwned' as const, agentOwner: owner }),
+        ...(owner && { signInErrorCode: 'agentOwned' as const }),
       })
     },
     /** Move this computer's agent to the signed-in account; the backend signs its owner out first. */
@@ -365,12 +365,12 @@ export default createModel<RootModel>()({
       dispatch.auth.set({ agentOwner: undefined })
       Controller.retryWithAgentSwitch()
     },
-    /** Leave the agent with its owner: sign this account out and return to the owner when it is saved here. */
+    /** Leave the agent with its owner: return to the owner when it is saved here, otherwise sign out. */
     async keepAgent(_: void, state) {
       const owner = state.auth.agentOwner?.username.toLowerCase()
       const back = oidcAccounts().find(account => account.email?.toLowerCase() === owner)
+      if (back) return dispatch.auth.activateAccount(back.sub)
       await dispatch.auth.signedOut()
-      if (back) await dispatch.auth.activateAccount(back.sub)
     },
     async appReady(_: void, state) {
       // Temp migration of state

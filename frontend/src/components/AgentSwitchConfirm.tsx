@@ -10,7 +10,7 @@ export const AgentSwitchConfirm: React.FC = () => {
   const { auth } = useDispatch<Dispatch>()
   const owner = useSelector((state: State) => state.auth.agentOwner)
   const account = useSelector((state: State) => state.auth.user?.email)
-  if (!owner?.canSwitch) return null
+  if (!owner) return null
   const target = account ?? t('agentSwitch.thisAccount', 'this account')
 
   return (

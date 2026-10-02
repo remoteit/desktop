@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused } from '../services/oidc'
 import { SignInErrorCode } from '../models/auth'
+import { parseAgentOwned } from '@common/agentOwner'
 import { MODE, OAUTH_ISSUER, STAGE, STAGE_PINNED, STAGES } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
@@ -32,7 +33,7 @@ const SignInError: React.FC<{ code?: SignInErrorCode; detail?: string; retryAfte
      untranslated, under a sentence written for them. console.error still carries it for
      everyone, so a support session loses nothing. */
   const showDetail = useSelector((state: State) => MODE === 'development' || !!state.ui.testUI)
-  const agentOwner = useSelector((state: State) => state.auth.agentOwner)
+  const agentOwner = code === 'agentOwned' ? parseAgentOwned(detail) : undefined
   // Round UP: telling someone to wait 6 minutes when the lock lifts in 6:40 just earns
   // a second failure. Below a minute still reads as "a minute".
   const minutes = Math.max(1, Math.ceil((retryAfter || 0) / 60))
@@ -84,7 +85,7 @@ const SignInError: React.FC<{ code?: SignInErrorCode; detail?: string; retryAfte
       <Typography variant="body2" color="error" textAlign="center">
         {message()}
       </Typography>
-      {!!detail && showDetail && (
+      {!!detail && showDetail && !agentOwner && (
         <Typography variant="caption" color="grayDark.main" textAlign="center">
           {detail}
         </Typography>

@@ -382,6 +382,7 @@ describe('auth model — a stage switch signs out and reloads onto the new stage
 describe("auth model — this computer's agent belongs to another account", () => {
   const owner = { username: 'Jamie@Remote.it', canSwitch: true, command: "'sudo remoteit signout' from your terminal" }
   beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     retryWithAgentSwitch.mockReset()
     oidcAccounts.mockReset().mockReturnValue([])
   })
@@ -394,18 +395,20 @@ describe("auth model — this computer's agent belongs to another account", () =
   })
 
   it('an agent that cannot move signs out and names its owner', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
     const stuck = { ...owner, canSwitch: false }
     const dispatch = makeDispatch()
     await effectsFor(dispatch).backendSignInError(agentOwnedMessage(stuck))
     expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.set).toHaveBeenCalledWith(
-      expect.objectContaining({ signInFailed: true, signInErrorCode: 'agentOwned', agentOwner: stuck })
+      expect.objectContaining({
+        signInFailed: true,
+        signInErrorCode: 'agentOwned',
+        signInError: agentOwnedMessage(stuck),
+      })
     )
   })
 
   it('a malformed refusal falls back to the plain failure', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
     const dispatch = makeDispatch()
     await effectsFor(dispatch).backendSignInError('agent-owned:{not json')
     expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
@@ -419,18 +422,15 @@ describe("auth model — this computer's agent belongs to another account", () =
     expect(retryWithAgentSwitch).toHaveBeenCalledTimes(1)
   })
 
-  it('going back signs this account out and reactivates the saved owner', async () => {
+  it('going back reactivates the saved owner without signing this account out', async () => {
     oidcAccounts.mockReturnValue([
       { sub: 'sub-b', email: 'jr@gmail.test' },
       { sub: 'sub-a', email: 'jamie@remote.it' },
     ])
     const dispatch = makeDispatch()
     await effectsFor(dispatch).keepAgent(undefined, { auth: { agentOwner: owner } })
-    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.activateAccount).toHaveBeenCalledWith('sub-a')
-    expect(dispatch.auth.signedOut.mock.invocationCallOrder[0]).toBeLessThan(
-      dispatch.auth.activateAccount.mock.invocationCallOrder[0]
-    )
+    expect(dispatch.auth.signedOut).not.toHaveBeenCalled()
   })
 
   it('going back to an owner that is not saved here just signs out', async () => {

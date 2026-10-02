@@ -134,10 +134,16 @@ class Server {
       // The agent belongs to another account. Moving it needs that account's credentials, which the
       // backend holds only while it is still signed in as the owner: the CLI signs out with them.
       else {
-        const canSwitch = !!this.releaseAgent && user.signedIn && user.id === admin.guid
-        if (credentials.switchAgent && canSwitch) {
+        const canSwitch = user.signedIn && user.id === admin.guid
+        if (credentials.switchAgent && canSwitch && this.releaseAgent) {
           Logger.warn('AGENT SWITCH', { from: admin.username, to: credentials.username })
-          await this.releaseAgent!()
+          try {
+            await user.authHashLogin(credentials.username, credentials.authHash)
+          } catch (error) {
+            Logger.warn('AGENT SWITCH REFUSED', { username: credentials.username, error })
+            return callback(new Error('Server authentication failed.'), false)
+          }
+          await this.releaseAgent()
           return callback(null, !!(await user.checkSignIn(credentials)))
         }
 

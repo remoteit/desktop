@@ -28,7 +28,7 @@ class Controller {
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.io = io
     this.pool = pool
-    server.releaseAgent = this.signOut
+    server.releaseAgent = this.releaseAgent
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
     EventBus.on(electronInterface.EVENTS.signOut, this.signOutRequested)
@@ -226,6 +226,15 @@ class Controller {
     Logger.info('CLEAR CREDENTIALS')
     await cli.signOut()
     await user.signOut()
+    await this.pool.clearMemory()
+  }
+
+  // No signed-out broadcast: socketio-auth 0.1.1 cannot fence unauthenticated sockets under socket.io 4,
+  // so it would reach the renderer whose switch this is and sign that account out too.
+  releaseAgent = async () => {
+    Logger.info('RELEASE AGENT')
+    await cli.signOut()
+    user.clear()
     await this.pool.clearMemory()
   }
 
