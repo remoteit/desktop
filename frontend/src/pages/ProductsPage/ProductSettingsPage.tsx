@@ -10,6 +10,7 @@ import { ProductHeaderMenu } from '../../components/ProductHeaderMenu'
 import { productDetailAttributes } from '../../components/ProductAttributes'
 import { ProductRegistrationCodes } from '../../components/ProductRegistrationCodes'
 import { getProductModel } from '../../selectors/products'
+import { selectActiveAccountId } from '../../selectors/accounts'
 import { dispatch } from '../../store'
 
 export const ProductSettingsPage: React.FC = () => {
@@ -20,14 +21,20 @@ export const ProductSettingsPage: React.FC = () => {
   const registrationCommand = product?.registrationCommand
 
   // Read once per product, and again whenever the product is replaced by one without its codes: the list query and the
-  // edit mutations do not carry them. Keyed on the product object, so each such replacement reads it again; a failed
-  // read replaces nothing, so it is not retried in a loop.
+  // edit mutations do not carry them. That re-read merges only the code fields into the store as it is then
+  // (refreshCodes), so it cannot undo a change made meanwhile; it changes nothing once the fields agree, so a read that
+  // keeps failing is not retried in a loop.
+  const accountId = useSelector(selectActiveAccountId)
   const detailed = product?.registrationCodes !== undefined
   const fetched = useRef<string>()
   useEffect(() => {
-    if (!productId || (fetched.current === productId && (detailed || !product))) return
-    fetched.current = productId
-    dispatch.products.fetchSingle(productId)
+    if (!productId) return
+    if (fetched.current !== productId) {
+      fetched.current = productId
+      dispatch.products.fetchSingle(productId)
+    } else if (product && !detailed) {
+      dispatch.products.refreshCodes({ productId, accountId })
+    }
   }, [productId, product])
 
   if (!product) {

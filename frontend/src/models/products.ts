@@ -377,7 +377,9 @@ export default createModel<RootModel>()({
       }
     ) {
       const model = state[accountId]
-      if (!model) return state
+      const product = model?.all.find(p => p.id === productId)
+      // Nothing to change keeps every object as it is, so nothing that watches the product runs again.
+      if (!product || (Object.keys(codes) as (keyof typeof codes)[]).every(key => product[key] === codes[key])) return state
       return {
         ...state,
         [accountId]: { ...model, all: model.all.map(p => (p.id === productId ? { ...p, ...codes } : p)) },
