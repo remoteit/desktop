@@ -597,7 +597,8 @@ export async function oidcReopen(): Promise<boolean> {
 
 /** Boot-time completion: when the URL carries ?code&state (web return or the desktop
  * deep-link reload), finish the exchange and clean the URL. Returns claims, or
- * undefined when this boot isn't a callback. Throws on a failed/denied flow. */
+ * undefined when this boot isn't a callback or is a stale one over a stored session.
+ * Throws on a failed/denied flow. */
 export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   const query = new URLSearchParams(window.location.search)
   const state = query.get('state')
@@ -605,7 +606,15 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
 
   const flow = takeFlow(state)
   cleanUrl()
-  if (!flow) throw new OidcError('expired', 'Sign-in state mismatch')
+  if (!flow) {
+    // A second browser tab finishing a flow the first already completed (Open browser again) lands
+    // here; with that session stored the callback is stale, and failing it showed the sign-in screen.
+    if (oidcSignedIn()) {
+      console.warn('OIDC: ignoring a sign-in callback whose flow already completed')
+      return undefined
+    }
+    throw new OidcError('expired', 'Sign-in state mismatch')
+  }
   const error = query.get('error')
   if (error) {
     const refused = new OidcError('refused', query.get('error_description') || error)

@@ -8,7 +8,7 @@ vi.stubGlobal(
   vi.fn(() => Promise.reject(new Error('offline')))
 )
 
-import { oidcReconcileIssuer, oidcSignedIn, oidcAccounts, oidcStart, oidcReopen } from './oidc'
+import { oidcReconcileIssuer, oidcSignedIn, oidcAccounts, oidcStart, oidcReopen, oidcCompleteFromUrl } from './oidc'
 import { leaveTo } from './browser'
 import { OAUTH_ISSUER } from '../constants'
 
@@ -106,5 +106,27 @@ describe('oidcReopen', () => {
   it('resolves false when no flow is outstanding', async () => {
     expect(await oidcReopen()).toBe(false)
     expect(leaveTo).not.toHaveBeenCalled()
+  })
+})
+
+describe('oidcCompleteFromUrl with no flow for the callback', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    vi.mocked(fetch).mockClear()
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    window.history.replaceState({}, '', '/?code=c2&state=already-used')
+  })
+
+  it('ignores the callback when a session is already stored, so the first tab’s sign-in stands', async () => {
+    signIn()
+    await expect(oidcCompleteFromUrl()).resolves.toBeUndefined()
+    expect(window.location.search).toBe('')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('still fails as expired when no session is stored', async () => {
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'expired' })
+    expect(window.location.search).toBe('')
   })
 })
