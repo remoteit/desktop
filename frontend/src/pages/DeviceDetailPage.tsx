@@ -10,6 +10,7 @@ import { DataDisplay } from '../components/DataDisplay'
 import { GraphItem } from '../components/GraphItem'
 import { Gutters } from '../components/Gutters'
 import { DeviceAbout } from '../components/DeviceAbout'
+import { DeviceSshAccess } from '../components/DeviceSshAccess'
 
 export const DeviceDetailPage: React.FC = () => {
   const { device } = useContext(DeviceContext)
@@ -24,6 +25,7 @@ export const DeviceDetailPage: React.FC = () => {
       <Gutters>
         <DataDisplay attributes={attributes} device={device} instance={device} limits={limits} />
         {deviceSessions && device && <DeviceAbout deviceId={device.id} />}
+        {deviceSessions && device && <DeviceSshAccess deviceId={device.id} />}
       </Gutters>
     </DeviceHeaderMenu>
   )
