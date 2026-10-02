@@ -1,52 +1,44 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { OwnedDevices } from '../hooks/useOwnedDevices'
 import { TargetPlatform } from './TargetPlatform'
-import { ColorChip } from './ColorChip'
+import { StatusChip } from './StatusChip'
+import { Notice } from './Notice'
 
-const SHOWN = 10
+type Props = { owned: OwnedDevices; title: (count: number) => string }
 
-export type OwnedDevice = { id: string; name: string; state: string; platform: number }
-
-export type OwnedDevices = { total: number; devices: OwnedDevice[]; thisDeviceOwned: boolean }
-
-export function otherOwnedDevices(owned: OwnedDevices, thisId?: string) {
-  const isThis = (device: OwnedDevice) => owned.thisDeviceOwned && device.id === thisId
-  const devices = owned.devices
-    .filter(device => !isThis(device))
-    .sort((a, b) => Number(b.state === 'active') - Number(a.state === 'active'))
-    .slice(0, SHOWN)
-  const total = owned.total - (owned.thisDeviceOwned ? 1 : 0)
-  return { devices, total, more: total - devices.length }
-}
-
-export const OwnedDevicesList: React.FC<{ owned: OwnedDevices; thisId?: string }> = ({ owned, thisId }) => {
+export const OwnedDevicesList: React.FC<Props> = ({ owned, title }) => {
   const { t } = useTranslation()
-  const { devices, more } = otherOwnedDevices(owned, thisId)
-
-  if (!devices.length) return null
+  const more = owned.total - owned.devices.length
 
   return (
     <>
-      <List dense disablePadding>
-        {devices.map(device => (
-          <ListItem key={device.id} disableGutters>
-            <ListItemIcon>
-              <TargetPlatform id={device.platform} size="md" tooltip />
-            </ListItemIcon>
-            <ListItemText primary={device.name} />
-            {device.state === 'active' ? (
-              <ColorChip label={t('statusChip.online', 'Online')} size="small" color="success" />
-            ) : (
-              <ColorChip label={t('statusChip.offline', 'Offline')} size="small" color="gray" />
-            )}
-          </ListItem>
-        ))}
-      </List>
-      {more > 0 && (
-        <Typography variant="caption" color="GrayText">
-          {t('ownedDevicesList.more', { count: more, defaultValue: 'and {{count}} more' })}
-        </Typography>
+      {owned.devices.length > 0 && (
+        <Box marginTop={2}>
+          <Typography variant="h5">{title(owned.total)}</Typography>
+          <List dense disablePadding>
+            {owned.devices.map(device => (
+              <ListItem key={device.id} disableGutters>
+                <ListItemIcon>
+                  <TargetPlatform id={device.platform} size="md" tooltip />
+                </ListItemIcon>
+                <ListItemText primary={device.name} />
+                <StatusChip device={{ state: device.state, services: [] } as unknown as IDevice} />
+              </ListItem>
+            ))}
+          </List>
+          {more > 0 && (
+            <Typography variant="caption" color="GrayText">
+              {t('ownedDevicesList.more', { count: more, defaultValue: 'and {{count}} more' })}
+            </Typography>
+          )}
+        </Box>
+      )}
+      {owned.thisDeviceOwned && (
+        <Notice severity="info" fullWidth gutterTop>
+          {t('ownedDevicesList.thisDevice', 'This device is unregistered automatically when you delete your account.')}
+        </Notice>
       )}
     </>
   )

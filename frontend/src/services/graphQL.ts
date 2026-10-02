@@ -21,7 +21,7 @@ export async function graphQLPartialRequest(query: String, variables: ILookup<an
   return resolved ? response : 'ERROR'
 }
 
-export type GraphQLInlineResult = { ok: boolean; code?: string; message?: string }
+export type GraphQLInlineResult = { ok: boolean; code?: string; message?: string; args?: unknown }
 
 export async function graphQLInlineRequest(query: String, variables: ILookup<any> = {}): Promise<GraphQLInlineResult> {
   const response = await post({ query, variables })
@@ -29,8 +29,7 @@ export async function graphQLInlineRequest(query: String, variables: ILookup<any
   const errors = graphQLGetErrors(response, true)
   if (!errors) return { ok: true }
   const { message, extensions } = errors[0] as Error & { extensions?: { code?: string; args?: unknown } }
-  const args = extensions?.args
-  return { ok: false, code: extensions?.code, message: Array.isArray(args) ? args.join(' ') : message }
+  return { ok: false, code: extensions?.code, message, args: extensions?.args }
 }
 
 export function graphQLGetErrors(

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector, useStore } from 'react-redux'
 import {
   Box,
   Button,
@@ -18,16 +18,18 @@ import {
 import { Dispatch, State } from '../store'
 import { graphQLDeleteAccount, graphQLRequestAccountDeletion } from '../services/graphQLMutation'
 import { GraphQLInlineResult } from '../services/graphQL'
-import { OwnedDevices, OwnedDevicesList, otherOwnedDevices } from './OwnedDevicesList'
+import { OwnedDevices } from '../hooks/useOwnedDevices'
+import { OwnedDevicesList } from './OwnedDevicesList'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 import { spacing } from '../styling'
-import sleep from '../helpers/sleep'
+import sleep, { withTimeout } from '../helpers/sleep'
 
 const CODE_LENGTH = 6
 const MAX_ATTEMPTS = 5
 const SIGN_OUT_DELAY = 3000
+const FEEDBACK_TIMEOUT = 10000
 
 type Step = 'devices' | 'feedback' | 'confirm' | 'done'
 type Busy = 'sending' | 'unregistering' | 'deleting'
@@ -35,16 +37,15 @@ type Busy = 'sending' | 'unregistering' | 'deleting'
 type Props = {
   open: boolean
   owned?: OwnedDevices
-  thisId?: string
   onShowInstructions: () => void
   onClose: () => void
 }
 
-export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onShowInstructions, onClose }) => {
+export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, onShowInstructions, onClose }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
+  const store = useStore<State>()
   const user = useSelector((state: State) => state.user)
-  const connections = useSelector((state: State) => state.connections.all)
   const [step, setStep] = useState<Step>('devices')
   const [acknowledged, setAcknowledged] = useState(false)
   const [reasons, setReasons] = useState<string[]>([])
@@ -56,9 +57,8 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
   const [busy, setBusy] = useState<Busy>()
   const [error, setError] = useState<string>()
 
-  const unregisterThisDevice = !!(owned?.thisDeviceOwned && thisId)
-  const others = owned && otherOwnedDevices(owned, thisId)
   const locked = !!busy || step === 'done'
+  const ready = !busy && (!codeSent || code.length === CODE_LENGTH)
 
   const REASONS = [
     t('deleteAccountSection.reasonUnsupportedDevice', 'My device isn’t supported'),
@@ -74,20 +74,12 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
     t('deleteAccountSection.reasonUsingSomethingElse', 'Using something else'),
   ]
 
-  useEffect(() => {
-    if (!open) return
-    setStep('devices')
-    setAcknowledged(false)
-    setCodeSent(false)
-    setCode('')
-    setFailures(0)
-    setError(undefined)
-  }, [open])
-
-  const refusal = (result: GraphQLInlineResult) =>
-    result.message
-      ? result.message.charAt(0).toUpperCase() + result.message.slice(1)
+  const refusal = ({ message, args }: GraphQLInlineResult) => {
+    const reason = Array.isArray(args) ? args.join(' ') : message
+    return reason
+      ? reason.charAt(0).toUpperCase() + reason.slice(1)
       : t('deleteAccountDialog.genericError', 'Something went wrong. Please try again.')
+  }
 
   const goTo = (next: Step) => {
     setError(undefined)
@@ -123,7 +115,7 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
           day: 'numeric',
           year: 'numeric',
         }),
-        lastConnections: connections.slice(0, 5),
+        lastConnections: store.getState().connections.all.slice(0, 5),
       },
       snackbar: t('deleteAccountDialog.doneTitle', 'Your account has been deleted'),
     })
@@ -133,7 +125,7 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
   const deleteAccount = async () => {
     setError(undefined)
 
-    if (unregisterThisDevice) {
+    if (owned?.thisDeviceOwned) {
       setBusy('unregistering')
       if (!(await dispatch.backend.unregisterThisDevice())) {
         setBusy(undefined)
@@ -150,23 +142,25 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
     const result = await graphQLDeleteAccount(code)
     setBusy(undefined)
 
-    if (!result.ok) {
-      const attempts = result.code === 'NOT_AUTHORIZED' ? failures + 1 : MAX_ATTEMPTS
+    if (result.code === 'NOT_AUTHORIZED') {
+      const attempts = failures + 1
       setFailures(attempts)
       setCode('')
       if (attempts < MAX_ATTEMPTS)
         return setError(t('deleteAccountDialog.invalidCode', 'That code is incorrect or has expired.'))
       setCodeSent(false)
       return setError(
-        result.code === 'NOT_AUTHORIZED'
-          ? t('deleteAccountDialog.tooManyAttempts', 'Too many incorrect codes. Request a new code to try again.')
-          : refusal(result)
+        t('deleteAccountDialog.tooManyAttempts', 'Too many incorrect codes. Request a new code to try again.')
       )
     }
 
+    if (!result.ok) {
+      if (result.code) setCodeSent(false)
+      return setError(refusal(result))
+    }
+
     setStep('done')
-    await sendFeedback()
-    await sleep(SIGN_OUT_DELAY)
+    await Promise.all([withTimeout(sendFeedback(), FEEDBACK_TIMEOUT), sleep(SIGN_OUT_DELAY)])
     dispatch.auth.signOut()
   }
 
@@ -195,6 +189,16 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
     { icon: 'sign-out', text: t('deleteAccountDialog.consequenceSignIn', 'Your sign-in and access keys stop working') },
   ]
 
+  const actions = (left: React.ReactNode, primary: React.ReactNode) => (
+    <DialogActions sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+      <Box marginRight="auto">{left}</Box>
+      <Button disabled={!!busy} onClick={onClose}>
+        {t('common.cancel', 'Cancel')}
+      </Button>
+      {primary}
+    </DialogActions>
+  )
+
   return (
     <Dialog open={open} onClose={locked ? undefined : onClose} maxWidth="sm" fullWidth>
       {step === 'devices' && (
@@ -209,21 +213,13 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
                 "Deleting your account removes your devices from it, but it doesn't uninstall Remote.It. The software keeps running on every device it's installed on until you remove it."
               )}
             </Typography>
-            {owned && others && others.devices.length > 0 && (
-              <Box marginTop={2}>
-                <Typography variant="h5">
-                  {t('deleteAccountDialog.devicesOwned', {
-                    count: others.total,
-                    defaultValue: 'You own {{count}} devices',
-                  })}
-                </Typography>
-                <OwnedDevicesList owned={owned} thisId={thisId} />
-              </Box>
-            )}
-            {unregisterThisDevice && (
-              <Notice severity="info" fullWidth gutterTop>
-                {t('deleteAccountDialog.thisDevice', 'This device will be unregistered when your account is deleted.')}
-              </Notice>
+            {owned && (
+              <OwnedDevicesList
+                owned={owned}
+                title={count =>
+                  t('deleteAccountDialog.devicesOwned', { count, defaultValue: 'You own {{count}} devices' })
+                }
+              />
             )}
             <Box marginTop={2}>
               <ListItemCheckbox
@@ -237,15 +233,14 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
               />
             </Box>
           </DialogContent>
-          <DialogActions sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-            <Button onClick={onShowInstructions} sx={{ marginRight: 'auto' }}>
+          {actions(
+            <Button onClick={onShowInstructions}>
               {t('deleteAccountSection.removeButton', 'How to remove Remote.It')}
-            </Button>
-            <Button onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+            </Button>,
             <Button variant="contained" color="error" disabled={!acknowledged} onClick={() => goTo('feedback')}>
               {t('common.continue', 'Continue')}
             </Button>
-          </DialogActions>
+          )}
         </>
       )}
 
@@ -307,15 +302,12 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
               onClick={setContact}
             />
           </DialogContent>
-          <DialogActions sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-            <Button onClick={() => goTo('devices')} sx={{ marginRight: 'auto' }}>
-              {t('common.back', 'Back')}
-            </Button>
-            <Button onClick={onClose}>{t('common.cancel', 'Cancel')}</Button>
+          {actions(
+            <Button onClick={() => goTo('devices')}>{t('common.back', 'Back')}</Button>,
             <Button variant="contained" color="error" onClick={() => goTo('confirm')}>
               {t('common.continue', 'Continue')}
             </Button>
-          </DialogActions>
+          )}
         </>
       )}
 
@@ -358,7 +350,7 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
                         .slice(0, CODE_LENGTH)
                     )
                   }
-                  onKeyDown={e => e.key === 'Enter' && code.length === CODE_LENGTH && !busy && deleteAccount()}
+                  onKeyDown={e => e.key === 'Enter' && ready && deleteAccount()}
                   inputProps={{
                     maxLength: CODE_LENGTH,
                     autoComplete: 'one-time-code',
@@ -383,28 +375,18 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, thisId, onSh
               </Notice>
             )}
           </DialogContent>
-          <DialogActions sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-            <Button disabled={!!busy} onClick={() => goTo('feedback')} sx={{ marginRight: 'auto' }}>
+          {actions(
+            <Button disabled={!!busy} onClick={() => goTo('feedback')}>
               {t('common.back', 'Back')}
+            </Button>,
+            <Button variant="contained" color="error" disabled={!ready} onClick={codeSent ? deleteAccount : sendCode}>
+              {busy
+                ? busyLabel[busy]
+                : codeSent
+                ? t('deleteAccountDialog.deleteButton', 'Delete account permanently')
+                : t('deleteAccountDialog.sendCode', 'Email me a code')}
             </Button>
-            <Button disabled={!!busy} onClick={onClose}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-            {codeSent ? (
-              <Button
-                variant="contained"
-                color="error"
-                disabled={!!busy || code.length !== CODE_LENGTH}
-                onClick={deleteAccount}
-              >
-                {busy ? busyLabel[busy] : t('deleteAccountDialog.deleteButton', 'Delete account permanently')}
-              </Button>
-            ) : (
-              <Button variant="contained" color="error" disabled={!!busy} onClick={sendCode}>
-                {busy ? busyLabel[busy] : t('deleteAccountDialog.sendCode', 'Email me a code')}
-              </Button>
-            )}
-          </DialogActions>
+          )}
         </>
       )}
 

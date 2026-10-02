@@ -1,52 +1,33 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { Typography, Button, Stack } from '@mui/material'
 import { State } from '../store'
-import { isPersonal } from '../models/plans'
-import { getUserId } from '../selectors/state'
-import { graphQLFetchOwnedDevices } from '../services/graphQLDevice'
+import { PERSONAL_PLAN_ID } from '../models/plans'
+import { getOwnOrganization } from '../models/organization'
+import { selectRemoteitLicense } from '../selectors/organizations'
+import { useOwnedDevices } from '../hooks/useOwnedDevices'
 import { RemoveRemoteitDialog } from './RemoveRemoteitDialog'
 import { DeleteAccountDialog } from './DeleteAccountDialog'
-import { OwnedDevices } from './OwnedDevicesList'
 import { Gutters } from './Gutters'
 import { Notice } from './Notice'
 import { Link } from './Link'
 
-function useOwnedDevices(userId: string, thisId?: string) {
-  const [owned, setOwned] = useState<OwnedDevices>()
-
-  useEffect(() => {
-    if (!userId) return
-    let current = true
-    graphQLFetchOwnedDevices(userId, thisId).then(result => {
-      if (!current || result === 'ERROR') return
-      const login = result.data?.data?.login
-      const devices = login?.account?.devices
-      setOwned({
-        total: devices?.total || 0,
-        devices: devices?.items || [],
-        thisDeviceOwned: !!login?.device?.some((device: { owner?: { id: string } }) => device.owner?.id === userId),
-      })
-    })
-    return () => {
-      current = false
-    }
-  }, [userId, thisId])
-
-  return owned
-}
-
 export const DeleteAccountSection: React.FC = () => {
   const { t } = useTranslation()
-  const userId = useSelector(getUserId)
-  const thisId = useSelector((state: State) => state.backend.thisId)
-  const paidPlan = useSelector((state: State) => !isPersonal(state))
-  const members = useSelector(
-    (state: State) => state.organization.accounts[userId]?.members.filter(m => m.user.id !== userId).length || 0
-  )
-  const owned = useOwnedDevices(userId, thisId)
+  const userId = useSelector((state: State) => state.user.id)
+  const license = useSelector((state: State) => selectRemoteitLicense(state, state.user.id))
+  const members = useSelector((state: State) => getOwnOrganization(state).members)
   const [dialog, setDialog] = useState<'remove' | 'delete'>()
+  const [opened, setOpened] = useState(0)
+  const owned = useOwnedDevices(!!dialog)
+  const paidPlan = !!license && license.plan.id !== PERSONAL_PLAN_ID
+  const otherMembers = members.filter(member => member.user.id !== userId).length
+
+  const openDelete = () => {
+    setOpened(opened + 1)
+    setDialog('delete')
+  }
   const close = () => setDialog(undefined)
 
   return (
@@ -59,10 +40,10 @@ export const DeleteAccountSection: React.FC = () => {
           </Link>
         </Notice>
       )}
-      {members > 0 && (
+      {otherMembers > 0 && (
         <Notice severity="info" fullWidth gutterBottom>
           {t('deleteAccountSection.membersNotice', {
-            count: members,
+            count: otherMembers,
             defaultValue: 'Your organization has {{count}} other members.',
           })}{' '}
           <Link to="/organization/members">
@@ -80,15 +61,15 @@ export const DeleteAccountSection: React.FC = () => {
         <Button variant="contained" size="small" onClick={() => setDialog('remove')}>
           {t('deleteAccountSection.removeButton', 'How to remove Remote.It')}
         </Button>
-        <Button color="error" size="small" disabled={paidPlan || members > 0} onClick={() => setDialog('delete')}>
+        <Button color="error" size="small" onClick={openDelete}>
           {t('deleteAccountSection.deleteButton', 'Delete my account')}
         </Button>
       </Stack>
-      <RemoveRemoteitDialog open={dialog === 'remove'} owned={owned} thisId={thisId} onClose={close} />
+      <RemoveRemoteitDialog open={dialog === 'remove'} owned={owned} onClose={close} />
       <DeleteAccountDialog
+        key={opened}
         open={dialog === 'delete'}
         owned={owned}
-        thisId={thisId}
         onShowInstructions={() => setDialog('remove')}
         onClose={close}
       />

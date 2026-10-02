@@ -701,7 +701,6 @@
     "resendCode": "新しいコードを送信",
     "sendCode": "コードをメールで受け取る",
     "sending": "送信中…",
-    "thisDevice": "アカウントを削除すると、このデバイスの登録は解除されます。",
     "tooManyAttempts": "誤ったコードの入力が多すぎます。新しいコードをリクエストしてやり直してください。",
     "unregisterFailed": "このデバイスの登録を解除できなかったため、アカウントは削除されていません。もう一度お試しいただくか、先にデバイスのページからこのデバイスの登録を解除してください。",
     "unregistering": "このデバイスの登録を解除中…"
@@ -1603,7 +1602,8 @@
     "settings": "設定"
   },
   "ownedDevicesList": {
-    "more_other": "他 {{count}} 台"
+    "more_other": "他 {{count}} 台",
+    "thisDevice": "このデバイスは、アカウントを削除すると自動的に登録解除されます。"
   },
   "partnerStatsDetailPanel": {
     "activated": "有効化済み",
@@ -1862,7 +1862,6 @@
     "localAccess": "デバイス本体またはローカルネットワーク経由でアンインストールしてください。Remote.It の接続を使って Remote.It を削除すると、その接続はすぐに切断されます。",
     "openwrt": "OpenWrt",
     "otherDevices": "その他のデバイスの手順",
-    "thisDevice": "このデバイスは、アカウントを削除すると自動的に登録解除されます。",
     "title": "デバイスから Remote.It を削除する",
     "yourDevices_other": "所有デバイス ({{count}})"
   },

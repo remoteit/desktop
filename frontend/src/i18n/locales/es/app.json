@@ -711,7 +711,6 @@
     "resendCode": "Enviar un código nuevo",
     "sendCode": "Enviarme un código",
     "sending": "Enviando…",
-    "thisDevice": "Se anulará el registro de este dispositivo cuando se elimine tu cuenta.",
     "tooManyAttempts": "Demasiados códigos incorrectos. Solicita un código nuevo para volver a intentarlo.",
     "unregisterFailed": "No se pudo anular el registro de este dispositivo, así que tu cuenta no se eliminó. Inténtalo de nuevo o anula primero el registro desde la página del dispositivo.",
     "unregistering": "Anulando el registro de este dispositivo…"
@@ -1639,7 +1638,8 @@
   "ownedDevicesList": {
     "more_one": "y {{count}} más",
     "more_many": "y {{count}} más",
-    "more_other": "y {{count}} más"
+    "more_other": "y {{count}} más",
+    "thisDevice": "El registro de este dispositivo se anula automáticamente cuando eliminas tu cuenta."
   },
   "partnerStatsDetailPanel": {
     "activated": "Activado",
@@ -1914,7 +1914,6 @@
     "localAccess": "Desinstálalo desde el propio dispositivo o a través de tu red local. Si quitas Remote.It mediante una conexión de Remote.It, esa conexión se corta de inmediato.",
     "openwrt": "OpenWrt",
     "otherDevices": "Instrucciones para otros dispositivos",
-    "thisDevice": "El registro de este dispositivo se anula automáticamente cuando eliminas tu cuenta.",
     "title": "Quitar Remote.It de tus dispositivos",
     "yourDevices_one": "Tus dispositivos ({{count}})",
     "yourDevices_many": "Tus dispositivos ({{count}})",

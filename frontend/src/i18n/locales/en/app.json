@@ -706,7 +706,6 @@
     "resendCode": "Send a new code",
     "sendCode": "Email me a code",
     "sending": "Sending…",
-    "thisDevice": "This device will be unregistered when your account is deleted.",
     "tooManyAttempts": "Too many incorrect codes. Request a new code to try again.",
     "unregisterFailed": "This device couldn't be unregistered, so your account was not deleted. Try again, or unregister this device from its device page first.",
     "unregistering": "Unregistering this device…"
@@ -1621,7 +1620,8 @@
   },
   "ownedDevicesList": {
     "more_one": "and {{count}} more",
-    "more_other": "and {{count}} more"
+    "more_other": "and {{count}} more",
+    "thisDevice": "This device is unregistered automatically when you delete your account."
   },
   "partnerStatsDetailPanel": {
     "activated": "Activated",
@@ -1888,7 +1888,6 @@
     "localAccess": "Uninstall from the device itself or over your local network. Removing Remote.It through a Remote.It connection ends that connection right away.",
     "openwrt": "OpenWrt",
     "otherDevices": "Instructions for other devices",
-    "thisDevice": "This device is unregistered automatically when you delete your account.",
     "title": "Remove Remote.It from your devices",
     "yourDevices_one": "Your devices ({{count}})",
     "yourDevices_other": "Your devices ({{count}})"

@@ -312,13 +312,13 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, accountId }: g
   )
 }
 
-export async function graphQLFetchOwnedDevices(accountId: string, thisId?: string) {
+export async function graphQLFetchOwnedDevices(accountId: string, size: number, thisId?: string) {
   return await graphQLBasicRequest(
     ` query OwnedDevices($accountId: String, $size: Int${thisId ? ', $thisId: [String!]!' : ''}) {
         login {
           id
           account(id: $accountId) {
-            devices(owner: true, size: $size) {
+            devices(owner: true, size: $size, sort: "state,name") {
               total
               items { id name state platform }
             }
@@ -326,7 +326,7 @@ export async function graphQLFetchOwnedDevices(accountId: string, thisId?: strin
           ${thisId ? 'device(id: $thisId) { id owner { id } }' : ''}
         }
       }`,
-    { accountId, size: 100, thisId: thisId ? [thisId] : undefined }
+    { accountId, size, thisId: thisId ? [thisId] : undefined }
   )
 }
 

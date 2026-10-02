@@ -706,7 +706,6 @@
     "resendCode": "Neuen Code senden",
     "sendCode": "Code per E-Mail senden",
     "sending": "Wird gesendet…",
-    "thisDevice": "Die Registrierung dieses Geräts wird aufgehoben, wenn Ihr Konto gelöscht wird.",
     "tooManyAttempts": "Zu viele falsche Codes. Fordern Sie einen neuen Code an, um es erneut zu versuchen.",
     "unregisterFailed": "Die Registrierung dieses Geräts konnte nicht aufgehoben werden, daher wurde Ihr Konto nicht gelöscht. Versuchen Sie es erneut oder heben Sie die Registrierung zuerst auf der Seite des Geräts auf.",
     "unregistering": "Registrierung dieses Geräts wird aufgehoben…"
@@ -1621,7 +1620,8 @@
   },
   "ownedDevicesList": {
     "more_one": "und {{count}} weiteres",
-    "more_other": "und {{count}} weitere"
+    "more_other": "und {{count}} weitere",
+    "thisDevice": "Die Registrierung dieses Geräts wird automatisch aufgehoben, wenn Sie Ihr Konto löschen."
   },
   "partnerStatsDetailPanel": {
     "activated": "Aktiviert",
@@ -1888,7 +1888,6 @@
     "localAccess": "Deinstallieren Sie direkt am Gerät oder über Ihr lokales Netzwerk. Wenn Sie Remote.It über eine Remote.It-Verbindung entfernen, wird diese Verbindung sofort getrennt.",
     "openwrt": "OpenWrt",
     "otherDevices": "Anleitungen für andere Geräte",
-    "thisDevice": "Die Registrierung dieses Geräts wird automatisch aufgehoben, wenn Sie Ihr Konto löschen.",
     "title": "Remote.It von Ihren Geräten entfernen",
     "yourDevices_one": "Ihre Geräte ({{count}})",
     "yourDevices_other": "Ihre Geräte ({{count}})"

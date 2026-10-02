@@ -10,13 +10,19 @@ const dispatch = vi.hoisted(() => ({
 }))
 vi.mock('../services/graphQLMutation', () => api)
 vi.mock('../store', () => ({}))
-vi.mock('../helpers/sleep', () => ({ default: () => Promise.resolve() }))
-vi.mock('./TargetPlatform', () => ({ TargetPlatform: () => null }))
-vi.mock('react-redux', () => ({
-  useDispatch: () => dispatch,
-  useSelector: (select: (state: any) => any) =>
-    select({ user: { id: 'ME', email: 'me@example.com', created: new Date(0) }, connections: { all: [] } }),
+vi.mock('../helpers/sleep', () => ({
+  default: () => Promise.resolve(),
+  withTimeout: (promise: Promise<any>) => promise,
 }))
+vi.mock('./TargetPlatform', () => ({ TargetPlatform: () => null }))
+vi.mock('react-redux', () => {
+  const state = { user: { id: 'ME', email: 'me@example.com', created: new Date(0) }, connections: { all: [] } }
+  return {
+    useDispatch: () => dispatch,
+    useStore: () => ({ getState: () => state }),
+    useSelector: (select: (state: any) => any) => select(state),
+  }
+})
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
@@ -32,19 +38,17 @@ import { ThemeProvider } from '@mui/material'
 import { createTheme } from '@mui/material/styles'
 import { jssTheme } from '../styling/theme'
 import { DeleteAccountDialog } from './DeleteAccountDialog'
-import { OwnedDevices } from './OwnedDevicesList'
+import { OwnedDevices } from '../hooks/useOwnedDevices'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
 const theme = createTheme(jssTheme(false))
-const THIS_ID = 'THIS'
 const owned = (thisDeviceOwned: boolean): OwnedDevices => ({
-  total: 3,
+  total: 2,
   thisDeviceOwned,
   devices: [
-    { id: 'OFF', name: 'Offline NAS', state: 'inactive', platform: 0 },
-    { id: THIS_ID, name: 'This laptop', state: 'active', platform: 0 },
     { id: 'ON', name: 'Online Pi', state: 'active', platform: 0 },
+    { id: 'OFF', name: 'Offline NAS', state: 'inactive', platform: 0 },
   ],
 })
 
@@ -62,6 +66,8 @@ const click = async (label: string) => {
   await act(async () => button(label).click())
   await flush()
 }
+const check = (index = 0) =>
+  act(async () => (dialog().querySelectorAll('input[type=checkbox]')[index] as HTMLInputElement).click())
 const typeCode = async (code: string) => {
   const input = dialog().querySelector('input[autocomplete=one-time-code]') as HTMLInputElement
   await act(async () => {
@@ -69,29 +75,31 @@ const typeCode = async (code: string) => {
     input.dispatchEvent(new Event('input', { bubbles: true }))
   })
 }
-const render = async (devices = owned(true), thisId = THIS_ID) => {
+const render = async (devices = owned(true)) => {
   await act(async () =>
     root.render(
       <ThemeProvider theme={theme}>
-        <DeleteAccountDialog open owned={devices} thisId={thisId} onShowInstructions={vi.fn()} onClose={vi.fn()} />
+        <DeleteAccountDialog open owned={devices} onShowInstructions={vi.fn()} onClose={vi.fn()} />
       </ThemeProvider>
     )
   )
   await flush()
 }
-const toConfirm = async () => {
-  await act(async () => (dialog().querySelector('input[type=checkbox]') as HTMLInputElement).click())
+const toFeedback = async () => {
+  await check()
   await click('Continue')
+}
+const toConfirm = async () => {
   await click('Continue')
   await click('Email me a code')
 }
+const submit = async (code = 'ABC234') => {
+  await typeCode(code)
+  await click('Delete account permanently')
+}
 
 beforeEach(() => {
-  Object.values(api).forEach(fn => fn.mockReset())
-  dispatch.backend.unregisterThisDevice.mockReset()
-  dispatch.feedback.set.mockReset()
-  dispatch.feedback.sendFeedback.mockReset()
-  dispatch.auth.signOut.mockReset()
+  vi.resetAllMocks()
   api.graphQLRequestAccountDeletion.mockResolvedValue({ ok: true })
   container = document.createElement('div')
   document.body.appendChild(container)
@@ -103,13 +111,16 @@ afterEach(() => {
 })
 
 describe('DeleteAccountDialog', () => {
-  it('holds Continue until the person accepts that Remote.It stays on their other devices', async () => {
+  it('holds Continue until the person accepts that Remote.It stays on their devices', async () => {
     await render()
-    const names = [...dialog().querySelectorAll('li')].map(item => item.textContent)
-    expect(names).toEqual(['Online PiOnline', 'Offline NASOffline'])
+    expect([...dialog().querySelectorAll('li')].map(item => item.textContent)).toEqual([
+      'Online PiOnline',
+      'Offline NASOffline',
+    ])
     expect(dialog().textContent).toContain('You own 2 devices')
+    expect(dialog().textContent).toContain('This device is unregistered automatically')
     expect(button('Continue').disabled).toBe(true)
-    await act(async () => (dialog().querySelector('input[type=checkbox]') as HTMLInputElement).click())
+    await check()
     expect(button('Continue').disabled).toBe(false)
   })
 
@@ -117,9 +128,9 @@ describe('DeleteAccountDialog', () => {
     dispatch.backend.unregisterThisDevice.mockResolvedValue(true)
     api.graphQLDeleteAccount.mockResolvedValue({ ok: true })
     await render()
+    await toFeedback()
     await toConfirm()
-    await typeCode('abc234')
-    await click('Delete account permanently')
+    await submit('abc234')
 
     expect(api.graphQLDeleteAccount).toHaveBeenCalledWith('ABC234')
     expect(dispatch.backend.unregisterThisDevice.mock.invocationCallOrder[0]).toBeLessThan(
@@ -133,9 +144,9 @@ describe('DeleteAccountDialog', () => {
   it('never deletes the account when this device could not be unregistered', async () => {
     dispatch.backend.unregisterThisDevice.mockResolvedValue(false)
     await render()
+    await toFeedback()
     await toConfirm()
-    await typeCode('ABC234')
-    await click('Delete account permanently')
+    await submit()
 
     expect(api.graphQLDeleteAccount).not.toHaveBeenCalled()
     expect(dialog().textContent).toContain("This device couldn't be unregistered")
@@ -145,9 +156,9 @@ describe('DeleteAccountDialog', () => {
   it('leaves a device registered to someone else alone', async () => {
     api.graphQLDeleteAccount.mockResolvedValue({ ok: true })
     await render(owned(false))
+    await toFeedback()
     await toConfirm()
-    await typeCode('ABC234')
-    await click('Delete account permanently')
+    await submit()
 
     expect(dispatch.backend.unregisterThisDevice).not.toHaveBeenCalled()
     expect(api.graphQLDeleteAccount).toHaveBeenCalled()
@@ -156,14 +167,13 @@ describe('DeleteAccountDialog', () => {
   it('asks for a new code after the fifth wrong one', async () => {
     api.graphQLDeleteAccount.mockResolvedValue({ ok: false, code: 'NOT_AUTHORIZED', message: 'Not Authorized' })
     await render(owned(false))
+    await toFeedback()
     await toConfirm()
     for (let attempt = 1; attempt <= 4; attempt++) {
-      await typeCode('ABC234')
-      await click('Delete account permanently')
+      await submit()
       expect(dialog().textContent).toContain('That code is incorrect or has expired.')
     }
-    await typeCode('ABC234')
-    await click('Delete account permanently')
+    await submit()
 
     expect(api.graphQLDeleteAccount).toHaveBeenCalledTimes(5)
     expect(dialog().textContent).toContain('Too many incorrect codes')
@@ -174,28 +184,40 @@ describe('DeleteAccountDialog', () => {
     api.graphQLDeleteAccount.mockResolvedValue({
       ok: false,
       code: 'INVALID_ARGUMENT',
-      message: 'your subscription is still active — cancel it first',
+      message: 'Invalid Arguments: your subscription is still active — cancel it first',
+      args: ['your subscription is still active — cancel it first'],
     })
     await render(owned(false))
+    await toFeedback()
     await toConfirm()
-    await typeCode('ABC234')
-    await click('Delete account permanently')
+    await submit()
 
     expect(dialog().textContent).toContain('Your subscription is still active — cancel it first')
+    expect(dialog().textContent).not.toContain('Invalid Arguments')
     expect(button('Email me a code')).toBeTruthy()
     expect(dispatch.auth.signOut).not.toHaveBeenCalled()
+  })
+
+  it('keeps the code after a network failure, so the person can retry it', async () => {
+    api.graphQLDeleteAccount.mockResolvedValueOnce({ ok: false }).mockResolvedValueOnce({ ok: true })
+    await render(owned(false))
+    await toFeedback()
+    await toConfirm()
+    await submit()
+
+    expect(dialog().textContent).toContain('Something went wrong. Please try again.')
+    await click('Delete account permanently')
+    expect(api.graphQLDeleteAccount).toHaveBeenLastCalledWith('ABC234')
+    expect(dispatch.auth.signOut).toHaveBeenCalled()
   })
 
   it('sends the survey only when the person filled it in', async () => {
     api.graphQLDeleteAccount.mockResolvedValue({ ok: true })
     await render(owned(false))
-    await act(async () => (dialog().querySelector('input[type=checkbox]') as HTMLInputElement).click())
-    await click('Continue')
-    await act(async () => (dialog().querySelectorAll('input[type=checkbox]')[0] as HTMLInputElement).click())
-    await click('Continue')
-    await click('Email me a code')
-    await typeCode('ABC234')
-    await click('Delete account permanently')
+    await toFeedback()
+    await check()
+    await toConfirm()
+    await submit()
 
     expect(dispatch.feedback.set).toHaveBeenCalledWith(
       expect.objectContaining({
