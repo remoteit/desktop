@@ -109,20 +109,25 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
           <Timestamp date={new Date(about.hardwareChanged)} variant="minutes" />
         </Notice>
       )}
-      <Section title={t('deviceAbout.system', 'System')} rows={system} />
+      <Section
+        title={t('deviceAbout.system', 'System')}
+        rows={system}
+        action={
+          about && (
+            <Button size="small" onClick={() => setDetails(true)}>
+              {t('deviceAbout.viewDetails', 'View details')}
+            </Button>
+          )
+        }
+      />
       <Section title={t('deviceAbout.identifiers', 'Identifiers')} rows={identifiers} />
       <Section title={t('deviceAbout.declaredProduct', 'Product — declared by the manufacturer')} rows={product} />
       <Section title={t('deviceAbout.software', 'Software')} rows={software} />
       {about && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, paddingBottom: 1 }}>
-          <Typography variant="caption" color="grayDark.main">
-            {t('deviceAbout.reported', 'As the device last reported it')}{' '}
-            <Timestamp date={new Date(about.reported)} variant="minutes" />
-          </Typography>
-          <Button size="small" onClick={() => setDetails(true)}>
-            {t('deviceAbout.viewDetails', 'View details')}
-          </Button>
-        </Box>
+        <Typography variant="caption" color="grayDark.main" component="p" sx={{ paddingBottom: 1 }}>
+          {t('deviceAbout.reported', 'As the device last reported it')}{' '}
+          <Timestamp date={new Date(about.reported)} variant="minutes" />
+        </Typography>
       )}
       {about && <AboutDetails open={details} data={about.data} onClose={() => setDetails(false)} />}
       {!!history.length && (
@@ -183,12 +188,15 @@ const AboutDetails: React.FC<{ open: boolean; data: ILookup<any>; onClose: () =>
   )
 }
 
-const Section: React.FC<{ title: string; rows: Row[] }> = ({ title, rows }) => {
+const Section: React.FC<{ title: string; rows: Row[]; action?: React.ReactNode }> = ({ title, rows, action }) => {
   const shown = rows.filter(([, value]) => value != null && value !== '')
   if (!shown.length) return null
   return (
     <List dense sx={{ paddingBottom: 1 }}>
-      <ListSubheader disableGutters>{title}</ListSubheader>
+      <ListSubheader disableGutters sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {title}
+        {action}
+      </ListSubheader>
       {shown.map(([label, value]) => (
         <ListItem key={label} disableGutters sx={{ alignItems: 'flex-start' }}>
           <Box component="span" sx={{ color: 'grayDark.main', minWidth: 160 }}>
