@@ -112,8 +112,9 @@ The login server and every endpoint it signs for come from one **stage** (`STAGE
 `frontend/src/constants.ts`): production for a plain version, dev for a version containing `alpha`
 or `beta`. A tester switches stage under Settings → Test Settings → API Target, which signs out and
 reloads onto the other login server, and the sign-in screen of a dev stage offers the way back to
-production. Setting `VITE_OAUTH_ISSUER` in `.env` pins the build to that login server and turns the
-switch off; the other `VITE_OAUTH_*` variables still override single endpoints.
+production. Setting any endpoint variable in `.env` (`VITE_OAUTH_*` resources, `VITE_GRAPHQL_API`,
+`VITE_WEBSOCKET_URL`, `VITE_AGENT_URL`) pins the build and turns the switch off, so a login server
+and an endpoint can never come from different stages.
 
 Leave `VITE_OAUTH_CLIENT_ID` as `remoteit_desktop` locally. Redirect URIs are registered
 **per client**: the deployed AI portal uses `remoteit_portal_ai`, which only has

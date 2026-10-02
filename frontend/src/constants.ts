@@ -34,8 +34,9 @@ export const STAGES = {
   },
 }
 export type StageName = keyof typeof STAGES
+export const STAGE_NAMES = Object.keys(STAGES) as StageName[]
 export const STAGE_KEY = 'r3.stage'
-export const isStage = (value: unknown): value is StageName =>
+const isStage = (value: unknown): value is StageName =>
   typeof value === 'string' && Object.prototype.hasOwnProperty.call(STAGES, value)
 export const DEFAULT_STAGE: StageName = /alpha|beta/.test(pkg.version) ? 'dev' : 'prod'
 export function readStage(): StageName {
@@ -46,9 +47,17 @@ export function readStage(): StageName {
     return DEFAULT_STAGE
   }
 }
-export const STAGE_PINNED = !!env.VITE_OAUTH_ISSUER
+export const STAGE_PINNED = [
+  env.VITE_OAUTH_ISSUER,
+  env.VITE_OAUTH_GRAPHQL_RESOURCE,
+  env.VITE_OAUTH_AGENT_RESOURCE,
+  env.VITE_OAUTH_MCP_RESOURCE,
+  env.VITE_GRAPHQL_API,
+  env.VITE_WEBSOCKET_URL,
+  env.VITE_AGENT_URL,
+].some(Boolean)
 export const STAGE: StageName | undefined = STAGE_PINNED
-  ? (Object.keys(STAGES) as StageName[]).find(name => STAGES[name].issuer === env.VITE_OAUTH_ISSUER)
+  ? STAGE_NAMES.find(name => STAGES[name].issuer === env.VITE_OAUTH_ISSUER)
   : readStage()
 const stage = STAGES[STAGE ?? 'prod']
 
@@ -115,7 +124,6 @@ export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 const cloudTree = CLOUD_TREE_RE.test(OAUTH_GRAPHQL_RESOURCE)
 export const GRAPHQL_API =
   env.VITE_GRAPHQL_API || (cloudTree ? cloudTreeUrls(OAUTH_GRAPHQL_RESOURCE).graphql : OAUTH_GRAPHQL_RESOURCE)
-export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || GRAPHQL_API
 // Test Settings: an ad-hoc request header injected on API calls (helpers/apiHelper.getTestHeader).
 export const TEST_HEADER = 'test-header'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
@@ -141,7 +149,6 @@ const graphqlStage = GRAPHQL_API.match(LEGACY_GRAPHQL_RE)?.[1]
 export const WEBSOCKET_URL =
   env.VITE_WEBSOCKET_URL ||
   (graphqlTree ? cloudTreeUrls(graphqlTree).ws : `wss://ws${graphqlStage ? `.${graphqlStage}` : ''}.remote.it/v1`)
-export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL || WEBSOCKET_URL
 export const PORT = env.VITE_PORT || 29999
 export const PASSWORD_MIN_LENGTH = env.PASSWORD_MIN_LENGTH ? Number(env.PASSWORD_MIN_LENGTH) : 7
 export const PASSWORD_MAX_LENGTH = env.PASSWORD_MAX_LENGTH ? Number(env.PASSWORD_MAX_LENGTH) : 64

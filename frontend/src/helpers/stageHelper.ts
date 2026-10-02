@@ -6,8 +6,6 @@ export function chooseStage(stage: StageName) {
   else window.localStorage.setItem(STAGE_KEY, stage)
 }
 
-export const stageChanged = (): boolean => !STAGE_PINNED && readStage() !== STAGE
-
 export function reloadIfStageChanged(reload = () => window.location.reload()) {
-  if (stageChanged()) reload()
+  if (!STAGE_PINNED && readStage() !== STAGE) reload()
 }

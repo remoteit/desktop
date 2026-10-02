@@ -970,7 +970,6 @@ declare global {
 
   type IOverrides = {
     apiURL?: string
-    betaApiURL?: string
   }
 
   type IScanDataRaw = {

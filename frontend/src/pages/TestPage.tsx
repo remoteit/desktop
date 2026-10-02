@@ -9,9 +9,10 @@ import {
   LEGACY_GRAPHQL_RE,
   LEGACY_EVENTS_RE,
   STAGES,
-  STAGE,
+  STAGE_NAMES,
   STAGE_PINNED,
   StageName,
+  OAUTH_ISSUER,
   cloudTreeUrls,
   resourceForApiURL,
 } from '../constants'
@@ -36,6 +37,14 @@ import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 import sleep from '../helpers/sleep'
+
+const cloudPair = (key: string, name: string, tree: string) => ({
+  key,
+  name,
+  ...cloudTreeUrls(tree),
+  resources: [tree],
+})
+const host = (url: string) => new URL(url).host
 
 export const TestPage: React.FC = () => {
   const { t } = useTranslation()
@@ -108,7 +117,7 @@ export const TestPage: React.FC = () => {
       const cloud = target.identifier.match(CLOUD_TREE_RE)
       if (cloud) {
         const key = `cloud:${cloud[1] || 'prod'}`
-        pairs.set(key, { key, name: target.name, ...cloudTreeUrls(target.identifier), resources: [target.identifier] })
+        pairs.set(key, cloudPair(key, target.name, target.identifier))
         continue
       }
       const gql = target.identifier.match(LEGACY_GRAPHQL_RE)
@@ -136,23 +145,27 @@ export const TestPage: React.FC = () => {
   // same string until the unified front, where the build's resource (…/api) matches no row's URL
   // (…/api/graphql) — so every radio read unchecked and the picker looked broken.
   const currentGraphql = getApiURL()
-  const presets: StageName[] = STAGE_PINNED ? [] : (Object.keys(STAGES) as StageName[])
-  const presetPair = (name: StageName): StagePair => ({
-    key: `stage:${name}`,
-    name: STAGES[name].name,
-    ...cloudTreeUrls(STAGES[name].api),
-    resources: [STAGES[name].api],
-  })
-  const otherPairs = stagePairs.filter(pair => !presets.some(name => presetPair(name).graphql === pair.graphql))
-  const knownGraphql = [...presets.map(name => presetPair(name).graphql), ...stagePairs.map(pair => pair.graphql)]
+  // Each row names the login server it is signed by. A row of the running one switches in place; a
+  // stage row of another one is a stage switch, which signs out. Stage rows win a shared URL.
+  type Row = StagePair & { issuer: string; stage?: StageName }
+  const rows: Row[] = [
+    ...(STAGE_PINNED ? [] : STAGE_NAMES).map(stage => ({
+      ...cloudPair(`stage:${stage}`, STAGES[stage].name, STAGES[stage].api),
+      issuer: STAGES[stage].issuer,
+      stage,
+    })),
+    ...stagePairs.map(pair => ({ ...pair, issuer: OAUTH_ISSUER })),
+  ].filter((row, index, all) => all.findIndex(other => other.graphql === row.graphql) === index)
+  const reachable = rows.filter(row => row.issuer === OAUTH_ISSUER)
   const [customMode, setCustomMode] = useState<boolean | undefined>(undefined)
   const customSelected =
-    customMode ?? (!!apis.switchApi && knownGraphql.length > 0 && !knownGraphql.includes(currentGraphql))
+    customMode ?? (!!apis.switchApi && reachable.length > 0 && !reachable.some(row => row.graphql === currentGraphql))
   const [pendingStage, setPendingStage] = useState<StageName | undefined>(undefined)
+  const pending = pendingStage && STAGES[pendingStage]
 
-  function selectPreset(name: StageName) {
-    if (name === STAGE) selectStage(presetPair(name))
-    else setPendingStage(name)
+  function selectRow(row: Row) {
+    if (row.issuer === OAUTH_ISSUER) selectStage(row)
+    else if (row.stage) setPendingStage(row.stage)
   }
 
   async function selectCustom() {
@@ -255,24 +268,19 @@ export const TestPage: React.FC = () => {
 
       <Typography variant="subtitle1">{t('testPage.apiTarget', 'API Target')}</Typography>
       <List>
-        {presets.map(name => (
+        {rows.map(row => (
           <ListItemRadio
-            key={name}
-            label={t('testPage.stageLabel', '{{name}} stage', { name: STAGES[name].name })}
-            subLabel={[STAGES[name].issuer, STAGES[name].api, STAGES[name].agent]
-              .map(url => new URL(url).host)
-              .join(' · ')}
-            checked={!customSelected && name === STAGE && currentGraphql === presetPair(name).graphql}
-            onClick={() => selectPreset(name)}
-          />
-        ))}
-        {otherPairs.map(pair => (
-          <ListItemRadio
-            key={pair.key}
-            label={pair.name}
-            subLabel={pair.ws ? `${pair.graphql} + events` : pair.graphql}
-            checked={!customSelected && currentGraphql === pair.graphql}
-            onClick={() => selectStage(pair)}
+            key={row.key}
+            label={row.stage ? t('testPage.stageLabel', '{{name}} stage', { name: row.name }) : row.name}
+            subLabel={
+              row.stage
+                ? [row.issuer, STAGES[row.stage].api, STAGES[row.stage].agent].map(host).join(' · ')
+                : row.ws
+                ? `${row.graphql} + events`
+                : row.graphql
+            }
+            checked={!customSelected && row.issuer === OAUTH_ISSUER && currentGraphql === row.graphql}
+            onClick={() => selectRow(row)}
           />
         ))}
         <ListItemRadio
@@ -359,9 +367,7 @@ export const TestPage: React.FC = () => {
         open={!!pendingStage}
         onConfirm={() => pendingStage && dispatch.auth.switchStage(pendingStage)}
         onDeny={() => setPendingStage(undefined)}
-        title={t('testPage.switchStageTitle', 'Switch to the {{name}} stage?', {
-          name: pendingStage && STAGES[pendingStage].name,
-        })}
+        title={t('testPage.switchStageTitle', 'Switch to the {{name}} stage?', { name: pending?.name })}
         action={t('testPage.switchStageAction', 'Sign out and switch')}
         color="warning"
         maxWidth="xs"
@@ -369,7 +375,7 @@ export const TestPage: React.FC = () => {
         {t(
           'testPage.switchStageMessage',
           'You will be signed out and asked to sign in again at {{issuer}}. Other accounts saved in this app are removed.',
-          { issuer: pendingStage && new URL(STAGES[pendingStage].issuer).host }
+          { issuer: pending && host(pending.issuer) }
         )}
       </Confirm>
 

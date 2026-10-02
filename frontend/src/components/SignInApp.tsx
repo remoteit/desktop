@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { OidcErrorCode, oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused } from '../services/oidc'
-import { MODE, STAGE, STAGE_PINNED, STAGES } from '../constants'
+import { MODE, OAUTH_ISSUER, STAGE, STAGE_PINNED, STAGES } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
 
@@ -193,7 +193,7 @@ export function SignInApp() {
           <Typography variant="caption" color="textSecondary">
             {t('signIn.stageNotice', 'Signing in to the {{name}} stage at {{host}}.', {
               name: STAGES[STAGE].name,
-              host: new URL(STAGES[STAGE].issuer).host,
+              host: new URL(OAUTH_ISSUER).host,
             })}
           </Typography>
           <Button size="small" onClick={() => auth.switchStage('prod')}>

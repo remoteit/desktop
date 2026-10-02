@@ -52,22 +52,6 @@ describe('constants — WEBSOCKET_URL fallback pairs with the effective GraphQL 
   })
 })
 
-describe('constants — GRAPHQL_BETA_API', () => {
-  it('follows the effective GraphQL URL when unset', async () => {
-    const c = await load({
-      VITE_OAUTH_GRAPHQL_RESOURCE: 'https://cloud.remote.it/api',
-      VITE_GRAPHQL_API: '',
-      VITE_GRAPHQL_BETA_API: '',
-    })
-    expect(c.GRAPHQL_BETA_API).toBe('https://cloud.remote.it/api/graphql')
-  })
-
-  it('an explicit VITE_GRAPHQL_BETA_API wins', async () => {
-    const c = await load({ VITE_GRAPHQL_BETA_API: 'https://cloud.dev.remote.it/api/graphql' })
-    expect(c.GRAPHQL_BETA_API).toBe('https://cloud.dev.remote.it/api/graphql')
-  })
-})
-
 describe('constants — stage', () => {
   const unpinned = {
     VITE_OAUTH_ISSUER: '',
@@ -141,6 +125,13 @@ describe('constants — stage', () => {
       window.localStorage.setItem('r3.stage', junk)
       expect((await loadAt('3.49.2')).STAGE).toBe('prod')
     }
+  })
+
+  it('any endpoint set by the build pins it, so a stored choice cannot split login from endpoint', async () => {
+    window.localStorage.setItem('r3.stage', 'dev')
+    const c = await loadAt('3.49.2', { VITE_OAUTH_AGENT_RESOURCE: 'https://agent.example.test' })
+    expect(c.STAGE_PINNED).toBe(true)
+    expect(c.OAUTH_ISSUER).toBe('https://login.remote.it')
   })
 
   it('an issuer pinned by the build wins over a stored choice and names its stage', async () => {

@@ -23,7 +23,7 @@ import {
   oidcClaims,
   oidcStart,
   oidcClearLocal,
-  oidcForgetSavedAccounts,
+  oidcReconcileIssuer,
   oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
@@ -129,6 +129,7 @@ export default createModel<RootModel>()({
        could reload, until the AS rate-limited the address for everyone behind it. A
        failure is always recorded now; being unattended is not a reason to forget it. */
     async init(_: void, state) {
+      oidcReconcileIssuer()
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
@@ -485,15 +486,14 @@ export default createModel<RootModel>()({
       Controller.close()
       reloadIfStageChanged()
     },
-    /** Test Settings' stage switch. The new login server cannot refresh the old one's tokens, so this
-     *  signs out and the reload at the end of signedOut boots every endpoint on the new stage. */
+    /** Test Settings' stage switch. This signs out of the old login server; the reload at the end of
+     *  signedOut boots every endpoint on the new stage, where init drops the old stage's accounts. */
     async switchStage(stage: StageName, state) {
       chooseStage(stage)
       await dispatch.ui.setPersistent({
         apis: { ...state.ui.apis, switchApi: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' },
       })
       emit('preferences', { switchApi: false, apiGraphqlURL: '' })
-      oidcForgetSavedAccounts()
       if (state.auth.user) await dispatch.auth.signOut()
       else reloadIfStageChanged()
     },

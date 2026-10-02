@@ -16,12 +16,12 @@ const {
   oidcActor,
   browser,
   storeState,
-  oidcForgetSavedAccounts,
+  oidcReconcileIssuer,
   chooseStage,
   reloadIfStageChanged,
   controllerClose,
 } = vi.hoisted(() => ({
-  oidcForgetSavedAccounts: vi.fn(),
+  oidcReconcileIssuer: vi.fn(),
   chooseStage: vi.fn(),
   reloadIfStageChanged: vi.fn(),
   controllerClose: vi.fn(),
@@ -45,7 +45,7 @@ vi.mock('../services/oidc', () => ({
   oidcMcpDetailReady,
   oidcActor,
   oidcClearLocal: vi.fn(),
-  oidcForgetSavedAccounts,
+  oidcReconcileIssuer,
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
@@ -77,7 +77,7 @@ vi.mock('axios', () => ({ default: {} }))
 function makeDispatch() {
   return {
     auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn() },
-    ui: { set: vi.fn() },
+    ui: { set: vi.fn(), setPersistent: vi.fn() },
     chat: { signOut: vi.fn() },
   }
 }
@@ -100,6 +100,10 @@ beforeEach(() => {
   oidcActor.mockReset().mockReturnValue(null)
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
+  oidcReconcileIssuer.mockReset()
+  chooseStage.mockReset()
+  reloadIfStageChanged.mockReset()
+  controllerClose.mockReset()
 })
 
 describe('auth model — sign-in always offers the chooser', () => {
@@ -316,8 +320,8 @@ describe('auth model — the password change is one call to the AS', () => {
 })
 
 /* A stage switch changes the login server, which cannot refresh the old one's tokens: the choice is
-   stored first, every override and saved account of the old stage goes, and the app reloads onto
-   the new stage once signed out. */
+   stored first, the old stage's API overrides go, and the app reloads onto the new stage once signed
+   out, where boot drops whatever the old login server issued. */
 describe('auth model — a stage switch signs out and reloads onto the new stage', () => {
   const apis = {
     switchApi: true,
@@ -325,32 +329,30 @@ describe('auth model — a stage switch signs out and reloads onto the new stage
     agentURL: 'https://x.test',
   }
   const cleared = { apis: { switchApi: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' } }
-  beforeEach(() => {
-    chooseStage.mockReset()
-    reloadIfStageChanged.mockReset()
-    oidcForgetSavedAccounts.mockReset()
-    controllerClose.mockReset()
-  })
-
-  it('signed in: stores the stage, clears the old overrides and accounts, then signs out', async () => {
-    const dispatch = { ...makeDispatch(), ui: { set: vi.fn(), setPersistent: vi.fn() } }
+  it('signed in: stores the stage and clears the old API overrides, then signs out', async () => {
+    const dispatch = makeDispatch()
     await effectsFor(dispatch).switchStage('dev', { auth: { user: { id: 'u1' } }, ui: { apis } })
     expect(chooseStage).toHaveBeenCalledWith('dev')
     expect(dispatch.ui.setPersistent).toHaveBeenCalledWith(cleared)
     expect(emit).toHaveBeenCalledWith('preferences', { switchApi: false, apiGraphqlURL: '' })
-    expect(oidcForgetSavedAccounts).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
     expect(chooseStage.mock.invocationCallOrder[0]).toBeLessThan(dispatch.auth.signOut.mock.invocationCallOrder[0])
     expect(reloadIfStageChanged).not.toHaveBeenCalled()
   })
 
   it('signed out: nothing to sign out of, so it reloads straight away', async () => {
-    const dispatch = { ...makeDispatch(), ui: { set: vi.fn(), setPersistent: vi.fn() } }
+    const dispatch = makeDispatch()
     await effectsFor(dispatch).switchStage('prod', { auth: {}, ui: { apis: {} } })
     expect(chooseStage).toHaveBeenCalledWith('prod')
-    expect(oidcForgetSavedAccounts).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.signOut).not.toHaveBeenCalled()
     expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
+  })
+
+  it('boot reconciles the stored session with the running login server before anything else', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).init(undefined, { auth: { user: { id: 'u1' } } })
+    expect(oidcReconcileIssuer).toHaveBeenCalledTimes(1)
+    expect(oidcReconcileIssuer.mock.invocationCallOrder[0]).toBeLessThan(dispatch.auth.set.mock.invocationCallOrder[0])
   })
 
   it('the sign-out teardown reloads onto a changed stage as its last step', async () => {
