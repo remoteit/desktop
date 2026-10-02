@@ -50,7 +50,8 @@ try {
     $content = Get-Content $yamlPath -Raw
 
     # REMOVE EXACT BLOCK
-    $pattern = "(?ms)^publisherName:\s*\n\s*-\s*'.*'\r?\n?"
+    # electron-builder 23 wrote the entry unquoted (`- remot3.it, Inc.`); the block is the header plus every list line under it.
+    $pattern = "(?m)^publisherName:[ \t]*\r?\n(?:[ \t]+-[^\r\n]*\r?\n?)+"
     $contentModified = [Regex]::Replace($content, $pattern, "")
 
     if ($content -ne $contentModified) {
