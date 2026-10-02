@@ -8,7 +8,6 @@ import {
   List,
   ListItem,
   ListSubheader,
-  Switch,
   TextField,
   Typography,
 } from '@mui/material'
@@ -18,15 +17,12 @@ import {
   graphQLDeviceSsh,
   graphQLGrantDeviceSsh,
   graphQLRevokeDeviceSsh,
-  graphQLSetDeviceSshCertificates,
 } from '../services/graphQLDeviceSsh'
 
-/* Who may log in to a device by SSH certificate (services/graphQLDeviceSsh), on its details page: for whoever manages
-   it. A person is let in as their own account there — r3-<their email's name>, made by the device, admin (sudo) or
-   not; an organization's role can make its members admins too — or as a local user. With none set, its owner as their
-   own account, admin — the starting point, kept as a grant of its own when someone is added. Certificates are turned on in the device's sshd from here, or on the device (remoteit-device
-   ssh-certificates on); a device that refuses remote configuration (ssh_remote_config no) is switched only there. The
-   switch shows what the device says it did, waiting for it after a change. */
+/* Who may log in through a device's console by SSH certificate (services/graphQLDeviceSsh), on its details page: for
+   whoever manages it. A person is let in as their own account there — r3-<their email's name>, made by the device, admin
+   (sudo) or not; an organization's role can make its members admins too — or as a local user. With none set, its owner
+   as their own account (admin) or any user — the starting point, kept as grants of their own when someone is added. */
 export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) => {
   const { t } = useTranslation()
   const [read, setRead] = useState<DeviceSshRead | null>()
@@ -34,8 +30,6 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
   const [email, setEmail] = useState('')
   const [admin, setAdmin] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [switching, setSwitching] = useState<boolean>()
-
   const load = async () => setRead(await graphQLDeviceSsh(deviceId))
 
   useEffect(() => {
@@ -63,34 +57,6 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
     setBusy(false)
   }
 
-  // The device turns sshd over and says so within seconds: wait for it, up to half a minute.
-  const turn = async (on: boolean) => {
-    setSwitching(on)
-    if ((await graphQLSetDeviceSshCertificates(deviceId, on)) !== 'ERROR') {
-      for (let waited = 0; waited < 30_000; waited += 2_000) {
-        await new Promise(resolve => setTimeout(resolve, 2_000))
-        const now = await graphQLDeviceSsh(deviceId)
-        setRead(now)
-        if (!now || now.on === on) break
-      }
-    }
-    setSwitching(undefined)
-  }
-
-  const status =
-    switching !== undefined
-      ? switching
-        ? t('deviceSshAccess.turningOn', 'Turning logins by certificate on…')
-        : t('deviceSshAccess.turningOff', 'Turning logins by certificate off…')
-      : read.on
-      ? t(
-          'deviceSshAccess.on',
-          'Logins by certificate are on: the people below sign in from the terminal, no password.'
-        )
-      : t('deviceSshAccess.off', 'Logins by certificate are off on this device.')
-  // The account's switch, not what the device did: the device says why.
-  const refused = switching === undefined && read.certificates !== null && read.certificates !== read.on && read.refused
-
   const as = (grant: DeviceSshRead['grants'][number]) =>
     grant.login === ''
       ? grant.admin
@@ -103,31 +69,13 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
   return (
     <List dense sx={{ paddingBottom: 1 }}>
       <ListSubheader disableGutters>{t('deviceSshAccess.title', 'SSH access')}</ListSubheader>
-      <ListItem disableGutters sx={{ alignItems: 'flex-start' }}>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" color={read.on ? 'textPrimary' : 'textSecondary'}>
-            {status}
-          </Typography>
-          {refused && (
-            <Typography variant="caption" color="error" component="div">
-              {t('deviceSshAccess.refused', 'The device did not: {{reason}}', { reason: read.refused })}
-            </Typography>
+      <ListItem disableGutters>
+        <Typography variant="body2" color="textSecondary">
+          {t(
+            'deviceSshAccess.about',
+            'Who may log in through the console, as whom — by certificate, signed for minutes when they connect.'
           )}
-          {read.localOnly && (
-            <Typography variant="caption" color="textSecondary" component="div">
-              {t(
-                'deviceSshAccess.localOnly',
-                'This device is switched only on itself: sudo remoteit-device ssh-certificates on'
-              )}
-            </Typography>
-          )}
-        </Box>
-        <Switch
-          checked={switching ?? read.on}
-          disabled={read.localOnly || switching !== undefined}
-          onChange={e => turn(e.target.checked)}
-          inputProps={{ 'aria-label': t('deviceSshAccess.switch', 'Logins by certificate') }}
-        />
+        </Typography>
       </ListItem>
       {read.grants.map(grant => (
         <ListItem key={`${grant.login} ${grant.user.id}`} disableGutters>

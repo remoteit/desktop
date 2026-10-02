@@ -55,7 +55,6 @@ export const DeviceApps: React.FC<{ deviceId: string; canManage: boolean }> = ({
       title: t('deviceApps.console', 'Console'),
       service: app.serviceId,
     })
-    if (app.hostKey) query.set('hostKey', app.hostKey)
     window.open(`${location.origin}${location.pathname}#/terminal?${query}`, '_blank')
   }
 

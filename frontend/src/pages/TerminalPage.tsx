@@ -20,8 +20,6 @@ export const TerminalPage: React.FC = () => {
   const port = Number(params.get('port') || 22)
   const title = params.get('title') || name
   const serviceId = params.get('service') || ''
-  // The host key the device reports for its console: one that matches is let through, one that does not is refused.
-  const expectedHostKey = params.get('hostKey') || ''
 
   useEffect(() => {
     if (!box.current || !name) return
@@ -74,13 +72,16 @@ export const TerminalPage: React.FC = () => {
       // Their own account on the device, when they have one; otherwise asked, as ssh does.
       const own = serviceId
         ? await graphQLBasicRequest(
-            ` query SshAccount($serviceId: String!) {
+            ` query SshLogin($serviceId: String!) {
                 sshAccount(serviceId: $serviceId)
+                sshHostKey(serviceId: $serviceId)
               }`,
             { serviceId }
           )
         : 'ERROR'
       const account = own === 'ERROR' ? null : own?.data?.data?.sshAccount
+      // The host key the device reports for its console: one that matches is let through, another refused.
+      const expectedHostKey: string = (own === 'ERROR' ? null : own?.data?.data?.sshHostKey) || ''
       if (account) term.write(`login as: ${account}\r\n`)
       const user = account || (await readLine('login as: ', true)).trim()
       if (!user) return term.write('No user name: closed.\r\n')
@@ -145,7 +146,7 @@ export const TerminalPage: React.FC = () => {
       session?.close()
       term.dispose()
     }
-  }, [name, port, serviceId, expectedHostKey])
+  }, [name, port, serviceId])
 
   return <Box ref={box} sx={{ position: 'fixed', inset: 0, bgcolor: '#111111', padding: 1 }} />
 }
