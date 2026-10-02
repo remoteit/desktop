@@ -110,13 +110,16 @@ describe('oidcReopen', () => {
 })
 
 describe('oidcCompleteFromUrl with no flow for the callback', () => {
+  let warn: ReturnType<typeof vi.spyOn>
+
   beforeEach(() => {
     window.sessionStorage.clear()
     window.localStorage.clear()
     vi.mocked(fetch).mockClear()
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     window.history.replaceState({}, '', '/?code=c2&state=already-used')
   })
+  afterEach(() => warn.mockRestore())
 
   it('ignores the callback when a session is already stored, so the first tab’s sign-in stands', async () => {
     signIn()
