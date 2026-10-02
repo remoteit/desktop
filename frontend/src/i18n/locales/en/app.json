@@ -106,7 +106,6 @@
     "summaryUnlimited": "{{name}} can reach all devices in every organization you belong to."
   },
   "agentSwitch": {
-    "keep": "Go back to {{owner}}",
     "message": "Switching accounts will stop all connections.",
     "switch": "Switch",
     "title": "Switch accounts?"

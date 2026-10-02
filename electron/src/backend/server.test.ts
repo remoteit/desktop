@@ -5,12 +5,12 @@ import socketioAuth from 'socketio-auth'
 import { io as connect, Socket } from 'socket.io-client'
 import cli from './cliInterface'
 import ConnectionPool from './ConnectionPool'
-import { APP_ORIGIN } from './constants'
 import Controller from './Controller'
 import EventBus from './EventBus'
 import electronInterface from './electronInterface'
 import server from './server'
 import user, { User } from './User'
+import { parseAgentOwned } from '@common/agentOwner'
 
 jest.mock('./index', () => ({ __esModule: true, default: {} }))
 jest.mock('./Logger', () => ({ __esModule: true, default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }))
@@ -56,8 +56,8 @@ describe('backend/server broadcasts', () => {
 
   const next = (socket: Socket, event: string) => new Promise(resolve => socket.once(event, resolve))
 
-  const open = async (extraHeaders?: Record<string, string>) => {
-    const socket = connect(url, { transports: ['websocket'], forceNew: true, reconnection: false, extraHeaders })
+  const open = async () => {
+    const socket = connect(url, { transports: ['websocket'], forceNew: true, reconnection: false })
     sockets.push(socket)
     await next(socket, 'connect')
     return socket
@@ -149,30 +149,41 @@ describe('backend/server broadcasts', () => {
     expect(signOut).toHaveBeenCalledTimes(1)
   })
 
-  it('releasing the agent disconnects the signed-in windows and keeps the one still authenticating', async () => {
-    Object.assign(user, credentials)
-    const owner = await open()
-    expect(await authenticate(owner, credentials)).toBe('authenticated')
-    const switching = await open()
-    const [ownerId, switchingId] = [owner.id, switching.id]
+  it('lets a signed-in window release the agent, dropping its other windows and its own broadcasts', async () => {
+    const signOut = (cli.signOut as jest.Mock).mockClear()
+    Object.assign(user, { ...credentials, signedIn: true })
+    const popout = await open()
+    expect(await authenticate(popout, credentials)).toBe('authenticated')
+    const window = await open()
+    const heard = listen(window)
+    expect(await authenticate(window, credentials)).toBe('authenticated')
+    const popoutId = popout.id
 
-    expect(await server.releaseAgent?.()).toBe(true)
-    expect(io.sockets.sockets.has(ownerId!)).toBe(false)
-    expect(io.sockets.sockets.has(switchingId!)).toBe(true)
+    expect(await window.emitWithAck('agent/release')).toBe(true)
+    expect(signOut).toHaveBeenCalledTimes(1)
+    expect(user.signedIn).toBe(false)
+    expect(io.sockets.sockets.has(popoutId!)).toBe(false)
+
+    const probe = next(window, 'probe')
+    EventBus.emit(ConnectionPool.EVENTS.updated, { id: 'service-4' })
+    io.emit('probe')
+    await probe
+    expect(heard).not.toContain(ConnectionPool.EVENTS.updated)
   })
 
-  it("lets only the app's own origin move the agent", async () => {
-    const checkSignIn = jest.spyOn(user, 'checkSignIn').mockResolvedValue(true)
-    Object.assign(user, { ...credentials, id: 'guid-a', signedIn: true })
+  it('refuses another account while the agent has an owner, and only a signed-in window can release it', async () => {
+    const signOut = (cli.signOut as jest.Mock).mockClear()
+    const checkSignIn = jest.spyOn(user, 'checkSignIn')
     Object.assign(cli.data, { admin: { guid: 'guid-a', username: credentials.username } })
-    const switching = { username: 'b@test', authHash: 'hash-b', guid: 'guid-b', switchAgent: true }
+    const other = await open()
+    const refused = next(other, 'unauthorized')
+    other.emit('authentication', { username: 'b@test', authHash: 'hash-b', guid: 'guid-b', switchAgent: true })
+    const { message } = (await refused) as { message: string }
 
-    expect(await authenticate(await open({ origin: 'https://example.com' }), switching)).toBe('unauthorized')
-    expect(await authenticate(await open(), switching)).toBe('unauthorized')
+    expect(parseAgentOwned(message)).toEqual(expect.objectContaining({ username: credentials.username }))
     expect(checkSignIn).not.toHaveBeenCalled()
-
-    expect(await authenticate(await open({ origin: APP_ORIGIN }), switching)).toBe('authenticated')
-    expect(checkSignIn).toHaveBeenCalledTimes(1)
+    await expect(other.timeout(200).emitWithAck('agent/release')).rejects.toThrow()
+    expect(signOut).not.toHaveBeenCalled()
 
     checkSignIn.mockRestore()
     Object.assign(cli.data, { admin: undefined })

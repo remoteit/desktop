@@ -4,6 +4,7 @@
     "noService": "そのサービスへのアクセス権がありません。({{id}})"
   },
   "auth": {
+    "agentReleaseFailed": "このコンピューターからサインアウトできなかったため、アカウントは切り替えられませんでした。",
     "emailModified": "メールアドレスを変更しました。",
     "invalidFormat": "形式が正しくありません。",
     "loginFailed": "ログインに失敗しました。",

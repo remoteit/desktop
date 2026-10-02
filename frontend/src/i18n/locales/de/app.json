@@ -106,7 +106,6 @@
     "summaryUnlimited": "{{name}} kann alle Geräte in jeder Organisation erreichen, der Sie angehören."
   },
   "agentSwitch": {
-    "keep": "Zurück zu {{owner}}",
     "message": "Durch den Kontowechsel werden alle Verbindungen beendet.",
     "switch": "Wechseln",
     "title": "Konto wechseln?"

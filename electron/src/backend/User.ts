@@ -52,7 +52,7 @@ export class User {
     return { id: data.guid, authHash: data.service_authhash }
   }
 
-  checkSignIn = async (credentials?: UserCredentials, beforeSignIn?: () => Promise<boolean>) => {
+  checkSignIn = async (credentials?: UserCredentials) => {
     if (!credentials) {
       Logger.warn('No user, sign in failed')
       return false
@@ -67,7 +67,6 @@ export class User {
         EventBus.emit(User.EVENTS.signInError, { message: 'No user found.' })
         return false
       }
-      if (beforeSignIn && !(await beforeSignIn())) return false
 
       this.signedIn = true
       this.username = credentials.username

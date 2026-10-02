@@ -28,7 +28,6 @@ class Controller {
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.clients = io.to(AUTHENTICATED)
     this.pool = pool
-    server.releaseAgent = this.releaseAgent
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
     EventBus.on(electronInterface.EVENTS.signOut, this.signOutRequested)
@@ -62,6 +61,7 @@ class Controller {
     socket.on('user/lock', user.signOut)
     socket.on('user/sign-out', this.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
+    socket.on('agent/release', (done?: (released: boolean) => void) => this.releaseAgent(socket).then(done))
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
@@ -231,9 +231,9 @@ class Controller {
     await this.pool.clearMemory()
   }
 
-  // Disconnects instead of broadcasting signed-out: the old owner's chat popout would sign out, clearing the active
-  // tokens from the localStorage it shares with the main window, which by now holds the new account's.
-  releaseAgent = async () => {
+  // Not user.signOut(): its signed-out broadcast makes every window run a full sign-out, dropping the owner's saved
+  // session from the account switcher. The window that asked keeps its connection for the answer.
+  releaseAgent = async (requester: SocketIO.Socket) => {
     Logger.info('RELEASE AGENT')
     await cli.signOut()
     if (!cli.isSignedOut()) {
@@ -241,6 +241,7 @@ class Controller {
       return false
     }
     user.clear()
+    requester.leave(AUTHENTICATED)
     this.clients.disconnectSockets(true)
     await this.pool.clearMemory()
     return true

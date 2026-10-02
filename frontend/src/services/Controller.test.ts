@@ -1,26 +1,17 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { socket } = vi.hoisted(() => {
+const { socket, emitWithAck } = vi.hoisted(() => {
+  const emitWithAck = vi.fn()
   const socket = {
     connected: true,
-    handlers: {} as Record<string, (...args: any[]) => void>,
-    on: vi.fn((event: string, handler: (...args: any[]) => void) => {
-      socket.handlers[event] = handler
-      return socket
-    }),
+    on: vi.fn(),
     emit: vi.fn(),
     removeAllListeners: vi.fn(),
-    close: vi.fn(() => {
-      socket.connected = false
-    }),
-    // Like socket.io: opening a connected socket does nothing.
-    open: vi.fn(() => {
-      if (socket.connected) return
-      socket.connected = true
-      socket.handlers.connect?.()
-    }),
+    close: vi.fn(),
+    open: vi.fn(),
+    timeout: vi.fn(() => ({ emitWithAck })),
   }
-  return { socket }
+  return { socket, emitWithAck }
 })
 vi.mock('socket.io-client', () => ({ default: vi.fn(() => socket) }))
 vi.mock('./browser', () => ({ default: { hasBackend: true } }))
@@ -33,26 +24,29 @@ vi.mock('../store', () => {
 
 import controller from './Controller'
 
-const credentials = { username: 'b@test', authHash: 'hash-b', guid: 'guid-b' }
-
-describe('Controller — switching the agent', () => {
-  afterEach(() => vi.useRealTimers())
-
-  it('re-authenticates on a fresh connection with consent, and only once', () => {
-    vi.useFakeTimers()
+describe('Controller.emitWithAck', () => {
+  beforeEach(() => {
     vi.spyOn(console, 'log').mockImplementation(() => {})
-    controller.setupConnection(credentials)
+    controller.setupConnection({ username: 'a@test', authHash: 'hash-a', guid: 'guid-a' })
     socket.connected = true
-    socket.emit.mockClear()
+    emitWithAck.mockReset()
+  })
 
-    controller.retryWithAgentSwitch()
-    vi.runAllTimers()
+  it("resolves the backend's answer within the timeout", async () => {
+    emitWithAck.mockResolvedValue(true)
+    expect(await controller.emitWithAck('agent/release', 500)).toBe(true)
+    expect(socket.timeout).toHaveBeenCalledWith(500)
+    expect(emitWithAck).toHaveBeenCalledWith('agent/release')
+  })
 
-    expect(socket.close).toHaveBeenCalled()
-    expect(socket.emit).toHaveBeenCalledWith('authentication', { ...credentials, switchAgent: true })
+  it('resolves nothing when the backend never answers', async () => {
+    emitWithAck.mockRejectedValue(new Error('operation has timed out'))
+    expect(await controller.emitWithAck('agent/release', 500)).toBeUndefined()
+  })
 
-    socket.emit.mockClear()
-    controller.auth()
-    expect(socket.emit).toHaveBeenCalledWith('authentication', credentials)
+  it('resolves nothing without asking when the socket is down', async () => {
+    socket.connected = false
+    expect(await controller.emitWithAck('agent/release', 500)).toBeUndefined()
+    expect(emitWithAck).not.toHaveBeenCalled()
   })
 })

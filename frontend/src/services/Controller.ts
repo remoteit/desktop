@@ -11,7 +11,6 @@ class Controller extends EventEmitter {
   private socket?: Socket
   private retrying?: NodeJS.Timeout
   private credentials?: UserCredentials
-  private switchAgent = false
   private url: string = '/'
   handlers: ILookup<(result: any) => void> = {}
 
@@ -107,17 +106,7 @@ class Controller extends EventEmitter {
   }
 
   auth() {
-    if (!browser.hasBackend) return
-    emit('authentication', this.switchAgent ? { ...this.credentials, switchAgent: true } : this.credentials)
-    this.switchAgent = false
-  }
-
-  // A fresh connection: the refused socket stays open until socketio-auth's ack or 20 s timeout, and
-  // open() on a connected socket does nothing, so the consent would never be sent.
-  retryWithAgentSwitch() {
-    this.switchAgent = true
-    this.socket?.close()
-    this.open(false, true)
+    if (browser.hasBackend) emit('authentication', this.credentials)
   }
 
   // Retry open with delay, force skips delay
@@ -157,6 +146,11 @@ class Controller extends EventEmitter {
     this.socket?.off(eventName)
     return this
   }
+
+  emitWithAck = (event: SocketAction, timeout: number): Promise<unknown> =>
+    this.socket?.connected
+      ? this.socket.timeout(timeout).emitWithAck(event).catch(() => undefined)
+      : Promise.resolve(undefined)
 
   emit = (event: SocketAction, ...args: any[]): boolean => {
     if (!this.socket?.connected) {

@@ -52,7 +52,6 @@ const PROD_BIN_DIR = path.resolve(process.resourcesPath || APP_ROOT)
 // Port for the Socket.io websocket server
 export const WEB_PORT = Number(process.env.PORT || 29999)
 export const SSL_PORT = WEB_PORT - 1
-export const APP_ORIGIN = `http://127.0.0.1:${ENVIRONMENT === 'development' ? 3003 : WEB_PORT}`
 
 // Install paths
 export const PATHS = {

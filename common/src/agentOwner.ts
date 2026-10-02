@@ -3,7 +3,6 @@ const PREFIX = 'agent-owned:'
 
 export type AgentOwner = {
   username: string
-  canSwitch: boolean
   command: string
 }
 

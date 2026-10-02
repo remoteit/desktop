@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next'
 export type ConfirmProps = {
   title?: React.ReactNode
   action?: string
-  denyLabel?: string
   open: boolean
   disabled?: boolean
   maxWidth?: DialogProps['maxWidth']
@@ -28,7 +27,6 @@ export type ConfirmProps = {
 export const Confirm: React.FC<ConfirmProps> = ({
   title,
   action,
-  denyLabel,
   open,
   onConfirm,
   onDeny,
@@ -52,7 +50,7 @@ export const Confirm: React.FC<ConfirmProps> = ({
       <DialogActions>
         {onDeny && (
           <Button color="primary" onClick={onDeny}>
-            {denyLabel ?? t('common.cancel', 'Cancel')}
+            {t('common.cancel', 'Cancel')}
           </Button>
         )}
         <Button autoFocus variant="contained" color={color} disabled={disabled} onClick={onConfirm}>

@@ -108,7 +108,6 @@
     "summaryUnlimited": "{{name}} puede acceder a todos los dispositivos de todas las organizaciones a las que perteneces."
   },
   "agentSwitch": {
-    "keep": "Volver a {{owner}}",
     "message": "Al cambiar de cuenta, se detendrán todas las conexiones.",
     "switch": "Cambiar",
     "title": "¿Cambiar de cuenta?"

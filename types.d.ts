@@ -47,6 +47,7 @@ declare global {
     | 'user/lock'
     | 'user/sign-out'
     | 'user/quit'
+    | 'agent/release'
 
     // binaries
     | 'binaries/install'

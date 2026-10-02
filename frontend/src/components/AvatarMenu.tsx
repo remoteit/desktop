@@ -39,6 +39,11 @@ export const AvatarMenu: React.FC = () => {
   const remoteUI = useSelector(isRemoteUI)
   const testUI = useSelector((state: State) => ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''))
   const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
+  const switchConfirm = {
+    title: t('agentSwitch.title', 'Switch accounts?'),
+    action: t('agentSwitch.switch', 'Switch'),
+    children: t('agentSwitch.message', 'Switching accounts will stop all connections.'),
+  }
   const licenseIndicator = useSelector(selectLicenseIndicator)
   const activeUser = useSelector(selectActiveUser)
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
@@ -206,6 +211,8 @@ export const AvatarMenu: React.FC = () => {
                   {(a.name || a.email || '?').charAt(0).toUpperCase()}
                 </MuiAvatar>
               }
+              confirm={backendAuthenticated}
+              confirmProps={switchConfirm}
               onClick={async () => {
                 handleClose()
                 await dispatch.auth.activateAccount(a.sub)
@@ -215,6 +222,8 @@ export const AvatarMenu: React.FC = () => {
         <ListItemSetting
           label={t('nav.switchAccount', 'Switch account')}
           icon="users"
+          confirm={backendAuthenticated}
+          confirmProps={switchConfirm}
           onClick={async () => {
             handleClose()
             await dispatch.auth.switchAccount()

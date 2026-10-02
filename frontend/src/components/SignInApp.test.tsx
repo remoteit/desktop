@@ -40,7 +40,7 @@ const screens: Record<string, any> = {
   agentOwned: {
     signInFailed: true,
     signInErrorCode: 'agentOwned',
-    signInError: agentOwnedMessage({ username: 'jamie@remote.it', canSwitch: false, command: 'sudo remoteit signout' }),
+    signInError: agentOwnedMessage({ username: 'jamie@remote.it', command: 'sudo remoteit signout' }),
   },
 }
 
