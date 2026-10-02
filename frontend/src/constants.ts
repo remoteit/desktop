@@ -75,7 +75,7 @@ export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 const cloudTree = CLOUD_TREE_RE.test(OAUTH_GRAPHQL_RESOURCE)
 export const GRAPHQL_API =
   env.VITE_GRAPHQL_API || (cloudTree ? cloudTreeUrls(OAUTH_GRAPHQL_RESOURCE).graphql : OAUTH_GRAPHQL_RESOURCE)
-export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
+export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || GRAPHQL_API
 // Test Settings: an ad-hoc request header injected on API calls (helpers/apiHelper.getTestHeader).
 export const TEST_HEADER = 'test-header'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
