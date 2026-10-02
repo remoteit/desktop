@@ -31,7 +31,7 @@ export type DeviceAbout = {
     serial: string | null
     hardwareUuid: string | null
     machineId: string | null
-    macs: { interface: string; mac: string }[]
+    macs: { interface: string | null; mac: string | null }[] | null
     diskSerial: string | null
   } | null
   oem: {
@@ -44,6 +44,7 @@ export type DeviceAbout = {
     serial: string | null
   } | null
   software: { connectd: string | null; package: string | null; format: string | null } | null
+  data: ILookup<any> // the document itself, as the device said it
   reported: string
   hardwareChanged: string | null
 }
@@ -70,6 +71,7 @@ const QUERY = `query DeviceAbout($id: [String!]!) {
         ids { serial hardwareUuid machineId macs { interface mac } diskSerial }
         oem { product productName manufacturer model hardwareRevision firmware serial }
         software { connectd package format }
+        data
         reported
         hardwareChanged
       }

@@ -731,10 +731,13 @@
     "arch": "",
     "board": "",
     "build": "",
+    "close": "",
+    "copy": "",
     "cores_one": "",
     "cores_other": "",
     "cpu": "",
     "declaredProduct": "",
+    "detailsTitle": "",
     "diskSerial": "",
     "firmware": "",
     "hardwareChanged": "",
@@ -759,6 +762,7 @@
     "updateFailed": "",
     "updateRefused": "",
     "upgrade": "",
+    "viewDetails": "",
     "virtual": ""
   },
   "deviceAgent": {

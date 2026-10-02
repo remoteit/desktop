@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from 'vitest'
 const { read } = vi.hoisted(() => ({ read: vi.fn() }))
 vi.mock('../services/graphQLDeviceAbout', () => ({ graphQLDeviceAbout: read }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
+vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: () => null }))
 vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -12,7 +13,7 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-import { DeviceAbout } from './DeviceAbout'
+import { DeviceAbout, fieldLabel } from './DeviceAbout'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 async function render(deviceId = 'A') {
@@ -52,6 +53,7 @@ const about = {
   },
   oem: null,
   software: { connectd: 'connectd-go 5.6.1.20261001', package: '1.0.1', format: 'pkg' },
+  data: { os: { family: 'darwin', name: 'macOS' }, hardware: { virtual: 'none' }, future: { thing: 1 } },
   reported: '2026-10-02T03:26:16Z',
   hardwareChanged: null,
 }
@@ -119,5 +121,20 @@ describe('DeviceAbout', () => {
     expect((await render()).textContent).toBe('')
     read.mockResolvedValue({ about: null, history: [] })
     expect((await render()).textContent).toBe('')
+  })
+
+  it('shows the document exactly as the device said it, the fields the page leaves out too', async () => {
+    read.mockResolvedValue({ about, history: [] })
+    const container = await render()
+    const button = [...container.querySelectorAll('button')].find(b => b.textContent === 'View details')!
+    await act(async () => button.click())
+    expect(JSON.parse(document.querySelector('[data-about-json]')!.textContent!)).toEqual(about.data)
+  })
+})
+
+describe('fieldLabel', () => {
+  it('names a field as a person reads it, and leaves one it does not know as its path', () => {
+    expect(fieldLabel('os.version')).toBe('OS version')
+    expect(fieldLabel('ids.something_new')).toBe('ids.something_new')
   })
 })

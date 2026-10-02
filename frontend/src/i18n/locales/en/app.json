@@ -731,10 +731,13 @@
     "arch": "Architecture",
     "board": "Board",
     "build": "Build",
+    "close": "Close",
+    "copy": "Copy",
     "cores_one": "{{count}} core",
     "cores_other": "{{count}} cores",
     "cpu": "CPU",
     "declaredProduct": "Product — declared by the manufacturer",
+    "detailsTitle": "As the device reported it",
     "diskSerial": "Boot disk serial",
     "firmware": "Firmware",
     "hardwareChanged": "Its serial or hardware ID changed: this device ID may now be on other hardware — a copied image or SD card.",
@@ -759,6 +762,7 @@
     "updateFailed": "The upgrade to {{version}} failed",
     "updateRefused": "Refused the upgrade to {{version}}",
     "upgrade": "Upgrade",
+    "viewDetails": "View details",
     "virtual": "Virtual"
   },
   "deviceAgent": {

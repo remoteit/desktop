@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { CopyIconButton } from '../buttons/CopyIconButton'
 import { useTranslation } from 'react-i18next'
 import { Box, List, ListItem, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
@@ -14,6 +16,7 @@ type Row = [label: string, value: React.ReactNode]
 export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
   const { t } = useTranslation()
   const [read, setRead] = useState<DeviceAboutRead | 'ERROR' | typeof UNSUPPORTED>()
+  const [details, setDetails] = useState(false)
 
   useEffect(() => {
     let current = true
@@ -55,10 +58,10 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
     [t('deviceAbout.diskSerial', 'Boot disk serial'), ids?.diskSerial],
     [
       t('deviceAbout.macs', 'Network interfaces'),
-      ids?.macs.length ? (
+      ids?.macs?.length ? (
         <Box component="span">
           {ids.macs.map(m => (
-            <Box key={m.interface + m.mac} component="span" sx={{ display: 'block' }}>
+            <Box key={`${m.interface} ${m.mac}`} component="span" sx={{ display: 'block' }}>
               {m.interface}{' '}
               <Typography component="span" variant="body2" color="grayDark.main">
                 {m.mac}
@@ -111,11 +114,17 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
       <Section title={t('deviceAbout.declaredProduct', 'Product — declared by the manufacturer')} rows={product} />
       <Section title={t('deviceAbout.software', 'Software')} rows={software} />
       {about && (
-        <Typography variant="caption" color="grayDark.main" component="p" sx={{ paddingBottom: 1 }}>
-          {t('deviceAbout.reported', 'As the device last reported it')}{' '}
-          <Timestamp date={new Date(about.reported)} variant="minutes" />
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, paddingBottom: 1 }}>
+          <Typography variant="caption" color="grayDark.main">
+            {t('deviceAbout.reported', 'As the device last reported it')}{' '}
+            <Timestamp date={new Date(about.reported)} variant="minutes" />
+          </Typography>
+          <Button size="small" onClick={() => setDetails(true)}>
+            {t('deviceAbout.viewDetails', 'View details')}
+          </Button>
+        </Box>
       )}
+      {about && <AboutDetails open={details} data={about.data} onClose={() => setDetails(false)} />}
       {!!history.length && (
         <List dense>
           <ListSubheader disableGutters>{t('deviceAbout.history', 'History')}</ListSubheader>
@@ -141,6 +150,36 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
         </List>
       )}
     </>
+  )
+}
+
+// The document exactly as the device said it, and kept: every field, the ones the page leaves out too.
+const AboutDetails: React.FC<{ open: boolean; data: ILookup<any>; onClose: () => void }> = ({
+  open,
+  data,
+  onClose,
+}) => {
+  const { t } = useTranslation()
+  const json = JSON.stringify(data, null, 2)
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {t('deviceAbout.detailsTitle', 'As the device reported it')}
+        <CopyIconButton value={json} title={t('deviceAbout.copy', 'Copy')} size="md" color="grayDark" />
+      </DialogTitle>
+      <DialogContent>
+        <Box
+          component="pre"
+          data-about-json
+          sx={{ margin: 0, fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+        >
+          {json}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>{t('deviceAbout.close', 'Close')}</Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 
