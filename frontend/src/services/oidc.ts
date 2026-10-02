@@ -175,15 +175,20 @@ function rememberFlow(flow: Flow, authorizeUrl: string): void {
   }
 }
 
+/** This tab's outstanding flow, with the authorize URL it was sent to. */
+function ownFlow(): (Flow & { authorizeUrl?: string }) | undefined {
+  try {
+    return JSON.parse(sessionStorage.getItem(FLOW_KEY) || 'null') ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
 /** The flow a callback's `state` belongs to: this tab's, else one another tab of this browser
  *  started (the email-link case). Read only; dropFlow clears it once the callback settles. */
 function findFlow(state: string): Flow | undefined {
-  try {
-    const own: Flow | undefined = JSON.parse(sessionStorage.getItem(FLOW_KEY) || 'null') ?? undefined
-    if (own?.state === state) return own
-  } catch {
-    /* fall through to the shared record */
-  }
+  const own = ownFlow()
+  if (own?.state === state) return own
   try {
     const raw = localStorage.getItem(FLOW_SHARED_PREFIX + state)
     if (raw) {
@@ -199,15 +204,10 @@ function findFlow(state: string): Flow | undefined {
 /** Single-use: both records of the flow go once its callback has settled. */
 function dropFlow(state: string): void {
   try {
-    const own: Flow | undefined = JSON.parse(sessionStorage.getItem(FLOW_KEY) || 'null') ?? undefined
-    if (own?.state === state) sessionStorage.removeItem(FLOW_KEY)
-  } catch {
-    sessionStorage.removeItem(FLOW_KEY)
-  }
-  try {
+    if (ownFlow()?.state === state) sessionStorage.removeItem(FLOW_KEY)
     localStorage.removeItem(FLOW_SHARED_PREFIX + state)
   } catch {
-    /* nothing shared */
+    /* storage unavailable: nothing to clear */
   }
 }
 /** A support session (`act` in the id_token) has NO refresh token — its one access token IS the
@@ -594,12 +594,7 @@ export async function oidcStart(
 /** Sends the person back to this tab's outstanding authorize, for a browser tab that was lost or
  *  never opened. Resolves false when no flow is outstanding. */
 export async function oidcReopen(): Promise<boolean> {
-  let authorizeUrl: string | undefined
-  try {
-    authorizeUrl = JSON.parse(sessionStorage.getItem(FLOW_KEY) || '{}').authorizeUrl
-  } catch {
-    /* unreadable: start afresh */
-  }
+  const authorizeUrl = ownFlow()?.authorizeUrl
   if (!authorizeUrl) return false
   await leaveTo(authorizeUrl)
   return true

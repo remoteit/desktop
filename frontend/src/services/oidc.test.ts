@@ -171,7 +171,7 @@ describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => 
   it('drops the flow once the exchange fails', async () => {
     const state = ownFlow().state
     exchange = () => Promise.resolve(new Response(JSON.stringify({ error: 'invalid_grant' }), { status: 400 }))
-    await expect(oidcCompleteFromUrl()).rejects.toBeTruthy()
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ oauthError: 'invalid_grant' })
     expect(ownFlow()).toBeNull()
     expect(window.localStorage.getItem(`oidc.flow:${state}`)).toBeNull()
   })
