@@ -11,19 +11,17 @@ import user from './User'
 
 jest.mock('./index', () => ({ __esModule: true, default: {} }))
 jest.mock('./Logger', () => ({ __esModule: true, default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }))
-jest.mock('./cliInterface', () => ({
-  __esModule: true,
-  default: { readUser: jest.fn(), data: {}, EVENTS: { error: 'cli/error', command: 'cli/command' } },
-}))
+jest.mock('./cliInterface', () => ({ __esModule: true, default: { readUser: jest.fn(), data: {}, EVENTS: {} } }))
+jest.mock('./LAN', () => ({ __esModule: true, default: { EVENTS: {} } }))
 
 describe('backend/server broadcasts', () => {
-  const credentials = { username: 'a@test', authHash: 'hash-a', guid: 'guid-a' }
+  const credentials = { username: 'a@test', authHash: 'hash-a' }
   const sockets: Socket[] = []
   let io: SocketIO.Server
   let url: string
 
   beforeAll(done => {
-    Object.assign(user, { id: credentials.guid, username: credentials.username, authHash: credentials.authHash })
+    Object.assign(user, credentials)
     const http = createServer()
     io = new SocketIO.Server(http)
     socketioAuth(io, { authenticate: server.authenticate, postAuthenticate: server.postAuthenticate, timeout: 'none' })
