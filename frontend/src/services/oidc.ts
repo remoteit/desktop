@@ -176,29 +176,39 @@ function rememberFlow(flow: Flow, authorizeUrl: string): void {
 }
 
 /** The flow a callback's `state` belongs to: this tab's, else one another tab of this browser
- *  started (the email-link case). Single-use either way — both records are cleared. */
-function takeFlow(state: string): Flow | undefined {
-  let flow: Flow | undefined
+ *  started (the email-link case). Read only; dropFlow clears it once the callback settles. */
+function findFlow(state: string): Flow | undefined {
   try {
-    const raw = sessionStorage.getItem(FLOW_KEY)
-    sessionStorage.removeItem(FLOW_KEY)
-    const own: Flow | undefined = raw ? JSON.parse(raw) : undefined
-    if (own?.state === state) flow = own
+    const own: Flow | undefined = JSON.parse(sessionStorage.getItem(FLOW_KEY) || 'null') ?? undefined
+    if (own?.state === state) return own
   } catch {
     /* fall through to the shared record */
   }
   try {
-    const key = FLOW_SHARED_PREFIX + state
-    const raw = localStorage.getItem(key)
-    localStorage.removeItem(key)
-    if (!flow && raw) {
+    const raw = localStorage.getItem(FLOW_SHARED_PREFIX + state)
+    if (raw) {
       const shared = JSON.parse(raw) as Flow & { at?: number }
-      if (Date.now() - (shared.at ?? 0) <= FLOW_TTL_MS) flow = shared
+      if (Date.now() - (shared.at ?? 0) <= FLOW_TTL_MS) return shared
     }
   } catch {
     /* nothing shared */
   }
-  return flow
+  return undefined
+}
+
+/** Single-use: both records of the flow go once its callback has settled. */
+function dropFlow(state: string): void {
+  try {
+    const own: Flow | undefined = JSON.parse(sessionStorage.getItem(FLOW_KEY) || 'null') ?? undefined
+    if (own?.state === state) sessionStorage.removeItem(FLOW_KEY)
+  } catch {
+    sessionStorage.removeItem(FLOW_KEY)
+  }
+  try {
+    localStorage.removeItem(FLOW_SHARED_PREFIX + state)
+  } catch {
+    /* nothing shared */
+  }
 }
 /** A support session (`act` in the id_token) has NO refresh token — its one access token IS the
  *  session, stored so a reload of the support tab survives until it expires. */
@@ -604,7 +614,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   const state = query.get('state')
   if (!state || !(query.get('code') || query.get('error'))) return undefined
 
-  const flow = takeFlow(state)
+  const flow = findFlow(state)
   cleanUrl()
   if (!flow) {
     // A second browser tab finishing a flow the first already completed (Open browser again) lands
@@ -615,6 +625,16 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     }
     throw new OidcError('expired', 'Sign-in state mismatch')
   }
+  // Dropped only once the exchange settles: a second tab's deep link reloads the window mid-request,
+  // and its callback needs the flow that the interrupted one never finished with.
+  try {
+    return await exchangeCallback(flow, query)
+  } finally {
+    dropFlow(state)
+  }
+}
+
+async function exchangeCallback(flow: Flow, query: URLSearchParams): Promise<OidcClaims | undefined> {
   const error = query.get('error')
   if (error) {
     const refused = new OidcError('refused', query.get('error_description') || error)
