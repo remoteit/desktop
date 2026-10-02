@@ -216,9 +216,9 @@ class Controller {
 
   /* The tray's Sign out. The relay already carries it to the renderer, which owns the OIDC
      session: it ends the account's AS session, then comes back with user/sign-out. Only with
-     no renderer connected does the backend clear the credentials on its own. */
+     no signed-in renderer for the relay to reach does the backend clear the credentials on its own. */
   signOutRequested = async () => {
-    if (server.socket?.connected) return
+    if (server.socket?.rooms.has(AUTHENTICATED)) return
     Logger.info('SIGN OUT REQUESTED WITHOUT A RENDERER')
     await this.signOut()
   }

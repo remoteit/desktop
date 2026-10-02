@@ -3,9 +3,11 @@ import { createServer } from 'http'
 import SocketIO from 'socket.io'
 import socketioAuth from 'socketio-auth'
 import { io as connect, Socket } from 'socket.io-client'
+import cli from './cliInterface'
 import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import EventBus from './EventBus'
+import electronInterface from './electronInterface'
 import server from './server'
 import user, { User } from './User'
 
@@ -119,4 +121,23 @@ describe('backend/server broadcasts', () => {
     expect(await updated).toEqual({ id: 'service-3' })
   })
 
+  it('leaves the tray sign-out to a signed-in window, and does it itself once none is left', async () => {
+    const signOut = (cli.signOut as jest.Mock).mockClear()
+    const window = await open()
+    Object.assign(user, credentials)
+    expect(await authenticate(window, credentials)).toBe('authenticated')
+
+    const relayed = next(window, electronInterface.EVENTS.signOut)
+    EventBus.emit(electronInterface.EVENTS.signOut)
+    await relayed
+    expect(signOut).not.toHaveBeenCalled()
+
+    const signedOut = next(window, User.EVENTS.signedOut)
+    window.emit('user/sign-out')
+    await signedOut
+    signOut.mockClear()
+
+    EventBus.emit(electronInterface.EVENTS.signOut)
+    expect(signOut).toHaveBeenCalledTimes(1)
+  })
 })
