@@ -368,9 +368,7 @@ export default createModel<RootModel>()({
 function migrateApiTarget(states: ILookup<any>): ILookup<any> {
   if (!LEGACY_SHARED_GRAPHQL_RE.test(states.apis?.apiGraphqlURL ?? '')) return states
   console.log('MIGRATE API TARGET', states.apis.apiGraphqlURL)
-  const cleared = { switchApi: false, apiGraphqlURL: '', webSocketURL: '' }
-  if (browser.isElectron) emit('preferences', cleared)
-  return { ...states, apis: { ...states.apis, ...cleared } }
+  return { ...states, apis: { ...states.apis, switchApi: false, apiGraphqlURL: '', webSocketURL: '' } }
 }
 
 function migrateColumnStates(states: ILookup<any>): ILookup<any> {

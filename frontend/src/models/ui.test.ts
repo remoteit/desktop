@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 vi.mock('../services/Controller', () => ({ emit: vi.fn() }))
 vi.mock('@capacitor/status-bar', () => ({ StatusBar: {}, Style: {} }))
@@ -12,8 +12,7 @@ vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: vi.fn() }))
 vi.mock('../services/browser', () => ({ default: {}, getLocalStorage: vi.fn(), setLocalStorage: vi.fn() }))
 
 import uiModel from './ui'
-import browser, { getLocalStorage } from '../services/browser'
-import { emit } from '../services/Controller'
+import { getLocalStorage } from '../services/browser'
 
 describe('ui — clearAutoLaunch', () => {
   const run = (pending: string | undefined, connectionId: string) => {
@@ -32,9 +31,6 @@ describe('ui — clearAutoLaunch', () => {
 })
 
 describe('ui — restoreState and saved API targets', () => {
-  beforeEach(() => vi.mocked(emit).mockClear())
-  afterEach(() => delete (browser as any).isElectron)
-
   const restore = async (apis: Record<string, unknown>) => {
     vi.mocked(getLocalStorage).mockImplementation((_state: any, key: string) => (key === 'ui-apis' ? apis : null))
     const dispatch = { ui: { set: vi.fn(), setTheme: vi.fn(), setLanguage: vi.fn() } }
@@ -59,12 +55,5 @@ describe('ui — restoreState and saved API targets', () => {
       webSocketURL: 'wss://cloud.dev.remote.it/api/ws',
     }
     expect(await restore(saved)).toEqual(saved)
-    expect(emit).not.toHaveBeenCalled()
-  })
-
-  it('clears the Electron copy too, which the CLI service install reads', async () => {
-    ;(browser as any).isElectron = true
-    await restore({ switchApi: true, apiGraphqlURL: 'https://api.remote.it/graphql/v1' })
-    expect(emit).toHaveBeenCalledWith('preferences', { switchApi: false, apiGraphqlURL: '', webSocketURL: '' })
   })
 })
