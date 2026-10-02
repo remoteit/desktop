@@ -5,7 +5,13 @@ import network from '../services/Network'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT, SIGN_OUT_SESSION_TIMEOUT } from '../constants'
+import {
+  SIGN_OUT_BACKEND_TIMEOUT,
+  SIGN_OUT_EVERYWHERE_TIMEOUT,
+  SIGN_OUT_SESSION_TIMEOUT,
+  StageName,
+} from '../constants'
+import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
@@ -17,6 +23,7 @@ import {
   oidcClaims,
   oidcStart,
   oidcClearLocal,
+  oidcReconcileIssuer,
   oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
@@ -122,6 +129,7 @@ export default createModel<RootModel>()({
        could reload, until the AS rate-limited the address for everyone behind it. A
        failure is always recorded now; being unattended is not a reason to forget it. */
     async init(_: void, state) {
+      oidcReconcileIssuer()
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
@@ -476,6 +484,24 @@ export default createModel<RootModel>()({
       emit('user/sign-out-complete')
       cloudController.reset()
       Controller.close()
+      reloadIfStageChanged()
+    },
+    /** Test Settings' stage switch. This signs out of the old login server; the reload at the end of
+     *  signedOut boots every endpoint on the new stage, where init drops the old stage's accounts. */
+    async switchStage(stage: StageName, state) {
+      chooseStage(stage)
+      await dispatch.ui.setPersistent({
+        apis: {
+          ...state.ui.apis,
+          switchApi: false,
+          customTarget: false,
+          apiGraphqlURL: '',
+          webSocketURL: '',
+          agentURL: '',
+        },
+      })
+      if (state.auth.user) await dispatch.auth.signOut()
+      else reloadIfStageChanged()
     },
     async globalSignOut() {
       // "Sign out everywhere" (SecurityPage) is the EXPLICIT, account-wide action, distinct from

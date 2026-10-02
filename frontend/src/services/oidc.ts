@@ -50,6 +50,7 @@ const FLOW_KEY = 'oidc.flow'
 const FLOW_SHARED_PREFIX = 'oidc.flow:'
 const FLOW_TTL_MS = 24 * 60 * 60 * 1000 // the set-password link's own life (the AS mints it for 24h)
 const TOKENS_KEY = 'oidc.tokens'
+const ISSUER_KEY = 'oidc.issuer'
 // What the grant behind those tokens was last written from (see oidcGrantStale).
 const DECLARATION_KEY = 'oidc.declaration'
 // The ACCOUNT REGISTRY (multi-account menu): one saved token set per subject this app has
@@ -800,6 +801,31 @@ export async function oidcEndSession(): Promise<number | undefined> {
  * not signing out of the app's memory of the rest. The person's own sign-out ends the AS
  * session first (oidcEndSession, models/auth signOut). */
 export { clearLocal as oidcClearLocal }
+
+/** Tokens and saved accounts belong to the login server that issued them, so a boot on another stage
+ *  (Test Settings, or a version whose default stage differs) drops them. Sessions stored before the
+ *  marker existed are judged by their id_token's own issuer. */
+export function oidcReconcileIssuer() {
+  try {
+    const same = (issuer?: string) => issuer?.replace(/\/+$/, '') === OAUTH_ISSUER.replace(/\/+$/, '')
+    const foreign = (tokens?: { id_token?: string }) => {
+      const issuer = decodeJwt(tokens?.id_token)?.iss
+      return !!issuer && !same(issuer)
+    }
+    const marked = tokenStore().getItem(ISSUER_KEY)
+    const switched = !!marked && !same(marked)
+    const registry = readRegistry()
+    const kept = switched ? {} : Object.fromEntries(Object.entries(registry).filter(([, entry]) => !foreign(entry)))
+    if (switched || foreign(stored())) {
+      clearActivationHint()
+      writeRegistry(kept)
+      clearLocal()
+    } else if (Object.keys(kept).length !== Object.keys(registry).length) writeRegistry(kept)
+    tokenStore().setItem(ISSUER_KEY, OAUTH_ISSUER)
+  } catch {
+    /* storage blocked — nothing stored to reconcile */
+  }
+}
 
 function clearLocal() {
   clearActivationHint()

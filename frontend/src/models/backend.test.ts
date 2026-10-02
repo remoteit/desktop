@@ -7,28 +7,6 @@ vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 
 import backend from './backend'
 
-describe('backend — setPreferences', () => {
-  beforeEach(() => emit.mockClear())
-
-  const receive = async (preferences: IPreferences) => {
-    const dispatch = { backend: { set: vi.fn() } }
-    await (backend as any).effects(dispatch).setPreferences(preferences)
-    return dispatch.backend.set
-  }
-
-  it('clears a saved shared-domain override, which the CLI service install reads', async () => {
-    const preferences = { switchApi: true, apiGraphqlURL: 'https://api.remote.it/graphql/beta' } as IPreferences
-    expect(await receive(preferences)).toHaveBeenCalledWith({ preferences })
-    expect(emit).toHaveBeenCalledWith('preferences', { switchApi: false, apiGraphqlURL: '' })
-  })
-
-  it('leaves any other target alone', async () => {
-    await receive({ switchApi: true, apiGraphqlURL: 'https://cloud.dev.remote.it/api/graphql' } as IPreferences)
-    await receive({ switchApi: false, apiGraphqlURL: '' } as IPreferences)
-    expect(emit).not.toHaveBeenCalled()
-  })
-})
-
 describe('backend.unregisterThisDevice', () => {
   const state = { backend: { thisId: 'THIS' }, ui: {} }
   let dispatch: any

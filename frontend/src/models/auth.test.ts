@@ -16,7 +16,15 @@ const {
   oidcActor,
   browser,
   storeState,
+  oidcReconcileIssuer,
+  chooseStage,
+  reloadIfStageChanged,
+  controllerClose,
 } = vi.hoisted(() => ({
+  oidcReconcileIssuer: vi.fn(),
+  chooseStage: vi.fn(),
+  reloadIfStageChanged: vi.fn(),
+  controllerClose: vi.fn(),
   oidcStart: vi.fn(),
   oidcEndSession: vi.fn(),
   changePassword: vi.fn(),
@@ -36,17 +44,20 @@ vi.mock('../services/oidc', () => ({
   oidcGrantStale,
   oidcMcpDetailReady,
   oidcActor,
+  oidcClearLocal: vi.fn(),
+  oidcReconcileIssuer,
   OidcError: class OidcError extends Error {},
 }))
+vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 vi.mock('../services/accountSecurity', () => ({ changePassword }))
-vi.mock('../services/Controller', () => ({ default: {}, emit: vi.fn(() => false) }))
-vi.mock('../services/CloudSync', () => ({ default: {} }))
-vi.mock('../services/cloudController', () => ({ default: {} }))
+vi.mock('../services/Controller', () => ({ default: { close: controllerClose }, emit: vi.fn(() => false) }))
+vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn() } }))
+vi.mock('../services/cloudController', () => ({ default: { reset: vi.fn() } }))
 vi.mock('../services/Network', () => ({ default: {} }))
 vi.mock('../services/browser', () => ({ default: browser }))
 vi.mock('../services/analytics', () => ({ default: {} }))
-vi.mock('../services/zendesk', () => ({ default: {} }))
+vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
@@ -66,7 +77,7 @@ vi.mock('axios', () => ({ default: {} }))
 function makeDispatch() {
   return {
     auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn() },
-    ui: { set: vi.fn() },
+    ui: { set: vi.fn(), setPersistent: vi.fn() },
     chat: { signOut: vi.fn() },
   }
 }
@@ -88,6 +99,10 @@ beforeEach(() => {
   oidcActor.mockReset().mockReturnValue(null)
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
+  oidcReconcileIssuer.mockReset()
+  chooseStage.mockReset()
+  reloadIfStageChanged.mockReset()
+  controllerClose.mockReset()
 })
 
 describe('auth model — sign-in always offers the chooser', () => {
@@ -300,5 +315,55 @@ describe('auth model — the password change is one call to the AS', () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).changePassword(values)
     expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'Choose a password of at least 12 characters.' })
+  })
+})
+
+/* A stage switch stores the choice, clears the old API overrides, signs out and reloads; boot then
+   drops whatever the old login server issued. */
+describe('auth model — a stage switch signs out and reloads onto the new stage', () => {
+  const apis = {
+    switchApi: true,
+    apiGraphqlURL: 'https://cloud.evan.remote.it/api/graphql',
+    agentURL: 'https://x.test',
+  }
+  const cleared = {
+    apis: { switchApi: false, customTarget: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' },
+  }
+  it('signed in: stores the stage and clears the old API overrides, then signs out', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).switchStage('dev', { auth: { user: { id: 'u1' } }, ui: { apis } })
+    expect(chooseStage).toHaveBeenCalledWith('dev')
+    expect(dispatch.ui.setPersistent).toHaveBeenCalledWith(cleared)
+    expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
+    expect(chooseStage.mock.invocationCallOrder[0]).toBeLessThan(dispatch.auth.signOut.mock.invocationCallOrder[0])
+    expect(reloadIfStageChanged).not.toHaveBeenCalled()
+  })
+
+  it('signed out: nothing to sign out of, so it reloads straight away', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).switchStage('prod', { auth: {}, ui: { apis: {} } })
+    expect(chooseStage).toHaveBeenCalledWith('prod')
+    expect(dispatch.auth.signOut).not.toHaveBeenCalled()
+    expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
+  })
+
+  it('boot reconciles the stored session with the running login server before anything else', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).init(undefined, { auth: { user: { id: 'u1' } } })
+    expect(oidcReconcileIssuer).toHaveBeenCalledTimes(1)
+    expect(oidcReconcileIssuer.mock.invocationCallOrder[0]).toBeLessThan(dispatch.auth.set.mock.invocationCallOrder[0])
+  })
+
+  it('the sign-out teardown reloads onto a changed stage as its last step', async () => {
+    const fns: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {}
+    const dispatch = new Proxy(fns, {
+      get: (models, model: string) =>
+        (models[model] ??= new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
+          get: (calls, fn: string) => (calls[fn] ??= vi.fn()),
+        })),
+    })
+    await effectsFor(dispatch).signedOut()
+    expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
+    expect(controllerClose.mock.invocationCallOrder[0]).toBeLessThan(reloadIfStageChanged.mock.invocationCallOrder[0])
   })
 })

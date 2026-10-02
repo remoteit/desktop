@@ -2256,8 +2256,10 @@
     "errorUnreachable": "",
     "redirecting": "",
     "retry": "",
+    "stageNotice": "",
     "subtitle": "",
     "title": "",
+    "useProduction": "",
     "waiting": ""
   },
   "statusChip": {
@@ -2340,7 +2342,11 @@
     "setServiceLicensesHint": "Legt die Lizenzierung aller Geräte in dieser Reihenfolge fest: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY",
     "showLatestAnnouncement": "Neueste Ankündigung anzeigen",
     "showLatestAnnouncementHint": "Zeigt eine Vorschau der neuesten Ankündigung, ohne deren Lesestatus zu ändern.",
+    "stageLabel": "",
     "switchGraphQLAPIs": "GraphQL-APIs wechseln",
+    "switchStageAction": "",
+    "switchStageMessage": "",
+    "switchStageTitle": "",
     "testOptions": "Testoptionen",
     "title": "Testeinstellungen",
     "webSocketURL": "WebSocket-URL"

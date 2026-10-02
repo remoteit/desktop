@@ -7,7 +7,7 @@ import i18n, { resolveLanguage, LanguageMode } from '../i18n'
 import { Settings as LuxonSettings } from 'luxon'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
-import { LEGACY_SHARED_GRAPHQL_RE, SIDEBAR_WIDTH } from '../constants'
+import { OAUTH_ISSUER, SIDEBAR_WIDTH } from '../constants'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/browser'
 
@@ -43,12 +43,14 @@ export type UIState = {
   language: LanguageMode
   testUI?: 'ON' | 'HIGHLIGHT'
   apis: {
-    switchApi?: IPreferences['switchApi']
-    apiGraphqlURL?: IPreferences['apiGraphqlURL']
-    webSocketURL?: IPreferences['webSocketURL']
-    apiURL?: IPreferences['apiURL']
+    switchApi?: boolean
+    apiGraphqlURL?: string
+    webSocketURL?: string
+    apiURL?: string
     // Test UI: point the Remote.It AI chat at a deployed agent (https only)
     agentURL?: string
+    issuer?: string
+    customTarget?: boolean
   }
   layout: ILayout
   silent: string | null
@@ -363,10 +365,15 @@ export default createModel<RootModel>()({
   },
 })
 
+// Overrides saved before they carried a login server cannot be trusted on any stage: one account's
+// stage switch cannot reach another account's saved settings.
 function migrateApiTarget(states: ILookup<any>): ILookup<any> {
-  if (!LEGACY_SHARED_GRAPHQL_RE.test(states.apis?.apiGraphqlURL ?? '')) return states
-  console.log('MIGRATE API TARGET', states.apis.apiGraphqlURL)
-  return { ...states, apis: { ...states.apis, switchApi: false, apiGraphqlURL: '', webSocketURL: '' } }
+  const apis = states.apis
+  const chosen = apis?.switchApi || apis?.apiGraphqlURL || apis?.webSocketURL || apis?.agentURL
+  if (!chosen || apis.issuer === OAUTH_ISSUER) return states
+  console.log('MIGRATE API TARGET from', apis.issuer ?? 'an unstamped save', apis.apiGraphqlURL)
+  const cleared = { switchApi: false, customTarget: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' }
+  return { ...states, apis: { ...apis, ...cleared, issuer: OAUTH_ISSUER } }
 }
 
 function migrateColumnStates(states: ILookup<any>): ILookup<any> {

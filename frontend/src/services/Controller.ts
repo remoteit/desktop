@@ -249,7 +249,7 @@ function getEventHandlers() {
       backend.set({ environment: result })
     },
 
-    preferences: (result: IPreferences) => backend.setPreferences(result),
+    preferences: (result: IPreferences) => backend.set({ preferences: result }),
 
     'app/filePath': (filePath: string) => backend.set({ filePath }),
 
