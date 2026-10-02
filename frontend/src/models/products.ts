@@ -156,20 +156,21 @@ export default createModel<RootModel>()({
       return true
     },
 
-    // The product as graphql has it after a code changed, in the account the change was made in: the active account can
-    // change while the mutation runs. When that read fails, the product's command and codes are cleared rather than left
+    // A product's codes as graphql has them after a code changed, in the account the change was made in: the active
+    // account can change while the mutation runs. Only the code fields are merged, into the store as it is when the read
+    // returns (mergeCodes), so a change made meanwhile is kept. When the read fails they are cleared rather than left
     // stale (a revoked code must not stay on screen as the one to register with); the settings page reads them again.
-    async refreshCodes({ productId, accountId }: { productId: string; accountId: string }, state) {
+    async refreshCodes({ productId, accountId }: { productId: string; accountId: string }) {
       const response = await graphQLDeviceProduct(productId, accountId)
       const fresh = response !== 'ERROR' ? response?.data?.data?.login?.account?.deviceProducts?.items?.[0] : undefined
-      const productModel = getProductModel(state, accountId)
-      dispatch.products.set({
-        all: productModel.all.map(p =>
-          p.id !== productId
-            ? p
-            : fresh || { ...p, registrationCode: undefined, registrationCommand: undefined, registrationCodes: undefined }
-        ),
+      dispatch.products.mergeCodes({
         accountId,
+        productId,
+        codes: {
+          registrationCode: fresh?.registrationCode,
+          registrationCommand: fresh?.registrationCommand,
+          registrationCodes: fresh?.registrationCodes,
+        },
       })
     },
 
@@ -362,6 +363,25 @@ export default createModel<RootModel>()({
     rootSet(state: ProductsAccountState, params: ProductsAccountState) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
+    },
+    mergeCodes(
+      state: ProductsAccountState,
+      {
+        accountId,
+        productId,
+        codes,
+      }: {
+        accountId: string
+        productId: string
+        codes: Pick<IDeviceProduct, 'registrationCode' | 'registrationCommand' | 'registrationCodes'>
+      }
+    ) {
+      const model = state[accountId]
+      if (!model) return state
+      return {
+        ...state,
+        [accountId]: { ...model, all: model.all.map(p => (p.id === productId ? { ...p, ...codes } : p)) },
+      }
     },
   },
 })
