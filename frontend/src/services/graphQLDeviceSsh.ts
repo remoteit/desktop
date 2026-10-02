@@ -5,14 +5,23 @@ import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 // whoever manages it, checked when graphql signs a certificate for a session — and whether the device takes them.
 
 export type DeviceSshGrant = { login: string; user: { id: string; email: string | null } }
-export type DeviceSshRead = { on: boolean; fallback: boolean; grants: DeviceSshGrant[] }
+// on, localOnly and refused are what the device says (about.ssh); certificates is the account's switch, null when it
+// leaves it to the device.
+export type DeviceSshRead = {
+  on: boolean
+  localOnly: boolean
+  refused: string | null
+  certificates: boolean | null
+  fallback: boolean
+  grants: DeviceSshGrant[]
+}
 
 const QUERY = `query DeviceSsh($id: [String!]!) {
   login {
     device(id: $id) {
       id
       about { data }
-      sshAccess { fallback grants { login user { id email } } }
+      sshAccess { fallback certificates grants { login user { id email } } }
     }
   }
 }`
@@ -25,7 +34,13 @@ export async function graphQLDeviceSsh(deviceId: string): Promise<DeviceSshRead 
   if (graphQLGetErrors(response, true, { query: QUERY, variables })) return null
   const device = response.data?.data?.login?.device?.[0]
   if (!device?.sshAccess) return null
-  return { on: device.about?.data?.ssh?.certificates === true, ...device.sshAccess }
+  const ssh = device.about?.data?.ssh
+  return {
+    on: ssh?.certificates === true,
+    localOnly: ssh?.local_only === true,
+    refused: ssh?.refused || null,
+    ...device.sshAccess,
+  }
 }
 
 export async function graphQLGrantDeviceSsh(deviceId: string, login: string, email: string) {
@@ -43,5 +58,14 @@ export async function graphQLRevokeDeviceSsh(deviceId: string, login: string, us
         revokeDeviceSsh(deviceId: $deviceId, login: $login, userId: $userId)
       }`,
     { deviceId, login, userId }
+  )
+}
+
+export async function graphQLSetDeviceSshCertificates(deviceId: string, on: boolean) {
+  return await graphQLBasicRequest(
+    ` mutation SetDeviceSshCertificates($deviceId: String!, $on: Boolean!) {
+        setDeviceSshCertificates(deviceId: $deviceId, on: $on)
+      }`,
+    { deviceId, on }
   )
 }
