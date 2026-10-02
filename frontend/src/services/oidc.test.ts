@@ -133,3 +133,46 @@ describe('oidcCompleteFromUrl with no flow for the callback', () => {
     expect(window.location.search).toBe('')
   })
 })
+
+describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => {
+  let exchange: () => Promise<Response>
+  const ownFlow = () => JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
+
+  beforeEach(async () => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    vi.mocked(fetch).mockImplementation((url, init) => {
+      if (String(url).endsWith('/.well-known/openid-configuration'))
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              authorization_endpoint: 'https://login.test/authorize',
+              token_endpoint: 'https://login.test/token',
+            })
+          )
+        )
+      if (String(init?.body ?? '').includes('grant_type=authorization_code')) return exchange()
+      return Promise.reject(new Error('offline'))
+    })
+    await oidcStart()
+    window.history.replaceState({}, '', `/?code=c1&state=${ownFlow().state}`)
+  })
+  afterEach(() => vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline'))))
+
+  it('still holds the flow mid-exchange, so a reload by the second tab’s callback can complete', async () => {
+    const state = ownFlow().state
+    exchange = () => new Promise(() => {})
+    void oidcCompleteFromUrl()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ownFlow()?.state).toBe(state)
+    expect(window.localStorage.getItem(`oidc.flow:${state}`)).not.toBeNull()
+  })
+
+  it('drops the flow once the exchange fails', async () => {
+    const state = ownFlow().state
+    exchange = () => Promise.resolve(new Response(JSON.stringify({ error: 'invalid_grant' }), { status: 400 }))
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ oauthError: 'invalid_grant' })
+    expect(ownFlow()).toBeNull()
+    expect(window.localStorage.getItem(`oidc.flow:${state}`)).toBeNull()
+  })
+})
