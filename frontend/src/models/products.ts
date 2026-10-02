@@ -63,6 +63,11 @@ type ProductsAccountState = {
   [accountId: string]: ProductsState
 }
 
+// The latest code refresh asked for, per account and product: a response to an earlier one is superseded and dropped,
+// so a read that started before a rotation or revocation cannot land after it and put the old codes back.
+const codeRefreshes = new Map<string, number>()
+let codeRefreshCount = 0
+
 const defaultAccountState: ProductsAccountState = {
   default: { ...defaultState },
 }
@@ -161,7 +166,11 @@ export default createModel<RootModel>()({
     // returns (mergeCodes), so a change made meanwhile is kept. When the read fails they are cleared rather than left
     // stale (a revoked code must not stay on screen as the one to register with); the settings page reads them again.
     async refreshCodes({ productId, accountId }: { productId: string; accountId: string }) {
+      const key = `${accountId}:${productId}`
+      const request = ++codeRefreshCount
+      codeRefreshes.set(key, request)
       const response = await graphQLDeviceProduct(productId, accountId)
+      if (codeRefreshes.get(key) !== request) return
       const fresh = response !== 'ERROR' ? response?.data?.data?.login?.account?.deviceProducts?.items?.[0] : undefined
       dispatch.products.mergeCodes({
         accountId,
