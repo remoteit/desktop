@@ -12,9 +12,10 @@ export type DeviceApp = {
   serviceId: string | null
   port: number | null
   hostKey: string | null
+  version: string | null // the app installed there
 }
 
-const FIELDS = 'id on state detail serviceId port hostKey'
+const FIELDS = 'id on state detail serviceId port hostKey version'
 
 // null: an API without apps, or a device this person cannot see.
 export async function graphQLDeviceApps(deviceId: string): Promise<DeviceApp[] | null> {

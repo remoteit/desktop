@@ -65,7 +65,9 @@ export const DeviceApps: React.FC<{ deviceId: string; canManage: boolean }> = ({
       case 'running':
         return t('deviceApps.running', 'Running — logins by certificate, nothing listening on the device')
       case 'starting':
-        return t('deviceApps.starting', 'Starting — waiting for the device to say so')
+        return app.detail
+          ? t('deviceApps.startingDetail', 'Starting — {{detail}}', { detail: app.detail })
+          : t('deviceApps.starting', 'Starting — waiting for the device to say so')
       case 'unavailable':
         return t('deviceApps.unavailable', 'Not available here: {{detail}}', { detail: app.detail })
       default:
@@ -84,7 +86,11 @@ export const DeviceApps: React.FC<{ deviceId: string; canManage: boolean }> = ({
               <Icon name="terminal" size="md" fixedWidth />
             </ListItemIcon>
             <ListItemText
-              primary={t('deviceApps.console', 'Console')}
+              primary={
+                app.version
+                  ? `${t('deviceApps.console', 'Console')} ${app.version}`
+                  : t('deviceApps.console', 'Console')
+              }
               secondary={
                 <>
                   <Typography
