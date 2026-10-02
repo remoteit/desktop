@@ -2204,8 +2204,10 @@
     "errorUnreachable": "We couldn't reach the sign-in service. Check your internet connection, then try again.",
     "redirecting": "Taking you to sign in…",
     "retry": "Try again",
+    "stageNotice": "Signing in to the {{name}} stage at {{host}}.",
     "subtitle": "We'll open your browser to sign you in with Remote.It Single Sign-On.",
     "title": "Sign in to {{app}}",
+    "useProduction": "Use production",
     "waiting": "Waiting for your browser… finish signing in there."
   },
   "statusChip": {
@@ -2288,7 +2290,11 @@
     "setServiceLicensesHint": "Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY",
     "showLatestAnnouncement": "Show latest announcement",
     "showLatestAnnouncementHint": "Previews the latest announcement without changing its read status.",
+    "stageLabel": "{{name}} stage",
     "switchGraphQLAPIs": "Switch GraphQL APIs",
+    "switchStageAction": "Sign out and switch",
+    "switchStageMessage": "You will be signed out and asked to sign in again at {{issuer}}. Other accounts saved in this app are removed.",
+    "switchStageTitle": "Switch to the {{name}} stage?",
     "testOptions": "Test Options",
     "title": "Test Settings",
     "webSocketURL": "WebSocket URL"

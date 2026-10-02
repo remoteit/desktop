@@ -8,6 +8,11 @@ import {
   CLOUD_TREE_RE,
   LEGACY_GRAPHQL_RE,
   LEGACY_EVENTS_RE,
+  STAGES,
+  STAGE_NAMES,
+  STAGE_PINNED,
+  StageName,
+  OAUTH_ISSUER,
   cloudTreeUrls,
   resourceForApiURL,
 } from '../constants'
@@ -26,11 +31,20 @@ import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { ListItemRadio } from '../components/ListItemRadio'
 import { Container } from '../components/Container'
+import { Confirm } from '../components/Confirm'
 import { PortalUI } from '../components/PortalUI'
 import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 import sleep from '../helpers/sleep'
+
+const cloudPair = (key: string, name: string, tree: string) => ({
+  key,
+  name,
+  ...cloudTreeUrls(tree),
+  resources: [tree],
+})
+const host = (url: string) => new URL(url).host
 
 export const TestPage: React.FC = () => {
   const { t } = useTranslation()
@@ -44,7 +58,7 @@ export const TestPage: React.FC = () => {
   const overrides = useSelector((state: State) => state.ui.limitsOverride)
 
   async function setAPIPreferences(values: UIState['apis']) {
-    await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
+    await dispatch.ui.setPersistent({ apis: { ...apis, ...values, issuer: OAUTH_ISSUER } })
     emit('preferences', values)
   }
 
@@ -103,7 +117,7 @@ export const TestPage: React.FC = () => {
       const cloud = target.identifier.match(CLOUD_TREE_RE)
       if (cloud) {
         const key = `cloud:${cloud[1] || 'prod'}`
-        pairs.set(key, { key, name: target.name, ...cloudTreeUrls(target.identifier), resources: [target.identifier] })
+        pairs.set(key, cloudPair(key, target.name, target.identifier))
         continue
       }
       const gql = target.identifier.match(LEGACY_GRAPHQL_RE)
@@ -131,15 +145,37 @@ export const TestPage: React.FC = () => {
   // same string until the unified front, where the build's resource (…/api) matches no row's URL
   // (…/api/graphql) — so every radio read unchecked and the picker looked broken.
   const currentGraphql = getApiURL()
+  // Each row names the login server it is signed by. A row of the running one switches in place; a
+  // stage row of another one is a stage switch, which signs out. Stage rows win a shared URL.
+  type Row = StagePair & { issuer: string; stage?: StageName }
+  const rows: Row[] = [
+    ...(STAGE_PINNED ? [] : STAGE_NAMES).map(stage => ({
+      ...cloudPair(`stage:${stage}`, STAGES[stage].name, STAGES[stage].api),
+      issuer: STAGES[stage].issuer,
+      stage,
+    })),
+    ...stagePairs.map(pair => ({ ...pair, issuer: OAUTH_ISSUER })),
+  ].filter((row, index, all) => all.findIndex(other => other.graphql === row.graphql) === index)
+  const reachable = rows.filter(row => row.issuer === OAUTH_ISSUER)
   const [customMode, setCustomMode] = useState<boolean | undefined>(undefined)
   const customSelected =
-    customMode ?? (!!apis.switchApi && stagePairs.length > 0 && !stagePairs.some(p => p.graphql === currentGraphql))
+    customMode ??
+    (!!apis.customTarget ||
+      (!!apis.switchApi && stagePairs.length > 0 && !reachable.some(row => row.graphql === currentGraphql)))
+  const [pendingStage, setPendingStage] = useState<StageName | undefined>(undefined)
+  const pending = pendingStage && STAGES[pendingStage]
+
+  function selectRow(row: Row) {
+    if (row.issuer === OAUTH_ISSUER) selectStage(row)
+    else if (row.stage) setPendingStage(row.stage)
+  }
 
   async function selectCustom() {
     setMintError('')
     setCustomMode(true)
     await setAPIPreferences({
       switchApi: true,
+      customTarget: true,
       apiGraphqlURL: apis.apiGraphqlURL || getApiURL() || '',
       webSocketURL: apis.webSocketURL || getWebSocketURL() || '',
     })
@@ -151,7 +187,9 @@ export const TestPage: React.FC = () => {
     const isDefault = pair.graphql === GRAPHQL_API
     await setAPIPreferences({
       switchApi: !isDefault,
+      customTarget: false,
       apiGraphqlURL: pair.graphql!,
+      agentURL: '',
       ...(pair.ws ? { webSocketURL: pair.ws } : {}),
     })
     try {
@@ -234,13 +272,19 @@ export const TestPage: React.FC = () => {
 
       <Typography variant="subtitle1">{t('testPage.apiTarget', 'API Target')}</Typography>
       <List>
-        {stagePairs.map(pair => (
+        {rows.map(row => (
           <ListItemRadio
-            key={pair.key}
-            label={pair.name}
-            subLabel={pair.ws ? `${pair.graphql} + events` : pair.graphql}
-            checked={!customSelected && currentGraphql === pair.graphql}
-            onClick={() => selectStage(pair)}
+            key={row.key}
+            label={row.stage ? t('testPage.stageLabel', '{{name}} stage', { name: row.name }) : row.name}
+            subLabel={
+              row.stage
+                ? [row.issuer, STAGES[row.stage].api, STAGES[row.stage].agent].map(host).join(' · ')
+                : row.ws
+                ? `${row.graphql} + events`
+                : row.graphql
+            }
+            checked={!customSelected && row.issuer === OAUTH_ISSUER && currentGraphql === row.graphql}
+            onClick={() => selectRow(row)}
           />
         ))}
         <ListItemRadio
@@ -293,10 +337,54 @@ export const TestPage: React.FC = () => {
                 }}
                 hideIcon
               />
+              <InlineTextFieldSetting
+                value={apis.agentURL || OAUTH_AGENT_RESOURCE}
+                label={t('testPage.agentURL', 'Agent service URL (advanced)')}
+                disabled={!customSelected}
+                resetValue={OAUTH_AGENT_RESOURCE}
+                maxLength={200}
+                onSave={result => {
+                  const url = result.toString().trim()
+                  if (url && !isSecureAgentURL(url)) {
+                    setAgentError(t('testPage.agentURLInvalid', 'Agent service URL must start with https://'))
+                    return
+                  }
+                  setAgentError('')
+                  // Reset (or entering the default) CLEARS the override so agentURL() falls back to the
+                  // /agent proxy (dev) or the stage's agent (build) — never pinning the OAuth audience as the transport.
+                  setAPIPreferences({ agentURL: url === OAUTH_AGENT_RESOURCE ? '' : url })
+                }}
+                hideIcon
+              />
+              {!!agentError && (
+                <ListItem>
+                  <Typography variant="caption" color="error">
+                    {agentError}
+                  </Typography>
+                </ListItem>
+              )}
             </List>
           </Quote>
         </ListItem>
       </List>
+      <Confirm
+        open={!!pendingStage}
+        onConfirm={() => {
+          setPendingStage(undefined)
+          if (pendingStage) dispatch.auth.switchStage(pendingStage)
+        }}
+        onDeny={() => setPendingStage(undefined)}
+        title={t('testPage.switchStageTitle', 'Switch to the {{name}} stage?', { name: pending?.name })}
+        action={t('testPage.switchStageAction', 'Sign out and switch')}
+        color="warning"
+        maxWidth="xs"
+      >
+        {t(
+          'testPage.switchStageMessage',
+          'You will be signed out and asked to sign in again at {{issuer}}. Other accounts saved in this app are removed.',
+          { issuer: pending && host(pending.issuer) }
+        )}
+      </Confirm>
 
       {chatEnabled && (
         <>
@@ -315,37 +403,6 @@ export const TestPage: React.FC = () => {
               toggle={!!backgroundEnrolled}
               onClick={() => (backgroundEnrolled ? disableBackground() : connectBackground())}
             />
-            <ListItem>
-              <Quote margin={null} indent="listItem" noInset>
-                <List disablePadding>
-                  <InlineTextFieldSetting
-                    value={apis.agentURL || OAUTH_AGENT_RESOURCE}
-                    label={t('testPage.agentURL', 'Agent service URL (advanced)')}
-                    resetValue={OAUTH_AGENT_RESOURCE}
-                    maxLength={200}
-                    onSave={result => {
-                      const url = result.toString().trim()
-                      if (url && !isSecureAgentURL(url)) {
-                        setAgentError(t('testPage.agentURLInvalid', 'Agent service URL must start with https://'))
-                        return
-                      }
-                      setAgentError('')
-                      // Reset (or entering the default) CLEARS the override so agentURL() falls back to the
-                      // /agent proxy (dev) or VITE_AGENT_URL (build) — never pinning the OAuth audience as the transport.
-                      setAPIPreferences({ agentURL: url === OAUTH_AGENT_RESOURCE ? '' : url })
-                    }}
-                    hideIcon
-                  />
-                  {!!agentError && (
-                    <ListItem>
-                      <Typography variant="caption" color="error">
-                        {agentError}
-                      </Typography>
-                    </ListItem>
-                  )}
-                </List>
-              </Quote>
-            </ListItem>
           </List>
         </>
       )}
