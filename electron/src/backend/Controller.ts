@@ -234,8 +234,13 @@ class Controller {
   releaseAgent = async () => {
     Logger.info('RELEASE AGENT')
     await cli.signOut()
+    if (!cli.isSignedOut()) {
+      Logger.warn('RELEASE AGENT FAILED: the CLI is still signed in')
+      return false
+    }
     user.clear()
     await this.pool.clearMemory()
+    return true
   }
 
   signOutComplete = () => {

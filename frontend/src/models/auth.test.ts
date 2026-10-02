@@ -22,7 +22,9 @@ const {
   controllerClose,
   retryWithAgentSwitch,
   oidcAccounts,
+  popout,
 } = vi.hoisted(() => ({
+  popout: { value: false },
   retryWithAgentSwitch: vi.fn(),
   oidcAccounts: vi.fn(() => [] as Array<{ sub: string; email?: string }>),
   oidcReconcileIssuer: vi.fn(),
@@ -54,6 +56,11 @@ vi.mock('../services/oidc', () => ({
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
+vi.mock('../services/chatPopout', () => ({
+  get isChatPopout() {
+    return popout.value
+  },
+}))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 vi.mock('../services/accountSecurity', () => ({ changePassword }))
 vi.mock('../services/Controller', () => ({
@@ -392,6 +399,15 @@ describe("auth model — this computer's agent belongs to another account", () =
     await effectsFor(dispatch).backendSignInError(agentOwnedMessage(owner))
     expect(dispatch.auth.set).toHaveBeenCalledWith({ agentOwner: owner })
     expect(dispatch.auth.signedOut).not.toHaveBeenCalled()
+  })
+
+  it('the chat popout never offers the switch; it signs out like any refusal', async () => {
+    popout.value = true
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).backendSignInError(agentOwnedMessage(owner))
+    popout.value = false
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.set).toHaveBeenCalledWith(expect.objectContaining({ signInErrorCode: 'agentOwned' }))
   })
 
   it('an agent that cannot move signs out and names its owner', async () => {

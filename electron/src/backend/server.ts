@@ -18,13 +18,14 @@ import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
 import { IP_PRIVATE, IP_OPEN } from '@common/constants'
 import { agentOwnedMessage } from '@common/agentOwner'
+import { isLoopback } from './loopback'
 
 const d = debug('Server')
 
 class Server {
   public io?: SocketIO.Server
   public socket?: SocketIO.Socket
-  public releaseAgent?: () => Promise<void>
+  public releaseAgent?: () => Promise<boolean>
   private app: Express
 
   EVENTS = {
@@ -134,17 +135,20 @@ class Server {
       // The agent belongs to another account. Moving it needs that account's credentials, which the
       // backend holds only while it is still signed in as the owner: the CLI signs out with them.
       else {
-        const canSwitch = user.signedIn && user.id === admin.guid
+        const canSwitch = isLoopback(socket.handshake.address) && user.signedIn && user.id === admin.guid
+        const command = environment.isWindows
+          ? `'remoteit signout' from an Administrator Command Prompt`
+          : `'sudo remoteit signout' from your terminal`
+
         if (credentials.switchAgent && canSwitch && this.releaseAgent) {
           Logger.warn('AGENT SWITCH', { from: admin.username, to: credentials.username })
-          try {
-            await user.authHashLogin(credentials.username, credentials.authHash)
-          } catch (error) {
-            Logger.warn('AGENT SWITCH REFUSED', { username: credentials.username, error })
-            return callback(new Error('Server authentication failed.'), false)
-          }
-          await this.releaseAgent()
-          return callback(null, !!(await user.checkSignIn(credentials)))
+          let released = true
+          const release = this.releaseAgent
+          if (await user.checkSignIn(credentials, async () => (released = await release()))) return callback(null, true)
+          const refusal = released
+            ? 'Server authentication failed.'
+            : agentOwnedMessage({ username: admin.username, canSwitch: false, command })
+          return callback(new Error(refusal), false)
         }
 
         Logger.warn('USER ALREADY SIGNED IN', {
@@ -154,10 +158,6 @@ class Server {
           signedInID: admin.guid,
           canSwitch,
         })
-
-        const command = environment.isWindows
-          ? `'remoteit signout' from an Administrator Command Prompt`
-          : `'sudo remoteit signout' from your terminal`
 
         return callback(new Error(agentOwnedMessage({ username: admin.username, canSwitch, command })), false)
       }

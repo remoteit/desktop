@@ -45,6 +45,7 @@ import zendesk from '../services/zendesk'
 import i18n from '../i18n'
 import { withTimeout } from '../helpers/sleep'
 import { AgentOwner, parseAgentOwned } from '@common/agentOwner'
+import { isChatPopout } from '../services/chatPopout'
 
 export type SignInErrorCode = OidcErrorCode | 'agentOwned'
 
@@ -348,7 +349,7 @@ export default createModel<RootModel>()({
     async backendSignInError(signInError: string) {
       console.error(signInError)
       const owner = parseAgentOwned(signInError)
-      if (owner?.canSwitch) return dispatch.auth.set({ agentOwner: owner })
+      if (owner?.canSwitch && !isChatPopout) return dispatch.auth.set({ agentOwner: owner })
       // Tear down FIRST, then record the failure: signedOut() deliberately clears
       // signInFailed/signInError (a failure logged while signed in must not survive into the
       // signed-out screen), so a set() before it was wiped and SignInApp — which renders its
