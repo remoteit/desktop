@@ -95,6 +95,13 @@ describe('SignInApp', () => {
     expect(button('Try again')).toBeUndefined()
   })
 
+  it('keeps the waiting actions reachable in the native mobile app', () => {
+    Object.assign(browser, { isElectron: false, isNative: true })
+    render(screens.waiting)
+    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Open browser again')
+    expect(button('Cancel')).toBeDefined()
+  })
+
   it('on the web, where the page is the browser, offers a plain sign-in', () => {
     Object.assign(browser, { isElectron: false, isNative: false })
     autoStart.spent = true

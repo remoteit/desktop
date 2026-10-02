@@ -175,7 +175,7 @@ export function SignInApp() {
       </Box>
     )
 
-  if (autoStart || (!browser.isElectron && signingIn))
+  if (autoStart || (!browser.isNative && signingIn))
     return (
       <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={12}>
         <CircularProgress size={28} />
