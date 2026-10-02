@@ -20,6 +20,8 @@ export const TerminalPage: React.FC = () => {
   const port = Number(params.get('port') || 22)
   const title = params.get('title') || name
   const serviceId = params.get('service') || ''
+  // The host key the device reports for its console: one that matches is let through, one that does not is refused.
+  const expectedHostKey = params.get('hostKey') || ''
 
   useEffect(() => {
     if (!box.current || !name) return
@@ -106,6 +108,13 @@ export const TerminalPage: React.FC = () => {
             return answers
           },
           hostKey: async key => {
+            if (expectedHostKey) {
+              if (key.fingerprint === expectedHostKey) return true
+              term.write(
+                `\x1b[31mThe host key of ${key.host} (${key.fingerprint}) is not the one the device reports (${expectedHostKey}): refused.\x1b[0m\r\n`
+              )
+              return false
+            }
             term.write(
               `The host key of ${key.host} is not known yet.\r\n${key.type} key fingerprint is ${key.fingerprint}.\r\n`
             )
@@ -136,7 +145,7 @@ export const TerminalPage: React.FC = () => {
       session?.close()
       term.dispose()
     }
-  }, [name, port, serviceId])
+  }, [name, port, serviceId, expectedHostKey])
 
   return <Box ref={box} sx={{ position: 'fixed', inset: 0, bgcolor: '#111111', padding: 1 }} />
 }
