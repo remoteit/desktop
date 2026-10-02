@@ -19,15 +19,16 @@ export const ProductSettingsPage: React.FC = () => {
 
   const registrationCommand = product?.registrationCommand
 
-  // Read once per product, and again whenever the product is replaced without its codes: the list query and the edit
-  // mutations do not carry them.
+  // Read once per product, and again whenever the product is replaced by one without its codes: the list query and the
+  // edit mutations do not carry them. Keyed on the product object, so each such replacement reads it again; a failed
+  // read replaces nothing, so it is not retried in a loop.
   const detailed = product?.registrationCodes !== undefined
   const fetched = useRef<string>()
   useEffect(() => {
-    if (!productId || (fetched.current === productId && detailed)) return
+    if (!productId || (fetched.current === productId && (detailed || !product))) return
     fetched.current = productId
     dispatch.products.fetchSingle(productId)
-  }, [productId, detailed])
+  }, [productId, product])
 
   if (!product) {
     return (
