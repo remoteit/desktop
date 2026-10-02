@@ -46,6 +46,8 @@ describe('backend/server broadcasts', () => {
     })
   })
 
+  afterEach(() => io.disconnectSockets(true))
+
   afterAll(done => {
     sockets.forEach(socket => socket.close())
     io.close(() => done())
@@ -121,23 +123,28 @@ describe('backend/server broadcasts', () => {
     expect(await updated).toEqual({ id: 'service-3' })
   })
 
-  it('leaves the tray sign-out to a signed-in window, and does it itself once none is left', async () => {
+  it('leaves the tray sign-out to any signed-in window, and does it itself once none is left', async () => {
     const signOut = (cli.signOut as jest.Mock).mockClear()
-    const window = await open()
     Object.assign(user, credentials)
-    expect(await authenticate(window, credentials)).toBe('authenticated')
+    const earlier = await open()
+    expect(await authenticate(earlier, credentials)).toBe('authenticated')
+    expect(await authenticate(await open(), credentials)).toBe('authenticated')
+    server.socket?.disconnect(true)
 
-    const relayed = next(window, electronInterface.EVENTS.signOut)
+    const relayed = next(earlier, electronInterface.EVENTS.signOut)
     EventBus.emit(electronInterface.EVENTS.signOut)
     await relayed
     expect(signOut).not.toHaveBeenCalled()
 
+    const window = await open()
+    expect(await authenticate(window, credentials)).toBe('authenticated')
     const signedOut = next(window, User.EVENTS.signedOut)
     window.emit('user/sign-out')
     await signedOut
     signOut.mockClear()
 
     EventBus.emit(electronInterface.EVENTS.signOut)
+    await new Promise(resolve => setImmediate(resolve))
     expect(signOut).toHaveBeenCalledTimes(1)
   })
 })
