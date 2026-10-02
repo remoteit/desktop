@@ -106,11 +106,10 @@
     "summaryUnlimited": "{{name}} kann alle Geräte in jeder Organisation erreichen, der Sie angehören."
   },
   "agentSwitch": {
-    "keep": "",
-    "message": "",
-    "switch": "",
-    "thisAccount": "",
-    "title": ""
+    "keep": "Zurück zu {{owner}}",
+    "message": "Die Verbindungen, die Sie auf diesem Computer eingerichtet haben, gehen verloren.",
+    "switch": "Wechseln",
+    "title": "Konto wechseln?"
   },
   "androidSetup": {
     "guideBody": "Sie können Ihr Android-Gerät einrichten oder den einfachen Anweisungen folgen, um eine der gängigen Plattformen einzurichten.",
@@ -2198,8 +2197,8 @@
     "services": "Dienste"
   },
   "signIn": {
-    "agentOwnedDetail": "",
-    "agentOwnedTitle": "",
+    "agentOwnedDetail": "{{owner}} ist auf diesem Computer noch angemeldet. Melden Sie sich zuerst als {{owner}} an und wieder ab, oder führen Sie Folgendes in einem Terminal als Administrator aus:",
+    "agentOwnedTitle": "Dieser Computer wird bereits verwendet",
     "autoStopped": "",
     "button": "",
     "cancel": "",

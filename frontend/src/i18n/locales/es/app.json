@@ -108,11 +108,10 @@
     "summaryUnlimited": "{{name}} puede acceder a todos los dispositivos de todas las organizaciones a las que perteneces."
   },
   "agentSwitch": {
-    "keep": "",
-    "message": "",
-    "switch": "",
-    "thisAccount": "",
-    "title": ""
+    "keep": "Volver a {{owner}}",
+    "message": "Perderás las conexiones que configuraste en esta computadora.",
+    "switch": "Cambiar",
+    "title": "¿Cambiar de cuenta?"
   },
   "androidSetup": {
     "guideBody": "Puedes configurar tu dispositivo Android o seguir las sencillas instrucciones para configurar una de las plataformas más utilizadas.",
@@ -2234,8 +2233,8 @@
     "services": "Servicios"
   },
   "signIn": {
-    "agentOwnedDetail": "",
-    "agentOwnedTitle": "",
+    "agentOwnedDetail": "{{owner}} sigue con la sesión iniciada en esta computadora. Inicia sesión como {{owner}} y cierra la sesión primero, o ejecuta esto en una terminal como administrador:",
+    "agentOwnedTitle": "Esta computadora está en uso",
     "autoStopped": "",
     "button": "",
     "cancel": "",

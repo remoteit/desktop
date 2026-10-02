@@ -387,7 +387,7 @@ describe('auth model — a stage switch signs out and reloads onto the new stage
 /* The backend refuses a second account while this computer's agent belongs to another. When it can
    move the agent it says so, and the app asks instead of signing out; otherwise the screen says why. */
 describe("auth model — this computer's agent belongs to another account", () => {
-  const owner = { username: 'Jamie@Remote.it', canSwitch: true, command: "'sudo remoteit signout' from your terminal" }
+  const owner = { username: 'Jamie@Remote.it', canSwitch: true, command: 'sudo remoteit signout' }
   beforeEach(() => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     retryWithAgentSwitch.mockReset()

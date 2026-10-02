@@ -107,10 +107,9 @@
   },
   "agentSwitch": {
     "keep": "Go back to {{owner}}",
-    "message": "This computer's Remote.It agent is signed in as {{owner}}. Switching moves it to {{account}}, and the connections {{owner}} saved on this computer are removed.",
-    "switch": "Switch agent",
-    "thisAccount": "this account",
-    "title": "Switch this computer's agent?"
+    "message": "You'll lose the connections you've set up on this computer.",
+    "switch": "Switch",
+    "title": "Switch accounts?"
   },
   "androidSetup": {
     "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
@@ -2198,7 +2197,7 @@
     "services": "Services"
   },
   "signIn": {
-    "agentOwnedDetail": "The agent on this computer is signed in as {{owner}}. Sign in as that account, or sign the agent out from a terminal:",
+    "agentOwnedDetail": "{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:",
     "agentOwnedTitle": "This computer is in use",
     "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
     "button": "Sign In",

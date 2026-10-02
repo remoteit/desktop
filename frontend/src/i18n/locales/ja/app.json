@@ -104,11 +104,10 @@
     "summaryUnlimited": "{{name}} は、所属するすべての組織のすべてのデバイスにアクセスできます。"
   },
   "agentSwitch": {
-    "keep": "",
-    "message": "",
-    "switch": "",
-    "thisAccount": "",
-    "title": ""
+    "keep": "{{owner}} に戻る",
+    "message": "このコンピューターで設定した接続は失われます。",
+    "switch": "切り替える",
+    "title": "アカウントを切り替えますか？"
   },
   "androidSetup": {
     "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
@@ -2162,8 +2161,8 @@
     "services": "サービス"
   },
   "signIn": {
-    "agentOwnedDetail": "",
-    "agentOwnedTitle": "",
+    "agentOwnedDetail": "{{owner}} がこのコンピューターにまだサインインしています。{{owner}} としてサインインしてからサインアウトするか、ターミナルで管理者として次のコマンドを実行してください：",
+    "agentOwnedTitle": "このコンピューターは使用中です",
     "autoStopped": "",
     "button": "",
     "cancel": "",

@@ -83,7 +83,7 @@ const SignInError: React.FC<{
       case 'agentOwned':
         return t(
           'signIn.agentOwnedDetail',
-          'The agent on this computer is signed in as {{owner}}. Sign in as that account, or sign the agent out from a terminal:',
+          '{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:',
           { owner: agentOwner?.username }
         )
       case 'expired':
