@@ -69,7 +69,18 @@ export const TerminalPage: React.FC = () => {
 
     ;(async () => {
       term.write(`\x1b[2m${name}:${port} — through remote.it, in this browser\x1b[0m\r\n`)
-      const user = (await readLine('login as: ', true)).trim()
+      // Their own account on the device, when they have one; otherwise asked, as ssh does.
+      const own = serviceId
+        ? await graphQLBasicRequest(
+            ` query SshAccount($serviceId: String!) {
+                sshAccount(serviceId: $serviceId)
+              }`,
+            { serviceId }
+          )
+        : 'ERROR'
+      const account = own === 'ERROR' ? null : own?.data?.data?.sshAccount
+      if (account) term.write(`login as: ${account}\r\n`)
+      const user = account || (await readLine('login as: ', true)).trim()
       if (!user) return term.write('No user name: closed.\r\n')
       term.write('\x1b[2mconnecting…\x1b[0m\r\n')
       session = await openSSH(

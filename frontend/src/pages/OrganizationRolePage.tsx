@@ -16,6 +16,8 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { RoleSshAdmin } from '../components/RoleSshAdmin'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 
 const NAME_MAX_LENGTH = 64
 
@@ -25,6 +27,7 @@ export const OrganizationRolePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const disabled = useSelector((state: State) => state.organization.updating)
   const roles = useSelector((state: State) => selectOrganization(state).roles)
+  const deviceSessions = useDeviceSessions()
   const role = structuredClone(roles?.find(r => r.id === roleID) || DEFAULT_ROLE)
   const [form, setForm] = useState<IOrganizationRole>(role)
   const [saving, setSaving] = useState<boolean>(false)
@@ -122,6 +125,9 @@ export const OrganizationRolePage: React.FC = () => {
             onChange={handlePermissionChange}
           />
         )}
+        {deviceSessions && role.id && !systemRole && form.access !== 'NONE' && (
+          <RoleSshAdmin roleId={role.id} disabled={disabled} />
+        )}
       </List>
       {!systemRole && (
         <Gutters top="lg">
@@ -141,12 +147,11 @@ export const OrganizationRolePage: React.FC = () => {
             {saving
               ? t('organizationRolePage.saving', 'Saving...')
               : changed
-                ? t('organizationRolePage.save', 'Save')
-                : t('organizationRolePage.saved', 'Saved')}
+              ? t('organizationRolePage.save', 'Save')
+              : t('organizationRolePage.saved', 'Saved')}
           </Button>
         </Gutters>
       )}
     </Container>
   )
 }
-
