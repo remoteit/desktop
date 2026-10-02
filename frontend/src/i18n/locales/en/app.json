@@ -1663,7 +1663,8 @@
   },
   "passkeys": {
     "add": "Add a Passkey",
-    "explainer": "A passkey signs you in with a touch instead of a code. Passkeys are added on your Remote.It account page.",
+    "added": "Passkey added",
+    "explainer": "A passkey signs you in with a touch instead of a code. Adding one opens your Remote.It sign-in page, then brings you back here.",
     "title": "Passkeys"
   },
   "passwordStrengthInput": {

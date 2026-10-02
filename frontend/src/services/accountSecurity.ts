@@ -111,8 +111,10 @@ export const answerElevationStore = (handle: string, answer: string) =>
   call<StoreStep | Elevated>('POST', '/elevate/store/relay', { handle, answer })
 /** A passkey confirms only on the AS's own page (its ceremony is bound to the AS origin): a ticket
  *  there that comes back to `returnTo`, which must be on one of this app's registered web origins. */
-export const elevationReturnTicket = (returnTo: string) =>
-  call<{ url: string; expiresInSec: number }>('POST', '/elevation/return-ticket', { return_to: returnTo })
+/** A link to the AS's page, for what only it can do — a passkey is bound to its host — and back to
+ *  `returnTo` when done. `add-passkey` comes back with `passkey=added` or `passkey=cancelled`. */
+export const elevationReturnTicket = (returnTo: string, purpose: 'elevate' | 'add-passkey' = 'elevate') =>
+  call<{ url: string; expiresInSec: number }>('POST', '/elevation/return-ticket', { return_to: returnTo, purpose })
 
 // Adding a factor the AS holds.
 export const totpOptions = () =>

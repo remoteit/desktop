@@ -5,6 +5,7 @@ import {
   WEBSOCKET_BETA_URL,
   WEBSOCKET_URL,
   TEST_HEADER,
+  LEGACY_SHARED_GRAPHQL_RE,
   resourceForApiURL,
 } from '../constants'
 import { graphQLRentANode } from '../services/graphQLMutation'
@@ -16,10 +17,11 @@ export function getApiURL(): string | undefined {
 
   const { apiGraphqlURL, switchApi } = store.getState().ui.apis
   const { overrides } = store.getState().backend.environment
+  const usable = (url?: string) => (url && !LEGACY_SHARED_GRAPHQL_RE.test(url) ? url : undefined)
   const defaultURL =
     version.includes('alpha') || version.includes('beta')
-      ? overrides?.betaApiURL || GRAPHQL_BETA_API
-      : overrides?.apiURL || GRAPHQL_API
+      ? usable(overrides?.betaApiURL) || GRAPHQL_BETA_API
+      : usable(overrides?.apiURL) || GRAPHQL_API
   return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
 }
 
