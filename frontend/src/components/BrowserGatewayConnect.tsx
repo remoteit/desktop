@@ -9,7 +9,7 @@ import { Icon } from './Icon'
    browser's remote.it client — nothing to install, and no connection to start. An SSH service opens a terminal in
    this app instead (pages/TerminalPage), its session through the same client. The counterpart of LocalSubnetConnect,
    which is shown instead when an agent here does reach it. */
-type Props = { name: string; terminal?: { port: number; title?: string } }
+type Props = { name: string; terminal?: { port: number; title?: string; service?: string } }
 
 export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
   const { t } = useTranslation()
@@ -23,6 +23,7 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
     // An SSH service: a terminal in this app, its session through the browser's client.
     if (terminal) {
       const query = new URLSearchParams({ name, port: String(terminal.port), title: terminal.title || name })
+      if (terminal.service) query.set('service', terminal.service)
       window.open(`${location.origin}${location.pathname}#/terminal?${query}`, '_blank')
       return
     }

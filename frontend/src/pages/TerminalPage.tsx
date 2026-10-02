@@ -5,17 +5,21 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
 import { openSSH, SSHSession } from '../services/browserClient'
+import { graphQLBasicRequest } from '../services/graphQL'
 
 /* A terminal on a device's SSH service through this browser's remote.it client — nothing to install
-   (services/browserClient). Opened in its own tab: /terminal?name=<subnet name>&port=22&title=…. It asks who to log
-   in as, then the password or the server's own questions, and an unknown host key, in the terminal itself, as ssh
-   does; none of them is kept, but an accepted host key, by the client. */
+   (services/browserClient). Opened in its own tab: /terminal?name=<subnet name>&port=22&title=…&service=<id>. It asks
+   who to log in as; a device with SSH certificates on lets you in by a certificate for minutes, for a key made for the
+   session, when its account lets you be that user (graphql sshCertificate) — otherwise the password or the server's
+   own questions are asked, and an unknown host key, in the terminal itself, as ssh does; none of them is kept, but an
+   accepted host key, by the client. */
 export const TerminalPage: React.FC = () => {
   const box = useRef<HTMLDivElement>(null)
   const params = new URLSearchParams(useLocation().search)
   const name = params.get('name') || ''
   const port = Number(params.get('port') || 22)
   const title = params.get('title') || name
+  const serviceId = params.get('service') || ''
 
   useEffect(() => {
     if (!box.current || !name) return
@@ -97,6 +101,16 @@ export const TerminalPage: React.FC = () => {
             const answer = (await readLine('Are you sure you want to continue connecting (yes/no)? ', true)).trim()
             return answer.toLowerCase() === 'yes'
           },
+          certificate: async publicKey => {
+            if (!serviceId) return null
+            const result = await graphQLBasicRequest(
+              ` mutation SshCertificate($serviceId: String!, $publicKey: String!, $login: String!) {
+                  sshCertificate(serviceId: $serviceId, publicKey: $publicKey, login: $login)
+                }`,
+              { serviceId, publicKey, login: user }
+            )
+            return result === 'ERROR' ? null : result?.data?.data?.sshCertificate ?? null
+          },
         }
       ).catch(err => {
         term.write(`\r\n\x1b[31m${err.message}\x1b[0m\r\n`)
@@ -111,7 +125,7 @@ export const TerminalPage: React.FC = () => {
       session?.close()
       term.dispose()
     }
-  }, [name, port])
+  }, [name, port, serviceId])
 
   return <Box ref={box} sx={{ position: 'fixed', inset: 0, bgcolor: '#111111', padding: 1 }} />
 }

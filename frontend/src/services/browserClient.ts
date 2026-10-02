@@ -49,6 +49,8 @@ export type SSHEvents = {
   error: (message: string) => void
   ask: (instruction: string, questions: { prompt: string; echo: boolean }[]) => Promise<string[]>
   hostKey: (key: { host: string; type: string; fingerprint: string }) => Promise<boolean>
+  // A certificate for the session's key (graphql sshCertificate), or null: the password is asked instead.
+  certificate?: (publicKey: string) => Promise<string | null>
 }
 
 export type SSHSession = {
@@ -75,6 +77,9 @@ export async function openSSH(
       ch.port1.postMessage({ type: 'answer', id: d.id, value })
     } else if (d?.type === 'hostKey') {
       const value = await on.hostKey(d.payload)
+      ch.port1.postMessage({ type: 'answer', id: d.id, value })
+    } else if (d?.type === 'certificate') {
+      const value = on.certificate ? await on.certificate(d.payload.publicKey).catch(() => null) : null
       ch.port1.postMessage({ type: 'answer', id: d.id, value })
     }
   }

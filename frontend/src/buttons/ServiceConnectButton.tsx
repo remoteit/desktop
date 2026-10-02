@@ -92,7 +92,7 @@ export const ServiceConnectButton: React.FC = () => {
                 ) : (
                   <BrowserGatewayConnect
                     name={reach.name!}
-                    terminal={ssh && service ? { port: service.port || 22, title: service.name } : undefined}
+                    terminal={ssh && service ? { port: service.port || 22, title: service.name, service: service.id } : undefined}
                   />
                 )}
                 <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
