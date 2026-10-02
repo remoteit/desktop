@@ -30,9 +30,9 @@ const signIn = (active: string | null = OAUTH_ISSUER, saved: string | null = OAU
 describe('oidcReconcileIssuer', () => {
   beforeEach(() => window.localStorage.clear())
 
-  it('keeps a session the running login server issued', () => {
+  it('keeps a session across boots on the same login server', () => {
     signIn()
-    window.localStorage.setItem('oidc.issuer', OAUTH_ISSUER)
+    oidcReconcileIssuer()
     oidcReconcileIssuer()
     expect(oidcSignedIn()).toBe(true)
     expect(oidcAccounts()).toHaveLength(2)
