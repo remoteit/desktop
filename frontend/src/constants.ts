@@ -1,5 +1,6 @@
 import brand from '@common/brand/config'
 import { CATALOGUE } from './platforms/catalogue'
+import pkg from '../package.json'
 const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
@@ -14,17 +15,54 @@ export const MODE = env.MODE || 'development'
 export const CHAT_FEATURE = 'ai-agent'
 export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
 
+// One stage sets the login server with every endpoint: a token works only where its own login server
+// is trusted, and the dev agent accepts login.dev tokens alone.
+export const STAGES = {
+  prod: {
+    name: 'Production',
+    issuer: 'https://login.remote.it',
+    api: 'https://cloud.remote.it/api',
+    agent: 'https://agent.remote.it',
+    mcp: 'https://cloud.remote.it/mcp',
+  },
+  dev: {
+    name: 'Dev',
+    issuer: 'https://login.dev.remote.it',
+    api: 'https://cloud.dev.remote.it/api',
+    agent: 'https://agent.dev.remote.it',
+    mcp: 'https://cloud.dev.remote.it/mcp',
+  },
+}
+export type StageName = keyof typeof STAGES
+export const STAGE_KEY = 'r3.stage'
+export const isStage = (value: unknown): value is StageName =>
+  typeof value === 'string' && Object.prototype.hasOwnProperty.call(STAGES, value)
+export const DEFAULT_STAGE: StageName = /alpha|beta/.test(pkg.version) ? 'dev' : 'prod'
+export function readStage(): StageName {
+  try {
+    const stored = window.localStorage.getItem(STAGE_KEY)
+    return isStage(stored) ? stored : DEFAULT_STAGE
+  } catch {
+    return DEFAULT_STAGE
+  }
+}
+export const STAGE_PINNED = !!env.VITE_OAUTH_ISSUER
+export const STAGE: StageName | undefined = STAGE_PINNED
+  ? (Object.keys(STAGES) as StageName[]).find(name => STAGES[name].issuer === env.VITE_OAUTH_ISSUER)
+  : readStage()
+const stage = STAGES[STAGE ?? 'prod']
+
 // Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
 // web and desktop; the backend never touches auth.
-export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || 'https://login.remote.it'
+export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || stage.issuer
 export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
 export const OAUTH_ACCOUNT_RESOURCE = `${OAUTH_ISSUER}/account/api`
-// The dev stage's UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md). The identifier is the
+// The UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md). The identifier is the
 // TREE, not the graphql URL: /api covers graphql, the user REST surface and the events socket, so
 // one token serves all three. Was https://graphql.dev.remote.it/graphql until 2026-09-06, when
 // that host was destroyed — a build falling back to the old default now asks for an audience whose
 // resource server is being retired, and gets invalid_target.
-export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || 'https://cloud.remote.it/api'
+export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || stage.api
 // The two front shapes, recognised in ONE place (graphql-permitteer docs/CLOUD-EDGE.md): the unified
 // front's TREE identifier, with graphql and the socket as paths inside it, and the legacy per-stage
 // hosts, one each for graphql and events. Group 1 is the stage, absent on prod.
@@ -51,16 +89,16 @@ export const resourceForEventsURL = (url: string): string | undefined => (LEGACY
 // The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
 // tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail
 // delegated onward to the service actor — which is what makes those tokens exchangeable.
-export const OAUTH_AGENT_RESOURCE = env.VITE_OAUTH_AGENT_RESOURCE || 'https://agent.remote.it'
-export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || 'https://cloud.remote.it/mcp'
+export const OAUTH_AGENT_RESOURCE = env.VITE_OAUTH_AGENT_RESOURCE || stage.agent
+export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || stage.mcp
 // FALLBACK only: the live name is DISCOVERED from the MCP resource's PRM at sign-in
 // (services/oidc.ts) — per-resource keying made it stage-stable, and the 2026-08-31
 // retirement of the _dev names is exactly why a pinned copy can't be the source of truth.
 export const OAUTH_MCP_DETAIL = env.VITE_OAUTH_MCP_DETAIL || 'remoteit_mcp'
 export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
 // Dev rides the vite /agent proxy (same-origin, CSP-clean) even when VITE_AGENT_URL is set;
-// builds have no proxy and call the deployed agent.
-export const AGENT_URL = env.DEV ? '/agent' : env.VITE_AGENT_URL || '/agent'
+// builds have no proxy and call the stage's agent, which is served at its own audience.
+export const AGENT_URL = env.DEV ? '/agent' : env.VITE_AGENT_URL || OAUTH_AGENT_RESOURCE
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 // The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
