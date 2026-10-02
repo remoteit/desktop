@@ -2,6 +2,7 @@ import browser, { setLocalStorage, getOs } from '../services/browser'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
+import { LEGACY_SHARED_GRAPHQL_RE } from '../constants'
 import sleep from '../helpers/sleep'
 import i18n from '../i18n'
 
@@ -147,6 +148,12 @@ export default createModel<RootModel>()({
     },
     async setUpdateNotice(updateVersion: string | undefined, state) {
       setLocalStorage(state, NOTICE_VERSION_ID, updateVersion)
+    },
+    async setPreferences(preferences: IPreferences) {
+      dispatch.backend.set({ preferences })
+      if (LEGACY_SHARED_GRAPHQL_RE.test(preferences.apiGraphqlURL ?? '')) {
+        emit('preferences', { switchApi: false, apiGraphqlURL: '' })
+      }
     },
     async disableAutoUpdate() {
       emit('preferences', { autoUpdate: false })

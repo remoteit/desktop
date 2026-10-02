@@ -51,3 +51,19 @@ describe('constants — WEBSOCKET_URL fallback pairs with the effective GraphQL 
     expect(c.WEBSOCKET_URL).toBe('wss://custom.example.com/ws')
   })
 })
+
+describe('constants — GRAPHQL_BETA_API', () => {
+  it('follows the effective GraphQL URL when unset', async () => {
+    const c = await load({
+      VITE_OAUTH_GRAPHQL_RESOURCE: 'https://cloud.remote.it/api',
+      VITE_GRAPHQL_API: '',
+      VITE_GRAPHQL_BETA_API: '',
+    })
+    expect(c.GRAPHQL_BETA_API).toBe('https://cloud.remote.it/api/graphql')
+  })
+
+  it('an explicit VITE_GRAPHQL_BETA_API wins', async () => {
+    const c = await load({ VITE_GRAPHQL_BETA_API: 'https://cloud.dev.remote.it/api/graphql' })
+    expect(c.GRAPHQL_BETA_API).toBe('https://cloud.dev.remote.it/api/graphql')
+  })
+})

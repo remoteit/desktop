@@ -32,6 +32,8 @@ export const CLOUD_TREE_RE = /^https:\/\/cloud(?:\.([a-z0-9-]+))?\.remote\.it\/a
 export const CLOUD_GRAPHQL_RE = /^(https:\/\/cloud(?:\.[a-z0-9-]+)?\.remote\.it\/api)\/graphql$/
 export const LEGACY_GRAPHQL_RE = /^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/
 export const LEGACY_EVENTS_RE = /^wss:\/\/ws(?:\.([a-z0-9-]+))?\.remote\.it\/v1$/
+// The pre-OIDC shared-domain API: no registered resource, so the AS refuses any token for it.
+export const LEGACY_SHARED_GRAPHQL_RE = /^https:\/\/api\.remote\.it\/graphql\//
 export const cloudTreeUrls = (tree: string) => ({
   graphql: `${tree}/graphql`,
   ws: `${tree.replace(/^https:/, 'wss:')}/ws`,
@@ -75,7 +77,7 @@ export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 const cloudTree = CLOUD_TREE_RE.test(OAUTH_GRAPHQL_RESOURCE)
 export const GRAPHQL_API =
   env.VITE_GRAPHQL_API || (cloudTree ? cloudTreeUrls(OAUTH_GRAPHQL_RESOURCE).graphql : OAUTH_GRAPHQL_RESOURCE)
-export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
+export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || GRAPHQL_API
 // Test Settings: an ad-hoc request header injected on API calls (helpers/apiHelper.getTestHeader).
 export const TEST_HEADER = 'test-header'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
