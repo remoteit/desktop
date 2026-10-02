@@ -22,6 +22,10 @@ import { isLoopback } from './loopback'
 
 const d = debug('Server')
 
+// socketio-auth 0.1.1 hides unauthenticated sockets from broadcasts through socket.io 2 internals that
+// socket.io 4 removed, so broadcasts go to this room, which a socket joins only once it authenticates.
+export const AUTHENTICATED = 'authenticated'
+
 class Server {
   public io?: SocketIO.Server
   public socket?: SocketIO.Socket
@@ -168,6 +172,7 @@ class Server {
   }
 
   postAuthenticate = (socket: SocketIO.Socket) => {
+    socket.join(AUTHENTICATED)
     this.socket = socket
     Logger.info('POST AUTHENTICATE')
     EventBus.emit(this.EVENTS.ready)
