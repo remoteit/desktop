@@ -4,12 +4,7 @@ vi.mock('../services/Controller', () => ({ emit: vi.fn() }))
 vi.mock('@capacitor/status-bar', () => ({ StatusBar: {}, Style: {} }))
 vi.mock('../styling/theme', () => ({ isDarkMode: vi.fn() }))
 vi.mock('../i18n', () => ({ default: {}, resolveLanguage: vi.fn() }))
-vi.mock('../constants', async () => ({
-  SIDEBAR_WIDTH: 0,
-  OAUTH_ISSUER: 'https://login.remote.it',
-  LEGACY_SHARED_GRAPHQL_RE: (await vi.importActual<typeof import('../constants')>('../constants'))
-    .LEGACY_SHARED_GRAPHQL_RE,
-}))
+vi.mock('../constants', () => ({ SIDEBAR_WIDTH: 0, OAUTH_ISSUER: 'https://login.remote.it' }))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: vi.fn() }))
 vi.mock('../services/browser', () => ({ default: {}, getLocalStorage: vi.fn(), setLocalStorage: vi.fn() }))
 
@@ -40,19 +35,30 @@ describe('ui — restoreState and saved API targets', () => {
     return dispatch.ui.set.mock.calls[0][0].apis
   }
 
-  it('turns off a saved override on the shared-domain API the new login cannot mint for', async () => {
-    const apis = await restore({
-      switchApi: true,
-      apiGraphqlURL: 'https://api.remote.it/graphql/beta',
-      webSocketURL: 'wss://ws.remote.it/beta',
-      agentURL: 'https://agent.dev.remote.it',
-    })
-    expect(apis).toEqual({
-      switchApi: false,
-      apiGraphqlURL: '',
-      webSocketURL: '',
-      agentURL: 'https://agent.dev.remote.it',
-    })
+  const cleared = {
+    issuer: 'https://login.remote.it',
+    switchApi: false,
+    customTarget: false,
+    apiGraphqlURL: '',
+    webSocketURL: '',
+    agentURL: '',
+  }
+
+  it('clears overrides saved before they carried a login server, the shared-domain API included', async () => {
+    for (const saved of [
+      {
+        switchApi: true,
+        apiGraphqlURL: 'https://api.remote.it/graphql/beta',
+        webSocketURL: 'wss://ws.remote.it/beta',
+        agentURL: 'https://agent.dev.remote.it',
+      },
+      {
+        switchApi: true,
+        apiGraphqlURL: 'https://cloud.dev.remote.it/api/graphql',
+        webSocketURL: 'wss://cloud.dev.remote.it/api/ws',
+      },
+    ])
+      expect(await restore(saved)).toEqual(cleared)
   })
 
   it('drops overrides chosen under another login server, whichever account restores them', async () => {
@@ -64,14 +70,7 @@ describe('ui — restoreState and saved API targets', () => {
       webSocketURL: 'wss://cloud.evan.remote.it/api/ws',
       agentURL: 'https://agent.evan.remote.it',
     })
-    expect(apis).toEqual({
-      issuer: 'https://login.remote.it',
-      switchApi: false,
-      customTarget: false,
-      apiGraphqlURL: '',
-      webSocketURL: '',
-      agentURL: '',
-    })
+    expect(apis).toEqual(cleared)
   })
 
   it('keeps overrides chosen under the running login server', async () => {
@@ -85,12 +84,7 @@ describe('ui — restoreState and saved API targets', () => {
     expect(await restore(saved)).toEqual(saved)
   })
 
-  it('keeps a saved override on the unified front', async () => {
-    const saved = {
-      switchApi: true,
-      apiGraphqlURL: 'https://cloud.dev.remote.it/api/graphql',
-      webSocketURL: 'wss://cloud.dev.remote.it/api/ws',
-    }
-    expect(await restore(saved)).toEqual(saved)
+  it('leaves settings with nothing chosen alone', async () => {
+    expect(await restore({ switchApi: false, apiGraphqlURL: '' })).toEqual({ switchApi: false, apiGraphqlURL: '' })
   })
 })
