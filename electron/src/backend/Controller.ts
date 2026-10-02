@@ -234,6 +234,7 @@ class Controller {
   // Not user.signOut(): its signed-out broadcast makes every window run a full sign-out, dropping the owner's saved
   // session from the account switcher. The window that asked keeps its connection for the answer.
   releaseAgent = async (requester: SocketIO.Socket) => {
+    if (!requester.rooms.has(AUTHENTICATED)) return false
     Logger.info('RELEASE AGENT')
     await cli.signOut()
     if (!cli.isSignedOut()) {

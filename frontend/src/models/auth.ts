@@ -211,9 +211,9 @@ export default createModel<RootModel>()({
     },
     /** Account switch: re-run authorize with select_account — the AS chooser shows the
      * real session chips. On desktop the agent is released first, so a canceled chooser
-     * leaves this window without it until a reload signs it back in. Completion replaces the session like any sign-in (a SAME-account re-auth
-     * revokes the old family; a DIFFERENT account files the old one in the registry —
-     * services/oidc.ts). */
+     * leaves this window without it until a reload signs it back in. Completion replaces
+     * the session like any sign-in (a SAME-account re-auth revokes the old family; a
+     * DIFFERENT account files the old one in the registry — services/oidc.ts). */
     async switchAccount(_: void) {
       if (!(await dispatch.auth.releaseAgent())) return
       try {
@@ -315,7 +315,7 @@ export default createModel<RootModel>()({
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {
-        dispatch.auth.set({ backendAuthenticated: true })
+        dispatch.auth.set({ backendAuthenticated: true, agentReleased: false })
         console.log('BACKEND AUTHENTICATED')
         if (!state.backend.initialized) {
           emit('init')

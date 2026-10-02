@@ -171,6 +171,21 @@ describe('backend/server broadcasts', () => {
     expect(heard).not.toContain(ConnectionPool.EVENTS.updated)
   })
 
+  it("a window that has signed out cannot release the next owner's agent", async () => {
+    Object.assign(user, credentials)
+    const window = await open()
+    expect(await authenticate(window, credentials)).toBe('authenticated')
+    const signedOut = next(window, User.EVENTS.signedOut)
+    window.emit('user/sign-out')
+    await signedOut
+
+    const signOut = (cli.signOut as jest.Mock).mockClear()
+    Object.assign(user, { ...credentials, signedIn: true })
+    expect(await window.emitWithAck('agent/release')).toBe(false)
+    expect(signOut).not.toHaveBeenCalled()
+    expect(user.signedIn).toBe(true)
+  })
+
   it('refuses another account while the agent has an owner, and only a signed-in window can release it', async () => {
     const signOut = (cli.signOut as jest.Mock).mockClear()
     const checkSignIn = jest.spyOn(user, 'checkSignIn')

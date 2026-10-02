@@ -427,6 +427,15 @@ describe('auth model — switching accounts releases the agent first', () => {
     browser.hasBackend = false
   })
 
+  it('signing back in to the backend makes this window the owner again', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).backendAuthenticated(undefined, {
+      auth: { authenticated: true, agentReleased: true },
+      backend: { initialized: true },
+    })
+    expect(dispatch.auth.set).toHaveBeenCalledWith({ backendAuthenticated: true, agentReleased: false })
+  })
+
   it('a signed-in desktop window asks the backend to release the agent', async () => {
     emitWithAck.mockResolvedValue(true)
     const dispatch = makeDispatch()
