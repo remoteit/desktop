@@ -47,10 +47,10 @@ describe('backend/server broadcasts', () => {
     return socket
   }
 
-  const authenticate = async (socket: Socket, attempt: object) => {
-    const answered = Promise.race([next(socket, 'authenticated'), next(socket, 'unauthorized')])
+  const authenticate = (socket: Socket, attempt: object) => {
+    const answer = Promise.race(['authenticated', 'unauthorized'].map(event => next(socket, event).then(() => event)))
     socket.emit('authentication', attempt)
-    await answered
+    return answer
   }
 
   const listen = (socket: Socket) => {
@@ -64,10 +64,10 @@ describe('backend/server broadcasts', () => {
     const impostor = await open()
     const strangerHeard = listen(stranger)
     const impostorHeard = listen(impostor)
-    await authenticate(impostor, { username: credentials.username, authHash: 'wrong' })
+    expect(await authenticate(impostor, { username: credentials.username, authHash: 'wrong' })).toBe('unauthorized')
 
     const window = await open()
-    await authenticate(window, credentials)
+    expect(await authenticate(window, credentials)).toBe('authenticated')
 
     const updated = next(window, ConnectionPool.EVENTS.updated)
     EventBus.emit(ConnectionPool.EVENTS.updated, { id: 'service-1' })
