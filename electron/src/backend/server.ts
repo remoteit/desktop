@@ -136,9 +136,7 @@ class Server {
       // backend holds only while it is still signed in as the owner: the CLI signs out with them.
       else {
         const canSwitch = isLoopback(socket.handshake.address) && user.signedIn && user.id === admin.guid
-        const command = environment.isWindows
-          ? `'remoteit signout' from an Administrator Command Prompt`
-          : `'sudo remoteit signout' from your terminal`
+        const command = environment.isWindows ? 'remoteit signout' : 'sudo remoteit signout'
 
         if (credentials.switchAgent && canSwitch && this.releaseAgent) {
           Logger.warn('AGENT SWITCH', { from: admin.username, to: credentials.username })

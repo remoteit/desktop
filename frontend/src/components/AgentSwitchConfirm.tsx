@@ -9,25 +9,19 @@ export const AgentSwitchConfirm: React.FC = () => {
   const { t } = useTranslation()
   const { auth } = useDispatch<Dispatch>()
   const owner = useSelector((state: State) => state.auth.agentOwner)
-  const account = useSelector((state: State) => state.auth.user?.email)
   if (!owner) return null
-  const target = account ?? t('agentSwitch.thisAccount', 'this account')
 
   return (
     <Confirm
       open
-      title={t('agentSwitch.title', "Switch this computer's agent?")}
-      action={t('agentSwitch.switch', 'Switch agent')}
+      title={t('agentSwitch.title', 'Switch accounts?')}
+      action={t('agentSwitch.switch', 'Switch')}
       denyLabel={t('agentSwitch.keep', 'Go back to {{owner}}', { owner: owner.username })}
       onConfirm={() => auth.switchAgent()}
       onDeny={() => auth.keepAgent()}
     >
       <Typography variant="body2">
-        {t(
-          'agentSwitch.message',
-          "This computer's Remote.It agent is signed in as {{owner}}. Switching moves it to {{account}}, and the connections {{owner}} saved on this computer are removed.",
-          { owner: owner.username, account: target }
-        )}
+        {t('agentSwitch.message', "You'll lose the connections you've set up on this computer.")}
       </Typography>
     </Confirm>
   )

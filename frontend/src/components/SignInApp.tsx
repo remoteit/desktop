@@ -70,7 +70,7 @@ const SignInError: React.FC<{ code?: SignInErrorCode; detail?: string; retryAfte
       case 'agentOwned':
         return t(
           'signIn.errorAgentOwned',
-          "This computer's Remote.It agent is signed in as {{owner}}. Sign in as {{owner}} and sign out, or run {{command}}.",
+          '{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run "{{command}}" in a terminal as an administrator.',
           { owner: agentOwner?.username, command: agentOwner?.command }
         )
       case 'expired':

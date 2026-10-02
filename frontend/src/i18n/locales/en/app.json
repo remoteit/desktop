@@ -107,10 +107,9 @@
   },
   "agentSwitch": {
     "keep": "Go back to {{owner}}",
-    "message": "This computer's Remote.It agent is signed in as {{owner}}. Switching moves it to {{account}}, and the connections {{owner}} saved on this computer are removed.",
-    "switch": "Switch agent",
-    "thisAccount": "this account",
-    "title": "Switch this computer's agent?"
+    "message": "You'll lose the connections you've set up on this computer.",
+    "switch": "Switch",
+    "title": "Switch accounts?"
   },
   "androidSetup": {
     "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
@@ -2201,7 +2200,7 @@
     "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
     "button": "Sign In",
     "cancel": "Cancel",
-    "errorAgentOwned": "This computer's Remote.It agent is signed in as {{owner}}. Sign in as {{owner}} and sign out, or run {{command}}.",
+    "errorAgentOwned": "{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run \"{{command}}\" in a terminal as an administrator.",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
     "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
     "errorRateLimitedWait_one": "Too many sign-in attempts from this network. Please try again in about a minute.",
