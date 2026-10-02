@@ -2198,10 +2198,11 @@
     "services": "Dienste"
   },
   "signIn": {
+    "agentOwnedDetail": "",
+    "agentOwnedTitle": "",
     "autoStopped": "",
     "button": "",
     "cancel": "",
-    "errorAgentOwned": "",
     "errorExpired": "",
     "errorRateLimited": "",
     "errorRateLimitedWait_one": "",
@@ -2210,13 +2211,16 @@
     "errorUnavailable": "",
     "errorUnknown": "",
     "errorUnreachable": "",
+    "heading": "",
+    "help": "",
+    "opensBrowser": "",
     "redirecting": "",
+    "reopen": "",
     "retry": "",
-    "stageNotice": "",
-    "subtitle": "",
-    "title": "",
-    "useProduction": "",
-    "waiting": ""
+    "switchToProduction": "",
+    "waitingDetail": "",
+    "waitingTitle": "",
+    "withBrowser": ""
   },
   "statusChip": {
     "connected": "Verbunden",

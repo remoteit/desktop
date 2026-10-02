@@ -2198,10 +2198,11 @@
     "services": "Services"
   },
   "signIn": {
+    "agentOwnedDetail": "The agent on this computer is signed in as {{owner}}. Sign in as that account, or sign the agent out from a terminal:",
+    "agentOwnedTitle": "This computer is in use",
     "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
     "button": "Sign In",
     "cancel": "Cancel",
-    "errorAgentOwned": "This computer's Remote.It agent is signed in as {{owner}}. Sign in as {{owner}} and sign out, or run {{command}}.",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
     "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
     "errorRateLimitedWait_one": "Too many sign-in attempts from this network. Please try again in about a minute.",
@@ -2210,13 +2211,16 @@
     "errorUnavailable": "The sign-in service is temporarily unavailable. Please try again in a few minutes.",
     "errorUnknown": "Sign in didn't complete. Please try again.",
     "errorUnreachable": "We couldn't reach the sign-in service. Check your internet connection, then try again.",
+    "heading": "Sign in",
+    "help": "Get help",
+    "opensBrowser": "Your browser will open to finish signing in.",
     "redirecting": "Taking you to sign in…",
+    "reopen": "Open browser again",
     "retry": "Try again",
-    "stageNotice": "Signing in to the {{name}} stage at {{host}}.",
-    "subtitle": "We'll open your browser to sign you in with Remote.It Single Sign-On.",
-    "title": "Sign in to {{app}}",
-    "useProduction": "Use production",
-    "waiting": "Waiting for your browser… finish signing in there."
+    "switchToProduction": "Switch to production",
+    "waitingDetail": "We opened {{host}} in your default browser.",
+    "waitingTitle": "Finish signing in in your browser",
+    "withBrowser": "Sign in with browser"
   },
   "statusChip": {
     "connected": "Connected",

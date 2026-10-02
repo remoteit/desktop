@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Box, Button, Typography, CircularProgress } from '@mui/material'
+import { Box, Button, Chip, Link as MuiLink, Typography, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
@@ -8,7 +8,13 @@ import { SignInErrorCode } from '../models/auth'
 import { parseAgentOwned } from '@common/agentOwner'
 import { MODE, OAUTH_ISSUER, STAGE, STAGE_PINNED, STAGES } from '../constants'
 import browser from '../services/browser'
-import brand from '@common/brand/config'
+import { Notice } from './Notice'
+import { CopyCodeBlock } from './CopyCodeBlock'
+import { Icon } from './Icon'
+import { Link } from './Link'
+import { Logo } from '@common/brand/Logo'
+
+const HELP_LINK = 'https://link.remote.it/documentation-desktop/overview'
 
 /**
  * The sign-in panel is a LAUNCHER now: the whole journey — email-first with org SSO
@@ -69,9 +75,9 @@ const SignInError: React.FC<{ code?: SignInErrorCode; detail?: string; retryAfte
         )
       case 'agentOwned':
         return t(
-          'signIn.errorAgentOwned',
-          "This computer's Remote.It agent is signed in as {{owner}}. Sign in as {{owner}} and sign out, or run {{command}}.",
-          { owner: agentOwner?.username, command: agentOwner?.command }
+          'signIn.agentOwnedDetail',
+          'The agent on this computer is signed in as {{owner}}. Sign in as that account, or sign the agent out from a terminal:',
+          { owner: agentOwner?.username }
         )
       case 'expired':
         return t('signIn.errorExpired', 'That sign-in attempt expired before it finished. Please try again.')
@@ -81,16 +87,15 @@ const SignInError: React.FC<{ code?: SignInErrorCode; detail?: string; retryAfte
   }
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" gap={0.5} maxWidth={420}>
-      <Typography variant="body2" color="error" textAlign="center">
-        {message()}
-      </Typography>
+    <Notice severity={agentOwner ? 'warning' : 'error'} fullWidth sx={{ textAlign: 'left' }}>
+      {message()}
       {!!detail && showDetail && !agentOwner && (
-        <Typography variant="caption" color="grayDark.main" textAlign="center">
+        <Typography variant="caption" component="p" color="grayDark.main">
           {detail}
         </Typography>
       )}
-    </Box>
+      {agentOwner && <CopyCodeBlock value={agentOwner.command} hideCopyLabel sx={{ marginTop: 1 }} />}
+    </Notice>
   )
 }
 
@@ -173,45 +178,71 @@ export function SignInApp() {
       </Box>
     )
 
+  const agentOwned = signInFailed && signInErrorCode === 'agentOwned'
+  const issuerHost = new URL(OAUTH_ISSUER).host
+
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={8} paddingX={4}>
-      <Typography variant="h1" textAlign="center">
-        {t('signIn.title', 'Sign in to {{app}}', { app: brand.appName })}
-      </Typography>
-      <Typography variant="body2" color="textSecondary" textAlign="center">
-        {t('signIn.subtitle', "We'll open your browser to sign you in with Remote.It Single Sign-On.")}
-      </Typography>
-      {signingIn ? (
-        <Box display="flex" flexDirection="column" alignItems="center" gap={1} marginTop={2}>
-          <CircularProgress size={28} />
-          <Typography variant="caption" color="textSecondary">
-            {t('signIn.waiting', 'Waiting for your browser… finish signing in there.')}
-          </Typography>
-          <Button size="small" onClick={() => auth.set({ signingIn: false })}>
-            {t('signIn.cancel', 'Cancel')}
-          </Button>
-        </Box>
-      ) : (
-        <Button variant="contained" size="large" onClick={() => auth.signIn()} sx={{ marginTop: 2 }}>
-          {/* After a failure the same button is a RETRY — "Sign In" beside an error reads
-              as the thing that just didn't work rather than as the way out of it. */}
-          {signInFailed ? t('signIn.retry', 'Try again') : t('signIn.button', 'Sign In')}
-        </Button>
-      )}
-      {signInFailed && <SignInError code={signInErrorCode} detail={signInError} retryAfter={signInRetryAfter} />}
+    <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" gap={2} paddingTop={6} paddingX={4}>
       {otherStage && (
-        <Box display="flex" alignItems="center" gap={1} marginTop={2}>
-          <Typography variant="caption" color="textSecondary">
-            {t('signIn.stageNotice', 'Signing in to the {{name}} stage at {{host}}.', {
-              name: STAGES[otherStage].name,
-              host: new URL(OAUTH_ISSUER).host,
-            })}
-          </Typography>
-          <Button size="small" onClick={() => auth.switchStage('prod')}>
-            {t('signIn.useProduction', 'Use production')}
-          </Button>
-        </Box>
+        <Chip
+          size="small"
+          icon={<Icon name="flask" size="sm" />}
+          label={`${STAGES[otherStage].name} · ${issuerHost}`}
+          sx={{ color: 'warning.main', backgroundColor: 'warningLightest.main', '& .MuiChip-icon': { color: 'inherit' } }}
+        />
       )}
+      <Logo width={140} marginBottom={1} />
+      {signingIn ? (
+        <>
+          <CircularProgress size={28} />
+          <Typography variant="h1">{t('signIn.waitingTitle', 'Finish signing in in your browser')}</Typography>
+          <Typography variant="body2" color="textSecondary">
+            {t('signIn.waitingDetail', 'We opened {{host}} in your default browser.', { host: issuerHost })}
+          </Typography>
+          <Box display="flex" alignItems="center" gap={1} marginTop={1}>
+            <Button onClick={() => auth.set({ signingIn: false })}>{t('signIn.cancel', 'Cancel')}</Button>
+            <Button variant="contained" size="large" onClick={() => auth.signIn()}>
+              {t('signIn.reopen', 'Open browser again')}
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <>
+          <Typography variant="h1">
+            {agentOwned ? t('signIn.agentOwnedTitle', 'This computer is in use') : t('signIn.heading', 'Sign in')}
+          </Typography>
+          {signInFailed ? (
+            <SignInError code={signInErrorCode} detail={signInError} retryAfter={signInRetryAfter} />
+          ) : (
+            browser.isNative && (
+              <Typography variant="body2" color="textSecondary">
+                {t('signIn.opensBrowser', 'Your browser will open to finish signing in.')}
+              </Typography>
+            )
+          )}
+          <Button variant="contained" size="large" onClick={() => auth.signIn()} sx={{ marginTop: 1 }}>
+            {/* After a failure the same button is a RETRY — "Sign In" beside an error reads
+                as the thing that just didn't work rather than as the way out of it. */}
+            {signInFailed && !agentOwned
+              ? t('signIn.retry', 'Try again')
+              : browser.isNative
+              ? t('signIn.withBrowser', 'Sign in with browser')
+              : t('signIn.button', 'Sign In')}
+          </Button>
+        </>
+      )}
+      <Box display="flex" flexDirection="column" alignItems="center" gap={1} marginTop={2}>
+        {signInFailed && !agentOwned && (
+          <Link href={HELP_LINK} variant="caption" noUnderline>
+            {t('signIn.help', 'Get help')}
+          </Link>
+        )}
+        {otherStage && (
+          <MuiLink component="button" variant="caption" onClick={() => auth.switchStage('prod')}>
+            {t('signIn.switchToProduction', 'Switch to production')}
+          </MuiLink>
+        )}
+      </Box>
     </Box>
   )
 }
