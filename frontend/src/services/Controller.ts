@@ -112,8 +112,11 @@ class Controller extends EventEmitter {
     this.switchAgent = false
   }
 
+  // A fresh connection: the refused socket stays open until socketio-auth's ack or 20 s timeout, and
+  // open() on a connected socket does nothing, so the consent would never be sent.
   retryWithAgentSwitch() {
     this.switchAgent = true
+    this.socket?.close()
     this.open(false, true)
   }
 
