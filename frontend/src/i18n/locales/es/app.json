@@ -2233,10 +2233,11 @@
     "services": "Servicios"
   },
   "signIn": {
+    "agentOwnedDetail": "{{owner}} sigue con la sesión iniciada en esta computadora. Inicia sesión como {{owner}} y cierra la sesión primero, o ejecuta esto en una terminal como administrador:",
+    "agentOwnedTitle": "Esta computadora está en uso",
     "autoStopped": "",
     "button": "",
     "cancel": "",
-    "errorAgentOwned": "{{owner}} sigue con la sesión iniciada en esta computadora. Inicia sesión como {{owner}} y cierra la sesión primero, o ejecuta \"{{command}}\" en una terminal como administrador.",
     "errorExpired": "",
     "errorRateLimited": "",
     "errorRateLimitedWait_one": "",
@@ -2246,13 +2247,16 @@
     "errorUnavailable": "",
     "errorUnknown": "",
     "errorUnreachable": "",
+    "heading": "",
+    "help": "",
+    "opensBrowser": "",
     "redirecting": "",
+    "reopen": "",
     "retry": "",
-    "stageNotice": "",
-    "subtitle": "",
-    "title": "",
-    "useProduction": "",
-    "waiting": ""
+    "switchToProduction": "",
+    "waitingDetail": "",
+    "waitingTitle": "",
+    "withBrowser": ""
   },
   "statusChip": {
     "connected": "Conectado",

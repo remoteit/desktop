@@ -2197,10 +2197,11 @@
     "services": "Dienste"
   },
   "signIn": {
+    "agentOwnedDetail": "{{owner}} ist auf diesem Computer noch angemeldet. Melden Sie sich zuerst als {{owner}} an und wieder ab, oder führen Sie Folgendes in einem Terminal als Administrator aus:",
+    "agentOwnedTitle": "Dieser Computer wird bereits verwendet",
     "autoStopped": "",
     "button": "",
     "cancel": "",
-    "errorAgentOwned": "{{owner}} ist auf diesem Computer noch angemeldet. Melden Sie sich zuerst als {{owner}} an und wieder ab, oder führen Sie „{{command}}“ in einem Terminal als Administrator aus.",
     "errorExpired": "",
     "errorRateLimited": "",
     "errorRateLimitedWait_one": "",
@@ -2209,13 +2210,16 @@
     "errorUnavailable": "",
     "errorUnknown": "",
     "errorUnreachable": "",
+    "heading": "",
+    "help": "",
+    "opensBrowser": "",
     "redirecting": "",
+    "reopen": "",
     "retry": "",
-    "stageNotice": "",
-    "subtitle": "",
-    "title": "",
-    "useProduction": "",
-    "waiting": ""
+    "switchToProduction": "",
+    "waitingDetail": "",
+    "waitingTitle": "",
+    "withBrowser": ""
   },
   "statusChip": {
     "connected": "Verbunden",

@@ -2161,10 +2161,11 @@
     "services": "サービス"
   },
   "signIn": {
+    "agentOwnedDetail": "{{owner}} がこのコンピューターにまだサインインしています。{{owner}} としてサインインしてからサインアウトするか、ターミナルで管理者として次のコマンドを実行してください：",
+    "agentOwnedTitle": "このコンピューターは使用中です",
     "autoStopped": "",
     "button": "",
     "cancel": "",
-    "errorAgentOwned": "{{owner}} がこのコンピューターにまだサインインしています。{{owner}} としてサインインしてからサインアウトするか、ターミナルで管理者として「{{command}}」を実行してください。",
     "errorExpired": "",
     "errorRateLimited": "",
     "errorRateLimitedWait_other": "",
@@ -2172,13 +2173,16 @@
     "errorUnavailable": "",
     "errorUnknown": "",
     "errorUnreachable": "",
+    "heading": "",
+    "help": "",
+    "opensBrowser": "",
     "redirecting": "",
+    "reopen": "",
     "retry": "",
-    "stageNotice": "",
-    "subtitle": "",
-    "title": "",
-    "useProduction": "",
-    "waiting": ""
+    "switchToProduction": "",
+    "waitingDetail": "",
+    "waitingTitle": "",
+    "withBrowser": ""
   },
   "statusChip": {
     "connected": "接続済み",

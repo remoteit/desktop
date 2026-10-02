@@ -154,8 +154,8 @@ const tokenStore = (): Storage => {
 
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
 
-function rememberFlow(flow: Flow): void {
-  sessionStorage.setItem(FLOW_KEY, JSON.stringify(flow))
+function rememberFlow(flow: Flow, authorizeUrl: string): void {
+  sessionStorage.setItem(FLOW_KEY, JSON.stringify({ ...flow, authorizeUrl }))
   if (oidcIsSupportTab()) return
   try {
     const now = Date.now()
@@ -538,7 +538,6 @@ export async function oidcStart(
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
-  rememberFlow(flow)
   const url = new URL(d.authorization_endpoint)
   const params: { [key: string]: string } = {
     client_id: OAUTH_CLIENT_ID,
@@ -577,13 +576,29 @@ export async function oidcStart(
     params.prompt = opts.prompt
   }
   for (const key in params) url.searchParams.set(key, params[key])
+  rememberFlow(flow, url.toString())
   await leaveTo(url.toString())
+  return true
+}
+
+/** Sends the person back to this tab's outstanding authorize, for a browser tab that was lost or
+ *  never opened. Resolves false when no flow is outstanding. */
+export async function oidcReopen(): Promise<boolean> {
+  let authorizeUrl: string | undefined
+  try {
+    authorizeUrl = JSON.parse(sessionStorage.getItem(FLOW_KEY) || '{}').authorizeUrl
+  } catch {
+    /* unreadable: start afresh */
+  }
+  if (!authorizeUrl) return false
+  await leaveTo(authorizeUrl)
   return true
 }
 
 /** Boot-time completion: when the URL carries ?code&state (web return or the desktop
  * deep-link reload), finish the exchange and clean the URL. Returns claims, or
- * undefined when this boot isn't a callback. Throws on a failed/denied flow. */
+ * undefined when this boot isn't a callback or is a stale one over a stored session.
+ * Throws on a failed/denied flow. */
 export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   const query = new URLSearchParams(window.location.search)
   const state = query.get('state')
@@ -591,7 +606,15 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
 
   const flow = takeFlow(state)
   cleanUrl()
-  if (!flow) throw new OidcError('expired', 'Sign-in state mismatch')
+  if (!flow) {
+    // A second browser tab finishing a flow the first already completed (Open browser again) lands
+    // here; with that session stored the callback is stale, and failing it showed the sign-in screen.
+    if (oidcSignedIn()) {
+      console.warn('OIDC: ignoring a sign-in callback whose flow already completed')
+      return undefined
+    }
+    throw new OidcError('expired', 'Sign-in state mismatch')
+  }
   const error = query.get('error')
   if (error) {
     const refused = new OidcError('refused', query.get('error_description') || error)
