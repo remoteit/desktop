@@ -6,11 +6,11 @@ import { graphQLBasicRequest } from './graphQL'
    it when no agent here does. The first tab registers the browser's client with a one-time code, passed in the URL's
    fragment with where to sign in (no server sees a fragment); a browser whose client is registered ignores it.
 
-   The tab is the service's name — w<port>--<name> for its port (no name has a double hyphen) — so the same link
-   reaches it through an agent here, when there is one, and through the gateway otherwise. */
+   The tab is the device's own name, as with an agent here: its web service, whatever port that is on — so the same
+   link reaches it through an agent when there is one, and through the gateway otherwise. */
 
-export function gatewayURL(name: string, port?: number): string {
-  return port ? `https://w${port}--${name}/` : `https://${name}/`
+export function gatewayURL(name: string): string {
+  return `https://${name}/`
 }
 
 type Handoff = { code: string; presence: string[]; reflector: string }
@@ -32,14 +32,14 @@ const fragment = (h: Handoff) => btoa(JSON.stringify(h)).replace(/\+/g, '-').rep
 
 // Opens the service in a new tab through the browser client. The tab opens on the click — a tab opened after the
 // code is fetched would be a pop-up the browser refuses — and goes to the device once it has the code.
-export async function openThroughGateway(name: string, port?: number): Promise<boolean> {
+export async function openThroughGateway(name: string): Promise<boolean> {
   const tab = window.open('', '_blank')
   const h = await handoff()
   if (!h) {
     tab?.close()
     return false
   }
-  const url = `${gatewayURL(name, port)}#rit=${fragment(h)}`
+  const url = `${gatewayURL(name)}#rit=${fragment(h)}`
   if (tab) {
     tab.opener = null
     tab.location.href = url

@@ -89,7 +89,7 @@ export const ServiceConnectButton: React.FC = () => {
                 {local ? (
                   <LocalSubnetConnect local={local} service={service} connection={connection} />
                 ) : (
-                  <BrowserGatewayConnect name={reach.name!} service={service} />
+                  <BrowserGatewayConnect name={reach.name!} />
                 )}
                 <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
                   <Link onClick={() => setProxy(true)}>

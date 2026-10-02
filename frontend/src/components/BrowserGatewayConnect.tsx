@@ -8,19 +8,19 @@ import { Icon } from './Icon'
 /* A web service with no agent here to reach it (services/browserGateway): it opens in its own tab, carried by this
    browser's remote.it client — nothing to install, and no connection to start. The counterpart of LocalSubnetConnect,
    which is shown instead when an agent here does reach it. */
-type Props = { name: string; service?: IService }
+type Props = { name: string }
 
-export const BrowserGatewayConnect: React.FC<Props> = ({ name, service }) => {
+export const BrowserGatewayConnect: React.FC<Props> = ({ name }) => {
   const { t } = useTranslation()
   const [opening, setOpening] = useState(false)
   const [failed, setFailed] = useState(false)
-  const address = gatewayURL(name, service?.port)
+  const address = gatewayURL(name)
     .replace(/^https:\/\//, '')
     .replace(/\/$/, '')
 
   const open = async () => {
     setOpening(true)
-    setFailed(!(await openThroughGateway(name, service?.port)))
+    setFailed(!(await openThroughGateway(name)))
     setOpening(false)
   }
 
