@@ -270,6 +270,7 @@
   "browserGatewayConnect": {
     "failed": "",
     "launch": "",
+    "terminal": "",
     "title": ""
   },
   "changeEmailDialog": {

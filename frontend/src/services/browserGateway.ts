@@ -13,9 +13,9 @@ export function gatewayURL(name: string): string {
   return `https://${name}/`
 }
 
-type Handoff = { code: string; presence: string[]; reflector: string }
+export type Handoff = { code: string; presence: string[]; reflector: string }
 
-async function handoff(): Promise<Handoff | null> {
+export async function handoff(): Promise<Handoff | null> {
   const response = await graphQLBasicRequest(`query BrowserClientHandoff {
     deviceSessionServers { presence reflector }
     login { registrationCode(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true) }

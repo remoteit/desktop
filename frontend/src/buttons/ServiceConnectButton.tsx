@@ -27,7 +27,8 @@ export const ServiceConnectButton: React.FC = () => {
   // No agent here reaches it, but it has a name and serves the web: this browser's client can open it in its own tab
   // (services/browserGateway), the proxy one step away as for a local name.
   const web = useApplication(service, connection).urlForm
-  const gateway = !local && reach.checked && !!reach.name && !!web && !proxy
+  const ssh = service?.typeID === 28
+  const gateway = !local && reach.checked && !!reach.name && (!!web || ssh) && !proxy
   const named = (!!local && !proxy) || gateway
   // The name works here, so the proxy is not in use: an error an earlier proxy attempt left on the connection — saved
   // with it, so back on every reload, and red on the service — is stale, and cleared. A proxy attempt asked for after
@@ -89,7 +90,10 @@ export const ServiceConnectButton: React.FC = () => {
                 {local ? (
                   <LocalSubnetConnect local={local} service={service} connection={connection} />
                 ) : (
-                  <BrowserGatewayConnect name={reach.name!} />
+                  <BrowserGatewayConnect
+                    name={reach.name!}
+                    terminal={ssh && service ? { port: service.port || 22, title: service.name } : undefined}
+                  />
                 )}
                 <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
                   <Link onClick={() => setProxy(true)}>

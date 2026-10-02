@@ -6,11 +6,12 @@ import { gatewayURL, openThroughGateway } from '../services/browserGateway'
 import { Icon } from './Icon'
 
 /* A web service with no agent here to reach it (services/browserGateway): it opens in its own tab, carried by this
-   browser's remote.it client — nothing to install, and no connection to start. The counterpart of LocalSubnetConnect,
+   browser's remote.it client — nothing to install, and no connection to start. An SSH service opens a terminal in
+   this app instead (pages/TerminalPage), its session through the same client. The counterpart of LocalSubnetConnect,
    which is shown instead when an agent here does reach it. */
-type Props = { name: string }
+type Props = { name: string; terminal?: { port: number; title?: string } }
 
-export const BrowserGatewayConnect: React.FC<Props> = ({ name }) => {
+export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
   const { t } = useTranslation()
   const [opening, setOpening] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -19,6 +20,12 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name }) => {
     .replace(/\/$/, '')
 
   const open = async () => {
+    // An SSH service: a terminal in this app, its session through the browser's client.
+    if (terminal) {
+      const query = new URLSearchParams({ name, port: String(terminal.port), title: terminal.title || name })
+      window.open(`${location.origin}${location.pathname}#/terminal?${query}`, '_blank')
+      return
+    }
     setOpening(true)
     setFailed(!(await openThroughGateway(name)))
     setOpening(false)
@@ -51,11 +58,15 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name }) => {
         )}
       </Box>
       <IconButton
-        icon={opening ? 'spinner-third' : 'launch'}
+        icon={opening ? 'spinner-third' : terminal ? 'terminal' : 'launch'}
         spin={opening}
         color="primary"
         disabled={opening}
-        title={t('browserGatewayConnect.launch', 'Open in a new tab')}
+        title={
+          terminal
+            ? t('browserGatewayConnect.terminal', 'Open a terminal')
+            : t('browserGatewayConnect.launch', 'Open in a new tab')
+        }
         onClick={open}
       />
     </Box>

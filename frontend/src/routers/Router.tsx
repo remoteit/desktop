@@ -16,6 +16,7 @@ import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { ClaimPage } from '../pages/ClaimPage'
 import { TestPage } from '../pages/TestPage'
+import { TerminalPage } from '../pages/TerminalPage'
 import { AddPage } from '../pages/AddPage'
 import { DevicesPage } from '../pages/DevicesPage'
 import { DeviceBulkTransferPage } from '../pages/DeviceTransferPage'
@@ -133,6 +134,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           state: { autoFeedback: true, isRedirect: true },
         }}
       />
+      <Route path="/terminal">
+        <TerminalPage />
+      </Route>
       <Route path="/claim/:claimID">
         <ClaimPage />
       </Route>

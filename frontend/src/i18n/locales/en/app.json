@@ -273,6 +273,7 @@
   "browserGatewayConnect": {
     "failed": "Could not open it: try again",
     "launch": "Open in a new tab",
+    "terminal": "Open a terminal",
     "title": "In this browser — nothing to install"
   },
   "changeEmailDialog": {
