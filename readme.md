@@ -143,8 +143,8 @@ The chat is a license feature: it shows only for an account holding the `ai-agen
 which a system admin grants from **Admin → Add-ons** — your dev account included; nothing in a build
 or env turns it on otherwise. In dev its requests go through the same-origin `/agent`
 vite proxy, so `AGENT_PROXY_TARGET` is what selects the service — the deployed dev agent, or
-`http://localhost:3001` to run `ai-agent` locally. **Settings → Test Settings → Override agent
-service** overrides it at runtime without a restart (https only). DPoP proofs are signed over
+`http://localhost:3001` to run `ai-agent` locally. **Settings → Test Settings → API Target →
+Custom** sets an agent service URL at runtime without a restart (https only). DPoP proofs are signed over
 the canonical resource URL, so neither the proxy nor the override invalidates them.
 
 To use the fontawesome fonts:

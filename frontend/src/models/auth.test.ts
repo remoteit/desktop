@@ -319,9 +319,8 @@ describe('auth model — the password change is one call to the AS', () => {
   })
 })
 
-/* A stage switch changes the login server, which cannot refresh the old one's tokens: the choice is
-   stored first, the old stage's API overrides go, and the app reloads onto the new stage once signed
-   out, where boot drops whatever the old login server issued. */
+/* A stage switch stores the choice, clears the old API overrides, signs out and reloads; boot then
+   drops whatever the old login server issued. */
 describe('auth model — a stage switch signs out and reloads onto the new stage', () => {
   const apis = {
     switchApi: true,

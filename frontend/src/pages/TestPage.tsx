@@ -159,7 +159,7 @@ export const TestPage: React.FC = () => {
   const reachable = rows.filter(row => row.issuer === OAUTH_ISSUER)
   const [customMode, setCustomMode] = useState<boolean | undefined>(undefined)
   const customSelected =
-    customMode ?? (!!apis.switchApi && reachable.length > 0 && !reachable.some(row => row.graphql === currentGraphql))
+    customMode ?? (!!apis.switchApi && stagePairs.length > 0 && !reachable.some(row => row.graphql === currentGraphql))
   const [pendingStage, setPendingStage] = useState<StageName | undefined>(undefined)
   const pending = pendingStage && STAGES[pendingStage]
 
@@ -365,7 +365,10 @@ export const TestPage: React.FC = () => {
       </List>
       <Confirm
         open={!!pendingStage}
-        onConfirm={() => pendingStage && dispatch.auth.switchStage(pendingStage)}
+        onConfirm={() => {
+          setPendingStage(undefined)
+          if (pendingStage) dispatch.auth.switchStage(pendingStage)
+        }}
         onDeny={() => setPendingStage(undefined)}
         title={t('testPage.switchStageTitle', 'Switch to the {{name}} stage?', { name: pending?.name })}
         action={t('testPage.switchStageAction', 'Sign out and switch')}

@@ -108,7 +108,9 @@ export function SignInApp() {
   // themselves.
   const supportTab = oidcIsSupportTab()
   const budgetSpent = oidcAutoStartExhausted('boot')
-  const autoStart = !browser.isElectron && !signingIn && !signInFailed && !budgetSpent && !oidcLeaveRefused()
+  const otherStage = !STAGE_PINNED && STAGE !== 'prod' ? STAGE : undefined
+  const autoStart =
+    !browser.isElectron && !otherStage && !signingIn && !signInFailed && !budgetSpent && !oidcLeaveRefused()
   useEffect(() => {
     if (!autoStart) return
     auth.signIn({ auto: 'boot' })
@@ -188,11 +190,11 @@ export function SignInApp() {
         </Button>
       )}
       {signInFailed && <SignInError code={signInErrorCode} detail={signInError} retryAfter={signInRetryAfter} />}
-      {!STAGE_PINNED && STAGE && STAGE !== 'prod' && (
+      {otherStage && (
         <Box display="flex" alignItems="center" gap={1} marginTop={2}>
           <Typography variant="caption" color="textSecondary">
             {t('signIn.stageNotice', 'Signing in to the {{name}} stage at {{host}}.', {
-              name: STAGES[STAGE].name,
+              name: STAGES[otherStage].name,
               host: new URL(OAUTH_ISSUER).host,
             })}
           </Typography>

@@ -136,9 +136,12 @@ describe('constants — stage', () => {
 
   it('an issuer pinned by the build wins over a stored choice and names its stage', async () => {
     window.localStorage.setItem('r3.stage', 'prod')
-    const c = await loadAt('3.49.2', { VITE_OAUTH_ISSUER: 'https://login.dev.remote.it' })
-    expect(c.STAGE_PINNED).toBe(true)
-    expect(c.STAGE).toBe('dev')
-    expect(endpoints(c)).toEqual(DEV_ENDPOINTS)
+    for (const issuer of ['https://login.dev.remote.it', 'https://login.dev.remote.it/']) {
+      const c = await loadAt('3.49.2', { VITE_OAUTH_ISSUER: issuer })
+      expect(c.STAGE_PINNED).toBe(true)
+      expect(c.STAGE).toBe('dev')
+      expect(endpoints(c).slice(1, 6)).toEqual(DEV_ENDPOINTS.slice(1, 6))
+      expect(c.AGENT_URL).toBe('/agent')
+    }
   })
 })

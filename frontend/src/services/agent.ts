@@ -19,11 +19,11 @@ import { OAUTH_AGENT_RESOURCE, AGENT_URL } from '../constants'
    the Test Settings validation so what saves is exactly what engages. */
 export const isSecureAgentURL = (url: string): boolean => !!httpsOnly(url)
 
-/* Base URL for the agent service, resolved per request. A Test UI override
-   wins (Test Settings → Agent service URL, https only); otherwise the build's AGENT_URL. */
+/* Base URL for the agent service, resolved per request. A Test UI override wins while the API
+   target is Custom (Test Settings → API Target, https only); otherwise the build's AGENT_URL. */
 export function agentURL(): string {
-  const override = store.getState().ui.apis.agentURL
-  if (override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
+  const { agentURL: override, switchApi } = store.getState().ui.apis
+  if (switchApi && override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
   return AGENT_URL
 }
 

@@ -56,8 +56,9 @@ export const STAGE_PINNED = [
   env.VITE_WEBSOCKET_URL,
   env.VITE_AGENT_URL,
 ].some(Boolean)
+const pinnedIssuer = env.VITE_OAUTH_ISSUER?.replace(/\/+$/, '')
 export const STAGE: StageName | undefined = STAGE_PINNED
-  ? STAGE_NAMES.find(name => STAGES[name].issuer === env.VITE_OAUTH_ISSUER)
+  ? STAGE_NAMES.find(name => STAGES[name].issuer === pinnedIssuer)
   : readStage()
 const stage = STAGES[STAGE ?? 'prod']
 
@@ -105,9 +106,9 @@ export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || stage.mcp
 // retirement of the _dev names is exactly why a pinned copy can't be the source of truth.
 export const OAUTH_MCP_DETAIL = env.VITE_OAUTH_MCP_DETAIL || 'remoteit_mcp'
 export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
-// Dev rides the vite /agent proxy (same-origin, CSP-clean) even when VITE_AGENT_URL is set;
-// builds have no proxy and call the stage's agent, which is served at its own audience.
-export const AGENT_URL = env.DEV ? '/agent' : env.VITE_AGENT_URL || OAUTH_AGENT_RESOURCE
+// Dev rides the vite /agent proxy (same-origin, CSP-clean) even when VITE_AGENT_URL is set; an
+// unpinned build calls the stage's agent at its own audience, a pinned one keeps its /agent route.
+export const AGENT_URL = env.DEV ? '/agent' : env.VITE_AGENT_URL || (STAGE_PINNED ? '/agent' : OAUTH_AGENT_RESOURCE)
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 // The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
