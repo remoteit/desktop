@@ -1,5 +1,5 @@
 import { addConnectionProps } from '../models/networks'
-import { graphQLBasicRequest } from './graphQL'
+import { graphQLBasicRequest, graphQLInlineRequest } from './graphQL'
 
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
   return await graphQLBasicRequest(
@@ -745,6 +745,19 @@ export async function graphQLAdminUpdateEmail(from: string, to: string) {
         updateEmail(from: $from, to: $to)
       }`,
     { from, to }
+  )
+}
+
+export async function graphQLRequestAccountDeletion() {
+  return await graphQLInlineRequest(` mutation { requestAccountDeletion }`)
+}
+
+export async function graphQLDeleteAccount(code: string) {
+  return await graphQLInlineRequest(
+    ` mutation DeleteAccount($code: String!) {
+        deleteAccount(code: $code)
+      }`,
+    { code }
   )
 }
 
