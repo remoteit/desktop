@@ -52,6 +52,8 @@ export interface AuthState {
   initialized: boolean
   authenticated: boolean
   backendAuthenticated: boolean
+  /** This window has signed the agent out for an account switch; it no longer owns it. */
+  agentReleased?: boolean
   /** A sign-in attempt failed. Deliberately SEPARATE from the message: this is what stops
    *  the web app starting another authorize by itself, and a brake that reads a display
    *  string is a brake that vanishes the moment the string is empty or suppressed. */
@@ -208,8 +210,8 @@ export default createModel<RootModel>()({
       }
     },
     /** Account switch: re-run authorize with select_account — the AS chooser shows the
-     * real session chips; nothing is torn down locally, so a canceled chooser costs
-     * nothing. Completion replaces the session like any sign-in (a SAME-account re-auth
+     * real session chips. On desktop the agent is released first, so a canceled chooser
+     * leaves this window without it until a reload signs it back in. Completion replaces the session like any sign-in (a SAME-account re-auth
      * revokes the old family; a DIFFERENT account files the old one in the registry —
      * services/oidc.ts). */
     async switchAccount(_: void) {
@@ -361,9 +363,10 @@ export default createModel<RootModel>()({
     /** Desktop: the account leaving signs this computer's agent out from its own window before a switch,
      *  so the agent only ever moves on its owner's credentials. Its saved session stays in the switcher. */
     async releaseAgent(_: void, state): Promise<boolean> {
-      if (!state.auth.backendAuthenticated) return true
-      if (await Controller.emitWithAck('agent/release', AGENT_RELEASE_TIMEOUT)) {
-        dispatch.auth.set({ backendAuthenticated: false })
+      if (!browser.hasBackend || !state.auth.user || state.auth.agentReleased) return true
+      const ask = () => Controller.emitWithAck('agent/release', AGENT_RELEASE_TIMEOUT)
+      if ((await ask()) || ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && (await ask()))) {
+        dispatch.auth.set({ backendAuthenticated: false, agentReleased: true })
         return true
       }
       dispatch.ui.set({

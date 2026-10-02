@@ -168,7 +168,6 @@ declare global {
     username: string
     authHash: string
     guid: string
-    switchAgent?: boolean
   }
 
   interface IRawUser {

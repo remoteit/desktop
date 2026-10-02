@@ -15,6 +15,7 @@ import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { oidcAccounts, oidcRefreshBrowserAccounts } from '../services/oidc'
 import { emit } from '../services/Controller'
+import browser from '../services/browser'
 import { DESKTOP_HELP_LINK } from '../constants'
 
 const ENTER_DELAY = 300
@@ -125,12 +126,7 @@ export const AvatarMenu: React.FC = () => {
           badge={licenseIndicator}
           onClick={handleClose}
         />
-        <ListItemLink
-          title={t('nav.support', 'Support')}
-          icon="life-ring"
-          href={DESKTOP_HELP_LINK}
-          dense
-        />
+        <ListItemLink title={t('nav.support', 'Support')} icon="life-ring" href={DESKTOP_HELP_LINK} dense />
         <ListItemLink title={t('nav.apis', 'APIs')} icon="books" href="https://link.remote.it/docs/api" dense />
         <ListItemLocation
           title={t('nav.bugReport', 'Bug Report')}
@@ -211,7 +207,7 @@ export const AvatarMenu: React.FC = () => {
                   {(a.name || a.email || '?').charAt(0).toUpperCase()}
                 </MuiAvatar>
               }
-              confirm={backendAuthenticated}
+              confirm={browser.hasBackend}
               confirmProps={switchConfirm}
               onClick={async () => {
                 handleClose()
@@ -222,7 +218,7 @@ export const AvatarMenu: React.FC = () => {
         <ListItemSetting
           label={t('nav.switchAccount', 'Switch account')}
           icon="users"
-          confirm={backendAuthenticated}
+          confirm={browser.hasBackend}
           confirmProps={switchConfirm}
           onClick={async () => {
             handleClose()

@@ -177,12 +177,18 @@ describe('backend/server broadcasts', () => {
     Object.assign(cli.data, { admin: { guid: 'guid-a', username: credentials.username } })
     const other = await open()
     const refused = next(other, 'unauthorized')
-    other.emit('authentication', { username: 'b@test', authHash: 'hash-b', guid: 'guid-b', switchAgent: true })
+    const attempt = { username: 'b@test', authHash: 'hash-b', guid: 'guid-b' }
+    other.emit('authentication', attempt)
     const { message } = (await refused) as { message: string }
 
     expect(parseAgentOwned(message)).toEqual(expect.objectContaining({ username: credentials.username }))
     expect(checkSignIn).not.toHaveBeenCalled()
-    await expect(other.timeout(200).emitWithAck('agent/release')).rejects.toThrow()
+
+    // The server handles one socket's packets in order, so once the next refusal arrives the release was ignored.
+    other.emit('agent/release')
+    const refusedAgain = next(other, 'unauthorized')
+    other.emit('authentication', attempt)
+    await refusedAgain
     expect(signOut).not.toHaveBeenCalled()
 
     checkSignIn.mockRestore()

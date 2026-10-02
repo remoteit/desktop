@@ -21,10 +21,12 @@ const {
   reloadIfStageChanged,
   controllerClose,
   emitWithAck,
+  reconnectNow,
   oidcClaims,
   oidcActivateAccount,
 } = vi.hoisted(() => ({
   emitWithAck: vi.fn(),
+  reconnectNow: vi.fn(),
   oidcClaims: vi.fn(),
   oidcActivateAccount: vi.fn(),
   oidcReconcileIssuer: vi.fn(),
@@ -61,7 +63,7 @@ vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 vi.mock('../services/accountSecurity', () => ({ changePassword }))
 vi.mock('../services/Controller', () => ({
-  default: { close: controllerClose, emitWithAck },
+  default: { close: controllerClose, emitWithAck, reconnectNow },
   emit: vi.fn(() => false),
 }))
 vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn() } }))
@@ -411,34 +413,52 @@ describe("auth model — this computer's agent belongs to another account", () =
   })
 })
 
-/* On desktop the account leaving signs the agent out from its own window before any switch, so the
-   agent only moves on its owner's credentials. */
 describe('auth model — switching accounts releases the agent first', () => {
+  const signedIn = { auth: { user: { id: 'guid-a' } } }
   beforeEach(() => {
+    browser.hasBackend = true
     emitWithAck.mockReset()
+    reconnectNow.mockReset()
     oidcStart.mockReset()
     oidcClaims.mockReset()
     oidcActivateAccount.mockReset()
   })
+  afterEach(() => {
+    browser.hasBackend = false
+  })
 
-  it('a window signed in to the backend asks it to release the agent', async () => {
+  it('a signed-in desktop window asks the backend to release the agent', async () => {
     emitWithAck.mockResolvedValue(true)
     const dispatch = makeDispatch()
-    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: { backendAuthenticated: true } })).toBe(true)
+    expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(true)
     expect(emitWithAck).toHaveBeenCalledWith('agent/release', 1000)
-    expect(dispatch.auth.set).toHaveBeenCalledWith({ backendAuthenticated: false })
+    expect(dispatch.auth.set).toHaveBeenCalledWith({ backendAuthenticated: false, agentReleased: true })
+  })
+
+  it('a dropped socket reconnects and asks again rather than switching without a release', async () => {
+    emitWithAck.mockResolvedValueOnce(undefined).mockResolvedValueOnce(true)
+    reconnectNow.mockResolvedValue(true)
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(true)
+    expect(emitWithAck).toHaveBeenCalledTimes(2)
   })
 
   it('a release the backend refuses or never answers stops the switch and says so', async () => {
     emitWithAck.mockResolvedValue(undefined)
+    reconnectNow.mockResolvedValue(false)
     const dispatch = makeDispatch()
-    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: { backendAuthenticated: true } })).toBe(false)
+    expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(false)
     expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.agentReleaseFailed' })
   })
 
-  it('without a signed-in backend there is nothing to release', async () => {
+  it('nothing to release without a backend, a signed-in account, or after this window released it', async () => {
     const dispatch = makeDispatch()
-    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: { backendAuthenticated: false } })).toBe(true)
+    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: {} })).toBe(true)
+    expect(
+      await effectsFor(dispatch).releaseAgent(undefined, { auth: { ...signedIn.auth, agentReleased: true } })
+    ).toBe(true)
+    browser.hasBackend = false
+    expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(true)
     expect(emitWithAck).not.toHaveBeenCalled()
   })
 

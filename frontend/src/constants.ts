@@ -225,7 +225,7 @@ export const FRONTEND_RETRY_DELAY = 20000
 // How long sign out waits for the local backend to come back before giving up and
 // tearing down the frontend on its own. Short: it's a localhost socket.
 export const SIGN_OUT_BACKEND_TIMEOUT = 3000
-export const AGENT_RELEASE_TIMEOUT = 20000
+export const AGENT_RELEASE_TIMEOUT = 10000
 // How long "Sign out everywhere" waits for the AS to end every session before signing out
 // locally regardless — a stalled token mint must never leave the person signed in here.
 export const SIGN_OUT_EVERYWHERE_TIMEOUT = 10000
