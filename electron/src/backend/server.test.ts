@@ -149,26 +149,22 @@ describe('backend/server broadcasts', () => {
     expect(signOut).toHaveBeenCalledTimes(1)
   })
 
-  it('lets a signed-in window release the agent, dropping its other windows and its own broadcasts', async () => {
+  it('lets a signed-in window release the agent, then drops every window signed in as its owner', async () => {
     const signOut = (cli.signOut as jest.Mock).mockClear()
     Object.assign(user, { ...credentials, signedIn: true })
     const popout = await open()
     expect(await authenticate(popout, credentials)).toBe('authenticated')
     const window = await open()
-    const heard = listen(window)
     expect(await authenticate(window, credentials)).toBe('authenticated')
-    const popoutId = popout.id
+    const [popoutId, windowId] = [popout.id, window.id]
+    const dropped = next(window, 'disconnect')
 
     expect(await window.emitWithAck('agent/release')).toBe(true)
+    await dropped
     expect(signOut).toHaveBeenCalledTimes(1)
     expect(user.signedIn).toBe(false)
     expect(io.sockets.sockets.has(popoutId!)).toBe(false)
-
-    const probe = next(window, 'probe')
-    EventBus.emit(ConnectionPool.EVENTS.updated, { id: 'service-4' })
-    io.emit('probe')
-    await probe
-    expect(heard).not.toContain(ConnectionPool.EVENTS.updated)
+    expect(io.sockets.sockets.has(windowId!)).toBe(false)
   })
 
   it("a window that has signed out cannot release the next owner's agent", async () => {
