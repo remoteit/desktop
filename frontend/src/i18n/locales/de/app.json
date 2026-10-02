@@ -683,6 +683,7 @@
   "deleteAccountDialog": {
     "acknowledge": "Mir ist bewusst, dass Remote.It auf meinen Geräten installiert bleibt und weiterläuft und durch das Löschen meines Kontos nicht entfernt wird.",
     "codeIntro": "Zur Bestätigung senden wir einen Code per E-Mail an {{email}}.",
+    "codeLabel": "Bestätigungscode",
     "codePlaceholder": "Code",
     "codeSent": "Geben Sie den Code ein, den wir an {{email}} gesendet haben. Er ist 10 Minuten gültig.",
     "confirmTitle": "Konto löschen",
@@ -693,6 +694,8 @@
     "deleteButton": "Konto endgültig löschen",
     "deleting": "Wird gelöscht…",
     "devicesBody": "Beim Löschen Ihres Kontos werden Ihre Geräte daraus entfernt, Remote.It wird aber nicht deinstalliert. Die Software läuft auf jedem Gerät weiter, auf dem sie installiert ist, bis Sie sie entfernen.",
+    "devicesFailed": "Ihre Geräte konnten nicht geladen werden. Schließen Sie dieses Fenster und versuchen Sie es erneut.",
+    "devicesLoading": "Ihre Geräte werden geladen…",
     "devicesOwned_one": "Sie besitzen {{count}} Gerät",
     "devicesOwned_other": "Sie besitzen {{count}} Geräte",
     "devicesTitle": "Remote.It läuft auf Ihren Geräten weiter",
@@ -1881,7 +1884,7 @@
   "removeRemoteitDialog": {
     "debian": "Raspberry Pi, Ubuntu und andere Debian-basierte Linux-Systeme",
     "desktopMacLinux": "Desktop-App unter macOS oder Linux",
-    "desktopMacLinuxSteps": "Öffnen Sie die Einstellungen, dann „Erweitert“, und wählen Sie „Deinstallieren“.",
+    "desktopMacLinuxSteps": "Öffnen Sie die Einstellungen, dann „Anwendung“, klappen Sie „Erweitert“ auf und wählen Sie „Deinstallieren“.",
     "desktopWindows": "Desktop-App unter Windows",
     "desktopWindowsSteps": "Deinstallieren Sie Remote.It in den Windows-Einstellungen unter „Apps“.",
     "intro": "Beim Löschen Ihres Kontos wird Remote.It nicht deinstalliert. Entfernen Sie es von jedem Ihrer Geräte, bevor Sie Ihr Konto löschen.",

@@ -75,11 +75,17 @@ const typeCode = async (code: string) => {
     input.dispatchEvent(new Event('input', { bubbles: true }))
   })
 }
-const render = async (devices = owned(true)) => {
+const render = async (devices: OwnedDevices | null = owned(true), props: object = {}) => {
   await act(async () =>
     root.render(
       <ThemeProvider theme={theme}>
-        <DeleteAccountDialog open owned={devices} onShowInstructions={vi.fn()} onClose={vi.fn()} />
+        <DeleteAccountDialog
+          open
+          owned={devices ?? undefined}
+          onShowInstructions={vi.fn()}
+          onClose={vi.fn()}
+          {...props}
+        />
       </ThemeProvider>
     )
   )
@@ -122,6 +128,27 @@ describe('DeleteAccountDialog', () => {
     expect(button('Continue').disabled).toBe(true)
     await check()
     expect(button('Continue').disabled).toBe(false)
+  })
+
+  it('holds Continue until the devices are known, so this device is never skipped', async () => {
+    await render(null)
+    await check()
+    expect(dialog().textContent).toContain('Loading your devices…')
+    expect(button('Continue').disabled).toBe(true)
+
+    await render(null, { devicesFailed: true })
+    expect(dialog().textContent).toContain("Your devices couldn't be loaded")
+    expect(button('Continue').disabled).toBe(true)
+  })
+
+  it('mentions the organization only to someone who has one', async () => {
+    await render(owned(false))
+    await toFeedback()
+    await click('Continue')
+    expect(dialog().textContent).not.toContain('Your organization and its roles are deleted')
+
+    await render(owned(false), { hasOrganization: true })
+    expect(dialog().textContent).toContain('Your organization and its roles are deleted')
   })
 
   it('unregisters this device before the account is deleted, then signs out without a survey ticket', async () => {

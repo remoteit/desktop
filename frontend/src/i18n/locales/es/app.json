@@ -687,6 +687,7 @@
   "deleteAccountDialog": {
     "acknowledge": "Entiendo que Remote.It seguirá instalado y en ejecución en mis dispositivos, y que eliminar mi cuenta no lo desinstala.",
     "codeIntro": "Para confirmar, enviaremos un código por correo a {{email}}.",
+    "codeLabel": "Código de confirmación",
     "codePlaceholder": "Código",
     "codeSent": "Introduce el código que enviamos a {{email}}. Caduca en 10 minutos.",
     "confirmTitle": "Eliminar tu cuenta",
@@ -697,6 +698,8 @@
     "deleteButton": "Eliminar la cuenta definitivamente",
     "deleting": "Eliminando…",
     "devicesBody": "Al eliminar tu cuenta, tus dispositivos se quitan de ella, pero Remote.It no se desinstala. El software sigue funcionando en cada dispositivo donde está instalado hasta que lo quites.",
+    "devicesFailed": "No se pudieron cargar tus dispositivos. Cierra esto e inténtalo de nuevo.",
+    "devicesLoading": "Cargando tus dispositivos…",
     "devicesOwned_one": "Tienes {{count}} dispositivo",
     "devicesOwned_many": "Tienes {{count}} dispositivos",
     "devicesOwned_other": "Tienes {{count}} dispositivos",
@@ -1907,7 +1910,7 @@
   "removeRemoteitDialog": {
     "debian": "Raspberry Pi, Ubuntu y otros Linux basados en Debian",
     "desktopMacLinux": "App de escritorio en macOS o Linux",
-    "desktopMacLinuxSteps": "Abre Configuración, luego Avanzado, y selecciona Desinstalar.",
+    "desktopMacLinuxSteps": "Abre Configuración, luego Aplicación, despliega Avanzado y selecciona Desinstalar.",
     "desktopWindows": "App de escritorio en Windows",
     "desktopWindowsSteps": "Desinstala Remote.It desde la Configuración de Windows, en Aplicaciones.",
     "intro": "Eliminar tu cuenta no desinstala Remote.It. Quítalo de cada dispositivo que tengas antes de eliminar tu cuenta.",

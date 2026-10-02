@@ -37,11 +37,20 @@ type Busy = 'sending' | 'unregistering' | 'deleting'
 type Props = {
   open: boolean
   owned?: OwnedDevices
+  devicesFailed?: boolean
+  hasOrganization?: boolean
   onShowInstructions: () => void
   onClose: () => void
 }
 
-export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, onShowInstructions, onClose }) => {
+export const DeleteAccountDialog: React.FC<Props> = ({
+  open,
+  owned,
+  devicesFailed,
+  hasOrganization,
+  onShowInstructions,
+  onClose,
+}) => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const store = useStore<State>()
@@ -175,7 +184,7 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, onShowInstru
       icon: 'hdd',
       text: t('deleteAccountDialog.consequenceDevices', 'The devices you own are removed from your account'),
     },
-    {
+    hasOrganization && {
       icon: 'industry-alt',
       text: t('deleteAccountDialog.consequenceOrganization', 'Your organization and its roles are deleted'),
     },
@@ -187,7 +196,7 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, onShowInstru
       ),
     },
     { icon: 'sign-out', text: t('deleteAccountDialog.consequenceSignIn', 'Your sign-in and access keys stop working') },
-  ]
+  ].filter(Boolean) as { icon: string; text: string }[]
 
   const actions = (left: React.ReactNode, primary: React.ReactNode) => (
     <DialogActions sx={{ flexWrap: 'wrap', rowGap: 1 }}>
@@ -213,6 +222,13 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, onShowInstru
                 "Deleting your account removes your devices from it, but it doesn't uninstall Remote.It. The software keeps running on every device it's installed on until you remove it."
               )}
             </Typography>
+            {!owned && (
+              <Typography variant="caption" color={devicesFailed ? 'error' : 'GrayText'}>
+                {devicesFailed
+                  ? t('deleteAccountDialog.devicesFailed', "Your devices couldn't be loaded. Close this and try again.")
+                  : t('deleteAccountDialog.devicesLoading', 'Loading your devices…')}
+              </Typography>
+            )}
             {owned && (
               <OwnedDevicesList
                 owned={owned}
@@ -237,7 +253,12 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, onShowInstru
             <Button onClick={onShowInstructions}>
               {t('deleteAccountSection.removeButton', 'How to remove Remote.It')}
             </Button>,
-            <Button variant="contained" color="error" disabled={!acknowledged} onClick={() => goTo('feedback')}>
+            <Button
+              variant="contained"
+              color="error"
+              disabled={!acknowledged || !owned}
+              onClick={() => goTo('feedback')}
+            >
               {t('common.continue', 'Continue')}
             </Button>
           )}
@@ -352,6 +373,7 @@ export const DeleteAccountDialog: React.FC<Props> = ({ open, owned, onShowInstru
                   }
                   onKeyDown={e => e.key === 'Enter' && ready && deleteAccount()}
                   inputProps={{
+                    'aria-label': t('deleteAccountDialog.codeLabel', 'Confirmation code'),
                     maxLength: CODE_LENGTH,
                     autoComplete: 'one-time-code',
                     style: { textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.5rem' },

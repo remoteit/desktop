@@ -683,6 +683,7 @@
   "deleteAccountDialog": {
     "acknowledge": "I understand that Remote.It stays installed and running on my devices, and deleting my account won't remove it.",
     "codeIntro": "To confirm, we'll email a code to {{email}}.",
+    "codeLabel": "Confirmation code",
     "codePlaceholder": "Code",
     "codeSent": "Enter the code we sent to {{email}}. It expires in 10 minutes.",
     "confirmTitle": "Delete your account",
@@ -693,6 +694,8 @@
     "deleteButton": "Delete account permanently",
     "deleting": "Deleting…",
     "devicesBody": "Deleting your account removes your devices from it, but it doesn't uninstall Remote.It. The software keeps running on every device it's installed on until you remove it.",
+    "devicesFailed": "Your devices couldn't be loaded. Close this and try again.",
+    "devicesLoading": "Loading your devices…",
     "devicesOwned_one": "You own {{count}} device",
     "devicesOwned_other": "You own {{count}} devices",
     "devicesTitle": "Remote.It will keep running on your devices",
@@ -1881,7 +1884,7 @@
   "removeRemoteitDialog": {
     "debian": "Raspberry Pi, Ubuntu and other Debian Linux",
     "desktopMacLinux": "Desktop app on macOS or Linux",
-    "desktopMacLinuxSteps": "Open Settings, then Advanced, and select Uninstall.",
+    "desktopMacLinuxSteps": "Open Settings, then Application, expand Advanced, and select Uninstall.",
     "desktopWindows": "Desktop app on Windows",
     "desktopWindowsSteps": "Uninstall Remote.It from Windows Settings, under Apps.",
     "intro": "Deleting your account doesn't uninstall Remote.It. Remove it from each device you own before you delete your account.",

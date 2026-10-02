@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { Typography, Button, Stack } from '@mui/material'
-import { State } from '../store'
+import { Dispatch, State } from '../store'
 import { PERSONAL_PLAN_ID } from '../models/plans'
 import { getOwnOrganization } from '../models/organization'
 import { selectRemoteitLicense } from '../selectors/organizations'
@@ -15,12 +16,15 @@ import { Link } from './Link'
 
 export const DeleteAccountSection: React.FC = () => {
   const { t } = useTranslation()
+  const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
   const userId = useSelector((state: State) => state.user.id)
   const license = useSelector((state: State) => selectRemoteitLicense(state, state.user.id))
   const members = useSelector((state: State) => getOwnOrganization(state).members)
+  const hasOrganization = useSelector((state: State) => !!getOwnOrganization(state).id)
   const [dialog, setDialog] = useState<'remove' | 'delete'>()
   const [opened, setOpened] = useState(0)
-  const owned = useOwnedDevices(!!dialog)
+  const { owned, failed } = useOwnedDevices(!!dialog)
   const paidPlan = !!license && license.plan.id !== PERSONAL_PLAN_ID
   const otherMembers = members.filter(member => member.user.id !== userId).length
 
@@ -29,6 +33,11 @@ export const DeleteAccountSection: React.FC = () => {
     setDialog('delete')
   }
   const close = () => setDialog(undefined)
+  const manageMembers = async (event: React.MouseEvent) => {
+    event.preventDefault()
+    await dispatch.accounts.select(userId)
+    history.push('/organization/members')
+  }
 
   return (
     <Gutters>
@@ -46,7 +55,7 @@ export const DeleteAccountSection: React.FC = () => {
             count: otherMembers,
             defaultValue: 'Your organization has {{count}} other members.',
           })}{' '}
-          <Link to="/organization/members">
+          <Link to="/organization/members" onClick={manageMembers}>
             {t('deleteAccountSection.membersRemove', 'Transfer ownership or remove them before deleting your account.')}
           </Link>
         </Notice>
@@ -70,6 +79,8 @@ export const DeleteAccountSection: React.FC = () => {
         key={opened}
         open={dialog === 'delete'}
         owned={owned}
+        devicesFailed={failed}
+        hasOrganization={hasOrganization}
         onShowInstructions={() => setDialog('remove')}
         onClose={close}
       />

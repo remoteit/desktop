@@ -21,7 +21,10 @@ export const RemoveRemoteitDialog: React.FC<Props> = ({ open, owned, onClose }) 
   const desktopApps = [
     {
       label: t('removeRemoteitDialog.desktopMacLinux', 'Desktop app on macOS or Linux'),
-      steps: t('removeRemoteitDialog.desktopMacLinuxSteps', 'Open Settings, then Advanced, and select Uninstall.'),
+      steps: t(
+        'removeRemoteitDialog.desktopMacLinuxSteps',
+        'Open Settings, then Application, expand Advanced, and select Uninstall.'
+      ),
     },
     {
       label: t('removeRemoteitDialog.desktopWindows', 'Desktop app on Windows'),

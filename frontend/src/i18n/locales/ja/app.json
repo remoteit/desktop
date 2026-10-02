@@ -679,6 +679,7 @@
   "deleteAccountDialog": {
     "acknowledge": "Remote.It はデバイスにインストールされたまま動作し続け、アカウントを削除しても削除されないことを理解しました。",
     "codeIntro": "確認のため、{{email}} にコードをメールでお送りします。",
+    "codeLabel": "確認コード",
     "codePlaceholder": "コード",
     "codeSent": "{{email}} に送信したコードを入力してください。有効期限は10分です。",
     "confirmTitle": "アカウントを削除",
@@ -689,6 +690,8 @@
     "deleteButton": "アカウントを完全に削除",
     "deleting": "削除中…",
     "devicesBody": "アカウントを削除するとデバイスはアカウントから外れますが、Remote.It はアンインストールされません。ソフトウェアは、削除するまでインストールされているすべてのデバイスで動作し続けます。",
+    "devicesFailed": "デバイスを読み込めませんでした。閉じてからもう一度お試しください。",
+    "devicesLoading": "デバイスを読み込んでいます…",
     "devicesOwned_other": "所有しているデバイス: {{count}}台",
     "devicesTitle": "Remote.It はデバイス上で動作し続けます",
     "doneBody": "Remote.It をご利用いただきありがとうございました。サインアウトしています…",
@@ -1855,7 +1858,7 @@
   "removeRemoteitDialog": {
     "debian": "Raspberry Pi、Ubuntu、その他の Debian 系 Linux",
     "desktopMacLinux": "macOS または Linux のデスクトップアプリ",
-    "desktopMacLinuxSteps": "設定を開き、「詳細設定」から「アンインストール」を選択します。",
+    "desktopMacLinuxSteps": "設定を開き、「アプリケーション」の「詳細設定」を展開して「アンインストール」を選択します。",
     "desktopWindows": "Windows のデスクトップアプリ",
     "desktopWindowsSteps": "Windows の設定の「アプリ」から Remote.It をアンインストールします。",
     "intro": "アカウントを削除しても Remote.It はアンインストールされません。アカウントを削除する前に、所有している各デバイスから削除してください。",
