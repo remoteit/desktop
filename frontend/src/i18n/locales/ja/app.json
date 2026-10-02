@@ -446,13 +446,14 @@
   "common": {
     "actionCannotBeUndone": "この操作は元に戻せません。",
     "areYouSure": "本当によろしいですか?",
+    "back": "戻る",
     "cancel": "キャンセル",
     "cannotBeUndone": "この操作は元に戻せません。",
     "clear": "クリア",
     "close": "閉じる",
     "confirm": "確認",
     "confirmingEllipsis": "確認中...",
-    "continue": "",
+    "continue": "続行",
     "delete": "削除",
     "disable": "無効にする",
     "done": "完了",
@@ -675,17 +676,46 @@
     "title": "アクセスキーを削除",
     "warning": "この操作は取り消せず、元に戻せません。"
   },
+  "deleteAccountDialog": {
+    "acknowledge": "Remote.It はデバイスにインストールされたまま動作し続け、アカウントを削除しても削除されないことを理解しました。",
+    "codeIntro": "確認のため、{{email}} にコードをメールでお送りします。",
+    "codePlaceholder": "コード",
+    "codeSent": "{{email}} に送信したコードを入力してください。有効期限は10分です。",
+    "confirmTitle": "アカウントを削除",
+    "consequenceDevices": "所有しているデバイスがアカウントから削除されます",
+    "consequenceOrganization": "組織とそのロールが削除されます",
+    "consequenceShares": "共有されているデバイスと、他の組織のメンバーシップが削除されます",
+    "consequenceSignIn": "サインインとアクセスキーが使えなくなります",
+    "deleteButton": "アカウントを完全に削除",
+    "deleting": "削除中…",
+    "devicesBody": "アカウントを削除するとデバイスはアカウントから外れますが、Remote.It はアンインストールされません。ソフトウェアは、削除するまでインストールされているすべてのデバイスで動作し続けます。",
+    "devicesOwned_other": "所有しているデバイス: {{count}}台",
+    "devicesTitle": "Remote.It はデバイス上で動作し続けます",
+    "doneBody": "Remote.It をご利用いただきありがとうございました。サインアウトしています…",
+    "doneTitle": "アカウントを削除しました",
+    "feedbackOptional": "任意 — うまくいかなかった理由を教えていただけると、改善に役立ちます。",
+    "feedbackTitle": "退会の理由を教えてください",
+    "genericError": "問題が発生しました。もう一度お試しください。",
+    "invalidCode": "コードが正しくないか、有効期限が切れています。",
+    "permanent": "この操作はすぐに実行され、元に戻せません。",
+    "resendCode": "新しいコードを送信",
+    "sendCode": "コードをメールで受け取る",
+    "sending": "送信中…",
+    "thisDevice": "アカウントを削除すると、このデバイスの登録は解除されます。",
+    "tooManyAttempts": "誤ったコードの入力が多すぎます。新しいコードをリクエストしてやり直してください。",
+    "unregisterFailed": "このデバイスの登録を解除できなかったため、アカウントは削除されていません。もう一度お試しいただくか、先にデバイスのページからこのデバイスの登録を解除してください。",
+    "unregistering": "このデバイスの登録を解除中…"
+  },
   "deleteAccountSection": {
-    "confirmHelp": "うまくいかなかった理由を教えていただき、改善にご協力ください。",
     "confirmSorry": "退会されるとのこと、残念です。",
-    "confirmTitle": "アカウントを削除する理由は何ですか？",
     "contactMeLabel": "フィードバックについて連絡を受けても構いません。",
     "deleteButton": "アカウントを削除する",
-    "description": "Remote.It アカウントが不要になった場合は、アカウントの削除をリクエストできます。削除リクエストが処理されると、アカウント情報はすべて完全に削除されます。",
+    "description": "アカウントの削除はすぐに実行され、元に戻せません。デバイスから Remote.It はアンインストールされないため、先に各デバイスから削除してください。",
+    "membersNotice_other": "組織には他に {{count}} 人のメンバーがいます。",
+    "membersRemove": "アカウントを削除する前に、所有権を移転するかメンバーを削除してください。",
     "otherReasonLabel": "その他の理由",
-    "paidPlanDowngrade": "アカウントの削除をリクエストするには、Personalプランにダウングレードしてください。",
+    "paidPlanCancel": "アカウントを削除する前に解約してください。",
     "paidPlanNotice": "有料サブスクリプションプランをご利用中です。",
-    "permanentWarning": "これは永久的な操作であり、アカウントおよび関連するデバイスは復元できないことを理解しています。",
     "reasonAnotherAccount": "別のアカウントを持っている",
     "reasonConnectionQuality": "接続品質またはパフォーマンスの問題",
     "reasonCost": "サービスの費用",
@@ -697,8 +727,7 @@
     "reasonTooHard": "使いにくい",
     "reasonUnsupportedDevice": "自分のデバイスがサポートされていない",
     "reasonUsingSomethingElse": "別のものを使用している",
-    "snackbar": "アカウント削除のリクエストを送信しました。",
-    "turnaround": "削除リクエストの完了には3〜5営業日かかります。"
+    "removeButton": "Remote.It の削除方法"
   },
   "deleteDevice": {
     "deletingDevices": "デバイスを削除しています。",
@@ -1573,6 +1602,9 @@
     "removeMembersWarning": "これにより、すべてのメンバーとデバイスへのアクセス権が削除されます。",
     "settings": "設定"
   },
+  "ownedDevicesList": {
+    "more_other": "他 {{count}} 台"
+  },
   "partnerStatsDetailPanel": {
     "activated": "有効化済み",
     "activeLast30Days": "アクティブ (過去30日間)",
@@ -1819,6 +1851,20 @@
     "guideRegistersBefore": "デバイスは自動的に登録され、",
     "guideTitle": "デバイスを追加",
     "managePermissionRequired": "この組織にデバイスを追加するには「管理」権限が必要です。"
+  },
+  "removeRemoteitDialog": {
+    "debian": "Raspberry Pi、Ubuntu、その他の Debian 系 Linux",
+    "desktopMacLinux": "macOS または Linux のデスクトップアプリ",
+    "desktopMacLinuxSteps": "設定を開き、「詳細設定」から「アンインストール」を選択します。",
+    "desktopWindows": "Windows のデスクトップアプリ",
+    "desktopWindowsSteps": "Windows の設定の「アプリ」から Remote.It をアンインストールします。",
+    "intro": "アカウントを削除しても Remote.It はアンインストールされません。アカウントを削除する前に、所有している各デバイスから削除してください。",
+    "localAccess": "デバイス本体またはローカルネットワーク経由でアンインストールしてください。Remote.It の接続を使って Remote.It を削除すると、その接続はすぐに切断されます。",
+    "openwrt": "OpenWrt",
+    "otherDevices": "その他のデバイスの手順",
+    "thisDevice": "このデバイスは、アカウントを削除すると自動的に登録解除されます。",
+    "title": "デバイスから Remote.It を削除する",
+    "yourDevices_other": "所有デバイス ({{count}})"
   },
   "rentANodeForm": {
     "addDns": "公開DNSアドレスを追加",
