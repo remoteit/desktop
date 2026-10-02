@@ -105,6 +105,11 @@
     "summaryNone": "{{name}} cannot reach any devices.",
     "summaryUnlimited": "{{name}} can reach all devices in every organization you belong to."
   },
+  "agentSwitch": {
+    "message": "Switching accounts will stop all connections.",
+    "switch": "Switch",
+    "title": "Switch accounts?"
+  },
   "androidSetup": {
     "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
     "guideTitle": "Select a device",
@@ -2204,6 +2209,8 @@
     "services": "Services"
   },
   "signIn": {
+    "agentOwnedDetail": "{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:",
+    "agentOwnedTitle": "This computer is in use",
     "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
     "button": "Sign In",
     "cancel": "Cancel",
@@ -2215,13 +2222,16 @@
     "errorUnavailable": "The sign-in service is temporarily unavailable. Please try again in a few minutes.",
     "errorUnknown": "Sign in didn't complete. Please try again.",
     "errorUnreachable": "We couldn't reach the sign-in service. Check your internet connection, then try again.",
+    "heading": "Sign in",
+    "help": "Get help",
+    "opensBrowser": "Your browser will open to finish signing in.",
     "redirecting": "Taking you to sign in…",
+    "reopen": "Open browser again",
     "retry": "Try again",
-    "stageNotice": "Signing in to the {{name}} stage at {{host}}.",
-    "subtitle": "We'll open your browser to sign you in with Remote.It Single Sign-On.",
-    "title": "Sign in to {{app}}",
-    "useProduction": "Use production",
-    "waiting": "Waiting for your browser… finish signing in there."
+    "switchToProduction": "Switch to production",
+    "waitingDetail": "We opened {{host}} in your default browser.",
+    "waitingTitle": "Finish signing in in your browser",
+    "withBrowser": "Sign in with browser"
   },
   "statusChip": {
     "connected": "Connected",

@@ -10,12 +10,13 @@ import EventBus from './EventBus'
 import electronInterface from './electronInterface'
 import server from './server'
 import user, { User } from './User'
+import { parseAgentOwned } from '@common/agentOwner'
 
 jest.mock('./index', () => ({ __esModule: true, default: {} }))
 jest.mock('./Logger', () => ({ __esModule: true, default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }))
 jest.mock('./cliInterface', () => ({
   __esModule: true,
-  default: { readUser: jest.fn(), signOut: jest.fn(), data: {}, EVENTS: {} },
+  default: { readUser: jest.fn(), signOut: jest.fn(), isSignedOut: () => true, data: {}, EVENTS: {} },
 }))
 jest.mock('./LAN', () => ({ __esModule: true, default: { EVENTS: {} } }))
 // user.signOut deletes the real user.json under environment.userPath
@@ -146,5 +147,62 @@ describe('backend/server broadcasts', () => {
     EventBus.emit(electronInterface.EVENTS.signOut)
     await new Promise(resolve => setImmediate(resolve))
     expect(signOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('lets a signed-in window release the agent, then drops every window signed in as its owner', async () => {
+    const signOut = (cli.signOut as jest.Mock).mockClear()
+    Object.assign(user, { ...credentials, signedIn: true })
+    const popout = await open()
+    expect(await authenticate(popout, credentials)).toBe('authenticated')
+    const window = await open()
+    expect(await authenticate(window, credentials)).toBe('authenticated')
+    const [popoutId, windowId] = [popout.id, window.id]
+    const dropped = next(window, 'disconnect')
+
+    expect(await window.emitWithAck('agent/release')).toBe(true)
+    await dropped
+    expect(signOut).toHaveBeenCalledTimes(1)
+    expect(user.signedIn).toBe(false)
+    expect(io.sockets.sockets.has(popoutId!)).toBe(false)
+    expect(io.sockets.sockets.has(windowId!)).toBe(false)
+  })
+
+  it("a window that has signed out cannot release the next owner's agent", async () => {
+    Object.assign(user, credentials)
+    const window = await open()
+    expect(await authenticate(window, credentials)).toBe('authenticated')
+    const signedOut = next(window, User.EVENTS.signedOut)
+    window.emit('user/sign-out')
+    await signedOut
+
+    const signOut = (cli.signOut as jest.Mock).mockClear()
+    Object.assign(user, { ...credentials, signedIn: true })
+    expect(await window.emitWithAck('agent/release')).toBe(false)
+    expect(signOut).not.toHaveBeenCalled()
+    expect(user.signedIn).toBe(true)
+  })
+
+  it('refuses another account while the agent has an owner, and only a signed-in window can release it', async () => {
+    const signOut = (cli.signOut as jest.Mock).mockClear()
+    const checkSignIn = jest.spyOn(user, 'checkSignIn')
+    Object.assign(cli.data, { admin: { guid: 'guid-a', username: credentials.username } })
+    const other = await open()
+    const refused = next(other, 'unauthorized')
+    const attempt = { username: 'b@test', authHash: 'hash-b', guid: 'guid-b' }
+    other.emit('authentication', attempt)
+    const { message } = (await refused) as { message: string }
+
+    expect(parseAgentOwned(message)).toEqual(expect.objectContaining({ username: credentials.username }))
+    expect(checkSignIn).not.toHaveBeenCalled()
+
+    // The server handles one socket's packets in order, so once the next refusal arrives the release was ignored.
+    other.emit('agent/release')
+    const refusedAgain = next(other, 'unauthorized')
+    other.emit('authentication', attempt)
+    await refusedAgain
+    expect(signOut).not.toHaveBeenCalled()
+
+    checkSignIn.mockRestore()
+    Object.assign(cli.data, { admin: undefined })
   })
 })

@@ -17,6 +17,7 @@ import environment from './environment'
 import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
 import { IP_PRIVATE, IP_OPEN } from '@common/constants'
+import { agentOwnedMessage } from '@common/agentOwner'
 
 const d = debug('Server')
 
@@ -142,17 +143,8 @@ class Server {
           signedInID: admin.guid,
         })
 
-        const command = environment.isWindows
-          ? `'remoteit signout' from an Administrator Command Prompt`
-          : `'sudo remoteit signout' from your terminal`
-
-        return callback(
-          new Error(
-            `${admin.username} (${admin.guid}) is already signed in. They must first sign in and back out to allow ${credentials.username} (${credentials.guid}) to sign in.
-            Or you can run ${command}.`
-          ),
-          false
-        )
+        const command = environment.isWindows ? 'remoteit signout' : 'sudo remoteit signout'
+        return callback(new Error(agentOwnedMessage({ username: admin.username, command })), false)
       }
     }
     // No user

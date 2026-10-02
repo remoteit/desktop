@@ -103,6 +103,11 @@
     "summaryNone": "{{name}} はどのデバイスにもアクセスできません。",
     "summaryUnlimited": "{{name}} は、所属するすべての組織のすべてのデバイスにアクセスできます。"
   },
+  "agentSwitch": {
+    "message": "アカウントを切り替えると、すべての接続が停止します。",
+    "switch": "切り替える",
+    "title": "アカウントを切り替えますか？"
+  },
   "androidSetup": {
     "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
     "guideTitle": "デバイスを選択",
@@ -2168,23 +2173,28 @@
     "services": "サービス"
   },
   "signIn": {
-    "autoStopped": "",
-    "button": "",
-    "cancel": "",
-    "errorExpired": "",
-    "errorRateLimited": "",
-    "errorRateLimitedWait_other": "",
-    "errorRefused": "",
-    "errorUnavailable": "",
-    "errorUnknown": "",
-    "errorUnreachable": "",
-    "redirecting": "",
-    "retry": "",
-    "stageNotice": "",
-    "subtitle": "",
-    "title": "",
-    "useProduction": "",
-    "waiting": ""
+    "agentOwnedDetail": "{{owner}} がこのコンピューターにまだサインインしています。{{owner}} としてサインインしてからサインアウトするか、ターミナルで管理者として次のコマンドを実行してください：",
+    "agentOwnedTitle": "このコンピューターは使用中です",
+    "autoStopped": "何度も試行されたため、自動サインインを停止しました。もう一度試すには「サインイン」を選択してください。",
+    "button": "サインイン",
+    "cancel": "キャンセル",
+    "errorExpired": "サインインが完了する前に有効期限が切れました。もう一度お試しください。",
+    "errorRateLimited": "このネットワークからのサインイン試行が多すぎます。数分待ってからもう一度お試しください。",
+    "errorRateLimitedWait_other": "このネットワークからのサインイン試行が多すぎます。約{{count}}分後にもう一度お試しください。",
+    "errorRefused": "サインインサービスがこのリクエストを拒否しました。もう一度お試しいただき、問題が続く場合はサポートにお問い合わせください。",
+    "errorUnavailable": "サインインサービスは一時的に利用できません。数分後にもう一度お試しください。",
+    "errorUnknown": "サインインが完了しませんでした。もう一度お試しください。",
+    "errorUnreachable": "サインインサービスに接続できませんでした。インターネット接続を確認してから、もう一度お試しください。",
+    "heading": "サインイン",
+    "help": "ヘルプ",
+    "opensBrowser": "サインインを完了するためにブラウザが開きます。",
+    "redirecting": "サインイン画面に移動しています…",
+    "reopen": "ブラウザをもう一度開く",
+    "retry": "再試行",
+    "switchToProduction": "本番環境に切り替える",
+    "waitingDetail": "既定のブラウザで {{host}} を開きました。",
+    "waitingTitle": "ブラウザでサインインを完了してください",
+    "withBrowser": "ブラウザでサインイン"
   },
   "statusChip": {
     "connected": "接続済み",

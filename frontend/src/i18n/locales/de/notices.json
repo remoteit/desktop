@@ -4,6 +4,7 @@
     "noService": "Sie haben keinen Zugriff auf diesen Dienst. ({{id}})"
   },
   "auth": {
+    "agentReleaseFailed": "Die Abmeldung von diesem Computer ist fehlgeschlagen, daher wurde das Konto nicht gewechselt.",
     "emailModified": "E-Mail-Adresse erfolgreich geändert.",
     "invalidFormat": "Ungültiges Format.",
     "loginFailed": "Anmeldung fehlgeschlagen.",

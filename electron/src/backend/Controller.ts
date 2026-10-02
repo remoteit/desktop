@@ -61,6 +61,9 @@ class Controller {
     socket.on('user/lock', user.signOut)
     socket.on('user/sign-out', this.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
+    socket.on('agent/release', (done: unknown) =>
+      this.releaseAgent(socket, released => typeof done === 'function' && done(released))
+    )
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
@@ -228,6 +231,24 @@ class Controller {
     await cli.signOut()
     await user.signOut()
     await this.pool.clearMemory()
+  }
+
+  // Not user.signOut(): its signed-out broadcast makes every window run a full sign-out, dropping the owner's saved
+  // session from the account switcher. The window that asked is disconnected only after its answer is sent.
+  releaseAgent = async (requester: SocketIO.Socket, answer: (released: boolean) => void) => {
+    if (!requester.rooms.has(AUTHENTICATED)) return answer(false)
+    Logger.info('RELEASE AGENT')
+    await cli.signOut()
+    if (!cli.isSignedOut()) {
+      Logger.warn('RELEASE AGENT FAILED: the CLI is still signed in')
+      return answer(false)
+    }
+    user.clear()
+    requester.leave(AUTHENTICATED)
+    this.clients.disconnectSockets(true)
+    await this.pool.clearMemory()
+    answer(true)
+    requester.disconnect()
   }
 
   signOutComplete = () => {

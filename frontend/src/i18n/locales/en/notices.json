@@ -4,6 +4,7 @@
     "noService": "You don't have access to that service. ({{id}})"
   },
   "auth": {
+    "agentReleaseFailed": "Couldn't sign out of this computer, so the account wasn't switched.",
     "emailModified": "Email modified successfully.",
     "invalidFormat": "Invalid format.",
     "loginFailed": "Login failed.",
