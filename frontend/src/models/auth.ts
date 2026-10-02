@@ -500,7 +500,6 @@ export default createModel<RootModel>()({
           agentURL: '',
         },
       })
-      emit('preferences', { switchApi: false, apiGraphqlURL: '' })
       if (state.auth.user) await dispatch.auth.signOut()
       else reloadIfStageChanged()
     },

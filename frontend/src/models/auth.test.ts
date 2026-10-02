@@ -88,7 +88,6 @@ const aFailureShowing = (signInError: string) => expect.objectContaining({ signI
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import authModel from './auth'
-import { emit } from '../services/Controller'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
@@ -335,7 +334,6 @@ describe('auth model — a stage switch signs out and reloads onto the new stage
     await effectsFor(dispatch).switchStage('dev', { auth: { user: { id: 'u1' } }, ui: { apis } })
     expect(chooseStage).toHaveBeenCalledWith('dev')
     expect(dispatch.ui.setPersistent).toHaveBeenCalledWith(cleared)
-    expect(emit).toHaveBeenCalledWith('preferences', { switchApi: false, apiGraphqlURL: '' })
     expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
     expect(chooseStage.mock.invocationCallOrder[0]).toBeLessThan(dispatch.auth.signOut.mock.invocationCallOrder[0])
     expect(reloadIfStageChanged).not.toHaveBeenCalled()
