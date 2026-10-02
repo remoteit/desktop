@@ -59,7 +59,6 @@ export const TestPage: React.FC = () => {
 
   async function setAPIPreferences(values: UIState['apis']) {
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values, issuer: OAUTH_ISSUER } })
-    emit('preferences', values)
   }
 
   // The stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c).
@@ -138,8 +137,7 @@ export const TestPage: React.FC = () => {
 
   // Which radio is lit. The override flag is DERIVED from the choice — selecting the stage
   // this build ships with is the same thing the old "Override default APIs" switch expressed,
-  // so the switch is gone and `switchApi` (still read by the Electron backend to configure
-  // the CLI binary) is set from here. `customMode` is held locally because a hand-typed URL
+  // so the switch is gone and `switchApi` is set from here. `customMode` is held locally because a hand-typed URL
   // may coincide with a registered stage, and the choice should not silently jump to it.
   // Compare on the URL the app actually CALLS, not on the audience it mints for. Those were the
   // same string until the unified front, where the build's resource (…/api) matches no row's URL
@@ -196,7 +194,6 @@ export const TestPage: React.FC = () => {
       // One mint per RESOURCE, which is two on a legacy stage and one on the unified front — where
       // asking for the socket URL separately would answer invalid_target, correctly.
       if (!isDefault) for (const resource of pair.resources) await oidcAccessToken(resource)
-      emit('binaries/install')
       cloudSync.all()
     } catch (error) {
       setMintError(error instanceof Error ? error.message : String(error))
@@ -222,7 +219,7 @@ export const TestPage: React.FC = () => {
           )}
           onClick={() => {
             dispatch.ui.setPersistent({ testUI: undefined })
-            emit('preferences', { allowPrerelease: false, switchApi: false })
+            emit('preferences', { allowPrerelease: false })
           }}
         />
         <ListItemSetting
@@ -320,7 +317,6 @@ export const TestPage: React.FC = () => {
                   } catch (error) {
                     setMintError(error instanceof Error ? error.message : String(error))
                   }
-                  emit('binaries/install')
                   cloudSync.all()
                 }}
                 hideIcon
@@ -331,10 +327,7 @@ export const TestPage: React.FC = () => {
                 disabled={!customSelected}
                 resetValue={getWebSocketURL()}
                 maxLength={200}
-                onSave={url => {
-                  setAPIPreferences({ webSocketURL: url.toString() })
-                  emit('binaries/install')
-                }}
+                onSave={url => setAPIPreferences({ webSocketURL: url.toString() })}
                 hideIcon
               />
               <InlineTextFieldSetting

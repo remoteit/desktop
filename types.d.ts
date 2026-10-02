@@ -1041,10 +1041,6 @@ declare global {
     disableLocalNetwork?: boolean
     allowPrerelease?: boolean
     useCertificate?: boolean
-    switchApi?: boolean
-    apiURL?: string
-    apiGraphqlURL?: string
-    webSocketURL?: string
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
     sshConfig?: boolean

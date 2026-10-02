@@ -43,10 +43,10 @@ export type UIState = {
   language: LanguageMode
   testUI?: 'ON' | 'HIGHLIGHT'
   apis: {
-    switchApi?: IPreferences['switchApi']
-    apiGraphqlURL?: IPreferences['apiGraphqlURL']
-    webSocketURL?: IPreferences['webSocketURL']
-    apiURL?: IPreferences['apiURL']
+    switchApi?: boolean
+    apiGraphqlURL?: string
+    webSocketURL?: string
+    apiURL?: string
     // Test UI: point the Remote.It AI chat at a deployed agent (https only)
     agentURL?: string
     issuer?: string
