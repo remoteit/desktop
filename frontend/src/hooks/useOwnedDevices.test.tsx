@@ -50,7 +50,7 @@ describe('parseOwnedDevices', () => {
 })
 
 describe('useOwnedDevices', () => {
-  it('refetches when this device turns up or changes, but not when it is unregistered', async () => {
+  it('refetches on each open and when this device turns up or changes, but not when it is unregistered', async () => {
     const response = (thisId: string) => ({
       data: {
         data: {
@@ -60,8 +60,9 @@ describe('useOwnedDevices', () => {
     })
     graphQLFetchOwnedDevices.mockImplementation(async (_: string, __: number, thisId: string) => response(thisId))
     let latest: OwnedDevices | undefined
+    let open = true
     const Probe = () => {
-      latest = useOwnedDevices(true).owned
+      latest = useOwnedDevices(open).owned
       return null
     }
     const root = createRoot(document.createElement('div'))
@@ -79,6 +80,13 @@ describe('useOwnedDevices', () => {
     await render()
     expect(graphQLFetchOwnedDevices).toHaveBeenCalledTimes(2)
     expect(latest?.thisDeviceOwned).toBe(true)
+
+    open = false
+    await render()
+    expect(latest?.thisDeviceOwned).toBe(true)
+    open = true
+    await render()
+    expect(graphQLFetchOwnedDevices).toHaveBeenCalledTimes(3)
     act(() => root.unmount())
   })
 })

@@ -26,11 +26,16 @@ export function useOwnedDevices(enabled: boolean) {
   const [owned, setOwned] = useState<OwnedDevices>()
   const [failed, setFailed] = useState(false)
   const fetchedFor = useRef<string>()
+  const fresh = useRef(false)
 
   useEffect(() => {
-    if (!enabled || !userId) return
-    if (owned && (!thisId || thisId === fetchedFor.current)) return
+    if (!enabled || !userId) {
+      fresh.current = false
+      return
+    }
+    if (fresh.current && owned && (!thisId || thisId === fetchedFor.current)) return
     let current = true
+    fresh.current = true
     fetchedFor.current = thisId
     setOwned(undefined)
     setFailed(false)
