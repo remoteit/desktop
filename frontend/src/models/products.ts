@@ -140,18 +140,37 @@ export default createModel<RootModel>()({
 
     // A new code becomes the product's current one; the earlier codes keep working until revoked. The product is read
     // again after either change, so its command and its list of codes come from graphql together.
-    async rotateCode(productId: string) {
+    async rotateCode(productId: string, state) {
+      const accountId = selectActiveAccountId(state)
       const response = await graphQLRotateDeviceProductCode(productId)
       if (response === 'ERROR' || !response?.data?.data?.rotateDeviceProductCode) return false
-      await dispatch.products.fetchSingle(productId)
+      await dispatch.products.refreshCodes({ productId, accountId })
       return true
     },
 
-    async revokeCode({ productId, code }: { productId: string; code: string }) {
+    async revokeCode({ productId, code }: { productId: string; code: string }, state) {
+      const accountId = selectActiveAccountId(state)
       const response = await graphQLRevokeDeviceProductCode(productId, code)
       if (response === 'ERROR' || !response?.data?.data?.revokeDeviceProductCode) return false
-      await dispatch.products.fetchSingle(productId)
+      await dispatch.products.refreshCodes({ productId, accountId })
       return true
+    },
+
+    // The product as graphql has it after a code changed, in the account the change was made in: the active account can
+    // change while the mutation runs. When that read fails, the product's command and codes are cleared rather than left
+    // stale (a revoked code must not stay on screen as the one to register with); the settings page reads them again.
+    async refreshCodes({ productId, accountId }: { productId: string; accountId: string }, state) {
+      const response = await graphQLDeviceProduct(productId, accountId)
+      const fresh = response !== 'ERROR' ? response?.data?.data?.login?.account?.deviceProducts?.items?.[0] : undefined
+      const productModel = getProductModel(state, accountId)
+      dispatch.products.set({
+        all: productModel.all.map(p =>
+          p.id !== productId
+            ? p
+            : fresh || { ...p, registrationCode: undefined, registrationCommand: undefined, registrationCodes: undefined }
+        ),
+        accountId,
+      })
     },
 
     async delete(id: string, state) {

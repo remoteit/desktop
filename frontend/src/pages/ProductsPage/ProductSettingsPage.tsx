@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Typography } from '@mui/material'
@@ -19,9 +19,15 @@ export const ProductSettingsPage: React.FC = () => {
 
   const registrationCommand = product?.registrationCommand
 
+  // Read once per product, and again whenever the product is replaced without its codes: the list query and the edit
+  // mutations do not carry them.
+  const detailed = product?.registrationCodes !== undefined
+  const fetched = useRef<string>()
   useEffect(() => {
-    if (productId) dispatch.products.fetchSingle(productId)
-  }, [productId])
+    if (!productId || (fetched.current === productId && detailed)) return
+    fetched.current = productId
+    dispatch.products.fetchSingle(productId)
+  }, [productId, detailed])
 
   if (!product) {
     return (

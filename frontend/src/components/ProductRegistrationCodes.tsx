@@ -19,6 +19,8 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   const [rotating, setRotating] = useState(false)
   const [revoking, setRevoking] = useState<string>()
 
+  // One change at a time: each reads the product again, and two reads in flight could land out of order.
+  const busy = rotating || !!revoking
   const codes = product.registrationCodes || []
   const inForce = codes.filter(code => !code.revoked)
   const current = inForce[0]?.code
@@ -46,7 +48,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
           icon="rotate"
           title={t('productRegistrationCodes.rotate', 'Rotate Code')}
           loading={rotating}
-          disabled={rotating}
+          disabled={busy}
           onClick={rotate}
         />
       </Stack>
@@ -79,13 +81,14 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
                     ),
                   }}
                   name="ban"
+                  forceTitle
                   title={
                     inForce.length > 1
                       ? t('productRegistrationCodes.revoke', 'Revoke Code')
                       : t('productRegistrationCodes.revokeLast', 'Rotate first: this is the only code in force')
                   }
                   loading={revoking === code.code}
-                  disabled={inForce.length <= 1 || !!revoking}
+                  disabled={inForce.length <= 1 || busy}
                   onClick={() => revoke(code.code)}
                 />
               )
