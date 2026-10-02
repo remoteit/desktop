@@ -44,7 +44,7 @@ import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import { State } from '../store'
+import { State, store } from '../store'
 
 export type IDeviceState = {
   all: IDevice[]
@@ -99,6 +99,8 @@ export const defaultState: IDeviceState = {
 type IDeviceAccountState = {
   [accountId: string]: IDeviceState
 }
+
+let notificationWrites: Promise<unknown> = Promise.resolve()
 
 const defaultAccountState: IDeviceAccountState = {
   default: { ...defaultState },
@@ -444,13 +446,21 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async setNotificationDevice(device: IDevice) {
-      graphQLSetDeviceNotification(
-        device.id,
-        device.notificationSettings.emailNotifications,
-        device.notificationSettings.desktopNotifications
-      )
-      dispatch.accounts.setDevice({ id: device.id, device })
+    async setNotificationDevice(
+      { device, settings }: { device: IDevice; settings: IDevice['notificationSettings'] },
+      state
+    ) {
+      const account = state.auth.user?.id
+      // In order: a category change sends the whole list, so an earlier one landing last would undo the later
+      notificationWrites = notificationWrites
+        .then(async () => {
+          if (store.getState().auth.user?.id === account) await graphQLSetDeviceNotification(device.id, settings)
+        })
+        .catch(() => {})
+      dispatch.accounts.setDevice({
+        id: device.id,
+        device: { ...device, notificationSettings: { ...device.notificationSettings, ...settings } },
+      })
     },
 
     async setServiceAttributes(service: IService, state) {

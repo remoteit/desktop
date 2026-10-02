@@ -49,6 +49,7 @@ export type UIState = {
     apiURL?: IPreferences['apiURL']
     // Test UI: point the Remote.It AI chat at a deployed agent (https only)
     agentURL?: string
+    apnsEnvironment?: IApnsEnvironment
   }
   layout: ILayout
   silent: string | null

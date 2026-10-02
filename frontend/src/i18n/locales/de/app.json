@@ -1352,6 +1352,7 @@
     "custom": "Benutzerdefiniert",
     "email": "E-Mail",
     "globalSettings": "Globale Einstellungen",
+    "push": "Mobile Push",
     "systemNotification": "Systembenachrichtigung",
     "title": "Gerätebenachrichtigungen"
   },
@@ -1796,6 +1797,16 @@
     "none": "Keine",
     "openHelp": "Während die Verbindung aktiv ist, kann sich jedes Gerät verbinden."
   },
+  "push": {
+    "channel": "Benachrichtigungen"
+  },
+  "pushCategories": {
+    "access": "Zugriffsänderungen",
+    "account": "Kontosicherheit",
+    "connect": "Verbindungen",
+    "jobs": "Skripte",
+    "state": "Online / Offline"
+  },
   "qualityDetails": {
     "availability": "Verfügbarkeit:",
     "availabilityCaption": "Durchschnittliche Online-Zeit pro Tag.",
@@ -2139,6 +2150,7 @@
     "notificationMethod": "Methode",
     "notifications": "Benachrichtigungen",
     "notifyEmail": "E-Mail",
+    "notifyPush": "Mobile Push",
     "notifySystem": "Systembenachrichtigung",
     "notifyWebhook": "Webhook",
     "profile": "Profil",
@@ -2261,6 +2273,11 @@
     "agentURLInvalid": "",
     "aiAgent": "",
     "apiTarget": "API-Ziel",
+    "apnsEnvironment": "Push-Umgebung",
+    "apnsProduction": "APNs-Produktion",
+    "apnsProductionHint": "TestFlight- und App-Store-Builds",
+    "apnsSandbox": "APNs-Sandbox",
+    "apnsSandboxHint": "Mit Entwicklungsprofil signierte Builds und der Simulator",
     "backgroundWork": "",
     "backgroundWorkOff": "",
     "backgroundWorkOn": "",

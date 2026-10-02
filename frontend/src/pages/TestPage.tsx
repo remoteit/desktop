@@ -6,6 +6,7 @@ import {
   GRAPHQL_API,
   OAUTH_AGENT_RESOURCE,
   CLOUD_TREE_RE,
+  APNS_ENVIRONMENT,
   LEGACY_GRAPHQL_RE,
   LEGACY_EVENTS_RE,
   cloudTreeUrls,
@@ -18,7 +19,8 @@ import { getApiURL, getWebSocketURL } from '../helpers/apiHelper'
 import { bindableResources } from '../services/permitteerAccount'
 import { oidcAccessToken } from '../services/oidc'
 import { isSecureAgentURL, backgroundConnectUrl, backgroundStatus, backgroundDisable } from '../services/agent'
-import { windowOpen } from '../services/browser'
+import browser, { windowOpen } from '../services/browser'
+import pushNotifications from '../services/pushNotifications'
 import { selectLimitsLookup, selectFeatures } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { useChatEnabled } from '../hooks/useChatEnabled'
@@ -46,6 +48,13 @@ export const TestPage: React.FC = () => {
   async function setAPIPreferences(values: UIState['apis']) {
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values } })
     emit('preferences', values)
+  }
+
+  const apnsEnvironment = apis.apnsEnvironment || APNS_ENVIRONMENT
+
+  async function setApnsEnvironment(value: IApnsEnvironment) {
+    await setAPIPreferences({ apnsEnvironment: value === APNS_ENVIRONMENT ? undefined : value })
+    pushNotifications.refresh()
   }
 
   // The stage-pair switcher (D10+D11a, permitteer docs/remoteit-desktop-login.md 4c).
@@ -297,6 +306,26 @@ export const TestPage: React.FC = () => {
           </Quote>
         </ListItem>
       </List>
+
+      {browser.isIOS && (
+        <>
+          <Typography variant="subtitle1">{t('testPage.apnsEnvironment', 'Push Environment')}</Typography>
+          <List>
+            <ListItemRadio
+              label={t('testPage.apnsSandbox', 'APNs sandbox')}
+              subLabel={t('testPage.apnsSandboxHint', 'Development-signed builds and the simulator')}
+              checked={apnsEnvironment === 'sandbox'}
+              onClick={() => setApnsEnvironment('sandbox')}
+            />
+            <ListItemRadio
+              label={t('testPage.apnsProduction', 'APNs production')}
+              subLabel={t('testPage.apnsProductionHint', 'TestFlight and App Store builds')}
+              checked={apnsEnvironment === 'production'}
+              onClick={() => setApnsEnvironment('production')}
+            />
+          </List>
+        </>
+      )}
 
       {chatEnabled && (
         <>

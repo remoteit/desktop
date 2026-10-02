@@ -1365,6 +1365,7 @@
     "custom": "Personalizado",
     "email": "Correo electrónico",
     "globalSettings": "Configuración global",
+    "push": "Push móvil",
     "systemNotification": "Notificación del sistema",
     "title": "Notificaciones del dispositivo"
   },
@@ -1819,6 +1820,16 @@
     "none": "Ninguno",
     "openHelp": "Cualquier dispositivo podrá conectarse mientras la conexión esté activa."
   },
+  "push": {
+    "channel": "Notificaciones"
+  },
+  "pushCategories": {
+    "access": "Cambios de acceso",
+    "account": "Seguridad de la cuenta",
+    "connect": "Conexiones",
+    "jobs": "Scripts",
+    "state": "En línea / Sin conexión"
+  },
   "qualityDetails": {
     "availability": "Disponibilidad:",
     "availabilityCaption": "Tiempo medio en línea por día.",
@@ -2175,6 +2186,7 @@
     "notificationMethod": "Método",
     "notifications": "Notificaciones",
     "notifyEmail": "Correo electrónico",
+    "notifyPush": "Push móvil",
     "notifySystem": "Notificación del sistema",
     "notifyWebhook": "Webhook",
     "profile": "Perfil",
@@ -2300,6 +2312,11 @@
     "agentURLInvalid": "",
     "aiAgent": "",
     "apiTarget": "Destino de la API",
+    "apnsEnvironment": "Entorno de push",
+    "apnsProduction": "APNs de producción",
+    "apnsProductionHint": "Compilaciones de TestFlight y App Store",
+    "apnsSandbox": "Sandbox de APNs",
+    "apnsSandboxHint": "Compilaciones firmadas para desarrollo y el simulador",
     "backgroundWork": "",
     "backgroundWorkOff": "",
     "backgroundWorkOn": "",

@@ -184,6 +184,18 @@ export const SIGN_OUT_EVERYWHERE_TIMEOUT = 10000
 // How long sign out waits for the AS to end this account's session: one request, no token mint,
 // and the person is watching the button — past this the app signs out locally regardless.
 export const SIGN_OUT_SESSION_TIMEOUT = 5000
+export const PUSH_UNREGISTER_TIMEOUT = 3000
+
+// The APNs environment follows the build's signing, not the API it talks to: a development
+// profile gets sandbox tokens, TestFlight and the App Store production ones (build-ios.yml).
+export const APNS_ENVIRONMENT: IApnsEnvironment = env.VITE_APNS_ENVIRONMENT === 'production' ? 'production' : 'sandbox'
+export const FIREBASE_CONFIGURED = !!env.VITE_FIREBASE_CONFIGURED
+// The default_notification_channel_id in AndroidManifest.xml
+export const PUSH_CHANNEL_ID = 'notifications'
+export const PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs', 'account']
+// Mirrors DEFAULT_PUSH_CATEGORIES in graphql-api/src/constants.ts — keep in sync
+export const DEFAULT_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs']
+export const DEVICE_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access']
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250

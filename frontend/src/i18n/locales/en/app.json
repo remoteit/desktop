@@ -1352,6 +1352,7 @@
     "custom": "Custom",
     "email": "Email",
     "globalSettings": "Global Settings",
+    "push": "Mobile push",
     "systemNotification": "System notification",
     "title": "Device Notifications"
   },
@@ -1796,6 +1797,16 @@
     "none": "None",
     "openHelp": "Any device will be able to connect while the connection is active."
   },
+  "push": {
+    "channel": "Notifications"
+  },
+  "pushCategories": {
+    "access": "Access changes",
+    "account": "Account security",
+    "connect": "Connections",
+    "jobs": "Scripts",
+    "state": "Online / offline"
+  },
   "qualityDetails": {
     "availability": "Availability:",
     "availabilityCaption": "Average time online per day.",
@@ -2139,6 +2150,7 @@
     "notificationMethod": "Method",
     "notifications": "Notifications",
     "notifyEmail": "Email",
+    "notifyPush": "Mobile push",
     "notifySystem": "System notification",
     "notifyWebhook": "Webhook",
     "profile": "Profile",
@@ -2261,6 +2273,11 @@
     "agentURLInvalid": "Agent service URL must start with https://",
     "aiAgent": "AI Agent",
     "apiTarget": "API Target",
+    "apnsEnvironment": "Push Environment",
+    "apnsProduction": "APNs production",
+    "apnsProductionHint": "TestFlight and App Store builds",
+    "apnsSandbox": "APNs sandbox",
+    "apnsSandboxHint": "Development-signed builds and the simulator",
     "backgroundWork": "AI background work",
     "backgroundWorkOff": "The agent only works while you are here.",
     "backgroundWorkOn": "The agent can read and watch while you are away.",

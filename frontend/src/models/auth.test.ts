@@ -14,6 +14,7 @@ const {
   oidcGrantStale,
   oidcMcpDetailReady,
   oidcActor,
+  pushUnregister,
   browser,
   storeState,
 } = vi.hoisted(() => ({
@@ -24,6 +25,7 @@ const {
   oidcGrantStale: vi.fn(),
   oidcActor: vi.fn(),
   oidcMcpDetailReady: vi.fn(),
+  pushUnregister: vi.fn(),
   browser: { isElectron: false, hasBackend: false },
   storeState: { auth: {} as Record<string, unknown> },
 }))
@@ -47,6 +49,7 @@ vi.mock('../services/Network', () => ({ default: {} }))
 vi.mock('../services/browser', () => ({ default: browser }))
 vi.mock('../services/analytics', () => ({ default: {} }))
 vi.mock('../services/zendesk', () => ({ default: {} }))
+vi.mock('../services/pushNotifications', () => ({ default: { register: vi.fn(), unregister: pushUnregister } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
@@ -88,6 +91,7 @@ beforeEach(() => {
   oidcActor.mockReset().mockReturnValue(null)
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
+  pushUnregister.mockReset()
 })
 
 describe('auth model — sign-in always offers the chooser', () => {
@@ -111,12 +115,14 @@ describe('auth model — sign-out ends this account’s AS session, then the loc
     expect(oidcEndSession).toHaveBeenCalledTimes(1)
     expect(signOutEverywhere).not.toHaveBeenCalled()
     expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
-    const [grant, session, local] = [
+    const [grant, push, session, local] = [
       dispatch.chat.signOut.mock.invocationCallOrder[0],
+      pushUnregister.mock.invocationCallOrder[0],
       oidcEndSession.mock.invocationCallOrder[0],
       dispatch.auth.signedOut.mock.invocationCallOrder[0],
     ]
     expect(grant).toBeLessThan(session)
+    expect(push).toBeLessThan(session)
     expect(session).toBeLessThan(local)
   })
 
@@ -154,12 +160,14 @@ describe('auth model — "Sign out everywhere" is one AS call, then the local te
     expect(dispatch.chat.signOut).toHaveBeenCalledTimes(1)
     expect(signOutEverywhere).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
-    const [grant, everywhere, local] = [
+    const [grant, push, everywhere, local] = [
       dispatch.chat.signOut.mock.invocationCallOrder[0],
+      pushUnregister.mock.invocationCallOrder[0],
       signOutEverywhere.mock.invocationCallOrder[0],
       dispatch.auth.signOut.mock.invocationCallOrder[0],
     ]
     expect(grant).toBeLessThan(everywhere)
+    expect(push).toBeLessThan(everywhere)
     expect(everywhere).toBeLessThan(local)
     // Every session is already ended — the sign-out that follows does not ask the AS again.
     expect(dispatch.auth.signOut).toHaveBeenCalledWith({ keepSession: true })
