@@ -11,15 +11,16 @@ vi.stubGlobal(
 import { oidcReconcileIssuer, oidcSignedIn, oidcAccounts } from './oidc'
 import { OAUTH_ISSUER } from '../constants'
 
-const idToken = (sub: string) =>
-  ['e30', btoa(JSON.stringify({ sub, email: `${sub}@x.test` })).replace(/=+$/, ''), 'sig'].join('.')
-const signIn = () => {
-  window.localStorage.setItem('oidc.tokens', JSON.stringify({ refresh_token: 'r1', id_token: idToken('a') }))
+const OTHER = 'https://login.other.test'
+const idToken = (sub: string, iss?: string) =>
+  ['e30', btoa(JSON.stringify({ sub, iss, email: `${sub}@x.test` })).replace(/=+$/, ''), 'sig'].join('.')
+const signIn = (active: string | undefined = OAUTH_ISSUER, saved: string | undefined = OAUTH_ISSUER) => {
+  window.localStorage.setItem('oidc.tokens', JSON.stringify({ refresh_token: 'r1', id_token: idToken('a', active) }))
   window.localStorage.setItem(
     'oidc.accounts',
     JSON.stringify({
-      a: { refresh_token: 'r1', id_token: idToken('a') },
-      b: { refresh_token: 'r2', id_token: idToken('b') },
+      a: { refresh_token: 'r1', id_token: idToken('a', active) },
+      b: { refresh_token: 'r2', id_token: idToken('b', saved) },
     })
   )
 }
@@ -39,12 +40,34 @@ describe('oidcReconcileIssuer', () => {
     signIn()
     oidcReconcileIssuer()
     expect(oidcSignedIn()).toBe(true)
+    expect(oidcAccounts()).toHaveLength(2)
     expect(window.localStorage.getItem('oidc.issuer')).toBe(OAUTH_ISSUER)
   })
 
-  it('drops the session and every saved account another login server issued', () => {
+  it('adopts tokens that carry no issuer at all', () => {
+    signIn(undefined, undefined)
+    oidcReconcileIssuer()
+    expect(oidcSignedIn()).toBe(true)
+    expect(oidcAccounts()).toHaveLength(2)
+  })
+
+  it('judges a session stored before the record by its own issuer', () => {
+    signIn(OTHER, OTHER)
+    oidcReconcileIssuer()
+    expect(oidcSignedIn()).toBe(false)
+    expect(oidcAccounts()).toHaveLength(0)
+  })
+
+  it('drops only the saved accounts another login server issued', () => {
+    signIn(OAUTH_ISSUER, OTHER)
+    oidcReconcileIssuer()
+    expect(oidcSignedIn()).toBe(true)
+    expect(oidcAccounts().map(account => account.sub)).toEqual(['a'])
+  })
+
+  it('drops the session and every saved account once the marker names another login server', () => {
     signIn()
-    window.localStorage.setItem('oidc.issuer', 'https://login.other.test')
+    window.localStorage.setItem('oidc.issuer', OTHER)
     oidcReconcileIssuer()
     expect(oidcSignedIn()).toBe(false)
     expect(oidcAccounts()).toHaveLength(0)

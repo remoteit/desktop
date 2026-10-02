@@ -803,15 +803,24 @@ export async function oidcEndSession(): Promise<number | undefined> {
 export { clearLocal as oidcClearLocal }
 
 /** Tokens and saved accounts belong to the login server that issued them, so a boot on another stage
- *  (Test Settings, or a version whose default stage differs) starts signed out. */
+ *  (Test Settings, or a version whose default stage differs) drops them. Sessions stored before the
+ *  marker existed are judged by their id_token's own issuer. */
 export function oidcReconcileIssuer() {
   try {
-    const previous = tokenStore().getItem(ISSUER_KEY)
-    if (previous && previous !== OAUTH_ISSUER) {
-      clearActivationHint()
-      writeRegistry({})
-      clearLocal()
+    const same = (issuer?: string) => issuer?.replace(/\/+$/, '') === OAUTH_ISSUER.replace(/\/+$/, '')
+    const foreign = (tokens?: { id_token?: string }) => {
+      const issuer = decodeJwt(tokens?.id_token)?.iss
+      return !!issuer && !same(issuer)
     }
+    const marked = tokenStore().getItem(ISSUER_KEY)
+    const switched = !!marked && !same(marked)
+    const registry = readRegistry()
+    const kept = switched ? {} : Object.fromEntries(Object.entries(registry).filter(([, entry]) => !foreign(entry)))
+    if (switched || foreign(stored())) {
+      clearActivationHint()
+      writeRegistry(kept)
+      clearLocal()
+    } else if (Object.keys(kept).length !== Object.keys(registry).length) writeRegistry(kept)
     tokenStore().setItem(ISSUER_KEY, OAUTH_ISSUER)
   } catch {
     /* storage blocked — nothing stored to reconcile */
