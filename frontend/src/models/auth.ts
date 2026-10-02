@@ -491,7 +491,14 @@ export default createModel<RootModel>()({
     async switchStage(stage: StageName, state) {
       chooseStage(stage)
       await dispatch.ui.setPersistent({
-        apis: { ...state.ui.apis, switchApi: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' },
+        apis: {
+          ...state.ui.apis,
+          switchApi: false,
+          customTarget: false,
+          apiGraphqlURL: '',
+          webSocketURL: '',
+          agentURL: '',
+        },
       })
       emit('preferences', { switchApi: false, apiGraphqlURL: '' })
       if (state.auth.user) await dispatch.auth.signOut()

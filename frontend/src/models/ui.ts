@@ -7,7 +7,7 @@ import i18n, { resolveLanguage, LanguageMode } from '../i18n'
 import { Settings as LuxonSettings } from 'luxon'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
-import { LEGACY_SHARED_GRAPHQL_RE, SIDEBAR_WIDTH } from '../constants'
+import { LEGACY_SHARED_GRAPHQL_RE, OAUTH_ISSUER, SIDEBAR_WIDTH } from '../constants'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/browser'
 
@@ -49,6 +49,8 @@ export type UIState = {
     apiURL?: IPreferences['apiURL']
     // Test UI: point the Remote.It AI chat at a deployed agent (https only)
     agentURL?: string
+    issuer?: string
+    customTarget?: boolean
   }
   layout: ILayout
   silent: string | null
@@ -366,7 +368,13 @@ export default createModel<RootModel>()({
 })
 
 function migrateApiTarget(states: ILookup<any>): ILookup<any> {
-  if (!LEGACY_SHARED_GRAPHQL_RE.test(states.apis?.apiGraphqlURL ?? '')) return states
+  const apis = states.apis
+  if (apis?.issuer && apis.issuer !== OAUTH_ISSUER) {
+    console.log('MIGRATE API TARGET from', apis.issuer)
+    const cleared = { switchApi: false, customTarget: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' }
+    return { ...states, apis: { ...apis, ...cleared, issuer: OAUTH_ISSUER } }
+  }
+  if (!LEGACY_SHARED_GRAPHQL_RE.test(apis?.apiGraphqlURL ?? '')) return states
   console.log('MIGRATE API TARGET', states.apis.apiGraphqlURL)
   return { ...states, apis: { ...states.apis, switchApi: false, apiGraphqlURL: '', webSocketURL: '' } }
 }

@@ -327,7 +327,9 @@ describe('auth model — a stage switch signs out and reloads onto the new stage
     apiGraphqlURL: 'https://cloud.evan.remote.it/api/graphql',
     agentURL: 'https://x.test',
   }
-  const cleared = { apis: { switchApi: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' } }
+  const cleared = {
+    apis: { switchApi: false, customTarget: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' },
+  }
   it('signed in: stores the stage and clears the old API overrides, then signs out', async () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).switchStage('dev', { auth: { user: { id: 'u1' } }, ui: { apis } })

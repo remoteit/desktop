@@ -22,8 +22,8 @@ export const isSecureAgentURL = (url: string): boolean => !!httpsOnly(url)
 /* Base URL for the agent service, resolved per request. A Test UI override wins while the API
    target is Custom (Test Settings → API Target, https only); otherwise the build's AGENT_URL. */
 export function agentURL(): string {
-  const { agentURL: override, switchApi } = store.getState().ui.apis
-  if (switchApi && override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
+  const { agentURL: override, customTarget } = store.getState().ui.apis
+  if (customTarget && override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
   return AGENT_URL
 }
 
