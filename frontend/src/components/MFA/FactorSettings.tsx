@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDispatch } from 'react-redux'
+import { useHistory, useLocation } from 'react-router-dom'
+import { Dispatch } from '../../store'
 import { Box, Button, Chip, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
 import { PasswordStep, CodeStep, ChoiceStep, RecoveryCodes } from './steps'
-import browser from '../../services/browser'
-import { OAUTH_ISSUER } from '../../constants'
+import browser, { leaveTo } from '../../services/browser'
+import { PROTOCOL } from '../../constants'
 import {
   AccountResult,
   ElevationStatus,
@@ -42,8 +45,8 @@ import {
  * code the AS emails. Adding a factor the store will hold asks for the password as well, because
  * the store will not associate one without it; its first factor needs nothing more.
  *
- * A passkey's ceremony is bound to the AS's own origin, so passkeys are added on the AS's account
- * page, and a passkey confirms it's you on the AS's page, coming back here.
+ * A passkey's ceremony is bound to the AS's own origin, so a passkey is added — and confirms it's you —
+ * on the AS's page, which comes back here: with `passkey=added` or `passkey=cancelled` for an add.
  */
 
 type Change =
@@ -65,8 +68,6 @@ type Step =
   | { at: 'sms-code'; phone: string; error?: string }
   | { at: 'store'; method: FactorKind; store?: StoreStep; error?: string }
   | { at: 'codes'; codes: string[] }
-
-const PASSKEY_PAGE = () => `${OAUTH_ISSUER}/account/console/logins#elevation`
 
 /** What a refusal means, in the person's words; the AS's own sentence otherwise. */
 function refusal(
@@ -120,6 +121,43 @@ export const FactorSettings: React.FC<{ readOnly?: boolean }> = ({ readOnly }) =
   }
   useEffect(() => {
     load()
+  }, [])
+
+  // --- the AS's page and back ---------------------------------------------------------------
+  const location = useLocation()
+  const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
+  /** Where the AS's page sends the person back: this screen. The web app is on a registered origin;
+   *  the desktop and mobile apps run that page in the system (or in-app) browser, so the way back is
+   *  the app's own scheme, which their deep-link handling routes to the same screen. */
+  const returnHere = () =>
+    browser.isNative
+      ? `${PROTOCOL}${location.pathname.replace(/^\//, '')}`
+      : `${window.location.origin}${window.location.pathname}#${location.pathname}`
+  // The add's outcome. On the web it arrives on the page's own query (the return URL's hash holds the
+  // route); in the apps, on the route's. Read once, then removed, so a reload does not repeat it.
+  useEffect(() => {
+    const routed = new URLSearchParams(location.search).get('passkey')
+    const paged = new URLSearchParams(window.location.search).get('passkey')
+    const outcome = routed ?? paged
+    if (!outcome) return
+    if (routed) history.replace(location.pathname)
+    else window.history.replaceState(null, '', `${window.location.pathname}${window.location.hash}`)
+    load()
+    if (outcome === 'added') dispatch.ui.set({ successMessage: t('passkeys.added', 'Passkey added') })
+  }, [location.search])
+  // Whatever happened in the browser — a passkey added, a tab closed half-way — this screen shows
+  // what the AS holds when the person comes back to it.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refresh)
+    }
   }, [])
 
   const clearInputs = () => {
@@ -251,8 +289,15 @@ export const FactorSettings: React.FC<{ readOnly?: boolean }> = ({ readOnly }) =
   }
   const elevateWithPasskey = () =>
     withBusy(async () => {
-      const r = await elevationReturnTicket(window.location.href)
-      if (r.ok) window.location.assign(r.data.url)
+      const r = await elevationReturnTicket(returnHere())
+      if (r.ok) await leaveTo(r.data.url)
+      else failed(r)
+    })
+  const addPasskey = () =>
+    withBusy(async () => {
+      setNotice(undefined)
+      const r = await elevationReturnTicket(returnHere(), 'add-passkey')
+      if (r.ok) await leaveTo(r.data.url)
       else failed(r)
     })
 
@@ -662,11 +707,11 @@ export const FactorSettings: React.FC<{ readOnly?: boolean }> = ({ readOnly }) =
         <Typography variant="caption" color="textSecondary" display="block" gutterBottom>
           {t(
             'passkeys.explainer',
-            'A passkey signs you in with a touch instead of a code. Passkeys are added on your Remote.It account page.'
+            'A passkey signs you in with a touch instead of a code. Adding one opens your Remote.It sign-in page, then brings you back here.'
           )}
         </Typography>
         {!readOnly && (
-          <Button variant="outlined" size="small" href={PASSKEY_PAGE()} target="_blank">
+          <Button variant="outlined" size="small" disabled={busy} onClick={addPasskey}>
             {t('passkeys.add', 'Add a Passkey')}
           </Button>
         )}
@@ -697,7 +742,7 @@ const Chooser: React.FC<{
   const hasHere = (kind: FactorKind) => here.some(f => f.kind === kind)
   const hasStore = props.status.factors.some(f => f.home === 'store')
   // The return ticket comes back to this page only on a web origin the app registered.
-  const passkeyHere = hasHere('passkey') && !browser.isNative
+  const passkeyHere = hasHere('passkey')
   return (
     <Gutters bottom="xl" sx={{ '.MuiTextField-root': { marginRight: 1, marginBottom: 1 } }}>
       <Typography variant="body2" gutterBottom>
