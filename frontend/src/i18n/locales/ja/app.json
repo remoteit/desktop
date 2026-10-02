@@ -2166,8 +2166,10 @@
     "errorUnreachable": "",
     "redirecting": "",
     "retry": "",
+    "stageNotice": "",
     "subtitle": "",
     "title": "",
+    "useProduction": "",
     "waiting": ""
   },
   "statusChip": {
@@ -2248,7 +2250,11 @@
     "setServiceLicensesHint": "すべてのデバイスのライセンスを次の順序で設定します: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY",
     "showLatestAnnouncement": "最新のお知らせを表示",
     "showLatestAnnouncementHint": "既読状態を変更せずに、最新のお知らせをプレビューします。",
+    "stageLabel": "",
     "switchGraphQLAPIs": "GraphQL APIを切り替え",
+    "switchStageAction": "",
+    "switchStageMessage": "",
+    "switchStageTitle": "",
     "testOptions": "テストオプション",
     "title": "テスト設定",
     "webSocketURL": "WebSocket URL"

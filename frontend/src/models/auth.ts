@@ -5,7 +5,13 @@ import network from '../services/Network'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT, SIGN_OUT_SESSION_TIMEOUT } from '../constants'
+import {
+  SIGN_OUT_BACKEND_TIMEOUT,
+  SIGN_OUT_EVERYWHERE_TIMEOUT,
+  SIGN_OUT_SESSION_TIMEOUT,
+  StageName,
+} from '../constants'
+import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
 import { persistor, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
@@ -17,6 +23,7 @@ import {
   oidcClaims,
   oidcStart,
   oidcClearLocal,
+  oidcForgetSavedAccounts,
   oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
@@ -476,6 +483,19 @@ export default createModel<RootModel>()({
       emit('user/sign-out-complete')
       cloudController.reset()
       Controller.close()
+      reloadIfStageChanged()
+    },
+    /** Test Settings' stage switch. The new login server cannot refresh the old one's tokens, so this
+     *  signs out and the reload at the end of signedOut boots every endpoint on the new stage. */
+    async switchStage(stage: StageName, state) {
+      chooseStage(stage)
+      await dispatch.ui.setPersistent({
+        apis: { ...state.ui.apis, switchApi: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' },
+      })
+      emit('preferences', { switchApi: false, apiGraphqlURL: '' })
+      oidcForgetSavedAccounts()
+      if (state.auth.user) await dispatch.auth.signOut()
+      else reloadIfStageChanged()
     },
     async globalSignOut() {
       // "Sign out everywhere" (SecurityPage) is the EXPLICIT, account-wide action, distinct from

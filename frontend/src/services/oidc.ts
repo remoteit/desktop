@@ -801,6 +801,12 @@ export async function oidcEndSession(): Promise<number | undefined> {
  * session first (oidcEndSession, models/auth signOut). */
 export { clearLocal as oidcClearLocal }
 
+/** A stage switch: every saved account belongs to the old login server, which alone can refresh it. */
+export function oidcForgetSavedAccounts() {
+  clearActivationHint()
+  writeRegistry({})
+}
+
 function clearLocal() {
   clearActivationHint()
   const activeSub = oidcClaims()?.sub

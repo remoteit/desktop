@@ -16,7 +16,15 @@ const {
   oidcActor,
   browser,
   storeState,
+  oidcForgetSavedAccounts,
+  chooseStage,
+  reloadIfStageChanged,
+  controllerClose,
 } = vi.hoisted(() => ({
+  oidcForgetSavedAccounts: vi.fn(),
+  chooseStage: vi.fn(),
+  reloadIfStageChanged: vi.fn(),
+  controllerClose: vi.fn(),
   oidcStart: vi.fn(),
   oidcEndSession: vi.fn(),
   changePassword: vi.fn(),
@@ -36,17 +44,20 @@ vi.mock('../services/oidc', () => ({
   oidcGrantStale,
   oidcMcpDetailReady,
   oidcActor,
+  oidcClearLocal: vi.fn(),
+  oidcForgetSavedAccounts,
   OidcError: class OidcError extends Error {},
 }))
+vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 vi.mock('../services/accountSecurity', () => ({ changePassword }))
-vi.mock('../services/Controller', () => ({ default: {}, emit: vi.fn(() => false) }))
-vi.mock('../services/CloudSync', () => ({ default: {} }))
-vi.mock('../services/cloudController', () => ({ default: {} }))
+vi.mock('../services/Controller', () => ({ default: { close: controllerClose }, emit: vi.fn(() => false) }))
+vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn() } }))
+vi.mock('../services/cloudController', () => ({ default: { reset: vi.fn() } }))
 vi.mock('../services/Network', () => ({ default: {} }))
 vi.mock('../services/browser', () => ({ default: browser }))
 vi.mock('../services/analytics', () => ({ default: {} }))
-vi.mock('../services/zendesk', () => ({ default: {} }))
+vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
@@ -77,6 +88,7 @@ const aFailureShowing = (signInError: string) => expect.objectContaining({ signI
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import authModel from './auth'
+import { emit } from '../services/Controller'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
@@ -300,5 +312,57 @@ describe('auth model — the password change is one call to the AS', () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).changePassword(values)
     expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'Choose a password of at least 12 characters.' })
+  })
+})
+
+/* A stage switch changes the login server, which cannot refresh the old one's tokens: the choice is
+   stored first, every override and saved account of the old stage goes, and the app reloads onto
+   the new stage once signed out. */
+describe('auth model — a stage switch signs out and reloads onto the new stage', () => {
+  const apis = {
+    switchApi: true,
+    apiGraphqlURL: 'https://cloud.evan.remote.it/api/graphql',
+    agentURL: 'https://x.test',
+  }
+  const cleared = { apis: { switchApi: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' } }
+  beforeEach(() => {
+    chooseStage.mockReset()
+    reloadIfStageChanged.mockReset()
+    oidcForgetSavedAccounts.mockReset()
+    controllerClose.mockReset()
+  })
+
+  it('signed in: stores the stage, clears the old overrides and accounts, then signs out', async () => {
+    const dispatch = { ...makeDispatch(), ui: { set: vi.fn(), setPersistent: vi.fn() } }
+    await effectsFor(dispatch).switchStage('dev', { auth: { user: { id: 'u1' } }, ui: { apis } })
+    expect(chooseStage).toHaveBeenCalledWith('dev')
+    expect(dispatch.ui.setPersistent).toHaveBeenCalledWith(cleared)
+    expect(emit).toHaveBeenCalledWith('preferences', { switchApi: false, apiGraphqlURL: '' })
+    expect(oidcForgetSavedAccounts).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
+    expect(chooseStage.mock.invocationCallOrder[0]).toBeLessThan(dispatch.auth.signOut.mock.invocationCallOrder[0])
+    expect(reloadIfStageChanged).not.toHaveBeenCalled()
+  })
+
+  it('signed out: nothing to sign out of, so it reloads straight away', async () => {
+    const dispatch = { ...makeDispatch(), ui: { set: vi.fn(), setPersistent: vi.fn() } }
+    await effectsFor(dispatch).switchStage('prod', { auth: {}, ui: { apis: {} } })
+    expect(chooseStage).toHaveBeenCalledWith('prod')
+    expect(oidcForgetSavedAccounts).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.signOut).not.toHaveBeenCalled()
+    expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
+  })
+
+  it('the sign-out teardown reloads onto a changed stage as its last step', async () => {
+    const fns: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {}
+    const dispatch = new Proxy(fns, {
+      get: (models, model: string) =>
+        (models[model] ??= new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
+          get: (calls, fn: string) => (calls[fn] ??= vi.fn()),
+        })),
+    })
+    await effectsFor(dispatch).signedOut()
+    expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
+    expect(controllerClose.mock.invocationCallOrder[0]).toBeLessThan(reloadIfStageChanged.mock.invocationCallOrder[0])
   })
 })

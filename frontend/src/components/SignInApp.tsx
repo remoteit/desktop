@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
 import { OidcErrorCode, oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused } from '../services/oidc'
-import { MODE } from '../constants'
+import { MODE, STAGE, STAGE_PINNED, STAGES } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
 
@@ -188,6 +188,19 @@ export function SignInApp() {
         </Button>
       )}
       {signInFailed && <SignInError code={signInErrorCode} detail={signInError} retryAfter={signInRetryAfter} />}
+      {!STAGE_PINNED && STAGE && STAGE !== 'prod' && (
+        <Box display="flex" alignItems="center" gap={1} marginTop={2}>
+          <Typography variant="caption" color="textSecondary">
+            {t('signIn.stageNotice', 'Signing in to the {{name}} stage at {{host}}.', {
+              name: STAGES[STAGE].name,
+              host: new URL(STAGES[STAGE].issuer).host,
+            })}
+          </Typography>
+          <Button size="small" onClick={() => auth.switchStage('prod')}>
+            {t('signIn.useProduction', 'Use production')}
+          </Button>
+        </Box>
+      )}
     </Box>
   )
 }

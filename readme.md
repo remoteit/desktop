@@ -108,9 +108,12 @@ the vite dev server reads `frontend/.env`, so copy it there too after changing a
 #### Sign-in (permitteer OIDC)
 
 Sign-in is renderer-owned and identical on web and desktop — the backend never touches auth.
-Every `VITE_OAUTH_*` variable defaults to its production endpoint — the issuer to
-`https://login.remote.it` — so a build with no `.env` signs in against production. Set them in
-`.env` only to point a local build at dev.
+The login server and every endpoint it signs for come from one **stage** (`STAGES` in
+`frontend/src/constants.ts`): production for a plain version, dev for a version containing `alpha`
+or `beta`. A tester switches stage under Settings → Test Settings → API Target, which signs out and
+reloads onto the other login server, and the sign-in screen of a dev stage offers the way back to
+production. Setting `VITE_OAUTH_ISSUER` in `.env` pins the build to that login server and turns the
+switch off; the other `VITE_OAUTH_*` variables still override single endpoints.
 
 Leave `VITE_OAUTH_CLIENT_ID` as `remoteit_desktop` locally. Redirect URIs are registered
 **per client**: the deployed AI portal uses `remoteit_portal_ai`, which only has
