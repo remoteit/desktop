@@ -9,6 +9,7 @@ import { selectDevice } from '../selectors/devices'
 import { MaximizeAppRegion } from '../components/MaximizeAppRegion'
 import { ConnectionNotice } from '../components/ConnectionNotice'
 import { GlobalConfirm } from '../components/GlobalConfirm'
+import { AgentSwitchConfirm } from '../components/AgentSwitchConfirm'
 import { UpdateNotice } from '../components/UpdateNotice'
 import { RemoteHeader } from '../components/RemoteHeader'
 import { Notice } from '../components/Notice'
@@ -75,6 +76,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
         </Dialog>
       )}
       <GlobalConfirm />
+      <AgentSwitchConfirm />
       <ConnectionNotice sx={snackbarSx} />
       <UpdateNotice sx={snackbarSx} />
       <Snackbar
@@ -138,4 +140,3 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     </RemoteHeader>
   )
 }
-

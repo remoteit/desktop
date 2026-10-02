@@ -105,6 +105,13 @@
     "summaryNone": "{{name}} kann keine Geräte erreichen.",
     "summaryUnlimited": "{{name}} kann alle Geräte in jeder Organisation erreichen, der Sie angehören."
   },
+  "agentSwitch": {
+    "keep": "",
+    "message": "",
+    "switch": "",
+    "thisAccount": "",
+    "title": ""
+  },
   "androidSetup": {
     "guideBody": "Sie können Ihr Android-Gerät einrichten oder den einfachen Anweisungen folgen, um eine der gängigen Plattformen einzurichten.",
     "guideTitle": "Gerät auswählen",
@@ -2194,6 +2201,7 @@
     "autoStopped": "",
     "button": "",
     "cancel": "",
+    "errorAgentOwned": "",
     "errorExpired": "",
     "errorRateLimited": "",
     "errorRateLimitedWait_one": "",

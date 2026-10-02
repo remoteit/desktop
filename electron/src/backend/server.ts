@@ -17,12 +17,14 @@ import environment from './environment'
 import { createServer } from 'http'
 import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
 import { IP_PRIVATE, IP_OPEN } from '@common/constants'
+import { agentOwnedMessage } from '@common/agentOwner'
 
 const d = debug('Server')
 
 class Server {
   public io?: SocketIO.Server
   public socket?: SocketIO.Socket
+  public releaseAgent?: () => Promise<void>
   private app: Express
 
   EVENTS = {
@@ -129,26 +131,29 @@ class Server {
       if (!admin || !admin.guid || credentials.guid === admin.guid) {
         return callback(null, !!(await user.checkSignIn(credentials)))
       }
-      // User not allowed
+      // The agent belongs to another account. Moving it needs that account's credentials, which the
+      // backend holds only while it is still signed in as the owner: the CLI signs out with them.
       else {
+        const canSwitch = !!this.releaseAgent && user.signedIn && user.id === admin.guid
+        if (credentials.switchAgent && canSwitch) {
+          Logger.warn('AGENT SWITCH', { from: admin.username, to: credentials.username })
+          await this.releaseAgent!()
+          return callback(null, !!(await user.checkSignIn(credentials)))
+        }
+
         Logger.warn('USER ALREADY SIGNED IN', {
           attempting: credentials.username,
           signedIn: admin.username,
           attemptingID: credentials.guid,
           signedInID: admin.guid,
+          canSwitch,
         })
 
         const command = environment.isWindows
           ? `'remoteit signout' from an Administrator Command Prompt`
           : `'sudo remoteit signout' from your terminal`
 
-        return callback(
-          new Error(
-            `${admin.username} (${admin.guid}) is already signed in. They must first sign in and back out to allow ${credentials.username} (${credentials.guid}) to sign in.
-            Or you can run ${command}.`
-          ),
-          false
-        )
+        return callback(new Error(agentOwnedMessage({ username: admin.username, canSwitch, command })), false)
       }
     }
     // No user

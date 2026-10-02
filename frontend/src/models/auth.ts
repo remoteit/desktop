@@ -27,6 +27,7 @@ import {
   oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
+  oidcAccounts,
   oidcActivationHint,
   invalidateOidcToken,
   oidcGrantStale,
@@ -43,6 +44,9 @@ import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import i18n from '../i18n'
 import { withTimeout } from '../helpers/sleep'
+import { AgentOwner, parseAgentOwned } from '@common/agentOwner'
+
+export type SignInErrorCode = OidcErrorCode | 'agentOwned'
 
 export interface AuthState {
   initialized: boolean
@@ -56,7 +60,9 @@ export interface AuthState {
    *  the server's own wording, so it is untranslated and often meaningless to a person. */
   signInError?: string
   /** What the failure MEANS, which is what the screen actually translates and acts on. */
-  signInErrorCode?: OidcErrorCode
+  signInErrorCode?: SignInErrorCode
+  /** This computer's agent is signed in as another account; set while that refusal stands. */
+  agentOwner?: AgentOwner
   /** Seconds the server asked us to wait, when it said so (429). */
   signInRetryAfter?: number
   signingIn?: boolean
@@ -113,6 +119,7 @@ const signInCleared = {
   signInError: undefined,
   signInErrorCode: undefined,
   signInRetryAfter: undefined,
+  agentOwner: undefined,
 }
 
 export default createModel<RootModel>()({
@@ -340,13 +347,30 @@ export default createModel<RootModel>()({
     },
     async backendSignInError(signInError: string) {
       console.error(signInError)
+      const owner = parseAgentOwned(signInError)
+      if (owner?.canSwitch) return dispatch.auth.set({ agentOwner: owner })
       // Tear down FIRST, then record the failure: signedOut() deliberately clears
       // signInFailed/signInError (a failure logged while signed in must not survive into the
       // signed-out screen), so a set() before it was wiped and SignInApp — which renders its
       // message only while signInFailed is true — showed a bare sign-in screen with no word of
       // the backend's rejection. signInFailure is the one shape every failure takes.
       await dispatch.auth.signedOut()
-      dispatch.auth.set(signInFailure(new Error(signInError)))
+      dispatch.auth.set({
+        ...signInFailure(new Error(signInError)),
+        ...(owner && { signInErrorCode: 'agentOwned' as const, agentOwner: owner }),
+      })
+    },
+    /** Move this computer's agent to the signed-in account; the backend signs its owner out first. */
+    async switchAgent() {
+      dispatch.auth.set({ agentOwner: undefined })
+      Controller.retryWithAgentSwitch()
+    },
+    /** Leave the agent with its owner: sign this account out and return to the owner when it is saved here. */
+    async keepAgent(_: void, state) {
+      const owner = state.auth.agentOwner?.username.toLowerCase()
+      const back = oidcAccounts().find(account => account.email?.toLowerCase() === owner)
+      await dispatch.auth.signedOut()
+      if (back) await dispatch.auth.activateAccount(back.sub)
     },
     async appReady(_: void, state) {
       // Temp migration of state

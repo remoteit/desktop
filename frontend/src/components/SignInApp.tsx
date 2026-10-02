@@ -3,7 +3,8 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { OidcErrorCode, oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused } from '../services/oidc'
+import { oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused } from '../services/oidc'
+import { SignInErrorCode } from '../models/auth'
 import { MODE, OAUTH_ISSUER, STAGE, STAGE_PINNED, STAGES } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
@@ -19,7 +20,7 @@ import brand from '@common/brand/config'
    server's wording, because the two things a stuck user needs — "is this me or them?"
    and "do I retry or wait?" — are not in an error_description. The raw detail is shown
    underneath, quietly, so a support conversation still has something to go on. */
-const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?: number }> = ({
+const SignInError: React.FC<{ code?: SignInErrorCode; detail?: string; retryAfter?: number }> = ({
   code,
   detail,
   retryAfter,
@@ -31,6 +32,7 @@ const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?
      untranslated, under a sentence written for them. console.error still carries it for
      everyone, so a support session loses nothing. */
   const showDetail = useSelector((state: State) => MODE === 'development' || !!state.ui.testUI)
+  const agentOwner = useSelector((state: State) => state.auth.agentOwner)
   // Round UP: telling someone to wait 6 minutes when the lock lifts in 6:40 just earns
   // a second failure. Below a minute still reads as "a minute".
   const minutes = Math.max(1, Math.ceil((retryAfter || 0) / 60))
@@ -63,6 +65,12 @@ const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?
         return t(
           'signIn.errorRefused',
           'The sign-in service refused this request. Try again, and contact support if it keeps happening.'
+        )
+      case 'agentOwned':
+        return t(
+          'signIn.errorAgentOwned',
+          "This computer's Remote.It agent is signed in as {{owner}}. Sign in as {{owner}} and sign out, or run {{command}}.",
+          { owner: agentOwner?.username, command: agentOwner?.command }
         )
       case 'expired':
         return t('signIn.errorExpired', 'That sign-in attempt expired before it finished. Please try again.')

@@ -11,6 +11,7 @@ class Controller extends EventEmitter {
   private socket?: Socket
   private retrying?: NodeJS.Timeout
   private credentials?: UserCredentials
+  private switchAgent = false
   private url: string = '/'
   handlers: ILookup<(result: any) => void> = {}
 
@@ -106,7 +107,14 @@ class Controller extends EventEmitter {
   }
 
   auth() {
-    if (browser.hasBackend) emit('authentication', this.credentials)
+    if (!browser.hasBackend) return
+    emit('authentication', this.switchAgent ? { ...this.credentials, switchAgent: true } : this.credentials)
+    this.switchAgent = false
+  }
+
+  retryWithAgentSwitch() {
+    this.switchAgent = true
+    this.open(false, true)
   }
 
   // Retry open with delay, force skips delay

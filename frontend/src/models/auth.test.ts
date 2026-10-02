@@ -20,7 +20,11 @@ const {
   chooseStage,
   reloadIfStageChanged,
   controllerClose,
+  retryWithAgentSwitch,
+  oidcAccounts,
 } = vi.hoisted(() => ({
+  retryWithAgentSwitch: vi.fn(),
+  oidcAccounts: vi.fn(() => [] as Array<{ sub: string; email?: string }>),
   oidcReconcileIssuer: vi.fn(),
   chooseStage: vi.fn(),
   reloadIfStageChanged: vi.fn(),
@@ -46,12 +50,16 @@ vi.mock('../services/oidc', () => ({
   oidcActor,
   oidcClearLocal: vi.fn(),
   oidcReconcileIssuer,
+  oidcAccounts,
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 vi.mock('../services/accountSecurity', () => ({ changePassword }))
-vi.mock('../services/Controller', () => ({ default: { close: controllerClose }, emit: vi.fn(() => false) }))
+vi.mock('../services/Controller', () => ({
+  default: { close: controllerClose, retryWithAgentSwitch },
+  emit: vi.fn(() => false),
+}))
 vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn() } }))
 vi.mock('../services/cloudController', () => ({ default: { reset: vi.fn() } }))
 vi.mock('../services/Network', () => ({ default: {} }))
@@ -76,7 +84,7 @@ vi.mock('axios', () => ({ default: {} }))
 // call is an observable spy rather than a real reducer/effect.
 function makeDispatch() {
   return {
-    auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn() },
+    auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn(), activateAccount: vi.fn() },
     ui: { set: vi.fn(), setPersistent: vi.fn() },
     chat: { signOut: vi.fn() },
   }
@@ -88,6 +96,7 @@ const aFailureShowing = (signInError: string) => expect.objectContaining({ signI
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import authModel from './auth'
+import { agentOwnedMessage } from '@common/agentOwner'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
@@ -365,5 +374,69 @@ describe('auth model — a stage switch signs out and reloads onto the new stage
     await effectsFor(dispatch).signedOut()
     expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
     expect(controllerClose.mock.invocationCallOrder[0]).toBeLessThan(reloadIfStageChanged.mock.invocationCallOrder[0])
+  })
+})
+
+/* The backend refuses a second account while this computer's agent belongs to another. When it can
+   move the agent it says so, and the app asks instead of signing out; otherwise the screen says why. */
+describe("auth model — this computer's agent belongs to another account", () => {
+  const owner = { username: 'Jamie@Remote.it', canSwitch: true, command: "'sudo remoteit signout' from your terminal" }
+  beforeEach(() => {
+    retryWithAgentSwitch.mockReset()
+    oidcAccounts.mockReset().mockReturnValue([])
+  })
+
+  it('a movable agent keeps the new session and asks', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).backendSignInError(agentOwnedMessage(owner))
+    expect(dispatch.auth.set).toHaveBeenCalledWith({ agentOwner: owner })
+    expect(dispatch.auth.signedOut).not.toHaveBeenCalled()
+  })
+
+  it('an agent that cannot move signs out and names its owner', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const stuck = { ...owner, canSwitch: false }
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).backendSignInError(agentOwnedMessage(stuck))
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.set).toHaveBeenCalledWith(
+      expect.objectContaining({ signInFailed: true, signInErrorCode: 'agentOwned', agentOwner: stuck })
+    )
+  })
+
+  it('a malformed refusal falls back to the plain failure', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).backendSignInError('agent-owned:{not json')
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.set).toHaveBeenCalledWith(expect.not.objectContaining({ signInErrorCode: 'agentOwned' }))
+  })
+
+  it('switching clears the question and retries with consent to move the agent', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).switchAgent()
+    expect(dispatch.auth.set).toHaveBeenCalledWith({ agentOwner: undefined })
+    expect(retryWithAgentSwitch).toHaveBeenCalledTimes(1)
+  })
+
+  it('going back signs this account out and reactivates the saved owner', async () => {
+    oidcAccounts.mockReturnValue([
+      { sub: 'sub-b', email: 'jr@gmail.test' },
+      { sub: 'sub-a', email: 'jamie@remote.it' },
+    ])
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).keepAgent(undefined, { auth: { agentOwner: owner } })
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.activateAccount).toHaveBeenCalledWith('sub-a')
+    expect(dispatch.auth.signedOut.mock.invocationCallOrder[0]).toBeLessThan(
+      dispatch.auth.activateAccount.mock.invocationCallOrder[0]
+    )
+  })
+
+  it('going back to an owner that is not saved here just signs out', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).keepAgent(undefined, { auth: { agentOwner: owner } })
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.activateAccount).not.toHaveBeenCalled()
   })
 })

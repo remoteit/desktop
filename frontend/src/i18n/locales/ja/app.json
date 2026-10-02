@@ -103,6 +103,13 @@
     "summaryNone": "{{name}} はどのデバイスにもアクセスできません。",
     "summaryUnlimited": "{{name}} は、所属するすべての組織のすべてのデバイスにアクセスできます。"
   },
+  "agentSwitch": {
+    "keep": "",
+    "message": "",
+    "switch": "",
+    "thisAccount": "",
+    "title": ""
+  },
   "androidSetup": {
     "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
     "guideTitle": "デバイスを選択",
@@ -2158,6 +2165,7 @@
     "autoStopped": "",
     "button": "",
     "cancel": "",
+    "errorAgentOwned": "",
     "errorExpired": "",
     "errorRateLimited": "",
     "errorRateLimitedWait_other": "",
