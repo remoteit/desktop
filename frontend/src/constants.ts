@@ -32,6 +32,8 @@ export const CLOUD_TREE_RE = /^https:\/\/cloud(?:\.([a-z0-9-]+))?\.remote\.it\/a
 export const CLOUD_GRAPHQL_RE = /^(https:\/\/cloud(?:\.[a-z0-9-]+)?\.remote\.it\/api)\/graphql$/
 export const LEGACY_GRAPHQL_RE = /^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/
 export const LEGACY_EVENTS_RE = /^wss:\/\/ws(?:\.([a-z0-9-]+))?\.remote\.it\/v1$/
+// The pre-OIDC shared-domain API: no registered resource, so the AS refuses any token for it.
+export const LEGACY_SHARED_GRAPHQL_RE = /^https:\/\/api\.remote\.it\/graphql\//
 export const cloudTreeUrls = (tree: string) => ({
   graphql: `${tree}/graphql`,
   ws: `${tree.replace(/^https:/, 'wss:')}/ws`,
