@@ -18,6 +18,7 @@ import EventBus from './EventBus'
 import server from './server'
 import user, { User } from './User'
 import launch from './launch'
+import { disconnectAuthenticated } from './sockets'
 
 const DEFAULT_SOCKETS_LENGTH = 3
 
@@ -239,6 +240,7 @@ class Controller {
       return false
     }
     user.clear()
+    disconnectAuthenticated(this.io.sockets.sockets.values() as Iterable<SocketIO.Socket & { auth?: boolean }>)
     await this.pool.clearMemory()
     return true
   }
