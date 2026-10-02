@@ -36,7 +36,6 @@ import {
   oidcTakeSupportTicket,
   oidcSelectKnownAccount,
   oidcClearAutoStarts,
-  oidcReopen,
   OidcError,
   OidcErrorCode,
 } from '../services/oidc'
@@ -254,9 +253,6 @@ export default createModel<RootModel>()({
         console.error('SIGN IN FAILED', error)
         dispatch.auth.set(signInFailure(error))
       }
-    },
-    async reopenSignIn() {
-      if (!(await oidcReopen())) await dispatch.auth.signIn()
     },
     async fetchUser(_: void) {
       const { auth } = dispatch

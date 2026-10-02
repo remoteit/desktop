@@ -8,7 +8,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // re-read from the store after a teardown.
 const {
   oidcStart,
-  oidcReopen,
   oidcEndSession,
   signOutEverywhere,
   changePassword,
@@ -33,7 +32,6 @@ const {
   reloadIfStageChanged: vi.fn(),
   controllerClose: vi.fn(),
   oidcStart: vi.fn(),
-  oidcReopen: vi.fn(),
   oidcEndSession: vi.fn(),
   changePassword: vi.fn(),
   signOutEverywhere: vi.fn(),
@@ -48,7 +46,6 @@ const {
 // (an undefined right-hand side of instanceof throws rather than returning false).
 vi.mock('../services/oidc', () => ({
   oidcStart,
-  oidcReopen,
   oidcEndSession,
   oidcGrantStale,
   oidcMcpDetailReady,
@@ -94,7 +91,7 @@ vi.mock('axios', () => ({ default: {} }))
 // call is an observable spy rather than a real reducer/effect.
 function makeDispatch() {
   return {
-    auth: { set: vi.fn(), signIn: vi.fn(), signedOut: vi.fn(), signOut: vi.fn(), activateAccount: vi.fn() },
+    auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn(), activateAccount: vi.fn() },
     ui: { set: vi.fn(), setPersistent: vi.fn() },
     chat: { signOut: vi.fn() },
   }
@@ -112,7 +109,6 @@ const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
 beforeEach(() => {
   oidcStart.mockReset()
-  oidcReopen.mockReset()
   oidcEndSession.mockReset().mockResolvedValue(204)
   changePassword.mockReset()
   signOutEverywhere.mockReset().mockResolvedValue({ status: 200, body: { ended: 1, pool: 'skipped' } })
@@ -131,23 +127,6 @@ describe('auth model — sign-in always offers the chooser', () => {
     await effectsFor(dispatch).signIn()
     expect(oidcStart).toHaveBeenCalledTimes(1)
     expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
-  })
-})
-
-describe('auth model — reopening the browser', () => {
-  it('resends the outstanding authorize rather than starting another sign-in', async () => {
-    const dispatch = makeDispatch()
-    oidcReopen.mockResolvedValue(true)
-    await effectsFor(dispatch).reopenSignIn()
-    expect(oidcReopen).toHaveBeenCalledTimes(1)
-    expect(dispatch.auth.signIn).not.toHaveBeenCalled()
-  })
-
-  it('starts a sign-in when none is outstanding', async () => {
-    const dispatch = makeDispatch()
-    oidcReopen.mockResolvedValue(false)
-    await effectsFor(dispatch).reopenSignIn()
-    expect(dispatch.auth.signIn).toHaveBeenCalledTimes(1)
   })
 })
 

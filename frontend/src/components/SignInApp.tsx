@@ -3,7 +3,7 @@ import { Box, Button, Link as MuiLink, Typography, CircularProgress } from '@mui
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused } from '../services/oidc'
+import { oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused, oidcReopen } from '../services/oidc'
 import { SignInErrorCode } from '../models/auth'
 import { AgentOwner, parseAgentOwned } from '@common/agentOwner'
 import { DESKTOP_HELP_LINK, MODE, OAUTH_ISSUER, STAGE, STAGE_PINNED, STAGES } from '../constants'
@@ -14,6 +14,14 @@ import { Icon } from './Icon'
 import { ColorChip } from './ColorChip'
 import { Link } from './Link'
 import { Logo } from '@common/brand/Logo'
+
+const ISSUER_HOST = (() => {
+  try {
+    return new URL(OAUTH_ISSUER).host
+  } catch {
+    return OAUTH_ISSUER
+  }
+})()
 
 /**
  * The sign-in panel is a LAUNCHER now: the whole journey — email-first with org SSO
@@ -179,7 +187,6 @@ export function SignInApp() {
 
   const agentOwner = signInFailed && signInErrorCode === 'agentOwned' ? parseAgentOwned(signInError) : undefined
   const retryable = signInFailed && !agentOwner
-  const issuerHost = new URL(OAUTH_ISSUER).host
 
   let heading = t('signIn.heading', 'Sign in')
   if (signingIn) heading = t('signIn.waitingTitle', 'Finish signing in in your browser')
@@ -198,7 +205,7 @@ export function SignInApp() {
           size="small"
           color="warning"
           icon={<Icon name="flask" size="sm" />}
-          label={`${STAGES[otherStage].name} · ${issuerHost}`}
+          label={`${STAGES[otherStage].name} · ${ISSUER_HOST}`}
         />
       )}
       <Logo width={140} marginBottom={1} />
@@ -208,7 +215,7 @@ export function SignInApp() {
       </Typography>
       {signingIn ? (
         <Typography variant="body2" color="textSecondary" textAlign="center">
-          {t('signIn.waitingDetail', 'We opened {{host}} in your default browser.', { host: issuerHost })}
+          {t('signIn.waitingDetail', 'We opened {{host}} in your default browser.', { host: ISSUER_HOST })}
         </Typography>
       ) : signInFailed ? (
         <SignInError
@@ -226,7 +233,7 @@ export function SignInApp() {
       )}
       <Box display="flex" alignItems="center" gap={1} marginTop={1}>
         {signingIn && <Button onClick={() => auth.set({ signingIn: false })}>{t('signIn.cancel', 'Cancel')}</Button>}
-        <Button variant="contained" size="large" onClick={() => (signingIn ? auth.reopenSignIn() : auth.signIn())}>
+        <Button variant="contained" size="large" onClick={() => (signingIn ? oidcReopen() : auth.signIn())}>
           {action}
         </Button>
       </Box>

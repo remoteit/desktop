@@ -3,8 +3,13 @@ import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { agentOwnedMessage } from '@common/agentOwner'
 
-const auth = { signIn: vi.fn(), reopenSignIn: vi.fn(), set: vi.fn(), switchStage: vi.fn() }
+const auth = { signIn: vi.fn(), set: vi.fn(), switchStage: vi.fn() }
 let authState: any
+const { browser, oidcReopen, autoStart } = vi.hoisted(() => ({
+  browser: { isElectron: true, isNative: true },
+  oidcReopen: vi.fn(),
+  autoStart: { spent: false },
+}))
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_: string, fallback: string) => fallback }),
@@ -16,11 +21,12 @@ vi.mock('react-redux', () => ({
 }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 vi.mock('./CopyCodeBlock', () => ({ CopyCodeBlock: ({ value }: { value: string }) => <code>{value}</code> }))
-vi.mock('../services/browser', () => ({ default: { isElectron: true, isNative: true } }))
+vi.mock('../services/browser', () => ({ default: browser }))
 vi.mock('../services/oidc', () => ({
-  oidcAutoStartExhausted: () => false,
+  oidcAutoStartExhausted: () => autoStart.spent,
   oidcIsSupportTab: () => false,
   oidcLeaveRefused: () => false,
+  oidcReopen,
 }))
 
 import { SignInApp } from './SignInApp'
@@ -54,6 +60,8 @@ describe('SignInApp', () => {
     document.body.appendChild(container)
     root = createRoot(container)
     vi.clearAllMocks()
+    Object.assign(browser, { isElectron: true, isNative: true })
+    autoStart.spent = false
   })
 
   afterEach(() => {
@@ -74,7 +82,7 @@ describe('SignInApp', () => {
     expect(buttons().indexOf(cancel)).toBeLessThan(buttons().indexOf(reopen))
 
     act(() => reopen.click())
-    expect(auth.reopenSignIn).toHaveBeenCalledTimes(1)
+    expect(oidcReopen).toHaveBeenCalledTimes(1)
     expect(auth.signIn).not.toHaveBeenCalled()
     act(() => cancel.click())
     expect(auth.set).toHaveBeenCalledWith({ signingIn: false })
@@ -85,5 +93,13 @@ describe('SignInApp', () => {
     expect(container.textContent).toContain('This computer is in use')
     expect(container.textContent).toContain('sudo remoteit signout')
     expect(button('Try again')).toBeUndefined()
+  })
+
+  it('on the web, where the page is the browser, offers a plain sign-in', () => {
+    Object.assign(browser, { isElectron: false, isNative: false })
+    autoStart.spent = true
+    render(screens.ready)
+    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Sign In')
+    expect(container.textContent).not.toContain('Your browser will open')
   })
 })
