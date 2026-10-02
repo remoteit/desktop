@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { getUserId } from '../selectors/state'
@@ -25,10 +25,14 @@ export function useOwnedDevices(enabled: boolean) {
   const thisId = useSelector((state: State) => state.backend.thisId)
   const [owned, setOwned] = useState<OwnedDevices>()
   const [failed, setFailed] = useState(false)
+  const fetchedFor = useRef<string>()
 
   useEffect(() => {
-    if (!enabled || !userId || owned) return
+    if (!enabled || !userId) return
+    if (owned && (!thisId || thisId === fetchedFor.current)) return
     let current = true
+    fetchedFor.current = thisId
+    setOwned(undefined)
     setFailed(false)
     graphQLFetchOwnedDevices(userId, OWNED_DEVICES_SHOWN + 1, thisId).then(result => {
       if (!current) return
@@ -38,7 +42,7 @@ export function useOwnedDevices(enabled: boolean) {
     return () => {
       current = false
     }
-  }, [enabled, userId])
+  }, [enabled, userId, thisId])
 
   return { owned, failed }
 }
