@@ -15,7 +15,7 @@ import socketioAuth from 'socketio-auth'
 import Preferences from './preferences'
 import environment from './environment'
 import { createServer } from 'http'
-import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
+import { APP_ORIGIN, WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
 import { IP_PRIVATE, IP_OPEN } from '@common/constants'
 import { agentOwnedMessage } from '@common/agentOwner'
 import { isLoopback } from './loopback'
@@ -139,7 +139,12 @@ class Server {
       // The agent belongs to another account. Moving it needs that account's credentials, which the
       // backend holds only while it is still signed in as the owner: the CLI signs out with them.
       else {
-        const canSwitch = isLoopback(socket.handshake.address) && user.signedIn && user.id === admin.guid
+        // A page in any browser on this computer connects from loopback too, but the browser stamps its own Origin.
+        const canSwitch =
+          isLoopback(socket.handshake.address) &&
+          socket.handshake.headers.origin === APP_ORIGIN &&
+          user.signedIn &&
+          user.id === admin.guid
         const command = environment.isWindows ? 'remoteit signout' : 'sudo remoteit signout'
 
         if (credentials.switchAgent && canSwitch && this.releaseAgent) {

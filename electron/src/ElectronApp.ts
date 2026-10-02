@@ -5,10 +5,9 @@ import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import { t, setLanguage } from './i18n'
-import { EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from './backend'
+import { APP_ORIGIN, EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
-const IP_PRIVATE = '127.0.0.1'
 
 export default class ElectronApp {
   public app: electron.App
@@ -455,7 +454,7 @@ export default class ElectronApp {
   }
 
   private getStartUrl(): string {
-    return process.env.NODE_ENV === 'development' ? `http://${IP_PRIVATE}:3003` : `http://${IP_PRIVATE}:29999`
+    return APP_ORIGIN
   }
 
   private createSystemTray() {

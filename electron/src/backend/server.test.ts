@@ -5,6 +5,7 @@ import socketioAuth from 'socketio-auth'
 import { io as connect, Socket } from 'socket.io-client'
 import cli from './cliInterface'
 import ConnectionPool from './ConnectionPool'
+import { APP_ORIGIN } from './constants'
 import Controller from './Controller'
 import EventBus from './EventBus'
 import electronInterface from './electronInterface'
@@ -55,8 +56,8 @@ describe('backend/server broadcasts', () => {
 
   const next = (socket: Socket, event: string) => new Promise(resolve => socket.once(event, resolve))
 
-  const open = async () => {
-    const socket = connect(url, { transports: ['websocket'], forceNew: true, reconnection: false })
+  const open = async (extraHeaders?: Record<string, string>) => {
+    const socket = connect(url, { transports: ['websocket'], forceNew: true, reconnection: false, extraHeaders })
     sockets.push(socket)
     await next(socket, 'connect')
     return socket
@@ -158,5 +159,22 @@ describe('backend/server broadcasts', () => {
     expect(await server.releaseAgent?.()).toBe(true)
     expect(io.sockets.sockets.has(ownerId!)).toBe(false)
     expect(io.sockets.sockets.has(switchingId!)).toBe(true)
+  })
+
+  it("lets only the app's own origin move the agent", async () => {
+    const checkSignIn = jest.spyOn(user, 'checkSignIn').mockResolvedValue(true)
+    Object.assign(user, { ...credentials, id: 'guid-a', signedIn: true })
+    Object.assign(cli.data, { admin: { guid: 'guid-a', username: credentials.username } })
+    const switching = { username: 'b@test', authHash: 'hash-b', guid: 'guid-b', switchAgent: true }
+
+    expect(await authenticate(await open({ origin: 'https://example.com' }), switching)).toBe('unauthorized')
+    expect(await authenticate(await open(), switching)).toBe('unauthorized')
+    expect(checkSignIn).not.toHaveBeenCalled()
+
+    expect(await authenticate(await open({ origin: APP_ORIGIN }), switching)).toBe('authenticated')
+    expect(checkSignIn).toHaveBeenCalledTimes(1)
+
+    checkSignIn.mockRestore()
+    Object.assign(cli.data, { admin: undefined })
   })
 })
