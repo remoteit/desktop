@@ -244,4 +244,20 @@ describe('backend/server broadcasts', () => {
     expect(isAppOrigin('null')).toBe(false)
   })
 
+  it('ignores commands from a socket that has signed out', async () => {
+    Object.assign(user, credentials)
+    const window = await open()
+    expect(await authenticate(window, credentials)).toBe('authenticated')
+    const signedOut = next(window, User.EVENTS.signedOut)
+    window.emit('user/sign-out')
+    await signedOut
+
+    nextFreePort.mockClear()
+    const heard = listen(window)
+    window.emit('freePort')
+    // Packets from one socket are handled in order, so the release's answer comes after freePort was handled.
+    expect(await window.emitWithAck('agent/release')).toBe(false)
+    expect(nextFreePort).not.toHaveBeenCalled()
+    expect(heard).not.toContain('freePort')
+  })
 })
