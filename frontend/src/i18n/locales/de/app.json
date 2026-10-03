@@ -1167,9 +1167,13 @@
     "emailSent": "Wir haben Ihnen einen Code per E-Mail gesendet, um Ihren ersten Faktor zu bestätigen. Er ist 10 Minuten lang und nur in diesem Browser gültig.",
     "failed": "Etwas ist schiefgelaufen – versuchen Sie es erneut.",
     "federated": "Sie melden sich über einen Identitätsanbieter (z. B. Google) an, daher gibt es kein Remote.It-Passwort, das geändert werden kann. Sie können eines einrichten, das Sie zusätzlich zu Ihrem Anbieter verwenden.",
+    "kind": {
+      "passkey": "Passkey",
+      "sms": "SMS",
+      "totp": "Authenticator-App"
+    },
     "locked": "Zu viele falsche Codes. Die Codeeingabe ist für 15 Minuten gesperrt.",
     "lockedUntil": "Die Codeeingabe ist bis {{when}} gesperrt.",
-    "method": "Methode",
     "newCodes": "Neue Wiederherstellungscodes",
     "phone": "Mobilnummer (+15555550123)",
     "prefer": "Zuerst abfragen",

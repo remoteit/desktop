@@ -1180,9 +1180,13 @@
     "emailSent": "Te enviamos un código por correo electrónico para confirmar tu primer factor. Funciona durante 10 minutos y solo en este navegador.",
     "failed": "Algo salió mal. Inténtalo de nuevo.",
     "federated": "Inicias sesión con un proveedor de identidad (como Google), así que no hay ninguna contraseña de Remote.It que cambiar. Puedes configurar una para usarla junto con tu proveedor.",
+    "kind": {
+      "passkey": "Llave de acceso",
+      "sms": "Mensaje de texto",
+      "totp": "Aplicación de autenticación"
+    },
     "locked": "Demasiados códigos incorrectos. Los códigos están bloqueados durante 15 minutos.",
     "lockedUntil": "Los códigos están bloqueados hasta {{when}}.",
-    "method": "Método",
     "newCodes": "Nuevos códigos de recuperación",
     "phone": "Número de móvil (+15555550123)",
     "prefer": "Pedir este primero",
