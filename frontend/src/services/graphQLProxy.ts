@@ -107,3 +107,24 @@ export const graphQLRemoveProxy = (deviceId: string) =>
 // Where an endpoint is reached, as a person would type it.
 export const endpointAddress = (endpoint: Pick<Endpoint, 'kind' | 'url' | 'host' | 'port'>) =>
   endpoint.kind === 'https' ? endpoint.url : `${endpoint.host}:${endpoint.port}`
+
+// Exit nodes (proxy-plan.md §8): using a device as one is its own grant — its owner's always, anyone else's by their
+// share or organization role. A share's is set apart from what sharing again resets.
+export const graphQLShareExit = (deviceId: string, email: string) =>
+  read<boolean>(
+    `query ShareExit($id: [String!]!) { login { device(id: $id) { id access { user { email } exit } } } }`,
+    { id: [deviceId] },
+    'exit',
+    data =>
+      !!data?.login?.device?.[0]?.access?.find(
+        (a: { user?: { email?: string } }) => a.user?.email?.toLowerCase() === email.toLowerCase()
+      )?.exit
+  )
+
+export const graphQLSetShareExit = (deviceId: string, email: string, exit: boolean) =>
+  graphQLBasicRequest(
+    ` mutation SetShareExit($deviceId: String!, $email: String!, $exit: Boolean!) {
+        setShareExit(deviceId: $deviceId, email: $email, exit: $exit)
+      }`,
+    { deviceId, email, exit }
+  )

@@ -2557,6 +2557,10 @@
     "organizationMembers": "Organization members",
     "shareToGuest": "Share to a guest"
   },
+  "shareExit": {
+    "hint": "Send their traffic out through this device, as a VPN would",
+    "label": "Use as an exit node"
+  },
   "sharingForm": {
     "allowScriptExecution": "Allow script execution",
     "allowScriptExecutionHelp": "Give the user the ability to run scripts on this device.",

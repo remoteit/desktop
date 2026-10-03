@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import isEqual from 'lodash.isequal'
 import structuredClone from '@ungap/structured-clone'
 import { useParams } from 'react-router-dom'
-import { DEFAULT_ROLE, PERMISSION } from '../models/organization'
+import { DEFAULT_ROLE, PERMISSION, deviceSessionPermissions } from '../models/organization'
 import { selectOrganization } from '../selectors/organizations'
 import { Button, Typography, List, ListItem, ListItemIcon, TextField } from '@mui/material'
 import { Dispatch, State } from '../store'
@@ -121,7 +121,9 @@ export const OrganizationRolePage: React.FC = () => {
             locked={systemRole}
             disabled={disabled}
             allowed={form.permissions}
-            permissions={Object.keys(PERMISSION).filter(p => !PERMISSION[p].user && !PERMISSION[p].hidden)}
+            permissions={deviceSessionPermissions(deviceSessions).filter(
+              p => !PERMISSION[p].user && !PERMISSION[p].hidden
+            )}
             onChange={handlePermissionChange}
           />
         )}

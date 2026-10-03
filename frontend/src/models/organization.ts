@@ -27,6 +27,7 @@ export const PERMISSION: ILookup<{
   system?: boolean
   user?: boolean
   hidden?: boolean
+  deviceSessions?: boolean
 }> = {
   VIEW: { name: 'View', description: 'See devices and their current state', icon: 'eye', system: true },
   CONNECT: { name: 'Connect', description: 'Connect to device services', icon: 'arrow-right' },
@@ -44,7 +45,20 @@ export const PERMISSION: ILookup<{
     icon: 'user-pen',
     user: true,
   },
+  // Exit nodes (device sessions): only by this explicit grant — connect access does not give it. Shown and sent only
+  // where the device-session API is on (deviceSessionPermissions).
+  EXIT: {
+    name: 'Exit node',
+    description: 'Send their traffic out through the devices — use them as exit nodes',
+    icon: 'arrow-right-from-bracket',
+    deviceSessions: true,
+  },
 }
+
+// The permissions this client deals in: the device-session ones only with device sessions on — an API without them
+// refuses a role that names one, even to revoke it.
+export const deviceSessionPermissions = (deviceSessions: boolean) =>
+  (Object.keys(PERMISSION) as IPermission[]).filter(p => deviceSessions || !PERMISSION[p].deviceSessions)
 
 export const DEFAULT_ROLE: IOrganizationRole = {
   id: '',
@@ -273,7 +287,7 @@ export default createModel<RootModel>()({
     async setRole(role: IOrganizationRole, state) {
       let roles = [...selectOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
-      const permissions = Object.keys(PERMISSION) as IPermission[]
+      const permissions = deviceSessionPermissions(!!state.ui.deviceSessions)
       const data = {
         id: role.id,
         name: role.name,

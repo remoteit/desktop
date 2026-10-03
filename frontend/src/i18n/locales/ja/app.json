@@ -2505,6 +2505,10 @@
     "organizationMembers": "組織のメンバー",
     "shareToGuest": "ゲストに共有"
   },
+  "shareExit": {
+    "hint": "",
+    "label": ""
+  },
   "sharingForm": {
     "allowScriptExecution": "スクリプトの実行を許可",
     "allowScriptExecutionHelp": "ユーザーにこのデバイスでスクリプトを実行する権限を与えます。",

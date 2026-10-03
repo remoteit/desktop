@@ -2557,6 +2557,10 @@
     "organizationMembers": "Organisationsmitglieder",
     "shareToGuest": "Für einen Gast freigeben"
   },
+  "shareExit": {
+    "hint": "",
+    "label": ""
+  },
   "sharingForm": {
     "allowScriptExecution": "Skriptausführung zulassen",
     "allowScriptExecutionHelp": "Ermöglicht dem Benutzer, Skripte auf diesem Gerät auszuführen.",

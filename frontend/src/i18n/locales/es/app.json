@@ -2609,6 +2609,10 @@
     "organizationMembers": "Miembros de la organización",
     "shareToGuest": "Compartir con un invitado"
   },
+  "shareExit": {
+    "hint": "",
+    "label": ""
+  },
   "sharingForm": {
     "allowScriptExecution": "Permitir la ejecución de scripts",
     "allowScriptExecutionHelp": "Otorga al usuario la capacidad de ejecutar scripts en este dispositivo.",
