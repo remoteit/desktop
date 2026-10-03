@@ -136,9 +136,10 @@ describe('oidcCompleteFromUrl with no flow for the callback', () => {
   })
 
   it('reads a deep link handed to the live window instead of the window’s own URL', async () => {
-    window.history.replaceState({}, '', '/')
+    window.history.replaceState({ key: 'k' }, '', '/#/devices')
     await expect(oidcCompleteFromUrl()).resolves.toBeUndefined()
     await expect(oidcCompleteFromUrl('?code=c2&state=already-used')).rejects.toMatchObject({ code: 'expired' })
+    expect(window.history.state).toEqual({ key: 'k' })
   })
 })
 
