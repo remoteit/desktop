@@ -8,7 +8,8 @@ import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import EventBus from './EventBus'
 import electronInterface from './electronInterface'
-import server from './server'
+import server, { isAppOrigin } from './server'
+import { WEB_PORT, SSL_PORT } from './constants'
 import user, { User } from './User'
 import { parseAgentOwned } from '@common/agentOwner'
 
@@ -27,14 +28,16 @@ describe('backend/server broadcasts', () => {
   const sockets: Socket[] = []
   let io: SocketIO.Server
   let url: string
+  const nextFreePort = jest.fn(async () => 33001)
+  const appOrigin = `http://127.0.0.1:${WEB_PORT}`
 
   beforeAll(done => {
     Object.assign(user, credentials)
     const http = createServer()
-    io = new SocketIO.Server(http)
+    io = new SocketIO.Server(http, { allowRequest: server.allowRequest })
     socketioAuth(io, { authenticate: server.authenticate, postAuthenticate: server.postAuthenticate, timeout: 'none' })
     const pool = {
-      nextFreePort: async () => 33001,
+      nextFreePort,
       clear: jest.fn(),
       clearRecent: jest.fn(),
       clearErrors: jest.fn(),
@@ -56,9 +59,15 @@ describe('backend/server broadcasts', () => {
 
   const next = (socket: Socket, event: string) => new Promise(resolve => socket.once(event, resolve))
 
-  const open = async () => {
-    const socket = connect(url, { transports: ['websocket'], forceNew: true, reconnection: false })
+  const dial = (origin = appOrigin) => {
+    const extraHeaders = { origin }
+    const socket = connect(url, { transports: ['websocket'], forceNew: true, reconnection: false, extraHeaders })
     sockets.push(socket)
+    return socket
+  }
+
+  const open = async (origin?: string) => {
+    const socket = dial(origin)
     await next(socket, 'connect')
     return socket
   }
@@ -205,4 +214,34 @@ describe('backend/server broadcasts', () => {
     checkSignIn.mockRestore()
     Object.assign(cli.data, { admin: undefined })
   })
+
+  it('accepts sockets only from the app origin', async () => {
+    const checkSignIn = jest.spyOn(user, 'checkSignIn')
+    const before = io.sockets.sockets.size
+    for (const origin of ['https://evil.example', `http://attacker.example:${WEB_PORT}`, 'null']) {
+      const socket = dial(origin)
+      const answer = Promise.race(['connect', 'connect_error'].map(event => next(socket, event).then(() => event)))
+      socket.emit('authentication', { username: 'b@test', authHash: 'hash-b', guid: 'guid-b' })
+      expect(await answer).toBe('connect_error')
+    }
+    expect(io.sockets.sockets.size).toBe(before)
+    expect(checkSignIn).not.toHaveBeenCalled()
+    checkSignIn.mockRestore()
+
+    Object.assign(user, credentials)
+    expect(await authenticate(await open(`https://localhost:${SSL_PORT}`), credentials)).toBe('authenticated')
+  })
+
+  it('allowlists the origin by hostname and port', () => {
+    expect(isAppOrigin(appOrigin)).toBe(true)
+    expect(isAppOrigin(`http://localhost:${WEB_PORT}`)).toBe(true)
+    expect(isAppOrigin(`http://[::1]:${WEB_PORT}`)).toBe(true)
+    expect(isAppOrigin(`https://127.0.0.1:${SSL_PORT}`)).toBe(true)
+    expect(isAppOrigin(`https://127.0.0.1:${WEB_PORT}`)).toBe(false)
+    expect(isAppOrigin('http://127.0.0.1:8080')).toBe(false)
+    expect(isAppOrigin(`http://127.0.0.1.attacker.example:${WEB_PORT}`)).toBe(false)
+    expect(isAppOrigin(undefined)).toBe(false)
+    expect(isAppOrigin('null')).toBe(false)
+  })
+
 })

@@ -1,5 +1,6 @@
 import os from 'os'
 import path from 'path'
+import { IP_PRIVATE } from '@common/constants'
 const env = process.env
 
 //General
@@ -52,6 +53,8 @@ const PROD_BIN_DIR = path.resolve(process.resourcesPath || APP_ROOT)
 // Port for the Socket.io websocket server
 export const WEB_PORT = Number(process.env.PORT || 29999)
 export const SSL_PORT = WEB_PORT - 1
+
+export const START_URL = `http://${IP_PRIVATE}:${ENVIRONMENT === 'development' ? 3003 : WEB_PORT}`
 
 // Install paths
 export const PATHS = {

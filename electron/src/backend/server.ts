@@ -4,6 +4,7 @@ import debug from 'debug'
 import EventBus from './EventBus'
 import express, { Express } from 'express'
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import https from 'https'
 import user from './User'
@@ -15,7 +16,7 @@ import socketioAuth from 'socketio-auth'
 import Preferences from './preferences'
 import environment from './environment'
 import { createServer } from 'http'
-import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
+import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR, START_URL } from './constants'
 import { IP_PRIVATE, IP_OPEN } from '@common/constants'
 import { agentOwnedMessage } from '@common/agentOwner'
 
@@ -24,6 +25,29 @@ const d = debug('Server')
 // socketio-auth 0.1.1 hides unauthenticated sockets from broadcasts through socket.io 2 internals that
 // socket.io 4 removed, so broadcasts go to this room, which a socket joins only once it authenticates.
 export const AUTHENTICATED = 'authenticated'
+
+// Allowlisted by hostname, not matched to the Host header: a DNS-rebound name that resolves here still sends its own name
+// as the Origin. This machine's own names resolve through the LAN (mDNS or local DNS), which a remote site can't point at.
+const ownHostnames = () => {
+  const name = os.hostname().toLowerCase()
+  const addresses = Object.values(os.networkInterfaces())
+    .flatMap(list => list ?? [])
+    .map(({ address }) => (address.includes(':') ? `[${address}]` : address))
+  return ['localhost', '127.0.0.1', '[::1]', ...addresses, name, `${name.split('.')[0]}.local`]
+}
+
+export const isAppOrigin = (origin?: string) => {
+  let url: URL
+  try {
+    url = new URL(origin ?? '')
+  } catch {
+    return false
+  }
+  if (url.origin === new URL(START_URL).origin) return true
+  const port = Number(url.port) || (url.protocol === 'https:' ? 443 : 80)
+  const appPort = url.protocol === 'http:' ? WEB_PORT : url.protocol === 'https:' ? SSL_PORT : undefined
+  return port === appPort && ownHostnames().includes(url.hostname)
+}
 
 class Server {
   public io?: SocketIO.Server
@@ -83,7 +107,7 @@ class Server {
         Logger.info('HTTPS SERVER STARTED', { port: SSL_PORT, directory: WEB_DIR })
       })
 
-    this.io = new SocketIO.Server()
+    this.io = new SocketIO.Server({ allowRequest: this.allowRequest })
     this.io.attach(server)
     this.io.attach(secureServer)
 
@@ -95,6 +119,13 @@ class Server {
     }
 
     socketioAuth(this.io, authOptions)
+  }
+
+  allowRequest: SocketIO.ServerOptions['allowRequest'] = (request, callback) => {
+    const { origin } = request.headers
+    if (isAppOrigin(origin)) return callback(null, true)
+    Logger.warn('SOCKET ORIGIN REFUSED', { origin })
+    callback('Origin not allowed', false)
   }
 
   authenticate = async (
