@@ -841,6 +841,16 @@
   "deviceDescriptionSetting": {
     "label": "Device Description"
   },
+  "deviceExit": {
+    "none": "None — its usual way out",
+    "offers": "Offers itself as an exit node",
+    "offersHint": "People you allow (its share or role says exit) can send their traffic out through it",
+    "offersNot": "Not an exit node",
+    "offersNotHint": "On the device: sudo remoteit-device exit-node on",
+    "title": "Exit node",
+    "via": "Send its traffic out through",
+    "viaHint": "All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached."
+  },
   "deviceGraphColumn": {
     "title": "Device Graph"
   },

@@ -5,6 +5,7 @@ import { DeviceContext } from '../services/Context'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { Proxy, graphQLProxies, graphQLRemoveProxy, graphQLSetProxy } from '../services/graphQLProxy'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
+import { DeviceExitSection } from '../components/DeviceExitSection'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -157,7 +158,10 @@ export const DeviceProxyPage: React.FC = () => {
 
   return (
     <DeviceHeaderMenu>
-      <Gutters size={null}>{body()}</Gutters>
+      <Gutters size={null}>
+        {body()}
+        <DeviceExitSection device={device} />
+      </Gutters>
     </DeviceHeaderMenu>
   )
 }

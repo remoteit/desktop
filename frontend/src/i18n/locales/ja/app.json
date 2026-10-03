@@ -833,6 +833,16 @@
   "deviceDescriptionSetting": {
     "label": "デバイスの説明"
   },
+  "deviceExit": {
+    "none": "",
+    "offers": "",
+    "offersHint": "",
+    "offersNot": "",
+    "offersNotHint": "",
+    "title": "",
+    "via": "",
+    "viaHint": ""
+  },
   "deviceGraphColumn": {
     "title": "デバイスグラフ"
   },

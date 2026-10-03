@@ -128,3 +128,24 @@ export const graphQLSetShareExit = (deviceId: string, email: string, exit: boole
       }`,
     { deviceId, email, exit }
   )
+
+// A device's exit (proxy-plan.md §8, phase 3): the exit nodes a person may use, the one a device goes through, and
+// whether it offers itself as one.
+export type ExitInfo = { offersExit: boolean; exit: { id: string; name: string } | null }
+
+export const graphQLDeviceExit = (deviceId: string) =>
+  read<ExitInfo | null>(
+    `query DeviceExit($id: [String!]!) { login { device(id: $id) { id offersExit exit { id name } } } }`,
+    { id: [deviceId] },
+    'offersExit',
+    data => data?.login?.device?.[0] ?? null
+  )
+
+export const graphQLExits = () =>
+  read<{ id: string; name: string }[]>(`query Exits { exits { id name } }`, {}, 'exits', data => data?.exits ?? [])
+
+export const graphQLSetDeviceExit = (deviceId: string, via: string | null) =>
+  graphQLBasicRequest(
+    ` mutation SetDeviceExit($deviceId: String!, $via: String) { setDeviceExit(deviceId: $deviceId, via: $via) }`,
+    { deviceId, via }
+  )

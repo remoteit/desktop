@@ -841,6 +841,16 @@
   "deviceDescriptionSetting": {
     "label": "Gerätebeschreibung"
   },
+  "deviceExit": {
+    "none": "",
+    "offers": "",
+    "offersHint": "",
+    "offersNot": "",
+    "offersNotHint": "",
+    "title": "",
+    "via": "",
+    "viaHint": ""
+  },
   "deviceGraphColumn": {
     "title": "Gerätediagramm"
   },

@@ -74,7 +74,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
             )}
             {deviceSessions && (
               <ListItemLocation
-                title={t('deviceHeaderMenu.proxy', 'Proxy')}
+                title={t('deviceHeaderMenu.proxy', 'Proxy & exit')}
                 icon="server"
                 iconColor="grayDarker"
                 to={`/devices/${device.id}/proxy`}
