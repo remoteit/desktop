@@ -1,5 +1,5 @@
 import { AddressInfo } from 'net'
-import { createServer } from 'http'
+import { createServer, get, IncomingHttpHeaders } from 'http'
 import SocketIO from 'socket.io'
 import socketioAuth from 'socketio-auth'
 import { io as connect, Socket } from 'socket.io-client'
@@ -8,7 +8,7 @@ import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import EventBus from './EventBus'
 import electronInterface from './electronInterface'
-import server, { isSocketOrigin } from './server'
+import server, { isOwnOrigin } from './server'
 import { WEB_PORT, SSL_PORT, START_ORIGIN } from './constants'
 import preferences from './preferences'
 import user, { User } from './User'
@@ -23,6 +23,7 @@ jest.mock('./cliInterface', () => ({
 jest.mock('./LAN', () => ({ __esModule: true, default: { EVENTS: {} } }))
 // user.signOut deletes the real user.json under environment.userPath
 jest.mock('rimraf')
+jest.mock('./systemInfo', () => ({ __esModule: true, default: async () => ({ id: 'device-1' }) }))
 
 describe('backend/server broadcasts', () => {
   const credentials = { username: 'a@test', authHash: 'hash-a' }
@@ -241,23 +242,23 @@ describe('backend/server broadcasts', () => {
   })
 
   it('allowlists the origin by hostname and port', () => {
-    expect(isSocketOrigin(appOrigin)).toBe(true)
-    expect(isSocketOrigin(`http://localhost:${WEB_PORT}`)).toBe(true)
-    expect(isSocketOrigin(`http://[::1]:${WEB_PORT}`)).toBe(true)
-    expect(isSocketOrigin(`https://127.0.0.1:${SSL_PORT}`)).toBe(true)
-    expect(isSocketOrigin(`https://127.0.0.1:${WEB_PORT}`)).toBe(false)
+    expect(isOwnOrigin(appOrigin)).toBe(true)
+    expect(isOwnOrigin(`http://localhost:${WEB_PORT}`)).toBe(true)
+    expect(isOwnOrigin(`http://[::1]:${WEB_PORT}`)).toBe(true)
+    expect(isOwnOrigin(`https://127.0.0.1:${SSL_PORT}`)).toBe(true)
+    expect(isOwnOrigin(`https://127.0.0.1:${WEB_PORT}`)).toBe(false)
     // Derived from WEB_PORT so a PORT in the environment can't make it the app's own port.
-    expect(isSocketOrigin(`http://127.0.0.1:${WEB_PORT + 1}`)).toBe(false)
-    expect(isSocketOrigin(`http://127.0.0.1.attacker.example:${WEB_PORT}`)).toBe(false)
-    expect(isSocketOrigin(undefined)).toBe(false)
-    expect(isSocketOrigin('null')).toBe(false)
+    expect(isOwnOrigin(`http://127.0.0.1:${WEB_PORT + 1}`)).toBe(false)
+    expect(isOwnOrigin(`http://127.0.0.1.attacker.example:${WEB_PORT}`)).toBe(false)
+    expect(isOwnOrigin(undefined)).toBe(false)
+    expect(isOwnOrigin('null')).toBe(false)
   })
 
   it('accepts a loopback origin forwarded from another port only when the request came in on that port', async () => {
-    expect(isSocketOrigin('http://127.0.0.1:33001', '127.0.0.1:33001')).toBe(true)
-    expect(isSocketOrigin('http://localhost:33001', 'localhost:33001')).toBe(true)
-    expect(isSocketOrigin('http://127.0.0.1:33001', `127.0.0.1:${WEB_PORT}`)).toBe(false)
-    expect(isSocketOrigin('http://attacker.example:33001', 'attacker.example:33001')).toBe(false)
+    expect(isOwnOrigin('http://127.0.0.1:33001', '127.0.0.1:33001')).toBe(true)
+    expect(isOwnOrigin('http://localhost:33001', 'localhost:33001')).toBe(true)
+    expect(isOwnOrigin('http://127.0.0.1:33001', `127.0.0.1:${WEB_PORT}`)).toBe(false)
+    expect(isOwnOrigin('http://attacker.example:33001', 'attacker.example:33001')).toBe(false)
 
     Object.assign(user, credentials)
     expect(await authenticate(await open(new URL(url).origin), credentials)).toBe('authenticated')
@@ -296,5 +297,38 @@ describe('backend/server broadcasts', () => {
     } finally {
       set.mockRestore()
     }
+  })
+})
+
+describe('backend/server /system', () => {
+  let port: number
+  const http = createServer(server['app'])
+
+  beforeAll(done => {
+    http.listen(0, '127.0.0.1', () => {
+      port = (http.address() as AddressInfo).port
+      done()
+    })
+  })
+  afterAll(done => {
+    http.close(() => done())
+  })
+
+  const system = (headers: Record<string, string>) =>
+    new Promise<{ status?: number; headers: IncomingHttpHeaders }>((resolve, reject) =>
+      get({ host: '127.0.0.1', port, path: '/system', headers }, response => {
+        response.resume()
+        resolve({ status: response.statusCode, headers: response.headers })
+      }).on('error', reject)
+    )
+
+  it('answers this machine but gives another site no CORS grant to read it', async () => {
+    const answer = await system({ host: `127.0.0.1:${port}`, origin: 'https://evil.example' })
+    expect(answer.status).toBe(200)
+    expect(answer.headers['access-control-allow-origin']).toBeUndefined()
+  })
+
+  it('refuses a DNS-rebound name that resolves to this machine', async () => {
+    expect((await system({ host: `attacker.example:${port}` })).status).toBe(403)
   })
 })
