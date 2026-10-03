@@ -5,10 +5,9 @@ import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import { t, setLanguage } from './i18n'
-import { EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from './backend'
+import { EVENTS, PROTOCOL, START_URL, START_ORIGIN, brand, environment, preferences, EventBus, Logger } from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
-const IP_PRIVATE = '127.0.0.1'
 
 export default class ElectronApp {
   public app: electron.App
@@ -303,9 +302,7 @@ export default class ElectronApp {
       autoHideMenuBar: true,
     })
 
-    const startUrl = this.getStartUrl()
-
-    this.window.loadURL(startUrl)
+    this.window.loadURL(START_URL)
 
     this.window.on('close', event => {
       this.saveWindowState()
@@ -448,14 +445,10 @@ export default class ElectronApp {
 
   private isAppOrigin(url: string): boolean {
     try {
-      return new URL(url).origin === new URL(this.getStartUrl()).origin
+      return new URL(url).origin === START_ORIGIN
     } catch {
       return false
     }
-  }
-
-  private getStartUrl(): string {
-    return process.env.NODE_ENV === 'development' ? `http://${IP_PRIVATE}:3003` : `http://${IP_PRIVATE}:29999`
   }
 
   private createSystemTray() {
@@ -529,7 +522,7 @@ export default class ElectronApp {
         .executeJavaScript(`window.authCallback?.(${JSON.stringify(parameters)}) === true`)
         .catch(() => false))
     if (handled) return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
-    const fullUrl = this.getStartUrl() + parameters
+    const fullUrl = START_URL + parameters
     Logger.info('OPENING AUTH URL', { url: fullUrl })
     this.window?.loadURL(fullUrl)
   }

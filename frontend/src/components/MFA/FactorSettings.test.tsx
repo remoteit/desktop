@@ -24,10 +24,7 @@ const api = vi.hoisted(() => ({
   preferFactor: vi.fn(),
   replaceRecoveryCodes: vi.fn(),
 }))
-vi.mock('../../services/accountSecurity', () => ({
-  ...api,
-  KIND_LABEL: { totp: 'Authenticator app', sms: 'Text message', passkey: 'Passkey' },
-}))
+vi.mock('../../services/accountSecurity', () => api)
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_: string, fallback: string, values?: Record<string, unknown>) =>
