@@ -5,6 +5,7 @@
   },
   "auth": {
     "agentReleaseFailed": "Couldn't sign out of this computer, so the account wasn't switched.",
+    "callbackFailed": "Sign-in didn't complete, so nothing changed.",
     "emailModified": "Email modified successfully.",
     "invalidFormat": "Invalid format.",
     "loginFailed": "Login failed.",

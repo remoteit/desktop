@@ -24,7 +24,15 @@ const {
   reconnectNow,
   oidcClaims,
   oidcActivateAccount,
+  oidcIsSavedAccount,
+  oidcSelectKnownAccount,
+  oidcCompleteFromUrl,
+  completeCallback,
 } = vi.hoisted(() => ({
+  oidcIsSavedAccount: vi.fn(),
+  oidcSelectKnownAccount: vi.fn(),
+  oidcCompleteFromUrl: vi.fn(),
+  completeCallback: vi.fn(),
   emitWithAck: vi.fn(),
   reconnectNow: vi.fn(),
   oidcClaims: vi.fn(),
@@ -56,7 +64,9 @@ vi.mock('../services/oidc', () => ({
   oidcReconcileIssuer,
   oidcClaims,
   oidcActivateAccount,
-  oidcSelectKnownAccount: vi.fn(),
+  oidcIsSavedAccount,
+  oidcSelectKnownAccount,
+  oidcCompleteFromUrl,
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
@@ -75,7 +85,10 @@ vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
-vi.mock('../store', () => ({ persistor: { purge: vi.fn() }, store: { getState: () => storeState } }))
+vi.mock('../store', () => ({
+  persistor: { purge: vi.fn() },
+  store: { getState: () => storeState, dispatch: { auth: { completeCallback } } },
+}))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 vi.mock('../constants', () => ({
   API_URL: '',
@@ -102,7 +115,7 @@ function makeDispatch() {
 const aFailureShowing = (signInError: string) => expect.objectContaining({ signInFailed: true, signInError })
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-import authModel from './auth'
+import authModel, { liveAuthCallback } from './auth'
 import { agentOwnedMessage } from '@common/agentOwner'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
@@ -422,9 +435,12 @@ describe('auth model — switching accounts releases the agent first', () => {
     oidcStart.mockReset()
     oidcClaims.mockReset()
     oidcActivateAccount.mockReset()
+    oidcIsSavedAccount.mockReset()
+    oidcSelectKnownAccount.mockReset()
   })
   afterEach(() => {
     browser.hasBackend = false
+    browser.isElectron = false
   })
 
   it('signing back in to the backend makes this window the owner again', async () => {
@@ -471,7 +487,15 @@ describe('auth model — switching accounts releases the agent first', () => {
     expect(emitWithAck).not.toHaveBeenCalled()
   })
 
-  it('the chooser opens only once the agent is released', async () => {
+  it('the chooser opens without releasing the agent: a cancel must leave this computer signed in', async () => {
+    browser.isElectron = true
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).switchAccount()
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+  })
+
+  it('a browser on the local backend releases before the chooser: its return is a page load that cannot', async () => {
     const dispatch = makeDispatch()
     dispatch.auth.releaseAgent.mockResolvedValue(false)
     await effectsFor(dispatch).switchAccount()
@@ -479,10 +503,11 @@ describe('auth model — switching accounts releases the agent first', () => {
 
     dispatch.auth.releaseAgent.mockResolvedValue(true)
     await effectsFor(dispatch).switchAccount()
-    expect(oidcStart).toHaveBeenCalledTimes(1)
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
   })
 
   it('a saved account activates only once the agent is released', async () => {
+    oidcIsSavedAccount.mockReturnValue(true)
     oidcActivateAccount.mockReturnValue(false)
     const dispatch = makeDispatch()
     dispatch.auth.releaseAgent.mockResolvedValue(false)
@@ -492,5 +517,115 @@ describe('auth model — switching accounts releases the agent first', () => {
     dispatch.auth.releaseAgent.mockResolvedValue(true)
     await effectsFor(dispatch).activateAccount('sub-b')
     expect(oidcActivateAccount).toHaveBeenCalledWith('sub-b')
+  })
+
+  it('a known account goes to the browser without releasing the agent', async () => {
+    browser.isElectron = true
+    oidcIsSavedAccount.mockReturnValue(false)
+    oidcSelectKnownAccount.mockResolvedValue(true)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(oidcSelectKnownAccount).toHaveBeenCalledWith('sub-b')
+  })
+})
+
+describe('auth model — the chooser callback releases the agent only for a different account', () => {
+  const assign = vi.fn()
+  beforeEach(() => {
+    assign.mockReset()
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, assign })
+    oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a' })
+    oidcCompleteFromUrl.mockReset()
+    oidcActivateAccount.mockReset()
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  // The admit gate oidcCompleteFromUrl runs between the code exchange and storing the account.
+  const admitting = (returned: { sub: string } | undefined) =>
+    oidcCompleteFromUrl.mockImplementation(async (_search, admit) => ((await admit(returned)) ? returned : undefined))
+
+  it('a different account is stored only once the agent is released, then boots as that account', async () => {
+    admitting({ sub: 'sub-b' })
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).completeCallback('?code=c&state=s')
+    expect(oidcCompleteFromUrl).toHaveBeenCalledWith('?code=c&state=s', expect.any(Function))
+    expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
+    expect(assign).toHaveBeenCalledWith('/')
+  })
+
+  it('the same account keeps the agent', async () => {
+    admitting({ sub: 'sub-a' })
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?code=c&state=s')
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(assign).toHaveBeenCalledWith('/')
+  })
+
+  it('a refused release refuses the new account and stays as the owner', async () => {
+    admitting({ sub: 'sub-b' })
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(false)
+    await effectsFor(dispatch).completeCallback('?code=c&state=s')
+    expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('a cancelled or failed chooser keeps the agent and this session', async () => {
+    oidcCompleteFromUrl.mockRejectedValue(new Error('access_denied'))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?error=access_denied&state=s')
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.callbackFailed' })
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('a refused silent selection says that account is no longer signed in', async () => {
+    oidcCompleteFromUrl.mockRejectedValue(Object.assign(new Error('login_required'), { oauthError: 'login_required' }))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?error=login_required&state=s')
+    expect(dispatch.ui.set).toHaveBeenCalledWith({
+      errorMessage: 'That account is no longer signed in on this browser.',
+    })
+  })
+
+  it('a stale callback changes nothing', async () => {
+    oidcCompleteFromUrl.mockResolvedValue(undefined)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?code=c&state=old')
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(assign).not.toHaveBeenCalled()
+  })
+})
+
+describe('auth model — the desktop hands the chooser callback to a signed-in window', () => {
+  beforeEach(() => {
+    completeCallback.mockReset()
+  })
+  afterEach(() => {
+    storeState.auth = {}
+  })
+
+  it('declines without a signed-in account, so the main process reloads with it', () => {
+    storeState.auth = {}
+    expect(liveAuthCallback('?code=c&state=s')).toBe(false)
+    expect(completeCallback).not.toHaveBeenCalled()
+  })
+
+  it('takes it while signed in, and one at a time', async () => {
+    let finish = () => {}
+    completeCallback.mockReturnValue(new Promise<void>(resolve => (finish = resolve)))
+    storeState.auth = { user: { id: 'guid-a' } }
+    expect(liveAuthCallback('?code=c&state=s')).toBe(true)
+    expect(liveAuthCallback('?code=c&state=s')).toBe(true)
+    expect(completeCallback).toHaveBeenCalledTimes(1)
+    finish()
+    await new Promise(resolve => setTimeout(resolve))
+    completeCallback.mockResolvedValue(undefined)
+    liveAuthCallback('?code=d&state=t')
+    expect(completeCallback).toHaveBeenCalledTimes(2)
   })
 })

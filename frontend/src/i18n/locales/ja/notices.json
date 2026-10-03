@@ -5,6 +5,7 @@
   },
   "auth": {
     "agentReleaseFailed": "このコンピューターからサインアウトできなかったため、アカウントは切り替えられませんでした。",
+    "callbackFailed": "サインインが完了しなかったため、何も変更されていません。",
     "emailModified": "メールアドレスを変更しました。",
     "invalidFormat": "形式が正しくありません。",
     "loginFailed": "ログインに失敗しました。",

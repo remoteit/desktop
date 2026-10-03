@@ -502,19 +502,29 @@ export default class ElectronApp {
     if (location && this.authCallback) {
       this.authCallback = false
       const index = location.indexOf('?')
-      let fullUrl = START_URL
-      if (index != -1) {
-        const parameters = location.substring(index)
-        fullUrl = fullUrl + parameters
-      }
-      Logger.info('OPENING AUTH URL', { url: fullUrl })
-      this.window.loadURL(fullUrl)
+      void this.deliverAuthCallback(index != -1 ? location.substring(index) : '')
     } else if (location) {
       Logger.info('OPENING WINDOW LOCATION', { location })
       this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     }
 
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
+  }
+
+  /* A signed-in window completes the callback itself, so it can release the agent before the
+     new account signs in; reloading with it is only for a window that isn't signed in. */
+  private async deliverAuthCallback(parameters: string) {
+    const webContents = this.window?.webContents
+    const live = webContents && !webContents.isLoadingMainFrame() && this.isAppOrigin(webContents.getURL())
+    const handled =
+      live &&
+      (await webContents
+        .executeJavaScript(`window.authCallback?.(${JSON.stringify(parameters)}) === true`)
+        .catch(() => false))
+    if (handled) return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
+    const fullUrl = START_URL + parameters
+    Logger.info('OPENING AUTH URL', { url: fullUrl })
+    this.window?.loadURL(fullUrl)
   }
 
   private closeWindow() {

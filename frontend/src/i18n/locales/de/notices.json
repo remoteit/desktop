@@ -5,6 +5,7 @@
   },
   "auth": {
     "agentReleaseFailed": "Die Abmeldung von diesem Computer ist fehlgeschlagen, daher wurde das Konto nicht gewechselt.",
+    "callbackFailed": "Die Anmeldung wurde nicht abgeschlossen, daher wurde nichts geändert.",
     "emailModified": "E-Mail-Adresse erfolgreich geändert.",
     "invalidFormat": "Ungültiges Format.",
     "loginFailed": "Anmeldung fehlgeschlagen.",

@@ -22,8 +22,8 @@ import { httpsOnly } from '../helpers/utilHelper'
  * state-keyed localStorage record so another tab can finish it — see rememberFlow) → the app
  * (re)boots with ?code&state in its URL → exchange completes here. The only per-shell
  * difference is how the code returns: the page's own /authCallback URL on web; the
- * remoteit://authCallback deep link reloading the window with the same query on packaged
- * desktop (ElectronApp's long-standing lane). On desktop the AS journey still runs in
+ * remoteit://authCallback deep link on packaged desktop, which a signed-in window completes
+ * in place and any other window takes as a reload with the same query (ElectronApp). On desktop the AS journey still runs in
  * the SYSTEM browser — the main process bounces issuer-origin navigations out.
  *
  * Tokens live renderer-side: access tokens in memory, the ROTATING single-use refresh
@@ -600,17 +600,21 @@ export async function oidcReopen(): Promise<boolean> {
   return true
 }
 
-/** Boot-time completion: when the URL carries ?code&state (web return or the desktop
- * deep-link reload), finish the exchange and clean the URL. Returns claims, or
- * undefined when this boot isn't a callback or is a stale one over a stored session.
- * Throws on a failed/denied flow. */
-export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
-  const query = new URLSearchParams(window.location.search)
+/** Callback completion: when `search` (the boot URL's, or a desktop deep link handed to a live
+ * window) carries ?code&state, finish the exchange and clean the URL. Returns claims, or
+ * undefined when it isn't a callback, is a stale one over a stored session, or `admit` refused
+ * the account (its tokens are then revoked, never stored). Throws on a failed/denied flow. */
+export async function oidcCompleteFromUrl(
+  search?: string,
+  admit?: (claims: OidcClaims | undefined) => Promise<boolean>
+): Promise<OidcClaims | undefined> {
+  const query = new URLSearchParams(search ?? window.location.search)
   const state = query.get('state')
   if (!state || !(query.get('code') || query.get('error'))) return undefined
 
   const flow = findFlow(state)
-  cleanUrl()
+  // Only the boot URL carries the callback; a live window's own URL (and its router's history state) is not ours.
+  if (search === undefined) cleanUrl()
   if (!flow) {
     // A second browser tab finishing a flow the first already completed (Open browser again) lands
     // here; with that session stored the callback is stale, and failing it showed the sign-in screen.
@@ -620,16 +624,20 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     }
     throw new OidcError('expired', 'Sign-in state mismatch')
   }
-  // Dropped only once the exchange settles: a second tab's deep link reloads the window mid-request,
-  // and its callback needs the flow that the interrupted one never finished with.
+  // Dropped only once the exchange settles: a second tab's deep link can reload a window that is
+  // not signed in mid-request, and its callback needs the flow the interrupted one never finished with.
   try {
-    return await exchangeCallback(flow, query)
+    return await exchangeCallback(flow, query, admit)
   } finally {
     dropFlow(state)
   }
 }
 
-async function exchangeCallback(flow: Flow, query: URLSearchParams): Promise<OidcClaims | undefined> {
+async function exchangeCallback(
+  flow: Flow,
+  query: URLSearchParams,
+  admit?: (claims: OidcClaims | undefined) => Promise<boolean>
+): Promise<OidcClaims | undefined> {
   const error = query.get('error')
   if (error) {
     const refused = new OidcError('refused', query.get('error_description') || error)
@@ -646,6 +654,16 @@ async function exchangeCallback(flow: Flow, query: URLSearchParams): Promise<Oid
   })
   const claims = decodeJwt(body.id_token)
   if (claims?.nonce !== flow.nonce) throw new OidcError('expired', 'Sign-in nonce mismatch')
+  if (admit) {
+    let admitted = false
+    try {
+      admitted = await admit(claims)
+    } finally {
+      // Refused or thrown alike: tokens that will never be stored must not stay live.
+      if (!admitted && body.refresh_token) revoke(body.refresh_token)
+    }
+    if (!admitted) return undefined
+  }
   // Sub-aware handover: the SAME account signing in again replaces its family (revoke the
   // old refresh token — it is dead weight); a DIFFERENT account arriving is the
   // add-account path, and the previous account's set is a LIVING saved session — persist()
@@ -653,13 +671,7 @@ async function exchangeCallback(flow: Flow, query: URLSearchParams): Promise<Oid
   const previousSet = stored()
   const previousSub = decodeJwt(previousSet?.id_token)?.sub
   const previous = previousSet?.refresh_token
-  if (previous && previous !== body.refresh_token && (!claims?.sub || previousSub === claims.sub)) {
-    fetch(`${OAUTH_ISSUER}/revoke`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ token: previous, token_type_hint: 'refresh_token', client_id: OAUTH_CLIENT_ID }),
-    }).catch(() => {})
-  }
+  if (previous && previous !== body.refresh_token && (!claims?.sub || previousSub === claims.sub)) revoke(previous)
 
   if (claims?.act) {
     // A SUPPORT session (docs/desktop-support.md): the AS mints no refresh token, and the access
@@ -690,6 +702,14 @@ async function exchangeCallback(flow: Flow, query: URLSearchParams): Promise<Oid
   }
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
   return claims
+}
+
+function revoke(refreshToken: string) {
+  fetch(`${OAUTH_ISSUER}/revoke`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ token: refreshToken, token_type_hint: 'refresh_token', client_id: OAUTH_CLIENT_ID }),
+  }).catch(() => {})
 }
 
 /** Current access token for `resource` ('' when signed out). Mints are SERIALIZED, not
@@ -986,6 +1006,9 @@ const clearActivationHint = () => {
     /* nothing to clear */
   }
 }
+
+/** A SAVED account (tokens in the registry), as opposed to a known one or none at all. */
+export const oidcIsSavedAccount = (sub: string): boolean => !!readRegistry()[sub]?.refresh_token
 
 /** Make a saved account the ACTIVE one. Storage-only — the caller reloads the app so
  *  every model boots as the new identity (a soft swap would bleed one account's data

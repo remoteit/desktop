@@ -5,6 +5,7 @@
   },
   "auth": {
     "agentReleaseFailed": "No se pudo cerrar la sesión en esta computadora, así que no se cambió de cuenta.",
+    "callbackFailed": "El inicio de sesión no se completó, así que no se cambió nada.",
     "emailModified": "Correo electrónico modificado correctamente.",
     "invalidFormat": "Formato no válido.",
     "loginFailed": "Error al iniciar sesión.",

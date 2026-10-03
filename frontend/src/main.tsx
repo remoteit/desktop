@@ -12,10 +12,14 @@ import { HashRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { Layout } from './components/Layout'
 import heartbeat from './services/Heartbeat'
+import { liveAuthCallback } from './models/auth'
+import { isChatPopout } from './services/chatPopout'
 import analytics from './services/analytics'
 import './i18n'
 import './initializeCommon'
 import './services/Controller'
+
+declare const window: Window & { authCallback?: typeof liveAuthCallback }
 
 if (browser.environment() !== 'development') analytics.initialize()
 document.title = `${brand.appName} Application`
@@ -36,3 +40,5 @@ root.render(
 
 heartbeat.init()
 Controller.init()
+// Called by the desktop main process (ElectronApp) with an auth deep link's query
+if (browser.isElectron && !isChatPopout) window.authCallback = liveAuthCallback
