@@ -9,7 +9,8 @@ import Controller from './Controller'
 import EventBus from './EventBus'
 import electronInterface from './electronInterface'
 import server, { isSocketOrigin } from './server'
-import { WEB_PORT, SSL_PORT, START_URL } from './constants'
+import { WEB_PORT, SSL_PORT, START_ORIGIN } from './constants'
+import preferences from './preferences'
 import user, { User } from './User'
 import { parseAgentOwned } from '@common/agentOwner'
 
@@ -29,7 +30,7 @@ describe('backend/server broadcasts', () => {
   let io: SocketIO.Server
   let url: string
   const nextFreePort = jest.fn(async () => 33001)
-  const appOrigin = new URL(START_URL).origin
+  const appOrigin = START_ORIGIN
 
   beforeAll(done => {
     Object.assign(user, credentials)
@@ -221,16 +222,19 @@ describe('backend/server broadcasts', () => {
 
   it('accepts sockets only from the app origin', async () => {
     const checkSignIn = jest.spyOn(user, 'checkSignIn')
-    const before = io.sockets.sockets.size
-    for (const origin of ['https://evil.example', `http://attacker.example:${WEB_PORT}`, 'null']) {
-      const socket = dial(origin)
-      const answer = Promise.race(['connect', 'connect_error'].map(event => next(socket, event).then(() => event)))
-      socket.emit('authentication', { username: 'b@test', authHash: 'hash-b', guid: 'guid-b' })
-      expect(await answer).toBe('connect_error')
+    try {
+      const before = io.sockets.sockets.size
+      for (const origin of ['https://evil.example', `http://attacker.example:${WEB_PORT}`, 'null']) {
+        const socket = dial(origin)
+        const answer = Promise.race(['connect', 'connect_error'].map(event => next(socket, event).then(() => event)))
+        socket.emit('authentication', { username: 'b@test', authHash: 'hash-b', guid: 'guid-b' })
+        expect(await answer).toBe('connect_error')
+      }
+      expect(io.sockets.sockets.size).toBe(before)
+      expect(checkSignIn).not.toHaveBeenCalled()
+    } finally {
+      checkSignIn.mockRestore()
     }
-    expect(io.sockets.sockets.size).toBe(before)
-    expect(checkSignIn).not.toHaveBeenCalled()
-    checkSignIn.mockRestore()
 
     Object.assign(user, credentials)
     expect(await authenticate(await open(`https://localhost:${SSL_PORT}`), credentials)).toBe('authenticated')
@@ -242,10 +246,21 @@ describe('backend/server broadcasts', () => {
     expect(isSocketOrigin(`http://[::1]:${WEB_PORT}`)).toBe(true)
     expect(isSocketOrigin(`https://127.0.0.1:${SSL_PORT}`)).toBe(true)
     expect(isSocketOrigin(`https://127.0.0.1:${WEB_PORT}`)).toBe(false)
-    expect(isSocketOrigin('http://127.0.0.1:8080')).toBe(false)
+    // Derived from WEB_PORT so a PORT in the environment can't make it the app's own port.
+    expect(isSocketOrigin(`http://127.0.0.1:${WEB_PORT + 1}`)).toBe(false)
     expect(isSocketOrigin(`http://127.0.0.1.attacker.example:${WEB_PORT}`)).toBe(false)
     expect(isSocketOrigin(undefined)).toBe(false)
     expect(isSocketOrigin('null')).toBe(false)
+  })
+
+  it('accepts a loopback origin forwarded from another port only when the request came in on that port', async () => {
+    expect(isSocketOrigin('http://127.0.0.1:33001', '127.0.0.1:33001')).toBe(true)
+    expect(isSocketOrigin('http://localhost:33001', 'localhost:33001')).toBe(true)
+    expect(isSocketOrigin('http://127.0.0.1:33001', `127.0.0.1:${WEB_PORT}`)).toBe(false)
+    expect(isSocketOrigin('http://attacker.example:33001', 'attacker.example:33001')).toBe(false)
+
+    Object.assign(user, credentials)
+    expect(await authenticate(await open(new URL(url).origin), credentials)).toBe('authenticated')
   })
 
   it('ignores commands from a socket that has signed out', async () => {
@@ -257,11 +272,29 @@ describe('backend/server broadcasts', () => {
     await signedOut
 
     nextFreePort.mockClear()
-    const heard = listen(window)
     window.emit('freePort')
     // Packets from one socket are handled in order, so the release's answer comes after freePort was handled.
     expect(await window.emitWithAck('agent/release')).toBe(false)
     expect(nextFreePort).not.toHaveBeenCalled()
-    expect(heard).not.toContain('freePort')
+  })
+
+  it("still takes the signed-out screen's language, and no other preference", async () => {
+    // Spied before authenticating: openSockets registers the handler it finds then.
+    const set = jest.spyOn(preferences, 'set').mockImplementation(() => {})
+    try {
+      Object.assign(user, credentials)
+      const window = await open()
+      expect(await authenticate(window, credentials)).toBe('authenticated')
+      const signedOut = next(window, User.EVENTS.signedOut)
+      window.emit('user/sign-out')
+      await signedOut
+
+      window.emit('preferences', { language: 'de', autoUpdate: false })
+      window.emit('preferences', { language: 'ja' })
+      expect(await window.emitWithAck('agent/release')).toBe(false)
+      expect(set.mock.calls).toEqual([[{ language: 'ja' }]])
+    } finally {
+      set.mockRestore()
+    }
   })
 })

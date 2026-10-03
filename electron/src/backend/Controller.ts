@@ -22,6 +22,14 @@ import launch from './launch'
 const DEFAULT_SOCKETS_LENGTH = 3
 // sign-out-complete arrives after signed-out has taken the socket out of the room; agent/release answers false itself.
 const UNFENCED_EVENTS = new Set(['authentication', 'user/sign-out-complete', 'agent/release'])
+// The signed-out screen resets the language to the OS after leaving the room, and syncs it to the tray as a preference.
+const isLanguageSync = ([event, data]: unknown[]) =>
+  event === 'preferences' &&
+  typeof data === 'object' &&
+  data !== null &&
+  Object.keys(data).length === 1 &&
+  typeof (data as IPreferences).language === 'string'
+const unfenced = (packet: unknown[]) => UNFENCED_EVENTS.has(packet[0] as string) || isLanguageSync(packet)
 
 class Controller {
   private clients: ReturnType<SocketIO.Server['to']>
@@ -31,7 +39,7 @@ class Controller {
     this.clients = io.to(AUTHENTICATED)
     this.pool = pool
     io.on('connection', socket =>
-      socket.use(([event], next) => (socket.rooms.has(AUTHENTICATED) || UNFENCED_EVENTS.has(event)) && next())
+      socket.use((packet, next) => (socket.rooms.has(AUTHENTICATED) || unfenced(packet)) && next())
     )
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)

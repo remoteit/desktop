@@ -18,7 +18,7 @@ import brand from '@common/brand/config'
 import { hostName } from '@common/nameHelper'
 import { IP_PRIVATE } from '@common/constants'
 import { getApplication } from '@common/applications'
-import { PROTOCOL, START_URL, WEB_DIR } from './constants'
+import { PROTOCOL, START_URL, START_ORIGIN, WEB_DIR } from './constants'
 
 const d = debug('r3:backend:backend')
 
@@ -74,4 +74,5 @@ export {
   WEB_DIR,
   PROTOCOL,
   START_URL,
+  START_ORIGIN,
 }

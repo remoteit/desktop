@@ -5,7 +5,7 @@ import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import { t, setLanguage } from './i18n'
-import { EVENTS, PROTOCOL, START_URL, brand, environment, preferences, EventBus, Logger } from './backend'
+import { EVENTS, PROTOCOL, START_URL, START_ORIGIN, brand, environment, preferences, EventBus, Logger } from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
 
@@ -445,7 +445,7 @@ export default class ElectronApp {
 
   private isAppOrigin(url: string): boolean {
     try {
-      return new URL(url).origin === new URL(START_URL).origin
+      return new URL(url).origin === START_ORIGIN
     } catch {
       return false
     }

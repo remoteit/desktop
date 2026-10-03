@@ -55,6 +55,7 @@ export const WEB_PORT = Number(process.env.PORT || 29999)
 export const SSL_PORT = WEB_PORT - 1
 
 export const START_URL = `http://${IP_PRIVATE}:${ENVIRONMENT === 'development' ? 3003 : WEB_PORT}`
+export const START_ORIGIN = new URL(START_URL).origin
 
 // Install paths
 export const PATHS = {
