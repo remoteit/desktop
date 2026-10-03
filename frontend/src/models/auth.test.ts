@@ -24,12 +24,12 @@ const {
   reconnectNow,
   oidcClaims,
   oidcActivateAccount,
-  oidcAccounts,
+  oidcIsSavedAccount,
   oidcSelectKnownAccount,
   oidcCompleteFromUrl,
   completeCallback,
 } = vi.hoisted(() => ({
-  oidcAccounts: vi.fn(),
+  oidcIsSavedAccount: vi.fn(),
   oidcSelectKnownAccount: vi.fn(),
   oidcCompleteFromUrl: vi.fn(),
   completeCallback: vi.fn(),
@@ -64,7 +64,7 @@ vi.mock('../services/oidc', () => ({
   oidcReconcileIssuer,
   oidcClaims,
   oidcActivateAccount,
-  oidcAccounts,
+  oidcIsSavedAccount,
   oidcSelectKnownAccount,
   oidcCompleteFromUrl,
   OidcError: class OidcError extends Error {},
@@ -492,7 +492,7 @@ describe('auth model — switching accounts releases the agent first', () => {
   })
 
   it('a saved account activates only once the agent is released', async () => {
-    oidcAccounts.mockReturnValue([{ sub: 'sub-b', known: false }])
+    oidcIsSavedAccount.mockReturnValue(true)
     oidcActivateAccount.mockReturnValue(false)
     const dispatch = makeDispatch()
     dispatch.auth.releaseAgent.mockResolvedValue(false)
@@ -505,7 +505,7 @@ describe('auth model — switching accounts releases the agent first', () => {
   })
 
   it('a known account goes to the browser without releasing the agent', async () => {
-    oidcAccounts.mockReturnValue([{ sub: 'sub-b', known: true }])
+    oidcIsSavedAccount.mockReturnValue(false)
     oidcSelectKnownAccount.mockResolvedValue(true)
     const dispatch = makeDispatch()
     await effectsFor(dispatch).activateAccount('sub-b')
@@ -527,31 +527,34 @@ describe('auth model — the chooser callback releases the agent only for a diff
     vi.restoreAllMocks()
   })
 
-  it('a different account releases the agent, then boots as that account', async () => {
-    oidcCompleteFromUrl.mockResolvedValue({ sub: 'sub-b' })
+  // The admit gate oidcCompleteFromUrl runs between the code exchange and storing the account.
+  const admitting = (returned: { sub: string } | undefined) =>
+    oidcCompleteFromUrl.mockImplementation(async (_search, admit) => ((await admit(returned)) ? returned : undefined))
+
+  it('a different account is stored only once the agent is released, then boots as that account', async () => {
+    admitting({ sub: 'sub-b' })
     const dispatch = makeDispatch()
     dispatch.auth.releaseAgent.mockResolvedValue(true)
     await effectsFor(dispatch).completeCallback('?code=c&state=s')
-    expect(oidcCompleteFromUrl).toHaveBeenCalledWith('?code=c&state=s')
+    expect(oidcCompleteFromUrl).toHaveBeenCalledWith('?code=c&state=s', expect.any(Function))
     expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
     expect(assign).toHaveBeenCalledWith('/')
-    expect(dispatch.auth.releaseAgent.mock.invocationCallOrder[0]).toBeLessThan(assign.mock.invocationCallOrder[0])
   })
 
   it('the same account keeps the agent', async () => {
-    oidcCompleteFromUrl.mockResolvedValue({ sub: 'sub-a' })
+    admitting({ sub: 'sub-a' })
     const dispatch = makeDispatch()
     await effectsFor(dispatch).completeCallback('?code=c&state=s')
     expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
     expect(assign).toHaveBeenCalledWith('/')
   })
 
-  it('a refused release puts the owner back as the active account and stays', async () => {
-    oidcCompleteFromUrl.mockResolvedValue({ sub: 'sub-b' })
+  it('a refused release refuses the new account and stays as the owner', async () => {
+    admitting({ sub: 'sub-b' })
     const dispatch = makeDispatch()
     dispatch.auth.releaseAgent.mockResolvedValue(false)
     await effectsFor(dispatch).completeCallback('?code=c&state=s')
-    expect(oidcActivateAccount).toHaveBeenCalledWith('sub-a')
+    expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
     expect(assign).not.toHaveBeenCalled()
   })
 

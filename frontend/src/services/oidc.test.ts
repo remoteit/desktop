@@ -13,10 +13,12 @@ import { leaveTo } from './browser'
 import { OAUTH_ISSUER } from '../constants'
 
 const OTHER = 'https://login.other.test'
-const idToken = (sub: string, iss: string | null) =>
-  ['e30', btoa(JSON.stringify({ sub, iss: iss ?? undefined, email: `${sub}@x.test` })).replace(/=+$/, ''), 'sig'].join(
-    '.'
-  )
+const idToken = (sub: string, iss: string | null, nonce?: string) =>
+  [
+    'e30',
+    btoa(JSON.stringify({ sub, iss: iss ?? undefined, email: `${sub}@x.test`, nonce })).replace(/=+$/, ''),
+    'sig',
+  ].join('.')
 const signIn = (active: string | null = OAUTH_ISSUER, saved: string | null = OAUTH_ISSUER) => {
   window.localStorage.setItem('oidc.tokens', JSON.stringify({ refresh_token: 'r1', id_token: idToken('a', active) }))
   window.localStorage.setItem(
@@ -172,6 +174,24 @@ describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => 
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(ownFlow()?.state).toBe(state)
     expect(window.localStorage.getItem(`oidc.flow:${state}`)).not.toBeNull()
+  })
+
+  it('stores nothing and revokes the new tokens when admit refuses the account', async () => {
+    const { nonce } = ownFlow()
+    exchange = () =>
+      Promise.resolve(
+        new Response(JSON.stringify({ refresh_token: 'r-new', id_token: idToken('b', null, nonce), access_token: 'a' }))
+      )
+    const admit = vi.fn(async () => false)
+    await expect(oidcCompleteFromUrl(undefined, admit)).resolves.toBeUndefined()
+    expect(admit).toHaveBeenCalledWith(expect.objectContaining({ sub: 'b' }))
+    expect(oidcSignedIn()).toBe(false)
+    expect(oidcAccounts()).toHaveLength(0)
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([url, init]) => String(url).endsWith('/revoke') && String(init?.body).includes('r-new'))
+    ).toBe(true)
   })
 
   it('drops the flow once the exchange fails', async () => {

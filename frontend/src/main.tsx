@@ -19,6 +19,8 @@ import './i18n'
 import './initializeCommon'
 import './services/Controller'
 
+declare const window: Window & { authCallback?: typeof liveAuthCallback }
+
 if (browser.environment() !== 'development') analytics.initialize()
 document.title = `${brand.appName} Application`
 
@@ -39,4 +41,4 @@ root.render(
 heartbeat.init()
 Controller.init()
 // Called by the desktop main process (ElectronApp) with an auth deep link's query
-if (browser.isElectron && !isChatPopout) (window as any).authCallback = liveAuthCallback
+if (browser.isElectron && !isChatPopout) window.authCallback = liveAuthCallback

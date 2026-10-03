@@ -28,7 +28,7 @@ import {
   oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
-  oidcAccounts,
+  oidcIsSavedAccount,
   oidcActivationHint,
   invalidateOidcToken,
   oidcGrantStale,
@@ -230,7 +230,7 @@ export default createModel<RootModel>()({
      * menu row that somehow outlived its registry entry still lands somewhere sensible. */
     async activateAccount(sub: string) {
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
-      if (oidcAccounts().some(a => a.sub === sub && !a.known)) {
+      if (oidcIsSavedAccount(sub)) {
         if (!(await dispatch.auth.releaseAgent())) return
         if (oidcActivateAccount(sub)) return window.location.assign('/')
       }
@@ -240,18 +240,15 @@ export default createModel<RootModel>()({
       await dispatch.auth.switchAccount()
     },
     /** Desktop: a chooser's deep link delivered to this still signed-in window (liveAuthCallback).
-     *  The agent moves only when a DIFFERENT account came back, and only on this window's own
-     *  release; a release that fails puts the account that owns it back as the active one. */
+     *  A DIFFERENT account is stored only once this window has released the agent. */
     async completeCallback(search: string) {
       const previous = oidcClaims()?.sub
       try {
-        const claims = await oidcCompleteFromUrl(search)
-        if (!claims) return
-        if (claims.sub !== previous && !(await dispatch.auth.releaseAgent())) {
-          if (previous) oidcActivateAccount(previous)
-          return
-        }
-        window.location.assign('/')
+        const claims = await oidcCompleteFromUrl(
+          search,
+          async returned => returned?.sub === previous || dispatch.auth.releaseAgent()
+        )
+        if (claims) window.location.assign('/')
       } catch (error) {
         console.error('AUTH: account switch did not complete', error)
         dispatch.ui.set({
@@ -603,16 +600,13 @@ export default createModel<RootModel>()({
   },
 })
 
-let completingCallback = false
+let completing: Promise<void> | undefined
 
 /** The desktop main process hands an auth deep link here before falling back to reloading the
  *  window with it. True means this signed-in window owns the callback; a reload instead would
  *  sign the new account in while this window still holds the agent. */
 export function liveAuthCallback(search: string): boolean {
   if (!store.getState().auth.user) return false
-  if (!completingCallback) {
-    completingCallback = true
-    store.dispatch.auth.completeCallback(search).finally(() => (completingCallback = false))
-  }
+  completing ??= store.dispatch.auth.completeCallback(search).finally(() => (completing = undefined))
   return true
 }
