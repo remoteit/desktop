@@ -57,7 +57,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
     '/admin/enterprise-licenses',
     '/admin/devices',
     '/admin/notices',
-    '/admin/exits',
+    '/admin/proxies',
     '/partner-stats',
   ]
   // The add-ons page keys its product into the URL (/admin/add-ons/:productId): that is its root

@@ -19,6 +19,7 @@ import {
   graphQLSetExitSuspended,
 } from '../services/graphQLExitPolicy'
 import { parsePorts } from '../helpers/portListHelper'
+import { AdminProxyLimits } from './AdminProxyLimits'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -28,11 +29,11 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 
-/* remote.it's exit nodes (presence-server docs/proxy-plan.md §8, phase 5): the policy every one of them keeps — what
-   they refuse beyond what every exit refuses, how fast one account may open flows, how long their flow log is kept —
-   and the accounts stopped from using them. A change reaches every exit at once. Admins only; English only, as the
-   rest of /admin. */
-export const AdminExitsPage: React.FC = () => {
+/* remote.it's proxies and exit nodes (presence-server docs/proxy-plan.md §5, §8): each plan's limits on them; the
+   policy every exit keeps — what it refuses beyond what every exit refuses, how fast one account may open flows, how
+   long its flow log is kept — and the accounts stopped from using exits. A change takes effect at once. Admins only;
+   English only, as the rest of /admin. */
+export const AdminProxiesPage: React.FC = () => {
   const [policy, setPolicy] = useState<ExitPolicy | null | 'ERROR' | typeof UNSUPPORTED>()
   const [saving, setSaving] = useState(false)
   const [problem, setProblem] = useState<string>()
@@ -88,7 +89,11 @@ export const AdminExitsPage: React.FC = () => {
           </Notice>
         )}
         <List>
-          <ListSubheader>Refused</ListSubheader>
+          <ListSubheader>Plan limits</ListSubheader>
+        </List>
+        <AdminProxyLimits />
+        <List>
+          <ListSubheader>Exit nodes: refused</ListSubheader>
           <InlineTextFieldSetting
             icon="ban"
             label="TCP ports"
@@ -115,7 +120,7 @@ export const AdminExitsPage: React.FC = () => {
           </Typography>
         </Gutters>
         <List>
-          <ListSubheader>Limits</ListSubheader>
+          <ListSubheader>Exit nodes: limits</ListSubheader>
           <InlineTextFieldSetting
             icon="gauge-high"
             label="New flows an account may open a second (0, no cap)"
@@ -153,7 +158,7 @@ export const AdminExitsPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Gutters>
-          <Typography variant="h1">Exit nodes</Typography>
+          <Typography variant="h1">Proxies &amp; exits</Typography>
         </Gutters>
       }
     >

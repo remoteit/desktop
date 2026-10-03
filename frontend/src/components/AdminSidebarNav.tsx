@@ -127,13 +127,13 @@ export const AdminSidebarNav: React.FC = () => {
       {deviceSessions && (
         <ListItemButton
           dense
-          selected={currentPath.includes('/admin/exits')}
-          onClick={() => handleNavClick('/admin/exits')}
+          selected={currentPath.includes('/admin/proxies')}
+          onClick={() => handleNavClick('/admin/proxies')}
         >
           <ListItemIcon>
             <Icon name="door-open" size="md" />
           </ListItemIcon>
-          <ListItemText primary="Exit nodes" />
+          <ListItemText primary="Proxies & exits" />
         </ListItemButton>
       )}
     </List>
