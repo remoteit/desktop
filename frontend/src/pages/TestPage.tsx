@@ -24,6 +24,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useChatEnabled } from '../hooks/useChatEnabled'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
+import { SelectSetting } from '../components/SelectSetting'
 import { ListItemRadio } from '../components/ListItemRadio'
 import { Container } from '../components/Container'
 import { PortalUI } from '../components/PortalUI'
@@ -68,6 +69,7 @@ export const TestPage: React.FC = () => {
   // or not this account still has Remote.It AI, and whether or not the agent service answers.
   const chatEnabled = useChatEnabled()
   const deviceSessions = useSelector((state: State) => !!state.ui.deviceSessions)
+  const proxyFleet = useSelector((state: State) => state.ui.proxyFleet)
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {
     if (chatEnabled) backgroundStatus().then(setBackgroundEnrolled)
@@ -361,6 +363,21 @@ export const TestPage: React.FC = () => {
           )}
           toggle={deviceSessions}
           onClick={() => dispatch.ui.setPersistent({ deviceSessions: !deviceSessions })}
+        />
+        <SelectSetting
+          hideIcon
+          label={t('testPage.proxyFleet', 'Proxy fleet')}
+          helpMessage={t(
+            'testPage.proxyFleetHint',
+            'Which proxies new connections and connect links ask for. A link keeps the fleet it was set on. Needs an API that takes it (local).'
+          )}
+          value={proxyFleet || ''}
+          values={[
+            { key: '', name: t('testPage.proxyFleetDefault', "The API stage's default") },
+            { key: 'LEGACY', name: t('testPage.proxyFleetLegacy', 'Legacy fleet') },
+            { key: 'CONNECTD', name: t('testPage.proxyFleetConnectd', 'connectd-go proxies') },
+          ]}
+          onChange={value => dispatch.ui.setPersistent({ proxyFleet: (value || undefined) as UIState['proxyFleet'] })}
         />
       </List>
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>

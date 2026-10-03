@@ -1,5 +1,6 @@
 import { addConnectionProps } from '../models/networks'
 import { graphQLBasicRequest } from './graphQL'
+import { store } from '../store'
 
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
   return await graphQLBasicRequest(
@@ -28,10 +29,15 @@ export async function graphQLSetDeviceNotification(
   )
 }
 
+// Which proxies to ask for (Test UI → Experimental): only sent when chosen, so an API without the argument is asked as
+// before; none leaves it to the API stage's default.
+const proxyFleet = () => store?.getState().ui.proxyFleet
+
 export async function graphQLConnect(serviceId: string, hostIP?: string) {
+  const fleet = proxyFleet()
   return await graphQLBasicRequest(
-    ` mutation Connect($serviceId: String!, $hostIP: String) {
-        connect(serviceId: $serviceId, hostIP: $hostIP) {
+    ` mutation Connect($serviceId: String!, $hostIP: String${fleet ? ', $proxyFleet: ProxyFleet' : ''}) {
+        connect(serviceId: $serviceId, hostIP: $hostIP${fleet ? ', proxyFleet: $proxyFleet' : ''}) {
           id
           created
           host
@@ -40,7 +46,7 @@ export async function graphQLConnect(serviceId: string, hostIP?: string) {
           timeout
         }
       }`,
-    { serviceId, hostIP }
+    { serviceId, hostIP, ...(fleet ? { proxyFleet: fleet } : {}) }
   )
 }
 
@@ -63,16 +69,21 @@ export async function graphQLSurvey(serviceId: string, sessionId: string, qualit
 }
 
 export async function graphQLSetLink(params: { serviceId: string; password?: string | null; enabled?: boolean }) {
+  const fleet = proxyFleet()
   return await graphQLBasicRequest(
-    ` mutation SetLink($serviceId: String!, $password: String, $enabled: Boolean) {
-        setConnectLink(serviceId: $serviceId, password: $password, enabled: $enabled) {
+    ` mutation SetLink($serviceId: String!, $password: String, $enabled: Boolean${
+      fleet ? ', $proxyFleet: ProxyFleet' : ''
+    }) {
+        setConnectLink(serviceId: $serviceId, password: $password, enabled: $enabled${
+          fleet ? ', proxyFleet: $proxyFleet' : ''
+        }) {
           url
           code
           enabled
           created
         }
       }`,
-    params
+    { ...params, ...(fleet ? { proxyFleet: fleet } : {}) }
   )
 }
 
@@ -595,7 +606,12 @@ export async function graphQLDeleteFile(fileId: string) {
   )
 }
 
-export async function graphQLModifyFile(params: { fileId: string; name?: string; shortDesc?: string; longDesc?: string }) {
+export async function graphQLModifyFile(params: {
+  fileId: string
+  name?: string
+  shortDesc?: string
+  longDesc?: string
+}) {
   return await graphQLBasicRequest(
     ` mutation ModifyFile($fileId: String!, $name: String, $shortDesc: String, $longDesc: String) {
         modifyFile(fileId: $fileId, name: $name, shortDesc: $shortDesc, longDesc: $longDesc)
