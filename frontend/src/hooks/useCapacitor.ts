@@ -52,7 +52,7 @@ function useCapacitor() {
     if (path.includes('authCallback')) {
       await windowClose()
       SplashScreen.show()
-      console.log('AUTH CALLBACK', window.origin + path.replace('authCallback', ''))
+      console.log('AUTH CALLBACK')
       location.href = window.origin + path.replace('authCallback', '')
       return
     }
