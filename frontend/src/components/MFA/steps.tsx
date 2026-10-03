@@ -1,13 +1,23 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Box, Button, Radio, RadioGroup, FormControlLabel, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
 import { CopyCodeBlock } from '../CopyCodeBlock'
-import { FactorKind, KIND_LABEL } from '../../services/accountSecurity'
+import { FactorKind } from '../../services/accountSecurity'
 
 /* The steps a sign-in factor change walks through — a password where the credential store asks for
    one, a code, a choice of factor, keeping the recovery codes — rendered the same way for every
    change. The surface keeps its own step machine and hands these the state. */
+
+/** A factor kind's name, wherever factors are listed. Each key is written out so the parser
+    extracts it; a kind this build doesn't know shows as itself. */
+export const kindLabel = (t: TFunction, kind: FactorKind): string =>
+  ({
+    totp: t('mfa.kind.totp', 'Authenticator app'),
+    sms: t('mfa.kind.sms', 'Text message'),
+    passkey: t('mfa.kind.passkey', 'Passkey'),
+  }[kind] ?? kind)
 
 const Buttons: React.FC<{ primary: string; disabled: boolean; onPrimary: () => void; onCancel: () => void }> = ({
   primary,
@@ -127,12 +137,7 @@ export const ChoiceStep: React.FC<{
       </Typography>
       <RadioGroup value={choice} onChange={e => onChoice(e.target.value as FactorKind)}>
         {options.map(o => (
-          <FormControlLabel
-            key={o}
-            value={o}
-            control={<Radio size="small" />}
-            label={t(`mfa.method.${o}`, KIND_LABEL[o] ?? o)}
-          />
+          <FormControlLabel key={o} value={o} control={<Radio size="small" />} label={kindLabel(t, o)} />
         ))}
       </RadioGroup>
       <ErrorLine error={error} />

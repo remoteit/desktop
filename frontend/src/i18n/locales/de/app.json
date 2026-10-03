@@ -1167,9 +1167,13 @@
     "emailSent": "",
     "failed": "",
     "federated": "",
+    "kind": {
+      "passkey": "Passkey",
+      "sms": "SMS",
+      "totp": "Authenticator-App"
+    },
     "locked": "",
     "lockedUntil": "",
-    "method": "",
     "newCodes": "",
     "phone": "",
     "prefer": "",

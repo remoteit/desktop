@@ -11,12 +11,6 @@ import { oidcResourceRequest } from './oidc'
 import { OAUTH_ACCOUNT_RESOURCE, OAUTH_ISSUER } from '../constants'
 
 export type FactorKind = 'passkey' | 'totp' | 'sms'
-// English fallbacks for the `mfa.method.<kind>` catalog keys, shared by every surface that lists factors.
-export const KIND_LABEL: Record<FactorKind, string> = {
-  totp: 'Authenticator app',
-  sms: 'Text message',
-  passkey: 'Passkey',
-}
 
 export type Factor = {
   id: string

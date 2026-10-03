@@ -1180,9 +1180,13 @@
     "emailSent": "",
     "failed": "",
     "federated": "",
+    "kind": {
+      "passkey": "Llave de acceso",
+      "sms": "Mensaje de texto",
+      "totp": "Aplicación de autenticación"
+    },
     "locked": "",
     "lockedUntil": "",
-    "method": "",
     "newCodes": "",
     "phone": "",
     "prefer": "",

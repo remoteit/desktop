@@ -5,7 +5,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { Dispatch } from '../../store'
 import { Box, Button, Chip, TextField, Typography } from '@mui/material'
 import { Gutters } from '../Gutters'
-import { PasswordStep, CodeStep, ChoiceStep, RecoveryCodes } from './steps'
+import { PasswordStep, CodeStep, ChoiceStep, RecoveryCodes, kindLabel } from './steps'
 import browser, { leaveTo } from '../../services/browser'
 import { PROTOCOL } from '../../constants'
 import {
@@ -13,7 +13,6 @@ import {
   ElevationStatus,
   Factor,
   FactorKind,
-  KIND_LABEL,
   StoreStep,
   addSms,
   addStoreFactor,
@@ -338,7 +337,6 @@ export const FactorSettings: React.FC<{ readOnly?: boolean }> = ({ readOnly }) =
 
   // --- rendering --------------------------------------------------------------------------
   const cancel = () => done()
-  const kindName = (kind: FactorKind) => t(`mfa.method.${kind}`, KIND_LABEL[kind])
 
   if (status === 'loading') return null
   if (status === 'unavailable')
@@ -371,7 +369,7 @@ export const FactorSettings: React.FC<{ readOnly?: boolean }> = ({ readOnly }) =
       <Box minWidth={180}>
         <Typography variant="body2">{factor.name}</Typography>
         <Typography variant="caption" color="textSecondary">
-          {kindName(factor.kind)}
+          {kindLabel(t, factor.kind)}
         </Typography>
       </Box>
       {factor.preferred && <Chip size="small" color="success" label={t('mfa.askedFirst', 'Asked for first')} />}
