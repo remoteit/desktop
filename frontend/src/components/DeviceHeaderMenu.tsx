@@ -72,6 +72,15 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
                 dense
               />
             )}
+            {deviceSessions && (
+              <ListItemLocation
+                title={t('deviceHeaderMenu.proxy', 'Proxy')}
+                icon="server"
+                iconColor="grayDarker"
+                to={`/devices/${device.id}/proxy`}
+                dense
+              />
+            )}
             <ListItemLocation
               title={t('deviceHeaderMenu.logs', 'Logs')}
               icon="file-alt"

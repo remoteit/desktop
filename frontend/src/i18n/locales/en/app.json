@@ -811,6 +811,18 @@
     "tcp": "Any port (TCP)",
     "udp": "Any port (UDP)"
   },
+  "deviceApps": {
+    "console": "Console",
+    "off": "Off — a terminal on this device, from this app, by certificate",
+    "openTerminal": "Open terminal",
+    "running": "Running — logins by certificate, nothing listening on the device",
+    "starting": "Starting — waiting for the device to say so",
+    "startingDetail": "Starting — {{detail}}",
+    "switch": "Console on",
+    "switching": "Waiting for the device…",
+    "title": "Apps",
+    "unavailable": "Not available here: {{detail}}"
+  },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} of the selected device cannot be transferred.",
     "blockedCount_other": "{{count}} of the selected devices cannot be transferred.",
@@ -837,6 +849,7 @@
     "configure": "Configure",
     "details": "Details",
     "logs": "Logs",
+    "proxy": "Proxy",
     "shareAccess": "Share access",
     "unknown": "Unknown"
   },
@@ -1069,6 +1082,29 @@
   "devicePresenceSetting": {
     "label": "Presence Address"
   },
+  "deviceProxy": {
+    "access": "Access",
+    "certificate": "Its https certificate",
+    "certificateOwn": "Your domain's, on the device (proxy_cert, proxy_key)",
+    "certificatePending": "remote.it's, issued within a day of its name: until then https names fail",
+    "certificateReady": "remote.it's, for its names",
+    "domain": "Your own domain for its https names",
+    "error": "Could not read the proxies.",
+    "host": "Where it is reached",
+    "name": "Name before your account slug",
+    "nameNone": "none: your slug alone",
+    "names": "Names",
+    "off": "Make endpoints into services through this device",
+    "onDevice": "The device listens only once told to, on the device itself: run \"sudo remoteit-device proxy on\" there (it listens on port 443), and \"remoteit-device proxy\" to see what it serves.",
+    "publicEndpoints": "Public endpoints",
+    "publicEndpointsHint": "Endpoints anyone with the address may use; off, only signed-in and address-locked ones",
+    "remoteit": "One of remote.it's proxies: {{host}}",
+    "removeConfirm": "Stop using it as a proxy?",
+    "removeConfirmBody": "Every endpoint on it is removed, for everyone using one.",
+    "unsupported": "This API does not serve device sessions. Point Test Settings → API Target at a stage that does (local or dev).",
+    "use": "Use as a proxy",
+    "usedBy": "For you and the people who may connect to it"
+  },
   "devicesActionMenu": {
     "confirmTitle": "Confirm Device Deletion",
     "delete": "Delete",
@@ -1095,6 +1131,21 @@
     "restoring": "Restoring device...",
     "thisSystem": "This system"
   },
+  "deviceSshAccess": {
+    "about": "Who may log in through the console, as whom — by certificate, signed for minutes when they connect.",
+    "add": "Add",
+    "admin": "Admin",
+    "anyUser": "as any user",
+    "asUser": "as {{login}}",
+    "email": "Email",
+    "fallback": "its owner, the starting point",
+    "login": "Local user",
+    "loginHelp": "Empty: their own. Or a user there, * for any",
+    "loginOwn": "their own account",
+    "ownAdmin": "as {{account}}, admin",
+    "revoke": "Remove",
+    "title": "SSH access"
+  },
   "deviceTransferPage": {
     "confirmTransferPrefix": "You are about to transfer ownership of",
     "confirmTransferSuffix": "and all of its services to",
@@ -1111,6 +1162,48 @@
   },
   "duration": {
     "ago": "{{duration}} ago"
+  },
+  "endpoints": {
+    "access": "Who may use it",
+    "add": "Add an endpoint",
+    "allow": "Addresses allowed, as 203.0.113.0/24, comma separated",
+    "cancel": "Cancel",
+    "cidr": "Only {{allow}}",
+    "cidrChoice": "Addresses I list",
+    "copy": "Copy the address",
+    "create": "Make the endpoint",
+    "error": "Could not read the endpoints.",
+    "https": "HTTPS — a name",
+    "idleUntil": "unless used, released",
+    "ipLocked": "Only {{ip}}",
+    "ipLockedChoice": "One address",
+    "kind": "Kind",
+    "latch": "Only its first user",
+    "latchChoice": "Its first user only",
+    "lifetime": "Lifetime",
+    "lifetimeHelp": "Chosen now: an endpoint is not made permanent later.",
+    "lockedIp": "The address allowed",
+    "nearest": "remote.it's, nearest the device",
+    "none": "None yet: an address for this service through a proxy, for anyone you choose.",
+    "permanent": "permanent",
+    "permanentChoice": "Permanent — kept until removed",
+    "proxy": "Proxy",
+    "public": "Anyone with the address",
+    "remove": "Remove",
+    "removeConfirm": "Remove this endpoint?",
+    "removeConfirmBody": "{{address}} stops working for everyone using it.",
+    "signedIn": "People who may connect, signed in",
+    "tcp": "TCP — a port",
+    "temporary": "temporary",
+    "temporaryChoice": "Temporary — released after 15 idle minutes",
+    "title": "Proxy endpoints",
+    "udp": "UDP — a port",
+    "via": "via {{host}}"
+  },
+  "endpointSignIn": {
+    "missing": "This sign-in link is incomplete.",
+    "refused": "You do not have access to this endpoint.",
+    "signingIn": "Signing you in…"
   },
   "eventMessage": {
     "allowed": "allowed",
@@ -2168,6 +2261,10 @@
     "devicesCount_other": "{{count}} devices",
     "networksCount_one": "{{count}} network",
     "networksCount_other": "{{count}} networks"
+  },
+  "roleSshAdmin": {
+    "description": "Admin (sudo) on their own SSH account on the devices this role reaches",
+    "title": "SSH admin"
   },
   "routeSetting": {
     "adaptiveDescription": "Will pick the best route available, prioritizing a direct connection to this service.",

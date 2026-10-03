@@ -806,6 +806,18 @@
     "tcp": "",
     "udp": ""
   },
+  "deviceApps": {
+    "console": "",
+    "off": "",
+    "openTerminal": "",
+    "running": "",
+    "starting": "",
+    "startingDetail": "",
+    "switch": "",
+    "switching": "",
+    "title": "",
+    "unavailable": ""
+  },
   "deviceBulkTransferPage": {
     "blockedCount_other": "選択したデバイスのうち{{count}}台は譲渡できません。",
     "blockedNames": "所有しているデバイスのみ譲渡できます: {{names}}。",
@@ -829,6 +841,7 @@
     "configure": "設定",
     "details": "詳細",
     "logs": "ログ",
+    "proxy": "",
     "shareAccess": "アクセスを共有",
     "unknown": "不明"
   },
@@ -1046,6 +1059,29 @@
   "devicePresenceSetting": {
     "label": "プレゼンスアドレス"
   },
+  "deviceProxy": {
+    "access": "",
+    "certificate": "",
+    "certificateOwn": "",
+    "certificatePending": "",
+    "certificateReady": "",
+    "domain": "",
+    "error": "",
+    "host": "",
+    "name": "",
+    "nameNone": "",
+    "names": "",
+    "off": "",
+    "onDevice": "",
+    "publicEndpoints": "",
+    "publicEndpointsHint": "",
+    "remoteit": "",
+    "removeConfirm": "",
+    "removeConfirmBody": "",
+    "unsupported": "",
+    "use": "",
+    "usedBy": ""
+  },
   "devicesActionMenu": {
     "confirmTitle": "デバイスの削除を確認",
     "delete": "削除",
@@ -1070,6 +1106,21 @@
     "restoring": "デバイスを復元中...",
     "thisSystem": "このシステム"
   },
+  "deviceSshAccess": {
+    "about": "",
+    "add": "",
+    "admin": "",
+    "anyUser": "",
+    "asUser": "",
+    "email": "",
+    "fallback": "",
+    "login": "",
+    "loginHelp": "",
+    "loginOwn": "",
+    "ownAdmin": "",
+    "revoke": "",
+    "title": ""
+  },
   "deviceTransferPage": {
     "confirmTransferPrefix": "次の所有権を譲渡しようとしています:",
     "confirmTransferSuffix": "とそのすべてのサービスを次の相手に:",
@@ -1086,6 +1137,48 @@
   },
   "duration": {
     "ago": "{{duration}}前"
+  },
+  "endpoints": {
+    "access": "",
+    "add": "",
+    "allow": "",
+    "cancel": "",
+    "cidr": "",
+    "cidrChoice": "",
+    "copy": "",
+    "create": "",
+    "error": "",
+    "https": "",
+    "idleUntil": "",
+    "ipLocked": "",
+    "ipLockedChoice": "",
+    "kind": "",
+    "latch": "",
+    "latchChoice": "",
+    "lifetime": "",
+    "lifetimeHelp": "",
+    "lockedIp": "",
+    "nearest": "",
+    "none": "",
+    "permanent": "",
+    "permanentChoice": "",
+    "proxy": "",
+    "public": "",
+    "remove": "",
+    "removeConfirm": "",
+    "removeConfirmBody": "",
+    "signedIn": "",
+    "tcp": "",
+    "temporary": "",
+    "temporaryChoice": "",
+    "title": "",
+    "udp": "",
+    "via": ""
+  },
+  "endpointSignIn": {
+    "missing": "",
+    "refused": "",
+    "signingIn": ""
   },
   "eventMessage": {
     "allowed": "許可されました",
@@ -2127,6 +2220,10 @@
     "counting": "カウント中...",
     "devicesCount_other": "{{count}}台のデバイス",
     "networksCount_other": "{{count}}件のネットワーク"
+  },
+  "roleSshAdmin": {
+    "description": "",
+    "title": ""
   },
   "routeSetting": {
     "adaptiveDescription": "利用可能な最適なルートを選択し、このサービスへの直接接続を優先します。",

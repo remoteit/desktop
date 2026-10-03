@@ -14,6 +14,8 @@ import { ConnectionDetails } from './ConnectionDetails'
 import { ConnectLinkSetting } from './ConnectLinkSetting'
 import { ServiceAttributes } from './ServiceAttributes'
 import { NetworksAccordion } from './NetworksAccordion'
+import { EndpointsAccordion } from './EndpointsAccordion'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { ServiceKeySetting } from './ServiceKeySetting'
 import { ListItemLocation } from './ListItemLocation'
@@ -45,6 +47,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
   const showDesktopNotice = useSelector((state: State) => state.ui.showDesktopNotice)
 
   const app = useApplication(service, connection)
+  const deviceSessions = useDeviceSessions()
 
   useEffect(() => {
     if (!location.state) return
@@ -162,6 +165,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
           expanded={accordion.networks}
           onClick={() => dispatch.ui.accordion({ networks: !accordion.networks })}
         />
+        {deviceSessions && device && service && <EndpointsAccordion device={device} service={service} />}
         <AccessAccordion
           expanded={accordion.access}
           onClick={() => dispatch.ui.accordion({ access: !accordion.access })}

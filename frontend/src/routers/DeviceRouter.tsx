@@ -12,6 +12,7 @@ import { DeviceUsersPage } from '../pages/DeviceUsersPage'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
 import { DeviceAgentPage } from '../pages/DeviceAgentPage'
+import { DeviceProxyPage } from '../pages/DeviceProxyPage'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
@@ -73,6 +74,11 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           {deviceSessions && (
             <Route path="/devices/:deviceID/agent">
               <DeviceAgentPage />
+            </Route>
+          )}
+          {deviceSessions && (
+            <Route path="/devices/:deviceID/proxy">
+              <DeviceProxyPage />
             </Route>
           )}
           <Route path="/devices/:deviceID/details">

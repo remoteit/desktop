@@ -811,6 +811,18 @@
     "tcp": "",
     "udp": ""
   },
+  "deviceApps": {
+    "console": "",
+    "off": "",
+    "openTerminal": "",
+    "running": "",
+    "starting": "",
+    "startingDetail": "",
+    "switch": "",
+    "switching": "",
+    "title": "",
+    "unavailable": ""
+  },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} der ausgewählten Geräte kann nicht übertragen werden.",
     "blockedCount_other": "{{count}} der ausgewählten Geräte können nicht übertragen werden.",
@@ -837,6 +849,7 @@
     "configure": "Konfigurieren",
     "details": "Details",
     "logs": "Protokolle",
+    "proxy": "",
     "shareAccess": "Zugriff freigeben",
     "unknown": "Unbekannt"
   },
@@ -1069,6 +1082,29 @@
   "devicePresenceSetting": {
     "label": "Präsenzadresse"
   },
+  "deviceProxy": {
+    "access": "",
+    "certificate": "",
+    "certificateOwn": "",
+    "certificatePending": "",
+    "certificateReady": "",
+    "domain": "",
+    "error": "",
+    "host": "",
+    "name": "",
+    "nameNone": "",
+    "names": "",
+    "off": "",
+    "onDevice": "",
+    "publicEndpoints": "",
+    "publicEndpointsHint": "",
+    "remoteit": "",
+    "removeConfirm": "",
+    "removeConfirmBody": "",
+    "unsupported": "",
+    "use": "",
+    "usedBy": ""
+  },
   "devicesActionMenu": {
     "confirmTitle": "Gerätelöschung bestätigen",
     "delete": "Löschen",
@@ -1095,6 +1131,21 @@
     "restoring": "Gerät wird wiederhergestellt …",
     "thisSystem": "Dieses System"
   },
+  "deviceSshAccess": {
+    "about": "",
+    "add": "",
+    "admin": "",
+    "anyUser": "",
+    "asUser": "",
+    "email": "",
+    "fallback": "",
+    "login": "",
+    "loginHelp": "",
+    "loginOwn": "",
+    "ownAdmin": "",
+    "revoke": "",
+    "title": ""
+  },
   "deviceTransferPage": {
     "confirmTransferPrefix": "Sie sind dabei, das Eigentum zu übertragen von",
     "confirmTransferSuffix": "und alle zugehörigen Services an",
@@ -1111,6 +1162,48 @@
   },
   "duration": {
     "ago": "vor {{duration}}"
+  },
+  "endpoints": {
+    "access": "",
+    "add": "",
+    "allow": "",
+    "cancel": "",
+    "cidr": "",
+    "cidrChoice": "",
+    "copy": "",
+    "create": "",
+    "error": "",
+    "https": "",
+    "idleUntil": "",
+    "ipLocked": "",
+    "ipLockedChoice": "",
+    "kind": "",
+    "latch": "",
+    "latchChoice": "",
+    "lifetime": "",
+    "lifetimeHelp": "",
+    "lockedIp": "",
+    "nearest": "",
+    "none": "",
+    "permanent": "",
+    "permanentChoice": "",
+    "proxy": "",
+    "public": "",
+    "remove": "",
+    "removeConfirm": "",
+    "removeConfirmBody": "",
+    "signedIn": "",
+    "tcp": "",
+    "temporary": "",
+    "temporaryChoice": "",
+    "title": "",
+    "udp": "",
+    "via": ""
+  },
+  "endpointSignIn": {
+    "missing": "",
+    "refused": "",
+    "signingIn": ""
   },
   "eventMessage": {
     "allowed": "erlaubt",
@@ -2168,6 +2261,10 @@
     "devicesCount_other": "{{count}} Geräte",
     "networksCount_one": "{{count}} Netzwerk",
     "networksCount_other": "{{count}} Netzwerke"
+  },
+  "roleSshAdmin": {
+    "description": "",
+    "title": ""
   },
   "routeSetting": {
     "adaptiveDescription": "Wählt die beste verfügbare Route und priorisiert dabei eine direkte Verbindung zu diesem Dienst.",

@@ -816,6 +816,18 @@
     "tcp": "",
     "udp": ""
   },
+  "deviceApps": {
+    "console": "",
+    "off": "",
+    "openTerminal": "",
+    "running": "",
+    "starting": "",
+    "startingDetail": "",
+    "switch": "",
+    "switching": "",
+    "title": "",
+    "unavailable": ""
+  },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} del dispositivo seleccionado no se puede transferir.",
     "blockedCount_many": "{{count}} de los dispositivos seleccionados no se pueden transferir.",
@@ -845,6 +857,7 @@
     "configure": "Configurar",
     "details": "Detalles",
     "logs": "Registros",
+    "proxy": "",
     "shareAccess": "Compartir acceso",
     "unknown": "Desconocido"
   },
@@ -1092,6 +1105,29 @@
   "devicePresenceSetting": {
     "label": "Dirección de presencia"
   },
+  "deviceProxy": {
+    "access": "",
+    "certificate": "",
+    "certificateOwn": "",
+    "certificatePending": "",
+    "certificateReady": "",
+    "domain": "",
+    "error": "",
+    "host": "",
+    "name": "",
+    "nameNone": "",
+    "names": "",
+    "off": "",
+    "onDevice": "",
+    "publicEndpoints": "",
+    "publicEndpointsHint": "",
+    "remoteit": "",
+    "removeConfirm": "",
+    "removeConfirmBody": "",
+    "unsupported": "",
+    "use": "",
+    "usedBy": ""
+  },
   "devicesActionMenu": {
     "confirmTitle": "Confirmar eliminación del dispositivo",
     "delete": "Eliminar",
@@ -1120,6 +1156,21 @@
     "restoring": "Restaurando dispositivo...",
     "thisSystem": "Este sistema"
   },
+  "deviceSshAccess": {
+    "about": "",
+    "add": "",
+    "admin": "",
+    "anyUser": "",
+    "asUser": "",
+    "email": "",
+    "fallback": "",
+    "login": "",
+    "loginHelp": "",
+    "loginOwn": "",
+    "ownAdmin": "",
+    "revoke": "",
+    "title": ""
+  },
   "deviceTransferPage": {
     "confirmTransferPrefix": "Estás a punto de transferir la propiedad de",
     "confirmTransferSuffix": "y todos sus servicios a",
@@ -1136,6 +1187,48 @@
   },
   "duration": {
     "ago": "hace {{duration}}"
+  },
+  "endpoints": {
+    "access": "",
+    "add": "",
+    "allow": "",
+    "cancel": "",
+    "cidr": "",
+    "cidrChoice": "",
+    "copy": "",
+    "create": "",
+    "error": "",
+    "https": "",
+    "idleUntil": "",
+    "ipLocked": "",
+    "ipLockedChoice": "",
+    "kind": "",
+    "latch": "",
+    "latchChoice": "",
+    "lifetime": "",
+    "lifetimeHelp": "",
+    "lockedIp": "",
+    "nearest": "",
+    "none": "",
+    "permanent": "",
+    "permanentChoice": "",
+    "proxy": "",
+    "public": "",
+    "remove": "",
+    "removeConfirm": "",
+    "removeConfirmBody": "",
+    "signedIn": "",
+    "tcp": "",
+    "temporary": "",
+    "temporaryChoice": "",
+    "title": "",
+    "udp": "",
+    "via": ""
+  },
+  "endpointSignIn": {
+    "missing": "",
+    "refused": "",
+    "signingIn": ""
   },
   "eventMessage": {
     "allowed": "permitido",
@@ -2209,6 +2302,10 @@
     "networksCount_one": "{{count}} red",
     "networksCount_many": "{{count}} redes",
     "networksCount_other": "{{count}} redes"
+  },
+  "roleSshAdmin": {
+    "description": "",
+    "title": ""
   },
   "routeSetting": {
     "adaptiveDescription": "Elegirá la mejor ruta disponible, priorizando una conexión directa a este servicio.",
