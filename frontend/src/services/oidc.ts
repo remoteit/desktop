@@ -603,9 +603,9 @@ export async function oidcReopen(): Promise<boolean> {
 /** Boot-time completion: when the URL carries ?code&state (web return or the desktop
  * deep-link reload), finish the exchange and clean the URL. Returns claims, or
  * undefined when this boot isn't a callback or is a stale one over a stored session.
- * Throws on a failed/denied flow. */
-export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
-  const query = new URLSearchParams(window.location.search)
+ * Throws on a failed/denied flow. `search` is a desktop deep link handed to the live window. */
+export async function oidcCompleteFromUrl(search = window.location.search): Promise<OidcClaims | undefined> {
+  const query = new URLSearchParams(search)
   const state = query.get('state')
   if (!state || !(query.get('code') || query.get('error'))) return undefined
 

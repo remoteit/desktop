@@ -28,6 +28,7 @@ import {
   oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
+  oidcAccounts,
   oidcActivationHint,
   invalidateOidcToken,
   oidcGrantStale,
@@ -210,12 +211,11 @@ export default createModel<RootModel>()({
       }
     },
     /** Account switch: re-run authorize with select_account — the AS chooser shows the
-     * real session chips. On desktop the agent is released first, so a canceled chooser
-     * leaves this window without it until a reload signs it back in. Completion replaces
-     * the session like any sign-in (a SAME-account re-auth revokes the old family; a
-     * DIFFERENT account files the old one in the registry — services/oidc.ts). */
+     * real session chips. Completion replaces the session like any sign-in (a SAME-account
+     * re-auth revokes the old family; a DIFFERENT account files the old one in the registry —
+     * services/oidc.ts). On desktop the chooser returns through a deep link that the live
+     * window completes (completeCallback), so the agent is released only for a different account. */
     async switchAccount(_: void) {
-      if (!(await dispatch.auth.releaseAgent())) return
       try {
         await oidcStart({ prompt: 'select_account' })
       } catch (error) {
@@ -230,12 +230,34 @@ export default createModel<RootModel>()({
      * menu row that somehow outlived its registry entry still lands somewhere sensible. */
     async activateAccount(sub: string) {
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
-      if (!(await dispatch.auth.releaseAgent())) return
-      if (oidcActivateAccount(sub)) return window.location.assign('/')
+      if (oidcAccounts().some(a => a.sub === sub && !a.known)) {
+        if (!(await dispatch.auth.releaseAgent())) return
+        if (oidcActivateAccount(sub)) return window.location.assign('/')
+      }
       // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
       // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
       if (await oidcSelectKnownAccount(sub)) return
       await dispatch.auth.switchAccount()
+    },
+    /** Desktop: a chooser's deep link delivered to this still signed-in window (liveAuthCallback).
+     *  The agent moves only when a DIFFERENT account came back, and only on this window's own
+     *  release; a release that fails puts the account that owns it back as the active one. */
+    async completeCallback(search: string) {
+      const previous = oidcClaims()?.sub
+      try {
+        const claims = await oidcCompleteFromUrl(search)
+        if (!claims) return
+        if (claims.sub !== previous && !(await dispatch.auth.releaseAgent())) {
+          if (previous) oidcActivateAccount(previous)
+          return
+        }
+        window.location.assign('/')
+      } catch (error) {
+        console.error('AUTH: account switch did not complete', error)
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:auth.switchFailed', { defaultValue: "The account wasn't switched." }),
+        })
+      }
     },
     /** `auto` names a sign-in nobody clicked for (the web sign-in screen's own start) so the
      *  ledger in oidcStart can bound it; a refused one leaves the screen as it was. */
@@ -580,3 +602,17 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+let completingCallback = false
+
+/** The desktop main process hands an auth deep link here before falling back to reloading the
+ *  window with it. True means this signed-in window owns the callback; a reload instead would
+ *  sign the new account in while this window still holds the agent. */
+export function liveAuthCallback(search: string): boolean {
+  if (!store.getState().auth.user) return false
+  if (!completingCallback) {
+    completingCallback = true
+    store.dispatch.auth.completeCallback(search).finally(() => (completingCallback = false))
+  }
+  return true
+}

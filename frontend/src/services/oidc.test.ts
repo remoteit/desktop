@@ -132,6 +132,12 @@ describe('oidcCompleteFromUrl with no flow for the callback', () => {
     await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'expired' })
     expect(window.location.search).toBe('')
   })
+
+  it('reads a deep link handed to the live window instead of the window’s own URL', async () => {
+    window.history.replaceState({}, '', '/')
+    await expect(oidcCompleteFromUrl()).resolves.toBeUndefined()
+    await expect(oidcCompleteFromUrl('?code=c2&state=already-used')).rejects.toMatchObject({ code: 'expired' })
+  })
 })
 
 describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => {

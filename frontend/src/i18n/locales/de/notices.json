@@ -13,7 +13,8 @@
     "passwordIncorrect": "Das aktuelle Passwort ist falsch.",
     "passwordLocked": "Zu viele Fehlversuche. Bitte in ein paar Minuten erneut versuchen.",
     "passwordNotHeld": "Dieses Konto hat noch kein Passwort – lege eines über den Link fest, den wir dir per E-Mail senden.",
-    "passwordWeak": "Wähle ein stärkeres Passwort."
+    "passwordWeak": "Wähle ein stärkeres Passwort.",
+    "switchFailed": "Das Konto wurde nicht gewechselt."
   },
   "chat": {
     "authRequired": "Agentenauthentifizierung erforderlich — melden Sie sich an, um fortzufahren.",
