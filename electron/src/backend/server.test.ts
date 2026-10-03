@@ -8,8 +8,8 @@ import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import EventBus from './EventBus'
 import electronInterface from './electronInterface'
-import server, { isAppOrigin } from './server'
-import { WEB_PORT, SSL_PORT } from './constants'
+import server, { isSocketOrigin } from './server'
+import { WEB_PORT, SSL_PORT, START_URL } from './constants'
 import user, { User } from './User'
 import { parseAgentOwned } from '@common/agentOwner'
 
@@ -29,7 +29,7 @@ describe('backend/server broadcasts', () => {
   let io: SocketIO.Server
   let url: string
   const nextFreePort = jest.fn(async () => 33001)
-  const appOrigin = `http://127.0.0.1:${WEB_PORT}`
+  const appOrigin = new URL(START_URL).origin
 
   beforeAll(done => {
     Object.assign(user, credentials)
@@ -60,8 +60,12 @@ describe('backend/server broadcasts', () => {
   const next = (socket: Socket, event: string) => new Promise(resolve => socket.once(event, resolve))
 
   const dial = (origin = appOrigin) => {
-    const extraHeaders = { origin }
-    const socket = connect(url, { transports: ['websocket'], forceNew: true, reconnection: false, extraHeaders })
+    const socket = connect(url, {
+      transports: ['websocket'],
+      forceNew: true,
+      reconnection: false,
+      extraHeaders: { origin },
+    })
     sockets.push(socket)
     return socket
   }
@@ -233,15 +237,15 @@ describe('backend/server broadcasts', () => {
   })
 
   it('allowlists the origin by hostname and port', () => {
-    expect(isAppOrigin(appOrigin)).toBe(true)
-    expect(isAppOrigin(`http://localhost:${WEB_PORT}`)).toBe(true)
-    expect(isAppOrigin(`http://[::1]:${WEB_PORT}`)).toBe(true)
-    expect(isAppOrigin(`https://127.0.0.1:${SSL_PORT}`)).toBe(true)
-    expect(isAppOrigin(`https://127.0.0.1:${WEB_PORT}`)).toBe(false)
-    expect(isAppOrigin('http://127.0.0.1:8080')).toBe(false)
-    expect(isAppOrigin(`http://127.0.0.1.attacker.example:${WEB_PORT}`)).toBe(false)
-    expect(isAppOrigin(undefined)).toBe(false)
-    expect(isAppOrigin('null')).toBe(false)
+    expect(isSocketOrigin(appOrigin)).toBe(true)
+    expect(isSocketOrigin(`http://localhost:${WEB_PORT}`)).toBe(true)
+    expect(isSocketOrigin(`http://[::1]:${WEB_PORT}`)).toBe(true)
+    expect(isSocketOrigin(`https://127.0.0.1:${SSL_PORT}`)).toBe(true)
+    expect(isSocketOrigin(`https://127.0.0.1:${WEB_PORT}`)).toBe(false)
+    expect(isSocketOrigin('http://127.0.0.1:8080')).toBe(false)
+    expect(isSocketOrigin(`http://127.0.0.1.attacker.example:${WEB_PORT}`)).toBe(false)
+    expect(isSocketOrigin(undefined)).toBe(false)
+    expect(isSocketOrigin('null')).toBe(false)
   })
 
   it('ignores commands from a socket that has signed out', async () => {

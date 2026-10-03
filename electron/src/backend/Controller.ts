@@ -20,6 +20,8 @@ import user, { User } from './User'
 import launch from './launch'
 
 const DEFAULT_SOCKETS_LENGTH = 3
+// sign-out-complete arrives after signed-out has taken the socket out of the room; agent/release answers false itself.
+const UNFENCED_EVENTS = new Set(['authentication', 'user/sign-out-complete', 'agent/release'])
 
 class Controller {
   private clients: ReturnType<SocketIO.Server['to']>
@@ -28,6 +30,9 @@ class Controller {
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
     this.clients = io.to(AUTHENTICATED)
     this.pool = pool
+    io.on('connection', socket =>
+      socket.use(([event], next) => (socket.rooms.has(AUTHENTICATED) || UNFENCED_EVENTS.has(event)) && next())
+    )
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
     EventBus.on(electronInterface.EVENTS.signOut, this.signOutRequested)
@@ -56,52 +61,46 @@ class Controller {
     Logger.info('OPEN SOCKETS', { existing: socket.eventNames() })
     if (socket.eventNames().length > DEFAULT_SOCKETS_LENGTH) socket.removeAllListeners()
 
-    // Ungated: sign-out-complete arrives after signed-out has taken the socket out of the room, and
-    // agent/release answers false itself so the window isn't left waiting on its acknowledgement.
+    socket.on('init', this.init)
+    socket.on('refresh', this.refresh)
+    socket.on('user/lock', user.signOut)
+    socket.on('user/sign-out', this.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
     socket.on('agent/release', (done: unknown) =>
       this.releaseAgent(socket, released => typeof done === 'function' && done(released))
     )
-
-    const on = (event: string, handler: (...args: any[]) => unknown) =>
-      socket.on(event, (...args: any[]) => socket.rooms.has(AUTHENTICATED) && handler(...args))
-
-    on('init', this.init)
-    on('refresh', this.refresh)
-    on('user/lock', user.signOut)
-    on('user/sign-out', this.signOut)
-    on('user/quit', this.quit)
-    on('service/connect', this.connect)
-    on('service/disconnect', this.disconnect)
-    on('service/stop', this.stop)
-    on('service/clear', this.pool.clear)
-    on('service/clearRecent', this.pool.clearRecent)
-    on('service/clearErrors', this.pool.clearErrors)
-    on('service/forget', this.forget)
-    on('binaries/install', this.installBinaries)
-    on('launch/app', launch)
-    on('connection', connection => this.pool.set(connection, true))
-    on('connections', connections => this.pool.setAll(connections))
-    on('device', this.device)
-    on('registration', this.registration)
-    on('restore', this.restore)
-    on('scan', this.scan)
-    on('useCertificate', this.useCertificate)
-    on('sshConfig', this.sshConfig)
-    on(lan.EVENTS.interfaces, this.interfaces)
-    on('freePort', this.freePort)
-    on('reachablePort', this.isReachablePort)
-    on('preferences', preferences.set)
-    on('uninstall', this.uninstall)
-    on('forceUnregister', this.forceUnregister)
-    on('heartbeat', this.check)
-    on('showFolder', this.showFolder)
-    on('update/check', () => EventBus.emit(electronInterface.EVENTS.check, true))
-    on('update/install', () => EventBus.emit(electronInterface.EVENTS.install))
-    on('navigate', action => EventBus.emit(electronInterface.EVENTS.navigate, action))
-    on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
-    on('filePrompt', type => EventBus.emit(electronInterface.EVENTS.filePrompt, type))
-    on('cancelBluetooth', type => EventBus.emit(electronInterface.EVENTS.cancelBluetooth))
+    socket.on('user/quit', this.quit)
+    socket.on('service/connect', this.connect)
+    socket.on('service/disconnect', this.disconnect)
+    socket.on('service/stop', this.stop)
+    socket.on('service/clear', this.pool.clear)
+    socket.on('service/clearRecent', this.pool.clearRecent)
+    socket.on('service/clearErrors', this.pool.clearErrors)
+    socket.on('service/forget', this.forget)
+    socket.on('binaries/install', this.installBinaries)
+    socket.on('launch/app', launch)
+    socket.on('connection', connection => this.pool.set(connection, true))
+    socket.on('connections', connections => this.pool.setAll(connections))
+    socket.on('device', this.device)
+    socket.on('registration', this.registration)
+    socket.on('restore', this.restore)
+    socket.on('scan', this.scan)
+    socket.on('useCertificate', this.useCertificate)
+    socket.on('sshConfig', this.sshConfig)
+    socket.on(lan.EVENTS.interfaces, this.interfaces)
+    socket.on('freePort', this.freePort)
+    socket.on('reachablePort', this.isReachablePort)
+    socket.on('preferences', preferences.set)
+    socket.on('uninstall', this.uninstall)
+    socket.on('forceUnregister', this.forceUnregister)
+    socket.on('heartbeat', this.check)
+    socket.on('showFolder', this.showFolder)
+    socket.on('update/check', () => EventBus.emit(electronInterface.EVENTS.check, true))
+    socket.on('update/install', () => EventBus.emit(electronInterface.EVENTS.install))
+    socket.on('navigate', action => EventBus.emit(electronInterface.EVENTS.navigate, action))
+    socket.on('maximize', () => EventBus.emit(electronInterface.EVENTS.maximize))
+    socket.on('filePrompt', type => EventBus.emit(electronInterface.EVENTS.filePrompt, type))
+    socket.on('cancelBluetooth', type => EventBus.emit(electronInterface.EVENTS.cancelBluetooth))
   }
 
   init = () => {

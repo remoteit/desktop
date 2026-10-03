@@ -26,6 +26,9 @@ const d = debug('Server')
 // socket.io 4 removed, so broadcasts go to this room, which a socket joins only once it authenticates.
 export const AUTHENTICATED = 'authenticated'
 
+const START_ORIGIN = new URL(START_URL).origin
+const APP_PORTS: Record<string, number> = { 'http:': WEB_PORT, 'https:': SSL_PORT }
+
 // Allowlisted by hostname, not matched to the Host header: a DNS-rebound name that resolves here still sends its own name
 // as the Origin. This machine's own names resolve through the LAN (mDNS or local DNS), which a remote site can't point at.
 const ownHostnames = () => {
@@ -33,20 +36,19 @@ const ownHostnames = () => {
   const addresses = Object.values(os.networkInterfaces())
     .flatMap(list => list ?? [])
     .map(({ address }) => (address.includes(':') ? `[${address}]` : address))
-  return ['localhost', '127.0.0.1', '[::1]', ...addresses, name, `${name.split('.')[0]}.local`]
+  return ['localhost', IP_PRIVATE, '[::1]', ...addresses, name, `${name.split('.')[0]}.local`]
 }
 
-export const isAppOrigin = (origin?: string) => {
+export const isSocketOrigin = (origin?: string) => {
   let url: URL
   try {
     url = new URL(origin ?? '')
   } catch {
     return false
   }
-  if (url.origin === new URL(START_URL).origin) return true
+  if (url.origin === START_ORIGIN) return true
   const port = Number(url.port) || (url.protocol === 'https:' ? 443 : 80)
-  const appPort = url.protocol === 'http:' ? WEB_PORT : url.protocol === 'https:' ? SSL_PORT : undefined
-  return port === appPort && ownHostnames().includes(url.hostname)
+  return port === APP_PORTS[url.protocol] && ownHostnames().includes(url.hostname)
 }
 
 class Server {
@@ -123,7 +125,7 @@ class Server {
 
   allowRequest: SocketIO.ServerOptions['allowRequest'] = (request, callback) => {
     const { origin } = request.headers
-    if (isAppOrigin(origin)) return callback(null, true)
+    if (isSocketOrigin(origin)) return callback(null, true)
     Logger.warn('SOCKET ORIGIN REFUSED', { origin })
     callback('Origin not allowed', false)
   }
