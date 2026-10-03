@@ -194,6 +194,23 @@ describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => 
     ).toBe(true)
   })
 
+  it('revokes the new tokens when admit throws, too', async () => {
+    const { nonce } = ownFlow()
+    exchange = () =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({ refresh_token: 'r-thrown', id_token: idToken('b', null, nonce), access_token: 'a' })
+        )
+      )
+    await expect(oidcCompleteFromUrl(undefined, async () => Promise.reject(new Error('boom')))).rejects.toThrow('boom')
+    expect(oidcSignedIn()).toBe(false)
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([url, init]) => String(url).endsWith('/revoke') && String(init?.body).includes('r-thrown'))
+    ).toBe(true)
+  })
+
   it('drops the flow once the exchange fails', async () => {
     const state = ownFlow().state
     exchange = () => Promise.resolve(new Response(JSON.stringify({ error: 'invalid_grant' }), { status: 400 }))

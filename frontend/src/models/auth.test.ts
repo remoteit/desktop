@@ -435,9 +435,12 @@ describe('auth model — switching accounts releases the agent first', () => {
     oidcStart.mockReset()
     oidcClaims.mockReset()
     oidcActivateAccount.mockReset()
+    oidcIsSavedAccount.mockReset()
+    oidcSelectKnownAccount.mockReset()
   })
   afterEach(() => {
     browser.hasBackend = false
+    browser.isElectron = false
   })
 
   it('signing back in to the backend makes this window the owner again', async () => {
@@ -485,9 +488,21 @@ describe('auth model — switching accounts releases the agent first', () => {
   })
 
   it('the chooser opens without releasing the agent: a cancel must leave this computer signed in', async () => {
+    browser.isElectron = true
     const dispatch = makeDispatch()
     await effectsFor(dispatch).switchAccount()
     expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+  })
+
+  it('a browser on the local backend releases before the chooser: its return is a page load that cannot', async () => {
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(false)
+    await effectsFor(dispatch).switchAccount()
+    expect(oidcStart).not.toHaveBeenCalled()
+
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).switchAccount()
     expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
   })
 
@@ -505,6 +520,7 @@ describe('auth model — switching accounts releases the agent first', () => {
   })
 
   it('a known account goes to the browser without releasing the agent', async () => {
+    browser.isElectron = true
     oidcIsSavedAccount.mockReturnValue(false)
     oidcSelectKnownAccount.mockResolvedValue(true)
     const dispatch = makeDispatch()
@@ -563,8 +579,17 @@ describe('auth model — the chooser callback releases the agent only for a diff
     const dispatch = makeDispatch()
     await effectsFor(dispatch).completeCallback('?error=access_denied&state=s')
     expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
-    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.switchFailed' })
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.callbackFailed' })
     expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('a refused silent selection says that account is no longer signed in', async () => {
+    oidcCompleteFromUrl.mockRejectedValue(Object.assign(new Error('login_required'), { oauthError: 'login_required' }))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?error=login_required&state=s')
+    expect(dispatch.ui.set).toHaveBeenCalledWith({
+      errorMessage: 'That account is no longer signed in on this browser.',
+    })
   })
 
   it('a stale callback changes nothing', async () => {

@@ -214,8 +214,11 @@ export default createModel<RootModel>()({
      * real session chips. Completion replaces the session like any sign-in (a SAME-account
      * re-auth revokes the old family; a DIFFERENT account files the old one in the registry —
      * services/oidc.ts). On desktop the chooser returns through a deep link that the live
-     * window completes (completeCallback), so the agent is released only for a different account. */
+     * window completes (completeCallback), so the agent is released only for a different account.
+     * Any other shell with a local backend (the browser UI on the backend's own port) returns
+     * through a fresh page load that cannot release it, so that shell still releases first. */
     async switchAccount(_: void) {
+      if (!browser.isElectron && !(await dispatch.auth.releaseAgent())) return
       try {
         await oidcStart({ prompt: 'select_account' })
       } catch (error) {
@@ -236,6 +239,8 @@ export default createModel<RootModel>()({
       }
       // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
       // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
+      // Outside desktop it returns through a page load that cannot release the agent (switchAccount).
+      if (!browser.isElectron && !(await dispatch.auth.releaseAgent())) return
       if (await oidcSelectKnownAccount(sub)) return
       await dispatch.auth.switchAccount()
     },
@@ -249,10 +254,13 @@ export default createModel<RootModel>()({
           async returned => returned?.sub === previous || dispatch.auth.releaseAgent()
         )
         if (claims) window.location.assign('/')
-      } catch (error) {
-        console.error('AUTH: account switch did not complete', error)
+      } catch (error: any) {
+        console.error('AUTH: sign-in callback did not complete', error)
         dispatch.ui.set({
-          errorMessage: i18n.t('notices:auth.switchFailed', { defaultValue: "The account wasn't switched." }),
+          errorMessage:
+            error?.oauthError === 'login_required'
+              ? 'That account is no longer signed in on this browser.'
+              : i18n.t('notices:auth.callbackFailed', { defaultValue: "Sign-in didn't complete, so nothing changed." }),
         })
       }
     },

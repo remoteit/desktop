@@ -5,6 +5,7 @@
   },
   "auth": {
     "agentReleaseFailed": "Couldn't sign out of this computer, so the account wasn't switched.",
+    "callbackFailed": "Sign-in didn't complete, so nothing changed.",
     "emailModified": "Email modified successfully.",
     "invalidFormat": "Invalid format.",
     "loginFailed": "Login failed.",
@@ -13,8 +14,7 @@
     "passwordIncorrect": "Current password is incorrect.",
     "passwordLocked": "Too many wrong attempts. Try again in a few minutes.",
     "passwordNotHeld": "This account has no password yet — set one from the link we email you.",
-    "passwordWeak": "Choose a stronger password.",
-    "switchFailed": "The account wasn't switched."
+    "passwordWeak": "Choose a stronger password."
   },
   "chat": {
     "authRequired": "Agent authentication required — sign in to continue.",

@@ -5,6 +5,7 @@
   },
   "auth": {
     "agentReleaseFailed": "No se pudo cerrar la sesión en esta computadora, así que no se cambió de cuenta.",
+    "callbackFailed": "El inicio de sesión no se completó, así que no se cambió nada.",
     "emailModified": "Correo electrónico modificado correctamente.",
     "invalidFormat": "Formato no válido.",
     "loginFailed": "Error al iniciar sesión.",
@@ -13,8 +14,7 @@
     "passwordIncorrect": "La contraseña actual es incorrecta.",
     "passwordLocked": "Demasiados intentos fallidos. Inténtalo de nuevo en unos minutos.",
     "passwordNotHeld": "Esta cuenta aún no tiene contraseña; créala desde el enlace que te enviamos por correo.",
-    "passwordWeak": "Elige una contraseña más segura.",
-    "switchFailed": "No se cambió de cuenta."
+    "passwordWeak": "Elige una contraseña más segura."
   },
   "chat": {
     "authRequired": "Se requiere autenticación del agente — inicie sesión para continuar.",

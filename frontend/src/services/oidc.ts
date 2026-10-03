@@ -605,15 +605,16 @@ export async function oidcReopen(): Promise<boolean> {
  * undefined when it isn't a callback, is a stale one over a stored session, or `admit` refused
  * the account (its tokens are then revoked, never stored). Throws on a failed/denied flow. */
 export async function oidcCompleteFromUrl(
-  search = window.location.search,
+  search?: string,
   admit?: (claims: OidcClaims | undefined) => Promise<boolean>
 ): Promise<OidcClaims | undefined> {
-  const query = new URLSearchParams(search)
+  const query = new URLSearchParams(search ?? window.location.search)
   const state = query.get('state')
   if (!state || !(query.get('code') || query.get('error'))) return undefined
 
   const flow = findFlow(state)
-  cleanUrl()
+  // Only the boot URL carries the callback; a live window's own URL (and its router's history state) is not ours.
+  if (search === undefined) cleanUrl()
   if (!flow) {
     // A second browser tab finishing a flow the first already completed (Open browser again) lands
     // here; with that session stored the callback is stale, and failing it showed the sign-in screen.
@@ -653,9 +654,15 @@ async function exchangeCallback(
   })
   const claims = decodeJwt(body.id_token)
   if (claims?.nonce !== flow.nonce) throw new OidcError('expired', 'Sign-in nonce mismatch')
-  if (admit && !(await admit(claims))) {
-    if (body.refresh_token) revoke(body.refresh_token)
-    return undefined
+  if (admit) {
+    let admitted = false
+    try {
+      admitted = await admit(claims)
+    } finally {
+      // Refused or thrown alike: tokens that will never be stored must not stay live.
+      if (!admitted && body.refresh_token) revoke(body.refresh_token)
+    }
+    if (!admitted) return undefined
   }
   // Sub-aware handover: the SAME account signing in again replaces its family (revoke the
   // old refresh token — it is dead weight); a DIFFERENT account arriving is the
@@ -1000,11 +1007,12 @@ const clearActivationHint = () => {
   }
 }
 
+/** A SAVED account (tokens in the registry), as opposed to a known one or none at all. */
+export const oidcIsSavedAccount = (sub: string): boolean => !!readRegistry()[sub]?.refresh_token
+
 /** Make a saved account the ACTIVE one. Storage-only — the caller reloads the app so
  *  every model boots as the new identity (a soft swap would bleed one account's data
  *  into the other's view). Returns false when the account is unknown. */
-export const oidcIsSavedAccount = (sub: string): boolean => !!readRegistry()[sub]?.refresh_token
-
 export function oidcActivateAccount(sub: string): boolean {
   const entry = readRegistry()[sub]
   if (!entry?.refresh_token) return false
