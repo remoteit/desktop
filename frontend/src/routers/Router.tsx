@@ -67,6 +67,7 @@ import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { AdminEnterpriseLicensesListPage } from '../pages/AdminEnterpriseLicensesPage/AdminEnterpriseLicensesListPage'
 import { AdminAddonLicensesListPage } from '../pages/AdminAddonLicensesPage/AdminAddonLicensesListPage'
 import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
+import { AdminExitsPage } from '../pages/AdminExitsPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
@@ -457,6 +458,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
               <Route path="/admin/devices/:deviceId?">
                 <AdminDevicesWithDetailPage />
+              </Route>
+              <Route path="/admin/exits">
+                <AdminExitsPage />
               </Route>
               <Redirect to="/admin/users" />
             </Switch>

@@ -6,10 +6,12 @@ import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { Icon } from './Icon'
 import { ADMIN_ADDONS_ROUTE } from '../constants'
+import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 
 export const AdminSidebarNav: React.FC = () => {
   const history = useHistory()
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
+  const deviceSessions = useSelector(selectDeviceSessions)
   const currentPath = history.location.pathname
 
   const handleNavClick = (baseRoute: string) => {
@@ -121,6 +123,19 @@ export const AdminSidebarNav: React.FC = () => {
         </ListItemIcon>
         <ListItemText primary="Notices" />
       </ListItemButton>
+
+      {deviceSessions && (
+        <ListItemButton
+          dense
+          selected={currentPath.includes('/admin/exits')}
+          onClick={() => handleNavClick('/admin/exits')}
+        >
+          <ListItemIcon>
+            <Icon name="door-open" size="md" />
+          </ListItemIcon>
+          <ListItemText primary="Exit nodes" />
+        </ListItemButton>
+      )}
     </List>
   )
 }
