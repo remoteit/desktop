@@ -1,7 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { List, ListSubheader } from '@mui/material'
-import { ExitInfo, graphQLDeviceExit, graphQLExits, graphQLSetDeviceExit } from '../services/graphQLProxy'
+import {
+  ExitChooser,
+  ExitInfo,
+  graphQLDeviceExit,
+  graphQLDeviceExitChooser,
+  graphQLExits,
+  graphQLSetDeviceExit,
+} from '../services/graphQLProxy'
 import { ListItemSetting } from './ListItemSetting'
 import { SelectSetting } from './SelectSetting'
 
@@ -11,6 +19,7 @@ import { SelectSetting } from './SelectSetting'
 export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const [info, setInfo] = useState<ExitInfo | null>()
+  const [chooser, setChooser] = useState<ExitChooser | null>(null)
   const [exits, setExits] = useState<{ id: string; name: string }[]>([])
   const [saving, setSaving] = useState(false)
   const manage = device.permissions.includes('MANAGE')
@@ -18,6 +27,8 @@ export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => 
   const load = useCallback(async () => {
     const answer = await graphQLDeviceExit(device.id)
     setInfo(answer && typeof answer === 'object' ? answer : null)
+    const who = await graphQLDeviceExitChooser(device.id)
+    setChooser(who && typeof who === 'object' ? who : null)
     const list = await graphQLExits()
     if (Array.isArray(list)) setExits(list.filter(e => e.id !== device.id))
   }, [device.id])
@@ -35,6 +46,12 @@ export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => 
   ]
   if (info.exit && !exits.some(e => e.id === info.exit?.id)) choices.push({ key: info.exit.id, name: info.exit.name })
 
+  // The machine's administrator's policy holds over the portal: under local or never, nothing is chosen here.
+  const policy = chooser?.exitPolicy
+  const locked = policy === 'local' || policy === 'never'
+  const chosenBy = info.exit ? chosenLine(t, chooser) : null
+  const policyText = policyLine(t, chooser)
+
   return (
     <List>
       <ListSubheader>{t('deviceExit.title', 'Exit node')}</ListSubheader>
@@ -44,7 +61,7 @@ export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => 
           label={t('deviceExit.via', 'Send its traffic out through')}
           value={current}
           values={choices}
-          disabled={saving}
+          disabled={saving || locked}
           helpMessage={t(
             'deviceExit.viaHint',
             'All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached.'
@@ -56,6 +73,8 @@ export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => 
           }}
         />
       )}
+      {chosenBy && <ListItemSetting icon="user" label={chosenBy} />}
+      {policyText && <ListItemSetting icon="lock" label={policyText.label} subLabel={policyText.hint} />}
       <ListItemSetting
         icon="door-open"
         label={
@@ -74,4 +93,48 @@ export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => 
       />
     </List>
   )
+}
+
+type T = TFunction
+
+// Who chose the exit in force: someone on the device (its OS user, when the device said), or a person in the portal.
+export function chosenLine(t: T, chooser: ExitChooser | null): string | null {
+  if (!chooser) return null
+  if (chooser.exitSetOnDevice) {
+    return chooser.exitSetOnDeviceBy
+      ? t('deviceExit.setOnDeviceBy', 'Set on the device by {{name}}', { name: chooser.exitSetOnDeviceBy })
+      : t('deviceExit.setOnDevice', 'Set on the device')
+  }
+  if (chooser.exitSetBy?.email) return t('deviceExit.setBy', 'Set by {{email}}', { email: chooser.exitSetBy.email })
+  return null
+}
+
+// What the machine's administrator decided of its exit on the device, if anything.
+export function policyLine(t: T, chooser: ExitChooser | null): { label: string; hint?: string } | null {
+  if (!chooser) return null
+  if (chooser.exitPolicy === 'never')
+    return {
+      label: t('deviceExit.policyNever', 'This machine’s administrator allows it no exit'),
+      hint: t('deviceExit.policyHint', 'Set on the device: sudo remoteit-device policy'),
+    }
+  if (chooser.exitPolicy === 'local')
+    return {
+      label: t('deviceExit.policyLocal', 'This machine’s administrator keeps its exit local'),
+      hint: t('deviceExit.policyLocalHint', 'Its exit is chosen on the device only; the portal cannot change it'),
+    }
+  if (chooser.exitPinned)
+    return {
+      label: t('deviceExit.policyPinned', 'Pinned by this machine’s administrator to {{id}}', {
+        id: chooser.exitPinned,
+      }),
+      hint: t('deviceExit.policyPinnedHint', 'The pinned exit holds over any chosen here'),
+    }
+  if (chooser.exitAllowed)
+    return {
+      label: t('deviceExit.policyAllowed', 'This machine’s administrator allows only some exits'),
+      hint: chooser.exitAllowed.length
+        ? chooser.exitAllowed.join(', ')
+        : t('deviceExit.policyAllowedNone', 'None is allowed'),
+    }
+  return null
 }

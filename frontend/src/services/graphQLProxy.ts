@@ -141,6 +141,29 @@ export const graphQLDeviceExit = (deviceId: string) =>
     data => data?.login?.device?.[0] ?? null
   )
 
+// Who chose a device's exit — on the device (the OS user there) or in the portal (a person) — and what the machine's
+// administrator decided of it on the device (device-package docs/menu-app.md §3): who may choose it (cloud+local,
+// local, never), the exits allowed (null: every one), the exit pinned. Asked apart from the exit itself, so an API
+// before these fields still shows the exit.
+export type ExitChooser = {
+  exitSetOnDevice: boolean | null
+  exitSetOnDeviceBy: string | null
+  exitSetBy: { email: string | null } | null
+  exitPolicy: 'cloud+local' | 'local' | 'never' | null
+  exitAllowed: string[] | null
+  exitPinned: string | null
+}
+
+export const graphQLDeviceExitChooser = (deviceId: string) =>
+  read<ExitChooser | null>(
+    `query DeviceExitChooser($id: [String!]!) {
+      login { device(id: $id) { id exitSetOnDevice exitSetOnDeviceBy exitSetBy { email } exitPolicy exitAllowed exitPinned } }
+    }`,
+    { id: [deviceId] },
+    'exitSetOnDeviceBy',
+    data => data?.login?.device?.[0] ?? null
+  )
+
 export const graphQLExits = () =>
   read<{ id: string; name: string }[]>(`query Exits { exits { id name } }`, {}, 'exits', data => data?.exits ?? [])
 
