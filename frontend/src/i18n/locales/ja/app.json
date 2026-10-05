@@ -1137,6 +1137,13 @@
     "allServices": "すべてのサービス",
     "screenView": "ScreenView"
   },
+  "deviceSetting": {
+    "controlLocal": "",
+    "controlOff": "",
+    "controlOn": "",
+    "onDevice": "",
+    "onDeviceBy": ""
+  },
   "deviceSetupItem": {
     "alreadyCreated": "作成済み",
     "alreadyRegistered": "このシステムは既に別のユーザーに登録されています。管理するには、デバイスの所有者としてログインする必要があります。",

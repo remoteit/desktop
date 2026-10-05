@@ -1187,6 +1187,13 @@
     "allServices": "Todos los servicios",
     "screenView": "ScreenView"
   },
+  "deviceSetting": {
+    "controlLocal": "",
+    "controlOff": "",
+    "controlOn": "",
+    "onDevice": "",
+    "onDeviceBy": ""
+  },
   "deviceSetupItem": {
     "alreadyCreated": "Ya creado",
     "alreadyRegistered": "Este sistema ya está registrado con otro usuario. Deberás iniciar sesión como el propietario del dispositivo para administrarlo.",

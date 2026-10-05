@@ -1162,6 +1162,13 @@
     "allServices": "Alle Dienste",
     "screenView": "ScreenView"
   },
+  "deviceSetting": {
+    "controlLocal": "",
+    "controlOff": "",
+    "controlOn": "",
+    "onDevice": "",
+    "onDeviceBy": ""
+  },
   "deviceSetupItem": {
     "alreadyCreated": "Bereits erstellt",
     "alreadyRegistered": "Dieses System ist bereits bei einem anderen Benutzer registriert. Sie müssen sich als Eigentümer des Geräts anmelden, um es zu verwalten.",

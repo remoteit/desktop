@@ -1162,6 +1162,13 @@
     "allServices": "All Services",
     "screenView": "ScreenView"
   },
+  "deviceSetting": {
+    "controlLocal": "Set only on the device",
+    "controlOff": "Turned off on the device by its administrator",
+    "controlOn": "Turned on on the device by its administrator",
+    "onDevice": "Set on the device",
+    "onDeviceBy": "Set on the device by {{by}}"
+  },
   "deviceSetupItem": {
     "alreadyCreated": "Already created",
     "alreadyRegistered": "This system is already registered to another user. You'll need to log in as the device's owner to manage it.",
