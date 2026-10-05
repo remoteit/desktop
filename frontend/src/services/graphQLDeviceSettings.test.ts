@@ -53,6 +53,14 @@ describe('a device’s settings', () => {
     expect(request.mock.calls[0][0].data.variables).toEqual({ deviceId: 'D', name: 'subnet', value: true })
   })
 
+  it('declares its variables in graphql’s own types: the value is Any', async () => {
+    request.mockResolvedValue({ data: { data: { setDeviceSetting: subnet } }, headers: {} })
+    await graphQLSetDeviceSetting('D', 'exit_node', { on: true, lan: false })
+    const { query } = request.mock.calls[0][0].data
+    expect(query).toMatch(/mutation SetDeviceSetting\(\$deviceId: String!, \$name: String!, \$value: Any\)/)
+    expect(query).toMatch(/setDeviceSetting\(deviceId: \$deviceId, name: \$name, value: \$value\)/)
+  })
+
   it('a refused change: ERROR', async () => {
     request.mockResolvedValue({ data: { errors: [{ message: 'Set only on the device' }] }, headers: {} })
     expect(await graphQLSetDeviceSetting('D', 'subnet', false)).toBe('ERROR')

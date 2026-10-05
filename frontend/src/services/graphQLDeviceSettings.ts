@@ -49,7 +49,7 @@ export async function graphQLSetDeviceSetting(
   value: any
 ): Promise<DeviceSetting | 'ERROR'> {
   const response = await graphQLBasicRequest(
-    ` mutation SetDeviceSetting($deviceId: String!, $name: String!, $value: JSON) {
+    ` mutation SetDeviceSetting($deviceId: String!, $name: String!, $value: Any) {
         setDeviceSetting(deviceId: $deviceId, name: $name, value: $value) { ${FIELDS} }
       }`,
     { deviceId, name, value }
