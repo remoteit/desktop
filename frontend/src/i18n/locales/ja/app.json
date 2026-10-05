@@ -63,6 +63,8 @@
     "addMany": "複数追加",
     "alreadyShared": "共有済み",
     "demoDevice": "デモデバイス",
+    "devicePackage": "",
+    "oneLineInstall": "",
     "products": "プロダクト",
     "provisionInBulk": "一括プロビジョニング",
     "title": "何に接続しますか？",
@@ -1065,6 +1067,11 @@
     "serviceLink": "サービスリンク",
     "shareAccess": "アクセスを共有",
     "transferDevice": "デバイスを譲渡"
+  },
+  "devicePackage": {
+    "joins": "",
+    "whereTerminal": "",
+    "whereWindows": ""
   },
   "devicePage": {
     "availableServices": "利用可能なサービス",

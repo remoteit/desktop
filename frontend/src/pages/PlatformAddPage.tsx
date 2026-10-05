@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery, Typography, Box, Stack, Divider, Theme, Chip } from '@mui/material'
@@ -9,20 +9,26 @@ import { AddPlatformTags } from '../components/AddPlatformTags'
 import { AddDownload } from '../components/AddDownload'
 import { AddDevice } from '../components/AddDevice'
 import { platforms } from '../platforms'
+import { withDevicePackage } from '../platforms/devicePackage'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
 export const PlatformAddPage: React.FC = () => {
   let { platform = '', redirect } = useParams<{ platform?: string; redirect?: string }>()
-  const platformObj = platforms.get(platform)
+  const { t } = useTranslation()
+  const location = useLocation()
+  // ?package: the remote.it device package's one-line install for this platform (AddPage, behind the device-session
+  // gate) in place of its own download or command.
+  const devicePackage = useDeviceSessions() && new URLSearchParams(location.search).has('package')
+  const platformObj = devicePackage ? withDevicePackage(platforms.get(platform), t) : platforms.get(platform)
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
   const canRegister = useSelector(selectCanRegister)
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [serviceTypes, setServiceTypes] = useState<number[]>(defaultServices)
   const [oneTimeUse, setOneTimeUse] = useState(false)
   const xs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
-  const { t } = useTranslation()
 
   return (
     <Body center>

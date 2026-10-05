@@ -15,6 +15,8 @@ import { ClaimDevice } from '../components/ClaimDevice'
 import { RentANodeAdd } from '../components/RentANodeAdd'
 import { Container } from '../components/Container'
 import { platforms } from '../platforms'
+import { DEVICE_PACKAGE_PLATFORMS, devicePackagePath } from '../platforms/devicePackage'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { spacing } from '../styling'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
@@ -27,6 +29,7 @@ export const AddPage: React.FC = () => {
   const claiming = useSelector((state: State) => state.ui.claiming)
   const hasDemo = useSelector((state: State) => selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined)
   const history = useHistory()
+  const devicePackage = useDeviceSessions()
 
   useEffect(() => {
     if (!allApplicationTypes.length) dispatch.applicationTypes.fetchAll()
@@ -109,6 +112,26 @@ export const AddPage: React.FC = () => {
         <AndroidSetup className="addList addSmall" />
         <DeviceSetupItem className="addList addSmall" />
         <BluetoothScan className="addList addSmall" />
+        {devicePackage && (
+          <List className="addList addIcons" dense disablePadding>
+            <ListSubheader disableGutters>{t('addPage.devicePackage', 'remote.it device package')}</ListSubheader>
+            {DEVICE_PACKAGE_PLATFORMS.map(p => {
+              const platform = platforms.get(p)
+              return (
+                <ListItemLocation
+                  key={p}
+                  iconPlatform
+                  iconSize="xxl"
+                  icon={platform.id}
+                  to={devicePackagePath(platform.id)}
+                  title={platformText(t, platform).name}
+                  subtitle={t('addPage.oneLineInstall', 'One-line install')}
+                  disableGutters
+                />
+              )
+            })}
+          </List>
+        )}
         <List className="addList addIcons" dense disablePadding>
           <ListSubheader disableGutters>{t('addPage.addInstance', 'Add an instance')}</ListSubheader>
           {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {

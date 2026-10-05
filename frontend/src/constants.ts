@@ -61,6 +61,9 @@ export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
 export const AGENT_URL = env.DEV ? '/agent' : env.VITE_AGENT_URL || '/agent'
 
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
+// The device package's downloads (remoteit-device), where its one-line installs are: the stage's own
+// (downloads.<stage>.remote.it), declared with the stage's build like the hosts above.
+export const DEVICE_DOWNLOADS_URL = (env.VITE_DEVICE_DOWNLOADS_URL || 'https://downloads.remote.it/device').replace(/\/+$/, '')
 // The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
 // install that sets only the OIDC vars calls one stage with another stage's token and 401s with
 // nothing in the UI explaining why. Set VITE_GRAPHQL_API (or pick a stage in Test Settings) to

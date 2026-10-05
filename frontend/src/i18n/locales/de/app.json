@@ -63,6 +63,8 @@
     "addMany": "Mehrere hinzufügen",
     "alreadyShared": "Bereits freigegeben",
     "demoDevice": "Demogerät",
+    "devicePackage": "",
+    "oneLineInstall": "",
     "products": "Produkte",
     "provisionInBulk": "Massenbereitstellung",
     "title": "Womit möchten Sie sich verbinden?",
@@ -1088,6 +1090,11 @@
     "serviceLink": "Dienstlink",
     "shareAccess": "Zugriff freigeben",
     "transferDevice": "Gerät übertragen"
+  },
+  "devicePackage": {
+    "joins": "",
+    "whereTerminal": "",
+    "whereWindows": ""
   },
   "devicePage": {
     "availableServices": "Verfügbare Dienste",

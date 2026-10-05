@@ -63,6 +63,8 @@
     "addMany": "Add many",
     "alreadyShared": "Already shared",
     "demoDevice": "Demo device",
+    "devicePackage": "remote.it device package",
+    "oneLineInstall": "One-line install",
     "products": "Products",
     "provisionInBulk": "Provision in bulk",
     "title": "What do you want to connect\u00a0to?",
@@ -1088,6 +1090,11 @@
     "serviceLink": "Service Link",
     "shareAccess": "Share access",
     "transferDevice": "Transfer Device"
+  },
+  "devicePackage": {
+    "joins": "A machine already on another remote.it stage keeps it, and joins this one beside it. This page updates when the device registers.",
+    "whereTerminal": "Run it in a terminal; it asks for your password to install.",
+    "whereWindows": "Run it in a PowerShell opened as administrator."
   },
   "devicePage": {
     "availableServices": "Available services",
