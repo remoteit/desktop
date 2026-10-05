@@ -10,13 +10,17 @@ import {
   graphQLExits,
   graphQLSetDeviceExit,
 } from '../services/graphQLProxy'
+import { settingOn } from '../services/graphQLDeviceSettings'
+import type { DeviceSettings } from '../hooks/useDeviceSettings'
+import { DeviceSettingRow } from './DeviceSettingRow'
 import { ListItemSetting } from './ListItemSetting'
 import { SelectSetting } from './SelectSetting'
 
 /* A device and exit nodes (presence-server docs/proxy-plan.md §8): the exit its traffic goes out through — one you may
-   use, chosen here — and whether it offers itself as one, which it says by its own configuration. Device sessions
-   only; nothing shows where the API lacks them. */
-export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => {
+   use, chosen here — and whether it offers itself as one: a device setting (exit_node) switched here by whoever manages
+   it, where the API has device settings; else what its own configuration says. Device sessions only; nothing shows
+   where the API lacks them. */
+export const DeviceExitSection: React.FC<{ device: IDevice; settings?: DeviceSettings }> = ({ device, settings }) => {
   const { t } = useTranslation()
   const [info, setInfo] = useState<ExitInfo | null>()
   const [chooser, setChooser] = useState<ExitChooser | null>(null)
@@ -51,6 +55,12 @@ export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => 
   const locked = policy === 'local' || policy === 'never'
   const chosenBy = info.exit ? chosenLine(t, chooser) : null
   const policyText = policyLine(t, chooser)
+  const exitNode = settings?.setting('exit_node')
+  const offer = async (value: { on: boolean; lan: boolean }) => {
+    setSaving(true)
+    if (await settings?.set('exit_node', value)) await load()
+    setSaving(false)
+  }
 
   return (
     <List>
@@ -75,22 +85,50 @@ export const DeviceExitSection: React.FC<{ device: IDevice }> = ({ device }) => 
       )}
       {chosenBy && <ListItemSetting icon="user" label={chosenBy} />}
       {policyText && <ListItemSetting icon="lock" label={policyText.label} subLabel={policyText.hint} />}
-      <ListItemSetting
-        icon="door-open"
-        label={
-          info.offersExit
-            ? t('deviceExit.offers', 'Offers itself as an exit node')
-            : t('deviceExit.offersNot', 'Not an exit node')
-        }
-        subLabel={
-          info.offersExit
-            ? t(
-                'deviceExit.offersHint',
-                'People you allow (its share or role says exit) can send their traffic out through it'
-              )
-            : t('deviceExit.offersNotHint', 'On the device: sudo remoteit-device exit-node on')
-        }
-      />
+      {manage && exitNode ? (
+        <>
+          <DeviceSettingRow
+            setting={exitNode}
+            icon="door-open"
+            label={t('deviceExit.offer', 'Offer itself as an exit node')}
+            subLabel={t(
+              'deviceExit.offersHint',
+              'People you allow (its share or role says exit) can send their traffic out through it'
+            )}
+            disabled={saving}
+            onChange={on => offer({ on, lan: !!exitNode.value?.lan })}
+          />
+          {settingOn(exitNode) && (
+            <DeviceSettingRow
+              setting={exitNode}
+              icon="network-wired"
+              label={t('deviceExit.lan', 'Its local network too')}
+              subLabel={t('deviceExit.lanHint', 'Traffic sent out through it may reach the network it is on')}
+              on={!!exitNode.value?.lan}
+              quiet
+              disabled={saving}
+              onChange={lan => offer({ on: !!exitNode.value?.on, lan })}
+            />
+          )}
+        </>
+      ) : (
+        <ListItemSetting
+          icon="door-open"
+          label={
+            info.offersExit
+              ? t('deviceExit.offers', 'Offers itself as an exit node')
+              : t('deviceExit.offersNot', 'Not an exit node')
+          }
+          subLabel={
+            info.offersExit
+              ? t(
+                  'deviceExit.offersHint',
+                  'People you allow (its share or role says exit) can send their traffic out through it'
+                )
+              : t('deviceExit.offersNotHint', 'On the device: sudo remoteit-device exit-node on')
+          }
+        />
+      )}
     </List>
   )
 }

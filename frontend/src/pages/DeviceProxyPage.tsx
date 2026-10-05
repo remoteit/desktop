@@ -17,6 +17,8 @@ import {
 } from '../services/graphQLProxy'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceExitSection } from '../components/DeviceExitSection'
+import { DeviceSettingRow } from '../components/DeviceSettingRow'
+import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -24,8 +26,9 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 
 /* This device as a proxy (presence-server docs/proxy-plan.md): the people allowed to connect to it may make endpoints
-   on it into their services. The device listens only once told to on the device itself (remoteit-device proxy on);
-   here its owner names it and says what it takes. remote.it's admins may make it one of remote.it's — public, for
+   on it into their services. The device listens only once told to: a device setting (proxy), switched here where the
+   API has device settings, else on the device itself (remoteit-device proxy on); here its owner names it and says what
+   it takes. remote.it's admins may make it one of remote.it's — public, for
    everyone — and, apart, a public exit for everyone whose plan gives exits. Behind the device-sessions flag. */
 
 // Where a device made one of remote.it's proxies here is placed, until there is more than one region.
@@ -37,6 +40,8 @@ export const DeviceProxyPage: React.FC = () => {
   const [proxy, setProxy] = useState<Proxy | null | 'ERROR' | typeof UNSUPPORTED>()
   const [publicExit, setPublicExit] = useState<boolean>()
   const [saving, setSaving] = useState(false)
+  const settings = useDeviceSettings(device?.id)
+  const listening = settings.setting('proxy')
 
   const load = useCallback(async () => {
     if (!device?.id) return
@@ -65,6 +70,11 @@ export const DeviceProxyPage: React.FC = () => {
   }
   const save = (set: Parameters<typeof graphQLSetProxy>[1] | 'remove') =>
     run(() => (set === 'remove' ? graphQLRemoveProxy(device.id) : graphQLSetProxy(device.id, set)))
+  const listen = async (on: boolean) => {
+    setSaving(true)
+    await settings.set('proxy', on)
+    setSaving(false)
+  }
 
   const body = () => {
     if (proxy === undefined) return <LoadingMessage />
@@ -115,6 +125,19 @@ export const DeviceProxyPage: React.FC = () => {
             }}
             onClick={() => (isPublic ? run(() => graphQLRemoveRemoteitProxy(device.id)) : save(proxy ? 'remove' : {}))}
           />
+          {proxy && listening && (
+            <DeviceSettingRow
+              setting={listening}
+              icon="tower-broadcast"
+              label={t('deviceProxy.listen', 'Listening on the device')}
+              subLabel={t(
+                'deviceProxy.listenHint',
+                'Its proxy listeners: port 443 and its endpoints’ ports, or those its configuration names'
+              )}
+              disabled={(isPublic ? !admin : !manage) || saving}
+              onChange={listen}
+            />
+          )}
           {proxy && (admin || isPublic) && (
             <ListItemSetting
               icon="globe"
@@ -224,14 +247,16 @@ export const DeviceProxyPage: React.FC = () => {
             </List>
           </>
         )}
-        <Gutters>
-          <Typography variant="body2" color="textSecondary">
-            {t(
-              'deviceProxy.onDevice',
-              'The device listens only once told to, on the device itself: run "sudo remoteit-device proxy on" there (it listens on port 443), and "remoteit-device proxy" to see what it serves.'
-            )}
-          </Typography>
-        </Gutters>
+        {!listening && (
+          <Gutters>
+            <Typography variant="body2" color="textSecondary">
+              {t(
+                'deviceProxy.onDevice',
+                'The device listens only once told to, on the device itself: run "sudo remoteit-device proxy on" there (it listens on port 443), and "remoteit-device proxy" to see what it serves.'
+              )}
+            </Typography>
+          </Gutters>
+        )}
       </>
     )
   }
@@ -240,7 +265,7 @@ export const DeviceProxyPage: React.FC = () => {
     <DeviceHeaderMenu>
       <Gutters size={null}>
         {body()}
-        <DeviceExitSection device={device} />
+        <DeviceExitSection device={device} settings={settings} />
       </Gutters>
     </DeviceHeaderMenu>
   )

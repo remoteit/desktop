@@ -844,7 +844,10 @@
     "label": "Gerätebeschreibung"
   },
   "deviceExit": {
+    "lan": "",
+    "lanHint": "",
     "none": "",
+    "offer": "",
     "offers": "",
     "offersHint": "",
     "offersNot": "",
@@ -1119,6 +1122,8 @@
     "domain": "",
     "error": "",
     "host": "",
+    "listen": "",
+    "listenHint": "",
     "name": "",
     "nameNone": "",
     "names": "",

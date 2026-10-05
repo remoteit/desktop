@@ -17,6 +17,14 @@ vi.mock('./ListItemSetting', () => ({
     </div>
   ),
 }))
+vi.mock('../services/graphQLDeviceSettings', () => ({ settingOn: (s: any) => !!s?.value?.on }))
+vi.mock('./DeviceSettingRow', () => ({
+  DeviceSettingRow: ({ label, on, setting }: any) => (
+    <div data-switch>
+      {label} {String(on ?? setting.value.on)}
+    </div>
+  ),
+}))
 vi.mock('./SelectSetting', () => ({
   SelectSetting: ({ disabled }: any) => <div data-select>{disabled ? 'locked' : 'open'}</div>,
 }))
@@ -39,11 +47,11 @@ const none = {
   exitPinned: null,
 }
 
-async function render() {
+async function render(settings?: any, permissions = ['MANAGE']) {
   const container = document.createElement('div')
   const root = createRoot(container)
-  const device = { id: 'LAPTOP', permissions: ['MANAGE'] } as any
-  await act(async () => root.render(<DeviceExitSection device={device} />))
+  const device = { id: 'LAPTOP', permissions } as any
+  await act(async () => root.render(<DeviceExitSection device={device} settings={settings} />))
   return container
 }
 
@@ -84,5 +92,19 @@ describe('who chose the exit, and the machine’s policy', () => {
     const page = await render()
     expect(page.querySelector('[data-select]')?.textContent).toBe('open')
     expect(page.textContent).not.toContain('Set on the device')
+  })
+
+  it('with device settings, whoever manages it switches it an exit node, and its LAN beneath while on', async () => {
+    exit.mockResolvedValue({ offersExit: true, exit: null })
+    chooser.mockResolvedValue(none)
+    const setting = { name: 'exit_node', value: { on: true, lan: false }, control: 'cloud+local' }
+    const settings = { setting: () => setting, set: vi.fn() }
+    let page = await render(settings)
+    const switches = [...page.querySelectorAll('[data-switch]')].map(e => e.textContent)
+    expect(switches).toEqual(['Offer itself as an exit node true', 'Its local network too false'])
+
+    page = await render(settings, [])
+    expect(page.querySelector('[data-switch]')).toBeNull()
+    expect(page.textContent).toContain('Offers itself as an exit node')
   })
 })

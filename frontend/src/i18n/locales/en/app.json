@@ -844,7 +844,10 @@
     "label": "Device Description"
   },
   "deviceExit": {
+    "lan": "Its local network too",
+    "lanHint": "Traffic sent out through it may reach the network it is on",
     "none": "None — its usual way out",
+    "offer": "Offer itself as an exit node",
     "offers": "Offers itself as an exit node",
     "offersHint": "People you allow (its share or role says exit) can send their traffic out through it",
     "offersNot": "Not an exit node",
@@ -1119,6 +1122,8 @@
     "domain": "Your own domain for its https names",
     "error": "Could not read the proxies.",
     "host": "Where it is reached",
+    "listen": "Listening on the device",
+    "listenHint": "Its proxy listeners: port 443 and its endpoints’ ports, or those its configuration names",
     "name": "Name before your account slug",
     "nameNone": "none: your slug alone",
     "names": "Names",
