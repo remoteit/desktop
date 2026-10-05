@@ -859,7 +859,6 @@
     "setBy": "",
     "setOnDevice": "",
     "setOnDeviceBy": "",
-    "title": "",
     "via": "",
     "viaHint": ""
   },
@@ -1102,6 +1101,7 @@
     "certificateReady": "",
     "domain": "",
     "error": "",
+    "exitHeading": "",
     "host": "",
     "listening": "",
     "listeningAdmin": "",
@@ -1120,6 +1120,7 @@
     "notListeningOnDevice": "",
     "off": "",
     "onDevice": "",
+    "proxyHeading": "",
     "public": "",
     "publicEndpoints": "",
     "publicEndpointsHint": "",

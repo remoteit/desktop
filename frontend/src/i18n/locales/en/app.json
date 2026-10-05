@@ -867,7 +867,6 @@
     "setBy": "Set by {{email}}",
     "setOnDevice": "Set on the device",
     "setOnDeviceBy": "Set on the device by {{name}}",
-    "title": "Exit node",
     "via": "Send its traffic out through",
     "viaHint": "All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached."
   },
@@ -1125,6 +1124,7 @@
     "certificateReady": "remote.it's, for its names",
     "domain": "Your own domain for its https names",
     "error": "Could not read the proxies.",
+    "exitHeading": "Exit",
     "host": "Where it is reached",
     "listening": "Listening, though not a proxy: its proxy setting is on",
     "listeningAdmin": "Listening, though not a proxy: turned on on the device by its administrator",
@@ -1143,6 +1143,7 @@
     "notListeningOnDevice": "Not listening: turned off on the device",
     "off": "Make endpoints into services through this device",
     "onDevice": "The device listens only once told to, on the device itself: run \"sudo remoteit-device proxy on\" there (it listens on port 443), and \"remoteit-device proxy\" to see what it serves.",
+    "proxyHeading": "Proxy",
     "public": "Public proxy",
     "publicEndpoints": "Public endpoints",
     "publicEndpointsHint": "Endpoints anyone with the address may use; off, only signed-in and address-locked ones",

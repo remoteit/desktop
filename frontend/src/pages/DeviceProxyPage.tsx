@@ -27,12 +27,14 @@ import { Notice } from '../components/Notice'
 import { DeviceSetting, settingOn } from '../services/graphQLDeviceSettings'
 import type { TFunction } from 'i18next'
 
-/* This device as a proxy (presence-server docs/proxy-plan.md): the people allowed to connect to it may make endpoints
-   on it into their services. The device listens only once told to: a device setting (proxy), which graphql turns on
-   and off with its being a proxy where the API has device settings — shown here only where the device keeps it
-   otherwise — else set on the device itself (remoteit-device proxy on); here its owner names it and says what it
-   takes. remote.it's admins may make it one of remote.it's — public, for
-   everyone — and, apart, a public exit for everyone whose plan gives exits. Behind the device-sessions flag. */
+/* What this device offers others, in two sections. Proxy (presence-server docs/proxy-plan.md): the people allowed to
+   connect to it may make endpoints on it into their services. The device listens only once told to: a device setting
+   (proxy), which graphql turns on and off with its being a proxy where the API has device settings — shown here only
+   where the device keeps it otherwise — else set on the device itself (remoteit-device proxy on); here its owner names
+   it and says what it takes, and remote.it's admins may make it one of remote.it's, public, for everyone. Exit: whether
+   it offers itself as an exit node (components/DeviceExitSection.tsx) and, for one of remote.it's, whether it is a
+   public exit for everyone whose plan gives exits. The exit its own traffic goes out through is chosen on Configure.
+   Behind the device-sessions flag. */
 
 // Where a device made one of remote.it's proxies here is placed, until there is more than one region.
 const PUBLIC_PROXY_REGION = 'us-west-2'
@@ -100,6 +102,7 @@ export const DeviceProxyPage: React.FC = () => {
   }, [load])
 
   if (!device) return null
+  const isPublic = typeof proxy === 'object' && proxy?.kind === 'remoteit'
   const manage = device.permissions.includes('MANAGE') && !device.shared
 
   const run = async (change: () => Promise<unknown>) => {
@@ -127,7 +130,6 @@ export const DeviceProxyPage: React.FC = () => {
           {t('deviceProxy.error', 'Could not read the proxies.')}
         </Notice>
       )
-    const isPublic = proxy?.kind === 'remoteit'
     const listeningLine = proxyListeningLine(t, !!proxy, listening)
 
     const certificate = !proxy
@@ -141,6 +143,7 @@ export const DeviceProxyPage: React.FC = () => {
     return (
       <>
         <List>
+          <ListSubheader>{t('deviceProxy.proxyHeading', 'Proxy')}</ListSubheader>
           <ListItemSetting
             icon="server"
             label={t('deviceProxy.use', 'Use as a proxy')}
@@ -196,28 +199,6 @@ export const DeviceProxyPage: React.FC = () => {
                     : graphQLSetRemoteitProxy(device.id, proxy.region || PUBLIC_PROXY_REGION)
                 )
               }
-            />
-          )}
-          {isPublic && (
-            <ListItemSetting
-              icon="right-from-bracket"
-              label={t('deviceProxy.publicExit', 'Public exit')}
-              subLabel={
-                publicExit === undefined
-                  ? t('deviceProxy.publicExitUnknown', 'This API cannot say whether it is one')
-                  : t(
-                      'deviceProxy.publicExitHint',
-                      "An exit for everyone whose plan gives exits — remote.it's exit policy applies"
-                    )
-              }
-              toggle={!!publicExit}
-              disabled={!admin || saving || publicExit === undefined}
-              confirm={!!publicExit}
-              confirmProps={{
-                title: t('deviceProxy.publicExitOffConfirm', 'Stop it being a public exit?'),
-                children: t('deviceProxy.publicExitOffConfirmBody', 'Everyone using it as their exit is moved off it.'),
-              }}
-              onClick={() => run(() => graphQLSetProxyPublicExit(device.id, !publicExit))}
             />
           )}
         </List>
@@ -288,7 +269,37 @@ export const DeviceProxyPage: React.FC = () => {
     <DeviceHeaderMenu>
       <Gutters size={null}>
         {body()}
-        <DeviceExitOffer device={device} settings={settings} />
+        {proxy !== UNSUPPORTED && (
+          <List>
+            <ListSubheader>{t('deviceProxy.exitHeading', 'Exit')}</ListSubheader>
+            <DeviceExitOffer device={device} settings={settings} />
+            {isPublic && (
+              <ListItemSetting
+                icon="right-from-bracket"
+                label={t('deviceProxy.publicExit', 'Public exit')}
+                subLabel={
+                  publicExit === undefined
+                    ? t('deviceProxy.publicExitUnknown', 'This API cannot say whether it is one')
+                    : t(
+                        'deviceProxy.publicExitHint',
+                        "An exit for everyone whose plan gives exits — remote.it's exit policy applies"
+                      )
+                }
+                toggle={!!publicExit}
+                disabled={!admin || saving || publicExit === undefined}
+                confirm={!!publicExit}
+                confirmProps={{
+                  title: t('deviceProxy.publicExitOffConfirm', 'Stop it being a public exit?'),
+                  children: t(
+                    'deviceProxy.publicExitOffConfirmBody',
+                    'Everyone using it as their exit is moved off it.'
+                  ),
+                }}
+                onClick={() => run(() => graphQLSetProxyPublicExit(device.id, !publicExit))}
+              />
+            )}
+          </List>
+        )}
       </Gutters>
     </DeviceHeaderMenu>
   )

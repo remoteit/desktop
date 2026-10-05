@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { List, ListSubheader } from '@mui/material'
 import {
   ExitChooser,
   ExitInfo,
@@ -92,7 +91,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   )
 }
 
-// Whether the device offers itself as an exit node, and its local network with it.
+// Whether the device offers itself as an exit node, and its local network with it: rows of the caller's list.
 export const DeviceExitOffer: React.FC<{ device: IDevice; settings?: DeviceSettings }> = ({ device, settings }) => {
   const { t } = useTranslation()
   const { info, load } = useDeviceExit(device.id, false)
@@ -109,8 +108,7 @@ export const DeviceExitOffer: React.FC<{ device: IDevice; settings?: DeviceSetti
   }
 
   return (
-    <List>
-      <ListSubheader>{t('deviceExit.title', 'Exit node')}</ListSubheader>
+    <>
       {manage && exitNode ? (
         <>
           <DeviceSettingRow
@@ -171,7 +169,7 @@ export const DeviceExitOffer: React.FC<{ device: IDevice; settings?: DeviceSetti
           }
         />
       )}
-    </List>
+    </>
   )
 }
 
