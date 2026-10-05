@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { useSelector } from 'react-redux'
 import { DeviceContext } from '../services/Context'
 import { DeviceDescriptionSetting } from '../components/DeviceDescriptionSetting'
 import { DevicePresenceSetting } from '../components/DevicePresenceSetting'
@@ -7,11 +8,15 @@ import { DeviceAnyPortSetting } from '../components/DeviceAnyPortSetting'
 import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
+import { DeviceSshAccess } from '../components/DeviceSshAccess'
+import { DeviceApps } from '../components/DeviceApps'
+import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { Gutters } from '../components/Gutters'
 import { List } from '@mui/material'
 
 export const DeviceEditPage: React.FC = () => {
   const { device } = useContext(DeviceContext)
+  const deviceSessions = useSelector(selectDeviceSessions)
 
   return (
     <DeviceHeaderMenu>
@@ -24,6 +29,13 @@ export const DeviceEditPage: React.FC = () => {
             <DeviceUserModeSetting />
             <DeviceAnyPortSetting />
           </List>
+        </Gutters>
+      )}
+      {/* The device's apps and who may log in through its console: what is set on it, so with its settings. */}
+      {deviceSessions && device && (
+        <Gutters>
+          <DeviceApps deviceId={device.id} canManage={!!device.permissions?.includes('MANAGE')} />
+          <DeviceSshAccess deviceId={device.id} />
         </Gutters>
       )}
       <NotificationSettings />

@@ -15,7 +15,7 @@ import { DeviceApp, graphQLDeviceApps, graphQLSetDeviceApp } from '../services/g
 import { useSubnetReach } from '../hooks/useLocalSubnetName'
 import { Icon } from './Icon'
 
-/* A device's apps (services/graphQLDeviceApps) on its details page: the console first — SSH by OpenSSH, run by the
+/* A device's apps (services/graphQLDeviceApps) on its Configure page: the console first — SSH by OpenSSH, run by the
    device's daemon, nothing listening. Its switch turns it on or off for whoever manages the device; its state is what
    the device says, waited for after a change. Open terminal logs in by certificate, the host key checked against the
    one the device reports. Nothing where the API has no apps. */
