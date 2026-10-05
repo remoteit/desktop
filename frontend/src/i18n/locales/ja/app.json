@@ -1146,8 +1146,10 @@
     "controlLocal": "",
     "controlOff": "",
     "controlOn": "",
+    "initiators": "",
     "onDevice": "",
-    "onDeviceBy": ""
+    "onDeviceBy": "",
+    "updates": ""
   },
   "deviceSetupItem": {
     "alreadyCreated": "作成済み",
@@ -1173,6 +1175,10 @@
     "ownAdmin": "",
     "revoke": "",
     "title": ""
+  },
+  "deviceSubnet": {
+    "hint": "",
+    "label": ""
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "次の所有権を譲渡しようとしています:",

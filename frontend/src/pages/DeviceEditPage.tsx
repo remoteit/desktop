@@ -1,10 +1,13 @@
 import React, { useContext } from 'react'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { DeviceDescriptionSetting } from '../components/DeviceDescriptionSetting'
 import { DevicePresenceSetting } from '../components/DevicePresenceSetting'
 import { DeviceUserModeSetting } from '../components/DeviceUserModeSetting'
 import { DeviceAnyPortSetting } from '../components/DeviceAnyPortSetting'
+import { DeviceSubnetSetting } from '../components/DeviceSubnetSetting'
+import { DevicePolicyRow } from '../components/DeviceSettingRow'
 import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
@@ -15,6 +18,7 @@ import { Gutters } from '../components/Gutters'
 import { List } from '@mui/material'
 
 export const DeviceEditPage: React.FC = () => {
+  const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
   const deviceSessions = useSelector(selectDeviceSessions)
 
@@ -27,7 +31,15 @@ export const DeviceEditPage: React.FC = () => {
             <DeviceDescriptionSetting />
             <DevicePresenceSetting />
             <DeviceUserModeSetting />
+            <DeviceSubnetSetting />
             <DeviceAnyPortSetting />
+            {deviceSessions && (
+              <DevicePolicyRow
+                deviceId={device.id}
+                name="initiators"
+                label={t('deviceSetting.initiators', 'Device sessions from this device')}
+              />
+            )}
           </List>
         </Gutters>
       )}

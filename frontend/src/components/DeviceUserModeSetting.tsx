@@ -6,11 +6,14 @@ import { DeviceContext } from '../services/Context'
 import { setDeviceUserMode } from '../services/deviceSessionInfo'
 import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { ListItemSetting } from './ListItemSetting'
+import { settingNote } from './DeviceSettingRow'
 
 /* User mode (presence-server docs/device-principals.md §1): the device reaches everything the person who switched it
    on can, as well as what its networks grant it — a laptop's or a phone's usual mode. Not a privilege: it gives that
-   person nothing they could not reach already. Only for a device you manage; switched on, it acts for you. Behind the
+   person nothing they could not reach already. Only for a device you manage; switched on, it acts for you — unless the
+   machine's administrator allows it none (the user_mode policy), said here and the switch greyed. Behind the
    device-sessions flag, and absent where the API does not serve device sessions. */
 export const DeviceUserModeSetting: React.FC = () => {
   const { t } = useTranslation()
@@ -19,19 +22,23 @@ export const DeviceUserModeSetting: React.FC = () => {
   const email = useSelector((state: State) => state.user.email)
   const info = useDeviceSessionInfo(enabled ? device?.id : undefined)
   const [saving, setSaving] = useState(false)
+  const userMode = useDeviceSettings(enabled ? device?.id : undefined).setting('user_mode')
 
   // No name means the API does not serve device sessions (or the device is not visible): nothing to switch.
   if (!enabled || !device || !info?.subnetName) return null
 
   const on = !!info.actsFor
   const mine = info.actsFor === email
+  const refused = userMode?.control === 'off'
 
   return (
     <ListItemSetting
       icon="user"
       label={t('deviceUserMode.label', 'User mode')}
       subLabel={
-        on
+        refused
+          ? settingNote(t, userMode)
+          : on
           ? mine
             ? t('deviceUserMode.onYou', 'Reaches everything you can, as well as what its networks grant it')
             : t('deviceUserMode.onOther', 'Reaches everything {{email}} can, as well as what its networks grant it', {
@@ -40,7 +47,7 @@ export const DeviceUserModeSetting: React.FC = () => {
           : t('deviceUserMode.off', 'Reaches only what its networks grant it. On, it reaches everything you can too.')
       }
       toggle={on}
-      disabled={saving || !device.permissions.includes('MANAGE')}
+      disabled={saving || refused || !device.permissions.includes('MANAGE')}
       onClick={async () => {
         setSaving(true)
         await setDeviceUserMode(device.id, !on)

@@ -1171,8 +1171,10 @@
     "controlLocal": "Set only on the device",
     "controlOff": "Turned off on the device by its administrator",
     "controlOn": "Turned on on the device by its administrator",
+    "initiators": "Device sessions from this device",
     "onDevice": "Set on the device",
-    "onDeviceBy": "Set on the device by {{by}}"
+    "onDeviceBy": "Set on the device by {{by}}",
+    "updates": "Remote upgrades"
   },
   "deviceSetupItem": {
     "alreadyCreated": "Already created",
@@ -1198,6 +1200,10 @@
     "ownAdmin": "as {{account}}, admin",
     "revoke": "Remove",
     "title": "SSH access"
+  },
+  "deviceSubnet": {
+    "hint": "Reaches what it may by name and address, without starting a connection",
+    "label": "Device subnet"
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "You are about to transfer ownership of",

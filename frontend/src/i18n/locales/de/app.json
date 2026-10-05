@@ -1171,8 +1171,10 @@
     "controlLocal": "",
     "controlOff": "",
     "controlOn": "",
+    "initiators": "",
     "onDevice": "",
-    "onDeviceBy": ""
+    "onDeviceBy": "",
+    "updates": ""
   },
   "deviceSetupItem": {
     "alreadyCreated": "Bereits erstellt",
@@ -1198,6 +1200,10 @@
     "ownAdmin": "",
     "revoke": "",
     "title": ""
+  },
+  "deviceSubnet": {
+    "hint": "",
+    "label": ""
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "Sie sind dabei, das Eigentum zu übertragen von",

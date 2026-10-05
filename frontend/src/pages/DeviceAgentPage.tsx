@@ -12,6 +12,7 @@ import {
   updating,
 } from '../services/graphQLDaemon'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
+import { DevicePolicyRow } from '../components/DeviceSettingRow'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { SelectSetting } from '../components/SelectSetting'
@@ -24,7 +25,8 @@ const WATCH_INTERVAL = 3000
 
 /* The device agent (device-package's connectd-go daemon): what it runs, what it should, where an upgrade stands, and
    the device's own upgrade settings — a channel other than its account's, or held at what it runs. Behind the
-   device-sessions flag (the route and the tab), and it says so where the API does not serve device sessions. */
+   device-sessions flag (the route and the tab), and it says so where the API does not serve device sessions. Where the
+   machine's administrator allows no remote upgrades (the updates policy), that is said with them. */
 export const DeviceAgentPage: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
@@ -147,6 +149,7 @@ export const DeviceAgentPage: React.FC = () => {
         </List>
         <List>
           <ListSubheader>{t('deviceAgent.upgrades', 'Upgrades')}</ListSubheader>
+          <DevicePolicyRow deviceId={device.id} name="updates" label={t('deviceSetting.updates', 'Remote upgrades')} />
           <SelectSetting
             icon="code-branch"
             label={t('deviceAgent.channel', 'Channel')}
