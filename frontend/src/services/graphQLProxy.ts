@@ -17,6 +17,7 @@ export type Proxy = {
   name: string | null // an own proxy's, before its account's slug ('' for the slug alone)
   domain: string | null
   publicEndpoints: boolean
+  publicExit?: boolean // one of remote.it's offered as an exit to everyone whose plan gives exits (an API before it: absent)
   manage: boolean
   certificate: ProxyCertificate
 }
@@ -66,6 +67,18 @@ async function read<T>(query: string, variables: ILookup<any>, marker: string, p
 export const graphQLProxies = () =>
   read<Proxy[]>(`query Proxies { proxies { ${PROXY_FIELDS} } }`, {}, 'proxies', data => data?.proxies ?? [])
 
+// Which of remote.it's proxies are public exits, apart: an API from before the switch has no such field, and asking
+// for it with the rest would fail the proxies too. Undefined where it cannot say.
+export async function graphQLProxyPublicExit(deviceId: string): Promise<boolean | undefined> {
+  const result = await read<{ id: string; publicExit: boolean }[]>(
+    `query ProxyPublicExits { proxies { id publicExit } }`,
+    {},
+    'proxies',
+    data => data?.proxies ?? []
+  )
+  return Array.isArray(result) ? result.find(p => p.id === deviceId)?.publicExit : undefined
+}
+
 // A service's endpoints: all of them for whoever manages it, otherwise one's own.
 export const graphQLServiceEndpoints = (deviceId: string, serviceId: string) =>
   read<Endpoint[]>(
@@ -103,6 +116,28 @@ export const graphQLSetProxy = (
 
 export const graphQLRemoveProxy = (deviceId: string) =>
   graphQLBasicRequest(` mutation RemoveProxy($deviceId: String!) { removeProxy(deviceId: $deviceId) }`, { deviceId })
+
+// remote.it's own proxies, for everyone — and, apart, offered as an exit to everyone whose plan gives exits: set by
+// remote.it's admins (the API refuses anyone else).
+export const graphQLSetRemoteitProxy = (deviceId: string, region: string) =>
+  graphQLBasicRequest(
+    ` mutation SetRemoteitProxy($deviceId: String!, $region: String!) { setRemoteitProxy(deviceId: $deviceId, region: $region) { host } }`,
+    { deviceId, region }
+  )
+
+export const graphQLRemoveRemoteitProxy = (deviceId: string) =>
+  graphQLBasicRequest(
+    ` mutation RemoveRemoteitProxy($deviceId: String!) { removeRemoteitProxy(deviceId: $deviceId) }`,
+    {
+      deviceId,
+    }
+  )
+
+export const graphQLSetProxyPublicExit = (deviceId: string, publicExit: boolean) =>
+  graphQLBasicRequest(
+    ` mutation SetProxyPublicExit($deviceId: String!, $publicExit: Boolean!) { setProxyPublicExit(deviceId: $deviceId, publicExit: $publicExit) { publicExit } }`,
+    { deviceId, publicExit }
+  )
 
 // Where an endpoint is reached, as a person would type it.
 export const endpointAddress = (endpoint: Pick<Endpoint, 'kind' | 'url' | 'host' | 'port'>) =>

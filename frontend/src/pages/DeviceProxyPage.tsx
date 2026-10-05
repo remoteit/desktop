@@ -1,9 +1,20 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { getUserAdmin } from '../selectors/state'
 import { useTranslation } from 'react-i18next'
 import { List, ListSubheader, Typography } from '@mui/material'
 import { DeviceContext } from '../services/Context'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
-import { Proxy, graphQLProxies, graphQLRemoveProxy, graphQLSetProxy } from '../services/graphQLProxy'
+import {
+  Proxy,
+  graphQLProxies,
+  graphQLProxyPublicExit,
+  graphQLRemoveProxy,
+  graphQLRemoveRemoteitProxy,
+  graphQLSetProxy,
+  graphQLSetProxyPublicExit,
+  graphQLSetRemoteitProxy,
+} from '../services/graphQLProxy'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceExitSection } from '../components/DeviceExitSection'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -14,17 +25,29 @@ import { Notice } from '../components/Notice'
 
 /* This device as a proxy (presence-server docs/proxy-plan.md): the people allowed to connect to it may make endpoints
    on it into their services. The device listens only once told to on the device itself (remoteit-device proxy on);
-   here its owner names it and says what it takes. Behind the device-sessions flag. */
+   here its owner names it and says what it takes. remote.it's admins may make it one of remote.it's — public, for
+   everyone — and, apart, a public exit for everyone whose plan gives exits. Behind the device-sessions flag. */
+
+// Where a device made one of remote.it's proxies here is placed, until there is more than one region.
+const PUBLIC_PROXY_REGION = 'us-west-2'
 export const DeviceProxyPage: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
+  const admin = useSelector(getUserAdmin)
   const [proxy, setProxy] = useState<Proxy | null | 'ERROR' | typeof UNSUPPORTED>()
+  const [publicExit, setPublicExit] = useState<boolean>()
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
     if (!device?.id) return
     const list = await graphQLProxies()
-    setProxy(Array.isArray(list) ? list.find(p => p.id === device.id) ?? null : list)
+    const found = Array.isArray(list) ? list.find(p => p.id === device.id) ?? null : list
+    setProxy(found)
+    setPublicExit(
+      found && typeof found === 'object' && found.kind === 'remoteit'
+        ? await graphQLProxyPublicExit(device.id)
+        : undefined
+    )
   }, [device?.id])
 
   useEffect(() => {
@@ -35,12 +58,13 @@ export const DeviceProxyPage: React.FC = () => {
   if (!device) return null
   const manage = device.permissions.includes('MANAGE') && !device.shared
 
-  const save = async (set: Parameters<typeof graphQLSetProxy>[1] | 'remove') => {
+  const run = async (change: () => Promise<unknown>) => {
     setSaving(true)
-    const result = set === 'remove' ? await graphQLRemoveProxy(device.id) : await graphQLSetProxy(device.id, set)
-    if (result !== 'ERROR') await load()
+    if ((await change()) !== 'ERROR') await load()
     setSaving(false)
   }
+  const save = (set: Parameters<typeof graphQLSetProxy>[1] | 'remove') =>
+    run(() => (set === 'remove' ? graphQLRemoveProxy(device.id) : graphQLSetProxy(device.id, set)))
 
   const body = () => {
     if (proxy === undefined) return <LoadingMessage />
@@ -59,12 +83,7 @@ export const DeviceProxyPage: React.FC = () => {
           {t('deviceProxy.error', 'Could not read the proxies.')}
         </Notice>
       )
-    if (proxy?.kind === 'remoteit')
-      return (
-        <Notice severity="info" fullWidth>
-          {t('deviceProxy.remoteit', "One of remote.it's proxies: {{host}}", { host: proxy.host })}
-        </Notice>
-      )
+    const isPublic = proxy?.kind === 'remoteit'
 
     const certificate = !proxy
       ? undefined
@@ -81,21 +100,82 @@ export const DeviceProxyPage: React.FC = () => {
             icon="server"
             label={t('deviceProxy.use', 'Use as a proxy')}
             subLabel={
-              proxy
+              isPublic
+                ? t('deviceProxy.usedByEveryone', 'For everyone')
+                : proxy
                 ? t('deviceProxy.usedBy', 'For you and the people who may connect to it')
                 : t('deviceProxy.off', 'Make endpoints into services through this device')
             }
             toggle={!!proxy}
-            disabled={!manage || saving}
+            disabled={(isPublic ? !admin : !manage) || saving}
             confirm={!!proxy}
             confirmProps={{
               title: t('deviceProxy.removeConfirm', 'Stop using it as a proxy?'),
               children: t('deviceProxy.removeConfirmBody', 'Every endpoint on it is removed, for everyone using one.'),
             }}
-            onClick={() => save(proxy ? 'remove' : {})}
+            onClick={() => (isPublic ? run(() => graphQLRemoveRemoteitProxy(device.id)) : save(proxy ? 'remove' : {}))}
           />
+          {proxy && (admin || isPublic) && (
+            <ListItemSetting
+              icon="globe"
+              label={t('deviceProxy.public', 'Public proxy')}
+              subLabel={
+                isPublic
+                  ? t('deviceProxy.publicOn', "One of remote.it's proxies, for everyone: {{host}}", {
+                      host: proxy.host,
+                    })
+                  : t('deviceProxy.publicOff', "Make it one of remote.it's proxies, for everyone (remote.it admins)")
+              }
+              toggle={isPublic}
+              disabled={!admin || saving}
+              confirm
+              confirmProps={{
+                title: isPublic
+                  ? t('deviceProxy.publicOffConfirm', 'Make it a private proxy?')
+                  : t('deviceProxy.publicOnConfirm', "Make it one of remote.it's proxies?"),
+                children: isPublic
+                  ? t(
+                      'deviceProxy.publicOffConfirmBody',
+                      "It is yours alone again, under your account's name, and no longer anyone's exit."
+                    )
+                  : t(
+                      'deviceProxy.publicOnConfirmBody',
+                      "Everyone may make endpoints on it, under remote.it's name for it. Whether it is an exit is set apart."
+                    ),
+              }}
+              onClick={() =>
+                run(() =>
+                  isPublic
+                    ? graphQLSetProxy(device.id, {})
+                    : graphQLSetRemoteitProxy(device.id, proxy.region || PUBLIC_PROXY_REGION)
+                )
+              }
+            />
+          )}
+          {isPublic && (
+            <ListItemSetting
+              icon="right-from-bracket"
+              label={t('deviceProxy.publicExit', 'Public exit')}
+              subLabel={
+                publicExit === undefined
+                  ? t('deviceProxy.publicExitUnknown', 'This API cannot say whether it is one')
+                  : t(
+                      'deviceProxy.publicExitHint',
+                      "An exit for everyone whose plan gives exits — remote.it's exit policy applies"
+                    )
+              }
+              toggle={!!publicExit}
+              disabled={!admin || saving || publicExit === undefined}
+              confirm={!!publicExit}
+              confirmProps={{
+                title: t('deviceProxy.publicExitOffConfirm', 'Stop it being a public exit?'),
+                children: t('deviceProxy.publicExitOffConfirmBody', 'Everyone using it as their exit is moved off it.'),
+              }}
+              onClick={() => run(() => graphQLSetProxyPublicExit(device.id, !publicExit))}
+            />
+          )}
         </List>
-        {proxy && (
+        {proxy && !isPublic && (
           <>
             <List>
               <ListSubheader>{t('deviceProxy.names', 'Names')}</ListSubheader>
