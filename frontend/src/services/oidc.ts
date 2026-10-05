@@ -548,13 +548,13 @@ export async function oidcStart(
   }
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
-  const [d] = await Promise.all([discover(), refreshMcpDetailType()])
   // An AS without prompt=create treats it as a plain sign-in and silently resumes whoever its
   // cookie remembers; its own sign-up page is the honest fallback.
-  if (opts.prompt === 'create' && !d.prompt_values_supported?.includes('create')) {
+  if (opts.prompt === 'create' && !(await discover()).prompt_values_supported?.includes('create')) {
     await leaveTo(`${OAUTH_ISSUER}/signup`)
     return false
   }
+  const [d] = await Promise.all([discover(), refreshMcpDetailType()])
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
