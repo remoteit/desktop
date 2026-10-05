@@ -24,6 +24,7 @@ import { ListItemSetting } from '../components/ListItemSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
+import { settingOn } from '../services/graphQLDeviceSettings'
 
 /* This device as a proxy (presence-server docs/proxy-plan.md): the people allowed to connect to it may make endpoints
    on it into their services. The device listens only once told to: a device setting (proxy), switched here where the
@@ -135,6 +136,14 @@ export const DeviceProxyPage: React.FC = () => {
                 'Its proxy listeners: port 443 and its endpoints’ ports, or those its configuration names'
               )}
               disabled={(isPublic ? !admin : !manage) || saving}
+              confirm={settingOn(listening)}
+              confirmProps={{
+                title: t('deviceProxy.listenOffConfirm', 'Stop it listening?'),
+                children: t(
+                  'deviceProxy.listenOffConfirmBody',
+                  'Every endpoint on it stops answering, for everyone using one.'
+                ),
+              }}
               onChange={listen}
             />
           )}

@@ -96,6 +96,14 @@ export const DeviceExitSection: React.FC<{ device: IDevice; settings?: DeviceSet
               'People you allow (its share or role says exit) can send their traffic out through it'
             )}
             disabled={saving}
+            confirm={settingOn(exitNode)}
+            confirmProps={{
+              title: t('deviceExit.offerOffConfirm', 'Stop offering it as an exit node?'),
+              children: t(
+                'deviceExit.offerOffConfirmBody',
+                'Everyone sending their traffic out through it now is cut off.'
+              ),
+            }}
             onChange={on => offer({ on, lan: !!exitNode.value?.lan })}
           />
           {settingOn(exitNode) && (
@@ -107,6 +115,14 @@ export const DeviceExitSection: React.FC<{ device: IDevice; settings?: DeviceSet
               on={!!exitNode.value?.lan}
               quiet
               disabled={saving}
+              confirm={!exitNode.value?.lan}
+              confirmProps={{
+                title: t('deviceExit.lanOnConfirm', 'Let its local network be reached?'),
+                children: t(
+                  'deviceExit.lanOnConfirmBody',
+                  'Everyone who may use it as an exit can then reach the devices on the network it is on.'
+                ),
+              }}
               onChange={lan => offer({ on: !!exitNode.value?.on, lan })}
             />
           )}
