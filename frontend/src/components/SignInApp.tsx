@@ -37,9 +37,6 @@ const GOOGLE_MARK = (
   </svg>
 )
 
-// The page centres its content; padding below lifts it to where the eye reads the middle.
-const OPTICAL_LIFT = '4vh'
-
 const ISSUER_HOST = (() => {
   try {
     return new URL(OAUTH_ISSUER).host
@@ -49,10 +46,10 @@ const ISSUER_HOST = (() => {
 })()
 
 /**
- * The sign-in panel is a LAUNCHER now: the whole journey — email-first with org SSO
- * routing, password + MFA, Google, signup, forgot — lives at the authorization server
- * in the SYSTEM browser (permitteer docs/remoteit-desktop-login.md). The renderer owns
- * the flow (services/oidc); this panel starts it and waits.
+ * The sign-in panel is a LAUNCHER: it only picks where the journey starts (email, Google, Apple,
+ * sign-up); the journey itself — org SSO routing, password + MFA, forgot — lives at the
+ * authorization server in the SYSTEM browser (permitteer docs/remoteit-desktop-login.md). The
+ * renderer owns the flow (services/oidc); this panel starts it and waits.
  */
 
 /* What a failed sign-in tells the person to DO. Keyed by the reason rather than by the
@@ -179,7 +176,7 @@ export function SignInApp() {
   }, [budgetSpent, signInFailed, signingIn])
   if (supportTab)
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingX={4} paddingBottom={OPTICAL_LIFT}>
+      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingX={4}>
         {initialized ? (
           <>
             <Typography variant="h1" textAlign="center">
@@ -202,7 +199,7 @@ export function SignInApp() {
 
   if (autoStart || (!browser.isNative && signingIn))
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingBottom={OPTICAL_LIFT}>
+      <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
         <CircularProgress size={28} />
         <Typography variant="body2" color="textSecondary">
           {t('signIn.redirecting', 'Taking you to sign in…')}
@@ -211,10 +208,9 @@ export function SignInApp() {
     )
 
   const agentOwner = signInFailed && signInErrorCode === 'agentOwned' ? parseAgentOwned(signInError) : undefined
-  const retryable = signInFailed && !agentOwner
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" gap={3} paddingX={4} paddingBottom={OPTICAL_LIFT}>
+    <Box display="flex" flexDirection="column" alignItems="center" gap={3} paddingX={4}>
       {otherStage && (
         <ColorChip
           size="small"
@@ -251,23 +247,23 @@ export function SignInApp() {
           ) : (
             <Typography variant="h2">{t('signIn.heading', 'Sign in')}</Typography>
           )}
-          <Box display="flex" flexDirection="column" gap={1.5} width={280}>
-            <Button variant="contained" sx={{ width: '100%' }} onClick={() => auth.signIn()}>
+          <Box display="flex" flexDirection="column" gap={3} width={280}>
+            <Button variant="contained" onClick={() => auth.signIn()}>
               {t('signIn.continueEmail', 'Continue with email')}
             </Button>
-          </Box>
-          <Divider sx={{ width: 280, color: 'grayDark.main', typography: 'caption' }}>{t('signIn.or', 'or')}</Divider>
-          <Box display="grid" gridAutoFlow="column" gridAutoColumns="1fr" gap={1} width={280}>
-            <Button variant="outlined" startIcon={GOOGLE_MARK} onClick={() => auth.signIn({ idpHint: 'google' })}>
-              Google
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<Icon name="apple" type="brands" />}
-              onClick={() => auth.signIn({ idpHint: 'apple' })}
-            >
-              Apple
-            </Button>
+            <Divider sx={{ color: 'grayDark.main', typography: 'caption' }}>{t('signIn.or', 'or')}</Divider>
+            <Box display="grid" gridAutoFlow="column" gridAutoColumns="1fr" gap={1}>
+              <Button variant="outlined" startIcon={GOOGLE_MARK} onClick={() => auth.signIn({ idpHint: 'google' })}>
+                Google
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<Icon name="apple" type="brands" />}
+                onClick={() => auth.signIn({ idpHint: 'apple' })}
+              >
+                Apple
+              </Button>
+            </Box>
           </Box>
           <Typography variant="body2" color="textSecondary">
             {t('signIn.noAccount', "Don't have an account?")}{' '}
@@ -278,7 +274,7 @@ export function SignInApp() {
         </>
       )}
       <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
-        {retryable && (
+        {signInFailed && !agentOwner && (
           <Link href={DESKTOP_HELP_LINK} variant="caption" noUnderline>
             {t('signIn.help', 'Get help')}
           </Link>

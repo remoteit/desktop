@@ -92,7 +92,7 @@ describe('SignInApp', () => {
     render(screens.agentOwned)
     expect(container.textContent).toContain('is still signed in on this computer')
     expect(container.textContent).toContain('sudo remoteit signout')
-    expect(button('Try again')).toBeUndefined()
+    expect(container.textContent).not.toContain('Get help')
   })
 
   it('keeps the waiting actions reachable in the native mobile app', () => {

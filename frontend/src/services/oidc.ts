@@ -527,7 +527,8 @@ export function oidcGrantStale(): boolean {
 export const oidcLeaveRefused = (): boolean => isChatPopout || oidcIsSupportTab()
 
 /** Leave for the AS. `auto` names an authorize nobody clicked for (see the ledger above). Resolves
- *  false, without leaving, when that reason has been spent or this window may not leave. */
+ *  false, without leaving, when that reason has been spent or this window may not leave; and false
+ *  after leaving for the AS's plain sign-up page when it can't take `prompt=create`. */
 export async function oidcStart(
   opts: {
     prompt?: 'login' | 'select_account' | 'none' | 'create'
@@ -548,6 +549,12 @@ export async function oidcStart(
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
   const [d] = await Promise.all([discover(), refreshMcpDetailType()])
+  // An AS without prompt=create treats it as a plain sign-in and silently resumes whoever its
+  // cookie remembers; its own sign-up page is the honest fallback.
+  if (opts.prompt === 'create' && !d.prompt_values_supported?.includes('create')) {
+    await leaveTo(`${OAUTH_ISSUER}/signup`)
+    return false
+  }
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
@@ -594,15 +601,6 @@ export async function oidcStart(
   rememberFlow(flow, url.toString())
   await leaveTo(url.toString())
   return true
-}
-
-/** Whether the AS can open its sign-up page as part of an authorize (OIDC prompt=create). */
-export async function oidcSignUpSupported(): Promise<boolean> {
-  try {
-    return !!(await discover()).prompt_values_supported?.includes('create')
-  } catch {
-    return false
-  }
 }
 
 /** Sends the person back to this tab's outstanding authorize, for a browser tab that was lost or

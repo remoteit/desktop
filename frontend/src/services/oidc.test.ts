@@ -12,6 +12,18 @@ import { oidcReconcileIssuer, oidcSignedIn, oidcAccounts, oidcStart, oidcReopen,
 import { leaveTo } from './browser'
 import { OAUTH_ISSUER } from '../constants'
 
+const stubDiscovery = (
+  doc: object,
+  otherwise: (url: unknown, init?: RequestInit) => Promise<Response> = () => Promise.reject(new Error('offline'))
+) =>
+  vi
+    .mocked(fetch)
+    .mockImplementation((url, init) =>
+      String(url).endsWith('/.well-known/openid-configuration')
+        ? Promise.resolve(new Response(JSON.stringify(doc)))
+        : otherwise(url, init)
+    )
+
 const OTHER = 'https://login.other.test'
 const idToken = (sub: string, iss: string | null, nonce?: string) =>
   [
@@ -87,11 +99,7 @@ describe('oidcReopen', () => {
     window.sessionStorage.clear()
     window.localStorage.clear()
     vi.mocked(leaveTo).mockClear()
-    vi.mocked(fetch).mockImplementation(url =>
-      String(url).endsWith('/.well-known/openid-configuration')
-        ? Promise.resolve(new Response(JSON.stringify({ authorization_endpoint: 'https://login.test/authorize' })))
-        : Promise.reject(new Error('offline'))
-    )
+    stubDiscovery({ authorization_endpoint: 'https://login.test/authorize' })
   })
   afterEach(() => vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline'))))
 
@@ -103,11 +111,6 @@ describe('oidcReopen', () => {
     expect(leaveTo).toHaveBeenCalledTimes(2)
     expect(vi.mocked(leaveTo).mock.calls[1][0]).toBe(vi.mocked(leaveTo).mock.calls[0][0])
     expect(sharedFlows()).toEqual(flows)
-  })
-
-  it('names the hinted provider on the authorize', async () => {
-    await oidcStart({ idpHint: 'google' })
-    expect(new URL(vi.mocked(leaveTo).mock.calls[0][0]).searchParams.get('idp_hint')).toBe('google')
   })
 
   it('resolves false when no flow is outstanding', async () => {
@@ -155,19 +158,13 @@ describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => 
   beforeEach(async () => {
     window.sessionStorage.clear()
     window.localStorage.clear()
-    vi.mocked(fetch).mockImplementation((url, init) => {
-      if (String(url).endsWith('/.well-known/openid-configuration'))
-        return Promise.resolve(
-          new Response(
-            JSON.stringify({
-              authorization_endpoint: 'https://login.test/authorize',
-              token_endpoint: 'https://login.test/token',
-            })
-          )
-        )
-      if (String(init?.body ?? '').includes('grant_type=authorization_code')) return exchange()
-      return Promise.reject(new Error('offline'))
-    })
+    stubDiscovery(
+      { authorization_endpoint: 'https://login.test/authorize', token_endpoint: 'https://login.test/token' },
+      (_, init) =>
+        String(init?.body ?? '').includes('grant_type=authorization_code')
+          ? exchange()
+          : Promise.reject(new Error('offline'))
+    )
     await oidcStart()
     window.history.replaceState({}, '', `/?code=c1&state=${ownFlow().state}`)
   })
@@ -226,20 +223,32 @@ describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => 
   })
 })
 
-describe('oidcSignUpSupported', () => {
-  const discovered = async (doc: object) => {
-    vi.resetModules()
-    vi.mocked(fetch).mockImplementation(url =>
-      String(url).endsWith('/.well-known/openid-configuration')
-        ? Promise.resolve(new Response(JSON.stringify(doc)))
-        : Promise.reject(new Error('offline'))
-    )
-    return (await import('./oidc')).oidcSignUpSupported()
-  }
+describe('oidcStart', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    vi.mocked(leaveTo).mockClear()
+    stubDiscovery({ authorization_endpoint: 'https://login.test/authorize' })
+  })
   afterEach(() => vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline'))))
 
-  it('is true only when discovery lists prompt=create', async () => {
-    expect(await discovered({ authorization_endpoint: 'x', prompt_values_supported: ['none', 'create'] })).toBe(true)
-    expect(await discovered({ authorization_endpoint: 'x', prompt_values_supported: ['none', 'login'] })).toBe(false)
+  it('names the hinted provider on the authorize', async () => {
+    await oidcStart({ idpHint: 'google' })
+    expect(new URL(vi.mocked(leaveTo).mock.calls[0][0]).searchParams.get('idp_hint')).toBe('google')
+  })
+
+  it.each([
+    ['supports', ['none', 'login', 'select_account', 'create'], 'https://login.test/authorize'],
+    ['lacks', ['none', 'login', 'select_account'], `${OAUTH_ISSUER}/signup`],
+  ])('when discovery %s prompt=create, sign-up leaves for the right page', async (_, prompts, page) => {
+    vi.resetModules()
+    stubDiscovery({ authorization_endpoint: 'https://login.test/authorize', prompt_values_supported: prompts })
+    const oidc = await import('./oidc')
+    const browser = await import('./browser')
+    const started = await oidc.oidcStart({ prompt: 'create' })
+    const url = new URL(vi.mocked(browser.leaveTo).mock.calls[0][0])
+    expect(url.origin + url.pathname).toBe(page)
+    expect(started).toBe(page.endsWith('/authorize'))
+    if (started) expect(url.searchParams.get('prompt')).toBe('create')
+    else expect(window.sessionStorage.getItem('oidc.flow')).toBeNull()
   })
 })
