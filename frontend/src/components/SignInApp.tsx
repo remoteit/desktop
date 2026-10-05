@@ -15,6 +15,9 @@ import { ColorChip } from './ColorChip'
 import { Link } from './Link'
 import { Logo } from '@common/brand/Logo'
 
+// The page centres its content; padding below lifts it to where the eye reads the middle.
+const OPTICAL_LIFT = '12vh'
+
 const ISSUER_HOST = (() => {
   try {
     return new URL(OAUTH_ISSUER).host
@@ -154,7 +157,7 @@ export function SignInApp() {
   }, [budgetSpent, signInFailed, signingIn])
   if (supportTab)
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={12} paddingX={4}>
+      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingX={4} paddingBottom={OPTICAL_LIFT}>
         {initialized ? (
           <>
             <Typography variant="h1" textAlign="center">
@@ -177,7 +180,7 @@ export function SignInApp() {
 
   if (autoStart || (!browser.isNative && signingIn))
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={12}>
+      <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingBottom={OPTICAL_LIFT}>
         <CircularProgress size={28} />
         <Typography variant="body2" color="textSecondary">
           {t('signIn.redirecting', 'Taking you to sign in…')}
@@ -195,7 +198,7 @@ export function SignInApp() {
   else if (retryable) action = t('signIn.retry', 'Try again')
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" gap={3} paddingTop={6} paddingX={4}>
+    <Box display="flex" flexDirection="column" alignItems="center" gap={3} paddingX={4} paddingBottom={OPTICAL_LIFT}>
       {otherStage && (
         <ColorChip
           size="small"
@@ -221,8 +224,12 @@ export function SignInApp() {
           agentOwner={agentOwner}
         />
       )}
-      <Box display="flex" alignItems="center" gap={1}>
-        {signingIn && <Button onClick={() => auth.set({ signingIn: false })}>{t('signIn.cancel', 'Cancel')}</Button>}
+      <Box display="grid" gridAutoFlow="column" gridAutoColumns="1fr" gap={1}>
+        {signingIn && (
+          <Button size="large" onClick={() => auth.set({ signingIn: false })}>
+            {t('signIn.cancel', 'Cancel')}
+          </Button>
+        )}
         <Button variant="contained" size="large" onClick={() => (signingIn ? oidcReopen() : auth.signIn())}>
           {action}
         </Button>
