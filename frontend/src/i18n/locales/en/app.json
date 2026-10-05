@@ -2217,7 +2217,6 @@
     "autoPaused": "Automatic sign-in stopped after repeated attempts. Choose how to sign in below.",
     "cancel": "Cancel",
     "continueEmail": "Continue with email",
-    "continueGoogle": "Continue with Google",
     "continueInBrowser": "Continue in your browser",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
     "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
@@ -2231,6 +2230,7 @@
     "help": "Get help",
     "noAccount": "Don't have an account?",
     "openAgain": "Open again",
+    "or": "or",
     "redirecting": "Taking you to sign in…",
     "signUp": "Sign up",
     "switchToProduction": "Switch to production"

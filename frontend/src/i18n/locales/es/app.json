@@ -2253,7 +2253,6 @@
     "autoPaused": "El inicio de sesión automático se detuvo tras varios intentos. Elige cómo iniciar sesión a continuación.",
     "cancel": "Cancelar",
     "continueEmail": "Continuar con correo electrónico",
-    "continueGoogle": "Continuar con Google",
     "continueInBrowser": "Continúa en tu navegador",
     "errorExpired": "Ese intento de inicio de sesión caducó antes de completarse. Inténtalo de nuevo.",
     "errorRateLimited": "Demasiados intentos de inicio de sesión desde esta red. Espera unos minutos e inténtalo de nuevo.",
@@ -2268,6 +2267,7 @@
     "help": "Obtener ayuda",
     "noAccount": "¿No tienes una cuenta?",
     "openAgain": "Abrir de nuevo",
+    "or": "o",
     "redirecting": "Te llevamos al inicio de sesión…",
     "signUp": "Regístrate",
     "switchToProduction": "Cambiar a producción"

@@ -2217,7 +2217,6 @@
     "autoPaused": "Die automatische Anmeldung wurde nach mehreren Versuchen beendet. Wählen Sie unten aus, wie Sie sich anmelden möchten.",
     "cancel": "Abbrechen",
     "continueEmail": "Mit E-Mail fortfahren",
-    "continueGoogle": "Mit Google fortfahren",
     "continueInBrowser": "Fahren Sie in Ihrem Browser fort",
     "errorExpired": "Dieser Anmeldeversuch ist abgelaufen, bevor er abgeschlossen wurde. Bitte versuchen Sie es erneut.",
     "errorRateLimited": "Zu viele Anmeldeversuche aus diesem Netzwerk. Bitte warten Sie einige Minuten und versuchen Sie es dann erneut.",
@@ -2231,6 +2230,7 @@
     "help": "Hilfe",
     "noAccount": "Noch kein Konto?",
     "openAgain": "Erneut öffnen",
+    "or": "oder",
     "redirecting": "Weiterleitung zur Anmeldung…",
     "signUp": "Registrieren",
     "switchToProduction": "Zur Produktionsumgebung wechseln"

@@ -2181,7 +2181,6 @@
     "autoPaused": "何度も試行されたため、自動サインインを停止しました。以下からサインイン方法を選択してください。",
     "cancel": "キャンセル",
     "continueEmail": "メールアドレスで続行",
-    "continueGoogle": "Googleで続行",
     "continueInBrowser": "ブラウザで続行してください",
     "errorExpired": "サインインが完了する前に有効期限が切れました。もう一度お試しください。",
     "errorRateLimited": "このネットワークからのサインイン試行が多すぎます。数分待ってからもう一度お試しください。",
@@ -2194,6 +2193,7 @@
     "help": "ヘルプ",
     "noAccount": "アカウントをお持ちでないですか？",
     "openAgain": "もう一度開く",
+    "or": "または",
     "redirecting": "サインイン画面に移動しています…",
     "signUp": "新規登録",
     "switchToProduction": "本番環境に切り替える"
