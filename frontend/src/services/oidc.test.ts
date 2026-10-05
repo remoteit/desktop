@@ -105,6 +105,11 @@ describe('oidcReopen', () => {
     expect(sharedFlows()).toEqual(flows)
   })
 
+  it('names the hinted provider on the authorize', async () => {
+    await oidcStart({ idpHint: 'google' })
+    expect(new URL(vi.mocked(leaveTo).mock.calls[0][0]).searchParams.get('idp_hint')).toBe('google')
+  })
+
   it('resolves false when no flow is outstanding', async () => {
     expect(await oidcReopen()).toBe(false)
     expect(leaveTo).not.toHaveBeenCalled()
@@ -218,5 +223,23 @@ describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => 
     await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ oauthError: 'invalid_grant' })
     expect(ownFlow()).toBeNull()
     expect(window.localStorage.getItem(`oidc.flow:${state}`)).toBeNull()
+  })
+})
+
+describe('oidcSignUpSupported', () => {
+  const discovered = async (doc: object) => {
+    vi.resetModules()
+    vi.mocked(fetch).mockImplementation(url =>
+      String(url).endsWith('/.well-known/openid-configuration')
+        ? Promise.resolve(new Response(JSON.stringify(doc)))
+        : Promise.reject(new Error('offline'))
+    )
+    return (await import('./oidc')).oidcSignUpSupported()
+  }
+  afterEach(() => vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline'))))
+
+  it('is true only when discovery lists prompt=create', async () => {
+    expect(await discovered({ authorization_endpoint: 'x', prompt_values_supported: ['none', 'create'] })).toBe(true)
+    expect(await discovered({ authorization_endpoint: 'x', prompt_values_supported: ['none', 'login'] })).toBe(false)
   })
 })

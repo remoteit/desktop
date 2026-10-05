@@ -220,7 +220,9 @@ type Stored = {
 
 let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
 let minting: Promise<unknown> = Promise.resolve()
-let discovery: { authorization_endpoint: string; token_endpoint: string } | undefined
+let discovery:
+  | { authorization_endpoint: string; token_endpoint: string; prompt_values_supported?: string[] }
+  | undefined
 
 /* Sign-in failures the person reading them can DO something different about. The message
    stays the technical detail — console, support, bug reports — while `code` is what picks
@@ -528,8 +530,9 @@ export const oidcLeaveRefused = (): boolean => isChatPopout || oidcIsSupportTab(
  *  false, without leaving, when that reason has been spent or this window may not leave. */
 export async function oidcStart(
   opts: {
-    prompt?: 'login' | 'select_account' | 'none'
+    prompt?: 'login' | 'select_account' | 'none' | 'create'
     loginHint?: string
+    idpHint?: string
     supportTicket?: string
     auto?: string
   } = {}
@@ -580,6 +583,8 @@ export async function oidcStart(
   // chooser — without it, prompt=login lands on the picker and choosing your own account
   // simply returns you to the same page, which reads as a loop.
   if (opts.loginHint) params.login_hint = opts.loginHint
+  // Opens the AS straight on that provider (e.g. Google) instead of its own sign-in page.
+  if (opts.idpHint) params.idp_hint = opts.idpHint
   // A support launch: the one-time ticket binds THIS authorize to the operator's support session.
   if (opts.supportTicket) params.support_ticket = opts.supportTicket
   if (opts.prompt) {
@@ -589,6 +594,15 @@ export async function oidcStart(
   rememberFlow(flow, url.toString())
   await leaveTo(url.toString())
   return true
+}
+
+/** Whether the AS can open its sign-up page as part of an authorize (OIDC prompt=create). */
+export async function oidcSignUpSupported(): Promise<boolean> {
+  try {
+    return !!(await discover()).prompt_values_supported?.includes('create')
+  } catch {
+    return false
+  }
 }
 
 /** Sends the person back to this tab's outstanding authorize, for a browser tab that was lost or

@@ -8,6 +8,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // re-read from the store after a teardown.
 const {
   oidcStart,
+  oidcSignUpSupported,
+  windowOpen,
   oidcEndSession,
   signOutEverywhere,
   changePassword,
@@ -42,6 +44,8 @@ const {
   reloadIfStageChanged: vi.fn(),
   controllerClose: vi.fn(),
   oidcStart: vi.fn(),
+  oidcSignUpSupported: vi.fn(),
+  windowOpen: vi.fn(),
   oidcEndSession: vi.fn(),
   changePassword: vi.fn(),
   signOutEverywhere: vi.fn(),
@@ -56,6 +60,7 @@ const {
 // (an undefined right-hand side of instanceof throws rather than returning false).
 vi.mock('../services/oidc', () => ({
   oidcStart,
+  oidcSignUpSupported,
   oidcEndSession,
   oidcGrantStale,
   oidcMcpDetailReady,
@@ -79,7 +84,7 @@ vi.mock('../services/Controller', () => ({
 vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn() } }))
 vi.mock('../services/cloudController', () => ({ default: { reset: vi.fn() } }))
 vi.mock('../services/Network', () => ({ default: {} }))
-vi.mock('../services/browser', () => ({ default: browser }))
+vi.mock('../services/browser', () => ({ default: browser, windowOpen }))
 vi.mock('../services/analytics', () => ({ default: {} }))
 vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
@@ -91,6 +96,7 @@ vi.mock('../store', () => ({
 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 vi.mock('../constants', () => ({
+  OAUTH_ISSUER: 'https://login.test',
   API_URL: '',
   DEVELOPER_KEY: '',
   AGENT_RELEASE_TIMEOUT: 1000,
@@ -122,6 +128,8 @@ const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
 beforeEach(() => {
   oidcStart.mockReset()
+  oidcSignUpSupported.mockReset()
+  windowOpen.mockReset()
   oidcEndSession.mockReset().mockResolvedValue(204)
   changePassword.mockReset()
   signOutEverywhere.mockReset().mockResolvedValue({ status: 200, body: { ended: 1, pool: 'skipped' } })
@@ -140,6 +148,29 @@ describe('auth model — sign-in always offers the chooser', () => {
     await effectsFor(dispatch).signIn()
     expect(oidcStart).toHaveBeenCalledTimes(1)
     expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+  })
+})
+
+describe('auth model — the sign-in paths', () => {
+  it('asks the AS to open straight on the hinted provider', async () => {
+    await effectsFor(makeDispatch()).signIn({ idpHint: 'google' })
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account', idpHint: 'google' })
+  })
+
+  it('opens sign-up inside the authorize when the AS supports prompt=create', async () => {
+    oidcSignUpSupported.mockResolvedValue(true)
+    await effectsFor(makeDispatch()).signIn({ signUp: true })
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'create' })
+    expect(windowOpen).not.toHaveBeenCalled()
+  })
+
+  it('falls back to the AS sign-up page rather than an authorize that would sign in silently', async () => {
+    oidcSignUpSupported.mockResolvedValue(false)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).signIn({ signUp: true })
+    expect(windowOpen).toHaveBeenCalledWith('https://login.test/signup', '_blank', true)
+    expect(oidcStart).not.toHaveBeenCalled()
+    expect(dispatch.auth.set).not.toHaveBeenCalled()
   })
 })
 

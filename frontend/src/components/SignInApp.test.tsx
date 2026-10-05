@@ -105,11 +105,21 @@ describe('SignInApp', () => {
   it.each([
     ['desktop', { isElectron: true, isNative: true }],
     ['web', { isElectron: false, isNative: false }],
-  ])('on %s, the ready screen is the logo and one Sign In button, nothing else', (_, platform) => {
+  ])('on %s, the ready screen offers email, Google and sign-up, each said once', (_, platform) => {
     Object.assign(browser, platform)
     autoStart.spent = true
     render(screens.ready)
-    expect(container.textContent).toBe('Sign In')
-    expect(container.querySelector('.MuiButton-contained')).not.toBeNull()
+    expect(container.textContent).toBe("Sign inContinue with emailContinue with GoogleDon't have an account? Sign up")
+    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Continue with email')
+  })
+
+  it('starts each sign-in path from its own button', () => {
+    render(screens.ready)
+    act(() => button('Continue with email')!.click())
+    expect(auth.signIn).toHaveBeenLastCalledWith()
+    act(() => button('Continue with Google')!.click())
+    expect(auth.signIn).toHaveBeenLastCalledWith({ idpHint: 'google' })
+    act(() => button('Sign up')!.click())
+    expect(auth.signIn).toHaveBeenLastCalledWith({ signUp: true })
   })
 })

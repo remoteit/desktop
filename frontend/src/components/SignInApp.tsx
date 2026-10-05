@@ -149,8 +149,8 @@ export function SignInApp() {
     if (browser.isElectron || signingIn || signInFailed || !budgetSpent) return
     ui.set({
       noticeMessage: t(
-        'signIn.autoStopped',
-        'Automatic sign-in stopped after repeated attempts. Select Sign In to try again.'
+        'signIn.autoPaused',
+        'Automatic sign-in stopped after repeated attempts. Choose how to sign in below.'
       ),
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -191,12 +191,6 @@ export function SignInApp() {
   const agentOwner = signInFailed && signInErrorCode === 'agentOwned' ? parseAgentOwned(signInError) : undefined
   const retryable = signInFailed && !agentOwner
 
-  // After a failure the button is a RETRY: "Sign In" beside an error reads as the thing that just
-  // didn't work. Not so for an agent held by another account, where retrying the same account can't help.
-  let action = t('signIn.button', 'Sign In')
-  if (signingIn) action = t('signIn.openAgain', 'Open again')
-  else if (retryable) action = t('signIn.retry', 'Try again')
-
   return (
     <Box display="flex" flexDirection="column" alignItems="center" gap={3} paddingX={4} paddingBottom={OPTICAL_LIFT}>
       {otherStage && (
@@ -208,32 +202,56 @@ export function SignInApp() {
         />
       )}
       <Logo width={140} />
-      {signingIn && (
-        <Box display="flex" alignItems="center" gap={1.5}>
-          <CircularProgress size={16} />
+      {signingIn ? (
+        <>
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <CircularProgress size={16} />
+            <Typography variant="body2" color="textSecondary">
+              {t('signIn.continueInBrowser', 'Continue in your browser')}
+            </Typography>
+          </Box>
+          <Box display="grid" gridAutoFlow="column" gridAutoColumns="1fr" gap={1}>
+            <Button size="large" onClick={() => auth.set({ signingIn: false })}>
+              {t('signIn.cancel', 'Cancel')}
+            </Button>
+            <Button variant="contained" size="large" onClick={() => oidcReopen()}>
+              {t('signIn.openAgain', 'Open again')}
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <>
+          {signInFailed ? (
+            <SignInError
+              code={signInErrorCode}
+              detail={signInError}
+              retryAfter={signInRetryAfter}
+              agentOwner={agentOwner}
+            />
+          ) : (
+            <Typography variant="h2">{t('signIn.heading', 'Sign in')}</Typography>
+          )}
+          <Box display="flex" flexDirection="column" gap={1.5} width={280}>
+            <Button variant="contained" size="large" sx={{ width: '100%' }} onClick={() => auth.signIn()}>
+              {t('signIn.continueEmail', 'Continue with email')}
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              sx={{ width: '100%' }}
+              onClick={() => auth.signIn({ idpHint: 'google' })}
+            >
+              {t('signIn.continueGoogle', 'Continue with Google')}
+            </Button>
+          </Box>
           <Typography variant="body2" color="textSecondary">
-            {t('signIn.continueInBrowser', 'Continue in your browser')}
+            {t('signIn.noAccount', "Don't have an account?")}{' '}
+            <MuiLink component="button" variant="body2" onClick={() => auth.signIn({ signUp: true })}>
+              {t('signIn.signUp', 'Sign up')}
+            </MuiLink>
           </Typography>
-        </Box>
+        </>
       )}
-      {signInFailed && (
-        <SignInError
-          code={signInErrorCode}
-          detail={signInError}
-          retryAfter={signInRetryAfter}
-          agentOwner={agentOwner}
-        />
-      )}
-      <Box display="grid" gridAutoFlow="column" gridAutoColumns="1fr" gap={1}>
-        {signingIn && (
-          <Button size="large" onClick={() => auth.set({ signingIn: false })}>
-            {t('signIn.cancel', 'Cancel')}
-          </Button>
-        )}
-        <Button variant="contained" size="large" onClick={() => (signingIn ? oidcReopen() : auth.signIn())}>
-          {action}
-        </Button>
-      </Box>
       <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
         {retryable && (
           <Link href={DESKTOP_HELP_LINK} variant="caption" noUnderline>

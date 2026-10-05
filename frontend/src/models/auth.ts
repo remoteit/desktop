@@ -2,7 +2,7 @@ import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
-import browser from '../services/browser'
+import browser, { windowOpen } from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import {
@@ -11,6 +11,7 @@ import {
   SIGN_OUT_EVERYWHERE_TIMEOUT,
   SIGN_OUT_SESSION_TIMEOUT,
   StageName,
+  OAUTH_ISSUER,
 } from '../constants'
 import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
 import { persistor, store } from '../store'
@@ -37,6 +38,7 @@ import {
   oidcTakeSupportTicket,
   oidcSelectKnownAccount,
   oidcClearAutoStarts,
+  oidcSignUpSupported,
   OidcError,
   OidcErrorCode,
 } from '../services/oidc'
@@ -266,7 +268,10 @@ export default createModel<RootModel>()({
     },
     /** `auto` names a sign-in nobody clicked for (the web sign-in screen's own start) so the
      *  ledger in oidcStart can bound it; a refused one leaves the screen as it was. */
-    async signIn(options?: { auto?: string }) {
+    async signIn(options?: { auto?: string; idpHint?: string; signUp?: boolean }) {
+      // An AS without prompt=create would treat it as a plain sign-in, silently resuming whoever
+      // its cookie remembers; its own sign-up page is the honest fallback.
+      if (options?.signUp && !(await oidcSignUpSupported())) return windowOpen(`${OAUTH_ISSUER}/signup`, '_blank', true)
       dispatch.auth.set({ signingIn: true, ...signInCleared })
       try {
         // Sign-in ALWAYS offers the CHOOSER (prompt=select_account), web and desktop alike.
@@ -274,7 +279,8 @@ export default createModel<RootModel>()({
         // PROMPTLESS authorize would silently SSO the last user straight back in — which is
         // exactly the "sign-out doesn't stick" bug. select_account also means that signing
         // out and reloading always lands on the picker, never a silent re-login.
-        if (!(await oidcStart({ prompt: 'select_account', auto: options?.auto })))
+        const prompt = options?.signUp ? 'create' : 'select_account'
+        if (!(await oidcStart({ prompt, idpHint: options?.idpHint, auto: options?.auto })))
           dispatch.auth.set({ signingIn: false })
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)

@@ -2214,9 +2214,10 @@
   },
   "signIn": {
     "agentOwnedDetail": "{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:",
-    "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
-    "button": "Sign In",
+    "autoPaused": "Automatic sign-in stopped after repeated attempts. Choose how to sign in below.",
     "cancel": "Cancel",
+    "continueEmail": "Continue with email",
+    "continueGoogle": "Continue with Google",
     "continueInBrowser": "Continue in your browser",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
     "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
@@ -2226,10 +2227,12 @@
     "errorUnavailable": "The sign-in service is temporarily unavailable. Please try again in a few minutes.",
     "errorUnknown": "Sign in didn't complete. Please try again.",
     "errorUnreachable": "We couldn't reach the sign-in service. Check your internet connection, then try again.",
+    "heading": "Sign in",
     "help": "Get help",
+    "noAccount": "Don't have an account?",
     "openAgain": "Open again",
     "redirecting": "Taking you to sign in…",
-    "retry": "Try again",
+    "signUp": "Sign up",
     "switchToProduction": "Switch to production"
   },
   "statusChip": {

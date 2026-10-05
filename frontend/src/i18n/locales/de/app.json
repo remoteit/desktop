@@ -2214,9 +2214,10 @@
   },
   "signIn": {
     "agentOwnedDetail": "{{owner}} ist auf diesem Computer noch angemeldet. Melden Sie sich zuerst als {{owner}} an und wieder ab, oder führen Sie Folgendes in einem Terminal als Administrator aus:",
-    "autoStopped": "Die automatische Anmeldung wurde nach mehreren Versuchen beendet. Wählen Sie „Anmelden“, um es erneut zu versuchen.",
-    "button": "Anmelden",
+    "autoPaused": "Die automatische Anmeldung wurde nach mehreren Versuchen beendet. Wählen Sie unten aus, wie Sie sich anmelden möchten.",
     "cancel": "Abbrechen",
+    "continueEmail": "Mit E-Mail fortfahren",
+    "continueGoogle": "Mit Google fortfahren",
     "continueInBrowser": "Fahren Sie in Ihrem Browser fort",
     "errorExpired": "Dieser Anmeldeversuch ist abgelaufen, bevor er abgeschlossen wurde. Bitte versuchen Sie es erneut.",
     "errorRateLimited": "Zu viele Anmeldeversuche aus diesem Netzwerk. Bitte warten Sie einige Minuten und versuchen Sie es dann erneut.",
@@ -2226,10 +2227,12 @@
     "errorUnavailable": "Der Anmeldedienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es in einigen Minuten erneut.",
     "errorUnknown": "Die Anmeldung wurde nicht abgeschlossen. Bitte versuchen Sie es erneut.",
     "errorUnreachable": "Der Anmeldedienst ist nicht erreichbar. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es dann erneut.",
+    "heading": "Anmelden",
     "help": "Hilfe",
+    "noAccount": "Noch kein Konto?",
     "openAgain": "Erneut öffnen",
     "redirecting": "Weiterleitung zur Anmeldung…",
-    "retry": "Erneut versuchen",
+    "signUp": "Registrieren",
     "switchToProduction": "Zur Produktionsumgebung wechseln"
   },
   "statusChip": {
