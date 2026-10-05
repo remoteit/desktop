@@ -16,7 +16,7 @@ import { Link } from './Link'
 import { Logo } from '@common/brand/Logo'
 
 // The page centres its content; padding below lifts it to where the eye reads the middle.
-const OPTICAL_LIFT = '12vh'
+const OPTICAL_LIFT = '4vh'
 
 const ISSUER_HOST = (() => {
   try {
