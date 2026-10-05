@@ -2250,10 +2250,10 @@
   },
   "signIn": {
     "agentOwnedDetail": "{{owner}} sigue con la sesión iniciada en esta computadora. Inicia sesión como {{owner}} y cierra la sesión primero, o ejecuta esto en una terminal como administrador:",
-    "agentOwnedTitle": "Esta computadora está en uso",
     "autoStopped": "El inicio de sesión automático se detuvo tras varios intentos. Selecciona Iniciar sesión para volver a intentarlo.",
     "button": "Iniciar sesión",
     "cancel": "Cancelar",
+    "continueInBrowser": "Continúa en tu navegador",
     "errorExpired": "Ese intento de inicio de sesión caducó antes de completarse. Inténtalo de nuevo.",
     "errorRateLimited": "Demasiados intentos de inicio de sesión desde esta red. Espera unos minutos e inténtalo de nuevo.",
     "errorRateLimitedWait_one": "Demasiados intentos de inicio de sesión desde esta red. Vuelve a intentarlo en aproximadamente un minuto.",
@@ -2263,16 +2263,11 @@
     "errorUnavailable": "El servicio de inicio de sesión no está disponible temporalmente. Vuelve a intentarlo en unos minutos.",
     "errorUnknown": "No se completó el inicio de sesión. Inténtalo de nuevo.",
     "errorUnreachable": "No pudimos conectar con el servicio de inicio de sesión. Comprueba tu conexión a internet e inténtalo de nuevo.",
-    "heading": "Iniciar sesión",
     "help": "Obtener ayuda",
-    "opensBrowser": "Se abrirá tu navegador para completar el inicio de sesión.",
+    "openAgain": "Abrir de nuevo",
     "redirecting": "Te llevamos al inicio de sesión…",
-    "reopen": "Abrir el navegador de nuevo",
     "retry": "Volver a intentar",
-    "switchToProduction": "Cambiar a producción",
-    "waitingDetail": "Abrimos {{host}} en tu navegador predeterminado.",
-    "waitingTitle": "Completa el inicio de sesión en tu navegador",
-    "withBrowser": "Iniciar sesión con el navegador"
+    "switchToProduction": "Cambiar a producción"
   },
   "statusChip": {
     "connected": "Conectado",

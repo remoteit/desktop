@@ -188,18 +188,14 @@ export function SignInApp() {
   const agentOwner = signInFailed && signInErrorCode === 'agentOwned' ? parseAgentOwned(signInError) : undefined
   const retryable = signInFailed && !agentOwner
 
-  let heading = t('signIn.heading', 'Sign in')
-  if (signingIn) heading = t('signIn.waitingTitle', 'Finish signing in in your browser')
-  else if (agentOwner) heading = t('signIn.agentOwnedTitle', 'This computer is in use')
-
   // After a failure the button is a RETRY: "Sign In" beside an error reads as the thing that just
   // didn't work. Not so for an agent held by another account, where retrying the same account can't help.
-  let action = browser.isNative ? t('signIn.withBrowser', 'Sign in with browser') : t('signIn.button', 'Sign In')
-  if (signingIn) action = t('signIn.reopen', 'Open browser again')
+  let action = t('signIn.button', 'Sign In')
+  if (signingIn) action = t('signIn.openAgain', 'Open again')
   else if (retryable) action = t('signIn.retry', 'Try again')
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={6} paddingX={4}>
+    <Box display="flex" flexDirection="column" alignItems="center" gap={3} paddingTop={6} paddingX={4}>
       {otherStage && (
         <ColorChip
           size="small"
@@ -208,36 +204,30 @@ export function SignInApp() {
           label={`${STAGES[otherStage].name} · ${ISSUER_HOST}`}
         />
       )}
-      <Logo width={140} marginBottom={1} />
-      {signingIn && <CircularProgress size={28} />}
-      <Typography variant="h1" textAlign="center">
-        {heading}
-      </Typography>
-      {signingIn ? (
-        <Typography variant="body2" color="textSecondary" textAlign="center">
-          {t('signIn.waitingDetail', 'We opened {{host}} in your default browser.', { host: ISSUER_HOST })}
-        </Typography>
-      ) : signInFailed ? (
+      <Logo width={140} />
+      {signingIn && (
+        <Box display="flex" alignItems="center" gap={1.5}>
+          <CircularProgress size={16} />
+          <Typography variant="body2" color="textSecondary">
+            {t('signIn.continueInBrowser', 'Continue in your browser')}
+          </Typography>
+        </Box>
+      )}
+      {signInFailed && (
         <SignInError
           code={signInErrorCode}
           detail={signInError}
           retryAfter={signInRetryAfter}
           agentOwner={agentOwner}
         />
-      ) : (
-        browser.isNative && (
-          <Typography variant="body2" color="textSecondary" textAlign="center">
-            {t('signIn.opensBrowser', 'Your browser will open to finish signing in.')}
-          </Typography>
-        )
       )}
-      <Box display="flex" alignItems="center" gap={1} marginTop={1}>
+      <Box display="flex" alignItems="center" gap={1}>
         {signingIn && <Button onClick={() => auth.set({ signingIn: false })}>{t('signIn.cancel', 'Cancel')}</Button>}
         <Button variant="contained" size="large" onClick={() => (signingIn ? oidcReopen() : auth.signIn())}>
           {action}
         </Button>
       </Box>
-      <Box display="flex" flexDirection="column" alignItems="center" gap={1} marginTop={2}>
+      <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
         {retryable && (
           <Link href={DESKTOP_HELP_LINK} variant="caption" noUnderline>
             {t('signIn.help', 'Get help')}

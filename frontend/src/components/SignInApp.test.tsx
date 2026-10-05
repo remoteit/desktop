@@ -78,7 +78,7 @@ describe('SignInApp', () => {
     render(screens.waiting)
     const reopen = container.querySelector<HTMLButtonElement>('.MuiButton-contained')!
     const cancel = button('Cancel')!
-    expect(reopen.textContent).toBe('Open browser again')
+    expect(reopen.textContent).toBe('Open again')
     expect(buttons().indexOf(cancel)).toBeLessThan(buttons().indexOf(reopen))
 
     act(() => reopen.click())
@@ -90,7 +90,7 @@ describe('SignInApp', () => {
 
   it('gives the agent owner and a copyable command when another account holds the agent', () => {
     render(screens.agentOwned)
-    expect(container.textContent).toContain('This computer is in use')
+    expect(container.textContent).toContain('is still signed in on this computer')
     expect(container.textContent).toContain('sudo remoteit signout')
     expect(button('Try again')).toBeUndefined()
   })
@@ -98,15 +98,18 @@ describe('SignInApp', () => {
   it('keeps the waiting actions reachable in the native mobile app', () => {
     Object.assign(browser, { isElectron: false, isNative: true })
     render(screens.waiting)
-    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Open browser again')
+    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Open again')
     expect(button('Cancel')).toBeDefined()
   })
 
-  it('on the web, where the page is the browser, offers a plain sign-in', () => {
-    Object.assign(browser, { isElectron: false, isNative: false })
+  it.each([
+    ['desktop', { isElectron: true, isNative: true }],
+    ['web', { isElectron: false, isNative: false }],
+  ])('on %s, the ready screen is the logo and one Sign In button, nothing else', (_, platform) => {
+    Object.assign(browser, platform)
     autoStart.spent = true
     render(screens.ready)
-    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Sign In')
-    expect(container.textContent).not.toContain('Your browser will open')
+    expect(container.textContent).toBe('Sign In')
+    expect(container.querySelector('.MuiButton-contained')).not.toBeNull()
   })
 })
