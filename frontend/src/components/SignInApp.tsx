@@ -223,7 +223,7 @@ export function SignInApp() {
           label={`${STAGES[otherStage].name} · ${ISSUER_HOST}`}
         />
       )}
-      <Logo width={140} />
+      <Logo width={140} marginBottom={1} />
       {signingIn ? (
         <>
           <Box display="flex" alignItems="center" gap={1.5}>
