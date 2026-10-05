@@ -11,6 +11,7 @@ import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from '../components/DesktopUI'
 import { Gutters } from '../components/Gutters'
 import { LocalSubnetConnect } from '../components/LocalSubnetConnect'
+import { isConsoleService } from '../helpers/sshHelper'
 import { useSubnetReach } from '../hooks/useLocalSubnetName'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
 import { useApplication } from '../hooks/useApplication'
@@ -92,7 +93,16 @@ export const ServiceConnectButton: React.FC = () => {
                 ) : (
                   <BrowserGatewayConnect
                     name={reach.name!}
-                    terminal={ssh && service ? { port: service.port || 22, title: service.name, service: service.id } : undefined}
+                    terminal={
+                      ssh && service
+                        ? {
+                            port: service.port || 22,
+                            title: service.name,
+                            service: service.id,
+                            console: isConsoleService(service),
+                          }
+                        : undefined
+                    }
                   />
                 )}
                 <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>

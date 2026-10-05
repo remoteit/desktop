@@ -9,23 +9,35 @@ import { LocalSubnetName } from '../services/localSubnet'
 import { useApplication } from '../hooks/useApplication'
 import { saveLaunchTokens } from '../helpers/connectionHelper'
 import { PromptModal } from './PromptModal'
+import { isConsoleService, sshCommand } from '../helpers/sshHelper'
 import { Icon } from './Icon'
 
 /* A service reached by its name on this machine: the device daemon here resolves it (services/localSubnet), so there
    is nothing to start — the name and port are the connection. Copy it into ssh, a browser, a database client, or
    launch it as its type would a connection — the same templates and launch methods, the name as the host and the
    service's own port. A web service launches as https://<name>/: port 443 on a name is the host's web service, under
-   the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md). */
+   the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md). An SSH service is shown and
+   copied as the command that reaches it, plain `ssh`: the console's works as it is from a machine signed in on its
+   remote.it device app, which gets a certificate for its own ssh (connectd remoteit-device ssh-config). */
 type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection }
 
 export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection }) => {
   const { t } = useTranslation()
   const port = service?.port
-  const endpoint = port ? `${local.name}:${port}` : local.name
+  const ssh = service?.typeID === 28
+  const endpoint = ssh ? sshCommand(local.name, port) : port ? `${local.name}:${port}` : local.name
   // The service's connection with the name in place of the proxy's address: never saved, only launched from.
   const here = useMemo<IConnection | undefined>(
     () =>
-      connection && { ...connection, host: local.name, port, connected: true, ready: true, enabled: true, online: true },
+      connection && {
+        ...connection,
+        host: local.name,
+        port,
+        connected: true,
+        ready: true,
+        enabled: true,
+        online: true,
+      },
     [connection, local.name, port]
   )
   const app = useApplication(service, here)
@@ -65,6 +77,11 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection
         {local.address && (
           <Typography variant="caption" color="textSecondary" component="div">
             {t('localSubnetConnect.address', 'resolves here to {{address}}', { address: local.address })}
+          </Typography>
+        )}
+        {isConsoleService(service) && (
+          <Typography variant="caption" color="textSecondary" component="div">
+            {t('localSubnetConnect.sshHint', 'Works from a machine signed in on its remote.it device app')}
           </Typography>
         )}
       </Box>

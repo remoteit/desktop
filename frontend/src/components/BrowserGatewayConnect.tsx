@@ -2,14 +2,17 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
+import { CopyIconButton } from '../buttons/CopyIconButton'
+import { sshCommand } from '../helpers/sshHelper'
 import { gatewayURL, openThroughGateway } from '../services/browserGateway'
 import { Icon } from './Icon'
 
 /* A web service with no agent here to reach it (services/browserGateway): it opens in its own tab, carried by this
    browser's remote.it client — nothing to install, and no connection to start. An SSH service opens a terminal in
    this app instead (pages/TerminalPage), its session through the same client. The counterpart of LocalSubnetConnect,
-   which is shown instead when an agent here does reach it. */
-type Props = { name: string; terminal?: { port: number; title?: string; service?: string } }
+   which is shown instead when an agent here does reach it. The console's plain ssh command is offered to copy as well:
+   it works from a machine signed in on its remote.it device app. */
+type Props = { name: string; terminal?: { port: number; title?: string; service?: string; console?: boolean } }
 
 export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
   const { t } = useTranslation()
@@ -57,7 +60,14 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
             {t('browserGatewayConnect.failed', 'Could not open it: try again')}
           </Typography>
         )}
+        {terminal?.console && (
+          <Typography variant="caption" color="textSecondary" component="div" noWrap>
+            {sshCommand(name, terminal.port)} —{' '}
+            {t('localSubnetConnect.sshHint', 'Works from a machine signed in on its remote.it device app')}
+          </Typography>
+        )}
       </Box>
+      {terminal?.console && <CopyIconButton value={sshCommand(name, terminal.port)} color="primary" />}
       <IconButton
         icon={opening ? 'spinner-third' : terminal ? 'terminal' : 'launch'}
         spin={opening}

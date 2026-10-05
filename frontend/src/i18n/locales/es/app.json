@@ -1617,6 +1617,7 @@
   "localSubnetConnect": {
     "address": "",
     "launch": "",
+    "sshHint": "",
     "title": ""
   },
   "logsPage": {
