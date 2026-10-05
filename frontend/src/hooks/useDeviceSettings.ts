@@ -25,6 +25,7 @@ export type DeviceSettings = {
   settings: DeviceSetting[] | null | undefined
   setting: (name: DeviceSettingName) => DeviceSetting | undefined
   set: (name: DeviceSettingName, value: any) => Promise<boolean>
+  reload: () => Promise<void> // after a change graphql makes to a setting with something else (a proxy's listening)
 }
 
 /* A device's settings (services/graphQLDeviceSettings), behind the device-sessions gate: null with the gate off, as
@@ -61,5 +62,11 @@ export function useDeviceSettings(deviceId?: string): DeviceSettings {
     [deviceId]
   )
 
-  return { settings, setting, set }
+  const reload = useCallback(async () => {
+    if (!enabled || !deviceId) return
+    const result = await read(deviceId)
+    setSettings(Array.isArray(result) ? result : null)
+  }, [enabled, deviceId])
+
+  return { settings, setting, set, reload }
 }

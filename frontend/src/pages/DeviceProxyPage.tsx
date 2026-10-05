@@ -17,23 +17,61 @@ import {
 } from '../services/graphQLProxy'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceExitSection } from '../components/DeviceExitSection'
-import { DeviceSettingRow } from '../components/DeviceSettingRow'
+import { CONFIGURATION } from '../components/DeviceSettingRow'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { settingOn } from '../services/graphQLDeviceSettings'
+import { DeviceSetting, settingOn } from '../services/graphQLDeviceSettings'
+import type { TFunction } from 'i18next'
 
 /* This device as a proxy (presence-server docs/proxy-plan.md): the people allowed to connect to it may make endpoints
-   on it into their services. The device listens only once told to: a device setting (proxy), switched here where the
-   API has device settings, else on the device itself (remoteit-device proxy on); here its owner names it and says what
-   it takes. remote.it's admins may make it one of remote.it's — public, for
+   on it into their services. The device listens only once told to: a device setting (proxy), which graphql turns on
+   and off with its being a proxy where the API has device settings — shown here only where the device keeps it
+   otherwise — else set on the device itself (remoteit-device proxy on); here its owner names it and says what it
+   takes. remote.it's admins may make it one of remote.it's — public, for
    everyone — and, apart, a public exit for everyone whose plan gives exits. Behind the device-sessions flag. */
 
 // Where a device made one of remote.it's proxies here is placed, until there is more than one region.
 const PUBLIC_PROXY_REGION = 'us-west-2'
+
+// Where the device's listening disagrees with its being a proxy, and why: the machine's administrator, its setting kept
+// on the device, or a change made there. None where they agree.
+export function proxyListeningLine(t: TFunction, proxy: boolean, listening?: DeviceSetting): string | undefined {
+  if (!listening || settingOn(listening) === proxy) return undefined
+  if (proxy) {
+    if (listening.control === 'off')
+      return t('deviceProxy.notListeningAdmin', 'Not listening: turned off on the device by its administrator')
+    if (listening.control === 'local')
+      return t('deviceProxy.notListeningLocal', 'Not listening: set only on the device, which keeps it off')
+    if (!listening.onDevice) return t('deviceProxy.notListening', 'Not listening: its proxy setting is off')
+    if (listening.by === CONFIGURATION)
+      return t('deviceProxy.notListeningConfiguration', "Not listening: turned off in the device's configuration")
+    return listening.by
+      ? t('deviceProxy.notListeningBy', 'Not listening: turned off on the device by {{by}}', { by: listening.by })
+      : t('deviceProxy.notListeningOnDevice', 'Not listening: turned off on the device')
+  }
+  if (listening.control === 'on')
+    return t(
+      'deviceProxy.listeningAdmin',
+      'Listening, though not a proxy: turned on on the device by its administrator'
+    )
+  if (listening.control === 'local')
+    return t('deviceProxy.listeningLocal', 'Listening, though not a proxy: set only on the device, which keeps it on')
+  if (!listening.onDevice) return t('deviceProxy.listening', 'Listening, though not a proxy: its proxy setting is on')
+  if (listening.by === CONFIGURATION)
+    return t(
+      'deviceProxy.listeningConfiguration',
+      "Listening, though not a proxy: turned on in the device's configuration"
+    )
+  return listening.by
+    ? t('deviceProxy.listeningBy', 'Listening, though not a proxy: turned on on the device by {{by}}', {
+        by: listening.by,
+      })
+    : t('deviceProxy.listeningOnDevice', 'Listening, though not a proxy: turned on on the device')
+}
 export const DeviceProxyPage: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
@@ -66,16 +104,11 @@ export const DeviceProxyPage: React.FC = () => {
 
   const run = async (change: () => Promise<unknown>) => {
     setSaving(true)
-    if ((await change()) !== 'ERROR') await load()
+    if ((await change()) !== 'ERROR') await Promise.all([load(), settings.reload()])
     setSaving(false)
   }
   const save = (set: Parameters<typeof graphQLSetProxy>[1] | 'remove') =>
     run(() => (set === 'remove' ? graphQLRemoveProxy(device.id) : graphQLSetProxy(device.id, set)))
-  const listen = async (on: boolean) => {
-    setSaving(true)
-    await settings.set('proxy', on)
-    setSaving(false)
-  }
 
   const body = () => {
     if (proxy === undefined) return <LoadingMessage />
@@ -95,6 +128,7 @@ export const DeviceProxyPage: React.FC = () => {
         </Notice>
       )
     const isPublic = proxy?.kind === 'remoteit'
+    const listeningLine = proxyListeningLine(t, !!proxy, listening)
 
     const certificate = !proxy
       ? undefined
@@ -126,27 +160,7 @@ export const DeviceProxyPage: React.FC = () => {
             }}
             onClick={() => (isPublic ? run(() => graphQLRemoveRemoteitProxy(device.id)) : save(proxy ? 'remove' : {}))}
           />
-          {proxy && listening && (
-            <DeviceSettingRow
-              setting={listening}
-              icon="tower-broadcast"
-              label={t('deviceProxy.listen', 'Listening on the device')}
-              subLabel={t(
-                'deviceProxy.listenHint',
-                'Its proxy listeners: port 443 and its endpoints’ ports, or those its configuration names'
-              )}
-              disabled={(isPublic ? !admin : !manage) || saving}
-              confirm={settingOn(listening)}
-              confirmProps={{
-                title: t('deviceProxy.listenOffConfirm', 'Stop it listening?'),
-                children: t(
-                  'deviceProxy.listenOffConfirmBody',
-                  'Every endpoint on it stops answering, for everyone using one.'
-                ),
-              }}
-              onChange={listen}
-            />
-          )}
+          {listeningLine && <ListItemSetting icon="tower-broadcast" iconColor="warning" label={listeningLine} />}
           {proxy && (admin || isPublic) && (
             <ListItemSetting
               icon="globe"

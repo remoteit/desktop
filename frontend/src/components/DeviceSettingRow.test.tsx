@@ -73,6 +73,17 @@ describe('a device setting’s row', () => {
     expect(page.textContent).toBe('Subnet — Set on the device')
   })
 
+  it('set from the device’s configuration file: said as its configuration, not as a person', async () => {
+    const page = await render(
+      <DeviceSettingRow
+        setting={subnet('cloud+local', { onDevice: true, by: 'configuration' })}
+        label="Subnet"
+        onChange={vi.fn()}
+      />
+    )
+    expect(page.textContent).toBe('Subnet — Set on the device, in its configuration')
+  })
+
   it('off and on: fixed by the administrator, greyed', async () => {
     let page = await render(<DeviceSettingRow setting={subnet('off')} label="Subnet" onChange={vi.fn()} />)
     expect(row(page).dataset.on).toBe('false')

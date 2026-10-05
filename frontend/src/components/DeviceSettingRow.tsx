@@ -50,6 +50,9 @@ export const DeviceSettingRow: React.FC<Props> = ({
   )
 }
 
+// Who set a value the device took from its configuration file: not a person.
+export const CONFIGURATION = 'configuration'
+
 // Why a setting is as it is, where that is not the portal's doing: the administrator's override, or a change made on the
 // device. None for a setting set here.
 export function settingNote(t: TFunction, setting?: DeviceSetting): string | undefined {
@@ -63,7 +66,9 @@ export function settingNote(t: TFunction, setting?: DeviceSetting): string | und
       return t('deviceSetting.controlLocal', 'Set only on the device')
   }
   if (setting.onDevice)
-    return setting.by
+    return setting.by === CONFIGURATION
+      ? t('deviceSetting.onDeviceConfiguration', 'Set on the device, in its configuration')
+      : setting.by
       ? t('deviceSetting.onDeviceBy', 'Set on the device by {{by}}', { by: setting.by })
       : t('deviceSetting.onDevice', 'Set on the device')
   return undefined
