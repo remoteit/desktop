@@ -32,6 +32,7 @@ import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 import sleep from '../helpers/sleep'
+import { selectDeviceSessionsSetting } from '../hooks/useDeviceSessions'
 
 export const TestPage: React.FC = () => {
   const { t } = useTranslation()
@@ -68,7 +69,7 @@ export const TestPage: React.FC = () => {
   // (not gated on the licence) lists and revokes it — killing every token minted from it — whether
   // or not this account still has Remote.It AI, and whether or not the agent service answers.
   const chatEnabled = useChatEnabled()
-  const deviceSessions = useSelector((state: State) => !!state.ui.deviceSessions)
+  const deviceSessions = useSelector(selectDeviceSessionsSetting)
   const proxyFleet = useSelector((state: State) => state.ui.proxyFleet)
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {

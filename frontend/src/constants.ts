@@ -63,6 +63,9 @@ export const AGENT_URL = env.DEV ? '/agent' : env.VITE_AGENT_URL || '/agent'
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 // The device package's downloads (remoteit-device), where its one-line installs are: the stage's own
 // (downloads.<stage>.remote.it), declared with the stage's build like the hosts above.
+// A stage whose API serves device sessions to every account (solo: VITE_DEVICE_SESSIONS=on) has their features on by
+// default, without Test UI; hooks/useDeviceSessions.
+export const DEVICE_SESSIONS_DEFAULT = env.VITE_DEVICE_SESSIONS === 'on'
 export const DEVICE_DOWNLOADS_URL = (env.VITE_DEVICE_DOWNLOADS_URL || 'https://downloads.remote.it/device').replace(/\/+$/, '')
 // The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
 // install that sets only the OIDC vars calls one stage with another stage's token and 401s with

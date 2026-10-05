@@ -19,6 +19,7 @@ import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 import { State } from '../store'
 import i18n from '../i18n'
+import { selectDeviceSessionsSetting } from '../hooks/useDeviceSessions'
 
 export const PERMISSION: ILookup<{
   name: string
@@ -287,7 +288,7 @@ export default createModel<RootModel>()({
     async setRole(role: IOrganizationRole, state) {
       let roles = [...selectOrganization(state).roles]
       const index = roles.findIndex(r => r.id === role.id)
-      const permissions = deviceSessionPermissions(!!state.ui.deviceSessions)
+      const permissions = deviceSessionPermissions(selectDeviceSessionsSetting(state))
       const data = {
         id: role.id,
         name: role.name,
