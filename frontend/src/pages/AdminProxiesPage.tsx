@@ -20,6 +20,7 @@ import {
 } from '../services/graphQLExitPolicy'
 import { parsePorts } from '../helpers/portListHelper'
 import { AdminProxyLimits } from './AdminProxyLimits'
+import { AdminPublicProxies } from './AdminPublicProxies'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -31,7 +32,8 @@ import { Icon } from '../components/Icon'
 
 /* remote.it's proxies and exit nodes (presence-server docs/proxy-plan.md §5, §8): each plan's limits on them; the
    policy every exit keeps — what it refuses beyond what every exit refuses, how fast one account may open flows, how
-   long its flow log is kept — and the accounts stopped from using exits. A change takes effect at once. Admins only;
+   long its flow log is kept — and the accounts stopped from using exits; and the public proxies themselves, each a
+   public exit or not. A change takes effect at once. Admins only;
    English only, as the rest of /admin. */
 export const AdminProxiesPage: React.FC = () => {
   const [policy, setPolicy] = useState<ExitPolicy | null | 'ERROR' | typeof UNSUPPORTED>()
@@ -91,6 +93,7 @@ export const AdminProxiesPage: React.FC = () => {
         <List>
           <ListSubheader>Plan limits</ListSubheader>
         </List>
+        <AdminPublicProxies onProblem={setProblem} />
         <AdminProxyLimits />
         <List>
           <ListSubheader>Exit nodes: refused</ListSubheader>

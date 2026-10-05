@@ -119,6 +119,24 @@ export const graphQLRemoveProxy = (deviceId: string) =>
 
 // remote.it's own proxies, for everyone — and, apart, offered as an exit to everyone whose plan gives exits: set by
 // remote.it's admins (the API refuses anyone else).
+// remote.it's proxies, for the admin page: each with whether it is a public exit (undefined where the API cannot say).
+export async function graphQLPublicProxies(): Promise<
+  (Pick<Proxy, 'id' | 'region' | 'host'> & { publicExit?: boolean })[] | 'ERROR' | typeof UNSUPPORTED
+> {
+  const list = await graphQLProxies()
+  if (!Array.isArray(list)) return list
+  const exits = await read<{ id: string; publicExit: boolean }[]>(
+    `query ProxyPublicExits { proxies { id publicExit } }`,
+    {},
+    'proxies',
+    data => data?.proxies ?? []
+  )
+  return list
+    .filter(p => p.kind === 'remoteit')
+    .sort((a, b) => a.host.localeCompare(b.host, undefined, { numeric: true }))
+    .map(p => ({ ...p, publicExit: Array.isArray(exits) ? exits.find(e => e.id === p.id)?.publicExit : undefined }))
+}
+
 export const graphQLSetRemoteitProxy = (deviceId: string, region: string) =>
   graphQLBasicRequest(
     ` mutation SetRemoteitProxy($deviceId: String!, $region: String!) { setRemoteitProxy(deviceId: $deviceId, region: $region) { host } }`,
