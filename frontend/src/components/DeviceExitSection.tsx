@@ -17,29 +17,39 @@ import { ListItemSetting } from './ListItemSetting'
 import { SelectSetting } from './SelectSetting'
 
 /* A device and exit nodes (presence-server docs/proxy-plan.md §8): the exit its traffic goes out through — one you may
-   use, chosen here — and whether it offers itself as one: a device setting (exit_node) switched here by whoever manages
-   it, where the API has device settings; else what its own configuration says. Device sessions only; nothing shows
-   where the API lacks them. */
-export const DeviceExitSection: React.FC<{ device: IDevice; settings?: DeviceSettings }> = ({ device, settings }) => {
-  const { t } = useTranslation()
+   use, chosen on Configure (DeviceExitChoice) — and whether it offers itself as one, on Proxy & exit
+   (DeviceExitOffer): a device setting (exit_node) switched by whoever manages it, where the API has device settings;
+   else what its own configuration says. Device sessions only; nothing shows where the API lacks them. */
+
+// The device's exit and, for the choice, who chose it and the exits it may use: read again after each change.
+function useDeviceExit(deviceId: string, choice: boolean) {
   const [info, setInfo] = useState<ExitInfo | null>()
   const [chooser, setChooser] = useState<ExitChooser | null>(null)
   const [exits, setExits] = useState<{ id: string; name: string }[]>([])
-  const [saving, setSaving] = useState(false)
-  const manage = device.permissions.includes('MANAGE')
 
   const load = useCallback(async () => {
-    const answer = await graphQLDeviceExit(device.id)
+    const answer = await graphQLDeviceExit(deviceId)
     setInfo(answer && typeof answer === 'object' ? answer : null)
-    const who = await graphQLDeviceExitChooser(device.id)
+    if (!choice) return
+    const who = await graphQLDeviceExitChooser(deviceId)
     setChooser(who && typeof who === 'object' ? who : null)
     const list = await graphQLExits()
-    if (Array.isArray(list)) setExits(list.filter(e => e.id !== device.id))
-  }, [device.id])
+    if (Array.isArray(list)) setExits(list.filter(e => e.id !== deviceId))
+  }, [deviceId, choice])
 
   useEffect(() => {
     load()
   }, [load])
+
+  return { info, chooser, exits, load }
+}
+
+// The exit the device's traffic goes out through, with who chose it and what the machine's administrator allows.
+export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
+  const { t } = useTranslation()
+  const { info, chooser, exits, load } = useDeviceExit(device.id, true)
+  const [saving, setSaving] = useState(false)
+  const manage = device.permissions.includes('MANAGE')
 
   if (!info) return null
 
@@ -55,16 +65,9 @@ export const DeviceExitSection: React.FC<{ device: IDevice; settings?: DeviceSet
   const locked = policy === 'local' || policy === 'never'
   const chosenBy = info.exit ? chosenLine(t, chooser) : null
   const policyText = policyLine(t, chooser)
-  const exitNode = settings?.setting('exit_node')
-  const offer = async (value: { on: boolean; lan: boolean }) => {
-    setSaving(true)
-    if (await settings?.set('exit_node', value)) await load()
-    setSaving(false)
-  }
 
   return (
-    <List>
-      <ListSubheader>{t('deviceExit.title', 'Exit node')}</ListSubheader>
+    <>
       {manage && (
         <SelectSetting
           icon="arrow-right-from-bracket"
@@ -85,6 +88,29 @@ export const DeviceExitSection: React.FC<{ device: IDevice; settings?: DeviceSet
       )}
       {chosenBy && <ListItemSetting icon="user" label={chosenBy} />}
       {policyText && <ListItemSetting icon="lock" label={policyText.label} subLabel={policyText.hint} />}
+    </>
+  )
+}
+
+// Whether the device offers itself as an exit node, and its local network with it.
+export const DeviceExitOffer: React.FC<{ device: IDevice; settings?: DeviceSettings }> = ({ device, settings }) => {
+  const { t } = useTranslation()
+  const { info, load } = useDeviceExit(device.id, false)
+  const [saving, setSaving] = useState(false)
+  const manage = device.permissions.includes('MANAGE')
+
+  if (!info) return null
+
+  const exitNode = settings?.setting('exit_node')
+  const offer = async (value: { on: boolean; lan: boolean }) => {
+    setSaving(true)
+    if (await settings?.set('exit_node', value)) await load()
+    setSaving(false)
+  }
+
+  return (
+    <List>
+      <ListSubheader>{t('deviceExit.title', 'Exit node')}</ListSubheader>
       {manage && exitNode ? (
         <>
           <DeviceSettingRow

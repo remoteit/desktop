@@ -34,7 +34,7 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-import { DeviceExitSection, chosenLine, policyLine } from './DeviceExitSection'
+import { DeviceExitChoice, DeviceExitOffer, chosenLine, policyLine } from './DeviceExitSection'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
@@ -47,11 +47,15 @@ const none = {
   exitPinned: null,
 }
 
-async function render(settings?: any, permissions = ['MANAGE']) {
+async function render(part: 'choice' | 'offer', settings?: any, permissions = ['MANAGE']) {
   const container = document.createElement('div')
   const root = createRoot(container)
   const device = { id: 'LAPTOP', permissions } as any
-  await act(async () => root.render(<DeviceExitSection device={device} settings={settings} />))
+  await act(async () =>
+    root.render(
+      part === 'choice' ? <DeviceExitChoice device={device} /> : <DeviceExitOffer device={device} settings={settings} />
+    )
+  )
   return container
 }
 
@@ -80,18 +84,26 @@ describe('who chose the exit, and the machine’s policy', () => {
   it('shows them, and locks the choice under local', async () => {
     exit.mockResolvedValue({ offersExit: false, exit: { id: 'EXIT', name: 'office' } })
     chooser.mockResolvedValue({ ...none, exitSetOnDevice: true, exitSetOnDeviceBy: 'bob', exitPolicy: 'local' })
-    const page = await render()
+    const page = await render('choice')
     expect(page.textContent).toContain('Set on the device by bob')
     expect(page.textContent).toContain('keeps its exit local')
     expect(page.querySelector('[data-select]')?.textContent).toBe('locked')
+    expect(page.textContent).not.toContain('exit node')
   })
 
   it('an API without the fields still shows the exit', async () => {
     exit.mockResolvedValue({ offersExit: false, exit: { id: 'EXIT', name: 'office' } })
     chooser.mockResolvedValue('UNSUPPORTED')
-    const page = await render()
+    const page = await render('choice')
     expect(page.querySelector('[data-select]')?.textContent).toBe('open')
     expect(page.textContent).not.toContain('Set on the device')
+  })
+
+  it('an API without device sessions shows neither', async () => {
+    exit.mockResolvedValue('UNSUPPORTED')
+    chooser.mockResolvedValue('UNSUPPORTED')
+    expect((await render('choice')).textContent).toBe('')
+    expect((await render('offer')).textContent).toBe('')
   })
 
   it('with device settings, whoever manages it switches it an exit node, and its LAN beneath while on', async () => {
@@ -99,11 +111,12 @@ describe('who chose the exit, and the machine’s policy', () => {
     chooser.mockResolvedValue(none)
     const setting = { name: 'exit_node', value: { on: true, lan: false }, control: 'cloud+local' }
     const settings = { setting: () => setting, set: vi.fn() }
-    let page = await render(settings)
+    let page = await render('offer', settings)
+    expect(page.querySelector('[data-select]')).toBeNull()
     const switches = [...page.querySelectorAll('[data-switch]')].map(e => e.textContent)
     expect(switches).toEqual(['Offer itself as an exit node true', 'Its local network too false'])
 
-    page = await render(settings, [])
+    page = await render('offer', settings, [])
     expect(page.querySelector('[data-switch]')).toBeNull()
     expect(page.textContent).toContain('Offers itself as an exit node')
   })

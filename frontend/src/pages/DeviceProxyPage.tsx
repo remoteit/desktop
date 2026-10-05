@@ -16,7 +16,7 @@ import {
   graphQLSetRemoteitProxy,
 } from '../services/graphQLProxy'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
-import { DeviceExitSection } from '../components/DeviceExitSection'
+import { DeviceExitOffer } from '../components/DeviceExitSection'
 import { CONFIGURATION } from '../components/DeviceSettingRow'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -288,7 +288,7 @@ export const DeviceProxyPage: React.FC = () => {
     <DeviceHeaderMenu>
       <Gutters size={null}>
         {body()}
-        <DeviceExitSection device={device} settings={settings} />
+        <DeviceExitOffer device={device} settings={settings} />
       </Gutters>
     </DeviceHeaderMenu>
   )
