@@ -20,6 +20,7 @@ export default class ElectronApp {
   private isMaximized: boolean
   private deepLinkUrl?: string
   private authCallback?: boolean
+  private takenAuthStates = new Set<string>()
   private errorShown: boolean
   private protocol: string
   private bluetoothCallback?: (deviceId: string) => void
@@ -450,11 +451,16 @@ export default class ElectronApp {
 
   async takeAuthCallback(parameters: string): Promise<string | undefined> {
     const state = new URLSearchParams(parameters).get('state')
-    if (!state || !(await this.callWindow('authFlowPending', state))) return
-    Logger.info('AUTH CALLBACK ON LOOPBACK')
-    this.openWindow()
-    this.app.focus({ steal: true })
-    void this.deliverAuthCallback(parameters)
+    if (!state) return
+    // A refreshed tab re-sends a taken callback; delivering it again would redeem its single-use code twice.
+    if (!this.takenAuthStates.has(state)) {
+      if (!(await this.callWindow('authFlowPending', state))) return
+      this.takenAuthStates.add(state)
+      Logger.info('AUTH CALLBACK ON LOOPBACK')
+      this.openWindow()
+      this.app.focus({ steal: true })
+      void this.deliverAuthCallback(parameters)
+    }
     const title = t('authCallback.title', { appName: brand.appName })
     const message = t('authCallback.message', { appName: brand.appName })
     return `<!doctype html>
