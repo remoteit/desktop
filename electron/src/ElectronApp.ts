@@ -451,7 +451,7 @@ export default class ElectronApp {
 
   async takeAuthCallback(parameters: string): Promise<string | undefined> {
     const state = new URLSearchParams(parameters).get('state')
-    if (!state) return
+    if (!state || this.deepLinks) return
     // A refreshed tab re-sends a taken callback; delivering it again would redeem its single-use code twice.
     if (!this.takenAuthStates.has(state)) {
       if (!(await this.callWindow('authFlowPending', state))) return
