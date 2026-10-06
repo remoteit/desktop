@@ -144,6 +144,7 @@ class Server {
   // The desktop window's sign-in returns here when deep links are off; any other callback is a browser's own.
   authCallback: express.RequestHandler = async (request, response, next) => {
     const page =
+      request.path === '/authCallback' &&
       LOOPBACK_ADDRESSES.includes(request.socket.remoteAddress ?? '') &&
       (await app.takeAuthCallback(new URL(request.originalUrl, START_ORIGIN).search))
     if (!page) return next()

@@ -441,36 +441,38 @@ export default class ElectronApp {
   /* A signed-in window completes the callback itself, so it can release the agent before the
      new account signs in; reloading with it is only for a window that isn't signed in. */
   private async deliverAuthCallback(parameters: string) {
-    const webContents = this.window?.webContents
-    const live = webContents && !webContents.isLoadingMainFrame() && this.isAppOrigin(webContents.getURL())
-    const handled =
-      live &&
-      (await webContents
-        .executeJavaScript(`window.authCallback?.(${JSON.stringify(parameters)}) === true`)
-        .catch(() => false))
-    if (handled) return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
+    if (await this.callWindow('authCallback', parameters))
+      return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
     const fullUrl = START_URL + parameters
     Logger.info('OPENING AUTH URL', { url: withoutQuery(fullUrl) })
     this.window?.loadURL(fullUrl)
   }
 
-  /* With deep links off, sign-in returns to the app's own server, which also serves the UI to browsers,
-     so a callback is this window's only for a flow the window started. Resolves the page for the browser tab. */
   async takeAuthCallback(parameters: string): Promise<string | undefined> {
     const state = new URLSearchParams(parameters).get('state')
-    const webContents = this.window?.webContents
-    if (!state || !webContents || webContents.isLoadingMainFrame() || !this.isAppOrigin(webContents.getURL())) return
-    const owned = await webContents
-      .executeJavaScript(`window.authFlowPending?.(${JSON.stringify(state)}) === true`)
-      .catch(() => false)
-    if (!owned) return
+    if (!state || !(await this.callWindow('authFlowPending', state))) return
     Logger.info('AUTH CALLBACK ON LOOPBACK')
     this.openWindow()
     this.app.focus({ steal: true })
     void this.deliverAuthCallback(parameters)
     const title = t('authCallback.title', { appName: brand.appName })
     const message = t('authCallback.message', { appName: brand.appName })
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;text-align:center;color:#333;background:#fff}@media (prefers-color-scheme:dark){body{color:#ddd;background:#1e1e1e}}</style></head><body><main><h1>${title}</h1><p>${message}</p></main></body></html>`
+    return `<!doctype html>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="color-scheme" content="light dark">
+      <link rel="icon" href="/brand/icon.svg">
+      <title>${title}</title>
+      <body style="font-family: system-ui, sans-serif; text-align: center; margin-top: 30vh">
+        <h1>${title}</h1>
+        <p>${message}</p>
+      </body>`
+  }
+
+  private async callWindow(name: 'authCallback' | 'authFlowPending', argument: string): Promise<boolean> {
+    const webContents = this.window?.webContents
+    if (!webContents || webContents.isLoadingMainFrame() || !this.isAppOrigin(webContents.getURL())) return false
+    return webContents.executeJavaScript(`window.${name}?.(${JSON.stringify(argument)}) === true`).catch(() => false)
   }
 
   private closeWindow() {

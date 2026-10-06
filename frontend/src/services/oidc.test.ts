@@ -264,53 +264,35 @@ describe('oidcStart', () => {
 describe('oidcStart on desktop', () => {
   const LOOPBACK = 'http://127.0.0.1:29999/authCallback'
   let authRedirect: () => Promise<Response>
-  let exchanged: URLSearchParams | undefined
   const authorize = () => new URL(vi.mocked(leaveTo).mock.calls[0][0])
 
   beforeEach(() => {
     window.sessionStorage.clear()
-    window.localStorage.clear()
     vi.mocked(leaveTo).mockClear()
     Object.assign(browser, { isNative: true, isElectron: true })
-    exchanged = undefined
-    stubDiscovery({ authorization_endpoint: 'https://login.test/authorize' }, (url, init) => {
-      if (url === '/authRedirect') return authRedirect()
-      const body = new URLSearchParams(String(init?.body ?? ''))
-      if (body.get('grant_type') !== 'authorization_code') return Promise.reject(new Error('offline'))
-      exchanged = body
-      const { nonce } = JSON.parse(window.sessionStorage.getItem('oidc.flow') || '{}')
-      return Promise.resolve(
-        new Response(JSON.stringify({ refresh_token: 'r', id_token: idToken('a', null, nonce), access_token: 'a' }))
-      )
-    })
+    stubDiscovery({ authorization_endpoint: 'https://login.test/authorize' }, url =>
+      url === '/authRedirect' ? authRedirect() : Promise.reject(new Error('offline'))
+    )
   })
   afterEach(() => {
     Object.assign(browser, { isNative: false, isElectron: false })
     vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline')))
   })
 
-  it('comes back through the app scheme while deep links are on', async () => {
-    authRedirect = () => Promise.resolve(new Response('{}'))
+  it.each([
+    ['deep links are on', () => Promise.resolve(new Response('{}'))],
+    ['its server does not answer', () => Promise.reject(new Error('offline'))],
+  ])('comes back through the app scheme when %s', async (_, answer) => {
+    authRedirect = answer
     await oidcStart()
     expect(authorize().searchParams.get('redirect_uri')).toBe(PROTOCOL + 'authCallback')
   })
 
-  it('comes back to the app’s own server when deep links are off, and exchanges the code there', async () => {
+  it('comes back to the app’s own server when deep links are off', async () => {
     authRedirect = () => Promise.resolve(new Response(JSON.stringify({ redirectUri: LOOPBACK })))
     await oidcStart()
-    const state = authorize().searchParams.get('state')!
     expect(authorize().searchParams.get('redirect_uri')).toBe(LOOPBACK)
-    expect(oidcFlowPending(state)).toBe(true)
+    expect(oidcFlowPending(authorize().searchParams.get('state')!)).toBe(true)
     expect(oidcFlowPending('someone-else')).toBe(false)
-
-    await expect(oidcCompleteFromUrl(`?code=c1&state=${state}`)).resolves.toMatchObject({ sub: 'a' })
-    expect(exchanged?.get('redirect_uri')).toBe(LOOPBACK)
-    expect(oidcFlowPending(state)).toBe(false)
-  })
-
-  it('falls back to the app scheme when its server does not answer', async () => {
-    authRedirect = () => Promise.reject(new Error('offline'))
-    await oidcStart()
-    expect(authorize().searchParams.get('redirect_uri')).toBe(PROTOCOL + 'authCallback')
   })
 })

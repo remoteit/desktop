@@ -41,7 +41,7 @@ root.render(
 
 heartbeat.init()
 Controller.init()
-// Called by the desktop main process (ElectronApp) with a sign-in callback's query
+// Called by the desktop main process (ElectronApp)
 if (browser.isElectron && !isChatPopout) {
   window.authCallback = liveAuthCallback
   window.authFlowPending = oidcFlowPending

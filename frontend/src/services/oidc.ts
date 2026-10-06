@@ -368,14 +368,15 @@ async function discover() {
 // links are off has no scheme to come back through, so its server names the loopback one it answers.
 async function redirectUri(): Promise<string> {
   if (!browser.isNative) return window.location.origin + '/authCallback'
-  if (browser.isElectron) {
-    const loopback = await fetch('/authRedirect', { signal: timeoutSignal(2000) })
+  const loopback =
+    browser.isElectron &&
+    (await fetch('/authRedirect', { signal: timeoutSignal(2000) })
       .then(response => response.json())
-      .then(body => body?.redirectUri)
-      .catch(() => undefined)
-    if (typeof loopback === 'string') return loopback
-  }
-  return PROTOCOL + 'authCallback'
+      .then(
+        body => body?.redirectUri,
+        () => undefined
+      ))
+  return loopback || PROTOCOL + 'authCallback'
 }
 
 /** What this build asks for, per audience. ONE source of truth: the authorize request is
