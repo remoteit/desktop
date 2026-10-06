@@ -11,6 +11,7 @@ export type DeviceSettingName =
   | 'exit_node'
   | 'subnet'
   | 'console'
+  | 'mcp_exec' // AI commands through MCP on the console
   | 'any_port'
   | 'proxy'
   | 'updates' // policy only: no value, a control of on or off

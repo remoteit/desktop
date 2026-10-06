@@ -16,13 +16,15 @@ import { settingLocked, settingOn } from '../services/graphQLDeviceSettings'
 import { useSubnetReach } from '../hooks/useLocalSubnetName'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { settingNote } from './DeviceSettingRow'
+import { DeviceMcpExecSetting } from './DeviceMcpExecSetting'
 import { Icon } from './Icon'
 
 /* A device's apps (services/graphQLDeviceApps) on its Configure page: the console first — SSH by OpenSSH, run by the
    device's daemon, nothing listening. Its switch turns it on or off for whoever manages the device; its state is what
    the device says, waited for after a change — a device setting (console) where the API has device settings, so who set
    it on the device, or the administrator's refusal of it, is said and holds. Open terminal logs in by certificate, the
-   host key checked against the one the device reports. Nothing where the API has no apps. */
+   host key checked against the one the device reports. Under it, whether AI commands may use the console. Nothing where
+   the API has no apps. */
 export const DeviceApps: React.FC<{ deviceId: string; canManage: boolean }> = ({ deviceId, canManage }) => {
   const { t } = useTranslation()
   const [apps, setApps] = useState<DeviceApp[] | null>()
@@ -142,6 +144,7 @@ export const DeviceApps: React.FC<{ deviceId: string; canManage: boolean }> = ({
             </Box>
           </ListItem>
         ))}
+      {apps.some(app => app.id === 'console') && <DeviceMcpExecSetting settings={settings} canManage={canManage} />}
     </List>
   )
 }

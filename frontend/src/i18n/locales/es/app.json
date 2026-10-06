@@ -916,6 +916,10 @@
     "selectToRestore": "Selecciona un dispositivo para restaurar.",
     "tagsLabel": "etiquetas"
   },
+  "deviceMcpExec": {
+    "hint": "",
+    "label": ""
+  },
   "deviceName": {
     "new": "NUEVO",
     "noDeviceFound": "No se encontró ningún dispositivo",

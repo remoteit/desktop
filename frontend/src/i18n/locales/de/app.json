@@ -908,6 +908,10 @@
     "selectToRestore": "Bitte wählen Sie ein Gerät zum Wiederherstellen aus.",
     "tagsLabel": "Tags"
   },
+  "deviceMcpExec": {
+    "hint": "",
+    "label": ""
+  },
   "deviceName": {
     "new": "NEU",
     "noDeviceFound": "Kein Gerät gefunden",

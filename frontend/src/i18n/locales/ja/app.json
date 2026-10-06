@@ -900,6 +900,10 @@
     "selectToRestore": "復元するデバイスを選択してください。",
     "tagsLabel": "タグ"
   },
+  "deviceMcpExec": {
+    "hint": "",
+    "label": ""
+  },
   "deviceName": {
     "new": "新規",
     "noDeviceFound": "デバイスが見つかりません",

@@ -14,6 +14,7 @@ type Props = {
   disabled?: boolean // the caller's: not one who manages the device, or a change under way
   quiet?: boolean // a part of a setting whose row above already says who set it, or why it is fixed
   confirm?: boolean
+  disableGutters?: boolean // in a list whose rows have none, as the console's
   confirmProps?: React.ComponentProps<typeof ListItemSetting>['confirmProps']
   onChange: (on: boolean) => void
 }
@@ -30,6 +31,7 @@ export const DeviceSettingRow: React.FC<Props> = ({
   disabled,
   quiet,
   confirm,
+  disableGutters,
   confirmProps,
   onChange,
 }) => {
@@ -44,6 +46,7 @@ export const DeviceSettingRow: React.FC<Props> = ({
       toggle={checked}
       disabled={disabled || settingLocked(setting)}
       confirm={confirm}
+      disableGutters={disableGutters}
       confirmProps={confirmProps}
       onClick={() => onChange(!checked)}
     />

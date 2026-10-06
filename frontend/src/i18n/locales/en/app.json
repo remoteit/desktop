@@ -908,6 +908,10 @@
     "selectToRestore": "Please select a device to restore.",
     "tagsLabel": "tags"
   },
+  "deviceMcpExec": {
+    "hint": "Let AI assistants you authorize run commands on this device's console through remote.it's MCP server. The device's administrator can turn this off on the machine.",
+    "label": "AI commands"
+  },
   "deviceName": {
     "new": "NEW",
     "noDeviceFound": "No device found",
