@@ -8,7 +8,6 @@ import os from 'os'
 import path from 'path'
 import https from 'https'
 import user from './User'
-import cors from 'cors'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
 import systemInfo from './systemInfo'
@@ -48,7 +47,7 @@ const ownHostnames = () => {
   return [...LOOPBACK, ...interfaceAddresses(), name, `${name.split('.')[0]}.local`]
 }
 
-export const isSocketOrigin = (origin?: string, host?: string) => {
+export const isOwnOrigin = (origin?: string, host?: string) => {
   let url: URL
   try {
     url = new URL(origin ?? '')
@@ -82,13 +81,15 @@ class Server {
     //   next()
     // })
 
-    this.app.use(cors())
     this.app.use(express.static(WEB_DIR))
     this.app.use('/v1/callback', express.static(WEB_DIR))
     this.app.use('/authCallback', express.static(WEB_DIR))
     this.app.use('/', router)
 
     router.get('/system', async (request, response) => {
+      // A DNS-rebound page is same-origin with this server, so dropping CORS alone doesn't stop it reading this.
+      const { host } = request.headers
+      if (!isOwnOrigin(`${request.protocol}://${host}`, host)) return response.sendStatus(403)
       const system = await systemInfo()
       Logger.info('SEND SYSTEM INFO', { system })
       response.send(system)
@@ -136,7 +137,7 @@ class Server {
 
   allowRequest: SocketIO.ServerOptions['allowRequest'] = (request, callback) => {
     const { origin, host } = request.headers
-    if (isSocketOrigin(origin, host)) return callback(null, true)
+    if (isOwnOrigin(origin, host)) return callback(null, true)
     Logger.warn('SOCKET ORIGIN REFUSED', { origin, host })
     callback('Origin not allowed', false)
   }

@@ -7,6 +7,8 @@ import { t, setLanguage } from './i18n'
 import { EVENTS, PROTOCOL, START_URL, START_ORIGIN, brand, environment, preferences, EventBus, Logger } from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
+// An auth deep link carries the OAuth code and state in its query, so logs keep only the part before it.
+const withoutQuery = (url = '') => url.split('?')[0]
 
 export default class ElectronApp {
   public app: electron.App
@@ -104,7 +106,7 @@ export default class ElectronApp {
 
   private handleSecondInstance = (_: electron.Event, argv: string[]) => {
     // Windows deep link support
-    Logger.info('SECOND INSTANCE ARGS', { argv })
+    Logger.info('SECOND INSTANCE ARGS', { argv: argv.map(withoutQuery) })
     this.setDeepLink(argv.pop())
     this.openWindow()
   }
@@ -116,7 +118,7 @@ export default class ElectronApp {
 
   private handleOpenUrl = (event: electron.Event, url: string) => {
     // Mac deep link support
-    Logger.info('OPEN URL', { url })
+    Logger.info('OPEN URL', { url: withoutQuery(url) })
     event.preventDefault()
     this.setDeepLink(url)
     this.openWindow()
@@ -190,7 +192,7 @@ export default class ElectronApp {
 
     if (url.includes(scheme)) {
       this.deepLinkUrl = url.substring(scheme.length)
-      Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
+      Logger.info('SET DEEP LINK', { url: withoutQuery(this.deepLinkUrl) })
     }
 
     if (url.includes('authCallback')) {
@@ -445,7 +447,7 @@ export default class ElectronApp {
         .catch(() => false))
     if (handled) return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
     const fullUrl = START_URL + parameters
-    Logger.info('OPENING AUTH URL', { url: fullUrl })
+    Logger.info('OPENING AUTH URL', { url: withoutQuery(fullUrl) })
     this.window?.loadURL(fullUrl)
   }
 
