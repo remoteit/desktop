@@ -220,7 +220,9 @@ type Stored = {
 
 let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
 let minting: Promise<unknown> = Promise.resolve()
-let discovery: { authorization_endpoint: string; token_endpoint: string } | undefined
+let discovery:
+  | { authorization_endpoint: string; token_endpoint: string; prompt_values_supported?: string[] }
+  | undefined
 
 /* Sign-in failures the person reading them can DO something different about. The message
    stays the technical detail — console, support, bug reports — while `code` is what picks
@@ -525,11 +527,13 @@ export function oidcGrantStale(): boolean {
 export const oidcLeaveRefused = (): boolean => isChatPopout || oidcIsSupportTab()
 
 /** Leave for the AS. `auto` names an authorize nobody clicked for (see the ledger above). Resolves
- *  false, without leaving, when that reason has been spent or this window may not leave. */
+ *  false, without leaving, when that reason has been spent or this window may not leave; and false
+ *  after leaving for the AS's plain sign-up page when it can't take `prompt=create`. */
 export async function oidcStart(
   opts: {
-    prompt?: 'login' | 'select_account' | 'none'
+    prompt?: 'login' | 'select_account' | 'none' | 'create'
     loginHint?: string
+    idpHint?: string
     supportTicket?: string
     auto?: string
   } = {}
@@ -544,6 +548,12 @@ export async function oidcStart(
   }
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
+  // An AS without prompt=create treats it as a plain sign-in and silently resumes whoever its
+  // cookie remembers; its own sign-up page is the honest fallback.
+  if (opts.prompt === 'create' && !(await discover()).prompt_values_supported?.includes('create')) {
+    await leaveTo(`${OAUTH_ISSUER}/signup`)
+    return false
+  }
   const [d] = await Promise.all([discover(), refreshMcpDetailType()])
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
@@ -580,6 +590,8 @@ export async function oidcStart(
   // chooser — without it, prompt=login lands on the picker and choosing your own account
   // simply returns you to the same page, which reads as a loop.
   if (opts.loginHint) params.login_hint = opts.loginHint
+  // Opens the AS straight on that provider (e.g. Google) instead of its own sign-in page.
+  if (opts.idpHint) params.idp_hint = opts.idpHint
   // A support launch: the one-time ticket binds THIS authorize to the operator's support session.
   if (opts.supportTicket) params.support_ticket = opts.supportTicket
   if (opts.prompt) {

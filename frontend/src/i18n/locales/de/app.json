@@ -2214,10 +2214,10 @@
   },
   "signIn": {
     "agentOwnedDetail": "{{owner}} ist auf diesem Computer noch angemeldet. Melden Sie sich zuerst als {{owner}} an und wieder ab, oder führen Sie Folgendes in einem Terminal als Administrator aus:",
-    "agentOwnedTitle": "Dieser Computer wird bereits verwendet",
-    "autoStopped": "Die automatische Anmeldung wurde nach mehreren Versuchen beendet. Wählen Sie „Anmelden“, um es erneut zu versuchen.",
-    "button": "Anmelden",
+    "autoPaused": "Die automatische Anmeldung wurde nach mehreren Versuchen beendet. Wählen Sie unten aus, wie Sie sich anmelden möchten.",
     "cancel": "Abbrechen",
+    "continueEmail": "Mit E-Mail fortfahren",
+    "continueInBrowser": "Fahren Sie in Ihrem Browser fort",
     "errorExpired": "Dieser Anmeldeversuch ist abgelaufen, bevor er abgeschlossen wurde. Bitte versuchen Sie es erneut.",
     "errorRateLimited": "Zu viele Anmeldeversuche aus diesem Netzwerk. Bitte warten Sie einige Minuten und versuchen Sie es dann erneut.",
     "errorRateLimitedWait_one": "Zu viele Anmeldeversuche aus diesem Netzwerk. Bitte versuchen Sie es in etwa einer Minute erneut.",
@@ -2228,14 +2228,12 @@
     "errorUnreachable": "Der Anmeldedienst ist nicht erreichbar. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es dann erneut.",
     "heading": "Anmelden",
     "help": "Hilfe",
-    "opensBrowser": "Ihr Browser wird geöffnet, um die Anmeldung abzuschließen.",
+    "noAccount": "Noch kein Konto?",
+    "openAgain": "Erneut öffnen",
+    "or": "oder",
     "redirecting": "Weiterleitung zur Anmeldung…",
-    "reopen": "Browser erneut öffnen",
-    "retry": "Erneut versuchen",
-    "switchToProduction": "Zur Produktionsumgebung wechseln",
-    "waitingDetail": "{{host}} wurde in Ihrem Standardbrowser geöffnet.",
-    "waitingTitle": "Schließen Sie die Anmeldung in Ihrem Browser ab",
-    "withBrowser": "Mit Browser anmelden"
+    "signUp": "Registrieren",
+    "switchToProduction": "Zur Produktionsumgebung wechseln"
   },
   "statusChip": {
     "connected": "Verbunden",

@@ -134,12 +134,22 @@ beforeEach(() => {
   controllerClose.mockReset()
 })
 
-describe('auth model — sign-in always offers the chooser', () => {
+describe('auth model — the sign-in paths', () => {
   it('signIn authorizes with prompt=select_account (never a promptless / silent SSO)', async () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).signIn()
     expect(oidcStart).toHaveBeenCalledTimes(1)
     expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+  })
+
+  it('asks the AS to open straight on the hinted provider', async () => {
+    await effectsFor(makeDispatch()).signIn({ idpHint: 'google' })
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account', idpHint: 'google' })
+  })
+
+  it('asks the AS for its sign-up page', async () => {
+    await effectsFor(makeDispatch()).signIn({ signUp: true })
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'create' })
   })
 })
 

@@ -2214,10 +2214,10 @@
   },
   "signIn": {
     "agentOwnedDetail": "{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:",
-    "agentOwnedTitle": "This computer is in use",
-    "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
-    "button": "Sign In",
+    "autoPaused": "Automatic sign-in stopped after repeated attempts. Choose how to sign in below.",
     "cancel": "Cancel",
+    "continueEmail": "Continue with email",
+    "continueInBrowser": "Continue in your browser",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
     "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
     "errorRateLimitedWait_one": "Too many sign-in attempts from this network. Please try again in about a minute.",
@@ -2228,14 +2228,12 @@
     "errorUnreachable": "We couldn't reach the sign-in service. Check your internet connection, then try again.",
     "heading": "Sign in",
     "help": "Get help",
-    "opensBrowser": "Your browser will open to finish signing in.",
+    "noAccount": "Don't have an account?",
+    "openAgain": "Open again",
+    "or": "or",
     "redirecting": "Taking you to sign in…",
-    "reopen": "Open browser again",
-    "retry": "Try again",
-    "switchToProduction": "Switch to production",
-    "waitingDetail": "We opened {{host}} in your default browser.",
-    "waitingTitle": "Finish signing in in your browser",
-    "withBrowser": "Sign in with browser"
+    "signUp": "Sign up",
+    "switchToProduction": "Switch to production"
   },
   "statusChip": {
     "connected": "Connected",

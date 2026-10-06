@@ -266,15 +266,16 @@ export default createModel<RootModel>()({
     },
     /** `auto` names a sign-in nobody clicked for (the web sign-in screen's own start) so the
      *  ledger in oidcStart can bound it; a refused one leaves the screen as it was. */
-    async signIn(options?: { auto?: string }) {
+    async signIn(options?: { auto?: string; idpHint?: string; signUp?: boolean }) {
       dispatch.auth.set({ signingIn: true, ...signInCleared })
       try {
-        // Sign-in ALWAYS offers the CHOOSER (prompt=select_account), web and desktop alike.
-        // A "Sign in" button should let the person pick; and with a live AS cookie a
+        // Every sign-in but sign-up offers the CHOOSER (prompt=select_account), web and desktop
+        // alike. A sign-in button should let the person pick; and with a live AS cookie a
         // PROMPTLESS authorize would silently SSO the last user straight back in — which is
         // exactly the "sign-out doesn't stick" bug. select_account also means that signing
         // out and reloading always lands on the picker, never a silent re-login.
-        if (!(await oidcStart({ prompt: 'select_account', auto: options?.auto })))
+        const prompt = options?.signUp ? 'create' : 'select_account'
+        if (!(await oidcStart({ prompt, idpHint: options?.idpHint, auto: options?.auto })))
           dispatch.auth.set({ signingIn: false })
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)

@@ -78,7 +78,7 @@ describe('SignInApp', () => {
     render(screens.waiting)
     const reopen = container.querySelector<HTMLButtonElement>('.MuiButton-contained')!
     const cancel = button('Cancel')!
-    expect(reopen.textContent).toBe('Open browser again')
+    expect(reopen.textContent).toBe('Open again')
     expect(buttons().indexOf(cancel)).toBeLessThan(buttons().indexOf(reopen))
 
     act(() => reopen.click())
@@ -90,23 +90,38 @@ describe('SignInApp', () => {
 
   it('gives the agent owner and a copyable command when another account holds the agent', () => {
     render(screens.agentOwned)
-    expect(container.textContent).toContain('This computer is in use')
+    expect(container.textContent).toContain('is still signed in on this computer')
     expect(container.textContent).toContain('sudo remoteit signout')
-    expect(button('Try again')).toBeUndefined()
+    expect(container.textContent).not.toContain('Get help')
   })
 
   it('keeps the waiting actions reachable in the native mobile app', () => {
     Object.assign(browser, { isElectron: false, isNative: true })
     render(screens.waiting)
-    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Open browser again')
+    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Open again')
     expect(button('Cancel')).toBeDefined()
   })
 
-  it('on the web, where the page is the browser, offers a plain sign-in', () => {
-    Object.assign(browser, { isElectron: false, isNative: false })
+  it.each([
+    ['desktop', { isElectron: true, isNative: true }],
+    ['web', { isElectron: false, isNative: false }],
+  ])('on %s, the ready screen offers email, Google, Apple and sign-up, each said once', (_, platform) => {
+    Object.assign(browser, platform)
     autoStart.spent = true
     render(screens.ready)
-    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Sign In')
-    expect(container.textContent).not.toContain('Your browser will open')
+    expect(container.textContent).toBe("Sign inContinue with emailorGoogleAppleDon't have an account? Sign up")
+    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Continue with email')
+  })
+
+  it('starts each sign-in path from its own button', () => {
+    render(screens.ready)
+    act(() => button('Continue with email')!.click())
+    expect(auth.signIn).toHaveBeenLastCalledWith()
+    act(() => button('Google')!.click())
+    expect(auth.signIn).toHaveBeenLastCalledWith({ idpHint: 'google' })
+    act(() => button('Apple')!.click())
+    expect(auth.signIn).toHaveBeenLastCalledWith({ idpHint: 'apple' })
+    act(() => button('Sign up')!.click())
+    expect(auth.signIn).toHaveBeenLastCalledWith({ signUp: true })
   })
 })
