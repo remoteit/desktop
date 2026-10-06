@@ -8,6 +8,7 @@ import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import EventBus from './EventBus'
 import electronInterface from './electronInterface'
+import app from './index'
 import server, { isOwnOrigin } from './server'
 import { WEB_PORT, SSL_PORT, START_ORIGIN } from './constants'
 import preferences from './preferences'
@@ -330,5 +331,67 @@ describe('backend/server /system', () => {
 
   it('refuses a DNS-rebound name that resolves to this machine', async () => {
     expect((await system({ host: `attacker.example:${port}` })).status).toBe(403)
+  })
+})
+
+describe('backend/server sign-in callback', () => {
+  let port: number
+  const http = createServer(server['app'])
+  const takeAuthCallback = jest.fn()
+  const page = '<p>Return to the app</p>'
+
+  beforeAll(done => {
+    Object.assign(app, { takeAuthCallback, deepLinks: true })
+    http.listen(0, '127.0.0.1', () => {
+      port = (http.address() as AddressInfo).port
+      done()
+    })
+  })
+  afterAll(done => {
+    http.close(() => done())
+  })
+  beforeEach(() => takeAuthCallback.mockReset())
+
+  const request = (path: string) =>
+    new Promise<{ status?: number; location?: string; body: string }>((resolve, reject) =>
+      get({ host: '127.0.0.1', port, path }, response => {
+        let body = ''
+        response.setEncoding('utf8')
+        response.on('data', chunk => (body += chunk))
+        response.on('end', () => resolve({ status: response.statusCode, location: response.headers.location, body }))
+      }).on('error', reject)
+    )
+
+  it('hands the window a callback for the flow it started, and answers the browser tab with its page', async () => {
+    takeAuthCallback.mockResolvedValue(page)
+    expect(await request('/authCallback?code=c1&state=s1')).toMatchObject({ status: 200, body: page })
+    expect(takeAuthCallback).toHaveBeenCalledWith('?code=c1&state=s1')
+  })
+
+  it('leaves any other callback to the app it serves browsers', async () => {
+    takeAuthCallback.mockResolvedValue(undefined)
+    const answer = await request('/authCallback?code=c1&state=a-browser-tab')
+    expect(takeAuthCallback).toHaveBeenCalledWith('?code=c1&state=a-browser-tab')
+    expect(answer).toMatchObject({ status: 301, location: '/authCallback/?code=c1&state=a-browser-tab' })
+  })
+
+  it('never offers the window a callback from another machine', async () => {
+    const next = jest.fn()
+    const request = { socket: { remoteAddress: '192.168.1.20' }, originalUrl: '/authCallback?code=c1&state=s1' }
+    await server.authCallback(request as any, {} as any, next)
+    expect(takeAuthCallback).not.toHaveBeenCalled()
+    expect(next).toHaveBeenCalled()
+  })
+
+  it('names the loopback callback only when deep links are off', async () => {
+    try {
+      expect(JSON.parse((await request('/authRedirect')).body)).toEqual({})
+      Object.assign(app, { deepLinks: false })
+      expect(JSON.parse((await request('/authRedirect')).body)).toEqual({
+        redirectUri: `http://127.0.0.1:${WEB_PORT}/authCallback`,
+      })
+    } finally {
+      Object.assign(app, { deepLinks: true })
+    }
   })
 })

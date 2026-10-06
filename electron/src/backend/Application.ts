@@ -30,6 +30,14 @@ export default class Application {
     this.electron && this.electron.quitDuplicateInstance()
   }
 
+  get deepLinks(): boolean {
+    return this.electron?.deepLinks ?? true
+  }
+
+  async takeAuthCallback(parameters: string): Promise<string | undefined> {
+    return this.electron?.takeAuthCallback(parameters)
+  }
+
   recapitate(head: any) {
     this.electron = head
     environment.recapitate()

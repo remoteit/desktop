@@ -13,6 +13,7 @@ const withoutQuery = (url = '') => url.split('?')[0]
 export default class ElectronApp {
   public app: electron.App
   public tray?: electron.Tray
+  public readonly deepLinks: boolean
   private window?: electron.BrowserWindow
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
@@ -40,7 +41,9 @@ export default class ElectronApp {
 
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
-    if (preferences.get().disableDeepLinks) {
+    // The server reports this rather than the live preference: the scheme is only (un)registered here, at launch.
+    this.deepLinks = !preferences.get().disableDeepLinks
+    if (!this.deepLinks) {
       this.app.removeAsDefaultProtocolClient(this.protocol)
       Logger.info('REMOVED AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
     } else {
@@ -449,6 +452,25 @@ export default class ElectronApp {
     const fullUrl = START_URL + parameters
     Logger.info('OPENING AUTH URL', { url: withoutQuery(fullUrl) })
     this.window?.loadURL(fullUrl)
+  }
+
+  /* With deep links off, sign-in returns to the app's own server, which also serves the UI to browsers,
+     so a callback is this window's only for a flow the window started. Resolves the page for the browser tab. */
+  async takeAuthCallback(parameters: string): Promise<string | undefined> {
+    const state = new URLSearchParams(parameters).get('state')
+    const webContents = this.window?.webContents
+    if (!state || !webContents || webContents.isLoadingMainFrame() || !this.isAppOrigin(webContents.getURL())) return
+    const owned = await webContents
+      .executeJavaScript(`window.authFlowPending?.(${JSON.stringify(state)}) === true`)
+      .catch(() => false)
+    if (!owned) return
+    Logger.info('AUTH CALLBACK ON LOOPBACK')
+    this.openWindow()
+    this.app.focus({ steal: true })
+    void this.deliverAuthCallback(parameters)
+    const title = t('authCallback.title', { appName: brand.appName })
+    const message = t('authCallback.message', { appName: brand.appName })
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;text-align:center;color:#333;background:#fff}@media (prefers-color-scheme:dark){body{color:#ddd;background:#1e1e1e}}</style></head><body><main><h1>${title}</h1><p>${message}</p></main></body></html>`
   }
 
   private closeWindow() {

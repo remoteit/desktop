@@ -21,5 +21,9 @@
     "findApplicationTitle": "Anwendung suchen",
     "findApplicationMessage": "Wählen Sie den Speicherort der Anwendung",
     "findApplicationButton": "Auswählen"
+  },
+  "authCallback": {
+    "title": "Zurück zu {{appName}}",
+    "message": "Die Anmeldung wird in der {{appName}}-App fortgesetzt. Sie können diesen Tab schließen."
   }
 }

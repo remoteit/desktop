@@ -22,9 +22,10 @@ import { httpsOnly } from '../helpers/utilHelper'
  * state-keyed localStorage record so another tab can finish it — see rememberFlow) → the app
  * (re)boots with ?code&state in its URL → exchange completes here. The only per-shell
  * difference is how the code returns: the page's own /authCallback URL on web; the
- * remoteit://authCallback deep link on packaged desktop, which a signed-in window completes
- * in place and any other window takes as a reload with the same query (ElectronApp). On desktop the AS journey still runs in
- * the SYSTEM browser — the main process bounces issuer-origin navigations out.
+ * remoteit://authCallback deep link on packaged desktop (with deep links off, the app's own loopback
+ * server), which a signed-in window completes in place and any other window takes as a reload with
+ * the same query (ElectronApp). On desktop the AS journey still runs in the SYSTEM browser — the main
+ * process bounces issuer-origin navigations out.
  *
  * Tokens live renderer-side: access tokens in memory, the ROTATING single-use refresh
  * token in localStorage (family revocation on reuse is the mitigation). `resource` rides
@@ -201,6 +202,9 @@ function findFlow(state: string): Flow | undefined {
   return undefined
 }
 
+/** Whether a callback carrying `state` is for a sign-in this browser started and hasn't settled. */
+export const oidcFlowPending = (state: string): boolean => !!findFlow(state)
+
 /** Single-use: both records of the flow go once its callback has settled. */
 function dropFlow(state: string): void {
   try {
@@ -360,8 +364,19 @@ async function discover() {
 }
 
 // A native shell comes back through its private-use scheme, which the registry lists for the
-// desktop client; on web the page's own /authCallback is the registered one.
-const redirectUri = () => (browser.isNative ? PROTOCOL + 'authCallback' : window.location.origin + '/authCallback')
+// desktop client; on web the page's own /authCallback is the registered one. A desktop whose deep
+// links are off has no scheme to come back through, so its server names the loopback one it answers.
+async function redirectUri(): Promise<string> {
+  if (!browser.isNative) return window.location.origin + '/authCallback'
+  if (browser.isElectron) {
+    const loopback = await fetch('/authRedirect', { signal: timeoutSignal(2000) })
+      .then(response => response.json())
+      .then(body => body?.redirectUri)
+      .catch(() => undefined)
+    if (typeof loopback === 'string') return loopback
+  }
+  return PROTOCOL + 'authCallback'
+}
 
 /** What this build asks for, per audience. ONE source of truth: the authorize request is
  *  built from it AND the boot check measures tokens against it, so a slice added in a deploy
@@ -554,10 +569,10 @@ export async function oidcStart(
     await leaveTo(`${OAUTH_ISSUER}/signup`)
     return false
   }
-  const [d] = await Promise.all([discover(), refreshMcpDetailType()])
+  const [d, , redirect] = await Promise.all([discover(), refreshMcpDetailType(), redirectUri()])
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-  const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
+  const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirect }
   const url = new URL(d.authorization_endpoint)
   const params: { [key: string]: string } = {
     client_id: OAUTH_CLIENT_ID,
