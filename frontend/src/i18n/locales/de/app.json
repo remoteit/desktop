@@ -1187,6 +1187,7 @@
     "screenView": "ScreenView"
   },
   "deviceSetting": {
+    "controlFixed": "",
     "controlLocal": "",
     "controlOff": "",
     "controlOn": "",
@@ -1238,6 +1239,19 @@
     "off": "",
     "onOther": "",
     "onYou": ""
+  },
+  "deviceWebsocket": {
+    "auto": "",
+    "autoHint": "",
+    "label": "",
+    "off": "",
+    "offConfirm": "",
+    "offConfirmAction": "",
+    "offConfirmBody": "",
+    "offHint": "",
+    "on": "",
+    "onHint": "",
+    "using": ""
   },
   "duration": {
     "ago": "vor {{duration}}"

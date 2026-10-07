@@ -7,6 +7,7 @@ import { DevicePresenceSetting } from '../components/DevicePresenceSetting'
 import { DeviceUserModeSetting } from '../components/DeviceUserModeSetting'
 import { DeviceAnyPortSetting } from '../components/DeviceAnyPortSetting'
 import { DeviceSubnetSetting } from '../components/DeviceSubnetSetting'
+import { DeviceWebsocketSetting } from '../components/DeviceWebsocketSetting'
 import { DeviceExitChoice } from '../components/DeviceExitSection'
 import { DevicePolicyRow } from '../components/DeviceSettingRow'
 import { NotificationSettings } from '../components/NotificationSettings'
@@ -35,6 +36,7 @@ export const DeviceEditPage: React.FC = () => {
             <DeviceSubnetSetting />
             {deviceSessions && <DeviceExitChoice device={device} />}
             <DeviceAnyPortSetting />
+            <DeviceWebsocketSetting />
             {deviceSessions && (
               <DevicePolicyRow
                 deviceId={device.id}

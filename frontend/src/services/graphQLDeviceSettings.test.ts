@@ -10,7 +10,14 @@ vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
 
 import { UNSUPPORTED } from './graphQLDaemon'
-import { graphQLDeviceSettings, graphQLSetDeviceSetting, settingLocked, settingOn } from './graphQLDeviceSettings'
+import {
+  graphQLDeviceSettings,
+  graphQLDeviceWebsocket,
+  graphQLSetDeviceSetting,
+  settingLocked,
+  settingOn,
+  websocketMode,
+} from './graphQLDeviceSettings'
 
 const subnet = {
   name: 'subnet',
@@ -75,12 +82,46 @@ describe('a device’s settings', () => {
     expect(settingOn(as('cloud', { tcp: '*', udp: '' }))).toBe(true)
     expect(settingOn(as('cloud', null))).toBe(false)
     expect(settingOn(undefined)).toBe(false)
-    expect(['cloud+local', 'cloud', 'local', 'off', 'on'].map(c => settingLocked(as(c, true)))).toEqual([
+    expect(['cloud+local', 'cloud', 'local', 'off', 'on', 'auto'].map(c => settingLocked(as(c, true)))).toEqual([
       false,
       false,
+      true,
       true,
       true,
       true,
     ])
+  })
+})
+
+describe('the websocket setting', () => {
+  const websocket = (control: string, value: any) => ({ ...subnet, name: 'websocket', control, value } as any)
+
+  it('its mode: what the control fixes, else the value, else auto', () => {
+    expect(websocketMode(websocket('cloud+local', 'on'))).toBe('on')
+    expect(websocketMode(websocket('local', 'off'))).toBe('off')
+    expect(websocketMode(websocket('off', 'on'))).toBe('off')
+    expect(websocketMode(websocket('on', 'off'))).toBe('on')
+    expect(websocketMode(websocket('auto', 'on'))).toBe('auto')
+    expect(websocketMode(websocket('cloud', null))).toBe('auto')
+    expect(websocketMode(websocket('cloud', 'sideways'))).toBe('auto')
+    expect(websocketMode(undefined)).toBe('auto')
+  })
+
+  it('reads the reflector’s state from Device.websocket', async () => {
+    const state = { mode: 'auto', using: true, since: '2026-10-06T17:04:05.123Z' }
+    request.mockResolvedValue({ data: { data: { login: { device: [{ id: 'D', websocket: state }] } } }, headers: {} })
+    expect(await graphQLDeviceWebsocket('D')).toEqual(state)
+    expect(request.mock.calls[0][0].data.query).toMatch(/websocket \{ mode using since \}/)
+  })
+
+  it('not reported: null; an API without Device.websocket: UNSUPPORTED, no error banner', async () => {
+    request.mockResolvedValue({ data: { data: { login: { device: [{ id: 'D', websocket: null }] } } }, headers: {} })
+    expect(await graphQLDeviceWebsocket('D')).toBeNull()
+    request.mockResolvedValue({
+      data: { errors: [{ message: 'Cannot query field "websocket" on type "Device".' }] },
+      headers: {},
+    })
+    expect(await graphQLDeviceWebsocket('D')).toBe(UNSUPPORTED)
+    expect(uiSet).not.toHaveBeenCalled()
   })
 })

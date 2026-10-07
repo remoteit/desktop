@@ -1187,6 +1187,7 @@
     "screenView": "ScreenView"
   },
   "deviceSetting": {
+    "controlFixed": "Fixed on the device by its administrator",
     "controlLocal": "Set only on the device",
     "controlOff": "Turned off on the device by its administrator",
     "controlOn": "Turned on on the device by its administrator",
@@ -1238,6 +1239,19 @@
     "off": "Reaches only what its networks grant it. On, it reaches everything you can too.",
     "onOther": "Reaches everything {{email}} can, as well as what its networks grant it",
     "onYou": "Reaches everything you can, as well as what its networks grant it"
+  },
+  "deviceWebsocket": {
+    "auto": "Automatic",
+    "autoHint": "Used only when this device’s UDP is blocked",
+    "label": "Reflector (websocket)",
+    "off": "Off",
+    "offConfirm": "Turn the reflector off?",
+    "offConfirmAction": "Turn off",
+    "offConfirmBody": "This device reaches remote.it through the reflector now. Turning it off disconnects it until someone changes it on the device.",
+    "offHint": "Never; with UDP blocked the device goes offline",
+    "on": "Always",
+    "onHint": "All traffic through remote.it’s reflector — for networks that block UDP",
+    "using": "Reaching remote.it through the reflector"
   },
   "duration": {
     "ago": "{{duration}} ago"

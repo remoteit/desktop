@@ -4,6 +4,7 @@ import type { TFunction } from 'i18next'
 import { DeviceSetting, DeviceSettingName, settingLocked, settingOn } from '../services/graphQLDeviceSettings'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { ListItemSetting } from './ListItemSetting'
+import { SelectSetting } from './SelectSetting'
 
 type Props = {
   setting: DeviceSetting
@@ -53,6 +54,41 @@ export const DeviceSettingRow: React.FC<Props> = ({
   )
 }
 
+/* A device setting whose value is a choice (websocket's auto, on, off): DeviceSettingRow's, as a select — who set it
+   when that was on the device, and the administrator's override, which fixes a value here greyed. */
+export const DeviceSettingChoice: React.FC<{
+  setting: DeviceSetting
+  icon?: string
+  label: string
+  value: string // the value standing, as the setting's control fixes it
+  choices: ISelect[]
+  note?: React.ReactNode // the setting's state, below who set it
+  disabled?: boolean
+  onChange: (value: string) => void
+}> = ({ setting, icon, label, value, choices, note, disabled, onChange }) => {
+  const { t } = useTranslation()
+  const why = settingNote(t, setting)
+  return (
+    <SelectSetting
+      icon={icon}
+      label={label}
+      value={value}
+      values={choices}
+      disabled={disabled || settingLocked(setting)}
+      helperText={
+        why || note ? (
+          <>
+            {why}
+            {why && note && <br />}
+            {note}
+          </>
+        ) : undefined
+      }
+      onChange={next => next !== value && onChange(next)}
+    />
+  )
+}
+
 // Who set a value the device took from its configuration file: not a person.
 export const CONFIGURATION = 'configuration'
 
@@ -65,6 +101,8 @@ export function settingNote(t: TFunction, setting?: DeviceSetting): string | und
       return t('deviceSetting.controlOff', 'Turned off on the device by its administrator')
     case 'on':
       return t('deviceSetting.controlOn', 'Turned on on the device by its administrator')
+    case 'auto':
+      return t('deviceSetting.controlFixed', 'Fixed on the device by its administrator')
     case 'local':
       return t('deviceSetting.controlLocal', 'Set only on the device')
   }

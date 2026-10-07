@@ -14,13 +14,23 @@ vi.mock('./ListItemSetting', () => ({
     </button>
   ),
 }))
+vi.mock('./SelectSetting', () => ({
+  SelectSetting: ({ value, values, disabled, helperText, onChange }: any) => (
+    <div data-select data-value={value} data-disabled={String(!!disabled)}>
+      {values.map((v: any) => (
+        <button key={v.key} data-choice={v.key} onClick={() => onChange(v.key)} />
+      ))}
+      {helperText}
+    </div>
+  ),
+}))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
   }),
 }))
 
-import { DevicePolicyRow, DeviceSettingRow } from './DeviceSettingRow'
+import { DevicePolicyRow, DeviceSettingChoice, DeviceSettingRow } from './DeviceSettingRow'
 import type { DeviceSetting, DeviceSettingControl } from '../services/graphQLDeviceSettings'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -148,5 +158,64 @@ describe('a device setting’s row', () => {
     settings.mockReturnValue(undefined)
     page = await render(<DevicePolicyRow deviceId="D" name="updates" label="Remote upgrades" />)
     expect(page.textContent).toBe('')
+  })
+})
+
+describe('a device setting whose value is a choice', () => {
+  const websocket = (control: DeviceSettingControl, more: Partial<DeviceSetting> = {}): DeviceSetting => ({
+    ...subnet(control),
+    name: 'websocket',
+    value: 'on',
+    ...more,
+  })
+  const choices = [
+    { key: 'auto', name: 'Automatic' },
+    { key: 'on', name: 'Always' },
+    { key: 'off', name: 'Off' },
+  ]
+  const choice = (page: HTMLElement, key: string) => page.querySelector(`[data-choice="${key}"]`) as HTMLButtonElement
+  const select = (page: HTMLElement) => page.querySelector('[data-select]') as HTMLElement
+
+  it('a change: the value chosen; the one standing again: nothing', async () => {
+    const onChange = vi.fn()
+    const page = await render(
+      <DeviceSettingChoice
+        setting={websocket('cloud+local')}
+        label="Reflector"
+        value="on"
+        choices={choices}
+        onChange={onChange}
+      />
+    )
+    expect(select(page).dataset.disabled).toBe('false')
+    await act(async () => choice(page, 'on').click())
+    expect(onChange).not.toHaveBeenCalled()
+    await act(async () => choice(page, 'off').click())
+    expect(onChange).toHaveBeenCalledWith('off')
+  })
+
+  it('who set it, then the note; fixed by a value as its control: greyed', async () => {
+    let page = await render(
+      <DeviceSettingChoice
+        setting={websocket('cloud+local', { onDevice: true, by: 'bob' })}
+        label="Reflector"
+        value="on"
+        choices={choices}
+        note="Through it now"
+        onChange={vi.fn()}
+      />
+    )
+    expect(page.textContent).toBe('Set on the device by bobThrough it now')
+    page = await render(
+      <DeviceSettingChoice
+        setting={websocket('auto')}
+        label="Reflector"
+        value="auto"
+        choices={choices}
+        onChange={vi.fn()}
+      />
+    )
+    expect(select(page).dataset.disabled).toBe('true')
+    expect(page.textContent).toBe('Fixed on the device by its administrator')
   })
 })

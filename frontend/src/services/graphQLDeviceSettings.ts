@@ -14,17 +14,18 @@ export type DeviceSettingName =
   | 'mcp_exec' // AI commands through MCP on the console
   | 'any_port'
   | 'proxy'
+  | 'websocket' // the reflector: 'auto', 'on' or 'off'
   | 'updates' // policy only: no value, a control of on or off
   | 'user_mode'
   | 'initiators'
 
 // cloud+local: either side sets it; local: the machine only; cloud: here only; off, on: fixed by the machine's
-// administrator.
-export type DeviceSettingControl = 'cloud+local' | 'local' | 'cloud' | 'off' | 'on'
+// administrator — and, for a setting whose value is a choice, any of its values (websocket's auto).
+export type DeviceSettingControl = 'cloud+local' | 'local' | 'cloud' | 'off' | 'on' | 'auto'
 
 export type DeviceSetting = {
   name: DeviceSettingName
-  value: any // the setting's JSON: a boolean; exit_node {on, lan}; any_port {tcp, udp} or null
+  value: any // the setting's JSON: a boolean; exit_node {on, lan}; any_port {tcp, udp} or null; websocket a mode
   at: string | null
   by: string | null
   onDevice: boolean
@@ -59,7 +60,8 @@ export async function graphQLSetDeviceSetting(
 }
 
 // Fixed by the machine's administrator, or set only on the machine: not to be changed here.
-export const settingLocked = (setting?: DeviceSetting) => !!setting && ['local', 'off', 'on'].includes(setting.control)
+export const settingLocked = (setting?: DeviceSetting) =>
+  !!setting && ['local', 'off', 'on', 'auto'].includes(setting.control)
 
 // Whether a setting is on: what its control fixes, else its value (exit_node's `on`, any_port's lists).
 export function settingOn(setting?: DeviceSetting): boolean {
@@ -69,4 +71,36 @@ export function settingOn(setting?: DeviceSetting): boolean {
   const value = setting.value
   if (value && typeof value === 'object') return 'on' in value ? !!value.on : true
   return !!value
+}
+
+/* The websocket setting (device-package docs/device-settings.md, "The websocket setting"): whether the device uses
+   remote.it's reflector, which carries its traffic over a websocket when its UDP is blocked. auto (the default) only
+   while its UDP to presence fails; on, all its traffic; off, never — and with its UDP blocked it stays offline.
+   Device.websocket is the reflector's state as the device reports it (about.websocket): `using` while its own traffic
+   goes through the reflector, when turning it off would strand it. */
+
+export type WebsocketMode = 'auto' | 'on' | 'off'
+export const WEBSOCKET_MODES: WebsocketMode[] = ['auto', 'on', 'off']
+
+export type DeviceWebsocket = { mode: WebsocketMode; using: boolean; since: string | null }
+
+// The mode standing: what the administrator's control fixes, else the value, else the default.
+export function websocketMode(setting?: DeviceSetting): WebsocketMode {
+  const fixed = setting?.control as WebsocketMode
+  if (WEBSOCKET_MODES.includes(fixed)) return fixed
+  return WEBSOCKET_MODES.includes(setting?.value) ? setting!.value : 'auto'
+}
+
+// Null where the device has not reported it; UNSUPPORTED from an API without it.
+export async function graphQLDeviceWebsocket(
+  deviceId: string
+): Promise<DeviceWebsocket | null | 'ERROR' | typeof UNSUPPORTED> {
+  const query = `query DeviceWebsocket($id: [String!]!) { login { device(id: $id) { id websocket { mode using since } } } }`
+  const variables = { id: [deviceId] }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  const errors = graphQLGetErrors(response, true, { query, variables })
+  if (withoutDeviceSessions(errors, 'websocket')) return UNSUPPORTED
+  if (errors) return 'ERROR'
+  return response.data?.data?.login?.device?.[0]?.websocket ?? null
 }
