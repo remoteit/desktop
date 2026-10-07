@@ -21,8 +21,6 @@ jest.mock('./cliInterface', () => ({
   default: { readUser: jest.fn(), signOut: jest.fn(), isSignedOut: () => true, data: {}, EVENTS: {} },
 }))
 jest.mock('./LAN', () => ({ __esModule: true, default: { EVENTS: {} } }))
-// user.signOut deletes the real user.json under environment.userPath
-jest.mock('rimraf')
 jest.mock('./systemInfo', () => ({ __esModule: true, default: async () => ({ id: 'device-1' }) }))
 
 describe('backend/server broadcasts', () => {
