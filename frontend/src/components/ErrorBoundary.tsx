@@ -1,9 +1,25 @@
 import React, { Component, ErrorInfo } from 'react'
 import { AIRBRAKE_ID, AIRBRAKE_KEY } from '../constants'
-import { Notifier } from '@airbrake/browser'
+import { INotice, Notifier } from '@airbrake/browser'
 import { version } from '../helpers/versionHelper'
 import { Store } from '../store'
 import browser from '../services/browser'
+
+// A sign-in callback's URL carries the OAuth code and state, and Airbrake reports the page URL and its navigation history.
+const OAUTH_PARAMS = /([?&](?:code|state)=)[^&#]*/g
+const redact = (value: unknown) => (typeof value === 'string' ? value.replace(OAUTH_PARAMS, '$1[redacted]') : value)
+
+export function redactOAuthParams(notice: INotice) {
+  if (!notice.context) return notice
+  notice.context = {
+    ...notice.context,
+    url: redact(notice.context.url),
+    history: notice.context.history?.map((entry: Record<string, unknown>) =>
+      Object.fromEntries(Object.entries(entry).map(([key, value]) => [key, redact(value)]))
+    ),
+  }
+  return notice
+}
 
 type ErrorBoundaryProps = {
   store?: Store
@@ -27,6 +43,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = { hasError: false }
+    this.airbrake.addFilter(redactOAuthParams)
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {

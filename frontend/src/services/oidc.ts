@@ -22,9 +22,10 @@ import { httpsOnly } from '../helpers/utilHelper'
  * state-keyed localStorage record so another tab can finish it — see rememberFlow) → the app
  * (re)boots with ?code&state in its URL → exchange completes here. The only per-shell
  * difference is how the code returns: the page's own /authCallback URL on web; the
- * remoteit://authCallback deep link reloading the window with the same query on packaged
- * desktop (ElectronApp's long-standing lane). On desktop the AS journey still runs in
- * the SYSTEM browser — the main process bounces issuer-origin navigations out.
+ * remoteit://authCallback deep link on packaged desktop (with deep links off, the app's own loopback
+ * server), which a signed-in window completes in place and any other window takes as a reload with
+ * the same query (ElectronApp). On desktop the AS journey still runs in the SYSTEM browser — the main
+ * process bounces issuer-origin navigations out.
  *
  * Tokens live renderer-side: access tokens in memory, the ROTATING single-use refresh
  * token in localStorage (family revocation on reuse is the mitigation). `resource` rides
@@ -50,6 +51,7 @@ const FLOW_KEY = 'oidc.flow'
 const FLOW_SHARED_PREFIX = 'oidc.flow:'
 const FLOW_TTL_MS = 24 * 60 * 60 * 1000 // the set-password link's own life (the AS mints it for 24h)
 const TOKENS_KEY = 'oidc.tokens'
+const ISSUER_KEY = 'oidc.issuer'
 // What the grant behind those tokens was last written from (see oidcGrantStale).
 const DECLARATION_KEY = 'oidc.declaration'
 // The ACCOUNT REGISTRY (multi-account menu): one saved token set per subject this app has
@@ -153,8 +155,8 @@ const tokenStore = (): Storage => {
 
 type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
 
-function rememberFlow(flow: Flow): void {
-  sessionStorage.setItem(FLOW_KEY, JSON.stringify(flow))
+function rememberFlow(flow: Flow, authorizeUrl: string): void {
+  sessionStorage.setItem(FLOW_KEY, JSON.stringify({ ...flow, authorizeUrl }))
   if (oidcIsSupportTab()) return
   try {
     const now = Date.now()
@@ -174,30 +176,43 @@ function rememberFlow(flow: Flow): void {
   }
 }
 
-/** The flow a callback's `state` belongs to: this tab's, else one another tab of this browser
- *  started (the email-link case). Single-use either way — both records are cleared. */
-function takeFlow(state: string): Flow | undefined {
-  let flow: Flow | undefined
+/** This tab's outstanding flow, with the authorize URL it was sent to. */
+function ownFlow(): (Flow & { authorizeUrl?: string }) | undefined {
   try {
-    const raw = sessionStorage.getItem(FLOW_KEY)
-    sessionStorage.removeItem(FLOW_KEY)
-    const own: Flow | undefined = raw ? JSON.parse(raw) : undefined
-    if (own?.state === state) flow = own
+    return JSON.parse(sessionStorage.getItem(FLOW_KEY) || 'null') ?? undefined
   } catch {
-    /* fall through to the shared record */
+    return undefined
   }
+}
+
+/** The flow a callback's `state` belongs to: this tab's, else one another tab of this browser
+ *  started (the email-link case). Read only; dropFlow clears it once the callback settles. */
+function findFlow(state: string): Flow | undefined {
+  const own = ownFlow()
+  if (own?.state === state) return own
   try {
-    const key = FLOW_SHARED_PREFIX + state
-    const raw = localStorage.getItem(key)
-    localStorage.removeItem(key)
-    if (!flow && raw) {
+    const raw = localStorage.getItem(FLOW_SHARED_PREFIX + state)
+    if (raw) {
       const shared = JSON.parse(raw) as Flow & { at?: number }
-      if (Date.now() - (shared.at ?? 0) <= FLOW_TTL_MS) flow = shared
+      if (Date.now() - (shared.at ?? 0) <= FLOW_TTL_MS) return shared
     }
   } catch {
     /* nothing shared */
   }
-  return flow
+  return undefined
+}
+
+/** Whether a callback carrying `state` is for a sign-in this browser started and hasn't settled. */
+export const oidcFlowPending = (state: string): boolean => !!findFlow(state)
+
+/** Single-use: both records of the flow go once its callback has settled. */
+function dropFlow(state: string): void {
+  try {
+    if (ownFlow()?.state === state) sessionStorage.removeItem(FLOW_KEY)
+    localStorage.removeItem(FLOW_SHARED_PREFIX + state)
+  } catch {
+    /* storage unavailable: nothing to clear */
+  }
 }
 /** A support session (`act` in the id_token) has NO refresh token — its one access token IS the
  *  session, stored so a reload of the support tab survives until it expires. */
@@ -209,7 +224,9 @@ type Stored = {
 
 let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
 let minting: Promise<unknown> = Promise.resolve()
-let discovery: { authorization_endpoint: string; token_endpoint: string } | undefined
+let discovery:
+  | { authorization_endpoint: string; token_endpoint: string; prompt_values_supported?: string[] }
+  | undefined
 
 /* Sign-in failures the person reading them can DO something different about. The message
    stays the technical detail — console, support, bug reports — while `code` is what picks
@@ -347,8 +364,20 @@ async function discover() {
 }
 
 // A native shell comes back through its private-use scheme, which the registry lists for the
-// desktop client; on web the page's own /authCallback is the registered one.
-const redirectUri = () => (browser.isNative ? PROTOCOL + 'authCallback' : window.location.origin + '/authCallback')
+// desktop client; on web the page's own /authCallback is the registered one. A desktop whose deep
+// links are off has no scheme to come back through, so its server names the loopback one it answers.
+async function redirectUri(): Promise<string> {
+  if (!browser.isNative) return window.location.origin + '/authCallback'
+  const loopback =
+    browser.isElectron &&
+    (await fetch('/authRedirect', { signal: timeoutSignal(2000) })
+      .then(response => response.json())
+      .then(
+        body => body?.redirectUri,
+        () => undefined
+      ))
+  return loopback || PROTOCOL + 'authCallback'
+}
 
 /** What this build asks for, per audience. ONE source of truth: the authorize request is
  *  built from it AND the boot check measures tokens against it, so a slice added in a deploy
@@ -514,11 +543,13 @@ export function oidcGrantStale(): boolean {
 export const oidcLeaveRefused = (): boolean => isChatPopout || oidcIsSupportTab()
 
 /** Leave for the AS. `auto` names an authorize nobody clicked for (see the ledger above). Resolves
- *  false, without leaving, when that reason has been spent or this window may not leave. */
+ *  false, without leaving, when that reason has been spent or this window may not leave; and false
+ *  after leaving for the AS's plain sign-up page when it can't take `prompt=create`. */
 export async function oidcStart(
   opts: {
-    prompt?: 'login' | 'select_account' | 'none'
+    prompt?: 'login' | 'select_account' | 'none' | 'create'
     loginHint?: string
+    idpHint?: string
     supportTicket?: string
     auto?: string
   } = {}
@@ -533,11 +564,16 @@ export async function oidcStart(
   }
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
-  const [d] = await Promise.all([discover(), refreshMcpDetailType()])
+  // An AS without prompt=create treats it as a plain sign-in and silently resumes whoever its
+  // cookie remembers; its own sign-up page is the honest fallback.
+  if (opts.prompt === 'create' && !(await discover()).prompt_values_supported?.includes('create')) {
+    await leaveTo(`${OAUTH_ISSUER}/signup`)
+    return false
+  }
+  const [d, , redirect] = await Promise.all([discover(), refreshMcpDetailType(), redirectUri()])
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-  const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
-  rememberFlow(flow)
+  const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirect }
   const url = new URL(d.authorization_endpoint)
   const params: { [key: string]: string } = {
     client_id: OAUTH_CLIENT_ID,
@@ -570,27 +606,66 @@ export async function oidcStart(
   // chooser — without it, prompt=login lands on the picker and choosing your own account
   // simply returns you to the same page, which reads as a loop.
   if (opts.loginHint) params.login_hint = opts.loginHint
+  // Opens the AS straight on that provider (e.g. Google) instead of its own sign-in page.
+  if (opts.idpHint) params.idp_hint = opts.idpHint
   // A support launch: the one-time ticket binds THIS authorize to the operator's support session.
   if (opts.supportTicket) params.support_ticket = opts.supportTicket
   if (opts.prompt) {
     params.prompt = opts.prompt
   }
   for (const key in params) url.searchParams.set(key, params[key])
+  rememberFlow(flow, url.toString())
   await leaveTo(url.toString())
   return true
 }
 
-/** Boot-time completion: when the URL carries ?code&state (web return or the desktop
- * deep-link reload), finish the exchange and clean the URL. Returns claims, or
- * undefined when this boot isn't a callback. Throws on a failed/denied flow. */
-export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
-  const query = new URLSearchParams(window.location.search)
+/** Sends the person back to this tab's outstanding authorize, for a browser tab that was lost or
+ *  never opened. Resolves false when no flow is outstanding. */
+export async function oidcReopen(): Promise<boolean> {
+  const authorizeUrl = ownFlow()?.authorizeUrl
+  if (!authorizeUrl) return false
+  await leaveTo(authorizeUrl)
+  return true
+}
+
+/** Callback completion: when `search` (the boot URL's, or a desktop deep link handed to a live
+ * window) carries ?code&state, finish the exchange and clean the URL. Returns claims, or
+ * undefined when it isn't a callback, is a stale one over a stored session, or `admit` refused
+ * the account (its tokens are then revoked, never stored). Throws on a failed/denied flow. */
+export async function oidcCompleteFromUrl(
+  search?: string,
+  admit?: (claims: OidcClaims | undefined) => Promise<boolean>
+): Promise<OidcClaims | undefined> {
+  const query = new URLSearchParams(search ?? window.location.search)
   const state = query.get('state')
   if (!state || !(query.get('code') || query.get('error'))) return undefined
 
-  const flow = takeFlow(state)
-  cleanUrl()
-  if (!flow) throw new OidcError('expired', 'Sign-in state mismatch')
+  const flow = findFlow(state)
+  // Only the boot URL carries the callback; a live window's own URL (and its router's history state) is not ours.
+  if (search === undefined) cleanUrl()
+  if (!flow) {
+    // A second browser tab finishing a flow the first already completed (Open browser again) lands
+    // here; with that session stored the callback is stale, and failing it showed the sign-in screen.
+    if (oidcSignedIn()) {
+      console.warn('OIDC: ignoring a sign-in callback whose flow already completed')
+      return undefined
+    }
+    throw new OidcError('expired', 'Sign-in state mismatch')
+  }
+  // Dropped only once the exchange settles: a second tab's deep link can reload a window that is
+  // not signed in mid-request, and its callback needs the flow the interrupted one never finished with.
+  try {
+    return await exchangeCallback(flow, query, admit)
+  } finally {
+    dropFlow(state)
+  }
+}
+
+async function exchangeCallback(
+  flow: Flow,
+  query: URLSearchParams,
+  admit?: (claims: OidcClaims | undefined) => Promise<boolean>
+): Promise<OidcClaims | undefined> {
   const error = query.get('error')
   if (error) {
     const refused = new OidcError('refused', query.get('error_description') || error)
@@ -607,6 +682,16 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   })
   const claims = decodeJwt(body.id_token)
   if (claims?.nonce !== flow.nonce) throw new OidcError('expired', 'Sign-in nonce mismatch')
+  if (admit) {
+    let admitted = false
+    try {
+      admitted = await admit(claims)
+    } finally {
+      // Refused or thrown alike: tokens that will never be stored must not stay live.
+      if (!admitted && body.refresh_token) revoke(body.refresh_token)
+    }
+    if (!admitted) return undefined
+  }
   // Sub-aware handover: the SAME account signing in again replaces its family (revoke the
   // old refresh token — it is dead weight); a DIFFERENT account arriving is the
   // add-account path, and the previous account's set is a LIVING saved session — persist()
@@ -614,13 +699,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   const previousSet = stored()
   const previousSub = decodeJwt(previousSet?.id_token)?.sub
   const previous = previousSet?.refresh_token
-  if (previous && previous !== body.refresh_token && (!claims?.sub || previousSub === claims.sub)) {
-    fetch(`${OAUTH_ISSUER}/revoke`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ token: previous, token_type_hint: 'refresh_token', client_id: OAUTH_CLIENT_ID }),
-    }).catch(() => {})
-  }
+  if (previous && previous !== body.refresh_token && (!claims?.sub || previousSub === claims.sub)) revoke(previous)
 
   if (claims?.act) {
     // A SUPPORT session (docs/desktop-support.md): the AS mints no refresh token, and the access
@@ -651,6 +730,14 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   }
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
   return claims
+}
+
+function revoke(refreshToken: string) {
+  fetch(`${OAUTH_ISSUER}/revoke`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ token: refreshToken, token_type_hint: 'refresh_token', client_id: OAUTH_CLIENT_ID }),
+  }).catch(() => {})
 }
 
 /** Current access token for `resource` ('' when signed out). Mints are SERIALIZED, not
@@ -801,6 +888,31 @@ export async function oidcEndSession(): Promise<number | undefined> {
  * session first (oidcEndSession, models/auth signOut). */
 export { clearLocal as oidcClearLocal }
 
+/** Tokens and saved accounts belong to the login server that issued them, so a boot on another stage
+ *  (Test Settings, or a version whose default stage differs) drops them. Sessions stored before the
+ *  marker existed are judged by their id_token's own issuer. */
+export function oidcReconcileIssuer() {
+  try {
+    const same = (issuer?: string) => issuer?.replace(/\/+$/, '') === OAUTH_ISSUER.replace(/\/+$/, '')
+    const foreign = (tokens?: { id_token?: string }) => {
+      const issuer = decodeJwt(tokens?.id_token)?.iss
+      return !!issuer && !same(issuer)
+    }
+    const marked = tokenStore().getItem(ISSUER_KEY)
+    const switched = !!marked && !same(marked)
+    const registry = readRegistry()
+    const kept = switched ? {} : Object.fromEntries(Object.entries(registry).filter(([, entry]) => !foreign(entry)))
+    if (switched || foreign(stored())) {
+      clearActivationHint()
+      writeRegistry(kept)
+      clearLocal()
+    } else if (Object.keys(kept).length !== Object.keys(registry).length) writeRegistry(kept)
+    tokenStore().setItem(ISSUER_KEY, OAUTH_ISSUER)
+  } catch {
+    /* storage blocked — nothing stored to reconcile */
+  }
+}
+
 function clearLocal() {
   clearActivationHint()
   const activeSub = oidcClaims()?.sub
@@ -922,6 +1034,9 @@ const clearActivationHint = () => {
     /* nothing to clear */
   }
 }
+
+/** A SAVED account (tokens in the registry), as opposed to a known one or none at all. */
+export const oidcIsSavedAccount = (sub: string): boolean => !!readRegistry()[sub]?.refresh_token
 
 /** Make a saved account the ACTIVE one. Storage-only — the caller reloads the app so
  *  every model boots as the new identity (a soft swap would bleed one account's data

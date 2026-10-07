@@ -105,6 +105,11 @@
     "summaryNone": "{{name}} cannot reach any devices.",
     "summaryUnlimited": "{{name}} can reach all devices in every organization you belong to."
   },
+  "agentSwitch": {
+    "message": "Switching accounts will stop all connections.",
+    "switch": "Switch",
+    "title": "Switch accounts?"
+  },
   "androidSetup": {
     "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
     "guideTitle": "Select a device",
@@ -1162,9 +1167,13 @@
     "emailSent": "We emailed you a code to confirm your first factor. It works for 10 minutes, only in this browser.",
     "failed": "Something went wrong — try again.",
     "federated": "You sign in with an identity provider (like Google), so there is no Remote.It password to change. You can set one up to use alongside your provider.",
+    "kind": {
+      "passkey": "Passkey",
+      "sms": "Text message",
+      "totp": "Authenticator app"
+    },
     "locked": "Too many wrong codes. Codes are locked for 15 minutes.",
     "lockedUntil": "Codes are locked until {{when}}.",
-    "method": "Method",
     "newCodes": "New recovery codes",
     "phone": "Mobile number (+15555550123)",
     "prefer": "Ask for this first",
@@ -1626,7 +1635,8 @@
   },
   "passkeys": {
     "add": "Add a Passkey",
-    "explainer": "A passkey signs you in with a touch instead of a code. Passkeys are added on your Remote.It account page.",
+    "added": "Passkey added",
+    "explainer": "A passkey signs you in with a touch instead of a code. Adding one opens your Remote.It sign-in page, then brings you back here.",
     "title": "Passkeys"
   },
   "passwordStrengthInput": {
@@ -1739,6 +1749,19 @@
     "productNotFoundHint": "The product may have been deleted or you don't have access to it.",
     "service": "Service",
     "unknown": "Unknown"
+  },
+  "productRegistrationCodes": {
+    "current": "Current",
+    "description": "Rotating issues a new code for the registration command. Earlier codes keep registering devices until you revoke them; devices already registered are not affected.",
+    "issued": "Issued",
+    "revoke": "Revoke Code",
+    "revokeAction": "Revoke Code",
+    "revokeBody": "No device can register with this code from now on, and devices can no longer register with a service ID of this product. Devices already registered are not affected. This cannot be undone.",
+    "revoked": "Revoked",
+    "revokeLast": "Rotate first: this is the only code in force",
+    "revokeTitle": "Revoke registration code?",
+    "rotate": "Rotate Code",
+    "title": "Registration Codes"
   },
   "productsActionBar": {
     "adminRequired": "Admin permissions required",
@@ -2202,9 +2225,11 @@
     "services": "Services"
   },
   "signIn": {
-    "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
-    "button": "Sign In",
+    "agentOwnedDetail": "{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:",
+    "autoPaused": "Automatic sign-in stopped after repeated attempts. Choose how to sign in below.",
     "cancel": "Cancel",
+    "continueEmail": "Continue with email",
+    "continueInBrowser": "Continue in your browser",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
     "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
     "errorRateLimitedWait_one": "Too many sign-in attempts from this network. Please try again in about a minute.",
@@ -2213,11 +2238,14 @@
     "errorUnavailable": "The sign-in service is temporarily unavailable. Please try again in a few minutes.",
     "errorUnknown": "Sign in didn't complete. Please try again.",
     "errorUnreachable": "We couldn't reach the sign-in service. Check your internet connection, then try again.",
+    "heading": "Sign in",
+    "help": "Get help",
+    "noAccount": "Don't have an account?",
+    "openAgain": "Open again",
+    "or": "or",
     "redirecting": "Taking you to sign in…",
-    "retry": "Try again",
-    "subtitle": "We'll open your browser to sign you in with Remote.It Single Sign-On.",
-    "title": "Sign in to {{app}}",
-    "waiting": "Waiting for your browser… finish signing in there."
+    "signUp": "Sign up",
+    "switchToProduction": "Switch to production"
   },
   "statusChip": {
     "connected": "Connected",
@@ -2304,7 +2332,11 @@
     "setServiceLicensesHint": "Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY",
     "showLatestAnnouncement": "Show latest announcement",
     "showLatestAnnouncementHint": "Previews the latest announcement without changing its read status.",
+    "stageLabel": "{{name}} stage",
     "switchGraphQLAPIs": "Switch GraphQL APIs",
+    "switchStageAction": "Sign out and switch",
+    "switchStageMessage": "You will be signed out and asked to sign in again at {{issuer}}. Other accounts saved in this app are removed.",
+    "switchStageTitle": "Switch to the {{name}} stage?",
     "testOptions": "Test Options",
     "title": "Test Settings",
     "webSocketURL": "WebSocket URL"

@@ -85,11 +85,15 @@ export class User {
     }
   }
 
-  signOut = () => {
+  clear = () => {
     this.id = ''
     this.username = ''
     this.authHash = ''
     this.signedIn = false
+  }
+
+  signOut = () => {
+    this.clear()
 
     Logger.info('SIGN OUT USER', { user: this })
 

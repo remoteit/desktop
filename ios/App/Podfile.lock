@@ -1,5 +1,5 @@
 PODS:
-  - Capacitor (7.4.2):
+  - Capacitor (7.6.9):
     - CapacitorCordova
   - CapacitorApp (7.0.1):
     - Capacitor
@@ -11,7 +11,7 @@ PODS:
     - Capacitor
   - CapacitorCommunityBluetoothLe (7.1.1):
     - Capacitor
-  - CapacitorCordova (7.4.2)
+  - CapacitorCordova (7.6.9)
   - CapacitorPluginSafeArea (4.0.0):
     - Capacitor
   - CapacitorPushNotifications (7.0.7):
@@ -59,13 +59,13 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
 
 SPEC CHECKSUMS:
-  Capacitor: 9d9e481b79ffaeacaf7a85d6a11adec32bd33b59
+  Capacitor: 46067d1c8df89760dbed78780d436327d588c726
   CapacitorApp: febecbb9582cb353aed037e18ec765141f880fe9
   CapacitorAppLauncher: bab4ca931a308252d2bafcb78ca6a364bd1d4c4e
   CapacitorBrowser: 6299776d496e968505464884d565992faa20444a
   CapacitorClipboard: 70bfdb42b877b320a6e511ab94fa7a6a55d57ecb
   CapacitorCommunityBluetoothLe: 3a65ed12464f16189772c1a8c247cb0b91186114
-  CapacitorCordova: 5e58d04631bc5094894ac106e2bf1da18a9e6151
+  CapacitorCordova: 2080fc0d6bfbc9dcc0e6d88e77fa624190d343ca
   CapacitorPluginSafeArea: 22031c3436269ca80fac90ec2c94bc7c1e59a81d
   CapacitorPushNotifications: 0527809a9619ed775439d5ab2c2d996122b48319
   CapacitorSplashScreen: 1d67815a422a9b61539c94f283c08ed56667c0fc

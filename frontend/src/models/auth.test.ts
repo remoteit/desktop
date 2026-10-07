@@ -17,7 +17,31 @@ const {
   pushUnregister,
   browser,
   storeState,
+  oidcReconcileIssuer,
+  chooseStage,
+  reloadIfStageChanged,
+  controllerClose,
+  emitWithAck,
+  reconnectNow,
+  oidcClaims,
+  oidcActivateAccount,
+  oidcIsSavedAccount,
+  oidcSelectKnownAccount,
+  oidcCompleteFromUrl,
+  completeCallback,
 } = vi.hoisted(() => ({
+  oidcIsSavedAccount: vi.fn(),
+  oidcSelectKnownAccount: vi.fn(),
+  oidcCompleteFromUrl: vi.fn(),
+  completeCallback: vi.fn(),
+  emitWithAck: vi.fn(),
+  reconnectNow: vi.fn(),
+  oidcClaims: vi.fn(),
+  oidcActivateAccount: vi.fn(),
+  oidcReconcileIssuer: vi.fn(),
+  chooseStage: vi.fn(),
+  reloadIfStageChanged: vi.fn(),
+  controllerClose: vi.fn(),
   oidcStart: vi.fn(),
   oidcEndSession: vi.fn(),
   changePassword: vi.fn(),
@@ -38,26 +62,41 @@ vi.mock('../services/oidc', () => ({
   oidcGrantStale,
   oidcMcpDetailReady,
   oidcActor,
+  oidcClearLocal: vi.fn(),
+  oidcReconcileIssuer,
+  oidcClaims,
+  oidcActivateAccount,
+  oidcIsSavedAccount,
+  oidcSelectKnownAccount,
+  oidcCompleteFromUrl,
   OidcError: class OidcError extends Error {},
 }))
+vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 vi.mock('../services/accountSecurity', () => ({ changePassword }))
-vi.mock('../services/Controller', () => ({ default: {}, emit: vi.fn(() => false) }))
-vi.mock('../services/CloudSync', () => ({ default: {} }))
-vi.mock('../services/cloudController', () => ({ default: {} }))
+vi.mock('../services/Controller', () => ({
+  default: { close: controllerClose, emitWithAck, reconnectNow },
+  emit: vi.fn(() => false),
+}))
+vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn() } }))
+vi.mock('../services/cloudController', () => ({ default: { reset: vi.fn() } }))
 vi.mock('../services/Network', () => ({ default: {} }))
 vi.mock('../services/browser', () => ({ default: browser }))
 vi.mock('../services/analytics', () => ({ default: {} }))
-vi.mock('../services/zendesk', () => ({ default: {} }))
+vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
 vi.mock('../services/pushNotifications', () => ({ default: { register: vi.fn(), unregister: pushUnregister } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
-vi.mock('../store', () => ({ persistor: { purge: vi.fn() }, store: { getState: () => storeState } }))
+vi.mock('../store', () => ({
+  persistor: { purge: vi.fn() },
+  store: { getState: () => storeState, dispatch: { auth: { completeCallback } } },
+}))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 vi.mock('../constants', () => ({
   API_URL: '',
   DEVELOPER_KEY: '',
+  AGENT_RELEASE_TIMEOUT: 1000,
   SIGN_OUT_BACKEND_TIMEOUT: 1000,
   SIGN_OUT_EVERYWHERE_TIMEOUT: 50,
   SIGN_OUT_SESSION_TIMEOUT: 50,
@@ -68,8 +107,8 @@ vi.mock('axios', () => ({ default: {} }))
 // call is an observable spy rather than a real reducer/effect.
 function makeDispatch() {
   return {
-    auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn() },
-    ui: { set: vi.fn() },
+    auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn(), releaseAgent: vi.fn(), switchAccount: vi.fn() },
+    ui: { set: vi.fn(), setPersistent: vi.fn() },
     chat: { signOut: vi.fn() },
   }
 }
@@ -79,7 +118,8 @@ function makeDispatch() {
 const aFailureShowing = (signInError: string) => expect.objectContaining({ signInFailed: true, signInError })
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-import authModel from './auth'
+import authModel, { liveAuthCallback } from './auth'
+import { agentOwnedMessage } from '@common/agentOwner'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
@@ -91,15 +131,29 @@ beforeEach(() => {
   oidcActor.mockReset().mockReturnValue(null)
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
+  oidcReconcileIssuer.mockReset()
+  chooseStage.mockReset()
+  reloadIfStageChanged.mockReset()
+  controllerClose.mockReset()
   pushUnregister.mockReset()
 })
 
-describe('auth model — sign-in always offers the chooser', () => {
+describe('auth model — the sign-in paths', () => {
   it('signIn authorizes with prompt=select_account (never a promptless / silent SSO)', async () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).signIn()
     expect(oidcStart).toHaveBeenCalledTimes(1)
     expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+  })
+
+  it('asks the AS to open straight on the hinted provider', async () => {
+    await effectsFor(makeDispatch()).signIn({ idpHint: 'google' })
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account', idpHint: 'google' })
+  })
+
+  it('asks the AS for its sign-up page', async () => {
+    await effectsFor(makeDispatch()).signIn({ signUp: true })
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'create' })
   })
 })
 
@@ -308,5 +362,288 @@ describe('auth model — the password change is one call to the AS', () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).changePassword(values)
     expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'Choose a password of at least 12 characters.' })
+  })
+})
+
+/* A stage switch stores the choice, clears the old API overrides, signs out and reloads; boot then
+   drops whatever the old login server issued. */
+describe('auth model — a stage switch signs out and reloads onto the new stage', () => {
+  const apis = {
+    switchApi: true,
+    apiGraphqlURL: 'https://cloud.evan.remote.it/api/graphql',
+    agentURL: 'https://x.test',
+  }
+  const cleared = {
+    apis: { switchApi: false, customTarget: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' },
+  }
+  it('signed in: stores the stage and clears the old API overrides, then signs out', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).switchStage('dev', { auth: { user: { id: 'u1' } }, ui: { apis } })
+    expect(chooseStage).toHaveBeenCalledWith('dev')
+    expect(dispatch.ui.setPersistent).toHaveBeenCalledWith(cleared)
+    expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
+    expect(chooseStage.mock.invocationCallOrder[0]).toBeLessThan(dispatch.auth.signOut.mock.invocationCallOrder[0])
+    expect(reloadIfStageChanged).not.toHaveBeenCalled()
+  })
+
+  it('signed out: nothing to sign out of, so it reloads straight away', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).switchStage('prod', { auth: {}, ui: { apis: {} } })
+    expect(chooseStage).toHaveBeenCalledWith('prod')
+    expect(dispatch.auth.signOut).not.toHaveBeenCalled()
+    expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
+  })
+
+  it('boot reconciles the stored session with the running login server before anything else', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).init(undefined, { auth: { user: { id: 'u1' } } })
+    expect(oidcReconcileIssuer).toHaveBeenCalledTimes(1)
+    expect(oidcReconcileIssuer.mock.invocationCallOrder[0]).toBeLessThan(dispatch.auth.set.mock.invocationCallOrder[0])
+  })
+
+  it('the sign-out teardown reloads onto a changed stage as its last step', async () => {
+    const fns: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {}
+    const dispatch = new Proxy(fns, {
+      get: (models, model: string) =>
+        (models[model] ??= new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
+          get: (calls, fn: string) => (calls[fn] ??= vi.fn()),
+        })),
+    })
+    await effectsFor(dispatch).signedOut()
+    expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
+    expect(controllerClose.mock.invocationCallOrder[0]).toBeLessThan(reloadIfStageChanged.mock.invocationCallOrder[0])
+  })
+})
+
+/* The backend refuses a second account while this computer's agent belongs to another, and the
+   sign-in screen says who owns it and how to free it. */
+describe("auth model — this computer's agent belongs to another account", () => {
+  const owner = { username: 'Jamie@Remote.it', command: 'sudo remoteit signout' }
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  it('the refusal signs out and names the owner', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).backendSignInError(agentOwnedMessage(owner))
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        signInFailed: true,
+        signInErrorCode: 'agentOwned',
+        signInError: agentOwnedMessage(owner),
+      })
+    )
+  })
+
+  it('a malformed refusal falls back to the plain failure', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).backendSignInError('agent-owned:{not json')
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.set).toHaveBeenCalledWith(expect.not.objectContaining({ signInErrorCode: 'agentOwned' }))
+  })
+})
+
+describe('auth model — switching accounts releases the agent first', () => {
+  const signedIn = { auth: { user: { id: 'guid-a' } } }
+  beforeEach(() => {
+    browser.hasBackend = true
+    emitWithAck.mockReset()
+    reconnectNow.mockReset()
+    oidcStart.mockReset()
+    oidcClaims.mockReset()
+    oidcActivateAccount.mockReset()
+    oidcIsSavedAccount.mockReset()
+    oidcSelectKnownAccount.mockReset()
+  })
+  afterEach(() => {
+    browser.hasBackend = false
+    browser.isElectron = false
+  })
+
+  it('signing back in to the backend makes this window the owner again', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).backendAuthenticated(undefined, {
+      auth: { authenticated: true, agentReleased: true },
+      backend: { initialized: true },
+    })
+    expect(dispatch.auth.set).toHaveBeenCalledWith({ backendAuthenticated: true, agentReleased: false })
+  })
+
+  it('a signed-in desktop window asks the backend to release the agent', async () => {
+    emitWithAck.mockResolvedValue(true)
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(true)
+    expect(emitWithAck).toHaveBeenCalledWith('agent/release', 1000)
+    expect(dispatch.auth.set).toHaveBeenCalledWith({ backendAuthenticated: false, agentReleased: true })
+  })
+
+  it('a dropped socket reconnects and asks again rather than switching without a release', async () => {
+    emitWithAck.mockResolvedValueOnce(undefined).mockResolvedValueOnce(true)
+    reconnectNow.mockResolvedValue(true)
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(true)
+    expect(emitWithAck).toHaveBeenCalledTimes(2)
+  })
+
+  it('a release the backend refuses or never answers stops the switch and says so', async () => {
+    emitWithAck.mockResolvedValue(undefined)
+    reconnectNow.mockResolvedValue(false)
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(false)
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.agentReleaseFailed' })
+  })
+
+  it('nothing to release without a backend, a signed-in account, or after this window released it', async () => {
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: {} })).toBe(true)
+    expect(
+      await effectsFor(dispatch).releaseAgent(undefined, { auth: { ...signedIn.auth, agentReleased: true } })
+    ).toBe(true)
+    browser.hasBackend = false
+    expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(true)
+    expect(emitWithAck).not.toHaveBeenCalled()
+  })
+
+  it('the chooser opens without releasing the agent: a cancel must leave this computer signed in', async () => {
+    browser.isElectron = true
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).switchAccount()
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+  })
+
+  it('a browser on the local backend releases before the chooser: its return is a page load that cannot', async () => {
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(false)
+    await effectsFor(dispatch).switchAccount()
+    expect(oidcStart).not.toHaveBeenCalled()
+
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).switchAccount()
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+  })
+
+  it('a saved account activates only once the agent is released', async () => {
+    oidcIsSavedAccount.mockReturnValue(true)
+    oidcActivateAccount.mockReturnValue(false)
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(false)
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(oidcActivateAccount).not.toHaveBeenCalled()
+
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(oidcActivateAccount).toHaveBeenCalledWith('sub-b')
+  })
+
+  it('a known account goes to the browser without releasing the agent', async () => {
+    browser.isElectron = true
+    oidcIsSavedAccount.mockReturnValue(false)
+    oidcSelectKnownAccount.mockResolvedValue(true)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(oidcSelectKnownAccount).toHaveBeenCalledWith('sub-b')
+  })
+})
+
+describe('auth model — the chooser callback releases the agent only for a different account', () => {
+  const assign = vi.fn()
+  beforeEach(() => {
+    assign.mockReset()
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, assign })
+    oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a' })
+    oidcCompleteFromUrl.mockReset()
+    oidcActivateAccount.mockReset()
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  // The admit gate oidcCompleteFromUrl runs between the code exchange and storing the account.
+  const admitting = (returned: { sub: string } | undefined) =>
+    oidcCompleteFromUrl.mockImplementation(async (_search, admit) => ((await admit(returned)) ? returned : undefined))
+
+  it('a different account is stored only once the agent is released, then boots as that account', async () => {
+    admitting({ sub: 'sub-b' })
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).completeCallback('?code=c&state=s')
+    expect(oidcCompleteFromUrl).toHaveBeenCalledWith('?code=c&state=s', expect.any(Function))
+    expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
+    expect(assign).toHaveBeenCalledWith('/')
+  })
+
+  it('the same account keeps the agent', async () => {
+    admitting({ sub: 'sub-a' })
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?code=c&state=s')
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(assign).toHaveBeenCalledWith('/')
+  })
+
+  it('a refused release refuses the new account and stays as the owner', async () => {
+    admitting({ sub: 'sub-b' })
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(false)
+    await effectsFor(dispatch).completeCallback('?code=c&state=s')
+    expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('a cancelled or failed chooser keeps the agent and this session', async () => {
+    oidcCompleteFromUrl.mockRejectedValue(new Error('access_denied'))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?error=access_denied&state=s')
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.callbackFailed' })
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('a refused silent selection says that account is no longer signed in', async () => {
+    oidcCompleteFromUrl.mockRejectedValue(Object.assign(new Error('login_required'), { oauthError: 'login_required' }))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?error=login_required&state=s')
+    expect(dispatch.ui.set).toHaveBeenCalledWith({
+      errorMessage: 'That account is no longer signed in on this browser.',
+    })
+  })
+
+  it('a stale callback changes nothing', async () => {
+    oidcCompleteFromUrl.mockResolvedValue(undefined)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?code=c&state=old')
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(assign).not.toHaveBeenCalled()
+  })
+})
+
+describe('auth model — the desktop hands the chooser callback to a signed-in window', () => {
+  beforeEach(() => {
+    completeCallback.mockReset()
+  })
+  afterEach(() => {
+    storeState.auth = {}
+  })
+
+  it('declines without a signed-in account, so the main process reloads with it', () => {
+    storeState.auth = {}
+    expect(liveAuthCallback('?code=c&state=s')).toBe(false)
+    expect(completeCallback).not.toHaveBeenCalled()
+  })
+
+  it('takes it while signed in, and one at a time', async () => {
+    let finish = () => {}
+    completeCallback.mockReturnValue(new Promise<void>(resolve => (finish = resolve)))
+    storeState.auth = { user: { id: 'guid-a' } }
+    expect(liveAuthCallback('?code=c&state=s')).toBe(true)
+    expect(liveAuthCallback('?code=c&state=s')).toBe(true)
+    expect(completeCallback).toHaveBeenCalledTimes(1)
+    finish()
+    await new Promise(resolve => setTimeout(resolve))
+    completeCallback.mockResolvedValue(undefined)
+    liveAuthCallback('?code=d&state=t')
+    expect(completeCallback).toHaveBeenCalledTimes(2)
   })
 })

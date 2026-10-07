@@ -10,6 +10,8 @@ import {
   graphQLTransferDeviceProduct,
   graphQLCreateDeviceProductFromRegistration,
   graphQLUpdateDeviceProduct,
+  graphQLRotateDeviceProductCode,
+  graphQLRevokeDeviceProductCode,
 } from '../services/graphQLDeviceProducts'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { State } from '../store'
@@ -22,6 +24,12 @@ export interface IProductService {
   enabled: boolean
 }
 
+export interface IDeviceProductCode {
+  code: string
+  created: string
+  revoked?: string | null
+}
+
 export interface IDeviceProduct {
   id: string
   name: string
@@ -29,6 +37,7 @@ export interface IDeviceProduct {
   status: 'NEW' | 'LOCKED'
   registrationCode?: string
   registrationCommand?: string
+  registrationCodes?: IDeviceProductCode[]
   tags?: string[]
   source?: string
   created: string
@@ -53,6 +62,11 @@ export const defaultState: ProductsState = {
 type ProductsAccountState = {
   [accountId: string]: ProductsState
 }
+
+// The latest code refresh asked for, per account and product: a response to an earlier one is superseded and dropped,
+// so a read that started before a rotation or revocation cannot land after it and put the old codes back.
+const codeRefreshes = new Map<string, number>()
+let codeRefreshCount = 0
 
 const defaultAccountState: ProductsAccountState = {
   default: { ...defaultState },
@@ -127,6 +141,46 @@ export default createModel<RootModel>()({
         }
       }
       return null
+    },
+
+    // A new code becomes the product's current one; the earlier codes keep working until revoked. The product is read
+    // again after either change, so its command and its list of codes come from graphql together.
+    async rotateCode(productId: string, state) {
+      const accountId = selectActiveAccountId(state)
+      const response = await graphQLRotateDeviceProductCode(productId)
+      if (response === 'ERROR' || !response?.data?.data?.rotateDeviceProductCode) return false
+      await dispatch.products.refreshCodes({ productId, accountId })
+      return true
+    },
+
+    async revokeCode({ productId, code }: { productId: string; code: string }, state) {
+      const accountId = selectActiveAccountId(state)
+      const response = await graphQLRevokeDeviceProductCode(productId, code)
+      if (response === 'ERROR' || !response?.data?.data?.revokeDeviceProductCode) return false
+      await dispatch.products.refreshCodes({ productId, accountId })
+      return true
+    },
+
+    // A product's codes as graphql has them after a code changed, in the account the change was made in: the active
+    // account can change while the mutation runs. Only the code fields are merged, into the store as it is when the read
+    // returns (mergeCodes), so a change made meanwhile is kept. When the read fails they are cleared rather than left
+    // stale (a revoked code must not stay on screen as the one to register with); the settings page reads them again.
+    async refreshCodes({ productId, accountId }: { productId: string; accountId: string }) {
+      const key = `${accountId}:${productId}`
+      const request = ++codeRefreshCount
+      codeRefreshes.set(key, request)
+      const response = await graphQLDeviceProduct(productId, accountId)
+      if (codeRefreshes.get(key) !== request) return
+      const fresh = response !== 'ERROR' ? response?.data?.data?.login?.account?.deviceProducts?.items?.[0] : undefined
+      dispatch.products.mergeCodes({
+        accountId,
+        productId,
+        codes: {
+          registrationCode: fresh?.registrationCode,
+          registrationCommand: fresh?.registrationCommand,
+          registrationCodes: fresh?.registrationCodes,
+        },
+      })
     },
 
     async delete(id: string, state) {
@@ -318,6 +372,27 @@ export default createModel<RootModel>()({
     rootSet(state: ProductsAccountState, params: ProductsAccountState) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
+    },
+    mergeCodes(
+      state: ProductsAccountState,
+      {
+        accountId,
+        productId,
+        codes,
+      }: {
+        accountId: string
+        productId: string
+        codes: Pick<IDeviceProduct, 'registrationCode' | 'registrationCommand' | 'registrationCodes'>
+      }
+    ) {
+      const model = state[accountId]
+      const product = model?.all.find(p => p.id === productId)
+      // Nothing to change keeps every object as it is, so nothing that watches the product runs again.
+      if (!product || (Object.keys(codes) as (keyof typeof codes)[]).every(key => product[key] === codes[key])) return state
+      return {
+        ...state,
+        [accountId]: { ...model, all: model.all.map(p => (p.id === productId ? { ...p, ...codes } : p)) },
+      }
     },
   },
 })

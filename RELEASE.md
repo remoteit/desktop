@@ -151,6 +151,10 @@ community post, a support reply — not back onto GitHub.
 Mark the GitHub release **Latest** for a public release, or **Pre-release** for
 a beta. This is what gates the in-app auto update.
 
+A version with `alpha` or `beta` in it (`v3.50.0-beta.1`) boots on the **dev stage**: dev
+login, API and agent. A plain version boots on production, whether or not it is marked
+Pre-release. Testers can switch either way under Test Settings → API Target.
+
 ## 5. Desktop: copy to S3
 
 Run **Copy / Electron to S3** (`workflow_dispatch`):

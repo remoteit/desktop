@@ -1,5 +1,6 @@
 import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
+import { MemoryRouter, Route } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const api = vi.hoisted(() => ({
@@ -23,18 +24,17 @@ const api = vi.hoisted(() => ({
   preferFactor: vi.fn(),
   replaceRecoveryCodes: vi.fn(),
 }))
-vi.mock('../../services/accountSecurity', () => ({
-  ...api,
-  KIND_LABEL: { totp: 'Authenticator app', sms: 'Text message', passkey: 'Passkey' },
-}))
+vi.mock('../../services/accountSecurity', () => api)
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_: string, fallback: string, values?: Record<string, unknown>) =>
       fallback.replace(/{{(\w+)}}/g, (_m, name) => String(values?.[name] ?? '')),
   }),
 }))
-vi.mock('../../services/browser', () => ({ default: { isNative: false } }))
-vi.mock('../../constants', () => ({ OAUTH_ISSUER: 'https://login.test' }))
+const shell = vi.hoisted(() => ({ browser: { isNative: false }, leaveTo: vi.fn(), uiSet: vi.fn() }))
+vi.mock('../../services/browser', () => ({ default: shell.browser, leaveTo: shell.leaveTo }))
+vi.mock('../../constants', () => ({ PROTOCOL: 'remoteit://' }))
+vi.mock('react-redux', () => ({ useDispatch: () => ({ ui: { set: shell.uiSet } }) }))
 vi.mock('../CopyCodeBlock', () => ({ CopyCodeBlock: ({ value }: { value: string }) => <pre>{value}</pre> }))
 
 import { FactorSettings } from './FactorSettings'
@@ -77,8 +77,17 @@ let root: Root
 let container: HTMLDivElement
 
 const flush = () => act(async () => {})
-const render = async () => {
-  await act(async () => root.render(<FactorSettings />))
+/** At its route, as the app mounts it — `at` may carry the AS page's answer (?passkey=added). */
+let routed = ''
+const render = async (at = '/account/security') => {
+  await act(async () =>
+    root.render(
+      <MemoryRouter initialEntries={[at]}>
+        <FactorSettings />
+        <Route render={({ location }) => ((routed = location.pathname + location.search), null)} />
+      </MemoryRouter>
+    )
+  )
   await flush()
 }
 const button = (label: string) => {
@@ -103,6 +112,9 @@ const type = async (labelText: string, value: string) => {
 
 beforeEach(() => {
   Object.values(api).forEach(fn => fn.mockReset())
+  shell.leaveTo.mockReset()
+  shell.uiSet.mockReset()
+  shell.browser.isNative = false
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -211,8 +223,61 @@ describe('FactorSettings — passkeys', () => {
       home: 'here',
     }
     api.elevationStatus.mockResolvedValue(status({ factors: [passkey] }))
+    api.elevationReturnTicket.mockResolvedValue(ok({ url: 'https://login.test/elevate?r=t1', expiresInSec: 900 }))
     await render()
     expect(container.textContent).toContain('Laptop')
-    expect(button('Add a Passkey').getAttribute('href')).toBe('https://login.test/account/console/logins#elevation')
+    await click('Add a Passkey')
+    // The web app comes back to this screen on its own origin: the route is the hash.
+    expect(api.elevationReturnTicket).toHaveBeenCalledWith(
+      `${window.location.origin}${window.location.pathname}#/account/security`,
+      'add-passkey'
+    )
+    expect(shell.leaveTo).toHaveBeenCalledWith('https://login.test/elevate?r=t1')
+  })
+
+  it('in the desktop and mobile apps, comes back on the app’s own scheme — and confirms with a passkey there too', async () => {
+    shell.browser.isNative = true
+    const passkey = {
+      id: 'f-key',
+      kind: 'passkey',
+      name: 'Laptop',
+      createdAt: '2026-09-03',
+      lastUsedAt: null,
+      preferred: false,
+      home: 'here',
+    }
+    api.elevationStatus.mockResolvedValue(status({ factors: [passkey, totp] }))
+    api.elevationReturnTicket.mockResolvedValue(ok({ url: 'https://login.test/elevate?r=t2', expiresInSec: 900 }))
+    await render()
+    await click('Add a Passkey')
+    expect(api.elevationReturnTicket).toHaveBeenLastCalledWith('remoteit://account/security', 'add-passkey')
+    await click('Ask for this first')
+    await click('Use a passkey')
+    expect(api.elevationReturnTicket).toHaveBeenLastCalledWith('remoteit://account/security')
+    expect(shell.leaveTo).toHaveBeenLastCalledWith('https://login.test/elevate?r=t2')
+  })
+
+  it('back with passkey=added: reads the factors again, says so once, and drops the answer from the route', async () => {
+    api.elevationStatus.mockResolvedValue(status())
+    await render('/account/security?passkey=added')
+    expect(api.elevationStatus).toHaveBeenCalledTimes(2)
+    expect(shell.uiSet).toHaveBeenCalledWith({ successMessage: 'Passkey added' })
+    expect(routed).toBe('/account/security')
+  })
+
+  it('back with passkey=cancelled: reads the factors again and says nothing', async () => {
+    api.elevationStatus.mockResolvedValue(status())
+    await render('/account/security?passkey=cancelled')
+    expect(api.elevationStatus).toHaveBeenCalledTimes(2)
+    expect(shell.uiSet).not.toHaveBeenCalled()
+    expect(routed).toBe('/account/security')
+  })
+
+  it('reads the factors again whenever the window comes back to the front', async () => {
+    api.elevationStatus.mockResolvedValue(status())
+    await render()
+    await act(async () => window.dispatchEvent(new Event('focus')))
+    await flush()
+    expect(api.elevationStatus).toHaveBeenCalledTimes(2)
   })
 })

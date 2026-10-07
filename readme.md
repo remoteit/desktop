@@ -108,8 +108,13 @@ the vite dev server reads `frontend/.env`, so copy it there too after changing a
 #### Sign-in (permitteer OIDC)
 
 Sign-in is renderer-owned and identical on web and desktop — the backend never touches auth.
-`VITE_OAUTH_ISSUER` is the only variable with no built-in fallback; without it the app logs
-`VITE_OAUTH_ISSUER is not configured` and sign-in never starts.
+The login server and every endpoint it signs for come from one **stage** (`STAGES` in
+`frontend/src/constants.ts`): production for a plain version, dev for a version containing `alpha`
+or `beta`. A tester switches stage under Settings → Test Settings → API Target, which signs out and
+reloads onto the other login server, and the sign-in screen of a dev stage offers the way back to
+production. Setting any endpoint variable in `.env` (`VITE_OAUTH_*` resources, `VITE_GRAPHQL_API`,
+`VITE_WEBSOCKET_URL`, `VITE_AGENT_URL`) pins the build and turns the switch off, so a login server
+and an endpoint can never come from different stages.
 
 Leave `VITE_OAUTH_CLIENT_ID` as `remoteit_desktop` locally. Redirect URIs are registered
 **per client**: the deployed AI portal uses `remoteit_portal_ai`, which only has
@@ -138,8 +143,8 @@ The chat is a license feature: it shows only for an account holding the `ai-agen
 which a system admin grants from **Admin → Add-ons** — your dev account included; nothing in a build
 or env turns it on otherwise. In dev its requests go through the same-origin `/agent`
 vite proxy, so `AGENT_PROXY_TARGET` is what selects the service — the deployed dev agent, or
-`http://localhost:3001` to run `ai-agent` locally. **Settings → Test Settings → Override agent
-service** overrides it at runtime without a restart (https only). DPoP proofs are signed over
+`http://localhost:3001` to run `ai-agent` locally. **Settings → Test Settings → API Target →
+Custom** sets an agent service URL at runtime without a restart (https only). DPoP proofs are signed over
 the canonical resource URL, so neither the proxy nor the override invalidates them.
 
 To use the fontawesome fonts:

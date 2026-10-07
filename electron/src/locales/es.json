@@ -21,5 +21,9 @@
     "findApplicationTitle": "Buscar aplicación",
     "findApplicationMessage": "Seleccione la ubicación de la aplicación",
     "findApplicationButton": "Seleccionar"
+  },
+  "authCallback": {
+    "title": "Vuelva a {{appName}}",
+    "message": "El inicio de sesión continúa en la aplicación {{appName}}. Puede cerrar esta pestaña."
   }
 }

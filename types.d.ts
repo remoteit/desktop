@@ -47,6 +47,7 @@ declare global {
     | 'user/lock'
     | 'user/sign-out'
     | 'user/quit'
+    | 'agent/release'
 
     // binaries
     | 'binaries/install'
@@ -978,7 +979,6 @@ declare global {
 
   type IOverrides = {
     apiURL?: string
-    betaApiURL?: string
   }
 
   type IScanDataRaw = {
@@ -1050,10 +1050,6 @@ declare global {
     disableLocalNetwork?: boolean
     allowPrerelease?: boolean
     useCertificate?: boolean
-    switchApi?: boolean
-    apiURL?: string
-    apiGraphqlURL?: string
-    webSocketURL?: string
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
     sshConfig?: boolean
