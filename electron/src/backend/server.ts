@@ -27,6 +27,7 @@ export const AUTHENTICATED = 'authenticated'
 
 const APP_PORTS: Record<string, number> = { 'http:': WEB_PORT, 'https:': SSL_PORT }
 const LOOPBACK = ['localhost', IP_PRIVATE, '[::1]']
+const LOOPBACK_ADDRESSES = [IP_PRIVATE, '::1', `::ffff:${IP_PRIVATE}`]
 
 // os.networkInterfaces() throws a SystemError on some platforms; that must refuse the origin, not escape allowRequest.
 const interfaceAddresses = () => {
@@ -83,8 +84,13 @@ class Server {
 
     this.app.use(express.static(WEB_DIR))
     this.app.use('/v1/callback', express.static(WEB_DIR))
+    this.app.get('/authCallback', this.authCallback)
     this.app.use('/authCallback', express.static(WEB_DIR))
     this.app.use('/', router)
+
+    router.get('/authRedirect', (request, response) => {
+      response.json(app.deepLinks ? {} : { redirectUri: `http://${IP_PRIVATE}:${WEB_PORT}/authCallback` })
+    })
 
     router.get('/system', async (request, response) => {
       // A DNS-rebound page is same-origin with this server, so dropping CORS alone doesn't stop it reading this.
@@ -133,6 +139,16 @@ class Server {
     }
 
     socketioAuth(this.io, authOptions)
+  }
+
+  // The desktop window's sign-in returns here when deep links are off; any other callback is a browser's own.
+  authCallback: express.RequestHandler = async (request, response, next) => {
+    const page =
+      request.path === '/authCallback' &&
+      LOOPBACK_ADDRESSES.includes(request.socket.remoteAddress ?? '') &&
+      (await app.takeAuthCallback(new URL(request.originalUrl, START_ORIGIN).search))
+    if (!page) return next()
+    response.type('html').send(page)
   }
 
   allowRequest: SocketIO.ServerOptions['allowRequest'] = (request, callback) => {

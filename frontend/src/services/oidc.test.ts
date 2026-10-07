@@ -8,9 +8,17 @@ vi.stubGlobal(
   vi.fn(() => Promise.reject(new Error('offline')))
 )
 
-import { oidcReconcileIssuer, oidcSignedIn, oidcAccounts, oidcStart, oidcReopen, oidcCompleteFromUrl } from './oidc'
-import { leaveTo } from './browser'
-import { OAUTH_ISSUER } from '../constants'
+import {
+  oidcReconcileIssuer,
+  oidcSignedIn,
+  oidcAccounts,
+  oidcStart,
+  oidcReopen,
+  oidcCompleteFromUrl,
+  oidcFlowPending,
+} from './oidc'
+import browser, { leaveTo } from './browser'
+import { OAUTH_ISSUER, PROTOCOL } from '../constants'
 
 const stubDiscovery = (
   doc: object,
@@ -250,5 +258,41 @@ describe('oidcStart', () => {
     expect(started).toBe(page.endsWith('/authorize'))
     if (started) expect(url.searchParams.get('prompt')).toBe('create')
     else expect(window.sessionStorage.getItem('oidc.flow')).toBeNull()
+  })
+})
+
+describe('oidcStart on desktop', () => {
+  const LOOPBACK = 'http://127.0.0.1:29999/authCallback'
+  let authRedirect: () => Promise<Response>
+  const authorize = () => new URL(vi.mocked(leaveTo).mock.calls[0][0])
+
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    vi.mocked(leaveTo).mockClear()
+    Object.assign(browser, { isNative: true, isElectron: true })
+    stubDiscovery({ authorization_endpoint: 'https://login.test/authorize' }, url =>
+      url === '/authRedirect' ? authRedirect() : Promise.reject(new Error('offline'))
+    )
+  })
+  afterEach(() => {
+    Object.assign(browser, { isNative: false, isElectron: false })
+    vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline')))
+  })
+
+  it.each([
+    ['deep links are on', () => Promise.resolve(new Response('{}'))],
+    ['its server does not answer', () => Promise.reject(new Error('offline'))],
+  ])('comes back through the app scheme when %s', async (_, answer) => {
+    authRedirect = answer
+    await oidcStart()
+    expect(authorize().searchParams.get('redirect_uri')).toBe(PROTOCOL + 'authCallback')
+  })
+
+  it('comes back to the app’s own server when deep links are off', async () => {
+    authRedirect = () => Promise.resolve(new Response(JSON.stringify({ redirectUri: LOOPBACK })))
+    await oidcStart()
+    expect(authorize().searchParams.get('redirect_uri')).toBe(LOOPBACK)
+    expect(oidcFlowPending(authorize().searchParams.get('state')!)).toBe(true)
+    expect(oidcFlowPending('someone-else')).toBe(false)
   })
 })

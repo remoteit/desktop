@@ -49,6 +49,8 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (p: string) => p.replace(/^\/agent/, ''),
         },
+        // The desktop backend names the sign-in redirect (oidc.ts redirectUri) and sends no CORS headers.
+        '/authRedirect': `http://127.0.0.1:${env.VITE_PORT || 29999}`,
       },
     },
     type: 'module',

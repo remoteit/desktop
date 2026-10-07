@@ -13,12 +13,14 @@ const withoutQuery = (url = '') => url.split('?')[0]
 export default class ElectronApp {
   public app: electron.App
   public tray?: electron.Tray
+  public readonly deepLinks: boolean
   private window?: electron.BrowserWindow
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
   private isMaximized: boolean
   private deepLinkUrl?: string
   private authCallback?: boolean
+  private takenAuthStates = new Set<string>()
   private errorShown: boolean
   private protocol: string
   private bluetoothCallback?: (deviceId: string) => void
@@ -40,7 +42,9 @@ export default class ElectronApp {
 
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
-    if (preferences.get().disableDeepLinks) {
+    // The server reports this rather than the live preference: the scheme is only (un)registered here, at launch.
+    this.deepLinks = !preferences.get().disableDeepLinks
+    if (!this.deepLinks) {
       this.app.removeAsDefaultProtocolClient(this.protocol)
       Logger.info('REMOVED AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
     } else {
@@ -438,17 +442,43 @@ export default class ElectronApp {
   /* A signed-in window completes the callback itself, so it can release the agent before the
      new account signs in; reloading with it is only for a window that isn't signed in. */
   private async deliverAuthCallback(parameters: string) {
-    const webContents = this.window?.webContents
-    const live = webContents && !webContents.isLoadingMainFrame() && this.isAppOrigin(webContents.getURL())
-    const handled =
-      live &&
-      (await webContents
-        .executeJavaScript(`window.authCallback?.(${JSON.stringify(parameters)}) === true`)
-        .catch(() => false))
-    if (handled) return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
+    if (await this.callWindow('authCallback', parameters))
+      return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
     const fullUrl = START_URL + parameters
     Logger.info('OPENING AUTH URL', { url: withoutQuery(fullUrl) })
     this.window?.loadURL(fullUrl)
+  }
+
+  async takeAuthCallback(parameters: string): Promise<string | undefined> {
+    const state = new URLSearchParams(parameters).get('state')
+    if (!state || this.deepLinks) return
+    // A refreshed tab re-sends a taken callback; delivering it again would redeem its single-use code twice.
+    if (!this.takenAuthStates.has(state)) {
+      if (!(await this.callWindow('authFlowPending', state))) return
+      this.takenAuthStates.add(state)
+      Logger.info('AUTH CALLBACK ON LOOPBACK')
+      this.openWindow()
+      this.app.focus({ steal: true })
+      void this.deliverAuthCallback(parameters)
+    }
+    const title = t('authCallback.title', { appName: brand.appName })
+    const message = t('authCallback.message', { appName: brand.appName })
+    return `<!doctype html>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="color-scheme" content="light dark">
+      <link rel="icon" href="/brand/icon.svg">
+      <title>${title}</title>
+      <body style="font-family: system-ui, sans-serif; text-align: center; margin-top: 30vh">
+        <h1>${title}</h1>
+        <p>${message}</p>
+      </body>`
+  }
+
+  private async callWindow(name: 'authCallback' | 'authFlowPending', argument: string): Promise<boolean> {
+    const webContents = this.window?.webContents
+    if (!webContents || webContents.isLoadingMainFrame() || !this.isAppOrigin(webContents.getURL())) return false
+    return webContents.executeJavaScript(`window.${name}?.(${JSON.stringify(argument)}) === true`).catch(() => false)
   }
 
   private closeWindow() {

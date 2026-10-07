@@ -8,6 +8,7 @@ import ConnectionPool from './ConnectionPool'
 import Controller from './Controller'
 import EventBus from './EventBus'
 import electronInterface from './electronInterface'
+import app from './index'
 import server, { isOwnOrigin } from './server'
 import { WEB_PORT, SSL_PORT, START_ORIGIN } from './constants'
 import preferences from './preferences'
@@ -298,7 +299,7 @@ describe('backend/server broadcasts', () => {
   })
 })
 
-describe('backend/server /system', () => {
+describe('backend/server over HTTP', () => {
   let port: number
   const http = createServer(server['app'])
 
@@ -312,21 +313,72 @@ describe('backend/server /system', () => {
     http.close(() => done())
   })
 
-  const system = (headers: Record<string, string>) =>
-    new Promise<{ status?: number; headers: IncomingHttpHeaders }>((resolve, reject) =>
-      get({ host: '127.0.0.1', port, path: '/system', headers }, response => {
-        response.resume()
-        resolve({ status: response.statusCode, headers: response.headers })
+  const request = (path: string, headers: Record<string, string> = {}) =>
+    new Promise<{ status?: number; headers: IncomingHttpHeaders; body: string }>((resolve, reject) =>
+      get({ host: '127.0.0.1', port, path, headers }, response => {
+        let body = ''
+        response.setEncoding('utf8')
+        response.on('data', chunk => (body += chunk))
+        response.on('end', () => resolve({ status: response.statusCode, headers: response.headers, body }))
       }).on('error', reject)
     )
 
-  it('answers this machine but gives another site no CORS grant to read it', async () => {
-    const answer = await system({ host: `127.0.0.1:${port}`, origin: 'https://evil.example' })
-    expect(answer.status).toBe(200)
-    expect(answer.headers['access-control-allow-origin']).toBeUndefined()
+  describe('/system', () => {
+    const system = (headers: Record<string, string>) => request('/system', headers)
+
+    it('answers this machine but gives another site no CORS grant to read it', async () => {
+      const answer = await system({ host: `127.0.0.1:${port}`, origin: 'https://evil.example' })
+      expect(answer.status).toBe(200)
+      expect(answer.headers['access-control-allow-origin']).toBeUndefined()
+    })
+
+    it('refuses a DNS-rebound name that resolves to this machine', async () => {
+      expect((await system({ host: `attacker.example:${port}` })).status).toBe(403)
+    })
   })
 
-  it('refuses a DNS-rebound name that resolves to this machine', async () => {
-    expect((await system({ host: `attacker.example:${port}` })).status).toBe(403)
+  describe('sign-in callback', () => {
+    const takeAuthCallback = jest.fn()
+    const page = '<p>Return to the app</p>'
+
+    beforeEach(() => {
+      takeAuthCallback.mockReset()
+      Object.assign(app, { takeAuthCallback, deepLinks: true })
+    })
+
+    it('hands the window a callback for the flow it started, and answers the browser tab with its page', async () => {
+      takeAuthCallback.mockResolvedValue(page)
+      expect(await request('/authCallback?code=c1&state=s1')).toMatchObject({ status: 200, body: page })
+      expect(takeAuthCallback).toHaveBeenCalledWith('?code=c1&state=s1')
+    })
+
+    it('leaves any other callback to the app it serves browsers, asking the window once', async () => {
+      takeAuthCallback.mockResolvedValue(undefined)
+      const answer = await request('/authCallback?code=c1&state=a-browser-tab')
+      expect(answer).toMatchObject({ status: 301, headers: { location: '/authCallback/?code=c1&state=a-browser-tab' } })
+      await request('/authCallback/?code=c1&state=a-browser-tab')
+      expect(takeAuthCallback).toHaveBeenCalledTimes(1)
+      expect(takeAuthCallback).toHaveBeenCalledWith('?code=c1&state=a-browser-tab')
+    })
+
+    it('never offers the window a callback from another machine', async () => {
+      const next = jest.fn()
+      const fake = {
+        path: '/authCallback',
+        socket: { remoteAddress: '192.168.1.20' },
+        originalUrl: '/authCallback?state=s1',
+      }
+      await server.authCallback(fake as any, {} as any, next)
+      expect(takeAuthCallback).not.toHaveBeenCalled()
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('names the loopback callback only when deep links are off', async () => {
+      expect(JSON.parse((await request('/authRedirect')).body)).toEqual({})
+      Object.assign(app, { deepLinks: false })
+      expect(JSON.parse((await request('/authRedirect')).body)).toEqual({
+        redirectUri: `http://127.0.0.1:${WEB_PORT}/authCallback`,
+      })
+    })
   })
 })
