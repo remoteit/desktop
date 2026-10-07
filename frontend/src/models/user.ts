@@ -8,6 +8,7 @@ import i18n, { LanguageMode } from '../i18n'
 import { apiAuthHeaders } from '../services/remoteit'
 import { store } from '../store'
 import { inOrder } from '../helpers/inOrder'
+import { latestWins } from '../helpers/latestWins'
 
 type IUserState = {
   id: string
@@ -21,6 +22,7 @@ type IUserState = {
 }
 
 const settingsWrites = inOrder(() => store.getState().auth.user?.id)
+const settingsTicket = latestWins()
 
 const defaultState: IUserState = {
   id: '',
@@ -88,12 +90,16 @@ export default createModel<RootModel>()({
       dispatch.ui.setLanguage(language as LanguageMode)
     },
     async updateNotificationSettings(metadata: INotificationSetting) {
+      const isLatest = settingsTicket.take()
       // Stored before the request: a second switch flipped while it is in flight builds on this one, not the stale store
       dispatch.user.set({ notificationSettings: metadata })
       const result = await settingsWrites(() => graphQLNotificationSettings(metadata))
-      // Behind the writes already queued, so the refetch reads what they leave rather than undoing them
+      // Only the newest write refetches: a later one resends this snapshot's switches, and a refetch ahead of it
+      // would overwrite its optimistic state with nothing to restore it
       if (result === 'ERROR')
-        settingsWrites(() => dispatch.user.fetch()).catch(error => console.warn('USER REFETCH FAILED', error))
+        settingsWrites(async () => {
+          if (isLatest()) await dispatch.user.fetch()
+        }).catch(error => console.warn('USER REFETCH FAILED', error))
     },
     async changeLanguage(language: string) {
       await axios.post(

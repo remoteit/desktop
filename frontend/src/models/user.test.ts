@@ -59,18 +59,30 @@ describe('updateNotificationSettings', () => {
     expect(dispatch.user.fetch).not.toHaveBeenCalled()
   })
 
-  it('re-fetches after a failed write, behind the writes already queued', async () => {
-    const first = deferred()
-    graphQLNotificationSettings.mockReturnValueOnce(first.promise)
-    const a = effects().updateNotificationSettings({ pushCategories: ['state'] })
-    const b = effects().updateNotificationSettings({ pushCategories: [] })
+  it('re-fetches after the newest write fails', async () => {
+    graphQLNotificationSettings.mockResolvedValueOnce('ERROR')
+    await effects().updateNotificationSettings({ pushCategories: ['state'] })
 
-    first.resolve('ERROR')
-    await Promise.all([a, b])
     await vi.waitFor(() => expect(dispatch.user.fetch).toHaveBeenCalledTimes(1))
-    expect(dispatch.user.fetch.mock.invocationCallOrder[0]).toBeGreaterThan(
-      graphQLNotificationSettings.mock.invocationCallOrder[1]
-    )
+  })
+
+  it('leaves a failed write to a newer one, which resends its switches and settles the store', async () => {
+    const first = deferred()
+    const second = deferred()
+    graphQLNotificationSettings.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise)
+    const a = effects().updateNotificationSettings({ pushCategories: ['state'] })
+    const b = effects().updateNotificationSettings({ pushCategories: ['state', 'connect'] })
+    first.resolve('ERROR')
+    await a
+    const c = effects().updateNotificationSettings({ pushCategories: ['state', 'connect', 'access'] })
+
+    second.resolve({ data: {} })
+    await Promise.all([b, c])
+    expect(graphQLNotificationSettings).toHaveBeenCalledTimes(3)
+    expect(dispatch.user.fetch).not.toHaveBeenCalled()
+    expect(dispatch.user.set).toHaveBeenLastCalledWith({
+      notificationSettings: { pushCategories: ['state', 'connect', 'access'] },
+    })
   })
 
   it('drops a queued write once the signed-in account changed', async () => {
