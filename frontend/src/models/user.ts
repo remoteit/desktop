@@ -7,6 +7,7 @@ import { RootModel } from '.'
 import i18n, { LanguageMode } from '../i18n'
 import { apiAuthHeaders } from '../services/remoteit'
 import { store } from '../store'
+import { inOrder } from '../helpers/inOrder'
 
 type IUserState = {
   id: string
@@ -19,7 +20,7 @@ type IUserState = {
   admin: boolean
 }
 
-let notificationWrites: Promise<unknown> = Promise.resolve()
+const settingsWrites = inOrder(() => store.getState().auth.user?.id)
 
 const defaultState: IUserState = {
   id: '',
@@ -86,19 +87,12 @@ export default createModel<RootModel>()({
       dispatch.user.setAttribute({ language: language === 'system' ? null : language })
       dispatch.ui.setLanguage(language as LanguageMode)
     },
-    async updateNotificationSettings(metadata: INotificationSetting, state) {
-      const account = state.auth.user?.id
+    async updateNotificationSettings(metadata: INotificationSetting) {
       // Stored before the request: a second switch flipped while it is in flight builds on this one, not the stale store
       dispatch.user.set({ notificationSettings: metadata })
-      // Each write is a full snapshot, so they go out in order: an earlier one landing last would undo the later
-      const write = notificationWrites.then(async () => {
-        if (store.getState().auth.user?.id !== account) return
-        if ((await graphQLNotificationSettings(metadata)) !== 'ERROR') return
-        // Behind the writes already queued, so the refetch reads what they leave rather than undoing them
-        notificationWrites = notificationWrites.then(() => dispatch.user.fetch())
-      })
-      notificationWrites = write.catch(() => {})
-      await write
+      const result = await settingsWrites(() => graphQLNotificationSettings(metadata))
+      // Behind the writes already queued, so the refetch reads what they leave rather than undoing them
+      if (result === 'ERROR') settingsWrites(() => dispatch.user.fetch())
     },
     async changeLanguage(language: string) {
       await axios.post(

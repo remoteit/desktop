@@ -13,8 +13,9 @@ const TOKEN_KEY = 'app:pushToken'
 let listening: Promise<unknown> | undefined
 let registering: Promise<void> | undefined
 let saving: Promise<void> = Promise.resolve()
-// Set by sign-out, cleared only by the next sign-in: a token callback in between would re-register a signed-out phone
-let closed = false
+// Held from sign-out until the next sign-in: a token callback in between would re-register a signed-out phone,
+// and a second sign-out path would wait out the same bound again
+let unregistering: Promise<void> | undefined
 
 function listen() {
   listening ??= Promise.all([
@@ -46,15 +47,18 @@ function save({ value }: Token) {
 }
 
 async function saveToken(token: string) {
-  if (closed || !store.getState().auth.user) return
+  if (unregistering || !store.getState().auth.user) return
   // Kept whatever the answer: a lost response may still have registered it, and sign-out has to clean it up
   window.localStorage.setItem(TOKEN_KEY, token)
-  const apnsEnvironment = store.getState().ui.apis.apnsEnvironment || APNS_ENVIRONMENT
-  await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', token, apnsEnvironment, version)
+  await graphQLRegisterPushToken(browser.isIOS ? 'ios' : 'android', token, apnsEnvironment(), version)
+}
+
+function apnsEnvironment(): IApnsEnvironment {
+  return store.getState().ui.apis.apnsEnvironment || APNS_ENVIRONMENT
 }
 
 function register() {
-  closed = false
+  unregistering = undefined
   return refresh()
 }
 
@@ -85,8 +89,12 @@ async function requestToken() {
   }
 }
 
-async function unregister() {
-  closed = true
+function unregister() {
+  unregistering ??= release()
+  return unregistering
+}
+
+async function release() {
   const dropped = await withTimeout(
     dropToken().catch(error => {
       console.warn('PUSH UNREGISTER FAILED', error)
@@ -107,4 +115,4 @@ async function dropToken() {
   return (await graphQLUnregisterPushToken(token)) !== 'ERROR'
 }
 
-export default { listen, teardown, register, refresh, unregister }
+export default { listen, teardown, register, refresh, unregister, apnsEnvironment }

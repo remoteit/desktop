@@ -169,7 +169,7 @@ describe('register', () => {
   })
 
   it('does not register a token that arrives after sign-out', async () => {
-    await pushNotifications.listen()
+    await pushNotifications.register()
     state.auth.user = undefined
     listeners.registration({ value: 'apns-token' })
     await pushNotifications.unregister()
@@ -184,6 +184,8 @@ describe('register', () => {
 })
 
 describe('unregister', () => {
+  beforeEach(() => pushNotifications.register())
+
   it('drops the kept token from the server', async () => {
     window.localStorage.setItem('app:pushToken', 'apns-token')
     await pushNotifications.unregister()
@@ -243,6 +245,16 @@ describe('unregister', () => {
     await done
     expect(unregister).toHaveBeenCalledWith('apns-token')
     expect(window.localStorage.getItem('app:pushToken')).toBeNull()
+  })
+
+  it('runs once per sign-out, so a second sign-out path does not wait or kill the token again', async () => {
+    window.localStorage.setItem('app:pushToken', 'apns-token')
+    unregister.mockResolvedValueOnce('ERROR' as any)
+    await Promise.all([pushNotifications.unregister(), pushNotifications.unregister()])
+    await pushNotifications.unregister()
+
+    expect(unregister).toHaveBeenCalledTimes(1)
+    expect(plugin.unregister).toHaveBeenCalledTimes(1)
   })
 
   it('never rejects into sign-out', async () => {

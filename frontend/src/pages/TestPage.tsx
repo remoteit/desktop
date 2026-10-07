@@ -63,7 +63,7 @@ export const TestPage: React.FC = () => {
     await dispatch.ui.setPersistent({ apis: { ...apis, ...values, issuer: OAUTH_ISSUER } })
   }
 
-  const apnsEnvironment = apis.apnsEnvironment || APNS_ENVIRONMENT
+  const apnsEnvironment = pushNotifications.apnsEnvironment()
 
   async function setApnsEnvironment(value: IApnsEnvironment) {
     await setAPIPreferences({ apnsEnvironment: value === APNS_ENVIRONMENT ? undefined : value })
