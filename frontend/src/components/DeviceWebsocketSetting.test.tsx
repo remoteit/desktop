@@ -143,6 +143,25 @@ describe('the reflector (websocket) setting', () => {
     expect(page.querySelector('[data-confirm]')).toBeNull()
   })
 
+  it('the state unknown (not reported, null, or the read failed): Off asked too, more softly', async () => {
+    const soft =
+      "remote.it can't tell whether this device needs the reflector right now. If its UDP is blocked, turning it off disconnects it until someone changes it on the device."
+    for (const answer of [null, { mode: null, using: null, since: null }, 'ERROR']) {
+      readWebsocket.mockResolvedValue(answer)
+      settings.set = vi.fn(async () => true)
+      const page = await render()
+      expect(note(page)).toBe('')
+      await choose(page, 'off')
+      expect(settings.set).not.toHaveBeenCalled()
+      const dialog = page.querySelector('[data-confirm]')!.textContent
+      expect(dialog).toContain('Turn the reflector off?')
+      expect(dialog).toContain(soft)
+      expect(dialog).not.toContain('reaches remote.it through the reflector now')
+      await act(async () => (page.querySelector('[data-confirm-ok]') as HTMLButtonElement).click())
+      expect(settings.set).toHaveBeenCalledWith('websocket', 'off')
+    }
+  })
+
   it('declined: nothing written', async () => {
     readWebsocket.mockResolvedValue(using(true))
     const page = await render()
@@ -170,9 +189,9 @@ describe('the reflector (websocket) setting', () => {
 
   it('fixed by the administrator (off, on, auto) or set only on the device: greyed at that value, with why', async () => {
     const cases = [
-      ['off', 'off', 'Turned off on the device by its administrator'],
-      ['on', 'on', 'Turned on on the device by its administrator'],
-      ['auto', 'auto', 'Fixed on the device by its administrator'],
+      ['off', 'off', "Set to Off by the device's administrator"],
+      ['on', 'on', "Set to Always by the device's administrator"],
+      ['auto', 'auto', "Set to Automatic by the device's administrator"],
       ['local', 'on', 'Set only on the device'],
     ] as const
     for (const [control, mode, why] of cases) {

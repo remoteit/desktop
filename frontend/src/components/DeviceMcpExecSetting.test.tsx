@@ -12,6 +12,7 @@ vi.mock('./ListItemSetting', () => ({
     </button>
   ),
 }))
+vi.mock('./SelectSetting', () => ({ SelectSetting: () => null }))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),

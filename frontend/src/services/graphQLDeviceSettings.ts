@@ -76,13 +76,13 @@ export function settingOn(setting?: DeviceSetting): boolean {
 /* The websocket setting (device-package docs/device-settings.md, "The websocket setting"): whether the device uses
    remote.it's reflector, which carries its traffic over a websocket when its UDP is blocked. auto (the default) only
    while its UDP to presence fails; on, all its traffic; off, never — and with its UDP blocked it stays offline.
-   Device.websocket is the reflector's state as the device reports it (about.websocket): `using` while its own traffic
-   goes through the reflector, when turning it off would strand it. */
+   Device.about.websocket is the reflector's state as the device reports it: `using` while its own traffic goes through
+   the reflector, when turning it off would strand it. */
 
 export type WebsocketMode = 'auto' | 'on' | 'off'
 export const WEBSOCKET_MODES: WebsocketMode[] = ['auto', 'on', 'off']
 
-export type DeviceWebsocket = { mode: WebsocketMode; using: boolean; since: string | null }
+export type DeviceWebsocket = { mode: WebsocketMode | null; using: boolean | null; since: string | null }
 
 // The mode standing: what the administrator's control fixes, else the value, else the default.
 export function websocketMode(setting?: DeviceSetting): WebsocketMode {
@@ -91,16 +91,18 @@ export function websocketMode(setting?: DeviceSetting): WebsocketMode {
   return WEBSOCKET_MODES.includes(setting?.value) ? setting!.value : 'auto'
 }
 
-// Null where the device has not reported it; UNSUPPORTED from an API without it.
+// Null where the device has not reported it; UNSUPPORTED from an API without it (no about, or no websocket in it).
 export async function graphQLDeviceWebsocket(
   deviceId: string
 ): Promise<DeviceWebsocket | null | 'ERROR' | typeof UNSUPPORTED> {
-  const query = `query DeviceWebsocket($id: [String!]!) { login { device(id: $id) { id websocket { mode using since } } } }`
+  const query = `query DeviceWebsocket($id: [String!]!) {
+    login { device(id: $id) { id about { websocket { mode using since } } } }
+  }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
-  if (withoutDeviceSessions(errors, 'websocket')) return UNSUPPORTED
+  if (withoutDeviceSessions(errors, 'about') || withoutDeviceSessions(errors, 'websocket')) return UNSUPPORTED
   if (errors) return 'ERROR'
-  return response.data?.data?.login?.device?.[0]?.websocket ?? null
+  return response.data?.data?.login?.device?.[0]?.about?.websocket ?? null
 }

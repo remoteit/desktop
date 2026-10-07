@@ -20,7 +20,7 @@ async function readWebsocket(deviceId: string): Promise<DeviceWebsocket | null> 
 
 /* Whether the device uses remote.it's reflector (the websocket setting, device-package docs/device-settings.md): a
    three-way choice, set here or on the device. Off while the device reaches remote.it through the reflector strands it
-   — no change made here reaches it after — so that is asked first, on the device's state read again at the choice.
+   — no change made here reaches it after — so Off is asked first unless the device is known not to be using it.
    Absent where the API's device settings do not have it. */
 export const DeviceWebsocketSetting: React.FC = () => {
   const { t } = useTranslation()
@@ -49,14 +49,16 @@ export const DeviceWebsocketSetting: React.FC = () => {
     setSaving(false)
   }
 
+  // Off strands a device that reaches remote.it through the reflector, so it is asked first — on the device's state
+  // read again at the choice, else the last known; and, softer, where that state is unknown.
   const choose = async (mode: WebsocketMode) => {
     if (mode !== 'off') return apply(mode)
     setSaving(true)
     const now = (await readWebsocket(device.id)) ?? state
     setState(now)
     setSaving(false)
-    if (now?.using) setConfirming(true)
-    else await apply(mode)
+    if (now?.using === false) await apply(mode)
+    else setConfirming(true)
   }
 
   return (
@@ -102,10 +104,15 @@ export const DeviceWebsocketSetting: React.FC = () => {
         onDeny={() => setConfirming(false)}
       >
         <Typography variant="body2">
-          {t(
-            'deviceWebsocket.offConfirmBody',
-            'This device reaches remote.it through the reflector now. Turning it off disconnects it until someone changes it on the device.'
-          )}
+          {state?.using
+            ? t(
+                'deviceWebsocket.offConfirmBody',
+                'This device reaches remote.it through the reflector now. Turning it off disconnects it until someone changes it on the device.'
+              )
+            : t(
+                'deviceWebsocket.offConfirmUnknown',
+                "remote.it can't tell whether this device needs the reflector right now. If its UDP is blocked, turning it off disconnects it until someone changes it on the device."
+              )}
         </Typography>
       </Confirm>
     </>

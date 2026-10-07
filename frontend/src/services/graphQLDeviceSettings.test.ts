@@ -107,21 +107,34 @@ describe('the websocket setting', () => {
     expect(websocketMode(undefined)).toBe('auto')
   })
 
-  it('reads the reflector’s state from Device.websocket', async () => {
+  it('reads the reflector’s state from Device.about.websocket', async () => {
     const state = { mode: 'auto', using: true, since: '2026-10-06T17:04:05.123Z' }
-    request.mockResolvedValue({ data: { data: { login: { device: [{ id: 'D', websocket: state }] } } }, headers: {} })
-    expect(await graphQLDeviceWebsocket('D')).toEqual(state)
-    expect(request.mock.calls[0][0].data.query).toMatch(/websocket \{ mode using since \}/)
-  })
-
-  it('not reported: null; an API without Device.websocket: UNSUPPORTED, no error banner', async () => {
-    request.mockResolvedValue({ data: { data: { login: { device: [{ id: 'D', websocket: null }] } } }, headers: {} })
-    expect(await graphQLDeviceWebsocket('D')).toBeNull()
     request.mockResolvedValue({
-      data: { errors: [{ message: 'Cannot query field "websocket" on type "Device".' }] },
+      data: { data: { login: { device: [{ id: 'D', about: { websocket: state } }] } } },
       headers: {},
     })
-    expect(await graphQLDeviceWebsocket('D')).toBe(UNSUPPORTED)
+    expect(await graphQLDeviceWebsocket('D')).toEqual(state)
+    expect(request.mock.calls[0][0].data.query).toMatch(/about \{ websocket \{ mode using since \} \}/)
+  })
+
+  it('not reported: null', async () => {
+    for (const device of [
+      { id: 'D', about: null },
+      { id: 'D', about: { websocket: null } },
+    ]) {
+      request.mockResolvedValue({ data: { data: { login: { device: [device] } } }, headers: {} })
+      expect(await graphQLDeviceWebsocket('D')).toBeNull()
+    }
+  })
+
+  it('an API without about, or without websocket in it: UNSUPPORTED, no error banner', async () => {
+    for (const message of [
+      'Cannot query field "about" on type "Device".',
+      'Cannot query field "websocket" on type "DeviceAbout".',
+    ]) {
+      request.mockResolvedValue({ data: { errors: [{ message }] }, headers: {} })
+      expect(await graphQLDeviceWebsocket('D')).toBe(UNSUPPORTED)
+    }
     expect(uiSet).not.toHaveBeenCalled()
   })
 })

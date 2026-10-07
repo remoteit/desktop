@@ -1187,7 +1187,7 @@
     "screenView": "ScreenView"
   },
   "deviceSetting": {
-    "controlFixed": "",
+    "controlFixedTo": "",
     "controlLocal": "",
     "controlOff": "",
     "controlOn": "",
@@ -1248,6 +1248,7 @@
     "offConfirm": "",
     "offConfirmAction": "",
     "offConfirmBody": "",
+    "offConfirmUnknown": "",
     "offHint": "",
     "on": "",
     "onHint": "",

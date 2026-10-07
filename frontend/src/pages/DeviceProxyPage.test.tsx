@@ -13,6 +13,7 @@ vi.mock('../components/ListItemSetting', () => ({ ListItemSetting: () => null })
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => null }))
 vi.mock('../components/Gutters', () => ({ Gutters: () => null }))
 vi.mock('../components/Notice', () => ({ Notice: () => null }))
+vi.mock('../components/SelectSetting', () => ({ SelectSetting: () => null }))
 vi.mock('../hooks/useDeviceSettings', () => ({ useDeviceSettings: vi.fn() }))
 
 import { proxyListeningLine } from './DeviceProxyPage'

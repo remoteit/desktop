@@ -55,7 +55,7 @@ export const DeviceSettingRow: React.FC<Props> = ({
 }
 
 /* A device setting whose value is a choice (websocket's auto, on, off): DeviceSettingRow's, as a select — who set it
-   when that was on the device, and the administrator's override, which fixes a value here greyed. */
+   when that was on the device, and the administrator's override, which fixes a value here greyed and says which. */
 export const DeviceSettingChoice: React.FC<{
   setting: DeviceSetting
   icon?: string
@@ -67,7 +67,10 @@ export const DeviceSettingChoice: React.FC<{
   onChange: (value: string) => void
 }> = ({ setting, icon, label, value, choices, note, disabled, onChange }) => {
   const { t } = useTranslation()
-  const why = settingNote(t, setting)
+  const fixed = choices.find(choice => choice.key === setting.control)
+  const why = fixed
+    ? t('deviceSetting.controlFixedTo', "Set to {{value}} by the device's administrator", { value: fixed.name })
+    : settingNote(t, setting)
   return (
     <SelectSetting
       icon={icon}
@@ -101,8 +104,6 @@ export function settingNote(t: TFunction, setting?: DeviceSetting): string | und
       return t('deviceSetting.controlOff', 'Turned off on the device by its administrator')
     case 'on':
       return t('deviceSetting.controlOn', 'Turned on on the device by its administrator')
-    case 'auto':
-      return t('deviceSetting.controlFixed', 'Fixed on the device by its administrator')
     case 'local':
       return t('deviceSetting.controlLocal', 'Set only on the device')
   }

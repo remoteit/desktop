@@ -194,7 +194,7 @@ describe('a device setting whose value is a choice', () => {
     expect(onChange).toHaveBeenCalledWith('off')
   })
 
-  it('who set it, then the note; fixed by a value as its control: greyed', async () => {
+  it('who set it, then the note; a control that fixes one of its values: greyed, naming the value', async () => {
     let page = await render(
       <DeviceSettingChoice
         setting={websocket('cloud+local', { onDevice: true, by: 'bob' })}
@@ -216,6 +216,20 @@ describe('a device setting whose value is a choice', () => {
       />
     )
     expect(select(page).dataset.disabled).toBe('true')
-    expect(page.textContent).toBe('Fixed on the device by its administrator')
+    expect(page.textContent).toBe("Set to Automatic by the device's administrator")
+  })
+
+  it('local: set only on the device, as for a switch', async () => {
+    const page = await render(
+      <DeviceSettingChoice
+        setting={websocket('local')}
+        label="Reflector"
+        value="on"
+        choices={choices}
+        onChange={vi.fn()}
+      />
+    )
+    expect(select(page).dataset.disabled).toBe('true')
+    expect(page.textContent).toBe('Set only on the device')
   })
 })

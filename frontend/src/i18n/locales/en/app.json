@@ -1187,7 +1187,7 @@
     "screenView": "ScreenView"
   },
   "deviceSetting": {
-    "controlFixed": "Fixed on the device by its administrator",
+    "controlFixedTo": "Set to {{value}} by the device's administrator",
     "controlLocal": "Set only on the device",
     "controlOff": "Turned off on the device by its administrator",
     "controlOn": "Turned on on the device by its administrator",
@@ -1248,6 +1248,7 @@
     "offConfirm": "Turn the reflector off?",
     "offConfirmAction": "Turn off",
     "offConfirmBody": "This device reaches remote.it through the reflector now. Turning it off disconnects it until someone changes it on the device.",
+    "offConfirmUnknown": "remote.it can't tell whether this device needs the reflector right now. If its UDP is blocked, turning it off disconnects it until someone changes it on the device.",
     "offHint": "Never; with UDP blocked the device goes offline",
     "on": "Always",
     "onHint": "All traffic through remote.it’s reflector — for networks that block UDP",
