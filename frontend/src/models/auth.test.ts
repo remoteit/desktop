@@ -69,6 +69,7 @@ vi.mock('../services/oidc', () => ({
   oidcIsSavedAccount,
   oidcSelectKnownAccount,
   oidcCompleteFromUrl,
+  oidcTakeSupportTicket: vi.fn(),
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
@@ -537,6 +538,16 @@ describe('auth model — switching accounts releases the agent first', () => {
     expect(oidcActivateAccount).toHaveBeenCalledWith('sub-b')
   })
 
+  it("a saved account drops this phone's push token before it activates", async () => {
+    oidcIsSavedAccount.mockReturnValue(true)
+    oidcActivateAccount.mockReturnValue(false)
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(pushUnregister).toHaveBeenCalledTimes(1)
+    expect(pushUnregister.mock.invocationCallOrder[0]).toBeLessThan(oidcActivateAccount.mock.invocationCallOrder[0])
+  })
+
   it('a known account goes to the browser without releasing the agent', async () => {
     browser.isElectron = true
     oidcIsSavedAccount.mockReturnValue(false)
@@ -645,5 +656,34 @@ describe('auth model — the desktop hands the chooser callback to a signed-in w
     completeCallback.mockResolvedValue(undefined)
     liveAuthCallback('?code=d&state=t')
     expect(completeCallback).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe("auth model — a different account arriving drops this phone's push token", () => {
+  beforeEach(() => {
+    oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a' })
+    oidcCompleteFromUrl.mockReset()
+  })
+
+  const admitting = (returned: { sub: string }) =>
+    oidcCompleteFromUrl.mockImplementation(async (_search, admit) => ((await admit(returned)) ? returned : undefined))
+  const boot = async () => {
+    const dispatch = makeDispatch()
+    Object.assign(dispatch.auth, { handleSignInSuccess: vi.fn() })
+    await effectsFor(dispatch).init(undefined, { auth: {} })
+    return dispatch
+  }
+
+  it('drops it before the new account is stored, then signs in as that account', async () => {
+    admitting({ sub: 'sub-b' })
+    const dispatch = await boot()
+    expect(pushUnregister).toHaveBeenCalledTimes(1)
+    expect((dispatch.auth as any).handleSignInSuccess).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps it when the same account signs back in', async () => {
+    admitting({ sub: 'sub-a' })
+    await boot()
+    expect(pushUnregister).not.toHaveBeenCalled()
   })
 })

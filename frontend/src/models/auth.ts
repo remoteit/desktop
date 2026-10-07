@@ -157,7 +157,12 @@ export default createModel<RootModel>()({
             await oidcStart({ supportTicket: ticket })
             return
           }
-          const claims = await oidcCompleteFromUrl()
+          const previous = oidcClaims()?.sub
+          // A different account arriving on this phone: the leaving one's push token goes while its session can still mint
+          const claims = await oidcCompleteFromUrl(undefined, async returned => {
+            if (previous && returned?.sub !== previous) await pushNotifications.unregister()
+            return true
+          })
           if (claims) await dispatch.auth.handleSignInSuccess()
           else if (oidcSignedIn()) {
             // Stored tokens are a CLAIM of a session, not proof of one: the AS may have
@@ -242,6 +247,7 @@ export default createModel<RootModel>()({
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
       if (oidcIsSavedAccount(sub)) {
         if (!(await dispatch.auth.releaseAgent())) return
+        await pushNotifications.unregister()
         if (oidcActivateAccount(sub)) return window.location.assign('/')
       }
       // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
