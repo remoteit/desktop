@@ -1,0 +1,49 @@
+# Amplify serves each PR at https://pr-<N>.d20k671nqqv4kl.amplifyapp.com, signed in on dev as
+# remoteit_portal, which accepts only exactly registered redirect URIs. This keeps that client's
+# preview callbacks equal to the open PRs (authentication tf-permitteer-registry/README.md).
+name: Preview callbacks
+
+on:
+  pull_request:
+    types: [opened, reopened, closed]
+    branches: [main, release]
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  # The key's environment admits runs on main only, so a PR asks main to reconcile. Dependabot's
+  # token cannot dispatch; the hourly run picks its PRs up.
+  request:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - run: gh workflow run preview-callbacks.yml --repo "$GITHUB_REPOSITORY" --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  reconcile:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: preview-callbacks
+    concurrency:
+      group: preview-callbacks
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: node .github/scripts/preview-callbacks.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PREVIEW_CALLBACKS_KEY: ${{ secrets.PREVIEW_CALLBACKS_KEY }}
