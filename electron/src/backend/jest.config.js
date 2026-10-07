@@ -5,5 +5,7 @@ module.exports = {
   moduleNameMapper: {
     '^@common/(.*)$': '<rootDir>/../../../common/src/$1',
   },
+  globalSetup: '<rootDir>/jest.globalSetup.js',
+  globalTeardown: '<rootDir>/jest.globalTeardown.js',
   setupFiles: ['<rootDir>/jest.setup.js'],
 }
