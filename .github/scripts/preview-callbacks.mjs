@@ -41,9 +41,10 @@ async function adminToken(pem) {
       resource: `${ISSUER}/admin/api`,
     }),
   })
-  const body = await response.json()
-  if (!body.access_token) throw new Error(`token: ${response.status} ${JSON.stringify(body)}`)
-  return body.access_token
+  const text = await response.text()
+  const accessToken = response.ok && JSON.parse(text).access_token
+  if (!accessToken) throw new Error(`token: ${response.status} ${text}`)
+  return accessToken
 }
 
 async function portal(token, method = 'GET', body) {
@@ -80,6 +81,10 @@ const pulls = open
   .map(p => p.number)
   .sort((a, b) => a - b)
 
+if (!process.env.PREVIEW_CALLBACKS_KEY)
+  throw new Error(
+    'PREVIEW_CALLBACKS_KEY is not set: run tf-permitteer-registry/preview-callbacks-key.sh in remoteit/authentication'
+  )
 const token = await adminToken(process.env.PREVIEW_CALLBACKS_KEY)
 const client = await portal(token)
 const withPreviews = (uris, path) => [

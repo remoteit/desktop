@@ -1,4 +1,3 @@
-# Registers each open PR's exact Amplify preview callbacks on dev's remoteit_portal (readme.md, Sign-in).
 name: Preview callbacks
 
 on:
