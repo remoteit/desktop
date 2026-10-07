@@ -6,6 +6,7 @@ import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import {
+  AGENT_RELEASE_TIMEOUT,
   SIGN_OUT_BACKEND_TIMEOUT,
   SIGN_OUT_EVERYWHERE_TIMEOUT,
   SIGN_OUT_SESSION_TIMEOUT,
@@ -27,6 +28,7 @@ import {
   oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
+  oidcIsSavedAccount,
   oidcActivationHint,
   invalidateOidcToken,
   oidcGrantStale,
@@ -43,11 +45,16 @@ import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import i18n from '../i18n'
 import { withTimeout } from '../helpers/sleep'
+import { parseAgentOwned } from '@common/agentOwner'
+
+export type SignInErrorCode = OidcErrorCode | 'agentOwned'
 
 export interface AuthState {
   initialized: boolean
   authenticated: boolean
   backendAuthenticated: boolean
+  /** This window has signed the agent out for an account switch; it no longer owns it. */
+  agentReleased?: boolean
   /** A sign-in attempt failed. Deliberately SEPARATE from the message: this is what stops
    *  the web app starting another authorize by itself, and a brake that reads a display
    *  string is a brake that vanishes the moment the string is empty or suppressed. */
@@ -56,7 +63,7 @@ export interface AuthState {
    *  the server's own wording, so it is untranslated and often meaningless to a person. */
   signInError?: string
   /** What the failure MEANS, which is what the screen actually translates and acts on. */
-  signInErrorCode?: OidcErrorCode
+  signInErrorCode?: SignInErrorCode
   /** Seconds the server asked us to wait, when it said so (429). */
   signInRetryAfter?: number
   signingIn?: boolean
@@ -204,11 +211,14 @@ export default createModel<RootModel>()({
       }
     },
     /** Account switch: re-run authorize with select_account — the AS chooser shows the
-     * real session chips; nothing is torn down locally, so a canceled chooser costs
-     * nothing. Completion replaces the session like any sign-in (a SAME-account re-auth
-     * revokes the old family; a DIFFERENT account files the old one in the registry —
-     * services/oidc.ts). */
+     * real session chips. Completion replaces the session like any sign-in (a SAME-account
+     * re-auth revokes the old family; a DIFFERENT account files the old one in the registry —
+     * services/oidc.ts). On desktop the chooser returns through a deep link that the live
+     * window completes (completeCallback), so the agent is released only for a different account.
+     * Any other shell with a local backend (the browser UI on the backend's own port) returns
+     * through a fresh page load that cannot release it, so that shell still releases first. */
     async switchAccount(_: void) {
+      if (!browser.isElectron && !(await dispatch.auth.releaseAgent())) return
       try {
         await oidcStart({ prompt: 'select_account' })
       } catch (error) {
@@ -223,23 +233,49 @@ export default createModel<RootModel>()({
      * menu row that somehow outlived its registry entry still lands somewhere sensible. */
     async activateAccount(sub: string) {
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
-      if (oidcActivateAccount(sub)) return window.location.assign('/')
+      if (oidcIsSavedAccount(sub)) {
+        if (!(await dispatch.auth.releaseAgent())) return
+        if (oidcActivateAccount(sub)) return window.location.assign('/')
+      }
       // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
       // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
+      // Outside desktop it returns through a page load that cannot release the agent (switchAccount).
+      if (!browser.isElectron && !(await dispatch.auth.releaseAgent())) return
       if (await oidcSelectKnownAccount(sub)) return
       await dispatch.auth.switchAccount()
     },
+    /** Desktop: a chooser's deep link delivered to this still signed-in window (liveAuthCallback).
+     *  A DIFFERENT account is stored only once this window has released the agent. */
+    async completeCallback(search: string) {
+      const previous = oidcClaims()?.sub
+      try {
+        const claims = await oidcCompleteFromUrl(
+          search,
+          async returned => returned?.sub === previous || dispatch.auth.releaseAgent()
+        )
+        if (claims) window.location.assign('/')
+      } catch (error: any) {
+        console.error('AUTH: sign-in callback did not complete', error)
+        dispatch.ui.set({
+          errorMessage:
+            error?.oauthError === 'login_required'
+              ? 'That account is no longer signed in on this browser.'
+              : i18n.t('notices:auth.callbackFailed', { defaultValue: "Sign-in didn't complete, so nothing changed." }),
+        })
+      }
+    },
     /** `auto` names a sign-in nobody clicked for (the web sign-in screen's own start) so the
      *  ledger in oidcStart can bound it; a refused one leaves the screen as it was. */
-    async signIn(options?: { auto?: string }) {
+    async signIn(options?: { auto?: string; idpHint?: string; signUp?: boolean }) {
       dispatch.auth.set({ signingIn: true, ...signInCleared })
       try {
-        // Sign-in ALWAYS offers the CHOOSER (prompt=select_account), web and desktop alike.
-        // A "Sign in" button should let the person pick; and with a live AS cookie a
+        // Every sign-in but sign-up offers the CHOOSER (prompt=select_account), web and desktop
+        // alike. A sign-in button should let the person pick; and with a live AS cookie a
         // PROMPTLESS authorize would silently SSO the last user straight back in — which is
         // exactly the "sign-out doesn't stick" bug. select_account also means that signing
         // out and reloading always lands on the picker, never a silent re-login.
-        if (!(await oidcStart({ prompt: 'select_account', auto: options?.auto })))
+        const prompt = options?.signUp ? 'create' : 'select_account'
+        if (!(await oidcStart({ prompt, idpHint: options?.idpHint, auto: options?.auto })))
           dispatch.auth.set({ signingIn: false })
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
@@ -307,7 +343,7 @@ export default createModel<RootModel>()({
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {
-        dispatch.auth.set({ backendAuthenticated: true })
+        dispatch.auth.set({ backendAuthenticated: true, agentReleased: false })
         console.log('BACKEND AUTHENTICATED')
         if (!state.backend.initialized) {
           emit('init')
@@ -340,13 +376,33 @@ export default createModel<RootModel>()({
     },
     async backendSignInError(signInError: string) {
       console.error(signInError)
+      const owner = parseAgentOwned(signInError)
       // Tear down FIRST, then record the failure: signedOut() deliberately clears
       // signInFailed/signInError (a failure logged while signed in must not survive into the
       // signed-out screen), so a set() before it was wiped and SignInApp — which renders its
       // message only while signInFailed is true — showed a bare sign-in screen with no word of
       // the backend's rejection. signInFailure is the one shape every failure takes.
       await dispatch.auth.signedOut()
-      dispatch.auth.set(signInFailure(new Error(signInError)))
+      dispatch.auth.set({
+        ...signInFailure(new Error(signInError)),
+        ...(owner && { signInErrorCode: 'agentOwned' as const }),
+      })
+    },
+    /** Desktop: the account leaving signs this computer's agent out from its own window before a switch,
+     *  so the agent only ever moves on its owner's credentials. Its saved session stays in the switcher. */
+    async releaseAgent(_: void, state): Promise<boolean> {
+      if (!browser.hasBackend || !state.auth.user || state.auth.agentReleased) return true
+      const ask = () => Controller.emitWithAck('agent/release', AGENT_RELEASE_TIMEOUT)
+      if ((await ask()) || ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && (await ask()))) {
+        dispatch.auth.set({ backendAuthenticated: false, agentReleased: true })
+        return true
+      }
+      dispatch.ui.set({
+        errorMessage: i18n.t('notices:auth.agentReleaseFailed', {
+          defaultValue: "Couldn't sign out of this computer, so the account wasn't switched.",
+        }),
+      })
+      return false
     },
     async appReady(_: void, state) {
       // Temp migration of state
@@ -552,3 +608,14 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+let completing: Promise<void> | undefined
+
+/** The desktop main process hands an auth deep link here before falling back to reloading the
+ *  window with it. True means this signed-in window owns the callback; a reload instead would
+ *  sign the new account in while this window still holds the agent. */
+export function liveAuthCallback(search: string): boolean {
+  if (!store.getState().auth.user) return false
+  completing ??= store.dispatch.auth.completeCallback(search).finally(() => (completing = undefined))
+  return true
+}

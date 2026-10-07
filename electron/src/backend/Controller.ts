@@ -15,19 +15,32 @@ import PortScanner from './PortScanner'
 import environment from './environment'
 import Binary from './Binary'
 import EventBus from './EventBus'
-import server from './server'
+import server, { AUTHENTICATED } from './server'
 import user, { User } from './User'
 import launch from './launch'
 
 const DEFAULT_SOCKETS_LENGTH = 3
+// sign-out-complete arrives after signed-out has taken the socket out of the room; agent/release answers false itself.
+const UNFENCED_EVENTS = new Set(['authentication', 'user/sign-out-complete', 'agent/release'])
+// The signed-out screen resets the language to the OS after leaving the room, and syncs it to the tray as a preference.
+const isLanguageSync = ([event, data]: unknown[]) =>
+  event === 'preferences' &&
+  typeof data === 'object' &&
+  data !== null &&
+  Object.keys(data).length === 1 &&
+  typeof (data as IPreferences).language === 'string'
+const unfenced = (packet: unknown[]) => UNFENCED_EVENTS.has(packet[0] as string) || isLanguageSync(packet)
 
 class Controller {
-  private io: SocketIO.Server
+  private clients: ReturnType<SocketIO.Server['to']>
   private pool: ConnectionPool
 
   constructor(io: SocketIO.Server, pool: ConnectionPool) {
-    this.io = io
+    this.clients = io.to(AUTHENTICATED)
     this.pool = pool
+    io.on('connection', socket =>
+      socket.use((packet, next) => (socket.rooms.has(AUTHENTICATED) || unfenced(packet)) && next())
+    )
     EventBus.on(server.EVENTS.ready, this.openSockets)
     EventBus.on(electronInterface.EVENTS.recapitate, this.recapitate)
     EventBus.on(electronInterface.EVENTS.signOut, this.signOutRequested)
@@ -44,7 +57,9 @@ class Controller {
       ...Object.values(preferences.EVENTS),
     ]
 
-    new EventRelay(eventNames, EventBus, this.io.sockets)
+    new EventRelay(eventNames, EventBus, this.clients)
+    // After the relay, so the signed-out broadcast still reaches the sockets it removes.
+    EventBus.on(User.EVENTS.signedOut, () => this.clients.socketsLeave(AUTHENTICATED))
   }
 
   openSockets = () => {
@@ -59,6 +74,9 @@ class Controller {
     socket.on('user/lock', user.signOut)
     socket.on('user/sign-out', this.signOut)
     socket.on('user/sign-out-complete', this.signOutComplete)
+    socket.on('agent/release', (done: unknown) =>
+      this.releaseAgent(socket, released => typeof done === 'function' && done(released))
+    )
     socket.on('user/quit', this.quit)
     socket.on('service/connect', this.connect)
     socket.on('service/disconnect', this.disconnect)
@@ -102,7 +120,7 @@ class Controller {
 
   recapitate = () => {
     // environment changes after recapitation
-    this.io.emit(environment.EVENTS.send, environment.frontend)
+    this.clients.emit(environment.EVENTS.send, environment.frontend)
   }
 
   check = (all?: boolean) => {
@@ -133,17 +151,17 @@ class Controller {
 
   device = async () => {
     await cli.set('device')
-    this.io.emit('device', cli.data.device?.uid)
+    this.clients.emit('device', cli.data.device?.uid)
   }
 
   registration = async (code: string) => {
     await cli.set('registration', code)
-    this.io.emit('device', cli.data.device?.uid)
+    this.clients.emit('device', cli.data.device?.uid)
   }
 
   restore = async (deviceId: string) => {
     await cli.restore(deviceId)
-    this.io.emit('device', cli.data.device?.uid)
+    this.clients.emit('device', cli.data.device?.uid)
   }
 
   forceUnregister = async (code: string) => {
@@ -152,22 +170,22 @@ class Controller {
 
   interfaces = async () => {
     await lan.getInterfaces()
-    this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
+    this.clients.emit(lan.EVENTS.interfaces, lan.interfaces)
   }
 
   scan = async (interfaceName: string) => {
     await lan.scan(interfaceName)
-    this.io.emit('scan', lan.data)
+    this.clients.emit('scan', lan.data)
   }
 
   freePort = async () => {
     const freePort = await this.pool.nextFreePort()
-    this.io.emit(PortScanner.EVENTS.freePort, freePort)
+    this.clients.emit(PortScanner.EVENTS.freePort, freePort)
   }
 
   isReachablePort = async (data: IReachablePort) => {
     const result = await PortScanner.isPortReachable(data.port, data.host)
-    this.io.emit(PortScanner.EVENTS.reachablePort, result)
+    this.clients.emit(PortScanner.EVENTS.reachablePort, result)
   }
 
   useCertificate = async (use: boolean) => {
@@ -185,7 +203,7 @@ class Controller {
     this.pool.init()
     sshConfig.init()
     this.refresh()
-    this.io.emit('appReady')
+    this.clients.emit('appReady')
     Logger.info('DATA READY')
   }
 
@@ -193,12 +211,12 @@ class Controller {
     cli.read()
     this.check()
     this.freePort()
-    this.io.emit('device', cli.data.device?.uid)
-    this.io.emit('scan', lan.data)
-    this.io.emit(lan.EVENTS.interfaces, lan.interfaces)
-    this.io.emit(ConnectionPool.EVENTS.pool, this.pool.toJSON())
-    this.io.emit(environment.EVENTS.send, environment.frontend)
-    this.io.emit('preferences', preferences.data)
+    this.clients.emit('device', cli.data.device?.uid)
+    this.clients.emit('scan', lan.data)
+    this.clients.emit(lan.EVENTS.interfaces, lan.interfaces)
+    this.clients.emit(ConnectionPool.EVENTS.pool, this.pool.toJSON())
+    this.clients.emit(environment.EVENTS.send, environment.frontend)
+    this.clients.emit('preferences', preferences.data)
     EventBus.emit(electronInterface.EVENTS.navigate, 'STATUS')
   }
 
@@ -214,9 +232,9 @@ class Controller {
 
   /* The tray's Sign out. The relay already carries it to the renderer, which owns the OIDC
      session: it ends the account's AS session, then comes back with user/sign-out. Only with
-     no renderer connected does the backend clear the credentials on its own. */
+     no signed-in renderer for the relay to reach does the backend clear the credentials on its own. */
   signOutRequested = async () => {
-    if (server.socket?.connected) return
+    if ((await this.clients.fetchSockets()).length) return
     Logger.info('SIGN OUT REQUESTED WITHOUT A RENDERER')
     await this.signOut()
   }
@@ -226,6 +244,24 @@ class Controller {
     await cli.signOut()
     await user.signOut()
     await this.pool.clearMemory()
+  }
+
+  // Not user.signOut(): its signed-out broadcast makes every window run a full sign-out, dropping the owner's saved
+  // session from the account switcher. The window that asked is disconnected only after its answer is sent.
+  releaseAgent = async (requester: SocketIO.Socket, answer: (released: boolean) => void) => {
+    if (!requester.rooms.has(AUTHENTICATED)) return answer(false)
+    Logger.info('RELEASE AGENT')
+    await cli.signOut()
+    if (!cli.isSignedOut()) {
+      Logger.warn('RELEASE AGENT FAILED: the CLI is still signed in')
+      return answer(false)
+    }
+    user.clear()
+    requester.leave(AUTHENTICATED)
+    this.clients.disconnectSockets(true)
+    await this.pool.clearMemory()
+    answer(true)
+    requester.disconnect()
   }
 
   signOutComplete = () => {

@@ -1,27 +1,30 @@
 import electron, { Menu, dialog } from 'electron'
 import { CHAT_POPOUT_PARAM, CHAT_POPOUT_SIZE } from '@common/constants'
-import { execFile } from 'child_process'
 import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import { t, setLanguage } from './i18n'
-import { EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from './backend'
+import { EVENTS, PROTOCOL, START_URL, START_ORIGIN, brand, environment, preferences, EventBus, Logger } from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
-const IP_PRIVATE = '127.0.0.1'
+// An auth deep link carries the OAuth code and state in its query, so logs keep only the part before it.
+const withoutQuery = (url = '') => url.split('?')[0]
 
 export default class ElectronApp {
   public app: electron.App
   public tray?: electron.Tray
+  public readonly deepLinks: boolean
   private window?: electron.BrowserWindow
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
   private isMaximized: boolean
   private deepLinkUrl?: string
   private authCallback?: boolean
+  private takenAuthStates = new Set<string>()
   private errorShown: boolean
   private protocol: string
   private bluetoothCallback?: (deviceId: string) => void
+  private lastFileDirs = new Map<string, string>()
 
   constructor() {
     this.app = electron.app
@@ -40,7 +43,9 @@ export default class ElectronApp {
 
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
-    if (preferences.get().disableDeepLinks) {
+    // The server reports this rather than the live preference: the scheme is only (un)registered here, at launch.
+    this.deepLinks = !preferences.get().disableDeepLinks
+    if (!this.deepLinks) {
       this.app.removeAsDefaultProtocolClient(this.protocol)
       Logger.info('REMOVED AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
     } else {
@@ -106,7 +111,7 @@ export default class ElectronApp {
 
   private handleSecondInstance = (_: electron.Event, argv: string[]) => {
     // Windows deep link support
-    Logger.info('SECOND INSTANCE ARGS', { argv })
+    Logger.info('SECOND INSTANCE ARGS', { argv: argv.map(withoutQuery) })
     this.setDeepLink(argv.pop())
     this.openWindow()
   }
@@ -118,7 +123,7 @@ export default class ElectronApp {
 
   private handleOpenUrl = (event: electron.Event, url: string) => {
     // Mac deep link support
-    Logger.info('OPEN URL', { url })
+    Logger.info('OPEN URL', { url: withoutQuery(url) })
     event.preventDefault()
     this.setDeepLink(url)
     this.openWindow()
@@ -161,14 +166,21 @@ export default class ElectronApp {
   private handleFilePrompt = async (type: 'app' | string) => {
     if (!this.window) return
 
+    // Electron 43+ opens dialogs in Downloads when no defaultPath is given, and the OS no longer remembers the last folder
+    // ProgramW6432: under WOW64 the ia32 build sees ProgramFiles as "Program Files (x86)"
+    const applicationsPath = environment.isMac ? '/Applications' : process.env.ProgramW6432 ?? process.env.ProgramFiles
     const result = await dialog.showOpenDialog(this.window, {
       title: t('dialog.findApplicationTitle'),
       message: t('dialog.findApplicationMessage'),
       buttonLabel: t('dialog.findApplicationButton'),
+      defaultPath: this.lastFileDirs.get(type) ?? (type === 'app' ? applicationsPath : undefined),
     })
 
     let filePath = result?.filePaths[0]
-    if (type === 'app' && environment.isMac) filePath = path.basename(filePath, '.app')
+    if (filePath) {
+      this.lastFileDirs.set(type, path.dirname(filePath))
+      if (type === 'app' && environment.isMac) filePath = path.basename(filePath, '.app')
+    }
 
     EventBus.emit(EVENTS.filePath, filePath)
     Logger.info('FILE PROMPT RESULT', { result, filePath })
@@ -186,90 +198,13 @@ export default class ElectronApp {
     }
   }
 
-  /** The new-window flag for a browser named by app name (mac) or executable (Windows).
-   * Empty for Safari and anything unrecognized — those keep the plain open. */
-  private newWindowFlag(browser: string) {
-    return /chrome|chromium|edge|brave|vivaldi|opera/i.test(browser)
-      ? '--new-window'
-      : /firefox/i.test(browser)
-      ? '-new-window'
-      : ''
-  }
-
-  /** The default browser's EXECUTABLE on Windows, via the registry association chain:
-   * the user's https choice names a ProgId, and that ProgId's shell-open command holds
-   * the real path. Yields '' on anything unexpected — a missing UserChoice (no explicit
-   * default set), an unparsable command, a non-exe target — and every caller treats ''
-   * as "use the plain open". Two hops rather than getApplicationNameForProtocol because
-   * that returns a DISPLAY name here ("Google Chrome"), which is not launchable. */
-  private windowsDefaultBrowser(done: (exe: string) => void) {
-    const association = 'HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice'
-    execFile('reg', ['query', association, '/v', 'ProgId'], (error, stdout) => {
-      const progId = error ? undefined : /ProgId\s+REG_SZ\s+(\S+)/i.exec(stdout)?.[1]
-      if (!progId) return done('')
-      execFile('reg', ['query', `HKCR\\${progId}\\shell\\open\\command`, '/ve'], (commandError, commandOut) => {
-        const command = commandError ? undefined : /REG_SZ\s+(.+)/i.exec(commandOut)?.[1]?.trim()
-        if (!command) return done('')
-        // Either `"C:\...\chrome.exe" --single-argument %1` or a bare path plus switches.
-        const exe = command.startsWith('"') ? command.slice(1, command.indexOf('"', 1)) : command.split(/\s+/)[0]
-        done(/\.exe$/i.test(exe) ? exe : '')
-      })
-    })
-  }
-
-  /** The auth journey gets a NEW browser window. Plain openExternal fronts the browser
-   * on whatever tab it already had — a flash of unrelated content before the sign-in
-   * page. Chromium-family and Firefox take a new-window flag; Safari and unknown
-   * browsers would need Apple-Events permission for the same, so they keep the plain
-   * open. Regular external links (setWindowOpenHandler, deep-linked URLs) deliberately
-   * stay on openExternal — normal tab behavior is right for them.
-   *
-   * EVERY path falls back to openExternal, which is the pre-polish behavior and always
-   * correct — so an unrecognized browser, a registry shape we don't expect, or a failed
-   * spawn costs the nicety, never the sign-in. Linux stays on the plain open: its
-   * default-browser lookup varies by desktop environment for the same modest gain. */
-  private openAuthWindow(url: string) {
-    const openPlainly = () => electron.shell.openExternal(url)
-
-    if (environment.isMac) {
-      const name = this.app.getApplicationNameForProtocol('https://')
-      const flag = this.newWindowFlag(name)
-      if (!flag) return openPlainly()
-      // Two-step: create the window WITHOUT focus (-g), let the page load and paint out of
-      // sight, then front the browser — the user lands on a finished sign-in page instead
-      // of watching a window be born. The delay is a heuristic; there is no cross-process
-      // signal for the browser's paint.
-      execFile('open', ['-g', '-na', name, '--args', flag, url], error => {
-        if (error) return openPlainly()
-        setTimeout(() => execFile('open', ['-a', name], () => {}), 900)
-      })
-      return
-    }
-
-    if (environment.isWindows) {
-      this.windowsDefaultBrowser(exe => {
-        // Match the FILE NAME, not the full path — a user folder called "Edge" should not
-        // decide which flag we pass. No background-then-front counterpart here: Windows
-        // governs foreground activation itself, so the window simply appears.
-        const flag = exe ? this.newWindowFlag(path.basename(exe)) : ''
-        if (!flag) return openPlainly()
-        execFile(exe, [flag, url], error => {
-          if (error) openPlainly()
-        })
-      })
-      return
-    }
-
-    openPlainly()
-  }
-
   private setDeepLink(url?: string) {
     if (!url) return
     const scheme = this.protocol + '://'
 
     if (url.includes(scheme)) {
       this.deepLinkUrl = url.substring(scheme.length)
-      Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
+      Logger.info('SET DEEP LINK', { url: withoutQuery(this.deepLinkUrl) })
     }
 
     if (url.includes('authCallback')) {
@@ -303,9 +238,7 @@ export default class ElectronApp {
       autoHideMenuBar: true,
     })
 
-    const startUrl = this.getStartUrl()
-
-    this.window.loadURL(startUrl)
+    this.window.loadURL(START_URL)
 
     this.window.on('close', event => {
       this.saveWindowState()
@@ -358,7 +291,7 @@ export default class ElectronApp {
       if (!this.isAppOrigin(url)) {
         Logger.info('EXTERNAL NAVIGATION -> SYSTEM BROWSER', { url })
         event.preventDefault()
-        this.openAuthWindow(url)
+        this.openExternal(url)
       }
     })
 
@@ -448,14 +381,10 @@ export default class ElectronApp {
 
   private isAppOrigin(url: string): boolean {
     try {
-      return new URL(url).origin === new URL(this.getStartUrl()).origin
+      return new URL(url).origin === START_ORIGIN
     } catch {
       return false
     }
-  }
-
-  private getStartUrl(): string {
-    return process.env.NODE_ENV === 'development' ? `http://${IP_PRIVATE}:3003` : `http://${IP_PRIVATE}:29999`
   }
 
   private createSystemTray() {
@@ -509,19 +438,55 @@ export default class ElectronApp {
     if (location && this.authCallback) {
       this.authCallback = false
       const index = location.indexOf('?')
-      let fullUrl = this.getStartUrl()
-      if (index != -1) {
-        const parameters = location.substring(index)
-        fullUrl = fullUrl + parameters
-      }
-      Logger.info('OPENING AUTH URL', { url: fullUrl })
-      this.window.loadURL(fullUrl)
+      void this.deliverAuthCallback(index != -1 ? location.substring(index) : '')
     } else if (location) {
       Logger.info('OPENING WINDOW LOCATION', { location })
       this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     }
 
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
+  }
+
+  /* A signed-in window completes the callback itself, so it can release the agent before the
+     new account signs in; reloading with it is only for a window that isn't signed in. */
+  private async deliverAuthCallback(parameters: string) {
+    if (await this.callWindow('authCallback', parameters))
+      return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
+    const fullUrl = START_URL + parameters
+    Logger.info('OPENING AUTH URL', { url: withoutQuery(fullUrl) })
+    this.window?.loadURL(fullUrl)
+  }
+
+  async takeAuthCallback(parameters: string): Promise<string | undefined> {
+    const state = new URLSearchParams(parameters).get('state')
+    if (!state || this.deepLinks) return
+    // A refreshed tab re-sends a taken callback; delivering it again would redeem its single-use code twice.
+    if (!this.takenAuthStates.has(state)) {
+      if (!(await this.callWindow('authFlowPending', state))) return
+      this.takenAuthStates.add(state)
+      Logger.info('AUTH CALLBACK ON LOOPBACK')
+      this.openWindow()
+      this.app.focus({ steal: true })
+      void this.deliverAuthCallback(parameters)
+    }
+    const title = t('authCallback.title', { appName: brand.appName })
+    const message = t('authCallback.message', { appName: brand.appName })
+    return `<!doctype html>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="color-scheme" content="light dark">
+      <link rel="icon" href="/brand/icon.svg">
+      <title>${title}</title>
+      <body style="font-family: system-ui, sans-serif; text-align: center; margin-top: 30vh">
+        <h1>${title}</h1>
+        <p>${message}</p>
+      </body>`
+  }
+
+  private async callWindow(name: 'authCallback' | 'authFlowPending', argument: string): Promise<boolean> {
+    const webContents = this.window?.webContents
+    if (!webContents || webContents.isLoadingMainFrame() || !this.isAppOrigin(webContents.getURL())) return false
+    return webContents.executeJavaScript(`window.${name}?.(${JSON.stringify(argument)}) === true`).catch(() => false)
   }
 
   private closeWindow() {

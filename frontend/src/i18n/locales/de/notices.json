@@ -4,6 +4,8 @@
     "noService": "Sie haben keinen Zugriff auf diesen Dienst. ({{id}})"
   },
   "auth": {
+    "agentReleaseFailed": "Die Abmeldung von diesem Computer ist fehlgeschlagen, daher wurde das Konto nicht gewechselt.",
+    "callbackFailed": "Die Anmeldung wurde nicht abgeschlossen, daher wurde nichts geändert.",
     "emailModified": "E-Mail-Adresse erfolgreich geändert.",
     "invalidFormat": "Ungültiges Format.",
     "loginFailed": "Anmeldung fehlgeschlagen.",
@@ -16,11 +18,11 @@
   },
   "chat": {
     "authRequired": "Agentenauthentifizierung erforderlich — melden Sie sich an, um fortzufahren.",
-    "deleteFailed": "",
+    "deleteFailed": "Die Unterhaltung konnte nicht gelöscht werden — versuchen Sie es erneut.",
     "popupBlocked": "Pop-out blockiert — erlauben Sie Pop-ups für diese Seite und versuchen Sie es erneut.",
     "sessionExpired": "Agentensitzung abgelaufen — melden Sie sich erneut an, um fortzufahren.",
     "signInFailed": "Agentenanmeldung fehlgeschlagen — {{error}}",
-    "streamEnded": "",
+    "streamEnded": "Die Verbindung zum Agenten wurde getrennt, bevor er fertig war — die Antwort ist möglicherweise unvollständig. Versuchen Sie es erneut.",
     "usageReset": "{{msg}} Zurücksetzung {{when}}."
   },
   "connection": {
