@@ -2,6 +2,7 @@ import i18n from '../i18n'
 import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLLeaveMembership } from '../services/graphQLMutation'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
@@ -64,14 +65,17 @@ export default createModel<RootModel>()({
       const activeId = state.accounts.activeId
       const userId = state.auth.user?.id || state.user.id
       const stale = !!activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)
+      if (stale) dispatch.ui.set({ selected: [], selectionAnchor: undefined })
       dispatch.accounts.set({ membership: memberships, ...(stale ? { activeId: undefined } : {}) })
     },
     /*
       The one way to switch accounts - every account scoped list has to be re-fetched
       or it keeps showing the previous account's data. Callers own their navigation.
     */
-    async select(accountId: string) {
+    async select(accountId: string, state) {
       await dispatch.logs.reset()
+      if (accountId !== selectActiveAccountId(state))
+        await dispatch.ui.set({ selected: [], selectionAnchor: undefined })
       await dispatch.accounts.set({ activeId: accountId })
       dispatch.networks.fetchIfEmpty()
       dispatch.devices.fetchIfEmpty()
