@@ -33,6 +33,16 @@ describe('graphQLDeviceAbout', () => {
     expect(await graphQLDeviceAbout('A')).toEqual({ about: null, history: [] })
   })
 
+  it('asks for the NAT class, and asks again without it of an API from before it', async () => {
+    const about = { os: { name: 'macOS' }, reported: '2026-10-01T20:00:00Z', hardwareChanged: null }
+    request
+      .mockResolvedValueOnce({ data: { errors: [{ message: 'Cannot query field "nat" on type "DeviceAbout".' }] } })
+      .mockResolvedValueOnce({ data: { data: { login: { device: [{ id: 'A', about, aboutHistory: [] }] } } } })
+    expect(await graphQLDeviceAbout('A')).toEqual({ about, history: [] })
+    expect(request.mock.calls[0][0].data.query).toMatch(/nat \{ mapping filtering since note why \}/)
+    expect(request.mock.calls[1][0].data.query).not.toMatch(/nat \{/)
+  })
+
   it('answers UNSUPPORTED where the API does not serve device sessions', async () => {
     request.mockResolvedValue({ data: { errors: [{ message: 'Cannot query field "about" on type "Device".' }] } })
     expect(await graphQLDeviceAbout('A')).toBe(UNSUPPORTED)

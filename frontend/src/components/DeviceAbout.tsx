@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { CopyIconButton } from '../buttons/CopyIconButton'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { Box, List, ListItem, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
-import { DeviceAboutChange, DeviceAboutRead, graphQLDeviceAbout } from '../services/graphQLDeviceAbout'
+import {
+  DeviceAbout as About,
+  DeviceAboutChange,
+  DeviceAboutRead,
+  graphQLDeviceAbout,
+} from '../services/graphQLDeviceAbout'
 import { Notice } from './Notice'
 import { Timestamp } from './Timestamp'
 
@@ -50,6 +56,7 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
     [t('deviceAbout.arch', 'Architecture'), hw?.arch],
     [t('deviceAbout.memory', 'Memory'), hw?.memoryMb ? memory(hw.memoryMb) : null],
     [t('deviceAbout.virtual', 'Virtual'), hw?.virtual && hw.virtual !== 'none' ? hw.virtual : null],
+    [t('deviceAbout.nat', 'NAT'), about?.nat ? <NAT nat={about.nat} /> : null],
   ]
   const identifiers: Row[] = [
     [t('deviceAbout.serial', 'Serial'), ids?.serial],
@@ -211,6 +218,55 @@ const Section: React.FC<{ title: string; rows: Row[]; action?: React.ReactNode }
   )
 }
 
+// The NAT the device measured itself behind, in a word and what makes it so — what decides whether another device
+// reaches it directly — and since when; or why it was not measured.
+const NAT: React.FC<{ nat: NonNullable<About['nat']> }> = ({ nat }) => {
+  const { t } = useTranslation()
+  if (!nat.mapping || !nat.filtering)
+    return <>{t('deviceAbout.natNotMeasured', 'Not measured ({{why}})', { why: nat.why ?? '' })}</>
+  return (
+    <>
+      {natLabel(t, nat.mapping, nat.filtering)}
+      {(nat.note || nat.since) && (
+        <Typography component="span" variant="body2" color="grayDark.main">
+          {nat.note && ` — ${t('deviceAbout.natAssumed', 'assumed: {{note}}', { note: nat.note })}`}
+          {nat.since && (
+            <>
+              {' '}
+              — {t('deviceAbout.natSince', 'since')} <Timestamp date={new Date(nat.since)} variant="minutes" />
+            </>
+          )}
+        </Typography>
+      )}
+    </>
+  )
+}
+
+/* open: anyone may answer the one port it uses for every destination; moderate: one port for every destination, answers
+   filtered — a direct path opens from both sides at once; strict: a port per destination, which the other side cannot
+   predict, so a session may go through the relay. As the device's own status says it (connectd device/nat.go). */
+export function natLabel(t: TFunction, mapping: string, filtering: string) {
+  const strict = mapping === 'endpoint-dependent' || mapping === 'pool'
+  const label = strict
+    ? t('deviceAbout.natStrict', 'strict')
+    : mapping === 'endpoint-independent' && filtering === 'endpoint-independent'
+    ? t('deviceAbout.natOpen', 'open')
+    : t('deviceAbout.natModerate', 'moderate')
+  const how = [
+    {
+      'endpoint-independent': t('deviceAbout.natNoFiltering', 'no filtering'),
+      'address-dependent': t('deviceAbout.natAddressFiltering', 'address filtering'),
+      'address-and-port-dependent': t('deviceAbout.natAddressPortFiltering', 'address-and-port filtering'),
+    }[filtering],
+    {
+      'endpoint-independent': t('deviceAbout.natOnePort', 'one port for every destination'),
+      'endpoint-dependent': t('deviceAbout.natPortPerDestination', 'one port per destination'),
+      pool: t('deviceAbout.natPool', 'a port per destination, over several addresses'),
+    }[mapping],
+  ].filter(Boolean)
+  return how.length ? `${label} (${how.join(', ')})` : label
+}
+
 const memory = (mb: number) => (mb >= 1024 ? `${Math.round((mb / 1024) * 10) / 10} GB` : `${mb} MB`)
 
 // A field's path, as a person reads it: os.version → "OS version"; the path itself for one not named here.
@@ -246,4 +302,9 @@ const FIELD_LABELS: ILookup<string> = {
   'software.connectd': 'Agent',
   'software.package': 'Package',
   'software.format': 'Package format',
+  'nat.mapping': 'NAT mapping',
+  'nat.filtering': 'NAT filtering',
+  'nat.since': 'NAT measured since',
+  'nat.note': 'NAT reading assumed',
+  'nat.why': 'NAT not measured',
 }

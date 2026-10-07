@@ -13,7 +13,7 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-import { DeviceAbout, fieldLabel } from './DeviceAbout'
+import { DeviceAbout, fieldLabel, natLabel } from './DeviceAbout'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 async function render(deviceId = 'A') {
@@ -88,6 +88,26 @@ describe('DeviceAbout', () => {
     expect(text).not.toContain('Virtual') // none
     expect(text).not.toContain('declared by the manufacturer') // no OEM product
     expect(text).not.toContain('other hardware')
+    expect(text).not.toContain('NAT') // none from this API or device
+  })
+
+  it('shows the NAT the device measured itself behind, in plain words, or why it was not measured', async () => {
+    const nat = {
+      mapping: 'endpoint-dependent',
+      filtering: 'address-and-port-dependent',
+      since: '2026-10-07T15:00:00Z',
+      note: null,
+      why: null,
+    }
+    read.mockResolvedValue({ about: { ...about, nat }, history: [] })
+    let text = (await render()).textContent
+    expect(text).toContain('NAT:strict (address-and-port filtering, one port per destination) — since')
+    read.mockResolvedValue({
+      about: { ...about, nat: { ...nat, mapping: null, filtering: null, since: null, why: 'not IPv4' } },
+      history: [],
+    })
+    text = (await render()).textContent
+    expect(text).toContain('NAT:Not measured (not IPv4)')
   })
 
   it('warns when its serial or hardware ID changed', async () => {
@@ -136,5 +156,21 @@ describe('fieldLabel', () => {
   it('names a field as a person reads it, and leaves one it does not know as its path', () => {
     expect(fieldLabel('os.version')).toBe('OS version')
     expect(fieldLabel('ids.something_new')).toBe('ids.something_new')
+  })
+})
+
+describe('natLabel', () => {
+  const t = (_key: string, text: string) => text
+  it('says a class in a word and what makes it so', () => {
+    expect(natLabel(t as any, 'endpoint-independent', 'endpoint-independent')).toBe(
+      'open (no filtering, one port for every destination)'
+    )
+    expect(natLabel(t as any, 'endpoint-independent', 'address-dependent')).toBe(
+      'moderate (address filtering, one port for every destination)'
+    )
+    expect(natLabel(t as any, 'pool', 'address-and-port-dependent')).toBe(
+      'strict (address-and-port filtering, a port per destination, over several addresses)'
+    )
+    expect(natLabel(t as any, 'something-new', 'something-new')).toBe('moderate')
   })
 })
