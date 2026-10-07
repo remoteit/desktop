@@ -92,7 +92,8 @@ export default createModel<RootModel>()({
       dispatch.user.set({ notificationSettings: metadata })
       const result = await settingsWrites(() => graphQLNotificationSettings(metadata))
       // Behind the writes already queued, so the refetch reads what they leave rather than undoing them
-      if (result === 'ERROR') settingsWrites(() => dispatch.user.fetch())
+      if (result === 'ERROR')
+        settingsWrites(() => dispatch.user.fetch()).catch(error => console.warn('USER REFETCH FAILED', error))
     },
     async changeLanguage(language: string) {
       await axios.post(

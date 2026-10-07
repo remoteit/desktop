@@ -448,7 +448,9 @@ export default createModel<RootModel>()({
     },
 
     async setNotificationDevice({ device, settings }: { device: IDevice; settings: IDevice['notificationSettings'] }) {
-      settingsWrites(() => graphQLSetDeviceNotification(device.id, settings))
+      settingsWrites(() => graphQLSetDeviceNotification(device.id, settings)).catch(error =>
+        console.warn('DEVICE NOTIFICATION SAVE FAILED', error)
+      )
       dispatch.accounts.setDevice({
         id: device.id,
         device: { ...device, notificationSettings: { ...device.notificationSettings, ...settings } },
