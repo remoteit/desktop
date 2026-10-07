@@ -24,6 +24,7 @@ export default class ElectronApp {
   private errorShown: boolean
   private protocol: string
   private bluetoothCallback?: (deviceId: string) => void
+  private lastFileDirs = new Map<string, string>()
 
   constructor() {
     this.app = electron.app
@@ -165,14 +166,21 @@ export default class ElectronApp {
   private handleFilePrompt = async (type: 'app' | string) => {
     if (!this.window) return
 
+    // Electron 43+ opens dialogs in Downloads when no defaultPath is given, and the OS no longer remembers the last folder
+    // ProgramW6432: under WOW64 the ia32 build sees ProgramFiles as "Program Files (x86)"
+    const applicationsPath = environment.isMac ? '/Applications' : process.env.ProgramW6432 ?? process.env.ProgramFiles
     const result = await dialog.showOpenDialog(this.window, {
       title: t('dialog.findApplicationTitle'),
       message: t('dialog.findApplicationMessage'),
       buttonLabel: t('dialog.findApplicationButton'),
+      defaultPath: this.lastFileDirs.get(type) ?? (type === 'app' ? applicationsPath : undefined),
     })
 
     let filePath = result?.filePaths[0]
-    if (type === 'app' && environment.isMac) filePath = path.basename(filePath, '.app')
+    if (filePath) {
+      this.lastFileDirs.set(type, path.dirname(filePath))
+      if (type === 'app' && environment.isMac) filePath = path.basename(filePath, '.app')
+    }
 
     EventBus.emit(EVENTS.filePath, filePath)
     Logger.info('FILE PROMPT RESULT', { result, filePath })
