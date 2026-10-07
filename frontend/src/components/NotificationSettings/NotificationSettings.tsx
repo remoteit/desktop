@@ -143,8 +143,10 @@ export const NotificationSettings: React.FC = () => {
         <ListItemSetting
           icon={pushOn && pushEnabled.length ? 'bell-on' : 'bell-slash'}
           label={t('notificationSettings.push', 'Mobile push')}
+          toggle={pushOn}
+          onClick={() => saveSettings({ pushNotifications: !pushOn })}
           secondaryContent={pushOverridden ? chipOverridden('push') : undefined}
-          secondaryContentWidth="100px"
+          secondaryContentWidth={pushOverridden ? '160px' : undefined}
         />
         <PushCategoryList
           categories={DEVICE_PUSH_CATEGORIES}
