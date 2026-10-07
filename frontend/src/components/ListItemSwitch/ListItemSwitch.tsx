@@ -19,7 +19,15 @@ export const ListItemSwitch: React.FC<Props> = ({ label, checked, onClick, child
       <ListItemText primary={label} />
       <ListItemSecondaryAction>
         {children}
-        <Switch edge="end" color="primary" checked={checked} onClick={() => onClick(!checked)} />
+        <Switch
+          edge="end"
+          color="primary"
+          checked={checked}
+          onClick={event => {
+            event.stopPropagation()
+            onClick(!checked)
+          }}
+        />
       </ListItemSecondaryAction>
     </ListItemButton>
   )

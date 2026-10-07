@@ -128,7 +128,15 @@ export const NotificationSettings: React.FC = () => {
             <ListItemText primary={t('notificationSettings.systemNotification', 'System notification')} />
             <ListItemSecondaryAction>
               {inAppOverridden && chipOverridden('inapp')}
-              <Switch edge="end" color="primary" checked={inapp} onClick={handleInAppNotifications} />
+              <Switch
+                edge="end"
+                color="primary"
+                checked={inapp}
+                onClick={event => {
+                  event.stopPropagation()
+                  handleInAppNotifications()
+                }}
+              />
             </ListItemSecondaryAction>
           </ListItemButton>
         )}
@@ -151,7 +159,15 @@ export const NotificationSettings: React.FC = () => {
           <ListItemText primary={t('notificationSettings.email', 'Email')} />
           <ListItemSecondaryAction>
             {emailOverridden && chipOverridden('email')}
-            <Switch edge="end" color="primary" checked={email} onClick={handleEmailNotifications} />
+            <Switch
+              edge="end"
+              color="primary"
+              checked={email}
+              onClick={event => {
+                event.stopPropagation()
+                handleEmailNotifications()
+              }}
+            />
           </ListItemSecondaryAction>
         </ListItemButton>
       </List>
