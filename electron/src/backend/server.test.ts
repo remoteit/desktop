@@ -19,7 +19,7 @@ jest.mock('./index', () => ({ __esModule: true, default: {} }))
 jest.mock('./Logger', () => ({ __esModule: true, default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }))
 jest.mock('./cliInterface', () => ({
   __esModule: true,
-  default: { readUser: jest.fn(), signOut: jest.fn(), isSignedOut: () => true, data: {}, EVENTS: {} },
+  default: { readUser: jest.fn(), signOut: jest.fn(), set: jest.fn(), isSignedOut: () => true, data: {}, EVENTS: {} },
 }))
 jest.mock('./LAN', () => ({ __esModule: true, default: { EVENTS: {} } }))
 jest.mock('./systemInfo', () => ({ __esModule: true, default: async () => ({ id: 'device-1' }) }))
@@ -161,6 +161,31 @@ describe('backend/server broadcasts', () => {
     EventBus.emit(electronInterface.EVENTS.signOut)
     await new Promise(resolve => setImmediate(resolve))
     expect(signOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('answers an unregister with the device left registered, and still broadcasts it', async () => {
+    Object.assign(user, credentials)
+    const window = await open()
+    expect(await authenticate(window, credentials)).toBe('authenticated')
+    const data = cli.data as { device?: { uid: string } }
+    const set = cli.set as jest.Mock
+
+    data.device = { uid: 'device-1' }
+    set.mockImplementationOnce(async () => (data.device = undefined))
+    const broadcast = next(window, 'device')
+    expect(await window.emitWithAck('registration', 'DELETE')).toBe('')
+    await broadcast
+
+    data.device = { uid: 'device-1' }
+    set.mockImplementationOnce(async () => {})
+    expect(await window.emitWithAck('registration', 'DELETE')).toBe('device-1')
+  })
+
+  it('leaves a signed-out window unanswered when it asks to unregister', async () => {
+    const window = await open()
+    const set = (cli.set as jest.Mock).mockClear()
+    await expect(window.timeout(200).emitWithAck('registration', 'DELETE')).rejects.toThrow()
+    expect(set).not.toHaveBeenCalled()
   })
 
   it('lets a signed-in window release the agent, then drops every window signed in as its owner', async () => {

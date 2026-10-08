@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { emit } = vi.hoisted(() => ({ emit: vi.fn() }))
-vi.mock('../services/Controller', () => ({ emit }))
+const { emit, emitWithAck } = vi.hoisted(() => ({ emit: vi.fn(), emitWithAck: vi.fn() }))
+vi.mock('../services/Controller', () => ({ emit, default: { emitWithAck } }))
 vi.mock('../services/browser', () => ({ default: {}, setLocalStorage: vi.fn(), getOs: vi.fn() }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 
@@ -13,39 +13,39 @@ describe('backend.unregisterThisDevice', () => {
   let effects: any
 
   beforeEach(() => {
-    emit.mockReset().mockReturnValue(true)
+    vi.resetAllMocks()
     dispatch = { ui: { set: vi.fn() }, backend: { set: vi.fn() }, devices: {} }
     effects = (backend as any).effects(dispatch)
   })
-  afterEach(() => vi.useRealTimers())
 
-  it('resolves true once the agent reports this device gone', async () => {
-    const unregistering = effects.unregisterThisDevice(undefined, state)
-    expect(emit).toHaveBeenCalledWith('registration', 'DELETE')
-    await effects.targetDeviceUpdated('', state)
-    await expect(unregistering).resolves.toBe(true)
+  it('resolves true once the agent answers that no device is registered', async () => {
+    emitWithAck.mockResolvedValue('')
+    await expect(effects.unregisterThisDevice(undefined, state)).resolves.toBe(true)
+    expect(emitWithAck).toHaveBeenCalledWith('registration', 60 * 1000, 'DELETE')
   })
 
-  it('resolves false when the device is still registered afterwards', async () => {
-    const unregistering = effects.unregisterThisDevice(undefined, state)
-    await effects.targetDeviceUpdated('THIS', state)
-    await expect(unregistering).resolves.toBe(false)
-  })
-
-  it('resolves false when the local backend is not connected', async () => {
-    emit.mockReturnValue(false)
+  it('resolves false when the agent answers that the device is still registered', async () => {
+    emitWithAck.mockResolvedValue('THIS')
     await expect(effects.unregisterThisDevice(undefined, state)).resolves.toBe(false)
   })
 
-  it('resolves false when the agent never answers', async () => {
-    vi.useFakeTimers()
+  it('resolves false when no answer comes back', async () => {
+    emitWithAck.mockResolvedValue(undefined)
+    await expect(effects.unregisterThisDevice(undefined, state)).resolves.toBe(false)
+  })
+
+  it('is not settled by an unrelated device broadcast', async () => {
+    let answer: (deviceId: string) => void = () => {}
+    emitWithAck.mockReturnValue(new Promise(resolve => (answer = resolve)))
     const unregistering = effects.unregisterThisDevice(undefined, state)
-    await vi.advanceTimersByTimeAsync(60 * 1000)
-    await expect(unregistering).resolves.toBe(false)
+    await effects.targetDeviceUpdated('THIS', state)
+    answer('')
+    await expect(unregistering).resolves.toBe(true)
   })
 
   it('has nothing to do without a registered device', async () => {
     await expect(effects.unregisterThisDevice(undefined, { backend: { thisId: '' } })).resolves.toBe(true)
+    expect(emitWithAck).not.toHaveBeenCalled()
     expect(emit).not.toHaveBeenCalled()
   })
 })

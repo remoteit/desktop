@@ -1,14 +1,12 @@
 import browser, { setLocalStorage, getOs } from '../services/browser'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import { emit } from '../services/Controller'
-import sleep, { withTimeout } from '../helpers/sleep'
+import Controller, { emit } from '../services/Controller'
+import sleep from '../helpers/sleep'
 import i18n from '../i18n'
 
 export const NOTICE_VERSION_ID = 'notice-version'
 const UNREGISTER_TIMEOUT = 60 * 1000
-
-let onTargetDeviceUpdated: ((id: string) => void) | undefined
 
 export type IBackendState = {
   initialized: boolean
@@ -97,16 +95,12 @@ export default createModel<RootModel>()({
     async unregisterThisDevice(_: void, state) {
       const { thisId } = state.backend
       if (!thisId) return true
-      const updated = new Promise<boolean>(resolve => (onTargetDeviceUpdated = id => resolve(!id)))
       dispatch.ui.set({ silent: thisId })
-      const unregistered = emit('registration', 'DELETE') && (await withTimeout(updated, UNREGISTER_TIMEOUT))
-      onTargetDeviceUpdated = undefined
-      return unregistered === true
+      return (await Controller.emitWithAck('registration', UNREGISTER_TIMEOUT, 'DELETE')) === ''
     },
     async targetDeviceUpdated(newId: string, state) {
       const { ui, backend, devices } = dispatch
       const { thisId } = state.backend
-      onTargetDeviceUpdated?.(newId)
 
       if (newId !== thisId) {
         // registered
