@@ -3,6 +3,7 @@ import { graphQLBasicRequest } from '../services/graphQL'
 import { graphQLReadNotice } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
+import { store } from '../store'
 
 type IAnnouncementsState = ILookup<IAnnouncement[]> & {
   all: IAnnouncement[]
@@ -15,7 +16,8 @@ const defaultState: IAnnouncementsState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async fetch() {
+    async fetch(_: void, state) {
+      const userId = state.auth.user?.id
       const response = await graphQLBasicRequest(
         ` query Announcements {
             notices {
@@ -31,7 +33,7 @@ export default createModel<RootModel>()({
             }
           }`
       )
-      if (response === 'ERROR') return
+      if (response === 'ERROR' || store.getState().auth.user?.id !== userId) return
       const all = await dispatch.announcements.parse(response)
       dispatch.announcements.set({ all })
       dispatch.ui.set({ announcementsFetched: true })
