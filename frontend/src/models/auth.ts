@@ -116,6 +116,17 @@ const signInFailure = (error: any): Partial<AuthState> => ({
   signInRetryAfter: error instanceof OidcError ? error.retryAfter : undefined,
 })
 
+// auth.init is not gated on rehydration, and an owner read before it sees the empty default.
+const rehydrated = () =>
+  new Promise<void>(resolve => {
+    if (persistor.getState().bootstrapped) return resolve()
+    const unsubscribe = persistor.subscribe(() => {
+      if (!persistor.getState().bootstrapped) return
+      unsubscribe()
+      resolve()
+    })
+  })
+
 const signInCleared = {
   signInFailed: false,
   signInError: undefined,
@@ -291,6 +302,7 @@ export default createModel<RootModel>()({
       const user = response?.data?.data?.login
 
       // Switching accounts reloads without signing out, so persisted state and open chat popouts can be the last account's.
+      await rehydrated()
       const owner = store.getState().user.id
       if (owner && user?.id && owner !== user.id) {
         auth.resetAccountData()
@@ -508,9 +520,8 @@ export default createModel<RootModel>()({
          a stale error and no redirect, for something that happened in someone else's
          session. */
       await dispatch.auth.set({ user: undefined, ...signInCleared })
-      dispatch.chat.reset()
-      dispatch.agents.reset()
       dispatch.auth.resetAccountData()
+      dispatch.agents.reset()
       dispatch.logs.reset()
       dispatch.search.reset()
       dispatch.billing.reset()
@@ -538,8 +549,9 @@ export default createModel<RootModel>()({
       Controller.close()
       reloadIfStageChanged()
     },
-    /** Every persisted model but chat, which clears itself when its ownerId stops matching the user. */
+    /** Every persisted model: what sign-out clears, and what a sign-in finding another account's state clears. */
     resetAccountData() {
+      dispatch.chat.reset()
       dispatch.user.reset()
       dispatch.organization.reset()
       dispatch.networks.reset()

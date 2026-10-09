@@ -87,8 +87,16 @@ vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
+const persist = vi.hoisted(() => ({ bootstrapped: true, listener: undefined as undefined | (() => void) }))
 vi.mock('../store', () => ({
-  persistor: { purge: vi.fn() },
+  persistor: {
+    purge: vi.fn(),
+    getState: () => ({ bootstrapped: persist.bootstrapped }),
+    subscribe: (listener: () => void) => {
+      persist.listener = listener
+      return () => (persist.listener = undefined)
+    },
+  },
   store: { getState: () => storeState, dispatch: { auth: { completeCallback } } },
 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
@@ -665,6 +673,7 @@ describe('auth model — signing in as another account clears the last account�
 
   afterEach(() => {
     storeState.user = { id: '' }
+    persist.bootstrapped = true
   })
 
   it('resets and closes chat popouts before the new user is set when the persisted state is another account’s', async () => {
@@ -690,16 +699,34 @@ describe('auth model — signing in as another account clears the last account�
     expect(broadcastChatSignout).not.toHaveBeenCalled()
   })
 
-  it('keeps the persisted state but still stamps an owner when none is recorded', async () => {
+  it('keeps the persisted state and other tabs’ popouts, but stamps an owner, when none is recorded', async () => {
     const dispatch = await signInAs('USER-A', '')
     expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+    expect(broadcastChatSignout).not.toHaveBeenCalled()
     expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-A' })
   })
 
-  it('resets every persisted model except chat, which clears itself by ownerId', () => {
+  it('waits for rehydration before reading the owner', async () => {
+    persist.bootstrapped = false
+    vi.mocked(graphQLLogin).mockResolvedValue({
+      data: { data: { login: { id: 'USER-B', authhash: 'h', yoicsId: 'y' } } },
+    } as any)
+    const { dispatch } = spyDispatch()
+    const signingIn = effectsFor(dispatch).fetchUser()
+    await vi.waitFor(() => expect(persist.listener).toBeDefined())
+    expect(dispatch.auth.set).not.toHaveBeenCalled()
+
+    storeState.user = { id: 'USER-A' }
+    persist.bootstrapped = true
+    persist.listener?.()
+    await signingIn
+    expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
+  })
+
+  it('resets every persisted model', () => {
     const { models, dispatch } = spyDispatch()
     effectsFor(dispatch).resetAccountData()
     const reset = Object.keys(models).filter(model => models[model].reset?.mock.calls.length)
-    expect(reset.sort()).toEqual(PERSISTED_MODELS.filter(model => model !== 'chat').sort())
+    expect(reset.sort()).toEqual([...PERSISTED_MODELS].sort())
   })
 })
