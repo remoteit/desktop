@@ -2551,6 +2551,12 @@
     "nodePackage": "Node.jsパッケージを取得",
     "permissionSubLabel": "デバイスの「管理」権限が必要です"
   },
+  "serviceScheme": {
+    "answersHttp": "",
+    "answersHttps": "",
+    "switchHttp": "",
+    "switchHttps": ""
+  },
   "serviceUsersPage": {
     "addGuestAccess": "ゲストアクセスを追加",
     "addOrgMember": "組織のメンバーを追加",

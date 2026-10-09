@@ -18,6 +18,7 @@ import { EndpointsAccordion } from './EndpointsAccordion'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { ServiceKeySetting } from './ServiceKeySetting'
+import { ServiceSchemeSuggestion } from './ServiceSchemeSuggestion'
 import { ListItemLocation } from './ListItemLocation'
 import { AutoLaunchToggle } from './AutoLaunchToggle'
 import { ConnectionSurvey } from './ConnectionSurvey'
@@ -76,6 +77,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
         </ConnectionDetails>
       </Gutters>
       {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
+      <ServiceSchemeSuggestion device={device} service={service} />
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />
       <Gutters size="md" bottom={null}>
         {variant === 'connection' && (

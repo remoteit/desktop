@@ -2603,6 +2603,12 @@
     "nodePackage": "Get the Node.js package",
     "permissionSubLabel": "Requires device 'Manage' permission"
   },
+  "serviceScheme": {
+    "answersHttp": "This service answers plain HTTP — switch its type to HTTP (port {{port}})?",
+    "answersHttps": "This service answers over HTTPS — switch its type to HTTPS (port {{port}})?",
+    "switchHttp": "Switch to HTTP",
+    "switchHttps": "Switch to HTTPS"
+  },
   "serviceUsersPage": {
     "addGuestAccess": "Add guest access",
     "addOrgMember": "Add organization member",

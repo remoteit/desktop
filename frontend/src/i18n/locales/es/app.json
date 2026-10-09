@@ -2655,6 +2655,12 @@
     "nodePackage": "Obtener el paquete de Node.js",
     "permissionSubLabel": "Requiere permiso de dispositivo \"Administrar\""
   },
+  "serviceScheme": {
+    "answersHttp": "",
+    "answersHttps": "",
+    "switchHttp": "",
+    "switchHttps": ""
+  },
   "serviceUsersPage": {
     "addGuestAccess": "Agregar acceso de invitado",
     "addOrgMember": "Agregar miembro de la organización",

@@ -2603,6 +2603,12 @@
     "nodePackage": "Node.js-Paket herunterladen",
     "permissionSubLabel": "Erfordert die Geräteberechtigung „Verwalten“"
   },
+  "serviceScheme": {
+    "answersHttp": "",
+    "answersHttps": "",
+    "switchHttp": "",
+    "switchHttps": ""
+  },
   "serviceUsersPage": {
     "addGuestAccess": "Gastzugriff hinzufügen",
     "addOrgMember": "Organisationsmitglied hinzufügen",
