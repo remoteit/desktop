@@ -27,11 +27,8 @@ const useAgentHealthOnReconnect = (check: () => void): void => {
 const currentHandoff = () => toChatHandoff(store.getState().chat)
 
 /* The identity the chat is scoped by. auth.user, NOT the persisted `user` model: auth.user is
-   fetched for the CURRENT tokens at sign-in (it is what lets App mount), while the user model
-   is restored from storage and only catches up when the cloud sync lands. Activating a saved
-   account swaps tokens and reloads without purging persisted models, so for that interval
-   (indefinitely, if the sync stalls) the user model still names the PREVIOUS account — and an
-   ownership check against it would keep that account's transcript on the new account's screen. */
+   fetched for the CURRENT tokens at sign-in (it is what lets App mount), while the rest of the
+   user model is restored from storage and only catches up when the cloud sync lands. */
 const useChatIdentity = (): string => useSelector((state: State) => state.auth.user?.id ?? '') // '' = not signed in: syncIdentity no-ops
 
 /* What both chat surfaces do on boot: follow the signed-in identity, clear what must not

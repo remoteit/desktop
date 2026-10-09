@@ -2,11 +2,13 @@ import { numericVersion } from './helpers/versionHelper'
 import { models, RootModel } from './models'
 import { defaultChatState, IChatState } from './models/chat'
 import { isChatPopout, popoutScopeId } from './services/chatPopout'
+import { oidcIsSupportTab } from './services/oidc'
 import { createLogger, ReduxLoggerOptions } from 'redux-logger'
 import { init, RematchDispatch, RematchRootState } from '@rematch/core'
 import { createTransform, PersistConfig } from 'redux-persist'
 import persistPlugin, { getPersistor } from '@rematch/persist'
 import DateTransform from './helpers/DateTransform'
+import { PERSISTED_MODELS } from './models/persistedModels'
 import immerPlugin from '@rematch/immer'
 import localForage from 'localforage'
 
@@ -43,29 +45,14 @@ const noopStorage = {
   removeItem: () => Promise.resolve(),
 }
 
+export const persistsState = !isChatPopout && !oidcIsSupportTab()
+
 const persistConfig: PersistConfig<RootModel> = {
   key: 'app',
   version: numericVersion(),
-  // The popout persists nothing (noopStorage) so it cannot clobber the main window's 'app' key.
-  storage: isChatPopout ? noopStorage : localForage,
-  whitelist: [
-    'accounts',
-    'announcements',
-    'applicationTypes',
-    'chat',
-    'connections',
-    'contacts',
-    'devices',
-    'files',
-    'jobs',
-    'networks',
-    'organization',
-    'plans',
-    'products',
-    'sessions',
-    'tags',
-    'user',
-  ],
+  // The popout and support tabs persist nothing (noopStorage), so neither can clobber the main window's 'app' key.
+  storage: persistsState ? localForage : noopStorage,
+  whitelist: [...PERSISTED_MODELS],
   throttle: 1000,
   transforms: [DateTransform, chatTransform],
 }
