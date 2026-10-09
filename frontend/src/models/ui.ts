@@ -51,6 +51,7 @@ export type UIState = {
     agentURL?: string
     issuer?: string
     customTarget?: boolean
+    apnsEnvironment?: IApnsEnvironment
   }
   layout: ILayout
   silent: string | null

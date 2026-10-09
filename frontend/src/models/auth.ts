@@ -2,6 +2,7 @@ import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
+import pushNotifications from '../services/pushNotifications'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
@@ -122,6 +123,12 @@ const signInCleared = {
   signInRetryAfter: undefined,
 }
 
+// This phone's push token goes with the agent's grant: both calls mint from the session, so they run
+// before it ends, and each runs once, so a later sign-out path's call is a no-op.
+function releaseSessionGrants(dispatch: { chat: { signOut: () => Promise<unknown> } }) {
+  return Promise.all([dispatch.chat.signOut(), pushNotifications.unregister()])
+}
+
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
@@ -150,7 +157,12 @@ export default createModel<RootModel>()({
             await oidcStart({ supportTicket: ticket })
             return
           }
-          const claims = await oidcCompleteFromUrl()
+          const previous = oidcClaims()?.sub
+          // A different account arriving on this phone: the leaving one's push token goes while its session can still mint
+          const claims = await oidcCompleteFromUrl(undefined, async returned => {
+            if (previous && returned?.sub !== previous) await pushNotifications.unregister()
+            return true
+          })
           if (claims) await dispatch.auth.handleSignInSuccess()
           else if (oidcSignedIn()) {
             // Stored tokens are a CLAIM of a session, not proof of one: the AS may have
@@ -235,6 +247,7 @@ export default createModel<RootModel>()({
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
       if (oidcIsSavedAccount(sub)) {
         if (!(await dispatch.auth.releaseAgent())) return
+        await pushNotifications.unregister()
         if (oidcActivateAccount(sub)) return window.location.assign('/')
       }
       // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
@@ -434,6 +447,7 @@ export default createModel<RootModel>()({
       cloudController.init()
       cloudSync.init()
       network.tick()
+      pushNotifications.register()
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(options: { keepSession?: boolean } | void, state) {
@@ -451,7 +465,7 @@ export default createModel<RootModel>()({
         // The agent's background grant goes FIRST, as in globalSignOut: its revoke mints a token
         // from the session about to end. It revokes once per identity, so the chat.signOut in
         // signedOut() is a no-op afterwards.
-        await dispatch.chat.signOut()
+        await releaseSessionGrants(dispatch)
         try {
           const status = await withTimeout(oidcEndSession(), SIGN_OUT_SESSION_TIMEOUT)
           if (status && status !== 204) console.warn('SIGN OUT: AS session end refused', status)
@@ -487,7 +501,7 @@ export default createModel<RootModel>()({
       // AWAIT the chat sign-out: it revokes the background-agent grant, whose authenticated DELETE
       // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
-      await dispatch.chat.signOut()
+      await releaseSessionGrants(dispatch)
       await persistor.purge()
       // Drop this app's tokens. The AS is never called from here — the failure paths land here
       // too; the person's own sign-out ended the AS session in signOut before this.
@@ -584,7 +598,7 @@ export default createModel<RootModel>()({
       // service with a token minted from THIS session, and once the AS has ended the session no
       // token can be minted for that call. It revokes once per identity, so the chat.signOut
       // inside signedOut() is a real no-op on the far side.
-      await dispatch.chat.signOut()
+      await releaseSessionGrants(dispatch)
       // BOUNDED, like the revoke above. Audience mints serialize through one shared promise
       // (services/oidc), so a mint the revoke abandoned mid-stall would otherwise queue this call
       // behind it indefinitely — and the panic button must never leave the person signed in here
