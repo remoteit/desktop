@@ -14,6 +14,7 @@ import {
   graphQLDeviceSettings,
   graphQLDeviceWebsocket,
   graphQLSetDeviceSetting,
+  servicesClosed,
   settingLocked,
   settingOn,
   websocketMode,
@@ -71,6 +72,15 @@ describe('a device’s settings', () => {
   it('a refused change: ERROR', async () => {
     request.mockResolvedValue({ data: { errors: [{ message: 'Set only on the device' }] }, headers: {} })
     expect(await graphQLSetDeviceSetting('D', 'subnet', false)).toBe('ERROR')
+  })
+
+  it('services closed on a phone whose lan_services is off; open with it on, and on any device without it', () => {
+    const lan = (value: boolean, control = 'cloud+local') =>
+      ({ ...subnet, name: 'lan_services', value, control } as any)
+    expect(servicesClosed(lan(false))).toBe(true)
+    expect(servicesClosed(lan(true))).toBe(false)
+    expect(servicesClosed(lan(true, 'off'))).toBe(true)
+    expect(servicesClosed(undefined)).toBe(false)
   })
 
   it('on: the control first, then the value — a boolean, exit_node’s on, any_port’s lists', () => {

@@ -15,6 +15,7 @@ export type DeviceSettingName =
   | 'any_port'
   | 'proxy'
   | 'websocket' // the reflector: 'auto', 'on' or 'off'
+  | 'lan_services' // a phone's connections through it to its services: a client-only device's alone
   | 'updates' // policy only: no value, a control of on or off
   | 'user_mode'
   | 'initiators'
@@ -62,6 +63,10 @@ export async function graphQLSetDeviceSetting(
 // Fixed by the machine's administrator, or set only on the machine: not to be changed here.
 export const settingLocked = (setting?: DeviceSetting) =>
   !!setting && ['local', 'off', 'on', 'auto'].includes(setting.control)
+
+// Whether a phone keeps services from being added: its lan_services setting (graphql serves it for client-only devices
+// alone) is there and off. A device without it — any other, or an API before it — is as before.
+export const servicesClosed = (lanServices?: DeviceSetting) => !!lanServices && !settingOn(lanServices)
 
 // Whether a setting is on: what its control fixes, else its value (exit_node's `on`, any_port's lists).
 export function settingOn(setting?: DeviceSetting): boolean {

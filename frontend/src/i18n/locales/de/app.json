@@ -898,6 +898,10 @@
   "deviceLabelSetting": {
     "label": "Gerätebezeichnung"
   },
+  "deviceLanServices": {
+    "hint": "",
+    "label": ""
+  },
   "deviceList": {
     "addTag": "Tag hinzufügen",
     "cachengoRent": "Rent-A-Node",
@@ -1125,6 +1129,8 @@
     "deviceNotFound": "Gerät nicht gefunden.",
     "deviceOffline": "Gerät offline",
     "deviceUnlicensed": "Gerät nicht lizenziert",
+    "phoneServicesOff": "",
+    "phoneServicesOffHint": "",
     "registeringEllipsis": "Wird registriert …",
     "restoreDevice": "Gerät wiederherstellen",
     "selectServiceInstruction": "Wählen Sie einen Dienst aus, um ihn zu konfigurieren oder eine Verbindung zu starten.",

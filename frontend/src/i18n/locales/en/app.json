@@ -898,6 +898,10 @@
   "deviceLabelSetting": {
     "label": "Device Label"
   },
+  "deviceLanServices": {
+    "hint": "Others you share with can reach devices on the network this phone is on, while the VPN is on.",
+    "label": "Allow connections through this phone"
+  },
   "deviceList": {
     "addTag": "Add Tag",
     "cachengoRent": "Rent-A-Node",
@@ -1125,6 +1129,8 @@
     "deviceNotFound": "Device not found.",
     "deviceOffline": "Device offline",
     "deviceUnlicensed": "Device unlicensed",
+    "phoneServicesOff": "Services need connections through this phone",
+    "phoneServicesOffHint": "Turn on Allow connections through this phone, in its settings or the phone’s app, to add services.",
     "registeringEllipsis": "Registering...",
     "restoreDevice": "Restore Device",
     "selectServiceInstruction": "Select a service to configure it or to start a connection.",

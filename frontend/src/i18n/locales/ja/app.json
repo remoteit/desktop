@@ -890,6 +890,10 @@
   "deviceLabelSetting": {
     "label": "デバイスラベル"
   },
+  "deviceLanServices": {
+    "hint": "",
+    "label": ""
+  },
   "deviceList": {
     "addTag": "タグを追加",
     "cachengoRent": "Rent-A-Node",
@@ -1102,6 +1106,8 @@
     "deviceNotFound": "デバイスが見つかりません。",
     "deviceOffline": "デバイスはオフラインです",
     "deviceUnlicensed": "デバイスにライセンスがありません",
+    "phoneServicesOff": "",
+    "phoneServicesOffHint": "",
     "registeringEllipsis": "登録中...",
     "restoreDevice": "デバイスを復元",
     "selectServiceInstruction": "サービスを選択して設定するか、接続を開始してください。",

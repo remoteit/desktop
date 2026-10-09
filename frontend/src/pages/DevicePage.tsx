@@ -29,6 +29,8 @@ import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { useDeviceSettings } from '../hooks/useDeviceSettings'
+import { servicesClosed } from '../services/graphQLDeviceSettings'
 
 export const DevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -36,6 +38,8 @@ export const DevicePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
+  // A phone takes services only while connections through it are on (its lan_services setting).
+  const phoneClosed = servicesClosed(useDeviceSettings(device?.id).setting('lan_services'))
 
   const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
@@ -101,9 +105,20 @@ export const DevicePage: React.FC = () => {
         <Title>{t('devicePage.service', 'Service')}</Title>
         <SortServices />
         <AddFromNetwork allowScanning={device.thisDevice} button />
-        <AddServiceButton device={device} editable={editable} link={`/devices/${device.id}/add`} />
+        <AddServiceButton device={device} editable={editable && !phoneClosed} link={`/devices/${device.id}/add`} />
       </Typography>
       <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
+        {editable && phoneClosed && (
+          <ListItemLocation to={`/devices/${device.id}/edit`} icon="network-wired" dense>
+            <ListItemText
+              primary={t('devicePage.phoneServicesOff', 'Services need connections through this phone')}
+              secondary={t(
+                'devicePage.phoneServicesOffHint',
+                'Turn on Allow connections through this phone, in its settings or the phone’s app, to add services.'
+              )}
+            />
+          </ListItemLocation>
+        )}
         {editable && <LicensingNotice instance={device} />}
         {editable && setupAddingService && (
           <ListItemLocation to="" disableIcon disabled dense>
