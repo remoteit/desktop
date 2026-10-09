@@ -18,19 +18,15 @@ export const selectLatestAnnouncement = createSelector([getAnnouncements], annou
   getLatestAnnouncement(announcements.filter(a => !isBanner(a)))
 )
 
-export const selectLatestUnreadAnnouncement = createSelector(
-  [getAnnouncements, state => state.announcements.presentedThrough],
-  (announcements, presentedThrough) =>
-    getLatestAnnouncement(
-      announcements.filter(announcement => {
-        const modified = announcement.modified?.getTime() || 0
-        return (
-          !isBanner(announcement) &&
-          !announcement.read &&
-          (presentedThrough === undefined || modified > presentedThrough)
-        )
-      })
+export const FULL_SCREEN_LAUNCH = new Date('2026-07-20T00:00:00-07:00').getTime()
+
+export const selectLatestUnreadAnnouncement = createSelector([getAnnouncements], announcements =>
+  getLatestAnnouncement(
+    announcements.filter(
+      announcement =>
+        !isBanner(announcement) && !announcement.read && (announcement.modified?.getTime() || 0) >= FULL_SCREEN_LAUNCH
     )
+  )
 )
 
 function getLatestAnnouncement(announcements: IAnnouncement[]) {

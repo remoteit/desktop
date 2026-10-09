@@ -8,7 +8,7 @@ import { AnnouncementCard } from './AnnouncementCard'
 import { spacing } from '../styling'
 
 export const AnnouncementDialog: React.FC = () => {
-  const [dismissedIds, setDismissedIds] = useState<string[]>([])
+  const [presentedFor, setPresentedFor] = useState<string>()
   const [activeId, setActiveId] = useState<string>()
   const [activeTest, setActiveTest] = useState(false)
   const [open, setOpen] = useState(false)
@@ -16,7 +16,8 @@ export const AnnouncementDialog: React.FC = () => {
   const latestUnread = useSelector((state: State) => selectLatestUnreadAnnouncement(state))
   const latestAnnouncement = useSelector((state: State) => selectLatestAnnouncement(state))
   const presentationTest = useSelector((state: State) => state.ui.announcementPresentationTest)
-  const presentedThrough = useSelector((state: State) => state.announcements.presentedThrough)
+  const fetched = useSelector((state: State) => state.ui.announcementsFetched)
+  const userId = useSelector((state: State) => state.auth.user?.id)
   const activeAnnouncement = useSelector((state: State) => state.announcements.all.find(a => a.id === activeId))
   const { announcements } = useDispatch<Dispatch>()
 
@@ -30,23 +31,20 @@ export const AnnouncementDialog: React.FC = () => {
   }, [lastPresentationTest, latestAnnouncement?.id, presentationTest])
 
   useEffect(() => {
-    // Wait until the watermark is seeded before presenting, otherwise the brief undefined window
-    // on load lets an already-seen notice slip through and reopen on every reload.
-    if (presentedThrough === undefined || !latestUnread || activeId || dismissedIds.includes(latestUnread.id)) return
+    // Until this session's fetch lands, the persisted list can be another account's on this browser.
+    // Once per account: closing marks the notice read, which would otherwise open the next unread one.
+    if (!fetched || !userId || presentedFor === userId || !latestUnread || activeId) return
 
     setActiveId(latestUnread.id)
     setActiveTest(false)
     setOpen(true)
-    // Advance the watermark as soon as we present, so a reload (or any close) won't replay it.
-    // Marking it read still happens on dismiss to clear the navigation badge.
-    announcements.setPresentedThrough(latestUnread.modified?.getTime() || 0)
-  }, [activeId, announcements, dismissedIds, latestUnread?.id, presentedThrough])
+    setPresentedFor(userId)
+  }, [activeId, fetched, latestUnread?.id, presentedFor, userId])
 
   const handleClose = useCallback(() => {
     if (!activeAnnouncement) return
 
     setOpen(false)
-    setDismissedIds(ids => (ids.includes(activeAnnouncement.id) ? ids : [...ids, activeAnnouncement.id]))
     if (activeTest) return
 
     announcements.read(activeAnnouncement.id).catch(error => console.warn('Failed to mark announcement read', error))

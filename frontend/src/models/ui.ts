@@ -123,6 +123,7 @@ export type UIState = {
   scriptRunForms: ILookup<IFileForm>
   logsFilters: LogsFiltersByAccount
   announcementPresentationTest?: number
+  announcementsFetched: boolean
 }
 
 export const defaultState: UIState = {
@@ -215,6 +216,7 @@ export const defaultState: UIState = {
   scriptRunForms: {},
   logsFilters: {},
   announcementPresentationTest: undefined,
+  announcementsFetched: false,
 }
 
 export default createModel<RootModel>()({
