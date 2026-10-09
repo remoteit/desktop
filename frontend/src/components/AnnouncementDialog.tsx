@@ -8,7 +8,7 @@ import { AnnouncementCard } from './AnnouncementCard'
 import { spacing } from '../styling'
 
 export const AnnouncementDialog: React.FC = () => {
-  const [presentedId, setPresentedId] = useState<string>()
+  const [presentedIds, setPresentedIds] = useState<string[]>([])
   const [activeId, setActiveId] = useState<string>()
   const [activeTest, setActiveTest] = useState(false)
   const [open, setOpen] = useState(false)
@@ -32,13 +32,13 @@ export const AnnouncementDialog: React.FC = () => {
   useEffect(() => {
     // Until this session's fetch lands, the persisted list can be another account's on this browser.
     // Marking read can fail, which would reopen the same notice as soon as it closes.
-    if (!fetched || !presentable || presentable.id === presentedId || activeId) return
+    if (!fetched || !presentable || presentedIds.includes(presentable.id) || activeId) return
 
     setActiveId(presentable.id)
     setActiveTest(false)
     setOpen(true)
-    setPresentedId(presentable.id)
-  }, [activeId, fetched, presentable?.id, presentedId])
+    setPresentedIds(ids => [...ids, presentable.id])
+  }, [activeId, fetched, presentable?.id, presentedIds])
 
   const handleClose = useCallback(() => {
     if (!activeAnnouncement) return

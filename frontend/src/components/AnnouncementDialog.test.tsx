@@ -105,6 +105,19 @@ describe('AnnouncementDialog', () => {
     expect(shown()).toBeUndefined()
   })
 
+  it('does not reopen an earlier notice whose read failed once a newer one disappears', () => {
+    const first = notice('first', 1)
+    render({ all: [first] })
+    close()
+
+    render({ all: [first, notice('second', 2)] })
+    expect(shown()).toBe('second')
+    close()
+
+    render({ all: [first] })
+    expect(shown()).toBeUndefined()
+  })
+
   it('does not reopen a closed notice when marking it read fails', () => {
     const all = [notice('newest', 2)]
     render({ all })
