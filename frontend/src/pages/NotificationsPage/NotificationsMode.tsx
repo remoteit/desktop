@@ -3,16 +3,24 @@ import { TextField, Button, List, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { Gutters } from '../../components/Gutters'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
+import { PushCategoryList } from '../../components/PushCategoryList'
 import { Link } from '../../components/Link'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
+import { DEFAULT_PUSH_CATEGORIES, PUSH_CATEGORIES } from '../../constants'
+import browser from '../../services/browser'
 import isURL from 'validator/lib/isURL'
 
 export const NotificationMode: React.FC = () => {
-  const { notificationUrl, urlNotifications, emailNotifications, desktopNotifications } = useSelector(
-    (state: State) => state.user.notificationSettings
-  )
+  const {
+    notificationUrl,
+    urlNotifications,
+    emailNotifications,
+    desktopNotifications,
+    pushNotifications,
+    pushCategories,
+  } = useSelector((state: State) => state.user.notificationSettings)
   const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
   const { updateNotificationSettings } = dispatch.user
@@ -25,6 +33,8 @@ export const NotificationMode: React.FC = () => {
     emailNotifications: emailNotifications,
     urlNotifications: urlNotifications,
     notificationUrl: webHookUrl,
+    pushNotifications,
+    pushCategories,
   }
 
   useEffect(() => {
@@ -37,6 +47,10 @@ export const NotificationMode: React.FC = () => {
 
   const onSystemChange = (value: boolean) => {
     updateNotificationSettings({ ...metadata, desktopNotifications: value })
+  }
+
+  const onPushChange = (value: boolean) => {
+    updateNotificationSettings({ ...metadata, pushNotifications: value })
   }
 
   const onWebChange = (value: boolean) => {
@@ -71,10 +85,23 @@ export const NotificationMode: React.FC = () => {
   return (
     <>
       <List>
+        {!browser.isMobile && (
+          <ListItemSwitch
+            label={t('settings.notifySystem', 'System notification')}
+            checked={desktopNotifications}
+            onClick={onSystemChange}
+          />
+        )}
         <ListItemSwitch
-          label={t('settings.notifySystem', 'System notification')}
-          checked={desktopNotifications}
-          onClick={onSystemChange}
+          label={t('settings.notifyPush', 'Mobile push')}
+          checked={pushNotifications !== false}
+          onClick={onPushChange}
+        />
+        <PushCategoryList
+          categories={PUSH_CATEGORIES}
+          enabled={pushCategories ?? DEFAULT_PUSH_CATEGORIES}
+          disabled={pushNotifications === false}
+          onChange={pushCategories => updateNotificationSettings({ ...metadata, pushCategories })}
         />
         <ListItemSwitch label={t('settings.notifyEmail', 'Email')} checked={emailNotifications} onClick={onEmailChange} />
         <ListItemSwitch label={t('settings.notifyWebhook', 'Webhook')} checked={urlNotifications} onClick={onWebChange} />

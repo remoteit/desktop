@@ -98,6 +98,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       console.log('UI REDIRECT', redirect)
       history.push(redirect)
       ui.set({ redirect: undefined })
+      // A push tap writes both; left behind, the next cold start would replay it
+      if (window.localStorage.getItem('initialRoute') === redirect) window.localStorage.removeItem('initialRoute')
     }
     analytics.pageView(location.pathname)
   }, [history.location, ui, redirect])
