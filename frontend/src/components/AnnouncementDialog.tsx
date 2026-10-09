@@ -27,6 +27,7 @@ export const AnnouncementDialog: React.FC = () => {
     setActiveTest(true)
     setOpen(true)
     setLastPresentationTest(presentationTest)
+    setPresentedIds(ids => (ids.includes(latestAnnouncement.id) ? ids : [...ids, latestAnnouncement.id]))
   }, [lastPresentationTest, latestAnnouncement?.id, presentationTest])
 
   useEffect(() => {

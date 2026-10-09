@@ -47,10 +47,18 @@ describe('AnnouncementDialog', () => {
   let root: Root
   let container: HTMLDivElement
 
-  const render = ({ all, fetched = true }: { all: IAnnouncement[]; fetched?: boolean }) => {
+  const render = ({
+    all,
+    fetched = true,
+    previewAt,
+  }: {
+    all: IAnnouncement[]
+    fetched?: boolean
+    previewAt?: number
+  }) => {
     redux.state = {
       announcements: { all },
-      ui: { announcementsFetched: fetched },
+      ui: { announcementsFetched: fetched, announcementPresentationTest: previewAt },
     }
     act(() => root.render(<AnnouncementDialog />))
   }
@@ -125,5 +133,16 @@ describe('AnnouncementDialog', () => {
 
     render({ all })
     expect(shown()).toBeUndefined()
+  })
+
+  it('does not reopen a previewed notice as a real one, which would mark it read', () => {
+    const all = [notice('newest', 2)]
+    render({ all, fetched: false, previewAt: 1 })
+    expect(shown()).toBe('newest')
+    close()
+
+    render({ all, previewAt: 1 })
+    expect(shown()).toBeUndefined()
+    expect(read).not.toHaveBeenCalled()
   })
 })
