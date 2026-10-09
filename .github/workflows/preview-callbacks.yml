@@ -1,0 +1,43 @@
+name: Preview callbacks
+
+on:
+  pull_request:
+    types: [opened, reopened, closed]
+    branches: [main, release]
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  # The key's environment admits runs on main only, so a PR asks main to reconcile. Dependabot's
+  # token cannot dispatch; the scheduled run picks its PRs up.
+  request:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - run: gh workflow run preview-callbacks.yml --repo "$GITHUB_REPOSITORY" --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  reconcile:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: preview-callbacks
+    concurrency:
+      group: preview-callbacks
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: node .github/scripts/preview-callbacks.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIEW_CALLBACKS_KEY: ${{ secrets.PREVIEW_CALLBACKS_KEY }}
