@@ -314,12 +314,13 @@ export default createModel<RootModel>()({
 
       const user = response?.data?.data?.login
 
-      // Switching accounts reloads without signing out, so persisted state and open chat popouts can be the last account's.
+      // Switching accounts reloads without signing out, so persisted state can be the last account's; with no owner
+      // recorded it can't be trusted either. Only a known other owner means open chat popouts are that account's.
       await rehydrated()
       const owner = store.getState().user.id
-      if (owner && user?.id && owner !== user.id) {
+      if (user?.id && owner !== user.id) {
         auth.resetAccountData()
-        broadcastChatSignout()
+        if (owner) broadcastChatSignout()
       }
       // Stamped here rather than when user.fetch lands, so a second switch before then still sees an owner.
       if (user?.id) dispatch.user.set({ id: user.id })

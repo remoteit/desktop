@@ -718,9 +718,9 @@ describe('auth model — signing in as another account clears the last account�
     expect(broadcastChatSignout).not.toHaveBeenCalled()
   })
 
-  it('keeps the persisted state and other tabs’ popouts, but stamps an owner, when none is recorded', async () => {
+  it('resets state with no recorded owner, but leaves other windows’ popouts open', async () => {
     const dispatch = await signInAs('USER-A', '')
-    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+    expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
     expect(broadcastChatSignout).not.toHaveBeenCalled()
     expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-A' })
   })
