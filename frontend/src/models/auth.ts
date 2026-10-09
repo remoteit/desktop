@@ -18,6 +18,7 @@ import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { changePassword as changeAccountPassword } from '../services/accountSecurity'
 import { signOutEverywhere } from '../services/permitteerAccount'
+import { broadcastChatSignout } from '../services/chatPopout'
 import {
   oidcConfigured,
   oidcSignedIn,
@@ -289,9 +290,14 @@ export default createModel<RootModel>()({
 
       const user = response?.data?.data?.login
 
-      // Switching saved accounts reloads without signing out, so the persisted state can still be the last account's.
+      // Switching accounts reloads without signing out, so persisted state and open chat popouts can be the last account's.
       const owner = store.getState().user.id
-      if (owner && user?.id && owner !== user.id) auth.resetAccountData()
+      if (owner && user?.id && owner !== user.id) {
+        auth.resetAccountData()
+        broadcastChatSignout()
+      }
+      // Stamped here rather than when user.fetch lands, so a second switch before then still sees an owner.
+      if (user?.id) dispatch.user.set({ id: user.id })
 
       auth.set({ user, ...signInCleared })
       if (user.authhash && user.yoicsId) {

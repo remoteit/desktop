@@ -49,7 +49,7 @@ const {
   oidcActor: vi.fn(),
   oidcMcpDetailReady: vi.fn(),
   browser: { isElectron: false, hasBackend: false },
-  storeState: { auth: {} as Record<string, unknown> },
+  storeState: { auth: {} as Record<string, unknown>, user: { id: '' } },
 }))
 
 // signInFailure() tests `error instanceof OidcError`, so the mock must export a real class
@@ -71,6 +71,8 @@ vi.mock('../services/oidc', () => ({
 }))
 vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
+const { broadcastChatSignout } = vi.hoisted(() => ({ broadcastChatSignout: vi.fn() }))
+vi.mock('../services/chatPopout', () => ({ broadcastChatSignout }))
 vi.mock('../services/accountSecurity', () => ({ changePassword }))
 vi.mock('../services/Controller', () => ({
   default: { close: controllerClose, emitWithAck, reconnectNow, setupConnection: vi.fn() },
@@ -108,6 +110,18 @@ function makeDispatch() {
     ui: { set: vi.fn(), setPersistent: vi.fn() },
     chat: { signOut: vi.fn() },
   }
+}
+
+// Every model and method on demand, as a spy: for effects that fan out across many models.
+function spyDispatch() {
+  const models: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {}
+  const dispatch = new Proxy(models, {
+    get: (all, model: string) =>
+      (all[model] ??= new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
+        get: (calls, fn: string) => (calls[fn] ??= vi.fn()),
+      })),
+  })
+  return { models, dispatch: dispatch as any }
 }
 
 // The only shape SignInApp renders: it shows a message ONLY while signInFailed is true, and
@@ -396,13 +410,7 @@ describe('auth model — a stage switch signs out and reloads onto the new stage
   })
 
   it('the sign-out teardown reloads onto a changed stage as its last step', async () => {
-    const fns: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {}
-    const dispatch = new Proxy(fns, {
-      get: (models, model: string) =>
-        (models[model] ??= new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
-          get: (calls, fn: string) => (calls[fn] ??= vi.fn()),
-        })),
-    })
+    const { dispatch } = spyDispatch()
     await effectsFor(dispatch).signedOut()
     expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
     expect(controllerClose.mock.invocationCallOrder[0]).toBeLessThan(reloadIfStageChanged.mock.invocationCallOrder[0])
@@ -643,18 +651,8 @@ describe('auth model — the desktop hands the chooser callback to a signed-in w
 })
 
 describe('auth model — signing in as another account clears the last account’s persisted state', () => {
-  const spyDispatch = () => {
-    const models: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {}
-    const dispatch = new Proxy(models, {
-      get: (all, model: string) =>
-        (all[model] ??= new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
-          get: (calls, fn: string) => (calls[fn] ??= vi.fn()),
-        })),
-    })
-    return { models, dispatch: dispatch as any }
-  }
   const signInAs = async (id: string, persistedOwner: string) => {
-    ;(storeState as any).user = { id: persistedOwner }
+    storeState.user = { id: persistedOwner }
     vi.mocked(graphQLLogin).mockResolvedValue({
       data: { data: { login: { id, authhash: 'hash', yoicsId: 'yoics' } } },
     } as any)
@@ -663,26 +661,39 @@ describe('auth model — signing in as another account clears the last account�
     return dispatch
   }
 
+  beforeEach(() => broadcastChatSignout.mockReset())
+
   afterEach(() => {
-    delete (storeState as any).user
+    storeState.user = { id: '' }
   })
 
-  it('resets before the new user is set when the persisted state is another account’s', async () => {
+  it('resets and closes chat popouts before the new user is set when the persisted state is another account’s', async () => {
     const dispatch = await signInAs('USER-B', 'USER-A')
     expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
+    expect(broadcastChatSignout).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.resetAccountData.mock.invocationCallOrder[0]).toBeLessThan(
       dispatch.auth.set.mock.invocationCallOrder[0]
     )
   })
 
-  it('keeps the persisted state for the same account', async () => {
-    const dispatch = await signInAs('USER-A', 'USER-A')
-    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+  it('stamps the new owner right after the reset, before any account fetch can persist', async () => {
+    const dispatch = await signInAs('USER-B', 'USER-A')
+    expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-B' })
+    expect(dispatch.auth.resetAccountData.mock.invocationCallOrder[0]).toBeLessThan(
+      dispatch.user.set.mock.invocationCallOrder[0]
+    )
   })
 
-  it('keeps the persisted state when no account owns it yet', async () => {
+  it('keeps the persisted state and chat popouts for the same account', async () => {
+    const dispatch = await signInAs('USER-A', 'USER-A')
+    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+    expect(broadcastChatSignout).not.toHaveBeenCalled()
+  })
+
+  it('keeps the persisted state but still stamps an owner when none is recorded', async () => {
     const dispatch = await signInAs('USER-A', '')
     expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+    expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-A' })
   })
 
   it('resets every persisted model except chat, which clears itself by ownerId', () => {
