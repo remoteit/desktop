@@ -7,6 +7,7 @@ import { init, RematchDispatch, RematchRootState } from '@rematch/core'
 import { createTransform, PersistConfig } from 'redux-persist'
 import persistPlugin, { getPersistor } from '@rematch/persist'
 import DateTransform from './helpers/DateTransform'
+import { PERSISTED_MODELS } from './models/persistedModels'
 import immerPlugin from '@rematch/immer'
 import localForage from 'localforage'
 
@@ -48,24 +49,7 @@ const persistConfig: PersistConfig<RootModel> = {
   version: numericVersion(),
   // The popout persists nothing (noopStorage) so it cannot clobber the main window's 'app' key.
   storage: isChatPopout ? noopStorage : localForage,
-  whitelist: [
-    'accounts',
-    'announcements',
-    'applicationTypes',
-    'chat',
-    'connections',
-    'contacts',
-    'devices',
-    'files',
-    'jobs',
-    'networks',
-    'organization',
-    'plans',
-    'products',
-    'sessions',
-    'tags',
-    'user',
-  ],
+  whitelist: [...PERSISTED_MODELS],
   throttle: 1000,
   transforms: [DateTransform, chatTransform],
 }

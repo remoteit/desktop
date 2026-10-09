@@ -289,6 +289,10 @@ export default createModel<RootModel>()({
 
       const user = response?.data?.data?.login
 
+      // Switching saved accounts reloads without signing out, so the persisted state can still be the last account's.
+      const owner = store.getState().user.id
+      if (owner && user?.id && owner !== user.id) auth.resetAccountData()
+
       auth.set({ user, ...signInCleared })
       if (user.authhash && user.yoicsId) {
         Controller.setupConnection({ username: user.yoicsId, authHash: user.authhash, guid: user.id })
@@ -500,27 +504,13 @@ export default createModel<RootModel>()({
       await dispatch.auth.set({ user: undefined, ...signInCleared })
       dispatch.chat.reset()
       dispatch.agents.reset()
-      dispatch.user.reset()
-      dispatch.organization.reset()
-      dispatch.networks.reset()
-      dispatch.accounts.reset()
-      dispatch.connections.reset()
-      dispatch.devices.reset()
-      dispatch.sessions.reset()
+      dispatch.auth.resetAccountData()
       dispatch.logs.reset()
       dispatch.search.reset()
-      dispatch.announcements.reset()
-      dispatch.applicationTypes.reset()
-      dispatch.plans.reset()
-      dispatch.contacts.reset()
       dispatch.billing.reset()
       dispatch.backend.reset()
-      dispatch.files.reset()
       dispatch.keys.reset()
-      dispatch.jobs.reset()
-      dispatch.tags.reset()
       dispatch.ui.reset()
-      dispatch.products.reset()
       dispatch.partnerStats.reset()
       dispatch.adminUsers.reset()
       dispatch.adminPartners.reset()
@@ -541,6 +531,24 @@ export default createModel<RootModel>()({
       cloudController.reset()
       Controller.close()
       reloadIfStageChanged()
+    },
+    /** Every persisted model but chat, which clears itself when its ownerId stops matching the user. */
+    resetAccountData() {
+      dispatch.user.reset()
+      dispatch.organization.reset()
+      dispatch.networks.reset()
+      dispatch.accounts.reset()
+      dispatch.connections.reset()
+      dispatch.devices.reset()
+      dispatch.sessions.reset()
+      dispatch.announcements.reset()
+      dispatch.applicationTypes.reset()
+      dispatch.plans.reset()
+      dispatch.contacts.reset()
+      dispatch.files.reset()
+      dispatch.jobs.reset()
+      dispatch.tags.reset()
+      dispatch.products.reset()
     },
     /** Test Settings' stage switch. This signs out of the old login server; the reload at the end of
      *  signedOut boots every endpoint on the new stage, where init drops the old stage's accounts. */

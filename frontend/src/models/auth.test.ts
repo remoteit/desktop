@@ -73,7 +73,7 @@ vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 vi.mock('../services/accountSecurity', () => ({ changePassword }))
 vi.mock('../services/Controller', () => ({
-  default: { close: controllerClose, emitWithAck, reconnectNow },
+  default: { close: controllerClose, emitWithAck, reconnectNow, setupConnection: vi.fn() },
   emit: vi.fn(() => false),
 }))
 vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn() } }))
@@ -117,6 +117,8 @@ const aFailureShowing = (signInError: string) => expect.objectContaining({ signI
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import authModel, { liveAuthCallback } from './auth'
 import { agentOwnedMessage } from '@common/agentOwner'
+import { graphQLLogin } from '../services/graphQLRequest'
+import { PERSISTED_MODELS } from './persistedModels'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
@@ -637,5 +639,56 @@ describe('auth model — the desktop hands the chooser callback to a signed-in w
     completeCallback.mockResolvedValue(undefined)
     liveAuthCallback('?code=d&state=t')
     expect(completeCallback).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('auth model — signing in as another account clears the last account’s persisted state', () => {
+  const spyDispatch = () => {
+    const models: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {}
+    const dispatch = new Proxy(models, {
+      get: (all, model: string) =>
+        (all[model] ??= new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
+          get: (calls, fn: string) => (calls[fn] ??= vi.fn()),
+        })),
+    })
+    return { models, dispatch: dispatch as any }
+  }
+  const signInAs = async (id: string, persistedOwner: string) => {
+    ;(storeState as any).user = { id: persistedOwner }
+    vi.mocked(graphQLLogin).mockResolvedValue({
+      data: { data: { login: { id, authhash: 'hash', yoicsId: 'yoics' } } },
+    } as any)
+    const { dispatch } = spyDispatch()
+    await effectsFor(dispatch).fetchUser()
+    return dispatch
+  }
+
+  afterEach(() => {
+    delete (storeState as any).user
+  })
+
+  it('resets before the new user is set when the persisted state is another account’s', async () => {
+    const dispatch = await signInAs('USER-B', 'USER-A')
+    expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.resetAccountData.mock.invocationCallOrder[0]).toBeLessThan(
+      dispatch.auth.set.mock.invocationCallOrder[0]
+    )
+  })
+
+  it('keeps the persisted state for the same account', async () => {
+    const dispatch = await signInAs('USER-A', 'USER-A')
+    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+  })
+
+  it('keeps the persisted state when no account owns it yet', async () => {
+    const dispatch = await signInAs('USER-A', '')
+    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+  })
+
+  it('resets every persisted model except chat, which clears itself by ownerId', () => {
+    const { models, dispatch } = spyDispatch()
+    effectsFor(dispatch).resetAccountData()
+    const reset = Object.keys(models).filter(model => models[model].reset?.mock.calls.length)
+    expect(reset.sort()).toEqual(PERSISTED_MODELS.filter(model => model !== 'chat').sort())
   })
 })
