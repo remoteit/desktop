@@ -4,12 +4,18 @@ vi.mock('../services/browser', () => ({ default: {}, getLocalStorage: vi.fn(), s
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
 
 import '../store'
-import { FULL_SCREEN_LAUNCH, selectLatestUnreadAnnouncement } from './announcements'
-
-const DAY = 24 * 60 * 60 * 1000
+import { ANNOUNCEMENT_POPUP_DATE } from '../constants'
+import { DAY_MS } from '../models/logs'
+import { selectLatestUnreadAnnouncement } from './announcements'
 
 const notice = (id: string, offsetDays: number, extra: Partial<IAnnouncement> = {}) =>
-  ({ id, type: 'RELEASE', modified: new Date(FULL_SCREEN_LAUNCH + offsetDays * DAY), ...extra } as IAnnouncement)
+  ({
+    id,
+    title: id,
+    type: 'RELEASE',
+    modified: new Date(ANNOUNCEMENT_POPUP_DATE.getTime() + offsetDays * DAY_MS),
+    ...extra,
+  } as IAnnouncement)
 
 const latestUnread = (all: IAnnouncement[]) => selectLatestUnreadAnnouncement({ announcements: { all } } as any)?.id
 

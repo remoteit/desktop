@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect'
 import { getAnnouncements, optionalParam } from './state'
 import { isBannerType } from '../helpers/noticeHelper'
+import { ANNOUNCEMENT_POPUP_DATE } from '../constants'
 
 // Banners are presented as a persistent bar at the top of the app rather than as cards, so they
 // are excluded from the announcements list, the unread badge and the full-screen presentation.
@@ -18,13 +19,13 @@ export const selectLatestAnnouncement = createSelector([getAnnouncements], annou
   getLatestAnnouncement(announcements.filter(a => !isBanner(a)))
 )
 
-export const FULL_SCREEN_LAUNCH = new Date('2026-07-20T00:00:00-07:00').getTime()
-
 export const selectLatestUnreadAnnouncement = createSelector([getAnnouncements], announcements =>
   getLatestAnnouncement(
     announcements.filter(
       announcement =>
-        !isBanner(announcement) && !announcement.read && (announcement.modified?.getTime() || 0) >= FULL_SCREEN_LAUNCH
+        !isBanner(announcement) &&
+        !announcement.read &&
+        (announcement.modified?.getTime() || 0) >= ANNOUNCEMENT_POPUP_DATE.getTime()
     )
   )
 )

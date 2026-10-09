@@ -28,23 +28,29 @@ vi.mock('@mui/material', async importOriginal => ({
 }))
 
 import '../store'
-import { FULL_SCREEN_LAUNCH } from '../selectors/announcements'
+import { ANNOUNCEMENT_POPUP_DATE } from '../constants'
+import { DAY_MS } from '../models/logs'
 import { AnnouncementDialog } from './AnnouncementDialog'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
-const notice = (id: string, offsetDays: number) =>
-  ({ id, title: id, type: 'RELEASE', modified: new Date(FULL_SCREEN_LAUNCH + offsetDays * 86400000) } as IAnnouncement)
+const notice = (id: string, offsetDays: number, extra: Partial<IAnnouncement> = {}) =>
+  ({
+    id,
+    title: id,
+    type: 'RELEASE',
+    modified: new Date(ANNOUNCEMENT_POPUP_DATE.getTime() + offsetDays * DAY_MS),
+    ...extra,
+  } as IAnnouncement)
 
 describe('AnnouncementDialog', () => {
   let root: Root
   let container: HTMLDivElement
 
-  const render = (state: { all: IAnnouncement[]; fetched?: boolean; userId?: string }) => {
+  const render = ({ all, fetched = true }: { all: IAnnouncement[]; fetched?: boolean }) => {
     redux.state = {
-      announcements: { all: state.all },
-      ui: { announcementsFetched: state.fetched ?? true },
-      auth: { user: state.userId === undefined ? { id: 'USER-A' } : { id: state.userId } },
+      announcements: { all },
+      ui: { announcementsFetched: fetched },
     }
     act(() => root.render(<AnnouncementDialog />))
   }
@@ -86,16 +92,16 @@ describe('AnnouncementDialog', () => {
     render({ all: [older, newest] })
     close()
 
-    render({ all: [older, { ...newest, read: new Date() }] })
+    render({ all: [older, notice('newest', 2, { read: new Date() })] })
     expect(shown()).toBeUndefined()
   })
 
-  it('presents again for a different account signed in without a reload', () => {
+  it('does not reopen a closed notice when marking it read fails', () => {
     const all = [notice('newest', 2)]
     render({ all })
     close()
 
-    render({ all, userId: 'USER-B' })
-    expect(shown()).toBe('newest')
+    render({ all })
+    expect(shown()).toBeUndefined()
   })
 })

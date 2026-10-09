@@ -8,7 +8,7 @@ import { AnnouncementCard } from './AnnouncementCard'
 import { spacing } from '../styling'
 
 export const AnnouncementDialog: React.FC = () => {
-  const [presentedFor, setPresentedFor] = useState<string>()
+  const [presented, setPresented] = useState(false)
   const [activeId, setActiveId] = useState<string>()
   const [activeTest, setActiveTest] = useState(false)
   const [open, setOpen] = useState(false)
@@ -17,7 +17,6 @@ export const AnnouncementDialog: React.FC = () => {
   const latestAnnouncement = useSelector((state: State) => selectLatestAnnouncement(state))
   const presentationTest = useSelector((state: State) => state.ui.announcementPresentationTest)
   const fetched = useSelector((state: State) => state.ui.announcementsFetched)
-  const userId = useSelector((state: State) => state.auth.user?.id)
   const activeAnnouncement = useSelector((state: State) => state.announcements.all.find(a => a.id === activeId))
   const { announcements } = useDispatch<Dispatch>()
 
@@ -32,14 +31,14 @@ export const AnnouncementDialog: React.FC = () => {
 
   useEffect(() => {
     // Until this session's fetch lands, the persisted list can be another account's on this browser.
-    // Once per account: closing marks the notice read, which would otherwise open the next unread one.
-    if (!fetched || !userId || presentedFor === userId || !latestUnread || activeId) return
+    // Once per mount: closing marks the notice read, which would otherwise open the next unread one.
+    if (!fetched || presented || !latestUnread || activeId) return
 
     setActiveId(latestUnread.id)
     setActiveTest(false)
     setOpen(true)
-    setPresentedFor(userId)
-  }, [activeId, fetched, latestUnread?.id, presentedFor, userId])
+    setPresented(true)
+  }, [activeId, fetched, latestUnread?.id, presented])
 
   const handleClose = useCallback(() => {
     if (!activeAnnouncement) return

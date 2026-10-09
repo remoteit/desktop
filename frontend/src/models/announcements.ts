@@ -15,7 +15,7 @@ const defaultState: IAnnouncementsState = {
 export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
-    async fetch(_: void) {
+    async fetch() {
       const response = await graphQLBasicRequest(
         ` query Announcements {
             notices {
