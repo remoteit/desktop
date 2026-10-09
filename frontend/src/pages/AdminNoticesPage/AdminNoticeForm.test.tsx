@@ -5,7 +5,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 vi.mock('../../components/ServiceForm', () => ({ fieldSx: {} }))
 vi.mock('../../components/AnnouncementCard', () => ({ AnnouncementCard: () => null }))
 vi.mock('../../components/Notice', () => ({ Notice: () => null }))
-vi.mock('../../components/ListItemCheckbox', () => ({ ListItemCheckbox: () => null }))
+vi.mock('../../components/ListItemCheckbox', () => ({
+  ListItemCheckbox: ({ onClick }: { onClick: (checked: boolean) => void }) => (
+    <button type="button" id="enable" onClick={() => onClick(true)} />
+  ),
+}))
 
 import { AdminNoticeForm } from './AdminNoticeForm'
 
@@ -19,8 +23,9 @@ describe('AdminNoticeForm', () => {
   let container: HTMLDivElement
   const onSave = vi.fn()
 
-  const save = (existing: IAdminNotice) => {
+  const save = (existing: IAdminNotice, enable = false) => {
     act(() => root.render(<AdminNoticeForm notice={existing} onCancel={vi.fn()} onSave={onSave} />))
+    if (enable) act(() => container.querySelector<HTMLButtonElement>('#enable')?.click())
     act(() => container.querySelector('form')?.requestSubmit())
     return onSave.mock.calls[0][0] as INoticeInput
   }
@@ -37,10 +42,15 @@ describe('AdminNoticeForm', () => {
     container.remove()
   })
 
-  it('stamps a blank start date with now when an enabled notice is saved', () => {
+  it('starts a draft now when it is enabled', () => {
     const before = Date.now()
-    const saved = save(notice({ enabled: true }))
+    const saved = save(notice({ enabled: false }), true)
     expect(new Date(saved.from as string).getTime()).toBeGreaterThanOrEqual(before)
+  })
+
+  it('dates an already-live notice by its last save, so editing it does not re-announce it', () => {
+    const modified = new Date('2024-07-24T07:25:42Z')
+    expect(save(notice({ enabled: true, modified })).from).toBe(modified.toISOString())
   })
 
   it('keeps an existing start date', () => {

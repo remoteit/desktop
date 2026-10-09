@@ -70,13 +70,15 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
     // The API preserves explicit nulls (that is how you clear a field) but ignores undefined.
     // Send null rather than '' so cleared optional fields don't persist as empty strings.
     const blankToNull = (value?: string | null) => (value ? value : null)
+    // A blank start dates the announcement: an already-live notice keeps the date it went out (its last save,
+    // not this one, or re-saving would re-announce it), and a notice being enabled starts now.
+    const start = notice?.enabled ? notice.modified : form.enabled ? new Date() : undefined
     onSave({
       ...form,
       image: blankToNull(form.image),
       link: blankToNull(form.link),
       stage: blankToNull(form.stage),
-      // A blank start is stamped on enabling: the popup and the card date read it, and edits must not move them.
-      from: form.from || (form.enabled ? new Date().toISOString() : null),
+      from: form.from || start?.toISOString() || null,
       body: form.body || '',
     } as INoticeInput)
   }
@@ -196,8 +198,8 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
             onChange={e => change({ from: fromInputValue(e.target.value) })}
           />
           <Typography variant="caption">
-            When the notice starts showing, and the date the announcement carries. Blank starts it when the notice is
-            enabled and saved.
+            When the notice starts showing, and the date the announcement carries. Blank fills in on save: now when you
+            enable the notice, or its last save if it is already enabled.
           </Typography>
         </ListItem>
 
