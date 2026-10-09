@@ -62,6 +62,7 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
     image: form.image || '',
     link: form.link || '',
     modified: new Date(),
+    from: form.from ? new Date(form.from) : undefined,
   }
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -74,6 +75,8 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
       image: blankToNull(form.image),
       link: blankToNull(form.link),
       stage: blankToNull(form.stage),
+      // A blank start is stamped on enabling: the popup and the card date read it, and edits must not move them.
+      from: form.from || (form.enabled ? new Date().toISOString() : null),
       body: form.body || '',
     } as INoticeInput)
   }
@@ -192,7 +195,10 @@ export const AdminNoticeForm: React.FC<Props> = ({ notice, saving, onCancel, onS
             value={toInputValue(form.from)}
             onChange={e => change({ from: fromInputValue(e.target.value) })}
           />
-          <Typography variant="caption">When the notice starts showing. Blank shows it immediately.</Typography>
+          <Typography variant="caption">
+            When the notice starts showing, and the date the announcement carries. Blank starts it when the notice is
+            enabled and saved.
+          </Typography>
         </ListItem>
 
         <ListItem sx={fieldSx}>

@@ -28,6 +28,7 @@ export default createModel<RootModel>()({
               link
               type
               modified
+              from
               until
               read
             }
@@ -50,6 +51,7 @@ export default createModel<RootModel>()({
         link: n.link,
         type: n.type,
         modified: new Date(n.modified),
+        from: n.from ? new Date(n.from) : undefined,
         until: n.until ? new Date(n.until) : undefined,
         read: n.read ? new Date(n.read) : undefined,
       }))
