@@ -86,7 +86,16 @@ describe('AnnouncementDialog', () => {
     expect(shown()).toBeUndefined()
   })
 
-  it('does not open the next unread notice after one is closed', () => {
+  it('presents a newer notice that arrives later in the session', () => {
+    const first = notice('first', 1)
+    render({ all: [first] })
+    close()
+
+    render({ all: [notice('first', 1, { read: new Date() }), notice('second', 2)] })
+    expect(shown()).toBe('second')
+  })
+
+  it('does not open an older unread notice after the newest is closed', () => {
     const older = notice('older', 1)
     const newest = notice('newest', 2)
     render({ all: [older, newest] })

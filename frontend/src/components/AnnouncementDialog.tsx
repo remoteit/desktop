@@ -3,17 +3,17 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Box, Dialog, Grow } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { Dispatch, State } from '../store'
-import { selectLatestAnnouncement, selectLatestUnreadAnnouncement } from '../selectors/announcements'
+import { selectLatestAnnouncement, selectPresentableAnnouncement } from '../selectors/announcements'
 import { AnnouncementCard } from './AnnouncementCard'
 import { spacing } from '../styling'
 
 export const AnnouncementDialog: React.FC = () => {
-  const [presented, setPresented] = useState(false)
+  const [presentedId, setPresentedId] = useState<string>()
   const [activeId, setActiveId] = useState<string>()
   const [activeTest, setActiveTest] = useState(false)
   const [open, setOpen] = useState(false)
   const [lastPresentationTest, setLastPresentationTest] = useState<number>()
-  const latestUnread = useSelector((state: State) => selectLatestUnreadAnnouncement(state))
+  const presentable = useSelector((state: State) => selectPresentableAnnouncement(state))
   const latestAnnouncement = useSelector((state: State) => selectLatestAnnouncement(state))
   const presentationTest = useSelector((state: State) => state.ui.announcementPresentationTest)
   const fetched = useSelector((state: State) => state.ui.announcementsFetched)
@@ -31,14 +31,14 @@ export const AnnouncementDialog: React.FC = () => {
 
   useEffect(() => {
     // Until this session's fetch lands, the persisted list can be another account's on this browser.
-    // Once per mount: closing marks the notice read, which would otherwise open the next unread one.
-    if (!fetched || presented || !latestUnread || activeId) return
+    // Marking read can fail, which would reopen the same notice as soon as it closes.
+    if (!fetched || !presentable || presentable.id === presentedId || activeId) return
 
-    setActiveId(latestUnread.id)
+    setActiveId(presentable.id)
     setActiveTest(false)
     setOpen(true)
-    setPresented(true)
-  }, [activeId, fetched, latestUnread?.id, presented])
+    setPresentedId(presentable.id)
+  }, [activeId, fetched, presentable?.id, presentedId])
 
   const handleClose = useCallback(() => {
     if (!activeAnnouncement) return

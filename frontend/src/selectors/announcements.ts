@@ -19,15 +19,8 @@ export const selectLatestAnnouncement = createSelector([getAnnouncements], annou
   getLatestAnnouncement(announcements.filter(a => !isBanner(a)))
 )
 
-export const selectLatestUnreadAnnouncement = createSelector([getAnnouncements], announcements =>
-  getLatestAnnouncement(
-    announcements.filter(
-      announcement =>
-        !isBanner(announcement) &&
-        !announcement.read &&
-        (announcement.modified?.getTime() || 0) >= ANNOUNCEMENT_POPUP_DATE.getTime()
-    )
-  )
+export const selectPresentableAnnouncement = createSelector([selectLatestAnnouncement], latest =>
+  latest && !latest.read && (latest.modified?.getTime() || 0) >= ANNOUNCEMENT_POPUP_DATE.getTime() ? latest : undefined
 )
 
 function getLatestAnnouncement(announcements: IAnnouncement[]) {
