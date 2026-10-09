@@ -45,11 +45,13 @@ const noopStorage = {
   removeItem: () => Promise.resolve(),
 }
 
+export const persistsState = !isChatPopout && !oidcIsSupportTab()
+
 const persistConfig: PersistConfig<RootModel> = {
   key: 'app',
   version: numericVersion(),
   // The popout and support tabs persist nothing (noopStorage), so neither can clobber the main window's 'app' key.
-  storage: isChatPopout || oidcIsSupportTab() ? noopStorage : localForage,
+  storage: persistsState ? localForage : noopStorage,
   whitelist: [...PERSISTED_MODELS],
   throttle: 1000,
   transforms: [DateTransform, chatTransform],

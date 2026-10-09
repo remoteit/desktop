@@ -91,8 +91,15 @@ vi.mock('../services/pushNotifications', () => ({ default: { register: vi.fn(), 
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
-const persist = vi.hoisted(() => ({ bootstrapped: true, listener: undefined as undefined | (() => void) }))
+const persist = vi.hoisted(() => ({
+  bootstrapped: true,
+  persistsState: true,
+  listener: undefined as undefined | (() => void),
+}))
 vi.mock('../store', () => ({
+  get persistsState() {
+    return persist.persistsState
+  },
   persistor: {
     purge: vi.fn(),
     getState: () => ({ bootstrapped: persist.bootstrapped }),
@@ -693,6 +700,7 @@ describe('auth model — signing in as another account clears the last account�
   afterEach(() => {
     storeState.user = { id: '' }
     persist.bootstrapped = true
+    persist.persistsState = true
   })
 
   it('resets and closes chat popouts before the new user is set when the persisted state is another account’s', async () => {
@@ -718,9 +726,17 @@ describe('auth model — signing in as another account clears the last account�
     expect(broadcastChatSignout).not.toHaveBeenCalled()
   })
 
-  it('resets state with no recorded owner, but leaves other windows’ popouts open', async () => {
+  it('treats state with no recorded owner as another account’s, popouts included', async () => {
     const dispatch = await signInAs('USER-A', '')
     expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
+    expect(broadcastChatSignout).toHaveBeenCalledTimes(1)
+    expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-A' })
+  })
+
+  it('skips the check in a popout or support tab, which persists nothing and must not close other windows’ popouts', async () => {
+    persist.persistsState = false
+    const dispatch = await signInAs('USER-A', '')
+    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
     expect(broadcastChatSignout).not.toHaveBeenCalled()
     expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-A' })
   })

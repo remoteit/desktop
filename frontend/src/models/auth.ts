@@ -14,7 +14,7 @@ import {
   StageName,
 } from '../constants'
 import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
-import { persistor, store } from '../store'
+import { persistor, persistsState, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { changePassword as changeAccountPassword } from '../services/accountSecurity'
@@ -314,13 +314,13 @@ export default createModel<RootModel>()({
 
       const user = response?.data?.data?.login
 
-      // Switching accounts reloads without signing out, so persisted state can be the last account's; with no owner
-      // recorded it can't be trusted either. Only a known other owner means open chat popouts are that account's.
+      // Switching accounts reloads without signing out, so a window's persisted state, and any chat popout still paired
+      // with it, can be the last account's. With no owner recorded neither can be trusted.
       await rehydrated()
       const owner = store.getState().user.id
-      if (user?.id && owner !== user.id) {
+      if (persistsState && user?.id && owner !== user.id) {
         auth.resetAccountData()
-        if (owner) broadcastChatSignout()
+        broadcastChatSignout()
       }
       // Stamped here rather than when user.fetch lands, so a second switch before then still sees an owner.
       if (user?.id) dispatch.user.set({ id: user.id })
