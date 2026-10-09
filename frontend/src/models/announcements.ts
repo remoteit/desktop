@@ -3,10 +3,10 @@ import { graphQLBasicRequest } from '../services/graphQL'
 import { graphQLReadNotice } from '../services/graphQLMutation'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
+import { store } from '../store'
 
 type IAnnouncementsState = ILookup<IAnnouncement[]> & {
   all: IAnnouncement[]
-  presentedThrough?: number
 }
 
 const defaultState: IAnnouncementsState = {
@@ -17,6 +17,7 @@ export default createModel<RootModel>()({
   state: defaultState,
   effects: dispatch => ({
     async fetch(_: void, state) {
+      const userId = state.auth.user?.id
       const response = await graphQLBasicRequest(
         ` query Announcements {
             notices {
@@ -27,17 +28,16 @@ export default createModel<RootModel>()({
               link
               type
               modified
+              from
               until
               read
             }
           }`
       )
-      if (response === 'ERROR') return
+      if (response === 'ERROR' || store.getState().auth.user?.id !== userId) return
       const all = await dispatch.announcements.parse(response)
       dispatch.announcements.set({ all })
-      // Seed the presentation watermark on first load so existing users aren't shown their
-      // historical backlog full-screen. Only notices published after this point auto-present.
-      if (state.announcements.presentedThrough === undefined) dispatch.announcements.setPresentedThrough(Date.now())
+      dispatch.ui.set({ announcementsFetched: true })
     },
     async parse(response: AxiosResponse<any>): Promise<IAnnouncement[]> {
       const all = response.data?.data?.notices
@@ -51,6 +51,7 @@ export default createModel<RootModel>()({
         link: n.link,
         type: n.type,
         modified: new Date(n.modified),
+        from: n.from ? new Date(n.from) : undefined,
         until: n.until ? new Date(n.until) : undefined,
         read: n.read ? new Date(n.read) : undefined,
       }))
@@ -69,7 +70,6 @@ export default createModel<RootModel>()({
       results.forEach(({ id, response }) => {
         if (response !== 'ERROR') dispatch.announcements.setRead({ id, value: false })
       })
-      dispatch.announcements.clearPresentedThrough()
     },
   }),
   reducers: {
@@ -85,16 +85,6 @@ export default createModel<RootModel>()({
         }
         return false
       })
-      return state
-    },
-    setPresentedThrough(state, modified: number) {
-      state.presentedThrough = Math.max(state.presentedThrough || 0, modified)
-      return state
-    },
-    clearPresentedThrough(state) {
-      // 0 (not undefined) so fetch() won't re-seed the watermark — lets the test control
-      // replay every announcement instead of suppressing the backlog.
-      state.presentedThrough = 0
       return state
     },
     set(state, params: ILookup<IAnnouncement[]>) {

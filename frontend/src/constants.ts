@@ -253,6 +253,7 @@ export const CHAT_PANEL_WIDTH_MIN = 320
    this date does not suppress it, so users who opted out of the older guides still
    get introduced to a feature that did not exist back then. */
 export const CHAT_GUIDE_DATE = new Date('2026-08-27')
+export const ANNOUNCEMENT_POPUP_DATE = new Date('2026-07-20T00:00:00-07:00')
 /* Content that must survive beside a docked chat column. The column shrinks to
    preserve it, so the chat keeps its column on small desktop windows instead of
    taking the screen — that only happens at phone size (MOBILE_WIDTH). */

@@ -188,7 +188,7 @@ export const App: React.FC = () => {
             )}
           </Box>
         )}
-        <AnnouncementDialog />
+        {!isChatPopout && <AnnouncementDialog />}
       </PersistGate>
     </Page>
   )
