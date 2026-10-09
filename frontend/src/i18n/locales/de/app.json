@@ -24,6 +24,15 @@
     "secretKeyWarning": "Wenn Sie Ihren geheimen Schlüssel verlieren oder vergessen, können Sie ihn nicht wiederherstellen.",
     "title": "Authentifizierung"
   },
+  "accountSlug": {
+    "about": "",
+    "hint": "",
+    "label": "",
+    "none": "",
+    "problem": "",
+    "taken": "",
+    "title": ""
+  },
   "addAdminDialog": {
     "addAdmin": "Administrator hinzufügen",
     "adminAdded": "Administrator hinzugefügt",
@@ -940,6 +949,7 @@
     "thisDevice": "Dieses Gerät"
   },
   "deviceNameSetting": {
+    "alsoSubnet": "",
     "label": "Gerätename"
   },
   "deviceNetwork": {
@@ -1244,6 +1254,11 @@
   "deviceSubnet": {
     "hint": "",
     "label": ""
+  },
+  "deviceSubnetLabel": {
+    "hint": "",
+    "label": "",
+    "problem": ""
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "Sie sind dabei, das Eigentum zu übertragen von",

@@ -42,6 +42,7 @@ type Props = {
   warning?: React.ReactNode
   modified?: boolean
   disableGutters?: boolean
+  invalid?: boolean // the value being edited cannot be saved: Save is greyed, and Enter does nothing
   DisplayComponent?: React.ReactElement<FormDisplayProps>
   children?: React.ReactNode
   onSubmit: () => void
@@ -63,6 +64,7 @@ export const InlineSetting: React.FC<Props> = ({
   hideIcon,
   modified,
   disableGutters,
+  invalid,
   DisplayComponent,
   children,
   ...props
@@ -129,6 +131,7 @@ export const InlineSetting: React.FC<Props> = ({
           }}
           onSubmit={e => {
             e.preventDefault()
+            if (invalid) return
             onSubmit()
             setEdit(false)
           }}
@@ -167,6 +170,7 @@ export const InlineSetting: React.FC<Props> = ({
               type="solid"
               size="md"
               buttonBaseSize="small"
+              disabled={invalid}
               onMouseDown={cancelBlur}
               submit
             />

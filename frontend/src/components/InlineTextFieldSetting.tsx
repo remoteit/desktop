@@ -26,6 +26,11 @@ export type InlineTextFieldSettingProps = {
   type?: InputProps['type']
   debug?: boolean
   fieldProps?: TextFieldProps
+  // Why the value being typed cannot be had, or undefined — sync, or once an answer comes; while it has a reason it
+  // is not saved.
+  validate?: (value: string) => string | undefined | Promise<string | undefined>
+  // Below the field while editing, given what is typed: a note, or a choice that goes with saving it.
+  helper?: (value: string) => React.ReactNode
   DisplayComponent?: React.ReactElement<FormDisplayProps>
   onError?: (value: string | undefined) => void
   onSave?: (value: string | number) => void
@@ -44,6 +49,8 @@ export const InlineTextFieldSetting: React.FC<InlineTextFieldSettingProps> = ({
   multiline,
   type,
   fieldProps = {},
+  validate,
+  helper,
   onError,
   onSave,
   ...props
@@ -51,17 +58,30 @@ export const InlineTextFieldSetting: React.FC<InlineTextFieldSettingProps> = ({
   const fieldRef = useRef<HTMLInputElement>(null)
   const [editValue, setEditValue] = useState<string | number>('')
   const [error, setError] = useState<string>()
+  const [problem, setProblem] = useState<string>()
+  const checking = useRef<string>()
 
   useEffect(() => {
-    onError && onError(error)
-  }, [error])
+    onError && onError(error ?? problem)
+  }, [error, problem])
+
+  const check = async (value: string) => {
+    if (!validate) return
+    checking.current = value
+    const answer = validate(value)
+    if (!(answer instanceof Promise)) return setProblem(answer)
+    setProblem(undefined)
+    const reason = await answer
+    if (checking.current === value) setProblem(reason)
+  }
 
   let Field
   fieldProps.type = type
 
   if (label) {
     Field = TextField
-    fieldProps.helperText = error
+    fieldProps.helperText = error ?? problem ?? helper?.(editValue.toString())
+    if (helper) fieldProps.FormHelperTextProps = { component: 'div' } as TextFieldProps['FormHelperTextProps']
   } else {
     Field = Input
   }
@@ -77,8 +97,13 @@ export const InlineTextFieldSetting: React.FC<InlineTextFieldSettingProps> = ({
       resetValue={resetValue}
       onResetClick={() => onSave && onSave(resetValue || '')}
       onSubmit={() => onSave && onSave(editValue)}
+      invalid={!!problem}
       onCancel={() => setEditValue(value)}
-      onShowEdit={() => setEditValue(value)}
+      onShowEdit={() => {
+        setEditValue(value)
+        setProblem(undefined)
+        checking.current = undefined
+      }}
     >
       <Field
         {...fieldProps}
@@ -86,7 +111,7 @@ export const InlineTextFieldSetting: React.FC<InlineTextFieldSettingProps> = ({
         multiline={multiline}
         inputRef={fieldRef}
         label={label}
-        error={!!error}
+        error={!!(error ?? problem)}
         value={editValue || ''}
         variant="filled"
         placeholder={placeholder}
@@ -116,6 +141,7 @@ export const InlineTextFieldSetting: React.FC<InlineTextFieldSettingProps> = ({
             setError(undefined)
           }
           setEditValue(value)
+          check(value)
         }}
       />
     </InlineSetting>

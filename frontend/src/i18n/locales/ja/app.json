@@ -24,6 +24,15 @@
     "secretKeyWarning": "シークレットキーを紛失したり忘れたりした場合、再取得することはできません。",
     "title": "認証"
   },
+  "accountSlug": {
+    "about": "",
+    "hint": "",
+    "label": "",
+    "none": "",
+    "problem": "",
+    "taken": "",
+    "title": ""
+  },
   "addAdminDialog": {
     "addAdmin": "管理者を追加",
     "adminAdded": "管理者が追加されました",
@@ -932,6 +941,7 @@
     "thisDevice": "このデバイス"
   },
   "deviceNameSetting": {
+    "alsoSubnet": "",
     "label": "デバイス名"
   },
   "deviceNetwork": {
@@ -1219,6 +1229,11 @@
   "deviceSubnet": {
     "hint": "",
     "label": ""
+  },
+  "deviceSubnetLabel": {
+    "hint": "",
+    "label": "",
+    "problem": ""
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "次の所有権を譲渡しようとしています:",

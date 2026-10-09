@@ -74,6 +74,11 @@ async function flush() {
   listeners.forEach(listener => listener())
 }
 
+// Every device read so far, read anew: an account's slug changed, and with it each of its devices' names.
+export function refreshDeviceSessionInfo() {
+  for (const id of [...info.keys()]) requestDeviceSessionInfo(id, true)
+}
+
 // User mode (graphql setDeviceUserMode): a device the caller manages acting for them — or no longer — then read anew.
 export async function setDeviceUserMode(deviceId: string, on: boolean) {
   const result = await graphQLBasicRequest(

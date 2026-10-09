@@ -409,7 +409,7 @@ export default createModel<RootModel>()({
     },
 
     async rename({ id, name }: { id: string; name: string }) {
-      await graphQLRename(id, name)
+      return await graphQLRename(id, name)
     },
 
     async addService({ deviceId, service }: { deviceId: string; service: IService }, state) {

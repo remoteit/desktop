@@ -24,6 +24,15 @@
     "secretKeyWarning": "If you lose or forget your secret key, you cannot retrieve it.",
     "title": "Authentication"
   },
+  "accountSlug": {
+    "about": "Every device's DNS name ends in -<slug>. Changing it renames all of them for everyone who reaches them; the old slug keeps working for {{days}} days, then is held from anyone else for six months.",
+    "hint": "Devices are named <name>-{{slug}}",
+    "label": "Account slug",
+    "none": "Given when a device is first named",
+    "problem": "3 to 32 lower case letters, digits and single hyphens, starting and ending with a letter or digit",
+    "taken": "{{slug}} is taken or reserved",
+    "title": "Device DNS names"
+  },
   "addAdminDialog": {
     "addAdmin": "Add Admin",
     "adminAdded": "Admin Added",
@@ -940,6 +949,7 @@
     "thisDevice": "This device"
   },
   "deviceNameSetting": {
+    "alsoSubnet": "Also change its DNS name to {{name}}",
     "label": "Device Name"
   },
   "deviceNetwork": {
@@ -1244,6 +1254,11 @@
   "deviceSubnet": {
     "hint": "Reaches what it may by name and address, without starting a connection",
     "label": "Device subnet"
+  },
+  "deviceSubnetLabel": {
+    "hint": "{{name}} — the old name keeps working for 30 days",
+    "label": "DNS Name",
+    "problem": "Lower case letters and digits, at most 29, no dashes"
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "You are about to transfer ownership of",

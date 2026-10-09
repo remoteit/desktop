@@ -18,6 +18,7 @@ import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { spacing } from '../styling'
 import { DaemonSettingsList } from '../components/DaemonSettingsList'
+import { AccountSlugSetting } from '../components/AccountSlugSetting'
 import { TaggedIntoList } from '../components/TaggedIntoList'
 
 export const ProfilePage: React.FC = () => {
@@ -88,6 +89,7 @@ export const ProfilePage: React.FC = () => {
           onChange={value => dispatch.user.changeLanguage(value)}
         />
       </List>
+      <AccountSlugSetting />
       <DaemonSettingsList />
       <TaggedIntoList />
       <Typography variant="subtitle1">{t('settings.accountDeletion', 'Account deletion')}</Typography>

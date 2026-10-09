@@ -14,6 +14,7 @@ import { DeviceExitChoice } from '../components/DeviceExitSection'
 import { DevicePolicyRow } from '../components/DeviceSettingRow'
 import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
+import { DeviceSubnetLabelSetting } from '../components/DeviceSubnetLabelSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceSshAccess } from '../components/DeviceSshAccess'
 import { DeviceApps } from '../components/DeviceApps'
@@ -33,6 +34,7 @@ export const DeviceEditPage: React.FC = () => {
         <Gutters size={null}>
           <List>
             <DeviceNameSetting />
+            <DeviceSubnetLabelSetting />
             <DeviceDescriptionSetting />
             <DevicePresenceSetting />
             <DeviceUserModeSetting />

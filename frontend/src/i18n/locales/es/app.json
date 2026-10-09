@@ -24,6 +24,15 @@
     "secretKeyWarning": "Si pierdes u olvidas tu clave secreta, no podrás recuperarla.",
     "title": "Autenticación"
   },
+  "accountSlug": {
+    "about": "",
+    "hint": "",
+    "label": "",
+    "none": "",
+    "problem": "",
+    "taken": "",
+    "title": ""
+  },
   "addAdminDialog": {
     "addAdmin": "Agregar administrador",
     "adminAdded": "Administrador agregado",
@@ -948,6 +957,7 @@
     "thisDevice": "Este dispositivo"
   },
   "deviceNameSetting": {
+    "alsoSubnet": "",
     "label": "Nombre del dispositivo"
   },
   "deviceNetwork": {
@@ -1269,6 +1279,11 @@
   "deviceSubnet": {
     "hint": "",
     "label": ""
+  },
+  "deviceSubnetLabel": {
+    "hint": "",
+    "label": "",
+    "problem": ""
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "Estás a punto de transferir la propiedad de",
