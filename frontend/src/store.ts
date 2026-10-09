@@ -2,6 +2,7 @@ import { numericVersion } from './helpers/versionHelper'
 import { models, RootModel } from './models'
 import { defaultChatState, IChatState } from './models/chat'
 import { isChatPopout, popoutScopeId } from './services/chatPopout'
+import { oidcIsSupportTab } from './services/oidc'
 import { createLogger, ReduxLoggerOptions } from 'redux-logger'
 import { init, RematchDispatch, RematchRootState } from '@rematch/core'
 import { createTransform, PersistConfig } from 'redux-persist'
@@ -47,8 +48,8 @@ const noopStorage = {
 const persistConfig: PersistConfig<RootModel> = {
   key: 'app',
   version: numericVersion(),
-  // The popout persists nothing (noopStorage) so it cannot clobber the main window's 'app' key.
-  storage: isChatPopout ? noopStorage : localForage,
+  // The popout and support tabs persist nothing (noopStorage), so neither can clobber the main window's 'app' key.
+  storage: isChatPopout || oidcIsSupportTab() ? noopStorage : localForage,
   whitelist: [...PERSISTED_MODELS],
   throttle: 1000,
   transforms: [DateTransform, chatTransform],
