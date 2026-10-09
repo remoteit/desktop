@@ -86,6 +86,11 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
       onButtonClick?.()
     }
 
+    const handleToggleClick = event => {
+      event.stopPropagation()
+      handleClick()
+    }
+
     const handleConfirm = () => {
       onClick?.()
       setOpen(false)
@@ -128,7 +133,14 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
             </Button>
           )}
           {showToggle && (
-            <Switch edge="end" color="primary" disabled={disabled} checked={toggle} onClick={handleClick} size={size} />
+            <Switch
+              edge="end"
+              color="primary"
+              disabled={disabled}
+              checked={toggle}
+              onClick={handleToggleClick}
+              size={size}
+            />
           )}
         </ListItemSecondaryAction>
       </>

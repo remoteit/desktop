@@ -78,7 +78,19 @@ jobs:
           # create files
           echo -n "$ANDROID_KEY_PROPERTIES" | base64 --decode -o $KEY_PROPERTIES_FILE
           echo -n "$ANDROID_UPLOAD_KEY_JKS" | base64 --decode -o $UPLOAD_KEY_JKS_FILE
-          
+
+      - name: Install the Firebase config
+        working-directory: ./android
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          # Without it Gradle skips the google-services plugin and the build ships with no push
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "::error::GOOGLE_SERVICES_JSON secret is not set"
+            exit 1
+          fi
+          printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+
       - name: npm build-mobile
         run: npm run build-mobile
 

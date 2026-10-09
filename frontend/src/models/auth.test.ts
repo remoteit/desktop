@@ -14,6 +14,7 @@ const {
   oidcGrantStale,
   oidcMcpDetailReady,
   oidcActor,
+  pushUnregister,
   browser,
   storeState,
   oidcReconcileIssuer,
@@ -48,6 +49,7 @@ const {
   oidcGrantStale: vi.fn(),
   oidcActor: vi.fn(),
   oidcMcpDetailReady: vi.fn(),
+  pushUnregister: vi.fn(),
   browser: { isElectron: false, hasBackend: false },
   storeState: { auth: {} as Record<string, unknown>, user: { id: '' } },
 }))
@@ -67,6 +69,7 @@ vi.mock('../services/oidc', () => ({
   oidcIsSavedAccount,
   oidcSelectKnownAccount,
   oidcCompleteFromUrl,
+  oidcTakeSupportTicket: vi.fn(),
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
@@ -84,6 +87,7 @@ vi.mock('../services/Network', () => ({ default: {} }))
 vi.mock('../services/browser', () => ({ default: browser }))
 vi.mock('../services/analytics', () => ({ default: {} }))
 vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
+vi.mock('../services/pushNotifications', () => ({ default: { register: vi.fn(), unregister: pushUnregister } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
@@ -156,6 +160,7 @@ beforeEach(() => {
   chooseStage.mockReset()
   reloadIfStageChanged.mockReset()
   controllerClose.mockReset()
+  pushUnregister.mockReset()
 })
 
 describe('auth model — the sign-in paths', () => {
@@ -189,12 +194,14 @@ describe('auth model — sign-out ends this account’s AS session, then the loc
     expect(oidcEndSession).toHaveBeenCalledTimes(1)
     expect(signOutEverywhere).not.toHaveBeenCalled()
     expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
-    const [grant, session, local] = [
+    const [grant, push, session, local] = [
       dispatch.chat.signOut.mock.invocationCallOrder[0],
+      pushUnregister.mock.invocationCallOrder[0],
       oidcEndSession.mock.invocationCallOrder[0],
       dispatch.auth.signedOut.mock.invocationCallOrder[0],
     ]
     expect(grant).toBeLessThan(session)
+    expect(push).toBeLessThan(session)
     expect(session).toBeLessThan(local)
   })
 
@@ -232,12 +239,14 @@ describe('auth model — "Sign out everywhere" is one AS call, then the local te
     expect(dispatch.chat.signOut).toHaveBeenCalledTimes(1)
     expect(signOutEverywhere).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
-    const [grant, everywhere, local] = [
+    const [grant, push, everywhere, local] = [
       dispatch.chat.signOut.mock.invocationCallOrder[0],
+      pushUnregister.mock.invocationCallOrder[0],
       signOutEverywhere.mock.invocationCallOrder[0],
       dispatch.auth.signOut.mock.invocationCallOrder[0],
     ]
     expect(grant).toBeLessThan(everywhere)
+    expect(push).toBeLessThan(everywhere)
     expect(everywhere).toBeLessThan(local)
     // Every session is already ended — the sign-out that follows does not ask the AS again.
     expect(dispatch.auth.signOut).toHaveBeenCalledWith({ keepSession: true })
@@ -547,6 +556,16 @@ describe('auth model — switching accounts releases the agent first', () => {
     expect(oidcActivateAccount).toHaveBeenCalledWith('sub-b')
   })
 
+  it("a saved account drops this phone's push token before it activates", async () => {
+    oidcIsSavedAccount.mockReturnValue(true)
+    oidcActivateAccount.mockReturnValue(false)
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(pushUnregister).toHaveBeenCalledTimes(1)
+    expect(pushUnregister.mock.invocationCallOrder[0]).toBeLessThan(oidcActivateAccount.mock.invocationCallOrder[0])
+  })
+
   it('a known account goes to the browser without releasing the agent', async () => {
     browser.isElectron = true
     oidcIsSavedAccount.mockReturnValue(false)
@@ -728,5 +747,34 @@ describe('auth model — signing in as another account clears the last account�
     effectsFor(dispatch).resetAccountData()
     const reset = Object.keys(models).filter(model => models[model].reset?.mock.calls.length)
     expect(reset.sort()).toEqual([...PERSISTED_MODELS].sort())
+  })
+})
+
+describe("auth model — a different account arriving drops this phone's push token", () => {
+  beforeEach(() => {
+    oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a' })
+    oidcCompleteFromUrl.mockReset()
+  })
+
+  const admitting = (returned: { sub: string }) =>
+    oidcCompleteFromUrl.mockImplementation(async (_search, admit) => ((await admit(returned)) ? returned : undefined))
+  const boot = async () => {
+    const dispatch = makeDispatch()
+    Object.assign(dispatch.auth, { handleSignInSuccess: vi.fn() })
+    await effectsFor(dispatch).init(undefined, { auth: {} })
+    return dispatch
+  }
+
+  it('drops it before the new account is stored, then signs in as that account', async () => {
+    admitting({ sub: 'sub-b' })
+    const dispatch = await boot()
+    expect(pushUnregister).toHaveBeenCalledTimes(1)
+    expect((dispatch.auth as any).handleSignInSuccess).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps it when the same account signs back in', async () => {
+    admitting({ sub: 'sub-a' })
+    await boot()
+    expect(pushUnregister).not.toHaveBeenCalled()
   })
 })
