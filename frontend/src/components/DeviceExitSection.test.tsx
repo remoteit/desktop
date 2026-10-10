@@ -2,18 +2,25 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi } from 'vitest'
 
-const { exit, chooser } = vi.hoisted(() => ({ exit: vi.fn(), chooser: vi.fn() }))
+const { exit, chooser, protect, setExit } = vi.hoisted(() => ({
+  exit: vi.fn(),
+  chooser: vi.fn(),
+  protect: vi.fn(async () => null as any),
+  setExit: vi.fn(async () => true as any),
+}))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLDeviceExit: exit,
   graphQLDeviceExitChooser: chooser,
+  graphQLDeviceProtect: protect,
   graphQLExits: async () => [{ id: 'EXIT', name: 'office' }],
-  graphQLSetDeviceExit: async () => true,
+  graphQLSetDeviceExit: setExit,
 }))
 vi.mock('./ListItemSetting', () => ({
-  ListItemSetting: ({ label, subLabel }: any) => (
+  ListItemSetting: ({ label, subLabel, button, onButtonClick }: any) => (
     <div data-item>
       {label}
       {subLabel ? ` — ${subLabel}` : ''}
+      {button ? <button onClick={onButtonClick}>{button}</button> : null}
     </div>
   ),
 }))
@@ -119,5 +126,37 @@ describe('who chose the exit, and the machine’s policy', () => {
     page = await render('offer', settings, [])
     expect(page.querySelector('[data-switch]')).toBeNull()
     expect(page.textContent).toContain('Offers itself as an exit node')
+  })
+
+  it('Protect off on the device: its route said, and turned on through it by choosing it as the exit', async () => {
+    exit.mockResolvedValue({ offersExit: false, exit: null })
+    chooser.mockResolvedValue(none)
+    protect.mockResolvedValue({ on: false, route: 'EXIT', routeName: 'e1' })
+    setExit.mockClear()
+    let page = await render('choice')
+    expect(page.textContent).toContain('Protect: off — route e1')
+    const on = page.querySelector('button')!
+    expect(on.textContent).toBe('Turn on')
+    await act(async () => on.click())
+    expect(setExit).toHaveBeenCalledWith('LAPTOP', 'EXIT')
+
+    // No name from the device: the exits list's, else the UID.
+    protect.mockResolvedValue({ on: false, route: 'EXIT', routeName: null })
+    expect((await render('choice')).textContent).toContain('Protect: off — route office')
+    // Someone who does not manage it, or under the machine's local policy: said, not offered.
+    expect((await render('choice', undefined, [])).querySelector('button')).toBeNull()
+    chooser.mockResolvedValue({ ...none, exitPolicy: 'local' })
+    expect((await render('choice')).querySelector('button')).toBeNull()
+
+    // On (the exit shows), or no route kept, or an API before the field: nothing more.
+    chooser.mockResolvedValue(none)
+    exit.mockResolvedValue({ offersExit: false, exit: { id: 'EXIT', name: 'office' } })
+    protect.mockResolvedValue({ on: true, route: 'EXIT', routeName: 'office' })
+    expect((await render('choice')).textContent).not.toContain('Protect')
+    exit.mockResolvedValue({ offersExit: false, exit: null })
+    protect.mockResolvedValue('UNSUPPORTED')
+    page = await render('choice')
+    expect(page.textContent).not.toContain('Protect')
+    protect.mockResolvedValue(null)
   })
 })

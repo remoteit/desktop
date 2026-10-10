@@ -4,8 +4,10 @@ import type { TFunction } from 'i18next'
 import {
   ExitChooser,
   ExitInfo,
+  ProtectInfo,
   graphQLDeviceExit,
   graphQLDeviceExitChooser,
+  graphQLDeviceProtect,
   graphQLExits,
   graphQLSetDeviceExit,
 } from '../services/graphQLProxy'
@@ -20,11 +22,13 @@ import { SelectSetting } from './SelectSetting'
    (DeviceExitOffer): a device setting (exit_node) switched by whoever manages it, where the API has device settings;
    else what its own configuration says. Device sessions only; nothing shows where the API lacks them. */
 
-// The device's exit and, for the choice, who chose it and the exits it may use: read again after each change.
+// The device's exit and, for the choice, who chose it, the exits it may use and its Protect (the route kept while off):
+// read again after each change.
 function useDeviceExit(deviceId: string, choice: boolean) {
   const [info, setInfo] = useState<ExitInfo | null>()
   const [chooser, setChooser] = useState<ExitChooser | null>(null)
   const [exits, setExits] = useState<{ id: string; name: string }[]>([])
+  const [protect, setProtect] = useState<ProtectInfo | null>(null)
 
   const load = useCallback(async () => {
     const answer = await graphQLDeviceExit(deviceId)
@@ -34,19 +38,21 @@ function useDeviceExit(deviceId: string, choice: boolean) {
     setChooser(who && typeof who === 'object' ? who : null)
     const list = await graphQLExits()
     if (Array.isArray(list)) setExits(list.filter(e => e.id !== deviceId))
+    const kept = await graphQLDeviceProtect(deviceId)
+    setProtect(kept && typeof kept === 'object' ? kept : null)
   }, [deviceId, choice])
 
   useEffect(() => {
     load()
   }, [load])
 
-  return { info, chooser, exits, load }
+  return { info, chooser, exits, protect, load }
 }
 
 // The exit the device's traffic goes out through, with who chose it and what the machine's administrator allows.
 export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
-  const { info, chooser, exits, load } = useDeviceExit(device.id, true)
+  const { info, chooser, exits, protect, load } = useDeviceExit(device.id, true)
   const [saving, setSaving] = useState(false)
   const manage = device.permissions.includes('MANAGE')
 
@@ -64,6 +70,16 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const locked = policy === 'local' || policy === 'never'
   const chosenBy = info.exit ? chosenLine(t, chooser) : null
   const policyText = policyLine(t, chooser)
+  // Protect off on the device, with the exit it would route through: said, and turned on through it by choosing that
+  // exit here — the device takes the newer choice, as it takes any.
+  const route = !info.exit && protect?.on === false && protect.route ? protect.route : null
+  const routeName = route ? protect?.routeName || exits.find(e => e.id === route)?.name || route : null
+  const choose = async (via: string | null) => {
+    if (saving) return
+    setSaving(true)
+    if ((await graphQLSetDeviceExit(device.id, via)) !== 'ERROR') await load()
+    setSaving(false)
+  }
 
   return (
     <>
@@ -78,11 +94,21 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
             'deviceExit.viaHint',
             'All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached.'
           )}
-          onChange={async via => {
-            setSaving(true)
-            if ((await graphQLSetDeviceExit(device.id, via || null)) !== 'ERROR') await load()
-            setSaving(false)
-          }}
+          onChange={via => choose(via || null)}
+        />
+      )}
+      {route && (
+        <ListItemSetting
+          icon="shield-alt"
+          label={t('deviceExit.protectOff', 'Protect: off — route {{name}}', { name: routeName })}
+          subLabel={t(
+            'deviceExit.protectOffHint',
+            'Turned off on the device, which keeps {{name}} to route through when Protect is on again',
+            { name: routeName }
+          )}
+          button={manage && !locked ? t('deviceExit.protectOn', 'Turn on') : undefined}
+          disabled={saving}
+          onButtonClick={() => choose(route)}
         />
       )}
       {chosenBy && <ListItemSetting icon="user" label={chosenBy} />}
