@@ -44,9 +44,18 @@
    it on also starts the tunnel and asks for the Local Network permission, as lanServices did; on a desktop it is just
    the setting — the difference is the shell's. 'lanServices' (1.3.0) is deprecated: a phone's shell still offers it
    and lanServices.set as services for one version, so a page built before 1.4.0 keeps working; a page uses 'services'
-   where offered. */
+   where offered.
 
-export const BRIDGE_VERSION = '1.4.0'
+   1.5.0 (additive): everything the menu's own Settings window shows, so This device takes its place (device-package
+   docs/one-app-plan.md, "Settings → This device") — the administrator's reason a setting, Access, Protect or the
+   services are held (lockedWhy) and a change made here that the portal's newer one replaced (overridden); what is said
+   of the subnet's range (subnet.range); whether remote.it's relay carries the device's traffic now (relay); the
+   device's owner, since when it is online, its versions, and what removing it is here (device.removal); the detailed
+   connection logging ('logging': logging.get, logging.set); the app's own preferences for the person, the machine's
+   and every stage's alike ('app': app.get, app.set — Open at login); and taking the device off this machine ('remove':
+   device.remove — the shell asks the person and an administrator first). */
+
+export const BRIDGE_VERSION = '1.5.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -61,6 +70,9 @@ export type Capability =
   | 'protect' // 1.2.0: protect.set, protect.route — remote.it Protect; DeviceStatus.protect
   | 'lanServices' // 1.3.0, deprecated by 'services': lanServices.set; DeviceStatus.lanServices
   | 'services' // 1.4.0: services.set — Allow remote access to services; DeviceStatus.services
+  | 'logging' // 1.5.0: logging.get, logging.set — the detailed connection logging
+  | 'app' // 1.5.0: app.get, app.set — the app's own preferences for the person (Open at login)
+  | 'remove' // 1.5.0: device.remove — take the device off this machine (DeviceStatus.device.removal)
 
 export type Platform = 'mac' | 'windows' | 'linux' | 'ios' | 'android'
 export type Shell = 'menu' | 'capacitor'
@@ -84,7 +96,8 @@ export type ExitRef = { id: string; name: string; kind: 'device' | 'remoteit' }
 
 // 1.2.0: Access remote devices — this machine reaching its devices by name (connectd's subnet setting). locked: the
 // machine's administrator holds it.
-export type AccessStatus = { on: boolean; changing?: boolean; error?: string; locked?: boolean }
+// 1.5.0 lockedWhy: the administrator's reason, in the shell's words.
+export type AccessStatus = { on: boolean; changing?: boolean; error?: string; locked?: boolean; lockedWhy?: string }
 
 // 1.2.0: remote.it Protect — all of this machine's traffic through an exit. route is the exit it routes through, said
 // while Protect is off too (the engine keeps it): Protect on goes through it. killSwitch: traffic stops while the exit
@@ -98,6 +111,7 @@ export type ProtectStatus = {
   error?: string
   killSwitch?: boolean
   locked?: boolean
+  lockedWhy?: string // 1.5.0
 }
 
 // 1.4.0: Allow remote access to services — connectd's services setting (1.3.0's lanServices, a phone's, the same
@@ -112,21 +126,41 @@ export type ServicesStatus = {
   changing?: boolean
   error?: string
   locked?: boolean
+  lockedWhy?: string // 1.5.0
   onLocalNetwork?: boolean
   localNetworkPermission?: PermissionState
 }
 // 1.3.0's name for it.
 export type LanServicesStatus = ServicesStatus
 
+// 1.5.0: what is said of the subnet's IPv4 range, only when there is something to say — off for want of a free range,
+// a range shared with another network, a move within the last hour (at: RFC 3339).
+export type SubnetRange = {
+  noRange?: string
+  warning?: string
+  moved?: { from: string; to: string; at: string; why?: string }
+}
+
 export type DeviceStatus = {
   stage: string
-  device?: { uid: string; name: string; dnsName?: string }
+  // 1.5.0: owner, since (online since, RFC 3339), package and connectd (versions), and removal — what device.remove is
+  // here: 'remove' (this stage's device off this machine) or 'uninstall' (the machine's only one: the app goes too).
+  device?: {
+    uid: string
+    name: string
+    dnsName?: string
+    owner?: string
+    since?: string
+    package?: string
+    connectd?: string
+    removal?: 'remove' | 'uninstall'
+  }
   engine: EngineState
   signedIn?: { sub: string; email?: string }
   vpn: { on: boolean; changing?: boolean; error?: string }
   // The exit traffic goes through while the VPN is on; absent: none (the machine's own internet).
   exit?: ExitRef & { state: 'connecting' | 'up' | 'down'; error?: string }
-  subnet?: { on: boolean; domain?: string; ipv4?: string; ipv6?: string }
+  subnet?: { on: boolean; domain?: string; ipv4?: string; ipv6?: string; range?: SubnetRange }
   network: NetworkKind
   // This machine's services and the connections open to them through it (a phone's shell): connectd's `served`.
   served?: { service: string; target: string; sessions: number; lastError?: string }[]
@@ -137,6 +171,8 @@ export type DeviceStatus = {
   lanServices?: LanServicesStatus
   // 1.4.0, with the 'services' capability.
   services?: ServicesStatus
+  // 1.5.0: whether remote.it's relay (the websocket setting) carries this device's traffic now.
+  relay?: { using: boolean }
 }
 
 export type SettingValue = string | number | boolean | null
@@ -146,12 +182,23 @@ export type SettingValue = string | number | boolean | null
 // `config` (the machine's configuration file) and `policy` → 'machine'; `cloud` → 'cloud'; anything else → 'default'.
 // `locked`: the machine may not change it — connectd's `control` is `off`, `on` or `cloud` (or a value it fixes), or
 // `from` is `policy`.
+// 1.5.0: lockedWhy, the administrator's reason it is locked; overridden, a change made here that the portal's newer one
+// replaced, said by the shell.
 export type DeviceSetting = {
   name: string
   value: SettingValue
   source: 'machine' | 'cloud' | 'default'
   locked?: boolean
+  lockedWhy?: string
+  overridden?: string
 }
+
+// 1.5.0: the app's own preferences for the person on this machine — the machine's, not a stage's, so every stage's
+// page shows them alike. openAtLogin absent where the app keeps no login item itself.
+export type AppPrefs = { openAtLogin?: { on: boolean; pending?: boolean; error?: string } }
+
+// 1.5.0: the detailed connection logging (a line a second for each connection in the log), until remote.it restarts.
+export type LoggingState = { detailed: boolean; error?: string }
 
 export type PermissionName = 'localNetwork' | 'vpnConfiguration'
 export type PermissionState = 'granted' | 'denied' | 'notAsked' | 'unknown'
@@ -224,6 +271,13 @@ export type BridgeMethods = {
   'auth.signIn': { args: { addAccount?: boolean; deviceName?: string }; result: AuthAccount }
   'auth.switch': { args: { sub: string }; result: AuthAccount }
   'auth.signOut': { args: { sub?: string }; result: {} }
+  // 1.5.0
+  'logging.get': { args: {}; result: LoggingState }
+  'logging.set': { args: { detailed: boolean }; result: LoggingState }
+  'app.get': { args: {}; result: AppPrefs }
+  'app.set': { args: { openAtLogin: boolean }; result: AppPrefs }
+  // The shell asks the person, then an administrator; removed false when either said no.
+  'device.remove': { args: {}; result: { removed: boolean } }
   'stages.list': { args: {}; result: StageStatus[] }
   'stages.join': { args: { stage: string }; result: StageStatus }
   'stages.leave': { args: { stage: string }; result: {} }

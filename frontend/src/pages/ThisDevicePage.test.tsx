@@ -161,7 +161,9 @@ describe('This device', () => {
         { name: 'printers', value: true, source: 'machine' },
       ],
     })
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'settings', 'diagnostics'])
+    // The printers are under Access (1.5.0, as the menu's Settings has them): nothing else is left to list.
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'diagnostics'])
+    expect(container.querySelector('[data-section="access"] [data-setting="printers"]')).not.toBeNull()
     expect(container.querySelector('[data-setting="services"]')).toBeNull()
     expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
     const line = container.querySelector('[data-services]')!
@@ -251,7 +253,10 @@ describe('This device', () => {
     ])
 
     await act(async () => control().click())
-    expect(bridge.calls.filter(c => c.method === 'services.set').map(c => c.args)).toEqual([{ on: true }, { on: false }])
+    expect(bridge.calls.filter(c => c.method === 'services.set').map(c => c.args)).toEqual([
+      { on: true },
+      { on: false },
+    ])
     expect(container.querySelector('[data-services]')!.getAttribute('data-services')).toBe('off')
     expect(container.querySelectorAll('[data-served]').length).toBe(0)
   })
@@ -333,5 +338,143 @@ describe('This device', () => {
     expect(container.textContent).toContain('Update the app')
     expect(sections(container)).toEqual([])
     expect(bridge.calls.map(c => c.method)).toEqual(['info'])
+  })
+})
+
+// 1.5.0: everything the menu's own Settings window shows (device-package docs/one-app-plan.md, "Settings → This
+// device"), from the bridge's capabilities alone.
+describe('This device has what Settings has', () => {
+  const caps: Capability[] = [
+    'status',
+    'exit',
+    'settings',
+    'diagnostics',
+    'access',
+    'protect',
+    'services',
+    'logging',
+    'app',
+    'remove',
+  ]
+  const status = {
+    device: {
+      uid: '80:00:00:00:01:0A:BC:DE',
+      name: 'Mock MacBook',
+      dnsName: 'mockmacbook.on.solo.remote.it',
+      owner: 'owner@example.com',
+      since: '2026-10-10T20:00:00Z',
+      package: '1.1.0.20261010',
+      connectd: '5.6.1.20261010',
+      removal: 'remove' as const,
+    },
+    subnet: {
+      on: true,
+      domain: 'on.solo.remote.it',
+      ipv4: '198.18.16.12',
+      range: {
+        warning: '198.18.0.0/20 is shared with utun9',
+        moved: { from: '198.18.0.0/20', to: '198.18.16.0/20', at: new Date().toISOString(), why: 'a VPN took it' },
+      },
+    },
+    relay: { using: true },
+  }
+  const settings = [
+    {
+      name: 'subnet',
+      value: true,
+      source: 'machine' as const,
+      locked: true,
+      lockedWhy: 'Kept on by this machine’s administrator',
+    },
+    { name: 'printers', value: true, source: 'machine' as const },
+    { name: 'services', value: false, source: 'machine' as const },
+    { name: 'console', value: true, source: 'cloud' as const },
+    {
+      name: 'exit_node',
+      value: { on: false, lan: false } as any,
+      source: 'cloud' as const,
+      locked: true,
+      lockedWhy: 'Turned off by this machine’s administrator',
+    },
+    { name: 'websocket', value: 'auto', source: 'machine' as const, overridden: 'Changed from the portal to Always' },
+  ]
+
+  it('the device’s details, and its removal asked of the shell', async () => {
+    const { container, bridge } = await render({ capabilities: caps, status, settings })
+    const text = (sel: string) => container.querySelector(sel)?.textContent
+    expect(text('[data-detail="owner"]')).toContain('owner@example.com')
+    expect(text('[data-detail="address"]')).toContain('198.18.16.12')
+    expect(text('[data-detail="uid"]')).toContain('80:00:00:00:01:0A:BC:DE')
+    expect(text('[data-detail="versions"]')).toBe('VersionsPackage 1.1.0.20261010 · connectd 5.6.1.20261010')
+    expect(text('[data-engine]')).toContain('Online since')
+    const remove = container.querySelector('[data-control="remove"]') as HTMLButtonElement
+    expect(remove.textContent).toBe('Remove from this Mac…')
+    await act(async () => remove.click())
+    expect(bridge.calls.filter(c => c.method === 'device.remove')).toHaveLength(1)
+    expect(container.textContent).not.toContain('Removed from this Mac') // the person said no
+  })
+
+  it('the machine’s only one: Uninstall', async () => {
+    const { container } = await render({
+      capabilities: caps,
+      status: { ...status, device: { ...status.device, removal: 'uninstall' } },
+      settings,
+    })
+    expect(container.querySelector('[data-control="remove"]')!.textContent).toBe('Uninstall remote.it from this Mac…')
+  })
+
+  it('under Access: the administrator’s reason, the range, and the printers', async () => {
+    const { container } = await render({ capabilities: caps, status, settings })
+    const access = container.querySelector('[data-section="access"]')!
+    expect(access.querySelector('[data-note="range.warning"]')!.textContent).toBe(
+      'Address range shared with another network'
+    )
+    expect(access.querySelector('[data-note="range.warning"] [title]')!.getAttribute('title')).toContain('utun9')
+    expect(access.querySelector('[data-note="access.locked"]')).toBeNull() // the mock says Access unlocked
+    expect(access.querySelector('[data-note="range.moved"]')!.textContent).toContain(
+      'Moved to 198.18.16.0/20: another network took 198.18.0.0/20'
+    )
+    expect(access.querySelector('[data-setting="printers"]')!.textContent).toContain('Show remote printers on this Mac')
+    expect(container.querySelector('[data-section="settings"] [data-setting="printers"]')).toBeNull()
+  })
+
+  it('what the device offers: reasons, a change replaced, the relay in use, and what is not served', async () => {
+    const { container } = await render({ capabilities: caps, status, settings })
+    const row = (name: string) => container.querySelector(`[data-section="settings"] [data-setting="${name}"]`)!
+    expect(row('exit_node').textContent).toContain('Turned off by this machine’s administrator')
+    expect((row('exit_node').querySelector('input') as HTMLInputElement).disabled).toBe(true)
+    expect(row('console').textContent).toContain('Not served: remote access to services is off')
+    expect(row('websocket').textContent).toContain('Changed from the portal to Always')
+    expect(row('websocket').textContent).toContain('In use now')
+    expect(row('websocket').textContent).toContain('Automatic')
+  })
+
+  it('the detailed connection logging, and the app’s own Open at login', async () => {
+    const { container, bridge } = await render({
+      capabilities: caps,
+      status,
+      settings,
+      app: { openAtLogin: { on: true } },
+    })
+    const logging = container.querySelector('[data-control="logging"] input') as HTMLInputElement
+    expect(logging.checked).toBe(false)
+    await act(async () => logging.click())
+    expect(bridge.calls.filter(c => c.method === 'logging.set').map(c => c.args)).toEqual([{ detailed: true }])
+    expect(container.querySelector('[data-logging]')!.getAttribute('data-logging')).toBe('on')
+    const part = container.querySelector('[data-section="app"]')!
+    expect(part.textContent).toContain('This Mac')
+    await act(async () => (part.querySelector('[data-control="openAtLogin"] input') as HTMLInputElement).click())
+    expect(bridge.calls.filter(c => c.method === 'app.set').map(c => c.args)).toEqual([{ openAtLogin: false }])
+    expect(part.querySelector('[data-open-at-login]')!.getAttribute('data-open-at-login')).toBe('off')
+  })
+
+  it('a shell before 1.5.0: none of it, nothing broken', async () => {
+    const { container } = await render({
+      capabilities: ['status', 'settings', 'access', 'protect', 'services'],
+      settings,
+    })
+    expect(container.querySelector('[data-section="logging"]')).toBeNull()
+    expect(container.querySelector('[data-section="app"]')).toBeNull()
+    expect(container.querySelector('[data-control="remove"]')).toBeNull()
   })
 })

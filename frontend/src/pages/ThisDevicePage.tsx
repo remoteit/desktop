@@ -19,10 +19,12 @@ import { Container } from '../components/Container'
 import { ThisDeviceSignIn } from '../components/ThisDeviceSignIn'
 import { useThisDevice } from '../hooks/useThisDevice'
 import {
+  AppPrefs,
   BRIDGE_VERSION,
   DeviceSetting,
   DeviceStatus,
   ExitRef,
+  LoggingState,
   PermissionName,
   PermissionState,
   SettingValue,
@@ -36,7 +38,13 @@ import {
 
    Signed out, or offline, in an app it is the whole portal (components/ThisDeviceApp): the bridge is the machine's own,
    so everything from it works; what is the account's — the device's page in remote.it — waits for the sign-in, which
-   is offered at the top. */
+   is offered at the top.
+
+   1.5.0: everything the menu's own Settings window shows is here too (device-package docs/one-app-plan.md, "Settings →
+   This device") — the menu's Settings… opens this page: the device's details and its removal; under Access, what is
+   said of the subnet's range and the printers; the administrator's reasons; what the device offers, the relay in use
+   and what is not served while the services are off; the detailed connection logging and the logs; and the app's own
+   preferences, the machine's, in one "This <device kind>" part every stage's page shows alike. */
 
 export const ThisDevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -70,7 +78,7 @@ export const ThisDevicePage: React.FC = () => {
 
 const SETTING_TITLES: { [name: string]: string } = {
   subnet: 'Access remote devices',
-  exit_node: 'Offer this device as an exit',
+  exit_node: 'Exit node',
   printers: 'Show remote printers',
   services: 'Allow remote access to services',
   websocket: 'Relay',
@@ -79,7 +87,29 @@ const SETTING_TITLES: { [name: string]: string } = {
   proxy: 'Proxy',
   mcp_exec: 'AI commands',
 }
-const WEBSOCKET_CHOICES = ['auto', 'on', 'off']
+// The relay's three ways, in the menu's words (connectd's websocket values).
+const relayChoices = (t: T): { value: string; title: string; line: string }[] => [
+  {
+    value: 'auto',
+    title: t('thisDevice.relayAuto', 'Automatic'),
+    line: t('thisDevice.relayAutoLine', 'Through remote.it’s relay only while this device’s UDP to remote.it fails'),
+  },
+  {
+    value: 'on',
+    title: t('thisDevice.relayOn', 'Always'),
+    line: t('thisDevice.relayOnLine', 'Everything through remote.it’s relay: for a network known to block UDP'),
+  },
+  {
+    value: 'off',
+    title: t('thisDevice.relayOff', 'Never'),
+    line: t(
+      'thisDevice.relayOffLine',
+      'Never through remote.it’s relay: on a network that blocks UDP, this device stays offline'
+    ),
+  },
+]
+// Settings served only while the services are: not served while they are off, whatever their own value says.
+const UNDER_SERVICES = ['console', 'any_port']
 // A switch's words keep clear of the switch at the row's end, at a phone's width too.
 const SWITCH_TEXT = { paddingRight: '56px' }
 
@@ -101,6 +131,8 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
   const [settings, setSettings] = useState<DeviceSetting[]>([])
   const [permissions, setPermissions] = useState<Partial<Record<PermissionName, PermissionState>>>({})
   const [stages, setStages] = useState<StageStatus[]>([])
+  const [logging, setLogging] = useState<LoggingState>()
+  const [app, setApp] = useState<AppPrefs>()
   const [error, setError] = useState<string>()
   const [notice, setNotice] = useState<string>()
   const [busy, setBusy] = useState(false)
@@ -131,6 +163,8 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
       offs.push(device.on('settings', setSettings))
     }
     if (device.has('permissions')) device.call('permissions.get', {}).then(setPermissions, fail)
+    if (device.has('logging')) device.call('logging.get', {}).then(setLogging, () => setLogging(undefined))
+    if (device.has('app')) device.call('app.get', {}).then(setApp, fail)
     if (device.has('stages')) {
       device.call('stages.list', {}).then(setStages, fail)
       offs.push(device.on('stages', setStages))
@@ -168,9 +202,17 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
   const phoneServices = has('permissions')
   // The settings listed: the switches above in their place — Access is subnet, the services switch services.
   // lan_services is the setting's earlier name, never listed.
+  // The printers are under Access, as in the menu's Settings: they are announced at the subnet's names.
+  const printers = has('access') ? settings.find(s => s.name === 'printers') : undefined
+  const servicesOff = !!servicesVia && !!lan && !lan.on
   const listed = settings.filter(
-    s => !(s.name === 'subnet' && has('access')) && !(s.name === 'services' && servicesVia) && s.name !== 'lan_services'
+    s =>
+      !(s.name === 'subnet' && has('access')) &&
+      !(s.name === 'services' && servicesVia) &&
+      s.name !== 'lan_services' &&
+      s !== printers
   )
+  const d = status?.device
 
   return (
     <Box paddingX={2} data-this-device>
@@ -196,10 +238,50 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
           <ListItem>
             <ListItemText
               primary={t('thisDevice.engine', 'remote.it here')}
-              secondary={engineLine(status, t)}
+              secondary={
+                status.engine === 'online' && d?.since
+                  ? t('thisDevice.onlineSince', 'Online since {{when}}', { when: when(d.since) })
+                  : engineLine(status, t)
+              }
               data-engine={status.engine}
             />
           </ListItem>
+          {d?.owner && (
+            <ListItem data-detail="owner">
+              <ListItemText primary={t('thisDevice.owner', 'Owner')} secondary={d.owner} />
+            </ListItem>
+          )}
+          {status.subnet?.on && (status.subnet.ipv4 || status.subnet.ipv6) && (
+            <ListItem data-detail="address">
+              <ListItemText
+                primary={t('thisDevice.address', 'Address')}
+                secondary={[status.subnet.ipv4, status.subnet.ipv6].filter(Boolean).join(' · ')}
+                secondaryTypographyProps={{ sx: { userSelect: 'all' } }}
+              />
+            </ListItem>
+          )}
+          {d?.uid && (
+            <ListItem data-detail="uid">
+              <ListItemText
+                primary={t('thisDevice.uid', 'UID')}
+                secondary={d.uid}
+                secondaryTypographyProps={{ sx: { userSelect: 'all' } }}
+              />
+            </ListItem>
+          )}
+          {(d?.package || d?.connectd) && (
+            <ListItem data-detail="versions">
+              <ListItemText
+                primary={t('thisDevice.versions', 'Versions')}
+                secondary={[
+                  d.package && t('thisDevice.package', 'Package {{v}}', { v: d.package }),
+                  d.connectd && `connectd ${d.connectd}`,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              />
+            </ListItem>
+          )}
           {status.signedIn && (
             <ListItem>
               <ListItemText
@@ -228,6 +310,26 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               </Button>
             </ListItem>
           )}
+          {has('remove') && d?.removal && (
+            <ListItem>
+              <Button
+                size="small"
+                color="error"
+                disabled={busy}
+                data-control="remove"
+                onClick={() =>
+                  act(async () => {
+                    const r = await device.call('device.remove', {})
+                    if (r.removed) setNotice(t('thisDevice.removed', 'Removed from this {{kind}}', { kind }))
+                  })
+                }
+              >
+                {d.removal === 'uninstall'
+                  ? t('thisDevice.uninstall', 'Uninstall remote.it from this {{kind}}…', { kind })
+                  : t('thisDevice.remove', 'Remove from this {{kind}}…', { kind })}
+              </Button>
+            </ListItem>
+          )}
         </List>
       )}
 
@@ -252,6 +354,23 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               data-access={access?.on ? 'on' : 'off'}
             />
           </ListItem>
+          {access?.locked && <Note id="access.locked" text={access.lockedWhy || lockedLine(t)} />}
+          {rangeLines(status, t).map(line => (
+            <Note key={line.key} id={`range.${line.key}`} text={line.text} title={line.title} warn />
+          ))}
+          {printers && (
+            <SettingRow
+              setting={printers}
+              title={t('thisDevice.printers', 'Show remote printers on this {{kind}}', { kind })}
+              disabled={busy}
+              onSet={value =>
+                act(async () => {
+                  const next = await device.call('settings.set', { name: 'printers', value })
+                  setSettings(all => all.map(x => (x.name === next.name ? next : x)))
+                })
+              }
+            />
+          )}
         </List>
       )}
 
@@ -282,6 +401,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               data-protect={protectOn ? 'on' : 'off'}
             />
           </ListItem>
+          {protect?.locked && <Note id="protect.locked" text={protect.lockedWhy || lockedLine(t)} />}
           {protect?.on && (protect.error || protect.changing) && (
             <ListItem>
               <ListItemText
@@ -349,7 +469,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               primary={t('thisDevice.services', 'Allow remote access to services')}
               secondary={
                 lan?.locked
-                  ? `${servicesLine(kind, phoneServices, t)} ${t('thisDevice.locked', 'Set by this machine’s administrator')}`
+                  ? `${servicesLine(kind, phoneServices, t)} ${lan.lockedWhy || lockedLine(t)}`
                   : servicesLine(kind, phoneServices, t)
               }
               sx={SWITCH_TEXT}
@@ -387,7 +507,8 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
                   primary={s.target}
                   secondary={[
                     t('thisDevice.servedConnections', 'Connections: {{n}}', { n: s.sessions }),
-                    s.lastError && t('thisDevice.servedFailed', 'Last connection failed: {{error}}', { error: s.lastError }),
+                    s.lastError &&
+                      t('thisDevice.servedFailed', 'Last connection failed: {{error}}', { error: s.lastError }),
                   ]
                     .filter(Boolean)
                     .join(' · ')}
@@ -466,22 +587,23 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
       {has('settings') && listed.length > 0 && (
         <List data-section="settings">
           <Typography variant="subtitle1" paddingX={2}>
-            {t('thisDevice.settings', 'Settings')}
+            {t('thisDevice.offers', 'What this device offers')}
           </Typography>
-          {listed
-            .map(s => (
-              <SettingRow
-                key={s.name}
-                setting={s}
-                disabled={busy}
-                onSet={value =>
-                  act(async () => {
-                    const next = await device.call('settings.set', { name: s.name, value })
-                    setSettings(all => all.map(x => (x.name === next.name ? next : x)))
-                  })
-                }
-              />
-            ))}
+          {listed.map(s => (
+            <SettingRow
+              key={s.name}
+              setting={s}
+              relayUsing={s.name === 'websocket' ? status?.relay?.using : undefined}
+              notServed={servicesOff && UNDER_SERVICES.includes(s.name)}
+              disabled={busy}
+              onSet={value =>
+                act(async () => {
+                  const next = await device.call('settings.set', { name: s.name, value })
+                  setSettings(all => all.map(x => (x.name === next.name ? next : x)))
+                })
+              }
+            />
+          ))}
         </List>
       )}
 
@@ -536,6 +658,41 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
         </List>
       )}
 
+      {has('logging') && logging && (
+        <List data-section="logging">
+          <Typography variant="subtitle1" paddingX={2}>
+            {t('thisDevice.diagnosticsTitle', 'Diagnostics')}
+          </Typography>
+          <ListItem
+            secondaryAction={
+              <Switch
+                edge="end"
+                checked={logging.detailed}
+                disabled={busy}
+                inputProps={{ 'aria-label': t('thisDevice.detailedLogging', 'Detailed connection logging') }}
+                data-control="logging"
+                onChange={() =>
+                  act(async () => setLogging(await device.call('logging.set', { detailed: !logging.detailed })))
+                }
+              />
+            }
+          >
+            <ListItemText
+              primary={t('thisDevice.detailedLogging', 'Detailed connection logging')}
+              secondary={
+                logging.error ||
+                t(
+                  'thisDevice.detailedLoggingLine',
+                  'A line a second for each connection in the log, until remote.it restarts.'
+                )
+              }
+              sx={SWITCH_TEXT}
+              data-logging={logging.detailed ? 'on' : 'off'}
+            />
+          </ListItem>
+        </List>
+      )}
+
       {has('diagnostics') && (
         <Box paddingX={2} paddingY={1} data-section="diagnostics">
           <Button
@@ -553,17 +710,114 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
           </Button>
         </Box>
       )}
+
+      {has('app') && app?.openAtLogin && (
+        <List data-section="app">
+          <Typography variant="subtitle1" paddingX={2}>
+            {t('thisDevice.machine', 'This {{kind}}', { kind })}
+          </Typography>
+          <ListItem
+            secondaryAction={
+              <Switch
+                edge="end"
+                checked={app.openAtLogin.on}
+                disabled={busy}
+                inputProps={{ 'aria-label': t('thisDevice.openAtLogin', 'Open at login') }}
+                data-control="openAtLogin"
+                onChange={() =>
+                  act(async () => setApp(await device.call('app.set', { openAtLogin: !app.openAtLogin?.on })))
+                }
+              />
+            }
+          >
+            <ListItemText
+              primary={t('thisDevice.openAtLogin', 'Open at login')}
+              secondary={
+                app.openAtLogin.error ||
+                (app.openAtLogin.pending
+                  ? t(
+                      'thisDevice.openAtLoginPending',
+                      'Waiting for you to allow it in System Settings → General → Login Items'
+                    )
+                  : t(
+                      'thisDevice.openAtLoginLine',
+                      'remote.it opens when you log in; quitting it leaves connections on.'
+                    ))
+              }
+              sx={SWITCH_TEXT}
+              data-open-at-login={app.openAtLogin.on ? 'on' : 'off'}
+            />
+          </ListItem>
+        </List>
+      )}
     </Box>
   )
 }
 
-const SettingRow: React.FC<{ setting: DeviceSetting; disabled: boolean; onSet: (value: any) => void }> = ({
-  setting,
-  disabled,
-  onSet,
-}) => {
+// A line said under a switch or setting: why it is held, what is said of the subnet's range.
+const Note: React.FC<{ id: string; text: string; title?: string; warn?: boolean }> = ({ id, text, title, warn }) => (
+  <ListItem data-note={id}>
+    <ListItemText
+      secondary={text}
+      title={title}
+      secondaryTypographyProps={warn ? { color: 'warning.main' } : undefined}
+    />
+  </ListItem>
+)
+
+const lockedLine = (t: T) => t('thisDevice.locked', 'Set by this machine’s administrator')
+
+// What is said of the subnet's range, as the menu's Settings says it: off for want of a free range, a range shared with
+// another network, a move within the hour (the shell says only those).
+const rangeLines = (s: DeviceStatus | undefined, t: T) => {
+  const r = s?.subnet?.range
+  const lines: { key: string; text: string; title?: string }[] = []
+  if (!r) return lines
+  if (r.noRange)
+    lines.push({
+      key: 'norange',
+      text: t('thisDevice.noRange', 'Subnet off: no free address range on this machine'),
+      title: r.noRange,
+    })
+  else if (r.warning)
+    lines.push({
+      key: 'warning',
+      text: t('thisDevice.rangeShared', 'Address range shared with another network'),
+      title: r.warning,
+    })
+  if (r.moved)
+    lines.push({
+      key: 'moved',
+      text: t('thisDevice.rangeMoved', 'Moved to {{to}}: another network took {{from}} ({{when}})', {
+        to: r.moved.to,
+        from: r.moved.from,
+        when: when(r.moved.at),
+      }),
+      title: r.moved.why,
+    })
+  return lines
+}
+
+// A time as the person reads it: today's by its clock, another day's with its date.
+const when = (iso: string) => {
+  const at = new Date(iso)
+  if (isNaN(at.getTime())) return iso
+  const today = new Date().toDateString() === at.toDateString()
+  return today ? at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : at.toLocaleString()
+}
+
+const SettingRow: React.FC<{
+  setting: DeviceSetting
+  disabled: boolean
+  onSet: (value: any) => void
+  title?: string
+  // websocket's: whether the relay carries the device's traffic now.
+  relayUsing?: boolean
+  // Not served while the services are off (console, any port), whatever its own value says.
+  notServed?: boolean
+}> = ({ setting, disabled, onSet, title: given, relayUsing, notServed }) => {
   const { t } = useTranslation()
-  const title = SETTING_TITLES[setting.name] ?? setting.name
+  const title = given ?? SETTING_TITLES[setting.name] ?? setting.name
   const on = settingOn(setting.value)
   const locked = !!setting.locked
   const from =
@@ -572,7 +826,13 @@ const SettingRow: React.FC<{ setting: DeviceSetting; disabled: boolean; onSet: (
       : setting.source === 'machine'
       ? t('thisDevice.fromMachine', 'Set on this device')
       : t('thisDevice.fromDefault', 'Default')
-  const secondary = locked ? `${from} · ${t('thisDevice.locked', 'Set by this machine’s administrator')}` : from
+  const secondary = [
+    locked ? setting.lockedWhy || lockedLine(t) : from,
+    setting.overridden,
+    on && notServed && t('thisDevice.notServed', 'Not served: remote access to services is off'),
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   if (on !== undefined)
     return (
@@ -602,12 +862,19 @@ const SettingRow: React.FC<{ setting: DeviceSetting; disabled: boolean; onSet: (
           value={setting.value}
           disabled={disabled || locked}
           InputLabelProps={{ shrink: true }}
-          helperText={secondary}
+          helperText={[
+            relayChoices(t).find(c => c.value === setting.value)?.line,
+            relayUsing && t('thisDevice.relayInUse', 'In use now'),
+            secondary,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+          inputProps={{ 'data-relay-using': relayUsing ? 'yes' : 'no' }}
           onChange={e => onSet(e.target.value)}
         >
-          {WEBSOCKET_CHOICES.map(c => (
-            <MenuItem key={c} value={c}>
-              {c}
+          {relayChoices(t).map(c => (
+            <MenuItem key={c.value} value={c.value}>
+              {c.title}
             </MenuItem>
           ))}
         </TextField>

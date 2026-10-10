@@ -1,4 +1,5 @@
 import {
+  AppPrefs,
   AuthAccount,
   BRIDGE_VERSION,
   BridgeError,
@@ -12,6 +13,7 @@ import {
   DeviceSetting,
   DeviceStatus,
   ExitRef,
+  LoggingState,
   PermissionState,
 } from './thisDevice'
 
@@ -36,6 +38,10 @@ export type MockBridgeOptions = {
   // refusing grants it).
   onLocalNetwork?: boolean
   localNetworkPermission?: PermissionState
+  // 1.5.0: the app's preferences ('app'), the logging ('logging'), and whether the person confirms a removal ('remove').
+  app?: AppPrefs
+  logging?: LoggingState
+  confirmRemove?: boolean
 }
 
 export type MockBridge = {
@@ -44,6 +50,9 @@ export type MockBridge = {
   status: DeviceStatus
   settings: DeviceSetting[]
   accounts: AuthAccount[]
+  app: AppPrefs
+  logging: LoggingState
+  removed: boolean
   emit<E extends BridgeEvent>(event: E, payload: BridgeEvents[E]): void
 }
 
@@ -62,6 +71,11 @@ const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
   'diagnostics.save': 'diagnostics',
   'lanServices.set': 'lanServices',
   'services.set': 'services',
+  'logging.get': 'logging',
+  'logging.set': 'logging',
+  'app.get': 'app',
+  'app.set': 'app',
+  'device.remove': 'remove',
 }
 
 export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
@@ -116,6 +130,9 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
       { name: 'websocket', value: 'auto', source: 'cloud', locked: true },
     ],
     accounts: options.accounts ?? [{ sub: 'sub-person', email: 'person@example.com', active: true }],
+    app: options.app ?? { openAtLogin: { on: true } },
+    logging: options.logging ?? { detailed: false },
+    removed: false,
     emit(event, payload) {
       for (const listener of listeners[event] ?? []) listener(payload)
     },
@@ -216,6 +233,19 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             return 'granted'
           case 'diagnostics.save':
             return { saved: true, where: '/tmp/remoteit-log.txt' }
+          case 'logging.get':
+            return bridge.logging
+          case 'logging.set':
+            bridge.logging = { detailed: !!a.detailed }
+            return bridge.logging
+          case 'app.get':
+            return bridge.app
+          case 'app.set':
+            bridge.app = { openAtLogin: { on: !!a.openAtLogin } }
+            return bridge.app
+          case 'device.remove':
+            bridge.removed = options.confirmRemove ?? false
+            return { removed: bridge.removed }
           case 'auth.accessToken': {
             const who = active()
             if (!who) throw new BridgeError('notSignedIn')
