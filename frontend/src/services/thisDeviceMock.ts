@@ -31,8 +31,9 @@ export type MockBridgeOptions = {
   route?: string
   // Whether traffic stops while the exit cannot be reached (protect.killSwitch); true unless said.
   killSwitch?: boolean
-  // With 'lanServices' (a phone's): whether it is on a local network (true unless said), and its Local Network
-  // permission ('notAsked' unless said; lanServices.set on asks, and a person not refusing grants it).
+  // With 'services' or 'lanServices': whether it is on a local network (true unless said), and — a phone's, with
+  // 'permissions' — its Local Network permission ('notAsked' unless said; services.set on asks, and a person not
+  // refusing grants it).
   onLocalNetwork?: boolean
   localNetworkPermission?: PermissionState
 }
@@ -60,6 +61,7 @@ const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
   'permissions.request': 'permissions',
   'diagnostics.save': 'diagnostics',
   'lanServices.set': 'lanServices',
+  'services.set': 'services',
 }
 
 export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
@@ -92,6 +94,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
   // The engine's route: the exit Protect goes back on through, kept while it is off (connectd exit_protect.go).
   let route = options.route
   let localNetwork: PermissionState = options.localNetworkPermission ?? 'notAsked'
+  // A phone's shell: the one with a Local Network permission to ask (lanServices was a phone's alone).
+  const phone = capabilities.includes('permissions') || capabilities.includes('lanServices')
 
   const bridge: MockBridge = {
     calls,
@@ -102,8 +106,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
       vpn: { on: false },
       subnet: { on: true, domain: 'on.solo.remote.it', ipv6: 'fd52:3f0e:7d1a::12' },
       network: 'unknown',
-      // What it serves, where it may serve (lanServices): nothing yet.
-      ...(capabilities.includes('lanServices') ? { served: [] } : {}),
+      // What it serves, as a phone's shell says it: nothing yet.
+      ...(capabilities.includes('lanServices') || capabilities.includes('permissions') ? { served: [] } : {}),
       ...options.status,
     },
     settings: options.settings ?? [
@@ -157,15 +161,16 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             derive()
             changed()
             return bridge.status
+          case 'services.set':
           case 'lanServices.set': {
-            const setting = bridge.settings.find(s => s.name === 'lan_services')
-            if (setting?.locked) throw new BridgeError('refused', 'lan_services: kept on this machine by its administrator')
-            // Turned on, the shell asks for the Local Network permission (the person's answer: granted unless the
-            // mock says they refused it).
-            if (a.on && localNetwork !== 'granted' && localNetwork !== 'denied') localNetwork = 'granted'
-            const next: DeviceSetting = { name: 'lan_services', value: !!a.on, source: 'machine' }
+            const setting = bridge.settings.find(s => s.name === 'services')
+            if (setting?.locked) throw new BridgeError('refused', 'services: kept on this machine by its administrator')
+            // Turned on, a phone's shell asks for the Local Network permission (the person's answer: granted unless
+            // the mock says they refused it); a desktop's sets the setting alone.
+            if (a.on && phone && localNetwork !== 'granted' && localNetwork !== 'denied') localNetwork = 'granted'
+            const next: DeviceSetting = { name: 'services', value: !!a.on, source: 'machine' }
             bridge.settings = setting
-              ? bridge.settings.map(s => (s.name === 'lan_services' ? next : s))
+              ? bridge.settings.map(s => (s.name === 'services' ? next : s))
               : [...bridge.settings, next]
             derive()
             changed()
@@ -193,7 +198,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             const next: DeviceSetting = { ...setting, value: a.value, source: 'machine' }
             bridge.settings = bridge.settings.map(s => (s.name === a.name ? next : s))
             bridge.emit('settings', bridge.settings)
-            if (a.name === 'lan_services') {
+            if (a.name === 'services') {
               derive()
               changed()
             }
@@ -260,24 +265,25 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
     }
     derive()
   }
-  // access, protect and lanServices, said from the state as a shell says them, where offered.
+  // access, protect and services (and lanServices, its 1.3.0 name), said from the state as a shell says them, where
+  // offered. A desktop's default is on, a phone's off.
   function derive() {
     const s = bridge.status
-    const lan = bridge.settings.find(x => x.name === 'lan_services')
+    const setting = bridge.settings.find(x => x.name === 'services')
+    const on = setting ? setting.value === true : !phone
+    const served = {
+      on,
+      locked: setting?.locked || undefined,
+      ...(phone ? { onLocalNetwork: options.onLocalNetwork ?? true, localNetworkPermission: localNetwork } : {}),
+    }
     bridge.status = {
       ...s,
       access: capabilities.includes('access') ? { on: !!s.subnet?.on } : undefined,
       protect: capabilities.includes('protect')
         ? { on: s.vpn.on, route: exits.find(e => e.id === route), killSwitch: options.killSwitch ?? true }
         : undefined,
-      lanServices: capabilities.includes('lanServices')
-        ? {
-            on: lan?.value === true,
-            locked: lan?.locked || undefined,
-            onLocalNetwork: options.onLocalNetwork ?? true,
-            localNetworkPermission: localNetwork,
-          }
-        : undefined,
+      lanServices: capabilities.includes('lanServices') ? served : undefined,
+      services: capabilities.includes('services') ? served : undefined,
     }
   }
   derive()

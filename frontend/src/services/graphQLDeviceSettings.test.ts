@@ -74,9 +74,8 @@ describe('a device’s settings', () => {
     expect(await graphQLSetDeviceSetting('D', 'subnet', false)).toBe('ERROR')
   })
 
-  it('services closed on a phone whose lan_services is off; open with it on, and on any device without it', () => {
-    const lan = (value: boolean, control = 'cloud+local') =>
-      ({ ...subnet, name: 'lan_services', value, control } as any)
+  it('services closed on a device whose services setting is off; open with it on, and on an API without it', () => {
+    const lan = (value: boolean, control = 'cloud+local') => ({ ...subnet, name: 'services', value, control } as any)
     expect(servicesClosed(lan(false))).toBe(true)
     expect(servicesClosed(lan(true))).toBe(false)
     expect(servicesClosed(lan(true, 'off'))).toBe(true)

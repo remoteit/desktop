@@ -902,10 +902,6 @@
   "deviceLabelSetting": {
     "label": "デバイスラベル"
   },
-  "deviceLanServices": {
-    "hint": "",
-    "label": ""
-  },
   "deviceList": {
     "addTag": "タグを追加",
     "cachengoRent": "Rent-A-Node",
@@ -1119,12 +1115,12 @@
     "deviceNotFound": "デバイスが見つかりません。",
     "deviceOffline": "デバイスはオフラインです",
     "deviceUnlicensed": "デバイスにライセンスがありません",
-    "phoneServicesOff": "",
-    "phoneServicesOffHint": "",
     "registeringEllipsis": "登録中...",
     "restoreDevice": "デバイスを復元",
     "selectServiceInstruction": "サービスを選択して設定するか、接続を開始してください。",
-    "service": "サービス"
+    "service": "サービス",
+    "servicesOff": "",
+    "servicesOffHint": ""
   },
   "devicePresenceSetting": {
     "label": "プレゼンスアドレス"
@@ -1192,6 +1188,10 @@
   "devicesApplicationsTabs": {
     "allServices": "すべてのサービス",
     "screenView": "ScreenView"
+  },
+  "deviceServices": {
+    "hint": "",
+    "label": ""
   },
   "deviceSetting": {
     "controlFixedTo": "",
@@ -2789,10 +2789,6 @@
     "fromDefault": "",
     "fromMachine": "",
     "kind": "",
-    "lanServices": "",
-    "lanServicesLine": "",
-    "lanServicesNoNetwork": "",
-    "lanServicesPermission": "",
     "localNetwork": "",
     "locked": "",
     "off": "",
@@ -2811,6 +2807,11 @@
     "servedConnections": "",
     "servedFailed": "",
     "servedNone": "",
+    "services": "",
+    "servicesLine": "",
+    "servicesLinePhone": "",
+    "servicesNoNetwork": "",
+    "servicesPermission": "",
     "settings": "",
     "signedIn": "",
     "signedOut": "",

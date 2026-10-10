@@ -918,10 +918,6 @@
   "deviceLabelSetting": {
     "label": "Etiqueta del dispositivo"
   },
-  "deviceLanServices": {
-    "hint": "",
-    "label": ""
-  },
   "deviceList": {
     "addTag": "Añadir etiqueta",
     "cachengoRent": "Rent-A-Node",
@@ -1165,12 +1161,12 @@
     "deviceNotFound": "Dispositivo no encontrado.",
     "deviceOffline": "Dispositivo sin conexión",
     "deviceUnlicensed": "Dispositivo sin licencia",
-    "phoneServicesOff": "",
-    "phoneServicesOffHint": "",
     "registeringEllipsis": "Registrando...",
     "restoreDevice": "Restaurar dispositivo",
     "selectServiceInstruction": "Selecciona un servicio para configurarlo o para iniciar una conexión.",
-    "service": "Servicio"
+    "service": "Servicio",
+    "servicesOff": "",
+    "servicesOffHint": ""
   },
   "devicePresenceSetting": {
     "label": "Dirección de presencia"
@@ -1242,6 +1238,10 @@
   "devicesApplicationsTabs": {
     "allServices": "Todos los servicios",
     "screenView": "ScreenView"
+  },
+  "deviceServices": {
+    "hint": "",
+    "label": ""
   },
   "deviceSetting": {
     "controlFixedTo": "",
@@ -2899,10 +2899,6 @@
     "fromDefault": "",
     "fromMachine": "",
     "kind": "",
-    "lanServices": "",
-    "lanServicesLine": "",
-    "lanServicesNoNetwork": "",
-    "lanServicesPermission": "",
     "localNetwork": "",
     "locked": "",
     "off": "",
@@ -2921,6 +2917,11 @@
     "servedConnections": "",
     "servedFailed": "",
     "servedNone": "",
+    "services": "",
+    "servicesLine": "",
+    "servicesLinePhone": "",
+    "servicesNoNetwork": "",
+    "servicesPermission": "",
     "settings": "",
     "signedIn": "",
     "signedOut": "",

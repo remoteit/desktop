@@ -910,10 +910,6 @@
   "deviceLabelSetting": {
     "label": "Device Label"
   },
-  "deviceLanServices": {
-    "hint": "People you share with can reach devices on the network this phone is on, through it.",
-    "label": "Allow remote access to services on the network"
-  },
   "deviceList": {
     "addTag": "Add Tag",
     "cachengoRent": "Rent-A-Node",
@@ -1142,12 +1138,12 @@
     "deviceNotFound": "Device not found.",
     "deviceOffline": "Device offline",
     "deviceUnlicensed": "Device unlicensed",
-    "phoneServicesOff": "Remote access to services on the network is off",
-    "phoneServicesOffHint": "Turn it on, in its settings or on the phone’s This device page, to add services.",
     "registeringEllipsis": "Registering...",
     "restoreDevice": "Restore Device",
     "selectServiceInstruction": "Select a service to configure it or to start a connection.",
-    "service": "Service"
+    "service": "Service",
+    "servicesOff": "Remote access to services is off",
+    "servicesOffHint": "Nothing on this device is served. Turn on Allow remote access to services, in its settings or on the device, to add services."
   },
   "devicePresenceSetting": {
     "label": "Presence Address"
@@ -1217,6 +1213,10 @@
   "devicesApplicationsTabs": {
     "allServices": "All Services",
     "screenView": "ScreenView"
+  },
+  "deviceServices": {
+    "hint": "People you share with can reach the services defined on this device, through it. Off, none are served — nor its ports beyond them or its console.",
+    "label": "Allow remote access to services"
   },
   "deviceSetting": {
     "controlFixedTo": "Set to {{value}} by the device's administrator",
@@ -2844,10 +2844,6 @@
     "fromDefault": "Default",
     "fromMachine": "Set on this device",
     "kind": "device",
-    "lanServices": "Allow remote access to services on the network",
-    "lanServicesLine": "People you share with can reach devices on the network this {{kind}} is on, through it.",
-    "lanServicesNoNetwork": "Not on a local network: this {{kind}} is on cellular or offline, so its services can’t be reached.",
-    "lanServicesPermission": "Needs Local Network access: turn on Local Network for remote.it in this {{kind}}’s Settings.",
     "localNetwork": "Local network",
     "locked": "Set by this machine’s administrator",
     "off": "Off",
@@ -2866,6 +2862,11 @@
     "servedConnections": "Connections: {{n}}",
     "servedFailed": "Last connection failed: {{error}}",
     "servedNone": "No services on this {{kind}} yet: add them on its page in remote.it.",
+    "services": "Allow remote access to services",
+    "servicesLine": "People you share with can reach this {{kind}}’s services.",
+    "servicesLinePhone": "People you share with can reach devices on the network this {{kind}} is on, through it.",
+    "servicesNoNetwork": "Not on a local network: this {{kind}} is on cellular or offline, so its services can’t be reached.",
+    "servicesPermission": "Needs Local Network access: turn on Local Network for remote.it in this {{kind}}’s Settings.",
     "settings": "Settings",
     "signedIn": "Signed in on this device",
     "signedOut": "Not signed in",

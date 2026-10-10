@@ -151,16 +151,42 @@ describe('This device', () => {
     expect(container.querySelector('[data-setting="websocket"]')!.textContent).toContain('administrator')
   })
 
-  it('never lists lan_services among the settings where no shell offers its switch (a desktop serves its services whatever it says)', async () => {
-    const { container } = await render({
+  it('a desktop: Allow remote access to services after Protect, on by default, just the setting', async () => {
+    const { container, bridge } = await render({
+      capabilities: ['status', 'vpn', 'exit', 'settings', 'diagnostics', 'access', 'protect', 'services'],
       settings: [
+        { name: 'services', value: true, source: 'default' },
         { name: 'lan_services', value: false, source: 'default' },
         { name: 'printers', value: true, source: 'machine' },
       ],
     })
-    expect(sections(container)).not.toContain('lanServices')
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'settings', 'diagnostics'])
+    expect(container.querySelector('[data-setting="services"]')).toBeNull()
     expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
-    expect(container.querySelector('[data-setting="printers"]')).not.toBeNull()
+    const line = container.querySelector('[data-services]')!
+    expect(line.getAttribute('data-services')).toBe('on')
+    expect(line.textContent).toBe('Allow remote access to servicesPeople you share with can reach this Mac’s services.')
+    await act(async () => (container.querySelector('[data-control="services"] input') as HTMLInputElement).click())
+    expect(bridge.calls.filter(c => c.method === 'services.set').map(c => c.args)).toEqual([{ on: false }])
+    expect(bridge.calls.filter(c => c.method === 'permissions.request' || c.method === 'permissions.get')).toEqual([])
+    expect(container.querySelector('[data-services]')!.getAttribute('data-services')).toBe('off')
+    expect(container.querySelectorAll('[data-services-state]').length).toBe(0)
+    expect(container.textContent).not.toContain('No services on this')
+  })
+
+  it('a shell without the switch lists services among the settings, and never lan_services', async () => {
+    const { container, bridge } = await render({
+      settings: [
+        { name: 'services', value: true, source: 'default' },
+        { name: 'lan_services', value: false, source: 'default' },
+      ],
+    })
+    expect(sections(container)).not.toContain('services')
+    expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
+    const row = container.querySelector('[data-setting="services"]')!
+    expect(row.textContent).toContain('Allow remote access to services')
+    await act(async () => (row.querySelector('input') as HTMLInputElement).click())
+    expect(bridge.calls.find(c => c.method === 'settings.set')!.args).toEqual({ name: 'services', value: false })
   })
 
   const PHONE: Capability[] = [
@@ -174,36 +200,37 @@ describe('This device', () => {
     'access',
     'protect',
     'lanServices',
+    'services',
   ]
   const phone = (options: MockBridgeOptions = {}) =>
     render({
       capabilities: PHONE,
       info: { platform: 'ios', shell: 'capacitor', deviceKind: 'iPhone' },
-      settings: [{ name: 'lan_services', value: false, source: 'default' }],
+      settings: [{ name: 'services', value: false, source: 'default' }],
       ...options,
     })
 
-  it('shows the third switch after Access and Protect, in place of its setting', async () => {
+  it('a phone: the switch after Access and Protect, in place of its setting, in a phone’s words', async () => {
     const { container } = await phone()
-    // lan_services was the phone's only setting: shown as the switch, no Settings section is left.
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'lanServices', 'permissions', 'diagnostics'])
-    expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
-    const line = container.querySelector('[data-lan-services]')!
-    expect(line.getAttribute('data-lan-services')).toBe('off')
+    // services was the phone's only setting: shown as the switch, no Settings section is left.
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'permissions', 'diagnostics'])
+    expect(container.querySelector('[data-setting="services"]')).toBeNull()
+    const line = container.querySelector('[data-services]')!
+    expect(line.getAttribute('data-services')).toBe('off')
     expect(line.textContent).toBe(
-      'Allow remote access to services on the networkPeople you share with can reach devices on the network this iPhone is on, through it.'
+      'Allow remote access to servicesPeople you share with can reach devices on the network this iPhone is on, through it.'
     )
   })
 
-  it('turns it on through lanServices.set, the Local Network permission asked then, and lists what it serves', async () => {
+  it('turns it on through services.set, the Local Network permission asked then, and lists what it serves', async () => {
     const { container, bridge } = await phone()
-    const control = () => container.querySelector('[data-control="lanServices"] input') as HTMLInputElement
+    const control = () => container.querySelector('[data-control="services"] input') as HTMLInputElement
     await act(async () => control().click())
-    expect(bridge.calls.filter(c => c.method === 'lanServices.set').map(c => c.args)).toEqual([{ on: true }])
-    expect(bridge.calls.filter(c => c.method === 'settings.set')).toEqual([])
-    expect(container.querySelector('[data-lan-services]')!.getAttribute('data-lan-services')).toBe('on')
-    expect(bridge.status.lanServices?.localNetworkPermission).toBe('granted')
-    expect(container.querySelectorAll('[data-lan-services-state]').length).toBe(0)
+    expect(bridge.calls.filter(c => c.method === 'services.set').map(c => c.args)).toEqual([{ on: true }])
+    expect(bridge.calls.filter(c => c.method === 'lanServices.set' || c.method === 'settings.set')).toEqual([])
+    expect(container.querySelector('[data-services]')!.getAttribute('data-services')).toBe('on')
+    expect(bridge.status.services?.localNetworkPermission).toBe('granted')
+    expect(container.querySelectorAll('[data-services-state]').length).toBe(0)
     expect(container.textContent).toContain('No services on this iPhone yet')
     expect(container.querySelector('[data-section="permissions"]')!.textContent).toContain('Local networkgranted')
 
@@ -223,28 +250,39 @@ describe('This device', () => {
     ])
 
     await act(async () => control().click())
-    expect(bridge.calls.filter(c => c.method === 'lanServices.set').map(c => c.args)).toEqual([{ on: true }, { on: false }])
-    expect(container.querySelector('[data-lan-services]')!.getAttribute('data-lan-services')).toBe('off')
+    expect(bridge.calls.filter(c => c.method === 'services.set').map(c => c.args)).toEqual([{ on: true }, { on: false }])
+    expect(container.querySelector('[data-services]')!.getAttribute('data-services')).toBe('off')
     expect(container.querySelectorAll('[data-served]').length).toBe(0)
+  })
+
+  it('a 1.3.0 phone shell, lanServices alone: the same switch through lanServices.set', async () => {
+    const { container, bridge } = await phone({
+      capabilities: PHONE.filter(c => c !== 'services'),
+      info: { platform: 'ios', shell: 'capacitor', deviceKind: 'iPhone', bridgeVersion: '1.3.0' },
+    })
+    expect(sections(container)).toContain('services')
+    await act(async () => (container.querySelector('[data-control="services"] input') as HTMLInputElement).click())
+    expect(bridge.calls.filter(c => c.method === 'lanServices.set').map(c => c.args)).toEqual([{ on: true }])
+    expect(container.querySelector('[data-services]')!.getAttribute('data-services')).toBe('on')
   })
 
   it('says what keeps its services from being reached: the permission refused, no local network', async () => {
     const { container, bridge } = await phone({ localNetworkPermission: 'denied', onLocalNetwork: false })
-    await act(async () => (container.querySelector('[data-control="lanServices"] input') as HTMLInputElement).click())
-    const states = [...container.querySelectorAll('[data-lan-services-state]')].map(e => [
-      e.getAttribute('data-lan-services-state'),
+    await act(async () => (container.querySelector('[data-control="services"] input') as HTMLInputElement).click())
+    const states = [...container.querySelectorAll('[data-services-state]')].map(e => [
+      e.getAttribute('data-services-state'),
       e.textContent,
     ])
     expect(states).toEqual([
       ['permission', 'Needs Local Network access: turn on Local Network for remote.it in this iPhone’s Settings.'],
       ['network', 'Not on a local network: this iPhone is on cellular or offline, so its services can’t be reached.'],
     ])
-    expect(bridge.status.lanServices?.on).toBe(true)
+    expect(bridge.status.services?.on).toBe(true)
   })
 
   it('offers to ask for the Local Network permission when it was turned on from elsewhere', async () => {
     const { container, bridge } = await phone({
-      settings: [{ name: 'lan_services', value: true, source: 'cloud' }],
+      settings: [{ name: 'services', value: true, source: 'cloud' }],
     })
     const ask = container.querySelector('[data-control="localNetwork"]') as HTMLButtonElement
     expect(ask).not.toBeNull()
@@ -257,10 +295,10 @@ describe('This device', () => {
 
   it('leaves it alone where the machine’s administrator holds it', async () => {
     const { container } = await phone({
-      settings: [{ name: 'lan_services', value: false, source: 'machine', locked: true }],
+      settings: [{ name: 'services', value: false, source: 'machine', locked: true }],
     })
-    expect((container.querySelector('[data-control="lanServices"] input') as HTMLInputElement).disabled).toBe(true)
-    expect(container.querySelector('[data-lan-services]')!.textContent).toContain('administrator')
+    expect((container.querySelector('[data-control="services"] input') as HTMLInputElement).disabled).toBe(true)
+    expect(container.querySelector('[data-services]')!.textContent).toContain('administrator')
   })
 
   it('says to update the app when the shell’s bridge is another major version', async () => {

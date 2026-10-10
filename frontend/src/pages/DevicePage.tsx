@@ -38,8 +38,8 @@ export const DevicePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
-  // A phone takes services only while remote access to services on its network is on (its lan_services setting).
-  const phoneClosed = servicesClosed(useDeviceSettings(device?.id).setting('lan_services'))
+  // A device takes services only while remote access to them is on (its services setting).
+  const closed = servicesClosed(useDeviceSettings(device?.id).setting('services'))
 
   const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
@@ -105,16 +105,16 @@ export const DevicePage: React.FC = () => {
         <Title>{t('devicePage.service', 'Service')}</Title>
         <SortServices />
         <AddFromNetwork allowScanning={device.thisDevice} button />
-        <AddServiceButton device={device} editable={editable && !phoneClosed} link={`/devices/${device.id}/add`} />
+        <AddServiceButton device={device} editable={editable && !closed} link={`/devices/${device.id}/add`} />
       </Typography>
       <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
-        {editable && phoneClosed && (
+        {editable && closed && (
           <ListItemLocation to={`/devices/${device.id}/edit`} icon="network-wired" dense>
             <ListItemText
-              primary={t('devicePage.phoneServicesOff', 'Remote access to services on the network is off')}
+              primary={t('devicePage.servicesOff', 'Remote access to services is off')}
               secondary={t(
-                'devicePage.phoneServicesOffHint',
-                'Turn it on, in its settings or on the phone’s This device page, to add services.'
+                'devicePage.servicesOffHint',
+                'Nothing on this device is served. Turn on Allow remote access to services, in its settings or on the device, to add services.'
               )}
             />
           </ListItemLocation>

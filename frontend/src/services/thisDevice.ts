@@ -35,9 +35,18 @@
    hosts on the network it is on, through it. connectd's lan_services setting, which only a client-only device (a
    phone) has a use for — a desktop serves its services whatever it says — so only such a shell offers it. A shell runs
    its tunnel while any of Access, Protect and this is on, and stops it with all three off. settings.set('lan_services')
-   still works; the page shows the switch in its place. */
+   still works; the page shows the switch in its place.
 
-export const BRIDGE_VERSION = '1.3.0'
+   1.4.0 (additive): Allow remote access to services, every device's (Evan, 2026-10-10) — 'services': services.set;
+   DeviceStatus.services. connectd's services setting (lan_services renamed): whether this machine serves its
+   services — lets people reach the hosts and ports defined as its services, through it; off, none are, nor its ports
+   beyond them or its console. On by default on a desktop, off on a phone; every shell offers it. On a phone, turning
+   it on also starts the tunnel and asks for the Local Network permission, as lanServices did; on a desktop it is just
+   the setting — the difference is the shell's. 'lanServices' (1.3.0) is deprecated: a phone's shell still offers it
+   and lanServices.set as services for one version, so a page built before 1.4.0 keeps working; a page uses 'services'
+   where offered. */
+
+export const BRIDGE_VERSION = '1.4.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -50,7 +59,8 @@ export type Capability =
   | 'stages' // stages.* — other stages joined beside the home stage (never in a prod build)
   | 'access' // 1.2.0: access.set — Access remote devices; DeviceStatus.access
   | 'protect' // 1.2.0: protect.set, protect.route — remote.it Protect; DeviceStatus.protect
-  | 'lanServices' // 1.3.0: lanServices.set — Allow remote access to services on the network; DeviceStatus.lanServices
+  | 'lanServices' // 1.3.0, deprecated by 'services': lanServices.set; DeviceStatus.lanServices
+  | 'services' // 1.4.0: services.set — Allow remote access to services; DeviceStatus.services
 
 export type Platform = 'mac' | 'windows' | 'linux' | 'ios' | 'android'
 export type Shell = 'menu' | 'capacitor'
@@ -90,13 +100,14 @@ export type ProtectStatus = {
   locked?: boolean
 }
 
-// 1.3.0: Allow remote access to services on the network — connectd's lan_services setting: on, this machine's
-// services (hosts on the network it is on) take connections from whoever they are shared with, through it; off, none.
+// 1.4.0: Allow remote access to services — connectd's services setting (1.3.0's lanServices, a phone's, the same
+// shape): on, this machine's services — hosts and ports defined as its services (on a phone, hosts on the network it
+// is on) — take connections from whoever they are shared with, through it; off, none.
 // What keeps them from being reached while it is on: onLocalNetwork false (cellular alone, or no network: there are no
 // neighbours to reach), and localNetworkPermission (a phone's Local Network permission, which its dials need; absent
 // where the shell has none to ask). error: why the last change was not made, or why it is not working. locked: the
 // machine's administrator holds it. The connections themselves are DeviceStatus.served.
-export type LanServicesStatus = {
+export type ServicesStatus = {
   on: boolean
   changing?: boolean
   error?: string
@@ -104,6 +115,8 @@ export type LanServicesStatus = {
   onLocalNetwork?: boolean
   localNetworkPermission?: PermissionState
 }
+// 1.3.0's name for it.
+export type LanServicesStatus = ServicesStatus
 
 export type DeviceStatus = {
   stage: string
@@ -115,18 +128,20 @@ export type DeviceStatus = {
   exit?: ExitRef & { state: 'connecting' | 'up' | 'down'; error?: string }
   subnet?: { on: boolean; domain?: string; ipv4?: string; ipv6?: string }
   network: NetworkKind
-  // This machine's services and the connections open to them through it (1.3.0's lanServices): connectd's `served`.
+  // This machine's services and the connections open to them through it (a phone's shell): connectd's `served`.
   served?: { service: string; target: string; sessions: number; lastError?: string }[]
   // 1.2.0, with the 'access' and 'protect' capabilities.
   access?: AccessStatus
   protect?: ProtectStatus
-  // 1.3.0, with the 'lanServices' capability.
+  // 1.3.0, with the 'lanServices' capability (deprecated: services).
   lanServices?: LanServicesStatus
+  // 1.4.0, with the 'services' capability.
+  services?: ServicesStatus
 }
 
 export type SettingValue = string | number | boolean | null
 
-// Settings by their connectd names (device-package docs/device-settings.md): exit_node, lan_services, printers, …
+// Settings by their connectd names (device-package docs/device-settings.md): exit_node, services, printers, …
 // `source` says who set the value standing now: either side sets, the newer stands. From connectd's `from`: `local`,
 // `config` (the machine's configuration file) and `policy` → 'machine'; `cloud` → 'cloud'; anything else → 'default'.
 // `locked`: the machine may not change it — connectd's `control` is `off`, `on` or `cloud` (or a value it fixes), or
@@ -180,10 +195,14 @@ export type BridgeMethods = {
   // 1.2.0: the exit Protect routes through: with Protect on the exit changes to it; off, it is kept for when Protect
   // is turned on, and nothing else changes.
   'protect.route': { args: { id: string }; result: DeviceStatus }
-  // 1.3.0: Allow remote access to services on the network on or off (connectd's lan_services). A phone starts its tunnel
+  // 1.3.0, deprecated by services.set: Allow remote access to services on the network on or off. A phone starts its tunnel
   // for it and asks for the Local Network permission as it turns on; off, it stops the tunnel when Access and Protect
   // are off too.
   'lanServices.set': { args: { on: boolean }; result: DeviceStatus }
+  // 1.4.0: Allow remote access to services on or off (connectd's services). A phone starts its tunnel for it and asks
+  // for the Local Network permission as it turns on, and stops the tunnel when Access and Protect are off too; on a
+  // desktop it is the setting alone. lanServices.set (1.3.0) is the same, deprecated.
+  'services.set': { args: { on: boolean }; result: DeviceStatus }
   'exit.list': { args: {}; result: ExitRef[] }
   'exit.set': { args: { id: string | null }; result: DeviceStatus }
   'settings.get': { args: {}; result: DeviceSetting[] }

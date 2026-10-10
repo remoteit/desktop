@@ -57,6 +57,7 @@ const SETTING_TITLES: { [name: string]: string } = {
   subnet: 'Access remote devices',
   exit_node: 'Offer this device as an exit',
   printers: 'Show remote printers',
+  services: 'Allow remote access to services',
   websocket: 'Relay',
   console: 'Console',
   any_port: 'Connections to any port',
@@ -143,11 +144,17 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
   const protect = status?.protect
   const protectOn = !!protect?.on
   const routeValue = protect?.route?.id ?? ''
-  const lan = status?.lanServices
-  // The settings listed: the switches above in their place — Access is subnet. lan_services is never listed: where it
-  // does something a shell offers it as its switch (lanServices), and elsewhere (a desktop, which serves its services
-  // whatever it says) it does nothing.
-  const listed = settings.filter(s => !(s.name === 'subnet' && has('access')) && s.name !== 'lan_services')
+  // 1.4.0: Allow remote access to services, every shell's ('services'); a 1.3.0 phone shell's 'lanServices' is the same.
+  const servicesVia = has('services') ? 'services' : has('lanServices') ? 'lanServices' : undefined
+  const lan = servicesVia === 'services' ? status?.services : status?.lanServices
+  // A phone's services are hosts on the network it is on, which its Local Network permission reaches; a desktop's are
+  // what is defined on it. The shell says which by offering the permission.
+  const phoneServices = has('permissions')
+  // The settings listed: the switches above in their place — Access is subnet, the services switch services.
+  // lan_services is the setting's earlier name, never listed.
+  const listed = settings.filter(
+    s => !(s.name === 'subnet' && has('access')) && !(s.name === 'services' && servicesVia) && s.name !== 'lan_services'
+  )
 
   return (
     <Box paddingX={2} data-this-device>
@@ -302,19 +309,19 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
         </List>
       )}
 
-      {has('lanServices') && (
-        <List data-section="lanServices">
+      {servicesVia && (
+        <List data-section="services">
           <ListItem
             secondaryAction={
               <Switch
                 edge="end"
                 checked={!!lan?.on}
                 disabled={busy || !lan || lan.changing || lan.locked}
-                inputProps={{ 'aria-label': t('thisDevice.lanServices', 'Allow remote access to services on the network') }}
-                data-control="lanServices"
+                inputProps={{ 'aria-label': t('thisDevice.services', 'Allow remote access to services') }}
+                data-control="services"
                 onChange={() =>
                   act(async () => {
-                    setStatus(await device.call('lanServices.set', { on: !lan?.on }))
+                    setStatus(await device.call(`${servicesVia}.set`, { on: !lan?.on }))
                     // Turning it on may have asked for the Local Network permission.
                     if (has('permissions')) setPermissions(await device.call('permissions.get', {}))
                   })
@@ -323,19 +330,19 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
             }
           >
             <ListItemText
-              primary={t('thisDevice.lanServices', 'Allow remote access to services on the network')}
+              primary={t('thisDevice.services', 'Allow remote access to services')}
               secondary={
                 lan?.locked
-                  ? `${lanServicesLine(kind, t)} ${t('thisDevice.locked', 'Set by this machine’s administrator')}`
-                  : lanServicesLine(kind, t)
+                  ? `${servicesLine(kind, phoneServices, t)} ${t('thisDevice.locked', 'Set by this machine’s administrator')}`
+                  : servicesLine(kind, phoneServices, t)
               }
               sx={SWITCH_TEXT}
-              data-lan-services={lan?.on ? 'on' : 'off'}
+              data-services={lan?.on ? 'on' : 'off'}
             />
           </ListItem>
           {lan?.on &&
-            lanServicesProblems(lan, kind, t).map(line => (
-              <ListItem key={line.key} data-lan-services-state={line.key}>
+            servicesProblems(lan, kind, t).map(line => (
+              <ListItem key={line.key} data-services-state={line.key}>
                 <ListItemText secondary={line.text} secondaryTypographyProps={{ color: 'warning.main' }} />
               </ListItem>
             ))}
@@ -645,23 +652,26 @@ const protectLine = (s: DeviceStatus | undefined, kind: string, t: T) => {
   return `${through} ${stops}`
 }
 
-// The third switch's line: who can reach what, through this machine.
-const lanServicesLine = (kind: string, t: T) =>
-  t(
-    'thisDevice.lanServicesLine',
-    'People you share with can reach devices on the network this {{kind}} is on, through it.',
-    { kind }
-  )
+// The services switch's line: who can reach what, through this machine — a phone's services are hosts on the network
+// it is on.
+const servicesLine = (kind: string, phone: boolean, t: T) =>
+  phone
+    ? t(
+        'thisDevice.servicesLinePhone',
+        'People you share with can reach devices on the network this {{kind}} is on, through it.',
+        { kind }
+      )
+    : t('thisDevice.servicesLine', 'People you share with can reach this {{kind}}’s services.', { kind })
 
 // What keeps this machine's services from being reached while it is on, a line each, with how to fix it.
-const lanServicesProblems = (lan: NonNullable<DeviceStatus['lanServices']>, kind: string, t: T) => {
+const servicesProblems = (lan: NonNullable<DeviceStatus['services']>, kind: string, t: T) => {
   const lines: { key: string; text: string }[] = []
   if (lan.error) lines.push({ key: 'error', text: lan.error })
   if (lan.localNetworkPermission === 'denied')
     lines.push({
       key: 'permission',
       text: t(
-        'thisDevice.lanServicesPermission',
+        'thisDevice.servicesPermission',
         'Needs Local Network access: turn on Local Network for remote.it in this {{kind}}’s Settings.',
         { kind }
       ),
@@ -670,7 +680,7 @@ const lanServicesProblems = (lan: NonNullable<DeviceStatus['lanServices']>, kind
     lines.push({
       key: 'network',
       text: t(
-        'thisDevice.lanServicesNoNetwork',
+        'thisDevice.servicesNoNetwork',
         'Not on a local network: this {{kind}} is on cellular or offline, so its services can’t be reached.',
         { kind }
       ),
