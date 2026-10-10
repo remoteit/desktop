@@ -64,6 +64,8 @@ const SETTING_TITLES: { [name: string]: string } = {
   mcp_exec: 'AI commands',
 }
 const WEBSOCKET_CHOICES = ['auto', 'on', 'off']
+// A switch's words keep clear of the switch at the row's end, at a phone's width too.
+const SWITCH_TEXT = { paddingRight: '56px' }
 
 /** Whether a setting's value is on: true, or {on: true}. */
 const settingOn = (value: SettingValue | { on?: boolean }): boolean | undefined => {
@@ -223,6 +225,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
             <ListItemText
               primary={t('thisDevice.access', 'Access remote devices')}
               secondary={accessLine(status, kind, t)}
+              sx={SWITCH_TEXT}
               data-access={access?.on ? 'on' : 'off'}
             />
           </ListItem>
@@ -252,6 +255,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
             <ListItemText
               primary={t('thisDevice.protect', 'remote.it Protect')}
               secondary={protectLine(status, kind, t)}
+              sx={SWITCH_TEXT}
               data-protect={protectOn ? 'on' : 'off'}
             />
           </ListItem>
@@ -325,6 +329,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
                   ? `${lanServicesLine(kind, t)} ${t('thisDevice.locked', 'Set by this machine’s administrator')}`
                   : lanServicesLine(kind, t)
               }
+              sx={SWITCH_TEXT}
               data-lan-services={lan?.on ? 'on' : 'off'}
             />
           </ListItem>
@@ -401,6 +406,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
               <ListItemText
                 primary={t('thisDevice.vpn', 'VPN')}
                 secondary={vpnLine(status, t)}
+                sx={SWITCH_TEXT}
                 data-vpn={vpnOn ? 'on' : 'off'}
               />
             </ListItem>
