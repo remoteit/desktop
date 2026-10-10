@@ -16,6 +16,7 @@
     "brand-all": "bash ./scripts/brand-all.sh",
     "build-common": "tsc -p common/tsconfig.json",
     "build-frontend": "npm run brand-web && npm run build -w=frontend",
+    "build-embedded": "node scripts/build-embedded.mjs",
     "build-electron": "echo 'Electron must be built from the /electron directory'",
     "build-mobile": "npm run brand-android && npm run brand-ios && cross-env NODE_ENV=production run-s build-frontend mobile-sync",
     "copy-env": "[ -f .env ] && cp .env frontend/ && cp .env electron/ || true",
