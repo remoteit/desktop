@@ -34,7 +34,7 @@ const sections = (c: HTMLElement) => [...c.querySelectorAll('[data-section]')].m
 describe('This device', () => {
   it('shows what the desktop menu offers, and nothing it does not', async () => {
     const { container } = await render()
-    expect(sections(container)).toEqual(['device', 'vpn', 'settings', 'diagnostics'])
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'settings', 'diagnostics'])
     expect(container.textContent).toContain('Mock MacBook')
     expect(container.textContent).toContain('mockmacbook.on.solo.remote.it')
   })
@@ -58,9 +58,12 @@ describe('This device', () => {
     expect(sections(container)).toEqual(['device'])
   })
 
-  it('turns the VPN on and off through the bridge', async () => {
-    const { container, bridge } = await render()
-    const vpn = () => container.querySelector('[data-control="vpn"] input, input[data-control="vpn"]') as HTMLInputElement
+  it('turns the VPN on and off through the bridge, from a shell before Access and Protect', async () => {
+    const caps: Capability[] = ['status', 'vpn', 'exit', 'settings', 'diagnostics']
+    const { container, bridge } = await render({ capabilities: caps, route: '80:00:00:00:01:0B:00:01' })
+    expect(sections(container)).toEqual(['device', 'vpn', 'settings', 'diagnostics'])
+    const vpn = () =>
+      container.querySelector('[data-control="vpn"] input, input[data-control="vpn"]') as HTMLInputElement
     const line = () => container.querySelector('[data-vpn]')!
     expect(line().getAttribute('data-vpn')).toBe('off')
     await act(async () => vpn().click())
@@ -73,7 +76,7 @@ describe('This device', () => {
   })
 
   it('follows the status the shell sends', async () => {
-    const { container, bridge } = await render()
+    const { container, bridge } = await render({ capabilities: ['status', 'vpn', 'exit'] })
     await act(async () =>
       bridge.emit('status', {
         ...bridge.status,
@@ -82,6 +85,58 @@ describe('This device', () => {
       })
     )
     expect(container.querySelector('[data-vpn]')!.textContent).toContain('Connecting to US West')
+  })
+
+  it('turns Access and Protect on and off apart, Protect back on through the same exit', async () => {
+    const { container, bridge } = await render()
+    const control = (name: string) =>
+      container.querySelector(`[data-control="${name}"] input, input[data-control="${name}"]`) as HTMLInputElement
+    const line = (name: string) => container.querySelector(`[data-${name}]`)!
+    const calls = (method: string) => bridge.calls.filter(c => c.method === method).map(c => c.args)
+    expect(line('access').getAttribute('data-access')).toBe('on')
+    expect(line('access').textContent).toContain('This Mac is mockmacbook.on.solo.remote.it')
+    expect(line('protect').getAttribute('data-protect')).toBe('off')
+    // No exit chosen yet, two to choose from: Protect waits for Route through.
+    expect(control('protect').disabled).toBe(true)
+    expect(line('protect').textContent).toContain('Send all of this Mac’s internet traffic through a device you choose')
+
+    // Route through, chosen while Protect is off: kept, nothing turned on; the subtitle names it.
+    await act(async () => {
+      const input = control('route')
+      // MUI's select: its hidden input takes the value; a change event is what the menu's click sends.
+      const props = Object.keys(input).find(k => k.startsWith('__reactProps'))!
+      ;(input as any)[props].onChange({ target: { value: '80:00:00:00:01:0B:00:03' } })
+    })
+    expect(calls('protect.route')).toEqual([{ id: '80:00:00:00:01:0B:00:03' }])
+    expect(line('protect').getAttribute('data-protect')).toBe('off')
+    expect(line('protect').textContent).toBe(
+      'remote.it ProtectAll traffic from this Mac goes through US West. If US West can’t be reached, traffic stops rather than going out unprotected.'
+    )
+    await act(async () => control('protect').click())
+    expect(calls('protect.set')).toEqual([{ on: true }])
+    expect(bridge.status.exit?.id).toBe('80:00:00:00:01:0B:00:03')
+    expect(line('protect').getAttribute('data-protect')).toBe('on')
+
+    // Access off leaves Protect on; Protect off and on again goes through the same exit.
+    await act(async () => control('access').click())
+    expect(calls('access.set')).toEqual([{ on: false }])
+    expect(line('access').getAttribute('data-access')).toBe('off')
+    expect(line('protect').getAttribute('data-protect')).toBe('on')
+    await act(async () => control('protect').click())
+    expect(bridge.status.exit).toBeUndefined()
+    expect(line('protect').textContent).toContain('goes through US West')
+    await act(async () => control('protect').click())
+    expect(calls('protect.set')).toEqual([{ on: true }, { on: false }, { on: true }])
+    expect(bridge.status.exit?.id).toBe('80:00:00:00:01:0B:00:03')
+    expect(calls('vpn.set')).toEqual([])
+    expect(calls('exit.set')).toEqual([])
+  })
+
+  it('says when traffic goes out the usual way while the exit cannot be reached', async () => {
+    const { container } = await render({ route: '80:00:00:00:01:0B:00:01', killSwitch: false })
+    expect(container.querySelector('[data-protect]')!.textContent).toContain(
+      'If Office can’t be reached, traffic goes out the usual way meanwhile.'
+    )
   })
 
   it('sets a setting by its connectd name, and leaves a locked one alone', async () => {
