@@ -85,6 +85,13 @@ export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote
 // Test Settings: an ad-hoc request header injected on API calls (helpers/apiHelper.getTestHeader).
 export const TEST_HEADER = 'test-header'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
+// The embedded build (scripts/build-embedded.mjs, device-package docs/one-app-plan.md "The portal bundle"): the portal
+// as a bundle a native shell serves from its own files — the menu app on a desktop, Capacitor on a phone — talking to
+// the machine through thisDevice. Its transports register only in it.
+export const EMBEDDED = env.VITE_EMBEDDED === 'true'
+// The "This device" page: on by default in an embedded build, else a Test UI setting (selectors/thisDevice). It shows
+// only where thisDevice is present, which a plain browser never is.
+export const THIS_DEVICE_DEFAULT = EMBEDDED || env.VITE_THIS_DEVICE === 'on'
 export const PORTAL_URL = env.VITE_PORTAL_URL || brand.package?.homepage || 'https://app.remote.it'
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 

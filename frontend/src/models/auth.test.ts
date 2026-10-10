@@ -36,6 +36,7 @@ vi.mock('../services/oidc', () => ({
   oidcGrantStale,
   oidcMcpDetailReady,
   oidcActor,
+  oidcUseShell: vi.fn(async () => false),
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))

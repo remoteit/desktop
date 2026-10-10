@@ -6,12 +6,16 @@ import path from 'path'
 export default defineConfig(({ mode }) => {
   // loadEnv sees frontend/.env files; process.env would only see shell vars
   const env = loadEnv(mode, __dirname, '')
+  // The embedded build (scripts/build-embedded.mjs): loaded from its own files under whatever path its shell serves it
+  // at (the menu's token path, Capacitor's webDir), so every URL is relative; no source maps in what a package carries.
+  const embedded = (process.env.VITE_EMBEDDED || env.VITE_EMBEDDED) === 'true'
   return {
+    base: embedded ? './' : undefined,
     build: {
       outDir: 'build',
       minify: mode === 'production',
       emptyOutDir: true,
-      sourcemap: true,
+      sourcemap: !embedded,
       assetsInlineLimit: 0,
       rollupOptions: {
         output: {

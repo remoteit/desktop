@@ -28,6 +28,7 @@ import {
   oidcTakeSupportTicket,
   oidcSelectKnownAccount,
   oidcClearAutoStarts,
+  oidcUseShell,
   OidcError,
   OidcErrorCode,
 } from '../services/oidc'
@@ -126,6 +127,9 @@ export default createModel<RootModel>()({
       console.log('AUTH INIT START', { user })
       if (!user) {
         try {
+          // In an app, the app's own sign-in is this page's (services/oidc, "the SHELL's sign-in"): asked first, so
+          // nothing below starts a flow or reads stored tokens there.
+          await oidcUseShell()
           // A boot with ?code&state in the URL IS the sign-in completing (web return, or
           // the desktop deep-link reload); otherwise restore a stored session.
           // A support LAUNCH (permitteer docs/desktop-support.md): this tab arrived with a one-time

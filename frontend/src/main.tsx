@@ -16,10 +16,14 @@ import analytics from './services/analytics'
 import './i18n'
 import './initializeCommon'
 import './services/Controller'
+import { EMBEDDED } from './constants'
+import { registerHttpBridge } from './services/thisDeviceHttp'
 import { registerCapacitorBridge } from './services/thisDeviceCapacitor'
 
-// The phone shell's bridge (thisDevice), before anything asks for it; none in a browser.
-registerCapacitorBridge()
+// The bridge to the machine (services/thisDevice), before anything asks for it — the sign-in asks first (models/auth
+// init): a phone shell's ThisDevice plugin, or in the embedded build the menu app's, over its local server; none in a
+// browser or the prod mobile app.
+if (!registerCapacitorBridge() && EMBEDDED) registerHttpBridge(browser.isMobile)
 
 if (browser.environment() !== 'development') analytics.initialize()
 document.title = `${brand.appName} Application`

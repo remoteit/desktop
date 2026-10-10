@@ -3,7 +3,7 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../store'
-import { OidcErrorCode, oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused } from '../services/oidc'
+import { OidcErrorCode, oidcAutoStartExhausted, oidcIsSupportTab, oidcLeaveRefused, oidcShell } from '../services/oidc'
 import { MODE } from '../constants'
 import browser from '../services/browser'
 import brand from '@common/brand/config'
@@ -107,8 +107,11 @@ export function SignInApp() {
   // refuses every other start there (oidcLeaveRefused), so it can never sign the operator in as
   // themselves.
   const supportTab = oidcIsSupportTab()
+  // A launcher, not a redirect: the desktop app, and an app whose shell signs in (the system browser hosts the
+  // journey in both, and opening it unasked — right after a sign-out, say — is not this page's to do).
+  const launcher = browser.isElectron || oidcShell()
   const budgetSpent = oidcAutoStartExhausted('boot')
-  const autoStart = !browser.isElectron && !signingIn && !signInFailed && !budgetSpent && !oidcLeaveRefused()
+  const autoStart = !launcher && !signingIn && !signInFailed && !budgetSpent && !oidcLeaveRefused()
   useEffect(() => {
     if (!autoStart) return
     auth.signIn({ auto: 'boot' })
@@ -120,7 +123,7 @@ export function SignInApp() {
      through the app's own snackbar (Page renders it over the signed-out screen too)
      rather than by growing a second error surface on this panel. */
   useEffect(() => {
-    if (browser.isElectron || signingIn || signInFailed || !budgetSpent) return
+    if (launcher || signingIn || signInFailed || !budgetSpent) return
     ui.set({
       noticeMessage: t(
         'signIn.autoStopped',
@@ -152,7 +155,7 @@ export function SignInApp() {
       </Box>
     )
 
-  if (autoStart || (!browser.isElectron && signingIn))
+  if (autoStart || (!launcher && signingIn))
     return (
       <Box display="flex" flexDirection="column" alignItems="center" gap={2} paddingTop={12}>
         <CircularProgress size={28} />
