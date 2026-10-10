@@ -16,6 +16,12 @@ import analytics from './services/analytics'
 import './i18n'
 import './initializeCommon'
 import './services/Controller'
+import { EMBEDDED } from './constants'
+import { registerHttpBridge } from './services/thisDeviceHttp'
+
+// The embedded build's bridge to the machine (services/thisDevice): the menu app's, over its local server; a Capacitor
+// shell registers its own. Before anything asks for thisDevice — the sign-in asks first (models/auth init).
+if (EMBEDDED) registerHttpBridge(browser.isMobile)
 
 if (browser.environment() !== 'development') analytics.initialize()
 document.title = `${brand.appName} Application`

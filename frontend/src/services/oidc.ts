@@ -10,7 +10,9 @@ import {
   OAUTH_AGENT_ACTOR,
   OAUTH_ACCOUNT_RESOURCE,
   PROTOCOL,
+  EMBEDDED,
 } from '../constants'
+import { thisDevice, ThisDevice, AuthAccount } from './thisDevice'
 import { toBase64url, decodeBase64url } from '../helpers/base64url'
 import { httpsOnly } from '../helpers/utilHelper'
 
@@ -211,6 +213,97 @@ let access: { [resource: string]: { token: string; exp: number; type?: string } 
 let minting: Promise<unknown> = Promise.resolve()
 let discovery: { authorization_endpoint: string; token_endpoint: string } | undefined
 
+/* The SHELL's sign-in (device-package docs/one-app-plan.md, "Sign-in through the shell"). In an app — the menu on a
+   desktop, the Capacitor shell on a phone — the portal never signs in by itself: the shell has, with its own client,
+   and keeps the refresh token and any DPoP key. With thisDevice present and offering `auth`, this module starts no
+   flow and stores nothing: an access token is the shell's auth.accessToken (cached in memory only, like any other),
+   a DPoP proof its auth.dpopProof where the token is bound, and sign-in, sign-out, switching and the account list are
+   the shell's. A plain browser never gets here (thisDevice is absent) and is unchanged.
+
+   The shell's sign-in changing under the page — signed in, out or switched from the menu — reloads it, so every model
+   boots as the new person, as activating a saved account does; a change the page asked for itself is expected and
+   does not. */
+type Shell = { device: ThisDevice; accounts: AuthAccount[]; expected?: string }
+let shell: Shell | undefined
+// Any account at all: a sign-in the page started, whoever it ends as.
+const ANY_ACCOUNT = '\u0000any'
+export const oidcShellHooks = { reload: () => window.location.reload() }
+/** The shell signs in for this page (oidcUseShell found one). */
+export const oidcShell = (): boolean => !!shell
+const shellActive = (): AuthAccount | undefined => shell?.accounts.find(a => a.active)
+const shellSignedOut = (s: Shell) => (s.accounts = s.accounts.map(a => ({ ...a, active: false })))
+async function readShellAccounts(s: Shell): Promise<void> {
+  try {
+    s.accounts = await s.device.call('auth.accounts', {})
+  } catch (error: any) {
+    console.warn('AUTH: the app did not list its accounts —', error?.message)
+  }
+}
+/** Use the shell's sign-in when there is one: thisDevice present, its bridge's major version this page's, and `auth`
+ *  offered. Once, at boot (models/auth init), before anything asks for a token. False: the browser's own sign-in. */
+export async function oidcUseShell(): Promise<boolean> {
+  if (shell) return true
+  const device = await thisDevice()
+  if (!device?.compatible || !device.has('auth')) return false
+  const s: Shell = { device, accounts: [] }
+  await readShellAccounts(s)
+  s.expected = s.accounts.find(a => a.active)?.sub
+  shell = s
+  device.on('auth', async ({ active }) => {
+    access = {}
+    await readShellAccounts(s)
+    if (s.expected !== ANY_ACCOUNT && active?.sub === s.expected) return
+    console.log('AUTH: the app’s sign-in changed — reloading as', active?.email ?? 'no one')
+    oidcShellHooks.reload()
+  })
+  return true
+}
+// A token's expiry as epoch seconds: the bridge says seconds; a shell that sent milliseconds is read as it meant.
+const expirySeconds = (t: number) => (t > 1e12 ? Math.floor(t / 1000) : t)
+const shellOidcError = (error: any): OidcError =>
+  new OidcError(error?.code === 'unavailable' ? 'unavailable' : 'refused', error?.message || 'the app refused')
+
+async function shellSignIn(s: Shell, opts: { prompt?: string }): Promise<boolean> {
+  // A silent round (prompt=none: recovering, activating, selecting a known account) is the shell's own business.
+  if (opts.prompt === 'none') return false
+  const before = s.expected
+  s.expected = ANY_ACCOUNT
+  try {
+    await s.device.call('auth.signIn', { addAccount: !!shellActive() })
+  } catch (error: any) {
+    s.expected = before
+    if (error?.code === 'cancelled') return false
+    throw shellOidcError(error)
+  }
+  oidcShellHooks.reload()
+  return true
+}
+
+async function shellAccessToken(s: Shell, resource: string): Promise<string> {
+  const fresh = () => {
+    const cached = access[resource]
+    return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined
+  }
+  const hit = fresh()
+  if (hit) return hit
+  const next = minting.then(async () => {
+    const again = fresh()
+    if (again) return again
+    try {
+      const r = await s.device.call('auth.accessToken', { resource })
+      access[resource] = { token: r.accessToken, exp: expirySeconds(r.expiresAt), type: r.tokenType }
+      return r.accessToken
+    } catch (error: any) {
+      // Signed out in the app (by its code: a BridgeError, whichever copy of the class threw it): no token, and the page is signed out with it. Anything else is this call's alone.
+      if (error?.code === 'notSignedIn') shellSignedOut(s)
+      else console.warn(`AUTH: the app gave no token for ${resource} —`, error?.message)
+      return ''
+    }
+  })
+  minting = next.catch(() => {})
+  return next
+}
+
 /* Sign-in failures the person reading them can DO something different about. The message
    stays the technical detail — console, support, bug reports — while `code` is what picks
    the sentence they read, so the AS rewording an error_description can never silently
@@ -284,9 +377,10 @@ const stored = (): Stored | undefined => {
   }
 }
 
-export const oidcConfigured = () => !!OAUTH_ISSUER
+export const oidcConfigured = () => !!OAUTH_ISSUER || !!shell
 const supportLive = (s: Stored | undefined) => !!s?.support && s.support.exp - Math.floor(Date.now() / 1000) > 0
 export const oidcSignedIn = () => {
+  if (shell) return !!shellActive()
   const s = stored()
   return !!s?.refresh_token || supportLive(s)
 }
@@ -322,11 +416,17 @@ export const oidcSupportEndsAt = (): number | undefined => {
   const s = stored()?.support
   return s ? s.exp * 1000 : undefined
 }
-export const oidcClaims = (): OidcClaims | undefined => decodeJwt(stored()?.id_token)
+export const oidcClaims = (): OidcClaims | undefined => {
+  if (shell) {
+    const a = shellActive()
+    return a ? { sub: a.sub, email: a.email, name: a.name } : undefined
+  }
+  return decodeJwt(stored()?.id_token)
+}
 /** The support-session marker: permitteer stamps `act` (the OPERATOR acting as this
  *  subject) into every token of an impersonated session, the id_token included — the
  *  app-readable artifact. Null on an ordinary session. */
-export const oidcActor = (): { sub: string } | null => decodeJwt(stored()?.id_token)?.act ?? null
+export const oidcActor = (): { sub: string } | null => (shell ? null : decodeJwt(stored()?.id_token)?.act ?? null)
 
 async function discover() {
   if (discovery) return discovery
@@ -428,7 +528,8 @@ async function refreshMcpDetailType(): Promise<string> {
 // cached (renamed-away) type, called the grant current, and the discovery that followed updated
 // only the cache — nothing re-ran the heal, so agent authorization stayed broken until a reload.
 // Bounded (the fetch times out) and never rejects, so awaiting it costs at most that bound once.
-const mcpDetailReady: Promise<string> = refreshMcpDetailType()
+// Not in an embedded build: its shell holds the grant, and the agent's slice is not this page's to declare.
+const mcpDetailReady: Promise<string> = EMBEDDED ? Promise.resolve(mcpDetailType()) : refreshMcpDetailType()
 export const oidcMcpDetailReady = (): Promise<string> => mcpDetailReady
 
 const declared = (): Array<{
@@ -495,6 +596,7 @@ const declarationFingerprint = () =>
  *  install with no stamp (cleared storage, or signed in before this existed) heals once and
  *  then matches. What it deliberately cannot see is a grant narrowed on the server. */
 export function oidcGrantStale(): boolean {
+  if (shell) return false // the shell's grant, written from the shell's own request
   try {
     return tokenStore().getItem(DECLARATION_KEY) !== declarationFingerprint()
   } catch {
@@ -527,6 +629,7 @@ export async function oidcStart(
     console.warn(`OIDC: automatic sign-in (${opts.auto}) already attempted this session — not retrying`)
     return false
   }
+  if (shell) return shellSignIn(shell, opts)
   // The authorize is the moment the name must be RIGHT (a stale one mints a grant the
   // exchange can't use) — resolve it fresh, falling back to last-known on failure.
   const [d] = await Promise.all([discover(), refreshMcpDetailType()])
@@ -580,6 +683,7 @@ export async function oidcStart(
  * deep-link reload), finish the exchange and clean the URL. Returns claims, or
  * undefined when this boot isn't a callback. Throws on a failed/denied flow. */
 export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
+  if (shell) return undefined
   const query = new URLSearchParams(window.location.search)
   const state = query.get('state')
   if (!state || !(query.get('code') || query.get('error'))) return undefined
@@ -656,6 +760,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
  * out to the account API and come back 401. Queue instead, and re-read the cache after
  * the wait so N callers for one audience still cost one refresh. */
 export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE): Promise<string> {
+  if (shell) return shellAccessToken(shell, resource)
   // A support session's token IS the session: served until it expires (a reload restores it from
   // the tab store), never refreshed, and '' — the end — once it is gone. Other audiences have
   // nothing to mint from; their features fail closed, as writes do under `act`.
@@ -780,6 +885,15 @@ export function invalidateOidcToken() {
  * sessions and stay. Nothing to end for a support session (the operator's console owns it) or
  * with no id_token. Resolves the AS's status; a network error rejects. */
 export async function oidcEndSession(): Promise<number | undefined> {
+  if (shell) {
+    // The person signing out of the app's window signs the app out (the shell ends its session as its own sign-out
+    // does): expected, so its auth event does not reload the page out from under the sign-out.
+    const s = shell
+    s.expected = undefined
+    await s.device.call('auth.signOut', { sub: shellActive()?.sub })
+    shellSignedOut(s)
+    return 204
+  }
   const hint = stored()?.id_token
   if (!hint || oidcActor()) return undefined
   const r = await fetch(`${OAUTH_ISSUER}/session/end`, {
@@ -799,6 +913,13 @@ export { clearLocal as oidcClearLocal }
 
 function clearLocal() {
   clearActivationHint()
+  if (shell) {
+    // Nothing is stored here: drop the tokens in memory, and this page's view of who is signed in.
+    access = {}
+    shell.expected = undefined
+    shellSignedOut(shell)
+    return
+  }
   const activeSub = oidcClaims()?.sub
   const reg = readRegistry()
   if (activeSub && reg[activeSub]) {
@@ -884,6 +1005,10 @@ export type OidcAccount = {
 
 /** The accounts this app has signed into, for the avatar menu. Active first. */
 export function oidcAccounts(): OidcAccount[] {
+  if (shell)
+    return shell.accounts
+      .map(a => ({ sub: a.sub, email: a.email, name: a.name, active: a.active, known: false }))
+      .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
   const activeSub = oidcClaims()?.sub
   const reg = readRegistry()
   return Object.entries(reg)
@@ -923,6 +1048,7 @@ const clearActivationHint = () => {
  *  every model boots as the new identity (a soft swap would bleed one account's data
  *  into the other's view). Returns false when the account is unknown. */
 export function oidcActivateAccount(sub: string): boolean {
+  if (shell) return false // the shell's accounts switch through it (oidcSelectKnownAccount)
   const entry = readRegistry()[sub]
   if (!entry?.refresh_token) return false
   try {
@@ -1055,7 +1181,14 @@ export async function oidcAuthHeaders(
 ): Promise<Record<string, string>> {
   const token = await oidcAccessToken(resource)
   if (!token) return {}
-  if (access[resource]?.type === 'DPoP') {
+  if (access[resource]?.type === 'DPoP' && shell) {
+    try {
+      const { proof } = await shell.device.call('auth.dpopProof', { method, url, accessToken: token })
+      return { authorization: `DPoP ${token}`, DPoP: proof }
+    } catch (error: any) {
+      console.warn(`AUTH: the app made no DPoP proof for ${resource} —`, error?.message)
+    }
+  } else if (access[resource]?.type === 'DPoP') {
     const proof = await dpopProof(method, url, token)
     if (proof) return { authorization: `DPoP ${token}`, DPoP: proof }
     // A bound token with no proof to present. Falling through to Bearer is deliberate — the AS
@@ -1112,6 +1245,7 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
 // for are filed as KNOWN — identity only — and the menu offers them; picking one is a silent
 // selection (prompt=none + login_hint), which the AS answers for any live set member.
 export async function oidcRefreshBrowserAccounts(): Promise<void> {
+  if (shell) return readShellAccounts(shell)
   if (oidcActor()) return // a support session is no set member — nothing to switch to
   const { status, body } = await oidcResourceRequest<{
     multi?: boolean
@@ -1181,6 +1315,21 @@ export async function oidcRefreshBrowserAccounts(): Promise<void> {
 }
 /** Pick a KNOWN account: silent selection through the AS. False when the sub is not a known entry. */
 export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
+  if (shell) {
+    const s = shell
+    if (!s.accounts.some(a => a.sub === sub)) return false
+    const before = s.expected
+    s.expected = sub
+    try {
+      await s.device.call('auth.switch', { sub })
+    } catch (error: any) {
+      s.expected = before
+      console.warn('AUTH: the app did not switch accounts —', error?.message)
+      return false
+    }
+    oidcShellHooks.reload()
+    return true
+  }
   const e = readRegistry()[sub]
   if (!e || e.refresh_token || !e.email) return false
   return await oidcStart({ prompt: 'none', loginHint: e.email })
@@ -1190,5 +1339,8 @@ export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
 // above warms the third piece): fetched while the store rehydrates rather than after it. Last
 // in the module so every binding they touch exists. Failures are swallowed here and surface on
 // the call that actually needs them.
-void discover().catch(() => undefined)
-void dpopKey()
+// Not in an embedded build, whose shell signs in: no discovery it would use, and no browser key it must never make.
+if (!EMBEDDED) {
+  void discover().catch(() => undefined)
+  void dpopKey()
+}

@@ -13,9 +13,15 @@
      the error's code; events through `addListener('event', { name, payload })`.
 
    The page decides what to show from `info().capabilities` only, never from the platform. Versioning is semver on
-   BRIDGE_VERSION: a new method or capability is a minor version; a different major is "update the app". */
+   BRIDGE_VERSION: a new method or capability is a minor version; a different major is "update the app".
 
-export const BRIDGE_VERSION = '1.0.0'
+   Each transport registers itself only where it applies (thisDeviceHttp.ts: an embedded build not running as a
+   Capacitor native app; thisDeviceCapacitor.ts: a Capacitor native app), so one embedded bundle serves both shells.
+
+   1.1.0 (additive): NetworkKind 'unknown', for a shell that cannot tell the machine's network (the menu); the
+   epoch-seconds unit of auth.accessToken's expiresAt said here. */
+
+export const BRIDGE_VERSION = '1.1.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -41,7 +47,7 @@ export type BridgeInfo = {
 }
 
 export type EngineState = 'starting' | 'online' | 'offline' | 'signedOut' | 'stopped'
-export type NetworkKind = 'wifi' | 'wired' | 'cellular' | 'none'
+export type NetworkKind = 'wifi' | 'wired' | 'cellular' | 'none' | 'unknown'
 
 export type ExitRef = { id: string; name: string; kind: 'device' | 'remoteit' }
 
@@ -101,6 +107,7 @@ export type BridgeMethods = {
   'permissions.request': { args: { name: PermissionName }; result: PermissionState }
   'diagnostics.save': { args: {}; result: { saved: boolean; where?: string } }
   // An access token for the API, from the shell's sign-in; the shell keeps the refresh token and the DPoP key.
+  // `resource` absent: the stage's API. expiresAt is the token's expiry in seconds since the epoch (a JWT's exp).
   'auth.accessToken': { args: { resource?: string; scope?: string }; result: { accessToken: string; expiresAt: number; tokenType: 'Bearer' | 'DPoP' } }
   // A DPoP proof for one request, made with the shell's key (only where the token is DPoP).
   'auth.dpopProof': { args: { method: string; url: string; accessToken: string }; result: { proof: string } }
