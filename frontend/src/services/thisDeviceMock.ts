@@ -12,6 +12,7 @@ import {
   DeviceSetting,
   DeviceStatus,
   ExitRef,
+  PermissionState,
 } from './thisDevice'
 
 /* A stand-in shell for thisDevice: a machine's state in memory, every method of the bridge over it, and its events —
@@ -30,6 +31,10 @@ export type MockBridgeOptions = {
   route?: string
   // Whether traffic stops while the exit cannot be reached (protect.killSwitch); true unless said.
   killSwitch?: boolean
+  // With 'lanServices' (a phone's): whether it is on a local network (true unless said), and its Local Network
+  // permission ('notAsked' unless said; lanServices.set on asks, and a person not refusing grants it).
+  onLocalNetwork?: boolean
+  localNetworkPermission?: PermissionState
 }
 
 export type MockBridge = {
@@ -54,6 +59,7 @@ const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
   'permissions.get': 'permissions',
   'permissions.request': 'permissions',
   'diagnostics.save': 'diagnostics',
+  'lanServices.set': 'lanServices',
 }
 
 export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
@@ -85,6 +91,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
   const calls: MockBridge['calls'] = []
   // The engine's route: the exit Protect goes back on through, kept while it is off (connectd exit_protect.go).
   let route = options.route
+  let localNetwork: PermissionState = options.localNetworkPermission ?? 'notAsked'
 
   const bridge: MockBridge = {
     calls,
@@ -95,6 +102,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
       vpn: { on: false },
       subnet: { on: true, domain: 'on.solo.remote.it', ipv6: 'fd52:3f0e:7d1a::12' },
       network: 'unknown',
+      // What it serves, where it may serve (lanServices): nothing yet.
+      ...(capabilities.includes('lanServices') ? { served: [] } : {}),
       ...options.status,
     },
     settings: options.settings ?? [
@@ -148,6 +157,21 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             derive()
             changed()
             return bridge.status
+          case 'lanServices.set': {
+            const setting = bridge.settings.find(s => s.name === 'lan_services')
+            if (setting?.locked) throw new BridgeError('refused', 'lan_services: kept on this machine by its administrator')
+            // Turned on, the shell asks for the Local Network permission (the person's answer: granted unless the
+            // mock says they refused it).
+            if (a.on && localNetwork !== 'granted' && localNetwork !== 'denied') localNetwork = 'granted'
+            const next: DeviceSetting = { name: 'lan_services', value: !!a.on, source: 'machine' }
+            bridge.settings = setting
+              ? bridge.settings.map(s => (s.name === 'lan_services' ? next : s))
+              : [...bridge.settings, next]
+            derive()
+            changed()
+            bridge.emit('settings', bridge.settings)
+            return bridge.status
+          }
           case 'exit.list':
             return exits
           case 'exit.set': {
@@ -169,11 +193,21 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             const next: DeviceSetting = { ...setting, value: a.value, source: 'machine' }
             bridge.settings = bridge.settings.map(s => (s.name === a.name ? next : s))
             bridge.emit('settings', bridge.settings)
+            if (a.name === 'lan_services') {
+              derive()
+              changed()
+            }
             return next
           }
           case 'permissions.get':
-            return { localNetwork: 'granted', vpnConfiguration: 'notAsked' }
+            return { localNetwork, vpnConfiguration: 'notAsked' }
           case 'permissions.request':
+            if (a.name === 'localNetwork') {
+              if (localNetwork !== 'denied') localNetwork = 'granted'
+              derive()
+              changed()
+              return localNetwork
+            }
             return 'granted'
           case 'diagnostics.save':
             return { saved: true, where: '/tmp/remoteit-log.txt' }
@@ -226,14 +260,23 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
     }
     derive()
   }
-  // access and protect, said from the state as a shell says them, where offered.
+  // access, protect and lanServices, said from the state as a shell says them, where offered.
   function derive() {
     const s = bridge.status
+    const lan = bridge.settings.find(x => x.name === 'lan_services')
     bridge.status = {
       ...s,
       access: capabilities.includes('access') ? { on: !!s.subnet?.on } : undefined,
       protect: capabilities.includes('protect')
         ? { on: s.vpn.on, route: exits.find(e => e.id === route), killSwitch: options.killSwitch ?? true }
+        : undefined,
+      lanServices: capabilities.includes('lanServices')
+        ? {
+            on: lan?.value === true,
+            locked: lan?.locked || undefined,
+            onLocalNetwork: options.onLocalNetwork ?? true,
+            localNetworkPermission: localNetwork,
+          }
         : undefined,
     }
   }

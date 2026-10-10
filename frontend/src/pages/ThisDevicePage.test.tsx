@@ -151,6 +151,118 @@ describe('This device', () => {
     expect(container.querySelector('[data-setting="websocket"]')!.textContent).toContain('administrator')
   })
 
+  it('never lists lan_services among the settings where no shell offers its switch (a desktop serves its services whatever it says)', async () => {
+    const { container } = await render({
+      settings: [
+        { name: 'lan_services', value: false, source: 'default' },
+        { name: 'printers', value: true, source: 'machine' },
+      ],
+    })
+    expect(sections(container)).not.toContain('lanServices')
+    expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
+    expect(container.querySelector('[data-setting="printers"]')).not.toBeNull()
+  })
+
+  const PHONE: Capability[] = [
+    'status',
+    'vpn',
+    'exit',
+    'settings',
+    'permissions',
+    'diagnostics',
+    'auth',
+    'access',
+    'protect',
+    'lanServices',
+  ]
+  const phone = (options: MockBridgeOptions = {}) =>
+    render({
+      capabilities: PHONE,
+      info: { platform: 'ios', shell: 'capacitor', deviceKind: 'iPhone' },
+      settings: [{ name: 'lan_services', value: false, source: 'default' }],
+      ...options,
+    })
+
+  it('shows the third switch after Access and Protect, in place of its setting', async () => {
+    const { container } = await phone()
+    // lan_services was the phone's only setting: shown as the switch, no Settings section is left.
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'lanServices', 'permissions', 'diagnostics'])
+    expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
+    const line = container.querySelector('[data-lan-services]')!
+    expect(line.getAttribute('data-lan-services')).toBe('off')
+    expect(line.textContent).toBe(
+      'Allow remote access to services on the networkPeople you share with can reach devices on the network this iPhone is on, through it.'
+    )
+  })
+
+  it('turns it on through lanServices.set, the Local Network permission asked then, and lists what it serves', async () => {
+    const { container, bridge } = await phone()
+    const control = () => container.querySelector('[data-control="lanServices"] input') as HTMLInputElement
+    await act(async () => control().click())
+    expect(bridge.calls.filter(c => c.method === 'lanServices.set').map(c => c.args)).toEqual([{ on: true }])
+    expect(bridge.calls.filter(c => c.method === 'settings.set')).toEqual([])
+    expect(container.querySelector('[data-lan-services]')!.getAttribute('data-lan-services')).toBe('on')
+    expect(bridge.status.lanServices?.localNetworkPermission).toBe('granted')
+    expect(container.querySelectorAll('[data-lan-services-state]').length).toBe(0)
+    expect(container.textContent).toContain('No services on this iPhone yet')
+    expect(container.querySelector('[data-section="permissions"]')!.textContent).toContain('Local networkgranted')
+
+    await act(async () =>
+      bridge.emit('status', {
+        ...bridge.status,
+        served: [
+          { service: 'S1', target: '192.168.1.1:80', sessions: 2 },
+          { service: 'S2', target: '192.168.1.50:554', sessions: 0, lastError: 'no route to host' },
+        ],
+      })
+    )
+    const served = [...container.querySelectorAll('[data-served]')].map(e => e.textContent)
+    expect(served).toEqual([
+      '192.168.1.1:80Connections: 2',
+      '192.168.1.50:554Connections: 0 · Last connection failed: no route to host',
+    ])
+
+    await act(async () => control().click())
+    expect(bridge.calls.filter(c => c.method === 'lanServices.set').map(c => c.args)).toEqual([{ on: true }, { on: false }])
+    expect(container.querySelector('[data-lan-services]')!.getAttribute('data-lan-services')).toBe('off')
+    expect(container.querySelectorAll('[data-served]').length).toBe(0)
+  })
+
+  it('says what keeps its services from being reached: the permission refused, no local network', async () => {
+    const { container, bridge } = await phone({ localNetworkPermission: 'denied', onLocalNetwork: false })
+    await act(async () => (container.querySelector('[data-control="lanServices"] input') as HTMLInputElement).click())
+    const states = [...container.querySelectorAll('[data-lan-services-state]')].map(e => [
+      e.getAttribute('data-lan-services-state'),
+      e.textContent,
+    ])
+    expect(states).toEqual([
+      ['permission', 'Needs Local Network access: turn on Local Network for remote.it in this iPhone’s Settings.'],
+      ['network', 'Not on a local network: this iPhone is on cellular or offline, so its services can’t be reached.'],
+    ])
+    expect(bridge.status.lanServices?.on).toBe(true)
+  })
+
+  it('offers to ask for the Local Network permission when it was turned on from elsewhere', async () => {
+    const { container, bridge } = await phone({
+      settings: [{ name: 'lan_services', value: true, source: 'cloud' }],
+    })
+    const ask = container.querySelector('[data-control="localNetwork"]') as HTMLButtonElement
+    expect(ask).not.toBeNull()
+    await act(async () => ask.click())
+    expect(bridge.calls.filter(c => c.method === 'permissions.request').map(c => c.args)).toEqual([
+      { name: 'localNetwork' },
+    ])
+    expect(container.querySelector('[data-control="localNetwork"]')).toBeNull()
+  })
+
+  it('leaves it alone where the machine’s administrator holds it', async () => {
+    const { container } = await phone({
+      settings: [{ name: 'lan_services', value: false, source: 'machine', locked: true }],
+    })
+    expect((container.querySelector('[data-control="lanServices"] input') as HTMLInputElement).disabled).toBe(true)
+    expect(container.querySelector('[data-lan-services]')!.textContent).toContain('administrator')
+  })
+
   it('says to update the app when the shell’s bridge is another major version', async () => {
     const { container, bridge } = await render({ info: { bridgeVersion: '2.0.0' } })
     expect(container.textContent).toContain('Update the app')
