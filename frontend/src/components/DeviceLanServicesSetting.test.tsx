@@ -49,7 +49,7 @@ async function render(element: React.ReactElement) {
 
 const row = (page: HTMLElement) => page.querySelector('[data-row]') as HTMLButtonElement | null
 
-describe('connections through a phone', () => {
+describe('remote access to services on a phone’s network', () => {
   it('absent where the API serves no lan_services — any device but a phone — or no settings at all', async () => {
     for (const list of [null, [], [{ ...lan(), name: 'mcp_exec' as const }]]) {
       const page = await render(<DeviceLanServicesSetting settings={settingsOf(list)} canManage />)
@@ -62,7 +62,7 @@ describe('connections through a phone', () => {
     const page = await render(<DeviceLanServicesSetting settings={settings} canManage />)
     expect(row(page)!.dataset.on).toBe('false')
     expect(page.textContent).toBe(
-      'Allow connections through this phone — Others you share with can reach devices on the network this phone is on, while the VPN is on.'
+      'Allow remote access to services on the network — People you share with can reach devices on the network this phone is on, through it.'
     )
     await act(async () => row(page)!.click())
     expect(settings.set).toHaveBeenCalledWith('lan_services', true)
@@ -76,7 +76,7 @@ describe('connections through a phone', () => {
       />
     )
     expect(row(page)!.dataset.on).toBe('true')
-    expect(page.textContent).toBe('Allow connections through this phone — Set on the device by the app')
+    expect(page.textContent).toBe('Allow remote access to services on the network — Set on the device by the app')
   })
 
   it('greyed for one who does not manage the phone', async () => {

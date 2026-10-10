@@ -38,7 +38,7 @@ export const DevicePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
-  // A phone takes services only while connections through it are on (its lan_services setting).
+  // A phone takes services only while remote access to services on its network is on (its lan_services setting).
   const phoneClosed = servicesClosed(useDeviceSettings(device?.id).setting('lan_services'))
 
   const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
@@ -111,10 +111,10 @@ export const DevicePage: React.FC = () => {
         {editable && phoneClosed && (
           <ListItemLocation to={`/devices/${device.id}/edit`} icon="network-wired" dense>
             <ListItemText
-              primary={t('devicePage.phoneServicesOff', 'Services need connections through this phone')}
+              primary={t('devicePage.phoneServicesOff', 'Remote access to services on the network is off')}
               secondary={t(
                 'devicePage.phoneServicesOffHint',
-                'Turn on Allow connections through this phone, in its settings or the phone’s app, to add services.'
+                'Turn it on, in its settings or on the phone’s This device page, to add services.'
               )}
             />
           </ListItemLocation>

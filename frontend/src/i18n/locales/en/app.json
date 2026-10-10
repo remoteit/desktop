@@ -911,8 +911,8 @@
     "label": "Device Label"
   },
   "deviceLanServices": {
-    "hint": "Others you share with can reach devices on the network this phone is on, while the VPN is on.",
-    "label": "Allow connections through this phone"
+    "hint": "People you share with can reach devices on the network this phone is on, through it.",
+    "label": "Allow remote access to services on the network"
   },
   "deviceList": {
     "addTag": "Add Tag",
@@ -1142,8 +1142,8 @@
     "deviceNotFound": "Device not found.",
     "deviceOffline": "Device offline",
     "deviceUnlicensed": "Device unlicensed",
-    "phoneServicesOff": "Services need connections through this phone",
-    "phoneServicesOffHint": "Turn on Allow connections through this phone, in its settings or the phone’s app, to add services.",
+    "phoneServicesOff": "Remote access to services on the network is off",
+    "phoneServicesOffHint": "Turn it on, in its settings or on the phone’s This device page, to add services.",
     "registeringEllipsis": "Registering...",
     "restoreDevice": "Restore Device",
     "selectServiceInstruction": "Select a service to configure it or to start a connection.",
@@ -2831,6 +2831,7 @@
     "access": "Access remote devices",
     "accessLine": "Reach your devices by name from this {{kind}}.",
     "allow": "Allow",
+    "allowLocalNetwork": "Allow Local Network access",
     "chooseRoute": "Choose a device",
     "connecting": "Connecting to {{name}}…",
     "devicePage": "Its page in remote.it",
@@ -2843,6 +2844,10 @@
     "fromDefault": "Default",
     "fromMachine": "Set on this device",
     "kind": "device",
+    "lanServices": "Allow remote access to services on the network",
+    "lanServicesLine": "People you share with can reach devices on the network this {{kind}} is on, through it.",
+    "lanServicesNoNetwork": "Not on a local network: this {{kind}} is on cellular or offline, so its services can’t be reached.",
+    "lanServicesPermission": "Needs Local Network access: turn on Local Network for remote.it in this {{kind}}’s Settings.",
     "localNetwork": "Local network",
     "locked": "Set by this machine’s administrator",
     "off": "Off",
@@ -2858,6 +2863,9 @@
     "reachedAs": "This {{kind}} is {{name}}.",
     "route": "Route through",
     "saved": "Saved {{where}}",
+    "servedConnections": "Connections: {{n}}",
+    "servedFailed": "Last connection failed: {{error}}",
+    "servedNone": "No services on this {{kind}} yet: add them on its page in remote.it.",
     "settings": "Settings",
     "signedIn": "Signed in on this device",
     "signedOut": "Not signed in",
