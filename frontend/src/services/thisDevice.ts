@@ -19,7 +19,8 @@
    Capacitor native app; thisDeviceCapacitor.ts: a Capacitor native app), so one embedded bundle serves both shells.
 
    1.1.0 (additive): NetworkKind 'unknown', for a shell that cannot tell the machine's network (the menu); the
-   epoch-seconds unit of auth.accessToken's expiresAt said here. */
+   epoch-seconds unit of auth.accessToken's expiresAt said here; auth.signIn's optional deviceName; DeviceSetting's
+   source and locked said from connectd's own fields. */
 
 export const BRIDGE_VERSION = '1.1.0'
 
@@ -68,7 +69,10 @@ export type DeviceStatus = {
 export type SettingValue = string | number | boolean | null
 
 // Settings by their connectd names (device-package docs/device-settings.md): exit_node, lan_services, printers, …
-// `source` says who set the value standing now: either side sets, the newer stands.
+// `source` says who set the value standing now: either side sets, the newer stands. From connectd's `from`: `local`,
+// `config` (the machine's configuration file) and `policy` → 'machine'; `cloud` → 'cloud'; anything else → 'default'.
+// `locked`: the machine may not change it — connectd's `control` is `off`, `on` or `cloud` (or a value it fixes), or
+// `from` is `policy`.
 export type DeviceSetting = { name: string; value: SettingValue; source: 'machine' | 'cloud' | 'default'; locked?: boolean }
 
 export type PermissionName = 'localNetwork' | 'vpnConfiguration'
@@ -112,7 +116,9 @@ export type BridgeMethods = {
   // A DPoP proof for one request, made with the shell's key (only where the token is DPoP).
   'auth.dpopProof': { args: { method: string; url: string; accessToken: string }; result: { proof: string } }
   'auth.accounts': { args: {}; result: AuthAccount[] }
-  'auth.signIn': { args: { addAccount?: boolean }; result: AuthAccount }
+  // deviceName: what to call this machine where the first sign-in registers it (a phone; iOS gives an app only
+  // "iPhone"). A shell that registers nothing ignores it.
+  'auth.signIn': { args: { addAccount?: boolean; deviceName?: string }; result: AuthAccount }
   'auth.switch': { args: { sub: string }; result: AuthAccount }
   'auth.signOut': { args: { sub?: string }; result: {} }
   'stages.list': { args: {}; result: StageStatus[] }
