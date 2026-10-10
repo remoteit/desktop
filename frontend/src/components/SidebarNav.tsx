@@ -16,6 +16,7 @@ import { useCounts } from '../hooks/useCounts'
 import { getLocale } from '../helpers/dateHelper'
 import { spacing } from '../styling'
 import { getHasPartner } from '../models/partnerStats'
+import { useThisDevice, useThisDevicePage } from '../hooks/useThisDevice'
 
 const listSx = (theme: Theme) => ({
   position: 'static',
@@ -46,6 +47,9 @@ export const SidebarNav: React.FC = () => {
   const { t } = useTranslation()
 
   const hasPartner = useSelector(getHasPartner)
+  // "This device": only in an app (thisDevice present), and only with its flag (hooks/useThisDevice).
+  const thisDevicePage = useThisDevicePage()
+  const thisDevice = useThisDevice()
 
   if (remoteUI)
     return (
@@ -63,6 +67,9 @@ export const SidebarNav: React.FC = () => {
 
   return (
     <List sx={listSx}>
+      {thisDevicePage && thisDevice && (
+        <ListItemLocation title={t('nav.thisDevice', 'This Device')} icon="laptop" to="/this-device" dense />
+      )}
       {!mobile && (
         <>
           <ListItemLocation

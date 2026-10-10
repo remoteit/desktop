@@ -55,6 +55,7 @@ import { ProfilePage } from '../pages/ProfilePage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
+import { ThisDevicePage } from '../pages/ThisDevicePage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
@@ -243,6 +244,12 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         <DeviceContextWrapper>
           <DeviceRouter layout={layout} />
         </DeviceContextWrapper>
+      </Route>
+      {/* This device: the machine the app runs on (services/thisDevice) */}
+      <Route path="/this-device">
+        <Panel layout={layout}>
+          <ThisDevicePage />
+        </Panel>
       </Route>
       {/* Logs */}
       <Route path="/logs">
