@@ -3,7 +3,7 @@ import browser from './browser'
 import { store } from '../store'
 import { IP_PRIVATE } from '@common/constants'
 import { IBackendState } from '../models/backend'
-import { PORT, FRONTEND_RETRY_DELAY } from '../constants'
+import { PORT, FRONTEND_RETRY_DELAY, EMBEDDED } from '../constants'
 import { EventEmitter } from 'events'
 import network from '../services/Network'
 
@@ -35,7 +35,10 @@ class Controller extends EventEmitter {
     const state = store.getState()
     const { ui, auth } = store.dispatch
 
-    if (!navigator.onLine) return
+    // An embedded build boots offline as well: its sign-in is the app's, over the bridge on this machine, and signed
+    // out or unreached it shows This device, whose controls need no network (components/ThisDeviceApp). A browser
+    // waits for the network, as before.
+    if (!navigator.onLine && !EMBEDDED) return
     // Keyed off the user, not backendAuthenticated or authenticated:
     //  - backendAuthenticated is cleared by a dropped socket (auth.disconnect), so
     //    waking from sleep took the auth.init() branch, which no-ops once a user

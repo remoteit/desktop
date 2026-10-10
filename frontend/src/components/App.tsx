@@ -16,6 +16,8 @@ import { LoadingMessage } from './LoadingMessage'
 import { ResellerLogo } from './ResellerLogo'
 import { SidebarMenu } from './SidebarMenu'
 import { SignInPage } from '../pages/SignInPage'
+import { ThisDeviceApp } from './ThisDeviceApp'
+import { useThisDevice } from '../hooks/useThisDevice'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
 import { useChatEnabled, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
@@ -48,6 +50,8 @@ export const App: React.FC = () => {
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const chatEnabled = useChatEnabled()
+  // In an app, the machine the page runs on (services/thisDevice); null in a plain browser.
+  const thisDevice = useThisDevice()
   // organization.initialized flips exactly when the account's license limits have been parsed,
   // so it is the one signal that chatEnabled has been RESOLVED rather than merely not yet loaded
   const chatEntitlementResolved = useSelector((state: State) => state.organization.initialized)
@@ -100,6 +104,23 @@ export const App: React.FC = () => {
         ) : (
           <LoadingMessage logo={<Logo color="alwaysWhite" />} invert spinner />
         )}
+      </Page>
+    )
+
+  // Signed out in an app: This device, which works with no sign-in and no network, the sign-in on it
+  // (components/ThisDeviceApp) — and offline, no dialog over it saying the internet is required: it is not.
+  // thisDevice is undefined only while the bridge is still being asked, which the sign-in did first.
+  if (signedOut && thisDevice)
+    return (
+      <Page offlineDialog={false}>
+        <ThisDeviceApp layout={layout} />
+      </Page>
+    )
+
+  if (signedOut && thisDevice === undefined)
+    return (
+      <Page>
+        <LoadingMessage logo={<Logo color="alwaysWhite" />} invert spinner />
       </Page>
     )
 

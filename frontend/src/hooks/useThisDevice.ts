@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { THIS_DEVICE_DEFAULT } from '../constants'
-import { thisDevice, ThisDevice } from '../services/thisDevice'
+import { thisDevice, thisDeviceKnown, ThisDevice } from '../services/thisDevice'
 
 /** The machine this page runs on (services/thisDevice): undefined while it is asked, null where there is none — a plain
  *  browser, or an app that did not answer. */
 export function useThisDevice(): ThisDevice | null | undefined {
-  const [device, setDevice] = useState<ThisDevice | null | undefined>(undefined)
+  const [device, setDevice] = useState<ThisDevice | null | undefined>(thisDeviceKnown)
   useEffect(() => {
     let live = true
     thisDevice().then(d => live && setDevice(d ?? null))

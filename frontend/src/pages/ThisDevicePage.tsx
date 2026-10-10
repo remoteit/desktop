@@ -13,7 +13,10 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { useSelector } from 'react-redux'
+import { State } from '../store'
 import { Container } from '../components/Container'
+import { ThisDeviceSignIn } from '../components/ThisDeviceSignIn'
 import { useThisDevice } from '../hooks/useThisDevice'
 import {
   BRIDGE_VERSION,
@@ -29,11 +32,16 @@ import {
 
 /* "This device" (device-package docs/one-app-plan.md): the machine this page runs on, the same page on every
    platform. What it shows comes from the shell's capabilities only (thisDevice.info().capabilities) — never from which
-   platform it is — so the menu on a Mac and the phone's app draw it alike, each with what it can do. */
+   platform it is — so the menu on a Mac and the phone's app draw it alike, each with what it can do.
+
+   Signed out, or offline, in an app it is the whole portal (components/ThisDeviceApp): the bridge is the machine's own,
+   so everything from it works; what is the account's — the device's page in remote.it — waits for the sign-in, which
+   is offered at the top. */
 
 export const ThisDevicePage: React.FC = () => {
   const { t } = useTranslation()
   const device = useThisDevice()
+  const signedIn = useSelector((state: State) => state.auth.authenticated)
   return (
     <Container gutterBottom header={<Typography variant="h1">{t('thisDevice.title', 'This device')}</Typography>}>
       {device === undefined ? (
@@ -47,7 +55,14 @@ export const ThisDevicePage: React.FC = () => {
           </Typography>
         </Box>
       ) : (
-        <ThisDeviceView device={device} />
+        <>
+          {!signedIn && (
+            <Box paddingX={2}>
+              <ThisDeviceSignIn />
+            </Box>
+          )}
+          <ThisDeviceView device={device} signedIn={signedIn} />
+        </>
       )}
     </Container>
   )
@@ -77,7 +92,8 @@ const settingOn = (value: SettingValue | { on?: boolean }): boolean | undefined 
 /** The value that turns a setting the other way: a boolean flipped, or {on} flipped with the rest kept. */
 const toggled = (value: any): any => (typeof value === 'boolean' ? !value : { ...value, on: !value.on })
 
-export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => {
+// signedIn false: nothing of the account's (the device's page in remote.it) — the bridge's parts alone.
+export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }> = ({ device, signedIn = true }) => {
   const { t } = useTranslation()
   const has = (c: Parameters<ThisDevice['has']>[0]) => device.has(c)
   const [status, setStatus] = useState<DeviceStatus>()
@@ -205,7 +221,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
               />
             </ListItem>
           )}
-          {status.device?.uid && (
+          {signedIn && status.device?.uid && (
             <ListItem>
               <Button size="small" href={`#/devices/${status.device.uid}`}>
                 {t('thisDevice.devicePage', 'Its page in remote.it')}

@@ -14,6 +14,8 @@ const {
   oidcGrantStale,
   oidcMcpDetailReady,
   oidcActor,
+  oidcShell,
+  graphQLLogin,
   browser,
   storeState,
 } = vi.hoisted(() => ({
@@ -24,6 +26,8 @@ const {
   oidcGrantStale: vi.fn(),
   oidcActor: vi.fn(),
   oidcMcpDetailReady: vi.fn(),
+  oidcShell: vi.fn(),
+  graphQLLogin: vi.fn(),
   browser: { isElectron: false, hasBackend: false },
   storeState: { auth: {} as Record<string, unknown> },
 }))
@@ -37,6 +41,7 @@ vi.mock('../services/oidc', () => ({
   oidcMcpDetailReady,
   oidcActor,
   oidcUseShell: vi.fn(async () => false),
+  oidcShell,
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
@@ -48,7 +53,7 @@ vi.mock('../services/Network', () => ({ default: {} }))
 vi.mock('../services/browser', () => ({ default: browser }))
 vi.mock('../services/analytics', () => ({ default: {} }))
 vi.mock('../services/zendesk', () => ({ default: {} }))
-vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
+vi.mock('../services/graphQLRequest', () => ({ graphQLLogin }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
 vi.mock('../store', () => ({ persistor: { purge: vi.fn() }, store: { getState: () => storeState } }))
@@ -301,5 +306,26 @@ describe('auth model — the password change is one call to the AS', () => {
     const dispatch = makeDispatch()
     await effectsFor(dispatch).changePassword(values)
     expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'Choose a password of at least 12 characters.' })
+  })
+})
+
+/* In an app (a shell signs in) remote.it out of reach must not hold the page on a spinner waiting for a user that never
+   comes: the page goes to This device (components/ThisDeviceApp), whose controls are the machine's own. A browser is
+   left as it was. */
+describe('auth model — the user unreached', () => {
+  it('in an app: no longer authenticated, so This device shows', async () => {
+    oidcShell.mockReturnValue(true)
+    graphQLLogin.mockResolvedValue('ERROR')
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).fetchUser()
+    expect(dispatch.auth.set).toHaveBeenCalledWith({ authenticated: false })
+  })
+
+  it('in a plain browser: unchanged', async () => {
+    oidcShell.mockReturnValue(false)
+    graphQLLogin.mockResolvedValue('ERROR')
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).fetchUser()
+    expect(dispatch.auth.set).not.toHaveBeenCalled()
   })
 })

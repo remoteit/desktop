@@ -16,9 +16,11 @@ import { Icon } from '../components/Icon'
 
 export interface Props {
   children: React.ReactNode
+  /** The blocking "Disconnected" dialog while offline; off where the page works offline (components/ThisDeviceApp). */
+  offlineDialog?: boolean
 }
 
-export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
+export function Page({ children, offlineDialog = true }: Props & React.HTMLProps<HTMLDivElement>) {
   const { ui } = useDispatch<Dispatch>()
 
   const device = useSelector(selectDevice)
@@ -52,7 +54,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
     <RemoteHeader device={device}>
       <MaximizeAppRegion />
       {children}
-      {offline && (
+      {offline && offlineDialog && (
         <Dialog open maxWidth="xs" fullWidth>
           <Notice
             severity={offline.severity}

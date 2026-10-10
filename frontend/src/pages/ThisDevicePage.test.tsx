@@ -9,6 +9,7 @@ vi.mock('react-i18next', () => ({
 }))
 vi.mock('../components/Container', () => ({ Container: ({ children }: any) => <div>{children}</div> }))
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => null }))
+vi.mock('../components/ThisDeviceSignIn', () => ({ ThisDeviceSignIn: () => null }))
 
 import { ThisDeviceView } from './ThisDevicePage'
 import { ThisDevice, Capability } from '../services/thisDevice'
@@ -18,14 +19,14 @@ import { createMockBridge, MockBridgeOptions } from '../services/thisDeviceMock'
 // "This device" draws itself from the bridge's capabilities alone (device-package docs/one-app-plan.md), against a
 // mock shell: what a capability is not offered for never shows, and the platform changes nothing.
 
-async function render(options: MockBridgeOptions = {}) {
+async function render(options: MockBridgeOptions = {}, props: { signedIn?: boolean } = {}) {
   const bridge = createMockBridge(options)
   const info = await bridge.transport.call('info', {})
   const device = new ThisDevice(bridge.transport, info)
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => root.render(<ThisDeviceView device={device} />))
+  await act(async () => root.render(<ThisDeviceView device={device} {...props} />))
   await act(async () => {}) // the first status, exits and settings
   return { container, bridge, root }
 }
@@ -299,6 +300,32 @@ describe('This device', () => {
     })
     expect((container.querySelector('[data-control="services"] input') as HTMLInputElement).disabled).toBe(true)
     expect(container.querySelector('[data-services]')!.textContent).toContain('administrator')
+  })
+
+  it('works signed out: every switch through the bridge, nothing of the account’s', async () => {
+    const signedIn = await render()
+    expect(signedIn.container.textContent).toContain('Its page in remote.it')
+    const { container, bridge } = await render({}, { signedIn: false })
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'settings', 'diagnostics'])
+    expect(container.textContent).toContain('Mock MacBook')
+    expect(container.textContent).not.toContain('Its page in remote.it')
+    expect(container.querySelector('a[href^="#/devices/"]')).toBeNull()
+    const control = (name: string) => container.querySelector(`[data-control="${name}"] input`) as HTMLInputElement
+    await act(async () => control('access').click())
+    expect(container.querySelector('[data-access]')!.getAttribute('data-access')).toBe('off')
+    await act(async () => {
+      const input = control('route') ?? (container.querySelector('input[data-control="route"]') as HTMLInputElement)
+      const props = Object.keys(input).find(k => k.startsWith('__reactProps'))!
+      ;(input as any)[props].onChange({ target: { value: '80:00:00:00:01:0B:00:01' } })
+    })
+    await act(async () => control('protect').click())
+    expect(container.querySelector('[data-protect]')!.getAttribute('data-protect')).toBe('on')
+    expect(bridge.calls.map(c => c.method).filter(m => /\.(set|route)$/.test(m))).toEqual([
+      'access.set',
+      'protect.route',
+      'protect.set',
+    ])
+    expect(bridge.calls.some(c => c.method.startsWith('auth.'))).toBe(false)
   })
 
   it('says to update the app when the shell’s bridge is another major version', async () => {

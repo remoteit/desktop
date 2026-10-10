@@ -29,6 +29,7 @@ import {
   oidcSelectKnownAccount,
   oidcClearAutoStarts,
   oidcUseShell,
+  oidcShell,
   OidcError,
   OidcErrorCode,
 } from '../services/oidc'
@@ -245,7 +246,13 @@ export default createModel<RootModel>()({
     async fetchUser(_: void) {
       const { auth } = dispatch
       const response = await graphQLLogin()
-      if (response === 'ERROR') return
+      if (response === 'ERROR') {
+        // In an app, remote.it out of reach (offline, its API down) must not hold the page on a spinner waiting for a
+        // user: it shows This device, whose controls are the machine's own, saying remote.it is not reached
+        // (components/ThisDeviceApp). The shell keeps the sign-in; a retry or the network's return boots it again.
+        if (oidcShell()) auth.set({ authenticated: false })
+        return
+      }
 
       const user = response?.data?.data?.login
 

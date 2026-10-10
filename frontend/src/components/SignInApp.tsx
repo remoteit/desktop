@@ -19,7 +19,7 @@ import brand from '@common/brand/config'
    server's wording, because the two things a stuck user needs — "is this me or them?"
    and "do I retry or wait?" — are not in an error_description. The raw detail is shown
    underneath, quietly, so a support conversation still has something to go on. */
-const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?: number }> = ({
+export const SignInError: React.FC<{ code?: OidcErrorCode; detail?: string; retryAfter?: number }> = ({
   code,
   detail,
   retryAfter,

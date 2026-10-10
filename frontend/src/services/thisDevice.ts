@@ -275,10 +275,12 @@ const major = (version: string) => version.split('.')[0]
 // none registered: a plain browser, and thisDevice is absent.
 let detect: (() => Promise<BridgeTransport | undefined>) | undefined
 let resolved: Promise<ThisDevice | undefined> | undefined
+let known: ThisDevice | null | undefined
 
 export function registerBridgeTransport(find: () => Promise<BridgeTransport | undefined>) {
   detect = find
   resolved = undefined
+  known = undefined
 }
 
 export function thisDevice(): Promise<ThisDevice | undefined> {
@@ -289,6 +291,12 @@ export function thisDevice(): Promise<ThisDevice | undefined> {
       const info = await transport.call('info', {}).catch(() => undefined)
       return info ? new ThisDevice(transport, info) : undefined
     })()
+    const asked = resolved
+    asked.then(d => resolved === asked && (known = d ?? null))
   }
   return resolved
 }
+
+/** thisDevice's answer once it has one — null where there is none — else undefined: for a first render that must not
+ *  wait a turn for an answer the boot already has (the sign-in asks it before anything draws). */
+export const thisDeviceKnown = (): ThisDevice | null | undefined => known
