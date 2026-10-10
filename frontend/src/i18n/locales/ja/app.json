@@ -281,8 +281,7 @@
   "browserGatewayConnect": {
     "failed": "",
     "launch": "",
-    "terminal": "",
-    "title": ""
+    "terminal": ""
   },
   "changeEmailDialog": {
     "cancel": "キャンセル",
@@ -1612,8 +1611,7 @@
   "localSubnetConnect": {
     "address": "",
     "launch": "",
-    "sshHint": "",
-    "title": ""
+    "sshHint": ""
   },
   "logsPage": {
     "title": "ログ"
@@ -2496,8 +2494,20 @@
     "guideBodyBrowser": "接続ボタンでこのサービスへの接続を作成します。",
     "guideBodyDesktop": "このエンドポイントでネットワークリクエストの待ち受けを開始します。リクエストがあると自動的に接続し、アイドル状態になると切断します。",
     "guideTitleBrowser": "接続の開始",
-    "guideTitleDesktop": "オンデマンド接続",
-    "useProxy": ""
+    "guideTitleDesktop": "オンデマンド接続"
+  },
+  "serviceConnectOptions": {
+    "browser": "",
+    "browserAgent": "",
+    "browserSSH": "",
+    "browserType": "",
+    "proxy": "",
+    "proxyFirst": "",
+    "sshLink": "",
+    "subnet": "",
+    "terminal": "",
+    "terminalProxy": "",
+    "terminalSubnet": ""
   },
   "serviceDefaultsPage": {
     "defaults": "デフォルト",

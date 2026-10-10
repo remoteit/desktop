@@ -284,8 +284,7 @@
   "browserGatewayConnect": {
     "failed": "",
     "launch": "",
-    "terminal": "",
-    "title": ""
+    "terminal": ""
   },
   "changeEmailDialog": {
     "cancel": "Abbrechen",
@@ -1641,8 +1640,7 @@
   "localSubnetConnect": {
     "address": "",
     "launch": "",
-    "sshHint": "",
-    "title": ""
+    "sshHint": ""
   },
   "logsPage": {
     "title": "Protokolle"
@@ -2548,8 +2546,20 @@
     "guideBodyBrowser": "Erstellen Sie mit der Verbinden-Schaltfläche eine Verbindung zu diesem Dienst.",
     "guideBodyDesktop": "Beginnen Sie, an diesem Endpunkt auf Netzwerkanfragen zu warten. Bei einer Anfrage wird die Verbindung automatisch hergestellt und bei Inaktivität wieder getrennt.",
     "guideTitleBrowser": "Eine Verbindung starten",
-    "guideTitleDesktop": "Bei Bedarf verbinden",
-    "useProxy": ""
+    "guideTitleDesktop": "Bei Bedarf verbinden"
+  },
+  "serviceConnectOptions": {
+    "browser": "",
+    "browserAgent": "",
+    "browserSSH": "",
+    "browserType": "",
+    "proxy": "",
+    "proxyFirst": "",
+    "sshLink": "",
+    "subnet": "",
+    "terminal": "",
+    "terminalProxy": "",
+    "terminalSubnet": ""
   },
   "serviceDefaultsPage": {
     "defaults": "Standardwerte",

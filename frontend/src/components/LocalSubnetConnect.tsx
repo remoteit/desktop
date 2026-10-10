@@ -19,9 +19,9 @@ import { Icon } from './Icon'
    the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md). An SSH service is shown and
    copied as the command that reaches it, plain `ssh`: the console's works as it is from a machine signed in on its
    remote.it device app, which gets a certificate for its own ssh (connectd remoteit-device ssh-config). */
-type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection }
+type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection; label: string }
 
-export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection }) => {
+export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection, label }) => {
   const { t } = useTranslation()
   const port = service?.port
   const ssh = service?.typeID === 28
@@ -69,7 +69,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection
       <Icon name="laptop" color="primary" />
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography variant="caption" color="textSecondary" component="div">
-          {t('localSubnetConnect.title', 'On this machine — no connection to start')}
+          {label}
         </Typography>
         <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap title={endpoint}>
           {endpoint}

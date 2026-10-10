@@ -284,8 +284,7 @@
   "browserGatewayConnect": {
     "failed": "Could not open it: try again",
     "launch": "Open in a new tab",
-    "terminal": "Open a terminal",
-    "title": "In this browser — nothing to install"
+    "terminal": "Open a terminal"
   },
   "changeEmailDialog": {
     "cancel": "Cancel",
@@ -1641,8 +1640,7 @@
   "localSubnetConnect": {
     "address": "resolves here to {{address}}",
     "launch": "Open in the browser",
-    "sshHint": "Works from a machine signed in on its remote.it device app",
-    "title": "On this machine — no connection to start"
+    "sshHint": "Works from a machine signed in on its remote.it device app"
   },
   "logsPage": {
     "title": "Logs"
@@ -2548,8 +2546,20 @@
     "guideBodyBrowser": "Create a connection to this service with the connect button.",
     "guideBodyDesktop": "Start listening on this endpoint for network requests. On request, automatically create the connection and disconnect when idle.",
     "guideTitleBrowser": "Starting a connection",
-    "guideTitleDesktop": "Connect on demand",
-    "useProxy": "Connect through the proxy instead"
+    "guideTitleDesktop": "Connect on demand"
+  },
+  "serviceConnectOptions": {
+    "browser": "Via the web client — in this browser",
+    "browserAgent": "The agent on this machine answers its name first: use the local subnet",
+    "browserSSH": "Web SSH — a terminal in this browser",
+    "browserType": "Only web and SSH services open in the browser",
+    "proxy": "Via proxy",
+    "proxyFirst": "Connect through the proxy first",
+    "sshLink": "Open in the terminal (ssh://)",
+    "subnet": "Via local subnet — no connection to start",
+    "terminal": "Local terminal",
+    "terminalProxy": "Local terminal — through the proxy",
+    "terminalSubnet": "Local terminal — by its name on this machine"
   },
   "serviceDefaultsPage": {
     "defaults": "Defaults",

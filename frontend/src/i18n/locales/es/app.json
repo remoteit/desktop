@@ -287,8 +287,7 @@
   "browserGatewayConnect": {
     "failed": "",
     "launch": "",
-    "terminal": "",
-    "title": ""
+    "terminal": ""
   },
   "changeEmailDialog": {
     "cancel": "Cancelar",
@@ -1670,8 +1669,7 @@
   "localSubnetConnect": {
     "address": "",
     "launch": "",
-    "sshHint": "",
-    "title": ""
+    "sshHint": ""
   },
   "logsPage": {
     "title": "Registros"
@@ -2600,8 +2598,20 @@
     "guideBodyBrowser": "Crea una conexión a este servicio con el botón de conexión.",
     "guideBodyDesktop": "Empieza a escuchar solicitudes de red en este endpoint. Cuando llegue una solicitud, la conexión se crea automáticamente y se cierra cuando está inactiva.",
     "guideTitleBrowser": "Iniciar una conexión",
-    "guideTitleDesktop": "Conexión bajo demanda",
-    "useProxy": ""
+    "guideTitleDesktop": "Conexión bajo demanda"
+  },
+  "serviceConnectOptions": {
+    "browser": "",
+    "browserAgent": "",
+    "browserSSH": "",
+    "browserType": "",
+    "proxy": "",
+    "proxyFirst": "",
+    "sshLink": "",
+    "subnet": "",
+    "terminal": "",
+    "terminalProxy": "",
+    "terminalSubnet": ""
   },
   "serviceDefaultsPage": {
     "defaults": "Valores predeterminados",

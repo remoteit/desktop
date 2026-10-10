@@ -1,42 +1,41 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { clearConnectionError } from '../helpers/connectionHelper'
+import React, { useState, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GUIDE_START_DATE } from '../constants'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
-import { Box, Typography, Collapse } from '@mui/material'
+import { Typography, Collapse } from '@mui/material'
 import { DeviceContext } from '../services/Context'
 import { ComboButton } from './ComboButton'
 import { GuideBubble } from '../components/GuideBubble'
 import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from '../components/DesktopUI'
 import { Gutters } from '../components/Gutters'
-import { LocalSubnetConnect } from '../components/LocalSubnetConnect'
-import { isConsoleService } from '../helpers/sshHelper'
 import { useSubnetReach } from '../hooks/useLocalSubnetName'
-import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
 import { useApplication } from '../hooks/useApplication'
-import { Link } from '../components/Link'
+import { connectKind, connectOptions } from '../helpers/connectOptions'
+import { ServiceConnectOptions } from '../components/ServiceConnectOptions'
 
 export const ServiceConnectButton: React.FC = () => {
   const { t } = useTranslation()
   const { device, service, connection, instance } = useContext(DeviceContext)
   const [showError, setShowError] = useState<boolean>(true)
-  // A name that works on this machine needs no connection: it is shown in place of Connect, the proxy one step away.
+  // With a name in device subnets, every way to connect, side by side (helpers/connectOptions); without one, the proxy.
   const reach = useSubnetReach(device?.id, service?.id)
-  const local = reach.local
-  const [proxy, setProxy] = useState(false)
-  // No agent here reaches it, but it has a name and serves the web: this browser's client can open it in its own tab
-  // (services/browserGateway), the proxy one step away as for a local name.
   const web = useApplication(service, connection).urlForm
-  const ssh = service?.typeID === 28
-  const gateway = !local && reach.checked && !!reach.name && (!!web || ssh) && !proxy
-  const named = (!!local && !proxy) || gateway
-  // The name works here, so the proxy is not in use: an error an earlier proxy attempt left on the connection — saved
-  // with it, so back on every reload, and red on the service — is stale, and cleared. A proxy attempt asked for after
-  // this sets its own.
-  useEffect(() => {
-    if (named && connection?.error) clearConnectionError(connection)
-  }, [named, connection?.error])
+  const options = connectOptions(connectKind(service, web), !!reach.name, !!reach.local)
+
+  const proxy = (
+    <>
+      <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
+      <ComboButton
+        size="large"
+        iconType="solid"
+        service={service}
+        connection={connection}
+        permissions={instance?.permissions}
+        fullWidth
+      />
+    </>
+  )
 
   return (
     <Collapse in={!connection.connectLink} timeout={800}>
@@ -85,44 +84,25 @@ export const ServiceConnectButton: React.FC = () => {
             </>
           }
         >
-          <Gutters size="md" sx={{ display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }} bottom={null}>
-            {named ? (
-              <Box sx={{ width: '100%' }}>
-                {local ? (
-                  <LocalSubnetConnect local={local} service={service} connection={connection} />
-                ) : (
-                  <BrowserGatewayConnect
-                    name={reach.name!}
-                    terminal={
-                      ssh && service
-                        ? {
-                            port: service.port || 22,
-                            title: service.name,
-                            service: service.id,
-                            console: isConsoleService(service),
-                          }
-                        : undefined
-                    }
-                  />
-                )}
-                <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
-                  <Link onClick={() => setProxy(true)}>
-                    {t('serviceConnectButton.useProxy', 'Connect through the proxy instead')}
-                  </Link>
-                </Typography>
-              </Box>
+          <Gutters
+            size="md"
+            // The options size their own buttons: the proxy's as here, the others' icon buttons as they are.
+            sx={
+              options.length > 1 ? undefined : { display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }
+            }
+            bottom={null}
+          >
+            {options.length > 1 ? (
+              <ServiceConnectOptions
+                options={options}
+                name={reach.name!}
+                local={reach.local}
+                service={service}
+                connection={connection}
+                proxy={proxy}
+              />
             ) : (
-              <>
-                <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-                <ComboButton
-                  size="large"
-                  iconType="solid"
-                  service={service}
-                  connection={connection}
-                  permissions={instance?.permissions}
-                  fullWidth
-                />
-              </>
+              proxy
             )}
           </Gutters>
         </GuideBubble>
