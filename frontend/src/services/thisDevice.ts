@@ -20,9 +20,17 @@
 
    1.1.0 (additive): NetworkKind 'unknown', for a shell that cannot tell the machine's network (the menu); the
    epoch-seconds unit of auth.accessToken's expiresAt said here; auth.signIn's optional deviceName; DeviceSetting's
-   source and locked said from connectd's own fields. */
+   source and locked said from connectd's own fields.
 
-export const BRIDGE_VERSION = '1.1.0'
+   1.2.0 (additive): the two switches that replace "VPN" as what a person sees (Evan, 2026-10-10) — Access remote
+   devices ('access': access.set, the machine reaching its devices by name: connectd's subnet setting) and remote.it
+   Protect ('protect': protect.set and protect.route, all of the machine's traffic through an exit). They are
+   independent; a shell runs its tunnel whenever either is on (a phone's packet tunnel, off with both off). The exit
+   Protect routes through is the engine's (connectd keeps it while Protect is off, beside the device's key): every shell
+   and the portal turn Protect back on through the same one. DeviceStatus gains access and protect, BridgeInfo
+   deviceKind. vpn.set and vpn stay as they were. */
+
+export const BRIDGE_VERSION = '1.2.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -33,6 +41,8 @@ export type Capability =
   | 'diagnostics' // diagnostics.save
   | 'auth' // auth.* — the shell signs in; the portal starts no flow of its own
   | 'stages' // stages.* — other stages joined beside the home stage (never in a prod build)
+  | 'access' // 1.2.0: access.set — Access remote devices; DeviceStatus.access
+  | 'protect' // 1.2.0: protect.set, protect.route — remote.it Protect; DeviceStatus.protect
 
 export type Platform = 'mac' | 'windows' | 'linux' | 'ios' | 'android'
 export type Shell = 'menu' | 'capacitor'
@@ -45,12 +55,32 @@ export type BridgeInfo = {
   // The home stage: the one this app or package was built for ('prod', 'dev', 'solo', …).
   stage: string
   capabilities: Capability[]
+  // 1.2.0: what this machine is called in a sentence ("Mac", "iPhone", "computer"): "All traffic from this Mac …".
+  deviceKind?: string
 }
 
 export type EngineState = 'starting' | 'online' | 'offline' | 'signedOut' | 'stopped'
 export type NetworkKind = 'wifi' | 'wired' | 'cellular' | 'none' | 'unknown'
 
 export type ExitRef = { id: string; name: string; kind: 'device' | 'remoteit' }
+
+// 1.2.0: Access remote devices — this machine reaching its devices by name (connectd's subnet setting). locked: the
+// machine's administrator holds it.
+export type AccessStatus = { on: boolean; changing?: boolean; error?: string; locked?: boolean }
+
+// 1.2.0: remote.it Protect — all of this machine's traffic through an exit. route is the exit it routes through, said
+// while Protect is off too (the engine keeps it): Protect on goes through it. killSwitch: traffic stops while the exit
+// cannot be reached, rather than going out the usual way (always on a desktop; a phone's setting). error: why the
+// exit chosen is not used (refused, or another stage's Protect on), or that it cannot be reached. locked: pinned by
+// the machine's administrator.
+export type ProtectStatus = {
+  on: boolean
+  route?: ExitRef
+  changing?: boolean
+  error?: string
+  killSwitch?: boolean
+  locked?: boolean
+}
 
 export type DeviceStatus = {
   stage: string
@@ -64,6 +94,9 @@ export type DeviceStatus = {
   network: NetworkKind
   // Connections into this machine's own services (a phone's "Allow connections through this phone"): connectd's `served`.
   served?: { service: string; target: string; sessions: number; lastError?: string }[]
+  // 1.2.0, with the 'access' and 'protect' capabilities.
+  access?: AccessStatus
+  protect?: ProtectStatus
 }
 
 export type SettingValue = string | number | boolean | null
@@ -73,14 +106,24 @@ export type SettingValue = string | number | boolean | null
 // `config` (the machine's configuration file) and `policy` → 'machine'; `cloud` → 'cloud'; anything else → 'default'.
 // `locked`: the machine may not change it — connectd's `control` is `off`, `on` or `cloud` (or a value it fixes), or
 // `from` is `policy`.
-export type DeviceSetting = { name: string; value: SettingValue; source: 'machine' | 'cloud' | 'default'; locked?: boolean }
+export type DeviceSetting = {
+  name: string
+  value: SettingValue
+  source: 'machine' | 'cloud' | 'default'
+  locked?: boolean
+}
 
 export type PermissionName = 'localNetwork' | 'vpnConfiguration'
 export type PermissionState = 'granted' | 'denied' | 'notAsked' | 'unknown'
 
 export type AuthAccount = { sub: string; email?: string; name?: string; active: boolean }
 
-export type StageStatus = { stage: string; joined: boolean; signedIn?: { sub: string; email?: string }; engine: EngineState }
+export type StageStatus = {
+  stage: string
+  joined: boolean
+  signedIn?: { sub: string; email?: string }
+  engine: EngineState
+}
 
 export type BridgeErrorCode =
   | 'unsupported' // no such method, or its capability is not offered
@@ -102,7 +145,16 @@ export class BridgeError extends Error {
 export type BridgeMethods = {
   info: { args: {}; result: BridgeInfo }
   status: { args: {}; result: DeviceStatus }
+  // 1.0: the menu's Protect, a phone's packet tunnel; a page with 'access' and 'protect' uses those.
   'vpn.set': { args: { on: boolean }; result: DeviceStatus }
+  // 1.2.0: Access remote devices on or off. A phone starts its tunnel for it, and stops it when Protect is off too.
+  'access.set': { args: { on: boolean }; result: DeviceStatus }
+  // 1.2.0: Protect on — through protect.route, the exit it routes through ('refused' when there is none yet and more
+  // than one to choose from) — or off, that exit kept. A phone starts its tunnel for it, and stops it when Access is off.
+  'protect.set': { args: { on: boolean }; result: DeviceStatus }
+  // 1.2.0: the exit Protect routes through: with Protect on the exit changes to it; off, it is kept for when Protect
+  // is turned on, and nothing else changes.
+  'protect.route': { args: { id: string }; result: DeviceStatus }
   'exit.list': { args: {}; result: ExitRef[] }
   'exit.set': { args: { id: string | null }; result: DeviceStatus }
   'settings.get': { args: {}; result: DeviceSetting[] }
@@ -112,7 +164,10 @@ export type BridgeMethods = {
   'diagnostics.save': { args: {}; result: { saved: boolean; where?: string } }
   // An access token for the API, from the shell's sign-in; the shell keeps the refresh token and the DPoP key.
   // `resource` absent: the stage's API. expiresAt is the token's expiry in seconds since the epoch (a JWT's exp).
-  'auth.accessToken': { args: { resource?: string; scope?: string }; result: { accessToken: string; expiresAt: number; tokenType: 'Bearer' | 'DPoP' } }
+  'auth.accessToken': {
+    args: { resource?: string; scope?: string }
+    result: { accessToken: string; expiresAt: number; tokenType: 'Bearer' | 'DPoP' }
+  }
   // A DPoP proof for one request, made with the shell's key (only where the token is DPoP).
   'auth.dpopProof': { args: { method: string; url: string; accessToken: string }; result: { proof: string } }
   'auth.accounts': { args: {}; result: AuthAccount[] }

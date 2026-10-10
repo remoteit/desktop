@@ -54,7 +54,7 @@ export const ThisDevicePage: React.FC = () => {
 }
 
 const SETTING_TITLES: { [name: string]: string } = {
-  subnet: 'Reach devices by name',
+  subnet: 'Access remote devices',
   exit_node: 'Offer this device as an exit',
   lan_services: 'Allow connections through this device',
   printers: 'Show remote printers',
@@ -135,6 +135,13 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
 
   const vpnOn = !!status?.vpn.on
   const exitValue = status?.exit?.id ?? ''
+  // 1.2.0: Access and Protect, the two switches, where the shell offers them; the 1.0 VPN and exit otherwise.
+  const switches = has('access') || has('protect')
+  const kind = device.info.deviceKind || t('thisDevice.kind', 'device')
+  const access = status?.access
+  const protect = status?.protect
+  const protectOn = !!protect?.on
+  const routeValue = protect?.route?.id ?? ''
 
   return (
     <Box paddingX={2} data-this-device>
@@ -172,7 +179,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
               />
             </ListItem>
           )}
-          {status.subnet && (
+          {status.subnet && !has('access') && (
             <ListItem>
               <ListItemText
                 primary={t('thisDevice.subnet', 'Reach devices by name')}
@@ -195,7 +202,99 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
         </List>
       )}
 
-      {(has('vpn') || has('exit')) && (
+      {has('access') && (
+        <List data-section="access">
+          <ListItem
+            secondaryAction={
+              <Switch
+                edge="end"
+                checked={!!access?.on}
+                disabled={busy || !access || access.changing || access.locked}
+                inputProps={{ 'aria-label': t('thisDevice.access', 'Access remote devices') }}
+                data-control="access"
+                onChange={() => act(async () => setStatus(await device.call('access.set', { on: !access?.on })))}
+              />
+            }
+          >
+            <ListItemText
+              primary={t('thisDevice.access', 'Access remote devices')}
+              secondary={accessLine(status, kind, t)}
+              data-access={access?.on ? 'on' : 'off'}
+            />
+          </ListItem>
+        </List>
+      )}
+
+      {has('protect') && (
+        <List data-section="protect">
+          <ListItem
+            secondaryAction={
+              <Switch
+                edge="end"
+                checked={protectOn}
+                disabled={
+                  busy ||
+                  !protect ||
+                  protect.changing ||
+                  protect.locked ||
+                  (!protectOn && !protect.route && exits.length !== 1)
+                }
+                inputProps={{ 'aria-label': t('thisDevice.protect', 'remote.it Protect') }}
+                data-control="protect"
+                onChange={() => act(async () => setStatus(await device.call('protect.set', { on: !protectOn })))}
+              />
+            }
+          >
+            <ListItemText
+              primary={t('thisDevice.protect', 'remote.it Protect')}
+              secondary={protectLine(status, kind, t)}
+              data-protect={protectOn ? 'on' : 'off'}
+            />
+          </ListItem>
+          {protect?.on && (protect.error || protect.changing) && (
+            <ListItem>
+              <ListItemText
+                secondary={
+                  protect.error || t('thisDevice.connecting', 'Connecting to {{name}}…', { name: protect.route?.name })
+                }
+                data-protect-state
+              />
+            </ListItem>
+          )}
+          <ListItem>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label={t('thisDevice.route', 'Route through')}
+              value={routeValue}
+              disabled={busy || !protect || protect.locked}
+              InputLabelProps={{ shrink: true }}
+              SelectProps={{ displayEmpty: true }}
+              inputProps={{ 'data-control': 'route' }}
+              onChange={e =>
+                e.target.value && act(async () => setStatus(await device.call('protect.route', { id: e.target.value })))
+              }
+            >
+              {!routeValue && (
+                <MenuItem value="" disabled>
+                  {t('thisDevice.chooseRoute', 'Choose a device')}
+                </MenuItem>
+              )}
+              {protect?.route && !exits.some(x => x.id === protect.route!.id) && (
+                <MenuItem value={protect.route.id}>{exitLabel(protect.route)}</MenuItem>
+              )}
+              {exits.map(x => (
+                <MenuItem key={x.id} value={x.id}>
+                  {exitLabel(x)}
+                </MenuItem>
+              ))}
+            </TextField>
+          </ListItem>
+        </List>
+      )}
+
+      {!switches && (has('vpn') || has('exit')) && (
         <List data-section="vpn">
           <Typography variant="subtitle1" paddingX={2}>
             {t('thisDevice.vpnTitle', 'VPN')}
@@ -254,19 +353,21 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
           <Typography variant="subtitle1" paddingX={2}>
             {t('thisDevice.settings', 'Settings')}
           </Typography>
-          {settings.map(s => (
-            <SettingRow
-              key={s.name}
-              setting={s}
-              disabled={busy}
-              onSet={value =>
-                act(async () => {
-                  const next = await device.call('settings.set', { name: s.name, value })
-                  setSettings(all => all.map(x => (x.name === next.name ? next : x)))
-                })
-              }
-            />
-          ))}
+          {settings
+            .filter(s => !(s.name === 'subnet' && has('access'))) // the Access switch above
+            .map(s => (
+              <SettingRow
+                key={s.name}
+                setting={s}
+                disabled={busy}
+                onSet={value =>
+                  act(async () => {
+                    const next = await device.call('settings.set', { name: s.name, value })
+                    setSettings(all => all.map(x => (x.name === next.name ? next : x)))
+                  })
+                }
+              />
+            ))}
         </List>
       )}
 
@@ -413,6 +514,45 @@ const engineLine = (s: DeviceStatus, t: (k: string, d: string) => string) =>
     signedOut: t('thisDevice.signedOut', 'Not signed in'),
     stopped: t('thisDevice.stopped', 'Not running'),
   }[s.engine] ?? s.engine)
+
+const exitLabel = (x: ExitRef) => (x.kind === 'remoteit' ? `${x.name} (remote.it)` : x.name)
+
+type T = (k: string, d: string, v?: any) => string
+
+// Access's line: what it does, and the name this machine is reached by while on.
+const accessLine = (s: DeviceStatus | undefined, kind: string, t: T) => {
+  if (!s?.access) return ''
+  if (s.access.error) return s.access.error
+  const what = t('thisDevice.accessLine', 'Reach your devices by name from this {{kind}}.', { kind })
+  if (!s.access.on) return what
+  const name = s.device?.dnsName || s.subnet?.domain
+  return name ? `${what} ${t('thisDevice.reachedAs', 'This {{kind}} is {{name}}.', { kind, name })}` : what
+}
+
+// Protect's line, said plainly: everything through the exit, and what happens when it cannot be reached (the kill
+// switch) — the same sentence on and off, so the switch says what it will do.
+const protectLine = (s: DeviceStatus | undefined, kind: string, t: T) => {
+  const p = s?.protect
+  if (!p) return ''
+  const exit = p.route?.name
+  if (!exit)
+    return t('thisDevice.protectChoose', 'Send all of this {{kind}}’s internet traffic through a device you choose.', {
+      kind,
+    })
+  const through = t('thisDevice.protectThrough', 'All traffic from this {{kind}} goes through {{exit}}.', {
+    kind,
+    exit,
+  })
+  const stops =
+    p.killSwitch === false
+      ? t('thisDevice.protectFallsBack', 'If {{exit}} can’t be reached, traffic goes out the usual way meanwhile.', {
+          exit,
+        })
+      : t('thisDevice.protectStops', 'If {{exit}} can’t be reached, traffic stops rather than going out unprotected.', {
+          exit,
+        })
+  return `${through} ${stops}`
+}
 
 const vpnLine = (s: DeviceStatus | undefined, t: (k: string, d: string, v?: any) => string) => {
   if (!s) return ''

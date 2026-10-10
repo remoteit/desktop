@@ -26,6 +26,10 @@ export type MockBridgeOptions = {
   settings?: DeviceSetting[]
   accounts?: AuthAccount[]
   tokenType?: 'Bearer' | 'DPoP'
+  // The exit Protect routes through, as the engine keeps it (none: none chosen yet).
+  route?: string
+  // Whether traffic stops while the exit cannot be reached (protect.killSwitch); true unless said.
+  killSwitch?: boolean
 }
 
 export type MockBridge = {
@@ -40,6 +44,9 @@ export type MockBridge = {
 const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
   status: 'status',
   'vpn.set': 'vpn',
+  'access.set': 'access',
+  'protect.set': 'protect',
+  'protect.route': 'protect',
   'exit.list': 'exit',
   'exit.set': 'exit',
   'settings.get': 'settings',
@@ -50,7 +57,16 @@ const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
 }
 
 export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
-  const capabilities = options.capabilities ?? ['status', 'vpn', 'exit', 'settings', 'diagnostics', 'auth']
+  const capabilities = options.capabilities ?? [
+    'status',
+    'vpn',
+    'exit',
+    'settings',
+    'diagnostics',
+    'auth',
+    'access',
+    'protect',
+  ]
   const info: BridgeInfo = {
     bridgeVersion: BRIDGE_VERSION,
     platform: 'mac',
@@ -58,6 +74,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
     shellVersion: 'mock',
     stage: 'solo',
     capabilities,
+    deviceKind: 'Mac',
     ...options.info,
   }
   const exits: ExitRef[] = options.exits ?? [
@@ -66,7 +83,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
   ]
   const listeners: { [event: string]: Set<(payload: any) => void> } = {}
   const calls: MockBridge['calls'] = []
-  let lastExit = exits[0]?.id
+  // The engine's route: the exit Protect goes back on through, kept while it is off (connectd exit_protect.go).
+  let route = options.route
 
   const bridge: MockBridge = {
     calls,
@@ -91,7 +109,11 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
     transport: {
       async call<M extends BridgeMethod>(method: M, args: BridgeMethods[M]['args']): Promise<any> {
         calls.push({ method, args })
-        const needs = method.startsWith('auth.') ? 'auth' : method.startsWith('stages.') ? 'stages' : CAPABILITY_OF[method]
+        const needs = method.startsWith('auth.')
+          ? 'auth'
+          : method.startsWith('stages.')
+          ? 'stages'
+          : CAPABILITY_OF[method]
         if (method !== 'info' && (!needs || !capabilities.includes(needs))) throw new BridgeError('unsupported', method)
         const a = args as any
         const active = () => bridge.accounts.find(x => x.active)
@@ -102,22 +124,38 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
           case 'status':
             return bridge.status
           case 'vpn.set':
+          case 'protect.set':
             if (a.on) {
-              const exit = exits.find(e => e.id === lastExit)
-              if (!exit) throw new BridgeError('failed', 'choose an exit')
-              bridge.status = { ...bridge.status, vpn: { on: true }, exit: { ...exit, state: 'up' } }
-            } else bridge.status = { ...bridge.status, vpn: { on: false }, exit: undefined }
+              const exit = exits.find(e => e.id === route) ?? (exits.length === 1 ? exits[0] : undefined)
+              if (!exit) throw new BridgeError('refused', 'choose an exit to route through first')
+              use(exit)
+            } else use(undefined)
+            changed()
+            return bridge.status
+          case 'protect.route': {
+            const exit = exits.find(e => e.id === a.id)
+            if (!exit) throw new BridgeError('refused', `${a.id} is not among this device's exits`)
+            if (bridge.status.vpn.on) use(exit)
+            else {
+              route = exit.id
+              derive()
+            }
+            changed()
+            return bridge.status
+          }
+          case 'access.set':
+            bridge.status = { ...bridge.status, subnet: { ...bridge.status.subnet, on: !!a.on } }
+            derive()
             changed()
             return bridge.status
           case 'exit.list':
             return exits
           case 'exit.set': {
-            if (a.id === null) bridge.status = { ...bridge.status, vpn: { on: false }, exit: undefined }
+            if (a.id === null) use(undefined)
             else {
               const exit = exits.find(e => e.id === a.id)
               if (!exit) throw new BridgeError('refused', 'no such exit')
-              lastExit = exit.id
-              bridge.status = { ...bridge.status, vpn: { on: true }, exit: { ...exit, state: 'up' } }
+              use(exit)
             }
             changed()
             return bridge.status
@@ -178,5 +216,27 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
       },
     },
   }
+  // The exit in use (none: Protect off, the route kept); the route follows the exit that stands, as the engine's does.
+  function use(exit: ExitRef | undefined) {
+    if (exit) route = exit.id
+    bridge.status = {
+      ...bridge.status,
+      vpn: { on: !!exit },
+      exit: exit ? { ...exit, state: 'up' } : undefined,
+    }
+    derive()
+  }
+  // access and protect, said from the state as a shell says them, where offered.
+  function derive() {
+    const s = bridge.status
+    bridge.status = {
+      ...s,
+      access: capabilities.includes('access') ? { on: !!s.subnet?.on } : undefined,
+      protect: capabilities.includes('protect')
+        ? { on: s.vpn.on, route: exits.find(e => e.id === route), killSwitch: options.killSwitch ?? true }
+        : undefined,
+    }
+  }
+  derive()
   return bridge
 }
