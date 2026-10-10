@@ -16,6 +16,10 @@ import analytics from './services/analytics'
 import './i18n'
 import './initializeCommon'
 import './services/Controller'
+import { registerCapacitorBridge } from './services/thisDeviceCapacitor'
+
+// The phone shell's bridge (thisDevice), before anything asks for it; none in a browser.
+registerCapacitorBridge()
 
 if (browser.environment() !== 'development') analytics.initialize()
 document.title = `${brand.appName} Application`
