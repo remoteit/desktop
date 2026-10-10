@@ -217,6 +217,20 @@ export const graphQLDeviceExitChooser = (deviceId: string) =>
     data => data?.login?.device?.[0] ?? null
   )
 
+// remote.it Protect on a device, as its engine keeps it (connectd's about.protect; graphql DeviceAbout.protect): on or
+// off, and the exit it routes through — said while Protect is off too, which the device's exit (none then) cannot say.
+// Turning it on from here is choosing that exit as the device's exit (graphQLSetDeviceExit): either side sets, the newer
+// stands. Asked apart, so an API before the field still shows the exit.
+export type ProtectInfo = { on: boolean | null; route: string | null; routeName: string | null }
+
+export const graphQLDeviceProtect = (deviceId: string) =>
+  read<ProtectInfo | null>(
+    `query DeviceProtect($id: [String!]!) { login { device(id: $id) { id about { protect { on route routeName } } } } }`,
+    { id: [deviceId] },
+    'protect',
+    data => data?.login?.device?.[0]?.about?.protect ?? null
+  )
+
 export const graphQLExits = () =>
   read<{ id: string; name: string }[]>(`query Exits { exits { id name } }`, {}, 'exits', data => data?.exits ?? [])
 
