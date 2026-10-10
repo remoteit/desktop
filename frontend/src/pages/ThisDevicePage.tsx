@@ -229,6 +229,9 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice }> = ({ device }) => 
                 label={t('thisDevice.exit', 'Exit')}
                 value={exitValue}
                 disabled={busy}
+                // "None" is a choice like the others: shown, and the label kept above it, in every engine
+                InputLabelProps={{ shrink: true }}
+                SelectProps={{ displayEmpty: true }}
                 inputProps={{ 'data-control': 'exit' }}
                 onChange={e =>
                   act(async () => setStatus(await device.call('exit.set', { id: e.target.value || null })))
@@ -383,6 +386,7 @@ const SettingRow: React.FC<{ setting: DeviceSetting; disabled: boolean; onSet: (
           label={title}
           value={setting.value}
           disabled={disabled || locked}
+          InputLabelProps={{ shrink: true }}
           helperText={secondary}
           onChange={e => onSet(e.target.value)}
         >
