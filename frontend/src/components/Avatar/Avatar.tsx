@@ -1,5 +1,5 @@
 import md5 from 'md5'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { createColor } from '../../helpers/uiHelper'
 import { labelLookup } from '../../models/labels'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
@@ -7,6 +7,8 @@ import { spacing } from '../../styling'
 
 export interface Props {
   email?: string
+  // The picture: undefined is the email's Gravatar, null none — the letter alone.
+  src?: string | null
   size?: number
   button?: boolean
   tooltip?: boolean
@@ -20,31 +22,25 @@ export interface Props {
 }
 
 export const Avatar: React.FC<Props> = React.memo(
-  ({
-    email,
-    size = 36,
-    title,
-    button,
-    inline,
-    tooltip,
-    active,
-    border = 1,
-    fallback,
-    marginRight,
-    children,
-  }) => {
+  ({ email, src, size = 36, title, button, inline, tooltip, active, border = 1, fallback, marginRight, children }) => {
+    // d=404: Gravatar answers 404 where there is no picture. (A default it does not know is taken for a URL and
+    // redirected to, over plain http — which an app under App Transport Security leaves pending, never failed.)
     const url = useMemo(
-      () => `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`,
-      [email, size]
+      () =>
+        src === undefined
+          ? `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=404`
+          : src || undefined,
+      [src, email, size]
     )
+    // The letter on its colour is the avatar; the picture covers it only once it has loaded, so a picture pending,
+    // refused or missing never blanks it, and nothing waits on an outside host.
+    const [loaded, setLoaded] = useState<string>()
     const color = useMemo(() => createColor(email), [email])
     fallback = (fallback || email || '?').substring(0, 1).toUpperCase()
 
     let Element = (
       <>
         <MuiAvatar
-          alt={email}
-          src={url}
           sx={theme => ({
             color: theme.palette.alwaysWhite.main,
             fontSize: size * 0.625,
@@ -59,6 +55,24 @@ export const Avatar: React.FC<Props> = React.memo(
           })}
         >
           <div>{fallback}</div>
+          {url && (
+            <Box
+              component="img"
+              key={url}
+              src={url}
+              alt={email}
+              onLoad={() => setLoaded(url)}
+              onError={() => setLoaded(undefined)}
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                visibility: loaded === url ? 'visible' : 'hidden',
+              }}
+            />
+          )}
         </MuiAvatar>
         {children}
       </>
