@@ -223,7 +223,10 @@ let discovery: { authorization_endpoint: string; token_endpoint: string } | unde
    The shell's sign-in changing under the page — signed in, out or switched from the menu — reloads it, so every model
    boots as the new person, as activating a saved account does; a change the page asked for itself is expected and
    does not. */
-type Shell = { device: ThisDevice; accounts: AuthAccount[]; expected?: string }
+/* Not known yet ('unavailable' from auth.accounts): the shell cannot say yet whose sign-in this is — its device has not
+   said which stage it is on — which is not signed out. The page boots with no one, and the shell's auth event, which
+   it sends once it can say, brings the person (a reload, as any change of person does). */
+type Shell = { device: ThisDevice; accounts: AuthAccount[]; expected?: string; pending?: boolean }
 let shell: Shell | undefined
 // Any account at all: a sign-in the page started, whoever it ends as.
 const ANY_ACCOUNT = '\u0000any'
@@ -232,11 +235,15 @@ export const oidcShellHooks = { reload: () => window.location.reload() }
 export const oidcShell = (): boolean => !!shell
 const shellActive = (): AuthAccount | undefined => shell?.accounts.find(a => a.active)
 const shellSignedOut = (s: Shell) => (s.accounts = s.accounts.map(a => ({ ...a, active: false })))
-async function readShellAccounts(s: Shell): Promise<void> {
+/** The shell's accounts read again; the error's code when it gave none. */
+async function readShellAccounts(s: Shell): Promise<string | undefined> {
   try {
     s.accounts = await s.device.call('auth.accounts', {})
+    s.pending = false
   } catch (error: any) {
+    if (error?.code === 'unavailable') s.pending = true
     console.warn('AUTH: the app did not list its accounts —', error?.message)
+    return error?.code ?? 'failed'
   }
 }
 /** Use the shell's sign-in when there is one: thisDevice present, its bridge's major version this page's, and `auth`
@@ -247,15 +254,19 @@ export async function oidcUseShell(): Promise<boolean> {
   if (!device?.compatible || !device.has('auth')) return false
   const s: Shell = { device, accounts: [] }
   await readShellAccounts(s)
-  s.expected = s.accounts.find(a => a.active)?.sub
   shell = s
   device.on('auth', async ({ active }) => {
     access = {}
-    await readShellAccounts(s)
+    // No longer offered (the stage turned out to have no sign-in of the shell's): a reload reads what the shell offers.
+    if ((await readShellAccounts(s)) === 'unsupported') return oidcShellHooks.reload()
     if (s.expected !== ANY_ACCOUNT && active?.sub === s.expected) return
     console.log('AUTH: the app’s sign-in changed — reloading as', active?.email ?? 'no one')
     oidcShellHooks.reload()
   })
+  // Not known yet: asked again now that its auth event is listened for — a change between the first answer and the
+  // listening would be told to no one.
+  if (s.pending) await readShellAccounts(s)
+  s.expected = s.accounts.find(a => a.active)?.sub
   return true
 }
 // A token's expiry as epoch seconds: the bridge says seconds; a shell that sent milliseconds is read as it meant.
@@ -1245,7 +1256,7 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
 // for are filed as KNOWN — identity only — and the menu offers them; picking one is a silent
 // selection (prompt=none + login_hint), which the AS answers for any live set member.
 export async function oidcRefreshBrowserAccounts(): Promise<void> {
-  if (shell) return readShellAccounts(shell)
+  if (shell) return void (await readShellAccounts(shell))
   if (oidcActor()) return // a support session is no set member — nothing to switch to
   const { status, body } = await oidcResourceRequest<{
     multi?: boolean

@@ -28,6 +28,8 @@ export type MockBridgeOptions = {
   exits?: ExitRef[]
   settings?: DeviceSetting[]
   accounts?: AuthAccount[]
+  // The shell cannot say yet whose sign-in this is (its device has not said its stage): auth.* 'unavailable'.
+  authUnavailable?: boolean
   tokenType?: 'Bearer' | 'DPoP'
   // The exit Protect routes through, as the engine keeps it (none: none chosen yet).
   route?: string
@@ -50,6 +52,7 @@ export type MockBridge = {
   status: DeviceStatus
   settings: DeviceSetting[]
   accounts: AuthAccount[]
+  authUnavailable: boolean
   app: AppPrefs
   logging: LoggingState
   removed: boolean
@@ -131,6 +134,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
       { name: 'websocket', value: 'auto', source: 'cloud', locked: true },
     ],
     accounts: options.accounts ?? [{ sub: 'sub-person', email: 'person@example.com', active: true }],
+    authUnavailable: options.authUnavailable ?? false,
     app: options.app ?? { openAtLogin: { on: true } },
     logging: options.logging ?? { detailed: false },
     removed: false,
@@ -146,6 +150,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
           ? 'stages'
           : CAPABILITY_OF[method]
         if (method !== 'info' && (!needs || !capabilities.includes(needs))) throw new BridgeError('unsupported', method)
+        if (needs === 'auth' && bridge.authUnavailable)
+          throw new BridgeError('unavailable', 'its stage is not known yet')
         const a = args as any
         const active = () => bridge.accounts.find(x => x.active)
         const changed = () => bridge.emit('status', bridge.status)

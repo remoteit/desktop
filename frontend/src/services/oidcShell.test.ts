@@ -144,6 +144,59 @@ describe('with the shell signing in', () => {
   })
 })
 
+describe('with the shell not able to say yet (its device has not said its stage)', () => {
+  it('is not signed in meanwhile, and reloads as the person when the shell can say', async () => {
+    const { oidc, bridge, reload, used } = await boot({ authUnavailable: true })
+    expect(used).toBe(true)
+    expect(oidc.oidcShell()).toBe(true)
+    expect(oidc.oidcSignedIn()).toBe(false)
+    expect(fetchSpy).not.toHaveBeenCalled() // no flow of its own meanwhile
+    bridge!.authUnavailable = false
+    bridge!.emit('auth', { active: { sub: 'sub-person', email: 'person@example.com', active: true } })
+    await new Promise(r => setTimeout(r))
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('stays as it is when the shell then says no one is signed in', async () => {
+    const { bridge, reload } = await boot({ authUnavailable: true, accounts: [] })
+    bridge!.authUnavailable = false
+    bridge!.emit('auth', {})
+    await new Promise(r => setTimeout(r))
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it('asks again once it listens: a change before that is not lost', async () => {
+    vi.resetModules()
+    const bridge = createMockBridge({ authUnavailable: true })
+    const on = bridge.transport.on
+    // The shell comes to know its stage between the first answer and the page's listening: no event reaches it.
+    bridge.transport.on = (event, listener) => {
+      bridge.authUnavailable = false
+      return on(event, listener)
+    }
+    const td = await import('./thisDevice')
+    td.registerBridgeTransport(async () => bridge.transport)
+    const oidc = await import('./oidc')
+    const reload = vi.fn()
+    oidc.oidcShellHooks.reload = reload
+    expect(await oidc.oidcUseShell()).toBe(true)
+    expect(oidc.oidcSignedIn()).toBe(true)
+    expect(oidc.oidcClaims()).toMatchObject({ sub: 'sub-person' })
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it('reloads when the shell turns out not to sign in here, so the page reads what it offers', async () => {
+    const { bridge, reload } = await boot({ authUnavailable: true })
+    bridge!.authUnavailable = false
+    ;(bridge!.transport as any).call = async () => {
+      throw Object.assign(new Error('auth.accounts is not offered here'), { code: 'unsupported' })
+    }
+    bridge!.emit('auth', {})
+    await new Promise(r => setTimeout(r))
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('without the shell signing in', () => {
   it('a plain browser (no transport) keeps its own sign-in', async () => {
     const { oidc, used } = await boot(null)
