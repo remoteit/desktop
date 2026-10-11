@@ -57,6 +57,9 @@ export type MockBridge = {
   logging: LoggingState
   removed: boolean
   emit<E extends BridgeEvent>(event: E, payload: BridgeEvents[E]): void
+  // 1.7.0: what the shell offers changes (its engine came, went or changed): info's answer, the status said from it,
+  // and the info event, as a shell sends it.
+  offer(capabilities: Capability[]): void
 }
 
 const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
@@ -83,7 +86,7 @@ const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
 }
 
 export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
-  const capabilities = options.capabilities ?? [
+  let capabilities = options.capabilities ?? [
     'status',
     'vpn',
     'exit',
@@ -93,7 +96,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
     'access',
     'protect',
   ]
-  const info: BridgeInfo = {
+  let info: BridgeInfo = {
     bridgeVersion: BRIDGE_VERSION,
     platform: 'mac',
     shell: 'menu',
@@ -140,6 +143,13 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
     removed: false,
     emit(event, payload) {
       for (const listener of listeners[event] ?? []) listener(payload)
+    },
+    offer(next) {
+      capabilities = next
+      info = { ...info, capabilities: next }
+      derive()
+      bridge.emit('info', info)
+      bridge.emit('status', bridge.status)
     },
     transport: {
       async call<M extends BridgeMethod>(method: M, args: BridgeMethods[M]['args']): Promise<any> {

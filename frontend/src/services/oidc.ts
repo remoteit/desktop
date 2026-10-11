@@ -251,6 +251,7 @@ async function readShellAccounts(s: Shell): Promise<string | undefined> {
 export async function oidcUseShell(): Promise<boolean> {
   if (shell) return true
   const device = await thisDevice()
+  if (device) followShellOffer(device)
   if (!device?.compatible || !device.has('auth')) return false
   const s: Shell = { device, accounts: [] }
   await readShellAccounts(s)
@@ -268,6 +269,22 @@ export async function oidcUseShell(): Promise<boolean> {
   if (s.pending) await readShellAccounts(s)
   s.expected = s.accounts.find(a => a.active)?.sub
   return true
+}
+/* Whose sign-in this page is — the shell's or the browser's — is decided once, at boot, from what the shell offered
+   then. What it offers can change while the page runs (thisDevice 1.7.0's info event: 'auth' offered once the stage's
+   sign-in is known, or no longer): the page that decided otherwise reloads, once, here, and boots again on what the
+   shell offers now. Every other part of the page reads the shell's current info as it renders. */
+const shellSignsIn = (device: ThisDevice) => device.compatible && device.has('auth')
+let followed: ThisDevice | undefined
+function followShellOffer(device: ThisDevice) {
+  if (followed === device) return
+  followed = device
+  const decided = shellSignsIn(device)
+  device.onInfo(() => {
+    if (shellSignsIn(device) === decided) return
+    console.log(`AUTH: the app ${decided ? 'no longer signs in' : 'signs in'} for this page — reloading`)
+    oidcShellHooks.reload()
+  })
 }
 // A token's expiry as epoch seconds: the bridge says seconds; a shell that sent milliseconds is read as it meant.
 const expirySeconds = (t: number) => (t > 1e12 ? Math.floor(t / 1000) : t)

@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { THIS_DEVICE_DEFAULT } from '../constants'
 import { thisDevice, thisDeviceKnown, ThisDevice } from '../services/thisDevice'
+import { useThisDeviceInfo } from './useThisDeviceInfo'
 
 /** The machine this page runs on (services/thisDevice): undefined while it is asked, null where there is none — a plain
  *  browser, or an app that did not answer. */
@@ -15,6 +16,7 @@ export function useThisDevice(): ThisDevice | null | undefined {
       live = false
     }
   }, [])
+  useThisDeviceInfo(device)
   return device
 }
 

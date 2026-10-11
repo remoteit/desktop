@@ -23,6 +23,7 @@ async function render(options: MockBridgeOptions = {}, props: { signedIn?: boole
   const bridge = createMockBridge(options)
   const info = await bridge.transport.call('info', {})
   const device = new ThisDevice(bridge.transport, info)
+  device.follow() // as thisDevice() does: info kept current from the shell's info event
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
@@ -514,5 +515,71 @@ describe('This device stopped', () => {
     })
     expect(container.querySelector('[data-engine]')!.textContent).toContain('Not running')
     expect(container.querySelector('[data-control="start"]')).toBeNull()
+  })
+})
+
+// 1.7.0: what the shell offers follows its engine, and the page follows the shell — never what it offered as the page
+// opened (Evan's Mac, 2026-10-10: opened while the daemon came back, the page had no Services until opened again).
+describe('This device follows what the shell offers', () => {
+  const desktop: Capability[] = [
+    'status',
+    'vpn',
+    'exit',
+    'settings',
+    'diagnostics',
+    'auth',
+    'access',
+    'protect',
+    'start',
+  ]
+  it('shows the services once the daemon that has them answers, with no reload', async () => {
+    // The daemon absent as the page opened: no services, no logging, stopped.
+    const { container, bridge } = await render({
+      capabilities: desktop,
+      status: { engine: 'stopped', device: undefined },
+    })
+    expect(sections(container)).not.toContain('services')
+    expect(sections(container)).not.toContain('logging')
+    // It answers, running, with the setting: the shell offers services and logging, and says so.
+    bridge.status = {
+      ...bridge.status,
+      engine: 'online',
+      device: { uid: '80:00:00:00:01:0A:BC:DE', name: 'Mock MacBook' },
+    }
+    bridge.logging = { detailed: true }
+    await act(async () => bridge.offer([...desktop, 'services', 'logging']))
+    await act(async () => {})
+    expect(sections(container)).toContain('services')
+    expect(container.querySelector('[data-section="services"] input')).not.toBeNull()
+    // Read when it came to be offered: the logging as the daemon has it.
+    expect(container.querySelector('[data-logging]')!.getAttribute('data-logging')).toBe('on')
+  })
+
+  it('drops what the shell no longer offers', async () => {
+    const { container, bridge } = await render({ capabilities: [...desktop, 'services', 'logging', 'remove'] })
+    expect(sections(container)).toContain('services')
+    expect(sections(container)).toContain('logging')
+    await act(async () => bridge.offer(desktop))
+    expect(sections(container)).not.toContain('services')
+    expect(sections(container)).not.toContain('logging')
+    // A method of a capability gone is not asked again.
+    const asked = bridge.calls.length
+    bridge.emit('status', bridge.status)
+    await act(async () => {})
+    expect(bridge.calls.slice(asked).map(c => c.method)).not.toContain('logging.get')
+  })
+
+  it('reads again with each status what the engine answers and sends no event for', async () => {
+    const { container, bridge } = await render({ capabilities: [...desktop, 'logging'] })
+    expect(container.querySelector('[data-logging]')!.getAttribute('data-logging')).toBe('off')
+    bridge.logging = { detailed: true } // the menu's own Settings turned it on
+    await act(async () => bridge.emit('status', { ...bridge.status }))
+    await act(async () => {})
+    expect(container.querySelector('[data-logging]')!.getAttribute('data-logging')).toBe('on')
+  })
+
+  it('a shell before 1.7.0 (no info event): as it offered at boot', async () => {
+    const { container } = await render({ capabilities: desktop, info: { bridgeVersion: '1.6.0' } })
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'settings', 'diagnostics'])
   })
 })

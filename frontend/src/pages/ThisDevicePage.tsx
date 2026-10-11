@@ -18,6 +18,7 @@ import { State } from '../store'
 import { Container } from '../components/Container'
 import { ThisDeviceSignIn } from '../components/ThisDeviceSignIn'
 import { useThisDevice } from '../hooks/useThisDevice'
+import { useThisDeviceInfo } from '../hooks/useThisDeviceInfo'
 import {
   AppPrefs,
   BRIDGE_VERSION,
@@ -129,6 +130,8 @@ const toggled = (value: any): any => (typeof value === 'boolean' ? !value : { ..
 export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }> = ({ device, signedIn = true }) => {
   const { t } = useTranslation()
   const has = (c: Parameters<ThisDevice['has']>[0]) => device.has(c)
+  // What the shell offers now (1.7.0's info event): the page follows it, and reads again what a change newly offers.
+  const offered = [...(useThisDeviceInfo(device)?.capabilities ?? [])].sort().join(' ')
   const [status, setStatus] = useState<DeviceStatus>()
   const [exits, setExits] = useState<ExitRef[]>([])
   const [settings, setSettings] = useState<DeviceSetting[]>([])
@@ -156,24 +159,36 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
     if (!device.compatible) return
     const offs: (() => void)[] = []
     const fail = (e: any) => setError(e?.message || String(e))
+    // What the engine answers and sends no event for (its exits, its logging): read as the page opens and again with
+    // each status — a daemon that answers only later (restarting as the page opened), or changes them, is shown as it
+    // is, not as it was when the page asked first. Asked again, an exit list the engine cannot give yet is no new
+    // error: the status says why.
+    const engineReads = (failed: (e: any) => void) => {
+      if (device.has('exit')) device.call('exit.list', {}).then(setExits, failed)
+      if (device.has('logging')) device.call('logging.get', {}).then(setLogging, () => setLogging(undefined))
+    }
     if (device.has('status')) {
       device.call('status', {}).then(setStatus, fail)
-      offs.push(device.on('status', setStatus))
+      offs.push(
+        device.on('status', next => {
+          setStatus(next)
+          engineReads(() => {})
+        })
+      )
     }
-    if (device.has('exit')) device.call('exit.list', {}).then(setExits, fail)
+    engineReads(fail)
     if (device.has('settings')) {
       device.call('settings.get', {}).then(setSettings, fail)
       offs.push(device.on('settings', setSettings))
     }
     if (device.has('permissions')) device.call('permissions.get', {}).then(setPermissions, fail)
-    if (device.has('logging')) device.call('logging.get', {}).then(setLogging, () => setLogging(undefined))
     if (device.has('app')) device.call('app.get', {}).then(setApp, fail)
     if (device.has('stages')) {
       device.call('stages.list', {}).then(setStages, fail)
       offs.push(device.on('stages', setStages))
     }
     return () => offs.forEach(off => off())
-  }, [device])
+  }, [device, offered])
 
   if (!device.compatible)
     return (

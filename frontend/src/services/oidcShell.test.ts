@@ -197,6 +197,38 @@ describe('with the shell not able to say yet (its device has not said its stage)
   })
 })
 
+// 1.7.0: whose sign-in the page is — the shell's or its own — is decided at boot from what the shell offered; when that
+// changes (the info event), the page reloads once and decides again.
+describe('when what the shell offers changes', () => {
+  const desktop = ['status', 'vpn', 'exit', 'settings', 'access', 'protect'] as const
+  const settle = () => new Promise(r => setTimeout(r))
+
+  it('reloads when the shell comes to sign in here', async () => {
+    const { bridge, reload, used } = await boot({ capabilities: [...desktop] })
+    expect(used).toBe(false)
+    bridge!.offer([...desktop, 'auth'])
+    await settle()
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('reloads when the shell no longer signs in here', async () => {
+    const { bridge, reload, used } = await boot({ capabilities: [...desktop, 'auth'] })
+    expect(used).toBe(true)
+    bridge!.offer([...desktop])
+    await settle()
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not reload for a change that is not the sign-in’s', async () => {
+    const { bridge, reload, oidc } = await boot({ capabilities: [...desktop, 'auth'] })
+    bridge!.offer([...desktop, 'auth', 'services', 'logging'])
+    bridge!.offer([...desktop, 'auth'])
+    await settle()
+    expect(reload).not.toHaveBeenCalled()
+    expect(oidc.oidcSignedIn()).toBe(true)
+  })
+})
+
 describe('without the shell signing in', () => {
   it('a plain browser (no transport) keeps its own sign-in', async () => {
     const { oidc, used } = await boot(null)
@@ -209,7 +241,8 @@ describe('without the shell signing in', () => {
     const { oidc, used, bridge } = await boot({ capabilities: ['status', 'vpn'] })
     expect(used).toBe(false)
     expect(oidc.oidcShell()).toBe(false)
-    expect(bridge!.calls.map(c => c.method)).toEqual(['info'])
+    // info alone: as it booted, and once more as it listened for a change (1.7.0)
+    expect(new Set(bridge!.calls.map(c => c.method))).toEqual(new Set(['info']))
   })
 
   it('a shell of another major version is not used', async () => {

@@ -58,9 +58,17 @@
    1.6.0 (additive): a device stopped on the machine (device-package docs/menu-app.md §7.4, "Quit and Stop": the menu's
    Quit and Stop, or `remoteit-device stop`) — offline, nothing served, Access and Protect off, until started — is
    engine 'stopped' with its details, as an engine not running always was; 'start' (device.start) starts it again, its
-   switches back as they were. Stopping is the menu's, not the page's. */
+   switches back as they were. Stopping is the menu's, not the page's.
 
-export const BRIDGE_VERSION = '1.6.0'
+   1.7.0 (additive): the 'info' event — info()'s answer again, sent by the shell whenever it changes. What a shell
+   offers can follow its engine (the menu's 'services' while the daemon has the setting, 'remove' while it serves its
+   section, 'auth' while the stage's sign-in is the menu's), so a page that read info once — opened while the daemon was
+   absent — showed what was offered then until it was opened again. ThisDevice keeps info current from the event, and
+   asks info once more after it listens (a change between the first answer and the listening would reach no one);
+   onInfo tells the page. A shell before 1.7.0 sends none: its info is read once, as it always was. A shell whose info
+   cannot change while the page runs (a phone's: its capabilities are fixed in the build) need not send it. */
+
+export const BRIDGE_VERSION = '1.7.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -300,6 +308,8 @@ export type BridgeEvents = {
   // The shell's sign-in changed (signed in, out, switched, or the session ended): the portal reads auth.* again.
   auth: { active?: AuthAccount }
   stages: StageStatus[]
+  // 1.7.0: info()'s answer, changed — what the shell offers now.
+  info: BridgeInfo
 }
 
 export type BridgeEvent = keyof BridgeEvents
@@ -310,11 +320,56 @@ export interface BridgeTransport {
   on<E extends BridgeEvent>(event: E, listener: (payload: BridgeEvents[E]) => void): () => void
 }
 
+/** info as compared for a change: the same value in one form — its keys in order, its capabilities as a set. */
+export const infoKey = (info: BridgeInfo): string =>
+  JSON.stringify(
+    Object.keys(info)
+      .sort()
+      .map(k => [k, k === 'capabilities' ? [...info.capabilities].sort() : (info as any)[k]])
+  )
+
 export class ThisDevice {
-  constructor(private transport: BridgeTransport, public info: BridgeInfo) {}
+  private current: BridgeInfo
+  private infoListeners = new Set<(info: BridgeInfo) => void>()
+  private following = false
+
+  constructor(private transport: BridgeTransport, info: BridgeInfo) {
+    this.current = info
+  }
+
+  /** What the shell is and offers now: as it last said (1.7.0's info event), never only as it said at boot. */
+  get info(): BridgeInfo {
+    return this.current
+  }
 
   has(capability: Capability) {
-    return this.info.capabilities.includes(capability)
+    return this.current.capabilities.includes(capability)
+  }
+
+  /** Keeps info current: the shell's info event, and info asked once more now that the event is listened for. Once;
+   *  never with a shell of another major version, whose bridge the page does not use. */
+  follow() {
+    if (this.following || !this.compatible) return
+    this.following = true
+    this.transport.on('info', info => this.update(info))
+    this.transport.call('info', {}).then(
+      info => this.update(info),
+      () => {}
+    )
+  }
+
+  /** Told whenever info changes; returns the way to stop. */
+  onInfo(listener: (info: BridgeInfo) => void) {
+    this.infoListeners.add(listener)
+    return () => {
+      this.infoListeners.delete(listener)
+    }
+  }
+
+  private update(info: BridgeInfo) {
+    if (!info || !Array.isArray(info.capabilities) || infoKey(info) === infoKey(this.current)) return
+    this.current = info
+    for (const listener of [...this.infoListeners]) listener(info)
   }
 
   // Whether this page can run against the shell's bridge at all (the majors match).
@@ -351,7 +406,10 @@ export function thisDevice(): Promise<ThisDevice | undefined> {
       const transport = await detect?.().catch(() => undefined)
       if (!transport) return undefined
       const info = await transport.call('info', {}).catch(() => undefined)
-      return info ? new ThisDevice(transport, info) : undefined
+      if (!info) return undefined
+      const device = new ThisDevice(transport, info)
+      device.follow()
+      return device
     })()
     const asked = resolved
     asked.then(d => resolved === asked && (known = d ?? null))
