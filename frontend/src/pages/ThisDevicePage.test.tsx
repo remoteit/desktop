@@ -478,3 +478,41 @@ describe('This device has what Settings has', () => {
     expect(container.querySelector('[data-control="remove"]')).toBeNull()
   })
 })
+
+// 1.6.0: a device stopped on the machine (the menu's Quit and Stop): said plainly, its switches held, and Start where the
+// shell offers it; a shell without 'start' says it is not running, as before.
+describe('This device stopped', () => {
+  const caps: Capability[] = ['status', 'exit', 'settings', 'access', 'protect', 'services', 'start']
+
+  it('says stopped, holds the switches, and starts it again', async () => {
+    const { container, bridge } = await render({ capabilities: caps, status: { engine: 'stopped' } })
+    const engine = container.querySelector('[data-engine]')!
+    expect(engine.getAttribute('data-engine')).toBe('stopped')
+    expect(engine.textContent).toContain(
+      'Stopped: this Mac is offline — no one can reach its services, and Protect and Access are off'
+    )
+    const access = container.querySelector(
+      '[data-control="access"] input, input[data-control="access"]'
+    ) as HTMLInputElement
+    expect(access.disabled).toBe(true)
+    const start = container.querySelector('[data-control="start"]') as HTMLButtonElement
+    expect(start.textContent).toBe('Start remote.it')
+    await act(async () => start.click())
+    expect(bridge.calls.filter(c => c.method === 'device.start')).toHaveLength(1)
+    expect(container.querySelector('[data-engine]')!.getAttribute('data-engine')).toBe('online')
+    expect(container.querySelector('[data-control="start"]')).toBeNull()
+    expect(
+      (container.querySelector('[data-control="access"] input, input[data-control="access"]') as HTMLInputElement)
+        .disabled
+    ).toBe(false)
+  })
+
+  it('a shell without start: not running, no Start', async () => {
+    const { container } = await render({
+      capabilities: caps.filter(c => c !== 'start'),
+      status: { engine: 'stopped' },
+    })
+    expect(container.querySelector('[data-engine]')!.textContent).toContain('Not running')
+    expect(container.querySelector('[data-control="start"]')).toBeNull()
+  })
+})

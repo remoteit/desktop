@@ -53,9 +53,14 @@
    device's owner, since when it is online, its versions, and what removing it is here (device.removal); the detailed
    connection logging ('logging': logging.get, logging.set); the app's own preferences for the person, the machine's
    and every stage's alike ('app': app.get, app.set — Open at login); and taking the device off this machine ('remove':
-   device.remove — the shell asks the person and an administrator first). */
+   device.remove — the shell asks the person and an administrator first).
 
-export const BRIDGE_VERSION = '1.5.0'
+   1.6.0 (additive): a device stopped on the machine (device-package docs/menu-app.md §7.4, "Quit and Stop": the menu's
+   Quit and Stop, or `remoteit-device stop`) — offline, nothing served, Access and Protect off, until started — is
+   engine 'stopped' with its details, as an engine not running always was; 'start' (device.start) starts it again, its
+   switches back as they were. Stopping is the menu's, not the page's. */
+
+export const BRIDGE_VERSION = '1.6.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -73,6 +78,7 @@ export type Capability =
   | 'logging' // 1.5.0: logging.get, logging.set — the detailed connection logging
   | 'app' // 1.5.0: app.get, app.set — the app's own preferences for the person (Open at login)
   | 'remove' // 1.5.0: device.remove — take the device off this machine (DeviceStatus.device.removal)
+  | 'start' // 1.6.0: device.start — start remote.it again on a machine where it was stopped (engine 'stopped')
 
 export type Platform = 'mac' | 'windows' | 'linux' | 'ios' | 'android'
 export type Shell = 'menu' | 'capacitor'
@@ -278,6 +284,8 @@ export type BridgeMethods = {
   'app.set': { args: { openAtLogin: boolean }; result: AppPrefs }
   // The shell asks the person, then an administrator; removed false when either said no.
   'device.remove': { args: {}; result: { removed: boolean } }
+  // 1.6.0: remote.it started again where it was stopped; nothing to do while it runs.
+  'device.start': { args: {}; result: DeviceStatus }
   'stages.list': { args: {}; result: StageStatus[] }
   'stages.join': { args: { stage: string }; result: StageStatus }
   'stages.leave': { args: { stage: string }; result: {} }

@@ -44,7 +44,10 @@ import {
    This device") — the menu's Settings… opens this page: the device's details and its removal; under Access, what is
    said of the subnet's range and the printers; the administrator's reasons; what the device offers, the relay in use
    and what is not served while the services are off; the detailed connection logging and the logs; and the app's own
-   preferences, the machine's, in one "This <device kind>" part every stage's page shows alike. */
+   preferences, the machine's, in one "This <device kind>" part every stage's page shows alike.
+
+   1.6.0: stopped on the machine (the menu's Quit and Stop, device-package docs/menu-app.md §7.4), the page says so and
+   offers Start where the shell does ('start'); its switches wait until then. */
 
 export const ThisDevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -186,6 +189,9 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
     )
 
   const vpnOn = !!status?.vpn.on
+  // 1.6.0: stopped on this machine (the menu's Quit and Stop): the switches do nothing until it is started.
+  const stopped = status?.engine === 'stopped'
+  const held = busy || stopped
   const exitValue = status?.exit?.id ?? ''
   // 1.2.0: Access and Protect, the two switches, where the shell offers them; the 1.0 VPN and exit otherwise.
   const switches = has('access') || has('protect')
@@ -241,11 +247,30 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               secondary={
                 status.engine === 'online' && d?.since
                   ? t('thisDevice.onlineSince', 'Online since {{when}}', { when: when(d.since) })
+                  : stopped && has('start')
+                  ? t(
+                      'thisDevice.stoppedLine',
+                      'Stopped: this {{kind}} is offline — no one can reach its services, and Protect and Access are off',
+                      { kind }
+                    )
                   : engineLine(status, t)
               }
               data-engine={status.engine}
             />
           </ListItem>
+          {stopped && has('start') && (
+            <ListItem>
+              <Button
+                size="small"
+                variant="contained"
+                disabled={busy}
+                data-control="start"
+                onClick={() => act(async () => setStatus(await device.call('device.start', {})))}
+              >
+                {t('thisDevice.start', 'Start remote.it')}
+              </Button>
+            </ListItem>
+          )}
           {d?.owner && (
             <ListItem data-detail="owner">
               <ListItemText primary={t('thisDevice.owner', 'Owner')} secondary={d.owner} />
@@ -340,7 +365,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               <Switch
                 edge="end"
                 checked={!!access?.on}
-                disabled={busy || !access || access.changing || access.locked}
+                disabled={held || !access || access.changing || access.locked}
                 inputProps={{ 'aria-label': t('thisDevice.access', 'Access remote devices') }}
                 data-control="access"
                 onChange={() => act(async () => setStatus(await device.call('access.set', { on: !access?.on })))}
@@ -382,7 +407,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
                 edge="end"
                 checked={protectOn}
                 disabled={
-                  busy ||
+                  held ||
                   !protect ||
                   protect.changing ||
                   protect.locked ||
@@ -419,7 +444,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               size="small"
               label={t('thisDevice.route', 'Route through')}
               value={routeValue}
-              disabled={busy || !protect || protect.locked}
+              disabled={held || !protect || protect.locked}
               InputLabelProps={{ shrink: true }}
               SelectProps={{ displayEmpty: true }}
               inputProps={{ 'data-control': 'route' }}
@@ -452,7 +477,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               <Switch
                 edge="end"
                 checked={!!lan?.on}
-                disabled={busy || !lan || lan.changing || lan.locked}
+                disabled={held || !lan || lan.changing || lan.locked}
                 inputProps={{ 'aria-label': t('thisDevice.services', 'Allow remote access to services') }}
                 data-control="services"
                 onChange={() =>
@@ -540,7 +565,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
                 <Switch
                   edge="end"
                   checked={vpnOn}
-                  disabled={busy || status?.vpn.changing}
+                  disabled={held || status?.vpn.changing}
                   inputProps={{ 'aria-label': t('thisDevice.vpn', 'VPN') }}
                   data-control="vpn"
                   onChange={() => act(async () => setStatus(await device.call('vpn.set', { on: !vpnOn })))}

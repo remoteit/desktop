@@ -76,6 +76,7 @@ const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
   'app.get': 'app',
   'app.set': 'app',
   'device.remove': 'remove',
+  'device.start': 'start',
 }
 
 export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
@@ -246,6 +247,12 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
           case 'device.remove':
             bridge.removed = options.confirmRemove ?? false
             return { removed: bridge.removed }
+          case 'device.start':
+            if (bridge.status.engine === 'stopped') {
+              bridge.status = { ...bridge.status, engine: 'online' }
+              changed()
+            }
+            return bridge.status
           case 'auth.accessToken': {
             const who = active()
             if (!who) throw new BridgeError('notSignedIn')
