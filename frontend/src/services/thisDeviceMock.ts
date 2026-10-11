@@ -115,6 +115,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
   // The engine's route: the exit Protect goes back on through, kept while it is off (connectd exit_protect.go).
   let route = options.route
   let localNetwork: PermissionState = options.localNetworkPermission ?? 'notAsked'
+  let notifications: PermissionState = 'notAsked'
   // A phone's shell: the one with a Local Network permission to ask (lanServices was a phone's alone).
   const phone = capabilities.includes('permissions') || capabilities.includes('lanServices')
 
@@ -239,8 +240,19 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             return next
           }
           case 'permissions.get':
-            return { localNetwork, vpnConfiguration: 'notAsked' }
+            // 1.8.0: the notification permission beside the two, where the shell offers it.
+            return {
+              localNetwork,
+              vpnConfiguration: 'notAsked',
+              ...(capabilities.includes('notifications') ? { notifications } : {}),
+            }
           case 'permissions.request':
+            if (a.name === 'notifications') {
+              if (!capabilities.includes('notifications'))
+                throw new BridgeError('unsupported', 'no permission notifications')
+              notifications = 'granted'
+              return notifications
+            }
             if (a.name === 'localNetwork') {
               if (localNetwork !== 'denied') localNetwork = 'granted'
               derive()

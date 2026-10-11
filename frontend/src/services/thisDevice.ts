@@ -66,9 +66,14 @@
    absent — showed what was offered then until it was opened again. ThisDevice keeps info current from the event, and
    asks info once more after it listens (a change between the first answer and the listening would reach no one);
    onInfo tells the page. A shell before 1.7.0 sends none: its info is read once, as it always was. A shell whose info
-   cannot change while the page runs (a phone's: its capabilities are fixed in the build) need not send it. */
+   cannot change while the page runs (a phone's: its capabilities are fixed in the build) need not send it.
 
-export const BRIDGE_VERSION = '1.7.0'
+   1.8.0 (additive): the notification permission ('notifications'; PermissionName 'notifications'), where the shell has
+   one to ask for — Android's, whose tunnel shows an ongoing notification (Android 13 and later ask the person). Offered,
+   permissions.get answers it beside the other two and permissions.request asks it; not offered, permissions.get
+   answers the two alone and the page never names it. */
+
+export const BRIDGE_VERSION = '1.8.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -87,6 +92,7 @@ export type Capability =
   | 'app' // 1.5.0: app.get, app.set — the app's own preferences for the person (Open at login)
   | 'remove' // 1.5.0: device.remove — take the device off this machine (DeviceStatus.device.removal)
   | 'start' // 1.6.0: device.start — start remote.it again on a machine where it was stopped (engine 'stopped')
+  | 'notifications' // 1.8.0: the notification permission, in permissions.get and permissions.request ('permissions')
 
 export type Platform = 'mac' | 'windows' | 'linux' | 'ios' | 'android'
 export type Shell = 'menu' | 'capacitor'
@@ -214,7 +220,8 @@ export type AppPrefs = { openAtLogin?: { on: boolean; pending?: boolean; error?:
 // 1.5.0: the detailed connection logging (a line a second for each connection in the log), until remote.it restarts.
 export type LoggingState = { detailed: boolean; error?: string }
 
-export type PermissionName = 'localNetwork' | 'vpnConfiguration'
+// notifications (1.8.0) only where the shell offers 'notifications'.
+export type PermissionName = 'localNetwork' | 'vpnConfiguration' | 'notifications'
 export type PermissionState = 'granted' | 'denied' | 'notAsked' | 'unknown'
 
 export type AuthAccount = { sub: string; email?: string; name?: string; active: boolean }
@@ -268,7 +275,10 @@ export type BridgeMethods = {
   'exit.set': { args: { id: string | null }; result: DeviceStatus }
   'settings.get': { args: {}; result: DeviceSetting[] }
   'settings.set': { args: { name: string; value: SettingValue }; result: DeviceSetting }
-  'permissions.get': { args: {}; result: Record<PermissionName, PermissionState> }
+  'permissions.get': {
+    args: {}
+    result: Record<'localNetwork' | 'vpnConfiguration', PermissionState> & { notifications?: PermissionState }
+  }
   'permissions.request': { args: { name: PermissionName }; result: PermissionState }
   'diagnostics.save': { args: {}; result: { saved: boolean; where?: string } }
   // An access token for the API, from the shell's sign-in; the shell keeps the refresh token and the DPoP key.

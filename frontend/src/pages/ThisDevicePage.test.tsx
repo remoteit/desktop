@@ -47,6 +47,30 @@ describe('This device', () => {
     expect(sections(container)).toEqual(['device', 'vpn', 'settings', 'permissions', 'diagnostics'])
   })
 
+  it('names the notification permission only where the shell offers it (1.8.0), and asks it', async () => {
+    const caps: Capability[] = ['status', 'vpn', 'exit', 'settings', 'permissions', 'diagnostics', 'auth']
+    const rows = (c: HTMLElement) =>
+      [...c.querySelectorAll('[data-section="permissions"] li')].map(
+        li => li.querySelector('.MuiListItemText-primary')?.textContent
+      )
+    const without = await render({ capabilities: caps, info: { platform: 'android', shell: 'capacitor' } })
+    expect(rows(without.container)).toEqual(['Local network', 'VPN configuration'])
+
+    const { container, bridge } = await render({
+      capabilities: [...caps, 'notifications'],
+      info: { platform: 'android', shell: 'capacitor' },
+    })
+    expect(rows(container)).toEqual(['Local network', 'VPN configuration', 'Notifications'])
+    const row = [...container.querySelectorAll('[data-section="permissions"] li')][2]
+    expect(row.textContent).toContain('notAsked')
+    await act(async () => (row.querySelector('button') as HTMLButtonElement).click())
+    expect(bridge.calls.filter(c => c.method === 'permissions.request').map(c => c.args)).toEqual([
+      { name: 'notifications' },
+    ])
+    expect(row.textContent).toContain('granted')
+    expect(row.querySelector('button')).toBeNull()
+  })
+
   it('draws the same page for the same capabilities on any platform', async () => {
     const caps: Capability[] = ['status', 'vpn', 'exit', 'settings']
     const mac = await render({ capabilities: caps, info: { platform: 'mac', shell: 'menu' } })

@@ -2852,6 +2852,7 @@
     "locked": "Set by this machine’s administrator",
     "machine": "This {{kind}}",
     "noRange": "Subnet off: no free address range on this machine",
+    "notifications": "Notifications",
     "notServed": "Not served: remote access to services is off",
     "off": "Off",
     "offers": "What this device offers",

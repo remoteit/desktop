@@ -652,7 +652,9 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
           <Typography variant="subtitle1" paddingX={2}>
             {t('thisDevice.permissions', 'Permissions')}
           </Typography>
-          {(['localNetwork', 'vpnConfiguration'] as PermissionName[]).map(name => (
+          {(
+            ['localNetwork', 'vpnConfiguration', ...(has('notifications') ? ['notifications'] : [])] as PermissionName[]
+          ).map(name => (
             <ListItem
               key={name}
               secondaryAction={
@@ -676,6 +678,8 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
                 primary={
                   name === 'localNetwork'
                     ? t('thisDevice.localNetwork', 'Local network')
+                    : name === 'notifications'
+                    ? t('thisDevice.notifications', 'Notifications')
                     : t('thisDevice.vpnConfiguration', 'VPN configuration')
                 }
                 secondary={permissions[name] ?? 'unknown'}
