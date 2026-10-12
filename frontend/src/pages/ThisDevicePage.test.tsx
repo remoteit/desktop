@@ -532,13 +532,21 @@ describe('This device stopped', () => {
     ).toBe(false)
   })
 
-  it('a shell without start: not running, no Start', async () => {
+  // A phone (no 'start'): its engine says 'stopped' whenever its tunnel is off, and the switches are what turn it on —
+  // never held (Evan's Pixel, 2026-10-11: every switch greyed with the tunnel off, so nothing could start it).
+  it('a shell without start: off, the switches free, no Start', async () => {
     const { container } = await render({
       capabilities: caps.filter(c => c !== 'start'),
       status: { engine: 'stopped' },
     })
-    expect(container.querySelector('[data-engine]')!.textContent).toContain('Not running')
+    expect(container.querySelector('[data-engine]')!.textContent).toContain(
+      'Off — turn on Access, Protect or remote access to services to start it'
+    )
     expect(container.querySelector('[data-control="start"]')).toBeNull()
+    const access = container.querySelector(
+      '[data-control="access"] input, input[data-control="access"]'
+    ) as HTMLInputElement
+    expect(access.disabled).toBe(false)
   })
 })
 

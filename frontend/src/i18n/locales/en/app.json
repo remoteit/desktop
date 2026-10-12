@@ -2857,6 +2857,7 @@
     "off": "Off",
     "offers": "What this device offers",
     "offline": "Offline",
+    "offLine": "Off — turn on Access, Protect or remote access to services to start it",
     "offlineSignedIn": "You’re signed in, but this device is offline. Its own controls below work meanwhile.",
     "offlineSignIn": "This device is offline. Its own controls below work meanwhile; sign in once it’s back online.",
     "on": "On",

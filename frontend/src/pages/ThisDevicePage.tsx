@@ -204,8 +204,11 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
     )
 
   const vpnOn = !!status?.vpn.on
-  // 1.6.0: stopped on this machine (the menu's Quit and Stop): the switches do nothing until it is started.
-  const stopped = status?.engine === 'stopped'
+  // 1.6.0: stopped on this machine (the menu's Quit and Stop): the switches do nothing until it is started. Only a shell
+  // that can be stopped offers `start`; a phone's engine says 'stopped' whenever its tunnel is off, and there the
+  // switches are what turn it on, so they are never held for it.
+  const stopped = status?.engine === 'stopped' && has('start')
+  const off = status?.engine === 'stopped' && !stopped
   const held = busy || stopped
   const exitValue = status?.exit?.id ?? ''
   // 1.2.0: Access and Protect, the two switches, where the shell offers them; the 1.0 VPN and exit otherwise.
@@ -262,7 +265,9 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               secondary={
                 status.engine === 'online' && d?.since
                   ? t('thisDevice.onlineSince', 'Online since {{when}}', { when: when(d.since) })
-                  : stopped && has('start')
+                  : off
+                  ? t('thisDevice.offLine', 'Off — turn on Access, Protect or remote access to services to start it')
+                  : stopped
                   ? t(
                       'thisDevice.stoppedLine',
                       'Stopped: this {{kind}} is offline — no one can reach its services, and Protect and Access are off',
@@ -273,7 +278,7 @@ export const ThisDeviceView: React.FC<{ device: ThisDevice; signedIn?: boolean }
               data-engine={status.engine}
             />
           </ListItem>
-          {stopped && has('start') && (
+          {stopped && (
             <ListItem>
               <Button
                 size="small"
