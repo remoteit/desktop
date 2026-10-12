@@ -141,8 +141,9 @@ export const NotificationSettings: React.FC = () => {
           </ListItemButton>
         )}
         <ListItemSetting
-          icon={pushOn && pushEnabled.length ? 'bell-on' : 'bell-slash'}
+          icon={pushOn && pushEnabled.length ? 'mobile-vibrate' : 'mobile-vibrate-slash'}
           label={t('notificationSettings.push', 'Mobile push')}
+          subLabel={t('notificationSettings.pushHelp', "Overrides your account's push settings for this device only.")}
           toggle={pushOn}
           onClick={() => saveSettings({ pushNotifications: !pushOn })}
           secondaryContent={pushOverridden ? chipOverridden('push') : undefined}

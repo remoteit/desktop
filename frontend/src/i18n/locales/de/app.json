@@ -1362,6 +1362,7 @@
     "email": "E-Mail",
     "globalSettings": "Globale Einstellungen",
     "push": "Mobile Push",
+    "pushHelp": "Überschreibt die Push-Einstellungen Ihres Kontos nur für dieses Gerät.",
     "systemNotification": "Systembenachrichtigung",
     "title": "Gerätebenachrichtigungen"
   },
@@ -2174,6 +2175,7 @@
     "notifications": "Benachrichtigungen",
     "notifyEmail": "E-Mail",
     "notifyPush": "Mobile Push",
+    "notifyPushHelp": "Wird an die mobile App auf Ihren Telefonen gesendet. Wählen Sie unten die gewünschten Arten aus.",
     "notifySystem": "Systembenachrichtigung",
     "notifyWebhook": "Webhook",
     "profile": "Profil",

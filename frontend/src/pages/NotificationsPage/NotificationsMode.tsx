@@ -94,6 +94,9 @@ export const NotificationMode: React.FC = () => {
         )}
         <ListItemSwitch
           label={t('settings.notifyPush', 'Mobile push')}
+          subLabel={t('settings.notifyPushHelp', 'Sent to the mobile app on your phones. Choose which kinds below.')}
+          icon="mobile-vibrate"
+          offIcon="mobile-vibrate-slash"
           checked={pushNotifications !== false}
           onClick={onPushChange}
         />

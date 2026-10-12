@@ -1375,6 +1375,7 @@
     "email": "Correo electrónico",
     "globalSettings": "Configuración global",
     "push": "Push móvil",
+    "pushHelp": "Reemplaza la configuración push de tu cuenta solo para este dispositivo.",
     "systemNotification": "Notificación del sistema",
     "title": "Notificaciones del dispositivo"
   },
@@ -2210,6 +2211,7 @@
     "notifications": "Notificaciones",
     "notifyEmail": "Correo electrónico",
     "notifyPush": "Push móvil",
+    "notifyPushHelp": "Se envía a la aplicación móvil de tus teléfonos. Elige abajo qué tipos recibir.",
     "notifySystem": "Notificación del sistema",
     "notifyWebhook": "Webhook",
     "profile": "Perfil",

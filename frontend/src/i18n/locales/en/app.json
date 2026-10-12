@@ -1362,6 +1362,7 @@
     "email": "Email",
     "globalSettings": "Global Settings",
     "push": "Mobile push",
+    "pushHelp": "Overrides your account's push settings for this device only.",
     "systemNotification": "System notification",
     "title": "Device Notifications"
   },
@@ -2174,6 +2175,7 @@
     "notifications": "Notifications",
     "notifyEmail": "Email",
     "notifyPush": "Mobile push",
+    "notifyPushHelp": "Sent to the mobile app on your phones. Choose which kinds below.",
     "notifySystem": "System notification",
     "notifyWebhook": "Webhook",
     "profile": "Profile",

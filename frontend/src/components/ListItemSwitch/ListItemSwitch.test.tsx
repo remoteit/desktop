@@ -34,4 +34,9 @@ describe('ListItemSwitch', () => {
     act(() => container.querySelector<HTMLElement>('.MuiListItemButton-root')!.click())
     expect(onClick).toHaveBeenCalledTimes(2)
   })
+
+  it('shows a sub label under the label', () => {
+    act(() => root.render(<ListItemSwitch label="Mobile push" subLabel="Sent to your phones" onClick={vi.fn()} />))
+    expect(container.querySelector('.MuiListItemText-secondary')?.textContent).toBe('Sent to your phones')
+  })
 })

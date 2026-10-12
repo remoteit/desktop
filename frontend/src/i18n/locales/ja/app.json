@@ -1349,6 +1349,7 @@
     "email": "メール",
     "globalSettings": "グローバル設定",
     "push": "モバイルプッシュ",
+    "pushHelp": "このデバイスに限り、アカウントのプッシュ設定より優先されます。",
     "systemNotification": "システム通知",
     "title": "デバイス通知"
   },
@@ -2138,6 +2139,7 @@
     "notifications": "通知",
     "notifyEmail": "メール",
     "notifyPush": "モバイルプッシュ",
+    "notifyPushHelp": "スマートフォンのモバイルアプリに送信されます。受け取る種類を下で選択してください。",
     "notifySystem": "システム通知",
     "notifyWebhook": "Webhook",
     "profile": "プロフィール",
