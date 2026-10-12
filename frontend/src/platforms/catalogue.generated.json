@@ -64,6 +64,8 @@
     "1226": "Liverock Technologies",
     "1227": "Rent-A-Node",
     "1228": "TOA",
+    "1229": "Android Tablet",
+    "1230": "iPad",
     "1280": "Unknown",
     "1281": "Teltonika",
     "9999": "Legacy Camera",
@@ -111,7 +113,8 @@
         }
       ],
       "types": {
-        "1213": "Android Phone"
+        "1213": "Android Phone",
+        "1229": "Android Tablet"
       }
     },
     "arm": {
@@ -229,7 +232,8 @@
       "name": "iOS",
       "kind": "info",
       "types": {
-        "1214": "iPhone"
+        "1214": "iPhone",
+        "1230": "iPad"
       }
     },
     "linux": {
