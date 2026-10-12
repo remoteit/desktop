@@ -36,6 +36,9 @@ export const spacing: { [key in Sizes]: number } = {
   max: 96, //   64   12
 }
 
+export const LIST_ITEM_PADDING_Y = 5
+export const LIST_ITEM_MARGIN_Y = 1
+
 export type Colors = { [key in Color]: string }
 
 export const lightColors: Colors = {
