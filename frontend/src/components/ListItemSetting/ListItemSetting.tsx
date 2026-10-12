@@ -96,6 +96,12 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
       setOpen(false)
     }
 
+    // A quoted row's line is the Quote's border, inside the row: the row's own padding and margin
+    // would sit outside it and break the line between rows, so the Quote carries that spacing instead
+    const rowSx = quote
+      ? { paddingRight: secondaryContentWidth, paddingY: 0, marginY: 0 }
+      : { paddingRight: secondaryContentWidth }
+
     const ListItemContent = (
       <>
         {(label || subLabel) && <ListItemText primary={label} secondary={subLabel} />}
@@ -124,7 +130,13 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
         ) : (
           iconNode
         )}
-        {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
+        {quote ? (
+          <Quote margin={null} sx={{ paddingY: `${spacing.xs}px` }}>
+            {ListItemContent}
+          </Quote>
+        ) : (
+          ListItemContent
+        )}
         <ListItemSecondaryAction>
           {secondaryContent}
           {showButton && (
@@ -149,7 +161,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
     return (
       <>
         {disabled || !onClick ? (
-          <ListItem dense sx={{ paddingRight: secondaryContentWidth }} disableGutters={disableGutters}>
+          <ListItem dense sx={rowSx} disableGutters={disableGutters}>
             {ListItemContents}
           </ListItem>
         ) : (
@@ -161,7 +173,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
             disableGutters={disableGutters}
             onMouseEnter={() => setShowTip(true)}
             onMouseLeave={() => setShowTip(false)}
-            sx={{ paddingRight: secondaryContentWidth }}
+            sx={rowSx}
           >
             {ListItemContents}
           </ListItemButton>
