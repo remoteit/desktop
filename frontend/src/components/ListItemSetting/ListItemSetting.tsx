@@ -124,7 +124,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
         ) : (
           iconNode
         )}
-        {quote ? <Quote margin={null}>{ListItemContent}</Quote> : ListItemContent}
+        {quote ? <Quote spanRow>{ListItemContent}</Quote> : ListItemContent}
         <ListItemSecondaryAction>
           {secondaryContent}
           {showButton && (
