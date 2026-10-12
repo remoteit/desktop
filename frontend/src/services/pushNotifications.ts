@@ -84,8 +84,8 @@ async function requestToken() {
   }
 }
 
-// IDs mirror graphql-api's PUSH_CHANNELS — keep in sync. Android fixes a channel's importance once the
-// phone has it: 4 pops up, 3 sounds, 2 stays silent in the shade.
+// IDs mirror graphql-api's PUSH_CHANNELS and the manifest's default_notification_channel_id — keep in sync.
+// Android fixes a channel's importance once the phone has it: 4 pops up, 3 sounds, 2 stays silent in the shade.
 function channels(): Channel[] {
   return [
     { id: 'device-state', importance: 4, name: i18n.t('push.channels.deviceState', 'Device online / offline') },
