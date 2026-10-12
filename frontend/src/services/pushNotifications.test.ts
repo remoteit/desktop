@@ -12,7 +12,8 @@ const { plugin, listeners, state, set, browser, constants, register, unregister,
       removeAllListeners: vi.fn(async () => {}),
       checkPermissions: vi.fn(),
       requestPermissions: vi.fn(),
-      createChannel: vi.fn(async () => {}),
+      createChannel: vi.fn(async (_channel: any) => {}),
+      deleteChannel: vi.fn(async (_channel: any) => {}),
       register: vi.fn(async () => {}),
       unregister: vi.fn(async () => {}),
     },
@@ -22,7 +23,6 @@ const { plugin, listeners, state, set, browser, constants, register, unregister,
     constants: {
       APNS_ENVIRONMENT: 'sandbox',
       FIREBASE_CONFIGURED: false,
-      PUSH_CHANNEL_ID: 'notifications',
       PUSH_UNREGISTER_TIMEOUT: 3000,
     },
     register: vi.fn(async () => ({ data: {} })),
@@ -120,13 +120,22 @@ describe('register', () => {
     expect(plugin.register).not.toHaveBeenCalled()
   })
 
-  it('creates the notification channel on Android with Firebase', async () => {
+  it('creates a channel per kind of push on Android with Firebase, and drops the old single one', async () => {
     Object.assign(browser, { isIOS: false, isAndroid: true })
     constants.FIREBASE_CONFIGURED = true
     await pushNotifications.register()
     await listeners.registration({ value: 'fcm-token' })
 
-    expect(plugin.createChannel).toHaveBeenCalledWith({ id: 'notifications', name: 'Notifications' })
+    expect(plugin.deleteChannel).toHaveBeenCalledWith({ id: 'notifications' })
+    expect(plugin.createChannel.mock.calls.map(([channel]) => [channel.id, channel.importance])).toEqual([
+      ['device-state', 4],
+      ['connect-others', 4],
+      ['connect-own', 2],
+      ['account', 4],
+      ['access', 3],
+      ['jobs', 3],
+    ])
+    expect(plugin.createChannel).toHaveBeenCalledWith({ id: 'device-state', importance: 4, name: 'Device online / offline' })
     expect(register).toHaveBeenCalledWith('android', 'fcm-token', 'sandbox', '3.48.10')
   })
 
@@ -162,6 +171,7 @@ describe('register', () => {
   it('registers below Android 8, where the plugin refuses to create channels', async () => {
     Object.assign(browser, { isIOS: false, isAndroid: true })
     constants.FIREBASE_CONFIGURED = true
+    plugin.deleteChannel.mockRejectedValueOnce(new Error('unavailable'))
     plugin.createChannel.mockRejectedValueOnce(new Error('unavailable'))
     await pushNotifications.register()
 

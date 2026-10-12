@@ -1844,7 +1844,11 @@
     "openHelp": "Cualquier dispositivo podrá conectarse mientras la conexión esté activa."
   },
   "push": {
-    "channel": "Notificaciones"
+    "channels": {
+      "connectOthers": "Conexiones a tus dispositivos",
+      "connectOwn": "Tus conexiones",
+      "deviceState": "Dispositivo en línea / sin conexión"
+    }
   },
   "pushCategories": {
     "access": "Cambios de acceso",

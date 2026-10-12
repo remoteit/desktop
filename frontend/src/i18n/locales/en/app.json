@@ -1821,7 +1821,11 @@
     "openHelp": "Any device will be able to connect while the connection is active."
   },
   "push": {
-    "channel": "Notifications"
+    "channels": {
+      "connectOthers": "Connections to your devices",
+      "connectOwn": "Your connections",
+      "deviceState": "Device online / offline"
+    }
   },
   "pushCategories": {
     "access": "Access changes",

@@ -1798,7 +1798,11 @@
     "openHelp": "接続がアクティブな間は、どのデバイスでも接続できます。"
   },
   "push": {
-    "channel": "通知"
+    "channels": {
+      "connectOthers": "あなたのデバイスへの接続",
+      "connectOwn": "あなたの接続",
+      "deviceState": "デバイスのオンライン / オフライン"
+    }
   },
   "pushCategories": {
     "access": "アクセスの変更",

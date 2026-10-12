@@ -1,5 +1,5 @@
-import { PushNotifications, ActionPerformed, Token } from '@capacitor/push-notifications'
-import { APNS_ENVIRONMENT, FIREBASE_CONFIGURED, PUSH_CHANNEL_ID, PUSH_UNREGISTER_TIMEOUT } from '../constants'
+import { PushNotifications, ActionPerformed, Channel, Token } from '@capacitor/push-notifications'
+import { APNS_ENVIRONMENT, FIREBASE_CONFIGURED, PUSH_UNREGISTER_TIMEOUT } from '../constants'
 import { graphQLRegisterPushToken, graphQLUnregisterPushToken } from './graphQLMutation'
 import { version } from '../helpers/versionHelper'
 import { withTimeout } from '../helpers/sleep'
@@ -77,16 +77,31 @@ async function requestToken() {
     let { receive } = await PushNotifications.checkPermissions()
     if (receive === 'prompt') ({ receive } = await PushNotifications.requestPermissions())
     if (receive !== 'granted') return
-    // Android before 8.0 has no channels and the plugin rejects there, which must not stop register()
-    if (browser.isAndroid)
-      await PushNotifications.createChannel({
-        id: PUSH_CHANNEL_ID,
-        name: i18n.t('push.channel', 'Notifications'),
-      }).catch(() => {})
+    if (browser.isAndroid) await createChannels()
     await PushNotifications.register()
   } catch (error) {
     console.warn('PUSH REGISTER FAILED', error)
   }
+}
+
+// IDs mirror graphql-api's PUSH_CHANNELS and the manifest's default_notification_channel_id — keep in sync.
+// Android fixes a channel's importance once the phone has it: 4 pops up, 3 sounds, 2 stays silent in the shade.
+function channels(): Channel[] {
+  return [
+    { id: 'device-state', importance: 4, name: i18n.t('push.channels.deviceState', 'Device online / offline') },
+    { id: 'connect-others', importance: 4, name: i18n.t('push.channels.connectOthers', 'Connections to your devices') },
+    { id: 'connect-own', importance: 2, name: i18n.t('push.channels.connectOwn', 'Your connections') },
+    { id: 'account', importance: 4, name: i18n.t('pushCategories.account', 'Account security') },
+    { id: 'access', importance: 3, name: i18n.t('pushCategories.access', 'Access changes') },
+    { id: 'jobs', importance: 3, name: i18n.t('pushCategories.jobs', 'Scripts') },
+  ]
+}
+
+// Android before 8.0 has no channels and the plugin rejects there, which must not stop register().
+// `notifications` was the one channel before there was one per kind: deleted so it leaves the phone's settings
+async function createChannels() {
+  const created = channels().map(channel => PushNotifications.createChannel(channel))
+  await Promise.all([PushNotifications.deleteChannel({ id: 'notifications' }), ...created]).catch(() => {})
 }
 
 function unregister() {

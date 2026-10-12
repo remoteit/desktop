@@ -238,8 +238,6 @@ export const PUSH_UNREGISTER_TIMEOUT = 3000
 // profile gets sandbox tokens, TestFlight and the App Store production ones (build-ios.yml).
 export const APNS_ENVIRONMENT: IApnsEnvironment = env.VITE_APNS_ENVIRONMENT === 'production' ? 'production' : 'sandbox'
 export const FIREBASE_CONFIGURED = !!env.VITE_FIREBASE_CONFIGURED
-// The default_notification_channel_id in AndroidManifest.xml
-export const PUSH_CHANNEL_ID = 'notifications'
 export const PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs', 'account']
 // Mirrors DEFAULT_PUSH_CATEGORIES in graphql-api/src/constants.ts — keep in sync
 export const DEFAULT_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs']

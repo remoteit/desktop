@@ -1821,7 +1821,11 @@
     "openHelp": "Während die Verbindung aktiv ist, kann sich jedes Gerät verbinden."
   },
   "push": {
-    "channel": "Benachrichtigungen"
+    "channels": {
+      "connectOthers": "Verbindungen zu Ihren Geräten",
+      "connectOwn": "Ihre Verbindungen",
+      "deviceState": "Gerät online / offline"
+    }
   },
   "pushCategories": {
     "access": "Zugriffsänderungen",
