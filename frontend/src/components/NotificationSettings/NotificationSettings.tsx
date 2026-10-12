@@ -143,7 +143,6 @@ export const NotificationSettings: React.FC = () => {
         <ListItemSetting
           icon={pushOn && pushEnabled.length ? 'mobile-vibrate' : 'mobile-vibrate-slash'}
           label={t('notificationSettings.push', 'Mobile push')}
-          subLabel={t('notificationSettings.pushHelp', "Overrides your account's push settings for this device only.")}
           toggle={pushOn}
           onClick={() => saveSettings({ pushNotifications: !pushOn })}
           secondaryContent={pushOverridden ? chipOverridden('push') : undefined}
@@ -157,7 +156,7 @@ export const NotificationSettings: React.FC = () => {
         />
         <ListItemButton onClick={handleEmailNotifications} dense>
           <ListItemIcon>
-            <Icon name={email ? 'bell-on' : 'bell-slash'} size="md" />
+            <Icon name={email ? 'envelope' : 'envelope-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary={t('notificationSettings.email', 'Email')} />
           <ListItemSecondaryAction>

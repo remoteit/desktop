@@ -1362,7 +1362,6 @@
     "email": "Email",
     "globalSettings": "Global Settings",
     "push": "Mobile push",
-    "pushHelp": "Overrides your account's push settings for this device only.",
     "systemNotification": "System notification",
     "title": "Device Notifications"
   },
@@ -1826,10 +1825,15 @@
   },
   "pushCategories": {
     "access": "Access changes",
+    "accessHelp": "Someone shares a device with you or removes your access, or a device is transferred or deleted.",
     "account": "Account security",
+    "accountHelp": "A sign-in to your account, or a change to its password, phone number, or two-factor settings.",
     "connect": "Connections",
+    "connectHelp": "Anyone, including you, connects to or disconnects from a device you have access to.",
     "jobs": "Scripts",
-    "state": "Online / offline"
+    "jobsHelp": "A script you run, or one run on your account, starts, finishes, fails, or is cancelled.",
+    "state": "Online / offline",
+    "stateHelp": "A device you have access to goes offline or comes back online."
   },
   "qualityDetails": {
     "availability": "Availability:",
@@ -2175,7 +2179,6 @@
     "notifications": "Notifications",
     "notifyEmail": "Email",
     "notifyPush": "Mobile push",
-    "notifyPushHelp": "Sent to the mobile app on your phones. Choose which kinds below.",
     "notifySystem": "System notification",
     "notifyWebhook": "Webhook",
     "profile": "Profile",

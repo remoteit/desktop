@@ -5,7 +5,6 @@ import { ListItemButton, ListItemText, ListItemIcon, ListItemSecondaryAction, Sw
 type Props = {
   keyProp?: string | number
   label: string | React.ReactNode
-  subLabel?: React.ReactNode
   icon?: string
   offIcon?: string
   checked?: boolean
@@ -15,7 +14,6 @@ type Props = {
 
 export const ListItemSwitch: React.FC<Props> = ({
   label,
-  subLabel,
   icon = 'bell-on',
   offIcon = 'bell-slash',
   checked,
@@ -27,7 +25,7 @@ export const ListItemSwitch: React.FC<Props> = ({
       <ListItemIcon>
         <Icon name={checked ? icon : offIcon} size="md" />
       </ListItemIcon>
-      <ListItemText primary={label} secondary={subLabel} />
+      <ListItemText primary={label} />
       <ListItemSecondaryAction>
         {children}
         <Switch

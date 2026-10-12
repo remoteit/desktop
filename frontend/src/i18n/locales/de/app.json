@@ -1362,7 +1362,6 @@
     "email": "E-Mail",
     "globalSettings": "Globale Einstellungen",
     "push": "Mobile Push",
-    "pushHelp": "Überschreibt die Push-Einstellungen Ihres Kontos nur für dieses Gerät.",
     "systemNotification": "Systembenachrichtigung",
     "title": "Gerätebenachrichtigungen"
   },
@@ -1826,10 +1825,15 @@
   },
   "pushCategories": {
     "access": "Zugriffsänderungen",
+    "accessHelp": "Jemand teilt ein Gerät mit Ihnen oder entzieht Ihnen den Zugriff, oder ein Gerät wird übertragen oder gelöscht.",
     "account": "Kontosicherheit",
+    "accountHelp": "Eine Anmeldung bei Ihrem Konto oder eine Änderung des Passworts, der Telefonnummer oder der Zwei-Faktor-Einstellungen.",
     "connect": "Verbindungen",
+    "connectHelp": "Jemand, auch Sie selbst, verbindet sich mit einem Gerät, auf das Sie Zugriff haben, oder trennt die Verbindung.",
     "jobs": "Skripte",
-    "state": "Online / Offline"
+    "jobsHelp": "Ein Skript, das Sie ausführen oder das in Ihrem Konto ausgeführt wird, startet, wird beendet, schlägt fehl oder wird abgebrochen.",
+    "state": "Online / Offline",
+    "stateHelp": "Ein Gerät, auf das Sie Zugriff haben, geht offline oder ist wieder online."
   },
   "qualityDetails": {
     "availability": "Verfügbarkeit:",
@@ -2175,7 +2179,6 @@
     "notifications": "Benachrichtigungen",
     "notifyEmail": "E-Mail",
     "notifyPush": "Mobile Push",
-    "notifyPushHelp": "Wird an die mobile App auf Ihren Telefonen gesendet. Wählen Sie unten die gewünschten Arten aus.",
     "notifySystem": "Systembenachrichtigung",
     "notifyWebhook": "Webhook",
     "profile": "Profil",
