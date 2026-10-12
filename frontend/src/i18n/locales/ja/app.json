@@ -1799,12 +1799,9 @@
   },
   "push": {
     "channels": {
-      "access": "アクセスの変更",
-      "account": "アカウントのセキュリティ",
       "connectOthers": "あなたのデバイスへの接続",
       "connectOwn": "あなたの接続",
-      "deviceState": "デバイスのオンライン / オフライン",
-      "jobs": "スクリプト"
+      "deviceState": "デバイスのオンライン / オフライン"
     }
   },
   "pushCategories": {

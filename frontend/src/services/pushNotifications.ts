@@ -84,25 +84,24 @@ async function requestToken() {
   }
 }
 
-// The IDs are graphql-api's PUSH_CHANNELS: the server names one on every push, and the manifest's
-// default_notification_channel_id catches a push that names none. Android fixes a channel's importance
-// once the phone has it: 4 pops up, 3 sounds, 2 stays silent in the shade.
+// IDs mirror graphql-api's PUSH_CHANNELS — keep in sync. Android fixes a channel's importance once the
+// phone has it: 4 pops up, 3 sounds, 2 stays silent in the shade.
 function channels(): Channel[] {
   return [
     { id: 'device-state', importance: 4, name: i18n.t('push.channels.deviceState', 'Device online / offline') },
     { id: 'connect-others', importance: 4, name: i18n.t('push.channels.connectOthers', 'Connections to your devices') },
     { id: 'connect-own', importance: 2, name: i18n.t('push.channels.connectOwn', 'Your connections') },
-    { id: 'account', importance: 4, name: i18n.t('push.channels.account', 'Account security') },
-    { id: 'access', importance: 3, name: i18n.t('push.channels.access', 'Access changes') },
-    { id: 'jobs', importance: 3, name: i18n.t('push.channels.jobs', 'Scripts') },
+    { id: 'account', importance: 4, name: i18n.t('pushCategories.account', 'Account security') },
+    { id: 'access', importance: 3, name: i18n.t('pushCategories.access', 'Access changes') },
+    { id: 'jobs', importance: 3, name: i18n.t('pushCategories.jobs', 'Scripts') },
   ]
 }
 
 // Android before 8.0 has no channels and the plugin rejects there, which must not stop register().
 // `notifications` was the one channel before there was one per kind: deleted so it leaves the phone's settings
 async function createChannels() {
-  await PushNotifications.deleteChannel({ id: 'notifications' }).catch(() => {})
-  await Promise.all(channels().map(channel => PushNotifications.createChannel(channel).catch(() => {})))
+  const created = channels().map(channel => PushNotifications.createChannel(channel))
+  await Promise.all([PushNotifications.deleteChannel({ id: 'notifications' }), ...created]).catch(() => {})
 }
 
 function unregister() {

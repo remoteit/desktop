@@ -1822,12 +1822,9 @@
   },
   "push": {
     "channels": {
-      "access": "Access changes",
-      "account": "Account security",
       "connectOthers": "Connections to your devices",
       "connectOwn": "Your connections",
-      "deviceState": "Device online / offline",
-      "jobs": "Scripts"
+      "deviceState": "Device online / offline"
     }
   },
   "pushCategories": {

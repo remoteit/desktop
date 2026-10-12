@@ -1845,12 +1845,9 @@
   },
   "push": {
     "channels": {
-      "access": "Cambios de acceso",
-      "account": "Seguridad de la cuenta",
       "connectOthers": "Conexiones a tus dispositivos",
       "connectOwn": "Tus conexiones",
-      "deviceState": "Dispositivo en línea / sin conexión",
-      "jobs": "Scripts"
+      "deviceState": "Dispositivo en línea / sin conexión"
     }
   },
   "pushCategories": {
