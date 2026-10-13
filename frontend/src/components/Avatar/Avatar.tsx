@@ -1,7 +1,8 @@
 import md5 from 'md5'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { createColor } from '../../helpers/uiHelper'
 import { labelLookup } from '../../models/labels'
+import { oidcPicture } from '../../services/oidc'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
 import { spacing } from '../../styling'
 
@@ -19,6 +20,28 @@ export interface Props {
   children?: React.ReactNode
 }
 
+/* MUI's Avatar takes one src. Its img onError can't step to the next one reliably: MUI unmounts
+   that img as soon as its own preload of the same src errors. */
+function useFirstLoaded(urls: string[]) {
+  const key = urls.join(' ')
+  const [failed, setFailed] = useState({ key, count: 0 })
+  const count = failed.key === key ? failed.count : 0
+  const src = urls[count]
+
+  useEffect(() => {
+    if (!src) return
+    let active = true
+    const image = new Image()
+    image.onerror = () => active && setFailed({ key, count: count + 1 })
+    image.src = src
+    return () => {
+      active = false
+    }
+  }, [key, count, src])
+
+  return src
+}
+
 export const Avatar: React.FC<Props> = React.memo(
   ({
     email,
@@ -33,10 +56,12 @@ export const Avatar: React.FC<Props> = React.memo(
     marginRight,
     children,
   }) => {
-    const url = useMemo(
-      () => `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`,
-      [email, size]
-    )
+    const urls = useMemo(() => {
+      const picture = oidcPicture(email)
+      const gravatar = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
+      return picture ? [picture, gravatar] : [gravatar]
+    }, [email, size])
+    const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])
     fallback = (fallback || email || '?').substring(0, 1).toUpperCase()
 
