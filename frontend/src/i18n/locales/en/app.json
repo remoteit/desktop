@@ -1602,7 +1602,9 @@
     "fileTimeoutHint": "Each file argument’s download, all its tries. Default: 10 minutes, or a minute per 50 MB if longer.",
     "hint": "For devices that run the script on the job runner. Leave a field empty for its default. Used when the script runs now.",
     "seconds": "seconds",
-    "secondsRange": "Whole seconds, 1 to {{max}}"
+    "secondsRange": "Whole seconds, 1 to {{max}}",
+    "timeout": "Run time limit",
+    "timeoutHint": "How long the script may run on each device before it is stopped, at most {{maxHours}} hours. Default: {{defaultHours}} hour. A device’s administrator may set a shorter limit there."
   },
   "jobsPage": {
     "runScriptToStart": "Run a script to get started"

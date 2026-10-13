@@ -1629,7 +1629,9 @@
     "fileTimeoutHint": "La descarga de cada argumento de archivo, con todos sus intentos. Predeterminado: 10 minutos, o un minuto por cada 50 MB si es más.",
     "hint": "Para dispositivos que ejecutan el script en el ejecutor de trabajos. Deje un campo vacío para usar su valor predeterminado. Se usa cuando el script se ejecuta ahora.",
     "seconds": "segundos",
-    "secondsRange": "Segundos enteros, de 1 a {{max}}"
+    "secondsRange": "Segundos enteros, de 1 a {{max}}",
+    "timeout": "Límite de tiempo de ejecución",
+    "timeoutHint": "Cuánto tiempo puede ejecutarse el script en cada dispositivo antes de detenerse, como máximo {{maxHours}} horas. Predeterminado: {{defaultHours}} hora. El administrador de un dispositivo puede fijar allí un límite menor."
   },
   "jobsPage": {
     "runScriptToStart": "Ejecuta un script para empezar"

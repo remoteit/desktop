@@ -14,7 +14,7 @@ import { graphQLStartJob } from './graphQLMutation'
 
 const t = ((_key: string, text: string, values?: any) =>
   text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
-const ALL = ['fileTimeoutSeconds', 'fileStallSeconds', 'artifactLimit'] as const
+const ALL = ['timeoutSeconds', 'fileTimeoutSeconds', 'fileStallSeconds', 'artifactLimit'] as const
 
 beforeEach(() => {
   request.mockReset()
@@ -27,6 +27,7 @@ describe('a run’s options (Advanced)', () => {
     request.mockResolvedValueOnce({
       data: { data: { __type: { inputFields: [{ name: 'artifactLimit' }, { name: 'fileTimeoutSeconds' }, { name: 'later' }] } } },
     })
+    // An API without the run-time limit (before it): the field is not offered.
     expect(await jobRunOptionFields()).toEqual(['fileTimeoutSeconds', 'artifactLimit'])
     expect(await jobRunOptionFields()).toEqual(['fileTimeoutSeconds', 'artifactLimit'])
     expect(request).toHaveBeenCalledTimes(1)
@@ -42,6 +43,10 @@ describe('a run’s options (Advanced)', () => {
       errors: {},
     })
     expect(parseJobRunOptions(t, { artifactLimitMB: '0' }, [...ALL]).options).toEqual({ artifactLimit: 0 })
+    expect(parseJobRunOptions(t, { timeoutSeconds: '20' }, [...ALL])).toEqual({ options: { timeoutSeconds: 20 }, errors: {} })
+    expect(parseJobRunOptions(t, { timeoutSeconds: '86400' }, [...ALL]).options).toEqual({ timeoutSeconds: 86400 })
+    expect(parseJobRunOptions(t, { timeoutSeconds: '86401' }, [...ALL]).errors).toEqual({ timeoutSeconds: 'Whole seconds, 1 to 86400' })
+    expect(parseJobRunOptions(t, { timeoutSeconds: '0' }, [...ALL]).errors).toEqual({ timeoutSeconds: 'Whole seconds, 1 to 86400' })
     expect(parseJobRunOptions(t, { fileTimeoutSeconds: '0', fileStallSeconds: '1.5', artifactLimitMB: '101' }, [...ALL]).errors).toEqual({
       fileTimeoutSeconds: 'Whole seconds, 1 to 86400',
       fileStallSeconds: 'Whole seconds, 1 to 86400',
@@ -50,6 +55,7 @@ describe('a run’s options (Advanced)', () => {
   })
 
   it('an option the API does not take is left out', () => {
+    expect(parseJobRunOptions(t, { timeoutSeconds: '20' }, ['fileTimeoutSeconds']).options).toEqual({})
     expect(parseJobRunOptions(t, { fileTimeoutSeconds: '900', artifactLimitMB: '1' }, ['artifactLimit']).options).toEqual({
       artifactLimit: 1024 ** 2,
     })

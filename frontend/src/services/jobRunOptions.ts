@@ -2,16 +2,18 @@ import type { TFunction } from 'i18next'
 import { post } from './post'
 
 /* A run's options on the job runner (graphql startJob's `options`, JobRunOptions; device-package docs/scripting-plan.md,
-   "Files"): each FileSelect file's download limits on the device — overall, and with no byte coming — and what the
-   files the script writes to $R3_ARTIFACTS may come to. Offered only for the options the API takes: which it takes is
+   "Files"): the run's time limit on the device, each FileSelect file's download limits there — overall, and with no
+   byte coming — and what the files the script writes to $R3_ARTIFACTS may come to. Offered only for the options the API takes: which it takes is
    read from its schema (JobRunOptions' fields), so an older API — none of them — is asked startJob as before. */
 
-export type JobRunOptionName = 'fileTimeoutSeconds' | 'fileStallSeconds' | 'artifactLimit'
+export type JobRunOptionName = 'timeoutSeconds' | 'fileTimeoutSeconds' | 'fileStallSeconds' | 'artifactLimit'
 
 export type JobRunOptions = Partial<Record<JobRunOptionName, number>>
 
 const MB = 1024 ** 2
 export const MAX_FILE_SECONDS = 24 * 60 * 60 // graphql's bound on both file limits
+export const MAX_RUN_SECONDS = 24 * 60 * 60 // graphql's MAX_RUN_SECONDS
+export const DEFAULT_RUN_SECONDS = 60 * 60 // graphql's RUN_SECONDS
 export const MAX_ARTIFACT_MB = 100 // graphql's MAX_ARTIFACT_LIMIT, 100 MiB
 export const DEFAULT_ARTIFACT_MB = 10 // graphql's ARTIFACT_LIMIT
 export const DEFAULT_FILE_STALL_SECONDS = 60 // the device's own
@@ -26,7 +28,9 @@ export function jobRunOptionFields(): Promise<JobRunOptionName[]> {
         const names: string[] =
           response === 'ERROR' ? [] : response.data?.data?.__type?.inputFields?.map((f: { name: string }) => f.name) ?? []
         if (response === 'ERROR') fields = undefined // to ask again
-        return (['fileTimeoutSeconds', 'fileStallSeconds', 'artifactLimit'] as const).filter(name => names.includes(name))
+        return (['timeoutSeconds', 'fileTimeoutSeconds', 'fileStallSeconds', 'artifactLimit'] as const).filter(name =>
+          names.includes(name)
+        )
       }
     )
   return fields
@@ -44,12 +48,16 @@ const whole = (text?: string) => (text ?? '').trim()
 // error to show, and the run waits for it.
 export function parseJobRunOptions(t: TFunction, form: IJobRunOptionsForm | undefined, offered: JobRunOptionName[]): Parsed {
   const parsed: Parsed = { options: {}, errors: {} }
-  for (const name of ['fileTimeoutSeconds', 'fileStallSeconds'] as const) {
+  for (const [name, max] of [
+    ['timeoutSeconds', MAX_RUN_SECONDS],
+    ['fileTimeoutSeconds', MAX_FILE_SECONDS],
+    ['fileStallSeconds', MAX_FILE_SECONDS],
+  ] as const) {
     const text = whole(form?.[name])
     if (!text || !offered.includes(name)) continue
     const value = Number(text)
-    if (!Number.isInteger(value) || value < 1 || value > MAX_FILE_SECONDS)
-      parsed.errors[name] = t('jobRunOptions.secondsRange', 'Whole seconds, 1 to {{max}}', { max: MAX_FILE_SECONDS })
+    if (!Number.isInteger(value) || value < 1 || value > max)
+      parsed.errors[name] = t('jobRunOptions.secondsRange', 'Whole seconds, 1 to {{max}}', { max })
     else parsed.options[name] = value
   }
   const text = whole(form?.artifactLimitMB)

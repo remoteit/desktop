@@ -4,10 +4,12 @@ import { Box, Button, Collapse, InputAdornment, Stack, TextField, Typography } f
 import {
   DEFAULT_ARTIFACT_MB,
   DEFAULT_FILE_STALL_SECONDS,
+  DEFAULT_RUN_SECONDS,
   jobRunOptionFields,
   JobRunOptionName,
   MAX_ARTIFACT_MB,
   MAX_FILE_SECONDS,
+  MAX_RUN_SECONDS,
 } from '../services/jobRunOptions'
 import { Icon } from './Icon'
 
@@ -82,6 +84,18 @@ export const ScriptRunAdvanced: React.FC<Props> = ({ fields, value = {}, errors,
               'For devices that run the script on the job runner. Leave a field empty for its default. Used when the script runs now.'
             )}
           </Typography>
+          {fields.includes('timeoutSeconds') &&
+            field(
+              'timeoutSeconds',
+              t('jobRunOptions.timeout', 'Run time limit'),
+              t('jobRunOptions.seconds', 'seconds'),
+              t(
+                'jobRunOptions.timeoutHint',
+                'How long the script may run on each device before it is stopped, at most {{maxHours}} hours. Default: {{defaultHours}} hour. A device’s administrator may set a shorter limit there.',
+                { maxHours: MAX_RUN_SECONDS / 3600, defaultHours: DEFAULT_RUN_SECONDS / 3600 }
+              ),
+              MAX_RUN_SECONDS
+            )}
           {fields.includes('fileTimeoutSeconds') &&
             field(
               'fileTimeoutSeconds',

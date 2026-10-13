@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BINARY_DATA_TOKEN } from '../constants'
 import { Typography, TextField, Box, ButtonBase, Stack, Divider } from '@mui/material'
@@ -57,10 +57,18 @@ type Props = ScriptProps | FileProps | TextProps
 export const FileUpload: React.FC<Props> = props => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
-  const [uploadedFilename, setUploadedFilename] = useState<string>()
   const isScriptMode = props.mode === 'script'
   const isFileMode = props.mode === 'file'
   const isTextMode = props.mode === 'text'
+  // The name of the file a script or text was read from: the value is the text, so the name is kept beside it — and
+  // goes when the value is emptied, by this box or by its owner (a form reset after it saved). A file's name is never
+  // kept here: it is the value's own, so the box shows what its owner holds and nothing it held before.
+  const [readFilename, setReadFilename] = useState<string>()
+  const textValue = isFileMode ? undefined : props.value
+  useEffect(() => {
+    if (!textValue) setReadFilename(undefined)
+  }, [textValue])
+  const uploadedFilename = isFileMode ? (props.value ?? undefined)?.name : readFilename
 
   const accept = useMemo(() => buildDropzoneAcceptFromExtensions(props.allowedExtensions), [props.allowedExtensions])
 
@@ -92,7 +100,7 @@ export const FileUpload: React.FC<Props> = props => {
   }
 
   const clear = () => {
-    setUploadedFilename(undefined)
+    setReadFilename(undefined)
     setEmptyValue()
   }
 
@@ -130,7 +138,7 @@ export const FileUpload: React.FC<Props> = props => {
     if (!files.length) return
     const file = files[0]
     try {
-      setUploadedFilename(file.name)
+      if (!isFileMode) setReadFilename(file.name)
       if (isScriptMode) {
         const buffer = await readFileAsArrayBuffer(file)
         if (containsBinaryData(buffer)) {
@@ -167,7 +175,6 @@ export const FileUpload: React.FC<Props> = props => {
     props.label || (isTextMode ? t('fileUpload.selectFile', 'Select File') : t('fileUpload.upload', 'Upload'))
   const uploadSubLabel = props.subLabel || t('fileUpload.dragAndDrop', 'Drag and drop or click')
   const selectionStatusLabel = props.selectionStatusLabel || t('fileUpload.selected', 'selected')
-  const selectedFile = isFileMode ? props.value : undefined
 
   return (
     <Stack width="100%" position="relative">
@@ -194,9 +201,9 @@ export const FileUpload: React.FC<Props> = props => {
         <Typography variant="caption" color="textSecondary">
           {uploadSubLabel}
         </Typography>
-        {(selectedFile || uploadedFilename) && !isScriptMode && (
-          <Typography variant="caption" color="primary.main" sx={{ mt: 0.5 }}>
-            "{(selectedFile?.name || uploadedFilename) ?? ''}" {selectionStatusLabel}
+        {uploadedFilename && !isScriptMode && (
+          <Typography variant="caption" color="primary.main" sx={{ mt: 0.5 }} data-testid="file-upload-selected">
+            "{uploadedFilename}" {selectionStatusLabel}
           </Typography>
         )}
       </ButtonBase>

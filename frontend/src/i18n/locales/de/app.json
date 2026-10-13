@@ -1602,7 +1602,9 @@
     "fileTimeoutHint": "Der Download jedes Datei-Arguments mit allen Versuchen. Standard: 10 Minuten oder eine Minute pro 50 MB, falls länger.",
     "hint": "Für Geräte, die das Skript über den Job-Runner ausführen. Lassen Sie ein Feld für den Standardwert leer. Gilt, wenn das Skript jetzt ausgeführt wird.",
     "seconds": "Sekunden",
-    "secondsRange": "Ganze Sekunden, 1 bis {{max}}"
+    "secondsRange": "Ganze Sekunden, 1 bis {{max}}",
+    "timeout": "Laufzeitlimit",
+    "timeoutHint": "Wie lange das Skript auf jedem Gerät laufen darf, bevor es beendet wird, höchstens {{maxHours}} Stunden. Standard: {{defaultHours}} Stunde. Der Administrator eines Geräts kann dort ein kürzeres Limit festlegen."
   },
   "jobsPage": {
     "runScriptToStart": "Führen Sie ein Skript aus, um zu beginnen"

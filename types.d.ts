@@ -684,6 +684,7 @@ declare global {
 
   // startJob's options (graphql JobRunOptions) as the run form holds them: text, empty for the default
   type IJobRunOptionsForm = {
+    timeoutSeconds?: string
     fileTimeoutSeconds?: string
     fileStallSeconds?: string
     artifactLimitMB?: string
