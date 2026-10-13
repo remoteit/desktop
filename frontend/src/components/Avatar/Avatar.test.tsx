@@ -32,11 +32,11 @@ describe('Avatar', () => {
   let root: Root
   let container: HTMLDivElement
 
-  const render = () =>
+  const render = (picture?: string) =>
     act(() =>
       root.render(
         <ThemeProvider theme={theme}>
-          <Avatar email={EMAIL} />
+          <Avatar email={EMAIL} picture={picture} />
         </ThemeProvider>
       )
     )
@@ -71,7 +71,11 @@ describe('Avatar', () => {
     vi.mocked(oidcPicture).mockReturnValue(undefined)
     render()
     expect(shown()).toBe(GRAVATAR)
-    fail(GRAVATAR)
-    expect(shown()).toBe('A')
+  })
+
+  it('shows a picture it is handed ahead of the lookup', () => {
+    vi.mocked(oidcPicture).mockReturnValue(PICTURE)
+    render('https://idp.example/given.jpg')
+    expect(shown()).toBe('https://idp.example/given.jpg')
   })
 })

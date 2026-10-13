@@ -3,7 +3,6 @@ import { LANGUAGES } from '../constants'
 import { SUPPORTED_LANGUAGES } from '../i18n'
 import { Dispatch, State } from '../store'
 import { isPersonal } from '../models/plans'
-import { oidcPicture } from '../services/oidc'
 import { Typography, List } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
@@ -53,18 +52,12 @@ export const ProfilePage: React.FC = () => {
       >
         <Avatar email={user.email} size={125} />
         <Typography variant="caption">
-          {oidcPicture(user.email) ? (
-            t(
-              'settings.pictureFromSignIn',
-              'Your profile picture comes from the account you signed in with, such as Google.'
-            )
-          ) : (
-            <>
-              {t('settings.gravatarImported', 'Your profile picture is imported from the free service Gravatar.')}
-              <br /> {t('settings.gravatarEdit', 'To edit or add a profile image please visit')}{' '}
-              <Link href="https://gravatar.com">gravatar.com.</Link>
-            </>
+          {t(
+            'settings.pictureSource',
+            'Your profile picture comes from the account you sign in with, such as Google, or else from the free service Gravatar.'
           )}
+          <br /> {t('settings.gravatarEdit', 'To edit or add a profile image please visit')}{' '}
+          <Link href="https://gravatar.com">gravatar.com.</Link>
         </Typography>
       </Gutters>
       <List>

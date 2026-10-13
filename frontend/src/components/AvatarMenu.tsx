@@ -202,7 +202,7 @@ export const AvatarMenu: React.FC = () => {
                   ? a.email
                   : undefined
               }
-              icon={<Avatar email={a.email} fallback={a.name} size={24} />}
+              icon={<Avatar email={a.email} picture={a.picture} fallback={a.name} size={24} />}
               confirm={browser.hasBackend}
               confirmProps={switchConfirm}
               onClick={async () => {

@@ -17,27 +17,23 @@ export interface Props {
   border?: number
   fallback?: string
   marginRight?: number
+  picture?: string
   children?: React.ReactNode
 }
 
-/* MUI's Avatar takes one src. Its img onError can't step to the next one reliably: MUI unmounts
-   that img as soon as its own preload of the same src errors. */
+/* MUI's Avatar takes one src and falls to its children when that fails, so only the earlier URLs
+   are checked here. Its img onError can't step on: MUI unmounts that img when its own preload errors. */
 function useFirstLoaded(urls: string[]) {
-  const key = urls.join(' ')
-  const [failed, setFailed] = useState({ key, count: 0 })
-  const count = failed.key === key ? failed.count : 0
-  const src = urls[count]
+  const [failed, setFailed] = useState<string[]>([])
+  const [src, ...rest] = urls.filter(url => !failed.includes(url))
+  const hasNext = rest.length > 0
 
   useEffect(() => {
-    if (!src) return
-    let active = true
+    if (!src || !hasNext) return
     const image = new Image()
-    image.onerror = () => active && setFailed({ key, count: count + 1 })
+    image.onerror = () => setFailed(f => [...f, src])
     image.src = src
-    return () => {
-      active = false
-    }
-  }, [key, count, src])
+  }, [src, hasNext])
 
   return src
 }
@@ -54,13 +50,14 @@ export const Avatar: React.FC<Props> = React.memo(
     border = 1,
     fallback,
     marginRight,
+    picture,
     children,
   }) => {
     const urls = useMemo(() => {
-      const picture = oidcPicture(email)
+      const signIn = picture ?? oidcPicture(email)
       const gravatar = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
-      return picture ? [picture, gravatar] : [gravatar]
-    }, [email, size])
+      return signIn ? [signIn, gravatar] : [gravatar]
+    }, [email, size, picture])
     const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])
     fallback = (fallback || email || '?').substring(0, 1).toUpperCase()
