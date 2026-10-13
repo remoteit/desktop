@@ -16,9 +16,10 @@ import { Link } from './Link'
 
 type Props = {
   children?: React.ReactNode
+  subheader?: React.ReactNode // under the tabs, outside the list's scrolling body (the files tab's storage)
 }
 
-export const ScriptingHeader: React.FC<Props> = ({ children }) => {
+export const ScriptingHeader: React.FC<Props> = ({ children, subheader }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
@@ -97,6 +98,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children }) => {
               </Route>
             )}
           </Stack>
+          {subheader}
         </>
       }
     >

@@ -3,11 +3,12 @@ import { useParams, Redirect } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { selectFile } from '../selectors/scripting'
-import { selectRole } from '../selectors/organizations'
+import { selectRole, selectPermissions } from '../selectors/organizations'
 import { initialForm } from '../models/files'
 import { FileDeleteButton } from '../components/FileDeleteButton'
 import { Container } from '../components/Container'
 import { FileEditorForm } from '../components/FileEditorForm'
+import { FileVersions } from '../components/FileVersions'
 
 export const FileDetailPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -15,6 +16,7 @@ export const FileDetailPage: React.FC = () => {
 
   const role = useSelector(selectRole)
   const manager = role.permissions.includes('MANAGE')
+  const permissions = useSelector(selectPermissions)
   const file = useSelector((state: State) => selectFile(state, undefined, fileID))
   const fetching = useSelector((state: State) => state.files.fetching)
 
@@ -102,6 +104,8 @@ export const FileDetailPage: React.FC = () => {
         actionDisabled={!canSave || saving || fetching}
         onSubmit={handleSave}
       />
+      {/* Read again when the file is: a new version, or one deleted. */}
+      <FileVersions key={`${file.updated}:${file.storedSize}`} fileId={file.id} canDelete={permissions.includes('ADMIN')} />
     </Container>
   )
 }

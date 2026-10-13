@@ -634,6 +634,7 @@ declare global {
     longDesc?: string
     executable: boolean // if file is a script
     versions: IFileVersion[]
+    storedSize?: number // bytes all its versions store, where the API says (File.storedSize)
   }
 
   type IFileVersion = {
@@ -678,6 +679,14 @@ declare global {
     file?: File
     argumentDefinitions?: IArgumentDefinition[] // For script creation/edit
     argumentValues?: IArgumentValue[] // For running scripts
+    runOptions?: IJobRunOptionsForm // A run's options on the job runner, as typed (Advanced)
+  }
+
+  // startJob's options (graphql JobRunOptions) as the run form holds them: text, empty for the default
+  type IJobRunOptionsForm = {
+    fileTimeoutSeconds?: string
+    fileStallSeconds?: string
+    artifactLimitMB?: string
   }
 
   type IJob = {

@@ -16,6 +16,8 @@ import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 import { Link } from '../components/Link'
 import { Notice } from '../components/Notice'
+import { FileStorageUsage } from '../components/FileStorageUsage'
+import { selectActiveAccountId } from '../selectors/accounts'
 
 type Props = {
   scripts?: boolean
@@ -31,6 +33,7 @@ export const FilesPage: React.FC<Props> = ({ scripts }) => {
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const files = useSelector(scripts ? selectScripts : selectFiles)
   const role = useSelector(selectRole)
+  const accountId = useSelector(selectActiveAccountId)
   const { t } = useTranslation()
 
   const handleDemo = async () => {
@@ -85,5 +88,12 @@ export const FilesPage: React.FC<Props> = ({ scripts }) => {
     <FileList attributes={attributes} {...{ required, scripts: files, columnWidths, fetching, isScriptList: !!scripts }} />
   )
 
-  return <ScriptingHeader>{content}</ScriptingHeader>
+  // The files tab: what the account's files store against its quota, every version counted.
+  return (
+    <ScriptingHeader
+      subheader={!scripts && <FileStorageUsage accountId={accountId} sx={{ paddingX: 4, paddingTop: 1, paddingBottom: 1 }} />}
+    >
+      {content}
+    </ScriptingHeader>
+  )
 }

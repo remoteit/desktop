@@ -635,7 +635,15 @@ export async function graphQLSetJob(params: {
   )
 }
 
-export async function graphQLStartJob(jobId: string) {
+// The run's options (services/jobRunOptions) only where there are any: an API without them is asked as before.
+export async function graphQLStartJob(jobId: string, options?: ILookup<number>) {
+  if (options && Object.keys(options).length)
+    return await graphQLBasicRequest(
+      ` mutation StartJob($jobId: String, $options: JobRunOptions) {
+          startJob(jobId: $jobId, options: $options)
+        }`,
+      { jobId, options }
+    )
   return await graphQLBasicRequest(
     ` mutation StartJob($jobId: String) {
         startJob(jobId: $jobId)

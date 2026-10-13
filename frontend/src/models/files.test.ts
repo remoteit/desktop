@@ -17,6 +17,7 @@ vi.mock('../services/post', () => ({ postFile }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLFiles: vi.fn() }))
 vi.mock('../services/graphQLMutation', () => ({ graphQLDeleteFile: vi.fn(), graphQLModifyFile: vi.fn() }))
 vi.mock('../services/get', () => ({ get: vi.fn() }))
+vi.mock('../services/fileStorage', () => ({ fetchFileSizes: vi.fn() }))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' }))
 vi.mock('../i18n', () => ({
   default: { t: (_key: string, options: any) => options.defaultValue.replace('{{message}}', options.message) },
@@ -120,5 +121,15 @@ describe('files.upload', () => {
     await effects().cancelUpload()
     expect(await result).toBe('')
     expect(dispatch.ui.set).not.toHaveBeenCalledWith(expect.objectContaining({ errorMessage: expect.anything() }))
+  })
+})
+
+describe('what each file stores', () => {
+  it('sizes merge into the account’s files; a file the API gave none for is left as it was', () => {
+    const state: any = { all: { acct: [{ id: 'F1' }, { id: 'F2', storedSize: 7 }], other: [{ id: 'F1' }] } }
+    const next = (files as any).reducers.setSizes(state, { accountId: 'acct', sizes: { F1: 5 } })
+    expect(next.all.acct).toEqual([{ id: 'F1', storedSize: 5 }, { id: 'F2', storedSize: 7 }])
+    expect(next.all.other).toEqual([{ id: 'F1' }])
+    expect((files as any).reducers.setSizes({ all: {} }, { accountId: 'acct', sizes: { F1: 5 } }).all).toEqual({})
   })
 })

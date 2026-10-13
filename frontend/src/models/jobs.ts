@@ -4,6 +4,7 @@ import { selectJobs } from '../selectors/scripting'
 import { getDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLSetJob, graphQLStartJob, graphQLCancelJob, graphQLDeleteJob } from '../services/graphQLMutation'
+import { jobRunOptionFields, JobRunOptions, parseJobRunOptions } from '../services/jobRunOptions'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
@@ -117,8 +118,10 @@ export default createModel<RootModel>()({
     },
     async saveRun(form: IFileForm): Promise<string> {
       console.log('SAVE AND RUN JOB', form)
+      // The run's options (Advanced), only those this API takes: none, and startJob is asked as before.
+      const { options } = parseJobRunOptions(i18n.t, form.runOptions, await jobRunOptionFields())
       const jobId = await dispatch.jobs.save(form)
-      await dispatch.jobs.run({ jobId, fileId: form.fileId })
+      await dispatch.jobs.run({ jobId, fileId: form.fileId, options })
       return jobId
     },
     async save(form: IFileForm, state): Promise<string> {
@@ -133,9 +136,9 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ redirect: `/script/${form.fileId}/latest` })
       return jobId
     },
-    async run({ jobId, fileId }: { jobId?: string; fileId: string }) {
+    async run({ jobId, fileId, options }: { jobId?: string; fileId: string; options?: JobRunOptions }) {
       if (!jobId) return console.error('NO JOB ID TO RUN')
-      const result = await graphQLStartJob(jobId)
+      const result = await graphQLStartJob(jobId, options)
       if (result === 'ERROR') return
       console.log('STARTED JOB', { result, jobId })
       dispatch.ui.set({ redirect: `/script/${fileId}/latest` })

@@ -5,6 +5,8 @@ import { Typography, List, ListItem, Button, Chip, Stack } from '@mui/material'
 import { ArgumentsValueForm } from './ArgumentsValueForm'
 import { TagFilter } from './TagFilter'
 import { Notice } from './Notice'
+import { ScriptRunAdvanced, useJobRunOptionFields } from './ScriptRunAdvanced'
+import { parseJobRunOptions } from '../services/jobRunOptions'
 
 type Props = {
   runForm: IFileForm
@@ -44,6 +46,9 @@ export const ScriptRunForm: React.FC<Props> = ({
   onPrepare,
 }) => {
   const { t } = useTranslation()
+  const runOptionFields = useJobRunOptionFields()
+  const runOptionErrors = parseJobRunOptions(t, runForm.runOptions, runOptionFields).errors
+  const runOptionsInvalid = Object.keys(runOptionErrors).length > 0
   return (
     <>
       {!hasValidEditSnapshot && (
@@ -119,12 +124,22 @@ export const ScriptRunForm: React.FC<Props> = ({
       )}
 
       {!disabled && (
+        <ScriptRunAdvanced
+          fields={runOptionFields}
+          value={runForm.runOptions}
+          errors={runOptionErrors}
+          disabled={running}
+          onChange={runOptions => onFormChange({ ...runForm, runOptions })}
+        />
+      )}
+
+      {!disabled && (
         <>
           <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
             <Button
               variant="contained"
               color="primary"
-              disabled={!canRun || !hasValidEditSnapshot || !requiredArgsFilled || running || fetching}
+              disabled={!canRun || !hasValidEditSnapshot || !requiredArgsFilled || runOptionsInvalid || running || fetching}
               onClick={onRun}
               sx={{ flexGrow: 1 }}
             >

@@ -9,6 +9,7 @@ import { DeviceAnyPortSetting } from '../components/DeviceAnyPortSetting'
 import { DeviceSubnetSetting } from '../components/DeviceSubnetSetting'
 import { DeviceWebsocketSetting } from '../components/DeviceWebsocketSetting'
 import { DeviceServicesSetting } from '../components/DeviceServicesSetting'
+import { DeviceScriptsSetting } from '../components/DeviceScriptsSetting'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { DeviceExitChoice } from '../components/DeviceExitSection'
 import { DevicePolicyRow } from '../components/DeviceSettingRow'
@@ -43,6 +44,7 @@ export const DeviceEditPage: React.FC = () => {
             <DeviceAnyPortSetting />
             <DeviceWebsocketSetting />
             <DeviceServicesSetting settings={settings} canManage={!!device?.permissions.includes('MANAGE')} />
+            <DeviceScriptsSetting settings={settings} canManage={!!device?.permissions.includes('MANAGE')} />
             {deviceSessions && (
               <DevicePolicyRow
                 deviceId={device.id}

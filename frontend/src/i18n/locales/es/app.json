@@ -436,6 +436,7 @@
     "scriptCreated": "Creado",
     "scriptDescription": "Descripción",
     "scriptName": "Script",
+    "scriptSize": "Tamaño",
     "scriptUpdated": "Modificado",
     "serviceAccess": "Usuarios",
     "serviceAction": "Acción",
@@ -1239,6 +1240,10 @@
     "allServices": "Todos los servicios",
     "screenView": "ScreenView"
   },
+  "deviceScripts": {
+    "hint": "Cualquiera que pueda ejecutar scripts en este dispositivo puede ejecutar comandos en él — con su propia cuenta en el dispositivo, o como root si no tiene una. Desactivado, aquí no se ejecuta ningún script.",
+    "label": "Permitir scripts"
+  },
   "deviceServices": {
     "hint": "",
     "label": ""
@@ -1450,6 +1455,14 @@
     "uploadFileNotice": "Sube un archivo para usarlo en tus scripts.",
     "visitDocs": "visita nuestro sitio de documentación."
   },
+  "fileStorage": {
+    "full": "El almacenamiento está lleno. Elimine archivos o versiones antiguas de archivos para subir más.",
+    "label": "Almacenamiento de archivos",
+    "near": "El almacenamiento está casi lleno. Elimine los archivos o las versiones antiguas que ya no necesite.",
+    "overQuota": "Este archivo superaría la cuota de almacenamiento de archivos de la cuenta: {{used}} de {{quota}} en uso, y este archivo ocupa {{size}}. Elimine los archivos o las versiones antiguas que ya no necesite y vuelva a intentarlo.",
+    "tooLarge": "Un archivo puede ocupar como máximo {{max}}; este ocupa {{size}}",
+    "used": "{{used}} de {{quota}} en uso"
+  },
   "fileUpload": {
     "binaryScriptUploaded": "Script binario subido",
     "dragAndDrop": "Arrastra y suelta o haz clic",
@@ -1463,6 +1476,15 @@
   "fileUploadProgress": {
     "hashing": "Comprobando el archivo",
     "uploading": "Subiendo"
+  },
+  "fileVersions": {
+    "delete": "Eliminar la versión {{version}}",
+    "deleteWarning": "Elimina la versión {{version}} y libera {{size}}. Esto no se puede deshacer.",
+    "hint": "Cada versión cuenta para su almacenamiento. Elimine las versiones antiguas que ya no necesite para liberar espacio.",
+    "latest": "Versión {{version}} (más reciente)",
+    "title": "Versiones",
+    "total": "{{size}} almacenados en total",
+    "version": "Versión {{version}}"
   },
   "globalSearch": {
     "placeholder": "Buscar nombre de dispositivo o servicio"
@@ -1594,6 +1616,20 @@
     "seconds_other": "{{count}} s",
     "truncated": "cortado en su límite",
     "waitingOutput": "Esperando salida…"
+  },
+  "jobRunOptions": {
+    "advanced": "Avanzado",
+    "artifactLimit": "Límite de artefactos",
+    "artifactLimitHint": "Lo que pueden ocupar los archivos que el script escribe en $R3_ARTIFACTS, como máximo {{max}} MB; 0 no conserva ninguno. Predeterminado: {{default}} MB.",
+    "artifactRange": "0 a {{max}} MB",
+    "default": "Predeterminado",
+    "fileStall": "Límite de bloqueo de descarga de archivos",
+    "fileStallHint": "Cuánto tiempo puede continuar una descarga sin recibir datos. Predeterminado: {{seconds}} segundos.",
+    "fileTimeout": "Límite de tiempo de descarga de archivos",
+    "fileTimeoutHint": "La descarga de cada argumento de archivo, con todos sus intentos. Predeterminado: 10 minutos, o un minuto por cada 50 MB si es más.",
+    "hint": "Para dispositivos que ejecutan el script en el ejecutor de trabajos. Deje un campo vacío para usar su valor predeterminado. Se usa cuando el script se ejecuta ahora.",
+    "seconds": "segundos",
+    "secondsRange": "Segundos enteros, de 1 a {{max}}"
   },
   "jobsPage": {
     "runScriptToStart": "Ejecuta un script para empezar"

@@ -2,6 +2,12 @@ import React from 'react'
 import { Box, Button, Typography } from '@mui/material'
 import { FileMetadataForm } from './FileMetadataForm'
 import { FileUploadProgress } from './FileUploadProgress'
+import { Notice } from './Notice'
+import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { useFileStorage } from '../hooks/useFileStorage'
+import { uploadRefusal } from '../services/fileStorage'
 
 type Props = {
   title: string
@@ -38,6 +44,11 @@ export const FileEditorForm: React.FC<Props> = ({
   actionLoading,
   onSubmit,
 }) => {
+  const { t } = useTranslation()
+  // The file chosen is checked against the account's storage before anything is sent: past the largest file, or past
+  // what the quota has left, it is refused here as the API would refuse it.
+  const storage = useFileStorage(useSelector(selectActiveAccountId))
+  const refusal = uploadedFile ? uploadRefusal(t, storage, uploadedFile.size) : undefined
   return (
     <Box width="100%" maxWidth={600}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
@@ -54,12 +65,17 @@ export const FileEditorForm: React.FC<Props> = ({
           onFormChange={onFormChange}
           onUploadedFileChange={onUploadedFileChange}
         />
+        {refusal && (
+          <Notice severity="error" fullWidth gutterTop>
+            <span data-testid="upload-refusal">{refusal}</span>
+          </Notice>
+        )}
         {showAction && (
           <Button
             type="submit"
             variant="contained"
             color="primary"
-            disabled={actionDisabled}
+            disabled={actionDisabled || !!refusal}
             fullWidth
             sx={{ mt: 3 }}
           >

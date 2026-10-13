@@ -432,6 +432,7 @@
     "scriptCreated": "Erstellt",
     "scriptDescription": "Beschreibung",
     "scriptName": "Skript",
+    "scriptSize": "Größe",
     "scriptUpdated": "Geändert",
     "serviceAccess": "Benutzer",
     "serviceAction": "Aktion",
@@ -1214,6 +1215,10 @@
     "allServices": "Alle Dienste",
     "screenView": "ScreenView"
   },
+  "deviceScripts": {
+    "hint": "Wer auf diesem Gerät Skripte ausführen darf, kann hier Befehle ausführen — mit dem eigenen Konto auf dem Gerät oder als root, wenn es keines gibt. Aus: Hier läuft kein Skript.",
+    "label": "Skripte erlauben"
+  },
   "deviceServices": {
     "hint": "",
     "label": ""
@@ -1424,6 +1429,14 @@
     "uploadFileNotice": "Laden Sie eine Datei zur Verwendung in Ihren Skripten hoch.",
     "visitDocs": "besuchen Sie unsere Dokumentationsseite."
   },
+  "fileStorage": {
+    "full": "Der Speicher ist voll. Löschen Sie Dateien oder alte Versionen von Dateien, um mehr hochzuladen.",
+    "label": "Dateispeicher",
+    "near": "Der Speicher ist fast voll. Löschen Sie Dateien oder alte Versionen, die Sie nicht mehr benötigen.",
+    "overQuota": "Diese Datei würde das Dateispeicher-Kontingent des Kontos überschreiten: {{used}} von {{quota}} belegt, und diese Datei ist {{size}} groß. Löschen Sie Dateien oder alte Versionen, die Sie nicht mehr benötigen, und versuchen Sie es erneut.",
+    "tooLarge": "Eine Datei darf höchstens {{max}} groß sein; diese ist {{size}} groß",
+    "used": "{{used}} von {{quota}} belegt"
+  },
   "fileUpload": {
     "binaryScriptUploaded": "Binärskript hochgeladen",
     "dragAndDrop": "Ziehen und ablegen oder klicken",
@@ -1437,6 +1450,15 @@
   "fileUploadProgress": {
     "hashing": "Datei wird geprüft",
     "uploading": "Wird hochgeladen"
+  },
+  "fileVersions": {
+    "delete": "Version {{version}} löschen",
+    "deleteWarning": "Löscht Version {{version}} und gibt {{size}} frei. Dies kann nicht rückgängig gemacht werden.",
+    "hint": "Jede Version zählt zu Ihrem Speicher. Löschen Sie alte Versionen, die Sie nicht mehr benötigen, um Platz zu schaffen.",
+    "latest": "Version {{version}} (neueste)",
+    "title": "Versionen",
+    "total": "{{size}} insgesamt gespeichert",
+    "version": "Version {{version}}"
   },
   "globalSearch": {
     "placeholder": "Geräte- oder Dienstnamen suchen"
@@ -1567,6 +1589,20 @@
     "seconds_other": "{{count}} s",
     "truncated": "am Limit abgeschnitten",
     "waitingOutput": "Warte auf Ausgabe…"
+  },
+  "jobRunOptions": {
+    "advanced": "Erweitert",
+    "artifactLimit": "Artefakt-Limit",
+    "artifactLimitHint": "Wie groß die Dateien, die das Skript nach $R3_ARTIFACTS schreibt, zusammen sein dürfen, höchstens {{max}} MB; 0 behält keine. Standard: {{default}} MB.",
+    "artifactRange": "0 bis {{max}} MB",
+    "default": "Standard",
+    "fileStall": "Stillstand-Limit für Datei-Downloads",
+    "fileStallHint": "Wie lange ein Download ohne eingehende Daten laufen darf. Standard: {{seconds}} Sekunden.",
+    "fileTimeout": "Zeitlimit für Datei-Downloads",
+    "fileTimeoutHint": "Der Download jedes Datei-Arguments mit allen Versuchen. Standard: 10 Minuten oder eine Minute pro 50 MB, falls länger.",
+    "hint": "Für Geräte, die das Skript über den Job-Runner ausführen. Lassen Sie ein Feld für den Standardwert leer. Gilt, wenn das Skript jetzt ausgeführt wird.",
+    "seconds": "Sekunden",
+    "secondsRange": "Ganze Sekunden, 1 bis {{max}}"
   },
   "jobsPage": {
     "runScriptToStart": "Führen Sie ein Skript aus, um zu beginnen"

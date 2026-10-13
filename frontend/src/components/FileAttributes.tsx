@@ -2,6 +2,7 @@ import React from 'react'
 import { Typography } from '@mui/material'
 import { Attribute } from './Attributes'
 import { Timestamp } from './Timestamp'
+import { formatBytes } from '../helpers/usageHelper'
 
 
 class ScriptAttribute extends Attribute {
@@ -49,6 +50,18 @@ export const scriptAttributes: ScriptAttribute[] = [
     label: 'Description',
     defaultWidth: 400,
     value: ({ file }) => file?.shortDesc,
+  }),
+  // What it stores, every version: what deleting it frees (only where the API says).
+  new ScriptAttribute({
+    id: 'scriptSize',
+    label: 'Size',
+    defaultWidth: 100,
+    value: ({ file }) =>
+      typeof file?.storedSize === 'number' && (
+        <Typography variant="caption" color="grayDarkest.main">
+          {formatBytes(file.storedSize)}
+        </Typography>
+      ),
   }),
   new ScriptAttribute({
     id: 'scriptUpdated',

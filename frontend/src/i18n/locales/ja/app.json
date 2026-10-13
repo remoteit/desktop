@@ -428,6 +428,7 @@
     "scriptCreated": "作成日",
     "scriptDescription": "説明",
     "scriptName": "スクリプト",
+    "scriptSize": "サイズ",
     "scriptUpdated": "変更日",
     "serviceAccess": "ユーザー",
     "serviceAction": "操作",
@@ -1189,6 +1190,10 @@
     "allServices": "すべてのサービス",
     "screenView": "ScreenView"
   },
+  "deviceScripts": {
+    "hint": "このデバイスでスクリプトを実行できる人は、ここでコマンドを実行できます — このデバイス上の自分のアカウントで、アカウントがなければ root で。オフにすると、ここではスクリプトは実行されません。",
+    "label": "スクリプトを許可"
+  },
   "deviceServices": {
     "hint": "",
     "label": ""
@@ -1398,6 +1403,14 @@
     "uploadFileNotice": "スクリプトで使用するファイルをアップロードしてください。",
     "visitDocs": "ドキュメントサイトをご覧ください。"
   },
+  "fileStorage": {
+    "full": "ストレージがいっぱいです。さらにアップロードするには、ファイルまたは古いバージョンを削除してください。",
+    "label": "ファイルストレージ",
+    "near": "ストレージがほぼいっぱいです。不要になったファイルや古いバージョンを削除してください。",
+    "overQuota": "このファイルはアカウントのファイルストレージの上限を超えます: {{quota}} 中 {{used}} を使用中で、このファイルは {{size}} です。不要になったファイルや古いバージョンを削除してから、もう一度お試しください。",
+    "tooLarge": "ファイルは最大 {{max}} までです。このファイルは {{size}} です",
+    "used": "{{quota}} 中 {{used}} を使用"
+  },
   "fileUpload": {
     "binaryScriptUploaded": "バイナリスクリプトがアップロードされました",
     "dragAndDrop": "ドラッグ&ドロップ、またはクリック",
@@ -1411,6 +1424,15 @@
   "fileUploadProgress": {
     "hashing": "ファイルを確認中",
     "uploading": "アップロード中"
+  },
+  "fileVersions": {
+    "delete": "バージョン {{version}} を削除",
+    "deleteWarning": "バージョン {{version}} を削除し、{{size}} を解放します。この操作は元に戻せません。",
+    "hint": "すべてのバージョンがストレージに含まれます。不要になった古いバージョンを削除して空き容量を確保してください。",
+    "latest": "バージョン {{version}}(最新)",
+    "title": "バージョン",
+    "total": "合計 {{size}} を保存",
+    "version": "バージョン {{version}}"
   },
   "globalSearch": {
     "placeholder": "デバイス名またはサービス名を検索"
@@ -1540,6 +1562,20 @@
     "seconds_other": "{{count}} 秒",
     "truncated": "上限で切り詰め",
     "waitingOutput": "出力を待っています…"
+  },
+  "jobRunOptions": {
+    "advanced": "詳細設定",
+    "artifactLimit": "成果物の上限",
+    "artifactLimitHint": "スクリプトが $R3_ARTIFACTS に書き込むファイルの合計の上限(最大 {{max}} MB、0 で保存しない)。既定値: {{default}} MB。",
+    "artifactRange": "0〜{{max}} MB",
+    "default": "既定値",
+    "fileStall": "ファイルダウンロードの停止上限",
+    "fileStallHint": "データが届かないままダウンロードが続けられる時間。既定値: {{seconds}} 秒。",
+    "fileTimeout": "ファイルダウンロードの時間制限",
+    "fileTimeoutHint": "各ファイル引数のダウンロード(すべての再試行を含む)。既定値: 10 分、または 50 MB ごとに 1 分のうち長い方。",
+    "hint": "ジョブランナーでスクリプトを実行するデバイス向けです。既定値を使うにはフィールドを空のままにしてください。今すぐ実行するときに使われます。",
+    "seconds": "秒",
+    "secondsRange": "1〜{{max}} の整数秒"
   },
   "jobsPage": {
     "runScriptToStart": "開始するにはスクリプトを実行してください"

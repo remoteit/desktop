@@ -432,6 +432,7 @@
     "scriptCreated": "Created",
     "scriptDescription": "Description",
     "scriptName": "Script",
+    "scriptSize": "Size",
     "scriptUpdated": "Modified",
     "serviceAccess": "Users",
     "serviceAction": "Action",
@@ -1214,6 +1215,10 @@
     "allServices": "All Services",
     "screenView": "ScreenView"
   },
+  "deviceScripts": {
+    "hint": "Anyone who may script this device can run commands on it — as their own account on it, or as root if they have none. Off, no script runs here.",
+    "label": "Allow scripts"
+  },
   "deviceServices": {
     "hint": "People you share with can reach the services defined on this device, through it. Off, none are served — nor its ports beyond them or its console.",
     "label": "Allow remote access to services"
@@ -1424,6 +1429,14 @@
     "uploadFileNotice": "Upload a file for use in your scripts.",
     "visitDocs": "visit our documentation site."
   },
+  "fileStorage": {
+    "full": "Storage is full. Delete files or old versions of files to upload more.",
+    "label": "File storage",
+    "near": "Storage is nearly full. Delete files or old versions of files you no longer need.",
+    "overQuota": "This file would take the account past its file storage quota: {{used}} of {{quota}} used, and this file is {{size}}. Delete files or old versions of files you no longer need, then try again.",
+    "tooLarge": "A file may be at most {{max}}; this one is {{size}}",
+    "used": "{{used}} of {{quota}} used"
+  },
   "fileUpload": {
     "binaryScriptUploaded": "Binary script uploaded",
     "dragAndDrop": "Drag and drop or click",
@@ -1437,6 +1450,15 @@
   "fileUploadProgress": {
     "hashing": "Checking file",
     "uploading": "Uploading"
+  },
+  "fileVersions": {
+    "delete": "Delete version {{version}}",
+    "deleteWarning": "Deletes version {{version}}, freeing {{size}}. This can not be undone.",
+    "hint": "Every version counts against your storage. Delete old versions you no longer need to free space.",
+    "latest": "Version {{version}} (latest)",
+    "title": "Versions",
+    "total": "{{size}} stored in all",
+    "version": "Version {{version}}"
   },
   "globalSearch": {
     "placeholder": "Search device or service name"
@@ -1567,6 +1589,20 @@
     "seconds_other": "{{count}} s",
     "truncated": "cut at its limit",
     "waitingOutput": "Waiting for output…"
+  },
+  "jobRunOptions": {
+    "advanced": "Advanced",
+    "artifactLimit": "Artifacts limit",
+    "artifactLimitHint": "What the files the script writes to $R3_ARTIFACTS may come to, at most {{max}} MB; 0 keeps none. Default: {{default}} MB.",
+    "artifactRange": "0 to {{max}} MB",
+    "default": "Default",
+    "fileStall": "File download stall limit",
+    "fileStallHint": "How long a download may go with no data arriving. Default: {{seconds}} seconds.",
+    "fileTimeout": "File download time limit",
+    "fileTimeoutHint": "Each file argument’s download, all its tries. Default: 10 minutes, or a minute per 50 MB if longer.",
+    "hint": "For devices that run the script on the job runner. Leave a field empty for its default. Used when the script runs now.",
+    "seconds": "seconds",
+    "secondsRange": "Whole seconds, 1 to {{max}}"
   },
   "jobsPage": {
     "runScriptToStart": "Run a script to get started"

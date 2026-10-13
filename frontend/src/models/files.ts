@@ -8,6 +8,7 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 import { postFile } from '../services/post'
 import { get } from '../services/get'
+import { fetchFileSizes } from '../services/fileStorage'
 import { directUpload, NOT_ENABLED, CANCELLED, UploadError, UploadProgress } from '../services/directUpload'
 import i18n from '../i18n'
 
@@ -56,6 +57,7 @@ export default createModel<RootModel>()({
       console.log('LOADED FILES', accountId, files)
       dispatch.files.setAccount({ accountId, files })
       dispatch.files.set({ fetching: false, initialized: true })
+      dispatch.files.fetchSizes(accountId)
     },
     async fetchSingle({ accountId, fileId }: { accountId?: string; fileId: string }, state) {
       dispatch.files.set({ fetching: true })
@@ -67,9 +69,16 @@ export default createModel<RootModel>()({
       }
       const files = await dispatch.files.parse(result)
       if (files?.[0]) {
-        dispatch.files.setFile({ accountId, file: files[0] })
+        await dispatch.files.setFile({ accountId, file: files[0] })
       }
       dispatch.files.set({ fetching: false })
+      dispatch.files.fetchSizes(accountId)
+    },
+    // What each file stores, all its versions (services/fileStorage): read on its own and silently, so an API without
+    // it lists files as before.
+    async fetchSizes(accountId: string) {
+      const sizes = await fetchFileSizes(accountId)
+      if (sizes && typeof sizes === 'object') dispatch.files.setSizes({ accountId, sizes })
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
@@ -204,6 +213,12 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
+    setSizes(state, { accountId, sizes }: { accountId: string; sizes: ILookup<number> }) {
+      const files = state.all[accountId]
+      if (!files) return state
+      state.all = { ...state.all, [accountId]: files.map(file => (file.id in sizes ? { ...file, storedSize: sizes[file.id] } : file)) }
+      return state
+    },
     reset(state) {
       state = { ...defaultState }
       return state

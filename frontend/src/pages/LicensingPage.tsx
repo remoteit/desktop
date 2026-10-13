@@ -5,9 +5,12 @@ import { selectOwnLicenses } from '../models/plans'
 import { LicensingSetting } from '../components/LicensingSetting'
 import { useSelector } from 'react-redux'
 import { Container } from '../components/Container'
+import { FileStorageLimit } from '../components/FileStorageUsage'
+import { State } from '../store'
 
 export const LicensingPage: React.FC = () => {
   const { t } = useTranslation()
+  const accountId = useSelector((state: State) => state.auth.user?.id)
   const { licenses, limits } = useSelector(selectOwnLicenses)
   return (
     <Container
@@ -16,6 +19,7 @@ export const LicensingPage: React.FC = () => {
       bodyProps={{ gutterTop: true }}
     >
       <LicensingSetting licenses={licenses} limits={limits} />
+      <FileStorageLimit accountId={accountId} />
     </Container>
   )
 }
