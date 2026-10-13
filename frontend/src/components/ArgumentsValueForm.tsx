@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { TextField, MenuItem, Typography, Box, Stack } from '@mui/material'
@@ -6,6 +6,7 @@ import { State, Dispatch } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { Quote } from './Quote'
 import { FileUpload } from './FileUpload'
+import { FileUploadProgress } from './FileUploadProgress'
 import { radius } from '../styling'
 
 type Props = {
@@ -86,6 +87,7 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
   const { t } = useTranslation()
   const { name, desc, argumentType, options } = argument
   const dispatch = useDispatch<Dispatch>()
+  const [uploading, setUploading] = useState(false)
 
   switch (argumentType) {
     case 'StringEntry':
@@ -180,9 +182,10 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
             subLabel={t('argumentsValueForm.uploadFileSubLabel', 'Drag and drop or click')}
             selectionStatusLabel={t('argumentsValueForm.uploadedStatus', 'uploaded')}
             allowedExtensions={options}
-            disabled={disabled}
+            disabled={disabled || uploading}
             onChange={async file => {
               if (!file) return
+              setUploading(true)
               const fileId = await dispatch.files.upload({
                 name: file.name,
                 description: '',
@@ -192,9 +195,11 @@ const ArgumentInput: React.FC<ArgumentInputProps> = ({ argument, value, onChange
                 fileId: '',
                 file,
               })
+              setUploading(false)
               if (fileId) onChange(fileId)
             }}
           />
+          {uploading && <FileUploadProgress gutterTop />}
 
           <TextField
             select

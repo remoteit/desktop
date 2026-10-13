@@ -1434,6 +1434,10 @@
     "selectFile": "Datei auswählen",
     "upload": "Hochladen"
   },
+  "fileUploadProgress": {
+    "hashing": "Datei wird geprüft",
+    "uploading": "Wird hochgeladen"
+  },
   "globalSearch": {
     "placeholder": "Geräte- oder Dienstnamen suchen"
   },

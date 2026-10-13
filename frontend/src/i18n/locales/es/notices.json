@@ -52,7 +52,8 @@
   },
   "file": {
     "deleteError": "Error al eliminar el archivo",
-    "updateError": "Error al actualizar el archivo"
+    "updateError": "Error al actualizar el archivo",
+    "uploadError": "Error al subir el archivo: {{message}}"
   },
   "job": {
     "deleteError": "Error al eliminar el trabajo",

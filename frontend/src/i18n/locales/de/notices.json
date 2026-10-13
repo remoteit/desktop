@@ -50,7 +50,8 @@
   },
   "file": {
     "deleteError": "Fehler beim Löschen der Datei",
-    "updateError": "Fehler beim Aktualisieren der Datei"
+    "updateError": "Fehler beim Aktualisieren der Datei",
+    "uploadError": "Fehler beim Hochladen der Datei: {{message}}"
   },
   "job": {
     "deleteError": "Fehler beim Löschen des Jobs",

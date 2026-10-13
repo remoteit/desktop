@@ -8,6 +8,7 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
 import { postFile } from '../services/post'
 import { get } from '../services/get'
+import { directUpload, NOT_ENABLED, CANCELLED, UploadError, UploadProgress } from '../services/directUpload'
 import i18n from '../i18n'
 
 type FilesState = {
@@ -30,6 +31,9 @@ export const initialForm: IFileForm = {
   argumentDefinitions: [],
   argumentValues: [],
 }
+
+// Kept out of the store: an AbortController is not state, and cancel stops every upload in progress.
+const uploads = new Set<AbortController>()
 
 const defaultState: FilesState = {
   initialized: false,
@@ -78,26 +82,69 @@ export default createModel<RootModel>()({
     async upload(form: IFileForm, state): Promise<string> {
       if (!form.file) return ''
 
+      const accountId = selectActiveAccountId(state)
+      const controller = new AbortController()
+      uploads.add(controller)
+
+      let shown = ''
+      const onProgress = ({ phase, loaded, total }: UploadProgress) => {
+        const percent = total ? Math.floor((loaded / total) * 100) : 100
+        if (`${phase}${percent}` === shown) return
+        shown = `${phase}${percent}`
+        dispatch.ui.set({ fileUpload: { phase, percent } })
+      }
+
+      try {
+        const result = await directUpload(
+          {
+            file: form.file,
+            name: form.name,
+            accountId,
+            executable: form.executable,
+            shortDesc: form.description,
+            arguments: form.argumentDefinitions?.length ? form.argumentDefinitions : undefined,
+          },
+          { onProgress, signal: controller.signal }
+        )
+        const fileId = result === NOT_ENABLED ? await dispatch.files.uploadForm({ form, accountId }) : result.fileId
+        console.log('UPLOADED FILE', { name: form.name, direct: result !== NOT_ENABLED, fileId })
+        if (!fileId) return ''
+        await dispatch.files.fetchSingle({ fileId })
+        return fileId
+      } catch (error) {
+        const uploadError = error instanceof UploadError ? error : undefined
+        console.error('UPLOAD FILE FAILED', error)
+        if (uploadError?.code !== CANCELLED && !uploadError?.reported)
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:file.uploadError', {
+              message: (error as Error)?.message,
+              defaultValue: 'Error uploading file: {{message}}',
+            }),
+          })
+        return ''
+      } finally {
+        uploads.delete(controller)
+        if (!uploads.size) dispatch.ui.set({ fileUpload: undefined })
+      }
+    },
+    // The whole file in one POST, for an API without direct uploads; its body limit caps the file size.
+    async uploadForm({ form, accountId }: { form: IFileForm; accountId: string }): Promise<string> {
+      if (!form.file) return ''
       const data: Record<string, any> = {
-        accountId: selectActiveAccountId(state),
+        accountId,
         executable: form.executable,
         shortDesc: form.description,
         name: form.name,
       }
+      if (form.argumentDefinitions?.length) data.arguments = JSON.stringify(form.argumentDefinitions)
 
-      // Include argument definitions if provided
-      if (form.argumentDefinitions?.length) {
-        data.arguments = JSON.stringify(form.argumentDefinitions)
-      }
-
+      dispatch.ui.set({ fileUpload: { phase: 'uploading' } })
       const result = await postFile(form.file, data, `/file/upload`)
       if (result === 'ERROR') return ''
-
-      console.log('UPLOADED FILE', { form, data, result })
-
-      const fileId: string = result?.data.fileId
-      await dispatch.files.fetchSingle({ fileId })
-      return fileId
+      return result?.data.fileId
+    },
+    async cancelUpload() {
+      uploads.forEach(controller => controller.abort())
     },
     async download(fileId: string) {
       const result = await get(`/file/download/${fileId}`)

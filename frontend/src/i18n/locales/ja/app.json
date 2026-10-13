@@ -1408,6 +1408,10 @@
     "selectFile": "ファイルを選択",
     "upload": "アップロード"
   },
+  "fileUploadProgress": {
+    "hashing": "ファイルを確認中",
+    "uploading": "アップロード中"
+  },
   "globalSearch": {
     "placeholder": "デバイス名またはサービス名を検索"
   },

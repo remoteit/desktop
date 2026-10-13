@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Button, Typography } from '@mui/material'
 import { FileMetadataForm } from './FileMetadataForm'
+import { FileUploadProgress } from './FileUploadProgress'
 
 type Props = {
   title: string
@@ -65,6 +66,7 @@ export const FileEditorForm: React.FC<Props> = ({
             {actionLoading ? actionLoadingLabel || `${actionLabel}...` : actionLabel}
           </Button>
         )}
+        {showAction && actionLoading && <FileUploadProgress gutterTop />}
       </form>
     </Box>
   )

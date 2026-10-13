@@ -50,7 +50,8 @@
   },
   "file": {
     "deleteError": "Error deleting file",
-    "updateError": "Error updating file"
+    "updateError": "Error updating file",
+    "uploadError": "Error uploading file: {{message}}"
   },
   "job": {
     "deleteError": "Error deleting job",

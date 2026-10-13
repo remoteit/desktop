@@ -11,6 +11,7 @@ import { initialForm } from '../models/files'
 import { ArgumentDefinitionForm } from '../components/ArgumentDefinitionForm'
 import { FileUpload, FileUploadActionApi } from '../components/FileUpload'
 import { ScriptDeleteButton } from '../components/ScriptDeleteButton'
+import { FileUploadProgress } from '../components/FileUploadProgress'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { IconButton } from '../buttons/IconButton'
@@ -209,6 +210,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       }
       footer={
         <Box sx={{ px: 3, py: 2 }}>
+          {saving && <FileUploadProgress />}
           <Stack direction="row" spacing={1}>
             {isNew ? (
               <>

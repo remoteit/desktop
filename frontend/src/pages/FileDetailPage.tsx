@@ -53,8 +53,8 @@ export const FileDetailPage: React.FC = () => {
         executable: false,
         file: uploadedFile,
       }
-      await dispatch.files.upload(uploadForm)
-      setUploadedFile(undefined)
+      // A failed or cancelled upload keeps the file chosen, to try again.
+      if (await dispatch.files.upload(uploadForm)) setUploadedFile(undefined)
     } else if (metadataChanged) {
       // Only metadata changed - use updateMetadata mutation (no new version)
       await dispatch.files.updateMetadata({

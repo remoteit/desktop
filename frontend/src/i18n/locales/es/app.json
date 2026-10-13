@@ -1460,6 +1460,10 @@
     "selectFile": "Seleccionar archivo",
     "upload": "Subir"
   },
+  "fileUploadProgress": {
+    "hashing": "Comprobando el archivo",
+    "uploading": "Subiendo"
+  },
   "globalSearch": {
     "placeholder": "Buscar nombre de dispositivo o servicio"
   },

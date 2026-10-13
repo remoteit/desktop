@@ -1434,6 +1434,10 @@
     "selectFile": "Select File",
     "upload": "Upload"
   },
+  "fileUploadProgress": {
+    "hashing": "Checking file",
+    "uploading": "Uploading"
+  },
   "globalSearch": {
     "placeholder": "Search device or service name"
   },

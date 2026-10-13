@@ -10,6 +10,7 @@ import { createModel } from '@rematch/core'
 import { SIDEBAR_WIDTH } from '../constants'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/browser'
+import type { UploadPhase } from '../services/directUpload'
 
 export const DEFAULT_INTERFACE = 'searching'
 
@@ -124,6 +125,8 @@ export type UIState = {
   connectThisDevice: boolean
   showDesktopNotice: boolean
   scriptForm?: IFileForm
+  // percent is absent for the /file/upload fallback: one POST, neither measured nor cancellable.
+  fileUpload?: { phase: UploadPhase; percent?: number }
   scriptRunForms: ILookup<IFileForm>
   logsFilters: LogsFiltersByAccount
   announcementPresentationTest?: number
@@ -218,6 +221,7 @@ export const defaultState: UIState = {
   connectThisDevice: false,
   showDesktopNotice: true,
   scriptForm: undefined,
+  fileUpload: undefined,
   scriptRunForms: {},
   logsFilters: {},
   announcementPresentationTest: undefined,
