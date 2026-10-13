@@ -2216,6 +2216,7 @@
     "notifyPush": "Push móvil",
     "notifySystem": "Notificación del sistema",
     "notifyWebhook": "Webhook",
+    "pictureFromSignIn": "Tu imagen de perfil proviene de la cuenta con la que iniciaste sesión, como Google.",
     "profile": "Perfil",
     "security": "Seguridad",
     "signOutEverywhere": "Cerrar sesión en todas partes",

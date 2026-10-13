@@ -2144,6 +2144,7 @@
     "notifyPush": "モバイルプッシュ",
     "notifySystem": "システム通知",
     "notifyWebhook": "Webhook",
+    "pictureFromSignIn": "プロフィール画像は、サインインに使用したアカウント（Google など）から取得されています。",
     "profile": "プロフィール",
     "security": "セキュリティ",
     "signOutEverywhere": "すべてのデバイスからサインアウト",

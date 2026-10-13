@@ -2180,6 +2180,7 @@
     "notifyPush": "Mobile push",
     "notifySystem": "System notification",
     "notifyWebhook": "Webhook",
+    "pictureFromSignIn": "Your profile picture comes from the account you signed in with, such as Google.",
     "profile": "Profile",
     "security": "Security",
     "signOutEverywhere": "Sign out everywhere",
