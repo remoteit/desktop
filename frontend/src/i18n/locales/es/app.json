@@ -1852,10 +1852,15 @@
   },
   "pushCategories": {
     "access": "Cambios de acceso",
+    "accessHelp": "Alguien comparte un dispositivo contigo o te quita el acceso, o un dispositivo se transfiere o se elimina.",
     "account": "Seguridad de la cuenta",
+    "accountHelp": "Un inicio de sesión en tu cuenta o un cambio de su contraseña, número de teléfono o configuración de autenticación de dos factores.",
     "connect": "Conexiones",
+    "connectHelp": "Alguien, incluido tú, se conecta o se desconecta de un dispositivo al que tienes acceso.",
     "jobs": "Scripts",
-    "state": "En línea / Sin conexión"
+    "jobsHelp": "Un script que ejecutas, o que se ejecuta en tu cuenta, se inicia, termina, falla o se cancela.",
+    "state": "En línea / Sin conexión",
+    "stateHelp": "Un dispositivo al que tienes acceso se desconecta o vuelve a estar en línea."
   },
   "qualityDetails": {
     "availability": "Disponibilidad:",

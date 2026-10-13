@@ -240,7 +240,7 @@ export const APNS_ENVIRONMENT: IApnsEnvironment = env.VITE_APNS_ENVIRONMENT === 
 export const FIREBASE_CONFIGURED = !!env.VITE_FIREBASE_CONFIGURED
 export const PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs', 'account']
 // Mirrors DEFAULT_PUSH_CATEGORIES in graphql-api/src/constants.ts — keep in sync
-export const DEFAULT_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs']
+export const DEFAULT_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs', 'account']
 export const DEVICE_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access']
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024

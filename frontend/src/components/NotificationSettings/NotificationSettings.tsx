@@ -141,7 +141,7 @@ export const NotificationSettings: React.FC = () => {
           </ListItemButton>
         )}
         <ListItemSetting
-          icon={pushOn && pushEnabled.length ? 'bell-on' : 'bell-slash'}
+          icon={pushOn && pushEnabled.length ? 'mobile-vibrate' : 'mobile-vibrate-slash'}
           label={t('notificationSettings.push', 'Mobile push')}
           toggle={pushOn}
           onClick={() => saveSettings({ pushNotifications: !pushOn })}
@@ -156,7 +156,7 @@ export const NotificationSettings: React.FC = () => {
         />
         <ListItemButton onClick={handleEmailNotifications} dense>
           <ListItemIcon>
-            <Icon name={email ? 'bell-on' : 'bell-slash'} size="md" />
+            <Icon name={email ? 'envelope' : 'envelope-slash'} size="md" />
           </ListItemIcon>
           <ListItemText primary={t('notificationSettings.email', 'Email')} />
           <ListItemSecondaryAction>

@@ -94,6 +94,8 @@ export const NotificationMode: React.FC = () => {
         )}
         <ListItemSwitch
           label={t('settings.notifyPush', 'Mobile push')}
+          icon="mobile-vibrate"
+          offIcon="mobile-vibrate-slash"
           checked={pushNotifications !== false}
           onClick={onPushChange}
         />
@@ -103,8 +105,20 @@ export const NotificationMode: React.FC = () => {
           disabled={pushNotifications === false}
           onChange={pushCategories => updateNotificationSettings({ ...metadata, pushCategories })}
         />
-        <ListItemSwitch label={t('settings.notifyEmail', 'Email')} checked={emailNotifications} onClick={onEmailChange} />
-        <ListItemSwitch label={t('settings.notifyWebhook', 'Webhook')} checked={urlNotifications} onClick={onWebChange} />
+        <ListItemSwitch
+          label={t('settings.notifyEmail', 'Email')}
+          icon="envelope"
+          offIcon="envelope-slash"
+          checked={emailNotifications}
+          onClick={onEmailChange}
+        />
+        <ListItemSwitch
+          label={t('settings.notifyWebhook', 'Webhook')}
+          icon="webhook"
+          offIcon="webhook-slash"
+          checked={urlNotifications}
+          onClick={onWebChange}
+        />
       </List>
       <Gutters inset="icon" top={null}>
         <Quote margin={null}>
