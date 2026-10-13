@@ -14,11 +14,12 @@ import {
   StageName,
 } from '../constants'
 import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
-import { persistor, store } from '../store'
+import { persistor, persistsState, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { changePassword as changeAccountPassword } from '../services/accountSecurity'
 import { signOutEverywhere } from '../services/permitteerAccount'
+import { broadcastChatSignout } from '../services/chatPopout'
 import {
   oidcConfigured,
   oidcSignedIn,
@@ -115,6 +116,17 @@ const signInFailure = (error: any): Partial<AuthState> => ({
   signInErrorCode: error instanceof OidcError ? error.code : undefined,
   signInRetryAfter: error instanceof OidcError ? error.retryAfter : undefined,
 })
+
+// auth.init is not gated on rehydration, and an owner read before it sees the empty default.
+const rehydrated = () =>
+  new Promise<void>(resolve => {
+    if (persistor.getState().bootstrapped) return resolve()
+    const unsubscribe = persistor.subscribe(() => {
+      if (!persistor.getState().bootstrapped) return
+      unsubscribe()
+      resolve()
+    })
+  })
 
 const signInCleared = {
   signInFailed: false,
@@ -301,6 +313,17 @@ export default createModel<RootModel>()({
       if (response === 'ERROR') return
 
       const user = response?.data?.data?.login
+
+      // Switching accounts reloads without signing out, so a window's persisted state, and any chat popout still paired
+      // with it, can be the last account's. With no owner recorded neither can be trusted.
+      await rehydrated()
+      const owner = store.getState().user.id
+      if (persistsState && user?.id && owner !== user.id) {
+        auth.resetAccountData()
+        broadcastChatSignout()
+      }
+      // Stamped here rather than when user.fetch lands, so a second switch before then still sees an owner.
+      if (user?.id) dispatch.user.set({ id: user.id })
 
       auth.set({ user, ...signInCleared })
       if (user.authhash && user.yoicsId) {
@@ -512,29 +535,14 @@ export default createModel<RootModel>()({
          a stale error and no redirect, for something that happened in someone else's
          session. */
       await dispatch.auth.set({ user: undefined, ...signInCleared })
-      dispatch.chat.reset()
+      dispatch.auth.resetAccountData()
       dispatch.agents.reset()
-      dispatch.user.reset()
-      dispatch.organization.reset()
-      dispatch.networks.reset()
-      dispatch.accounts.reset()
-      dispatch.connections.reset()
-      dispatch.devices.reset()
-      dispatch.sessions.reset()
       dispatch.logs.reset()
       dispatch.search.reset()
-      dispatch.announcements.reset()
-      dispatch.applicationTypes.reset()
-      dispatch.plans.reset()
-      dispatch.contacts.reset()
       dispatch.billing.reset()
       dispatch.backend.reset()
-      dispatch.files.reset()
       dispatch.keys.reset()
-      dispatch.jobs.reset()
-      dispatch.tags.reset()
       dispatch.ui.reset()
-      dispatch.products.reset()
       dispatch.partnerStats.reset()
       dispatch.adminUsers.reset()
       dispatch.adminPartners.reset()
@@ -555,6 +563,25 @@ export default createModel<RootModel>()({
       cloudController.reset()
       Controller.close()
       reloadIfStageChanged()
+    },
+    /** Every persisted model: what sign-out clears, and what a sign-in finding another account's state clears. */
+    resetAccountData() {
+      dispatch.chat.reset()
+      dispatch.user.reset()
+      dispatch.organization.reset()
+      dispatch.networks.reset()
+      dispatch.accounts.reset()
+      dispatch.connections.reset()
+      dispatch.devices.reset()
+      dispatch.sessions.reset()
+      dispatch.announcements.reset()
+      dispatch.applicationTypes.reset()
+      dispatch.plans.reset()
+      dispatch.contacts.reset()
+      dispatch.files.reset()
+      dispatch.jobs.reset()
+      dispatch.tags.reset()
+      dispatch.products.reset()
     },
     /** Test Settings' stage switch. This signs out of the old login server; the reload at the end of
      *  signedOut boots every endpoint on the new stage, where init drops the old stage's accounts. */
