@@ -95,7 +95,8 @@ signatures nobody receives.
 
 A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
-creates the **draft** release there for the version (on tag builds only), then a
+creates the **draft** release there for the version (on tag builds only; if
+that version is already published it fails, so bump the version), then a
 matrix of ubuntu-latest / macos-14 / windows-latest reads
 the version from `package.json` (not from the tag) and attaches the installers
 to it. The draft is created up front on purpose: electron-builder otherwise

@@ -114,8 +114,12 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
           RELEASE_REPO: ${{ steps.repo.outputs.RELEASE_REPO }}
         run: |
-          if view=$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft 2>&1); then
-            echo "release $VERSION already exists in $RELEASE_REPO"
+          if view=$(gh release view "$VERSION" --repo "$RELEASE_REPO" --json isDraft -q .isDraft 2>&1); then
+            if [ "$view" != "true" ]; then
+              echo "::error::$VERSION is already published in $RELEASE_REPO. CI never uploads into a live release - bump the version."
+              exit 1
+            fi
+            echo "draft $VERSION already exists in $RELEASE_REPO"
           elif [[ "$view" == *"release not found"* ]]; then
             # --target must name a commit the destination repository has.
             target=()
