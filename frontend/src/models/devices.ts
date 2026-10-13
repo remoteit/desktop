@@ -44,7 +44,8 @@ import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import { State } from '../store'
+import { State, store } from '../store'
+import { inOrder } from '../helpers/inOrder'
 
 export type IDeviceState = {
   all: IDevice[]
@@ -99,6 +100,8 @@ export const defaultState: IDeviceState = {
 type IDeviceAccountState = {
   [accountId: string]: IDeviceState
 }
+
+const settingsWrites = inOrder(() => store.getState().auth.user?.id)
 
 const defaultAccountState: IDeviceAccountState = {
   default: { ...defaultState },
@@ -444,13 +447,14 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async setNotificationDevice(device: IDevice) {
-      graphQLSetDeviceNotification(
-        device.id,
-        device.notificationSettings.emailNotifications,
-        device.notificationSettings.desktopNotifications
+    async setNotificationDevice({ device, settings }: { device: IDevice; settings: IDevice['notificationSettings'] }) {
+      settingsWrites(() => graphQLSetDeviceNotification(device.id, settings)).catch(error =>
+        console.warn('DEVICE NOTIFICATION SAVE FAILED', error)
       )
-      dispatch.accounts.setDevice({ id: device.id, device })
+      dispatch.accounts.setDevice({
+        id: device.id,
+        device: { ...device, notificationSettings: { ...device.notificationSettings, ...settings } },
+      })
     },
 
     async setServiceAttributes(service: IService, state) {

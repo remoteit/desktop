@@ -14,6 +14,7 @@ vi.mock('../selectors/devices', () => ({
 }))
 vi.mock('../selectors/ui', () => ({ selectTimeSeries: () => ({}) }))
 vi.mock('../selectors/organizations', () => ({}))
+vi.mock('../store', () => ({ store: {} }))
 
 import devices, { defaultState } from './devices'
 

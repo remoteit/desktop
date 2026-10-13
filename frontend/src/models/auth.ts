@@ -2,6 +2,7 @@ import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
+import pushNotifications from '../services/pushNotifications'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
@@ -13,11 +14,12 @@ import {
   StageName,
 } from '../constants'
 import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
-import { persistor, store } from '../store'
+import { persistor, persistsState, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { changePassword as changeAccountPassword } from '../services/accountSecurity'
 import { signOutEverywhere } from '../services/permitteerAccount'
+import { broadcastChatSignout } from '../services/chatPopout'
 import {
   oidcConfigured,
   oidcSignedIn,
@@ -115,11 +117,28 @@ const signInFailure = (error: any): Partial<AuthState> => ({
   signInRetryAfter: error instanceof OidcError ? error.retryAfter : undefined,
 })
 
+// auth.init is not gated on rehydration, and an owner read before it sees the empty default.
+const rehydrated = () =>
+  new Promise<void>(resolve => {
+    if (persistor.getState().bootstrapped) return resolve()
+    const unsubscribe = persistor.subscribe(() => {
+      if (!persistor.getState().bootstrapped) return
+      unsubscribe()
+      resolve()
+    })
+  })
+
 const signInCleared = {
   signInFailed: false,
   signInError: undefined,
   signInErrorCode: undefined,
   signInRetryAfter: undefined,
+}
+
+// This phone's push token goes with the agent's grant: both calls mint from the session, so they run
+// before it ends, and each runs once, so a later sign-out path's call is a no-op.
+function releaseSessionGrants(dispatch: { chat: { signOut: () => Promise<unknown> } }) {
+  return Promise.all([dispatch.chat.signOut(), pushNotifications.unregister()])
 }
 
 export default createModel<RootModel>()({
@@ -150,7 +169,12 @@ export default createModel<RootModel>()({
             await oidcStart({ supportTicket: ticket })
             return
           }
-          const claims = await oidcCompleteFromUrl()
+          const previous = oidcClaims()?.sub
+          // A different account arriving on this phone: the leaving one's push token goes while its session can still mint
+          const claims = await oidcCompleteFromUrl(undefined, async returned => {
+            if (previous && returned?.sub !== previous) await pushNotifications.unregister()
+            return true
+          })
           if (claims) await dispatch.auth.handleSignInSuccess()
           else if (oidcSignedIn()) {
             // Stored tokens are a CLAIM of a session, not proof of one: the AS may have
@@ -235,6 +259,7 @@ export default createModel<RootModel>()({
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
       if (oidcIsSavedAccount(sub)) {
         if (!(await dispatch.auth.releaseAgent())) return
+        await pushNotifications.unregister()
         if (oidcActivateAccount(sub)) return window.location.assign('/')
       }
       // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
@@ -288,6 +313,17 @@ export default createModel<RootModel>()({
       if (response === 'ERROR') return
 
       const user = response?.data?.data?.login
+
+      // Switching accounts reloads without signing out, so a window's persisted state, and any chat popout still paired
+      // with it, can be the last account's. With no owner recorded neither can be trusted.
+      await rehydrated()
+      const owner = store.getState().user.id
+      if (persistsState && user?.id && owner !== user.id) {
+        auth.resetAccountData()
+        broadcastChatSignout()
+      }
+      // Stamped here rather than when user.fetch lands, so a second switch before then still sees an owner.
+      if (user?.id) dispatch.user.set({ id: user.id })
 
       auth.set({ user, ...signInCleared })
       if (user.authhash && user.yoicsId) {
@@ -434,6 +470,7 @@ export default createModel<RootModel>()({
       cloudController.init()
       cloudSync.init()
       network.tick()
+      pushNotifications.register()
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
     async signOut(options: { keepSession?: boolean } | void, state) {
@@ -451,7 +488,7 @@ export default createModel<RootModel>()({
         // The agent's background grant goes FIRST, as in globalSignOut: its revoke mints a token
         // from the session about to end. It revokes once per identity, so the chat.signOut in
         // signedOut() is a no-op afterwards.
-        await dispatch.chat.signOut()
+        await releaseSessionGrants(dispatch)
         try {
           const status = await withTimeout(oidcEndSession(), SIGN_OUT_SESSION_TIMEOUT)
           if (status && status !== 204) console.warn('SIGN OUT: AS session end refused', status)
@@ -487,7 +524,7 @@ export default createModel<RootModel>()({
       // AWAIT the chat sign-out: it revokes the background-agent grant, whose authenticated DELETE
       // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
-      await dispatch.chat.signOut()
+      await releaseSessionGrants(dispatch)
       await persistor.purge()
       // Drop this app's tokens. The AS is never called from here — the failure paths land here
       // too; the person's own sign-out ended the AS session in signOut before this.
@@ -498,29 +535,14 @@ export default createModel<RootModel>()({
          a stale error and no redirect, for something that happened in someone else's
          session. */
       await dispatch.auth.set({ user: undefined, ...signInCleared })
-      dispatch.chat.reset()
+      dispatch.auth.resetAccountData()
       dispatch.agents.reset()
-      dispatch.user.reset()
-      dispatch.organization.reset()
-      dispatch.networks.reset()
-      dispatch.accounts.reset()
-      dispatch.connections.reset()
-      dispatch.devices.reset()
-      dispatch.sessions.reset()
       dispatch.logs.reset()
       dispatch.search.reset()
-      dispatch.announcements.reset()
-      dispatch.applicationTypes.reset()
-      dispatch.plans.reset()
-      dispatch.contacts.reset()
       dispatch.billing.reset()
       dispatch.backend.reset()
-      dispatch.files.reset()
       dispatch.keys.reset()
-      dispatch.jobs.reset()
-      dispatch.tags.reset()
       dispatch.ui.reset()
-      dispatch.products.reset()
       dispatch.partnerStats.reset()
       dispatch.adminUsers.reset()
       dispatch.adminPartners.reset()
@@ -541,6 +563,25 @@ export default createModel<RootModel>()({
       cloudController.reset()
       Controller.close()
       reloadIfStageChanged()
+    },
+    /** Every persisted model: what sign-out clears, and what a sign-in finding another account's state clears. */
+    resetAccountData() {
+      dispatch.chat.reset()
+      dispatch.user.reset()
+      dispatch.organization.reset()
+      dispatch.networks.reset()
+      dispatch.accounts.reset()
+      dispatch.connections.reset()
+      dispatch.devices.reset()
+      dispatch.sessions.reset()
+      dispatch.announcements.reset()
+      dispatch.applicationTypes.reset()
+      dispatch.plans.reset()
+      dispatch.contacts.reset()
+      dispatch.files.reset()
+      dispatch.jobs.reset()
+      dispatch.tags.reset()
+      dispatch.products.reset()
     },
     /** Test Settings' stage switch. This signs out of the old login server; the reload at the end of
      *  signedOut boots every endpoint on the new stage, where init drops the old stage's accounts. */
@@ -584,7 +625,7 @@ export default createModel<RootModel>()({
       // service with a token minted from THIS session, and once the AS has ended the session no
       // token can be minted for that call. It revokes once per identity, so the chat.signOut
       // inside signedOut() is a real no-op on the far side.
-      await dispatch.chat.signOut()
+      await releaseSessionGrants(dispatch)
       // BOUNDED, like the revoke above. Audience mints serialize through one shared promise
       // (services/oidc), so a mint the revoke abandoned mid-stall would otherwise queue this call
       // behind it indefinitely — and the panic button must never leave the person signed in here

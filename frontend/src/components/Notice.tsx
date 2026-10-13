@@ -92,6 +92,8 @@ export const Notice: React.FC<NoticeProps> = ({
             paddingBottom: `${spacing.sm}px`,
           },
           '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
+          // The theme colors captions grayDark, which otherwise wins over the severity color inherited from here.
+          '& .MuiTypography-caption': { color: 'inherit' },
           '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
           '& .MuiButton-root': { marginTop: '5px' },
         },

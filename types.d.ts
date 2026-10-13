@@ -391,6 +391,8 @@ declare global {
     notificationSettings: {
       emailNotifications?: boolean | null
       desktopNotifications?: boolean | null
+      pushNotifications?: boolean | null
+      pushCategories?: IPushCategory[] | null
     }
   }
 
@@ -553,7 +555,13 @@ declare global {
     urlNotifications?: boolean
     notificationEmail?: string
     notificationUrl?: string
+    pushNotifications?: boolean | null
+    pushCategories?: IPushCategory[] | null
   }
+
+  type IPushCategory = 'state' | 'connect' | 'access' | 'jobs' | 'account'
+
+  type IApnsEnvironment = 'sandbox' | 'production'
 
   type IUserRef = {
     id: string

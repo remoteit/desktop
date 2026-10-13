@@ -138,6 +138,8 @@ export async function graphQLUser(accountId: string) {
               urlNotifications
               notificationEmail
               notificationUrl
+              pushNotifications
+              pushCategories
             }
             attributes
             info {

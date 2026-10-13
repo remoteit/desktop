@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import fs from 'fs'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -33,6 +34,13 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [react()],
+    define: {
+      // Gradle applies Firebase only when this file has content, and without Firebase the push
+      // plugin's register() crashes the Android app (Capacitor rethrows the native exception)
+      'import.meta.env.VITE_FIREBASE_CONFIGURED': JSON.stringify(
+        !!fs.statSync(path.resolve(__dirname, '../android/app/google-services.json'), { throwIfNoEntry: false })?.size
+      ),
+    },
     resolve: {
       alias: { '@common': path.resolve(__dirname, '../common/src') },
     },

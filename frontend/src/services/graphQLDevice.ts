@@ -145,6 +145,8 @@ const DeviceSelectLookup: ILookup<string, string> = {
   notificationSettings {
     emailNotifications
     desktopNotifications
+    pushNotifications
+    pushCategories
   }`,
 
   deviceTimeSeries: `

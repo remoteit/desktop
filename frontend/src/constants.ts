@@ -232,6 +232,16 @@ export const SIGN_OUT_EVERYWHERE_TIMEOUT = 10000
 // How long sign out waits for the AS to end this account's session: one request, no token mint,
 // and the person is watching the button — past this the app signs out locally regardless.
 export const SIGN_OUT_SESSION_TIMEOUT = 5000
+export const PUSH_UNREGISTER_TIMEOUT = 3000
+
+// The APNs environment follows the build's signing, not the API it talks to: a development
+// profile gets sandbox tokens, TestFlight and the App Store production ones (build-ios.yml).
+export const APNS_ENVIRONMENT: IApnsEnvironment = env.VITE_APNS_ENVIRONMENT === 'production' ? 'production' : 'sandbox'
+export const FIREBASE_CONFIGURED = !!env.VITE_FIREBASE_CONFIGURED
+export const PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs', 'account']
+// Mirrors DEFAULT_PUSH_CATEGORIES in graphql-api/src/constants.ts — keep in sync
+export const DEFAULT_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs', 'account']
+export const DEVICE_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access']
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
@@ -241,6 +251,7 @@ export const CHAT_PANEL_WIDTH_MIN = 320
    this date does not suppress it, so users who opted out of the older guides still
    get introduced to a feature that did not exist back then. */
 export const CHAT_GUIDE_DATE = new Date('2026-08-27')
+export const ANNOUNCEMENT_POPUP_DATE = new Date('2026-07-20T00:00:00-07:00')
 /* Content that must survive beside a docked chat column. The column shrinks to
    preserve it, so the chat keeps its column on small desktop windows instead of
    taking the screen — that only happens at phone size (MOBILE_WIDTH). */

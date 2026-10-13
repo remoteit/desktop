@@ -118,11 +118,7 @@ const SignInError: React.FC<{
   return (
     <Notice severity={agentOwner ? 'warning' : 'error'} fullWidth>
       {message()}
-      {!!detail && showDetail && !agentOwner && (
-        <Typography variant="caption" component="p" color="grayDark.main">
-          {detail}
-        </Typography>
-      )}
+      {!!detail && showDetail && !agentOwner && <em>{detail}</em>}
       {agentOwner && <CopyCodeBlock value={agentOwner.command} hideCopyLabel sx={{ marginTop: 1 }} />}
     </Notice>
   )
