@@ -1,4 +1,5 @@
-import md5 from 'md5'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
 import React, { useEffect, useMemo, useState } from 'react'
 import { createColor } from '../../helpers/uiHelper'
 import { httpsOnly } from '../../helpers/utilHelper'
@@ -56,7 +57,8 @@ export const Avatar: React.FC<Props> = React.memo(
   }) => {
     const urls = useMemo(() => {
       const signIn = httpsOnly(picture) ?? oidcPicture(email)
-      const gravatar = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
+      const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
+      const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=force-fail`
       return signIn ? [signIn, gravatar] : [gravatar]
     }, [email, size, picture])
     const url = useFirstLoaded(urls)

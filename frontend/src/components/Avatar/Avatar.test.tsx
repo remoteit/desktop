@@ -1,4 +1,4 @@
-import md5 from 'md5'
+import { createHash } from 'crypto'
 import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
@@ -25,18 +25,18 @@ class FakeImage {
 
 const EMAIL = 'ada@x.test'
 const PICTURE = 'https://idp.example/ada.jpg'
-const GRAVATAR = `https://www.gravatar.com/avatar/${md5(EMAIL)}?s=72&d=force-fail`
+const GRAVATAR = `https://www.gravatar.com/avatar/${createHash('sha256').update(EMAIL).digest('hex')}?s=72&d=force-fail`
 const theme = createTheme({ palette: { alwaysWhite: { main: '#fff' }, white: { main: '#fff' } } as any })
 
 describe('Avatar', () => {
   let root: Root
   let container: HTMLDivElement
 
-  const render = (picture?: string) =>
+  const render = (picture?: string, email = EMAIL) =>
     act(() =>
       root.render(
         <ThemeProvider theme={theme}>
-          <Avatar email={EMAIL} picture={picture} />
+          <Avatar email={email} picture={picture} />
         </ThemeProvider>
       )
     )
@@ -70,6 +70,12 @@ describe('Avatar', () => {
   it('starts at Gravatar when Permitteer has no picture for the email', () => {
     vi.mocked(oidcPicture).mockReturnValue(undefined)
     render()
+    expect(shown()).toBe(GRAVATAR)
+  })
+
+  it('hashes the email the way Gravatar does: trimmed and lower-cased', () => {
+    vi.mocked(oidcPicture).mockReturnValue(undefined)
+    render(undefined, ' Ada@X.test ')
     expect(shown()).toBe(GRAVATAR)
   })
 
