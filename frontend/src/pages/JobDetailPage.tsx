@@ -22,6 +22,7 @@ import { ColorChip } from '../components/ColorChip'
 import { Timestamp } from '../components/Timestamp'
 import { DataDisplay } from '../components/DataDisplay'
 import { Gutters } from '../components/Gutters'
+import { JobRunPanel, JobRunStatus, useJobRuns, useJobWatch } from '../components/JobRunPanel'
 import { radius, spacing } from '../styling'
 
 type Props = {
@@ -88,8 +89,15 @@ export const JobDetailPage: React.FC<Props> = () => {
 
   const scriptArguments = script?.versions?.[0]?.arguments || []
   const jobDevice = job?.jobDevices.find(jd => jd.id === jobDeviceID)
+  // Runs on the job runner: their phase, progress and output, live while the job runs (none on an older API).
+  const [watchTick, setWatchTick] = React.useState(0)
+  const runs = useJobRuns(accountId, job, watchTick)
+  const { tick, live } = useJobWatch(job, runs, jobDevice?.id)
+  useEffect(() => setWatchTick(tick), [tick])
+  const runDetails = jobDevice ? runs?.[jobDevice.id] : undefined
+  const runAttributes = runDetails?.run ? runDetails.attributes : jobDevice?.attributes
   const jobDeviceAttributes =
-    jobDevice?.attributes.map(
+    runAttributes?.map(
       a => new JobAttribute({ id: `attribute-${a.key}`, label: a.key, value: () => a.value, multiline: true })
     ) || []
   const isActive = job?.status === 'RUNNING' || job?.status === 'WAITING'
@@ -281,6 +289,9 @@ export const JobDetailPage: React.FC<Props> = () => {
               <Timestamp date={new Date(jobDevice.updated)} />
             </Typography>
           )}
+          {runDetails?.run && (
+            <JobRunPanel accountId={accountId} jobId={job.id} jobDeviceId={jobDevice.id} details={runDetails} live={live} />
+          )}
           {jobDeviceAttributes.length ? (
             <Box bgcolor="grayLightest.main" borderRadius={radius.lg + 'px'} paddingY={2} paddingX={4}>
               <DataDisplay attributes={jobDeviceAttributes} />
@@ -336,7 +347,8 @@ export const JobDetailPage: React.FC<Props> = () => {
                   key={jd.id}
                   to={fileID ? `/script/${fileID}/${jobID}/${jd.id}` : `/runs/job/${jobID}/${jd.id}`}
                   title={jd.device.name}
-                  icon={<JobStatusIcon status={jd.status} device />}
+                  subtitle={runs?.[jd.id]?.run ? <JobRunStatus run={runs[jd.id].run} /> : undefined}
+                  icon={<JobStatusIcon status={runs?.[jd.id]?.status || jd.status} device />}
                 />
               ))}
             </List>

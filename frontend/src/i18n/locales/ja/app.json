@@ -1511,6 +1511,36 @@
     "noReturnValues": "このデバイスからの戻り値がありません",
     "unknown": "不明"
   },
+  "jobRun": {
+    "artifacts": "成果物",
+    "exitCode": "終了コード {{code}}",
+    "live": "ライブ",
+    "noOutput": "出力なし",
+    "output": "出力",
+    "outputCut": "出力の末尾を表示しています。すべてはログのダウンロードにあります。",
+    "outputSkipped": "一部の出力はライブで表示されません。実行の終了後、ログにすべてが含まれます。",
+    "phase": {
+      "cancelled": "キャンセル",
+      "failed": "失敗",
+      "held": "順番待ち",
+      "queued": "キュー済み",
+      "running": "実行中",
+      "succeeded": "成功",
+      "transferring": "ファイル送信中",
+      "waiting": "デバイスを待機中"
+    },
+    "ranAs": "{{account}} として",
+    "reason": {
+      "exitCode": "スクリプトが失敗しました",
+      "fileTransfer": "ファイルを配信できませんでした",
+      "lost": "失われました",
+      "refused": "デバイスが拒否しました",
+      "timeout": "タイムアウト"
+    },
+    "seconds_other": "{{count}} 秒",
+    "truncated": "上限で切り詰め",
+    "waitingOutput": "出力を待っています…"
+  },
   "jobsPage": {
     "runScriptToStart": "開始するにはスクリプトを実行してください"
   },

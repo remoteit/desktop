@@ -1537,6 +1537,37 @@
     "noReturnValues": "No return values from this device",
     "unknown": "Unknown"
   },
+  "jobRun": {
+    "artifacts": "Artifacts",
+    "exitCode": "exit {{code}}",
+    "live": "live",
+    "noOutput": "No output",
+    "output": "Output",
+    "outputCut": "Showing the end of the output; the logs download has all of it.",
+    "outputSkipped": "Some output is not shown live; the logs have all of it once the run ends.",
+    "phase": {
+      "cancelled": "Cancelled",
+      "failed": "Failed",
+      "held": "In line",
+      "queued": "Queued",
+      "running": "Running",
+      "succeeded": "Succeeded",
+      "transferring": "Sending files",
+      "waiting": "Waiting for the device"
+    },
+    "ranAs": "as {{account}}",
+    "reason": {
+      "exitCode": "Script failed",
+      "fileTransfer": "Files not delivered",
+      "lost": "Lost",
+      "refused": "Refused by the device",
+      "timeout": "Timed out"
+    },
+    "seconds_one": "{{count}} s",
+    "seconds_other": "{{count}} s",
+    "truncated": "cut at its limit",
+    "waitingOutput": "Waiting for output…"
+  },
   "jobsPage": {
     "runScriptToStart": "Run a script to get started"
   },

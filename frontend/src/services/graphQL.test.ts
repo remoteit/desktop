@@ -10,7 +10,7 @@ vi.mock('../store', () => ({
   store: { getState: () => state, dispatch: { ui: { set: uiSet } } },
 }))
 vi.mock('./remoteit', () => ({ apiHeaders }))
-vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
+vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql', getApiRestURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
 

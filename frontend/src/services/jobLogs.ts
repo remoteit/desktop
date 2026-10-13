@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getApiURL } from '../helpers/apiHelper'
+import { getApiRestURL } from '../helpers/apiHelper'
 import { apiHeaders } from './remoteit'
 
 export type DeviceLogEntry = {
@@ -35,7 +35,7 @@ export type GetJobLogsResult =
  * for transient operational failures and gave users no recovery path.
  */
 export async function getJobLogs(jobId: string): Promise<GetJobLogsResult> {
-  const url = `${getApiURL()}/job/log/all/${jobId}`
+  const url = `${getApiRestURL()}/job/log/all/${jobId}`
   const headers = await apiHeaders('GET', url)
   if (!headers) return { kind: 'error', status: 401, message: 'Not signed in' }
   try {

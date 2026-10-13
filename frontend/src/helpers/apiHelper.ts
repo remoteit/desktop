@@ -23,6 +23,14 @@ export function getApiURL(): string | undefined {
   return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
 }
 
+// Where the API's REST routes are (/file/upload, /job/log/all/…): beside graphql on a legacy host, whose graphql URL
+// is the API's root there; on the unified front, its /api tree — /api/graphql is graphql's leaf, not a root, so a
+// route under it is a 404.
+export function getApiRestURL(): string | undefined {
+  const url = getApiURL()
+  return url && resourceForApiURL(url)
+}
+
 // D10 (permitteer docs/remoteit-desktop-login.md Phase 4c): the token's audience follows the URL
 // the app CALLS — whichever lane chose it: the build's default, a backend override, the Test
 // Settings switcher or a hand-typed target — so a URL and a token can never disagree about the

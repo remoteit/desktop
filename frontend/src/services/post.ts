@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getApiURL } from '../helpers/apiHelper'
+import { getApiRestURL, getApiURL } from '../helpers/apiHelper'
 import { apiHeaders } from './remoteit'
 import { store } from '../store'
 import network from './Network'
@@ -14,7 +14,8 @@ export function resetErrorCount() {
 export async function post(data: ILookup<any, string> = {}, path: string = '') {
   if (store.getState().ui.offline) return 'ERROR'
 
-  const url = getApiURL() + path
+  // graphql at its URL; a REST route (a path) under the API's REST root (getApiRestURL: on the unified front, /api).
+  const url = (path ? getApiRestURL() : getApiURL()) + path
   const headers = await apiHeaders('POST', url)
   if (!headers) {
     console.warn('Unable to get token for API request.', data)

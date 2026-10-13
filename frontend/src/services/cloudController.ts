@@ -34,7 +34,7 @@ const connectTimes = new CloudTimes()
 // audience (resourceForEventsURL says when); otherwise it presents the graphql token — on the
 // unified front that is the right audience, not a stand-in, and on the legacy shared-domain URL the
 // authorizer's dual-accept window admits it until that contract retires.
-async function wsAuthorization(): Promise<string> {
+export async function wsAuthorization(): Promise<string> {
   const resource = resourceForEventsURL(getWebSocketURL() || '')
   if (!resource) return await getToken()
   const token = await oidcAccessToken(resource)

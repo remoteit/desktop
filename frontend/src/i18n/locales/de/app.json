@@ -1537,6 +1537,37 @@
     "noReturnValues": "Keine Rückgabewerte von diesem Gerät",
     "unknown": "Unbekannt"
   },
+  "jobRun": {
+    "artifacts": "Artefakte",
+    "exitCode": "Exit-Code {{code}}",
+    "live": "live",
+    "noOutput": "Keine Ausgabe",
+    "output": "Ausgabe",
+    "outputCut": "Das Ende der Ausgabe wird angezeigt; der Log-Download enthält alles.",
+    "outputSkipped": "Ein Teil der Ausgabe wird nicht live angezeigt; nach dem Ende des Laufs enthalten die Logs alles.",
+    "phase": {
+      "cancelled": "Abgebrochen",
+      "failed": "Fehlgeschlagen",
+      "held": "In der Warteschlange",
+      "queued": "Eingereiht",
+      "running": "Läuft",
+      "succeeded": "Erfolgreich",
+      "transferring": "Dateien werden gesendet",
+      "waiting": "Wartet auf das Gerät"
+    },
+    "ranAs": "als {{account}}",
+    "reason": {
+      "exitCode": "Skript fehlgeschlagen",
+      "fileTransfer": "Dateien nicht zugestellt",
+      "lost": "Verloren",
+      "refused": "Vom Gerät abgelehnt",
+      "timeout": "Zeitüberschreitung"
+    },
+    "seconds_one": "{{count}} s",
+    "seconds_other": "{{count}} s",
+    "truncated": "am Limit abgeschnitten",
+    "waitingOutput": "Warte auf Ausgabe…"
+  },
   "jobsPage": {
     "runScriptToStart": "Führen Sie ein Skript aus, um zu beginnen"
   },

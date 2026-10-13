@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getApiURL } from '../helpers/apiHelper'
+import { getApiRestURL, getApiURL } from '../helpers/apiHelper'
 import { apiHeaders } from './remoteit'
 import { apiError } from './post'
 import { store } from '../store'
@@ -7,7 +7,8 @@ import { store } from '../store'
 export async function get(path: string = '') {
   if (store.getState().ui.offline) return 'ERROR'
 
-  const url = getApiURL() + path
+  // A REST route under the API's REST root (getApiRestURL: on the unified front, /api).
+  const url = (path ? getApiRestURL() : getApiURL()) + path
   const headers = await apiHeaders('GET', url)
   if (!headers) {
     console.warn('Unable to get token for API request.')

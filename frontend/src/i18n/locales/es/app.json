@@ -1563,6 +1563,38 @@
     "noReturnValues": "Sin valores de retorno de este dispositivo",
     "unknown": "Desconocido"
   },
+  "jobRun": {
+    "artifacts": "Artefactos",
+    "exitCode": "código de salida {{code}}",
+    "live": "en vivo",
+    "noOutput": "Sin salida",
+    "output": "Salida",
+    "outputCut": "Se muestra el final de la salida; la descarga de registros la contiene completa.",
+    "outputSkipped": "Parte de la salida no se muestra en vivo; los registros la contienen completa al terminar la ejecución.",
+    "phase": {
+      "cancelled": "Cancelado",
+      "failed": "Fallido",
+      "held": "En cola",
+      "queued": "Encolado",
+      "running": "En ejecución",
+      "succeeded": "Correcto",
+      "transferring": "Enviando archivos",
+      "waiting": "Esperando al dispositivo"
+    },
+    "ranAs": "como {{account}}",
+    "reason": {
+      "exitCode": "El script falló",
+      "fileTransfer": "Archivos no entregados",
+      "lost": "Perdido",
+      "refused": "Rechazado por el dispositivo",
+      "timeout": "Tiempo agotado"
+    },
+    "seconds_one": "{{count}} s",
+    "seconds_many": "{{count}} s",
+    "seconds_other": "{{count}} s",
+    "truncated": "cortado en su límite",
+    "waitingOutput": "Esperando salida…"
+  },
   "jobsPage": {
     "runScriptToStart": "Ejecuta un script para empezar"
   },
