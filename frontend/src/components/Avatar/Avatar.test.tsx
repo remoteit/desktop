@@ -78,4 +78,10 @@ describe('Avatar', () => {
     render('https://idp.example/given.jpg')
     expect(shown()).toBe('https://idp.example/given.jpg')
   })
+
+  it('ignores a handed picture that is not https', () => {
+    vi.mocked(oidcPicture).mockReturnValue(undefined)
+    render('http://idp.example/given.jpg')
+    expect(shown()).toBe(GRAVATAR)
+  })
 })

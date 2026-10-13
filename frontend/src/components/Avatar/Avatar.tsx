@@ -1,6 +1,7 @@
 import md5 from 'md5'
 import React, { useEffect, useMemo, useState } from 'react'
 import { createColor } from '../../helpers/uiHelper'
+import { httpsOnly } from '../../helpers/utilHelper'
 import { labelLookup } from '../../models/labels'
 import { oidcPicture } from '../../services/oidc'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
@@ -54,7 +55,7 @@ export const Avatar: React.FC<Props> = React.memo(
     children,
   }) => {
     const urls = useMemo(() => {
-      const signIn = picture ?? oidcPicture(email)
+      const signIn = httpsOnly(picture) ?? oidcPicture(email)
       const gravatar = `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`
       return signIn ? [signIn, gravatar] : [gravatar]
     }, [email, size, picture])
