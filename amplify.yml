@@ -8,7 +8,7 @@ frontend:
         - npm install
     build:
       commands:
-        - if [ -n "$AWS_PULL_REQUEST_ID" ]; then . ./scripts/amplify-preview-env.sh; fi; npm run build-frontend
+        - if [ "$AMPLIFY_PREVIEW" = true ]; then . ./scripts/amplify-preview-env.sh; fi; npm run build-frontend
   artifacts:
     baseDirectory: frontend/build
     files:

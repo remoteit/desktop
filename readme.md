@@ -122,10 +122,13 @@ Leave `VITE_OAUTH_CLIENT_ID` as `remoteit_desktop` locally. Redirect URIs are re
 branch config makes authorize fail with a 400. `remoteit_desktop` carries both
 `http://localhost:3003/authCallback` and `remoteit://authCallback` (the Electron deep link).
 
-PR previews (`https://pr-<N>.d20k671nqqv4kl.amplifyapp.com`) build on the dev stage as
-`remoteit_portal` (`amplify.yml` sources `scripts/amplify-preview-env.sh`). The Preview callbacks
-workflow registers each open PR's exact callbacks and removes them when it closes. A PR from a fork
-gets none, so its preview cannot sign in.
+Branch previews build on the dev stage as `remoteit_portal`. Amplify autodetects `feat/**` and
+`fix/**` branches pushed to this repo, deploys each to its own `*.d20k671nqqv4kl.amplifyapp.com`
+address and drops it when the branch is deleted. Its auto-created branch config sets
+`AMPLIFY_PREVIEW=true`, which makes `amplify.yml` source `scripts/amplify-preview-env.sh`. Sign-in
+needs `https://*.d20k671nqqv4kl.amplifyapp.com/authCallback` and `/signoutCallback` registered on
+dev's `remoteit_portal`. That wildcard is safe only while nothing from outside this repo can deploy
+under the app's domain, so keep Amplify's **pull request previews off**: they build PRs from forks.
 
 Browse to `http://localhost:3003` exactly. `npm start` binds `0.0.0.0`, but reaching the app
 over a LAN IP is a non-secure origin, where `crypto.subtle` is unavailable and the DPoP
