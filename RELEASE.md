@@ -81,12 +81,17 @@ Then push the commit and the tag `npm version` created.
 
 ## 2. Desktop: build
 
-Run **Build / Electron** (`workflow_dispatch`) **from the version tag** — in
-"Use workflow from", switch to Tags and pick `vN.N.N`, not `main`. `brand`
-defaults to `remoteit`; **uncheck `skip_signing`** for a real release, since it
-defaults to `true`. Only a tag build creates the draft and publishes into it; a
-branch build compiles and discards everything, so with `skip_signing` off the
-`prepare` job refuses to start rather than pay for signatures nobody receives.
+Run **Build / Electron** (`workflow_dispatch`) from `main`, the default in "Use
+workflow from". A run on `main` builds nothing itself: it starts the workflow
+again on `main`'s version tag (`v` plus the version in `package.json`) with the
+same inputs, and its summary links to that run. The tag has to be pushed first,
+or the run fails and says so. Picking `vN.N.N` under Tags does the same thing
+directly. `brand` defaults to `remoteit`; **uncheck `skip_signing`** for a real
+release, since it defaults to `true`. Only a tag build creates the draft and
+publishes into it. Checking `build_main` builds `main` itself instead; that, and
+a run on any other branch, compiles and discards everything, so with
+`skip_signing` off the `prepare` job refuses to start rather than pay for
+signatures nobody receives.
 
 A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
@@ -296,8 +301,9 @@ Two things fix that, and both are automatic:
 
 1. **Build / Electron** runs `electron/scripts/finalize-win-update-manifests.js`
    after the Windows build. Like electron-builder's own publish step, it uploads
-   only into the **draft** release for this version — so dispatch the workflow
-   **on the tag**; a branch build creates no release and has nowhere to upload to.
+   only into the **draft** release for this version — so the build has to run
+   **on the tag** (a run from `main` hands itself to the tag); a branch build
+   creates no release and has nowhere to upload to.
    It never writes to a published release: if the version is already live the
    job fails rather than rewrite a live manifest. Changing a live `latest.yml`
    is only ever the deliberate manual step below. It reorders `files` to `ia32, x64, arm64` — ia32

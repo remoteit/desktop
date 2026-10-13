@@ -16,6 +16,11 @@ on:
         required: false
         type: boolean
         default: true
+      build_main:
+        description: 'Build main itself (compile only) instead of its version tag'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -31,9 +36,36 @@ env:
   BRAND: ${{ inputs.brand || 'remoteit' }}
 
 jobs:
+  # "Use workflow from" always opens on main, so a run there hands itself to main's version tag.
+  build_version_tag:
+    if: github.ref == 'refs/heads/main' && !inputs.build_main
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # GITHUB_TOKEN can start a workflow_dispatch run; any other event it causes starts none.
+      actions: write
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Start this workflow on the version tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=v$(node -p "require('./package.json').version")
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "::error::main is at $TAG but the tag isn't pushed. Push the tag npm version created and run this again, or check build_main to build main itself."
+            exit 1
+          fi
+          gh workflow run build-electron.yml --repo "$GITHUB_REPOSITORY" --ref "$TAG" -f brand="$BRAND" -f skip_signing="$SKIP_SIGNING"
+          runs="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/build-electron.yml?query=branch%3A$TAG"
+          echo "::notice::Started Build / Electron on $TAG: $runs"
+          echo "Started [Build / Electron on $TAG]($runs) (brand $BRAND, skip_signing $SKIP_SIGNING)." >> "$GITHUB_STEP_SUMMARY"
+
   # Creates the draft before the runners start: electron-builder otherwise creates it lazily
   # and racing runners have produced two drafts for one version. See RELEASE.md, section 2.
   prepare:
+    if: github.ref != 'refs/heads/main' || inputs.build_main
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
@@ -46,7 +78,7 @@ jobs:
           REF_TYPE: ${{ github.ref_type }}
           REF_NAME: ${{ github.ref_name }}
         run: |
-          echo "::error::skip_signing is off but this run is on $REF_TYPE '$REF_NAME'. Only a tag build publishes, so the signatures would be paid for and thrown away. Re-run from the version tag, or leave skip_signing checked."
+          echo "::error::skip_signing is off but this run is on $REF_TYPE '$REF_NAME'. Only a tag build publishes, so the signatures would be paid for and thrown away. Run from main with build_main unchecked (or from the version tag), or leave skip_signing checked."
           exit 1
 
       - name: Check out Git repository
