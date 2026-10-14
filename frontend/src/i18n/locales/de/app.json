@@ -1527,6 +1527,7 @@
     "title": "Rechnungsverlauf"
   },
   "jobAttributes": {
+    "upgrade": "Geräte-Upgrade",
     "fileDeleted": "Datei gelöscht",
     "filter": "Filter",
     "guestScript": "Gastskript",

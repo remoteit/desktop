@@ -37,6 +37,9 @@ const EVENTS = `
             file {
               name
             }
+            upgrade {
+              package
+            }
           }
         }
         ... on DeviceConnectEvent {
@@ -48,6 +51,9 @@ const EVENTS = `
           job {
             file {
               name
+            }
+            upgrade {
+              package
             }
           }
         }

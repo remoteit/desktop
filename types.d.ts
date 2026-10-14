@@ -705,6 +705,10 @@ declare global {
         id: string
       }
     }
+    // What it runs as people read it (its script's name, or "Device upgrade"), and — an upgrade job, which has no file —
+    // what it installs.
+    name?: string
+    upgrade?: { package: string; version: string }
     jobDevices: IJobDevice[]
     arguments: IJobArgument[]
   }
@@ -909,7 +913,7 @@ declare global {
     users?: IUser[]
     action: string
     devices?: { id: string; name: string }[]
-    job?: { file?: { name: string } }
+    job?: { file?: { name: string }; upgrade?: { package: string } }
     txBytes?: number
     rxBytes?: number
     lifetime?: number

@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import i18n from '../i18n'
 import { toLookup } from '../helpers/utilHelper'
+import { jobName } from '../helpers/jobHelper'
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import { ReactiveTagNames } from './ReactiveTagNames'
 import { JobStatusIcon } from './JobStatusIcon'
@@ -107,7 +108,7 @@ export const jobAttributes: JobAttribute[] = [
     defaultWidth: 350,
     value: ({ job, accountId }) => {
       const privateScript = !!job?.file?.owner?.id && job.file.owner.id !== accountId
-      const name = job?.file?.name
+      const name = jobName(job)
       if (name) {
         return (
           <Typography>

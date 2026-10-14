@@ -1553,6 +1553,7 @@
     "title": "Historial de facturación"
   },
   "jobAttributes": {
+    "upgrade": "Actualización del dispositivo",
     "fileDeleted": "Archivo eliminado",
     "filter": "Filtro",
     "guestScript": "script de invitado",

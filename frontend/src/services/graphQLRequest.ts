@@ -86,6 +86,11 @@ export async function graphQLJobs(args: {
                     id
                   }
                 }
+                name
+                upgrade {
+                  package
+                  version
+                }
                 arguments {
                   id
                   name

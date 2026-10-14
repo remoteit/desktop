@@ -4,6 +4,7 @@ import i18n from '../../i18n'
 import { combinedName } from '@common/nameHelper'
 import { formatBytes, formatDuration, isUsageNumber } from '../../helpers/usageHelper'
 import { Icon } from '../Icon'
+import { jobName } from '../../helpers/jobHelper'
 
 export const EventActions = ['add', 'update']
 
@@ -180,7 +181,7 @@ export function EventMessage({
     case 'JOB':
       message = (
         <>
-          {t('eventMessage.script', 'Script')} <b>{item.job?.file?.name}</b>{' '}
+          {item.job?.upgrade ? jobName(item.job) : <>{t('eventMessage.script', 'Script')} <b>{item.job?.file?.name}</b></>}{' '}
           {statusDisplay(item.action.toUpperCase() as IJobStatus)} {t('eventMessage.on', 'on')}{' '}
           <i>
             {t('eventMessage.deviceCount', {
@@ -196,7 +197,7 @@ export function EventMessage({
     case 'DEVICE_JOB':
       message = (
         <>
-          {t('eventMessage.script', 'Script')} <b>{item.job?.file?.name}</b>{' '}
+          {item.job?.upgrade ? jobName(item.job) : <>{t('eventMessage.script', 'Script')} <b>{item.job?.file?.name}</b></>}{' '}
           {statusDisplay(item.action.toUpperCase() as IJobStatus)} {t('eventMessage.on', 'on')}{' '}
           <i>{item.devices?.[0].name}</i>
           {/* <b>

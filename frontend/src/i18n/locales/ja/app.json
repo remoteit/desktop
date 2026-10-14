@@ -1501,6 +1501,7 @@
     "title": "請求履歴"
   },
   "jobAttributes": {
+    "upgrade": "デバイスのアップグレード",
     "fileDeleted": "ファイルが削除されました",
     "filter": "フィルター",
     "guestScript": "ゲストスクリプト",

@@ -1527,6 +1527,7 @@
     "title": "Billing History"
   },
   "jobAttributes": {
+    "upgrade": "Device upgrade",
     "fileDeleted": "File Deleted",
     "filter": "Filter",
     "guestScript": "guest script",

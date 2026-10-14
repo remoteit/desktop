@@ -22,10 +22,11 @@ export const JobListItem: React.FC<Props> = ({ job, required, attributes, mobile
   const history = useHistory()
   const accountId = useSelector(selectActiveAccountId)
   const privateScript = !!job.file?.owner?.id && job.file.owner.id !== accountId
-  const disabled = !job.file
+  // An upgrade job has no file: it opens by its own route.
+  const disabled = !job.file && !job.upgrade
 
   const handleClick = () => {
-    if (jobOnlyRoute || privateScript) {
+    if (jobOnlyRoute || privateScript || !job.file) {
       history.push(`/runs/job/${job.id}`)
       return
     }

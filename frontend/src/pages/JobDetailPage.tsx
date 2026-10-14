@@ -10,6 +10,7 @@ import { initialForm } from '../models/files'
 import { ScriptRunSummary } from '../components/ScriptRunSummary'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { JobAttribute } from '../components/JobAttributes'
+import { jobName } from '../helpers/jobHelper'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ListItemBack } from '../components/ListItemBack'
@@ -41,13 +42,13 @@ export const JobDetailPage: React.FC<Props> = () => {
   const script = useSelector((state: State) => scriptFileId ? selectScript(state, undefined, scriptFileId, jobID) : undefined)
   const job = script?.job || fallbackJob
   const isPrivateScript = !!job?.file?.owner?.id && job.file.owner.id !== accountId
-  const isFileMissing = !job?.file?.name
+  const isFileMissing = !jobName(job)
   const file = isPrivateScript ? undefined : script
   const scriptFileRef = file || (!isPrivateScript ? job?.file : undefined)
   const files = useSelector((state: State) => state.files.all[accountId] || [])
   const fetching = useSelector((state: State) => state.files.fetching)
   const jobsFetching = useSelector((state: State) => state.jobs.fetching)
-  const scriptName = file?.name || job?.file?.name
+  const scriptName = file?.name || jobName(job)
 
   // Track fetches we've already attempted so empty/missing results don't loop
   // when the fetching flag toggles back to false. Keys are scoped per-fetch
