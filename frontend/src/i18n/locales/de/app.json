@@ -1217,6 +1217,7 @@
   },
   "deviceScripts": {
     "hint": "Wer auf diesem Gerät Skripte ausführen darf, kann hier Befehle ausführen — mit dem eigenen Konto auf dem Gerät oder als root, wenn es keines gibt. Aus: Hier läuft kein Skript.",
+    "hintWindows": "Wer auf diesem Gerät Skripte ausführen darf, kann darauf Befehle ausführen, als SYSTEM. Aus: Hier läuft kein Skript.",
     "label": "Skripte erlauben"
   },
   "deviceServices": {
@@ -1527,7 +1528,6 @@
     "title": "Rechnungsverlauf"
   },
   "jobAttributes": {
-    "upgrade": "Geräte-Upgrade",
     "fileDeleted": "Datei gelöscht",
     "filter": "Filter",
     "guestScript": "Gastskript",
@@ -1537,7 +1537,8 @@
     "runBy": "Ausgeführt von",
     "targets": "Ziele",
     "time": "Zeit",
-    "unknown": "Unbekannt"
+    "unknown": "Unbekannt",
+    "upgrade": "Geräte-Upgrade"
   },
   "jobDetailPage": {
     "cancelRun": "Ausführung abbrechen",

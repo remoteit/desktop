@@ -9,10 +9,14 @@ import { DeviceSettingRow } from './DeviceSettingRow'
    not a service the people the device is shared with reach. One setting, the device's: set here or on the machine, and
    the machine's administrator may fix it either way, or leave it to the machine alone (scripts_control) — the row then
    says so, greyed. Only a device whose daemon serves scripts has it; absent elsewhere, and where the API's device
-   settings do not have it. */
-export const DeviceScriptsSetting: React.FC<{ settings: DeviceSettings; canManage: boolean }> = ({
+   settings do not have it. On Windows a script always runs as SYSTEM (the plan's "Run as"), so the row says that. */
+// Windows' platform codes: 4 as connectd reports a Windows machine, 10 a Windows Server, 5 the older Windows Desktop.
+const WINDOWS_PLATFORMS = [4, 5, 10]
+
+export const DeviceScriptsSetting: React.FC<{ settings: DeviceSettings; canManage: boolean; platform?: number }> = ({
   settings,
   canManage,
+  platform,
 }) => {
   const { t } = useTranslation()
   const [saving, setSaving] = useState(false)
@@ -25,10 +29,17 @@ export const DeviceScriptsSetting: React.FC<{ settings: DeviceSettings; canManag
       setting={scripts}
       icon="scroll"
       label={t('deviceScripts.label', 'Allow scripts')}
-      subLabel={t(
-        'deviceScripts.hint',
-        'Anyone who may script this device can run commands on it — as their own account on it, or as root if they have none. Off, no script runs here.'
-      )}
+      subLabel={
+        platform !== undefined && WINDOWS_PLATFORMS.includes(platform)
+          ? t(
+              'deviceScripts.hintWindows',
+              'Anyone who may script this device can run commands on it, as SYSTEM. Off, no script runs here.'
+            )
+          : t(
+              'deviceScripts.hint',
+              'Anyone who may script this device can run commands on it — as their own account on it, or as root if they have none. Off, no script runs here.'
+            )
+      }
       disabled={saving || !canManage}
       onChange={async on => {
         setSaving(true)

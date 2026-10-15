@@ -44,7 +44,11 @@ export const DeviceEditPage: React.FC = () => {
             <DeviceAnyPortSetting />
             <DeviceWebsocketSetting />
             <DeviceServicesSetting settings={settings} canManage={!!device?.permissions.includes('MANAGE')} />
-            <DeviceScriptsSetting settings={settings} canManage={!!device?.permissions.includes('MANAGE')} />
+            <DeviceScriptsSetting
+              settings={settings}
+              canManage={!!device?.permissions.includes('MANAGE')}
+              platform={device?.targetPlatform}
+            />
             {deviceSessions && (
               <DevicePolicyRow
                 deviceId={device.id}

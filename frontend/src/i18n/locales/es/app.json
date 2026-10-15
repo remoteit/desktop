@@ -1242,6 +1242,7 @@
   },
   "deviceScripts": {
     "hint": "Cualquiera que pueda ejecutar scripts en este dispositivo puede ejecutar comandos en él — con su propia cuenta en el dispositivo, o como root si no tiene una. Desactivado, aquí no se ejecuta ningún script.",
+    "hintWindows": "Cualquiera que pueda ejecutar scripts en este dispositivo puede ejecutar comandos en él, como SYSTEM. Desactivado, aquí no se ejecuta ningún script.",
     "label": "Permitir scripts"
   },
   "deviceServices": {
@@ -1553,7 +1554,6 @@
     "title": "Historial de facturación"
   },
   "jobAttributes": {
-    "upgrade": "Actualización del dispositivo",
     "fileDeleted": "Archivo eliminado",
     "filter": "Filtro",
     "guestScript": "script de invitado",
@@ -1563,7 +1563,8 @@
     "runBy": "Ejecutado por",
     "targets": "Objetivos",
     "time": "Hora",
-    "unknown": "Desconocido"
+    "unknown": "Desconocido",
+    "upgrade": "Actualización del dispositivo"
   },
   "jobDetailPage": {
     "cancelRun": "Cancelar ejecución",

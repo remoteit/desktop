@@ -87,6 +87,17 @@ describe('Allow scripts', () => {
     expect([row(page)!.disabled, page.textContent]).toEqual([true, 'Allow scripts — Set only on the device'])
   })
 
+  it('on Windows it says scripts run as SYSTEM; elsewhere, as the person or root', async () => {
+    for (const platform of [4, 5, 10]) {
+      const page = await render(<DeviceScriptsSetting settings={settingsOf([scripts()])} canManage platform={platform} />)
+      expect(page.textContent).toMatch(/can run commands on it, as SYSTEM\./)
+    }
+    for (const platform of [1120, 256, undefined]) {
+      const page = await render(<DeviceScriptsSetting settings={settingsOf([scripts()])} canManage platform={platform} />)
+      expect(page.textContent).toMatch(/as their own account on it, or as root/)
+    }
+  })
+
   it('greyed for one who does not manage the device', async () => {
     const page = await render(<DeviceScriptsSetting settings={settingsOf([scripts()])} canManage={false} />)
     expect(row(page)!.disabled).toBe(true)

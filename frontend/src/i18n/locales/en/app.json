@@ -1217,6 +1217,7 @@
   },
   "deviceScripts": {
     "hint": "Anyone who may script this device can run commands on it — as their own account on it, or as root if they have none. Off, no script runs here.",
+    "hintWindows": "Anyone who may script this device can run commands on it, as SYSTEM. Off, no script runs here.",
     "label": "Allow scripts"
   },
   "deviceServices": {
@@ -1527,7 +1528,6 @@
     "title": "Billing History"
   },
   "jobAttributes": {
-    "upgrade": "Device upgrade",
     "fileDeleted": "File Deleted",
     "filter": "Filter",
     "guestScript": "guest script",
@@ -1537,7 +1537,8 @@
     "runBy": "Run By",
     "targets": "Targets",
     "time": "Time",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "upgrade": "Device upgrade"
   },
   "jobDetailPage": {
     "cancelRun": "Cancel Run",
