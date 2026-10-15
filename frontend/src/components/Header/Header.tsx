@@ -1,6 +1,6 @@
 import { REGEX_FIRST_PATH, ADMIN_ADDONS_ROUTE } from '../../constants'
 import { useMobile } from '../../hooks/useMobile'
-import { useChatEnabled } from '../../hooks/useChatEnabled'
+import { useChatToggle } from '../../hooks/useChatEnabled'
 import { ChatAgentGuide } from '../Chat/ChatAgentGuide'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -32,9 +32,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const { t } = useTranslation()
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
-  const chatOpen = useSelector((state: State) => state.chat.open)
-  const chatPoppedOut = useSelector((state: State) => state.chat.poppedOut)
-  const chatEnabled = useChatEnabled()
+  const chat = useChatToggle()
   const layout = useSelector((state: State) => state.ui.layout)
   const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
@@ -102,15 +100,15 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             color="grayDarker"
           />
         )}
-        {chatEnabled && !chatPoppedOut && !layout.showBottomMenu && (
+        {chat.show && !layout.showBottomMenu && (
           <ChatAgentGuide placement="bottom">
             <IconButton
               fixedWidth
               icon="remote-ai"
               size="lg"
-              color={chatOpen ? 'primary' : 'grayDarker'}
+              color={chat.open ? 'primary' : 'grayDarker'}
               title={t('header.aiAgent', 'AI Agent')}
-              onClick={() => dispatch.chat.set({ open: !chatOpen })}
+              onClick={chat.toggle}
             />
           </ChatAgentGuide>
         )}

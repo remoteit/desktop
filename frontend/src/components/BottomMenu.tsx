@@ -1,11 +1,9 @@
 import React from 'react'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useTranslation } from 'react-i18next'
-import { useSelector, useDispatch } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Box, BottomNavigation, BottomNavigationAction, Badge } from '@mui/material'
-import { State, Dispatch } from '../store'
-import { useChatEnabled } from '../hooks/useChatEnabled'
+import { useChatToggle } from '../hooks/useChatEnabled'
 import { useCounts } from '../hooks/useCounts'
 import { ChatAgentGuide } from './Chat/ChatAgentGuide'
 import { Icon } from './Icon'
@@ -21,10 +19,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
   const history = useHistory()
   const counts = useCounts()
   const { t } = useTranslation()
-  const chatEnabled = useChatEnabled()
-  const chatOpen = useSelector((state: State) => state.chat.open)
-  const chatPoppedOut = useSelector((state: State) => state.chat.poppedOut)
-  const dispatch = useDispatch<Dispatch>()
+  const chat = useChatToggle()
 
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || '/devices'
 
@@ -40,10 +35,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
         },
       }}
     >
-      <BottomNavigation
-        value={menu}
-        onChange={(_, value) => (value === CHAT ? dispatch.chat.set({ open: !chatOpen }) : history.push(value))}
-      >
+      <BottomNavigation value={menu} onChange={(_, value) => (value === CHAT ? chat.toggle() : history.push(value))}>
         <BottomNavigationAction
           label={t('nav.connections', 'Connections')}
           icon={
@@ -55,7 +47,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
         />
         <BottomNavigationAction label={t('nav.devices', 'Devices')} icon={<Icon size="md" name="router" />} value="/devices" />
         <BottomNavigationAction label={t('nav.networks', 'Networks')} icon={<Icon size="md" name="chart-network" />} value="/networks" />
-        {chatEnabled && !chatPoppedOut && (
+        {chat.show && (
           <BottomNavigationAction
             label={t('header.aiAgent', 'AI Agent')}
             icon={
@@ -64,7 +56,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
               </ChatAgentGuide>
             }
             value={CHAT}
-            sx={{ color: chatOpen ? 'primary.main' : undefined }}
+            sx={{ color: chat.open ? 'primary.main' : undefined }}
           />
         )}
       </BottomNavigation>
