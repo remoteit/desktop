@@ -30,7 +30,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
       return
     }
     if (chatTab) chat.toggle()
-    history.push(value)
+    if (value !== menu) history.push(value)
   }
 
   return (

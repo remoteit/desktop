@@ -75,9 +75,16 @@ describe('BottomMenu', () => {
 
   it('closes the chat when another tab is picked', () => {
     render({ open: true })
+    act(() => action('Networks')!.click())
+    expect(set).toHaveBeenCalledWith({ open: false })
+    expect(push).toHaveBeenCalledWith('/networks')
+  })
+
+  it("closes the chat back to the page under it without pushing that page's path again", () => {
+    render({ open: true })
     act(() => action('Devices')!.click())
     expect(set).toHaveBeenCalledWith({ open: false })
-    expect(push).toHaveBeenCalledWith('/devices')
+    expect(push).not.toHaveBeenCalled()
   })
 
   it('finishes the chat tour step from anywhere on the AI action, not just its icon', () => {
