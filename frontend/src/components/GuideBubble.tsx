@@ -17,6 +17,11 @@ const arrowSx = (theme: Theme) => ({ color: theme.palette.guide.main })
 // MUI stacks tooltips above modals; without this, bubbles float over dialogs and menus
 const popperSx = (theme: Theme) => ({ zIndex: theme.zIndex.modal - 1 })
 
+// The bubble is portalled, but React still bubbles its events to the anchor's ancestors: in the
+// mobile bottom bar, pressing "Ok" also pressed the AI button around it and toggled the chat
+const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation()
+const contained = { onClick: stopPropagation, onMouseDown: stopPropagation, onTouchStart: stopPropagation }
+
 const tipSx = (theme: Theme) => ({
   backgroundColor: theme.palette.guide.main,
   color: theme.palette.white.main,
@@ -187,7 +192,7 @@ export const GuideBubble: React.FC<Props> = ({
 
   return (
     <Tooltip
-      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx }, popper: { sx: popperSx } }}
+      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx }, popper: { sx: popperSx, ...contained } }}
       open={open}
       arrow={!hideArrow}
       placement={placement || 'top'}
