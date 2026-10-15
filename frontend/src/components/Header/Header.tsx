@@ -1,7 +1,7 @@
-import { REGEX_FIRST_PATH, CHAT_GUIDE_DATE, ADMIN_ADDONS_ROUTE } from '../../constants'
+import { REGEX_FIRST_PATH, ADMIN_ADDONS_ROUTE } from '../../constants'
 import { useMobile } from '../../hooks/useMobile'
 import { useChatEnabled } from '../../hooks/useChatEnabled'
-import { GuideBubble } from '../GuideBubble'
+import { ChatAgentGuide } from '../Chat/ChatAgentGuide'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
@@ -102,30 +102,8 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             color="grayDarker"
           />
         )}
-        {/* Step 1 of the chat tour. Deliberately no startDate — this is new to everyone,
-            including long-standing accounts, so the usual "only for recent signups" cohort
-            gate would hide it from the people who most need it. The delay lets the app
-            settle before it speaks up. */}
-        {chatEnabled && !chatPoppedOut && (
-          <GuideBubble
-            guide="chatAgent"
-            added={CHAT_GUIDE_DATE}
-            placement="bottom"
-            enterDelay={1200}
-            instructions={
-              <>
-                <Typography variant="h3" gutterBottom>
-                  <b>{t('chat.guideAgentTitle', 'Meet Remote.It AI')}</b>
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  {t(
-                    'chat.guideAgentBody',
-                    'Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.'
-                  )}
-                </Typography>
-              </>
-            }
-          >
+        {chatEnabled && !chatPoppedOut && !layout.showBottomMenu && (
+          <ChatAgentGuide placement="bottom">
             <IconButton
               fixedWidth
               icon="remote-ai"
@@ -134,7 +112,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
               title={t('header.aiAgent', 'AI Agent')}
               onClick={() => dispatch.chat.set({ open: !chatOpen })}
             />
-          </GuideBubble>
+          </ChatAgentGuide>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (
