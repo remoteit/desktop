@@ -226,8 +226,8 @@ Empty means it is safe to fast-forward and something else is wrong (branch
 protection, most likely). Not empty means there is work on `release` to merge
 back into `main` first.
 
-Amplify builds the branch. Its build settings live in the Amplify console, not
-in this repo, so there is no `amplify.yml` here to change.
+Amplify builds the branch from `amplify.yml` in this repo. A branch that
+contains it ignores the build settings in the Amplify console.
 
 ## Windows installer payloads
 
