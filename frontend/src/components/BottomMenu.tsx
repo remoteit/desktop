@@ -22,6 +22,16 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
   const chat = useChatToggle()
 
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || '/devices'
+  const chatTab = chat.show && chat.open
+
+  const select = (value: string) => {
+    if (value === CHAT) {
+      if (!chatTab) chat.toggle()
+      return
+    }
+    if (chatTab) chat.toggle()
+    history.push(value)
+  }
 
   return (
     <Box
@@ -35,7 +45,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
         },
       }}
     >
-      <BottomNavigation value={menu} onChange={(_, value) => (value === CHAT ? chat.toggle() : history.push(value))}>
+      <BottomNavigation value={chatTab ? CHAT : menu} onChange={(_, value) => select(value)}>
         <BottomNavigationAction
           label={t('nav.connections', 'Connections')}
           icon={
@@ -56,7 +66,6 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
               </ChatAgentGuide>
             }
             value={CHAT}
-            sx={{ color: chat.open ? 'primary.main' : undefined }}
           />
         )}
       </BottomNavigation>

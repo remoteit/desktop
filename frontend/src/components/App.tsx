@@ -18,7 +18,7 @@ import { SidebarMenu } from './SidebarMenu'
 import { SignInPage } from '../pages/SignInPage'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
-import { useChatEnabled, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
+import { useChatEnabled, useChatDocked, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
 import { Router } from '../routers/Router'
 import { Page } from '../pages/Page'
 import { Logo } from '@common/brand/Logo'
@@ -48,6 +48,7 @@ export const App: React.FC = () => {
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const chatEnabled = useChatEnabled()
+  const chatDocked = useChatDocked()
   // organization.initialized flips exactly when the account's license limits have been parsed,
   // so it is the one signal that chatEnabled has been RESOLVED rather than merely not yet loaded
   const chatEntitlementResolved = useSelector((state: State) => state.organization.initialized)
@@ -145,48 +146,52 @@ export const App: React.FC = () => {
             />
           )
         ) : (
-          <Box
-            sx={{
-              flexGrow: 1,
-              position: 'relative',
-              display: 'flex',
-              overflow: 'hidden',
-              flexDirection: 'row',
-            }}
-          >
-            {/* The app side owns its own chrome. The sidebar, the pages AND the bottom
-                menu stack in this column, so the docked chat is a full-height column
-                BESIDE all three rather than a panel the menu runs underneath. */}
+          <>
             <Box
               sx={{
                 flexGrow: 1,
-                minWidth: 0,
+                position: 'relative',
                 display: 'flex',
-                flexDirection: 'column',
                 overflow: 'hidden',
+                flexDirection: 'row',
               }}
             >
+              {/* The app side owns its own chrome. Beside a docked chat the bottom menu stacks in
+                  this column with the sidebar and pages, so the chat is a full-height column BESIDE
+                  all three. An overlaid chat fills this row instead, so the menu moves below the row
+                  and stays in reach as the chat's tab. */}
               <Box
                 sx={{
                   flexGrow: 1,
-                  minHeight: 0,
+                  minWidth: 0,
                   display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'start',
-                  justifyContent: 'start',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
                 }}
               >
-                {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
-                <Router layout={layout} />
+                <Box
+                  sx={{
+                    flexGrow: 1,
+                    minHeight: 0,
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'start',
+                    justifyContent: 'start',
+                  }}
+                >
+                  {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
+                  <Router layout={layout} />
+                </Box>
+                {showBottomMenu && chatDocked && <BottomMenu layout={layout} />}
               </Box>
-              {showBottomMenu && <BottomMenu layout={layout} />}
+              {chatEnabled && (
+                <React.Suspense fallback={null}>
+                  <ChatPanel />
+                </React.Suspense>
+              )}
             </Box>
-            {chatEnabled && (
-              <React.Suspense fallback={null}>
-                <ChatPanel />
-              </React.Suspense>
-            )}
-          </Box>
+            {showBottomMenu && !chatDocked && <BottomMenu layout={layout} />}
+          </>
         )}
         {!isChatPopout && <AnnouncementDialog />}
       </PersistGate>

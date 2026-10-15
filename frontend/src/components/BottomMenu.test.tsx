@@ -56,15 +56,28 @@ describe('BottomMenu', () => {
     container.remove()
   })
 
-  it('toggles the chat from the AI action instead of navigating', () => {
+  it('opens the chat from the AI tab instead of navigating, and a second tap keeps it open', () => {
     render()
     act(() => action('AI Agent')!.click())
     expect(set).toHaveBeenCalledWith({ open: true })
 
     render({ open: true })
     act(() => action('AI Agent')!.click())
-    expect(set).toHaveBeenLastCalledWith({ open: false })
+    expect(set).toHaveBeenCalledTimes(1)
     expect(push).not.toHaveBeenCalled()
+  })
+
+  it('selects the AI tab while the chat is open', () => {
+    render({ open: true })
+    expect(action('AI Agent')!.classList).toContain('Mui-selected')
+    expect(action('Devices')!.classList).not.toContain('Mui-selected')
+  })
+
+  it('closes the chat when another tab is picked', () => {
+    render({ open: true })
+    act(() => action('Devices')!.click())
+    expect(set).toHaveBeenCalledWith({ open: false })
+    expect(push).toHaveBeenCalledWith('/devices')
   })
 
   it('finishes the chat tour step from anywhere on the AI action, not just its icon', () => {
