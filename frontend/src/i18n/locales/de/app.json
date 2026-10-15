@@ -313,7 +313,7 @@
     "inputPlaceholder": "Mit Remote.It chatten",
     "interrupted": "Unterbrochen",
     "introBody": "Verwalten Sie Ihre Geräte, Verbindungen und Dienste – fragen Sie einfach.",
-    "introTitle": "Remote.It AI",
+    "introTitle": "Remote.It Agent",
     "newChat": "Neuer Chat",
     "newPrompt1": "Wie füge ich mein erstes Gerät hinzu?",
     "newPrompt2": "Mit dem Demogerät ausprobieren",
@@ -1259,6 +1259,7 @@
   "nav": {
     "account": "Konto",
     "admin": "Admin",
+    "agent": "Agent",
     "announcements": "Ankündigungen",
     "apis": "APIs",
     "bugReport": "Fehlerbericht",

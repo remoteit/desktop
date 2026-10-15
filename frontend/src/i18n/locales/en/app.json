@@ -313,7 +313,7 @@
     "inputPlaceholder": "Chat with Remote.It",
     "interrupted": "Interrupted",
     "introBody": "Manage your devices, connections, and services — just ask.",
-    "introTitle": "Remote.It AI",
+    "introTitle": "Remote.It Agent",
     "newChat": "New Chat",
     "newPrompt1": "How do I add my first device?",
     "newPrompt2": "Try it out with the demo device",
@@ -1259,6 +1259,7 @@
   "nav": {
     "account": "Account",
     "admin": "Admin",
+    "agent": "Agent",
     "announcements": "Announcements",
     "apis": "APIs",
     "bugReport": "Bug Report",

@@ -316,7 +316,7 @@
     "inputPlaceholder": "Chatea con Remote.It",
     "interrupted": "Interrumpido",
     "introBody": "Administra tus dispositivos, conexiones y servicios: solo tienes que preguntar.",
-    "introTitle": "Remote.It AI",
+    "introTitle": "Remote.It Agent",
     "newChat": "Nuevo chat",
     "newPrompt1": "¿Cómo añado mi primer dispositivo?",
     "newPrompt2": "Pruébalo con el dispositivo de demostración",
@@ -1272,6 +1272,7 @@
   "nav": {
     "account": "Cuenta",
     "admin": "Admin",
+    "agent": "Agente",
     "announcements": "Anuncios",
     "apis": "API",
     "bugReport": "Informe de errores",

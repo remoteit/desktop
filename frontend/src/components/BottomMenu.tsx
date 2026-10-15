@@ -59,7 +59,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
         <BottomNavigationAction label={t('nav.networks', 'Networks')} icon={<Icon size="md" name="chart-network" />} value="/networks" />
         {chat.show && (
           <BottomNavigationAction
-            label={t('header.aiAgent', 'AI Agent')}
+            label={t('nav.agent', 'Agent')}
             icon={
               <ChatAgentGuide placement="top">
                 <Icon size="lg" name="remote-ai" />

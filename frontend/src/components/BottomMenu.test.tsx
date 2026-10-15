@@ -58,18 +58,18 @@ describe('BottomMenu', () => {
 
   it('opens the chat from the AI tab instead of navigating, and a second tap keeps it open', () => {
     render()
-    act(() => action('AI Agent')!.click())
+    act(() => action('Agent')!.click())
     expect(set).toHaveBeenCalledWith({ open: true })
 
     render({ open: true })
-    act(() => action('AI Agent')!.click())
+    act(() => action('Agent')!.click())
     expect(set).toHaveBeenCalledTimes(1)
     expect(push).not.toHaveBeenCalled()
   })
 
   it('selects the AI tab while the chat is open', () => {
     render({ open: true })
-    expect(action('AI Agent')!.classList).toContain('Mui-selected')
+    expect(action('Agent')!.classList).toContain('Mui-selected')
     expect(action('Devices')!.classList).not.toContain('Mui-selected')
   })
 
@@ -89,7 +89,7 @@ describe('BottomMenu', () => {
 
   it('finishes the chat tour step from anywhere on the AI action, not just its icon', () => {
     render()
-    act(() => action('AI Agent')!.click())
+    act(() => action('Agent')!.click())
     expect(pop).toHaveBeenCalledWith(CHAT_AGENT_GUIDE)
   })
 
@@ -102,10 +102,10 @@ describe('BottomMenu', () => {
 
   it('leaves the AI action out without the licence or while the chat is popped out', () => {
     render({ licensed: false })
-    expect(action('AI Agent')).toBeUndefined()
+    expect(action('Agent')).toBeUndefined()
     expect(actions()).toHaveLength(3)
 
     render({ poppedOut: true })
-    expect(action('AI Agent')).toBeUndefined()
+    expect(action('Agent')).toBeUndefined()
   })
 })

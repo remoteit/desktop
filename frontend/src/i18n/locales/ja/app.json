@@ -310,7 +310,7 @@
     "inputPlaceholder": "Remote.Itとチャット",
     "interrupted": "中断されました",
     "introBody": "質問するだけで、デバイス、接続、サービスを管理できます。",
-    "introTitle": "Remote.It AI",
+    "introTitle": "Remote.It Agent",
     "newChat": "新しいチャット",
     "newPrompt1": "最初のデバイスを追加するには？",
     "newPrompt2": "デモデバイスで試してみる",
@@ -1246,6 +1246,7 @@
   "nav": {
     "account": "アカウント",
     "admin": "管理",
+    "agent": "エージェント",
     "announcements": "お知らせ",
     "apis": "API",
     "bugReport": "バグ報告",
