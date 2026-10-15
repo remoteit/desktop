@@ -4,11 +4,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const redux = vi.hoisted(() => ({ state: {} as any }))
 const set = vi.hoisted(() => vi.fn())
+const pop = vi.hoisted(() => vi.fn())
 const push = vi.hoisted(() => vi.fn())
 
 vi.mock('react-redux', () => ({
   useSelector: (select: (s: any) => any) => select(redux.state),
-  useDispatch: () => ({ chat: { set } }),
+  useDispatch: () => ({ chat: { set }, ui: { pop } }),
 }))
 vi.mock('react-router-dom', () => ({
   useHistory: () => ({ push }),
@@ -23,7 +24,7 @@ vi.mock('./Chat/ChatAgentGuide', () => ({
   ChatAgentGuide: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
-import { CHAT_FEATURE } from '../constants'
+import { CHAT_FEATURE, CHAT_AGENT_GUIDE } from '../constants'
 import { BottomMenu } from './BottomMenu'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
@@ -46,6 +47,7 @@ describe('BottomMenu', () => {
     document.body.appendChild(container)
     root = createRoot(container)
     set.mockReset()
+    pop.mockReset()
     push.mockReset()
   })
 
@@ -63,6 +65,12 @@ describe('BottomMenu', () => {
     act(() => action('AI Agent')!.click())
     expect(set).toHaveBeenLastCalledWith({ open: false })
     expect(push).not.toHaveBeenCalled()
+  })
+
+  it('finishes the chat tour step from anywhere on the AI action, not just its icon', () => {
+    render()
+    act(() => action('AI Agent')!.click())
+    expect(pop).toHaveBeenCalledWith(CHAT_AGENT_GUIDE)
   })
 
   it('still navigates from the page actions', () => {

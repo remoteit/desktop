@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography, TooltipProps } from '@mui/material'
-import { CHAT_GUIDE_DATE } from '../../constants'
+import { CHAT_GUIDE_DATE, CHAT_AGENT_GUIDE } from '../../constants'
 import { GuideBubble } from '../GuideBubble'
 
 type Props = {
@@ -16,7 +16,7 @@ export const ChatAgentGuide: React.FC<Props> = ({ placement, children }) => {
   const { t } = useTranslation()
   return (
     <GuideBubble
-      guide="chatAgent"
+      guide={CHAT_AGENT_GUIDE}
       added={CHAT_GUIDE_DATE}
       placement={placement}
       enterDelay={1200}

@@ -6,6 +6,7 @@ import browser from '../services/browser'
 import { useViewportSelect, useViewportWiderThan } from './useViewportWidth'
 import {
   CHAT_FEATURE,
+  CHAT_AGENT_GUIDE,
   CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_MIN,
   CHAT_PANEL_WIDTH_MAX,
@@ -30,14 +31,18 @@ import {
    feature off in Test Settings → Features, and one without it has no row there. */
 export const useChatEnabled = (): boolean => useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
 
-/* The chat button's contract, shared by the header and the mobile bottom bar so the two
-   placements can't disagree on when it shows or what it does. */
+/* The chat button's contract for the header and the mobile bottom bar. Using it finishes the tour step
+   aimed at it: the bottom-bar bubble wraps only the icon, so taps beside it never reached its dismiss. */
 export const useChatToggle = () => {
   const enabled = useChatEnabled()
   const open = useSelector((state: State) => state.chat.open)
   const poppedOut = useSelector((state: State) => state.chat.poppedOut)
   const dispatch = useDispatch<Dispatch>()
-  return { show: enabled && !poppedOut, open, toggle: () => dispatch.chat.set({ open: !open }) }
+  const toggle = () => {
+    dispatch.ui.pop(CHAT_AGENT_GUIDE)
+    dispatch.chat.set({ open: !open })
+  }
+  return { show: enabled && !poppedOut, open, toggle }
 }
 
 /* The widest the chat column may be dragged: whatever the window holds once the
