@@ -46,17 +46,6 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
       }}
     >
       <BottomNavigation value={chatTab ? CHAT : menu} onChange={(_, value) => select(value)}>
-        <BottomNavigationAction
-          label={t('nav.connections', 'Connections')}
-          icon={
-            <Badge badgeContent={counts.active} color="primary">
-              <Icon size="md" name="arrow-right-arrow-left" />
-            </Badge>
-          }
-          value="/connections"
-        />
-        <BottomNavigationAction label={t('nav.devices', 'Devices')} icon={<Icon size="md" name="router" />} value="/devices" />
-        <BottomNavigationAction label={t('nav.networks', 'Networks')} icon={<Icon size="md" name="chart-network" />} value="/networks" />
         {chat.show && (
           <BottomNavigationAction
             label={t('nav.agent', 'Agent')}
@@ -68,6 +57,17 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
             value={CHAT}
           />
         )}
+        <BottomNavigationAction
+          label={t('nav.connections', 'Connections')}
+          icon={
+            <Badge badgeContent={counts.active} color="primary">
+              <Icon size="md" name="arrow-right-arrow-left" />
+            </Badge>
+          }
+          value="/connections"
+        />
+        <BottomNavigationAction label={t('nav.devices', 'Devices')} icon={<Icon size="md" name="router" />} value="/devices" />
+        <BottomNavigationAction label={t('nav.networks', 'Networks')} icon={<Icon size="md" name="chart-network" />} value="/networks" />
       </BottomNavigation>
     </Box>
   )

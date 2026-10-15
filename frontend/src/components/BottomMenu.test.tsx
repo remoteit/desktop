@@ -67,6 +67,11 @@ describe('BottomMenu', () => {
     expect(push).not.toHaveBeenCalled()
   })
 
+  it('puts the Agent tab first', () => {
+    render()
+    expect(actions().map(button => button.textContent)).toEqual(['Agent', 'Connections', 'Devices', 'Networks'])
+  })
+
   it('selects the AI tab while the chat is open', () => {
     render({ open: true })
     expect(action('Agent')!.classList).toContain('Mui-selected')
