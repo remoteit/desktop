@@ -9,10 +9,9 @@ type Props = {
   children: React.ReactNode
 }
 
-/* Step 1 of the chat tour, wrapped around whichever button opens the chat. Deliberately no
-   startDate — this is new to everyone, including long-standing accounts, so the usual "only
-   for recent signups" cohort gate would hide it from the people who most need it. The delay
-   lets the app settle before it speaks up. */
+/* Step 1 of the chat tour. Deliberately no startDate — this is new to everyone, including
+   long-standing accounts, so the usual "only for recent signups" cohort gate would hide it
+   from the people who most need it. The delay lets the app settle before it speaks up. */
 export const ChatAgentGuide: React.FC<Props> = ({ placement, children }) => {
   const { t } = useTranslation()
   return (
@@ -21,6 +20,8 @@ export const ChatAgentGuide: React.FC<Props> = ({ placement, children }) => {
       added={CHAT_GUIDE_DATE}
       placement={placement}
       enterDelay={1200}
+      // In the bottom bar this sits inside BottomNavigationAction's <button>, which only allows phrasing content
+      component="span"
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
