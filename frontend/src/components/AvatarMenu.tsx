@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
-import { ButtonBase, Divider, Menu, Avatar as MuiAvatar } from '@mui/material'
+import { ButtonBase, Divider, Menu } from '@mui/material'
 import { useHideSidebar } from '../hooks/useChatEnabled'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
@@ -202,11 +202,7 @@ export const AvatarMenu: React.FC = () => {
                   ? a.email
                   : undefined
               }
-              icon={
-                <MuiAvatar src={a.picture} sx={{ width: 24, height: 24, fontSize: 12 }}>
-                  {(a.name || a.email || '?').charAt(0).toUpperCase()}
-                </MuiAvatar>
-              }
+              icon={<Avatar email={a.email} picture={a.picture} fallback={a.name} size={24} />}
               confirm={browser.hasBackend}
               confirmProps={switchConfirm}
               onClick={async () => {

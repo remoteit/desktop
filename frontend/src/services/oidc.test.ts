@@ -12,6 +12,7 @@ import {
   oidcReconcileIssuer,
   oidcSignedIn,
   oidcAccounts,
+  oidcPicture,
   oidcStart,
   oidcReopen,
   oidcCompleteFromUrl,
@@ -97,6 +98,29 @@ describe('oidcReconcileIssuer', () => {
     expect(oidcSignedIn()).toBe(false)
     expect(oidcAccounts()).toHaveLength(0)
     expect(window.localStorage.getItem('oidc.issuer')).toBe(OAUTH_ISSUER)
+  })
+})
+
+describe('oidcPicture', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+    window.localStorage.setItem(
+      'oidc.accounts',
+      JSON.stringify({
+        a: { email: 'Ada@X.test', picture: 'https://idp.example/ada.jpg' },
+        b: { email: 'bob@x.test' },
+      })
+    )
+  })
+
+  it("finds a signed-in account's picture by email, ignoring case", () => {
+    expect(oidcPicture('ada@x.test')).toBe('https://idp.example/ada.jpg')
+  })
+
+  it('has none for an account without one, or for an email not signed in here', () => {
+    expect(oidcPicture('bob@x.test')).toBeUndefined()
+    expect(oidcPicture('eve@x.test')).toBeUndefined()
+    expect(oidcPicture(undefined)).toBeUndefined()
   })
 })
 

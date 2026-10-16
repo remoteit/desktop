@@ -1,7 +1,10 @@
-import md5 from 'md5'
-import React, { useMemo } from 'react'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
+import React, { useEffect, useMemo, useState } from 'react'
 import { createColor } from '../../helpers/uiHelper'
+import { httpsOnly } from '../../helpers/utilHelper'
 import { labelLookup } from '../../models/labels'
+import { oidcPicture } from '../../services/oidc'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
 import { spacing } from '../../styling'
 
@@ -16,7 +19,31 @@ export interface Props {
   border?: number
   fallback?: string
   marginRight?: number
+  picture?: string
   children?: React.ReactNode
+}
+
+/* The first of `urls` that loads, and nothing until one has: MUI's Avatar shows a blank <img> while its
+   src loads, so a load that never errors (iOS, a blocked redirect) would hide the initial for good. */
+function useFirstLoaded(urls: string[]) {
+  const [loaded, setLoaded] = useState<{ urls: string[]; url: string }>()
+
+  useEffect(() => {
+    let active = true
+    const load = (index: number) => {
+      if (index >= urls.length) return
+      const image = new Image()
+      image.onload = () => active && setLoaded({ urls, url: urls[index] })
+      image.onerror = () => active && load(index + 1)
+      image.src = urls[index]
+    }
+    load(0)
+    return () => {
+      active = false
+    }
+  }, [urls])
+
+  return loaded?.urls === urls ? loaded.url : undefined
 }
 
 export const Avatar: React.FC<Props> = React.memo(
@@ -31,12 +58,16 @@ export const Avatar: React.FC<Props> = React.memo(
     border = 1,
     fallback,
     marginRight,
+    picture,
     children,
   }) => {
-    const url = useMemo(
-      () => `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=force-fail`,
-      [email, size]
-    )
+    const urls = useMemo(() => {
+      const signIn = httpsOnly(picture) ?? oidcPicture(email)
+      const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
+      const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=404`
+      return signIn ? [signIn, gravatar] : [gravatar]
+    }, [email, size, picture])
+    const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])
     fallback = (fallback || email || '?').substring(0, 1).toUpperCase()
 

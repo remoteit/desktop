@@ -1027,6 +1027,13 @@ export function oidcAccounts(): OidcAccount[] {
     .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
 }
 
+/** The IdP picture Permitteer gave an account signed in on this browser, by email. */
+export function oidcPicture(email?: string): string | undefined {
+  if (!email) return undefined
+  const wanted = email.toLowerCase()
+  return Object.values(readRegistry()).find(e => e.picture && e.email?.toLowerCase() === wanted)?.picture
+}
+
 /** WHO was just activated, so a boot that finds the saved tokens dead can try one silent recovery
  *  (prompt=none + login_hint — the AS serves any live set member the hint names) before falling to
  *  the sign-in screen. Data, not a brake: the ledger in oidcStart bounds the attempt; the hint is
