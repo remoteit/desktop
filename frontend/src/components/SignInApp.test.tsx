@@ -104,6 +104,7 @@ describe('SignInApp', () => {
 
   it.each([
     ['desktop', { isElectron: true, isNative: true }],
+    ['the mobile app', { isElectron: false, isNative: true }],
     ['web', { isElectron: false, isNative: false }],
   ])('on %s, the ready screen offers email, Google, Apple and sign-up, each said once', (_, platform) => {
     Object.assign(browser, platform)
@@ -111,6 +112,23 @@ describe('SignInApp', () => {
     render(screens.ready)
     expect(container.textContent).toBe("Sign inContinue with emailorGoogleAppleDon't have an account? Sign up")
     expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Continue with email')
+  })
+
+  it.each([
+    ['desktop', { isElectron: true, isNative: true }],
+    ['the mobile app', { isElectron: false, isNative: true }],
+  ])('on %s, waits for a choice instead of opening the browser by itself', (_, platform) => {
+    Object.assign(browser, platform)
+    render(screens.ready)
+    expect(auth.signIn).not.toHaveBeenCalled()
+    expect(container.querySelector('.MuiButton-contained')?.textContent).toBe('Continue with email')
+  })
+
+  it('on the web, goes straight to the sign-in page', () => {
+    Object.assign(browser, { isElectron: false, isNative: false })
+    render(screens.ready)
+    expect(auth.signIn).toHaveBeenCalledWith({ auto: 'boot' })
+    expect(container.textContent).toBe('Taking you to sign in…')
   })
 
   it('starts each sign-in path from its own button', () => {
