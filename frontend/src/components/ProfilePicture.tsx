@@ -14,16 +14,19 @@ const MAX_BYTES = 64 * 1024
 /** A square JPEG of the middle of the image, under the AS's 64 KB limit. Redrawing it also drops
  *  the file's metadata, such as where a phone photo was taken. */
 export async function avatarDataUri(file: Blob): Promise<string> {
-  const bitmap = await createImageBitmap(file)
-  const crop = Math.min(bitmap.width, bitmap.height)
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = SIDE
-  const context = canvas.getContext('2d')
-  if (!context) throw new Error('no canvas')
-  context.fillStyle = '#fff'
-  context.fillRect(0, 0, SIDE, SIDE)
-  context.drawImage(bitmap, (bitmap.width - crop) / 2, (bitmap.height - crop) / 2, crop, crop, 0, 0, SIDE, SIDE)
-  bitmap.close()
+  try {
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('no canvas')
+    const crop = Math.min(bitmap.width, bitmap.height)
+    context.fillStyle = '#fff'
+    context.fillRect(0, 0, SIDE, SIDE)
+    context.drawImage(bitmap, (bitmap.width - crop) / 2, (bitmap.height - crop) / 2, crop, crop, 0, 0, SIDE, SIDE)
+  } finally {
+    bitmap.close()
+  }
   for (const quality of [0.85, 0.7, 0.5]) {
     const uri = canvas.toDataURL('image/jpeg', quality)
     if ((uri.length - uri.indexOf(',') - 1) * 0.75 <= MAX_BYTES) return uri
