@@ -81,16 +81,22 @@ Then push the commit and the tag `npm version` created.
 
 ## 2. Desktop: build
 
-Run **Build / Electron** (`workflow_dispatch`) **from the version tag** — in
-"Use workflow from", switch to Tags and pick `vN.N.N`, not `main`. `brand`
-defaults to `remoteit`; **uncheck `skip_signing`** for a real release, since it
-defaults to `true`. Only a tag build creates the draft and publishes into it; a
-branch build compiles and discards everything, so with `skip_signing` off the
-`prepare` job refuses to start rather than pay for signatures nobody receives.
+Run **Build / Electron** (`workflow_dispatch`) from `main`, the default in "Use
+workflow from". A run on `main` builds nothing itself: it starts the workflow
+again on `main`'s version tag (`v` plus the version in `package.json`) with the
+same inputs, and its summary links to that run. The tag has to be pushed first,
+or the run fails and says so. Picking `vN.N.N` under Tags does the same thing
+directly. `brand` defaults to `remoteit`; **uncheck `skip_signing`** for a real
+release, since it defaults to `true`. Only a tag build creates the draft and
+publishes into it. Checking `build_main` builds `main` itself instead; that, and
+a run on any other branch, compiles and discards everything, so with
+`skip_signing` off the `prepare` job refuses to start rather than pay for
+signatures nobody receives.
 
 A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
-creates the **draft** release there for the version (on tag builds only), then a
+creates the **draft** release there for the version (on tag builds only; if
+that version is already published it fails, so bump the version), then a
 matrix of ubuntu-latest / macos-14 / windows-latest reads
 the version from `package.json` (not from the tag) and attaches the installers
 to it. The draft is created up front on purpose: electron-builder otherwise
@@ -220,8 +226,8 @@ Empty means it is safe to fast-forward and something else is wrong (branch
 protection, most likely). Not empty means there is work on `release` to merge
 back into `main` first.
 
-Amplify builds the branch. Its build settings live in the Amplify console, not
-in this repo, so there is no `amplify.yml` here to change.
+Amplify builds the branch from `amplify.yml` in this repo. A branch that
+contains it ignores the build settings in the Amplify console.
 
 ## Windows installer payloads
 
@@ -296,8 +302,9 @@ Two things fix that, and both are automatic:
 
 1. **Build / Electron** runs `electron/scripts/finalize-win-update-manifests.js`
    after the Windows build. Like electron-builder's own publish step, it uploads
-   only into the **draft** release for this version — so dispatch the workflow
-   **on the tag**; a branch build creates no release and has nowhere to upload to.
+   only into the **draft** release for this version — so the build has to run
+   **on the tag** (a run from `main` hands itself to the tag); a branch build
+   creates no release and has nowhere to upload to.
    It never writes to a published release: if the version is already live the
    job fails rather than rewrite a live manifest. Changing a live `latest.yml`
    is only ever the deliberate manual step below. It reorders `files` to `ia32, x64, arm64` — ia32

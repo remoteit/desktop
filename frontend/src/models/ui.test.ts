@@ -88,3 +88,19 @@ describe('ui — restoreState and saved API targets', () => {
     expect(await restore({ switchApi: false, apiGraphqlURL: '' })).toEqual({ switchApi: false, apiGraphqlURL: '' })
   })
 })
+
+describe('ui — pop', () => {
+  const pop = async (bubble: string, poppedBubbles: string[]) => {
+    const dispatch = { ui: { setPersistent: vi.fn() } }
+    await (uiModel as any).effects(dispatch).pop(bubble, { ui: { poppedBubbles } })
+    return dispatch.ui.setPersistent
+  }
+
+  it('records a bubble the first time it is popped', async () => {
+    expect(await pop('chatAgent', ['other'])).toHaveBeenCalledWith({ poppedBubbles: ['other', 'chatAgent'] })
+  })
+
+  it('does not record a bubble twice when two controls dismiss it at once', async () => {
+    expect(await pop('chatAgent', ['chatAgent'])).not.toHaveBeenCalled()
+  })
+})

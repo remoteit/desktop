@@ -132,8 +132,10 @@ export function SignInApp() {
   const { auth, ui } = useDispatch<Dispatch>()
 
   /* On the WEB there is nothing to show a signed-out user — the AS login page IS the
-     sign-in surface, so leave for it immediately. Desktop keeps the launcher: its window
-     must show something while the SYSTEM browser hosts the journey.
+     sign-in surface, so leave for it immediately. Desktop and the mobile apps keep the
+     launcher: their window must show something while the SYSTEM browser hosts the journey,
+     and a mobile app that opened the browser by itself at launch left people at "Continue in
+     your browser" before they had chosen how to sign in.
 
      TWO brakes, because this effect redirects the browser and the redirect can come
      straight back. signInFailed is the real one: any failed attempt parks us here with an
@@ -149,7 +151,7 @@ export function SignInApp() {
   const budgetSpent = oidcAutoStartExhausted('boot')
   const otherStage = !STAGE_PINNED && STAGE !== 'prod' ? STAGE : undefined
   const autoStart =
-    !browser.isElectron && !otherStage && !signingIn && !signInFailed && !budgetSpent && !oidcLeaveRefused()
+    !browser.isNative && !otherStage && !signingIn && !signInFailed && !budgetSpent && !oidcLeaveRefused()
   useEffect(() => {
     if (!autoStart) return
     auth.signIn({ auto: 'boot' })
@@ -161,7 +163,7 @@ export function SignInApp() {
      through the app's own snackbar (Page renders it over the signed-out screen too)
      rather than by growing a second error surface on this panel. */
   useEffect(() => {
-    if (browser.isElectron || signingIn || signInFailed || !budgetSpent) return
+    if (browser.isNative || signingIn || signInFailed || !budgetSpent) return
     ui.set({
       noticeMessage: t(
         'signIn.autoPaused',
@@ -218,12 +220,9 @@ export function SignInApp() {
       <Logo width={140} marginBottom={1} />
       {signingIn ? (
         <>
-          <Box display="flex" alignItems="center" gap={1.5}>
-            <CircularProgress size={16} />
-            <Typography variant="body2" color="textSecondary">
-              {t('signIn.continueInBrowser', 'Continue in your browser')}
-            </Typography>
-          </Box>
+          <Typography variant="body2" color="textSecondary">
+            {t('signIn.continueInBrowser', 'Continue in your browser')}
+          </Typography>
           <Box display="grid" gridAutoFlow="column" gridAutoColumns="1fr" gap={1}>
             <Button onClick={() => auth.set({ signingIn: false })}>{t('signIn.cancel', 'Cancel')}</Button>
             <Button variant="contained" onClick={() => oidcReopen()}>

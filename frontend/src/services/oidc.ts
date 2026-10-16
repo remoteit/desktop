@@ -153,7 +153,7 @@ const tokenStore = (): Storage => {
   }
 }
 
-type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
+type Flow = { verifier: string; state: string; nonce: string; redirectUri: string; issuer?: string }
 
 function rememberFlow(flow: Flow, authorizeUrl: string): void {
   sessionStorage.setItem(FLOW_KEY, JSON.stringify({ ...flow, authorizeUrl }))
@@ -576,7 +576,13 @@ export async function oidcStart(
   const [d, , redirect] = await Promise.all([discover(), refreshMcpDetailType(), redirectUri()])
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-  const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirect }
+  const flow: Flow = {
+    verifier,
+    state: randomB64u(16),
+    nonce: randomB64u(16),
+    redirectUri: redirect,
+    issuer: OAUTH_ISSUER,
+  }
   const url = new URL(d.authorization_endpoint)
   const params: { [key: string]: string } = {
     client_id: OAUTH_CLIENT_ID,
@@ -646,6 +652,13 @@ export async function oidcCompleteFromUrl(
   const flow = findFlow(state)
   // Only the boot URL carries the callback; a live window's own URL (and its router's history state) is not ours.
   if (search === undefined) cleanUrl()
+  // A stage switch reloads the app onto another login server while a sign-in begun on the old one can
+  // still finish in the browser; this server refuses that code (seen on iOS, 2026-10-16).
+  if (flow?.issuer && flow.issuer !== OAUTH_ISSUER) {
+    dropFlow(state)
+    console.warn('OIDC: ignoring a sign-in callback from another login server', flow.issuer)
+    return undefined
+  }
   if (!flow) {
     // A second browser tab finishing a flow the first already completed (Open browser again) lands
     // here; with that session stored the callback is stale, and failing it showed the sign-in screen.

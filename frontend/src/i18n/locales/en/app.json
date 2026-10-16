@@ -303,7 +303,7 @@
     "deleteConversation": "Delete",
     "deny": "Deny",
     "guideAgentBody": "Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.",
-    "guideAgentTitle": "Meet Remote.It AI",
+    "guideAgentTitle": "Meet Remote.It Agent",
     "guideComposeBody": "Type a question, or say what you want changed. Anything that alters your account pauses for your approval first.",
     "guideComposeTitle": "Just ask",
     "guideHistoryBody": "Chats are saved. Switch between them, or start a new one, from here.",
@@ -313,13 +313,13 @@
     "inputPlaceholder": "Chat with Remote.It",
     "interrupted": "Interrupted",
     "introBody": "Manage your devices, connections, and services — just ask.",
-    "introTitle": "Remote.It AI",
+    "introTitle": "Remote.It Agent",
     "newChat": "New Chat",
     "newPrompt1": "How do I add my first device?",
     "newPrompt2": "Try it out with the demo device",
     "newPrompt3": "How do I reach a Raspberry Pi without port forwarding?",
     "newSession": "New chat",
-    "notLicensed": "Remote.It AI is not available for this account.",
+    "notLicensed": "Remote.It Agent is not available for this account.",
     "popIn": "Pop back in",
     "popOut": "Pop out",
     "prompt1": "Which of my devices are offline?",
@@ -333,7 +333,7 @@
     "toolRequest": "The agent wants to run <tool>{{tool}}</tool>",
     "toolsUsed_one": "Used {{count}} tool",
     "toolsUsed_other": "Used {{count}} tools",
-    "unavailable": "Remote.It AI is temporarily unavailable. Try again in a few minutes.",
+    "unavailable": "Remote.It Agent is temporarily unavailable. Try again in a few minutes.",
     "untitled": "New conversation",
     "usage": "Usage",
     "usageResets": "Resets {{when}}",
@@ -978,7 +978,6 @@
     "dismissAll": "dismiss all"
   },
   "header": {
-    "aiAgent": "AI Agent",
     "back": "Back",
     "create": "Create",
     "deviceSearch": "Device Search",
@@ -1259,6 +1258,7 @@
   "nav": {
     "account": "Account",
     "admin": "Admin",
+    "agent": "Agent",
     "announcements": "Announcements",
     "apis": "APIs",
     "bugReport": "Bug Report",
@@ -1829,10 +1829,15 @@
   },
   "pushCategories": {
     "access": "Access changes",
+    "accessHelp": "Someone shares a device with you or removes your access, or a device is transferred or deleted.",
     "account": "Account security",
+    "accountHelp": "A sign-in to your account, or a change to its password, phone number, or two-factor settings.",
     "connect": "Connections",
+    "connectHelp": "Anyone, including you, connects to or disconnects from a device you have access to.",
     "jobs": "Scripts",
-    "state": "Online / offline"
+    "jobsHelp": "A script you run, or one run on your account, starts, finishes, fails, or is cancelled.",
+    "state": "Online / offline",
+    "stateHelp": "A device you have access to goes offline or comes back online."
   },
   "qualityDetails": {
     "availability": "Availability:",

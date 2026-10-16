@@ -124,10 +124,9 @@ export const ChatPanel: React.FC = () => {
         borderLeft: !docked && sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
         boxShadow: docked || sidebarWidth ? 3 : 0,
-        // The chat reaches the window's bottom edge in both modes now — a full-height
-        // column beside the bottom menu when docked, over it when it overlays — so it
-        // owns its safe-area inset rather than leaving it to the menu below it
-        paddingBottom: insets?.bottomPx || 1.5,
+        // The chat owns the safe-area inset wherever it reaches the window's bottom edge — docked
+        // beside the bottom menu, or overlaying with no menu. An overlay stops above the menu, which carries it
+        paddingBottom: !docked && layout.showBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
       }}
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
@@ -144,11 +143,14 @@ export const ChatPanel: React.FC = () => {
         {/* "Close chat", not "Close": the title is this icon-only button's accessible name, and a
             bare "Close" is ambiguous beside every other close on the page — for a screen reader,
             and for the e2e suite, which dismisses a docked chat by that name (helpers/app.ts). */}
-        <IconButton
-          icon="times"
-          title={t('chat.closeChat', 'Close chat')}
-          onClick={() => dispatch.chat.set({ open: false })}
-        />
+        {/* With the bottom menu showing, the chat is one of its tabs: picking another tab closes it */}
+        {!layout.showBottomMenu && (
+          <IconButton
+            icon="times"
+            title={t('chat.closeChat', 'Close chat')}
+            onClick={() => dispatch.chat.set({ open: false })}
+          />
+        )}
       </ChatHeader>
       <ChatBody />
     </Box>

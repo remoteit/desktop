@@ -232,6 +232,30 @@ describe('oidcCompleteFromUrl with no flow for the callback', () => {
   })
 })
 
+describe('oidcCompleteFromUrl with a flow begun on another login server', () => {
+  let warn: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    vi.mocked(fetch).mockClear()
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const flow = { verifier: 'v', state: 's-old', nonce: 'n', redirectUri: `${PROTOCOL}authCallback`, issuer: OTHER }
+    window.sessionStorage.setItem('oidc.flow', JSON.stringify(flow))
+    window.localStorage.setItem('oidc.flow:s-old', JSON.stringify({ ...flow, at: Date.now() }))
+    window.history.replaceState({}, '', '/?code=c-other&state=s-old')
+  })
+  afterEach(() => warn.mockRestore())
+
+  it('drops it without exchanging its code, so a stage switch mid sign-in lands on the sign-in screen', async () => {
+    await expect(oidcCompleteFromUrl()).resolves.toBeUndefined()
+    expect(fetch).not.toHaveBeenCalled()
+    expect(window.sessionStorage.getItem('oidc.flow')).toBeNull()
+    expect(window.localStorage.getItem('oidc.flow:s-old')).toBeNull()
+    expect(window.location.search).toBe('')
+  })
+})
+
 describe('oidcCompleteFromUrl keeps the flow until its exchange settles', () => {
   let exchange: () => Promise<Response>
   const ownFlow = () => JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
