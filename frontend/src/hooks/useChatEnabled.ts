@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import { State } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
+import { State, Dispatch } from '../store'
 import { selectLimitsLookup } from '../selectors/organizations'
 import browser from '../services/browser'
 import { useViewportSelect, useViewportWiderThan } from './useViewportWidth'
 import {
   CHAT_FEATURE,
+  CHAT_AGENT_GUIDE,
   CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_MIN,
   CHAT_PANEL_WIDTH_MAX,
@@ -18,7 +19,7 @@ import {
   ORGANIZATION_BAR_WIDTH,
 } from '../constants'
 
-/* Whether the Remote.It AI chat exists for this user at all — the single gate the header
+/* Whether the Remote.It AI chat exists for this user at all — the single gate the chat
    button, the docked column and everything the panel loads hang off. Nothing chat-related
    mounts without it, so a user without the feature makes no agent requests.
 
@@ -29,6 +30,20 @@ import {
    ai-agent add-on licence (Admin → Add-ons); an account holding it can still switch the
    feature off in Test Settings → Features, and one without it has no row there. */
 export const useChatEnabled = (): boolean => useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
+
+/* The chat button's contract for the header and the mobile bottom bar. Using it finishes the tour step
+   aimed at it: the bottom-bar bubble wraps only the icon, so taps beside it never reached its dismiss. */
+export const useChatToggle = () => {
+  const enabled = useChatEnabled()
+  const open = useSelector((state: State) => state.chat.open)
+  const poppedOut = useSelector((state: State) => state.chat.poppedOut)
+  const dispatch = useDispatch<Dispatch>()
+  const toggle = () => {
+    dispatch.ui.pop(CHAT_AGENT_GUIDE)
+    dispatch.chat.set({ open: !open })
+  }
+  return { show: enabled && !poppedOut, open, toggle }
+}
 
 /* The widest the chat column may be dragged: whatever the window holds once the
    content keeps CHAT_MIN_CONTENT_WIDTH. The sidebar does not cap the drag — the layout

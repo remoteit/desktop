@@ -13,7 +13,7 @@ import { Icon } from '../Icon'
 import { GuideBubble } from '../GuideBubble'
 import { isChatPopout } from '../../services/chatPopout'
 import { oidcLeaveRefused } from '../../services/oidc'
-import { CHAT_GUIDE_DATE } from '../../constants'
+import { CHAT_GUIDE_DATE, CHAT_AGENT_GUIDE } from '../../constants'
 
 /* Everything below the chat header — shared by the docked panel and the
    popout window */
@@ -47,7 +47,7 @@ export const ChatBody: React.FC = () => {
   // services/Network's job, and it raises its own notice.
   const unavailableMessage = t(
     'chat.unavailable',
-    'Remote.It AI is temporarily unavailable. Try again in a few minutes.'
+    'Remote.It Agent is temporarily unavailable. Try again in a few minutes.'
   )
 
   // "Working" indicator: a turn is in flight but nothing else is moving — before the first
@@ -106,7 +106,7 @@ export const ChatBody: React.FC = () => {
         guide="chatCompose"
         added={CHAT_GUIDE_DATE}
         placement="top"
-        queueAfter="chatAgent"
+        queueAfter={CHAT_AGENT_GUIDE}
         hide={isChatPopout}
         instructions={
           <>

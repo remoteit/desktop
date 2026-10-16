@@ -281,6 +281,7 @@ export default createModel<RootModel>()({
       dispatch.ui.setPersistent({ columnWidths })
     },
     async pop(bubble: string, state) {
+      if (state.ui.poppedBubbles.includes(bubble)) return
       let poppedBubbles = [...state.ui.poppedBubbles]
       poppedBubbles.push(bubble)
       dispatch.ui.setPersistent({ poppedBubbles })
