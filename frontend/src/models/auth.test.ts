@@ -335,32 +335,40 @@ describe('auth model — the grant freshness check waits for the boot MCP metada
   })
 })
 
-describe('auth model — a dropped, unauthenticated backend socket still explains itself', () => {
-  const unauthenticated = { auth: { authenticated: false, backendAuthenticated: false } }
-  beforeEach(() => {
-    browser.hasBackend = true // the disconnect teardown is the electron/backend branch
-  })
+/* signedOut() ends with Controller.close(), and socket.io-client fires 'disconnect' synchronously
+   from close() on a connected socket — so disconnect runs in the middle of every teardown. */
+describe('auth model — the teardown closing its own socket', () => {
   afterEach(() => {
-    browser.hasBackend = false
     storeState.auth = {}
   })
 
-  it('records the generic failure (signInFailed) after teardown when nothing more specific is on screen', async () => {
-    storeState.auth = { signInFailed: false }
+  it('disconnect only marks the backend gone, and never tears down a second time', async () => {
     const dispatch = makeDispatch()
-    await effectsFor(dispatch).disconnect(undefined, unauthenticated)
-    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
-    expect(dispatch.auth.set).toHaveBeenCalledWith(aFailureShowing('Sign in failed, please try again.'))
+    await effectsFor(dispatch).disconnect()
+    expect(dispatch.auth.signedOut).not.toHaveBeenCalled()
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ connected: false })
+    expect(dispatch.auth.set).toHaveBeenCalledWith({ backendAuthenticated: false })
   })
 
-  it("carries a specific failure already recorded (backendSignInError's) through the teardown instead of wiping it", async () => {
-    // disconnect fires right behind backendSignInError when the rejected socket drops; the
-    // invocation-time snapshot predates that message, so it must read the LIVE store.
-    storeState.auth = { signInFailed: true, signInError: 'backend said no' }
-    const dispatch = makeDispatch()
-    await effectsFor(dispatch).disconnect(undefined, unauthenticated)
-    expect(dispatch.auth.set).toHaveBeenCalledWith(aFailureShowing('backend said no'))
-    expect(dispatch.auth.set).not.toHaveBeenCalledWith(aFailureShowing('Sign in failed, please try again.'))
+  it("the agent's owner is still named after the refusal's teardown closes the socket", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const owner = { username: 'jr', command: 'sudo remoteit signout' }
+    const { dispatch } = spyDispatch()
+    const effects = effectsFor(dispatch)
+    dispatch.auth.set.mockImplementation((params: object) => (storeState.auth = { ...storeState.auth, ...params }))
+    dispatch.auth.signedOut.mockImplementation(() => effects.signedOut())
+    let disconnecting: Promise<void> | undefined
+    controllerClose.mockImplementationOnce(() => (disconnecting = effects.disconnect()))
+    await effects.backendSignInError(agentOwnedMessage(owner))
+    await disconnecting
+    expect(dispatch.auth.signedOut).toHaveBeenCalledTimes(1)
+    expect(storeState.auth).toEqual(
+      expect.objectContaining({
+        signInFailed: true,
+        signInErrorCode: 'agentOwned',
+        signInError: agentOwnedMessage(owner),
+      })
+    )
   })
 })
 
