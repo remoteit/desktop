@@ -47,7 +47,7 @@ export const ChatBody: React.FC = () => {
   // services/Network's job, and it raises its own notice.
   const unavailableMessage = t(
     'chat.unavailable',
-    'Remote.It AI is temporarily unavailable. Try again in a few minutes.'
+    'Remote.It Agent is temporarily unavailable. Try again in a few minutes.'
   )
 
   // "Working" indicator: a turn is in flight but nothing else is moving — before the first

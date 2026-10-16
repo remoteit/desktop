@@ -140,7 +140,7 @@ export const App: React.FC = () => {
               spinner={!chatEntitlementResolved}
               message={
                 chatEntitlementResolved
-                  ? t('chat.notLicensed', 'Remote.It AI is not available for this account.')
+                  ? t('chat.notLicensed', 'Remote.It Agent is not available for this account.')
                   : undefined
               }
             />

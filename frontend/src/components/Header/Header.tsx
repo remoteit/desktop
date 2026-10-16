@@ -107,7 +107,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
               icon="remote-ai"
               size="lg"
               color={chat.open ? 'primary' : 'grayDarker'}
-              title={t('header.aiAgent', 'AI Agent')}
+              title={t('nav.agent', 'Agent')}
               onClick={chat.toggle}
             />
           </ChatAgentGuide>

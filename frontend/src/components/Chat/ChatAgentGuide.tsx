@@ -25,7 +25,7 @@ export const ChatAgentGuide: React.FC<Props> = ({ placement, children }) => {
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
-            <b>{t('chat.guideAgentTitle', 'Meet Remote.It AI')}</b>
+            <b>{t('chat.guideAgentTitle', 'Meet Remote.It Agent')}</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
             {t(
