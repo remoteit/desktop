@@ -4,7 +4,14 @@ import { createRoot, Root } from 'react-dom/client'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-vi.mock('../../services/oidc', () => ({ oidcPicture: vi.fn() }))
+const { listeners } = vi.hoisted(() => ({ listeners: new Set<() => void>() }))
+vi.mock('../../services/oidc', () => ({
+  oidcPicture: vi.fn(),
+  oidcSubscribe: (listener: () => void) => {
+    listeners.add(listener)
+    return () => listeners.delete(listener)
+  },
+}))
 vi.mock('../../helpers/uiHelper', () => ({ createColor: () => 1 }))
 vi.mock('../../models/labels', () => ({ labelLookup: { 1: { color: '#888' } } }))
 
@@ -79,10 +86,23 @@ describe('Avatar', () => {
     expect(shown()).toBe(GRAVATAR)
   })
 
-  it('shows a picture it is handed ahead of the lookup', () => {
+  it("tries a signed-in account's picture before one it is handed, and that before Gravatar", () => {
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
     render('https://idp.example/given.jpg')
+    expect(shown()).toBe(PICTURE)
+    fail(PICTURE)
     expect(shown()).toBe('https://idp.example/given.jpg')
+    fail('https://idp.example/given.jpg')
+    expect(shown()).toBe(GRAVATAR)
+  })
+
+  it('shows a new picture as soon as the account registry has it', () => {
+    vi.mocked(oidcPicture).mockReturnValue(undefined)
+    render()
+    expect(shown()).toBe(GRAVATAR)
+    vi.mocked(oidcPicture).mockReturnValue(PICTURE)
+    act(() => listeners.forEach(listener => listener()))
+    expect(shown()).toBe(PICTURE)
   })
 
   it('ignores a handed picture that is not https', () => {

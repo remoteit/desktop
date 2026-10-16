@@ -12,10 +12,9 @@ import { FormDisplay } from '../components/FormDisplay'
 import { Timestamp } from '../components/Timestamp'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
-import { Avatar } from '../components/Avatar'
+import { ProfilePicture } from '../components/ProfilePicture'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
-import { Link } from '../components/Link'
 import { spacing } from '../styling'
 
 export const ProfilePage: React.FC = () => {
@@ -50,15 +49,7 @@ export const ProfilePage: React.FC = () => {
           '& .MuiAvatar-root': { marginRight: `${spacing.xl}px` },
         }}
       >
-        <Avatar email={user.email} size={125} />
-        <Typography variant="caption">
-          {t(
-            'settings.pictureSource',
-            'Your profile picture comes from the account you sign in with, such as Google, or else from the free service Gravatar.'
-          )}
-          <br /> {t('settings.gravatarEdit', 'To edit or add a profile image please visit')}{' '}
-          <Link href="https://gravatar.com">gravatar.com.</Link>
-        </Typography>
+        <ProfilePicture email={user.email} />
       </Gutters>
       <List>
         <FormDisplay icon={<Icon name="at" />} label={t('settings.email', 'Email')} displayValue={user.email} displayOnly />

@@ -1,10 +1,10 @@
 import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { createColor } from '../../helpers/uiHelper'
 import { httpsOnly } from '../../helpers/utilHelper'
 import { labelLookup } from '../../models/labels'
-import { oidcPicture } from '../../services/oidc'
+import { oidcPicture, oidcSubscribe } from '../../services/oidc'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
 import { spacing } from '../../styling'
 
@@ -55,12 +55,12 @@ export const Avatar: React.FC<Props> = React.memo(
     picture,
     children,
   }) => {
+    const signedIn = useSyncExternalStore(oidcSubscribe, () => oidcPicture(email))
     const urls = useMemo(() => {
-      const signIn = httpsOnly(picture) ?? oidcPicture(email)
       const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
       const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=force-fail`
-      return signIn ? [signIn, gravatar] : [gravatar]
-    }, [email, size, picture])
+      return [...new Set([signedIn, httpsOnly(picture), gravatar])].filter((url): url is string => !!url)
+    }, [email, size, picture, signedIn])
     const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])
     fallback = (fallback || email || '?').substring(0, 1).toUpperCase()

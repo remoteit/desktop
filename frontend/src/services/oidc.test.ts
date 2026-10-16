@@ -13,6 +13,8 @@ import {
   oidcSignedIn,
   oidcAccounts,
   oidcPicture,
+  oidcSetPicture,
+  oidcSubscribe,
   oidcStart,
   oidcReopen,
   oidcCompleteFromUrl,
@@ -121,6 +123,27 @@ describe('oidcPicture', () => {
     expect(oidcPicture('bob@x.test')).toBeUndefined()
     expect(oidcPicture('eve@x.test')).toBeUndefined()
     expect(oidcPicture(undefined)).toBeUndefined()
+  })
+
+  it("sets the signed-in account's picture, tells subscribers, and is read back at once", () => {
+    window.localStorage.setItem(
+      'oidc.tokens',
+      JSON.stringify({ refresh_token: 'r1', id_token: idToken('a', OAUTH_ISSUER) })
+    )
+    expect(oidcPicture('ada@x.test')).toBe('https://idp.example/ada.jpg')
+    const heard = vi.fn()
+    const unsubscribe = oidcSubscribe(heard)
+
+    oidcSetPicture('https://login.example/avatar/a?v=2')
+    expect(heard).toHaveBeenCalledTimes(1)
+    expect(oidcPicture('ada@x.test')).toBe('https://login.example/avatar/a?v=2')
+
+    oidcSetPicture(null)
+    expect(oidcPicture('ada@x.test')).toBeUndefined()
+
+    unsubscribe()
+    oidcSetPicture('https://login.example/avatar/a?v=3')
+    expect(heard).toHaveBeenCalledTimes(2)
   })
 })
 
