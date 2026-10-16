@@ -4,7 +4,14 @@ import { createRoot, Root } from 'react-dom/client'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-vi.mock('../../services/oidc', () => ({ oidcPicture: vi.fn() }))
+const { listeners } = vi.hoisted(() => ({ listeners: new Set<() => void>() }))
+vi.mock('../../services/oidc', () => ({
+  oidcPicture: vi.fn(),
+  oidcSubscribe: (listener: () => void) => {
+    listeners.add(listener)
+    return () => listeners.delete(listener)
+  },
+}))
 vi.mock('../../helpers/uiHelper', () => ({ createColor: () => 1 }))
 vi.mock('../../models/labels', () => ({ labelLookup: { 1: { color: '#888' } } }))
 
@@ -25,6 +32,7 @@ class FakeImage {
 
 const EMAIL = 'ada@x.test'
 const PICTURE = 'https://idp.example/ada.jpg'
+const GIVEN = 'https://idp.example/given.jpg'
 const GRAVATAR = `https://www.gravatar.com/avatar/${createHash('sha256').update(EMAIL).digest('hex')}?s=72&d=404`
 const theme = createTheme({ palette: { alwaysWhite: { main: '#fff' }, white: { main: '#fff' } } as any })
 
@@ -61,7 +69,7 @@ describe('Avatar', () => {
     vi.unstubAllGlobals()
   })
 
-  it('shows the initial until the Permitteer picture loads, then the picture', () => {
+  it('shows the initial until the signed-in picture loads, then the picture', () => {
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
     render()
     expect(shown()).toBe('A')
@@ -69,11 +77,12 @@ describe('Avatar', () => {
     expect(shown()).toBe(PICTURE)
   })
 
-  it('falls from the Permitteer picture to Gravatar, and to the initial when both fail', () => {
+  it('tries the signed-in picture, then one it is handed, then Gravatar, then keeps the initial', () => {
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
-    render()
+    render(GIVEN)
     fail(PICTURE)
-    expect(asked()).toContain(GRAVATAR)
+    fail(GIVEN)
+    expect(asked()).toEqual([PICTURE, GIVEN, GRAVATAR])
     fail(GRAVATAR)
     expect(shown()).toBe('A')
   })
@@ -91,10 +100,15 @@ describe('Avatar', () => {
     expect(asked()).toEqual([GRAVATAR])
   })
 
-  it('tries a picture it is handed ahead of the lookup', () => {
+  it('shows a new picture once the account registry has it and it loads', () => {
+    vi.mocked(oidcPicture).mockReturnValue(undefined)
+    render()
+    load(GRAVATAR)
+    expect(shown()).toBe(GRAVATAR)
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
-    render('https://idp.example/given.jpg')
-    expect(asked()[0]).toBe('https://idp.example/given.jpg')
+    act(() => listeners.forEach(listener => listener()))
+    load(PICTURE)
+    expect(shown()).toBe(PICTURE)
   })
 
   it('ignores a handed picture that is not https', () => {

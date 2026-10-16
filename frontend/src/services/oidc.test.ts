@@ -13,6 +13,10 @@ import {
   oidcSignedIn,
   oidcAccounts,
   oidcPicture,
+  oidcSetPicture,
+  oidcSubscribe,
+  oidcAccessToken,
+  invalidateOidcToken,
   oidcStart,
   oidcReopen,
   oidcCompleteFromUrl,
@@ -121,6 +125,51 @@ describe('oidcPicture', () => {
     expect(oidcPicture('bob@x.test')).toBeUndefined()
     expect(oidcPicture('eve@x.test')).toBeUndefined()
     expect(oidcPicture(undefined)).toBeUndefined()
+  })
+
+  it("sets the signed-in account's picture, tells subscribers, and is read back at once", () => {
+    window.localStorage.setItem(
+      'oidc.tokens',
+      JSON.stringify({ refresh_token: 'r1', id_token: idToken('a', OAUTH_ISSUER) })
+    )
+    expect(oidcPicture('ada@x.test')).toBe('https://idp.example/ada.jpg')
+    const heard = vi.fn()
+    const unsubscribe = oidcSubscribe(heard)
+
+    oidcSetPicture('https://login.example/avatar/a?v=2')
+    expect(heard).toHaveBeenCalledTimes(1)
+    expect(oidcPicture('ada@x.test')).toBe('https://login.example/avatar/a?v=2')
+
+    oidcSetPicture(null)
+    expect(oidcPicture('ada@x.test')).toBeUndefined()
+
+    unsubscribe()
+    oidcSetPicture('https://login.example/avatar/a?v=3')
+    expect(heard).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('a refresh that brings no new id_token', () => {
+  afterEach(() => vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline'))))
+
+  it("keeps the picture set since sign-in rather than the sign-in id_token's", async () => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    const tokens = { refresh_token: 'r1', id_token: idToken('a', OAUTH_ISSUER) }
+    window.localStorage.setItem('oidc.tokens', JSON.stringify(tokens))
+    window.localStorage.setItem('oidc.accounts', JSON.stringify({ a: { ...tokens, email: 'a@x.test' } }))
+    oidcSetPicture('https://login.example/avatar/a?v=2')
+    stubDiscovery(
+      { authorization_endpoint: 'https://login.test/authorize', token_endpoint: 'https://login.test/token' },
+      (_, init) =>
+        String(init?.body ?? '').includes('grant_type=refresh_token')
+          ? Promise.resolve(new Response(JSON.stringify({ refresh_token: 'r2', access_token: 'at', expires_in: 300 })))
+          : Promise.reject(new Error('offline'))
+    )
+    invalidateOidcToken()
+
+    expect(await oidcAccessToken()).toBe('at')
+    expect(oidcPicture('a@x.test')).toBe('https://login.example/avatar/a?v=2')
   })
 })
 
