@@ -220,12 +220,9 @@ export function SignInApp() {
       <Logo width={140} marginBottom={1} />
       {signingIn ? (
         <>
-          <Box display="flex" alignItems="center" gap={1.5}>
-            <CircularProgress size={16} />
-            <Typography variant="body2" color="textSecondary">
-              {t('signIn.continueInBrowser', 'Continue in your browser')}
-            </Typography>
-          </Box>
+          <Typography variant="body2" color="textSecondary">
+            {t('signIn.continueInBrowser', 'Continue in your browser')}
+          </Typography>
           <Box display="grid" gridAutoFlow="column" gridAutoColumns="1fr" gap={1}>
             <Button onClick={() => auth.set({ signingIn: false })}>{t('signIn.cancel', 'Cancel')}</Button>
             <Button variant="contained" onClick={() => oidcReopen()}>
