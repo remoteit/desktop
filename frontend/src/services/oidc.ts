@@ -946,14 +946,21 @@ function persist(tokens: Stored) {
 
 type RegistryEntry = Stored & { email?: string; name?: string; picture?: string; declaration?: string }
 
-const readRegistry = (): { [sub: string]: RegistryEntry } => {
+const readRaw = (): string | null => {
   try {
-    const raw = tokenStore().getItem(ACCOUNTS_KEY)
+    return tokenStore().getItem(ACCOUNTS_KEY)
+  } catch {
+    return null
+  }
+}
+const parseRegistry = (raw: string | null): { [sub: string]: RegistryEntry } => {
+  try {
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
   }
 }
+const readRegistry = () => parseRegistry(readRaw())
 const registryListeners = new Set<() => void>()
 window.addEventListener('storage', event => {
   if (event.key === ACCOUNTS_KEY) registryListeners.forEach(listener => listener())
@@ -985,8 +992,9 @@ function fileAccount(tokens: Stored) {
     ...tokens,
     email: claims?.email,
     name: claims?.name,
-    // Belt on the AS's own https-only guard — this string lands in an <img src>.
-    picture: httpsOnly(claims?.picture),
+    // Belt on the AS's own https-only guard — this string lands in an <img src>. A refresh that
+    // brings no new id_token keeps the picture set since (oidcSetPicture), not the sign-in's.
+    picture: tokens.id_token === reg[sub]?.id_token ? reg[sub]?.picture : httpsOnly(claims?.picture),
     declaration: reg[sub]?.declaration,
   }
   writeRegistry(reg)
@@ -1030,20 +1038,16 @@ export function oidcAccounts(): OidcAccount[] {
     .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
 }
 
-/** The IdP picture Permitteer gave an account signed in on this browser, by email. */
 // Every avatar asks on every render, so the registry is parsed once per change, not once per ask.
 let pictures: { raw: string | null; byEmail: Map<string, string> } | undefined
+
+/** The picture Permitteer holds for an account signed in on this browser, by email. */
 export function oidcPicture(email?: string): string | undefined {
   if (!email) return undefined
-  let raw: string | null = null
-  try {
-    raw = tokenStore().getItem(ACCOUNTS_KEY)
-  } catch {
-    /* storage blocked — no pictures */
-  }
+  const raw = readRaw()
   if (!pictures || pictures.raw !== raw) {
     const byEmail = new Map<string, string>()
-    for (const e of Object.values(readRegistry()))
+    for (const e of Object.values(parseRegistry(raw)))
       if (e.picture && e.email) byEmail.set(e.email.toLowerCase(), e.picture)
     pictures = { raw, byEmail }
   }

@@ -1,10 +1,10 @@
 import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
-import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { createColor } from '../../helpers/uiHelper'
 import { httpsOnly } from '../../helpers/utilHelper'
 import { labelLookup } from '../../models/labels'
-import { oidcPicture, oidcSubscribe } from '../../services/oidc'
+import { useAccountPicture } from '../../hooks/useAccountPicture'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
 import { spacing } from '../../styling'
 
@@ -55,7 +55,7 @@ export const Avatar: React.FC<Props> = React.memo(
     picture,
     children,
   }) => {
-    const signedIn = useSyncExternalStore(oidcSubscribe, () => oidcPicture(email))
+    const signedIn = useAccountPicture(email)
     const urls = useMemo(() => {
       const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
       const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=force-fail`

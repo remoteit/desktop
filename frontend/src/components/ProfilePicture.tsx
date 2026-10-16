@@ -1,10 +1,11 @@
-import React, { useRef, useState, useSyncExternalStore } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
 import { Box, Button, Typography } from '@mui/material'
 import { Dispatch } from '../store'
 import { Avatar } from './Avatar'
-import { OidcResourceResult, oidcActor, oidcPicture, oidcSetPicture, oidcSubscribe } from '../services/oidc'
+import { OidcResourceResult, oidcActor, oidcSetPicture } from '../services/oidc'
+import { useAccountPicture } from '../hooks/useAccountPicture'
 import { removeAccountPicture, setAccountPicture } from '../services/permitteerAccount'
 
 const SIDE = 256
@@ -35,7 +36,7 @@ export const ProfilePicture: React.FC<{ email: string }> = ({ email }) => {
   const dispatch = useDispatch<Dispatch>()
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
-  const picture = useSyncExternalStore(oidcSubscribe, () => oidcPicture(email))
+  const picture = useAccountPicture(email)
   const readOnly = !!oidcActor()
 
   const change = async (request: () => Promise<OidcResourceResult<{ picture: string | null }>>) => {
