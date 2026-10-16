@@ -9,6 +9,8 @@ import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { graphQLJobs } from '../services/graphQLRequest'
 import { getJobLogs, triggerBrowserDownload } from '../services/jobLogs'
+import { fetchJobTargets, parseJobDevice } from '../services/jobDevices'
+import { jobRunsComplete } from '../helpers/jobHelper'
 import { RootModel } from '.'
 import i18n from '../i18n'
 
@@ -31,6 +33,9 @@ const defaultState: ScriptsState = {
   total: 0,
   all: {},
 }
+
+const REFRESH_MS = 2000
+const refreshing: ILookup<ReturnType<typeof setTimeout>> = {}
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
@@ -103,18 +108,27 @@ export default createModel<RootModel>()({
     },
     async parse(result: AxiosResponse<any>): Promise<IJob[]> {
       const data = result.data?.data?.login?.account
-      return (
-        data?.jobs.items.map(j => ({
-          ...j,
-          jobDevices: j.jobDevices.map(jd => ({
-            ...jd,
-            attributes: jd.attributes.map(a => ({
-              key: a.key.replace('$remoteit.', ''),
-              value: a.value,
-            })),
-          })),
-        })) || []
-      )
+      return data?.jobs.items.map(j => ({ ...j, jobDevices: (j.jobDevices || []).map(parseJobDevice) })) || []
+    },
+    // A job read again soon, quietly, at most once in REFRESH_MS: its runs' events (one a run) come by the thousand from
+    // a large job, and each changes only its counts.
+    async refreshSoon({ accountId, jobId }: { accountId: string; jobId: string }) {
+      if (refreshing[jobId]) return
+      refreshing[jobId] = setTimeout(async () => {
+        delete refreshing[jobId]
+        const result = await graphQLJobs({ accountId, ids: [jobId] })
+        if (result !== 'ERROR') dispatch.jobs.setJobs({ accountId, jobs: await dispatch.jobs.parse(result) })
+      }, REFRESH_MS)
+    },
+    // Every device a job ran on, for a new run made from it: those it holds where they are all of them, else read.
+    // None where they cannot be read: a new run of only the first few would be a different run.
+    async fetchTargets(job: IJob, state): Promise<IJobDevice['device'][] | undefined> {
+      if (jobRunsComplete(job)) return job.jobDevices.map(jd => jd.device)
+      const targets = await fetchJobTargets(selectActiveAccountId(state), job.id)
+      if (targets !== 'ERROR') return targets
+      dispatch.ui.set({
+        errorMessage: i18n.t('notices:job.loadTargetsError', { defaultValue: 'Couldn’t load the devices of this run' }),
+      })
     },
     async saveRun(form: IFileForm): Promise<string> {
       console.log('SAVE AND RUN JOB', form)

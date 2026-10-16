@@ -49,7 +49,7 @@ describe('a job\'s runs on the job runner', () => {
       R1: { status: 'RUNNING', attributes: [{ key: 'version', value: '2' }], run: { phase: 'running', ranAs: 'r3-evan', progressPercent: 40, artifacts: [] } },
       R2: { status: 'SUCCESS', attributes: [], run: null },
     })
-    expect(request.mock.calls[0][0].data.variables).toEqual({ accountId: 'A', ids: ['J'] })
+    expect(request.mock.calls[0][0].data.variables).toEqual({ accountId: 'A', ids: ['J'], size: 200 })
   })
 
   it('an API without the fields is UNSUPPORTED, quietly (no error banner)', async () => {

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import i18n from '../i18n'
 import { toLookup } from '../helpers/utilHelper'
-import { jobName } from '../helpers/jobHelper'
+import { jobName, jobRunCount, jobRunTotal } from '../helpers/jobHelper'
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import { ReactiveTagNames } from './ReactiveTagNames'
 import { JobStatusIcon } from './JobStatusIcon'
@@ -12,7 +12,8 @@ import { Icon } from './Icon'
 
 const MAX_ROWS = 2
 
-const DeviceNameChips: React.FC<{ names: string[] }> = ({ names }) => {
+// The names of a job's first runs (the jobs list reads JOB_PREVIEW_RUNS), and how many it has in all (`total`).
+const DeviceNameChips: React.FC<{ names: string[]; total: number }> = ({ names, total }) => {
   const measureRef = useRef<HTMLDivElement>(null)
   const [visibleCount, setVisibleCount] = useState(names.length)
 
@@ -58,7 +59,7 @@ const DeviceNameChips: React.FC<{ names: string[] }> = ({ names }) => {
     return () => observer.disconnect()
   }, [names, measure])
 
-  const remaining = names.length - visibleCount
+  const remaining = total - visibleCount
 
   return (
     <Box sx={{ width: '100%', whiteSpace: 'normal', overflow: 'visible' }}>
@@ -136,7 +137,7 @@ export const jobAttributes: JobAttribute[] = [
     defaultWidth: 60,
     value: ({ job }) => (
       <Typography variant="body2" color="gray.main">
-        {job?.jobDevices.length || '-'}
+        {jobRunTotal(job) || '-'}
       </Typography>
     ),
   }),
@@ -148,7 +149,7 @@ export const jobAttributes: JobAttribute[] = [
     value: ({ job }) => {
       const names = job?.jobDevices.map(jd => jd.device.name) || []
       if (!names.length) return <Typography variant="body2" color="gray.main">-</Typography>
-      return <DeviceNameChips names={names} />
+      return <DeviceNameChips names={names} total={Math.max(jobRunTotal(job), names.length)} />
     },
   }),
   new JobAttribute({
@@ -158,7 +159,7 @@ export const jobAttributes: JobAttribute[] = [
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="info.main">
-        {job?.jobDevices.filter(d => d.status === 'WAITING').length || '-'}
+        {jobRunCount(job, 'WAITING') || '-'}
       </Typography>
     ),
   }),
@@ -169,7 +170,7 @@ export const jobAttributes: JobAttribute[] = [
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="primary">
-        {job?.jobDevices.filter(d => d.status === 'RUNNING').length || '-'}
+        {jobRunCount(job, 'RUNNING') || '-'}
       </Typography>
     ),
   }),
@@ -180,7 +181,7 @@ export const jobAttributes: JobAttribute[] = [
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="primary">
-        {job?.jobDevices.filter(d => d.status === 'SUCCESS').length || '-'}
+        {jobRunCount(job, 'SUCCESS') || '-'}
       </Typography>
     ),
   }),
@@ -191,7 +192,7 @@ export const jobAttributes: JobAttribute[] = [
     defaultWidth: 50,
     value: ({ job }) => (
       <Typography variant="body2" color="error">
-        {job?.jobDevices.filter(d => d.status === 'FAILED' || d.status === 'CANCELLED').length || '-'}
+        {jobRunCount(job, 'FAILED', 'CANCELLED') || '-'}
       </Typography>
     ),
   }),

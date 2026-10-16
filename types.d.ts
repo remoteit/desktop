@@ -709,8 +709,17 @@ declare global {
     // what it installs.
     name?: string
     upgrade?: { package: string; version: string }
+    // The first of its runs, in the order they were made (the jobs list reads JOB_PREVIEW_RUNS of them, for their names):
+    // every one only where runCounts counts no more. runCounts counts them all, unread (jobRunTotal, jobRunCount).
     jobDevices: IJobDevice[]
+    runCounts?: IJobRunCount[]
     arguments: IJobArgument[]
+  }
+
+  // graphql JobRunCount: a job's runs counted by status
+  type IJobRunCount = {
+    status: IJobStatus
+    count: number
   }
 
   type IJobArgument = {

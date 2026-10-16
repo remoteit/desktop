@@ -8,6 +8,7 @@ type Props = {
   scriptArguments: IFileArgument[]
   argumentValues?: IArgumentValue[]
   jobDevices?: IJobDevice[]
+  deviceCount?: number // every run's, where jobDevices holds only the first of them
   tag?: ITagFilter
   files?: IFile[]
   maxVisibleDevices?: number
@@ -21,16 +22,17 @@ const findFileByIdOrVersionId = (files: IFile[], id: string): IFile | undefined 
   return files.find(f => f.versions?.some(v => v.id === id))
 }
 
-const DeviceChips: React.FC<{ names: string[]; maxVisibleDevices: number; collapsedVisibleDevices: number }> = ({
-  names,
-  maxVisibleDevices,
-  collapsedVisibleDevices,
-}) => {
+const DeviceChips: React.FC<{
+  names: string[]
+  count: number
+  maxVisibleDevices: number
+  collapsedVisibleDevices: number
+}> = ({ names, count, maxVisibleDevices, collapsedVisibleDevices }) => {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
-  if (!names.length) return <Chip label={t('scriptRunSummary.noDevices', 'No devices')} size="small" />
+  if (!count) return <Chip label={t('scriptRunSummary.noDevices', 'No devices')} size="small" />
   const displayCount = expanded ? maxVisibleDevices : collapsedVisibleDevices
-  const hiddenCount = Math.max(names.length - displayCount, 0)
+  const hiddenCount = Math.max(count - displayCount, 0)
 
   return (
     <Box>
@@ -39,7 +41,7 @@ const DeviceChips: React.FC<{ names: string[]; maxVisibleDevices: number; collap
           <Chip key={`${name}-${index}`} label={name} size="small" variant="outlined" />
         ))}
       </Stack>
-      {names.length > collapsedVisibleDevices && (
+      {count > collapsedVisibleDevices && (
         <Button
           size="small"
           variant="text"
@@ -111,6 +113,7 @@ export const ScriptRunSummary: React.FC<Props> = ({
   scriptArguments,
   argumentValues = [],
   jobDevices = [],
+  deviceCount,
   tag,
   files = [],
   maxVisibleDevices = 200,
@@ -161,6 +164,7 @@ export const ScriptRunSummary: React.FC<Props> = ({
       value: () => (
         <DeviceChips
           names={deviceNames}
+          count={Math.max(deviceCount ?? 0, deviceNames.length)}
           maxVisibleDevices={maxVisibleDevices}
           collapsedVisibleDevices={collapsedVisibleDevices}
         />

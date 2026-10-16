@@ -17,6 +17,7 @@ import {
   UNSUPPORTED,
 } from '../services/jobRuns'
 import { watchJobRun } from '../services/jobOutputSocket'
+import { jobChangeKey } from '../hooks/useJobDevices'
 
 /* A job's runs on the job runner (device-package docs/scripting-plan.md, "As built (phase 4)"): each run's phase, its
    progress and why it failed, read on their own beside the job; and for the run shown, the account it ran as, its exit,
@@ -25,20 +26,27 @@ import { watchJobRun } from '../services/jobOutputSocket'
 
 const ACTIVE_JOB: IJobStatus[] = ['WAITING', 'RUNNING']
 
-// The job's runs, read again whenever the job changes — its status here, or its JOB/DEVICE_JOB events while a run is
-// watched (`tick`) — at most once a second.
-export function useJobRuns(accountId: string, job: IJob | undefined, tick = 0): ILookup<JobRunDetails> | undefined {
+// The job's runs — the first `size`, those its page lists, and the run shown — read again whenever the job changes (its
+// status or counts here, or its JOB/DEVICE_JOB events while a run is watched: `tick`) or more are listed, at most once a
+// second.
+export function useJobRuns(
+  accountId: string,
+  job: IJob | undefined,
+  tick = 0,
+  size?: number,
+  jobDeviceId?: string
+): ILookup<JobRunDetails> | undefined {
   const [runs, setRuns] = useState<ILookup<JobRunDetails>>()
   const unsupported = useRef(false)
   const last = useRef(0)
   const timer = useRef<ReturnType<typeof setTimeout>>()
-  const key = job ? `${job.id}:${job.status}:${job.updated}:${job.jobDevices.map(jd => jd.status).join(',')}:${tick}` : ''
+  const key = job ? `${jobChangeKey(job)}:${tick}:${size}:${jobDeviceId}` : ''
 
   useEffect(() => {
     if (!job || unsupported.current) return
     const load = async () => {
       last.current = Date.now()
-      const result = await fetchJobRuns(accountId, job.id)
+      const result = await fetchJobRuns(accountId, job.id, size, jobDeviceId)
       if (result === UNSUPPORTED) unsupported.current = true
       else if (result !== 'ERROR') setRuns(result)
     }

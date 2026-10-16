@@ -58,6 +58,7 @@
   "job": {
     "deleteError": "Error al eliminar el trabajo",
     "loadLogsError": "No se pudieron cargar los registros: {{message}}",
+    "loadTargetsError": "No se pudieron cargar los dispositivos de esta ejecución",
     "noDeviceLogs": "Aún no hay registros disponibles para este dispositivo.",
     "noLogs": "Aún no hay registros disponibles.",
     "noRunLogs": "Aún no hay registros disponibles para esta ejecución."

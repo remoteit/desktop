@@ -7,6 +7,7 @@ import { selectScript } from '../selectors/scripting'
 import { getDevices, getAllDevices } from '../selectors/devices'
 import { selectRole } from '../selectors/organizations'
 import { initialForm } from '../models/files'
+import { jobRunsComplete } from '../helpers/jobHelper'
 import { ScriptRunForm } from '../components/ScriptRunForm'
 import { Container } from '../components/Container'
 
@@ -30,6 +31,7 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
 
   const [running, setRunning] = useState(false)
   const [unauthorized, setUnauthorized] = useState<IDevice[]>()
+  const [jobTargets, setJobTargets] = useState<IJobDevice['device'][]>()
   const [runForm, setRunForm] = useState<IFileForm>({
     ...role,
     ...initialForm,
@@ -61,6 +63,7 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
     hasMountedJobEffectRef.current = true
     prevJobIDRef.current = jobID
     hasConsumedScriptForm.current = false
+    setJobTargets(undefined)
   }, [jobID])
 
   // Save working run form to per-script storage on unmount
@@ -84,7 +87,6 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
   useEffect(() => {
     if (isNew || !script) return
 
-    const defaultDeviceIds = script?.job?.jobDevices.map(d => d.device.id) || []
     const tagValues = script?.job?.tag?.values || []
 
     if (!jobID && scriptFormFromState && scriptFormFromState.fileId === script.id && !hasConsumedScriptForm.current) {
@@ -93,18 +95,26 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
       dispatch.ui.set({ scriptForm: undefined })
     } else if (jobID && !hasConsumedScriptForm.current) {
       hasConsumedScriptForm.current = true
-      const access = tagValues.length ? 'TAG' : defaultDeviceIds.length ? 'CUSTOM' : selectedIds.length ? 'SELECTED' : 'NONE'
-      const argumentValues: IArgumentValue[] = script.job?.arguments?.map(arg => ({ name: arg.name, value: arg.value || '' })) || []
-      setRunForm({
-        ...role,
-        ...initialForm,
-        fileId: script.id,
-        jobId: script.job?.status === 'READY' ? script.job?.id : undefined,
-        deviceIds: defaultDeviceIds,
-        tag: script.job?.tag ?? initialForm.tag,
-        access,
-        argumentValues,
-      })
+      const job = script.job
+      const prefill = (targets: IJobDevice['device'][]) => {
+        const defaultDeviceIds = targets.map(d => d.id)
+        const access = tagValues.length ? 'TAG' : defaultDeviceIds.length ? 'CUSTOM' : selectedIds.length ? 'SELECTED' : 'NONE'
+        const argumentValues: IArgumentValue[] = job?.arguments?.map(arg => ({ name: arg.name, value: arg.value || '' })) || []
+        setJobTargets(targets)
+        setRunForm({
+          ...role,
+          ...initialForm,
+          fileId: script.id,
+          jobId: job?.status === 'READY' ? job?.id : undefined,
+          deviceIds: defaultDeviceIds,
+          tag: job?.tag ?? initialForm.tag,
+          access,
+          argumentValues,
+        })
+      }
+      // The job holds only its first runs where it has more: every one is read for the form.
+      if (!job || jobRunsComplete(job)) prefill(job?.jobDevices.map(jd => jd.device) || [])
+      else dispatch.jobs.fetchTargets(job).then(targets => targets && jobIDRef.current === jobID && prefill(targets))
     } else if (!jobID && !hasConsumedScriptForm.current && scriptRunForms[script.id]) {
       hasConsumedScriptForm.current = true
       setRunForm({ ...role, ...initialForm, ...scriptRunForms[script.id] })
@@ -151,9 +161,9 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
   // Build a lookup of job device names
   const jobDeviceNames: Record<string, string> = useMemo(() => {
     const lookup: Record<string, string> = {}
-    script?.job?.jobDevices.forEach(jd => { lookup[jd.device.id] = jd.device.name })
+    ;(jobTargets || script?.job?.jobDevices.map(jd => jd.device))?.forEach(d => { lookup[d.id] = d.name })
     return lookup
-  }, [script?.job?.jobDevices])
+  }, [jobTargets, script?.job?.jobDevices])
 
   // Resolve device names for the current run form, ordered by the device list so the run
   // follows whatever sort the user has chosen. Derived rather than stored, so changing the

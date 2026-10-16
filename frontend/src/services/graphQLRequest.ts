@@ -1,4 +1,9 @@
-import { graphQLBasicRequest, graphQLPartialRequest } from './graphQL'
+import { AxiosResponse } from 'axios'
+import { post } from './post'
+import { graphQLBasicRequest, graphQLGetErrors, graphQLPartialRequest } from './graphQL'
+import { withoutDeviceSessions } from './graphQLDaemon'
+import { jobRunsPaged, setJobRunsPaged } from './jobDevices'
+import { JOB_PREVIEW_RUNS } from '../helpers/jobHelper'
 
 export async function graphQLLogin() {
   return await graphQLBasicRequest(
@@ -54,10 +59,63 @@ export async function graphQLJobs(args: {
   from?: number
   size?: number
   sort?: string
-}) {
+}): Promise<AxiosResponse | 'ERROR'> {
   const { accountId, fileIds, ids, from, size, sort = '-updated' } = args
-  return await graphQLBasicRequest(
-    ` query Jobs($accountId: String, $ids: [ID!], $fileIds: [ID!], $from: Int, $size: Int, $sort: String) {
+  const paged = jobRunsPaged()
+  const query = `${jobsQueryHead(paged)}${paged ? JOB_RUNS_PREVIEW : JOB_RUNS_ALL}
+              }
+            }
+          }
+        }
+      }`
+  const variables = { accountId, fileIds, ids, from, size, sort, ...(paged ? { preview: JOB_PREVIEW_RUNS } : {}) }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return response
+  // An API without runCounts reads every run with its job, as it always has.
+  if (paged && withoutDeviceSessions(response.data?.errors, 'runCounts')) {
+    setJobRunsPaged(false)
+    return graphQLJobs(args)
+  }
+  return graphQLGetErrors(response, false, { query, variables }) ? 'ERROR' : response
+}
+
+// A job's runs counted, and only the first few read, for their names: a job may have 20,000 runs, which every read of
+// the jobs list (each poll, each run's event) would otherwise read whole. The rest are read a page at a time where they
+// are listed (useJobDevices).
+const JOB_RUNS_PREVIEW = `
+                runCounts {
+                  status
+                  count
+                }
+                jobDevices(from: 0, size: $preview) {
+                  id
+                  status
+                  created
+                  updated
+                  device {
+                    id
+                    name
+                  }
+                }`
+
+const JOB_RUNS_ALL = `
+                jobDevices {
+                  id
+                  status
+                  created
+                  updated
+                  attributes {
+                    key
+                    value
+                  }
+                  device {
+                    id
+                    name
+                  }
+                }`
+
+const jobsQueryHead = (paged: boolean, preview = paged ? ', $preview: Int' : '') => `
+      query Jobs($accountId: String, $ids: [ID!], $fileIds: [ID!], $from: Int, $size: Int, $sort: String${preview}) {
         login {
           account(id: $accountId) {
             jobs(ids: $ids, fileIds: $fileIds, from: $from, size: $size, sort: $sort) {
@@ -99,29 +157,7 @@ export async function graphQLJobs(args: {
                   argumentType
                   value
                   created
-                }
-                jobDevices {
-                  id
-                  status
-                  created
-                  updated
-                  attributes {
-                    key
-                    value
-                  }
-                  device {
-                    id
-                    name
-                  }
-                }
-              }
-            }
-          }
-        }
-      }`,
-    { accountId, fileIds, ids, from, size, sort }
-  )
-}
+                }`
 
 export async function graphQLUser(accountId: string) {
   return await graphQLBasicRequest(

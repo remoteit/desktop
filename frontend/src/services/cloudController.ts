@@ -554,6 +554,9 @@ class CloudController {
           ],
         })
 
+        // A run's event changes its job's counts, which only the job read again says (its runs are not all held).
+        if (jobDevice) dispatch.jobs.refreshSoon({ accountId: event.job.owner.id, jobId: event.job.id })
+
         if (event.type === 'JOB' && event.job?.status === 'SUCCESS') {
           dispatch.jobs.fetchSingle({ accountId: event.job.owner.id, jobId: event.job.id })
         }

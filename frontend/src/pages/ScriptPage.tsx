@@ -16,6 +16,7 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { jobRunTotal } from '../helpers/jobHelper'
 
 const MAX_RUNS = 12
 
@@ -46,9 +47,9 @@ export const ScriptPage: React.FC = () => {
   const args = file.versions?.[0]?.arguments
 
   const renderJobRow = (job: IJob) => {
-    const deviceCount = job.jobDevices.length
+    const deviceCount = jobRunTotal(job)
     const deviceLabel =
-      deviceCount === 1
+      deviceCount === 1 && job.jobDevices[0]
         ? job.jobDevices[0].device.name
         : deviceCount === 0
         ? t('scriptPage.noDevices', 'No devices')

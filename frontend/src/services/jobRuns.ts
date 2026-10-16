@@ -1,6 +1,7 @@
 import { post } from './post'
 import { graphQLGetErrors } from './graphQL'
 import { withoutDeviceSessions, UNSUPPORTED } from './graphQLDaemon'
+import { JOB_DEVICE_PAGE, jobRunsPaged } from './jobDevices'
 
 /* Runs on the job runner (graphql JobDevice.run; device-package docs/scripting-plan.md, "As built (phase 4)"): a run's
    phase, why it failed, the account it ran as, its progress, its artifacts and its output. Not in the jobs list's own
@@ -48,19 +49,27 @@ async function read(query: string, variables: ILookup<any>): Promise<any | 'ERRO
   return response.data?.data?.login?.account?.jobs?.items?.[0] ?? null
 }
 
-// Each of a job's runs, by its job device id.
+// A job's runs, by their job device id: the first `size` (those its page lists; on an API without paging, every one),
+// and the run shown where it is not among them.
 export async function fetchJobRuns(
   accountId: string,
-  jobId: string
+  jobId: string,
+  size: number = JOB_DEVICE_PAGE,
+  jobDeviceId?: string
 ): Promise<ILookup<JobRunDetails> | 'ERROR' | typeof UNSUPPORTED> {
+  const paged = jobRunsPaged()
+  const fields = `id status attributes { key value } run { ${RUN_FIELDS} }`
+  const params = (paged ? ', $size: Int' : '') + (jobDeviceId ? ', $jobDeviceId: ID!' : '')
+  const listed = `jobDevices${paged ? '(from: 0, size: $size)' : ''} { ${fields} }`
+  const shown = jobDeviceId ? `jobDevice(id: $jobDeviceId) { ${fields} }` : ''
   const job = await read(
-    `query JobRuns($accountId: String, $ids: [ID!]) { login { account(id: $accountId) { jobs(ids: $ids) { items { id
-      jobDevices { id status attributes { key value } run { ${RUN_FIELDS} } } } } } } }`,
-    { accountId, ids: [jobId] }
+    `query JobRuns($accountId: String, $ids: [ID!]${params}) {
+      login { account(id: $accountId) { jobs(ids: $ids) { items { id ${listed} ${shown} } } } } }`,
+    { accountId, ids: [jobId], ...(paged ? { size } : {}), ...(jobDeviceId ? { jobDeviceId } : {}) }
   )
   if (job === 'ERROR' || job === UNSUPPORTED) return job
   const out: ILookup<JobRunDetails> = {}
-  for (const jd of job?.jobDevices || [])
+  for (const jd of [...(job?.jobDevices || []), ...(job?.jobDevice ? [job.jobDevice] : [])])
     out[jd.id] = {
       run: jd.run ? { ...jd.run, artifacts: jd.run.artifacts || [] } : null,
       status: jd.status,

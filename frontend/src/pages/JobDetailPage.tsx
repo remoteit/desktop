@@ -10,7 +10,10 @@ import { initialForm } from '../models/files'
 import { ScriptRunSummary } from '../components/ScriptRunSummary'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { JobAttribute } from '../components/JobAttributes'
-import { jobName } from '../helpers/jobHelper'
+import { jobName, jobRunCount } from '../helpers/jobHelper'
+import { useJobDevices } from '../hooks/useJobDevices'
+import { JOB_DEVICE_PAGE } from '../services/jobDevices'
+import { LoadMore } from '../components/LoadMore'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ListItemBack } from '../components/ListItemBack'
@@ -89,10 +92,19 @@ export const JobDetailPage: React.FC<Props> = () => {
   }, [])
 
   const scriptArguments = script?.versions?.[0]?.arguments || []
-  const jobDevice = job?.jobDevices.find(jd => jd.id === jobDeviceID)
+  // Its runs a page at a time (a job may have tens of thousands), counted by runCounts; the run shown on its own.
+  const jobDevices = useJobDevices(accountId, job, jobDeviceID)
+  const jobDevice = jobDevices.jobDevice
+  const listed = !!jobDevice && jobDevices.runs.some(jd => jd.id === jobDevice.id)
   // Runs on the job runner: their phase, progress and output, live while the job runs (none on an older API).
   const [watchTick, setWatchTick] = React.useState(0)
-  const runs = useJobRuns(accountId, job, watchTick)
+  const runs = useJobRuns(
+    accountId,
+    job,
+    watchTick,
+    Math.max(jobDevices.count, JOB_DEVICE_PAGE),
+    jobDevice && !listed ? jobDevice.id : undefined
+  )
   const { tick, live } = useJobWatch(job, runs, jobDevice?.id)
   useEffect(() => setWatchTick(tick), [tick])
   const runDetails = jobDevice ? runs?.[jobDevice.id] : undefined
@@ -101,6 +113,8 @@ export const JobDetailPage: React.FC<Props> = () => {
     runAttributes?.map(
       a => new JobAttribute({ id: `attribute-${a.key}`, label: a.key, value: () => a.value, multiline: true })
     ) || []
+  const waiting = jobRunCount(job, 'WAITING')
+  const running = jobRunCount(job, 'RUNNING')
   const isActive = job?.status === 'RUNNING' || job?.status === 'WAITING'
   const statusColor: Color =
     job?.status === 'SUCCESS'
@@ -115,10 +129,12 @@ export const JobDetailPage: React.FC<Props> = () => {
       ? 'primary'
       : 'gray'
 
-  const handleNewRun = () => {
+  const handleNewRun = async () => {
     if (!job || !scriptFileRef) return
 
-    const deviceIds = job.jobDevices.map(d => d.device.id)
+    const targets = await dispatch.jobs.fetchTargets(job)
+    if (!targets) return
+    const deviceIds = targets.map(d => d.id)
     const tagValues = job.tag?.values || []
     const access: IRoleAccess = tagValues.length ? 'TAG' : deviceIds.length ? 'CUSTOM' : 'NONE'
     const argumentValues: IArgumentValue[] = job.arguments?.map(arg => ({ name: arg.name, value: arg.value || '' })) || []
@@ -243,7 +259,8 @@ export const JobDetailPage: React.FC<Props> = () => {
             <ScriptRunSummary
               scriptArguments={file ? scriptArguments : []}
               argumentValues={job.arguments?.map(arg => ({ name: arg.name, value: arg.value || '' }))}
-              jobDevices={job.jobDevices}
+              jobDevices={jobDevices.runs}
+              deviceCount={jobDevices.total}
               tag={job.tag}
               files={files}
               runConfigAction={
@@ -309,50 +326,61 @@ export const JobDetailPage: React.FC<Props> = () => {
             <Stack direction="row" spacing={0.5} marginRight={2} alignItems="center">
               <JobStatusIcon device padding={0} />
               <Typography variant="caption" sx={{ minWidth: 16 }}>
-                {job.jobDevices.length || '-'}
+                {jobDevices.total || '-'}
               </Typography>
-              {job.jobDevices.filter(d => d.status === 'WAITING').length > 0 && (
+              {waiting > 0 && (
                 <>
                   <JobStatusIcon status="WAITING" padding={0} />
                   <Typography variant="caption" sx={{ minWidth: 16 }}>
-                    {job.jobDevices.filter(d => d.status === 'WAITING').length}
+                    {waiting}
                   </Typography>
                 </>
               )}
-              {job.jobDevices.filter(d => d.status === 'RUNNING').length > 0 && (
+              {running > 0 && (
                 <>
                   <JobStatusIcon status="RUNNING" padding={0} />
                   <Typography variant="caption" sx={{ minWidth: 16 }}>
-                    {job.jobDevices.filter(d => d.status === 'RUNNING').length}
+                    {running}
                   </Typography>
                 </>
               )}
               <JobStatusIcon status="SUCCESS" padding={0} />
               <Typography variant="caption" sx={{ minWidth: 16 }}>
-                {job.jobDevices.filter(d => d.status === 'SUCCESS').length || '-'}
+                {jobRunCount(job, 'SUCCESS') || '-'}
               </Typography>
               <JobStatusIcon status="FAILED" padding={0} />
               <Typography variant="caption" sx={{ minWidth: 16 }}>
-                {job.jobDevices.filter(d => d.status === 'FAILED' || d.status === 'CANCELLED').length || '-'}
+                {jobRunCount(job, 'FAILED', 'CANCELLED') || '-'}
               </Typography>
             </Stack>
           </Typography>
 
-          {!job.jobDevices.length ? (
+          {!jobDevices.runs.length ? (
             <Notice gutterTop>{t('jobDetailPage.noDevicesInRun', 'No devices in this run')}</Notice>
           ) : (
-            <List>
-              {job.jobDevices.map(jd => (
-                <ListItemLocation
-                  sx={{ paddingRight: 2 }}
-                  key={jd.id}
-                  to={fileID ? `/script/${fileID}/${jobID}/${jd.id}` : `/runs/job/${jobID}/${jd.id}`}
-                  title={jd.device.name}
-                  subtitle={runs?.[jd.id]?.run ? <JobRunStatus run={runs[jd.id].run} /> : undefined}
-                  icon={<JobStatusIcon status={runs?.[jd.id]?.status || jd.status} device />}
+            <>
+              <List>
+                {jobDevices.runs.map(jd => (
+                  <ListItemLocation
+                    sx={{ paddingRight: 2 }}
+                    key={jd.id}
+                    to={fileID ? `/script/${fileID}/${jobID}/${jd.id}` : `/runs/job/${jobID}/${jd.id}`}
+                    title={jd.device.name}
+                    subtitle={runs?.[jd.id]?.run ? <JobRunStatus run={runs[jd.id].run} /> : undefined}
+                    icon={<JobStatusIcon status={runs?.[jd.id]?.status || jd.status} device />}
+                  />
+                ))}
+              </List>
+              {jobDevices.count > 0 && jobDevices.count < jobDevices.total && (
+                <LoadMore
+                  from={Math.max(jobDevices.count - JOB_DEVICE_PAGE, 0)}
+                  size={JOB_DEVICE_PAGE}
+                  count={jobDevices.total}
+                  fetching={jobDevices.fetching}
+                  onLoadMore={jobDevices.loadMore}
                 />
-              ))}
-            </List>
+              )}
+            </>
           )}
         </>
       )}
