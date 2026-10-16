@@ -387,26 +387,9 @@ export default createModel<RootModel>()({
         }
       }
     },
-    async disconnect(_: void, state) {
-      if (!state.auth.authenticated && !state.auth.backendAuthenticated && browser.hasBackend) {
-        // Read the LIVE store, not the invocation-time snapshot: backendSignInError records its
-        // failure after its own teardown and this handler fires right behind it when the
-        // rejected socket drops, so the snapshot predates that message. Carry an existing
-        // failure through this teardown (signedOut()'s signInCleared would wipe it) and only
-        // otherwise fall back to the generic one — either way through the signInFailure shape,
-        // so signInFailed is set and SignInApp actually renders the message.
-        const live = store.getState().auth
-        const failure: Partial<AuthState> = live.signInFailed
-          ? {
-              signInFailed: true,
-              signInError: live.signInError,
-              signInErrorCode: live.signInErrorCode,
-              signInRetryAfter: live.signInRetryAfter,
-            }
-          : signInFailure(new Error('Sign in failed, please try again.'))
-        await dispatch.auth.signedOut()
-        dispatch.auth.set(failure)
-      }
+    async disconnect() {
+      // No teardown here: a signed-out window's socket only drops from signedOut()'s own close(),
+      // and a second teardown from that echo wipes backendSignInError's agent-owned notice.
       dispatch.ui.set({ connected: false })
       dispatch.auth.set({ backendAuthenticated: false })
     },
