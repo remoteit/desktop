@@ -32,7 +32,8 @@ class FakeImage {
 
 const EMAIL = 'ada@x.test'
 const PICTURE = 'https://idp.example/ada.jpg'
-const GRAVATAR = `https://www.gravatar.com/avatar/${createHash('sha256').update(EMAIL).digest('hex')}?s=72&d=force-fail`
+const GIVEN = 'https://idp.example/given.jpg'
+const GRAVATAR = `https://www.gravatar.com/avatar/${createHash('sha256').update(EMAIL).digest('hex')}?s=72&d=404`
 const theme = createTheme({ palette: { alwaysWhite: { main: '#fff' }, white: { main: '#fff' } } as any })
 
 describe('Avatar', () => {
@@ -47,8 +48,12 @@ describe('Avatar', () => {
         </ThemeProvider>
       )
     )
-  const fail = (src: string) => act(() => FakeImage.all.filter(i => i.src === src).forEach(i => i.onerror?.()))
+  const fire = (src: string, event: 'onload' | 'onerror') =>
+    act(() => FakeImage.all.filter(i => i.src === src).forEach(i => i[event]?.()))
+  const load = (src: string) => fire(src, 'onload')
+  const fail = (src: string) => fire(src, 'onerror')
   const shown = () => container.querySelector('img')?.getAttribute('src') ?? container.textContent
+  const asked = () => FakeImage.all.map(i => i.src)
 
   beforeEach(() => {
     FakeImage.all = []
@@ -64,50 +69,51 @@ describe('Avatar', () => {
     vi.unstubAllGlobals()
   })
 
-  it('shows the Permitteer picture, then Gravatar, then the initial', () => {
+  it('shows the initial until the signed-in picture loads, then the picture', () => {
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
     render()
+    expect(shown()).toBe('A')
+    load(PICTURE)
     expect(shown()).toBe(PICTURE)
+  })
+
+  it('tries the signed-in picture, then one it is handed, then Gravatar, then keeps the initial', () => {
+    vi.mocked(oidcPicture).mockReturnValue(PICTURE)
+    render(GIVEN)
     fail(PICTURE)
-    expect(shown()).toBe(GRAVATAR)
+    fail(GIVEN)
+    expect(asked()).toEqual([PICTURE, GIVEN, GRAVATAR])
     fail(GRAVATAR)
     expect(shown()).toBe('A')
   })
 
-  it('starts at Gravatar when Permitteer has no picture for the email', () => {
+  it('keeps the initial when a picture neither loads nor errors', () => {
     vi.mocked(oidcPicture).mockReturnValue(undefined)
     render()
-    expect(shown()).toBe(GRAVATAR)
+    expect(asked()).toEqual([GRAVATAR])
+    expect(shown()).toBe('A')
   })
 
   it('hashes the email the way Gravatar does: trimmed and lower-cased', () => {
     vi.mocked(oidcPicture).mockReturnValue(undefined)
     render(undefined, ' Ada@X.test ')
-    expect(shown()).toBe(GRAVATAR)
+    expect(asked()).toEqual([GRAVATAR])
   })
 
-  it("tries a signed-in account's picture before one it is handed, and that before Gravatar", () => {
-    vi.mocked(oidcPicture).mockReturnValue(PICTURE)
-    render('https://idp.example/given.jpg')
-    expect(shown()).toBe(PICTURE)
-    fail(PICTURE)
-    expect(shown()).toBe('https://idp.example/given.jpg')
-    fail('https://idp.example/given.jpg')
-    expect(shown()).toBe(GRAVATAR)
-  })
-
-  it('shows a new picture as soon as the account registry has it', () => {
+  it('shows a new picture once the account registry has it and it loads', () => {
     vi.mocked(oidcPicture).mockReturnValue(undefined)
     render()
+    load(GRAVATAR)
     expect(shown()).toBe(GRAVATAR)
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
     act(() => listeners.forEach(listener => listener()))
+    load(PICTURE)
     expect(shown()).toBe(PICTURE)
   })
 
   it('ignores a handed picture that is not https', () => {
     vi.mocked(oidcPicture).mockReturnValue(undefined)
     render('http://idp.example/given.jpg')
-    expect(shown()).toBe(GRAVATAR)
+    expect(asked()).toEqual([GRAVATAR])
   })
 })

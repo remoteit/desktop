@@ -23,21 +23,27 @@ export interface Props {
   children?: React.ReactNode
 }
 
-/* MUI's Avatar takes one src and falls to its children when that fails, so only the earlier URLs
-   are checked here. Its img onError can't step on: MUI unmounts that img when its own preload errors. */
+/* The first of `urls` that loads, and nothing until one has: MUI's Avatar shows a blank <img> while its
+   src loads, so a load that never errors (iOS, a blocked redirect) would hide the initial for good. */
 function useFirstLoaded(urls: string[]) {
-  const [failed, setFailed] = useState<string[]>([])
-  const [src, ...rest] = urls.filter(url => !failed.includes(url))
-  const hasNext = rest.length > 0
+  const [loaded, setLoaded] = useState<{ urls: string[]; url: string }>()
 
   useEffect(() => {
-    if (!src || !hasNext) return
-    const image = new Image()
-    image.onerror = () => setFailed(f => [...f, src])
-    image.src = src
-  }, [src, hasNext])
+    let active = true
+    const load = (index: number) => {
+      if (index >= urls.length) return
+      const image = new Image()
+      image.onload = () => active && setLoaded({ urls, url: urls[index] })
+      image.onerror = () => active && load(index + 1)
+      image.src = urls[index]
+    }
+    load(0)
+    return () => {
+      active = false
+    }
+  }, [urls])
 
-  return src
+  return loaded?.urls === urls ? loaded.url : undefined
 }
 
 export const Avatar: React.FC<Props> = React.memo(
@@ -58,7 +64,7 @@ export const Avatar: React.FC<Props> = React.memo(
     const signedIn = useAccountPicture(email)
     const urls = useMemo(() => {
       const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
-      const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=force-fail`
+      const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=404`
       return [...new Set([signedIn, httpsOnly(picture), gravatar])].filter((url): url is string => !!url)
     }, [email, size, picture, signedIn])
     const url = useFirstLoaded(urls)
