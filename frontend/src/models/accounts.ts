@@ -38,6 +38,7 @@ export default createModel<RootModel>()({
                     account {
                       id
                       email
+                      picture
                     }
                   }
                 }

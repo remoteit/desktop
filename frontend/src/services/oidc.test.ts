@@ -121,8 +121,8 @@ describe('oidcPicture', () => {
     expect(oidcPicture('ada@x.test')).toBe('https://idp.example/ada.jpg')
   })
 
-  it('has none for an account without one, or for an email not signed in here', () => {
-    expect(oidcPicture('bob@x.test')).toBeUndefined()
+  it('answers null for an account here without one, and nothing for an email not signed in here', () => {
+    expect(oidcPicture('bob@x.test')).toBeNull()
     expect(oidcPicture('eve@x.test')).toBeUndefined()
     expect(oidcPicture(undefined)).toBeUndefined()
   })
@@ -141,7 +141,7 @@ describe('oidcPicture', () => {
     expect(oidcPicture('ada@x.test')).toBe('https://login.example/avatar/a?v=2')
 
     oidcSetPicture(null)
-    expect(oidcPicture('ada@x.test')).toBeUndefined()
+    expect(oidcPicture('ada@x.test')).toBeNull()
 
     unsubscribe()
     oidcSetPicture('https://login.example/avatar/a?v=3')

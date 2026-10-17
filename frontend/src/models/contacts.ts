@@ -21,6 +21,7 @@ export default createModel<RootModel>()({
               contacts {
                 id
                 email
+                picture
               }
             }
           }`

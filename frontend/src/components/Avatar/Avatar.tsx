@@ -5,6 +5,7 @@ import { createColor } from '../../helpers/uiHelper'
 import { httpsOnly } from '../../helpers/utilHelper'
 import { labelLookup } from '../../models/labels'
 import { useAccountPicture } from '../../hooks/useAccountPicture'
+import { useUserPicture } from '../../hooks/useUserPicture'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
 import { spacing } from '../../styling'
 
@@ -23,17 +24,17 @@ export interface Props {
   children?: React.ReactNode
 }
 
-/* The first of `urls` that loads, and nothing until one has: MUI's Avatar shows a blank <img> while its
-   src loads, so a load that never errors (iOS, a blocked redirect) would hide the initial for good. */
+/* The first of `urls` that loads (meanwhile the last one that did), never one still loading: MUI's Avatar
+   shows a blank <img> while its src loads, so a load that never errors (iOS) would hide the initial for good. */
 function useFirstLoaded(urls: string[]) {
-  const [loaded, setLoaded] = useState<{ urls: string[]; url: string }>()
+  const [loaded, setLoaded] = useState<string>()
 
   useEffect(() => {
     let active = true
     const load = (index: number) => {
       if (index >= urls.length) return
       const image = new Image()
-      image.onload = () => active && setLoaded({ urls, url: urls[index] })
+      image.onload = () => active && setLoaded(urls[index])
       image.onerror = () => active && load(index + 1)
       image.src = urls[index]
     }
@@ -43,7 +44,7 @@ function useFirstLoaded(urls: string[]) {
     }
   }, [urls])
 
-  return loaded?.urls === urls ? loaded.url : undefined
+  return loaded && urls.includes(loaded) ? loaded : undefined
 }
 
 export const Avatar: React.FC<Props> = React.memo(
@@ -62,11 +63,15 @@ export const Avatar: React.FC<Props> = React.memo(
     children,
   }) => {
     const signedIn = useAccountPicture(email)
+    const known = useUserPicture(email)
     const urls = useMemo(() => {
       const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
       const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=404`
-      return [...new Set([signedIn, httpsOnly(picture), gravatar])].filter((url): url is string => !!url)
-    }, [email, size, picture, signedIn])
+      // An account signed in here goes by its token's picture: graphql's URL is unversioned, so CloudFront
+      // can serve a removed picture for an hour.
+      const fromGraphql = signedIn === undefined ? known : undefined
+      return [...new Set([signedIn, httpsOnly(picture), fromGraphql, gravatar])].filter((url): url is string => !!url)
+    }, [email, size, picture, signedIn, known])
     const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])
     fallback = (fallback || email || '?').substring(0, 1).toUpperCase()
