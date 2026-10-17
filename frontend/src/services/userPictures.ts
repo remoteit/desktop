@@ -5,18 +5,15 @@ const listeners = new Set<() => void>()
 
 const key = (email: string) => email.trim().toLowerCase()
 
-/** Hear about new pictures, so a mounted avatar picks one up (useSyncExternalStore's subscribe). */
 export function userPicturesSubscribe(listener: () => void): () => void {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
 
-/** The picture graphql last answered for this person, if any. */
 export function userPicture(email?: string): string | undefined {
   return email ? byEmail.get(key(email)) : undefined
 }
 
-/** Remember every user in a graphql response that was asked for its `picture` beside its `email`. */
 export function rememberPictures(data: unknown) {
   let changed = false
   const walk = (node: unknown) => {

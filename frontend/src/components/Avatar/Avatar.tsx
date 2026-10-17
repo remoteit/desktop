@@ -24,9 +24,8 @@ export interface Props {
   children?: React.ReactNode
 }
 
-/* The first of `urls` that loads, and nothing until one has (or the last one loaded, while it is still in
-   `urls`): MUI's Avatar shows a blank <img> while its src loads, so a load that never errors (iOS, a
-   blocked redirect) would hide the initial for good. */
+/* The first of `urls` that loads (meanwhile the last one that did), never one still loading: MUI's Avatar
+   shows a blank <img> while its src loads, so a load that never errors (iOS) would hide the initial for good. */
 function useFirstLoaded(urls: string[]) {
   const [loaded, setLoaded] = useState<string>()
 

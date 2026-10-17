@@ -127,6 +127,16 @@ describe('Avatar', () => {
     expect(shown()).toBe(KNOWN)
   })
 
+  it('falls back to the initial when every picture fails, one that loaded before included', () => {
+    vi.mocked(oidcPicture).mockReturnValue(undefined)
+    render()
+    load(GRAVATAR)
+    act(() => rememberPictures({ email: EMAIL, picture: KNOWN }))
+    fail(KNOWN)
+    fail(GRAVATAR)
+    expect(shown()).toBe('A')
+  })
+
   it('ignores a handed picture that is not https', () => {
     vi.mocked(oidcPicture).mockReturnValue(undefined)
     render('http://idp.example/given.jpg')
