@@ -22,10 +22,25 @@ describe('userPictures', () => {
     expect(userPicture('eve@x.test')).toBeUndefined()
   })
 
-  it('keeps a picture answered as none when told not to forget', () => {
-    rememberPictures({ email: 'zed@x.test', picture: 'https://a/7' })
-    rememberPictures({ email: 'zed@x.test', picture: null }, false)
+  it('keeps a picture an error nulled, forgetting one answered as none beside it', () => {
+    const members = (zed: string | null, amy: string | null) => ({
+      login: {
+        _0: [{ user: { email: 'zed@x.test', picture: zed } }],
+        _1: [{ user: { email: 'amy@x.test', picture: amy } }],
+      },
+    })
+    rememberPictures(members('https://a/7', 'https://a/8'))
+    rememberPictures(members(null, null), [{ path: ['login', '_0', 0, 'user', 'picture'] }])
     expect(userPicture('zed@x.test')).toBe('https://a/7')
+    expect(userPicture('amy@x.test')).toBeUndefined()
+  })
+
+  it('forgets nothing on an error that names no path, and survives errors that are null', () => {
+    rememberPictures({ email: 'liv@x.test', picture: 'https://a/9' })
+    rememberPictures({ email: 'liv@x.test', picture: null }, [{}])
+    expect(userPicture('liv@x.test')).toBe('https://a/9')
+    expect(() => rememberPictures({ email: 'liv@x.test', picture: null }, null)).not.toThrow()
+    expect(() => rememberPictures({ email: 'liv@x.test', picture: null }, [null])).not.toThrow()
   })
 
   it('keeps a picture when a response carries the email without asking for the picture', () => {

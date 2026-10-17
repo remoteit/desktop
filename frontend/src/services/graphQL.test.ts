@@ -117,20 +117,26 @@ describe('graphQLPartialRequest', () => {
     expect(userPicture('grace@x.test')).toBe('https://login.test/avatar/u3')
   })
 
-  it('never forgets a picture on a response that carried errors', async () => {
+  it('forgets a picture answered as none in an alias that resolved, not one an error nulled', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
-    const members = (picture: string | null) => [{ user: { id: 'u5', email: 'ida@x.test', picture } }]
-    const respond = (picture: string | null, errors?: object[]) =>
+    const member = (email: string, picture: string | null) => ({
+      organization: { members: [{ user: { email, picture } }] },
+    })
+    const respond = (ida: string | null, bo: string | null, errors?: object[]) =>
       request.mockResolvedValueOnce({
-        data: { data: { login: { _0: { organization: { members: members(picture) } }, _1: null } }, errors },
+        data: { data: { login: { _0: member('ida@x.test', ida), _1: member('bo@x.test', bo), _2: null } }, errors },
         headers: {},
       })
-    const membersQuery = '{ login { _0: account { organization { members { user { id email picture } } } } } }'
-    respond('https://login.test/avatar/u5')
+    const membersQuery = '{ login { _0: account { organization { members { user { email picture } } } } } }'
+    respond('https://login.test/avatar/u5', 'https://login.test/avatar/u6')
     await graphQLPartialRequest(membersQuery)
-    respond(null, [{ message: 'forbidden' }])
+    respond(null, null, [
+      { message: 'forbidden', path: ['login', '_2'] },
+      { message: 'picture failed', path: ['login', '_0', 'organization', 'members', 0, 'user', 'picture'] },
+    ])
     await graphQLPartialRequest(membersQuery)
     expect(userPicture('ida@x.test')).toBe('https://login.test/avatar/u5')
+    expect(userPicture('bo@x.test')).toBeUndefined()
   })
 
   it('fails when every account alias errored', async () => {
