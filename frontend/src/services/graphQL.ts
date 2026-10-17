@@ -1,5 +1,6 @@
 import { AxiosResponse } from 'axios'
 import { post, resetErrorCount } from './post'
+import { rememberPictures } from './userPictures'
 import { store } from '../store'
 
 const CLIENT_DEPRECATED = '121'
@@ -7,6 +8,7 @@ const CLIENT_DEPRECATED = '121'
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}, silent = false) {
   const response = await post({ query, variables }, '', silent)
   if (response === 'ERROR') return response
+  if (query.includes('picture')) rememberPictures(response.data?.data)
   const errors = graphQLGetErrors(response, silent, { query, variables })
   return errors ? 'ERROR' : response
 }
@@ -15,6 +17,7 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
   const response = await post({ query, variables })
   if (response === 'ERROR') return response
+  if (query.includes('picture')) rememberPictures(response.data?.data)
   graphQLGetErrors(response, false, { query, variables })
   const fields = Object.values(response.data?.data || {})
   const resolved = fields.some(field => Object.values(field || {}).some(alias => alias != null))

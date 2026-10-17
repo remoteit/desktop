@@ -5,6 +5,7 @@ import { createColor } from '../../helpers/uiHelper'
 import { httpsOnly } from '../../helpers/utilHelper'
 import { labelLookup } from '../../models/labels'
 import { useAccountPicture } from '../../hooks/useAccountPicture'
+import { useUserPicture } from '../../hooks/useUserPicture'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
 import { spacing } from '../../styling'
 
@@ -62,11 +63,14 @@ export const Avatar: React.FC<Props> = React.memo(
     children,
   }) => {
     const signedIn = useAccountPicture(email)
+    const known = useUserPicture(email)
     const urls = useMemo(() => {
       const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
       const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=404`
-      return [...new Set([signedIn, httpsOnly(picture), gravatar])].filter((url): url is string => !!url)
-    }, [email, size, picture, signedIn])
+      return [...new Set([signedIn, httpsOnly(picture), httpsOnly(known), gravatar])].filter(
+        (url): url is string => !!url
+      )
+    }, [email, size, picture, signedIn, known])
     const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])
     fallback = (fallback || email || '?').substring(0, 1).toUpperCase()

@@ -17,6 +17,7 @@ vi.mock('axios', () => ({ default: { request } }))
 import { post } from './post'
 import { get } from './get'
 import { graphQLBasicRequest, graphQLPartialRequest } from './graphQL'
+import { userPicture } from './userPictures'
 
 const requests = [
   () => post({}),
@@ -66,6 +67,13 @@ describe('graphQLBasicRequest', () => {
     expect(await graphQLBasicRequest('{ login { id } }')).toBe('ERROR')
     expect(uiSet).toHaveBeenCalledWith({ errorMessage: 'GraphQL: denied' })
   })
+
+  it('remembers the picture of each user the query asked it for', async () => {
+    const contacts = [{ id: 'u2', email: 'ada@x.test', picture: 'https://login.test/avatar/u2' }]
+    request.mockResolvedValue({ data: { data: { login: { contacts } } }, headers: {} })
+    await graphQLBasicRequest('{ login { contacts { id email picture } } }')
+    expect(userPicture('ada@x.test')).toBe('https://login.test/avatar/u2')
+  })
 })
 
 describe('graphQLPartialRequest', () => {
@@ -79,6 +87,20 @@ describe('graphQLPartialRequest', () => {
     }
     request.mockResolvedValue(response)
     expect(await graphQLPartialRequest(query)).toBe(response)
+  })
+
+  it('remembers the pictures in the account aliases that resolved', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const member = { user: { id: 'u3', email: 'grace@x.test', picture: 'https://login.test/avatar/u3' } }
+    request.mockResolvedValue({
+      data: {
+        data: { login: { _0: { organization: { members: [member] } }, _1: null } },
+        errors: [{ message: 'forbidden' }],
+      },
+      headers: {},
+    })
+    await graphQLPartialRequest('{ login { _0: account { organization { members { user { id email picture } } } } } }')
+    expect(userPicture('grace@x.test')).toBe('https://login.test/avatar/u3')
   })
 
   it('fails when every account alias errored', async () => {
