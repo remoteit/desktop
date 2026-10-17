@@ -1,3 +1,5 @@
+import { httpsOnly } from '../helpers/utilHelper'
+
 const byEmail = new Map<string, string>()
 const listeners = new Set<() => void>()
 
@@ -19,14 +21,15 @@ export function rememberPictures(data: unknown) {
   let changed = false
   const walk = (node: unknown) => {
     if (!node || typeof node !== 'object') return
-    if (Array.isArray(node)) return node.forEach(walk)
     const { email, picture } = node as { email?: unknown; picture?: unknown }
     if (typeof email === 'string' && 'picture' in node) {
       const k = key(email)
-      if (typeof picture === 'string' && byEmail.get(k) !== picture) {
-        byEmail.set(k, picture)
+      const next = httpsOnly(picture)
+      if (byEmail.get(k) !== next) {
         changed = true
-      } else if (typeof picture !== 'string' && byEmail.delete(k)) changed = true
+        if (next) byEmail.set(k, next)
+        else byEmail.delete(k)
+      }
     }
     Object.values(node).forEach(walk)
   }

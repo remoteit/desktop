@@ -24,17 +24,18 @@ export interface Props {
   children?: React.ReactNode
 }
 
-/* The first of `urls` that loads, and nothing until one has: MUI's Avatar shows a blank <img> while its
-   src loads, so a load that never errors (iOS, a blocked redirect) would hide the initial for good. */
+/* The first of `urls` that loads, and nothing until one has (or the last one loaded, while it is still in
+   `urls`): MUI's Avatar shows a blank <img> while its src loads, so a load that never errors (iOS, a
+   blocked redirect) would hide the initial for good. */
 function useFirstLoaded(urls: string[]) {
-  const [loaded, setLoaded] = useState<{ urls: string[]; url: string }>()
+  const [loaded, setLoaded] = useState<string>()
 
   useEffect(() => {
     let active = true
     const load = (index: number) => {
       if (index >= urls.length) return
       const image = new Image()
-      image.onload = () => active && setLoaded({ urls, url: urls[index] })
+      image.onload = () => active && setLoaded(urls[index])
       image.onerror = () => active && load(index + 1)
       image.src = urls[index]
     }
@@ -44,7 +45,7 @@ function useFirstLoaded(urls: string[]) {
     }
   }, [urls])
 
-  return loaded?.urls === urls ? loaded.url : undefined
+  return loaded && urls.includes(loaded) ? loaded : undefined
 }
 
 export const Avatar: React.FC<Props> = React.memo(
@@ -67,9 +68,7 @@ export const Avatar: React.FC<Props> = React.memo(
     const urls = useMemo(() => {
       const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
       const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=404`
-      return [...new Set([signedIn, httpsOnly(picture), httpsOnly(known), gravatar])].filter(
-        (url): url is string => !!url
-      )
+      return [...new Set([signedIn, httpsOnly(picture), known, gravatar])].filter((url): url is string => !!url)
     }, [email, size, picture, signedIn, known])
     const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])

@@ -80,12 +80,14 @@ describe('Avatar', () => {
     expect(shown()).toBe(PICTURE)
   })
 
-  it('tries the signed-in picture, then one it is handed, then Gravatar, then keeps the initial', () => {
+  it("tries the signed-in picture, then one it is handed, then graphql's, then Gravatar, then keeps the initial", () => {
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
+    rememberPictures({ user: { email: EMAIL, picture: KNOWN } })
     render(GIVEN)
     fail(PICTURE)
     fail(GIVEN)
-    expect(asked()).toEqual([PICTURE, GIVEN, GRAVATAR])
+    fail(KNOWN)
+    expect(asked()).toEqual([PICTURE, GIVEN, KNOWN, GRAVATAR])
     fail(GRAVATAR)
     expect(shown()).toBe('A')
   })
@@ -110,25 +112,17 @@ describe('Avatar', () => {
     expect(shown()).toBe(GRAVATAR)
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
     act(() => listeners.forEach(listener => listener()))
+    expect(shown()).toBe(GRAVATAR)
     load(PICTURE)
     expect(shown()).toBe(PICTURE)
   })
 
-  it('tries the picture graphql answered after a handed one, before Gravatar', () => {
-    vi.mocked(oidcPicture).mockReturnValue(PICTURE)
-    rememberPictures({ user: { email: EMAIL, picture: KNOWN } })
-    render(GIVEN)
-    fail(PICTURE)
-    fail(GIVEN)
-    fail(KNOWN)
-    expect(asked()).toEqual([PICTURE, GIVEN, KNOWN, GRAVATAR])
-  })
-
-  it('shows a picture graphql answers after the avatar mounted', () => {
+  it('shows a picture graphql answers after the avatar mounted, keeping the one shown until it loads', () => {
     vi.mocked(oidcPicture).mockReturnValue(undefined)
     render()
     load(GRAVATAR)
     act(() => rememberPictures([{ email: EMAIL.toUpperCase(), picture: KNOWN }]))
+    expect(shown()).toBe(GRAVATAR)
     load(KNOWN)
     expect(shown()).toBe(KNOWN)
   })
