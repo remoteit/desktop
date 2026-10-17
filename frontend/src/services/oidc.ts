@@ -1052,16 +1052,19 @@ export function oidcAccounts(): OidcAccount[] {
 }
 
 // Every avatar asks on every render, so the registry is parsed once per change, not once per ask.
-let pictures: { raw: string | null; byEmail: Map<string, string> } | undefined
+let pictures: { raw: string | null; byEmail: Map<string, string | null> } | undefined
 
-/** The picture Permitteer holds for an account signed in on this browser, by email. */
-export function oidcPicture(email?: string): string | undefined {
+/** The picture Permitteer holds for an account signed in on this browser, by email: null when that
+ *  account has none, undefined when no account here has that email. */
+export function oidcPicture(email?: string): string | null | undefined {
   if (!email) return undefined
   const raw = readRaw()
   if (!pictures || pictures.raw !== raw) {
-    const byEmail = new Map<string, string>()
-    for (const e of Object.values(parseRegistry(raw)))
-      if (e.picture && e.email) byEmail.set(e.email.toLowerCase(), e.picture)
+    const byEmail = new Map<string, string | null>()
+    for (const e of Object.values(parseRegistry(raw))) {
+      const key = e.email?.toLowerCase()
+      if (key && !byEmail.get(key)) byEmail.set(key, e.picture || null)
+    }
     pictures = { raw, byEmail }
   }
   return pictures.byEmail.get(email.toLowerCase())

@@ -67,7 +67,10 @@ export const Avatar: React.FC<Props> = React.memo(
     const urls = useMemo(() => {
       const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
       const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=404`
-      return [...new Set([signedIn, httpsOnly(picture), known, gravatar])].filter((url): url is string => !!url)
+      // An account signed in here goes by its token's picture: graphql's URL is unversioned, so CloudFront
+      // can serve a removed picture for an hour.
+      const fromGraphql = signedIn === undefined ? known : undefined
+      return [...new Set([signedIn, httpsOnly(picture), fromGraphql, gravatar])].filter((url): url is string => !!url)
     }, [email, size, picture, signedIn, known])
     const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])

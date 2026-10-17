@@ -80,16 +80,24 @@ describe('Avatar', () => {
     expect(shown()).toBe(PICTURE)
   })
 
-  it("tries the signed-in picture, then one it is handed, then graphql's, then Gravatar, then keeps the initial", () => {
+  it('tries an account signed in here: its picture, then one it is handed, then Gravatar, then keeps the initial', () => {
     vi.mocked(oidcPicture).mockReturnValue(PICTURE)
     rememberPictures({ user: { email: EMAIL, picture: KNOWN } })
     render(GIVEN)
     fail(PICTURE)
     fail(GIVEN)
-    fail(KNOWN)
-    expect(asked()).toEqual([PICTURE, GIVEN, KNOWN, GRAVATAR])
+    expect(asked()).toEqual([PICTURE, GIVEN, GRAVATAR])
     fail(GRAVATAR)
     expect(shown()).toBe('A')
+  })
+
+  it("tries anyone else: a picture it is handed, then graphql's, then Gravatar", () => {
+    vi.mocked(oidcPicture).mockReturnValue(undefined)
+    rememberPictures({ user: { email: EMAIL, picture: KNOWN } })
+    render(GIVEN)
+    fail(GIVEN)
+    fail(KNOWN)
+    expect(asked()).toEqual([GIVEN, KNOWN, GRAVATAR])
   })
 
   it('keeps the initial when a picture neither loads nor errors', () => {
@@ -135,6 +143,13 @@ describe('Avatar', () => {
     fail(KNOWN)
     fail(GRAVATAR)
     expect(shown()).toBe('A')
+  })
+
+  it("never tries graphql's picture for an account signed in here, which may have just removed it", () => {
+    vi.mocked(oidcPicture).mockReturnValue(null)
+    rememberPictures({ email: EMAIL, picture: KNOWN })
+    render()
+    expect(asked()).toEqual([GRAVATAR])
   })
 
   it('ignores a handed picture that is not https', () => {
