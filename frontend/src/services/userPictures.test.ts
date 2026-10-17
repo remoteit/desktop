@@ -22,6 +22,12 @@ describe('userPictures', () => {
     expect(userPicture('eve@x.test')).toBeUndefined()
   })
 
+  it('keeps a picture answered as none when told not to forget', () => {
+    rememberPictures({ email: 'zed@x.test', picture: 'https://a/7' })
+    rememberPictures({ email: 'zed@x.test', picture: null }, false)
+    expect(userPicture('zed@x.test')).toBe('https://a/7')
+  })
+
   it('keeps a picture when a response carries the email without asking for the picture', () => {
     rememberPictures({ email: 'kay@x.test', picture: 'https://a/3' })
     rememberPictures({ email: 'kay@x.test' })

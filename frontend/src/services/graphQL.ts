@@ -8,8 +8,8 @@ const CLIENT_DEPRECATED = '121'
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}, silent = false) {
   const response = await post({ query, variables }, '', silent)
   if (response === 'ERROR') return response
-  if (query.includes('picture')) rememberPictures(response.data?.data)
   const errors = graphQLGetErrors(response, silent, { query, variables })
+  if (!errors && query.includes('picture')) rememberPictures(response.data?.data)
   return errors ? 'ERROR' : response
 }
 
@@ -17,8 +17,8 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
   const response = await post({ query, variables })
   if (response === 'ERROR') return response
-  if (query.includes('picture')) rememberPictures(response.data?.data)
-  graphQLGetErrors(response, false, { query, variables })
+  const errors = graphQLGetErrors(response, false, { query, variables })
+  if (query.includes('picture')) rememberPictures(response.data?.data, !errors)
   const fields = Object.values(response.data?.data || {})
   const resolved = fields.some(field => Object.values(field || {}).some(alias => alias != null))
   return resolved ? response : 'ERROR'

@@ -74,6 +74,20 @@ describe('graphQLBasicRequest', () => {
     await graphQLBasicRequest('{ login { contacts { id email picture } } }')
     expect(userPicture('ada@x.test')).toBe('https://login.test/avatar/u2')
   })
+
+  it('leaves pictures alone when the response it rejects nulled one', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const query = '{ login { contacts { id email picture } } }'
+    const contacts = (picture: string | null) => ({ login: { contacts: [{ id: 'u4', email: 'joy@x.test', picture }] } })
+    request.mockResolvedValueOnce({ data: { data: contacts('https://login.test/avatar/u4') }, headers: {} })
+    await graphQLBasicRequest(query)
+    request.mockResolvedValueOnce({
+      data: { data: contacts(null), errors: [{ message: 'picture failed' }] },
+      headers: {},
+    })
+    expect(await graphQLBasicRequest(query)).toBe('ERROR')
+    expect(userPicture('joy@x.test')).toBe('https://login.test/avatar/u4')
+  })
 })
 
 describe('graphQLPartialRequest', () => {
@@ -101,6 +115,22 @@ describe('graphQLPartialRequest', () => {
     })
     await graphQLPartialRequest('{ login { _0: account { organization { members { user { id email picture } } } } } }')
     expect(userPicture('grace@x.test')).toBe('https://login.test/avatar/u3')
+  })
+
+  it('never forgets a picture on a response that carried errors', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const members = (picture: string | null) => [{ user: { id: 'u5', email: 'ida@x.test', picture } }]
+    const respond = (picture: string | null, errors?: object[]) =>
+      request.mockResolvedValueOnce({
+        data: { data: { login: { _0: { organization: { members: members(picture) } }, _1: null } }, errors },
+        headers: {},
+      })
+    const membersQuery = '{ login { _0: account { organization { members { user { id email picture } } } } } }'
+    respond('https://login.test/avatar/u5')
+    await graphQLPartialRequest(membersQuery)
+    respond(null, [{ message: 'forbidden' }])
+    await graphQLPartialRequest(membersQuery)
+    expect(userPicture('ida@x.test')).toBe('https://login.test/avatar/u5')
   })
 
   it('fails when every account alias errored', async () => {

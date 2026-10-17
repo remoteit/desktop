@@ -14,7 +14,7 @@ export function userPicture(email?: string): string | undefined {
   return email ? byEmail.get(key(email)) : undefined
 }
 
-export function rememberPictures(data: unknown) {
+export function rememberPictures(data: unknown, forget = true) {
   let changed = false
   const walk = (node: unknown) => {
     if (!node || typeof node !== 'object') return
@@ -22,7 +22,7 @@ export function rememberPictures(data: unknown) {
     if (typeof email === 'string' && 'picture' in node) {
       const k = key(email)
       const next = httpsOnly(picture)
-      if (byEmail.get(k) !== next) {
+      if (byEmail.get(k) !== next && (next || forget)) {
         changed = true
         if (next) byEmail.set(k, next)
         else byEmail.delete(k)
