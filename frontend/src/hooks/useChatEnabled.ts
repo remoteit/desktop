@@ -27,8 +27,8 @@ import {
    not the account you are viewing: the ai-agent add-on licence (Admin → Add-ons) is
    granted to a person, so switching to an organization neither grants nor takes away the
    chat. Nothing skips this gate — not a dev build, not the AI portal. A user holding it
-   can still switch the feature off in Test Settings → Features (from their own account),
-   and one without it has no row there. */
+   can still switch the feature off in Test Settings → Features, and one without it has
+   no row there. */
 export const useChatEnabled = (): boolean =>
   useSelector((state: State) => !!selectUserLimitsLookup(state)[CHAT_FEATURE])
 

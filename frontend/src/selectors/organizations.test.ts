@@ -44,4 +44,8 @@ describe('selectUserLimitsLookup', () => {
   it("applies the user's Test page overrides while an organization is active", () => {
     expect(selectUserLimitsLookup(state({ 'ai-agent': false }))['ai-agent']).toBe(false)
   })
+
+  it("has no limits without a signed-in user, rather than the active account's", () => {
+    expect(selectUserLimitsLookup({ ...state(), auth: {} })).toEqual({})
+  })
 })
