@@ -51,7 +51,6 @@ vi.mock('../selectors/accounts', () => ({
   isUserAccount: (s: any) => !s.accounts?.activeId || s.accounts.activeId === s.auth?.user?.id,
 }))
 vi.mock('../store', () => ({ store: { getState: () => storeState } }))
-vi.mock('../constants', () => ({ CHAT_PANEL_WIDTH: 400 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 
 import chatModel from './chat'
@@ -475,6 +474,20 @@ describe('chat model — syncTranscript discards a response for a conversation n
    it before the AS ends the session, and the local teardown that follows calls signOut again —
    a second enrollment DELETE, and another bounded wait on a slow agent, for nothing. reset()
    ends every teardown and re-arms it for the next identity. */
+describe('chat model — sign-out clears the saved popout flag', () => {
+  it('marks the chat docked again when it was popped out, so the next sign-in shows it at once', async () => {
+    const dispatch = { ...makeDispatch(), ui: { setPersistent: vi.fn() } }
+    await effectsFor(dispatch).signOut(undefined, { auth: { user: { id: 'alice' } }, ui: { chatPoppedOut: true } })
+    expect(dispatch.ui.setPersistent).toHaveBeenCalledWith({ chatPoppedOut: false })
+  })
+
+  it('writes nothing when the chat was not popped out', async () => {
+    const dispatch = { ...makeDispatch(), ui: { setPersistent: vi.fn() } }
+    await effectsFor(dispatch).signOut(undefined, { auth: { user: { id: 'alice' } }, ui: { chatPoppedOut: false } })
+    expect(dispatch.ui.setPersistent).not.toHaveBeenCalled()
+  })
+})
+
 describe('chat model — the background grant is revoked once per identity', () => {
   const reducers = (chatModel as any).reducers
   const signedInAs = (id: string) => ({ auth: { user: { id } } })

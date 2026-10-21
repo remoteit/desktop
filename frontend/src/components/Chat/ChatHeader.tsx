@@ -28,10 +28,23 @@ import { useResizeMeasure } from '../../hooks/useResizeMeasure'
    height, same top margin, centered — so the two icon rows share a baseline across the
    divider. The name is the only thing allowed to shrink: it takes the slack and yields
    it back, so the action icons never compress. */
-export const ChatHeader: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+export const ChatHeader: React.FC<{ start?: React.ReactNode; children?: React.ReactNode }> = ({ start, children }) => {
   const { t } = useTranslation()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', height: 45, maxHeight: 45, paddingX: 2.5, marginTop: 1.5 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        height: 45,
+        maxHeight: 45,
+        flexShrink: 0,
+        // The app Header pads 2.25, so a leading icon lines up with the page's own beneath it
+        paddingLeft: start ? 2.25 : 2.5,
+        paddingRight: 2.5,
+        marginTop: 1.5,
+      }}
+    >
+      {start}
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', alignItems: 'center', marginLeft: 0.25 }}>
         {/* Step 3. The wrapper sx keeps the shrink chain intact — without minWidth: 0 the
             inserted div would refuse to shrink and the name would stop truncating. */}

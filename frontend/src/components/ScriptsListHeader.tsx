@@ -1,16 +1,16 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Box, Button, Typography, Tooltip } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { selectPermissions } from '../selectors/organizations'
 import { useHideSidebar } from '../hooks/useChatEnabled'
 import { IconButton } from '../buttons/IconButton'
 import { RefreshButton } from '../buttons/RefreshButton'
+import { SidebarMenuButton } from '../buttons/SidebarMenuButton'
 import { Icon } from '../components/Icon'
 import { Title } from '../components/Title'
 import { spacing } from '../styling'
-import { Dispatch } from '../store'
 
 type Props = {
   showBack?: boolean
@@ -20,7 +20,6 @@ type Props = {
 
 export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }) => {
   const history = useHistory()
-  const dispatch = useDispatch<Dispatch>()
   const sidebarHidden = useHideSidebar()
   const permissions = useSelector(selectPermissions)
   const { t } = useTranslation()
@@ -42,14 +41,7 @@ export const ScriptsListHeader: React.FC<Props> = ({ showBack, onBack, scripts }
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        {sidebarHidden && (
-          <IconButton
-            name="bars"
-            size="md"
-            color="grayDarker"
-            onClick={() => dispatch.ui.set({ sidebarMenu: true })}
-          />
-        )}
+        {sidebarHidden && <SidebarMenuButton />}
         {showBack && (
           <IconButton
             icon="chevron-left"

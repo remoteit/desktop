@@ -145,7 +145,7 @@ export function getLocalStorage(state: State | null, key: string) {
 
 export function setLocalStorage(state: State | null, key: string, value: any) {
   const currentSession = state?.auth.user?.id || 'app'
-  if (!value) {
+  if (value == null) {
     console.log('REMOVE LOCAL STORAGE', key, 'value:', value, 'session:', currentSession)
     removeLocalStorage(state, key)
   } else {

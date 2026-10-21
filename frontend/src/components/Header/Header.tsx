@@ -7,12 +7,11 @@ import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
 import browser from '../../services/browser'
 import { State } from '../../store'
-import { Dispatch } from '../../store'
 import { Typography } from '@mui/material'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
 import { useLocation, Switch, Route } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
 import { ProductsHeaderButtons } from './ProductsHeaderButtons'
 import { UpgradeNotice } from '../UpgradeNotice'
@@ -21,6 +20,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
+import { SidebarMenuButton } from '../../buttons/SidebarMenuButton'
 import { Title } from '../Title'
 import { Box } from '@mui/material'
 
@@ -41,7 +41,6 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const sidebarHidden = layout.hideSidebar
   const mobile = useMobile()
   const inputRef = useRef<HTMLInputElement>(null)
-  const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
 
   const manager = permissions.includes('MANAGE')
@@ -77,9 +76,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           marginTop: overlapHeader ? 3.5 : 1.5,
         }}
       >
-        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && (
-          <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
-        )}
+        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && <SidebarMenuButton />}
         {(layout.hideSidebar || browser.isMobile) && (
           <Route path="/add" exact>
             <IconButton
