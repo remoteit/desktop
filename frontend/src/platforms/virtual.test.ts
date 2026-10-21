@@ -7,10 +7,10 @@ import { VIRTUAL_PLATFORM_TYPES, allPlatformChoices, suggestPlatform, virtualPla
 describe('virtual device platforms', () => {
   it.each([
     [1282, 'PLC', 'plc'],
-    [1283, 'IP camera', 'ipcamera'],
+    [1283, 'IP Camera', 'ipcamera'],
     [1284, 'Printer', 'printer'],
-    [1285, 'HMI / industrial PC', 'hmi'],
-    [1286, 'Router / switch', 'router'],
+    [1285, 'HMI / Industrial PC', 'hmi'],
+    [1286, 'Router / Switch', 'router'],
   ])('%i is "%s", drawn as %s', async (type, label, route) => {
     await platforms.initialize()
     expect(platforms.name(type)).toBe(label)

@@ -225,7 +225,7 @@ export function sampleAdd(
   const added = device({
     id,
     name: input.name,
-    platform: input.platform ?? 1280,
+    platform: input.platform ?? 264, // graphql's default: the catalogue's "Unknown"
     host: input.host,
     hostedBy: hosting(gateway),
     state,

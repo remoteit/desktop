@@ -17,8 +17,8 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'ipcamera',
-  name: 'IP camera',
+  name: 'IP Camera',
   virtualOnly: true,
   component: Component,
-  types: { 1283: 'IP camera' },
+  types: { 1283: 'IP Camera' },
 })

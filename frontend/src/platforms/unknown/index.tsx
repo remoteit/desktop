@@ -20,5 +20,5 @@ const Index = ({ darkMode, ...props }) => {
 platforms.register({
   id: 'unknown',
   component: Index,
-  types: { 65535: 'Unknown', 0: 'Unknown' },
+  types: { 65535: 'Unknown', 0: 'Unknown', 264: 'Unknown' }, // 264: a virtual device given no platform (graphql's default)
 })

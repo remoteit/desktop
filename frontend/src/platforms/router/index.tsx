@@ -21,8 +21,8 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'router',
-  name: 'Router / switch',
+  name: 'Router / Switch',
   virtualOnly: true,
   component: Component,
-  types: { 1286: 'Router / switch' },
+  types: { 1286: 'Router / Switch' },
 })

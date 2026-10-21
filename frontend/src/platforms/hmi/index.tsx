@@ -19,8 +19,8 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'hmi',
-  name: 'HMI / industrial PC',
+  name: 'HMI / Industrial PC',
   virtualOnly: true,
   component: Component,
-  types: { 1285: 'HMI / industrial PC' },
+  types: { 1285: 'HMI / Industrial PC' },
 })

@@ -541,7 +541,8 @@ export const attributes: Attribute[] = [
     id: 'serviceHost',
     label: 'Service Host',
     defaultWidth: 130,
-    value: ({ service }) => service?.host || IP_PRIVATE,
+    // A virtual device's service with no host of its own uses the device's (graphql answers null): never the gateway.
+    value: ({ device, service }) => service?.host || (device?.virtual ? device.host || '–' : IP_PRIVATE),
   }),
   new ServiceAttribute({
     id: 'servicePort',

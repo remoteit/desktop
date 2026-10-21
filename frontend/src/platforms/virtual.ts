@@ -4,7 +4,8 @@ import { platforms } from '.'
    the portal proposal's "What kind of machine it is"). The picker leads with these, the machines most often reached
    through a gateway, and searches the whole catalogue for the rest. Custom labels ("Line 2", "Keyence") are tags. */
 
-export const PLATFORM_UNKNOWN = 65535
+// graphql's own default for a virtual device given no platform (the catalogue's 264, "Unknown")
+export const PLATFORM_UNKNOWN = 264
 
 export const VIRTUAL_PLATFORM_TYPES = [
   1284, // Printer
