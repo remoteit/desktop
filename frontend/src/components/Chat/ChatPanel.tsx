@@ -10,6 +10,7 @@ import { getViewportWidth } from '../../hooks/useViewportWidth'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
 import { PanelHandle } from '../PanelHandle'
+import { SidebarMenuButton } from '../SidebarMenu'
 import { IconButton } from '../../buttons/IconButton'
 import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
@@ -130,7 +131,7 @@ export const ChatPanel: React.FC = () => {
       }}
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
-      <ChatHeader>
+      <ChatHeader start={!docked && layout.showBottomMenu && <SidebarMenuButton />}>
         {!browser.isMobile && !layout.mobile && chatPopoutSupported && (
           <IconButton
             icon="arrow-up-right-from-square"
