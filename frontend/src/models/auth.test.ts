@@ -28,8 +28,12 @@ const {
   oidcIsSavedAccount,
   oidcSelectKnownAccount,
   oidcCompleteFromUrl,
+  oidcCallbackReason,
+  oidcSignedIn,
   completeCallback,
 } = vi.hoisted(() => ({
+  oidcCallbackReason: vi.fn(),
+  oidcSignedIn: vi.fn(),
   oidcIsSavedAccount: vi.fn(),
   oidcSelectKnownAccount: vi.fn(),
   oidcCompleteFromUrl: vi.fn(),
@@ -69,6 +73,8 @@ vi.mock('../services/oidc', () => ({
   oidcIsSavedAccount,
   oidcSelectKnownAccount,
   oidcCompleteFromUrl,
+  oidcCallbackReason,
+  oidcSignedIn,
   oidcTakeSupportTicket: vi.fn(),
   OidcError: class OidcError extends Error {},
 }))
@@ -151,6 +157,7 @@ const aFailureShowing = (signInError: string) => expect.objectContaining({ signI
 import authModel, { liveAuthCallback } from './auth'
 import { agentOwnedMessage } from '@common/agentOwner'
 import { graphQLLogin } from '../services/graphQLRequest'
+import { getToken } from '../services/remoteit'
 import { PERSISTED_MODELS } from './persistedModels'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
@@ -164,6 +171,9 @@ beforeEach(() => {
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
   oidcClaims.mockReset()
+  oidcCallbackReason.mockReset()
+  oidcSignedIn.mockReset()
+  vi.mocked(getToken).mockReset()
   oidcReconcileIssuer.mockReset()
   chooseStage.mockReset()
   reloadIfStageChanged.mockReset()
@@ -507,7 +517,7 @@ describe("auth model — this computer's agent belongs to another account", () =
 })
 
 describe('auth model — switching accounts releases the agent first', () => {
-  const signedIn = { auth: { user: { id: 'guid-a' } } }
+  const signedIn = { auth: { user: { id: 'guid-a' }, backendAuthenticated: true } }
   beforeEach(() => {
     browser.hasBackend = true
     emitWithAck.mockReset()
@@ -546,6 +556,19 @@ describe('auth model — switching accounts releases the agent first', () => {
     const dispatch = makeDispatch()
     expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(true)
     expect(emitWithAck).toHaveBeenCalledTimes(2)
+  })
+
+  // A switch landing in a window that had just reloaded asked before the backend had signed it in, got no
+  // answer, and warned that the agent could not be signed out while nothing had failed.
+  it('a window the backend has not signed in yet waits for it before asking', async () => {
+    reconnectNow.mockResolvedValue(true)
+    emitWithAck.mockResolvedValue(true)
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: { user: { id: 'guid-a' } } })).toBe(true)
+    expect(reconnectNow).toHaveBeenCalledTimes(1)
+    expect(emitWithAck).toHaveBeenCalledTimes(1)
+    expect(reconnectNow.mock.invocationCallOrder[0]).toBeLessThan(emitWithAck.mock.invocationCallOrder[0])
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
   })
 
   it('a release the backend refuses or never answers stops the switch and says so', async () => {
@@ -680,6 +703,16 @@ describe('auth model — the chooser callback releases the agent only for a diff
     expect(dispatch.ui.set).toHaveBeenCalledWith({
       errorMessage: 'That account is no longer signed in on this browser.',
     })
+  })
+
+  it('a background heal that fails says nothing: the session still works', async () => {
+    oidcCallbackReason.mockReturnValue('heal')
+    oidcCompleteFromUrl.mockRejectedValue(Object.assign(new Error('login_required'), { oauthError: 'login_required' }))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?error=login_required&state=s')
+    expect(oidcCallbackReason).toHaveBeenCalledWith('?error=login_required&state=s')
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+    expect(assign).not.toHaveBeenCalled()
   })
 
   it('a stale callback changes nothing', async () => {
@@ -828,5 +861,39 @@ describe("auth model — a different account arriving drops this phone's push to
     admitting({ sub: 'sub-a' })
     await boot()
     expect(pushUnregister).not.toHaveBeenCalled()
+  })
+})
+
+describe('auth model — a background heal that fails on boot', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    oidcCallbackReason.mockReturnValue('heal')
+    oidcCompleteFromUrl.mockReset().mockRejectedValue(new Error('consent_required'))
+    oidcSignedIn.mockReturnValue(true)
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  const boot = async () => {
+    const dispatch = makeDispatch()
+    Object.assign(dispatch.auth, { handleSignInSuccess: vi.fn() })
+    await effectsFor(dispatch).init(undefined, { auth: {} })
+    return dispatch
+  }
+
+  it('restores the working session without a word', async () => {
+    vi.mocked(getToken).mockResolvedValue('token')
+    const dispatch = await boot()
+    expect((dispatch.auth as any).handleSignInSuccess).toHaveBeenCalledWith({ keepAutoStarts: true })
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+    expect(dispatch.auth.set).not.toHaveBeenCalledWith(expect.objectContaining({ signInFailed: true }))
+  })
+
+  it('still lands on the sign-in screen when the session itself is gone', async () => {
+    vi.mocked(getToken).mockResolvedValue('')
+    const dispatch = await boot()
+    expect((dispatch.auth as any).handleSignInSuccess).not.toHaveBeenCalled()
+    expect(dispatch.auth.set).toHaveBeenCalledWith(aFailureShowing('consent_required'))
   })
 })

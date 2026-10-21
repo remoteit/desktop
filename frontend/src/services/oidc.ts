@@ -153,7 +153,7 @@ const tokenStore = (): Storage => {
   }
 }
 
-type Flow = { verifier: string; state: string; nonce: string; redirectUri: string; issuer?: string }
+type Flow = { verifier: string; state: string; nonce: string; redirectUri: string; issuer?: string; auto?: string }
 
 function rememberFlow(flow: Flow, authorizeUrl: string): void {
   sessionStorage.setItem(FLOW_KEY, JSON.stringify({ ...flow, authorizeUrl }))
@@ -204,6 +204,13 @@ function findFlow(state: string): Flow | undefined {
 
 /** Whether a callback carrying `state` is for a sign-in this browser started and hasn't settled. */
 export const oidcFlowPending = (state: string): boolean => !!findFlow(state)
+
+/** The `auto` reason the authorize a callback answers was started with — undefined when someone clicked
+ *  for it. Read before completing the callback, which drops the flow. */
+export const oidcCallbackReason = (search?: string): string | undefined => {
+  const state = new URLSearchParams(search ?? window.location.search).get('state')
+  return state ? findFlow(state)?.auto : undefined
+}
 
 /** Single-use: both records of the flow go once its callback has settled. */
 function dropFlow(state: string): void {
@@ -582,6 +589,7 @@ export async function oidcStart(
     nonce: randomB64u(16),
     redirectUri: redirect,
     issuer: OAUTH_ISSUER,
+    auto: opts.auto,
   }
   const url = new URL(d.authorization_endpoint)
   const params: { [key: string]: string } = {
