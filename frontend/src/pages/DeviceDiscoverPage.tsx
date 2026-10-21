@@ -8,6 +8,9 @@ import { DeviceContext } from '../services/Context'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { Discovery, DiscoveryError, graphQLDiscover, offerService } from '../services/graphQLDiscovery'
 import { DiscoveryList } from '../components/DiscoveryList'
+import { AddAsVirtualDevice, discoveredMachine, mayHostVirtualDevices } from '../components/AddAsVirtualDevice'
+import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
+import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -24,6 +27,11 @@ export const DeviceDiscoverPage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const [discovery, setDiscovery] = useState<Discovery | DiscoveryError | typeof UNSUPPORTED>()
+  // Each machine it sees can be added as a virtual device it hosts, where it may host one.
+  const virtualDevices = useVirtualDevices()
+  const sessionDevice = !!useDeviceSessionInfo(virtualDevices && !device?.virtual ? device?.id : undefined)?.agent
+    ?.running
+  const hosts = !!device && virtualDevices && mayHostVirtualDevices(device, sessionDevice)
 
   const load = useCallback(async () => {
     if (!device?.id) return
@@ -72,6 +80,11 @@ export const DeviceDiscoverPage: React.FC = () => {
           dispatch.ui.set({ setupAdded: offerService(offer) })
           history.push(`/devices/${device.id}/add`)
         }}
+        machineAction={
+          hosts
+            ? machine => <AddAsVirtualDevice gatewayId={device.id} machine={discoveredMachine(machine)} />
+            : undefined
+        }
       />
     )
   }
