@@ -1,3 +1,4 @@
+import { VIRTUAL_DEVICES_DEFAULT } from '../constants'
 import { post } from './post'
 import { store } from '../store'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
@@ -48,7 +49,9 @@ async function probe(): Promise<boolean> {
 export async function virtualDevicesMode(): Promise<VirtualMode> {
   if (!selectVirtualDevices(store.getState())) return 'off'
   served ??= probe()
-  return (await served) ? 'api' : 'sample'
+  // Sample devices are for trying the UI against an API without them. Where virtual devices are on for everyone
+  // (VIRTUAL_DEVICES_DEFAULT), an API that does not answer shows none rather than made-up ones.
+  return (await served) ? 'api' : VIRTUAL_DEVICES_DEFAULT ? 'off' : 'sample'
 }
 
 // For tests, and for a change of API.

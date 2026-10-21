@@ -66,6 +66,9 @@ export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
 // A stage whose API serves device sessions to every account (solo: VITE_DEVICE_SESSIONS=on) has their features on by
 // default, without Test UI; hooks/useDeviceSessions.
 export const DEVICE_SESSIONS_DEFAULT = env.VITE_DEVICE_SESSIONS === 'on'
+// A stage whose API serves virtual devices (solo: VITE_VIRTUAL_DEVICES=on) has them on by default, as device sessions
+// are; hooks/useVirtualDevices.
+export const VIRTUAL_DEVICES_DEFAULT = env.VITE_VIRTUAL_DEVICES === 'on'
 export const DEVICE_DOWNLOADS_URL = (env.VITE_DEVICE_DOWNLOADS_URL || 'https://downloads.remote.it/device').replace(/\/+$/, '')
 // The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
 // install that sets only the OIDC vars calls one stage with another stage's token and 401s with
