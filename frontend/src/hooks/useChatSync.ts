@@ -100,8 +100,8 @@ export const useChatMainSync = (): void => {
     checkPopoutPresence(handlers)
     return () => {
       unsubscribe()
-      // This panel unmounts ONLY when the entitlement goes away — an org switch to an unlicensed
-      // account, or the Test feature turned off (closing it merely renders null; popping out
+      // This panel unmounts ONLY when the entitlement goes away — the user's licence revoked,
+      // or the Test feature turned off (closing it merely renders null; popping out
       // stops explicitly). A turn left streaming behind that runs on headless: the remount's
       // resetTransient() then clears streaming/pendingConfirmation while the old request is
       // still live, so the next send orphans its AbortController and two turns' events

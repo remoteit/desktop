@@ -49,7 +49,7 @@ export const App: React.FC = () => {
   const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
   const chatEnabled = useChatEnabled()
   const chatDocked = useChatDocked()
-  // organization.initialized flips exactly when the account's license limits have been parsed,
+  // organization.initialized flips exactly when the user's license limits have been parsed,
   // so it is the one signal that chatEnabled has been RESOLVED rather than merely not yet loaded
   const chatEntitlementResolved = useSelector((state: State) => state.organization.initialized)
   const sidebarWidth = useSidebarWidth()
@@ -74,9 +74,6 @@ export const App: React.FC = () => {
     triplePanel,
     sidePanelWidth: sidebarWidth,
   }
-
-  // Before the popout's entitlement gate below can be read, the window must run under the
-  // account scope that opened it (otherwise it reads the personal account's license)
 
   useEffect(() => {
     hideSplashScreen()

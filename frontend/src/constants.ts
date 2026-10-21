@@ -7,11 +7,11 @@ export const MODE = env.MODE || 'development'
 
 /* The license limit that gates the Remote.It AI chat. The whole surface hangs off this
    one name — the header button, the docked column and everything the panel loads — so
-   switching the feature on for an account is a licensing change rather than a release:
-   the ai-agent ADD-ON licence, granted per account from Admin → Add-ons (graphql-api
+   switching the feature on for a user is a licensing change rather than a release:
+   the ai-agent ADD-ON licence, granted per user from Admin → Add-ons (graphql-api
    docs/AI-AGENT-LICENSE.md). It is the ONLY switch. Until 2026-09-14 a dev build and the
    AI portal defaulted the flag on ahead of the licence (PENDING_FEATURES / CHAT_ALWAYS_ON);
-   now an account without the licence — a developer's included — sees no chat anywhere. */
+   now a user without the licence — a developer included — sees no chat anywhere. */
 export const CHAT_FEATURE = 'ai-agent'
 export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
 
