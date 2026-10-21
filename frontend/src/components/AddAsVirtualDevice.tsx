@@ -88,6 +88,9 @@ export const AddAsVirtualDevice: React.FC<{ gatewayId: string; machine: Discover
   if (!useVirtualDevices()) return null
   return (
     <Button
+      // Outlined in the primary colour: a machine's own action, beside its offers' filled "Add as service" ones.
+      color="primary"
+      variant="outlined"
       size="small"
       onClick={event => {
         event.stopPropagation()
