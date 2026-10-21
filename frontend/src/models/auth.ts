@@ -40,6 +40,7 @@ import {
   oidcSelectKnownAccount,
   oidcClearAutoStarts,
   oidcCallbackReason,
+  oidcTakeSwitched,
   OidcError,
   OidcErrorCode,
 } from '../services/oidc'
@@ -161,6 +162,7 @@ export default createModel<RootModel>()({
       console.log('AUTH INIT START', { user })
       if (!user) {
         const healing = oidcCallbackReason() === 'heal'
+        const switched = oidcTakeSwitched()
         try {
           // A boot with ?code&state in the URL IS the sign-in completing (web return, or
           // the desktop deep-link reload); otherwise restore a stored session.
@@ -186,7 +188,9 @@ export default createModel<RootModel>()({
             const alive = await getToken()
             if (alive) {
               await dispatch.auth.handleSignInSuccess()
-              await dispatch.auth.healGrant() // refused by oidcStart in a support tab
+              // Desktop and mobile authorize in the system browser, which opening the app must never show, so
+              // there only the boot a switch causes heals. A support tab's heal is refused by oidcStart.
+              if (!browser.isNative || switched) await dispatch.auth.healGrant()
             } else {
               invalidateOidcToken()
               // A JUST-ACTIVATED saved account whose refresh family died: one silent
@@ -194,7 +198,7 @@ export default createModel<RootModel>()({
               // session-set member the hint names (permitteer silent selection), so the
               // person lands back signed in with zero screens. The marker is one-shot;
               // a refused silent round falls to the ordinary sign-in screen.
-              const hint = oidcActivationHint()
+              const hint = switched && oidcActivationHint()
               if (hint) await oidcStart({ prompt: 'none', loginHint: hint, auto: `activate:${hint}` })
             }
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')

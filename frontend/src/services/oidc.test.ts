@@ -22,6 +22,8 @@ import {
   oidcCompleteFromUrl,
   oidcFlowPending,
   oidcCallbackReason,
+  oidcActivateAccount,
+  oidcTakeSwitched,
 } from './oidc'
 import browser, { leaveTo } from './browser'
 import { OAUTH_ISSUER, PROTOCOL } from '../constants'
@@ -198,6 +200,21 @@ describe('oidcReopen', () => {
   it('resolves false when no flow is outstanding', async () => {
     expect(await oidcReopen()).toBe(false)
     expect(leaveTo).not.toHaveBeenCalled()
+  })
+})
+
+describe('oidcTakeSwitched', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+  })
+
+  it('answers true once, for the boot a saved-account switch causes, and not for a later reload', () => {
+    signIn()
+    expect(oidcTakeSwitched()).toBe(false)
+    expect(oidcActivateAccount('b')).toBe(true)
+    expect(oidcTakeSwitched()).toBe(true)
+    expect(oidcTakeSwitched()).toBe(false)
   })
 })
 

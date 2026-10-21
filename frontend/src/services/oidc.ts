@@ -124,6 +124,7 @@ export const oidcClearAutoStarts = (): void => {
 // first cut's clearLocal() call hit a temporal dead zone and killed the whole bundle.)
 const SUPPORT_FLAG = 'oidc.support'
 const SUPPORT_TICKET_KEY = 'oidc.support_ticket'
+const SWITCHED_KEY = 'oidc.switched'
 // Support-session LAUNCH (permitteer docs/desktop-support.md): the console lands this tab on
 // the app with a one-time ?support_ticket. The ticket is stashed for the authorize auth.init
 // starts (it rides that request as `support_ticket`; the AS binds the sign-in to the operator's
@@ -334,6 +335,9 @@ const takeSession = (key: string): string | undefined => {
 }
 /** The launch ticket, ONCE — consumed by the authorize auth.init starts. */
 export const oidcTakeSupportTicket = () => takeSession(SUPPORT_TICKET_KEY)
+/** Whether this boot is the one a saved-account switch caused, ONCE — so a later reload of the same
+ *  window is not mistaken for it. */
+export const oidcTakeSwitched = (): boolean => !!takeSession(SWITCHED_KEY)
 /** Ends this tab's support state: the tokens it held and the flag that made it a support tab. */
 export function oidcEndSupportTab() {
   clearLocal()
@@ -1119,6 +1123,7 @@ export function oidcActivateAccount(sub: string): boolean {
   const entry = readRegistry()[sub]
   if (!entry?.refresh_token) return false
   try {
+    sessionStorage.setItem(SWITCHED_KEY, '1')
     if (entry.email) sessionStorage.setItem(ACTIVATING_KEY, entry.email)
   } catch {
     /* recovery hint only */
