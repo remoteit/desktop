@@ -1,8 +1,10 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
 import { byName } from '../helpers/utilHelper'
+import { State } from '../store'
 import {
   getUser,
+  getUserId,
   getMemberships,
   getOrganizations,
   getPlans,
@@ -127,6 +129,8 @@ export const selectLimitsLookup = createSelector(
     return result
   }
 )
+
+export const selectUserLimitsLookup = (state: State) => selectLimitsLookup(state, getUserId(state))
 
 export type IFeature = { name: string; value: boolean }
 
