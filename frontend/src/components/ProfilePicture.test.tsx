@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   setAccountPicture: vi.fn(),
   removeAccountPicture: vi.fn(),
   uiSet: vi.fn(),
+  healGrant: vi.fn(),
 }))
 vi.mock('../services/oidc', () => ({
   oidcActor: mocks.oidcActor,
@@ -21,8 +22,11 @@ vi.mock('../services/permitteerAccount', () => ({
   removeAccountPicture: mocks.removeAccountPicture,
 }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_: string, fallback: string) => fallback }) }))
-vi.mock('react-redux', () => ({ useDispatch: () => ({ ui: { set: mocks.uiSet } }) }))
+vi.mock('react-redux', () => ({
+  useDispatch: () => ({ ui: { set: mocks.uiSet }, auth: { healGrant: mocks.healGrant } }),
+}))
 vi.mock('./Avatar', () => ({ Avatar: () => null }))
+vi.mock('./Notice', () => ({ Notice: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
 
 import { ProfilePicture } from './ProfilePicture'
 
@@ -77,6 +81,18 @@ describe('ProfilePicture', () => {
     await choose(new File(['x'], 'me.png', { type: 'image/png' }))
     expect(mocks.oidcSetPicture).not.toHaveBeenCalled()
     expect(mocks.uiSet).toHaveBeenCalledWith({ errorMessage: 'Your picture could not be changed. Try again.' })
+  })
+
+  // A desktop or mobile grant from before profile.write lasts until the next sign-in or switch, and
+  // "Try again" can never succeed for it.
+  it('offers to refresh permissions when the session lacks the one a picture change needs', async () => {
+    mocks.setAccountPicture.mockResolvedValue({ status: 403, body: { error: 'insufficient_authorization' } })
+    render()
+    await choose(new File(['x'], 'me.png', { type: 'image/png' }))
+    expect(mocks.uiSet).not.toHaveBeenCalled()
+    expect(container.textContent).toContain('needs a permission your session doesn’t carry yet')
+    await act(async () => button('Refresh permissions')!.click())
+    expect(mocks.healGrant).toHaveBeenCalledWith({ force: true })
   })
 
   it('says so when the file is no image it can draw', async () => {

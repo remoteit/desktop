@@ -39,6 +39,8 @@ import {
   oidcTakeSupportTicket,
   oidcSelectKnownAccount,
   oidcClearAutoStarts,
+  oidcCallbackReason,
+  oidcTakeSwitched,
   OidcError,
   OidcErrorCode,
 } from '../services/oidc'
@@ -159,6 +161,8 @@ export default createModel<RootModel>()({
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
+        const healing = oidcCallbackReason() === 'heal'
+        const switched = oidcTakeSwitched()
         try {
           // A boot with ?code&state in the URL IS the sign-in completing (web return, or
           // the desktop deep-link reload); otherwise restore a stored session.
@@ -184,7 +188,9 @@ export default createModel<RootModel>()({
             const alive = await getToken()
             if (alive) {
               await dispatch.auth.handleSignInSuccess()
-              await dispatch.auth.healGrant() // refused by oidcStart in a support tab
+              // Desktop and mobile authorize in the system browser, which opening the app must never show, so
+              // there only the boot a switch causes heals. A support tab's heal is refused by oidcStart.
+              if (!browser.isNative || switched) await dispatch.auth.healGrant()
             } else {
               invalidateOidcToken()
               // A JUST-ACTIVATED saved account whose refresh family died: one silent
@@ -192,7 +198,7 @@ export default createModel<RootModel>()({
               // session-set member the hint names (permitteer silent selection), so the
               // person lands back signed in with zero screens. The marker is one-shot;
               // a refused silent round falls to the ordinary sign-in screen.
-              const hint = oidcActivationHint()
+              const hint = switched && oidcActivationHint()
               if (hint) await oidcStart({ prompt: 'none', loginHint: hint, auto: `activate:${hint}` })
             }
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
@@ -200,11 +206,12 @@ export default createModel<RootModel>()({
           console.error('AUTH INIT: sign-in completion failed', error)
           // A REFUSED silent selection (a known account signed out elsewhere meanwhile) must not
           // strand a signed-in person on the sign-in screen: the stored session is intact — restore
-          // it, say why, and let the menu re-learn the browser's accounts. Otherwise fall through
-          // to this branch's richer error mapping (signInFailure).
-          if (error?.oauthError === 'login_required' && oidcSignedIn() && (await getToken())) {
-            await dispatch.auth.handleSignInSuccess()
-            dispatch.ui.set({ errorMessage: 'That account is no longer signed in on this browser.' })
+          // it, say why, and let the menu re-learn the browser's accounts. A failed heal restores it
+          // without a word: the session never stopped working. Otherwise fall through to this
+          // branch's richer error mapping (signInFailure).
+          if ((healing || error?.oauthError === 'login_required') && oidcSignedIn() && (await getToken())) {
+            await dispatch.auth.handleSignInSuccess({ keepAutoStarts: healing })
+            if (!healing) dispatch.ui.set({ errorMessage: 'That account is no longer signed in on this browser.' })
           } else dispatch.auth.set(signInFailure(error))
         }
       }
@@ -220,7 +227,10 @@ export default createModel<RootModel>()({
      *
      *  Automatic attempts are bounded by oidcStart's ledger (reason `heal`); a person pressing the
      *  chat's "Refresh permissions" is their own loop-breaker, so `force` skips both the ledger and
-     *  the stale check — a resource server's refusal is a runtime fact this stamp cannot see. */
+     *  the stale check — a resource server's refusal is a runtime fact this stamp cannot see.
+     *
+     *  A failed automatic heal says nothing (init, completeCallback): the session still works, and the
+     *  feature that needs the slice offers "Refresh permissions", whose failure the person is told. */
     async healGrant(options?: { force?: boolean }) {
       try {
         // The freshness check compares against the MCP detail type; on the first load after a
@@ -228,8 +238,12 @@ export default createModel<RootModel>()({
         // (bounded, resolved instantly thereafter) so this cannot call a renamed-away grant current.
         await oidcMcpDetailReady()
         if (!options?.force && !oidcGrantStale()) return
+        const email = oidcClaims()?.email
+        if (!email) return console.warn('AUTH: this session has no email to name, so its grant is not healed')
         console.log('AUTH: re-authorizing for this build’s declaration')
-        await oidcStart(options?.force ? {} : { auto: 'heal' })
+        // Only prompt=none makes the AS serve the session login_hint names; without it, the AS serves
+        // the browser's active account.
+        await oidcStart({ prompt: 'none', loginHint: email, auto: options?.force ? undefined : 'heal' })
       } catch (error) {
         console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
       }
@@ -273,6 +287,7 @@ export default createModel<RootModel>()({
      *  A DIFFERENT account is stored only once this window has released the agent. */
     async completeCallback(search: string) {
       const previous = oidcClaims()?.sub
+      const healing = oidcCallbackReason(search) === 'heal'
       try {
         const claims = await oidcCompleteFromUrl(
           search,
@@ -281,6 +296,7 @@ export default createModel<RootModel>()({
         if (claims) window.location.assign('/')
       } catch (error: any) {
         console.error('AUTH: sign-in callback did not complete', error)
+        if (healing) return
         dispatch.ui.set({
           errorMessage:
             error?.oauthError === 'login_required'
@@ -367,12 +383,13 @@ export default createModel<RootModel>()({
         await dispatch.auth.signedOut()
       }
     },
-    async handleSignInSuccess(): Promise<void> {
+    async handleSignInSuccess(options?: { keepAutoStarts?: boolean }): Promise<void> {
       // A session — freshly exchanged OR restored from stored tokens — is proof the
       // automatic path works, so it clears the auto-start budget. Doing it only at the
       // code exchange left a tab that had spent its budget unable to auto sign-in again
-      // after a perfectly healthy restore.
-      oidcClearAutoStarts()
+      // after a perfectly healthy restore. A restore after a failed heal is no such proof:
+      // clearing there sent every page load back through the AS.
+      if (!options?.keepAutoStarts) oidcClearAutoStarts()
       await dispatch.auth.set({ authenticated: true })
       await dispatch.auth.fetchUser()
       console.log('AUTHENTICATED SUCCESS')
@@ -412,7 +429,9 @@ export default createModel<RootModel>()({
     async releaseAgent(_: void, state): Promise<boolean> {
       if (!browser.hasBackend || !state.auth.user || state.auth.agentReleased) return true
       const ask = () => Controller.emitWithAck('agent/release', AGENT_RELEASE_TIMEOUT)
-      if ((await ask()) || ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && (await ask()))) {
+      // The backend only answers agent/release from a window it has finished signing in; asked sooner, it never does.
+      const ready = state.auth.backendAuthenticated || (await Controller.reconnectNow(AGENT_RELEASE_TIMEOUT))
+      if (ready && ((await ask()) || ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && (await ask())))) {
         dispatch.auth.set({ backendAuthenticated: false, agentReleased: true })
         return true
       }

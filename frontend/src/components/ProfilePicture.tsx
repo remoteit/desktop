@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux'
 import { Box, Button, Typography } from '@mui/material'
 import { Dispatch } from '../store'
 import { Avatar } from './Avatar'
+import { Notice } from './Notice'
 import { OidcResourceResult, oidcActor, oidcSetPicture } from '../services/oidc'
 import { useAccountPicture } from '../hooks/useAccountPicture'
 import { removeAccountPicture, setAccountPicture } from '../services/permitteerAccount'
@@ -39,14 +40,16 @@ export const ProfilePicture: React.FC<{ email: string }> = ({ email }) => {
   const dispatch = useDispatch<Dispatch>()
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+  const [unpermitted, setUnpermitted] = useState(false)
   const picture = useAccountPicture(email)
   const readOnly = !!oidcActor()
 
-  const change = async (request: () => Promise<OidcResourceResult<{ picture: string | null }>>) => {
+  const change = async (request: () => Promise<OidcResourceResult<{ picture?: string | null; error?: string }>>) => {
     setBusy(true)
     const result = await request().catch(() => undefined)
     setBusy(false)
     if (result?.status === 200) oidcSetPicture(result.body?.picture ?? null)
+    else if (result?.body?.error === 'insufficient_authorization') setUnpermitted(true)
     else dispatch.ui.set({ errorMessage: t('settings.pictureError', 'Your picture could not be changed. Try again.') })
   }
 
@@ -76,6 +79,24 @@ export const ProfilePicture: React.FC<{ email: string }> = ({ email }) => {
                 event.target.value = ''
               }}
             />
+          </Box>
+        )}
+        {unpermitted && (
+          <Box sx={{ marginBottom: 1 }}>
+            <Notice severity="info" fullWidth>
+              {t(
+                'settings.picturePermission',
+                'Changing your picture needs a permission your session doesn’t carry yet.'
+              )}
+            </Notice>
+            <Button
+              variant="contained"
+              size="small"
+              sx={{ marginTop: 1 }}
+              onClick={() => dispatch.auth.healGrant({ force: true })}
+            >
+              {t('settings.refreshPermissions', 'Refresh permissions')}
+            </Button>
           </Box>
         )}
         <Typography variant="caption">

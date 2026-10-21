@@ -21,6 +21,9 @@ import {
   oidcReopen,
   oidcCompleteFromUrl,
   oidcFlowPending,
+  oidcCallbackReason,
+  oidcActivateAccount,
+  oidcTakeSwitched,
 } from './oidc'
 import browser, { leaveTo } from './browser'
 import { OAUTH_ISSUER, PROTOCOL } from '../constants'
@@ -197,6 +200,43 @@ describe('oidcReopen', () => {
   it('resolves false when no flow is outstanding', async () => {
     expect(await oidcReopen()).toBe(false)
     expect(leaveTo).not.toHaveBeenCalled()
+  })
+})
+
+describe('oidcTakeSwitched', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+  })
+
+  it('answers true once, for the boot a saved-account switch causes, and not for a later reload', () => {
+    signIn()
+    expect(oidcTakeSwitched()).toBe(false)
+    expect(oidcActivateAccount('b')).toBe(true)
+    expect(oidcTakeSwitched()).toBe(true)
+    expect(oidcTakeSwitched()).toBe(false)
+  })
+})
+
+describe('oidcCallbackReason', () => {
+  const ownState = () => JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')?.state
+
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    stubDiscovery({ authorization_endpoint: 'https://login.test/authorize' })
+  })
+  afterEach(() => vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline'))))
+
+  it('names the automatic reason the callback’s authorize was started with', async () => {
+    await oidcStart({ prompt: 'none', loginHint: 'a@x.test', auto: 'heal' })
+    expect(oidcCallbackReason(`?error=login_required&state=${ownState()}`)).toBe('heal')
+  })
+
+  it('is undefined for an authorize someone clicked for, and for a callback with no flow', async () => {
+    await oidcStart({ prompt: 'select_account' })
+    expect(oidcCallbackReason(`?code=c&state=${ownState()}`)).toBeUndefined()
+    expect(oidcCallbackReason('?code=c&state=unknown')).toBeUndefined()
   })
 })
 

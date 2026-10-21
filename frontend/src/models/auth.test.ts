@@ -28,8 +28,16 @@ const {
   oidcIsSavedAccount,
   oidcSelectKnownAccount,
   oidcCompleteFromUrl,
+  oidcCallbackReason,
+  oidcSignedIn,
+  oidcActivationHint,
+  oidcTakeSwitched,
   completeCallback,
 } = vi.hoisted(() => ({
+  oidcCallbackReason: vi.fn(),
+  oidcActivationHint: vi.fn(),
+  oidcTakeSwitched: vi.fn(),
+  oidcSignedIn: vi.fn(),
   oidcIsSavedAccount: vi.fn(),
   oidcSelectKnownAccount: vi.fn(),
   oidcCompleteFromUrl: vi.fn(),
@@ -50,7 +58,7 @@ const {
   oidcActor: vi.fn(),
   oidcMcpDetailReady: vi.fn(),
   pushUnregister: vi.fn(),
-  browser: { isElectron: false, hasBackend: false },
+  browser: { isElectron: false, isNative: false, hasBackend: false },
   storeState: { auth: {} as Record<string, unknown>, user: { id: '' } },
 }))
 
@@ -69,6 +77,11 @@ vi.mock('../services/oidc', () => ({
   oidcIsSavedAccount,
   oidcSelectKnownAccount,
   oidcCompleteFromUrl,
+  oidcCallbackReason,
+  oidcSignedIn,
+  oidcActivationHint,
+  oidcTakeSwitched,
+  invalidateOidcToken: vi.fn(),
   oidcTakeSupportTicket: vi.fn(),
   OidcError: class OidcError extends Error {},
 }))
@@ -125,10 +138,24 @@ vi.mock('axios', () => ({ default: {} }))
 // call is an observable spy rather than a real reducer/effect.
 function makeDispatch() {
   return {
-    auth: { set: vi.fn(), signedOut: vi.fn(), signOut: vi.fn(), releaseAgent: vi.fn(), switchAccount: vi.fn() },
+    auth: {
+      set: vi.fn(),
+      signedOut: vi.fn(),
+      signOut: vi.fn(),
+      releaseAgent: vi.fn(),
+      switchAccount: vi.fn(),
+      handleSignInSuccess: vi.fn(),
+      healGrant: vi.fn(),
+    },
     ui: { set: vi.fn(), setPersistent: vi.fn() },
     chat: { signOut: vi.fn() },
   }
+}
+
+const boot = async () => {
+  const dispatch = makeDispatch()
+  await effectsFor(dispatch).init(undefined, { auth: {} })
+  return dispatch
 }
 
 // Every model and method on demand, as a spy: for effects that fan out across many models.
@@ -151,6 +178,7 @@ const aFailureShowing = (signInError: string) => expect.objectContaining({ signI
 import authModel, { liveAuthCallback } from './auth'
 import { agentOwnedMessage } from '@common/agentOwner'
 import { graphQLLogin } from '../services/graphQLRequest'
+import { getToken } from '../services/remoteit'
 import { PERSISTED_MODELS } from './persistedModels'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
@@ -163,6 +191,12 @@ beforeEach(() => {
   oidcActor.mockReset().mockReturnValue(null)
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
+  oidcClaims.mockReset()
+  oidcCallbackReason.mockReset()
+  oidcSignedIn.mockReset()
+  oidcActivationHint.mockReset()
+  oidcTakeSwitched.mockReset()
+  vi.mocked(getToken).mockReset()
   oidcReconcileIssuer.mockReset()
   chooseStage.mockReset()
   reloadIfStageChanged.mockReset()
@@ -335,6 +369,33 @@ describe('auth model — the grant freshness check waits for the boot MCP metada
   })
 })
 
+/* A heal with no prompt came back as whichever account the browser had active, and the window
+   completing it released the agent and switched to that account — on the first boot after an update. */
+describe('auth model — the grant heal re-authorizes the signed-in account', () => {
+  beforeEach(() => {
+    oidcGrantStale.mockReturnValue(true)
+    oidcClaims.mockReturnValue({ sub: 'sub-a', email: 'a@example.com' })
+  })
+
+  it('a stale grant heals by silent selection of this account', async () => {
+    await effectsFor(makeDispatch()).healGrant()
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'none', loginHint: 'a@example.com', auto: 'heal' })
+  })
+
+  it('a forced heal names the account too, outside the ledger', async () => {
+    oidcGrantStale.mockReturnValue(false)
+    await effectsFor(makeDispatch()).healGrant({ force: true })
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'none', loginHint: 'a@example.com' })
+  })
+
+  it('an account with no email to name is not healed', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    oidcClaims.mockReturnValue({ sub: 'sub-a' })
+    await effectsFor(makeDispatch()).healGrant()
+    expect(oidcStart).not.toHaveBeenCalled()
+  })
+})
+
 /* signedOut() ends with Controller.close(), and socket.io-client fires 'disconnect' synchronously
    from close() on a connected socket — so disconnect runs in the middle of every teardown. */
 describe('auth model — the teardown closing its own socket', () => {
@@ -479,7 +540,7 @@ describe("auth model — this computer's agent belongs to another account", () =
 })
 
 describe('auth model — switching accounts releases the agent first', () => {
-  const signedIn = { auth: { user: { id: 'guid-a' } } }
+  const signedIn = { auth: { user: { id: 'guid-a' }, backendAuthenticated: true } }
   beforeEach(() => {
     browser.hasBackend = true
     emitWithAck.mockReset()
@@ -518,6 +579,28 @@ describe('auth model — switching accounts releases the agent first', () => {
     const dispatch = makeDispatch()
     expect(await effectsFor(dispatch).releaseAgent(undefined, signedIn)).toBe(true)
     expect(emitWithAck).toHaveBeenCalledTimes(2)
+  })
+
+  // A switch landing in a window that had just reloaded asked before the backend had signed it in, got no
+  // answer, and warned that the agent could not be signed out while nothing had failed.
+  it('a window the backend has not signed in yet waits for it before asking', async () => {
+    reconnectNow.mockResolvedValue(true)
+    emitWithAck.mockResolvedValue(true)
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: { user: { id: 'guid-a' } } })).toBe(true)
+    expect(reconnectNow).toHaveBeenCalledTimes(1)
+    expect(emitWithAck).toHaveBeenCalledTimes(1)
+    expect(reconnectNow.mock.invocationCallOrder[0]).toBeLessThan(emitWithAck.mock.invocationCallOrder[0])
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+  })
+
+  it('a window the backend never signs in gives up after the one wait, without asking', async () => {
+    reconnectNow.mockResolvedValue(false)
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: { user: { id: 'guid-a' } } })).toBe(false)
+    expect(reconnectNow).toHaveBeenCalledTimes(1)
+    expect(emitWithAck).not.toHaveBeenCalled()
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.agentReleaseFailed' })
   })
 
   it('a release the backend refuses or never answers stops the switch and says so', async () => {
@@ -654,6 +737,16 @@ describe('auth model — the chooser callback releases the agent only for a diff
     })
   })
 
+  it('a background heal that fails says nothing: the session still works', async () => {
+    oidcCallbackReason.mockReturnValue('heal')
+    oidcCompleteFromUrl.mockRejectedValue(Object.assign(new Error('login_required'), { oauthError: 'login_required' }))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?error=login_required&state=s')
+    expect(oidcCallbackReason).toHaveBeenCalledWith('?error=login_required&state=s')
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+    expect(assign).not.toHaveBeenCalled()
+  })
+
   it('a stale callback changes nothing', async () => {
     oidcCompleteFromUrl.mockResolvedValue(undefined)
     const dispatch = makeDispatch()
@@ -782,23 +875,81 @@ describe("auth model — a different account arriving drops this phone's push to
 
   const admitting = (returned: { sub: string }) =>
     oidcCompleteFromUrl.mockImplementation(async (_search, admit) => ((await admit(returned)) ? returned : undefined))
-  const boot = async () => {
-    const dispatch = makeDispatch()
-    Object.assign(dispatch.auth, { handleSignInSuccess: vi.fn() })
-    await effectsFor(dispatch).init(undefined, { auth: {} })
-    return dispatch
-  }
-
   it('drops it before the new account is stored, then signs in as that account', async () => {
     admitting({ sub: 'sub-b' })
     const dispatch = await boot()
     expect(pushUnregister).toHaveBeenCalledTimes(1)
-    expect((dispatch.auth as any).handleSignInSuccess).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.handleSignInSuccess).toHaveBeenCalledTimes(1)
   })
 
   it('keeps it when the same account signs back in', async () => {
     admitting({ sub: 'sub-a' })
     await boot()
     expect(pushUnregister).not.toHaveBeenCalled()
+  })
+})
+
+/* The heal opens the system browser in the desktop and mobile apps, and it did so by itself on the first
+   launch after an update — once per account, or on every launch while it could not succeed. */
+describe('auth model — which boots heal the grant', () => {
+  beforeEach(() => {
+    oidcCompleteFromUrl.mockReset().mockResolvedValue(undefined)
+    oidcSignedIn.mockReturnValue(true)
+    vi.mocked(getToken).mockResolvedValue('token')
+  })
+  afterEach(() => {
+    browser.isNative = false
+  })
+
+  it('a plain launch of the desktop or mobile app never heals', async () => {
+    browser.isNative = true
+    expect((await boot()).auth.healGrant).not.toHaveBeenCalled()
+  })
+
+  it('the launch a saved-account switch causes heals', async () => {
+    browser.isNative = true
+    oidcTakeSwitched.mockReturnValue(true)
+    expect((await boot()).auth.healGrant).toHaveBeenCalledTimes(1)
+  })
+
+  it('every web boot heals', async () => {
+    expect((await boot()).auth.healGrant).toHaveBeenCalledTimes(1)
+  })
+
+  it('a later reload that cannot mint a token never leaves for the AS on the hint a switch left', async () => {
+    vi.mocked(getToken).mockResolvedValue('')
+    oidcActivationHint.mockReturnValue('b@x.test')
+    await boot()
+    expect(oidcStart).not.toHaveBeenCalled()
+    oidcTakeSwitched.mockReturnValue(true)
+    await boot()
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'none', loginHint: 'b@x.test', auto: 'activate:b@x.test' })
+  })
+})
+
+describe('auth model — a background heal that fails on boot', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    oidcCallbackReason.mockReturnValue('heal')
+    oidcCompleteFromUrl.mockReset().mockRejectedValue(new Error('consent_required'))
+    oidcSignedIn.mockReturnValue(true)
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('restores the working session without a word', async () => {
+    vi.mocked(getToken).mockResolvedValue('token')
+    const dispatch = await boot()
+    expect(dispatch.auth.handleSignInSuccess).toHaveBeenCalledWith({ keepAutoStarts: true })
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+    expect(dispatch.auth.set).not.toHaveBeenCalledWith(expect.objectContaining({ signInFailed: true }))
+  })
+
+  it('still lands on the sign-in screen when the session itself is gone', async () => {
+    vi.mocked(getToken).mockResolvedValue('')
+    const dispatch = await boot()
+    expect(dispatch.auth.handleSignInSuccess).not.toHaveBeenCalled()
+    expect(dispatch.auth.set).toHaveBeenCalledWith(aFailureShowing('consent_required'))
   })
 })

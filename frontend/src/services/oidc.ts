@@ -124,6 +124,7 @@ export const oidcClearAutoStarts = (): void => {
 // first cut's clearLocal() call hit a temporal dead zone and killed the whole bundle.)
 const SUPPORT_FLAG = 'oidc.support'
 const SUPPORT_TICKET_KEY = 'oidc.support_ticket'
+const SWITCHED_KEY = 'oidc.switched'
 // Support-session LAUNCH (permitteer docs/desktop-support.md): the console lands this tab on
 // the app with a one-time ?support_ticket. The ticket is stashed for the authorize auth.init
 // starts (it rides that request as `support_ticket`; the AS binds the sign-in to the operator's
@@ -153,7 +154,7 @@ const tokenStore = (): Storage => {
   }
 }
 
-type Flow = { verifier: string; state: string; nonce: string; redirectUri: string; issuer?: string }
+type Flow = { verifier: string; state: string; nonce: string; redirectUri: string; issuer?: string; auto?: string }
 
 function rememberFlow(flow: Flow, authorizeUrl: string): void {
   sessionStorage.setItem(FLOW_KEY, JSON.stringify({ ...flow, authorizeUrl }))
@@ -204,6 +205,13 @@ function findFlow(state: string): Flow | undefined {
 
 /** Whether a callback carrying `state` is for a sign-in this browser started and hasn't settled. */
 export const oidcFlowPending = (state: string): boolean => !!findFlow(state)
+
+/** The `auto` reason the authorize a callback answers was started with — undefined when someone clicked
+ *  for it. Read before completing the callback, which drops the flow. */
+export const oidcCallbackReason = (search?: string): string | undefined => {
+  const state = new URLSearchParams(search ?? window.location.search).get('state')
+  return state ? findFlow(state)?.auto : undefined
+}
 
 /** Single-use: both records of the flow go once its callback has settled. */
 function dropFlow(state: string): void {
@@ -327,6 +335,9 @@ const takeSession = (key: string): string | undefined => {
 }
 /** The launch ticket, ONCE — consumed by the authorize auth.init starts. */
 export const oidcTakeSupportTicket = () => takeSession(SUPPORT_TICKET_KEY)
+/** Whether this boot is the one a saved-account switch caused, ONCE — so a later reload of the same
+ *  window is not mistaken for it. */
+export const oidcTakeSwitched = (): boolean => !!takeSession(SWITCHED_KEY)
 /** Ends this tab's support state: the tokens it held and the flag that made it a support tab. */
 export function oidcEndSupportTab() {
   clearLocal()
@@ -582,6 +593,7 @@ export async function oidcStart(
     nonce: randomB64u(16),
     redirectUri: redirect,
     issuer: OAUTH_ISSUER,
+    auto: opts.auto,
   }
   const url = new URL(d.authorization_endpoint)
   const params: { [key: string]: string } = {
@@ -1111,6 +1123,7 @@ export function oidcActivateAccount(sub: string): boolean {
   const entry = readRegistry()[sub]
   if (!entry?.refresh_token) return false
   try {
+    sessionStorage.setItem(SWITCHED_KEY, '1')
     if (entry.email) sessionStorage.setItem(ACTIVATING_KEY, entry.email)
   } catch {
     /* recovery hint only */
