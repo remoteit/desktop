@@ -520,6 +520,12 @@ describe('chat model — reset keeps the dock layout', () => {
       ownerId: '',
     })
   })
+
+  it('docks a popped-out chat again, since the reset closes its window', () => {
+    const reducers = (chatModel as any).reducers
+    const poppedOut = { ...reducers.reset({}), open: false, poppedOut: true }
+    expect(reducers.reset(poppedOut)).toMatchObject({ open: true, poppedOut: false })
+  })
 })
 
 /* The reply in flight lives in models/chatLive so the token stream never touches the persisted

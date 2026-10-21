@@ -25,6 +25,14 @@ export const SidebarMenu: React.FC = () => {
     if (open && chatOverlaid) dispatch.chat.set({ open: false })
   }, [location])
 
+  // Left open, the drawer remounts open when the sidebar hides again, and the effect above then closes the chat
+  React.useEffect(
+    () => () => {
+      dispatch.ui.set({ sidebarMenu: false })
+    },
+    []
+  )
+
   return (
     <Drawer anchor="left" open={open} onClose={() => dispatch.ui.set({ sidebarMenu: false })}>
       <Sidebar layout={layout} />
