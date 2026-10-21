@@ -497,6 +497,8 @@ export default createModel<RootModel>()({
        here would land in the purge-to-reload window and re-persist the pre-signout state. */
     async signOut(_: void, state) {
       broadcastChatSignout()
+      // The saved flag outlives ui.reset; left set, the next sign-in hid the dock until the dead popout's ping timed out
+      if (state?.ui?.chatPoppedOut) dispatch.ui.setPersistent({ chatPoppedOut: false })
       // Aborting covers the STREAM; the generation covers every other load in flight. Without it a
       // slow history pick started under this account passed its own guard after the reset (its
       // ticket unchanged, nothing streaming) and wrote this account's transcript into the store the
