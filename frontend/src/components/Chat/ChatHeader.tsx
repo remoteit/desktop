@@ -38,12 +38,13 @@ export const ChatHeader: React.FC<{ start?: React.ReactNode; children?: React.Re
         height: 45,
         maxHeight: 45,
         flexShrink: 0,
-        paddingX: 2.5,
+        // The app Header pads 2.25, so a leading icon lines up with the page's own beneath it
+        paddingLeft: start ? 2.25 : 2.5,
+        paddingRight: 2.5,
         marginTop: 1.5,
       }}
     >
-      {/* The app Header pads 2.25, so this lines a leading icon up with the page's own beneath it */}
-      {start && <Box sx={{ marginLeft: -0.25 }}>{start}</Box>}
+      {start}
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', alignItems: 'center', marginLeft: 0.25 }}>
         {/* Step 3. The wrapper sx keeps the shrink chain intact — without minWidth: 0 the
             inserted div would refuse to shrink and the name would stop truncating. */}

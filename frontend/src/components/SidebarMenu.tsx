@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Drawer } from '@mui/material'
 import { useChatDocked, useChatToggle } from '../hooks/useChatEnabled'
-import { IconButton } from '../buttons/IconButton'
 import { Sidebar } from './Sidebar'
 
 export const SidebarMenu: React.FC = () => {
@@ -31,9 +30,4 @@ export const SidebarMenu: React.FC = () => {
       <Sidebar layout={layout} />
     </Drawer>
   )
-}
-
-export const SidebarMenuButton: React.FC = () => {
-  const dispatch = useDispatch<Dispatch>()
-  return <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
 }

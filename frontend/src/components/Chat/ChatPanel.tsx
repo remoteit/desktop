@@ -10,7 +10,7 @@ import { getViewportWidth } from '../../hooks/useViewportWidth'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
 import { PanelHandle } from '../PanelHandle'
-import { SidebarMenuButton } from '../SidebarMenu'
+import { SidebarMenuButton } from '../../buttons/SidebarMenuButton'
 import { IconButton } from '../../buttons/IconButton'
 import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
@@ -35,6 +35,7 @@ export const ChatPanel: React.FC = () => {
   // couldn't action the approval and the server-side turn would strand — so block it until idle.
   const turnActive = useSelector(selectTurnActive)
   const docked = useChatDocked()
+  const overBottomMenu = !docked && layout.showBottomMenu
   const chatWidth = useChatWidth()
   const sidebarWidth = layout.sidePanelWidth
   const dispatch = useDispatch<Dispatch>()
@@ -127,11 +128,11 @@ export const ChatPanel: React.FC = () => {
         boxShadow: docked || sidebarWidth ? 3 : 0,
         // The chat owns the safe-area inset wherever it reaches the window's bottom edge — docked
         // beside the bottom menu, or overlaying with no menu. An overlay stops above the menu, which carries it
-        paddingBottom: !docked && layout.showBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
+        paddingBottom: overBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
       }}
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
-      <ChatHeader start={!docked && layout.showBottomMenu && <SidebarMenuButton />}>
+      <ChatHeader start={overBottomMenu && <SidebarMenuButton />}>
         {!browser.isMobile && !layout.mobile && chatPopoutSupported && (
           <IconButton
             icon="arrow-up-right-from-square"

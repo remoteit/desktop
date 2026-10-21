@@ -20,7 +20,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
-import { SidebarMenuButton } from '../SidebarMenu'
+import { SidebarMenuButton } from '../../buttons/SidebarMenuButton'
 import { Title } from '../Title'
 import { Box } from '@mui/material'
 
