@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ColorChip } from './ColorChip'
 import { Duration } from './Duration'
 import { Badge, Tooltip } from '@mui/material'
+import { hostedStateTooltip } from './HostedBy'
 
 export type Props = {
   device?: IDevice
@@ -42,7 +43,9 @@ export const StatusChip: React.FC<Props> = ({ device, service, connections }) =>
   }, [device])
 
   const Chip =
-    instance?.license === 'UNLICENSED' ? (
+    device?.virtual && !device.hostedBy ? (
+      <ColorChip label={t('statusChip.notHosted', 'Not hosted')} size="small" color="warning" />
+    ) : instance?.license === 'UNLICENSED' ? (
       <ColorChip label={t('statusChip.unlicensed', 'Unlicensed')} size="small" color="warning" />
     ) : instance?.state === 'inactive' ? (
       <ColorChip label={t('statusChip.offline', 'Offline')} size="small" color="gray" />
@@ -56,6 +59,15 @@ export const StatusChip: React.FC<Props> = ({ device, service, connections }) =>
       <ColorChip label={t('statusChip.online', 'Online')} size="small" color="success" />
     ) : (
       <ColorChip label={t('statusChip.unknown', 'Unknown')} size="small" color="gray" />
+    )
+
+  // A virtual device's state is its gateway's: the tooltip says so (and stands in for the recent-change badge).
+  const hosted = hostedStateTooltip(t, device)
+  if (hosted)
+    return (
+      <Tooltip arrow placement="top" title={hosted}>
+        <span>{Chip}</span>
+      </Tooltip>
     )
 
   return badge.dropped || badge.activated ? (

@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux'
 import { DeviceName } from './DeviceName'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
+import { HostedByLine } from './HostedBy'
 
 type Props = {
   device: IDevice
@@ -70,7 +71,22 @@ const DisplayComponent: React.FC<DisplayComponentProps> = ({
           <DeviceName device={device} connection={connection} />
         </Typography>
       }
-      subtitle={device.thisDevice ? t('deviceNameLocation.thisDevice', 'This device') : undefined}
+      subtitle={
+        device.thisDevice ? (
+          t('deviceNameLocation.thisDevice', 'This device')
+        ) : device.virtual ? (
+          // What it is and where it lives, in one line: virtual, the gateway it's reached through, its address.
+          <Box component="span" display="inline-flex" flexWrap="wrap" alignItems="center" columnGap={1.5}>
+            <span>{t('deviceNameLocation.virtualDevice', 'Virtual device')}</span>
+            <HostedByLine device={device} link inline />
+            {device.host && (
+              <Typography component="span" variant="caption" fontFamily="monospace">
+                {device.host}
+              </Typography>
+            )}
+          </Box>
+        ) : undefined
+      }
       onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: null })}
       exactMatch
       {...props}

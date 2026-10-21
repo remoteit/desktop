@@ -41,7 +41,9 @@
     "restored": "デバイスを復元しました!",
     "transferred": "「{{name}}」を{{email}}に譲渡しました。",
     "transferredCount_other": "{{count}}台のデバイスを{{email}}に譲渡しました。",
-    "unregistered": "デバイスの登録を解除しました!"
+    "unregistered": "デバイスの登録を解除しました!",
+    "virtualAdded": "",
+    "virtualMoved": ""
   },
   "feedback": {
     "sendError": "メッセージの送信中にエラーが発生しました。もう一度お試しください。"

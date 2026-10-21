@@ -32,6 +32,8 @@ import { Title } from '../components/Title'
 import { Quote } from '../components/Quote'
 import { emit } from '../services/Controller'
 import sleep from '../helpers/sleep'
+import { selectVirtualDevicesSetting } from '../hooks/useVirtualDevices'
+import { resetVirtualDevicesMode } from '../services/graphQLVirtualDevices'
 import { selectDeviceSessionsSetting } from '../hooks/useDeviceSessions'
 
 export const TestPage: React.FC = () => {
@@ -70,6 +72,7 @@ export const TestPage: React.FC = () => {
   // or not this account still has Remote.It AI, and whether or not the agent service answers.
   const chatEnabled = useChatEnabled()
   const deviceSessions = useSelector(selectDeviceSessionsSetting)
+  const virtualDevices = useSelector(selectVirtualDevicesSetting)
   const proxyFleet = useSelector((state: State) => state.ui.proxyFleet)
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {
@@ -364,6 +367,20 @@ export const TestPage: React.FC = () => {
           )}
           toggle={deviceSessions}
           onClick={() => dispatch.ui.setPersistent({ deviceSessions: !deviceSessions })}
+        />
+        <ListItemSetting
+          hideIcon
+          label={t('testPage.virtualDevices', 'Virtual devices')}
+          subLabel={t(
+            'testPage.virtualDevicesHint',
+            'Devices with no daemon, hosted by a gateway. Shows sample devices where the API does not serve them yet.'
+          )}
+          toggle={virtualDevices}
+          onClick={() => {
+            resetVirtualDevicesMode()
+            dispatch.ui.setPersistent({ virtualDevices: !virtualDevices })
+            dispatch.devices.fetchList()
+          }}
         />
         <SelectSetting
           hideIcon

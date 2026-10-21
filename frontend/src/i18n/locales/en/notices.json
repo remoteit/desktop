@@ -43,7 +43,9 @@
     "transferred": "\"{{name}}\" was successfully transferred to {{email}}.",
     "transferredCount_one": "{{count}} device was successfully transferred to {{email}}.",
     "transferredCount_other": "{{count}} devices were successfully transferred to {{email}}.",
-    "unregistered": "Device unregistered successfully!"
+    "unregistered": "Device unregistered successfully!",
+    "virtualAdded": "\"{{name}}\" was added as a virtual device.",
+    "virtualMoved": "\"{{name}}\" is now hosted by {{gateway}}."
   },
   "feedback": {
     "sendError": "Sending message encountered an error. Please try again."

@@ -45,7 +45,9 @@
     "transferredCount_one": "{{count}} dispositivo se transfirió correctamente a {{email}}.",
     "transferredCount_many": "{{count}} dispositivos se transfirieron correctamente a {{email}}.",
     "transferredCount_other": "{{count}} dispositivos se transfirieron correctamente a {{email}}.",
-    "unregistered": "¡Registro del dispositivo anulado correctamente!"
+    "unregistered": "¡Registro del dispositivo anulado correctamente!",
+    "virtualAdded": "",
+    "virtualMoved": ""
   },
   "feedback": {
     "sendError": "Se produjo un error al enviar el mensaje. Inténtalo de nuevo."

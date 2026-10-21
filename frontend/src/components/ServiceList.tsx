@@ -71,6 +71,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
         headerContextProvider={DeviceListContext.Provider}
       >
         {rows.map(([service, device]) => {
+          if (select && device.virtual && location.pathname.includes('scripts')) return null
           const disabled = select && !device.scriptable && location.pathname.includes('scripts')
           const duplicateName = device.id === previousName.current
           const divider = !duplicateName && !!previousName.current

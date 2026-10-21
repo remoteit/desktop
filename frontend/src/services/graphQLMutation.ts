@@ -105,7 +105,16 @@ export async function graphQLRename(serviceId: string, name: string) {
   )
 }
 
-export async function graphQLDeleteDevice(deviceId: string) {
+// keepHosted (virtual devices): what becomes of the devices a gateway hosts — asked only of a gateway that hosts some,
+// so an API without the argument is never sent it.
+export async function graphQLDeleteDevice(deviceId: string, keepHosted?: boolean) {
+  if (keepHosted !== undefined)
+    return await graphQLBasicRequest(
+      ` mutation DeleteDevice($deviceId: String!, $keepHosted: Boolean) {
+          deleteDevice(deviceId: $deviceId, keepHosted: $keepHosted)
+        }`,
+      { deviceId, keepHosted }
+    )
   return await graphQLBasicRequest(
     ` mutation DeleteDevice($deviceId: String!) {
         deleteDevice(deviceId: $deviceId)

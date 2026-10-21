@@ -26,6 +26,14 @@ import {
   graphQLPreloadDevices,
   graphQLDeviceAdaptor,
 } from '../services/graphQLDevice'
+import {
+  addVirtualDevice,
+  convertJumpService,
+  deleteSampleDevice,
+  moveVirtualDevice,
+  updateVirtualDevice,
+} from '../services/graphQLVirtualDevices'
+import { isSampleId } from '../services/virtualDevicesSample'
 import { selectTimeSeries } from '../selectors/ui'
 import { listTimeSeriesKey, timeSeriesLoading, timeSeriesWithStyle } from '../helpers/dateHelper'
 import {
@@ -552,7 +560,9 @@ export default createModel<RootModel>()({
       const result = await graphQLSetLink({ serviceId, enabled })
 
       if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.code) {
-        dispatch.ui.set({ errorMessage: i18n.t('notices:service.updateError', { defaultValue: 'Could not update service.' }) })
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:service.updateError', { defaultValue: 'Could not update service.' }),
+        })
         return
       }
 
@@ -615,35 +625,35 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ claiming: false })
     },
 
-    async createRegistration({
-      name,
-      services,
-      platform,
-      tags,
-      accountId,
-      template,
-      oneTimeUse,
-      code,
-    }: {
-      name?: string
-      services: IServiceRegistration[]
-      platform?: number
-      tags?: string[]
-      accountId: string
-      template?: string | boolean
-      oneTimeUse?: boolean
-      code?: string
-    }, state) {
+    async createRegistration(
+      {
+        name,
+        services,
+        platform,
+        tags,
+        accountId,
+        template,
+        oneTimeUse,
+        code,
+      }: {
+        name?: string
+        services: IServiceRegistration[]
+        platform?: number
+        tags?: string[]
+        accountId: string
+        template?: string | boolean
+        oneTimeUse?: boolean
+        code?: string
+      },
+      state
+    ) {
       if (platform === 65535) platform = undefined // Clear out the platform if it's the unknown type
       const result = await graphQLRegistration({ name, services, platform, tags, accountId, oneTimeUse, code })
       if (result !== 'ERROR') {
         let { registrationCommand, registrationCode } = result?.data?.data?.login?.account
         if (template && typeof template === 'string') registrationCommand = template.replace('[CODE]', registrationCode)
         console.log('CREATE REGISTRATION', registrationCode)
-        if (
-          state.ui.registrationCode !== registrationCode ||
-          state.ui.registrationCommand !== registrationCommand
-        ) {
+        if (state.ui.registrationCode !== registrationCode || state.ui.registrationCommand !== registrationCommand) {
           dispatch.ui.set({ registrationCommand, registrationCode })
         }
         return { registrationCode, registrationCommand }
@@ -661,11 +671,16 @@ export default createModel<RootModel>()({
       return {}
     },
 
-    async destroy(device: IDevice) {
+    // keepHosted: for a gateway that hosts virtual devices, whether they stay (unhosted) or go with it.
+    async destroy({ device, keepHosted }: { device: IDevice; keepHosted?: boolean }) {
       dispatch.ui.set({ destroying: true, silent: device.id })
-      const result = await graphQLDeleteDevice(device.id)
+      const hosted = device.hostedDevices?.map(h => h.id) || []
+      const sample = isSampleId(device.id)
+      const result = sample ? 'OK' : await graphQLDeleteDevice(device.id, device.hosts ? keepHosted ?? true : undefined)
+      if (sample || hosted.some(isSampleId)) deleteSampleDevice(device.id, keepHosted ?? true)
       if (result !== 'ERROR') {
-        await dispatch.devices.cleanup([device.id])
+        await dispatch.devices.cleanup(keepHosted === false ? [device.id, ...hosted] : [device.id])
+        if (keepHosted !== false && hosted.length) await dispatch.devices.fetchDevices({ ids: hosted })
         dispatch.ui.set({
           successMessage: i18n.t('notices:device.deleted', {
             name: device.name,
@@ -734,6 +749,80 @@ export default createModel<RootModel>()({
         })
       }
       dispatch.ui.set({ destroying: false })
+    },
+
+    /* Virtual devices (graphql-api docs/VIRTUAL-DEVICES.md). Each reads anew what it changed: the device, and the
+       gateways whose hosted devices changed with it. */
+
+    async addVirtualDevice({
+      gateway,
+      ...input
+    }: {
+      gateway: IDevice
+      name: string
+      host: string
+      platform?: number
+      services?: IVirtualServiceInput[]
+    }): Promise<string | undefined> {
+      const result = await addVirtualDevice(gateway, input)
+      if (result === 'ERROR') return
+      await dispatch.devices.fetchSingleFull({ id: result.id, newDevice: true, silent: true })
+      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true })
+      dispatch.ui.set({
+        successMessage: i18n.t('notices:device.virtualAdded', {
+          name: input.name,
+          defaultValue: '"{{name}}" was added as a virtual device.',
+        }),
+      })
+      return result.id
+    },
+
+    async updateVirtualDevice({ device, set }: { device: IDevice; set: { host?: string; platform?: number } }) {
+      dispatch.accounts.setDevice({
+        id: device.id,
+        device: {
+          ...device,
+          ...(set.host !== undefined && { host: set.host }),
+          targetPlatform: set.platform ?? device.targetPlatform,
+        },
+      })
+      const result = await updateVirtualDevice(device.id, set)
+      await dispatch.devices.fetchSingleFull({ id: device.id, silent: true })
+      return result !== 'ERROR'
+    },
+
+    async moveVirtualDevice({ device, gateway }: { device: IDevice; gateway: IDevice }) {
+      const result = await moveVirtualDevice(device.id, gateway)
+      if (result === 'ERROR') return false
+      await dispatch.devices.fetchSingleFull({ id: device.id, silent: true })
+      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true })
+      if (device.hostedBy?.id) await dispatch.devices.fetchSingleFull({ id: device.hostedBy.id, silent: true })
+      dispatch.ui.set({
+        successMessage: i18n.t('notices:device.virtualMoved', {
+          name: device.name,
+          gateway: gateway.name,
+          defaultValue: '"{{name}}" is now hosted by {{gateway}}.',
+        }),
+      })
+      return true
+    },
+
+    async convertJumpService({
+      gateway,
+      service,
+      name,
+      platform,
+    }: {
+      gateway: IDevice
+      service: IService
+      name: string
+      platform?: number
+    }): Promise<string | undefined> {
+      const result = await convertJumpService(gateway, service, name, platform)
+      if (result === 'ERROR') return
+      await dispatch.devices.fetchSingleFull({ id: result.id, newDevice: true, silent: true })
+      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true })
+      return result.id
     },
 
     async leave(device: IDevice, state) {

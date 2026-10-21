@@ -142,6 +142,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
         {devices?.map((device, index) => {
           const canRestore = isOffline(device) && !device.shared
           if (restore && !canRestore) return null
+          // Choosing devices to script: a virtual device has no daemon to run one, so it is left out, not disabled.
+          if (select && isScriptsPath && device.virtual) return null
           const disabled = select && !device.scriptable && isScriptsPath
           return (
             <DeviceListRow

@@ -58,6 +58,9 @@
     "sendingEllipsis": "Wird gesendet...",
     "sendPromotionRequest": "Beförderungsanfrage senden"
   },
+  "addAsVirtualDevice": {
+    "button": ""
+  },
   "addDevice": {
     "codeExpiration": "Code läuft in {{hours}}\u00a0Stunden ab.",
     "registrationCode": "Registrierungscode"
@@ -77,7 +80,10 @@
     "products": "Produkte",
     "provisionInBulk": "Massenbereitstellung",
     "title": "Womit möchten Sie sich verbinden?",
-    "tryDevice": "Gerät ausprobieren"
+    "tryDevice": "Gerät ausprobieren",
+    "virtualDevice": "",
+    "virtualDeviceHint": "",
+    "virtualDeviceTitle": ""
   },
   "addPlatformServices": {
     "label": "DIENST",
@@ -395,6 +401,7 @@
     "externalAddress": "Externe IP",
     "from": "Von",
     "hardwareId": "Hardware-ID",
+    "hostedBy": "",
     "id": "Geräte-ID",
     "initiatorPlatform": "Plattform",
     "internalAddress": "Interne IP",
@@ -736,12 +743,20 @@
     "turnaround": "Löschanfragen benötigen 3 bis 5 Werktage zur Bearbeitung."
   },
   "deleteDevice": {
+    "deleteHosted": "",
+    "deleteHostedHint": "",
+    "deleteHostedNamed": "",
     "deletingDevices": "Geräte werden gelöscht.",
+    "hosts_one": "",
+    "hosts_other": "",
+    "keepHosted": "",
+    "keepHostedHint": "",
     "mustBeOffline": "Das Gerät muss offline sein",
     "title": "Gerät löschen",
     "uninstallRecommendation": "Wir empfehlen, Remote.It vorher zu deinstallieren",
     "unregisterTitle": "Geräteregistrierung aufheben",
     "unregisterWarning": "Sie sind dabei, dieses Gerät und alle zugehörigen Dienste dauerhaft zu entfernen.",
+    "virtualWarning": "",
     "warning": "Das Löschen von Geräten kann nicht rückgängig gemacht werden. Um es wiederherzustellen, benötigen Sie möglicherweise physischen Zugriff darauf."
   },
   "deviceAbout": {
@@ -908,6 +923,12 @@
     "shareAccess": "Zugriff freigeben",
     "unknown": "Unbekannt"
   },
+  "deviceHosting": {
+    "address": "",
+    "gateway": "",
+    "lastAddress": "",
+    "title": ""
+  },
   "deviceLabelSetting": {
     "label": "Gerätebezeichnung"
   },
@@ -946,7 +967,8 @@
   },
   "deviceNameLocation": {
     "rename": "Umbenennen",
-    "thisDevice": "Dieses Gerät"
+    "thisDevice": "Dieses Gerät",
+    "virtualDevice": ""
   },
   "deviceNameSetting": {
     "alsoSubnet": "",
@@ -1123,6 +1145,7 @@
     "deviceDetails": "Gerätedetails",
     "deviceLink": "Gerätelink",
     "makeProduct": "Produkt erstellen",
+    "makeVirtualDevice": "",
     "restoreDevice": "Gerät wiederherstellen",
     "serviceLink": "Dienstlink",
     "shareAccess": "Zugriff freigeben",
@@ -1136,6 +1159,7 @@
   "devicePage": {
     "availableServices": "Verfügbare Dienste",
     "availableServicesDescription": "Die vom Gerät gehosteten Dienste (Anwendungen) werden hier aufgelistet.",
+    "chooseGateway": "",
     "deviceNotFound": "Gerät nicht gefunden.",
     "deviceOffline": "Gerät offline",
     "deviceUnlicensed": "Gerät nicht lizenziert",
@@ -1506,6 +1530,22 @@
   "headerOverrideSetting": {
     "description": "Eine Möglichkeit, einen anderen Hostnamen im Host-Header einer HTTP-Anfrage anzugeben. Kann in Lastverteilungsszenarien verwendet werden, um Anfragen an den passenden Server weiterzuleiten.",
     "title": "Host-Header-Überschreibung"
+  },
+  "hostedBy": {
+    "aGateway": "",
+    "notHosted": "",
+    "notHostedTooltip": "",
+    "offlineTooltip": "",
+    "onlineTooltip": "",
+    "via": ""
+  },
+  "hostedDevices": {
+    "add": "",
+    "empty": "",
+    "emptyHint": "",
+    "services_one": "",
+    "services_other": "",
+    "title": ""
   },
   "inlineFileFieldSetting": {
     "reset": "Zurücksetzen",
@@ -2661,7 +2701,8 @@
     "serviceUrl": "Dienst-URL",
     "serviceUrlHelp": "Vollständige URL des Dienstes, zu dem Sie eine Verbindung herstellen möchten. Beispiel:",
     "setupConnectionDefaults": "Standardverbindungseinstellungen einrichten",
-    "updatePackageHelp": "Aktualisieren Sie das Gerätepaket auf die neueste Version, um es per Remotezugriff konfigurieren zu können."
+    "updatePackageHelp": "Aktualisieren Sie das Gerätepaket auf die neueste Version, um es per Remotezugriff konfigurieren zu können.",
+    "virtualHostHelp": ""
   },
   "serviceGraphColumn": {
     "title": "Dienstdiagramm"
@@ -2672,6 +2713,10 @@
     "selectAnotherDevice": "Wählen Sie im Geräte-Menü ein anderes Gerät aus, um sich per Remotezugriff damit zu verbinden.",
     "shareAccess": "Zugriff freigeben",
     "unknown": "unbekannt"
+  },
+  "serviceIndicators": {
+    "hosts_one": "",
+    "hosts_other": ""
   },
   "serviceKeySetting": {
     "beta": "BETA",
@@ -2801,6 +2846,7 @@
   "statusChip": {
     "connected": "Verbunden",
     "idle": "Inaktiv",
+    "notHosted": "",
     "offline": "Offline",
     "offlineLabel": "Offline ",
     "online": "Online",
@@ -2899,6 +2945,8 @@
     "switchGraphQLAPIs": "GraphQL-APIs wechseln",
     "testOptions": "Testoptionen",
     "title": "Testeinstellungen",
+    "virtualDevices": "",
+    "virtualDevicesHint": "",
     "webSocketURL": "WebSocket-URL"
   },
   "thisDevice": {
@@ -3062,5 +3110,40 @@
     "exit": "Ansichtsmodus verlassen",
     "supportSession": "Support-Sitzung — Ansicht als {{email}} bis {{until}}. Tokens tragen Ihre Identität; die Person kann diese Sitzung sehen und beenden.",
     "viewingAs": "Anzeige als: {{email}}"
+  },
+  "virtualDeviceAddPage": {
+    "convertTitle": "",
+    "intro": "",
+    "title": ""
+  },
+  "virtualDeviceForm": {
+    "add": "",
+    "adding": "",
+    "address": "",
+    "addressAlternatives": "",
+    "addressHint": "",
+    "addService": "",
+    "convert": "",
+    "convertHint": "",
+    "dhcpHint": "",
+    "hostedBy": "",
+    "hostedByHint": "",
+    "morePlatforms": "",
+    "name": "",
+    "noGateways": "",
+    "platform": "",
+    "port": "",
+    "searchPlatforms": "",
+    "services": "",
+    "serviceType": "",
+    "suggested": ""
+  },
+  "virtualDeviceSettings": {
+    "address": "",
+    "dhcpHint": "",
+    "hostedBy": "",
+    "notHosted": "",
+    "notHostedNotice": "",
+    "platform": ""
   }
 }

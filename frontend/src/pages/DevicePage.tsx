@@ -31,6 +31,9 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { servicesClosed } from '../services/graphQLDeviceSettings'
+import { HostedDevices } from '../components/HostedDevices'
+import { hostedStateTooltip } from '../components/HostedBy'
+import { useVirtualDevices } from '../hooks/useVirtualDevices'
 
 export const DevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -38,8 +41,10 @@ export const DevicePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
-  // A device takes services only while remote access to them is on (its services setting).
-  const closed = servicesClosed(useDeviceSettings(device?.id).setting('services'))
+  const virtualDevices = useVirtualDevices()
+  // A device takes services only while remote access to them is on (its services setting). A virtual device has no
+  // settings of its own: its gateway's apply.
+  const closed = servicesClosed(useDeviceSettings(device?.virtual ? undefined : device?.id).setting('services'))
 
   const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
@@ -53,7 +58,9 @@ export const DevicePage: React.FC = () => {
       </span>
     )
 
-  const editable = device.thisDevice || (device.configurable && device.permissions.includes('MANAGE'))
+  // A virtual device's services are graphql's alone: managing it is enough, with no daemon to configure.
+  const editable =
+    device.thisDevice || ((device.configurable || !!device.virtual) && device.permissions.includes('MANAGE'))
   const connection = connections?.find(c => c.deviceID === device.id && c.enabled)
   const thisDevice = device.thisDevice && device.owner.id === user.id
   const disableThisConnect = thisDevice && !connectThisDevice
@@ -71,7 +78,7 @@ export const DevicePage: React.FC = () => {
             <DeviceNameLocation device={device} connection={connection} editable={editable} />
             <Stack flexWrap="wrap" flexDirection="row" marginLeft={9} marginRight={3}>
               <DeviceTagEditor device={device} />
-              <DeviceScriptingMenu device={device} />
+              {!device.virtual && <DeviceScriptingMenu device={device} />}
             </Stack>
           </List>
           <LinearProgress loading={!device.loaded} />
@@ -82,6 +89,25 @@ export const DevicePage: React.FC = () => {
         <Notice severity="warning" button={<PlanActionChip color="warning" sx={{ marginTop: 1.4 }} />} gutterTop>
           {t('devicePage.deviceUnlicensed', 'Device unlicensed')}
         </Notice>
+      ) : device.virtual ? (
+        device.state === 'inactive' && (
+          <Notice
+            gutterTop
+            severity={device.hostedBy ? 'info' : 'warning'}
+            button={
+              !device.hostedBy &&
+              device.permissions.includes('MANAGE') && (
+                <IconButton
+                  icon="sliders"
+                  title={t('devicePage.chooseGateway', 'Choose a gateway')}
+                  to={`/devices/${device.id}/edit`}
+                />
+              )
+            }
+          >
+            {hostedStateTooltip(t, device)}
+          </Notice>
+        )
       ) : (
         device.state === 'inactive' && (
           <Notice
@@ -104,7 +130,7 @@ export const DevicePage: React.FC = () => {
       <Typography variant="subtitle1">
         <Title>{t('devicePage.service', 'Service')}</Title>
         <SortServices />
-        <AddFromNetwork allowScanning={device.thisDevice} button />
+        {!device.virtual && <AddFromNetwork allowScanning={device.thisDevice} button />}
         <AddServiceButton device={device} editable={editable && !closed} link={`/devices/${device.id}/add`} />
       </Typography>
       <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
@@ -146,10 +172,7 @@ export const DevicePage: React.FC = () => {
                 )}
               </Typography>
               <Typography variant="body2" gutterBottom>
-                {t(
-                  'devicePage.selectServiceInstruction',
-                  'Select a service to configure it or to start a connection.'
-                )}
+                {t('devicePage.selectServiceInstruction', 'Select a service to configure it or to start a connection.')}
               </Typography>
             </>
           }
@@ -190,7 +213,8 @@ export const DevicePage: React.FC = () => {
           })}
         </GuideBubble>
       </List>
-      <RestoreModal device={device} />
+      {virtualDevices && <HostedDevices device={device} />}
+      {!device.virtual && <RestoreModal device={device} />}
     </Container>
   )
 }

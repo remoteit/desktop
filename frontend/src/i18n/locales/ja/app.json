@@ -58,6 +58,9 @@
     "sendingEllipsis": "送信中...",
     "sendPromotionRequest": "昇格リクエストを送信"
   },
+  "addAsVirtualDevice": {
+    "button": ""
+  },
   "addDevice": {
     "codeExpiration": "コードは{{hours}}時間で失効します。",
     "registrationCode": "登録コード"
@@ -77,7 +80,10 @@
     "products": "プロダクト",
     "provisionInBulk": "一括プロビジョニング",
     "title": "何に接続しますか？",
-    "tryDevice": "デバイスを試す"
+    "tryDevice": "デバイスを試す",
+    "virtualDevice": "",
+    "virtualDeviceHint": "",
+    "virtualDeviceTitle": ""
   },
   "addPlatformServices": {
     "label": "サービス",
@@ -391,6 +397,7 @@
     "externalAddress": "外部IP",
     "from": "開始",
     "hardwareId": "ハードウェアID",
+    "hostedBy": "",
     "id": "デバイスID",
     "initiatorPlatform": "プラットフォーム",
     "internalAddress": "内部IP",
@@ -732,12 +739,19 @@
     "turnaround": "削除リクエストの完了には3〜5営業日かかります。"
   },
   "deleteDevice": {
+    "deleteHosted": "",
+    "deleteHostedHint": "",
+    "deleteHostedNamed": "",
     "deletingDevices": "デバイスを削除しています。",
+    "hosts_other": "",
+    "keepHosted": "",
+    "keepHostedHint": "",
     "mustBeOffline": "デバイスはオフラインである必要があります",
     "title": "デバイスを削除",
     "uninstallRecommendation": "事前にRemote.Itをアンインストールすることをお勧めします",
     "unregisterTitle": "デバイスの登録を解除",
     "unregisterWarning": "このデバイスとそのすべてのサービスを完全に削除しようとしています。",
+    "virtualWarning": "",
     "warning": "デバイスの削除は元に戻せないため、復元するにはデバイスに物理的にアクセスする必要がある場合があります。"
   },
   "deviceAbout": {
@@ -900,6 +914,12 @@
     "shareAccess": "アクセスを共有",
     "unknown": "不明"
   },
+  "deviceHosting": {
+    "address": "",
+    "gateway": "",
+    "lastAddress": "",
+    "title": ""
+  },
   "deviceLabelSetting": {
     "label": "デバイスラベル"
   },
@@ -938,7 +958,8 @@
   },
   "deviceNameLocation": {
     "rename": "名前を変更",
-    "thisDevice": "このデバイス"
+    "thisDevice": "このデバイス",
+    "virtualDevice": ""
   },
   "deviceNameSetting": {
     "alsoSubnet": "",
@@ -1100,6 +1121,7 @@
     "deviceDetails": "デバイスの詳細",
     "deviceLink": "デバイスリンク",
     "makeProduct": "プロダクトを作成",
+    "makeVirtualDevice": "",
     "restoreDevice": "デバイスを復元",
     "serviceLink": "サービスリンク",
     "shareAccess": "アクセスを共有",
@@ -1113,6 +1135,7 @@
   "devicePage": {
     "availableServices": "利用可能なサービス",
     "availableServicesDescription": "デバイスがホストするサービス(アプリケーション)がここに一覧表示されます。",
+    "chooseGateway": "",
     "deviceNotFound": "デバイスが見つかりません。",
     "deviceOffline": "デバイスはオフラインです",
     "deviceUnlicensed": "デバイスにライセンスがありません",
@@ -1480,6 +1503,21 @@
   "headerOverrideSetting": {
     "description": "HTTPリクエストのホストヘッダーに別のホスト名を指定する方法です。ロードバランシングのシナリオで、リクエストを適切なサーバーにルーティングするために使用できます。",
     "title": "ホストヘッダーのオーバーライド"
+  },
+  "hostedBy": {
+    "aGateway": "",
+    "notHosted": "",
+    "notHostedTooltip": "",
+    "offlineTooltip": "",
+    "onlineTooltip": "",
+    "via": ""
+  },
+  "hostedDevices": {
+    "add": "",
+    "empty": "",
+    "emptyHint": "",
+    "services_other": "",
+    "title": ""
   },
   "inlineFileFieldSetting": {
     "reset": "リセット",
@@ -2608,7 +2646,8 @@
     "serviceUrl": "サービスURL",
     "serviceUrlHelp": "接続先のサービスの完全なURLです。例:",
     "setupConnectionDefaults": "接続のデフォルトを設定",
-    "updatePackageHelp": "リモート構成できるようにするには、デバイスパッケージを最新バージョンに更新してください。"
+    "updatePackageHelp": "リモート構成できるようにするには、デバイスパッケージを最新バージョンに更新してください。",
+    "virtualHostHelp": ""
   },
   "serviceGraphColumn": {
     "title": "サービスグラフ"
@@ -2619,6 +2658,9 @@
     "selectAnotherDevice": "デバイスメニューから別のデバイスを選択すると、リモートで接続できます。",
     "shareAccess": "アクセスを共有",
     "unknown": "不明"
+  },
+  "serviceIndicators": {
+    "hosts_other": ""
   },
   "serviceKeySetting": {
     "beta": "ベータ",
@@ -2747,6 +2789,7 @@
   "statusChip": {
     "connected": "接続済み",
     "idle": "アイドル",
+    "notHosted": "",
     "offline": "オフライン",
     "offlineLabel": "オフライン ",
     "online": "オンライン",
@@ -2843,6 +2886,8 @@
     "switchGraphQLAPIs": "GraphQL APIを切り替え",
     "testOptions": "テストオプション",
     "title": "テスト設定",
+    "virtualDevices": "",
+    "virtualDevicesHint": "",
     "webSocketURL": "WebSocket URL"
   },
   "thisDevice": {
@@ -3003,5 +3048,40 @@
     "exit": "表示モードを終了",
     "supportSession": "サポートセッション — {{email}} として表示中（{{until}} まで）。トークンにはあなたの ID が記録され、ユーザーはこのセッションを確認して終了できます。",
     "viewingAs": "表示中: {{email}}"
+  },
+  "virtualDeviceAddPage": {
+    "convertTitle": "",
+    "intro": "",
+    "title": ""
+  },
+  "virtualDeviceForm": {
+    "add": "",
+    "adding": "",
+    "address": "",
+    "addressAlternatives": "",
+    "addressHint": "",
+    "addService": "",
+    "convert": "",
+    "convertHint": "",
+    "dhcpHint": "",
+    "hostedBy": "",
+    "hostedByHint": "",
+    "morePlatforms": "",
+    "name": "",
+    "noGateways": "",
+    "platform": "",
+    "port": "",
+    "searchPlatforms": "",
+    "services": "",
+    "serviceType": "",
+    "suggested": ""
+  },
+  "virtualDeviceSettings": {
+    "address": "",
+    "dhcpHint": "",
+    "hostedBy": "",
+    "notHosted": "",
+    "notHostedNotice": "",
+    "platform": ""
   }
 }

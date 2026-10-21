@@ -63,7 +63,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               dense
             />
             <UsersTab instance={device} to={`/devices/${device.id}/users`} />
-            {deviceSessions && (
+            {deviceSessions && !device.virtual && (
               <ListItemLocation
                 title={t('deviceHeaderMenu.agent', 'Agent')}
                 icon="microchip"
@@ -72,7 +72,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
                 dense
               />
             )}
-            {deviceSessions && (
+            {deviceSessions && !device.virtual && (
               <ListItemLocation
                 title={t('deviceHeaderMenu.proxy', 'Proxy & exit')}
                 icon="server"
