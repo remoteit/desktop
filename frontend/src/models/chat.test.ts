@@ -51,6 +51,11 @@ vi.mock('../selectors/accounts', () => ({
   isUserAccount: (s: any) => !s.accounts?.activeId || s.accounts.activeId === s.auth?.user?.id,
 }))
 vi.mock('../store', () => ({ store: { getState: () => storeState } }))
+const storage = vi.hoisted(() => new Map<string, unknown>())
+vi.mock('../services/browser', () => ({
+  getLocalStorage: (state: any, key: string) => storage.get(`${state.auth.user.id}:${key}`) ?? null,
+  setLocalStorage: (state: any, key: string, value: unknown) => storage.set(`${state.auth.user.id}:${key}`, value),
+}))
 vi.mock('../constants', () => ({ CHAT_PANEL_WIDTH: 400 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 
@@ -501,30 +506,32 @@ describe('chat model — the background grant is revoked once per identity', () 
   })
 })
 
-describe('chat model — reset keeps the dock layout', () => {
-  it('clears the account’s conversation but leaves a closed chat closed, at its width', () => {
-    const reducers = (chatModel as any).reducers
-    const before = {
-      ...reducers.reset({}),
-      open: false,
-      width: 520,
-      messages: [{ role: 'user', text: 'hi' }],
-      conversationId: 'c1',
-      ownerId: 'alice',
-    }
-    expect(reducers.reset(before)).toMatchObject({
-      open: false,
-      width: 520,
-      messages: [],
-      conversationId: '',
-      ownerId: '',
-    })
+describe('chat model — the open state is remembered per signed-in user', () => {
+  const as = (id: string, chat = {}) => ({ auth: { user: { id } }, chat: { open: true, poppedOut: false, ...chat } })
+  beforeEach(() => storage.clear())
+
+  it('restores each user’s own choice at sign-in', async () => {
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    await fx.setOpen(false, as('alice'))
+    await fx.restoreOpen(undefined, as('bob'))
+    expect(dispatch.chat.set).toHaveBeenLastCalledWith({ open: true })
+    await fx.restoreOpen(undefined, as('alice'))
+    expect(dispatch.chat.set).toHaveBeenLastCalledWith({ open: false })
   })
 
-  it('docks a popped-out chat again, since the reset closes its window', () => {
-    const reducers = (chatModel as any).reducers
-    const poppedOut = { ...reducers.reset({}), open: false, poppedOut: true }
-    expect(reducers.reset(poppedOut)).toMatchObject({ open: true, poppedOut: false })
+  it('keeps the persisted state for a user who has not chosen on this device yet', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).restoreOpen(undefined, as('alice', { open: false }))
+    expect(dispatch.chat.set).toHaveBeenLastCalledWith({ open: false })
+  })
+
+  it('keeps the dock hidden while a popout from before the reload may still be open', async () => {
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    await fx.setOpen(true, as('alice'))
+    await fx.restoreOpen(undefined, as('alice', { poppedOut: true }))
+    expect(dispatch.chat.set).toHaveBeenLastCalledWith({ open: false })
   })
 })
 

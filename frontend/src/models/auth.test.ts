@@ -81,12 +81,12 @@ vi.mock('../services/Controller', () => ({
   default: { close: controllerClose, emitWithAck, reconnectNow, setupConnection: vi.fn() },
   emit: vi.fn(() => false),
 }))
-vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn() } }))
-vi.mock('../services/cloudController', () => ({ default: { reset: vi.fn() } }))
-vi.mock('../services/Network', () => ({ default: {} }))
+vi.mock('../services/CloudSync', () => ({ default: { reset: vi.fn(), init: vi.fn() } }))
+vi.mock('../services/cloudController', () => ({ default: { reset: vi.fn(), init: vi.fn() } }))
+vi.mock('../services/Network', () => ({ default: { tick: vi.fn() } }))
 vi.mock('../services/browser', () => ({ default: browser }))
-vi.mock('../services/analytics', () => ({ default: {} }))
-vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
+vi.mock('../services/analytics', () => ({ default: { signedIn: vi.fn() } }))
+vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn(), initChat: vi.fn() } }))
 vi.mock('../services/pushNotifications', () => ({ default: { register: vi.fn(), unregister: pushUnregister } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
@@ -726,6 +726,17 @@ describe('auth model â€” signing in as another account clears the last accountâ€
     expect(dispatch.auth.resetAccountData.mock.invocationCallOrder[0]).toBeLessThan(
       dispatch.user.set.mock.invocationCallOrder[0]
     )
+  })
+
+  it('restores the chat open state once the reset is done and the new user is set', async () => {
+    const dispatch = await signInAs('USER-B', 'USER-A')
+    const signedIn = dispatch.auth.signedIn.mock.invocationCallOrder[0]
+    expect(dispatch.auth.resetAccountData.mock.invocationCallOrder[0]).toBeLessThan(signedIn)
+    expect(dispatch.auth.set.mock.invocationCallOrder[0]).toBeLessThan(signedIn)
+
+    const { dispatch: signedInDispatch } = spyDispatch()
+    await effectsFor(signedInDispatch).signedIn(undefined, { auth: { user: { id: 'USER-B' } } })
+    expect(signedInDispatch.chat.restoreOpen).toHaveBeenCalledTimes(1)
   })
 
   it('keeps the persisted state and chat popouts for the same account', async () => {

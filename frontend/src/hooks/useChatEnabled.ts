@@ -40,7 +40,7 @@ export const useChatToggle = () => {
   const dispatch = useDispatch<Dispatch>()
   const toggle = () => {
     dispatch.ui.pop(CHAT_AGENT_GUIDE)
-    dispatch.chat.set({ open: !open })
+    dispatch.chat.setOpen(!open)
   }
   return { show: enabled && !poppedOut, open, toggle }
 }

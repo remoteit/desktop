@@ -5,11 +5,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 const redux = vi.hoisted(() => ({ state: {} as any }))
 const router = vi.hoisted(() => ({ location: { pathname: '/devices' } }))
 const uiSet = vi.hoisted(() => vi.fn())
-const chatSet = vi.hoisted(() => vi.fn())
+const setOpen = vi.hoisted(() => vi.fn())
 
 vi.mock('react-redux', () => ({
   useSelector: (select: (s: any) => any) => select(redux.state),
-  useDispatch: () => ({ ui: { set: uiSet }, chat: { set: chatSet } }),
+  useDispatch: () => ({ ui: { set: uiSet }, chat: { setOpen } }),
 }))
 vi.mock('react-router-dom', () => ({ useLocation: () => router.location }))
 vi.mock('../selectors/organizations', () => ({ selectOrganization: (state: any) => ({ id: state.orgId }) }))
@@ -42,7 +42,7 @@ describe('SidebarMenu', () => {
     render()
     render({ drawer: true })
     uiSet.mockReset()
-    chatSet.mockReset()
+    setOpen.mockReset()
   })
 
   afterEach(() => {
@@ -53,25 +53,25 @@ describe('SidebarMenu', () => {
   it('closes an overlaid chat along with the drawer when the drawer navigates', () => {
     render({ drawer: true, pathname: '/logs' })
     expect(uiSet).toHaveBeenCalledWith({ sidebarMenu: false })
-    expect(chatSet).toHaveBeenCalledWith({ open: false })
+    expect(setOpen).toHaveBeenCalledWith(false)
   })
 
   it('leaves a docked chat open', () => {
     render({ drawer: true, docked: true })
     render({ drawer: true, docked: true, pathname: '/logs' })
-    expect(chatSet).not.toHaveBeenCalled()
+    expect(setOpen).not.toHaveBeenCalled()
   })
 
   it('leaves the chat open on an org switch from the drawer', () => {
     render({ drawer: true, orgId: 'acme' })
     expect(uiSet).toHaveBeenCalledWith({ sidebarMenu: false })
-    expect(chatSet).not.toHaveBeenCalled()
+    expect(setOpen).not.toHaveBeenCalled()
   })
 
   it('leaves the chat alone on navigation the drawer did not make', () => {
     render({ drawer: false })
     render({ drawer: false, pathname: '/logs' })
-    expect(chatSet).not.toHaveBeenCalled()
+    expect(setOpen).not.toHaveBeenCalled()
   })
 
   it('closes the drawer when it unmounts, so it cannot come back open and close the chat', () => {

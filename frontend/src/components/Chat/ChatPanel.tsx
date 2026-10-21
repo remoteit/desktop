@@ -150,7 +150,7 @@ export const ChatPanel: React.FC = () => {
           <IconButton
             icon="times"
             title={t('chat.closeChat', 'Close chat')}
-            onClick={() => dispatch.chat.set({ open: false })}
+            onClick={() => dispatch.chat.setOpen(false)}
           />
         )}
       </ChatHeader>

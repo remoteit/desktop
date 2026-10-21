@@ -32,6 +32,9 @@ import { withTimeout } from '../helpers/sleep'
 import { latestWins } from '../helpers/latestWins'
 import { formatReset } from '../helpers/dateHelper'
 import { selectActiveAccountId, isUserAccount } from '../selectors/accounts'
+import { getLocalStorage, setLocalStorage } from '../services/browser'
+
+const CHAT_OPEN_KEY = 'chat-open'
 
 export type ChatToolCall = {
   id: string
@@ -316,6 +319,19 @@ export default createModel<RootModel>()({
       await dispatch.chat.stop()
       dispatch.chat.clearConversation()
     },
+    /* Show or hide the chat for the person, remembered per signed-in user. Pop out and back in set
+       `open` directly: they move the conversation, not this choice. */
+    async setOpen(open: boolean, state) {
+      dispatch.chat.set({ open })
+      setLocalStorage(state, CHAT_OPEN_KEY, open ? 'open' : 'closed')
+    },
+    /* At sign-in, the signed-in user's last choice; without one the persisted state stands. A chat
+       popped out before a reload stays out of the dock, as the presence check expects. */
+    async restoreOpen(_: void, state) {
+      const saved = getLocalStorage(state, CHAT_OPEN_KEY)
+      const open = saved ? saved === 'open' : state.chat.open
+      dispatch.chat.set({ open: open && !state.chat.poppedOut })
+    },
     /* Move the conversation to its own window; the dock hides when the popout
        says hello. A blocked popup is surfaced instead of silently ignored. */
     async popOut(_: void, state) {
@@ -571,11 +587,9 @@ export default createModel<RootModel>()({
       state.error = null
       return state
     },
-    reset(state: IChatState) {
+    reset() {
       backgroundRevokedFor = null // the next sign-in cycle gets its own revoke
-      // Open state and width are this device's layout, not account data: resetting them reopened a closed
-      // chat on every account switch. A popped-out chat counts as open, since the reset closes its window.
-      return { ...defaultChatState, open: state.open || state.poppedOut, width: state.width }
+      return { ...defaultChatState }
     },
   },
 })
