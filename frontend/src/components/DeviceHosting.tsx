@@ -21,14 +21,22 @@ export const DeviceHosting: React.FC<{ device: IDevice }> = ({ device }) => {
         </ListItem>
         <ListItem disableGutters>
           <ListItemText
-            primary={<Typography fontFamily="monospace">{device.host || '–'}</Typography>}
+            primary={
+              <Typography variant="body2" fontFamily="monospace">
+                {device.host || '–'}
+              </Typography>
+            }
             secondary={t('deviceHosting.address', 'Address')}
           />
         </ListItem>
         {device.lastAddress && device.lastAddress !== device.host && (
           <ListItem disableGutters>
             <ListItemText
-              primary={<Typography fontFamily="monospace">{device.lastAddress}</Typography>}
+              primary={
+                <Typography variant="body2" fontFamily="monospace">
+                  {device.lastAddress}
+                </Typography>
+              }
               secondary={t('deviceHosting.lastAddress', 'Last resolved address')}
             />
           </ListItem>

@@ -143,6 +143,7 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
             variant="filled"
             disabled={converting}
             placeholder="nas.local"
+            InputLabelProps={{ shrink: true }}
             helperText={
               prefill.addresses?.filter(a => a !== host).length
                 ? t('virtualDeviceForm.addressAlternatives', {
@@ -247,6 +248,7 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
                 size="small"
                 variant="filled"
                 label={t('virtualDeviceForm.serviceType', 'Add a service')}
+                InputLabelProps={{ shrink: true }}
                 value={newType}
                 sx={{ minWidth: 180 }}
                 onChange={event => {
@@ -267,6 +269,7 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
                 size="small"
                 variant="filled"
                 label={t('virtualDeviceForm.port', 'Port')}
+                InputLabelProps={{ shrink: true }}
                 value={newPort}
                 sx={{ width: 100 }}
                 onChange={event => setNewPort(event.target.value.replace(/\D/g, ''))}

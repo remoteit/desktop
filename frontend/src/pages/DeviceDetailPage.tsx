@@ -13,6 +13,21 @@ import { DeviceAbout } from '../components/DeviceAbout'
 import { DeviceHosting } from '../components/DeviceHosting'
 import { selectVirtualDevices } from '../hooks/useVirtualDevices'
 
+const DAEMON_ATTRIBUTES = [
+  'quality',
+  'qualitySmall',
+  'configurable',
+  'version',
+  'hardwareId',
+  'lastReported',
+  'externalAddress',
+  'internalAddress',
+  'isp',
+  'connectionType',
+  'location',
+  'agent',
+]
+
 export const DeviceDetailPage: React.FC = () => {
   const { device } = useContext(DeviceContext)
   const accountLimits = useSelector((state: State) => selectLimitsLookup(state, device?.accountId))
@@ -22,7 +37,9 @@ export const DeviceDetailPage: React.FC = () => {
     () => ({ ...accountLimits, deviceSessions, virtualDevices }),
     [accountLimits, deviceSessions, virtualDevices]
   )
-  const attributes = useSelector(selectDeviceDetailAttributes)
+  const allAttributes = useSelector(selectDeviceDetailAttributes)
+  // A virtual device reports nothing of its own: what a daemon would say of it is left out.
+  const attributes = device?.virtual ? allAttributes.filter(a => !DAEMON_ATTRIBUTES.includes(a.id)) : allAttributes
 
   return (
     <DeviceHeaderMenu>

@@ -8,12 +8,29 @@ import { IconButton } from '../buttons/IconButton'
 import { useHistory } from 'react-router-dom'
 import { Title } from './Title'
 import { spacing } from '../styling'
+import type { VirtualDevicePrefill } from './VirtualDeviceForm'
 
 /* A gateway's virtual devices, after its services: each one the viewer can see (graphql leaves out the rest, so
    someone who sees the gateway and not a hosted device does not learn it exists), with its state and service count,
    each linking to its own page. Someone who manages the gateway can add one here. */
 
 export const virtualDeviceAddPath = (gatewayId?: string) => `/add/virtual${gatewayId ? `/${gatewayId}` : ''}`
+
+/* What the add form opens with, handed over at the navigation: the app's hash routing carries no route state, so the
+   page takes it once, on mount (a reload opens it empty). */
+let handedOver: VirtualDevicePrefill | undefined
+
+export function openVirtualDeviceAdd(history: { push: (path: string) => void }, prefill: VirtualDevicePrefill = {}) {
+  handedOver = prefill
+  history.push(virtualDeviceAddPath(prefill.gatewayId))
+}
+
+// Cleared a moment later, not at once: a development render reads its initial state twice.
+export function takeVirtualDevicePrefill(): VirtualDevicePrefill | undefined {
+  const prefill = handedOver
+  setTimeout(() => handedOver === prefill && (handedOver = undefined))
+  return prefill
+}
 
 type Props = { device: IDevice }
 

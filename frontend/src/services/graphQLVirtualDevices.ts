@@ -56,21 +56,25 @@ export function resetVirtualDevicesMode() {
   served = undefined
 }
 
-/* Sample mode's part in the device reads: the list gains the sample devices (on its first page, and only while it is
-   not narrowed by a search), and a read naming sample ids is answered from them. */
+/* Sample mode's part in the device reads: the list gains the sample devices (at the top of its first page, and only
+   while it is not narrowed by a search or filter), and a read naming sample ids is answered from them. */
 
 export function withSampleList(response: any, from?: number, name?: string) {
   const devices = response?.data?.data?.login?.account?.devices
   if (!devices || from || name?.trim()) return response
   const samples = sampleDevices()
-  devices.items = [...(devices.items || []), ...samples]
+  devices.items = [...samples, ...(devices.items || [])] // first, so the sample is seen
   devices.total = (devices.total || 0) + samples.length
   return response
 }
 
+// Sample answers wait as a request would: pages that fetch, redirect and fetch again assume a round trip between.
+const roundTrip = () => new Promise(resolve => setTimeout(resolve, 150))
+
 export const splitSampleIds = (ids: string[]) => [ids.filter(id => !isSampleId(id)), ids.filter(isSampleId)]
 
-export function sampleResponse(ids: string[], path: 'account' | 'login') {
+export async function sampleResponse(ids: string[], path: 'account' | 'login') {
+  await roundTrip()
   const device = sampleDevices(ids)
   return { data: { data: { login: path === 'account' ? { account: { device } } : { device } } } }
 }

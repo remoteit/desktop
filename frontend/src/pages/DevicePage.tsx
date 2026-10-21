@@ -206,7 +206,7 @@ export const DevicePage: React.FC = () => {
                 />
                 <ListItemText primary={<DeviceName service={s} connection={c} />} />
                 <NetworksIndicator instance={device} service={s} />
-                <JumpIndicator service={s} />
+                <JumpIndicator service={s} device={device} />
                 <ServiceMiniState service={s} connection={c} />
               </ListItemLocation>
             )

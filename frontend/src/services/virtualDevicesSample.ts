@@ -9,7 +9,7 @@ export const SAMPLE_GATEWAY_ID = `${SAMPLE_PREFIX}00:01`
 export const PLATFORM_SYNOLOGY = 1210
 export const PLATFORM_RASPBERRY_PI = 1072
 
-const MINE = ['VIEW', 'CONNECT', 'SCRIPTING', 'MANAGE']
+const MINE = ['VIEW', 'CONNECT', 'MANAGE'] // a gateway adds SCRIPTING: a virtual device runs nothing
 const SHARED = ['VIEW', 'CONNECT']
 
 type GqlService = {
@@ -110,6 +110,7 @@ function initial(): GqlSampleDevice[] {
       virtual: false,
       configurable: true,
       scriptable: true,
+      permissions: [...MINE, 'SCRIPTING'],
       version: 5.4,
       tags: [tag('office', 3)],
       services: [service(gw, 1, 'SSH', 28, 22, '127.0.0.1'), service(gw, 2, 'Web', 7, 80, '127.0.0.1')],
@@ -165,6 +166,7 @@ function initial(): GqlSampleDevice[] {
       state: 'inactive',
       configurable: true,
       scriptable: true,
+      permissions: [...MINE, 'SCRIPTING'],
       version: 5.3,
       services: [{ ...service(lab, 1, 'SSH', 28, 22, '127.0.0.1'), state: 'inactive' }],
     }),

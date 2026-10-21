@@ -778,12 +778,15 @@ export default createModel<RootModel>()({
     },
 
     async updateVirtualDevice({ device, set }: { device: IDevice; set: { host?: string; platform?: number } }) {
+      // At once, as graphql will: services on the old address move with it.
+      const host = set.host ?? device.host
       dispatch.accounts.setDevice({
         id: device.id,
         device: {
           ...device,
-          ...(set.host !== undefined && { host: set.host }),
+          host,
           targetPlatform: set.platform ?? device.targetPlatform,
+          services: device.services.map(s => (s.host === device.host ? { ...s, host } : s)),
         },
       })
       const result = await updateVirtualDevice(device.id, set)

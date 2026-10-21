@@ -17,7 +17,7 @@ import { MobileUI } from './MobileUI'
 import { Icon } from './Icon'
 import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { jumpHost } from '../helpers/virtualDeviceHelper'
-import { virtualDeviceAddPath } from './HostedDevices'
+import { openVirtualDeviceAdd } from './HostedDevices'
 import { VirtualDevicePrefill } from './VirtualDeviceForm'
 
 type Props = { device?: IDevice; service?: IService; user?: IUser }
@@ -208,7 +208,7 @@ const MakeVirtualDeviceItem: React.FC<{ device: IDevice; service: IService; onCl
       dense
       onClick={() => {
         onClick()
-        history.push(virtualDeviceAddPath(device.id), prefill)
+        openVirtualDeviceAdd(history, prefill)
       }}
     >
       <ListItemIcon>

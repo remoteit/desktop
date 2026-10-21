@@ -6,6 +6,7 @@ import { InlineSelectSetting } from './InlineSelectSetting'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { TargetPlatform } from './TargetPlatform'
 import { Notice } from './Notice'
+import { Icon } from './Icon'
 import { useGateways } from '../hooks/useGateways'
 import { isAddressOnly } from '../helpers/virtualDeviceHelper'
 import { allPlatformChoices, virtualPlatformChoices } from '../platforms/virtual'
@@ -65,7 +66,7 @@ export const VirtualDeviceSettings: React.FC<{ device: IDevice }> = ({ device })
       />
       <InlineSelectSetting
         label={t('virtualDeviceSettings.hostedBy', 'Hosted by')}
-        icon="arrow-turn-down"
+        icon={<Icon name="arrow-turn-down" rotate={270} size="md" color="grayDarker" />}
         value={current?.id || ''}
         values={gatewayValues}
         disabled={!manage || !gateways.length}

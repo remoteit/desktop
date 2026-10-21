@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { Button } from '@mui/material'
 import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { suggestPlatform } from '../platforms/virtual'
-import { virtualDeviceAddPath } from './HostedDevices'
+import { openVirtualDeviceAdd } from './HostedDevices'
 import { VirtualDevicePrefill } from './VirtualDeviceForm'
 
 /* The seam for discovery (the gateway's "What this device sees", grouped by machine): each machine's
@@ -58,7 +58,7 @@ export const AddAsVirtualDevice: React.FC<{ gatewayId: string; machine: Discover
       size="small"
       onClick={event => {
         event.stopPropagation()
-        history.push(virtualDeviceAddPath(gatewayId), machinePrefill(gatewayId, machine))
+        openVirtualDeviceAdd(history, machinePrefill(gatewayId, machine))
       }}
     >
       {t('addAsVirtualDevice.button', 'Add as virtual device')}

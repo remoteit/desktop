@@ -3,6 +3,7 @@ import { ServiceMiniState } from './ServiceMiniState'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Chip, Box } from '@mui/material'
+import { ColorChip } from './ColorChip'
 
 type Props = {
   device?: IDevice
@@ -37,11 +38,10 @@ export const ServiceIndicators: React.FC<Props> = ({ device, services = [], conn
       {!!extra && <Chip label={`+${extra}`} size="small" />}
       {/* A gateway: how many virtual devices it hosts that the viewer can see. */}
       {!!device?.hosts && (
-        <Chip
+        <ColorChip
           label={t('serviceIndicators.hosts', { count: device.hosts, defaultValue: 'hosts {{count}}' })}
           size="small"
           color="primary"
-          variant="outlined"
           onClick={() => history.push(`/devices/${device.id}`)}
           sx={{ marginLeft: 0.5 }}
         />

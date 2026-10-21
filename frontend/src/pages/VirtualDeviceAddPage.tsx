@@ -1,25 +1,26 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { Typography } from '@mui/material'
 import { Dispatch } from '../store'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import { VirtualDeviceForm, VirtualDevicePrefill } from '../components/VirtualDeviceForm'
+import { takeVirtualDevicePrefill } from '../components/HostedDevices'
 
 /* /add/virtual/:gatewayID? — making a virtual device. Reached from Add device (no gateway yet: the form asks), from a
-   gateway's Hosted devices, from discovery and from a jump service's menu, each passing what it knows as the route's
-   state (VirtualDevicePrefill). */
+   gateway's Hosted devices, from discovery and from a jump service's menu, each handing over what it knows
+   (openVirtualDeviceAdd, a VirtualDevicePrefill). */
 
 export const VirtualDeviceAddPage: React.FC = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { gatewayID } = useParams<{ gatewayID?: string }>()
-  const location = useLocation<VirtualDevicePrefill | undefined>()
-  const prefill: VirtualDevicePrefill = { ...location.state, gatewayId: location.state?.gatewayId || gatewayID }
+  const [handedOver] = useState(takeVirtualDevicePrefill)
+  const prefill: VirtualDevicePrefill = { ...handedOver, gatewayId: handedOver?.gatewayId || gatewayID }
 
   // The gateways it can go on are the devices loaded so far.
   useEffect(() => {
@@ -51,7 +52,6 @@ export const VirtualDeviceAddPage: React.FC = () => {
       </Gutters>
       <Gutters size={null} sx={{ maxWidth: 600 }}>
         <VirtualDeviceForm
-          key={location.key}
           prefill={prefill}
           onDone={id => history.push(`/devices/${id}`)}
           onCancel={() => history.goBack()}
