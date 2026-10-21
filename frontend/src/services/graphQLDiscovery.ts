@@ -32,7 +32,7 @@ export type Discovery = {
   withheld: string[] // the parts the device's local policy left out: network, local
 }
 
-// Why there is no answer: the device is offline (or has no session), or it did not answer in time.
+// Why there is no answer (graphql's reason, in the error's extensions): the device is offline (or has no session), or it did not answer in time.
 export type DiscoveryError = { error: 'OFFLINE' | 'NO_ANSWER' | 'ERROR'; message?: string }
 
 export async function graphQLDiscover(deviceId: string): Promise<Discovery | DiscoveryError | typeof UNSUPPORTED> {
@@ -48,7 +48,10 @@ export async function graphQLDiscover(deviceId: string): Promise<Discovery | Dis
   if (response === 'ERROR') return { error: 'ERROR' }
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, 'discover')) return UNSUPPORTED
-  if (errors?.length) return discoveryError(errors[0].message)
+  if (errors?.length) {
+    const error = errors[0] as Error & { extensions?: { reason?: string } }
+    return discoveryError(error.extensions?.reason || error.message)
+  }
   return response.data?.data?.discover ?? { error: 'NO_ANSWER' }
 }
 

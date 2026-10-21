@@ -43,12 +43,26 @@ describe('asking a device what it sees', () => {
 
   it('an offline device or no answer: said for the page, with no error banner', async () => {
     request.mockResolvedValue({
-      data: { errors: [{ message: 'Invalid argument deviceId: the device is offline' }] },
+      data: {
+        errors: [
+          {
+            message: 'Invalid Arguments: deviceId',
+            extensions: { code: 'INVALID_ARGUMENT', args: ['deviceId'], reason: 'the device is offline' },
+          },
+        ],
+      },
       headers: {},
     })
     expect(await graphQLDiscover('D')).toMatchObject({ error: 'OFFLINE' })
     request.mockResolvedValue({
-      data: { errors: [{ message: 'Invalid argument deviceId: the device did not answer' }] },
+      data: {
+        errors: [
+          {
+            message: 'Invalid Arguments: deviceId',
+            extensions: { code: 'INVALID_ARGUMENT', args: ['deviceId'], reason: 'the device did not answer' },
+          },
+        ],
+      },
       headers: {},
     })
     expect(await graphQLDiscover('D')).toMatchObject({ error: 'NO_ANSWER' })
