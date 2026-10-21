@@ -100,7 +100,7 @@ describe('what a device sees, listed', () => {
     const { container, onAdd } = await render({ at: null, offers: [printer], withheld: [] })
     const button = [...container.querySelectorAll('button')].find(b => b.textContent === 'Add as service')!
     await act(async () => button.click())
-    expect(onAdd).toHaveBeenCalledWith(printer)
+    expect(onAdd).toHaveBeenCalledWith(printer, expect.any(String))
   })
 
   it('what the device’s policy withholds is said', async () => {

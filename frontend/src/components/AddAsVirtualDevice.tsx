@@ -6,7 +6,7 @@ import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { suggestPlatform } from '../platforms/virtual'
 import { openVirtualDeviceAdd } from './HostedDevices'
 import { VirtualDevicePrefill } from './VirtualDeviceForm'
-import { DiscoveryMachine, DiscoveryRank, offerRank } from '../services/graphQLDiscovery'
+import { DiscoveryMachine, DiscoveryRank, offerRank, offerServiceName } from '../services/graphQLDiscovery'
 
 /* The seam for discovery (the gateway's "What this device sees", grouped by machine): each machine's
    "Add as virtual device". Give it the gateway and the machine as discovery found it; it opens the add form with
@@ -14,6 +14,7 @@ import { DiscoveryMachine, DiscoveryRank, offerRank } from '../services/graphQLD
 
 export type DiscoveredOffer = {
   name: string // the instance's name, e.g. "DSM"
+  label?: string // what it is: "Printer", "Web admin"
   application: number // the service type discovery suggests
   port: number
   protocol?: string
@@ -39,6 +40,7 @@ export function discoveredMachine(machine: DiscoveryMachine): DiscoveredMachine 
     addresses: machine.addresses,
     offers: machine.offers.map(o => ({
       name: o.name,
+      label: o.label,
       application: o.application,
       port: o.port,
       protocol: o.protocol,
@@ -58,18 +60,22 @@ export function mayHostVirtualDevices(device: IDevice, sessionDevice: boolean): 
   return sessionDevice && !device.virtual && device.permissions.includes('MANAGE')
 }
 
-// Its services, the likely ones ticked (where none is likely, the others; never one not reachable remotely).
+// Its services, named as discovery names them (offerServiceName), the likely ones first and ticked (where none is likely,
+// the others; never one not reachable remotely).
 export function machinePrefill(gatewayId: string, machine: DiscoveredMachine): VirtualDevicePrefill {
   const rank = (o: DiscoveredOffer) => o.rank || 'likely'
   const ticked = machine.offers.some(o => rank(o) === 'likely') ? 'likely' : 'other'
+  const order: DiscoveryRank[] = ['likely', 'other', 'hidden']
+  const offers = [...machine.offers].sort((a, b) => order.indexOf(rank(a)) - order.indexOf(rank(b)))
+  const name = machine.name || machine.host.replace(/\.local\.?$/, '')
   return {
     gatewayId,
-    name: machine.name || machine.host.replace(/\.local\.?$/, ''),
+    name,
     host: machine.host,
     addresses: machine.addresses,
     platform: suggestPlatform(machine.offers, machine.host),
-    services: machine.offers.map(o => ({
-      name: o.name,
+    services: offers.map(o => ({
+      name: offerServiceName({ ...o, kind: 'network' }, name, { onVirtualDevice: true }),
       application: o.application,
       port: o.port,
       protocol: o.protocol,

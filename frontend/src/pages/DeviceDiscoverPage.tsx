@@ -76,8 +76,8 @@ export const DeviceDiscoverPage: React.FC = () => {
       <DiscoveryList
         discovery={discovery}
         services={device.services}
-        onAdd={offer => {
-          dispatch.ui.set({ setupAdded: offerService(offer) })
+        onAdd={(offer, machineName) => {
+          dispatch.ui.set({ setupAdded: offerService(offer, machineName) })
           history.push(`/devices/${device.id}/add`)
         }}
         machineAction={

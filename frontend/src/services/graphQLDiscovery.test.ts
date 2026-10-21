@@ -20,8 +20,7 @@ import {
   looksGenerated,
   machineName,
   offerRank,
-  offerService,
-} from './graphQLDiscovery'
+  offerService, offerServiceName } from './graphQLDiscovery'
 
 const offer = (more: Partial<DiscoveryOffer>): DiscoveryOffer => ({
   kind: 'network',
@@ -197,5 +196,25 @@ describe('an offer as the service it adds', () => {
       port: 631,
       name: 'Brother HL-L2350 Kitchens',
     })
+  })
+})
+
+describe('offerServiceName', () => {
+  const brother = 'Brother MFC-L2740DW series'
+  const o = (fields: any) => ({ kind: 'network', name: brother, label: 'Printer', port: 631, protocol: 'tcp', ...fields })
+  it('is the label on a virtual device when the instance only repeats the machine', () => {
+    expect(offerServiceName(o({}), brother, { onVirtualDevice: true })).toBe('Printer')
+    expect(offerServiceName(o({ label: 'Web admin', port: 80 }), brother, { onVirtualDevice: true })).toBe('Web admin')
+  })
+  it("is the machine's name and the label on the device that sees it", () => {
+    expect(offerServiceName(o({}), brother)).toBe('Brother MFC-L2740DW series Printer')
+  })
+  it("keeps an instance's own name where it says more", () => {
+    expect(offerServiceName(o({ name: 'DSM', label: 'Web admin', port: 5000 }), 'Office NAS', { onVirtualDevice: true })).toBe('DSM')
+  })
+  it('passes over a generated instance name, and names a listener by its label', () => {
+    expect(offerServiceName(o({ name: '0176601908270003', label: 'Web admin' }), 'Hue Bridge', { onVirtualDevice: true })).toBe('Web admin')
+    expect(offerServiceName({ kind: 'local', name: 'sshd', label: 'SSH', port: 22 } as any)).toBe('SSH')
+    expect(offerServiceName({ kind: 'network', name: '', port: 8080, protocol: 'tcp' } as any)).toBe('TCP 8080')
   })
 })

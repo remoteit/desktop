@@ -31,7 +31,7 @@ import { Icon } from './Icon'
 type Props = {
   discovery: Discovery
   services: IService[]
-  onAdd: (offer: DiscoveryOffer) => void
+  onAdd: (offer: DiscoveryOffer, machineName?: string) => void
   // An action of a machine's own, on its header row (virtual devices: "Add as virtual device").
   machineAction?: (machine: DiscoveryMachine) => React.ReactNode
 }
@@ -143,7 +143,13 @@ export const DiscoveryList: React.FC<Props> = ({ discovery, services, onAdd, mac
       secondary
     )
 
-  const offerRow = (offer: DiscoveryOffer, key: React.Key, primary: React.ReactNode, secondary: string) => {
+  const offerRow = (
+    offer: DiscoveryOffer,
+    key: React.Key,
+    primary: React.ReactNode,
+    secondary: string,
+    machineName?: string
+  ) => {
     const added = offerAdded(offer, services)
     return (
       <ListItem
@@ -157,7 +163,7 @@ export const DiscoveryList: React.FC<Props> = ({ discovery, services, onAdd, mac
               <Icon name="check" inline />
             </Button>
           ) : (
-            <Button color="primary" variant="contained" size="small" onClick={() => onAdd(offer)}>
+            <Button color="primary" variant="contained" size="small" onClick={() => onAdd(offer, machineName)}>
               {t('discovery.addAsService', 'Add as service')}
             </Button>
           )
@@ -189,7 +195,8 @@ export const DiscoveryList: React.FC<Props> = ({ discovery, services, onAdd, mac
       )
         .concat(offer.host !== machine.key && offer.host)
         .filter(Boolean)
-        .join(' · ')
+        .join(' · '),
+      machine.name
     )
 
   // A listener: its label and port (an API before labels: its port), what listens and where.

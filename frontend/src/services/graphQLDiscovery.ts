@@ -172,7 +172,24 @@ export function groupDiscovery(offers: DiscoveryOffer[]): { machines: DiscoveryM
 }
 
 // The service an offer opens the add form with (ui.setupAdded, as the local scan does).
-export function offerService(offer: DiscoveryOffer): Partial<IService> {
-  const name = offer.name.replace(REGEX_NAME_SAFE, '').trim()
-  return { typeID: offer.application, host: offer.host, port: offer.port, name }
+/* What a service made from an offer is called. Its instance's own name where that says something the machine's name
+   and the label do not ("DSM" on a NAS); otherwise its label ("Printer", "Web admin") — on a virtual device made for
+   the machine, the label alone; on the device that sees it, after the machine's name ("Brother MFC-L2740DW series
+   Printer"), as a gateway's services are many machines'. A listener is its label ("SSH"), not its process ("sshd"). */
+export function offerServiceName(
+  offer: Pick<DiscoveryOffer, 'name' | 'label' | 'kind' | 'port'> & { protocol?: string },
+  machineName?: string,
+  { onVirtualDevice = false }: { onVirtualDevice?: boolean } = {}
+): string {
+  const clean = (name?: string | null) => (name || '').replace(REGEX_NAME_SAFE, '').trim()
+  const instance = clean(offer.name)
+  const label = clean(offer.label)
+  if (offer.kind === 'local') return label || instance || `${(offer.protocol || 'tcp').toUpperCase()} ${offer.port}`
+  const specific = !!instance && !looksGenerated(instance) && instance !== clean(machineName) && instance !== label
+  if (specific || !label) return instance || `${(offer.protocol || 'tcp').toUpperCase()} ${offer.port}`
+  return onVirtualDevice || !machineName ? label : clean(`${machineName} ${label}`)
+}
+
+export function offerService(offer: DiscoveryOffer, machineName?: string): Partial<IService> {
+  return { typeID: offer.application, host: offer.host, port: offer.port, name: offerServiceName(offer, machineName) }
 }
