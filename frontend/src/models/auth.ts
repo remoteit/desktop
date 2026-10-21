@@ -447,7 +447,6 @@ export default createModel<RootModel>()({
       await cloudSync.all()
     },
     async signedIn(_: void, state) {
-      dispatch.chat.restoreOpen()
       dispatch.ui.init()
       zendesk.initChat(state.auth.user)
       analytics.signedIn(state.auth.user)

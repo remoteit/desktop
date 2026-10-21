@@ -31,16 +31,19 @@ import {
    feature off in Test Settings → Features, and one without it has no row there. */
 export const useChatEnabled = (): boolean => useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
 
+/* The chat is showing in this window: the person hasn't closed it, and it isn't popped out into its own. */
+export const useChatOpen = (): boolean => useSelector((state: State) => !state.ui.chatClosed && !state.ui.chatPoppedOut)
+
 /* The chat button's contract for the header and the mobile bottom bar. Using it finishes the tour step
    aimed at it: the bottom-bar bubble wraps only the icon, so taps beside it never reached its dismiss. */
 export const useChatToggle = () => {
   const enabled = useChatEnabled()
-  const open = useSelector((state: State) => state.chat.open)
-  const poppedOut = useSelector((state: State) => state.chat.poppedOut)
+  const open = useChatOpen()
+  const poppedOut = useSelector((state: State) => state.ui.chatPoppedOut)
   const dispatch = useDispatch<Dispatch>()
   const toggle = () => {
     dispatch.ui.pop(CHAT_AGENT_GUIDE)
-    dispatch.chat.setOpen(!open)
+    dispatch.ui.setPersistent({ chatClosed: open })
   }
   return { show: enabled && !poppedOut, open, toggle }
 }
@@ -64,7 +67,7 @@ export const chatMaxWidth = (viewport: number): number =>
 const chatWidthFor = (stored: number, viewport: number): number =>
   Math.min(Math.max(stored || CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_MIN), chatMaxWidth(viewport))
 export const useChatWidth = (): number => {
-  const stored = useSelector((state: State) => state.chat.width)
+  const stored = useSelector((state: State) => state.ui.chatWidth)
   return useViewportSelect(w => chatWidthFor(stored, w))
 }
 
@@ -79,7 +82,7 @@ export const useChatWidth = (): number => {
    determines is what let the panel flip out from under a drag. */
 export const useChatDocked = (): boolean => {
   const enabled = useChatEnabled()
-  const open = useSelector((state: State) => state.chat.open)
+  const open = useChatOpen()
   const fits = useViewportWiderThan(CHAT_PANEL_WIDTH_MIN + CHAT_MIN_CONTENT_WIDTH)
   return enabled && open && !browser.isMobile && fits
 }
@@ -94,7 +97,7 @@ export const useChatDocked = (): boolean => {
    every frame of a resize or a chat drag. */
 export const useLayoutBreakpoints = () => {
   const docked = useChatDocked()
-  const stored = useSelector((state: State) => state.chat.width)
+  const stored = useSelector((state: State) => state.ui.chatWidth)
   const packed = useViewportSelect(w => layoutBreakpoints(docked ? w - chatWidthFor(stored, w) : w))
   return useMemo(
     () => ({

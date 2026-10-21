@@ -5,7 +5,7 @@ import { Box, Theme } from '@mui/material'
 import { State, Dispatch } from '../../store'
 import { CHAT_PANEL_WIDTH_MIN } from '../../constants'
 import { radius } from '../../styling'
-import { useChatDocked, useChatWidth, layoutBreakpoints, chatMaxWidth } from '../../hooks/useChatEnabled'
+import { useChatOpen, useChatDocked, useChatWidth, layoutBreakpoints, chatMaxWidth } from '../../hooks/useChatEnabled'
 import { getViewportWidth } from '../../hooks/useViewportWidth'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
@@ -24,10 +24,10 @@ import { selectTurnActive } from '../../models/chat'
 const INSET = 1
 
 /* Display-only: lifecycle, popout protocol, and org mirroring live in
-   useChatMainSync; user actions dispatch chat model effects */
+   useChatMainSync; user actions dispatch chat model effects, and the window state is the ui model's */
 export const ChatPanel: React.FC = () => {
   const { t } = useTranslation()
-  const open = useSelector((state: State) => state.chat.open)
+  const open = useChatOpen()
   const layout = useSelector((state: State) => state.ui.layout)
   const insets = layout.insets
   // Popping out hands the conversation to a second window and stop()s this one. While a turn is
@@ -59,7 +59,7 @@ export const ChatPanel: React.FC = () => {
   const setWidth = useCallback(
     (width: number) => {
       published.current = width
-      dispatch.chat.set({ width })
+      dispatch.ui.setPersistent({ chatWidth: width })
     },
     [dispatch]
   )
@@ -150,7 +150,7 @@ export const ChatPanel: React.FC = () => {
           <IconButton
             icon="times"
             title={t('chat.closeChat', 'Close chat')}
-            onClick={() => dispatch.chat.setOpen(false)}
+            onClick={() => dispatch.ui.setPersistent({ chatClosed: true })}
           />
         )}
       </ChatHeader>

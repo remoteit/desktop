@@ -3,13 +3,13 @@ import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const redux = vi.hoisted(() => ({ state: {} as any }))
-const setOpen = vi.hoisted(() => vi.fn())
+const setPersistent = vi.hoisted(() => vi.fn())
 const pop = vi.hoisted(() => vi.fn())
 const push = vi.hoisted(() => vi.fn())
 
 vi.mock('react-redux', () => ({
   useSelector: (select: (s: any) => any) => select(redux.state),
-  useDispatch: () => ({ chat: { setOpen }, ui: { pop } }),
+  useDispatch: () => ({ ui: { pop, setPersistent } }),
 }))
 vi.mock('react-router-dom', () => ({
   useHistory: () => ({ push }),
@@ -36,7 +36,10 @@ describe('BottomMenu', () => {
   let container: HTMLDivElement
 
   const render = ({ licensed = true, open = false, poppedOut = false } = {}) => {
-    redux.state = { limits: licensed ? { [CHAT_FEATURE]: true } : {}, chat: { open, poppedOut } }
+    redux.state = {
+      limits: licensed ? { [CHAT_FEATURE]: true } : {},
+      ui: { chatClosed: !open, chatPoppedOut: poppedOut },
+    }
     act(() => root.render(<BottomMenu layout={layout} />))
   }
   const actions = () => Array.from(container.querySelectorAll<HTMLButtonElement>('.MuiBottomNavigationAction-root'))
@@ -46,7 +49,7 @@ describe('BottomMenu', () => {
     container = document.createElement('div')
     document.body.appendChild(container)
     root = createRoot(container)
-    setOpen.mockReset()
+    setPersistent.mockReset()
     pop.mockReset()
     push.mockReset()
   })
@@ -59,11 +62,11 @@ describe('BottomMenu', () => {
   it('opens the chat from the AI tab instead of navigating, and a second tap keeps it open', () => {
     render()
     act(() => action('Agent')!.click())
-    expect(setOpen).toHaveBeenCalledWith(true)
+    expect(setPersistent).toHaveBeenCalledWith({ chatClosed: false })
 
     render({ open: true })
     act(() => action('Agent')!.click())
-    expect(setOpen).toHaveBeenCalledTimes(1)
+    expect(setPersistent).toHaveBeenCalledTimes(1)
     expect(push).not.toHaveBeenCalled()
   })
 
@@ -81,14 +84,14 @@ describe('BottomMenu', () => {
   it('closes the chat when another tab is picked', () => {
     render({ open: true })
     act(() => action('Networks')!.click())
-    expect(setOpen).toHaveBeenCalledWith(false)
+    expect(setPersistent).toHaveBeenCalledWith({ chatClosed: true })
     expect(push).toHaveBeenCalledWith('/networks')
   })
 
   it("closes the chat back to the page under it without pushing that page's path again", () => {
     render({ open: true })
     act(() => action('Devices')!.click())
-    expect(setOpen).toHaveBeenCalledWith(false)
+    expect(setPersistent).toHaveBeenCalledWith({ chatClosed: true })
     expect(push).not.toHaveBeenCalled()
   })
 
@@ -102,7 +105,7 @@ describe('BottomMenu', () => {
     render()
     act(() => action('Networks')!.click())
     expect(push).toHaveBeenCalledWith('/networks')
-    expect(setOpen).not.toHaveBeenCalled()
+    expect(setPersistent).not.toHaveBeenCalled()
   })
 
   it('leaves the AI action out without the licence or while the chat is popped out', () => {

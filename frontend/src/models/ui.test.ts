@@ -4,12 +4,12 @@ vi.mock('../services/Controller', () => ({ emit: vi.fn() }))
 vi.mock('@capacitor/status-bar', () => ({ StatusBar: {}, Style: {} }))
 vi.mock('../styling/theme', () => ({ isDarkMode: vi.fn() }))
 vi.mock('../i18n', () => ({ default: {}, resolveLanguage: vi.fn() }))
-vi.mock('../constants', () => ({ SIDEBAR_WIDTH: 0, OAUTH_ISSUER: 'https://login.remote.it' }))
+vi.mock('../constants', () => ({ SIDEBAR_WIDTH: 0, CHAT_PANEL_WIDTH: 400, OAUTH_ISSUER: 'https://login.remote.it' }))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: vi.fn() }))
 vi.mock('../services/browser', () => ({ default: {}, getLocalStorage: vi.fn(), setLocalStorage: vi.fn() }))
 
 import uiModel from './ui'
-import { getLocalStorage } from '../services/browser'
+import { getLocalStorage, setLocalStorage } from '../services/browser'
 
 describe('ui — clearAutoLaunch', () => {
   const run = (pending: string | undefined, connectionId: string) => {
@@ -24,6 +24,27 @@ describe('ui — clearAutoLaunch', () => {
 
   it("leaves another connection's pending launch alone", () => {
     expect(run('service-2', 'service-1')).not.toHaveBeenCalled()
+  })
+})
+
+describe('ui — the chat window state is saved per signed-in user', () => {
+  it('saves the chat being closed, its width and its popout', async () => {
+    const state = { auth: { user: { id: 'alice' } } }
+    const dispatch = { ui: { set: vi.fn() } }
+    await (uiModel as any)
+      .effects(dispatch)
+      .setPersistent({ chatClosed: true, chatWidth: 520, chatPoppedOut: true }, state)
+    expect(setLocalStorage).toHaveBeenCalledWith(state, 'ui-chatClosed', true)
+    expect(setLocalStorage).toHaveBeenCalledWith(state, 'ui-chatWidth', 520)
+    expect(setLocalStorage).toHaveBeenCalledWith(state, 'ui-chatPoppedOut', true)
+  })
+
+  it('restores them at sign-in', async () => {
+    const saved: Record<string, unknown> = { 'ui-chatClosed': true, 'ui-chatWidth': 520 }
+    vi.mocked(getLocalStorage).mockImplementation((_state: any, key: string) => saved[key] ?? null)
+    const dispatch = { ui: { set: vi.fn(), setTheme: vi.fn(), setLanguage: vi.fn() } }
+    await (uiModel as any).effects(dispatch).restoreState(undefined, { ui: { apis: {} } })
+    expect(dispatch.ui.set.mock.calls[0][0]).toMatchObject({ chatClosed: true, chatWidth: 520 })
   })
 })
 

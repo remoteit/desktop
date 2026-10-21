@@ -26,9 +26,6 @@ const chatTransform = createTransform(
     conversationId: inbound.conversationId,
     title: inbound.title,
     ownerId: inbound.ownerId,
-    open: inbound.open,
-    width: inbound.width,
-    poppedOut: inbound.poppedOut,
   }),
   (outbound: Partial<IChatState>) => ({ ...defaultChatState, ...outbound }),
   { whitelist: ['chat'] }

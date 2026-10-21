@@ -168,7 +168,7 @@ export function checkPopoutPresence(handlers: PopoutMainHandlers): void {
 export function broadcastChatSignout(): void {
   post({ type: 'signout' })
   // The popout is being closed deliberately — a lagging poll must not
-  // race in afterward and force `open: true` into freshly-reset state.
+  // race in afterward and report it lost into freshly-reset state.
   stopPolling()
 }
 

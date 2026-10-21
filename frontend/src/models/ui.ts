@@ -7,7 +7,7 @@ import i18n, { resolveLanguage, LanguageMode } from '../i18n'
 import { Settings as LuxonSettings } from 'luxon'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
-import { OAUTH_ISSUER, SIDEBAR_WIDTH } from '../constants'
+import { OAUTH_ISSUER, SIDEBAR_WIDTH, CHAT_PANEL_WIDTH } from '../constants'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/browser'
 
@@ -35,6 +35,9 @@ const SAVED_ACROSS_LOGOUT = [
   'serviceTimeSeries',
   'showDesktopNotice',
   'logsFilters',
+  'chatClosed',
+  'chatWidth',
+  'chatPoppedOut',
 ]
 
 export type UIState = {
@@ -99,6 +102,10 @@ export type UIState = {
   noticeMessage: React.ReactNode
   errorMessage: React.ReactNode
   panelWidth: ILookup<number>
+  /** Closed rather than open: setPersistent drops falsy values, so `open: false` would never be saved */
+  chatClosed: boolean
+  chatWidth: number
+  chatPoppedOut: boolean
   poppedBubbles: string[]
   /** WHEN the user last chose "dismiss all", as a timestamp — not whether they did.
    *  A bubble introduced after that moment still gets shown. `true` is the legacy
@@ -199,6 +206,9 @@ export const defaultState: UIState = {
   noticeMessage: '',
   errorMessage: '',
   panelWidth: {},
+  chatClosed: false,
+  chatWidth: CHAT_PANEL_WIDTH,
+  chatPoppedOut: false,
   poppedBubbles: [],
   expireBubbles: false,
   guidesResetDate: undefined,

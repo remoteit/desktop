@@ -26,15 +26,11 @@ import {
 // Value import is deref'd only inside effects, so the store/model cycle is safe
 import { store } from '../store'
 import type { State } from '../store'
-import { CHAT_PANEL_WIDTH } from '../constants'
 import i18n from '../i18n'
 import { withTimeout } from '../helpers/sleep'
 import { latestWins } from '../helpers/latestWins'
 import { formatReset } from '../helpers/dateHelper'
 import { selectActiveAccountId, isUserAccount } from '../selectors/accounts'
-import { getLocalStorage, setLocalStorage } from '../services/browser'
-
-const CHAT_OPEN_KEY = 'chat-open'
 
 export type ChatToolCall = {
   id: string
@@ -48,9 +44,6 @@ export type ChatAssistantMessage = { role: 'assistant'; text: string; toolCalls:
 export type ChatTranscriptMessage = { role: 'user'; text: string } | ChatAssistantMessage
 
 export type IChatState = {
-  open: boolean
-  /** Docked column width in px — drag-resized, persisted */
-  width: number
   messages: ChatTranscriptMessage[]
   conversationId: string
   turnId: string
@@ -59,9 +52,6 @@ export type IChatState = {
   usage: Usage | null
   /** The signed-in user id this chat belongs to — reset the chat when it changes. */
   ownerId: string
-  /** Org the agent is scoped to; null = uninitialized, user id = personal */
-  /** Conversation currently lives in the popout window (main window only) */
-  poppedOut: boolean
   streaming: boolean
   pendingConfirmation: { toolUseId: string; toolName: string; input: Record<string, unknown> } | null
   error: string | null
@@ -69,8 +59,6 @@ export type IChatState = {
 }
 
 export const defaultChatState: IChatState = {
-  open: true,
-  width: CHAT_PANEL_WIDTH,
   messages: [],
   conversationId: '',
   turnId: '',
@@ -78,7 +66,6 @@ export const defaultChatState: IChatState = {
   conversations: [],
   usage: null,
   ownerId: '',
-  poppedOut: false,
   streaming: false,
   pendingConfirmation: null,
   error: null,
@@ -318,19 +305,6 @@ export default createModel<RootModel>()({
       nextGeneration() // a New Chat outranks any pick or sync still in flight
       await dispatch.chat.stop()
       dispatch.chat.clearConversation()
-    },
-    /* Show or hide the chat for the person, remembered per signed-in user. Pop out and back in set
-       `open` directly: they move the conversation, not this choice. */
-    async setOpen(open: boolean, state) {
-      dispatch.chat.set({ open })
-      setLocalStorage(state, CHAT_OPEN_KEY, open ? 'open' : 'closed')
-    },
-    /* At sign-in, the signed-in user's last choice; without one the persisted state stands. A chat
-       popped out before a reload stays out of the dock, as the presence check expects. */
-    async restoreOpen(_: void, state) {
-      const saved = getLocalStorage(state, CHAT_OPEN_KEY)
-      const open = saved ? saved === 'open' : state.chat.open
-      dispatch.chat.set({ open: open && !state.chat.poppedOut })
     },
     /* Move the conversation to its own window; the dock hides when the popout
        says hello. A blocked popup is surfaced instead of silently ignored. */
