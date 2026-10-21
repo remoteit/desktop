@@ -594,6 +594,15 @@ describe('auth model — switching accounts releases the agent first', () => {
     expect(dispatch.ui.set).not.toHaveBeenCalled()
   })
 
+  it('a window the backend never signs in gives up after the one wait, without asking', async () => {
+    reconnectNow.mockResolvedValue(false)
+    const dispatch = makeDispatch()
+    expect(await effectsFor(dispatch).releaseAgent(undefined, { auth: { user: { id: 'guid-a' } } })).toBe(false)
+    expect(reconnectNow).toHaveBeenCalledTimes(1)
+    expect(emitWithAck).not.toHaveBeenCalled()
+    expect(dispatch.ui.set).toHaveBeenCalledWith({ errorMessage: 'notices:auth.agentReleaseFailed' })
+  })
+
   it('a release the backend refuses or never answers stops the switch and says so', async () => {
     emitWithAck.mockResolvedValue(undefined)
     reconnectNow.mockResolvedValue(false)

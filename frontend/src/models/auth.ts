@@ -431,7 +431,7 @@ export default createModel<RootModel>()({
       const ask = () => Controller.emitWithAck('agent/release', AGENT_RELEASE_TIMEOUT)
       // The backend only answers agent/release from a window it has finished signing in; asked sooner, it never does.
       const ready = state.auth.backendAuthenticated || (await Controller.reconnectNow(AGENT_RELEASE_TIMEOUT))
-      if ((ready && (await ask())) || ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && (await ask()))) {
+      if (ready && ((await ask()) || ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && (await ask())))) {
         dispatch.auth.set({ backendAuthenticated: false, agentReleased: true })
         return true
       }
