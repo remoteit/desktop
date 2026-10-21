@@ -1,4 +1,5 @@
 import { REGEX_NAME_SAFE } from '@common/constants'
+import i18n from '../i18n'
 import { post } from './post'
 import { graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
@@ -24,7 +25,15 @@ export type DiscoveryOffer = {
   process: string | null
   tls: boolean | null // a printer's alone: found as IPPS
   txt: string[] | null // a printer's alone: its announcement's TXT, key=value
+  // graphql's reading of it, absent from an API before them (offerRank ranks by type; the list shows its name):
+  label?: string // a friendly name: "SSH", "Web admin", "LPD printing"
+  rank?: DiscoveryRank
+  note?: string | null // a caveat: "Works only on its own network"
+  model?: string | null // the product its TXT names: "Brother MFC-L2740DW series"
 }
+
+// How likely it is wanted: likely (shown), other (behind "more"), hidden (not reachable remotely).
+export type DiscoveryRank = 'likely' | 'other' | 'hidden'
 
 export type Discovery = {
   at: string | null
@@ -35,11 +44,19 @@ export type Discovery = {
 // Why there is no answer (graphql's reason, in the error's extensions): the device is offline (or has no session), or it did not answer in time.
 export type DiscoveryError = { error: 'OFFLINE' | 'NO_ANSWER' | 'ERROR'; message?: string }
 
-export async function graphQLDiscover(deviceId: string): Promise<Discovery | DiscoveryError | typeof UNSUPPORTED> {
+const RANKED = ['label', 'rank', 'note', 'model']
+
+// An API from before an offer's label, rank, note and model is asked again without them: the page ranks by type.
+export async function graphQLDiscover(
+  deviceId: string,
+  ranked = true
+): Promise<Discovery | DiscoveryError | typeof UNSUPPORTED> {
   const query = `query Discover($deviceId: String!) {
     discover(deviceId: $deviceId) {
       at
-      offers { kind type name host addresses port protocol application process tls txt }
+      offers { kind type name host addresses port protocol application process tls txt${
+        ranked ? ' ' + RANKED.join(' ') : ''
+      } }
       withheld
     }
   }`
@@ -47,6 +64,7 @@ export async function graphQLDiscover(deviceId: string): Promise<Discovery | Dis
   const response = await post({ query, variables })
   if (response === 'ERROR') return { error: 'ERROR' }
   const errors = graphQLGetErrors(response, true, { query, variables })
+  if (ranked && RANKED.some(field => withoutDeviceSessions(errors, field))) return graphQLDiscover(deviceId, false)
   if (withoutDeviceSessions(errors, 'discover')) return UNSUPPORTED
   if (errors?.length) {
     const error = errors[0] as Error & { extensions?: { reason?: string } }
@@ -63,13 +81,67 @@ export function discoveryError(message?: string): DiscoveryError {
 
 export type DiscoveryMachine = {
   key: string // its host: the .local name, else its first address
-  name: string // its .local name without the domain, else its address
+  name: string // what it calls itself (machineName)
   addresses: string[]
-  offers: DiscoveryOffer[]
+  offers: DiscoveryOffer[] // by port
 }
 
+// The generic types: an offer of one is a socket, not yet anything in particular.
+const GENERIC_TYPES = [1, 32769] // TCP, UDP
+
+// graphql's rank, else (an API before it) likely for a type it knows, other for a bare socket.
+export function offerRank(offer: DiscoveryOffer): DiscoveryRank {
+  if (offer.rank === 'likely' || offer.rank === 'other' || offer.rank === 'hidden') return offer.rank
+  return GENERIC_TYPES.includes(offer.application) ? 'other' : 'likely'
+}
+
+export function byRank(offers: DiscoveryOffer[]) {
+  const ranked: Record<DiscoveryRank, DiscoveryOffer[]> = { likely: [], other: [], hidden: [] }
+  for (const offer of offers) ranked[offerRank(offer)].push(offer)
+  return ranked
+}
+
+/* A name a person gave it, or a product's, rather than one a machine made: not a hex string of 8 or more, a UUID, a
+   run of 10 or more digits, or a long alphanumeric blob (a MAC inside it, or no vowels at all: brwa8a795a76b38). */
+export function looksGenerated(name: string): boolean {
+  const value = name.trim()
+  if (!value) return true
+  if (/^[0-9a-f]{8,}$/i.test(value)) return true
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) return true
+  if (/\d{10,}/.test(value)) return true
+  if (/^[a-z0-9]{10,}$/i.test(value)) {
+    if (/[0-9a-f]{8,}/i.test(value) && /\d/.test(value)) return true
+    if (!/[aeiou]/i.test(value) && (value.match(/\d/g) || []).length >= 6) return true
+  }
+  return false
+}
+
+const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/
+const LOCAL = /\.local\.?$/i
+
+/* What a machine calls itself, the first that looks human of: the name its instances share (the most common among
+   them), the product its offers name, its .local host name; else "Device at" its first IPv4 address (or any). */
+export function machineName(key: string, addresses: string[], offers: DiscoveryOffer[]): string {
+  const human = (name?: string | null): name is string => !!name && !looksGenerated(name)
+  const counts = new Map<string, number>()
+  for (const offer of offers) if (human(offer.name)) counts.set(offer.name, (counts.get(offer.name) || 0) + 1)
+  let shared: string | undefined
+  for (const [name, count] of counts) if (!shared || count > counts.get(shared)!) shared = name
+  if (shared) return shared
+  const model = offers.map(offer => offer.model).find(human)
+  if (model) return model
+  const host = LOCAL.test(key) ? key.replace(LOCAL, '') : undefined
+  if (human(host)) return host
+  const address = addresses.find(a => IPV4.test(a)) || addresses[0] || key
+  return i18n.t('discovery.deviceAt', 'Device at {{address}}', { address })
+}
+
+// Whether it offers anything likely wanted: listed among the machines, else among the network's other devices.
+export const machineLikely = (machine: DiscoveryMachine) => machine.offers.some(offer => offerRank(offer) === 'likely')
+
 // The answer as the page lists it: the network's instances by the machine that advertises them, and the device's own
-// listeners on their own. Machines by name, each one's instances and the listeners by port.
+// listeners on their own. Machines with a likely offer first, each part by name; each one's instances and the
+// listeners by port.
 export function groupDiscovery(offers: DiscoveryOffer[]): { machines: DiscoveryMachine[]; local: DiscoveryOffer[] } {
   const machines = new Map<string, DiscoveryMachine>()
   const local: DiscoveryOffer[] = []
@@ -83,15 +155,19 @@ export function groupDiscovery(offers: DiscoveryOffer[]): { machines: DiscoveryM
     const key = offer.host || offer.addresses[0] || offer.name
     let machine = machines.get(key)
     if (!machine) {
-      machine = { key, name: key.replace(/\.local\.?$/i, ''), addresses: [], offers: [] }
+      machine = { key, name: key, addresses: [], offers: [] }
       machines.set(key, machine)
     }
     for (const address of offer.addresses) if (!machine.addresses.includes(address)) machine.addresses.push(address)
     machine.offers.push(offer)
   }
 
-  const list = [...machines.values()].sort((a, b) => a.name.localeCompare(b.name))
-  list.forEach(machine => machine.offers.sort(byPort))
+  const list = [...machines.values()]
+  for (const machine of list) {
+    machine.offers.sort(byPort)
+    machine.name = machineName(machine.key, machine.addresses, machine.offers)
+  }
+  list.sort((a, b) => Number(machineLikely(b)) - Number(machineLikely(a)) || a.name.localeCompare(b.name))
   return { machines: list, local: local.sort(byPort) }
 }
 

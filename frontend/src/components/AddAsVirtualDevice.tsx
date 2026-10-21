@@ -6,7 +6,7 @@ import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { suggestPlatform } from '../platforms/virtual'
 import { openVirtualDeviceAdd } from './HostedDevices'
 import { VirtualDevicePrefill } from './VirtualDeviceForm'
-import type { DiscoveryMachine } from '../services/graphQLDiscovery'
+import { DiscoveryMachine, DiscoveryRank, offerRank } from '../services/graphQLDiscovery'
 
 /* The seam for discovery (the gateway's "What this device sees", grouped by machine): each machine's
    "Add as virtual device". Give it the gateway and the machine as discovery found it; it opens the add form with
@@ -20,17 +20,18 @@ export type DiscoveredOffer = {
   type?: string // its DNS-SD type, e.g. "_smb._tcp"
   txt?: ILookup<string>
   host?: string // where it differs from the machine's host
+  rank?: DiscoveryRank // how likely it is wanted: likely ones are ticked
 }
 
 export type DiscoveredMachine = {
-  name?: string // a friendly name (a model, an instance's name)
+  name?: string // a friendly name (its instances' shared name, a model)
   host: string // its mDNS host name (nas.local), else its address
   addresses?: string[]
   offers: DiscoveredOffer[]
 }
 
-// A machine as discovery groups it (services/graphQLDiscovery groupDiscovery), as the add form takes it: an offer's host
-// only where it differs from the machine's, a printer's TXT (key=value) as a lookup.
+// A machine as discovery groups it (services/graphQLDiscovery groupDiscovery), as the add form takes it: its name as the
+// page shows it, an offer's host only where it differs from the machine's, a printer's TXT (key=value) as a lookup.
 export function discoveredMachine(machine: DiscoveryMachine): DiscoveredMachine {
   return {
     name: machine.name,
@@ -46,6 +47,7 @@ export function discoveredMachine(machine: DiscoveryMachine): DiscoveredMachine 
         ? Object.fromEntries(o.txt.map(entry => [entry.split('=')[0], entry.split('=').slice(1).join('=')]))
         : undefined,
       host: o.host && o.host !== machine.key ? o.host : undefined,
+      rank: offerRank(o),
     })),
   }
 }
@@ -56,7 +58,10 @@ export function mayHostVirtualDevices(device: IDevice, sessionDevice: boolean): 
   return sessionDevice && !device.virtual && device.permissions.includes('MANAGE')
 }
 
+// Its services, the likely ones ticked (where none is likely, the others; never one not reachable remotely).
 export function machinePrefill(gatewayId: string, machine: DiscoveredMachine): VirtualDevicePrefill {
+  const rank = (o: DiscoveredOffer) => o.rank || 'likely'
+  const ticked = machine.offers.some(o => rank(o) === 'likely') ? 'likely' : 'other'
   return {
     gatewayId,
     name: machine.name || machine.host.replace(/\.local\.?$/, ''),
@@ -69,7 +74,7 @@ export function machinePrefill(gatewayId: string, machine: DiscoveredMachine): V
       port: o.port,
       protocol: o.protocol,
       host: o.host,
-      checked: true,
+      checked: rank(o) === ticked,
     })),
   }
 }

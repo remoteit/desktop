@@ -5,8 +5,11 @@ vi.mock('react-router-dom', () => ({ useHistory: vi.fn() }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_key: string, text: string) => text }) }))
 vi.mock('./HostedDevices', () => ({ openVirtualDeviceAdd: vi.fn() }))
 vi.mock('../hooks/useVirtualDevices', () => ({ useVirtualDevices: () => true }))
+vi.mock('../services/post', () => ({ post: vi.fn() }))
+vi.mock('../services/graphQL', () => ({ graphQLGetErrors: vi.fn() }))
+vi.mock('../i18n', () => ({ default: { t: (_key: string, text: string) => text } }))
 
-import { discoveredMachine, mayHostVirtualDevices } from './AddAsVirtualDevice'
+import { discoveredMachine, machinePrefill, mayHostVirtualDevices } from './AddAsVirtualDevice'
 import type { DiscoveryMachine, DiscoveryOffer } from '../services/graphQLDiscovery'
 
 const offer = (more: Partial<DiscoveryOffer>): DiscoveryOffer => ({
@@ -49,6 +52,7 @@ describe('discoveredMachine', () => {
           type: '_smb._tcp',
           txt: undefined,
           host: undefined,
+          rank: 'likely',
         },
         {
           name: 'Printer',
@@ -58,6 +62,7 @@ describe('discoveredMachine', () => {
           type: '_ipp._tcp',
           txt: { ty: 'HP LaserJet', note: 'a=b' },
           host: undefined,
+          rank: 'likely',
         },
         {
           name: 'Admin',
@@ -67,9 +72,42 @@ describe('discoveredMachine', () => {
           type: '_http._tcp',
           txt: undefined,
           host: '192.168.1.21',
+          rank: 'likely',
         },
       ],
     })
+  })
+})
+
+describe('machinePrefill', () => {
+  const machine = (offers: DiscoveryOffer[]): DiscoveryMachine => ({
+    key: 'nas.local',
+    name: 'Synology DS920+',
+    addresses: ['192.168.1.20'],
+    offers,
+  })
+  const ticked = (offers: DiscoveryOffer[]) =>
+    machinePrefill('G', discoveredMachine(machine(offers))).services!.map(s => [s.port, s.checked])
+
+  it('the machine’s name as the page shows it; its likely services ticked, not the others or hidden ones', () => {
+    const offers = [
+      offer({ port: 22, rank: 'likely' }),
+      offer({ port: 5000, rank: 'other' }),
+      offer({ port: 8009, rank: 'hidden' }),
+    ]
+    expect(machinePrefill('G', discoveredMachine(machine(offers))).name).toBe('Synology DS920+')
+    expect(ticked(offers)).toEqual([
+      [22, true],
+      [5000, false],
+      [8009, false],
+    ])
+  })
+
+  it('nothing likely: its others ticked, never a hidden one', () => {
+    expect(ticked([offer({ port: 5000, rank: 'other' }), offer({ port: 8009, rank: 'hidden' })])).toEqual([
+      [5000, true],
+      [8009, false],
+    ])
   })
 })
 
