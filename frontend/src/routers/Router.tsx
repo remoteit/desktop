@@ -19,6 +19,8 @@ import { TestPage } from '../pages/TestPage'
 import { TerminalPage } from '../pages/TerminalPage'
 import { EndpointSignInPage } from '../pages/EndpointSignInPage'
 import { AddPage } from '../pages/AddPage'
+import { VirtualDeviceAddPage } from '../pages/VirtualDeviceAddPage'
+import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { DevicesPage } from '../pages/DevicesPage'
 import { DeviceBulkTransferPage } from '../pages/DeviceTransferPage'
 import { SetupDevice } from '../pages/SetupDevice'
@@ -87,6 +89,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const os = useSelector((state: State) => state.backend.environment.os) || getOs()
   // Connected Apps depends on an API that ships with the MCP production release
   const testUI = useSelector((state: State) => !!state.ui.testUI)
+  const virtualDevices = useVirtualDevices()
 
   useEffect(() => {
     const initialRoute = window.localStorage.getItem('initialRoute')
@@ -179,6 +182,13 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <RaspberrypiOptionsPage />
         </Panel>
       </Route>
+      {virtualDevices && (
+        <Route path="/add/virtual/:gatewayID?">
+          <Panel layout={layout}>
+            <VirtualDeviceAddPage />
+          </Panel>
+        </Route>
+      )}
       <Route path="/add/:platform/:redirect?">
         <Panel layout={layout}>
           <PlatformAddPage />

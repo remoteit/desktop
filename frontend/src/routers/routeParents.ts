@@ -129,6 +129,8 @@ const ROUTE_PARENTS: [string, string][] = [
 
   // Add
   ['/add/raspberrypi-options', '/add'],
+  ['/add/virtual/:gatewayID', '/add'],
+  ['/add/virtual', '/add'],
   ['/add/:platform/:redirect', '/add'],
   ['/add/:platform', '/add'],
 ]

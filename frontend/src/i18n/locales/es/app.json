@@ -58,6 +58,9 @@
     "sendingEllipsis": "Enviando...",
     "sendPromotionRequest": "Enviar solicitud de promoción"
   },
+  "addAsVirtualDevice": {
+    "button": ""
+  },
   "addDevice": {
     "codeExpiration": "El código caduca en {{hours}}\u00a0horas.",
     "registrationCode": "Código de registro"
@@ -78,7 +81,10 @@
     "products": "Productos",
     "provisionInBulk": "Aprovisionar en masa",
     "title": "¿A qué quieres conectarte?",
-    "tryDevice": "Probar un dispositivo"
+    "tryDevice": "Probar un dispositivo",
+    "virtualDevice": "",
+    "virtualDeviceHint": "",
+    "virtualDeviceTitle": ""
   },
   "addPlatformServices": {
     "label": "SERVICIO",
@@ -400,6 +406,7 @@
     "externalAddress": "IP externa",
     "from": "Desde",
     "hardwareId": "ID de hardware",
+    "hostedBy": "",
     "id": "ID del dispositivo",
     "initiatorPlatform": "Plataforma",
     "internalAddress": "IP interna",
@@ -741,12 +748,21 @@
     "turnaround": "Las solicitudes de eliminación tardan de 3 a 5 días hábiles en completarse."
   },
   "deleteDevice": {
+    "deleteHosted": "",
+    "deleteHostedHint": "",
+    "deleteHostedNamed": "",
     "deletingDevices": "eliminando dispositivos.",
+    "hosts_one": "",
+    "hosts_many": "",
+    "hosts_other": "",
+    "keepHosted": "",
+    "keepHostedHint": "",
     "mustBeOffline": "El dispositivo debe estar sin conexión",
     "title": "Eliminar dispositivo",
     "uninstallRecommendation": "Te recomendamos desinstalar Remote.It antes de",
     "unregisterTitle": "Anular registro del dispositivo",
     "unregisterWarning": "Estás a punto de eliminar permanentemente este dispositivo y todos sus servicios.",
+    "virtualWarning": "",
     "warning": "Eliminar dispositivos no se puede deshacer, por lo que es posible que necesites acceso físico al dispositivo si deseas recuperarlo."
   },
   "deviceAbout": {
@@ -917,6 +933,12 @@
     "shareAccess": "Compartir acceso",
     "unknown": "Desconocido"
   },
+  "deviceHosting": {
+    "address": "",
+    "gateway": "",
+    "lastAddress": "",
+    "title": ""
+  },
   "deviceLabelSetting": {
     "label": "Etiqueta del dispositivo"
   },
@@ -955,7 +977,8 @@
   },
   "deviceNameLocation": {
     "rename": "Cambiar nombre",
-    "thisDevice": "Este dispositivo"
+    "thisDevice": "Este dispositivo",
+    "virtualDevice": ""
   },
   "deviceNameSetting": {
     "alsoSubnet": "",
@@ -1147,6 +1170,7 @@
     "deviceDetails": "Detalles del dispositivo",
     "deviceLink": "Enlace del dispositivo",
     "makeProduct": "Crear producto",
+    "makeVirtualDevice": "",
     "restoreDevice": "Restaurar dispositivo",
     "serviceLink": "Enlace del servicio",
     "shareAccess": "Compartir acceso",
@@ -1160,6 +1184,7 @@
   "devicePage": {
     "availableServices": "Servicios disponibles",
     "availableServicesDescription": "Aquí se muestran los servicios (aplicaciones) alojados por el dispositivo.",
+    "chooseGateway": "",
     "deviceNotFound": "Dispositivo no encontrado.",
     "deviceOffline": "Dispositivo sin conexión",
     "deviceUnlicensed": "Dispositivo sin licencia",
@@ -1553,6 +1578,23 @@
   "headerOverrideSetting": {
     "description": "Una forma de especificar un nombre de host diferente en el encabezado host de una solicitud HTTP. Se puede usar en escenarios de balanceo de carga para enrutar solicitudes al servidor adecuado.",
     "title": "Anulación del encabezado host"
+  },
+  "hostedBy": {
+    "aGateway": "",
+    "notHosted": "",
+    "notHostedTooltip": "",
+    "offlineTooltip": "",
+    "onlineTooltip": "",
+    "via": ""
+  },
+  "hostedDevices": {
+    "add": "",
+    "empty": "",
+    "emptyHint": "",
+    "services_one": "",
+    "services_many": "",
+    "services_other": "",
+    "title": ""
   },
   "inlineFileFieldSetting": {
     "reset": "Restablecer",
@@ -2735,7 +2777,8 @@
     "serviceUrl": "URL del servicio",
     "serviceUrlHelp": "URL completa del servicio al que deseas conectarte. Ejemplo:",
     "setupConnectionDefaults": "Configurar valores predeterminados de conexión",
-    "updatePackageHelp": "Actualiza su paquete de dispositivo a la última versión para poder configurarlo de forma remota."
+    "updatePackageHelp": "Actualiza su paquete de dispositivo a la última versión para poder configurarlo de forma remota.",
+    "virtualHostHelp": ""
   },
   "serviceGraphColumn": {
     "title": "Gráfico del servicio"
@@ -2746,6 +2789,11 @@
     "selectAnotherDevice": "Selecciona otro dispositivo en el menú de dispositivos para conectarte a él de forma remota.",
     "shareAccess": "Compartir acceso",
     "unknown": "desconocido"
+  },
+  "serviceIndicators": {
+    "hosts_one": "",
+    "hosts_many": "",
+    "hosts_other": ""
   },
   "serviceKeySetting": {
     "beta": "BETA",
@@ -2876,6 +2924,7 @@
   "statusChip": {
     "connected": "Conectado",
     "idle": "Inactivo",
+    "notHosted": "",
     "offline": "Sin conexión",
     "offlineLabel": "Sin conexión ",
     "online": "En línea",
@@ -2976,6 +3025,8 @@
     "switchGraphQLAPIs": "Cambiar las API de GraphQL",
     "testOptions": "Opciones de prueba",
     "title": "Configuración de prueba",
+    "virtualDevices": "",
+    "virtualDevicesHint": "",
     "webSocketURL": "URL de WebSocket"
   },
   "thisDevice": {
@@ -3142,5 +3193,40 @@
     "exit": "Salir del modo de vista como",
     "supportSession": "Sesión de soporte — viendo como {{email}} hasta {{until}}. Los tokens llevan tu identidad; la persona puede ver y finalizar esta sesión.",
     "viewingAs": "Viendo como: {{email}}"
+  },
+  "virtualDeviceAddPage": {
+    "convertTitle": "",
+    "intro": "",
+    "title": ""
+  },
+  "virtualDeviceForm": {
+    "add": "",
+    "adding": "",
+    "address": "",
+    "addressAlternatives": "",
+    "addressHint": "",
+    "addService": "",
+    "convert": "",
+    "convertHint": "",
+    "dhcpHint": "",
+    "hostedBy": "",
+    "hostedByHint": "",
+    "morePlatforms": "",
+    "name": "",
+    "noGateways": "",
+    "platform": "",
+    "port": "",
+    "searchPlatforms": "",
+    "services": "",
+    "serviceType": "",
+    "suggested": ""
+  },
+  "virtualDeviceSettings": {
+    "address": "",
+    "dhcpHint": "",
+    "hostedBy": "",
+    "notHosted": "",
+    "notHostedNotice": "",
+    "platform": ""
   }
 }

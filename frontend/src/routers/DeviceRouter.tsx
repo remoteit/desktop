@@ -77,12 +77,12 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/devices/:deviceID/logs">
             <DeviceLogPage device={device} />
           </Route>
-          {deviceSessions && (
+          {deviceSessions && !device?.virtual && (
             <Route path="/devices/:deviceID/agent">
               <DeviceAgentPage />
             </Route>
           )}
-          {deviceSessions && (
+          {deviceSessions && !device?.virtual && (
             <Route path="/devices/:deviceID/proxy">
               <DeviceProxyPage />
             </Route>

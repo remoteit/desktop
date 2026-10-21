@@ -7,6 +7,7 @@ const { graphQLFetchDeviceList, graphQLDeviceAdaptor } = vi.hoisted(() => ({
 vi.mock('../services/graphQLDevice', () => ({ graphQLFetchDeviceList, graphQLDeviceAdaptor }))
 vi.mock('../services/graphQLMutation', () => ({}))
 vi.mock('../services/graphQLRequest', () => ({}))
+vi.mock('../services/graphQLVirtualDevices', () => ({}))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' }))
 vi.mock('../selectors/devices', () => ({
   selectDeviceModelAttributes: (state: any) => state.devices.acct,

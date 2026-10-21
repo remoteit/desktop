@@ -17,6 +17,8 @@ import { Container } from '../components/Container'
 import { platforms } from '../platforms'
 import { DEVICE_PACKAGE_PLATFORMS, devicePackagePath } from '../platforms/devicePackage'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useVirtualDevices } from '../hooks/useVirtualDevices'
+import { virtualDeviceAddPath } from '../components/HostedDevices'
 import { spacing } from '../styling'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
@@ -30,6 +32,7 @@ export const AddPage: React.FC = () => {
   const hasDemo = useSelector((state: State) => selectDevice(state, state.user.id, DEMO_DEVICE_ID) !== undefined)
   const history = useHistory()
   const devicePackage = useDeviceSessions()
+  const virtualDevices = useVirtualDevices()
 
   useEffect(() => {
     if (!allApplicationTypes.length) dispatch.applicationTypes.fetchAll()
@@ -82,7 +85,12 @@ export const AddPage: React.FC = () => {
             [theme.breakpoints.up('sm')]: { width: 200 },
           },
           '& .addIcons': {
-            '& .MuiListItemButton-root, & .MuiListItem-root': { width: 140, minWidth: 140, minHeight: 100, margin: '1px' },
+            '& .MuiListItemButton-root, & .MuiListItem-root': {
+              width: 140,
+              minWidth: 140,
+              minHeight: 100,
+              margin: '1px',
+            },
             [theme.breakpoints.down('sm')]: {
               '& .MuiListItemButton-root, & .MuiListItem-root': { width: 110, minWidth: 110 },
             },
@@ -187,6 +195,20 @@ export const AddPage: React.FC = () => {
             )
           })}
         </List>
+        {virtualDevices && (
+          <List className="addList addSmall" dense disablePadding>
+            <ListSubheader disableGutters>{t('addPage.virtualDevice', 'Virtual device')}</ListSubheader>
+            <ListItemButton disableGutters onClick={() => history.push(virtualDeviceAddPath())}>
+              <ListItemIcon>
+                <Icon name="plc" size="xxl" platformIcon fixedWidth />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('addPage.virtualDeviceTitle', 'Through a gateway')}
+                secondary={t('addPage.virtualDeviceHint', 'A NAS, printer or PLC that runs nothing itself')}
+              />
+            </ListItemButton>
+          </List>
+        )}
         <ClaimDevice className="addList addSmall" />
         <List className="addList addSmall" dense disablePadding>
           <ListSubheader disableGutters>{t('addPage.addMany', 'Add many')}</ListSubheader>
@@ -204,4 +226,3 @@ export const AddPage: React.FC = () => {
     </Container>
   )
 }
-

@@ -43,7 +43,9 @@
     "transferred": "„{{name}}“ wurde erfolgreich an {{email}} übertragen.",
     "transferredCount_one": "{{count}} Gerät wurde erfolgreich an {{email}} übertragen.",
     "transferredCount_other": "{{count}} Geräte wurden erfolgreich an {{email}} übertragen.",
-    "unregistered": "Geräteregistrierung erfolgreich aufgehoben!"
+    "unregistered": "Geräteregistrierung erfolgreich aufgehoben!",
+    "virtualAdded": "",
+    "virtualMoved": ""
   },
   "feedback": {
     "sendError": "Beim Senden der Nachricht ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."

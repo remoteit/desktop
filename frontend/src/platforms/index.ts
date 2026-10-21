@@ -11,6 +11,8 @@ export interface IPlatform {
   listItemTitle?: React.ReactNode
   route?: string
   hasScreenView?: boolean
+  // A machine no daemon runs on (a PLC, a printer): a virtual device's platform only, never a page or product type.
+  virtualOnly?: boolean
   override?: React.FC<IPlatformOverrideProps>
   installation?: {
     download?: boolean
@@ -58,16 +60,21 @@ class Platforms {
     'embedded-works',
     'firewalla',
     'gcp',
+    'hmi',
     'idy',
     'ios',
+    'ipcamera',
     'linux',
     'liverock',
     'mac',
     'nas',
     'nvidia',
     'openwrt',
+    'plc',
+    'printer',
     'raspberrypi',
     'remoteit',
+    'router',
     'teltonika',
     'this',
     'tinkerboard',
@@ -144,7 +151,25 @@ class Platforms {
 
   // For a picker a user chooses from; nameLookup is wider. See ./README.md.
   get pageTypes(): INumberLookup<string> {
-    return Object.fromEntries(Object.keys(this.lookup).map(type => [type, this.nameLookup[type]]))
+    return Object.fromEntries(
+      Object.keys(this.lookup)
+        .filter(type => !this.get(this.lookup[type]).virtualOnly)
+        .map(type => [type, this.nameLookup[type]])
+    )
+  }
+
+  // Every type with a label, for a picker that searches the whole catalogue (a virtual device's platform).
+  get allTypes(): INumberLookup<string> {
+    return { ...this.nameLookup }
+  }
+
+  // The types only a virtual device has (platforms marked virtualOnly).
+  get virtualTypes(): INumberLookup<string> {
+    return Object.fromEntries(
+      Object.keys(this.lookup)
+        .filter(type => this.get(this.lookup[type]).virtualOnly)
+        .map(type => [type, this.nameLookup[type]])
+    )
   }
 
   // A page covers several types, so the type's own label beats the page name: 10 is

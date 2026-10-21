@@ -65,7 +65,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     return {
       ...DEFAULT_SERVICE,
       id: service?.id || '',
-      host: service?.host || IP_PRIVATE,
+      // A virtual device's services default to its address; a daemon's to the device itself.
+      host: service?.host || (device?.virtual && device.host) || IP_PRIVATE,
       port: service?.port || defaultType.port,
       type: defaultType.name,
       typeID: defaultType.id,
@@ -180,7 +181,9 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                           defaultValue: 'No service found running on {{host}}:{{port}}.',
                         })}
                         <AddFromNetwork allowScanning={thisDevice} />
-                        <em>{t('serviceForm.doubleCheckRunning', 'Double check that the host application running.')}</em>
+                        <em>
+                          {t('serviceForm.doubleCheckRunning', 'Double check that the host application running.')}
+                        </em>
                       </>
                     )}
                   </Notice>
@@ -233,15 +236,24 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                         ),
                       }}
                     />
-                    <Typography variant="caption">
-                      {t(
-                        'serviceForm.serviceHostHelp',
-                        'Enter a local network IP address or fully qualified domain name to configure this as a jump service to a system on your local network.'
-                      )}
-                      <br />
-                      <i>{t('serviceForm.awsExample', 'AWS example:')}</i>
-                      <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
-                    </Typography>
+                    {device?.virtual && form.host === device.host ? (
+                      <Typography variant="caption">
+                        {t(
+                          'serviceForm.virtualHostHelp',
+                          "Uses the device's address. Change it for a machine with more than one."
+                        )}
+                      </Typography>
+                    ) : (
+                      <Typography variant="caption">
+                        {t(
+                          'serviceForm.serviceHostHelp',
+                          'Enter a local network IP address or fully qualified domain name to configure this as a jump service to a system on your local network.'
+                        )}
+                        <br />
+                        <i>{t('serviceForm.awsExample', 'AWS example:')}</i>
+                        <b> vpc-domain-name-identifier.region.es.amazonaws.com</b>
+                      </Typography>
+                    )}
                   </ListItem>
                   <ListItem sx={fieldSx}>
                     <TextField
@@ -368,11 +380,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           color="primary"
           disabled={disabled || !!error || !changed /*  || fieldError */}
         >
-          {saving
-            ? t('common.saving', 'Saving...')
-            : changed
-            ? t('common.save', 'Save')
-            : t('common.saved', 'Saved')}
+          {saving ? t('common.saving', 'Saving...') : changed ? t('common.save', 'Save') : t('common.saved', 'Saved')}
         </Button>
         <Button onClick={onCancel}>{t('common.cancel', 'Cancel')}</Button>
         {/* <Pre form={form} /> */}

@@ -391,6 +391,38 @@ declare global {
       emailNotifications?: boolean | null
       desktopNotifications?: boolean | null
     }
+    // Virtual devices (graphql-api docs/VIRTUAL-DEVICES.md): read only while the portal's flag is on.
+    virtual?: boolean // no daemon of its own: hosted by a gateway, its state the gateway's
+    hostedBy?: IHostingGateway | null // null when not virtual, or virtual and not hosted
+    host?: string // a virtual device's address: its .local name or an IP address
+    lastAddress?: string // the address its .local name last resolved to
+    hosts?: number // how many virtual devices this one hosts that the viewer can see
+    hostedDevices?: IHostedDevice[] // those devices, on a gateway's full read
+  }
+
+  interface IHostingGateway {
+    visible: boolean // the viewer can see the gateway: only then are its id and name given
+    id?: string
+    name?: string
+    state: IDevice['state']
+  }
+
+  // graphql VirtualServiceInput: a service of a virtual device, its host the device's unless given.
+  interface IVirtualServiceInput {
+    name: string
+    application: number
+    port: number
+    protocol?: string
+    host?: string
+  }
+
+  interface IHostedDevice {
+    id: string
+    name: string
+    state: IDevice['state']
+    host?: string
+    targetPlatform?: number
+    serviceCount: number
   }
 
   interface IService {

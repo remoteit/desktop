@@ -22,12 +22,31 @@ import { DeviceApps } from '../components/DeviceApps'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { Gutters } from '../components/Gutters'
 import { List } from '@mui/material'
+import { VirtualDeviceSettings } from '../components/VirtualDeviceSettings'
 
 export const DeviceEditPage: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
   const deviceSessions = useSelector(selectDeviceSessions)
   const settings = useDeviceSettings(device?.id)
+
+  // A virtual device keeps Name, Description, Platform, Address, Hosted by and Notifications: the rest are a
+  // daemon's settings, set on its gateway.
+  if (device?.virtual)
+    return (
+      <DeviceHeaderMenu>
+        {device.permissions.includes('MANAGE') && (
+          <Gutters size={null}>
+            <List>
+              <DeviceNameSetting />
+              <DeviceDescriptionSetting />
+              <VirtualDeviceSettings device={device} />
+            </List>
+          </Gutters>
+        )}
+        <NotificationSettings />
+      </DeviceHeaderMenu>
+    )
 
   return (
     <DeviceHeaderMenu>

@@ -1,9 +1,9 @@
 import { IP_PRIVATE } from '@common/constants'
-import { Chip,ListItemText,Typography } from '@mui/material'
+import { Chip, ListItemText, Typography } from '@mui/material'
 import React from 'react'
 import i18n from '../i18n'
 import { RestoreButton } from '../buttons/RestoreButton'
-import { lanShareRestriction,lanShared } from '../helpers/lanSharing'
+import { lanShareRestriction, lanShared } from '../helpers/lanSharing'
 import { toLookup } from '../helpers/utilHelper'
 import { PERMISSION } from '../models/organization'
 import { Avatar } from './Avatar'
@@ -29,6 +29,7 @@ import { TimeSeries } from './TimeSeries'
 import { Timestamp } from './Timestamp'
 import { SubnetName } from './SubnetName'
 import { AgentStatus } from './AgentStatus'
+import { HostedByLine, gatewayName } from './HostedBy'
 
 export class Attribute<TOptions = IDataOptions> {
   id: string = ''
@@ -147,7 +148,13 @@ export const attributes: Attribute[] = [
     value: ({ device, connection }) => (
       <ListItemText
         primary={<DeviceName device={device} connection={connection} />}
-        secondary={device?.thisDevice ? i18n.t('attributeValue.thisSystem', { defaultValue: 'This system' }) : undefined}
+        secondary={
+          device?.thisDevice ? (
+            i18n.t('attributeValue.thisSystem', { defaultValue: 'This system' })
+          ) : device?.virtual ? (
+            <HostedByLine device={device} />
+          ) : undefined
+        }
         sx={{ marginRight: 1, opacity: device?.state === 'active' ? 1 : 0.4 }}
       />
     ),
@@ -266,7 +273,7 @@ export const attributes: Attribute[] = [
     defaultWidth: 160,
     details: false,
     feature: 'deviceSessions',
-    value: ({ device }) => <AgentStatus deviceId={device?.id} />,
+    value: ({ device }) => (device?.virtual ? '–' : <AgentStatus deviceId={device?.id} />),
   }),
   new DeviceAttribute({
     id: 'subnetNameDetail',
@@ -461,7 +468,23 @@ export const attributes: Attribute[] = [
     id: 'version',
     label: 'Daemon version',
     defaultWidth: 80,
-    value: ({ device }) => device?.version,
+    value: ({ device }) => (device?.virtual ? '–' : device?.version),
+  }),
+  // The gateway a virtual device is reached through, named only to someone who can see it. Off by default; read with
+  // the device's name (the virtual fields ride on that query while the flag is on).
+  new DeviceAttribute({
+    id: 'hostedBy',
+    label: 'Hosted by',
+    query: 'deviceName',
+    defaultWidth: 180,
+    details: false, // the details page has its Hosting block
+    feature: 'virtualDevices',
+    value: ({ device }) =>
+      device?.virtual
+        ? device.hostedBy
+          ? gatewayName((key, fallback) => i18n.t(key, { defaultValue: fallback }), device.hostedBy)
+          : i18n.t('hostedBy.notHosted', { defaultValue: 'not hosted' })
+        : undefined,
   }),
   // @TODO add attributes to the device model on graphql request
   ...ATTRIBUTES.map(
@@ -518,7 +541,8 @@ export const attributes: Attribute[] = [
     id: 'serviceHost',
     label: 'Service Host',
     defaultWidth: 130,
-    value: ({ service }) => service?.host || IP_PRIVATE,
+    // A virtual device's service with no host of its own uses the device's (graphql answers null): never the gateway.
+    value: ({ device, service }) => service?.host || (device?.virtual ? device.host || '–' : IP_PRIVATE),
   }),
   new ServiceAttribute({
     id: 'servicePort',

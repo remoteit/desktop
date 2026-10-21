@@ -32,6 +32,7 @@ const SAVED_ACROSS_LOGOUT = [
   'defaultService',
   'testUI',
   'deviceSessions',
+  'virtualDevices',
   'proxyFleet',
   'updateNoticeCleared',
   'deviceTimeSeries',
@@ -47,6 +48,8 @@ export type UIState = {
   testUI?: 'ON' | 'HIGHLIGHT'
   // Test UI → Experimental: the device-session features (useDeviceSessions)
   deviceSessions?: boolean
+  // Test UI → Experimental: virtual devices (useVirtualDevices)
+  virtualDevices?: boolean
   // Test UI → Experimental: which proxies connections and connect links ask for; none, the API stage's default
   proxyFleet?: 'LEGACY' | 'CONNECTD'
   apis: {
@@ -138,6 +141,7 @@ export const defaultState: UIState = {
   language: 'system',
   testUI: undefined,
   deviceSessions: undefined,
+  virtualDevices: undefined,
   proxyFleet: undefined,
   apis: {},
   layout: {

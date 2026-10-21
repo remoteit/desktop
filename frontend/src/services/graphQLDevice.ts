@@ -4,6 +4,16 @@ import { removeDeviceName } from '@common/nameHelper'
 import { getTimeZone, listTimeSeriesOptions, timeSeriesRequest } from '../helpers/dateHelper'
 import { getAttribute } from '../components/Attributes'
 import { store } from '../store'
+import {
+  HOSTED_DEVICES_FIELDS,
+  VIRTUAL_DEVICE_FIELDS,
+  VirtualMode,
+  sampleResponse,
+  splitSampleIds,
+  virtualDevicesMode,
+  withSampleDevices,
+  withSampleList,
+} from './graphQLVirtualDevices'
 
 const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'license']
 
@@ -188,7 +198,8 @@ const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesO
 }
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
-  return await graphQLBasicRequest(
+  const virtual = await virtualDevicesMode()
+  const response = await graphQLBasicRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
       (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
@@ -199,7 +210,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, application: $application, platform: $platform) {
               total
               items {
-                ${deviceQueryColumns(params.columns)}
+                ${deviceQueryColumns(params.columns, undefined, virtual)}
               }
             }
           }
@@ -219,6 +230,10 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
     }
   )
+  const filtered = params.state || params.tag || params.platform?.length || params.applicationTypes?.length
+  return virtual === 'sample' && response !== 'ERROR' && !filtered
+    ? withSampleList(response, params.from, params.name)
+    : response
 }
 
 export async function graphQLPreloadDevices(params: {
@@ -228,7 +243,10 @@ export async function graphQLPreloadDevices(params: {
   serviceTimeSeries?: ITimeSeriesOptions
   deviceTimeSeries?: ITimeSeriesOptions
 }) {
-  return await graphQLBasicRequest(
+  const virtual = await virtualDevicesMode()
+  const [ids, samples] = virtual === 'sample' ? splitSampleIds(params.ids) : [params.ids, []]
+  if (!ids.length) return sampleResponse(samples, 'account')
+  const response = await graphQLBasicRequest(
     ` query DevicePreload($ids: [String!]!, $accountId: String${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
       (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
@@ -237,30 +255,36 @@ export async function graphQLPreloadDevices(params: {
           id
           account(id: $accountId) {
             device(id: $ids) {
-              ${deviceQueryColumns(params.columns)}
+              ${deviceQueryColumns(params.columns, undefined, virtual)}
             }
           }
         }
       }`,
     {
       ...params,
+      ids,
       ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
     }
   )
+  return response === 'ERROR' ? response : withSampleDevices(response, samples, 'account')
 }
 
 export async function graphQLFetchConnections(params: { ids: string[] }) {
-  return await graphQLBasicRequest(
+  const virtual = await virtualDevicesMode()
+  const [ids, samples] = virtual === 'sample' ? splitSampleIds(params.ids) : [params.ids, []]
+  if (!ids.length) return sampleResponse(samples, 'login')
+  const response = await graphQLBasicRequest(
     ` query Connections($ids: [String!]!) {
         login {
           id
           device(id: $ids)  {
-            ${deviceQueryColumns(selectDeviceColumns(store.getState()), ['tags', 'deviceTimeSeries'])}
+            ${deviceQueryColumns(selectDeviceColumns(store.getState()), ['tags', 'deviceTimeSeries'], virtual)}
           }
         }
       }`,
-    params
+    { ids }
   )
+  return response === 'ERROR' ? response : withSampleDevices(response, samples, 'login')
 }
 
 /* 
@@ -272,12 +296,14 @@ export async function graphQLFetchFullDevice(
   serviceTimeSeries?: ITimeSeriesOptions,
   deviceTimeSeries?: ITimeSeriesOptions
 ) {
+  const virtual = await virtualDevicesMode()
+  if (virtual === 'sample' && splitSampleIds([id])[1].length) return sampleResponse([id], 'login')
   return await graphQLBasicRequest(
     ` query Device($id: [String!]!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
         login {
           id
           device(id: $id) {
-            ${DEVICE_SELECT}
+            ${DEVICE_SELECT}${virtual === 'api' ? VIRTUAL_DEVICE_FIELDS + HOSTED_DEVICES_FIELDS : ''}
             services {
               ${SERVICE_SELECT}
             }
@@ -378,6 +404,7 @@ export function graphQLDeviceAdaptor({
       thisDevice: d.id === thisId,
       hidden: !!hidden,
       accountId,
+      ...virtualAdaptor(d),
     }
   })
   store.dispatch.devices.customAttributes(customAttributes)
@@ -426,10 +453,37 @@ export function graphQLServiceAdaptor(
   )
 }
 
-function deviceQueryColumns(selectedColumns: string[], filter?: string[]) {
+// Only what the response carries: a query that did not ask for the virtual fields leaves the device as it was.
+function virtualAdaptor(d: any): Partial<IDevice> {
+  if (d.virtual === undefined) return {}
+  const virtual: Partial<IDevice> = {
+    virtual: !!d.virtual,
+    hostedBy: d.hostedBy ?? null,
+    host: d.host ?? undefined,
+    lastAddress: d.lastAddress ?? undefined,
+    hosts: d.hosts ?? 0,
+  }
+  // Only a gateway's full read has its list: a list row's merge must not drop it.
+  if (!d.hostedDevices) return virtual
+  return {
+    ...virtual,
+    hostedDevices: d.hostedDevices.map(
+      (h: any): IHostedDevice => ({
+        id: h.id,
+        name: h.name,
+        state: h.state,
+        host: h.host ?? undefined,
+        targetPlatform: h.platform,
+        serviceCount: h.services?.length || 0,
+      })
+    ),
+  }
+}
+
+function deviceQueryColumns(selectedColumns: string[], filter?: string[], virtual?: VirtualMode) {
   let columns = DEVICE_PRELOAD_ATTRIBUTES.concat(SERVICE_PRELOAD_ATTRIBUTES).concat(selectedColumns)
   columns = columns.filter(c => (filter ? !filter.includes(c) : true))
-  return attributeQuery(columns)
+  return attributeQuery(columns) + (virtual === 'api' ? VIRTUAL_DEVICE_FIELDS : '')
 }
 
 function attributeQuery(attributes: string[]) {

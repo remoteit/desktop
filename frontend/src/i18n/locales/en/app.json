@@ -58,6 +58,9 @@
     "sendingEllipsis": "Sending...",
     "sendPromotionRequest": "Send Promotion Request"
   },
+  "addAsVirtualDevice": {
+    "button": "Add as virtual device"
+  },
   "addDevice": {
     "codeExpiration": "Code expires in {{hours}}\u00a0hours.",
     "registrationCode": "Registration Code"
@@ -78,7 +81,10 @@
     "products": "Products",
     "provisionInBulk": "Provision in bulk",
     "title": "What do you want to connect\u00a0to?",
-    "tryDevice": "Try a device"
+    "tryDevice": "Try a device",
+    "virtualDevice": "Virtual device",
+    "virtualDeviceHint": "A NAS, printer or PLC that runs nothing itself",
+    "virtualDeviceTitle": "Through a gateway"
   },
   "addPlatformServices": {
     "label": "SERVICE",
@@ -396,6 +402,7 @@
     "externalAddress": "External IP",
     "from": "From",
     "hardwareId": "Hardware ID",
+    "hostedBy": "Hosted by",
     "id": "Device ID",
     "initiatorPlatform": "Platform",
     "internalAddress": "Internal IP",
@@ -737,12 +744,20 @@
     "turnaround": "Deletion requests take 3 to 5 business days to complete."
   },
   "deleteDevice": {
+    "deleteHosted": "Delete them too",
+    "deleteHostedHint": "With their services and shares.",
+    "deleteHostedNamed": "{{names}}, with their services and shares.",
     "deletingDevices": "deleting devices.",
+    "hosts_one": "It hosts {{count}} virtual device.",
+    "hosts_other": "It hosts {{count}} virtual devices.",
+    "keepHosted": "Keep them, not hosted",
+    "keepHostedHint": "They go offline, keeping their services, shares and grants, until you move them to another gateway.",
     "mustBeOffline": "Device must be offline",
     "title": "Delete Device",
     "uninstallRecommendation": "We recommend uninstalling Remote.It before",
     "unregisterTitle": "Unregister Device",
     "unregisterWarning": "You are about to permanently remove this device and all of its services.",
+    "virtualWarning": "You are about to permanently remove this virtual device, its services and its shares. Nothing is changed on the machine itself.",
     "warning": "Deleting devices can't be undone so may require you to physically access the device if you wish to recover it."
   },
   "deviceAbout": {
@@ -909,6 +924,12 @@
     "shareAccess": "Share access",
     "unknown": "Unknown"
   },
+  "deviceHosting": {
+    "address": "Address",
+    "gateway": "Gateway",
+    "lastAddress": "Last resolved address",
+    "title": "Hosting"
+  },
   "deviceLabelSetting": {
     "label": "Device Label"
   },
@@ -947,7 +968,8 @@
   },
   "deviceNameLocation": {
     "rename": "Rename",
-    "thisDevice": "This device"
+    "thisDevice": "This device",
+    "virtualDevice": "Virtual device"
   },
   "deviceNameSetting": {
     "alsoSubnet": "Also change its DNS name to {{name}}",
@@ -1124,6 +1146,7 @@
     "deviceDetails": "Device Details",
     "deviceLink": "Device Link",
     "makeProduct": "Make Product",
+    "makeVirtualDevice": "Make a virtual device for {{host}}…",
     "restoreDevice": "Restore Device",
     "serviceLink": "Service Link",
     "shareAccess": "Share access",
@@ -1137,6 +1160,7 @@
   "devicePage": {
     "availableServices": "Available services",
     "availableServicesDescription": "The device's hosted services (applications) are listed here.",
+    "chooseGateway": "Choose a gateway",
     "deviceNotFound": "Device not found.",
     "deviceOffline": "Device offline",
     "deviceUnlicensed": "Device unlicensed",
@@ -1527,6 +1551,22 @@
   "headerOverrideSetting": {
     "description": "A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server.",
     "title": "Host header override"
+  },
+  "hostedBy": {
+    "aGateway": "a gateway",
+    "notHosted": "not hosted",
+    "notHostedTooltip": "Not hosted. Choose a gateway in its settings to bring it back online.",
+    "offlineTooltip": "Offline while {{gateway}} is offline",
+    "onlineTooltip": "Online while {{gateway}} is online",
+    "via": "via"
+  },
+  "hostedDevices": {
+    "add": "Add virtual device",
+    "empty": "Add a virtual device",
+    "emptyHint": "A NAS, printer or PLC on this network that runs nothing itself: its own device, reached through this one.",
+    "services_one": "{{count}} service",
+    "services_other": "{{count}} services",
+    "title": "Hosted devices"
   },
   "inlineFileFieldSetting": {
     "reset": "Reset",
@@ -2682,7 +2722,8 @@
     "serviceUrl": "Service URL",
     "serviceUrlHelp": "Full URL of the service you want to connect to. Example:",
     "setupConnectionDefaults": "Setup connection defaults",
-    "updatePackageHelp": "Update it's device package to the latest version to be able to remote configure it."
+    "updatePackageHelp": "Update it's device package to the latest version to be able to remote configure it.",
+    "virtualHostHelp": "Uses the device's address. Change it for a machine with more than one."
   },
   "serviceGraphColumn": {
     "title": "Service Graph"
@@ -2693,6 +2734,10 @@
     "selectAnotherDevice": "Select another device from the devices menu to connect to it remotely.",
     "shareAccess": "Share access",
     "unknown": "unknown"
+  },
+  "serviceIndicators": {
+    "hosts_one": "hosts {{count}}",
+    "hosts_other": "hosts {{count}}"
   },
   "serviceKeySetting": {
     "beta": "BETA",
@@ -2822,6 +2867,7 @@
   "statusChip": {
     "connected": "Connected",
     "idle": "Idle",
+    "notHosted": "Not hosted",
     "offline": "Offline",
     "offlineLabel": "Offline ",
     "online": "Online",
@@ -2920,6 +2966,8 @@
     "switchGraphQLAPIs": "Switch GraphQL APIs",
     "testOptions": "Test Options",
     "title": "Test Settings",
+    "virtualDevices": "Virtual devices",
+    "virtualDevicesHint": "Devices with no daemon, hosted by a gateway. Shows sample devices where the API does not serve them yet.",
     "webSocketURL": "WebSocket URL"
   },
   "thisDevice": {
@@ -3083,5 +3131,40 @@
     "exit": "Exit view-as mode",
     "supportSession": "Support session — viewing as {{email}} until {{until}}. Tokens are stamped with your identity; the user can see and end this session.",
     "viewingAs": "Viewing as: {{email}}"
+  },
+  "virtualDeviceAddPage": {
+    "convertTitle": "Make a virtual device",
+    "intro": "A NAS, printer, PLC or PC that runs nothing itself, reached through a device on its network. It gets its own services and sharing.",
+    "title": "Add virtual device"
+  },
+  "virtualDeviceForm": {
+    "add": "Add device",
+    "adding": "Adding…",
+    "address": "Address",
+    "addressAlternatives": "or {{addresses}}",
+    "addressHint": "Its .local name, or its IP address. Its services use it.",
+    "addService": "Add",
+    "convert": "Make virtual device",
+    "convertHint": "These services move from the gateway to the new device, with their shares and grants.",
+    "dhcpHint": "This address can change if your router assigns a new one. Reserve it in the router's DHCP settings to keep this device reachable.",
+    "hostedBy": "Hosted by",
+    "hostedByHint": "A device on its network that you manage. Sessions reach it through this device.",
+    "morePlatforms": "More…",
+    "name": "Name",
+    "noGateways": "No device you manage can host one yet. Install remote.it on a device on its network first.",
+    "platform": "Platform",
+    "port": "Port",
+    "searchPlatforms": "Any platform",
+    "services": "Services",
+    "serviceType": "Add a service",
+    "suggested": "{{name}} · suggested"
+  },
+  "virtualDeviceSettings": {
+    "address": "Address",
+    "dhcpHint": "This address can change if your router assigns a new one. Reserve it in the router's DHCP settings to keep this device reachable.",
+    "hostedBy": "Hosted by",
+    "notHosted": "Not hosted",
+    "notHostedNotice": "Not hosted. Choose a gateway to bring it back online.",
+    "platform": "Platform"
   }
 }

@@ -15,6 +15,10 @@ import { InfoButton } from '../buttons/InfoButton'
 import { IconButton } from '../buttons/IconButton'
 import { MobileUI } from './MobileUI'
 import { Icon } from './Icon'
+import { useVirtualDevices } from '../hooks/useVirtualDevices'
+import { jumpHost } from '../helpers/virtualDeviceHelper'
+import { openVirtualDeviceAdd } from './HostedDevices'
+import { VirtualDevicePrefill } from './VirtualDeviceForm'
 
 type Props = { device?: IDevice; service?: IService; user?: IUser }
 
@@ -29,6 +33,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const { t } = useTranslation()
   const devicesSection = !!deviceID
   const deviceOnly = device && !service
+  const virtualDevices = useVirtualDevices()
 
   if (!device) return null
 
@@ -117,26 +122,28 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         {device.permissions.includes('MANAGE') &&
           devicesSection &&
           deviceOnly && [
-            <MenuItem
-              dense
-              key="restore"
-              onClick={() => {
-                handleClose()
-                dispatch.ui.set({ showRestoreModal: true })
-              }}
-            >
-              <ListItemIcon>
-                <Icon name="wave-pulse" size="md" />
-              </ListItemIcon>
-              <ListItemText primary={t('deviceOptionMenu.restoreDevice', 'Restore Device')} />
-            </MenuItem>,
+            !device.virtual && (
+              <MenuItem
+                dense
+                key="restore"
+                onClick={() => {
+                  handleClose()
+                  dispatch.ui.set({ showRestoreModal: true })
+                }}
+              >
+                <ListItemIcon>
+                  <Icon name="wave-pulse" size="md" />
+                </ListItemIcon>
+                <ListItemText primary={t('deviceOptionMenu.restoreDevice', 'Restore Device')} />
+              </MenuItem>
+            ),
             <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link} onClick={handleClose}>
               <ListItemIcon>
                 <Icon name="arrow-turn-down-right" size="md" />
               </ListItemIcon>
               <ListItemText primary={t('deviceOptionMenu.transferDevice', 'Transfer Device')} />
             </MenuItem>,
-            admin ? (
+            device.virtual ? null : admin ? (
               makeProductItem
             ) : (
               <Tooltip
@@ -155,6 +162,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             <Divider key="divider" />,
             <DeleteDevice key="deleteDevice" device={device} menuItem onClick={handleClose} onCancel={handleClose} />,
           ]}
+        {virtualDevices && service && <MakeVirtualDeviceItem device={device} service={service} onClick={handleClose} />}
         {device.permissions.includes('MANAGE') &&
           service &&
           devicesSection && [
@@ -170,5 +178,45 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         <LeaveDevice key="leaveDevice" device={device} menuItem />
       </Menu>
     </>
+  )
+}
+
+/* A jump service's "Make a virtual device for <host>…": the add form, prefilled, with every service of the gateway on
+   that host ticked — they move with their shares and grants (graphql convertJumpService). Offered, never forced. */
+const MakeVirtualDeviceItem: React.FC<{ device: IDevice; service: IService; onClick: () => void }> = ({
+  device,
+  service,
+  onClick,
+}) => {
+  const { t } = useTranslation()
+  const history = useHistory()
+  const host = jumpHost(service)
+  if (!host || device.virtual || !device.permissions.includes('MANAGE')) return null
+
+  const prefill: VirtualDevicePrefill = {
+    gatewayId: device.id,
+    fromServiceId: service.id,
+    name: host.replace(/\.local\.?$/, ''),
+    host,
+    services: device.services
+      .filter(s => s.host === host)
+      .map(s => ({ name: s.name, application: s.typeID, port: s.port || 1, protocol: s.protocol, checked: true })),
+  }
+
+  return (
+    <MenuItem
+      dense
+      onClick={() => {
+        onClick()
+        openVirtualDeviceAdd(history, prefill)
+      }}
+    >
+      <ListItemIcon>
+        <Icon name="arrow-turn-down" rotate={270} size="md" />
+      </ListItemIcon>
+      <ListItemText
+        primary={t('deviceOptionMenu.makeVirtualDevice', { host, defaultValue: 'Make a virtual device for {{host}}…' })}
+      />
+    </MenuItem>
   )
 }
