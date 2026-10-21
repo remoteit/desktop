@@ -335,6 +335,32 @@ describe('auth model — the grant freshness check waits for the boot MCP metada
   })
 })
 
+/* A heal with no prompt came back as whichever account the browser had active, and the window
+   completing it released the agent and switched to that account — on the first boot after an update. */
+describe('auth model — the grant heal re-authorizes the signed-in account', () => {
+  beforeEach(() => {
+    oidcGrantStale.mockReturnValue(true)
+    oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a', email: 'a@example.com' })
+  })
+
+  it('a stale grant heals by silent selection of this account', async () => {
+    await effectsFor(makeDispatch()).healGrant()
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'none', loginHint: 'a@example.com', auto: 'heal' })
+  })
+
+  it('a forced heal names the account too, outside the ledger', async () => {
+    oidcGrantStale.mockReturnValue(false)
+    await effectsFor(makeDispatch()).healGrant({ force: true })
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'none', loginHint: 'a@example.com' })
+  })
+
+  it('an account with no email to name is not healed', async () => {
+    oidcClaims.mockReturnValue({ sub: 'sub-a' })
+    await effectsFor(makeDispatch()).healGrant()
+    expect(oidcStart).not.toHaveBeenCalled()
+  })
+})
+
 /* signedOut() ends with Controller.close(), and socket.io-client fires 'disconnect' synchronously
    from close() on a connected socket — so disconnect runs in the middle of every teardown. */
 describe('auth model — the teardown closing its own socket', () => {

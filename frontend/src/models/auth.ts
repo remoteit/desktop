@@ -228,8 +228,11 @@ export default createModel<RootModel>()({
         // (bounded, resolved instantly thereafter) so this cannot call a renamed-away grant current.
         await oidcMcpDetailReady()
         if (!options?.force && !oidcGrantStale()) return
+        const email = oidcClaims()?.email
+        if (!email) return
         console.log('AUTH: re-authorizing for this build’s declaration')
-        await oidcStart(options?.force ? {} : { auto: 'heal' })
+        // Only prompt=none makes the AS serve the session login_hint names; without it, it serves the browser's active account.
+        await oidcStart({ prompt: 'none', loginHint: email, auto: options?.force ? undefined : 'heal' })
       } catch (error) {
         console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
       }
