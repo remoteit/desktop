@@ -26,7 +26,8 @@ import { oidcAccessToken } from '../services/oidc'
 import { isSecureAgentURL, backgroundConnectUrl, backgroundStatus, backgroundDisable } from '../services/agent'
 import browser, { windowOpen } from '../services/browser'
 import pushNotifications from '../services/pushNotifications'
-import { selectLimitsLookup, selectFeatures } from '../selectors/organizations'
+import { selectUserLimitsLookup, selectFeatures } from '../selectors/organizations'
+import { getUserId } from '../selectors/state'
 import { useSelector, useDispatch } from 'react-redux'
 import { useChatEnabled } from '../hooks/useChatEnabled'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -55,8 +56,8 @@ export const TestPage: React.FC = () => {
   const { tests, informed } = useSelector((state: State) => state.plans)
   const apis = useSelector((state: State) => state.ui.apis)
   const testUI = useSelector((state: State) => state.ui.testUI)
-  const featureValues = useSelector(selectLimitsLookup)
-  const features = useSelector(selectFeatures)
+  const featureValues = useSelector(selectUserLimitsLookup)
+  const features = useSelector((state: State) => selectFeatures(state, getUserId(state)))
   const overrides = useSelector((state: State) => state.ui.limitsOverride)
 
   async function setAPIPreferences(values: UIState['apis']) {
@@ -87,7 +88,7 @@ export const TestPage: React.FC = () => {
   // not asked anything. This toggle is a convenience, not the grant's only door: the background
   // grant is an OAuth grant held at the AS for the agent's own client, and Account → Connected Apps
   // (not gated on the licence) lists and revokes it — killing every token minted from it — whether
-  // or not this account still has Remote.It AI, and whether or not the agent service answers.
+  // or not the user still has Remote.It AI, and whether or not the agent service answers.
   const chatEnabled = useChatEnabled()
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {

@@ -1,8 +1,10 @@
 import { createSelector } from 'reselect'
 import { REMOTEIT_PRODUCT_ID } from '../models/plans'
 import { byName } from '../helpers/utilHelper'
+import { State } from '../store'
 import {
   getUser,
+  getUserId,
   getMemberships,
   getOrganizations,
   getPlans,
@@ -128,9 +130,17 @@ export const selectLimitsLookup = createSelector(
   }
 )
 
+const NO_LIMITS: ILookup<ILimit['value']> = {}
+
+export const selectUserLimitsLookup = (state: State): ILookup<ILimit['value']> => {
+  const userId = getUserId(state)
+  // An empty id would fall through selectActiveAccountId to the active account's limits
+  return userId ? selectLimitsLookup(state, userId) : NO_LIMITS
+}
+
 export type IFeature = { name: string; value: boolean }
 
-/* The boolean features the Test page lists: exactly the ones this account's license
+/* The boolean features the Test page lists: exactly the ones the signed-in user's license
    mentions. A feature no license carries has no row — it is granted (Admin → Add-ons for
    the add-ons), not switched on here. */
 export const selectFeatures = createSelector([selectLimits], (limits): IFeature[] =>

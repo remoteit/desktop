@@ -16,7 +16,7 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: '/devices' }),
 }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_: string, fallback: string) => fallback }) }))
-vi.mock('../selectors/organizations', () => ({ selectLimitsLookup: (state: any) => state.limits }))
+vi.mock('../selectors/organizations', () => ({ selectUserLimitsLookup: (state: any) => state.limits }))
 vi.mock('../services/browser', () => ({ default: {} }))
 vi.mock('../hooks/useCounts', () => ({ useCounts: () => ({ active: 0 }) }))
 vi.mock('./Icon', () => ({ Icon: () => null }))

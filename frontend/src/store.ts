@@ -62,7 +62,7 @@ export const store = init<RootModel>({
     middlewares: [createLogger(loggerConfig)],
     // The popout persists nothing, so its account scope — the one the opening window handed it on
     // the URL — is its INITIAL state, exactly where a rehydrated main window's would come from.
-    // Every org-scoped read (the chat entitlement gate above all) then resolves the same way in
+    // Every org-scoped read (the chat's org above all) then resolves the same way in
     // both windows; accounts.parse still clears a scope the user is no member of.
     ...(isChatPopout && popoutScopeId
       ? { initialState: { accounts: { ...models.accounts.state, activeId: popoutScopeId } } }

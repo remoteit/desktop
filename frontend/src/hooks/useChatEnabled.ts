@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { selectLimitsLookup } from '../selectors/organizations'
+import { selectUserLimitsLookup } from '../selectors/organizations'
 import browser from '../services/browser'
 import { useViewportSelect, useViewportWiderThan } from './useViewportWidth'
 import {
@@ -22,13 +22,14 @@ import {
    button, the docked column and everything the panel loads hang off. Nothing chat-related
    mounts without it, so a user without the feature makes no agent requests.
 
-   It is a LICENSE feature, read exactly the way tagging/saml/roles are, which means it
-   follows the ACCOUNT you are viewing: the chat is scoped to the organization in the
-   sidebar selector, so an org whose license does not carry the agent does not get one.
-   Nothing skips this gate — not a dev build, not the AI portal. The limit comes from the
-   ai-agent add-on licence (Admin → Add-ons); an account holding it can still switch the
-   feature off in Test Settings → Features, and one without it has no row there. */
-export const useChatEnabled = (): boolean => useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
+   It is a LICENSE feature, but unlike tagging/saml/roles it follows the SIGNED-IN USER,
+   not the account you are viewing: the ai-agent add-on licence (Admin → Add-ons) is
+   granted to a person, so switching to an organization neither grants nor takes away the
+   chat. Nothing skips this gate — not a dev build, not the AI portal. A user holding it
+   can still switch the feature off in Test Settings → Features, and one without it has
+   no row there. */
+export const useChatEnabled = (): boolean =>
+  useSelector((state: State) => !!selectUserLimitsLookup(state)[CHAT_FEATURE])
 
 /* The chat is showing in this window: the person hasn't closed it, and it isn't popped out into its own. */
 export const useChatOpen = (): boolean => useSelector((state: State) => state.ui.chatOpen && !state.ui.chatPoppedOut)
