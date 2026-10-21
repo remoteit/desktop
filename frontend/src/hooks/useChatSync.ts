@@ -75,11 +75,14 @@ export const useChatMainSync = (): void => {
   useChatBoot(open)
 
   useEffect(() => {
+    const setPoppedOut = (poppedOut: boolean) => {
+      if (poppedOut !== store.getState().ui.chatPoppedOut) dispatch.ui.setPersistent({ chatPoppedOut: poppedOut })
+    }
     const handlers: PopoutMainHandlers = {
       getHandoff: currentHandoff,
       adopt: payload => {
         dispatch.chat.adoptHandoff(payload)
-        dispatch.ui.setPersistent({ chatPoppedOut: false })
+        setPoppedOut(false)
         // The handback carries only the partial response rendered when the popout closed; the
         // server journals the rest of the turn, so pull its copy or the remainder is missing
         // (and the partial looks complete) until a reload.
@@ -87,15 +90,15 @@ export const useChatMainSync = (): void => {
       },
       onPopoutOpened: () => {
         dispatch.chat.stop()
-        dispatch.ui.setPersistent({ chatPoppedOut: true })
+        setPoppedOut(true)
       },
       // A lost popout leaves no handback at all — reconcile against the server so the dock
       // reopens on the true transcript rather than this window's stale copy.
       onPopoutLost: () => {
-        dispatch.ui.setPersistent({ chatPoppedOut: false })
+        setPoppedOut(false)
         dispatch.chat.syncTranscript()
       },
-      onPresence: present => dispatch.ui.setPersistent({ chatPoppedOut: present }),
+      onPresence: setPoppedOut,
     }
     const unsubscribe = initChatPopoutMain(handlers)
     checkPopoutPresence(handlers)

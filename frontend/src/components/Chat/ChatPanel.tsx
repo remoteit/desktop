@@ -59,6 +59,13 @@ export const ChatPanel: React.FC = () => {
   const setWidth = useCallback(
     (width: number) => {
       published.current = width
+      dispatch.ui.set({ chatWidth: width })
+    },
+    [dispatch]
+  )
+  const saveWidth = useCallback(
+    (width: number) => {
+      published.current = width
       dispatch.ui.setPersistent({ chatWidth: width })
     },
     [dispatch]
@@ -75,7 +82,7 @@ export const ChatPanel: React.FC = () => {
     minWidth: CHAT_PANEL_WIDTH_MIN,
     getMaxWidth,
     onChange: publishIfLayoutChanges,
-    onPersist: setWidth,
+    onPersist: saveWidth,
     layoutDep: layout,
     anchor: 'right',
   })

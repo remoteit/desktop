@@ -51,7 +51,6 @@ vi.mock('../selectors/accounts', () => ({
   isUserAccount: (s: any) => !s.accounts?.activeId || s.accounts.activeId === s.auth?.user?.id,
 }))
 vi.mock('../store', () => ({ store: { getState: () => storeState } }))
-vi.mock('../constants', () => ({ CHAT_PANEL_WIDTH: 400 }))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 
 import chatModel from './chat'

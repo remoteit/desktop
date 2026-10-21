@@ -7,7 +7,6 @@ import { useViewportSelect, useViewportWiderThan } from './useViewportWidth'
 import {
   CHAT_FEATURE,
   CHAT_AGENT_GUIDE,
-  CHAT_PANEL_WIDTH,
   CHAT_PANEL_WIDTH_MIN,
   CHAT_PANEL_WIDTH_MAX,
   CHAT_MIN_CONTENT_WIDTH,
@@ -65,7 +64,7 @@ export const chatMaxWidth = (viewport: number): number =>
    display still docks (narrower) on a small one instead of sticking as an
    overlay the user has no handle to resize. */
 const chatWidthFor = (stored: number, viewport: number): number =>
-  Math.min(Math.max(stored || CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_MIN), chatMaxWidth(viewport))
+  Math.min(Math.max(stored, CHAT_PANEL_WIDTH_MIN), chatMaxWidth(viewport))
 export const useChatWidth = (): number => {
   const stored = useSelector((state: State) => state.ui.chatWidth)
   return useViewportSelect(w => chatWidthFor(stored, w))
