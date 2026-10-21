@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { Box, Button, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
+import { Button, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
 import { IP_PRIVATE } from '@common/constants'
 import { State } from '../store'
 import { findType } from '../models/applicationTypes'
@@ -45,13 +45,22 @@ export const DiscoveryList: React.FC<Props> = ({ discovery, services, onAdd, mac
     return findType(applicationTypes, offer.application).name
   }
 
-  const offerRow = (offer: DiscoveryOffer, primary: React.ReactNode, secondary: React.ReactNode) => {
+  // What it is, where that says more than its protocol: its type, else (plain TCP or UDP) what it advertises as.
+  const kindOf = (offer: DiscoveryOffer) => {
+    const name = typeName(offer)
+    if (name.toLowerCase() !== offer.protocol.toLowerCase()) return name
+    return offer.kind === 'network' ? offer.type : undefined
+  }
+
+  const portOf = (offer: DiscoveryOffer) => `${offer.protocol.toUpperCase()} ${offer.port}`
+
+  const offerRow = (offer: DiscoveryOffer, index: number, primary: React.ReactNode, secondary: React.ReactNode) => {
     const added = offerAdded(offer, services)
     return (
       <ListItem
-        key={`${offer.kind}-${offer.host}-${offer.protocol}-${offer.port}-${offer.name}`}
+        key={index}
         dense
-        sx={{ paddingLeft: 4, paddingRight: 20 }}
+        sx={{ paddingLeft: offer.kind === 'network' ? 4 : undefined, paddingRight: 20 }}
         secondaryAction={
           added ? (
             <Button disabled size="small">
@@ -108,14 +117,12 @@ export const DiscoveryList: React.FC<Props> = ({ discovery, services, onAdd, mac
                     .join(' · ')}
                 />
               </ListItem>
-              {machine.offers.map(offer =>
+              {machine.offers.map((offer, index) =>
                 offerRow(
                   offer,
+                  index,
                   offer.name,
-                  <Box component="span">
-                    {typeName(offer)} · {offer.protocol.toUpperCase()} {offer.port}
-                    {offer.host !== machine.key && ` · ${offer.host}`}
-                  </Box>
+                  [kindOf(offer), portOf(offer), offer.host !== machine.key && offer.host].filter(Boolean).join(' · ')
                 )
               )}
             </React.Fragment>
@@ -125,11 +132,12 @@ export const DiscoveryList: React.FC<Props> = ({ discovery, services, onAdd, mac
       {!!local.length && (
         <List>
           <ListSubheader disableSticky>{t('discovery.local', 'On this device')}</ListSubheader>
-          {local.map(offer =>
+          {local.map((offer, index) =>
             offerRow(
               offer,
-              `${offer.protocol.toUpperCase()} ${offer.port}`,
-              [offer.process || offer.name, typeName(offer), offer.addresses.join(', ')].filter(Boolean).join(' · ')
+              index,
+              portOf(offer),
+              [offer.process || offer.name, kindOf(offer), offer.addresses.join(', ')].filter(Boolean).join(' · ')
             )
           )}
         </List>

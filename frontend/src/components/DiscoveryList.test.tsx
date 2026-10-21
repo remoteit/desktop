@@ -10,6 +10,7 @@ vi.mock('react-redux', () => ({
           { id: 7, name: 'HTTP', port: 80 },
           { id: 28, name: 'SSH', port: 22 },
           { id: 50, name: 'IPP', port: 631 },
+          { id: 1, name: 'TCP', port: 0 },
         ],
       },
     }),
@@ -76,12 +77,14 @@ async function render(discovery: Discovery, props: Partial<React.ComponentProps<
 
 describe('what a device sees, listed', () => {
   it('machines with their instances, then the device’s own listeners; a printer as a Printer', async () => {
-    const { container } = await render({ at: null, offers: [offer({}), printer, sshd], withheld: [] })
+    const hue = offer({ name: 'Philips Hue', type: '_hue._tcp', port: 443, application: 1 })
+    const { container } = await render({ at: null, offers: [offer({}), hue, printer, sshd], withheld: [] })
     const text = container.textContent || ''
     expect(text).toContain('On its network')
     expect(text).toContain('brother.local · 192.168.1.30')
     expect(text).toContain('Printer · TCP 631')
     expect(text).toContain('HTTP · TCP 80')
+    expect(text).toContain('Philips Hue_hue._tcp · TCP 443')
     expect(text.indexOf('On this device')).toBeGreaterThan(text.indexOf('nas'))
     expect(text).toContain('sshd · SSH · 0.0.0.0')
     expect(container.querySelectorAll('[data-notice]')).toHaveLength(0)
