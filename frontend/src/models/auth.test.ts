@@ -163,6 +163,7 @@ beforeEach(() => {
   oidcActor.mockReset().mockReturnValue(null)
   oidcGrantStale.mockReset()
   oidcMcpDetailReady.mockReset().mockResolvedValue('mcp_type')
+  oidcClaims.mockReset()
   oidcReconcileIssuer.mockReset()
   chooseStage.mockReset()
   reloadIfStageChanged.mockReset()
@@ -340,7 +341,7 @@ describe('auth model — the grant freshness check waits for the boot MCP metada
 describe('auth model — the grant heal re-authorizes the signed-in account', () => {
   beforeEach(() => {
     oidcGrantStale.mockReturnValue(true)
-    oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a', email: 'a@example.com' })
+    oidcClaims.mockReturnValue({ sub: 'sub-a', email: 'a@example.com' })
   })
 
   it('a stale grant heals by silent selection of this account', async () => {
@@ -355,6 +356,7 @@ describe('auth model — the grant heal re-authorizes the signed-in account', ()
   })
 
   it('an account with no email to name is not healed', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
     oidcClaims.mockReturnValue({ sub: 'sub-a' })
     await effectsFor(makeDispatch()).healGrant()
     expect(oidcStart).not.toHaveBeenCalled()

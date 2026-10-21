@@ -229,9 +229,10 @@ export default createModel<RootModel>()({
         await oidcMcpDetailReady()
         if (!options?.force && !oidcGrantStale()) return
         const email = oidcClaims()?.email
-        if (!email) return
+        if (!email) return console.warn('AUTH: this session has no email to name, so its grant is not healed')
         console.log('AUTH: re-authorizing for this build’s declaration')
-        // Only prompt=none makes the AS serve the session login_hint names; without it, it serves the browser's active account.
+        // Only prompt=none makes the AS serve the session login_hint names; without it, the AS serves
+        // the browser's active account.
         await oidcStart({ prompt: 'none', loginHint: email, auto: options?.force ? undefined : 'heal' })
       } catch (error) {
         console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
