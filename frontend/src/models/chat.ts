@@ -571,9 +571,11 @@ export default createModel<RootModel>()({
       state.error = null
       return state
     },
-    reset() {
+    reset(state: IChatState) {
       backgroundRevokedFor = null // the next sign-in cycle gets its own revoke
-      return { ...defaultChatState }
+      // The dock's open state and width are this device's layout, not account data: resetting them
+      // reopened a closed chat on every account switch and sign-in.
+      return { ...defaultChatState, open: state.open, width: state.width }
     },
   },
 })

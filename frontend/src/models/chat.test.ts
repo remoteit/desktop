@@ -501,6 +501,27 @@ describe('chat model — the background grant is revoked once per identity', () 
   })
 })
 
+describe('chat model — reset keeps the dock layout', () => {
+  it('clears the account’s conversation but leaves a closed chat closed, at its width', () => {
+    const reducers = (chatModel as any).reducers
+    const before = {
+      ...reducers.reset({}),
+      open: false,
+      width: 520,
+      messages: [{ role: 'user', text: 'hi' }],
+      conversationId: 'c1',
+      ownerId: 'alice',
+    }
+    expect(reducers.reset(before)).toMatchObject({
+      open: false,
+      width: 520,
+      messages: [],
+      conversationId: '',
+      ownerId: '',
+    })
+  })
+})
+
 /* The reply in flight lives in models/chatLive so the token stream never touches the persisted
    chat slice; it joins the transcript exactly once, when the turn ends. */
 describe('chat model — the reply in flight lands once, when the turn ends', () => {
