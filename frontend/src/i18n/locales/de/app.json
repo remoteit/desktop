@@ -63,6 +63,7 @@
     "registrationCode": "Registrierungscode"
   },
   "addFromNetwork": {
+    "discover": "",
     "scanForServices": "Nach Diensten suchen",
     "scanNetwork": "Netzwerk durchsuchen"
   },
@@ -1296,6 +1297,26 @@
     "on": "",
     "onHint": "",
     "using": ""
+  },
+  "discovery": {
+    "addAsService": "",
+    "added": "",
+    "asking": "",
+    "description": "",
+    "error": "",
+    "local": "",
+    "network": "",
+    "noAnswer": "",
+    "nothing": "",
+    "offline": "",
+    "printer": "",
+    "printerTls": "",
+    "refresh": "",
+    "title": "",
+    "tryAgain": "",
+    "unsupported": "",
+    "withheldLocal": "",
+    "withheldNetwork": ""
   },
   "duration": {
     "ago": "vor {{duration}}"

@@ -31,6 +31,8 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { servicesClosed } from '../services/graphQLDeviceSettings'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 
 export const DevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -40,6 +42,9 @@ export const DevicePage: React.FC = () => {
   const history = useHistory()
   // A device takes services only while remote access to them is on (its services setting).
   const closed = servicesClosed(useDeviceSettings(device?.id).setting('services'))
+  // A device-session device is asked what it sees: its daemon reports what it runs, as no legacy agent does.
+  const deviceSessions = useDeviceSessions()
+  const sessionDevice = !!useDeviceSessionInfo(deviceSessions ? device?.id : undefined)?.agent?.running
 
   const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
@@ -104,7 +109,11 @@ export const DevicePage: React.FC = () => {
       <Typography variant="subtitle1">
         <Title>{t('devicePage.service', 'Service')}</Title>
         <SortServices />
-        <AddFromNetwork allowScanning={device.thisDevice} button />
+        <AddFromNetwork
+          allowScanning={device.thisDevice}
+          discover={sessionDevice && device.permissions.includes('MANAGE')}
+          button
+        />
         <AddServiceButton device={device} editable={editable && !closed} link={`/devices/${device.id}/add`} />
       </Typography>
       <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
@@ -146,10 +155,7 @@ export const DevicePage: React.FC = () => {
                 )}
               </Typography>
               <Typography variant="body2" gutterBottom>
-                {t(
-                  'devicePage.selectServiceInstruction',
-                  'Select a service to configure it or to start a connection.'
-                )}
+                {t('devicePage.selectServiceInstruction', 'Select a service to configure it or to start a connection.')}
               </Typography>
             </>
           }

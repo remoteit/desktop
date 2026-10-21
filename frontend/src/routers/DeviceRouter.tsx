@@ -1,6 +1,7 @@
 import React from 'react'
 import { State } from '../store'
 import { ScanPage } from '../pages/ScanPage'
+import { DeviceDiscoverPage } from '../pages/DeviceDiscoverPage'
 import { DeviceContext } from '../services/Context'
 import { ServiceRouter } from './ServiceRouter'
 import { selectDeviceModelAttributes } from '../selectors/devices'
@@ -53,6 +54,11 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/devices/:deviceID/add/scan">
             <ScanPage />
           </Route>
+          {deviceSessions && (
+            <Route path="/devices/:deviceID/add/discover">
+              <DeviceDiscoverPage />
+            </Route>
+          )}
           <Route path="/devices/:deviceID/add">
             <ServiceAddPage device={device} />
           </Route>

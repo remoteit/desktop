@@ -8,14 +8,28 @@ import { IconButton } from '../buttons/IconButton'
 
 type Props = {
   allowScanning?: boolean
+  // Ask the device what it sees (a device-session device the user manages), in place of scanning from this machine.
+  discover?: boolean
   button?: boolean
 }
 
-export const AddFromNetwork: React.FC<Props> = ({ allowScanning, button }) => {
+export const AddFromNetwork: React.FC<Props> = ({ allowScanning, discover, button }) => {
   const { deviceID } = useParams<{ deviceID: string }>()
   const { scanEnabled } = useSelector((state: State) => state.ui)
   const history = useHistory()
   const { t } = useTranslation()
+
+  if (discover)
+    return button ? (
+      <IconButton
+        icon="radar"
+        size="md"
+        title={t('addFromNetwork.discover', 'What this device sees')}
+        onClick={() => history.push(`/devices/${deviceID}/add/discover`)}
+      />
+    ) : (
+      <Link to={`/devices/${deviceID}/add/discover`}>{t('addFromNetwork.discover', 'What this device sees')}</Link>
+    )
 
   if (!allowScanning || !scanEnabled) return null
 

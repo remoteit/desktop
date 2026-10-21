@@ -63,6 +63,7 @@
     "registrationCode": "Registration Code"
   },
   "addFromNetwork": {
+    "discover": "What this device sees",
     "scanForServices": "Scan for Services",
     "scanNetwork": "Scan\u00a0network"
   },
@@ -1296,6 +1297,26 @@
     "on": "Always",
     "onHint": "All traffic through remote.it’s reflector — for networks that block UDP",
     "using": "Reaching remote.it through the reflector"
+  },
+  "discovery": {
+    "addAsService": "Add as service",
+    "added": "Added",
+    "asking": "Asking the device what it sees...",
+    "description": "What its network advertises and what listens on it, asked of the device now. Add any of them as a service.",
+    "error": "Could not ask the device what it sees.",
+    "local": "On this device",
+    "network": "On its network",
+    "noAnswer": "The device did not answer. Try again in a moment.",
+    "nothing": "Nothing to add: the device sees no advertised services and nothing listening.",
+    "offline": "The device is offline: it can only be asked while it is online.",
+    "printer": "Printer",
+    "printerTls": "Printer (IPPS)",
+    "refresh": "Refresh",
+    "title": "What this device sees",
+    "tryAgain": "Try again",
+    "unsupported": "This API does not ask devices what they see.",
+    "withheldLocal": "This device's local policy doesn't share what listens on it",
+    "withheldNetwork": "This device's local policy doesn't share what its network advertises"
   },
   "duration": {
     "ago": "{{duration}} ago"

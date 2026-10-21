@@ -63,6 +63,7 @@
     "registrationCode": "登録コード"
   },
   "addFromNetwork": {
+    "discover": "",
     "scanForServices": "サービスをスキャン",
     "scanNetwork": "ネットワークをスキャン"
   },
@@ -1271,6 +1272,26 @@
     "on": "",
     "onHint": "",
     "using": ""
+  },
+  "discovery": {
+    "addAsService": "",
+    "added": "",
+    "asking": "",
+    "description": "",
+    "error": "",
+    "local": "",
+    "network": "",
+    "noAnswer": "",
+    "nothing": "",
+    "offline": "",
+    "printer": "",
+    "printerTls": "",
+    "refresh": "",
+    "title": "",
+    "tryAgain": "",
+    "unsupported": "",
+    "withheldLocal": "",
+    "withheldNetwork": ""
   },
   "duration": {
     "ago": "{{duration}}前"
