@@ -157,7 +157,7 @@ export const ChatPanel: React.FC = () => {
           <IconButton
             icon="times"
             title={t('chat.closeChat', 'Close chat')}
-            onClick={() => dispatch.ui.setPersistent({ chatClosed: true })}
+            onClick={() => dispatch.ui.setPersistent({ chatOpen: false })}
           />
         )}
       </ChatHeader>

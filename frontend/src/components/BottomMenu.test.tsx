@@ -38,7 +38,7 @@ describe('BottomMenu', () => {
   const render = ({ licensed = true, open = false, poppedOut = false } = {}) => {
     redux.state = {
       limits: licensed ? { [CHAT_FEATURE]: true } : {},
-      ui: { chatClosed: !open, chatPoppedOut: poppedOut },
+      ui: { chatOpen: open, chatPoppedOut: poppedOut },
     }
     act(() => root.render(<BottomMenu layout={layout} />))
   }
@@ -62,7 +62,7 @@ describe('BottomMenu', () => {
   it('opens the chat from the AI tab instead of navigating, and a second tap keeps it open', () => {
     render()
     act(() => action('Agent')!.click())
-    expect(setPersistent).toHaveBeenCalledWith({ chatClosed: false })
+    expect(setPersistent).toHaveBeenCalledWith({ chatOpen: true })
 
     render({ open: true })
     act(() => action('Agent')!.click())
@@ -84,14 +84,14 @@ describe('BottomMenu', () => {
   it('closes the chat when another tab is picked', () => {
     render({ open: true })
     act(() => action('Networks')!.click())
-    expect(setPersistent).toHaveBeenCalledWith({ chatClosed: true })
+    expect(setPersistent).toHaveBeenCalledWith({ chatOpen: false })
     expect(push).toHaveBeenCalledWith('/networks')
   })
 
   it("closes the chat back to the page under it without pushing that page's path again", () => {
     render({ open: true })
     act(() => action('Devices')!.click())
-    expect(setPersistent).toHaveBeenCalledWith({ chatClosed: true })
+    expect(setPersistent).toHaveBeenCalledWith({ chatOpen: false })
     expect(push).not.toHaveBeenCalled()
   })
 

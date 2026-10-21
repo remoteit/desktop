@@ -35,7 +35,7 @@ const SAVED_ACROSS_LOGOUT = [
   'serviceTimeSeries',
   'showDesktopNotice',
   'logsFilters',
-  'chatClosed',
+  'chatOpen',
   'chatWidth',
   'chatPoppedOut',
 ]
@@ -102,8 +102,7 @@ export type UIState = {
   noticeMessage: React.ReactNode
   errorMessage: React.ReactNode
   panelWidth: ILookup<number>
-  /** Closed rather than open: setPersistent drops falsy values, so `open: false` would never be saved */
-  chatClosed: boolean
+  chatOpen: boolean
   chatWidth: number
   chatPoppedOut: boolean
   poppedBubbles: string[]
@@ -206,7 +205,7 @@ export const defaultState: UIState = {
   noticeMessage: '',
   errorMessage: '',
   panelWidth: {},
-  chatClosed: false,
+  chatOpen: true,
   chatWidth: CHAT_PANEL_WIDTH,
   chatPoppedOut: false,
   poppedBubbles: [],

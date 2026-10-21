@@ -31,7 +31,7 @@ import {
 export const useChatEnabled = (): boolean => useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
 
 /* The chat is showing in this window: the person hasn't closed it, and it isn't popped out into its own. */
-export const useChatOpen = (): boolean => useSelector((state: State) => !state.ui.chatClosed && !state.ui.chatPoppedOut)
+export const useChatOpen = (): boolean => useSelector((state: State) => state.ui.chatOpen && !state.ui.chatPoppedOut)
 
 /* The chat button's contract for the header and the mobile bottom bar. Using it finishes the tour step
    aimed at it: the bottom-bar bubble wraps only the icon, so taps beside it never reached its dismiss. */
@@ -42,7 +42,7 @@ export const useChatToggle = () => {
   const dispatch = useDispatch<Dispatch>()
   const toggle = () => {
     dispatch.ui.pop(CHAT_AGENT_GUIDE)
-    dispatch.ui.setPersistent({ chatClosed: open })
+    dispatch.ui.setPersistent({ chatOpen: !open })
   }
   return { show: enabled && !poppedOut, open, toggle }
 }
