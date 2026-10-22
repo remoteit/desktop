@@ -40,6 +40,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const sidebarHidden = layout.hideSidebar
   const mobile = useMobile()
+  const agentInBottomMenu = (mobile || browser.isMobile) && sidebarHidden
   const inputRef = useRef<HTMLInputElement>(null)
   const location = useLocation()
 
@@ -97,7 +98,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             color="grayDarker"
           />
         )}
-        {chat.show && !layout.showBottomMenu && (
+        {chat.show && !agentInBottomMenu && (
           <ChatAgentGuide placement="bottom">
             <IconButton
               fixedWidth
