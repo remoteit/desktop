@@ -11,6 +11,7 @@ import { withoutDeviceSessions } from './graphQLDaemon'
 
 export type DeviceAgent = {
   running: string | null
+  package?: { version: string } | null
   update: { version: string; state: string; detail?: string | null } | null
 }
 
@@ -55,7 +56,7 @@ async function flush() {
 
   const query = `query DeviceSessionInfo { login { device(id: ${JSON.stringify(
     ids
-  )}) { id subnetName actsFor { email } agent { running update { version state detail } } services { id subnetName } } } }`
+  )}) { id subnetName actsFor { email } agent { running package { version } update { version state detail } } services { id subnetName } } } }`
   const response = await post({ query })
   if (response !== 'ERROR') {
     const errors = graphQLGetErrors(response, true, { query, variables: {} })

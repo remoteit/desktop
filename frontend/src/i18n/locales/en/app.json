@@ -840,6 +840,7 @@
     "rollbackConfirmBody": "The device goes back to {{version}} by a handover, and stays there until you release it.",
     "rollbackHint": "The release before the one its channel gives it",
     "runs": "The version it runs",
+    "runsPackage": "The version it runs — connectd {{connectd}}",
     "started": "Upgrade to {{version}} started",
     "target": "The version it should run",
     "targetRollback": "{{version}} (a rollback)",

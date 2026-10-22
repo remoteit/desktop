@@ -9,7 +9,7 @@ vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/grap
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
 
-import { UNSUPPORTED, graphQLDeviceDaemon, runningVersion, updating } from './graphQLDaemon'
+import { UNSUPPORTED, daemonVersion, graphQLDeviceDaemon, runningVersion, updating } from './graphQLDaemon'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { exposes, graphQLDeviceNetworks, initiates, roleFor, targeted } from './graphQLDeviceNetworks'
 
@@ -59,9 +59,23 @@ describe('reading the device agent', () => {
 })
 
 describe('runningVersion', () => {
-  it("drops the daemon's name", () => {
-    expect(runningVersion({ ...daemon, running: 'connectd-go 5.6.1.20261001' } as any)).toBe('5.6.1.20261001')
+  it("is the package's version — what releases, and a target, name — not the daemon's", () => {
+    expect(
+      runningVersion({ ...daemon, running: 'connectd-go 5.6.1.20261022213015', package: { version: '1.1.0.20261022213015' } } as any)
+    ).toBe('1.1.0.20261022213015')
+  })
+
+  it("is the daemon's, its name dropped, for one from before packages were versioned", () => {
+    expect(runningVersion({ ...daemon, running: 'connectd-go 5.6.1.20261001', package: null } as any)).toBe('5.6.1.20261001')
     expect(runningVersion({ ...daemon, running: null } as any)).toBe(null)
+  })
+})
+
+describe('daemonVersion', () => {
+  it("is the daemon's own, whatever package it came in", () => {
+    expect(
+      daemonVersion({ ...daemon, running: 'connectd-go 5.6.1.20261022213015', package: { version: '1.1.0.20261022213015' } } as any)
+    ).toBe('5.6.1.20261022213015')
   })
 })
 

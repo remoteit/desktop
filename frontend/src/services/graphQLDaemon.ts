@@ -20,6 +20,7 @@ export type DaemonUpdateState =
 export type DeviceDaemon = {
   deviceId: string
   running: string | null // what the device reports it runs; none when no device-session daemon reports
+  package?: { version: string; format?: string | null } | null // the package it came in: what releases name
   target: { version: string; rollback: boolean } | null // what it should run; none leaves it on what it runs
   update: { version: string; state: DaemonUpdateState; detail?: string | null } | null
   channel: string
@@ -30,8 +31,13 @@ export type DeviceDaemon = {
 
 export type DaemonSettings = { autoUpdate: boolean; channel: string }
 
-// The version a device reports it runs, without the daemon's name ("connectd-go 5.6.1.20261001" → "5.6.1.20261001").
-export const runningVersion = (daemon?: { running?: string | null } | null) =>
+// The version a device runs, as releases name it: its package's ("1.1.0.20261022…"), which a target is compared with —
+// else, for a daemon from before packages were versioned on their own, the daemon's.
+export const runningVersion = (daemon?: { running?: string | null; package?: { version: string } | null } | null) =>
+  daemon?.package?.version || daemonVersion(daemon)
+
+// The daemon's own version, without its name ("connectd-go 5.6.1.20261001" → "5.6.1.20261001").
+export const daemonVersion = (daemon?: { running?: string | null } | null) =>
   daemon?.running?.replace(/^connectd-go\s+/, '') || null
 
 // An upgrade under way: worth watching until it settles.
@@ -62,6 +68,7 @@ export const graphQLDeviceDaemon = (deviceId: string) =>
       deviceDaemon(deviceId: $deviceId) {
         deviceId
         running
+        package { version format }
         target { version rollback }
         update { version state detail }
         channel

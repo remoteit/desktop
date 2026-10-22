@@ -8,6 +8,7 @@ import {
   UNSUPPORTED,
   graphQLDeviceDaemon,
   graphQLSetDeviceDaemon,
+  daemonVersion,
   runningVersion,
   updating,
 } from '../services/graphQLDaemon'
@@ -112,7 +113,11 @@ export const DeviceAgentPage: React.FC = () => {
             label={running || t('deviceAgent.notReported', 'Not reported')}
             subLabel={
               running
-                ? t('deviceAgent.runs', 'The version it runs')
+                ? daemon.package?.version
+                  ? t('deviceAgent.runsPackage', 'The version it runs — connectd {{connectd}}', {
+                      connectd: daemonVersion(daemon),
+                    })
+                  : t('deviceAgent.runs', 'The version it runs')
                 : t(
                     'deviceAgent.notReportedHint',
                     'A legacy agent — it upgrades by reinstalling — or a device agent that has not signed in'
