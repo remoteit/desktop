@@ -55,6 +55,8 @@ function stageEnv(stage) {
   }
   // solo's API serves device sessions to every account (portal.tf VITE_DEVICE_SESSIONS).
   if (stage === 'solo') env.VITE_DEVICE_SESSIONS = 'on'
+  // and virtual devices (portal.tf VITE_VIRTUAL_DEVICES).
+  if (stage === 'solo') env.VITE_VIRTUAL_DEVICES = 'on'
   return env
 }
 
