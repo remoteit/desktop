@@ -140,6 +140,14 @@ describe('streamChat — a refused turn', () => {
     ).rejects.toBeInstanceOf(AgentNotLicensedError)
   })
 
+  it('keys on the code, not the message', async () => {
+    await expect(
+      refuse(403, { error: 'Remote.It AI is not available for this account.', code: 'not_licensed' })
+    ).rejects.toBeInstanceOf(AgentNotLicensedError)
+    const outcome = await refuse(403, { error: "Remote.It AI isn't enabled for you." }).catch((e: unknown) => e)
+    expect(outcome).not.toBeInstanceOf(AgentNotLicensedError)
+  })
+
   it('keeps any other 403 a plain request failure', async () => {
     const outcome = await refuse(403, { error: 'Forbidden', code: 'mcp_access' }).catch((e: unknown) => e)
     expect(outcome).not.toBeInstanceOf(AgentNotLicensedError)

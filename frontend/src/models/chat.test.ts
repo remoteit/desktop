@@ -409,6 +409,14 @@ describe('chat model — send() on a refused licence', () => {
     expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
     expect(streamChat).toHaveBeenCalledTimes(1)
   })
+
+  it('leaves the limits alone when any other failure ends the turn', async () => {
+    streamChat.mockRejectedValue(new Error('Agent request failed (403)'))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).send('hello', sendable())
+    expect(dispatch.chat.endTurn).toHaveBeenCalledWith('Agent request failed (403)')
+    expect(dispatch.organization.fetch).not.toHaveBeenCalled()
+  })
 })
 
 /* The popout persists nothing, so it boots on the PERSONAL account unless told otherwise —
