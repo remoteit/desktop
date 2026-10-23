@@ -9,7 +9,14 @@ vi.mock('../store', () => ({ store: { getState: () => state } }))
 vi.mock('./oidc', () => ({ oidcAuthHeaders: vi.fn() }))
 vi.mock('../constants', () => ({ OAUTH_AGENT_RESOURCE: 'https://agent.remote.it', AGENT_URL: '/agent' }))
 
-import { agentURL, isSecureAgentURL, streamChat, AgentStreamEndedError, AgentNotLicensedError } from './agent'
+import {
+  agentURL,
+  isSecureAgentURL,
+  streamChat,
+  AgentStreamEndedError,
+  AgentNotLicensedError,
+  UsageLimitError,
+} from './agent'
 
 beforeEach(() => {
   state.ui.apis = {}
@@ -138,6 +145,16 @@ describe('streamChat — a refused turn', () => {
     await expect(
       refuse(403, { error: "Remote.It AI isn't enabled for you.", code: 'not_licensed' })
     ).rejects.toBeInstanceOf(AgentNotLicensedError)
+  })
+
+  it('throws UsageLimitError with its reset time on usage_limit', async () => {
+    const outcome = await refuse(429, {
+      error: 'Weekly limit reached',
+      code: 'usage_limit',
+      resetsAt: '2026-10-23T00:00:00Z',
+    }).catch((e: unknown) => e)
+    expect(outcome).toBeInstanceOf(UsageLimitError)
+    expect((outcome as UsageLimitError).resetsAt).toBe('2026-10-23T00:00:00Z')
   })
 
   it('keys on the code, not the message', async () => {
