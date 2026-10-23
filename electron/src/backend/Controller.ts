@@ -154,9 +154,10 @@ class Controller {
     this.clients.emit('device', cli.data.device?.uid)
   }
 
-  registration = async (code: string) => {
+  registration = async (code: string, done?: unknown) => {
     await cli.set('registration', code)
     this.clients.emit('device', cli.data.device?.uid)
+    if (typeof done === 'function') done(cli.data.device?.uid ?? '')
   }
 
   restore = async (deviceId: string) => {

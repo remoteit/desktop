@@ -2,7 +2,6 @@ import React from 'react'
 import { LANGUAGES } from '../constants'
 import { SUPPORTED_LANGUAGES } from '../i18n'
 import { Dispatch, State } from '../store'
-import { isPersonal } from '../models/plans'
 import { Typography, List } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
@@ -18,11 +17,7 @@ import { Icon } from '../components/Icon'
 import { spacing } from '../styling'
 
 export const ProfilePage: React.FC = () => {
-  const { paidPlan, user, deleteAccount } = useSelector((state: State) => ({
-    user: state.user,
-    paidPlan: !isPersonal(state),
-    deleteAccount: state.ui.deleteAccount,
-  }))
+  const user = useSelector((state: State) => state.user)
   const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
 
@@ -81,7 +76,7 @@ export const ProfilePage: React.FC = () => {
         />
       </List>
       <Typography variant="subtitle1">{t('settings.accountDeletion', 'Account deletion')}</Typography>
-      <DeleteAccountSection user={user} paidPlan={paidPlan} deleteAccount={deleteAccount} />
+      <DeleteAccountSection />
     </Container>
   )
 }
