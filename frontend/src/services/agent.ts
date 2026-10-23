@@ -52,6 +52,15 @@ export class UsageLimitError extends Error {
   }
 }
 
+/* The signed-in user does not hold the ai-agent licence (403 not_licensed) — the turn was refused
+   before it ran, so this window's view of the licence is stale. */
+export class AgentNotLicensedError extends Error {
+  constructor() {
+    super('Remote.It Agent is not licensed for this user')
+    this.name = 'AgentNotLicensedError'
+  }
+}
+
 /* Every call to the agent: the URL off agentURL(), the token minted for the agent AUDIENCE
    (signed over the canonical resource, not the transport — a proxy or an override must not
    break the proof), and a 401 as AgentAuthError. That refusal is the one server fact the chat
@@ -105,6 +114,10 @@ export async function streamChat(options: {
     const body = (await response.json().catch(() => ({}))) as { error?: string; code?: string; resetsAt?: string }
     if (body.code === 'usage_limit')
       throw new UsageLimitError(body.error || 'Usage limit reached', body.resetsAt ?? null)
+  }
+  if (response.status === 403) {
+    const body = (await response.json().catch(() => ({}))) as { code?: string }
+    if (body.code === 'not_licensed') throw new AgentNotLicensedError()
   }
   if (!response.ok || !response.body) throw new Error(`Agent request failed (${response.status})`)
 

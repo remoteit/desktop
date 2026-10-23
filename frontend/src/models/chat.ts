@@ -10,6 +10,7 @@ import {
   fetchUsage,
   UsageLimitError,
   AgentStreamEndedError,
+  AgentNotLicensedError,
   type ConversationSummary,
   type Usage,
   agentHealth,
@@ -113,6 +114,8 @@ const sessionExpiredError = () =>
   i18n.t('notices:chat.sessionExpired', {
     defaultValue: 'The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.',
   })
+
+const notLicensedError = () => i18n.t('chat.notLicensed', { defaultValue: "Remote.It Agent isn't enabled for you." })
 
 const usageLimitMessage = (e: UsageLimitError): string => {
   const when = formatReset(e.resetsAt)
@@ -225,7 +228,11 @@ export default createModel<RootModel>()({
         flushDeltas()
         if (error instanceof AgentAuthError) dispatch.chat.endTurn(authRequiredError())
         else if (error instanceof UsageLimitError) dispatch.chat.endTurn(usageLimitMessage(error))
-        else if (error instanceof AgentStreamEndedError)
+        else if (error instanceof AgentNotLicensedError) {
+          dispatch.chat.endTurn(notLicensedError())
+          // The agent read a licence this window doesn't know is gone; the refetch hides the chat if so
+          dispatch.organization.fetch()
+        } else if (error instanceof AgentStreamEndedError)
           // An interruption, not a completion — a cut-off must not leave a truncated reply
           // looking complete with the composer open for another send.
           dispatch.chat.endTurn(

@@ -38,6 +38,7 @@ vi.mock('../services/agent', () => ({
   UsageLimitError: class UsageLimitError extends Error {},
   AgentAuthError: class AgentAuthError extends Error {},
   AgentStreamEndedError: class AgentStreamEndedError extends Error {},
+  AgentNotLicensedError: class AgentNotLicensedError extends Error {},
 }))
 vi.mock('../services/chatPopout', () => ({
   broadcastChatSignout: vi.fn(),
@@ -55,7 +56,7 @@ vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 
 import chatModel from './chat'
 // The mocked module's class — the same one chat.ts's instanceof sees
-import { AgentStreamEndedError } from '../services/agent'
+import { AgentStreamEndedError, AgentNotLicensedError } from '../services/agent'
 
 const effectsFor = (dispatch: any) => (chatModel as any).effects(dispatch)
 const makeDispatch = () => ({
@@ -72,6 +73,7 @@ const makeDispatch = () => ({
     loadUsage: vi.fn(),
   },
   chatLive: { append: vi.fn(), toolStart: vi.fn(), toolResult: vi.fn(), clear: vi.fn() },
+  organization: { fetch: vi.fn() },
 })
 // The wider snapshot send() reads (resolveChatOrg looks at the user and memberships)
 const sendable = (chat: Record<string, unknown> = {}) => ({
@@ -395,8 +397,22 @@ describe('chat model — send() treats a cut-off stream as an interrupted turn',
   })
 })
 
+/* A 403 not_licensed means the agent read a licence this window still thinks the user holds:
+   the turn ends with the not-licensed message, nothing retries, and the limits are refetched so
+   the chat hides itself if the licence really is gone. */
+describe('chat model — send() on a refused licence', () => {
+  it('ends the turn with chat.notLicensed and refetches the limits', async () => {
+    streamChat.mockRejectedValue(new AgentNotLicensedError())
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).send('hello', sendable())
+    expect(dispatch.chat.endTurn).toHaveBeenCalledWith('chat.notLicensed')
+    expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
+    expect(streamChat).toHaveBeenCalledTimes(1)
+  })
+})
+
 /* The popout persists nothing, so it boots on the PERSONAL account unless told otherwise —
-   and a chat licensed only for an organization would then be refused in its own popout. */
+   and its turns would then name a different org than the window that opened it. */
 describe('chat model — popOut hands over the account scope', () => {
   it('passes the current org to openChatPopout', async () => {
     openChatPopout.mockReturnValue(true)
