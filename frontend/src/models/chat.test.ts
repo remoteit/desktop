@@ -373,6 +373,21 @@ describe('chat model — a stop mid-stream folds the reply exactly once', () => 
     }
   })
 
+  it('a request failure that lands after the abort ends nothing more', async () => {
+    streamChat.mockImplementation(
+      (options: any) =>
+        new Promise((_, reject) =>
+          options.signal.addEventListener('abort', () => reject(new Error('Agent request failed (403)')))
+        )
+    )
+    const dispatch = makeDispatch()
+    const fx = effectsFor(dispatch)
+    const sending = fx.send('hello', sendable())
+    await fx.stop(undefined, current({ streaming: true }))
+    await sending
+    expect(dispatch.chat.endTurn).toHaveBeenCalledTimes(1) // stop()'s own fold
+  })
+
   it('an unknown event type is ignored rather than read as an error event', async () => {
     const stream = abortableStream()
     const dispatch = makeDispatch()

@@ -240,7 +240,8 @@ export default createModel<RootModel>()({
                 'The connection to the agent closed before it finished — the answer may be incomplete. Try again.',
             })
           )
-        else if ((error as Error).name !== 'AbortError') dispatch.chat.endTurn((error as Error).message)
+        else if ((error as Error).name !== 'AbortError' && !controller.signal.aborted)
+          dispatch.chat.endTurn((error as Error).message)
       } finally {
         flushDeltas()
         if (abortController === controller) abortController = null
