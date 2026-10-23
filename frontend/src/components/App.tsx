@@ -136,9 +136,7 @@ export const App: React.FC = () => {
             <LoadingMessage
               spinner={!chatEntitlementResolved}
               message={
-                chatEntitlementResolved
-                  ? t('chat.notLicensed', 'Remote.It Agent is not available for this account.')
-                  : undefined
+                chatEntitlementResolved ? t('chat.notLicensed', "Remote.It Agent isn't enabled for you.") : undefined
               }
             />
           )
