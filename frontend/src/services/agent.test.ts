@@ -9,7 +9,14 @@ vi.mock('../store', () => ({ store: { getState: () => state } }))
 vi.mock('./oidc', () => ({ oidcAuthHeaders: vi.fn() }))
 vi.mock('../constants', () => ({ OAUTH_AGENT_RESOURCE: 'https://agent.remote.it', AGENT_URL: '/agent' }))
 
-import { agentURL, isSecureAgentURL, streamChat, AgentStreamEndedError } from './agent'
+import {
+  agentURL,
+  isSecureAgentURL,
+  streamChat,
+  AgentStreamEndedError,
+  AgentNotLicensedError,
+  UsageLimitError,
+} from './agent'
 
 beforeEach(() => {
   state.ui.apis = {}
@@ -124,5 +131,43 @@ describe('streamChat — SSE framing', () => {
   it('an error event is terminal too (no cut-off on top of a reported failure)', async () => {
     const events = await collect(['event: turn\ndata: {"turnId":"t1"}\n\nevent: error\ndata: {"message":"boom"}\n\n'])
     expect(events).toEqual([turn, { type: 'error', message: 'boom' }])
+  })
+})
+
+describe('streamChat — a refused turn', () => {
+  const refuse = (status: number, body: unknown) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status })))
+    return streamChat({ conversationId: 'c', text: 'hi', onEvent: () => {} })
+  }
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('throws AgentNotLicensedError on 403 not_licensed', async () => {
+    await expect(
+      refuse(403, { error: "Remote.It AI isn't enabled for you.", code: 'not_licensed' })
+    ).rejects.toBeInstanceOf(AgentNotLicensedError)
+  })
+
+  it('throws UsageLimitError with its reset time on usage_limit', async () => {
+    const outcome = await refuse(429, {
+      error: 'Weekly limit reached',
+      code: 'usage_limit',
+      resetsAt: '2026-10-23T00:00:00Z',
+    }).catch((e: unknown) => e)
+    expect(outcome).toBeInstanceOf(UsageLimitError)
+    expect((outcome as UsageLimitError).resetsAt).toBe('2026-10-23T00:00:00Z')
+  })
+
+  it('keys on the code, not the message', async () => {
+    await expect(
+      refuse(403, { error: 'Remote.It AI is not available for this account.', code: 'not_licensed' })
+    ).rejects.toBeInstanceOf(AgentNotLicensedError)
+    const outcome = await refuse(403, { error: "Remote.It AI isn't enabled for you." }).catch((e: unknown) => e)
+    expect(outcome).not.toBeInstanceOf(AgentNotLicensedError)
+  })
+
+  it('keeps any other 403 a plain request failure', async () => {
+    const outcome = await refuse(403, { error: 'Forbidden', code: 'mcp_access' }).catch((e: unknown) => e)
+    expect(outcome).not.toBeInstanceOf(AgentNotLicensedError)
+    expect((outcome as Error).message).toBe('Agent request failed (403)')
   })
 })
