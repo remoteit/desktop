@@ -230,7 +230,6 @@ export default createModel<RootModel>()({
         else if (error instanceof UsageLimitError) dispatch.chat.endTurn(usageLimitMessage(error))
         else if (error instanceof AgentNotLicensedError) {
           dispatch.chat.endTurn(notLicensedError())
-          // The agent read a licence this window doesn't know is gone; the refetch hides the chat if so
           dispatch.organization.fetch()
         } else if (error instanceof AgentStreamEndedError)
           // An interruption, not a completion — a cut-off must not leave a truncated reply

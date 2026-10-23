@@ -110,13 +110,10 @@ export async function streamChat(options: {
   const { conversationId, text, org, signal, onEvent } = options
   const path = `/api/conversations/${encodeURIComponent(conversationId)}/messages`
   const response = await agentRequest('POST', path, { body: org ? { text, org } : { text }, signal })
-  if (response.status === 429 || response.status === 503) {
+  if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { error?: string; code?: string; resetsAt?: string }
     if (body.code === 'usage_limit')
       throw new UsageLimitError(body.error || 'Usage limit reached', body.resetsAt ?? null)
-  }
-  if (response.status === 403) {
-    const body = (await response.json().catch(() => ({}))) as { code?: string }
     if (body.code === 'not_licensed') throw new AgentNotLicensedError()
   }
   if (!response.ok || !response.body) throw new Error(`Agent request failed (${response.status})`)
