@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { State, store } from '../../store'
 import { Avatar } from '../../components/Avatar'
+import { Gutters } from '../../components/Gutters'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { selectOrganizationOptions } from '../../selectors/organizations'
 import { graphQLMutedOrganizations } from '../../services/graphQLRequest'
@@ -58,9 +59,11 @@ export const OrganizationNotifications: React.FC = () => {
   return (
     <>
       <Typography variant="subtitle1">{t('settings.notifyOrganizations', 'Organizations')}</Typography>
-      <Typography variant="caption" color="text.secondary" component="p" paddingX={2}>
-        {t('settings.notifyOrganizationsHelp', 'Mobile push about the devices of each organization you belong to.')}
-      </Typography>
+      <Gutters top={null} bottom={null}>
+        <Typography variant="caption" color="text.secondary" component="p">
+          {t('settings.notifyOrganizationsHelp', 'Mobile push about the devices of each organization you belong to.')}
+        </Typography>
+      </Gutters>
       <List>
         {organizations.map(({ id, email, name }) => (
           <ListItemSetting
