@@ -2180,6 +2180,8 @@
     "notificationMethod": "Method",
     "notifications": "Notifications",
     "notifyEmail": "Email",
+    "notifyOrganizations": "Organizations",
+    "notifyOrganizationsHelp": "Mobile push about the devices of each organization you belong to.",
     "notifyPush": "Mobile push",
     "notifySystem": "System notification",
     "notifyWebhook": "Webhook",

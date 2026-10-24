@@ -2144,6 +2144,8 @@
     "notificationMethod": "方法",
     "notifications": "通知",
     "notifyEmail": "メール",
+    "notifyOrganizations": "組織",
+    "notifyOrganizationsHelp": "所属している各組織のデバイスに関するモバイルプッシュ通知。",
     "notifyPush": "モバイルプッシュ",
     "notifySystem": "システム通知",
     "notifyWebhook": "Webhook",

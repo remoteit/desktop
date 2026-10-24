@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Gutters } from '../../components/Gutters'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
 import { PushCategoryList } from '../../components/PushCategoryList'
+import { OrganizationNotifications } from './OrganizationNotifications'
 import { Link } from '../../components/Link'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
@@ -105,6 +106,7 @@ export const NotificationMode: React.FC = () => {
           disabled={pushNotifications === false}
           onChange={pushCategories => updateNotificationSettings({ ...metadata, pushCategories })}
         />
+        <OrganizationNotifications disabled={pushNotifications === false} />
         <ListItemSwitch
           label={t('settings.notifyEmail', 'Email')}
           icon="envelope"
