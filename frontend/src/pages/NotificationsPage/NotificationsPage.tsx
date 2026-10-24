@@ -4,7 +4,6 @@ import { Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { Title } from '../../components/Title'
 import { NotificationMode } from './NotificationsMode'
-import { OrganizationNotifications } from './OrganizationNotifications'
 
 export const NotificationsPage: React.FC = () => {
   const { t } = useTranslation()
@@ -19,7 +18,6 @@ export const NotificationsPage: React.FC = () => {
     >
       <Typography variant="subtitle1">{t('settings.notificationMethod', 'Method')}</Typography>
       <NotificationMode />
-      <OrganizationNotifications />
     </Container>
   )
 }

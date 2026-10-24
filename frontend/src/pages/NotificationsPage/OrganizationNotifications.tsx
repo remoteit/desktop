@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { List, Typography } from '@mui/material'
+import { Box } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { State, store } from '../../store'
+import { store } from '../../store'
 import { Avatar } from '../../components/Avatar'
-import { Gutters } from '../../components/Gutters'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { selectOrganizationOptions } from '../../selectors/organizations'
 import { graphQLMutedOrganizations } from '../../services/graphQLRequest'
@@ -27,10 +26,9 @@ const load = async () => {
   return list ? list.map(normalize) : null
 }
 
-export const OrganizationNotifications: React.FC = () => {
+export const OrganizationNotifications: React.FC<{ disabled?: boolean }> = ({ disabled }) => {
   const { t } = useTranslation()
   const organizations = useSelector(selectOrganizationOptions)
-  const pushNotifications = useSelector((state: State) => state.user.notificationSettings.pushNotifications)
   const [muted, setMuted] = useState<string[] | null>(null)
   const hasOrganizations = organizations.length > 0
 
@@ -58,24 +56,29 @@ export const OrganizationNotifications: React.FC = () => {
 
   return (
     <>
-      <Typography variant="subtitle1">{t('settings.notifyOrganizations', 'Organizations')}</Typography>
-      <Gutters top={null} bottom={null}>
-        <Typography variant="caption" color="text.secondary" component="p">
-          {t('settings.notifyOrganizationsHelp', 'Mobile push about the devices of each organization you belong to.')}
-        </Typography>
-      </Gutters>
-      <List>
-        {organizations.map(({ id, email, name }) => (
-          <ListItemSetting
-            key={id}
-            icon={<Avatar email={email} fallback={name} size={28} />}
-            label={name || email}
-            toggle={!muted.includes(normalize(id))}
-            disabled={pushNotifications === false}
-            onClick={() => toggle(id)}
-          />
-        ))}
-      </List>
+      <ListItemSetting
+        quote
+        label={t('settings.notifyOrganizations', 'Organizations')}
+        subLabel={t(
+          'settings.notifyOrganizationsHelp',
+          'Mobile push about the devices of each organization you belong to.'
+        )}
+      />
+      {organizations.map(({ id, email, name }) => (
+        <ListItemSetting
+          key={id}
+          quote
+          label={
+            <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Avatar email={email} fallback={name} size={24} />
+              {name || email}
+            </Box>
+          }
+          toggle={!muted.includes(normalize(id))}
+          disabled={disabled}
+          onClick={() => toggle(id)}
+        />
+      ))}
     </>
   )
 }

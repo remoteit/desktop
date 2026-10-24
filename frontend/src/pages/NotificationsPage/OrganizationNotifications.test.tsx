@@ -2,7 +2,7 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const state = { auth: { user: { id: 'USER' } }, user: { notificationSettings: {} as INotificationSetting } }
+const state = { auth: { user: { id: 'USER' } } }
 const organizations = [
   { id: 'ORG-A', email: 'a@example.com', name: 'Org A' },
   { id: 'ORG-B', email: 'b@example.com', name: 'Org B' },
@@ -25,19 +25,18 @@ vi.mock('../../components/ListItemSetting', () => ({
     disabled,
     onClick,
   }: {
-    label: string
-    toggle: boolean
+    label: React.ReactNode
+    toggle?: boolean
     disabled?: boolean
-    onClick: () => void
-  }) => (
-    <button
-      type="button"
-      data-label={label}
-      data-on={String(toggle)}
-      data-disabled={String(!!disabled)}
-      onClick={onClick}
-    />
-  ),
+    onClick?: () => void
+  }) =>
+    onClick ? (
+      <button type="button" data-on={String(toggle)} data-disabled={String(!!disabled)} onClick={onClick}>
+        {label}
+      </button>
+    ) : (
+      <p>{label}</p>
+    ),
 }))
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
@@ -56,11 +55,12 @@ describe('OrganizationNotifications', () => {
   let root: Root
   let container: HTMLDivElement
   // The write queue lives at module level: a fresh import per test keeps one test's queue out of the next.
-  let OrganizationNotifications: React.FC
-  const button = (label = 'Org A') => container.querySelector<HTMLButtonElement>(`button[data-label="${label}"]`)
+  let OrganizationNotifications: React.FC<{ disabled?: boolean }>
+  const button = (label = 'Org A') =>
+    Array.from(container.querySelectorAll('button')).find(b => b.textContent === label) ?? null
 
-  const render = async () => {
-    await act(async () => root.render(<OrganizationNotifications />))
+  const render = async (disabled = false) => {
+    await act(async () => root.render(<OrganizationNotifications disabled={disabled} />))
   }
 
   beforeEach(async () => {
@@ -71,7 +71,6 @@ describe('OrganizationNotifications', () => {
     root = createRoot(container)
     muted.mockReset()
     setOrganization.mockReset()
-    state.user.notificationSettings = {}
   })
 
   afterEach(() => {
@@ -85,9 +84,10 @@ describe('OrganizationNotifications', () => {
     expect(container.innerHTML).toBe('')
   })
 
-  it('shows each organization on unless it is muted', async () => {
+  it('shows each organization on unless it is muted, under an Organizations label', async () => {
     muted.mockResolvedValue(mutedResponse(['ORG-A']))
     await render()
+    expect(container.querySelector('p')?.textContent).toBe('Organizations')
     expect(button()?.dataset.on).toBe('false')
     expect(button('Org B')?.dataset.on).toBe('true')
   })
@@ -99,9 +99,8 @@ describe('OrganizationNotifications', () => {
   })
 
   it('disables the switches while mobile push is off', async () => {
-    state.user.notificationSettings = { pushNotifications: false }
     muted.mockResolvedValue(mutedResponse([]))
-    await render()
+    await render(true)
     expect(button()?.dataset.disabled).toBe('true')
   })
 
