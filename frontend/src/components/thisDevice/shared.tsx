@@ -215,7 +215,8 @@ export const SettingRow: React.FC<{
             size="small"
             value={setting.value}
             disabled={disabled || locked}
-            sx={{ width: SELECT_WIDTH }}
+            // The theme's small field is 20px tall, sized for a label's notch: too short for a menu's own value.
+            sx={{ width: SELECT_WIDTH, '&& .MuiInputBase-sizeSmall': { height: 'auto', marginY: 0 } }}
             inputProps={{ 'aria-label': title, 'data-relay-using': relayUsing ? 'yes' : 'no' }}
             SelectProps={{ renderValue: v => relayChoices(t).find(c => c.value === v)?.title ?? String(v) }}
             onChange={e => onSet(e.target.value)}
@@ -231,7 +232,7 @@ export const SettingRow: React.FC<{
         <ListItemText
           primary={title}
           secondary={[
-            t('thisDevice.relayLine', 'Use remote.it’s relay when a direct peer-to-peer connection isn’t possible.'),
+            t('thisDevice.relayLine', 'Use remote.it’s relay when a direct peer-to-peer connection is not possible.'),
             relayUsing && t('thisDevice.relayInUse', 'In use now'),
             secondary,
           ]
