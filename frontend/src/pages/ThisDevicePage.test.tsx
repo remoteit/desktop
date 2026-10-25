@@ -11,16 +11,19 @@ vi.mock('../components/Container', () => ({ Container: ({ children }: any) => <d
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => null }))
 vi.mock('../components/ThisDeviceSignIn', () => ({ ThisDeviceSignIn: () => null }))
 
-import { ThisDeviceView } from './ThisDevicePage'
+import { ThisDevicePart, ThisDeviceView } from '../components/thisDevice/ThisDeviceView'
 import { ThisDevice, Capability } from '../services/thisDevice'
-import { createMockBridge, MockBridgeOptions } from '../services/thisDeviceMock'
+import { createMockBridge, MockBridge, MockBridgeOptions } from '../services/thisDeviceMock'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 // "This device" draws itself from the bridge's capabilities alone (device-package docs/one-app-plan.md), against a
-// mock shell: what a capability is not offered for never shows, and the platform changes nothing.
+// mock shell: what a capability is not offered for never shows, and the platform changes nothing. Three pages — the
+// page itself (main), Details and Advanced — each drawn here as its part of the view.
 
-async function render(options: MockBridgeOptions = {}, props: { signedIn?: boolean } = {}) {
-  const bridge = createMockBridge(options)
+type Props = { signedIn?: boolean; part?: ThisDevicePart; renderName?: (uid: string, name: string) => React.ReactNode }
+
+// A part on a mock shell's bridge: another part can be mounted on the same one (mount), as the pages share the machine.
+async function mount(bridge: MockBridge, props: Props = {}) {
   const info = await bridge.transport.call('info', {})
   const device = new ThisDevice(bridge.transport, info)
   device.follow() // as thisDevice() does: info kept current from the shell's info event
@@ -31,20 +34,49 @@ async function render(options: MockBridgeOptions = {}, props: { signedIn?: boole
   await act(async () => {}) // the first status, exits and settings
   return { container, bridge, root }
 }
+const render = (options: MockBridgeOptions = {}, props: Props = {}) => mount(createMockBridge(options), props)
 const sections = (c: HTMLElement) => [...c.querySelectorAll('[data-section]')].map(e => e.getAttribute('data-section'))
 
 describe('This device', () => {
   it('shows what the desktop menu offers, and nothing it does not', async () => {
-    const { container } = await render()
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'settings', 'diagnostics'])
+    const { container, bridge } = await render()
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
     expect(container.textContent).toContain('Mock MacBook')
     expect(container.textContent).toContain('mockmacbook.on.solo.remote.it')
+    const advanced = await mount(bridge, { part: 'advanced' })
+    expect(sections(advanced.container)).toEqual(['settings', 'diagnostics'])
+  })
+
+  it('the page leads to Details and Advanced, and to its page in remote.it signed in', async () => {
+    const { container } = await render()
+    const links = [...container.querySelectorAll('[data-link]')].map(a => [a.getAttribute('data-link'), a.getAttribute('href')])
+    expect(links).toEqual([
+      ['details', '#/this-device/details'],
+      ['advanced', '#/this-device/advanced'],
+      ['device-page', '#/devices/80:00:00:00:01:0A:BC:DE'],
+    ])
+  })
+
+  it('no Advanced where there is nothing for it', async () => {
+    const { container } = await render({ capabilities: ['status'] })
+    expect(container.querySelector('[data-link="details"]')).not.toBeNull()
+    expect(container.querySelector('[data-link="advanced"]')).toBeNull()
+  })
+
+  it('the name as the page gives it: editable there, signed in', async () => {
+    const { container } = await render({}, { renderName: (uid, name) => <li data-editor={uid}>{name}</li> })
+    expect(container.querySelector('[data-editor="80:00:00:00:01:0A:BC:DE"]')!.textContent).toBe('Mock MacBook')
+    expect(container.querySelector('[data-name]')).toBeNull()
+    const plain = await render()
+    expect(plain.container.querySelector('[data-name]')!.textContent).toBe('Mock MacBook')
   })
 
   it('shows a phone’s permissions where the shell offers them', async () => {
     const caps: Capability[] = ['status', 'vpn', 'exit', 'settings', 'permissions', 'diagnostics', 'auth']
-    const { container } = await render({ capabilities: caps, info: { platform: 'ios', shell: 'capacitor' } })
-    expect(sections(container)).toEqual(['device', 'vpn', 'settings', 'permissions', 'diagnostics'])
+    const { container, bridge } = await render({ capabilities: caps, info: { platform: 'ios', shell: 'capacitor' } })
+    expect(sections(container)).toEqual(['device', 'vpn', 'more'])
+    const advanced = await mount(bridge, { part: 'advanced' })
+    expect(sections(advanced.container)).toEqual(['settings', 'permissions', 'diagnostics'])
   })
 
   it('names the notification permission only where the shell offers it (1.8.0), and asks it', async () => {
@@ -53,13 +85,13 @@ describe('This device', () => {
       [...c.querySelectorAll('[data-section="permissions"] li')].map(
         li => li.querySelector('.MuiListItemText-primary')?.textContent
       )
-    const without = await render({ capabilities: caps, info: { platform: 'android', shell: 'capacitor' } })
+    const without = await render({ capabilities: caps, info: { platform: 'android', shell: 'capacitor' } }, { part: 'advanced' })
     expect(rows(without.container)).toEqual(['Local network', 'VPN configuration'])
 
-    const { container, bridge } = await render({
-      capabilities: [...caps, 'notifications'],
-      info: { platform: 'android', shell: 'capacitor' },
-    })
+    const { container, bridge } = await render(
+      { capabilities: [...caps, 'notifications'], info: { platform: 'android', shell: 'capacitor' } },
+      { part: 'advanced' }
+    )
     expect(rows(container)).toEqual(['Local network', 'VPN configuration', 'Notifications'])
     const row = [...container.querySelectorAll('[data-section="permissions"] li')][2]
     expect(row.textContent).toContain('notAsked')
@@ -73,21 +105,23 @@ describe('This device', () => {
 
   it('draws the same page for the same capabilities on any platform', async () => {
     const caps: Capability[] = ['status', 'vpn', 'exit', 'settings']
-    const mac = await render({ capabilities: caps, info: { platform: 'mac', shell: 'menu' } })
-    const ios = await render({ capabilities: caps, info: { platform: 'ios', shell: 'capacitor' } })
     const html = (c: HTMLElement) => c.innerHTML.replace(/:r[0-9a-z]+:/g, ':id:') // React's generated ids differ
-    expect(html(ios.container)).toEqual(html(mac.container))
+    for (const part of ['main', 'details', 'advanced'] as ThisDevicePart[]) {
+      const mac = await render({ capabilities: caps, info: { platform: 'mac', shell: 'menu' } }, { part })
+      const ios = await render({ capabilities: caps, info: { platform: 'ios', shell: 'capacitor' } }, { part })
+      expect(html(ios.container)).toEqual(html(mac.container))
+    }
   })
 
   it('shows only the device where the shell offers only its status', async () => {
     const { container } = await render({ capabilities: ['status'] })
-    expect(sections(container)).toEqual(['device'])
+    expect(sections(container)).toEqual(['device', 'more'])
   })
 
   it('turns the VPN on and off through the bridge, from a shell before Access and Protect', async () => {
     const caps: Capability[] = ['status', 'vpn', 'exit', 'settings', 'diagnostics']
     const { container, bridge } = await render({ capabilities: caps, route: '80:00:00:00:01:0B:00:01' })
-    expect(sections(container)).toEqual(['device', 'vpn', 'settings', 'diagnostics'])
+    expect(sections(container)).toEqual(['device', 'vpn', 'more'])
     const vpn = () =>
       container.querySelector('[data-control="vpn"] input, input[data-control="vpn"]') as HTMLInputElement
     const line = () => container.querySelector('[data-vpn]')!
@@ -165,6 +199,18 @@ describe('This device', () => {
     )
   })
 
+  it('Route through: shown while Protect is off with none chosen, or on; else behind Change device', async () => {
+    const route = (c: HTMLElement) => c.querySelector('input[data-control="route"], [data-control="route"] input')
+    const none = await render()
+    expect(route(none.container)).not.toBeNull()
+    const chosen = await render({ route: '80:00:00:00:01:0B:00:01' })
+    expect(route(chosen.container)).toBeNull()
+    await act(async () => (chosen.container.querySelector('[data-control="changeRoute"]') as HTMLButtonElement).click())
+    expect(route(chosen.container)).not.toBeNull()
+    const on = await render({ route: '80:00:00:00:01:0B:00:01', status: { vpn: { on: true } } as any })
+    expect(route(on.container)).not.toBeNull()
+  })
+
   it('sets a setting by its connectd name, and leaves a locked one alone', async () => {
     const { container, bridge } = await render()
     const printers = container.querySelector('[data-setting="printers"] input') as HTMLInputElement
@@ -172,9 +218,17 @@ describe('This device', () => {
     await act(async () => printers.click())
     expect(bridge.calls.find(c => c.method === 'settings.set')!.args).toEqual({ name: 'printers', value: false })
     expect((container.querySelector('[data-setting="printers"] input') as HTMLInputElement).checked).toBe(false)
-    const relay = container.querySelector('[data-setting="websocket"] input') as HTMLInputElement
+    const advanced = await mount(bridge, { part: 'advanced' })
+    const relay = advanced.container.querySelector('[data-setting="websocket"] input') as HTMLInputElement
     expect(relay.disabled).toBe(true)
-    expect(container.querySelector('[data-setting="websocket"]')!.textContent).toContain('administrator')
+    expect(advanced.container.querySelector('[data-setting="websocket"]')!.textContent).toContain('administrator')
+  })
+
+  it('the printers are Access’s: not shown while it is off', async () => {
+    const { container } = await render()
+    expect(container.querySelector('[data-section="access"] [data-setting="printers"]')).not.toBeNull()
+    await act(async () => (container.querySelector('[data-control="access"] input') as HTMLInputElement).click())
+    expect(container.querySelector('[data-setting="printers"]')).toBeNull()
   })
 
   it('a desktop: Allow remote access to services after Protect, on by default, just the setting', async () => {
@@ -187,7 +241,8 @@ describe('This device', () => {
       ],
     })
     // The printers are under Access (1.5.0, as the menu's Settings has them): nothing else is left to list.
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'diagnostics'])
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'more'])
+    expect(sections((await mount(bridge, { part: 'advanced' })).container)).toEqual(['diagnostics'])
     expect(container.querySelector('[data-section="access"] [data-setting="printers"]')).not.toBeNull()
     expect(container.querySelector('[data-setting="services"]')).toBeNull()
     expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
@@ -203,12 +258,15 @@ describe('This device', () => {
   })
 
   it('a shell without the switch lists services among the settings, and never lan_services', async () => {
-    const { container, bridge } = await render({
-      settings: [
-        { name: 'services', value: true, source: 'default' },
-        { name: 'lan_services', value: false, source: 'default' },
-      ],
-    })
+    const { container, bridge } = await render(
+      {
+        settings: [
+          { name: 'services', value: true, source: 'default' },
+          { name: 'lan_services', value: false, source: 'default' },
+        ],
+      },
+      { part: 'advanced' }
+    )
     expect(sections(container)).not.toContain('services')
     expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
     const row = container.querySelector('[data-setting="services"]')!
@@ -230,18 +288,22 @@ describe('This device', () => {
     'lanServices',
     'services',
   ]
-  const phone = (options: MockBridgeOptions = {}) =>
-    render({
-      capabilities: PHONE,
-      info: { platform: 'ios', shell: 'capacitor', deviceKind: 'iPhone' },
-      settings: [{ name: 'services', value: false, source: 'default' }],
-      ...options,
-    })
+  const phone = (options: MockBridgeOptions = {}, part: ThisDevicePart = 'main') =>
+    render(
+      {
+        capabilities: PHONE,
+        info: { platform: 'ios', shell: 'capacitor', deviceKind: 'iPhone' },
+        settings: [{ name: 'services', value: false, source: 'default' }],
+        ...options,
+      },
+      { part }
+    )
 
   it('a phone: the switch after Access and Protect, in place of its setting, in a phone’s words', async () => {
     const { container } = await phone()
     // services was the phone's only setting: shown as the switch, no Settings section is left.
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'permissions', 'diagnostics'])
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'more'])
+    expect(sections((await phone({}, 'advanced')).container)).toEqual(['permissions', 'diagnostics'])
     expect(container.querySelector('[data-setting="services"]')).toBeNull()
     const line = container.querySelector('[data-services]')!
     expect(line.getAttribute('data-services')).toBe('off')
@@ -260,8 +322,11 @@ describe('This device', () => {
     expect(bridge.status.services?.localNetworkPermission).toBe('granted')
     expect(container.querySelectorAll('[data-services-state]').length).toBe(0)
     expect(container.textContent).toContain('No services on this iPhone yet')
-    expect(container.querySelector('[data-section="permissions"]')!.textContent).toContain('Local networkgranted')
+    const advanced = await mount(bridge, { part: 'advanced' })
+    expect(advanced.container.querySelector('[data-section="permissions"]')!.textContent).toContain('Local networkgranted')
 
+    // What it serves: counted on the page, listed in Details.
+    const details = await mount(bridge, { part: 'details' })
     await act(async () =>
       bridge.emit('status', {
         ...bridge.status,
@@ -271,7 +336,11 @@ describe('This device', () => {
         ],
       })
     )
-    const served = [...container.querySelectorAll('[data-served]')].map(e => e.textContent)
+    const summary = container.querySelector('[data-served-summary]')!
+    expect(summary.textContent).toBe('2 services · 2 connections — see them in Details')
+    expect(summary.getAttribute('href')).toBe('#/this-device/details')
+    expect(container.querySelectorAll('[data-served]').length).toBe(0)
+    const served = [...details.container.querySelectorAll('[data-served]')].map(e => e.textContent)
     expect(served).toEqual([
       '192.168.1.1:80Connections: 2',
       '192.168.1.50:554Connections: 0 · Last connection failed: no route to host',
@@ -283,7 +352,8 @@ describe('This device', () => {
       { on: false },
     ])
     expect(container.querySelector('[data-services]')!.getAttribute('data-services')).toBe('off')
-    expect(container.querySelectorAll('[data-served]').length).toBe(0)
+    expect(container.querySelector('[data-served-summary]')).toBeNull()
+    expect(details.container.querySelectorAll('[data-served]').length).toBe(0)
   })
 
   it('a 1.3.0 phone shell, lanServices alone: the same switch through lanServices.set', async () => {
@@ -336,7 +406,7 @@ describe('This device', () => {
     const signedIn = await render()
     expect(signedIn.container.textContent).toContain('Its page in remote.it')
     const { container, bridge } = await render({}, { signedIn: false })
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'settings', 'diagnostics'])
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
     expect(container.textContent).toContain('Mock MacBook')
     expect(container.textContent).not.toContain('Its page in remote.it')
     expect(container.querySelector('a[href^="#/devices/"]')).toBeNull()
@@ -424,27 +494,32 @@ describe('This device has what Settings has', () => {
     { name: 'websocket', value: 'auto', source: 'machine' as const, overridden: 'Changed from the portal to Always' },
   ]
 
-  it('the device’s details, and its removal asked of the shell', async () => {
-    const { container, bridge } = await render({ capabilities: caps, status, settings })
+  it('the device’s details in Details, online since on the page, and its removal last in Advanced', async () => {
+    const { container, bridge } = await render({ capabilities: caps, status, settings }, { part: 'details' })
     const text = (sel: string) => container.querySelector(sel)?.textContent
     expect(text('[data-detail="owner"]')).toContain('owner@example.com')
     expect(text('[data-detail="address"]')).toContain('198.18.16.12')
     expect(text('[data-detail="uid"]')).toContain('80:00:00:00:01:0A:BC:DE')
     expect(text('[data-detail="versions"]')).toBe('VersionsPackage 1.1.0.20261010 · connectd 5.6.1.20261010')
-    expect(text('[data-engine]')).toContain('Online since')
-    const remove = container.querySelector('[data-control="remove"]') as HTMLButtonElement
+    expect(text('[data-detail="dnsName"]')).toContain('mockmacbook.on.solo.remote.it')
+    expect(text('[data-detail="relay"]')).toContain('In use now')
+    const main = await mount(bridge)
+    expect(main.container.querySelector('[data-engine]')!.textContent).toMatch(/^OnlineSince /)
+    expect(main.container.querySelector('[data-control="remove"]')).toBeNull()
+    const advanced = await mount(bridge, { part: 'advanced' })
+    expect(sections(advanced.container).at(-1)).toBe('remove')
+    const remove = advanced.container.querySelector('[data-control="remove"]') as HTMLButtonElement
     expect(remove.textContent).toBe('Remove from this Mac…')
     await act(async () => remove.click())
     expect(bridge.calls.filter(c => c.method === 'device.remove')).toHaveLength(1)
-    expect(container.textContent).not.toContain('Removed from this Mac') // the person said no
+    expect(advanced.container.textContent).not.toContain('Removed from this Mac') // the person said no
   })
 
   it('the machine’s only one: Uninstall', async () => {
-    const { container } = await render({
-      capabilities: caps,
-      status: { ...status, device: { ...status.device, removal: 'uninstall' } },
-      settings,
-    })
+    const { container } = await render(
+      { capabilities: caps, status: { ...status, device: { ...status.device, removal: 'uninstall' } }, settings },
+      { part: 'advanced' }
+    )
     expect(container.querySelector('[data-control="remove"]')!.textContent).toBe('Uninstall remote.it from this Mac…')
   })
 
@@ -464,7 +539,7 @@ describe('This device has what Settings has', () => {
   })
 
   it('what the device offers: reasons, a change replaced, the relay in use, and what is not served', async () => {
-    const { container } = await render({ capabilities: caps, status, settings })
+    const { container } = await render({ capabilities: caps, status, settings }, { part: 'advanced' })
     const row = (name: string) => container.querySelector(`[data-section="settings"] [data-setting="${name}"]`)!
     expect(row('exit_node').textContent).toContain('Turned off by this machine’s administrator')
     expect((row('exit_node').querySelector('input') as HTMLInputElement).disabled).toBe(true)
@@ -475,12 +550,10 @@ describe('This device has what Settings has', () => {
   })
 
   it('the detailed connection logging, and the app’s own Open at login', async () => {
-    const { container, bridge } = await render({
-      capabilities: caps,
-      status,
-      settings,
-      app: { openAtLogin: { on: true } },
-    })
+    const { container, bridge } = await render(
+      { capabilities: caps, status, settings, app: { openAtLogin: { on: true } } },
+      { part: 'advanced' }
+    )
     const logging = container.querySelector('[data-control="logging"] input') as HTMLInputElement
     expect(logging.checked).toBe(false)
     await act(async () => logging.click())
@@ -494,11 +567,11 @@ describe('This device has what Settings has', () => {
   })
 
   it('a shell before 1.5.0: none of it, nothing broken', async () => {
-    const { container } = await render({
-      capabilities: ['status', 'settings', 'access', 'protect', 'services'],
-      settings,
-    })
-    expect(container.querySelector('[data-section="logging"]')).toBeNull()
+    const { container } = await render(
+      { capabilities: ['status', 'settings', 'access', 'protect', 'services'], settings },
+      { part: 'advanced' }
+    )
+    expect(container.querySelector('[data-logging]')).toBeNull()
     expect(container.querySelector('[data-section="app"]')).toBeNull()
     expect(container.querySelector('[data-control="remove"]')).toBeNull()
   })
@@ -513,8 +586,8 @@ describe('This device stopped', () => {
     const { container, bridge } = await render({ capabilities: caps, status: { engine: 'stopped' } })
     const engine = container.querySelector('[data-engine]')!
     expect(engine.getAttribute('data-engine')).toBe('stopped')
-    expect(engine.textContent).toContain(
-      'Stopped: this Mac is offline — no one can reach its services, and Protect and Access are off'
+    expect(engine.textContent).toBe(
+      'Not runningThis Mac is offline — no one can reach its services, and Protect and Access are off'
     )
     const access = container.querySelector(
       '[data-control="access"] input, input[data-control="access"]'
@@ -539,8 +612,8 @@ describe('This device stopped', () => {
       capabilities: caps.filter(c => c !== 'start'),
       status: { engine: 'stopped' },
     })
-    expect(container.querySelector('[data-engine]')!.textContent).toContain(
-      'Off — turn on Access, Protect or remote access to services to start it'
+    expect(container.querySelector('[data-engine]')!.textContent).toBe(
+      'OffTurn on Access, Protect or remote access to services to start it'
     )
     expect(container.querySelector('[data-control="start"]')).toBeNull()
     const access = container.querySelector(
@@ -570,8 +643,9 @@ describe('This device follows what the shell offers', () => {
       capabilities: desktop,
       status: { engine: 'stopped', device: undefined },
     })
+    const advanced = await mount(bridge, { part: 'advanced' })
     expect(sections(container)).not.toContain('services')
-    expect(sections(container)).not.toContain('logging')
+    expect(advanced.container.querySelector('[data-logging]')).toBeNull()
     // It answers, running, with the setting: the shell offers services and logging, and says so.
     bridge.status = {
       ...bridge.status,
@@ -584,16 +658,17 @@ describe('This device follows what the shell offers', () => {
     expect(sections(container)).toContain('services')
     expect(container.querySelector('[data-section="services"] input')).not.toBeNull()
     // Read when it came to be offered: the logging as the daemon has it.
-    expect(container.querySelector('[data-logging]')!.getAttribute('data-logging')).toBe('on')
+    expect(advanced.container.querySelector('[data-logging]')!.getAttribute('data-logging')).toBe('on')
   })
 
   it('drops what the shell no longer offers', async () => {
     const { container, bridge } = await render({ capabilities: [...desktop, 'services', 'logging', 'remove'] })
+    const advanced = await mount(bridge, { part: 'advanced' })
     expect(sections(container)).toContain('services')
-    expect(sections(container)).toContain('logging')
+    expect(advanced.container.querySelector('[data-logging]')).not.toBeNull()
     await act(async () => bridge.offer(desktop))
     expect(sections(container)).not.toContain('services')
-    expect(sections(container)).not.toContain('logging')
+    expect(advanced.container.querySelector('[data-logging]')).toBeNull()
     // A method of a capability gone is not asked again.
     const asked = bridge.calls.length
     bridge.emit('status', bridge.status)
@@ -602,7 +677,7 @@ describe('This device follows what the shell offers', () => {
   })
 
   it('reads again with each status what the engine answers and sends no event for', async () => {
-    const { container, bridge } = await render({ capabilities: [...desktop, 'logging'] })
+    const { container, bridge } = await render({ capabilities: [...desktop, 'logging'] }, { part: 'advanced' })
     expect(container.querySelector('[data-logging]')!.getAttribute('data-logging')).toBe('off')
     bridge.logging = { detailed: true } // the menu's own Settings turned it on
     await act(async () => bridge.emit('status', { ...bridge.status }))
@@ -612,6 +687,6 @@ describe('This device follows what the shell offers', () => {
 
   it('a shell before 1.7.0 (no info event): as it offered at boot', async () => {
     const { container } = await render({ capabilities: desktop, info: { bridgeVersion: '1.6.0' } })
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'settings', 'diagnostics'])
+    expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
   })
 })
