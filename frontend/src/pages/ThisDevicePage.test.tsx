@@ -199,16 +199,14 @@ describe('This device', () => {
     )
   })
 
-  it('Route through: shown while Protect is off with none chosen, or on; else behind Change device', async () => {
-    const route = (c: HTMLElement) => c.querySelector('input[data-control="route"], [data-control="route"] input')
-    const none = await render()
-    expect(route(none.container)).not.toBeNull()
-    const chosen = await render({ route: '80:00:00:00:01:0B:00:01' })
-    expect(route(chosen.container)).toBeNull()
-    await act(async () => (chosen.container.querySelector('[data-control="changeRoute"]') as HTMLButtonElement).click())
-    expect(route(chosen.container)).not.toBeNull()
-    const on = await render({ route: '80:00:00:00:01:0B:00:01', status: { vpn: { on: true } } as any })
-    expect(route(on.container)).not.toBeNull()
+  it('Route through: always shown, the device chosen in it, Protect on or off — no Change device', async () => {
+    const route = (c: HTMLElement) => c.querySelector('input[data-control="route"], [data-control="route"] input') as HTMLInputElement
+    for (const options of [{}, { route: '80:00:00:00:01:0B:00:01' }, { route: '80:00:00:00:01:0B:00:01', status: { vpn: { on: true } } as any }]) {
+      const { container } = await render(options)
+      expect(route(container)).not.toBeNull()
+      expect(route(container).value).toBe(options.route ?? '')
+      expect(container.querySelector('[data-control="changeRoute"]')).toBeNull()
+    }
   })
 
   it('sets a setting by its connectd name, and leaves a locked one alone', async () => {

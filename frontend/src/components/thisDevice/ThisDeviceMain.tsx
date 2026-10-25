@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Button, List, ListItem, ListItemButton, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
 import { ThisDevice } from '../../services/thisDevice'
 import { Icon } from '../Icon'
@@ -190,9 +190,6 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
   const protect = status?.protect
   const protectOn = !!protect?.on
   const routeValue = protect?.route?.id ?? ''
-  // The device it goes through, chosen here: shown while Protect is on, while none is chosen, and when asked to change.
-  const [choosing, setChoosing] = useState(false)
-  const showRoute = protectOn || !protect?.route || choosing
   return (
     <List data-section="protect">
       <ListItem
@@ -225,8 +222,8 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
           />
         </ListItem>
       )}
-      {showRoute ? (
-        <ListItem>
+      {/* The device it goes through, always shown, on or off (Evan, 2026-10-25). */}
+      <ListItem>
           <TextField
             select
             fullWidth
@@ -239,10 +236,7 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
             inputProps={{ 'data-control': 'route' }}
             onChange={e =>
               e.target.value &&
-              m.act(async () => {
-                m.setStatus(await device.call('protect.route', { id: e.target.value }))
-                setChoosing(false)
-              })
+              m.act(async () => m.setStatus(await device.call('protect.route', { id: e.target.value })))
             }
           >
             {!routeValue && (
@@ -260,18 +254,6 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
             ))}
           </TextField>
         </ListItem>
-      ) : (
-        <ListItem>
-          <Button
-            size="small"
-            disabled={m.held || !protect || protect.locked}
-            data-control="changeRoute"
-            onClick={() => setChoosing(true)}
-          >
-            {t('thisDevice.changeRoute', 'Change device')}
-          </Button>
-        </ListItem>
-      )}
     </List>
   )
 }
