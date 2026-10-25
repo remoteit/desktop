@@ -229,6 +229,14 @@ describe('This device', () => {
     expect(container.querySelector('[data-setting="printers"]')).toBeNull()
   })
 
+  it('each switch is a card, tinted while on', async () => {
+    const { container } = await render()
+    const on = (section: string) => container.querySelector(`[data-section="${section}"]`)!.getAttribute('data-on')
+    expect(on('access')).toBe('yes')
+    await act(async () => (container.querySelector('[data-control="access"] input') as HTMLInputElement).click())
+    expect(on('access')).toBe('no')
+  })
+
   it('a desktop: Allow remote access to services after Protect, on by default, just the setting', async () => {
     const { container, bridge } = await render({
       capabilities: ['status', 'vpn', 'exit', 'settings', 'diagnostics', 'access', 'protect', 'services'],

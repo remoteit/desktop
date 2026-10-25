@@ -1,11 +1,14 @@
 import React from 'react'
-import { Button, List, ListItem, ListItemButton, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
+import { Button, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
 import { ThisDevice } from '../../services/thisDevice'
 import { Icon } from '../Icon'
 import { ThisDeviceModel } from './model'
 import {
   T,
+  Card,
+  ICON_COLUMN_SX,
   Note,
+  RowIcon,
   SettingRow,
   SWITCH_TEXT,
   accessLine,
@@ -47,6 +50,8 @@ export const ThisDeviceMain: React.FC<{
         <List data-section="device">
           {nameEditor ?? (
             <ListItem>
+              {/* The machine's kind in the first column, where the name's editor keeps its icon signed in: a phone by its permissions, as the services' line says. */}
+              <RowIcon name={m.phoneServices ? 'mobile' : 'laptop'} />
               <ListItemText
                 primary={d?.name || t('thisDevice.unnamed', 'This device')}
                 primaryTypographyProps={{ variant: 'h2' }}
@@ -55,8 +60,12 @@ export const ThisDeviceMain: React.FC<{
             </ListItem>
           )}
           <ListItem>
+            <ListItemIcon sx={ICON_COLUMN_SX}>
+              <Icon name="circle" type="solid" size="xs" color={m.off ? 'grayLight' : ENGINE_COLOR[status.engine] ?? 'grayLight'} />
+            </ListItemIcon>
             <ListItemText
               primary={m.off ? t('thisDevice.offTitle', 'Off') : engineLine(status, t)}
+              primaryTypographyProps={{ fontWeight: 500 }}
               secondary={
                 status.engine === 'online' && d?.since
                   ? t('thisDevice.since', 'Since {{when}}', { when: when(d.since) })
@@ -95,13 +104,14 @@ export const ThisDeviceMain: React.FC<{
       {!m.switches && (has('vpn') || has('exit')) && <VpnPart device={device} m={m} />}
 
       {has('status') && status && (
-        <List data-section="more">
+        <Card section="more">
           <LinkRow
             link="details"
             href="#/this-device/details"
             primary={t('thisDevice.details', 'Details')}
             secondary={t('thisDevice.detailsLine', 'Its address, UID, versions and services')}
           />
+          {advanced && <Divider component="li" />}
           {advanced && (
             <LinkRow
               link="advanced"
@@ -110,6 +120,7 @@ export const ThisDeviceMain: React.FC<{
               secondary={t('thisDevice.advancedLine', 'Features, relay, permissions and diagnostics')}
             />
           )}
+          {signedIn && d?.uid && <Divider component="li" />}
           {signedIn && d?.uid && (
             <LinkRow
               link="device-page"
@@ -118,10 +129,19 @@ export const ThisDeviceMain: React.FC<{
               secondary={t('thisDevice.devicePageLine', 'Its services, sharing and logs')}
             />
           )}
-        </List>
+        </Card>
       )}
     </>
   )
+}
+
+// The status dot's color: green while it runs, amber while it starts, red when it can't reach remote.it.
+const ENGINE_COLOR: { [engine: string]: string } = {
+  online: 'success',
+  starting: 'warning',
+  offline: 'danger',
+  signedOut: 'warning',
+  stopped: 'grayLight',
 }
 
 const servicesCount = (n: number, t: T) =>
@@ -138,16 +158,19 @@ const LinkRow: React.FC<{ link: string; href: string; primary: string; secondary
   secondary,
 }) => (
   <ListItemButton component="a" href={href} data-link={link}>
-    <ListItemText primary={primary} secondary={secondary} />
+    <ListItemText primary={primary} secondary={secondary} primaryTypographyProps={{ fontWeight: 500 }} />
     <Icon name="chevron-right" size="md" color="grayDark" />
   </ListItemButton>
 )
+
+// A card's title: a little heavier than the lines under it.
+const TITLE = { fontWeight: 500, fontSize: '1.05rem' }
 
 const AccessPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
   const { t, status, kind } = m
   const access = status?.access
   return (
-    <List data-section="access">
+    <Card inset section="access" on={!!access?.on}>
       <ListItem
         secondaryAction={
           <Switch
@@ -160,8 +183,10 @@ const AccessPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ devi
           />
         }
       >
+        <RowIcon name="chart-network" on={!!access?.on} />
         <ListItemText
           primary={t('thisDevice.access', 'Access remote devices')}
+          primaryTypographyProps={TITLE}
           secondary={accessLine(status, kind, t)}
           sx={SWITCH_TEXT}
           data-access={access?.on ? 'on' : 'off'}
@@ -181,7 +206,7 @@ const AccessPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ devi
           onSet={value => m.setSetting('printers', value)}
         />
       )}
-    </List>
+    </Card>
   )
 }
 
@@ -191,7 +216,7 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
   const protectOn = !!protect?.on
   const routeValue = protect?.route?.id ?? ''
   return (
-    <List data-section="protect">
+    <Card inset section="protect" on={protectOn}>
       <ListItem
         secondaryAction={
           <Switch
@@ -206,8 +231,10 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
           />
         }
       >
+        <RowIcon name="shield" on={protectOn} />
         <ListItemText
           primary={t('thisDevice.protect', 'remote.it Protect')}
+          primaryTypographyProps={TITLE}
           secondary={protectLine(status, kind, t)}
           sx={SWITCH_TEXT}
           data-protect={protectOn ? 'on' : 'off'}
@@ -254,7 +281,7 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
             ))}
           </TextField>
         </ListItem>
-    </List>
+    </Card>
   )
 }
 
@@ -262,7 +289,7 @@ const ServicesPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ de
   const { t, has, status, kind, lan, servicesVia } = m
   const served = status?.served
   return (
-    <List data-section="services">
+    <Card inset section="services" on={!!lan?.on}>
       <ListItem
         secondaryAction={
           <Switch
@@ -281,8 +308,10 @@ const ServicesPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ de
           />
         }
       >
+        <RowIcon name="server" on={!!lan?.on} />
         <ListItemText
           primary={t('thisDevice.services', 'Allow remote access to services')}
+          primaryTypographyProps={TITLE}
           secondary={
             lan?.locked
               ? `${servicesLine(kind, m.phoneServices, t)} ${lan.lockedWhy || lockedLine(t)}`
@@ -336,7 +365,7 @@ const ServicesPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ de
           />
         </ListItem>
       )}
-    </List>
+    </Card>
   )
 }
 

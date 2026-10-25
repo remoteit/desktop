@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { ListItem, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
+import { Box, ListItem, ListItemIcon, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
+import { Icon } from '../Icon'
 import { DeviceSetting, DeviceStatus, ExitRef, SettingValue } from '../../services/thisDevice'
 
 // What This device's parts share (pages/ThisDevicePage.tsx): the rows, the notes, and the words for each state.
@@ -44,7 +45,7 @@ export const relayChoices = (t: T): { value: string; title: string; line: string
 // Settings served only while the services are: not served while they are off, whatever their own value says.
 export const UNDER_SERVICES = ['console', 'any_port']
 // A switch's words keep clear of the switch at the row's end, at a phone's width too.
-export const SWITCH_TEXT = { paddingRight: '56px' }
+export const SWITCH_TEXT = { paddingRight: '72px' }
 
 /** Whether a setting's value is on: true, or {on: true}. */
 export const settingOn = (value: SettingValue | { on?: boolean }): boolean | undefined => {
@@ -69,6 +70,49 @@ export const Note: React.FC<{ id: string; text: string; title?: string; warn?: b
       secondaryTypographyProps={warn ? { color: 'warning.main' } : undefined}
     />
   </ListItem>
+)
+
+// The icon column's width: narrower at a phone's width, so the words keep their room.
+const ICON_COLUMN = { xs: '40px', sm: '56px' }
+export const ICON_COLUMN_SX = { minWidth: { xs: ICON_COLUMN.xs, sm: ICON_COLUMN.sm } }
+
+// A part of the main page set apart, so each of its switches reads as its own thing: a rounded box, tinted while what
+// it holds is on.
+// inset: what follows the first row (notes, options, the route) lines up with its title, past the icon.
+export const Card: React.FC<{ section: string; on?: boolean; inset?: boolean; children: React.ReactNode }> = ({
+  section,
+  on,
+  inset,
+  children,
+}) => (
+  <Box
+    component="ul"
+    data-section={section}
+    data-on={on ? 'yes' : 'no'}
+    sx={{
+      listStyle: 'none',
+      padding: 0,
+      marginX: { xs: 1, sm: 2 },
+      marginTop: 0,
+      marginBottom: 2,
+      border: 1,
+      borderColor: on ? 'primaryLighter.main' : 'grayLighter.main',
+      borderRadius: 2,
+      bgcolor: on ? 'primaryHighlight.main' : undefined,
+      overflow: 'hidden',
+      transition: 'background-color 200ms, border-color 200ms',
+      ...(inset && { '& > li + li': { paddingLeft: { xs: ICON_COLUMN.xs, sm: ICON_COLUMN.sm } } }),
+    }}
+  >
+    {children}
+  </Box>
+)
+
+// A card's icon, in the row's first column: the primary color while on.
+export const RowIcon: React.FC<{ name: string; on?: boolean }> = ({ name, on }) => (
+  <ListItemIcon sx={ICON_COLUMN_SX}>
+    <Icon name={name} size="md" color={on ? 'primary' : 'grayDark'} type={on ? 'solid' : 'regular'} fixedWidth />
+  </ListItemIcon>
 )
 
 export const lockedLine = (t: T) => t('thisDevice.locked', 'Set by this machine’s administrator')

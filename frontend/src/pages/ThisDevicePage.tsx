@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux'
 import { useRouteMatch } from 'react-router-dom'
 import { State } from '../store'
 import { Container } from '../components/Container'
-import { IconButton } from '../buttons/IconButton'
 import { ThisDeviceSignIn } from '../components/ThisDeviceSignIn'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceContext } from '../services/Context'
@@ -45,14 +44,8 @@ export const ThisDevicePage: React.FC = () => {
   return (
     <Container
       gutterBottom
-      header={
-        <Box display="flex" alignItems="center">
-          {part !== 'main' && (
-            <IconButton icon="chevron-left" to="/this-device" title={t('thisDevice.back', 'This device')} />
-          )}
-          <Typography variant="h1">{title}</Typography>
-        </Box>
-      }
+      // The sub-pages' way back is the app's own back arrow, at the top.
+      header={<Typography variant="h1">{title}</Typography>}
     >
       {device === undefined ? (
         <Box display="flex" justifyContent="center" padding={4}>
