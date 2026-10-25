@@ -76,19 +76,17 @@ export const Note: React.FC<{ id: string; text: string; title?: string; warn?: b
 const ICON_COLUMN = { xs: '40px', sm: '56px' }
 export const ICON_COLUMN_SX = { minWidth: { xs: ICON_COLUMN.xs, sm: ICON_COLUMN.sm } }
 
-// A part of the main page set apart, so each of its switches reads as its own thing: a rounded box, tinted while what
-// it holds is on.
+// A part of the main page set apart, so each of its switches reads as its own thing: a rounded box, the same on or off
+// (its icon says which; Evan, 2026-10-25).
 // inset: what follows the first row (notes, options, the route) lines up with its title, past the icon.
-export const Card: React.FC<{ section: string; on?: boolean; inset?: boolean; children: React.ReactNode }> = ({
+export const Card: React.FC<{ section: string; inset?: boolean; children: React.ReactNode }> = ({
   section,
-  on,
   inset,
   children,
 }) => (
   <Box
     component="ul"
     data-section={section}
-    data-on={on ? 'yes' : 'no'}
     sx={{
       listStyle: 'none',
       padding: 0,
@@ -96,11 +94,9 @@ export const Card: React.FC<{ section: string; on?: boolean; inset?: boolean; ch
       marginTop: 0,
       marginBottom: 2,
       border: 1,
-      borderColor: on ? 'primaryLighter.main' : 'grayLighter.main',
+      borderColor: 'grayLighter.main',
       borderRadius: 2,
-      bgcolor: on ? 'primaryHighlight.main' : undefined,
       overflow: 'hidden',
-      transition: 'background-color 200ms, border-color 200ms',
       ...(inset && { '& > li + li': { paddingLeft: { xs: ICON_COLUMN.xs, sm: ICON_COLUMN.sm } } }),
     }}
   >

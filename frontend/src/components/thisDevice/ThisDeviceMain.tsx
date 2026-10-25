@@ -170,7 +170,7 @@ const AccessPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ devi
   const { t, status, kind } = m
   const access = status?.access
   return (
-    <Card inset section="access" on={!!access?.on}>
+    <Card inset section="access">
       <ListItem
         secondaryAction={
           <Switch
@@ -216,7 +216,7 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
   const protectOn = !!protect?.on
   const routeValue = protect?.route?.id ?? ''
   return (
-    <Card inset section="protect" on={protectOn}>
+    <Card inset section="protect">
       <ListItem
         secondaryAction={
           <Switch
@@ -289,7 +289,7 @@ const ServicesPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ de
   const { t, has, status, kind, lan, servicesVia } = m
   const served = status?.served
   return (
-    <Card inset section="services" on={!!lan?.on}>
+    <Card inset section="services">
       <ListItem
         secondaryAction={
           <Switch
