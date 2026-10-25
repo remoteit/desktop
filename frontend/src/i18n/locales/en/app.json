@@ -3044,6 +3044,7 @@
     "relayAuto": "Automatic",
     "relayAutoLine": "Through remote.it’s relay only while this device’s UDP to remote.it fails",
     "relayInUse": "In use now",
+    "relayLine": "Use remote.it’s relay when a direct peer-to-peer connection isn’t possible.",
     "relayNotUsing": "Not in use: this device reaches remote.it directly",
     "relayOff": "Never",
     "relayOffLine": "Never through remote.it’s relay: on a network that blocks UDP, this device stays offline",

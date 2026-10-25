@@ -18,6 +18,7 @@ export const SETTING_TITLES: { [name: string]: string } = {
   any_port: 'Connections to any port',
   proxy: 'Proxy',
   mcp_exec: 'AI commands',
+  scripts: 'Scripts',
 }
 
 // The relay's three ways, in the menu's words (connectd's websocket values).
@@ -46,6 +47,8 @@ export const relayChoices = (t: T): { value: string; title: string; line: string
 export const UNDER_SERVICES = ['console', 'any_port']
 // A switch's words keep clear of the switch at the row's end, at a phone's width too.
 export const SWITCH_TEXT = { paddingRight: '72px' }
+// The relay's menu, at the row's end where a switch would be.
+const SELECT_WIDTH = 150
 
 /** Whether a setting's value is on: true, or {on: true}. */
 export const settingOn = (value: SettingValue | { on?: boolean }): boolean | undefined => {
@@ -200,33 +203,42 @@ export const SettingRow: React.FC<{
         <ListItemText primary={title} secondary={secondary} sx={SWITCH_TEXT} />
       </ListItem>
     )
+  // The relay: a row like the switches above it, its choice where their switch is (Evan, 2026-10-25); what each choice
+  // does is said in the menu.
   if (setting.name === 'websocket' && typeof setting.value === 'string')
     return (
-      <ListItem data-setting={setting.name}>
-        <TextField
-          select
-          fullWidth
-          size="small"
-          label={title}
-          value={setting.value}
-          disabled={disabled || locked}
-          InputLabelProps={{ shrink: true }}
-          helperText={[
-            relayChoices(t).find(c => c.value === setting.value)?.line,
+      <ListItem
+        data-setting={setting.name}
+        secondaryAction={
+          <TextField
+            select
+            size="small"
+            value={setting.value}
+            disabled={disabled || locked}
+            sx={{ width: SELECT_WIDTH }}
+            inputProps={{ 'aria-label': title, 'data-relay-using': relayUsing ? 'yes' : 'no' }}
+            SelectProps={{ renderValue: v => relayChoices(t).find(c => c.value === v)?.title ?? String(v) }}
+            onChange={e => onSet(e.target.value)}
+          >
+            {relayChoices(t).map(c => (
+              <MenuItem key={c.value} value={c.value} sx={{ maxWidth: 360, whiteSpace: 'normal' }}>
+                <ListItemText primary={c.title} secondary={c.line} />
+              </MenuItem>
+            ))}
+          </TextField>
+        }
+      >
+        <ListItemText
+          primary={title}
+          secondary={[
+            t('thisDevice.relayLine', 'Use remote.it’s relay when a direct peer-to-peer connection isn’t possible.'),
             relayUsing && t('thisDevice.relayInUse', 'In use now'),
             secondary,
           ]
             .filter(Boolean)
             .join(' · ')}
-          inputProps={{ 'data-relay-using': relayUsing ? 'yes' : 'no' }}
-          onChange={e => onSet(e.target.value)}
-        >
-          {relayChoices(t).map(c => (
-            <MenuItem key={c.value} value={c.value}>
-              {c.title}
-            </MenuItem>
-          ))}
-        </TextField>
+          sx={{ paddingRight: `${SELECT_WIDTH + 24}px` }}
+        />
       </ListItem>
     )
   return (
