@@ -24,7 +24,8 @@ export type GetJobLogsResult =
   | { kind: 'error'; status?: number; message: string }
 
 /**
- * Fetch presigned URLs for the all-logs zip and every per-device archive.
+ * Fetch presigned URLs for the all-logs zip and every per-device archive — or, given a run, only that run's archive
+ * (a job may have tens of thousands of runs; every one's archive was looked up to download one).
  *
  * The `kind` field lets callers distinguish:
  *   - `ok`: payload available
@@ -34,8 +35,8 @@ export type GetJobLogsResult =
  * Conflating the last two as `null` made the UI report "No logs available"
  * for transient operational failures and gave users no recovery path.
  */
-export async function getJobLogs(jobId: string): Promise<GetJobLogsResult> {
-  const url = `${getApiRestURL()}/job/log/all/${jobId}`
+export async function getJobLogs(jobId: string, jobDeviceId?: string): Promise<GetJobLogsResult> {
+  const url = `${getApiRestURL()}/job/log/all/${jobId}${jobDeviceId ? `?jobDeviceId=${encodeURIComponent(jobDeviceId)}` : ''}`
   const headers = await apiHeaders('GET', url)
   if (!headers) return { kind: 'error', status: 401, message: 'Not signed in' }
   try {

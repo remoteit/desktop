@@ -158,7 +158,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ redirect: `/script/${fileId}/latest` })
     },
     async downloadLogs({ jobId, jobDeviceId }: { jobId: string; jobDeviceId: string }) {
-      const result = await getJobLogs(jobId)
+      const result = await getJobLogs(jobId, jobDeviceId)
       if (result.kind === 'error') {
         dispatch.ui.set({
           errorMessage: i18n.t('notices:job.loadLogsError', {
