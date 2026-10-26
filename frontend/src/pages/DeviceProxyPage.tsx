@@ -13,7 +13,6 @@ import {
   graphQLRemoveRemoteitProxy,
   graphQLSetProxy,
   graphQLSetProxyPublicExit,
-  graphQLSetRemoteitProxy,
 } from '../services/graphQLProxy'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceExitOffer } from '../components/DeviceExitSection'
@@ -31,13 +30,11 @@ import type { TFunction } from 'i18next'
    connect to it may make endpoints on it into their services. The device listens only once told to: a device setting
    (proxy), which graphql turns on and off with its being a proxy where the API has device settings — shown here only
    where the device keeps it otherwise — else set on the device itself (remoteit-device proxy on); here its owner names
-   it and says what it takes, and remote.it's admins may make it one of remote.it's, public, for everyone. Exit: whether
+   it and says what it takes. One of remote.it's public proxies is remote.it's device, made one on the admin page of
+   proxies (pages/AdminPublicProxies.tsx), and says so here. Exit: whether
    it offers itself as an exit node (components/DeviceExitSection.tsx) and, for one of remote.it's, whether it is a
    public exit for everyone whose plan gives exits. The exit its own traffic goes out through is chosen on Configure.
    Behind the device-sessions flag. */
-
-// Where a device made one of remote.it's proxies here is placed, until there is more than one region.
-const PUBLIC_PROXY_REGION = 'us-west-2'
 
 // Where the device's listening disagrees with its being a proxy, and why: the machine's administrator, its setting kept
 // on the device, or a change made there. None where they agree.
@@ -164,41 +161,13 @@ export const DeviceProxyPage: React.FC = () => {
             onClick={() => (isPublic ? run(() => graphQLRemoveRemoteitProxy(device.id)) : save(proxy ? 'remove' : {}))}
           />
           {listeningLine && <ListItemSetting icon="tower-broadcast" iconColor="warning" label={listeningLine} />}
-          {proxy && (admin || isPublic) && (
+          {isPublic && (
             <ListItemSetting
               icon="globe"
               label={t('deviceProxy.public', 'Public proxy')}
-              subLabel={
-                isPublic
-                  ? t('deviceProxy.publicOn', "One of remote.it's proxies, for everyone: {{host}}", {
-                      host: proxy.host,
-                    })
-                  : t('deviceProxy.publicOff', "Make it one of remote.it's proxies, for everyone (remote.it admins)")
-              }
-              toggle={isPublic}
-              disabled={!admin || saving}
-              confirm
-              confirmProps={{
-                title: isPublic
-                  ? t('deviceProxy.publicOffConfirm', 'Make it a private proxy?')
-                  : t('deviceProxy.publicOnConfirm', "Make it one of remote.it's proxies?"),
-                children: isPublic
-                  ? t(
-                      'deviceProxy.publicOffConfirmBody',
-                      "It is yours alone again, under your account's name, and no longer anyone's exit."
-                    )
-                  : t(
-                      'deviceProxy.publicOnConfirmBody',
-                      "Everyone may make endpoints on it, under remote.it's name for it. Whether it is an exit is set apart."
-                    ),
-              }}
-              onClick={() =>
-                run(() =>
-                  isPublic
-                    ? graphQLSetProxy(device.id, {})
-                    : graphQLSetRemoteitProxy(device.id, proxy.region || PUBLIC_PROXY_REGION)
-                )
-              }
+              subLabel={t('deviceProxy.publicOn', "One of remote.it's proxies, for everyone: {{host}}", {
+                host: proxy.host,
+              })}
             />
           )}
         </List>

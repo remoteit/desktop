@@ -119,23 +119,41 @@ export const graphQLRemoveProxy = (deviceId: string) =>
 
 // remote.it's own proxies, for everyone — and, apart, offered as an exit to everyone whose plan gives exits: set by
 // remote.it's admins (the API refuses anyone else).
-// remote.it's proxies, for the admin page: each with whether it is a public exit (undefined where the API cannot say).
-export async function graphQLPublicProxies(): Promise<
-  (Pick<Proxy, 'id' | 'region' | 'host'> & { publicExit?: boolean })[] | 'ERROR' | typeof UNSUPPORTED
-> {
-  const list = await graphQLProxies()
-  if (!Array.isArray(list)) return list
-  const exits = await read<{ id: string; publicExit: boolean }[]>(
-    `query ProxyPublicExits { proxies { id publicExit } }`,
-    {},
-    'proxies',
-    data => data?.proxies ?? []
-  )
-  return list
-    .filter(p => p.kind === 'remoteit')
-    .sort((a, b) => a.host.localeCompare(b.host, undefined, { numeric: true }))
-    .map(p => ({ ...p, publicExit: Array.isArray(exits) ? exits.find(e => e.id === p.id)?.publicExit : undefined }))
+// The admin page of remote.it's public proxies (graphql remoteitProxyDevices): each of remote.it's proxies and where its
+// device is owned — a public proxy's must be remote.it's system account's — and each device the proxy registration code
+// registered that is not a proxy yet.
+export type RemoteitProxyDevice = {
+  id: string
+  name: string | null
+  state: string | null
+  lastReported: string | null
+  system: boolean
+  owner: string | null
+  endpoints: number
+  proxy: (Pick<Proxy, 'id' | 'region' | 'host'> & { publicExit: boolean }) | null
 }
+
+export const graphQLRemoteitProxyDevices = () =>
+  read<RemoteitProxyDevice[]>(
+    `query RemoteitProxyDevices {
+      remoteitProxyDevices { id name state lastReported system owner endpoints proxy { id region host publicExit } }
+    }`,
+    {},
+    'remoteitProxyDevices',
+    data => data?.remoteitProxyDevices ?? []
+  )
+
+// The code a device installs with to be remote.it's, to become a public proxy: a secret, asked for only when shown.
+export async function graphQLRemoteitProxyCode(): Promise<string | 'ERROR'> {
+  const response = await graphQLBasicRequest(` mutation RemoteitProxyCode { remoteitProxyCode }`)
+  return response === 'ERROR' ? 'ERROR' : response?.data?.data?.remoteitProxyCode ?? 'ERROR'
+}
+
+// Moves one of remote.it's proxies made before they were the system account's into it.
+export const graphQLAdoptRemoteitProxy = (deviceId: string) =>
+  graphQLBasicRequest(` mutation AdoptRemoteitProxy($deviceId: String!) { adoptRemoteitProxy(deviceId: $deviceId) }`, {
+    deviceId,
+  })
 
 export const graphQLSetRemoteitProxy = (deviceId: string, region: string) =>
   graphQLBasicRequest(
