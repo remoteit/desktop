@@ -187,12 +187,20 @@ export default createModel<RootModel>()({
       return true
     },
     async downloadAllLogs({ jobId }: { jobId: string }) {
-      const result = await getJobLogs(jobId)
+      const result = await getJobLogs(jobId, undefined, true)
       if (result.kind === 'error') {
         dispatch.ui.set({
           errorMessage: i18n.t('notices:job.loadLogsError', {
             message: result.message,
             defaultValue: 'Couldn’t load logs: {{message}}',
+          }),
+        })
+        return false
+      }
+      if (result.kind === 'ok' && result.data.zipTooBig) {
+        dispatch.ui.set({
+          errorMessage: i18n.t('notices:job.zipTooBig', {
+            defaultValue: 'This run has too many devices for one download. Download each device’s log from its own page.',
           }),
         })
         return false

@@ -61,7 +61,8 @@
     "loadTargetsError": "Die Geräte dieses Laufs konnten nicht geladen werden",
     "noDeviceLogs": "Für dieses Gerät sind noch keine Protokolle verfügbar.",
     "noLogs": "Es sind noch keine Protokolle verfügbar.",
-    "noRunLogs": "Für diesen Durchlauf sind noch keine Protokolle verfügbar."
+    "noRunLogs": "Für diesen Durchlauf sind noch keine Protokolle verfügbar.",
+    "zipTooBig": ""
   },
   "mfa": {
     "enabled": "Zwei-Faktor-Authentifizierung erfolgreich aktiviert.",

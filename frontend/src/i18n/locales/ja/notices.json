@@ -59,7 +59,8 @@
     "loadTargetsError": "この実行のデバイスを読み込めませんでした",
     "noDeviceLogs": "このデバイスのログはまだありません。",
     "noLogs": "ログはまだありません。",
-    "noRunLogs": "この実行のログはまだありません。"
+    "noRunLogs": "この実行のログはまだありません。",
+    "zipTooBig": ""
   },
   "mfa": {
     "enabled": "2段階認証を有効にしました。",

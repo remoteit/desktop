@@ -61,7 +61,8 @@
     "loadTargetsError": "Couldn’t load the devices of this run",
     "noDeviceLogs": "No logs available for this device yet.",
     "noLogs": "No logs available yet.",
-    "noRunLogs": "No logs are available for this run yet."
+    "noRunLogs": "No logs are available for this run yet.",
+    "zipTooBig": "This run has too many devices for one download. Download each device’s log from its own page."
   },
   "mfa": {
     "enabled": "Two-factor authentication enabled successfully.",
