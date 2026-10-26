@@ -7,6 +7,8 @@ import { JobStatusIcon } from '../components/JobStatusIcon'
 import { Box, Typography } from '@mui/material'
 import { JobAttribute } from '../components/JobAttributes'
 import { selectScript } from '../selectors/scripting'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { useJobDevices } from '../hooks/useJobDevices'
 import { DataDisplay } from '../components/DataDisplay'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -25,8 +27,10 @@ export const JobDeviceDetailPage: React.FC<Props> = ({ showBack }) => {
   const history = useHistory()
   const { fileID, jobID, jobDeviceID } = useParams<{ fileID?: string; jobID?: string; jobDeviceID?: string }>()
   const script = useSelector((state: State) => selectScript(state, undefined, fileID))
+  const accountId = useSelector(selectActiveAccountId)
   const job = script?.jobs.find(j => j.id === jobID) || script?.jobs[0]
-  const jobDevice = job?.jobDevices.find(jd => jd.id === jobDeviceID)
+  // The run on its own when it is not among the few the jobs list reads with its job (a job may have tens of thousands).
+  const jobDevice = useJobDevices(accountId, job, jobDeviceID).jobDevice
   const attributes =
     jobDevice?.attributes.map(
       a => new JobAttribute({ id: `attribute-${a.key}`, label: a.key, value: () => a.value })
