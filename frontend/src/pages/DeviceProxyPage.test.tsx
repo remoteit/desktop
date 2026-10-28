@@ -15,8 +15,11 @@ vi.mock('../components/Gutters', () => ({ Gutters: () => null }))
 vi.mock('../components/Notice', () => ({ Notice: () => null }))
 vi.mock('../components/SelectSetting', () => ({ SelectSetting: () => null }))
 vi.mock('../hooks/useDeviceSettings', () => ({ useDeviceSettings: vi.fn() }))
+vi.mock('../hooks/useDeviceSessionInfo', () => ({ useDeviceSessionInfo: vi.fn() }))
+vi.mock('../services/deviceSessionInfo', () => ({}))
 
-import { proxyListeningLine } from './DeviceProxyPage'
+import { newProxyFields, PROXY_NAME_FILTER, proxyDomain, proxyHostPreview, proxyListeningLine } from './DeviceProxyPage'
+import type { Proxy } from '../services/graphQLProxy'
 import type { DeviceSetting, DeviceSettingControl } from '../services/graphQLDeviceSettings'
 
 const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
@@ -63,5 +66,33 @@ describe('the proxy’s listening, where it disagrees with its being a proxy', (
     expect(proxyListeningLine(t, false, proxySetting(true, 'cloud+local', { onDevice: true, by: 'bob' }))).toBe(
       'Listening, though not a proxy: turned on on the device by bob'
     )
+  })
+})
+
+describe('naming a proxy', () => {
+  it('a name is letters and digits only: a dash is filtered out as it is typed, as graphql refuses one', () => {
+    expect('Gw-1_x'.replace(PROXY_NAME_FILTER, '')).toBe('w1x')
+  })
+
+  it('made a proxy with the name typed before, or none for graphql to name it after the device', () => {
+    expect(newProxyFields('')).toEqual({})
+    expect(newProxyFields('  ')).toEqual({})
+    expect(newProxyFields(' Gw ')).toEqual({ name: 'gw' })
+  })
+
+  it('shows where it will be reached: the name, or the device’s DNS name, before the slug, under the proxy domain', () => {
+    const proxies = [
+      { kind: 'own', host: 'nas-acme-corp.dev.r3proxy.com' },
+      { kind: 'remoteit', host: 'e1.dev.r3proxy.com' },
+    ] as Proxy[]
+    const domain = proxyDomain(proxies)
+    expect(domain).toBe('dev.r3proxy.com')
+    expect(proxyHostPreview('kitchenpi-acme-corp.on.dev.remote.it', domain, '')).toBe(
+      'kitchenpi-acme-corp.dev.r3proxy.com'
+    )
+    expect(proxyHostPreview('kitchenpi-acme-corp.on.dev.remote.it', domain, 'Gw')).toBe('gw-acme-corp.dev.r3proxy.com')
+    expect(proxyDomain([])).toBeUndefined()
+    expect(proxyHostPreview(undefined, domain, 'gw')).toBeUndefined()
+    expect(proxyHostPreview('kitchenpi-acme-corp.on.dev.remote.it', undefined, 'gw')).toBeUndefined()
   })
 })

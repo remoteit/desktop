@@ -24,6 +24,8 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { DeviceSetting, settingOn } from '../services/graphQLDeviceSettings'
+import { NAME_MAX, splitSubnetName, validLabel } from '../services/subnetNames'
+import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import type { TFunction } from 'i18next'
 
 /* What this device offers others, in two sections. Proxy (presence-server docs/proxy-plan.md): the people allowed to
@@ -71,6 +73,28 @@ export function proxyListeningLine(t: TFunction, proxy: boolean, listening?: Dev
       })
     : t('deviceProxy.listeningOnDevice', 'Listening, though not a proxy: turned on on the device')
 }
+// An own proxy's name is a subnet name's: letters and digits, no dash (graphql labelProblem).
+export const PROXY_NAME_FILTER = /[^a-z0-9]/g
+
+// What setProxy is given to make the device a proxy: the name typed before, or none for graphql's own, made from the
+// device's subnet name.
+export const newProxyFields = (name: string) => (name.trim() ? { name: name.trim().toLowerCase() } : {})
+
+// The stage's proxy domain, from the proxies one may use: what follows a proxy host's first label.
+export function proxyDomain(proxies: Proxy[]): string | undefined {
+  const host = (proxies.find(p => p.kind === 'remoteit') ?? proxies[0])?.host
+  return host?.includes('.') ? host.slice(host.indexOf('.') + 1) : undefined
+}
+
+// Where a new proxy will be reached: <name>-<slug>.<proxy domain>, the name typed or, for none, the device's subnet
+// name, and the slug the device's subnet name's. graphql makes a name unique when that host is taken, so it may differ.
+export function proxyHostPreview(subnetName: string | null | undefined, domain: string | undefined, name: string) {
+  if (!subnetName || !domain) return undefined
+  const { label, rest } = splitSubnetName(subnetName)
+  const slug = rest.slice(1).split('.')[0]
+  return slug ? `${name.trim().toLowerCase() || label}-${slug}.${domain}` : undefined
+}
+
 export const DeviceProxyPage: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
@@ -78,14 +102,18 @@ export const DeviceProxyPage: React.FC = () => {
   const [proxy, setProxy] = useState<Proxy | null | 'ERROR' | typeof UNSUPPORTED>()
   const [publicExit, setPublicExit] = useState<boolean>()
   const [saving, setSaving] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [domain, setDomain] = useState<string>()
   const settings = useDeviceSettings(device?.id)
   const listening = settings.setting('proxy')
+  const subnetName = useDeviceSessionInfo(device?.id)?.subnetName
 
   const load = useCallback(async () => {
     if (!device?.id) return
     const list = await graphQLProxies()
     const found = Array.isArray(list) ? list.find(p => p.id === device.id) ?? null : list
     setProxy(found)
+    setDomain(Array.isArray(list) ? proxyDomain(list) : undefined)
     setPublicExit(
       found && typeof found === 'object' && found.kind === 'remoteit'
         ? await graphQLProxyPublicExit(device.id)
@@ -95,6 +123,7 @@ export const DeviceProxyPage: React.FC = () => {
 
   useEffect(() => {
     setProxy(undefined)
+    setNewName('')
     load()
   }, [load])
 
@@ -128,6 +157,7 @@ export const DeviceProxyPage: React.FC = () => {
         </Notice>
       )
     const listeningLine = proxyListeningLine(t, !!proxy, listening)
+    const preview = proxy ? undefined : proxyHostPreview(subnetName, domain, newName)
 
     const certificate = !proxy
       ? undefined
@@ -158,8 +188,38 @@ export const DeviceProxyPage: React.FC = () => {
               title: t('deviceProxy.removeConfirm', 'Stop using it as a proxy?'),
               children: t('deviceProxy.removeConfirmBody', 'Every endpoint on it is removed, for everyone using one.'),
             }}
-            onClick={() => (isPublic ? run(() => graphQLRemoveRemoteitProxy(device.id)) : save(proxy ? 'remove' : {}))}
+            onClick={() =>
+              isPublic
+                ? run(() => graphQLRemoveRemoteitProxy(device.id))
+                : save(proxy ? 'remove' : newProxyFields(newName))
+            }
           />
+          {!proxy && manage && (
+            <>
+              <InlineTextFieldSetting
+                icon="tag"
+                label={t('deviceProxy.newName', 'Its name, before your account slug')}
+                value={newName}
+                placeholder={t('deviceProxy.nameAutomatic', "none: the device's DNS name")}
+                disabled={saving}
+                filter={PROXY_NAME_FILTER}
+                maxLength={NAME_MAX}
+                validate={value =>
+                  !value.trim() || validLabel(value)
+                    ? undefined
+                    : t('deviceProxy.nameProblem', 'Lower case letters and digits, at most {{max}}', { max: NAME_MAX })
+                }
+                onSave={value => setNewName(String(value).trim().toLowerCase())}
+              />
+              {preview && (
+                <ListItemSetting
+                  icon="globe"
+                  label={preview}
+                  subLabel={t('deviceProxy.hostPreview', 'Where it will be reached, when that name is free')}
+                />
+              )}
+            </>
+          )}
           {listeningLine && <ListItemSetting icon="tower-broadcast" iconColor="warning" label={listeningLine} />}
           {isPublic && (
             <ListItemSetting
@@ -184,9 +244,10 @@ export const DeviceProxyPage: React.FC = () => {
                 icon="tag"
                 label={t('deviceProxy.name', 'Name before your account slug')}
                 value={proxy.name || ''}
-                placeholder={t('deviceProxy.nameNone', 'none: your slug alone')}
+                placeholder={t('deviceProxy.nameAutomatic', "none: the device's DNS name")}
                 disabled={!manage || saving}
-                filter={/[^a-z0-9-]/g}
+                filter={PROXY_NAME_FILTER}
+                maxLength={NAME_MAX}
                 onSave={value => save({ name: String(value) })}
               />
               <InlineTextFieldSetting
