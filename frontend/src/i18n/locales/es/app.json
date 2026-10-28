@@ -1815,6 +1815,7 @@
   "localSubnetConnect": {
     "address": "",
     "launch": "",
+    "ports": "",
     "sshHint": "",
     "title": ""
   },

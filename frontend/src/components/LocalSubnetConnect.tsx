@@ -10,6 +10,7 @@ import { useApplication } from '../hooks/useApplication'
 import { saveLaunchTokens } from '../helpers/connectionHelper'
 import { PromptModal } from './PromptModal'
 import { isConsoleService, sshCommand } from '../helpers/sshHelper'
+import { formatPorts, isMultiPort } from '../services/multiPortServices'
 import { Icon } from './Icon'
 
 /* A service reached by its name on this machine: the device daemon here resolves it (services/localSubnet), so there
@@ -18,7 +19,9 @@ import { Icon } from './Icon'
    service's own port. A web service launches as https://<name>/: port 443 on a name is the host's web service, under
    the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md). An SSH service is shown and
    copied as the command that reaches it, plain `ssh`: the console's works as it is from a machine signed in on its
-   remote.it device app, which gets a certificate for its own ssh (connectd remoteit-device ssh-config). */
+   remote.it device app, which gets a certificate for its own ssh (connectd remoteit-device ssh-config). A multi-port
+   service is reached here on every port it lists, each by its own number (graphql-api docs/MULTI-PORT-SERVICES.md), so
+   they are all shown; what is copied and launched is the first, as for a connection. */
 type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection }
 
 export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection }) => {
@@ -74,6 +77,13 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection
         <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap title={endpoint}>
           {endpoint}
         </Typography>
+        {isMultiPort(service) && (
+          <Typography variant="caption" color="textSecondary" component="div">
+            {t('localSubnetConnect.ports', 'Every port of the service: {{ports}}', {
+              ports: formatPorts(service?.ports),
+            })}
+          </Typography>
+        )}
         {local.address && (
           <Typography variant="caption" color="textSecondary" component="div">
             {t('localSubnetConnect.address', 'resolves here to {{address}}', { address: local.address })}

@@ -1783,6 +1783,7 @@
   "localSubnetConnect": {
     "address": "resolves here to {{address}}",
     "launch": "Open in the browser",
+    "ports": "Every port of the service: {{ports}}",
     "sshHint": "Works from a machine signed in on its remote.it device app",
     "title": "On this machine — no connection to start"
   },
