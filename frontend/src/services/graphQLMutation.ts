@@ -284,15 +284,22 @@ export async function graphQLUnsubscribe(licenseId?: string) {
   )
 }
 
+// `ports` is named only when given: an API without multi-port services refuses a mutation naming it, and the form
+// gives it only where the account has them (services/multiPortServices).
+const portsParam = (ports?: string[]) => (ports ? ', $ports: [String!]' : '')
+const portsArg = (ports?: string[]) => (ports ? '\n          ports: $ports,' : '')
+
 export async function graphQLAddService(form: ICloudAddService) {
   return await graphQLBasicRequest(
-    ` mutation AddService($deviceId: String!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean) {
+    ` mutation AddService($deviceId: String!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean${portsParam(
+      form.ports
+    )}) {
         addService(
           deviceId: $deviceId,
           name: $name,
           application: $application,
           host: $host,
-          port: $port,
+          port: $port,${portsArg(form.ports)}
           enabled: $enabled,
         ) {
           id
@@ -304,13 +311,15 @@ export async function graphQLAddService(form: ICloudAddService) {
 
 export async function graphQLUpdateService(form: ICloudUpdateService) {
   return await graphQLBasicRequest(
-    ` mutation UpdateService($id: ID!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean, $presenceAddress: String) {
+    ` mutation UpdateService($id: ID!, $name: String, $application: Int, $host: String, $port: Int, $enabled: Boolean, $presenceAddress: String${portsParam(
+      form.ports
+    )}) {
         updateService(
           id: $id,
           name: $name,
           application: $application,
           host: $host,
-          port: $port,
+          port: $port,${portsArg(form.ports)}
           enabled: $enabled,
           presenceAddress: $presenceAddress
         ) {

@@ -447,6 +447,8 @@ declare global {
     }
     typeID: number
     port?: number
+    // Its ports and ranges, the first first ("22", "5900-5910"): only where the API has them (multi-port services).
+    ports?: string[]
     host?: ipAddress
     protocol?: string
     access: IUserRef[]
@@ -1041,6 +1043,7 @@ declare global {
     application: number
     host: string
     port: number
+    ports?: string[] // sent only where the account has multi-port services
     enabled: boolean
   }
 
@@ -1050,6 +1053,7 @@ declare global {
     application?: number
     host?: string
     port?: number
+    ports?: string[]
     enabled?: boolean
     presenceAddress?: string
   }

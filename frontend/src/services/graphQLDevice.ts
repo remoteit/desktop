@@ -14,6 +14,7 @@ import {
   withSampleDevices,
   withSampleList,
 } from './graphQLVirtualDevices'
+import { multiPortServicesServed } from './multiPortServices'
 
 const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'license']
 
@@ -68,6 +69,10 @@ const ServiceSelectLookup: ILookup<string, string> = {
 const SERVICE_SELECT = Object.keys(ServiceSelectLookup)
   .map(k => ServiceSelectLookup[k])
   .join('')
+
+// A service's port list (services/multiPortServices), asked for beside its port only where the API has it.
+const SERVICE_PORTS = `
+  ports`
 
 const DeviceSelectLookup: ILookup<string, string> = {
   id: `
@@ -199,6 +204,7 @@ const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesO
 
 export async function graphQLFetchDeviceList(params: gqlOptions) {
   const virtual = await virtualDevicesMode()
+  const ports = await multiPortServicesServed()
   const response = await graphQLBasicRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
@@ -210,7 +216,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, application: $application, platform: $platform) {
               total
               items {
-                ${deviceQueryColumns(params.columns, undefined, virtual)}
+                ${deviceQueryColumns(params.columns, undefined, virtual, ports)}
               }
             }
           }
@@ -244,6 +250,7 @@ export async function graphQLPreloadDevices(params: {
   deviceTimeSeries?: ITimeSeriesOptions
 }) {
   const virtual = await virtualDevicesMode()
+  const ports = await multiPortServicesServed()
   const [ids, samples] = virtual === 'sample' ? splitSampleIds(params.ids) : [params.ids, []]
   if (!ids.length) return sampleResponse(samples, 'account')
   const response = await graphQLBasicRequest(
@@ -255,7 +262,7 @@ export async function graphQLPreloadDevices(params: {
           id
           account(id: $accountId) {
             device(id: $ids) {
-              ${deviceQueryColumns(params.columns, undefined, virtual)}
+              ${deviceQueryColumns(params.columns, undefined, virtual, ports)}
             }
           }
         }
@@ -271,6 +278,7 @@ export async function graphQLPreloadDevices(params: {
 
 export async function graphQLFetchConnections(params: { ids: string[] }) {
   const virtual = await virtualDevicesMode()
+  const ports = await multiPortServicesServed()
   const [ids, samples] = virtual === 'sample' ? splitSampleIds(params.ids) : [params.ids, []]
   if (!ids.length) return sampleResponse(samples, 'login')
   const response = await graphQLBasicRequest(
@@ -278,7 +286,7 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
         login {
           id
           device(id: $ids)  {
-            ${deviceQueryColumns(selectDeviceColumns(store.getState()), ['tags', 'deviceTimeSeries'], virtual)}
+            ${deviceQueryColumns(selectDeviceColumns(store.getState()), ['tags', 'deviceTimeSeries'], virtual, ports)}
           }
         }
       }`,
@@ -297,6 +305,7 @@ export async function graphQLFetchFullDevice(
   deviceTimeSeries?: ITimeSeriesOptions
 ) {
   const virtual = await virtualDevicesMode()
+  const ports = await multiPortServicesServed()
   if (virtual === 'sample' && splitSampleIds([id])[1].length) return sampleResponse([id], 'login')
   return await graphQLBasicRequest(
     ` query Device($id: [String!]!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
@@ -305,7 +314,7 @@ export async function graphQLFetchFullDevice(
           device(id: $id) {
             ${DEVICE_SELECT}${virtual === 'api' ? VIRTUAL_DEVICE_FIELDS + HOSTED_DEVICES_FIELDS : ''}
             services {
-              ${SERVICE_SELECT}
+              ${SERVICE_SELECT}${ports ? SERVICE_PORTS : ''}
             }
           }
         }
@@ -435,6 +444,7 @@ export function graphQLServiceAdaptor(
         attributes: processServiceAttributes(s),
         name: removeDeviceName(device.name, s.name),
         port: s.port,
+        ports: s.ports ?? undefined,
         host: s.host,
         protocol: s.protocol,
         presenceAddress: s.presenceAddress,
@@ -480,13 +490,13 @@ function virtualAdaptor(d: any): Partial<IDevice> {
   }
 }
 
-function deviceQueryColumns(selectedColumns: string[], filter?: string[], virtual?: VirtualMode) {
+function deviceQueryColumns(selectedColumns: string[], filter?: string[], virtual?: VirtualMode, ports?: boolean) {
   let columns = DEVICE_PRELOAD_ATTRIBUTES.concat(SERVICE_PRELOAD_ATTRIBUTES).concat(selectedColumns)
   columns = columns.filter(c => (filter ? !filter.includes(c) : true))
-  return attributeQuery(columns) + (virtual === 'api' ? VIRTUAL_DEVICE_FIELDS : '')
+  return attributeQuery(columns, ports) + (virtual === 'api' ? VIRTUAL_DEVICE_FIELDS : '')
 }
 
-function attributeQuery(attributes: string[]) {
+function attributeQuery(attributes: string[], ports?: boolean) {
   let lookup = new Set<string>()
   let query = ''
   let serviceQuery = ''
@@ -501,6 +511,7 @@ function attributeQuery(attributes: string[]) {
       query += DeviceSelectLookup[l]
     } else if (ServiceSelectLookup[l]) {
       serviceQuery += ServiceSelectLookup[l]
+      if (l === 'serviceView' && ports) serviceQuery += SERVICE_PORTS
       // } else {
       //   console.warn(`Missing query for attribute %c${l}`, 'font-weight: bold')
     }
