@@ -45,6 +45,9 @@ export const SelectSetting: React.FC<Props> = ({
   const handleClick = () => setOpen(!open)
 
   modified = modified || (!!defaultValue && value !== defaultValue)
+  // MUI's select treats '' as no value: it renders nothing and leaves the label over the field. A choice keyed ''
+  // (a "none" or default option) is a value here, so show its name and raise the label.
+  const chosen = values.find(r => r.key === value)
 
   return (
     <ListItemButton dense onClick={handleClick} disabled={disabled} disableGutters={disableGutters}>
@@ -56,7 +59,8 @@ export const SelectSetting: React.FC<Props> = ({
         select
         fullWidth
         variant="standard"
-        SelectProps={{ open, renderValue: value => values.find(r => r.key === value)?.name }}
+        SelectProps={{ open, displayEmpty: !!chosen, renderValue: value => values.find(r => r.key === value)?.name }}
+        InputLabelProps={{ ...props.InputLabelProps, ...(chosen && { shrink: true }) }}
         label={
           <>
             {label}
