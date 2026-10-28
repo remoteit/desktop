@@ -36,7 +36,7 @@ vi.mock('../components/Icon', () => ({ Icon: () => null }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div>loading</div> }))
 vi.mock('../components/Gutters', () => ({ Gutters: ({ children }: any) => <div>{children}</div> }))
 
-import { AdminPublicProxies } from './AdminPublicProxies'
+import { AdminPublicProxies, bareRemoteitNumber } from './AdminPublicProxies'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const E1 = {
@@ -127,6 +127,25 @@ describe('AdminPublicProxies', () => {
     expect(make.disabled).toBe(false)
     await act(async () => make.click())
     expect(setRemoteit).toHaveBeenCalledWith('N1', 'eu-west-1')
+  })
+
+  it('offers to rename a proxy with a bare e<n> to e<n>-r3, asked first; one named e<n>-r3 already is not offered it', async () => {
+    devices.mockResolvedValue([E1, { ...E2, system: true, proxy: { ...E2.proxy, host: 'e2-r3.r3proxy.com' } }])
+    const el = await render()
+    expect(el.textContent).toContain('e2-r3.r3proxy.com · us-west-2 · 1 endpoint')
+    const renames = [...el.querySelectorAll('button')].filter(b => b.textContent?.startsWith('Rename'))
+    expect(renames.map(b => b.textContent)).toEqual(['Rename e1-r3'])
+    await act(async () => renames[0].click())
+    expect(setRemoteit).not.toHaveBeenCalled()
+    expect(el.querySelector('[data-confirm]')?.textContent).toContain('Rename e1.r3proxy.com to e1-r3?')
+    await act(async () => button(el, 'Confirm').click())
+    expect(setRemoteit).toHaveBeenCalledWith('E1', 'us-west-2', 1)
+  })
+
+  it('reads the number of a bare e<n> host only', () => {
+    expect(bareRemoteitNumber('e1.solo.r3proxy.com')).toBe(1)
+    expect(bareRemoteitNumber('e12-r3.solo.r3proxy.com')).toBeUndefined()
+    expect(bareRemoteitNumber('geo.solo.r3proxy.com')).toBeUndefined()
   })
 
   it('shows the registration code only when asked', async () => {

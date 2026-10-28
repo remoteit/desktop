@@ -155,10 +155,11 @@ export const graphQLAdoptRemoteitProxy = (deviceId: string) =>
     deviceId,
   })
 
-export const graphQLSetRemoteitProxy = (deviceId: string, region: string) =>
+// Made one of remote.it's proxies, e<n>-r3, the next free n — or with a number, moved to e<number>-r3.
+export const graphQLSetRemoteitProxy = (deviceId: string, region: string, number?: number) =>
   graphQLBasicRequest(
-    ` mutation SetRemoteitProxy($deviceId: String!, $region: String!) { setRemoteitProxy(deviceId: $deviceId, region: $region) { host } }`,
-    { deviceId, region }
+    ` mutation SetRemoteitProxy($deviceId: String!, $region: String!, $number: Int) { setRemoteitProxy(deviceId: $deviceId, region: $region, number: $number) { host } }`,
+    { deviceId, region, number }
   )
 
 export const graphQLRemoveRemoteitProxy = (deviceId: string) =>

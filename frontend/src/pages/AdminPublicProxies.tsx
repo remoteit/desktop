@@ -106,11 +106,21 @@ const about = (d: RemoteitProxyDevice) => (
   </>
 )
 
+// A proxy named before remote.it's had its slug: its bare e<n> host's number, to move it to e<n>-r3 (graphql
+// setRemoteitProxy with the number). None for one named e<n>-r3 already.
+export const bareRemoteitNumber = (host: string) => {
+  const n = /^e(\d+)\./.exec(host)?.[1]
+  return n ? Number(n) : undefined
+}
+
 // One row a proxy: its name, region and endpoints, the device under them (and whose account it is in, when it is not
-// remote.it's yet); at its end, moving it to remote.it when it needs to be, whether it is a public exit, and stopping it.
+// remote.it's yet); at its end, moving it to remote.it when it needs to be, renaming one with a bare e<n> to e<n>-r3,
+// whether it is a public exit, and stopping it.
 const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
   const proxy = d.proxy!
   const [confirmExitOff, setConfirmExitOff] = useState(false)
+  const [confirmRename, setConfirmRename] = useState(false)
+  const bare = proxy.region ? bareRemoteitNumber(proxy.host) : undefined
   const setExit = (on: boolean) =>
     change(d.id, () => graphQLSetProxyPublicExit(d.id, on), `${proxy.host}'s exit was not changed.`)
 
@@ -128,6 +138,11 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
               }
             >
               Move to remote.it
+            </Button>
+          )}
+          {bare !== undefined && (
+            <Button size="small" variant="contained" disabled={busy} onClick={() => setConfirmRename(true)}>
+              Rename e{bare}-r3
             </Button>
           )}
           <FormControlLabel
@@ -165,6 +180,19 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
           >
             Everyone using it as their exit is moved off it.
           </Confirm>
+          <Confirm
+            open={confirmRename}
+            title={`Rename ${proxy.host} to e${bare}-r3?`}
+            onConfirm={() => {
+              setConfirmRename(false)
+              change(d.id, () => graphQLSetRemoteitProxy(d.id, proxy.region!, bare), `${proxy.host} was not renamed.`)
+            }}
+            onDeny={() => setConfirmRename(false)}
+          >
+            Its certificate is issued again for the new name by the certificate job — https on it fails until then — and
+            its endpoints and links move from names under {proxy.host} to names under e{bare}-r3. DNS for e{bare}-r3 and
+            *.e{bare}-r3 must be in place first. The geo names do not change.
+          </Confirm>
         </Box>
       }
     >
@@ -191,7 +219,7 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
 }
 
 // A device the proxy code registered, made a public proxy once it is given its region (an AWS region's name, as the
-// proxies nearest a device are chosen by: us-west-2, eu-west-1…). It takes the next free name, e<n>.
+// proxies nearest a device are chosen by: us-west-2, eu-west-1…). It takes the next free name, e<n>-r3.
 const Waiting: React.FC<RowProps> = ({ device: d, busy, change }) => {
   const [region, setRegion] = useState('')
   const valid = /^[a-z]{2}(-[a-z]+)+-\d$/.test(region.trim())
