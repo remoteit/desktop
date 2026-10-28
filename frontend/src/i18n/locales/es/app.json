@@ -1919,6 +1919,17 @@
     "smsNumber": "Número de SMS",
     "verificationMethod": "Método de verificación"
   },
+  "multiPort": {
+    "firstPortOnly": "",
+    "invalid": "",
+    "morePorts": "",
+    "morePortsHelp": "",
+    "ports": "",
+    "portsHelp": "",
+    "required": "",
+    "subnetReachesAll": "",
+    "tooMany": ""
+  },
   "nav": {
     "account": "Cuenta",
     "admin": "Admin",

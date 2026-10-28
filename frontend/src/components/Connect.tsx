@@ -30,6 +30,7 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
+import { formatPorts, isMultiPort } from '../services/multiPortServices'
 
 export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ variant = 'connection' }) => {
   const { t } = useTranslation()
@@ -76,6 +77,19 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
           />
         </ConnectionDetails>
       </Gutters>
+      {isMultiPort(service) && (
+        <Gutters size="md" bottom={null}>
+          {/* A connection here maps one port (graphql-api docs/MULTI-PORT-SERVICES.md, "Clients: address mode only"). */}
+          <Notice severity="info">
+            {t('multiPort.firstPortOnly', 'This connection reaches port {{port}} only.', { port: service.port })}
+            <em>
+              {t('multiPort.subnetReachesAll', 'All its ports, {{ports}}, are reached by name on the device subnet.', {
+                ports: formatPorts(service.ports),
+              })}
+            </em>
+          </Notice>
+        </Gutters>
+      )}
       {service.license === 'UNLICENSED' && <LicensingNotice instance={instance} />}
       <ServiceSchemeSuggestion device={device} service={service} />
       <ConnectionSurvey connection={connection} highlight={!!location.state?.autoFeedback} />

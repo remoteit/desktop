@@ -48,7 +48,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
             updatedService.attributes = { ...service.attributes, ...form.attributes }
             await dispatch.devices.setServiceAttributes(updatedService)
             if (device.configurable) {
-              await dispatch.devices.cloudUpdateService({ form, deviceId: device.id })
+              await dispatch.devices.cloudUpdateService({ form, deviceId: device.id, ports: form.ports })
             } else {
               await dispatch.devices.rename({ id: service.id, name: form.name })
               await dispatch.devices.fetchSingleFull({ id: device.id, hidden: true })

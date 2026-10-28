@@ -1855,6 +1855,17 @@
     "smsNumber": "SMS番号",
     "verificationMethod": "確認方法"
   },
+  "multiPort": {
+    "firstPortOnly": "",
+    "invalid": "",
+    "morePorts": "",
+    "morePortsHelp": "",
+    "ports": "",
+    "portsHelp": "",
+    "required": "",
+    "subnetReachesAll": "",
+    "tooMany": ""
+  },
   "nav": {
     "account": "アカウント",
     "admin": "管理",

@@ -30,6 +30,7 @@ import { Timestamp } from './Timestamp'
 import { SubnetName } from './SubnetName'
 import { AgentStatus } from './AgentStatus'
 import { HostedByLine, gatewayName } from './HostedBy'
+import { formatPorts, isMultiPort } from '../services/multiPortServices'
 
 export class Attribute<TOptions = IDataOptions> {
   id: string = ''
@@ -548,7 +549,8 @@ export const attributes: Attribute[] = [
     id: 'servicePort',
     label: 'Service Port',
     defaultWidth: 130,
-    value: ({ service }) => service?.port,
+    // A multi-port service's ports and ranges, its first first (services/multiPortServices).
+    value: ({ service }) => (isMultiPort(service) ? formatPorts(service?.ports) : service?.port),
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',

@@ -472,7 +472,9 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async cloudAddService({ form, deviceId }: { form: IService; deviceId: string }, state) {
+    // `ports`, a multi-port service's list, only from the service form where the account has them
+    // (services/multiPortServices): a caller changing the port alone leaves the rest of the list as it is.
+    async cloudAddService({ form, deviceId, ports }: { form: IService; deviceId: string; ports?: string[] }, state) {
       if (!form.host || !form.port) return
       const result = await graphQLAddService({
         deviceId,
@@ -480,6 +482,7 @@ export default createModel<RootModel>()({
         application: form.typeID,
         host: form.host,
         port: form.port,
+        ...(ports && { ports }),
         enabled: !!form.enabled,
       })
       if (result !== 'ERROR') {
@@ -487,7 +490,7 @@ export default createModel<RootModel>()({
         console.log('CLOUD ADD SERVICE', { id, form })
         if (id) {
           await graphQLSetAttributes(form.attributes, id)
-          dispatch.devices.addService({ deviceId, service: { ...form, id } })
+          dispatch.devices.addService({ deviceId, service: { ...form, ports, id } })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
 
@@ -509,7 +512,7 @@ export default createModel<RootModel>()({
       await graphQLUpdateService({ id, presenceAddress: set.presenceAddress })
     },
 
-    async cloudUpdateService({ form, deviceId }: { form: IService; deviceId: string }) {
+    async cloudUpdateService({ form, deviceId, ports }: { form: IService; deviceId: string; ports?: string[] }) {
       if (!form.host || !form.port) return
       dispatch.ui.set({ setupServiceBusy: form.id })
       const set: ICloudUpdateService = {
@@ -518,6 +521,7 @@ export default createModel<RootModel>()({
         application: form.typeID,
         host: form.host,
         port: form.port,
+        ...(ports && { ports }),
         enabled: !!form.enabled,
         presenceAddress: form.presenceAddress,
       }

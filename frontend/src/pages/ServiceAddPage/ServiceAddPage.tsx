@@ -63,7 +63,8 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
             disabled={!device?.permissions.includes('MANAGE')}
             onSubmit={async form => {
               dispatch.ui.set({ setupAddingService: true })
-              device?.configurable && (await dispatch.devices.cloudAddService({ form, deviceId: device?.id }))
+              device?.configurable &&
+                (await dispatch.devices.cloudAddService({ form, deviceId: device?.id, ports: form.ports }))
               dispatch.ui.set({ setupAddingService: false })
             }}
             onChange={form => setForward(isRelay(form))}

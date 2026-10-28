@@ -23,6 +23,9 @@ import { findType } from '../models/applicationTypes'
 import { Gutters } from './Gutters'
 import { spacing, Sizes } from '../styling'
 import { Notice } from './Notice'
+import { ServicePortsField } from './ServicePortsField'
+import { useMultiPortServices } from '../hooks/useMultiPortServices'
+import { firstPortOf, formatPorts, parsePorts } from '../services/multiPortServices'
 
 export type ServiceFormProps = {
   device?: IDevice
@@ -86,6 +89,13 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const [urlField, setUrlField, urlError] = useURLForm(form, setForm, application.urlForm)
   const appType = findType(applicationTypes, form?.typeID)
   const changed = !isEqual(form, defaultForm)
+  // Multi-port services: where on for the device's account, the port field is the service's list of ports and ranges
+  // (the ports after the URL's, for a type edited as a URL). Off, or an API without them, the form is as it was. A
+  // service read without its list is edited by its port alone, so a save never drops ports it did not show.
+  const multiPort = useMultiPortServices(device?.owner?.id) && (!service || !!service.ports)
+  const [portsText, setPortsText] = useState<string>() // as typed; unset, shown from form.ports
+  const [portsError, setPortsError] = useState<string>()
+  const portsShown = (urlForm: boolean) => portsText ?? formatPorts(urlForm ? form?.ports?.slice(1) : form?.ports)
 
   disabled = disabled || saving
 
@@ -98,8 +108,27 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   }, [service?.id])
 
   useEffect(() => {
+    if (!multiPort || !form) return
+    const ports = service?.ports?.length ? service.ports : [String(form.port || '')]
+    setForm(current => current && { ...current, ports })
+    if (!adding) setDefaultForm(current => current && { ...current, ports })
+    setPortsText(undefined)
+    setPortsError(undefined)
+  }, [multiPort, service?.id, !!form])
+
+  useEffect(() => {
     if (form && thisDevice) portScan({ port: form.port, host: form.host })
   }, [form])
+
+  const changePorts = (text: string) => {
+    if (!form) return
+    setPortsText(text)
+    const parsed = parsePorts(t, text, !application.urlForm)
+    setPortsError(parsed.error)
+    if (parsed.error) return
+    if (application.urlForm) setForm({ ...form, ports: [String(form.port), ...parsed.ports] })
+    else setForm({ ...form, ports: parsed.ports, port: firstPortOf(parsed.ports[0]) })
+  }
 
   if (!form) return <LoadingMessage />
 
@@ -112,6 +141,9 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           port: form.port || 1,
           name: form.name || serviceNameValidation(appType.name).value,
         }
+        // The list only where it is kept; the first is the URL's port for a type edited as a URL.
+        if (!multiPort) delete newForm.ports
+        else if (application.urlForm && newForm.ports) newForm.ports = [String(newForm.port), ...newForm.ports.slice(1)]
         onSubmit(newForm)
         setDefaultForm(newForm)
       }}
@@ -131,6 +163,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                     typeID: type.id,
                     type: type.name,
                     port: type.port,
+                    ...(multiPort && { ports: [String(type.port)] }),
                     attributes: {
                       ...form.attributes,
                       commandTemplate: undefined,
@@ -139,6 +172,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   }
                   setForm(nextForm)
                   setUrlField(nextForm)
+                  setPortsText(undefined)
+                  setPortsError(undefined)
                 }}
               />
               {appType.description && (
@@ -190,32 +225,44 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                 </ListItem>
               )}
               {application.urlForm ? (
-                <ListItem sx={fieldSx}>
-                  <TextField
-                    required
-                    value={urlField}
-                    label={t('serviceForm.serviceUrl', 'Service URL')}
-                    variant="filled"
-                    error={!!urlError}
-                    disabled={disabled}
-                    helperText={urlError}
-                    InputLabelProps={{ shrink: true }}
-                    onChange={event => {
-                      setUrlField(event.target.value)
-                      onChange?.(form)
-                    }}
-                    InputProps={{
-                      endAdornment: thisDevice && (
-                        <PortScanIcon state={portReachable} port={form.port} host={form.host} />
-                      ),
-                    }}
-                  />
-                  <Typography variant="caption">
-                    {t('serviceForm.serviceUrlHelp', 'Full URL of the service you want to connect to. Example:')}{' '}
-                    <b>https://localhost:8001/api/dashboard</b> {t('serviceForm.or', 'or')}
-                    <b> http://192.168.1.68/ui/login</b>.
-                  </Typography>
-                </ListItem>
+                <>
+                  <ListItem sx={fieldSx}>
+                    <TextField
+                      required
+                      value={urlField}
+                      label={t('serviceForm.serviceUrl', 'Service URL')}
+                      variant="filled"
+                      error={!!urlError}
+                      disabled={disabled}
+                      helperText={urlError}
+                      InputLabelProps={{ shrink: true }}
+                      onChange={event => {
+                        setUrlField(event.target.value)
+                        onChange?.(form)
+                      }}
+                      InputProps={{
+                        endAdornment: thisDevice && (
+                          <PortScanIcon state={portReachable} port={form.port} host={form.host} />
+                        ),
+                      }}
+                    />
+                    <Typography variant="caption">
+                      {t('serviceForm.serviceUrlHelp', 'Full URL of the service you want to connect to. Example:')}{' '}
+                      <b>https://localhost:8001/api/dashboard</b> {t('serviceForm.or', 'or')}
+                      <b> http://192.168.1.68/ui/login</b>.
+                    </Typography>
+                  </ListItem>
+                  {multiPort && (
+                    <ServicePortsField
+                      more
+                      sx={fieldSx}
+                      value={portsShown(true)}
+                      error={portsError}
+                      disabled={disabled}
+                      onChange={changePorts}
+                    />
+                  )}
+                </>
               ) : (
                 <>
                   <ListItem sx={fieldSx}>
@@ -255,30 +302,43 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                       </Typography>
                     )}
                   </ListItem>
-                  <ListItem sx={fieldSx}>
-                    <TextField
-                      required
-                      label={t('serviceForm.servicePort', 'Service Port')}
-                      value={form.port || ''}
+                  {multiPort ? (
+                    <ServicePortsField
+                      sx={fieldSx}
+                      value={portsShown(false)}
+                      error={portsError}
                       disabled={disabled}
-                      variant="filled"
-                      onChange={event => {
-                        const port = validPort(event)
-                        setForm({ ...form, port })
-                      }}
-                      InputProps={{
-                        endAdornment: thisDevice && (
-                          <PortScanIcon state={portReachable} port={form.port} host={form.host} />
-                        ),
-                      }}
+                      onChange={changePorts}
+                      endAdornment={
+                        thisDevice && <PortScanIcon state={portReachable} port={form.port} host={form.host} />
+                      }
                     />
-                    <Typography variant="caption">
-                      {t(
-                        'serviceForm.servicePortHelp',
-                        "Port the application's service is running on. Do not change this unless you know it is running on a custom port."
-                      )}
-                    </Typography>
-                  </ListItem>
+                  ) : (
+                    <ListItem sx={fieldSx}>
+                      <TextField
+                        required
+                        label={t('serviceForm.servicePort', 'Service Port')}
+                        value={form.port || ''}
+                        disabled={disabled}
+                        variant="filled"
+                        onChange={event => {
+                          const port = validPort(event)
+                          setForm({ ...form, port })
+                        }}
+                        InputProps={{
+                          endAdornment: thisDevice && (
+                            <PortScanIcon state={portReachable} port={form.port} host={form.host} />
+                          ),
+                        }}
+                      />
+                      <Typography variant="caption">
+                        {t(
+                          'serviceForm.servicePortHelp',
+                          "Port the application's service is running on. Do not change this unless you know it is running on a custom port."
+                        )}
+                      </Typography>
+                    </ListItem>
+                  )}
                 </>
               )}
             </>
@@ -378,7 +438,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           type="submit"
           variant="contained"
           color="primary"
-          disabled={disabled || !!error || !changed /*  || fieldError */}
+          disabled={disabled || !!error || !!portsError || !changed /*  || fieldError */}
         >
           {saving ? t('common.saving', 'Saving...') : changed ? t('common.save', 'Save') : t('common.saved', 'Saved')}
         </Button>
