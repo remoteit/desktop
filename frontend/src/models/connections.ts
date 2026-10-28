@@ -399,10 +399,11 @@ export default createModel<RootModel>()({
           : connection.password?.trim() || null,
       })
 
-      if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.url) {
+      if (result === 'ERROR' || 'reason' in result || !result?.data?.data?.setConnectLink?.url) {
+        const reason = result !== 'ERROR' && 'reason' in result ? result.reason : ''
         dispatch.connections.patchConnection({
           id: connection.id,
-          error: { message: 'Persistent connection update failed. Please contact support.' },
+          error: { message: reason || 'Persistent connection update failed. Please contact support.' },
           updating: false,
         })
         dispatch.devices.fetchSingleFull({ id: connection.id, isService: true })

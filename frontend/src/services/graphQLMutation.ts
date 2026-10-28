@@ -1,5 +1,5 @@
 import { addConnectionProps } from '../models/networks'
-import { graphQLBasicRequest } from './graphQL'
+import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 import { store } from '../store'
 
 export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
@@ -68,9 +68,10 @@ export async function graphQLSurvey(serviceId: string, sessionId: string, qualit
   )
 }
 
+// A refusal comes back with graphql's reason — a password on a link that is not a web one, say — for the owner to read.
 export async function graphQLSetLink(params: { serviceId: string; password?: string | null; enabled?: boolean }) {
   const fleet = proxyFleet()
-  return await graphQLBasicRequest(
+  return await graphQLRequestWithReason(
     ` mutation SetLink($serviceId: String!, $password: String, $enabled: Boolean${
       fleet ? ', $proxyFleet: ProxyFleet' : ''
     }) {

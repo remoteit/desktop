@@ -11,6 +11,19 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
   return errors ? 'ERROR' : response
 }
 
+// A request whose refusal the caller shows itself, in graphql's own words — a refusal's reason (extensions.message),
+// else the error's message, as a sentence — rather than the generic snackbar.
+export async function graphQLRequestWithReason(query: String, variables: ILookup<any> = {}) {
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return response
+  const errors = graphQLGetErrors(response, true, { query, variables }) as
+    | undefined
+    | (Error & { extensions?: { message?: string } })[]
+  if (!errors) return response
+  const reason = errors[0]?.extensions?.message || errors[0]?.message || ''
+  return { reason: reason.charAt(0).toUpperCase() + reason.slice(1) }
+}
+
 // For batched per-account queries: one account the token can't read must not discard the ones that resolved.
 export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
   const response = await post({ query, variables })

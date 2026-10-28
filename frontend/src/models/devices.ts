@@ -559,9 +559,10 @@ export default createModel<RootModel>()({
 
       const result = await graphQLSetLink({ serviceId, enabled })
 
-      if (result === 'ERROR' || !result?.data?.data?.setConnectLink?.code) {
+      if (result === 'ERROR' || 'reason' in result || !result?.data?.data?.setConnectLink?.code) {
+        const reason = result !== 'ERROR' && 'reason' in result ? result.reason : ''
         dispatch.ui.set({
-          errorMessage: i18n.t('notices:service.updateError', { defaultValue: 'Could not update service.' }),
+          errorMessage: reason || i18n.t('notices:service.updateError', { defaultValue: 'Could not update service.' }),
         })
         return
       }

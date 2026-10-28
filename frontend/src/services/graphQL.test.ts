@@ -16,7 +16,7 @@ vi.mock('axios', () => ({ default: { request } }))
 
 import { post } from './post'
 import { get } from './get'
-import { graphQLBasicRequest, graphQLPartialRequest } from './graphQL'
+import { graphQLBasicRequest, graphQLPartialRequest, graphQLRequestWithReason } from './graphQL'
 
 const requests = [
   () => post({}),
@@ -94,5 +94,25 @@ describe('graphQLPartialRequest', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     request.mockResolvedValue({ data: { data: { login: null }, errors: [{ message: 'unauthorized' }] }, headers: {} })
     expect(await graphQLPartialRequest(query)).toBe('ERROR')
+  })
+})
+
+describe('graphQLRequestWithReason', () => {
+  it("gives a refusal's reason to the caller, with no snackbar", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    request.mockResolvedValue({
+      data: { errors: [{ message: 'Invalid Arguments: no password here', extensions: { message: 'no password here' } }] },
+      headers: {},
+    })
+    expect(await graphQLRequestWithReason('mutation { x }')).toEqual({ reason: 'No password here' })
+    request.mockResolvedValue({ data: { errors: [{ message: 'denied' }] }, headers: {} })
+    expect(await graphQLRequestWithReason('mutation { x }')).toEqual({ reason: 'Denied' })
+    expect(uiSet).not.toHaveBeenCalled()
+  })
+
+  it('passes a clean response through', async () => {
+    const response = { data: { data: { x: true } }, headers: {} }
+    request.mockResolvedValue(response)
+    expect(await graphQLRequestWithReason('mutation { x }')).toBe(response)
   })
 })
