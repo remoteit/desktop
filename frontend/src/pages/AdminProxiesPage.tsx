@@ -90,10 +90,10 @@ export const AdminProxiesPage: React.FC = () => {
             {problem}
           </Notice>
         )}
+        <AdminPublicProxies onProblem={setProblem} />
         <List>
           <ListSubheader>Plan limits</ListSubheader>
         </List>
-        <AdminPublicProxies onProblem={setProblem} />
         <AdminProxyLimits />
         <List>
           <ListSubheader>Exit nodes: refused</ListSubheader>
