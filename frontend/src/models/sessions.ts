@@ -57,6 +57,9 @@ export default createModel<RootModel>()({
       return sorted.reduce((sessions: ISession[], s: any) => {
         // if (!sessions.some(s => s.id === e.user?.id && s.platform === e.endpoint?.platform))
         if (!s.endpoint) return sessions
+        // A session outlives its target: presence keeps a connected session until an end goes
+        // inactive, so one to a service deleted meanwhile comes back with no device to show.
+        if (!s.target?.device) return sessions
         const reverseProxy = isReverseProxy(state, s.target.application)
         // const accountIdFromDevice = accountFromDevice(
         //   state,

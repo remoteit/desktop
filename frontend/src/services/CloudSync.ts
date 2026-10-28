@@ -32,8 +32,17 @@ class CloudSync {
   async call(methods: Methods, parallel?: boolean, spinner: boolean = true) {
     if (spinner) await dispatch.ui.set({ fetching: true })
 
-    if (parallel) await Promise.all(methods.map(method => method()))
-    else for (const method of methods) await method()
+    // One failed fetch must not stop the rest (or leave the spinner on): a throw in sessions
+    // would otherwise abort the sync before the device list is ever fetched.
+    const run = async (method: Methods[number]) => {
+      try {
+        await method()
+      } catch (error) {
+        console.error('CLOUD SYNC FAILED', method.name, error)
+      }
+    }
+    if (parallel) await Promise.all(methods.map(run))
+    else for (const method of methods) await run(method)
 
     if (spinner) await dispatch.ui.set({ fetching: false })
   }
