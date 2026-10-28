@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react'
 import {
   Box,
   Button,
+  FormControlLabel,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material'
@@ -21,7 +23,7 @@ import {
   RemoteitProxyDevice,
 } from '../services/graphQLProxy'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
-import { ListItemSetting } from '../components/ListItemSetting'
+import { Confirm } from '../components/Confirm'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { CopyCodeBlock } from '../components/CopyCodeBlock'
 import { Timestamp } from '../components/Timestamp'
@@ -104,12 +106,43 @@ const about = (d: RemoteitProxyDevice) => (
   </>
 )
 
+// One row a proxy: its name, region and endpoints, the device under them (and whose account it is in, when it is not
+// remote.it's yet); at its end, moving it to remote.it when it needs to be, whether it is a public exit, and stopping it.
 const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
   const proxy = d.proxy!
+  const [confirmExitOff, setConfirmExitOff] = useState(false)
+  const setExit = (on: boolean) =>
+    change(d.id, () => graphQLSetProxyPublicExit(d.id, on), `${proxy.host}'s exit was not changed.`)
+
   return (
-    <>
-      <ListItem
-        secondaryAction={
+    <ListItem
+      secondaryAction={
+        <Box display="flex" alignItems="center" gap={1}>
+          {!d.system && (
+            <Button
+              size="small"
+              variant="contained"
+              disabled={busy}
+              onClick={() =>
+                change(d.id, () => graphQLAdoptRemoteitProxy(d.id), `${proxy.host} was not moved to remote.it.`)
+              }
+            >
+              Move to remote.it
+            </Button>
+          )}
+          <FormControlLabel
+            label={<Typography variant="caption">Public exit</Typography>}
+            labelPlacement="start"
+            title="An exit for everyone whose plan gives exits, under the policy below"
+            control={
+              <Switch
+                size="small"
+                checked={proxy.publicExit}
+                disabled={busy}
+                onChange={() => (proxy.publicExit ? setConfirmExitOff(true) : setExit(true))}
+              />
+            }
+          />
           <ConfirmIconButton
             icon="trash"
             title="Stop being a public proxy"
@@ -121,62 +154,39 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
             }}
             onClick={() => change(d.id, () => graphQLRemoveRemoteitProxy(d.id), `${proxy.host} was not removed.`)}
           />
-        }
-      >
-        <ListItemIcon>
-          <Icon name="server" size="md" color={online(d) ? 'primary' : 'grayDark'} />
-        </ListItemIcon>
-        <ListItemText
-          primary={`${proxy.host} · ${proxy.region ?? 'no region'} · ${d.endpoints} endpoint${
-            d.endpoints === 1 ? '' : 's'
-          }`}
-          secondary={about(d)}
-        />
-      </ListItem>
-      {!d.system && (
-        <ListItem
-          secondaryAction={
-            <Button
-              size="small"
-              variant="contained"
-              disabled={busy}
-              onClick={() =>
-                change(d.id, () => graphQLAdoptRemoteitProxy(d.id), `${proxy.host} was not moved to remote.it.`)
-              }
-            >
-              Move to remote.it
-            </Button>
-          }
-        >
-          <ListItemIcon>
-            <Icon name="triangle-exclamation" size="md" color="warning" />
-          </ListItemIcon>
-          <ListItemText
-            primary={`In ${d.owner ?? 'another'} account`}
-            secondary="A public proxy is remote.it's: moved, its shares end, and its owner no longer sees it."
-          />
-        </ListItem>
-      )}
-      <ListItemSetting
-        icon="right-from-bracket"
-        label="Public exit"
-        subLabel="An exit for everyone whose plan gives exits, under the policy below"
-        toggle={proxy.publicExit}
-        disabled={busy}
-        confirm={proxy.publicExit}
-        confirmProps={{
-          title: `Stop ${proxy.host} being a public exit?`,
-          children: 'Everyone using it as their exit is moved off it.',
-        }}
-        onClick={() =>
-          change(
-            d.id,
-            () => graphQLSetProxyPublicExit(d.id, !proxy.publicExit),
-            `${proxy.host}'s exit was not changed.`
-          )
+          <Confirm
+            open={confirmExitOff}
+            title={`Stop ${proxy.host} being a public exit?`}
+            onConfirm={() => {
+              setConfirmExitOff(false)
+              setExit(false)
+            }}
+            onDeny={() => setConfirmExitOff(false)}
+          >
+            Everyone using it as their exit is moved off it.
+          </Confirm>
+        </Box>
+      }
+    >
+      <ListItemIcon>
+        <Icon name="server" size="md" color={online(d) ? 'primary' : 'grayDark'} />
+      </ListItemIcon>
+      <ListItemText
+        primary={`${proxy.host} · ${proxy.region ?? 'no region'} · ${d.endpoints} endpoint${
+          d.endpoints === 1 ? '' : 's'
+        }`}
+        secondary={
+          <>
+            {about(d)}
+            {!d.system && (
+              <Typography component="span" variant="caption" color="warning.main" display="block">
+                In {d.owner ?? 'another'} account: move it, and its shares end and its owner no longer sees it.
+              </Typography>
+            )}
+          </>
         }
       />
-    </>
+    </ListItem>
   )
 }
 

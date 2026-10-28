@@ -5,11 +5,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // The admin page's public proxies: each of remote.it's proxies with where its device is owned (one still in a person's
 // account offered to move to remote.it), the devices the proxy code registered waiting for a region, and the code shown
 // only when asked.
-const { devices, code, adopt, setRemoteit } = vi.hoisted(() => ({
+const { devices, code, adopt, setRemoteit, setExit } = vi.hoisted(() => ({
   devices: vi.fn(),
   code: vi.fn(async () => 'PROXY-CODE' as any),
   adopt: vi.fn(async () => ({} as any)),
   setRemoteit: vi.fn(async () => ({} as any)),
+  setExit: vi.fn(async () => ({} as any)),
 }))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLRemoteitProxyDevices: devices,
@@ -17,14 +18,16 @@ vi.mock('../services/graphQLProxy', () => ({
   graphQLAdoptRemoteitProxy: adopt,
   graphQLSetRemoteitProxy: setRemoteit,
   graphQLRemoveRemoteitProxy: vi.fn(),
-  graphQLSetProxyPublicExit: vi.fn(),
+  graphQLSetProxyPublicExit: setExit,
 }))
-vi.mock('../components/ListItemSetting', () => ({
-  ListItemSetting: ({ label, subLabel }: any) => (
-    <div data-item>
-      {label} — {subLabel}
-    </div>
-  ),
+vi.mock('../components/Confirm', () => ({
+  Confirm: ({ open, title, children, onConfirm }: any) =>
+    open ? (
+      <div data-confirm>
+        {title} {children}
+        <button onClick={onConfirm}>Confirm</button>
+      </div>
+    ) : null,
 }))
 vi.mock('../components/CopyCodeBlock', () => ({ CopyCodeBlock: ({ value }: any) => <div data-code>{value}</div> }))
 vi.mock('../buttons/ConfirmIconButton', () => ({ ConfirmIconButton: ({ title }: any) => <button>{title}</button> }))
@@ -94,11 +97,28 @@ describe('AdminPublicProxies', () => {
     expect(devices).toHaveBeenCalledTimes(2) // read again after the move
   })
 
+  it('each proxy on one row: its exit switched there, turning it off asked first', async () => {
+    devices.mockResolvedValue([{ ...E1, proxy: { ...E1.proxy, publicExit: true } }])
+    const el = await render()
+    // the proxy's row: its name, region and endpoints with its exit switch, one list item
+    const rows = [...el.querySelectorAll('li')].filter(li => li.textContent?.includes('e1.r3proxy.com'))
+    expect(rows).toHaveLength(1)
+    expect(rows[0].textContent).toContain('e1.r3proxy.com · us-west-2 · 2 endpoints')
+    expect(rows[0].textContent).toContain('Public exit')
+    const toggle = rows[0].querySelector('input[type=checkbox]') as HTMLInputElement
+    expect(toggle.checked).toBe(true)
+    await act(async () => toggle.click())
+    expect(setExit).not.toHaveBeenCalled()
+    expect(el.querySelector('[data-confirm]')?.textContent).toContain('Stop e1.r3proxy.com being a public exit?')
+    await act(async () => button(el, 'Confirm').click())
+    expect(setExit).toHaveBeenCalledWith('E1', false)
+  })
+
   it("makes a waiting device a public proxy only with a region's name", async () => {
     const el = await render()
     const make = button(el, 'Make public proxy')
     expect(make.disabled).toBe(true)
-    const input = el.querySelector('input')!
+    const input = el.querySelector('input:not([type=checkbox])') as HTMLInputElement
     await act(async () => {
       const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
       set.call(input, 'eu-west-1')
