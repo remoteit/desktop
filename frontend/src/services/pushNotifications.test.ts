@@ -40,6 +40,7 @@ vi.mock('./oidc', () => ({ oidcActor: actor }))
 vi.mock('../i18n', () => ({ default: { t: (_key: string, value: string) => value } }))
 vi.mock('../helpers/versionHelper', () => ({ version: '3.48.10' }))
 
+import { renderToStaticMarkup } from 'react-dom/server'
 import pushNotifications from './pushNotifications'
 
 beforeEach(() => {
@@ -64,6 +65,27 @@ describe('tap routing', () => {
 
     expect(set).toHaveBeenCalledWith({ redirect: '/devices/abc' })
     expect(window.localStorage.getItem('initialRoute')).toBe('/devices/abc')
+  })
+
+  it('shows what was tapped, from the notification on iOS and from its data on Android', async () => {
+    await pushNotifications.listen()
+    listeners.pushNotificationActionPerformed({
+      actionId: 'tap',
+      notification: { title: 'pi went offline', body: 'Linux', data: { url: '/devices/abc' } },
+    })
+    listeners.pushNotificationActionPerformed({
+      actionId: 'tap',
+      notification: { data: { url: '/devices/abc', title: 'pi came online', body: 'Linux' } },
+    })
+
+    const notices = set.mock.calls.map(([{ redirect, noticeMessage }]) => [
+      redirect,
+      renderToStaticMarkup(noticeMessage),
+    ])
+    expect(notices).toEqual([
+      ['/devices/abc', '<strong>pi went offline</strong><em>Linux</em>'],
+      ['/devices/abc', '<strong>pi came online</strong><em>Linux</em>'],
+    ])
   })
 
   it('ignores a url that is not an app path', async () => {

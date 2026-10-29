@@ -3,6 +3,7 @@ import { getAccountIds } from '../models/accounts'
 import { selectOrganization } from '../selectors/organizations'
 import { platforms } from '../platforms'
 import { store } from '../store'
+import { openNotification } from './openNotification'
 import browser from './browser'
 import icon from '../assets/noticeIcon.png'
 
@@ -120,7 +121,7 @@ function transferNotification(event: ICloudEvent) {
 
 function createNotification(title: string, redirect: string, options?: NotificationOptions) {
   const notification = new Notification(title, { ...options, icon: browser.isPortal ? icon : undefined })
-  notification.onclick = () => store.dispatch.ui.set({ redirect })
+  notification.onclick = () => openNotification(redirect, title, options?.body)
   notification.onclose = e => e.preventDefault()
 }
 

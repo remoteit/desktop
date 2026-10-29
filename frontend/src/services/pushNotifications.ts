@@ -3,6 +3,7 @@ import { APNS_ENVIRONMENT, FIREBASE_CONFIGURED, PUSH_UNREGISTER_TIMEOUT } from '
 import { graphQLRegisterPushToken, graphQLUnregisterPushToken } from './graphQLMutation'
 import { version } from '../helpers/versionHelper'
 import { withTimeout } from '../helpers/sleep'
+import { openNotification } from './openNotification'
 import { oidcActor } from './oidc'
 import { store } from '../store'
 import browser from './browser'
@@ -32,12 +33,13 @@ function teardown() {
 }
 
 // Both: the in-memory redirect serves a running app, initialRoute survives the webview reload of a mobile sign-in
+// Android passes a tapped push's data only, so its title and body come from there
 function open({ notification }: ActionPerformed) {
   const url = notification.data?.url
   if (typeof url !== 'string' || !url.startsWith('/')) return
   console.log('PUSH OPENED', url)
   window.localStorage.setItem('initialRoute', url)
-  store.dispatch.ui.set({ redirect: url })
+  openNotification(url, notification.title || notification.data?.title, notification.body || notification.data?.body)
 }
 
 // Chained so unregister can wait out a registration still in flight: landing after it would re-register a signed-out phone
