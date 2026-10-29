@@ -116,15 +116,20 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
     graphQLDisableDevices.mockResolvedValue({ data: {} })
     const online = device('d1', { state: 'active' })
     const hidden = device('d2', { hidden: true })
-    const state = stateWith({ all: [online, hidden], total: 5 })
+    const state = { ...stateWith({ all: [online, hidden], total: 5 }), auth: { user: { email: 'me@x' } } }
     expect(await effects().disable({ ids: ['d1', 'd2'] }, state)).toBe(true)
     expect(graphQLDisableDevices).toHaveBeenCalledWith(['d1', 'd2'], undefined)
     expect(dispatch.connections.clearByDevice.mock.calls).toEqual([['d1'], ['d2']])
     expect(
-      dispatch.accounts.setDevice.mock.calls.map(([a]: any) => [a.id, a.device.disabled, a.device.disabledReason])
+      dispatch.accounts.setDevice.mock.calls.map(([a]: any) => [
+        a.id,
+        a.device.disabled,
+        a.device.disabledReason,
+        a.device.disabledBy,
+      ])
     ).toEqual([
-      ['d1', true, 'person'],
-      ['d2', true, 'person'],
+      ['d1', true, 'person', 'me@x'],
+      ['d2', true, 'person', 'me@x'],
     ])
     expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 4, accountId: 'acct' })
     expect(dispatch.devices.cleanup).not.toHaveBeenCalled()

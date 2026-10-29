@@ -20,20 +20,27 @@ export function useDeviceDisable(): boolean | undefined {
   return served
 }
 
-/* Who sees an account's disabled devices and may decommission: the owner, or an org admin — in some orgs the owner
-   never signs in (docs/DEVICE-DISABLE.md "Who may act"). graphql decides; this only says what to offer. */
+/* Who sees an account's disabled devices: anyone who may manage devices in it — its owner, or a role with MANAGE, on
+   some devices or all. graphql's Disabled list holds the disabled devices the reader may manage, and restore needs
+   MANAGE on each (docs/DEVICE-DISABLE.md, decision 9). graphql decides; this only says what to offer. */
 export function useDisabledDevicesAccess(): boolean {
   const userAccount = useSelector(isUserAccount)
-  const admin = useSelector(selectPermissions).includes('ADMIN')
-  return userAccount || admin
+  const permissions = useSelector(selectPermissions)
+  return userAccount || permissions.includes('MANAGE') || permissions.includes('ADMIN')
 }
 
-export function useCanDecommission(device?: IDevice): boolean {
+/* Who may decommission a disabled device: its owner, or an org admin of the owning account — in some orgs the owner
+   never signs in. A predicate, for a list of them. */
+export function useDecommissionRule(): (device?: { disabled?: boolean; owner?: IUserRef }) => boolean {
   const userId = useSelector((state: State) => state.auth.user?.id)
   const activeAccountId = useSelector(selectActiveAccountId)
   const admin = useSelector(selectPermissions).includes('ADMIN')
-  if (!device?.disabled) return false
-  return device.owner?.id === userId || (admin && device.owner?.id === activeAccountId)
+  return device =>
+    !!device?.disabled && (device.owner?.id === userId || (admin && device.owner?.id === activeAccountId))
+}
+
+export function useCanDecommission(device?: IDevice): boolean {
+  return useDecommissionRule()(device)
 }
 
 export function disabledWhen(date?: Date) {

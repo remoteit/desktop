@@ -23,12 +23,12 @@ import {
 // What the probe reads of graphql's schema: the field names of Mutation and Device.
 const schema = ({
   mutations = ['deleteDevices', 'disableDevices', 'restoreDevices', 'decommissionDevices'],
-  deviceFields = ['id', 'disabled', 'disabledAt', 'disabledReason'],
+  deviceFields = ['id', 'disabled', 'disabledAt', 'disabledReason'] as (string | { name: string; type: any })[],
 } = {}) => ({
   data: {
     data: {
       mutation: { fields: mutations.map(name => ({ name })) },
-      device: { fields: deviceFields.map(name => ({ name })) },
+      device: { fields: deviceFields.map(name => (typeof name === 'string' ? { name } : name)) },
     },
   },
 })
@@ -59,6 +59,23 @@ describe('device disable: whether the API serves it', () => {
     request.mockResolvedValueOnce(schema())
     expect(await deviceDisableServed()).toBe(true)
     expect(await deviceDisableFields()).toMatch(/disabled\s+disabledAt\s+disabledReason/)
+  })
+
+  it('who disabled it is asked only where Device has disabledBy: a user as { id email }, else as given', async () => {
+    request.mockResolvedValueOnce(schema())
+    expect(await deviceDisableFields()).not.toMatch(/disabledBy/)
+    resetDeviceDisable()
+    const object = { name: 'disabledBy', type: { kind: 'OBJECT' } }
+    request.mockResolvedValueOnce(schema({ deviceFields: ['disabled', object] }))
+    expect(await deviceDisableFields()).toMatch(/disabledBy \{ id email \}/)
+    resetDeviceDisable()
+    const text = { name: 'disabledBy', type: { kind: 'NON_NULL', ofType: { kind: 'SCALAR' } } }
+    request.mockResolvedValueOnce(schema({ deviceFields: ['disabled', text] }))
+    const fields = await deviceDisableFields()
+    expect(fields).toMatch(/disabledBy$/)
+    request.mockResolvedValueOnce({ data: { data: { login: { account: { devices: { total: 0, items: [] } } } } } })
+    await graphQLFetchDisabledDevices('A', 0, fields)
+    expect(sent(request.mock.calls.length - 1).query).toMatch(/disabledBy\s/)
   })
 
   it('asked once; asked again after a failed request', async () => {
@@ -109,11 +126,22 @@ describe('disabledAdaptor', () => {
     expect(disabledAdaptor({ id: 'd1' })).toEqual({})
   })
 
+  it("reads who: a user's email or id, text as given, nothing for the expiry", () => {
+    expect(disabledAdaptor({ disabled: true, disabledBy: { id: 'u1', email: 'a@b.c' } }).disabledBy).toBe('a@b.c')
+    expect(disabledAdaptor({ disabled: true, disabledBy: { id: 'u1' } }).disabledBy).toBe('u1')
+    expect(disabledAdaptor({ disabled: true, disabledBy: 'a@b.c' }).disabledBy).toBe('a@b.c')
+    expect(
+      disabledAdaptor({ disabled: true, disabledBy: 'expiry', disabledReason: 'expired' }).disabledBy
+    ).toBeUndefined()
+    expect(disabledAdaptor({ disabled: true, disabledBy: null }).disabledBy).toBeUndefined()
+  })
+
   it('reads when and why', () => {
     expect(disabledAdaptor({ disabled: true, disabledAt: '2026-10-28T10:00:00Z', disabledReason: 'expired' })).toEqual({
       disabled: true,
       disabledAt: new Date('2026-10-28T10:00:00Z'),
       disabledReason: 'expired',
+      disabledBy: undefined,
     })
   })
 })

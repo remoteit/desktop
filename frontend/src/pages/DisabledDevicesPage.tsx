@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Checkbox, List, Stack, Typography } from '@mui/material'
 import { Dispatch, State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { disabledAdaptor, graphQLFetchDisabledDevices } from '../services/deviceDisable'
-import { useDeviceDisable, useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
+import { deviceDisableFields, disabledAdaptor, graphQLFetchDisabledDevices } from '../services/deviceDisable'
+import { useDecommissionRule, useDeviceDisable, useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
 import { disabledDescription } from '../components/DisabledDeviceNotice'
 import { DecommissionDialog } from '../components/DecommissionDialog'
 import { ListItemCheckbox } from '../components/ListItemCheckbox'
@@ -19,19 +19,20 @@ import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
-type DisabledRow = Pick<IDevice, 'id' | 'name' | 'disabledAt' | 'disabledReason'> & {
+type DisabledRow = Pick<IDevice, 'id' | 'name' | 'disabled' | 'disabledAt' | 'disabledReason' | 'disabledBy'> & {
   platform?: number
   owner?: IUserRef
 }
 
-/* The account's disabled devices (graphql-api docs/DEVICE-DISABLE.md), for its owner and org admins: when each was
-   disabled, and whether by a person or by the expiry, and Restore or Decommission… — one, or those ticked. Read here, apart from the
-   device lists, which leave disabled devices out. */
+/* The account's disabled devices that the reader may manage (graphql-api docs/DEVICE-DISABLE.md): when each was
+   disabled, by whom or by the expiry, and Restore — and Decommission… for the owner or an org admin — one, or those
+   ticked. Read here, apart from the device lists, which leave disabled devices out. */
 export const DisabledDevicesPage: React.FC = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const served = useDeviceDisable()
   const access = useDisabledDevicesAccess()
+  const canDecommission = useDecommissionRule()
   const accountId = useSelector(selectActiveAccountId)
   const destroying = useSelector((state: State) => state.ui.destroying)
   const [rows, setRows] = useState<DisabledRow[]>([])
@@ -44,7 +45,7 @@ export const DisabledDevicesPage: React.FC = () => {
   const load = useCallback(
     async (from = 0) => {
       setLoading(true)
-      const response = await graphQLFetchDisabledDevices(accountId, from)
+      const response = await graphQLFetchDisabledDevices(accountId, from, await deviceDisableFields())
       setLoading(false)
       if (response === 'ERROR') return setFailed(true)
       setFailed(false)
@@ -71,7 +72,7 @@ export const DisabledDevicesPage: React.FC = () => {
     return (
       <Body center>
         <Typography variant="body2" color="textSecondary">
-          {t('disabledDevicesPage.noAccess', 'Disabled devices are seen by their owner and the organization’s admins.')}
+          {t('disabledDevicesPage.noManageAccess', 'Disabled devices are seen by those who may manage devices here.')}
         </Typography>
       </Body>
     )
@@ -82,6 +83,9 @@ export const DisabledDevicesPage: React.FC = () => {
 
   const byId = (ids: string[]) => rows.filter(r => ids.includes(r.id))
   const allSelected = !!rows.length && selected.length === rows.length
+  // Decommission is the owner's or an org admin's: offered on the ticked only when it may be on every one of them.
+  const decommissionable = rows.some(row => canDecommission(row))
+  const decommissionSelected = !!selected.length && byId(selected).every(row => canDecommission(row))
 
   return (
     <Container
@@ -131,14 +135,16 @@ export const DisabledDevicesPage: React.FC = () => {
               >
                 {t('disabledDevicesPage.restoreSelected', 'Restore')}
               </Button>
-              <Button
-                size="small"
-                color="error"
-                disabled={!selected.length || destroying}
-                onClick={() => setDecommission(byId(selected))}
-              >
-                {t('disabledDevicesPage.decommissionSelected', 'Decommission…')}
-              </Button>
+              {decommissionable && (
+                <Button
+                  size="small"
+                  color="error"
+                  disabled={!decommissionSelected || destroying}
+                  onClick={() => setDecommission(byId(selected))}
+                >
+                  {t('disabledDevicesPage.decommissionSelected', 'Decommission…')}
+                </Button>
+              )}
             </Stack>
           )}
         </>
@@ -161,7 +167,7 @@ export const DisabledDevicesPage: React.FC = () => {
       ) : !rows.length ? (
         <Body center>
           <Typography variant="body2" color="textSecondary">
-            {t('disabledDevicesPage.empty', 'No disabled devices.')}
+            {t('disabledDevicesPage.emptyManaged', 'No disabled devices that you manage.')}
           </Typography>
         </Body>
       ) : (
@@ -189,12 +195,14 @@ export const DisabledDevicesPage: React.FC = () => {
                     disabled={destroying}
                     onClick={() => restore([row.id])}
                   />
-                  <IconButton
-                    icon="trash"
-                    title={t('disabledDevicesPage.decommission', 'Decommission…')}
-                    disabled={destroying}
-                    onClick={() => setDecommission([row])}
-                  />
+                  {canDecommission(row) && (
+                    <IconButton
+                      icon="trash"
+                      title={t('disabledDevicesPage.decommission', 'Decommission…')}
+                      disabled={destroying}
+                      onClick={() => setDecommission([row])}
+                    />
+                  )}
                   <IconButton
                     icon="angle-right"
                     title={t('disabledDevicesPage.open', 'Open')}

@@ -402,6 +402,7 @@ declare global {
     disabled?: boolean // stopped serving, restorable; left out of the device lists
     disabledAt?: Date
     disabledReason?: 'person' | 'expired' // expired: offline past its registration's timeout, back on its return
+    disabledBy?: string // who disabled it (an email, or as the API gives it), where the API says
   }
 
   interface IHostingGateway {

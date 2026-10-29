@@ -810,6 +810,7 @@ export default createModel<RootModel>()({
       const result = await graphQLDisableDevices(deviceIds, keepHosted)
       if (result !== 'ERROR') {
         const disabledAt = new Date()
+        const by = state.auth?.user?.email
         const disabling = keepHosted === false ? [...deviceIds, ...hosted] : deviceIds
         for (const id of disabling) {
           await dispatch.connections.clearByDevice(id)
@@ -822,7 +823,7 @@ export default createModel<RootModel>()({
             await dispatch.accounts.setDevice({
               id: device.id,
               accountId,
-              device: { ...device, disabled: true, disabledAt, disabledReason: 'person' },
+              device: { ...device, disabled: true, disabledAt, disabledReason: 'person', disabledBy: by },
             })
             if (!device.hidden) listed++
           }
@@ -868,6 +869,7 @@ export default createModel<RootModel>()({
                   disabled: false,
                   disabledAt: undefined,
                   disabledReason: undefined,
+                  disabledBy: undefined,
                 },
               })
           }

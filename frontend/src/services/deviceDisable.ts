@@ -19,50 +19,79 @@ const FIELDS = `
   disabledAt
   disabledReason`
 
-let served: Promise<boolean> | undefined
+type TypeRef = { kind: string; ofType?: TypeRef | null }
+type Served = { served: boolean; fields: string }
+
+let schema: Promise<Served> | undefined
 
 const PROBE = `query DeviceDisableFields {
   mutation: __type(name: "Mutation") { fields { name } }
-  device: __type(name: "Device") { fields { name } }
+  device: __type(name: "Device") { fields { name type { kind ofType { kind ofType { kind } } } } }
 }`
 
-export function parseDeviceDisableServed(data: any): boolean {
+const kind = (type?: TypeRef | null): string | undefined => (type?.ofType ? kind(type.ofType) : type?.kind)
+
+// What the API serves of device disable, and the fields a device query adds for it. `disabledBy` — who disabled it —
+// is read only where Device has it: a user ({ id email }) where it is an object, else as given.
+export function parseDeviceDisable(data: any): Served {
+  const fields: { name: string; type?: TypeRef }[] = data?.device?.fields || []
   const has = (type: any, name: string) => !!type?.fields?.some((f: { name: string }) => f.name === name)
-  return (
+  const served =
     ['disableDevices', 'restoreDevices', 'decommissionDevices'].every(name => has(data?.mutation, name)) &&
     has(data?.device, 'disabled')
-  )
+  if (!served) return { served, fields: '' }
+  const by = fields.find(f => f.name === 'disabledBy')
+  if (!by) return { served, fields: FIELDS }
+  return {
+    served,
+    fields:
+      FIELDS +
+      (kind(by.type) === 'OBJECT'
+        ? `
+  disabledBy { id email }`
+        : `
+  disabledBy`),
+  }
+}
+
+function deviceDisable(): Promise<Served> {
+  if (!schema)
+    schema = post({ query: PROBE }).then(response => {
+      if (response === 'ERROR') {
+        schema = undefined
+        return { served: false, fields: '' }
+      }
+      return parseDeviceDisable(response.data?.data)
+    })
+  return schema
 }
 
 // Whether this API has device disable. Read once; asked again after a failed request.
-export function deviceDisableServed(): Promise<boolean> {
-  if (!served)
-    served = post({ query: PROBE }).then(response => {
-      if (response === 'ERROR') {
-        served = undefined
-        return false
-      }
-      return parseDeviceDisableServed(response.data?.data)
-    })
-  return served
+export async function deviceDisableServed(): Promise<boolean> {
+  return (await deviceDisable()).served
 }
 
 // For tests, and for a change of API or sign-in.
 export function resetDeviceDisable() {
-  served = undefined
+  schema = undefined
 }
 
 // The fields a device query adds: none where the API has no disable.
 export async function deviceDisableFields(): Promise<string> {
-  return (await deviceDisableServed()) ? FIELDS : ''
+  return (await deviceDisable()).fields
 }
 
+// disabledBy, where served: a user's email (or id), or as given — not for the expiry, which disabledReason says.
 export function disabledAdaptor(d: any): Partial<IDevice> {
   if (d.disabled === undefined) return {}
+  const reason = d.disabledReason ? (String(d.disabledReason).toLowerCase() as DisabledReason) : undefined
+  const by = d.disabledBy
+  const byText = by && typeof by === 'object' ? by.email || by.id : by ? String(by) : undefined
   return {
     disabled: !!d.disabled,
     disabledAt: d.disabledAt ? new Date(d.disabledAt) : undefined,
-    disabledReason: d.disabledReason ? (String(d.disabledReason).toLowerCase() as DisabledReason) : undefined,
+    disabledReason: reason,
+    disabledBy: reason === 'expired' || byText === 'expiry' ? undefined : byText || undefined,
   }
 }
 
@@ -97,8 +126,9 @@ export async function graphQLDecommissionDevices(ids: string[]) {
 
 export const DISABLED_PAGE_SIZE = 100
 
-// An account's disabled devices — those the reader may manage: what the Disabled view lists.
-export async function graphQLFetchDisabledDevices(accountId: string, from = 0) {
+// An account's disabled devices — those the reader may manage: what the Disabled view lists. fields:
+// deviceDisableFields(), which say who disabled each where the API does.
+export async function graphQLFetchDisabledDevices(accountId: string, from = 0, fields = FIELDS) {
   return await graphQLBasicRequest(
     ` query DisabledDevices($accountId: String, $size: Int, $from: Int) {
         login {
@@ -112,7 +142,7 @@ export async function graphQLFetchDisabledDevices(accountId: string, from = 0) {
                 state
                 platform
                 permissions
-                owner { id email }${FIELDS}
+                owner { id email }${fields}
               }
             }
           }
