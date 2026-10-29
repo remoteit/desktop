@@ -11,53 +11,28 @@ vi.mock('axios', () => ({ default: { request, isAxiosError: () => false } }))
 
 import {
   deviceDisableFields,
-  deviceDisableSchema,
+  deviceDisableServed,
   disabledAdaptor,
   graphQLDecommissionDevices,
   graphQLDisableDevices,
   graphQLFetchDisabledDevices,
+  graphQLRestoreDevices,
   resetDeviceDisable,
 } from './deviceDisable'
 
-const scalar = (name: string) => ({ kind: 'SCALAR', name })
-const nonNull = (ofType: any) => ({ kind: 'NON_NULL', ofType })
-const list = (ofType: any) => ({ kind: 'LIST', ofType })
-const ids = nonNull(list(nonNull(scalar('String'))))
-
-// The contract's shape (docs/DEVICE-DISABLE.md "Build contract"): disableDevices(ids), restoreDevices(ids),
-// decommissionDevices(ids, confirm), Device.disabled/disabledAt/disabledReason, User.devices(disabled:).
-const contract = ({
-  idsArg = 'ids',
-  confirm = nonNull(scalar('String')) as any,
+// What the probe reads of graphql's schema: the field names of Mutation and Device.
+const schema = ({
+  mutations = ['deleteDevices', 'disableDevices', 'restoreDevices', 'decommissionDevices'],
   deviceFields = ['id', 'disabled', 'disabledAt', 'disabledReason'],
-  filter = true,
 } = {}) => ({
   data: {
     data: {
-      mutation: {
-        fields: [
-          {
-            name: 'deleteDevices',
-            type: scalar('Boolean'),
-            args: [{ name: 'deviceId', type: list(scalar('String')) }],
-          },
-          { name: 'disableDevices', type: scalar('Boolean'), args: [{ name: idsArg, type: ids }] },
-          { name: 'restoreDevices', type: scalar('Boolean'), args: [{ name: idsArg, type: ids }] },
-          {
-            name: 'decommissionDevices',
-            type: scalar('Boolean'),
-            args: [{ name: idsArg, type: ids }, ...(confirm ? [{ name: 'confirm', type: confirm }] : [])],
-          },
-        ],
-      },
-      device: { fields: deviceFields.map(name => ({ name, type: scalar('String') })) },
-      user: {
-        fields: [{ name: 'devices', args: [{ name: 'size' }, ...(filter ? [{ name: 'disabled' }] : [])] }],
-      },
+      mutation: { fields: mutations.map(name => ({ name })) },
+      device: { fields: deviceFields.map(name => ({ name })) },
     },
   },
 })
-const older = { data: { data: { mutation: { fields: [] }, device: { fields: [] }, user: { fields: [] } } } }
+const older = schema({ mutations: ['deleteDevices'], deviceFields: ['id'] })
 const sent = (call: number) => request.mock.calls[call][0].data
 
 beforeEach(() => {
@@ -66,67 +41,66 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
-describe('device disable: what the API serves', () => {
-  it('an older API has none: device queries add nothing and nothing is sent', async () => {
+describe('device disable: whether the API serves it', () => {
+  it('an older API has none: device queries add nothing', async () => {
     request.mockResolvedValueOnce(older)
-    expect(await deviceDisableSchema()).toBeUndefined()
+    expect(await deviceDisableServed()).toBe(false)
     expect(await deviceDisableFields()).toBe('')
-    expect(await graphQLDisableDevices(['d1'])).toBe('ERROR')
-    expect(await graphQLFetchDisabledDevices('A')).toBe('ERROR')
     expect(request).toHaveBeenCalledTimes(1)
+  })
+
+  it('served only with all three mutations and Device.disabled', async () => {
+    request.mockResolvedValueOnce(schema({ mutations: ['disableDevices', 'restoreDevices'] }))
+    expect(await deviceDisableServed()).toBe(false)
+    resetDeviceDisable()
+    request.mockResolvedValueOnce(schema({ deviceFields: ['id'] }))
+    expect(await deviceDisableServed()).toBe(false)
+    resetDeviceDisable()
+    request.mockResolvedValueOnce(schema())
+    expect(await deviceDisableServed()).toBe(true)
+    expect(await deviceDisableFields()).toMatch(/disabled\s+disabledAt\s+disabledReason/)
   })
 
   it('asked once; asked again after a failed request', async () => {
     request.mockRejectedValueOnce(new Error('offline'))
-    expect(await deviceDisableSchema()).toBeUndefined()
-    request.mockResolvedValueOnce(contract())
-    expect(await deviceDisableSchema()).toBeDefined()
-    expect(await deviceDisableSchema()).toBeDefined()
+    expect(await deviceDisableServed()).toBe(false)
+    request.mockResolvedValueOnce(schema())
+    expect(await deviceDisableServed()).toBe(true)
+    expect(await deviceDisableServed()).toBe(true)
     expect(request).toHaveBeenCalledTimes(2)
   })
+})
 
-  it('device queries ask only for the fields served', async () => {
-    request.mockResolvedValueOnce(contract({ deviceFields: ['disabled', 'disabledReason'] }))
-    const fields = await deviceDisableFields()
-    expect(fields).toMatch(/disabled\s+disabledReason/)
-    expect(fields).not.toMatch(/disabledAt|disabledBy/)
-  })
-
-  it('the mutations take the argument name and type the API declares', async () => {
-    request.mockResolvedValueOnce(contract({ idsArg: 'deviceId' }))
-    request.mockResolvedValueOnce({ data: { data: { disableDevices: true } } })
+describe("device disable: graphql's mutations", () => {
+  it('disable sends keepHosted only when asked', async () => {
+    request.mockResolvedValue({ data: { data: { disableDevices: true } } })
     await graphQLDisableDevices(['d1', 'd2'])
-    expect(sent(1).query).toMatch(/\$ids: \[String!\]!/)
-    expect(sent(1).query).toMatch(/disableDevices\(deviceId: \$ids\)/)
-    expect(sent(1).variables).toEqual({ ids: ['d1', 'd2'] })
+    expect(sent(0).query).toMatch(/disableDevices\(ids: \$ids, keepHosted: \$keepHosted\)/)
+    expect(sent(0).variables).toEqual({ ids: ['d1', 'd2'] })
+    await graphQLDisableDevices(['d1'], false)
+    expect(sent(1).variables).toEqual({ ids: ['d1'], keepHosted: false })
   })
 
-  it('decommission sends what was typed, or true where confirm is a Boolean', async () => {
-    request.mockResolvedValueOnce(contract())
-    request.mockResolvedValueOnce({ data: { data: { decommissionDevices: true } } })
-    await graphQLDecommissionDevices(['d1'], 'Kitchen Pi')
-    expect(sent(1).query).toMatch(/decommissionDevices\(ids: \$ids, confirm: \$confirm\)/)
-    expect(sent(1).variables).toEqual({ ids: ['d1'], confirm: 'Kitchen Pi' })
-
-    resetDeviceDisable()
-    request.mockResolvedValueOnce(contract({ confirm: nonNull(scalar('Boolean')) }))
-    request.mockResolvedValueOnce({ data: { data: { decommissionDevices: true } } })
-    await graphQLDecommissionDevices(['d1'], 'Kitchen Pi')
-    expect(sent(3).query).toMatch(/\$confirm: Boolean!/)
-    expect(sent(3).variables).toEqual({ ids: ['d1'], confirm: true })
+  it('restore takes the ids', async () => {
+    request.mockResolvedValue({ data: { data: { restoreDevices: true } } })
+    await graphQLRestoreDevices(['d1'])
+    expect(sent(0).query).toMatch(/restoreDevices\(ids: \$ids\)/)
+    expect(sent(0).variables).toEqual({ ids: ['d1'] })
   })
 
-  it('the Disabled view lists only where the list takes the disabled filter', async () => {
-    request.mockResolvedValueOnce(contract({ filter: false }))
-    expect(await graphQLFetchDisabledDevices('A')).toBe('ERROR')
-    expect(request).toHaveBeenCalledTimes(1)
+  it('decommission sends confirm: true — the typed confirmation stays in the portal', async () => {
+    request.mockResolvedValue({ data: { data: { decommissionDevices: true } } })
+    await graphQLDecommissionDevices(['d1'])
+    expect(sent(0).query).toMatch(/decommissionDevices\(ids: \$ids, confirm: true\)/)
+    expect(sent(0).variables).toEqual({ ids: ['d1'] })
+  })
 
-    resetDeviceDisable()
-    request.mockResolvedValueOnce(contract())
-    request.mockResolvedValueOnce({ data: { data: { login: { account: { devices: { total: 0, items: [] } } } } } })
+  it('the Disabled view asks the list with disabled: true', async () => {
+    request.mockResolvedValue({ data: { data: { login: { account: { devices: { total: 0, items: [] } } } } } })
     await graphQLFetchDisabledDevices('A')
-    expect(sent(2).query).toMatch(/devices\(disabled: true/)
-    expect(sent(2).variables).toMatchObject({ accountId: 'A' })
+    expect(sent(0).query).toMatch(/devices\(disabled: true/)
+    expect(sent(0).query).toMatch(/disabledReason/)
+    expect(sent(0).variables).toMatchObject({ accountId: 'A' })
   })
 })
 
@@ -135,19 +109,11 @@ describe('disabledAdaptor', () => {
     expect(disabledAdaptor({ id: 'd1' })).toEqual({})
   })
 
-  it('reads when, why and by whom', () => {
-    expect(
-      disabledAdaptor({
-        disabled: true,
-        disabledAt: '2026-10-28T10:00:00Z',
-        disabledReason: 'EXPIRED',
-        disabledBy: { id: 'u1', email: 'a@b.c' },
-      })
-    ).toEqual({
+  it('reads when and why', () => {
+    expect(disabledAdaptor({ disabled: true, disabledAt: '2026-10-28T10:00:00Z', disabledReason: 'expired' })).toEqual({
       disabled: true,
       disabledAt: new Date('2026-10-28T10:00:00Z'),
       disabledReason: 'expired',
-      disabledBy: 'a@b.c',
     })
   })
 })

@@ -19,18 +19,18 @@ import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
-type DisabledRow = Pick<IDevice, 'id' | 'name' | 'disabledAt' | 'disabledReason' | 'disabledBy'> & {
+type DisabledRow = Pick<IDevice, 'id' | 'name' | 'disabledAt' | 'disabledReason'> & {
   platform?: number
   owner?: IUserRef
 }
 
 /* The account's disabled devices (graphql-api docs/DEVICE-DISABLE.md), for its owner and org admins: when each was
-   disabled, by whom or by the expiry, and Restore or Decommission… — one, or those ticked. Read here, apart from the
+   disabled, and whether by a person or by the expiry, and Restore or Decommission… — one, or those ticked. Read here, apart from the
    device lists, which leave disabled devices out. */
 export const DisabledDevicesPage: React.FC = () => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
-  const schema = useDeviceDisable()
+  const served = useDeviceDisable()
   const access = useDisabledDevicesAccess()
   const accountId = useSelector(selectActiveAccountId)
   const destroying = useSelector((state: State) => state.ui.destroying)
@@ -64,8 +64,8 @@ export const DisabledDevicesPage: React.FC = () => {
   )
 
   useEffect(() => {
-    if (schema?.filter && access) load()
-  }, [schema, access, load])
+    if (served && access) load()
+  }, [served, access, load])
 
   if (!access)
     return (
@@ -144,8 +144,8 @@ export const DisabledDevicesPage: React.FC = () => {
         </>
       }
     >
-      {!schema?.filter ? (
-        schema === undefined ? (
+      {!served ? (
+        served === undefined ? (
           <LoadingMessage />
         ) : (
           <Notice gutterTop>

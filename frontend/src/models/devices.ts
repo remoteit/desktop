@@ -761,7 +761,9 @@ export default createModel<RootModel>()({
        stays in the store marked, so its page can offer Restore, and is left out of the lists and their total as
        graphql leaves it out (selectVisibleDevices). */
 
-    async disable(deviceIds: string[], state) {
+    // keepHosted: what becomes of the virtual devices a gateway among them hosts — kept live and unhosted (graphql's
+    // default), or disabled with it; asked only where one hosts some.
+    async disable({ ids: deviceIds, keepHosted }: { ids: string[]; keepHosted?: boolean }, state) {
       if (!deviceIds.length) return false
 
       for (const id of deviceIds) {
@@ -795,29 +797,40 @@ export default createModel<RootModel>()({
         }
       }
 
+      // The virtual devices these gateways host, as far as the store knows them: disabled with them, or read again.
+      const hosted = new Set<string>()
+      for (const accountId in state.devices)
+        for (const device of state.devices[accountId].all) {
+          if (deviceIds.includes(device.id)) device.hostedDevices?.forEach(h => hosted.add(h.id))
+          else if (device.hostedBy?.id && deviceIds.includes(device.hostedBy.id)) hosted.add(device.id)
+        }
+      deviceIds.forEach(id => hosted.delete(id))
+
       dispatch.ui.set({ destroying: true })
-      const result = await graphQLDisableDevices(deviceIds)
+      const result = await graphQLDisableDevices(deviceIds, keepHosted)
       if (result !== 'ERROR') {
         const disabledAt = new Date()
-        const by = state.auth.user?.email
-        for (const id of deviceIds) {
+        const disabling = keepHosted === false ? [...deviceIds, ...hosted] : deviceIds
+        for (const id of disabling) {
           await dispatch.connections.clearByDevice(id)
           await dispatch.networks.clearById(id)
         }
         for (const accountId in state.devices) {
           let listed = 0
           for (const device of state.devices[accountId].all) {
-            if (!deviceIds.includes(device.id) || device.disabled) continue
+            if (!disabling.includes(device.id) || device.disabled) continue
             await dispatch.accounts.setDevice({
               id: device.id,
               accountId,
-              device: { ...device, disabled: true, disabledAt, disabledReason: 'person', disabledBy: by },
+              device: { ...device, disabled: true, disabledAt, disabledReason: 'person' },
             })
             if (!device.hidden) listed++
           }
           if (listed)
             await dispatch.devices.set({ total: Math.max(0, state.devices[accountId].total - listed), accountId })
         }
+        // Kept, a hosted device is unhosted now: it is read again.
+        if (keepHosted !== false && hosted.size) await dispatch.devices.fetchDevices({ ids: [...hosted] })
         dispatch.ui.set({
           selected: [],
           successMessage:
@@ -855,7 +868,6 @@ export default createModel<RootModel>()({
                   disabled: false,
                   disabledAt: undefined,
                   disabledReason: undefined,
-                  disabledBy: undefined,
                 },
               })
           }
@@ -872,11 +884,11 @@ export default createModel<RootModel>()({
       return result !== 'ERROR'
     },
 
-    // typed: the confirmation the person typed — the device's name, or for several, how many.
-    async decommission({ deviceIds, typed }: { deviceIds: string[]; typed: string }) {
+    // Called once the person has typed the confirmation (DecommissionDialog); graphql asks only for confirm: true.
+    async decommission(deviceIds: string[]) {
       if (!deviceIds.length) return false
       dispatch.ui.set({ destroying: true })
-      const result = await graphQLDecommissionDevices(deviceIds, typed)
+      const result = await graphQLDecommissionDevices(deviceIds)
       if (result !== 'ERROR') {
         await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({

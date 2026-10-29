@@ -3,21 +3,21 @@ import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { selectPermissions } from '../selectors/organizations'
 import { isUserAccount, selectActiveAccountId } from '../selectors/accounts'
-import { DeviceDisableSchema, deviceDisableSchema } from '../services/deviceDisable'
+import { deviceDisableServed } from '../services/deviceDisable'
 import { timeOptions } from '../components/Timestamp'
 
-/* What this API has of device disable (services/deviceDisable): undefined until it has answered, null where it has
+/* Whether this API has device disable (services/deviceDisable): undefined until it has answered, false where it has
    none — the portal then keeps its delete. */
-export function useDeviceDisable(): DeviceDisableSchema | null | undefined {
-  const [schema, setSchema] = useState<DeviceDisableSchema | null | undefined>()
+export function useDeviceDisable(): boolean | undefined {
+  const [served, setServed] = useState<boolean | undefined>()
   useEffect(() => {
     let live = true
-    deviceDisableSchema().then(s => live && setSchema(s ?? null))
+    deviceDisableServed().then(s => live && setServed(s))
     return () => {
       live = false
     }
   }, [])
-  return schema
+  return served
 }
 
 /* Who sees an account's disabled devices and may decommission: the owner, or an org admin — in some orgs the owner

@@ -9,11 +9,8 @@ import { useCanDecommission, disabledWhen } from '../hooks/useDeviceDisable'
 import { DecommissionDialog } from './DecommissionDialog'
 import { Notice } from './Notice'
 
-// When it was disabled, and by whom or why: a person, or the expiry (offline past its registration's timeout).
-export function disabledDescription(
-  t: TFunction,
-  device: Pick<IDevice, 'disabledAt' | 'disabledReason' | 'disabledBy'>
-) {
+// When it was disabled, and why: a person, or the expiry (offline past its registration's timeout).
+export function disabledDescription(t: TFunction, device: Pick<IDevice, 'disabledAt' | 'disabledReason'>) {
   const when = disabledWhen(device.disabledAt)
   if (device.disabledReason === 'expired')
     return when
@@ -26,10 +23,7 @@ export function disabledDescription(
           'disabledDevice.expired',
           'Disabled: offline past its registration’s timeout. It restores itself when it returns.'
         )
-  if (when && device.disabledBy)
-    return t('disabledDevice.whenBy', { when, by: device.disabledBy, defaultValue: 'Disabled {{when}} by {{by}}' })
   if (when) return t('disabledDevice.when', { when, defaultValue: 'Disabled {{when}}' })
-  if (device.disabledBy) return t('disabledDevice.by', { by: device.disabledBy, defaultValue: 'Disabled by {{by}}' })
   return t('disabledDevice.disabled', 'Disabled')
 }
 

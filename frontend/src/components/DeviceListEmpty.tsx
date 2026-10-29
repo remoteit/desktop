@@ -21,7 +21,7 @@ export const DeviceListEmpty: React.FC = () => {
   const userAccount = useSelector(isUserAccount)
   const claiming = useSelector((state: State) => state.ui.claiming)
   const noResults = deviceModel.searched || isFiltered
-  const disableSchema = useDeviceDisable()
+  const disableServed = useDeviceDisable()
   const disabledAccess = useDisabledDevicesAccess()
 
   return (
@@ -83,7 +83,7 @@ export const DeviceListEmpty: React.FC = () => {
           <Notice>{t('deviceList.noDevices', 'This account has no devices')}</Notice>
         </Box>
       )}
-      {!!disableSchema?.filter && disabledAccess && (
+      {!!disableServed && disabledAccess && (
         <Button component={Link} to="/devices/disabled" size="small" sx={{ marginTop: 2 }}>
           <Icon name="ban" inlineLeft /> {t('deviceList.disabledDevices', 'Disabled devices')}
         </Button>

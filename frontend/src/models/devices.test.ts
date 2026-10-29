@@ -109,36 +109,58 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
     dispatch.networks = { clearById: vi.fn() }
     dispatch.accounts.setDevice = vi.fn()
     dispatch.devices.cleanup = vi.fn()
+    dispatch.devices.fetchDevices = vi.fn()
   })
 
   it('an online device is disabled: kept in the store marked, out of the total only where it was listed', async () => {
     graphQLDisableDevices.mockResolvedValue({ data: {} })
     const online = device('d1', { state: 'active' })
     const hidden = device('d2', { hidden: true })
-    const state = { ...stateWith({ all: [online, hidden], total: 5 }), auth: { user: { email: 'me@x' } } }
-    expect(await effects().disable(['d1', 'd2'], state)).toBe(true)
-    expect(graphQLDisableDevices).toHaveBeenCalledWith(['d1', 'd2'])
+    const state = stateWith({ all: [online, hidden], total: 5 })
+    expect(await effects().disable({ ids: ['d1', 'd2'] }, state)).toBe(true)
+    expect(graphQLDisableDevices).toHaveBeenCalledWith(['d1', 'd2'], undefined)
     expect(dispatch.connections.clearByDevice.mock.calls).toEqual([['d1'], ['d2']])
     expect(
-      dispatch.accounts.setDevice.mock.calls.map(([a]: any) => [a.id, a.device.disabled, a.device.disabledBy])
+      dispatch.accounts.setDevice.mock.calls.map(([a]: any) => [a.id, a.device.disabled, a.device.disabledReason])
     ).toEqual([
-      ['d1', true, 'me@x'],
-      ['d2', true, 'me@x'],
+      ['d1', true, 'person'],
+      ['d2', true, 'person'],
     ])
     expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 4, accountId: 'acct' })
     expect(dispatch.devices.cleanup).not.toHaveBeenCalled()
   })
 
+  it('a gateway: its virtual devices disabled with it, or kept and read again', async () => {
+    graphQLDisableDevices.mockResolvedValue({ data: {} })
+    const gateway = device('g1', { hosts: 2, hostedDevices: [{ id: 'v1' } as IHostedDevice] })
+    const v1 = device('v1', { virtual: true, hostedBy: { visible: true, id: 'g1', state: 'active' } })
+    const v2 = device('v2', { virtual: true, hostedBy: { visible: true, id: 'g1', state: 'active' } })
+    const other = device('o1')
+    const all = [gateway, v1, v2, other]
+
+    expect(await effects().disable({ ids: ['g1'], keepHosted: false }, stateWith({ all, total: 4 }))).toBe(true)
+    expect(graphQLDisableDevices).toHaveBeenCalledWith(['g1'], false)
+    expect(dispatch.accounts.setDevice.mock.calls.map(([a]: any) => a.id)).toEqual(['g1', 'v1', 'v2'])
+    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 1, accountId: 'acct' })
+    expect(dispatch.devices.fetchDevices).not.toHaveBeenCalled()
+
+    dispatch.accounts.setDevice.mockReset()
+    expect(await effects().disable({ ids: ['g1'], keepHosted: true }, stateWith({ all, total: 4 }))).toBe(true)
+    expect(graphQLDisableDevices).toHaveBeenLastCalledWith(['g1'], true)
+    expect(dispatch.accounts.setDevice.mock.calls.map(([a]: any) => a.id)).toEqual(['g1'])
+    expect(dispatch.devices.fetchDevices).toHaveBeenCalledWith({ ids: ['v1', 'v2'] })
+  })
+
   it('a shared device, or one without MANAGE, is refused before the API is asked', async () => {
     for (const over of [{ shared: true }, { permissions: [] as IPermission[] }]) {
-      expect(await effects().disable(['d1'], stateWith({ all: [device('d1', over)] }))).toBe(false)
+      expect(await effects().disable({ ids: ['d1'] }, stateWith({ all: [device('d1', over)] }))).toBe(false)
     }
     expect(graphQLDisableDevices).not.toHaveBeenCalled()
   })
 
   it('a refused disable changes nothing', async () => {
     graphQLDisableDevices.mockResolvedValue('ERROR')
-    expect(await effects().disable(['d1'], stateWith({ all: [device('d1')], total: 1 }))).toBe(false)
+    expect(await effects().disable({ ids: ['d1'] }, stateWith({ all: [device('d1')], total: 1 }))).toBe(false)
     expect(dispatch.accounts.setDevice).not.toHaveBeenCalled()
     expect(dispatch.devices.set).not.toHaveBeenCalled()
   })
@@ -154,10 +176,10 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
     expect(dispatch.devices.fetchList).toHaveBeenCalled()
   })
 
-  it('decommission sends what was typed and forgets the devices', async () => {
+  it('decommission forgets the devices', async () => {
     graphQLDecommissionDevices.mockResolvedValue({ data: {} })
-    expect(await effects().decommission({ deviceIds: ['d1', 'd2'], typed: '2' })).toBe(true)
-    expect(graphQLDecommissionDevices).toHaveBeenCalledWith(['d1', 'd2'], '2')
+    expect(await effects().decommission(['d1', 'd2'])).toBe(true)
+    expect(graphQLDecommissionDevices).toHaveBeenCalledWith(['d1', 'd2'])
     expect(dispatch.devices.cleanup).toHaveBeenCalledWith(['d1', 'd2'])
   })
 })

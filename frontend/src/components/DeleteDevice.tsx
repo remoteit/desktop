@@ -7,6 +7,7 @@ import { Dispatch, State } from '../store'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Typography } from '@mui/material'
 import { Notice } from './Notice'
+import { useDeviceDisable } from '../hooks/useDeviceDisable'
 
 type Props = {
   device?: IDevice
@@ -24,6 +25,7 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
   const setupDeletingDevice = useSelector((state: State) => state.ui.setupDeletingDevice)
   const { t } = useTranslation()
   const [keepHosted, setKeepHosted] = useState<boolean>(true)
+  const disableServed = useDeviceDisable()
 
   let disabled: boolean = false
   let icon: string = 'trash'
@@ -124,7 +126,25 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
   if (device.thisDevice && device.permissions.includes('MANAGE')) {
     disabled = false
     title = t('deleteDevice.unregisterTitle', 'Unregister Device')
-    warning = (
+    /* The agent's unregister (cli device unregister): it stops serving, removes each of the device's services from the
+       cloud (removeService), then deletes the device (deleteDevice), and forgets its registration. Where graphql has
+       disable, that delete is a disable. */
+    warning = disableServed ? (
+      <>
+        <Notice severity="error" gutterBottom fullWidth>
+          {t(
+            'deleteDevice.unregisterServicesWarning',
+            'Remote.It on this machine stops and forgets its registration, and the device’s services are deleted for good.'
+          )}
+        </Notice>
+        <Typography variant="body2">
+          {t(
+            'deleteDevice.unregisterDisabled',
+            'The device itself is disabled and listed in Disabled devices, where it can be decommissioned. Restoring it brings back neither its services nor this machine: to use this machine again, set it up again.'
+          )}
+        </Typography>
+      </>
+    ) : (
       <Notice severity="error" fullWidth>
         {t(
           'deleteDevice.unregisterWarning',

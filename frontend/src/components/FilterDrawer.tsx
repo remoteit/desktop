@@ -47,9 +47,9 @@ export const FilterDrawer: React.FC = () => {
   const tags = useSelector(selectTags).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) }))
   const { t } = useTranslation()
   // Disabled devices are in no list: their own view, for the owner and org admins.
-  const disableSchema = useDeviceDisable()
+  const disableServed = useDeviceDisable()
   const disabledAccess = useDisabledDevicesAccess()
-  const disabledView = !!disableSchema?.filter && disabledAccess
+  const disabledView = !!disableServed && disabledAccess
 
   const update = values => {
     values = { ...values, from: defaultState.from }

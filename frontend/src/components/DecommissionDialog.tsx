@@ -53,7 +53,7 @@ export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, on
       disabled={!matches || destroying}
       onConfirm={async () => {
         if (!matches) return
-        const done = await dispatch.devices.decommission({ deviceIds: devices.map(d => d.id), typed: typed.trim() })
+        const done = await dispatch.devices.decommission(devices.map(d => d.id))
         onClose()
         if (done) onDone?.()
       }}

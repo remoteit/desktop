@@ -175,12 +175,14 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
           devicesSection &&
           deviceOnly && [
             <Divider key="divider" />,
-            // This machine's own device is unregistered through its agent, as before.
-            disable && !device.thisDevice ? (
+            // Disable where the API has it, else the delete. This machine's own device also offers Unregister, through
+            // its local agent.
+            disable && (
               <DisableDevice key="disableDevice" device={device} onClick={handleClose} onCancel={handleClose} />
-            ) : disable !== undefined || device.thisDevice ? (
+            ),
+            (disable === false || device.thisDevice) && (
               <DeleteDevice key="deleteDevice" device={device} menuItem onClick={handleClose} onCancel={handleClose} />
-            ) : null,
+            ),
           ]}
         {virtualDevices && service && !disabled && (
           <MakeVirtualDeviceItem device={device} service={service} onClick={handleClose} />

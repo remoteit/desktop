@@ -59,7 +59,7 @@ describe('DecommissionDialog', () => {
     expect(text).toMatch(/keeps checking in until that software is removed, and is refused quietly/)
   })
 
-  it('one device: confirmed only by its name typed, and the name is what is sent', async () => {
+  it('one device: confirmed only by its name typed', async () => {
     const onDone = vi.fn()
     await render([{ id: 'd1', name: 'Kitchen Pi' }], onDone)
     expect(confirmButton().disabled).toBe(true)
@@ -68,7 +68,7 @@ describe('DecommissionDialog', () => {
     await type('Kitchen Pi')
     expect(confirmButton().disabled).toBe(false)
     await act(async () => confirmButton().click())
-    expect(decommission).toHaveBeenCalledWith({ deviceIds: ['d1'], typed: 'Kitchen Pi' })
+    expect(decommission).toHaveBeenCalledWith(['d1'])
     expect(onDone).toHaveBeenCalled()
   })
 
@@ -83,6 +83,6 @@ describe('DecommissionDialog', () => {
     await type('3')
     expect(confirmButton().disabled).toBe(false)
     await act(async () => confirmButton().click())
-    expect(decommission).toHaveBeenCalledWith({ deviceIds: ['d1', 'd2', 'd3'], typed: '3' })
+    expect(decommission).toHaveBeenCalledWith(['d1', 'd2', 'd3'])
   })
 })

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { State, Dispatch } from '../store'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { Menu, MenuItem, ListSubheader, ListItemIcon, ListItemText, Typography } from '@mui/material'
@@ -10,10 +10,15 @@ import { Notice } from './Notice'
 import { Icon } from './Icon'
 import { DisableConfirm } from './DisableDevice'
 import { useDeviceDisable } from '../hooks/useDeviceDisable'
+import { selectDevice } from '../selectors/devices'
 
 export const DevicesActionMenu: React.FC = () => {
   const { t } = useTranslation()
   const selected = useSelector((state: State) => state.ui.selected)
+  const selectedDevices = useSelector(
+    (state: State) => selected.map(id => selectDevice(state, undefined, id)).filter((d): d is IDevice => !!d),
+    shallowEqual
+  )
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
@@ -77,10 +82,10 @@ export const DevicesActionMenu: React.FC = () => {
       </Menu>
       <DisableConfirm
         open={confirm && !!disable}
-        count={selected.length}
-        onConfirm={async () => {
+        devices={selectedDevices}
+        onConfirm={async keepHosted => {
           setConfirm(false)
-          if (await dispatch.devices.disable(selected)) history.push('/devices')
+          if (await dispatch.devices.disable({ ids: selected, keepHosted })) history.push('/devices')
         }}
         onDeny={() => setConfirm(false)}
       />
