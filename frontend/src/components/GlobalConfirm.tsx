@@ -2,24 +2,12 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Confirm } from '../components/Confirm'
-import { Notice } from '../components/Notice'
 
 const GLOBAL_DIALOGS: ILookup<{ title: string; message: React.ReactNode; action?: string }> = {
   destroyLink: {
     title: 'Reset persistent endpoint?',
     message: 'This will clear your connect link url so that a new one will be created when you restart again.',
     action: 'Reset',
-  },
-  forceUnregister: {
-    title: 'Force removal?',
-    message: (
-      <>
-        <Notice severity="error" fullWidth gutterBottom>
-          This device is owned by another user. You will be permanently removing it.
-        </Notice>
-        Use your system admin privileges to unregister this device?
-      </>
-    ),
   },
 }
 

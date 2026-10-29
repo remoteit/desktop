@@ -36,6 +36,7 @@ import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import { HostedDevices } from '../components/HostedDevices'
 import { hostedStateTooltip } from '../components/HostedBy'
 import { useVirtualDevices } from '../hooks/useVirtualDevices'
+import { DisabledDeviceNotice } from '../components/DisabledDeviceNotice'
 
 export const DevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -91,7 +92,9 @@ export const DevicePage: React.FC = () => {
         </>
       }
     >
-      {device.license === 'UNLICENSED' ? (
+      {device.disabled ? (
+        <DisabledDeviceNotice device={device} />
+      ) : device.license === 'UNLICENSED' ? (
         <Notice severity="warning" button={<PlanActionChip color="warning" sx={{ marginTop: 1.4 }} />} gutterTop>
           {t('devicePage.deviceUnlicensed', 'Device unlicensed')}
         </Notice>

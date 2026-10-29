@@ -49,7 +49,11 @@ export const getDevices = createSelector(
   (devices, activeAccountId): IDevice[] => getDeviceModelFn(devices, activeAccountId).all || []
 )
 
-export const selectVisibleDevices = createSelector([getDevices], devices => devices.filter((d: IDevice) => !d.hidden))
+// A disabled device is left out as graphql leaves it out of the list: one read by id (its page, an event's refresh)
+// lands in the store, and must not put it back in the list.
+export const selectVisibleDevices = createSelector([getDevices], devices =>
+  devices.filter((d: IDevice) => !d.hidden && !d.disabled)
+)
 
 export const selectOwnDevices = createSelector(
   [getDevicesState, getUserId],
@@ -171,6 +175,8 @@ export function deviceMatchesFilters(
   model: Pick<IDeviceState, 'filter' | 'owner' | 'platform' | 'tag' | 'appliedName' | 'applicationTypes'>,
   accountId: string
 ): boolean {
+  // a disabled device is in no list
+  if (device.disabled) return false
   // state (online/offline)
   if (model.filter !== 'all' && device.state !== model.filter) return false
   // owner (me / others) — ownership is relative to the active account, not the logged-in

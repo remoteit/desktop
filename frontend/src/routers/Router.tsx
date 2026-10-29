@@ -58,6 +58,7 @@ import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { ThisDevicePage } from '../pages/ThisDevicePage'
+import { DisabledDevicesPage } from '../pages/DisabledDevicesPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
@@ -230,6 +231,11 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path={['/devices/select', '/devices/select/scripts']}>
         <Panel layout={layout}>
           <DevicesPage select />
+        </Panel>
+      </Route>
+      <Route path="/devices/disabled">
+        <Panel layout={layout}>
+          <DisabledDevicesPage />
         </Panel>
       </Route>
       <Route path="/devices/transfer">

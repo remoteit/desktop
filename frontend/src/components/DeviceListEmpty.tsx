@@ -11,6 +11,7 @@ import { isUserAccount } from '../selectors/accounts'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 import { Body } from './Body'
+import { useDeviceDisable, useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
 
 export const DeviceListEmpty: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
@@ -20,6 +21,8 @@ export const DeviceListEmpty: React.FC = () => {
   const userAccount = useSelector(isUserAccount)
   const claiming = useSelector((state: State) => state.ui.claiming)
   const noResults = deviceModel.searched || isFiltered
+  const disableSchema = useDeviceDisable()
+  const disabledAccess = useDisabledDevicesAccess()
 
   return (
     <Body center>
@@ -79,6 +82,11 @@ export const DeviceListEmpty: React.FC = () => {
         <Box>
           <Notice>{t('deviceList.noDevices', 'This account has no devices')}</Notice>
         </Box>
+      )}
+      {!!disableSchema?.filter && disabledAccess && (
+        <Button component={Link} to="/devices/disabled" size="small" sx={{ marginTop: 2 }}>
+          <Icon name="ban" inlineLeft /> {t('deviceList.disabledDevices', 'Disabled devices')}
+        </Button>
       )}
     </Body>
   )

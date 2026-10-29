@@ -12,6 +12,10 @@ import { selectTags } from '../selectors/tags'
 import { byName } from '../helpers/utilHelper'
 import { useLabel } from '../hooks/useLabel'
 import { Drawer } from './Drawer'
+import { List } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { ListItemLocation } from './ListItemLocation'
+import { useDeviceDisable, useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
 
 const sortFilters = [
   { value: 'name', name: 'Name' },
@@ -41,6 +45,11 @@ export const FilterDrawer: React.FC = () => {
   const feature = useSelector(selectLimitsLookup)
   const state = useSelector(selectDeviceModelAttributes)
   const tags = useSelector(selectTags).map(t => ({ name: t.name, value: t.name, color: getColor(t.color) }))
+  const { t } = useTranslation()
+  // Disabled devices are in no list: their own view, for the owner and org admins.
+  const disableSchema = useDeviceDisable()
+  const disabledAccess = useDisabledDevicesAccess()
+  const disabledView = !!disableSchema?.filter && disabledAccess
 
   const update = values => {
     values = { ...values, from: defaultState.from }
@@ -147,6 +156,16 @@ export const FilterDrawer: React.FC = () => {
           },
         ]}
       />
+      {disabledView && (
+        <List>
+          <ListItemLocation
+            title={t('filterDrawer.disabledDevices', 'Disabled devices')}
+            icon="ban"
+            to="/devices/disabled"
+            dense
+          />
+        </List>
+      )}
     </Drawer>
   )
 }

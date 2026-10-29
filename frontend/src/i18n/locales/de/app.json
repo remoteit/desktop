@@ -712,6 +712,22 @@
     "channel": "",
     "title": ""
   },
+  "decommission": {
+    "action": "",
+    "countLabel": "",
+    "final": "",
+    "legacy": "",
+    "lostHistory": "",
+    "lostSettings": "",
+    "lostShares": "",
+    "nameLabel": "",
+    "title": "",
+    "titleCount_one": "",
+    "titleCount_other": "",
+    "typeCount_one": "",
+    "typeCount_other": "",
+    "typeName": ""
+  },
   "deleteAccessKey": {
     "confirmLabel": "Geben Sie zur Bestätigung DELETE ein",
     "confirmText": "Möchten Sie den Schlüssel löschen",
@@ -943,6 +959,7 @@
     "clearSelection": "Auswahl aufheben",
     "demoDevice": "Demogerät",
     "demoHelp": "Erfahren Sie, wie einfach die Verbindung mit unserem AWS-Demogerät ist, oder fügen Sie über das Plus-Menü oben links im Bildschirm Ihr eigenes Gerät hinzu.",
+    "disabledDevices": "",
     "filterNoResults": "Ihr Filter hat keine Ergebnisse geliefert",
     "guideHosting": "Ein Gerät kann eigene Anwendungen (Dienste) hosten oder einen anderen Dienst in seinem lokalen Netzwerk bereitstellen.",
     "guideSelect": "Wählen Sie ein Gerät aus, um sich mit einem Dienst zu verbinden oder es zu konfigurieren.",
@@ -1229,6 +1246,7 @@
     "deleteCount_one": "{{count}} Gerät löschen",
     "deleteCount_other": "{{count}} Geräte löschen",
     "deleteWarning": "Das Löschen ist unwiderruflich und erfordert für eine Wiederherstellung möglicherweise Gerätezugriff.",
+    "disable": "",
     "more": "Mehr",
     "selectedCount_one": "{{count}} Gerät ausgewählt",
     "selectedCount_other": "{{count}} Geräte ausgewählt",
@@ -1320,6 +1338,48 @@
     "on": "",
     "onHint": "",
     "using": ""
+  },
+  "disabledDevice": {
+    "by": "",
+    "decommission": "",
+    "disabled": "",
+    "expired": "",
+    "expiredWhen": "",
+    "notServing": "",
+    "restore": "",
+    "restoreDevice": "",
+    "when": "",
+    "whenBy": ""
+  },
+  "disabledDevicesPage": {
+    "count_one": "",
+    "count_other": "",
+    "decommission": "",
+    "decommissionSelected": "",
+    "description": "",
+    "empty": "",
+    "failed": "",
+    "more": "",
+    "noAccess": "",
+    "notServed": "",
+    "open": "",
+    "restore": "",
+    "restoreSelected": "",
+    "selectAll": "",
+    "selectedCount_one": "",
+    "selectedCount_other": "",
+    "title": ""
+  },
+  "disableDevice": {
+    "action": "",
+    "confirmTitle": "",
+    "confirmTitleCount_one": "",
+    "confirmTitleCount_other": "",
+    "restorable_one": "",
+    "restorable_other": "",
+    "stops_one": "",
+    "stops_other": "",
+    "title": ""
   },
   "discovery": {
     "addAsService": "",
@@ -1508,6 +1568,9 @@
     "title": "Versionen",
     "total": "{{size}} insgesamt gespeichert",
     "version": "Version {{version}}"
+  },
+  "filterDrawer": {
+    "disabledDevices": ""
   },
   "globalSearch": {
     "placeholder": "Geräte- oder Dienstnamen suchen"

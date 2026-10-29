@@ -708,6 +708,20 @@
     "channel": "",
     "title": ""
   },
+  "decommission": {
+    "action": "",
+    "countLabel": "",
+    "final": "",
+    "legacy": "",
+    "lostHistory": "",
+    "lostSettings": "",
+    "lostShares": "",
+    "nameLabel": "",
+    "title": "",
+    "titleCount_other": "",
+    "typeCount_other": "",
+    "typeName": ""
+  },
   "deleteAccessKey": {
     "confirmLabel": "確認のため「DELETE」と入力してください",
     "confirmText": "このキーを削除しますか",
@@ -934,6 +948,7 @@
     "clearSelection": "選択を解除",
     "demoDevice": "デモデバイス",
     "demoHelp": "AWS デモデバイスへの接続がいかに簡単か確認するか、画面左上のプラスメニューからご自身のデバイスを追加してください。",
+    "disabledDevices": "",
     "filterNoResults": "フィルターに一致する結果がありません",
     "guideHosting": "デバイスは自身のアプリケーション(サービス)をホストすることも、ローカルネットワーク上の別のサービスをホストすることもできます。",
     "guideSelect": "デバイスを選択して、サービスに接続するか設定してください。",
@@ -1204,6 +1219,7 @@
     "delete": "削除",
     "deleteCount_other": "{{count}}台のデバイスを削除",
     "deleteWarning": "削除は元に戻せません。復元するにはデバイスへのアクセスが必要になる場合があります。",
+    "disable": "",
     "more": "その他",
     "selectedCount_other": "{{count}}台のデバイスを選択中",
     "transfer": "譲渡",
@@ -1294,6 +1310,43 @@
     "on": "",
     "onHint": "",
     "using": ""
+  },
+  "disabledDevice": {
+    "by": "",
+    "decommission": "",
+    "disabled": "",
+    "expired": "",
+    "expiredWhen": "",
+    "notServing": "",
+    "restore": "",
+    "restoreDevice": "",
+    "when": "",
+    "whenBy": ""
+  },
+  "disabledDevicesPage": {
+    "count_other": "",
+    "decommission": "",
+    "decommissionSelected": "",
+    "description": "",
+    "empty": "",
+    "failed": "",
+    "more": "",
+    "noAccess": "",
+    "notServed": "",
+    "open": "",
+    "restore": "",
+    "restoreSelected": "",
+    "selectAll": "",
+    "selectedCount_other": "",
+    "title": ""
+  },
+  "disableDevice": {
+    "action": "",
+    "confirmTitle": "",
+    "confirmTitleCount_other": "",
+    "restorable_other": "",
+    "stops_other": "",
+    "title": ""
   },
   "discovery": {
     "addAsService": "",
@@ -1481,6 +1534,9 @@
     "title": "バージョン",
     "total": "合計 {{size}} を保存",
     "version": "バージョン {{version}}"
+  },
+  "filterDrawer": {
+    "disabledDevices": ""
   },
   "globalSearch": {
     "placeholder": "デバイス名またはサービス名を検索"

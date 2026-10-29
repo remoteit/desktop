@@ -32,6 +32,7 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/devices/:deviceID/details', '/devices/:deviceID'],
   ['/devices/:deviceID/:serviceID', '/devices/:deviceID'],
   // Devices — device page → devices list
+  ['/devices/disabled', '/devices'],
   ['/devices/:deviceID', '/devices'],
 
   // Networks

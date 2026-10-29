@@ -8,6 +8,8 @@ import { IconButton } from '../buttons/IconButton'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
+import { DisableConfirm } from './DisableDevice'
+import { useDeviceDisable } from '../hooks/useDeviceDisable'
 
 export const DevicesActionMenu: React.FC = () => {
   const { t } = useTranslation()
@@ -16,6 +18,8 @@ export const DevicesActionMenu: React.FC = () => {
   const history = useHistory()
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [confirm, setConfirm] = useState<boolean>(false)
+  // Disable where the API has it; an API without it keeps the delete.
+  const disable = useDeviceDisable()
 
   const handleClose = () => setAnchorEl(null)
   const selectedLabel = t('devicesActionMenu.selectedCount', {
@@ -64,13 +68,24 @@ export const DevicesActionMenu: React.FC = () => {
           }}
         >
           <ListItemIcon>
-            <Icon name="trash" size="md" />
+            <Icon name={disable ? 'ban' : 'trash'} size="md" />
           </ListItemIcon>
-          <ListItemText primary={t('devicesActionMenu.delete', 'Delete')} />
+          <ListItemText
+            primary={disable ? t('devicesActionMenu.disable', 'Disable') : t('devicesActionMenu.delete', 'Delete')}
+          />
         </MenuItem>
       </Menu>
+      <DisableConfirm
+        open={confirm && !!disable}
+        count={selected.length}
+        onConfirm={async () => {
+          setConfirm(false)
+          if (await dispatch.devices.disable(selected)) history.push('/devices')
+        }}
+        onDeny={() => setConfirm(false)}
+      />
       <Confirm
-        open={confirm}
+        open={confirm && !disable}
         title={t('devicesActionMenu.confirmTitle', 'Confirm Device Deletion')}
         action={deleteLabel}
         color="error"

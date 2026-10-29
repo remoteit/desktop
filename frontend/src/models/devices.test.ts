@@ -1,10 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { graphQLFetchDeviceList, graphQLDeviceAdaptor } = vi.hoisted(() => ({
+const {
+  graphQLFetchDeviceList,
+  graphQLDeviceAdaptor,
+  graphQLDisableDevices,
+  graphQLRestoreDevices,
+  graphQLDecommissionDevices,
+} = vi.hoisted(() => ({
   graphQLFetchDeviceList: vi.fn(),
   graphQLDeviceAdaptor: vi.fn(),
+  graphQLDisableDevices: vi.fn(),
+  graphQLRestoreDevices: vi.fn(),
+  graphQLDecommissionDevices: vi.fn(),
 }))
 vi.mock('../services/graphQLDevice', () => ({ graphQLFetchDeviceList, graphQLDeviceAdaptor }))
+vi.mock('../services/deviceDisable', () => ({
+  graphQLDisableDevices,
+  graphQLRestoreDevices,
+  graphQLDecommissionDevices,
+}))
 vi.mock('../services/graphQLMutation', () => ({}))
 vi.mock('../services/graphQLRequest', () => ({}))
 vi.mock('../services/graphQLVirtualDevices', () => ({}))
@@ -12,6 +26,7 @@ vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' })
 vi.mock('../selectors/devices', () => ({
   selectDeviceModelAttributes: (state: any) => state.devices.acct,
   selectActiveColumns: () => [],
+  selectDevice: (state: any, _: any, id: string) => state.devices.acct.all.find((d: any) => d.id === id),
 }))
 vi.mock('../selectors/ui', () => ({ selectTimeSeries: () => ({}) }))
 vi.mock('../selectors/organizations', () => ({}))
@@ -81,5 +96,68 @@ describe('a failed device list fetch keeps the held list', () => {
     dispatch.devices.fetchList.mockResolvedValue(true)
     await effects().fetchPage({ from: 100, append: true }, stateWith({ from: 50 }))
     expect(dispatch.devices.set.mock.calls).toEqual([[{ from: 100, append: true, accountId: 'acct' }]])
+  })
+})
+
+describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', () => {
+  const device = (id: string, over: Partial<IDevice> = {}) =>
+    ({ id, name: id, state: 'inactive', shared: false, permissions: ['MANAGE'], ...over } as IDevice)
+
+  beforeEach(() => {
+    dispatch.ui = { set: vi.fn() }
+    dispatch.connections = { clearByDevice: vi.fn() }
+    dispatch.networks = { clearById: vi.fn() }
+    dispatch.accounts.setDevice = vi.fn()
+    dispatch.devices.cleanup = vi.fn()
+  })
+
+  it('an online device is disabled: kept in the store marked, out of the total only where it was listed', async () => {
+    graphQLDisableDevices.mockResolvedValue({ data: {} })
+    const online = device('d1', { state: 'active' })
+    const hidden = device('d2', { hidden: true })
+    const state = { ...stateWith({ all: [online, hidden], total: 5 }), auth: { user: { email: 'me@x' } } }
+    expect(await effects().disable(['d1', 'd2'], state)).toBe(true)
+    expect(graphQLDisableDevices).toHaveBeenCalledWith(['d1', 'd2'])
+    expect(dispatch.connections.clearByDevice.mock.calls).toEqual([['d1'], ['d2']])
+    expect(
+      dispatch.accounts.setDevice.mock.calls.map(([a]: any) => [a.id, a.device.disabled, a.device.disabledBy])
+    ).toEqual([
+      ['d1', true, 'me@x'],
+      ['d2', true, 'me@x'],
+    ])
+    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 4, accountId: 'acct' })
+    expect(dispatch.devices.cleanup).not.toHaveBeenCalled()
+  })
+
+  it('a shared device, or one without MANAGE, is refused before the API is asked', async () => {
+    for (const over of [{ shared: true }, { permissions: [] as IPermission[] }]) {
+      expect(await effects().disable(['d1'], stateWith({ all: [device('d1', over)] }))).toBe(false)
+    }
+    expect(graphQLDisableDevices).not.toHaveBeenCalled()
+  })
+
+  it('a refused disable changes nothing', async () => {
+    graphQLDisableDevices.mockResolvedValue('ERROR')
+    expect(await effects().disable(['d1'], stateWith({ all: [device('d1')], total: 1 }))).toBe(false)
+    expect(dispatch.accounts.setDevice).not.toHaveBeenCalled()
+    expect(dispatch.devices.set).not.toHaveBeenCalled()
+  })
+
+  it('restore unmarks the device and reads the list again', async () => {
+    graphQLRestoreDevices.mockResolvedValue({ data: {} })
+    const disabled = device('d1', { disabled: true, disabledReason: 'person' })
+    expect(await effects().restore(['d1'], stateWith({ all: [disabled] }))).toBe(true)
+    expect(dispatch.accounts.setDevice.mock.calls[0][0].device).toMatchObject({
+      disabled: false,
+      disabledReason: undefined,
+    })
+    expect(dispatch.devices.fetchList).toHaveBeenCalled()
+  })
+
+  it('decommission sends what was typed and forgets the devices', async () => {
+    graphQLDecommissionDevices.mockResolvedValue({ data: {} })
+    expect(await effects().decommission({ deviceIds: ['d1', 'd2'], typed: '2' })).toBe(true)
+    expect(graphQLDecommissionDevices).toHaveBeenCalledWith(['d1', 'd2'], '2')
+    expect(dispatch.devices.cleanup).toHaveBeenCalledWith(['d1', 'd2'])
   })
 })

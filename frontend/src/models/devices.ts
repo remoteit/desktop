@@ -34,6 +34,7 @@ import {
   updateVirtualDevice,
 } from '../services/graphQLVirtualDevices'
 import { isSampleId } from '../services/virtualDevicesSample'
+import { graphQLDecommissionDevices, graphQLDisableDevices, graphQLRestoreDevices } from '../services/deviceDisable'
 import { selectTimeSeries } from '../selectors/ui'
 import { listTimeSeriesKey, timeSeriesLoading, timeSeriesWithStyle } from '../helpers/dateHelper'
 import {
@@ -754,6 +755,140 @@ export default createModel<RootModel>()({
         })
       }
       dispatch.ui.set({ destroying: false })
+    },
+
+    /* Disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md, services/deviceDisable). A disabled device
+       stays in the store marked, so its page can offer Restore, and is left out of the lists and their total as
+       graphql leaves it out (selectVisibleDevices). */
+
+    async disable(deviceIds: string[], state) {
+      if (!deviceIds.length) return false
+
+      for (const id of deviceIds) {
+        const device = selectDevice(state, undefined, id)
+        if (!device) {
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:device.idNotFound', {
+              id,
+              defaultValue: 'A device id could not be found. Deselect {{id}} and try again.',
+            }),
+          })
+          return false
+        }
+        if (device.shared) {
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:device.cannotDisableShared', {
+              name: device.name,
+              defaultValue: 'You cannot disable a shared device. Deselect or leave "{{name}}" and try again.',
+            }),
+          })
+          return false
+        }
+        if (!device.permissions.includes('MANAGE')) {
+          dispatch.ui.set({
+            errorMessage: i18n.t('notices:device.noPermissionDisable', {
+              name: device.name,
+              defaultValue: 'You do not have permission to disable a device. Deselect "{{name}}" and try again.',
+            }),
+          })
+          return false
+        }
+      }
+
+      dispatch.ui.set({ destroying: true })
+      const result = await graphQLDisableDevices(deviceIds)
+      if (result !== 'ERROR') {
+        const disabledAt = new Date()
+        const by = state.auth.user?.email
+        for (const id of deviceIds) {
+          await dispatch.connections.clearByDevice(id)
+          await dispatch.networks.clearById(id)
+        }
+        for (const accountId in state.devices) {
+          let listed = 0
+          for (const device of state.devices[accountId].all) {
+            if (!deviceIds.includes(device.id) || device.disabled) continue
+            await dispatch.accounts.setDevice({
+              id: device.id,
+              accountId,
+              device: { ...device, disabled: true, disabledAt, disabledReason: 'person', disabledBy: by },
+            })
+            if (!device.hidden) listed++
+          }
+          if (listed)
+            await dispatch.devices.set({ total: Math.max(0, state.devices[accountId].total - listed), accountId })
+        }
+        dispatch.ui.set({
+          selected: [],
+          successMessage:
+            deviceIds.length === 1
+              ? i18n.t('notices:device.disabled', {
+                  name: selectDevice(state, undefined, deviceIds[0])?.name,
+                  defaultValue: '"{{name}}" was disabled. You can restore it at any time.',
+                })
+              : i18n.t('notices:device.disabledCount', {
+                  count: deviceIds.length,
+                  defaultValue_one: '{{count}} device was disabled. You can restore it at any time.',
+                  defaultValue_other: '{{count}} devices were disabled. You can restore them at any time.',
+                }),
+        })
+      }
+      dispatch.ui.set({ destroying: false })
+      return result !== 'ERROR'
+    },
+
+    // The list is read again: a restored device takes its place in it, and in its total, by graphql's sort.
+    async restore(deviceIds: string[], state) {
+      if (!deviceIds.length) return false
+      dispatch.ui.set({ destroying: true })
+      const result = await graphQLRestoreDevices(deviceIds)
+      if (result !== 'ERROR') {
+        for (const id of deviceIds)
+          for (const accountId in state.devices) {
+            const device = state.devices[accountId].all.find(d => d.id === id)
+            if (device?.disabled)
+              await dispatch.accounts.setDevice({
+                id,
+                accountId,
+                device: {
+                  ...device,
+                  disabled: false,
+                  disabledAt: undefined,
+                  disabledReason: undefined,
+                  disabledBy: undefined,
+                },
+              })
+          }
+        await dispatch.devices.fetchList()
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:device.restoredCount', {
+            count: deviceIds.length,
+            defaultValue_one: '{{count}} device was restored.',
+            defaultValue_other: '{{count}} devices were restored.',
+          }),
+        })
+      }
+      dispatch.ui.set({ destroying: false })
+      return result !== 'ERROR'
+    },
+
+    // typed: the confirmation the person typed — the device's name, or for several, how many.
+    async decommission({ deviceIds, typed }: { deviceIds: string[]; typed: string }) {
+      if (!deviceIds.length) return false
+      dispatch.ui.set({ destroying: true })
+      const result = await graphQLDecommissionDevices(deviceIds, typed)
+      if (result !== 'ERROR') {
+        await dispatch.devices.cleanup(deviceIds)
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:device.decommissionedCount', {
+            count: deviceIds.length,
+            defaultValue_one: '{{count}} device was decommissioned.',
+            defaultValue_other: '{{count}} devices were decommissioned.',
+          }),
+        })
+      }
+      dispatch.ui.set({ destroying: false })
+      return result !== 'ERROR'
     },
 
     /* Virtual devices (graphql-api docs/VIRTUAL-DEVICES.md). Each reads anew what it changed: the device, and the

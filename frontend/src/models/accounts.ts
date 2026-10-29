@@ -191,7 +191,9 @@ export default createModel<RootModel>()({
         const filtered = all.filter(d => d.id !== id)
         if (filtered.length !== all.length) {
           await dispatch.accounts.setDevices({ devices: filtered, accountId })
-          await dispatch.devices.set({ total: state.devices[accountId].total - 1, accountId })
+          // A disabled device was never in the total (graphql leaves it out of the list).
+          if (!all.find(d => d.id === id)?.disabled)
+            await dispatch.devices.set({ total: state.devices[accountId].total - 1, accountId })
         }
       }
     },

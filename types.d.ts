@@ -398,6 +398,11 @@ declare global {
     lastAddress?: string // the address its .local name last resolved to
     hosts?: number // how many virtual devices this one hosts that the viewer can see
     hostedDevices?: IHostedDevice[] // those devices, on a gateway's full read
+    // Disabled (graphql-api docs/DEVICE-DISABLE.md): read only where the API serves it (services/deviceDisable).
+    disabled?: boolean // stopped serving, restorable; left out of the device lists
+    disabledAt?: Date
+    disabledReason?: 'person' | 'expired' // expired: offline past its registration's timeout, back on its return
+    disabledBy?: string // who disabled it, where the API says
   }
 
   interface IHostingGateway {

@@ -10,6 +10,9 @@ import { DeleteServiceMenuItem } from '../buttons/DeleteServiceMenuItem'
 import { ListItemLocation } from './ListItemLocation'
 import { CopyMenuItem } from './CopyMenuItem'
 import { DeleteDevice } from './DeleteDevice'
+import { DisableDevice } from './DisableDevice'
+import { DecommissionMenuItem, RestoreDisabledMenuItem } from './DisabledDeviceMenuItems'
+import { useDeviceDisable } from '../hooks/useDeviceDisable'
 import { LeaveDevice } from './LeaveDevice'
 import { InfoButton } from '../buttons/InfoButton'
 import { IconButton } from '../buttons/IconButton'
@@ -34,8 +37,13 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   const devicesSection = !!deviceID
   const deviceOnly = device && !service
   const virtualDevices = useVirtualDevices()
+  const disable = useDeviceDisable()
 
   if (!device) return null
+
+  // A disabled device offers Restore and Decommission… in place of what it can't do while disabled.
+  const disabled = !!device.disabled
+  const manage = device.permissions.includes('MANAGE') && !disabled
 
   const handleMakeProduct = async () => {
     handleClose()
@@ -78,7 +86,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         elevation={2}
       >
         <MobileUI>
-          {device.permissions.includes('MANAGE') && (
+          {manage && (
             <MenuItem
               dense
               key="restore"
@@ -119,7 +127,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             onCopied={handleClose}
           />
         )}
-        {device.permissions.includes('MANAGE') &&
+        {manage &&
           devicesSection &&
           deviceOnly && [
             !device.virtual && (
@@ -156,14 +164,28 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
               </Tooltip>
             ),
           ]}
-        {device.permissions.includes('MANAGE') &&
+        {devicesSection &&
+          deviceOnly &&
+          disabled && [
+            <Divider key="divider" />,
+            <RestoreDisabledMenuItem key="restoreDisabled" device={device} onClick={handleClose} />,
+            <DecommissionMenuItem key="decommission" device={device} onClick={handleClose} />,
+          ]}
+        {manage &&
           devicesSection &&
           deviceOnly && [
             <Divider key="divider" />,
-            <DeleteDevice key="deleteDevice" device={device} menuItem onClick={handleClose} onCancel={handleClose} />,
+            // This machine's own device is unregistered through its agent, as before.
+            disable && !device.thisDevice ? (
+              <DisableDevice key="disableDevice" device={device} onClick={handleClose} onCancel={handleClose} />
+            ) : disable !== undefined || device.thisDevice ? (
+              <DeleteDevice key="deleteDevice" device={device} menuItem onClick={handleClose} onCancel={handleClose} />
+            ) : null,
           ]}
-        {virtualDevices && service && <MakeVirtualDeviceItem device={device} service={service} onClick={handleClose} />}
-        {device.permissions.includes('MANAGE') &&
+        {virtualDevices && service && !disabled && (
+          <MakeVirtualDeviceItem device={device} service={service} onClick={handleClose} />
+        )}
+        {manage &&
           service &&
           devicesSection && [
             <Divider key="divider" />,

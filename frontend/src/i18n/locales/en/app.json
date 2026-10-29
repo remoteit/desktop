@@ -712,6 +712,22 @@
     "channel": "Channel",
     "title": "Device agent updates"
   },
+  "decommission": {
+    "action": "Decommission",
+    "countLabel": "Number of devices",
+    "final": "This can't be undone. Everything the cloud keeps for it goes:",
+    "legacy": "A device running older software keeps checking in until that software is removed, and is refused quietly. A device on current software removes its own key and stops.",
+    "lostHistory": "Its history: events, logs and reports",
+    "lostSettings": "Its services, settings, tags and scripts",
+    "lostShares": "Its shares, and the access they give",
+    "nameLabel": "Device name",
+    "title": "Decommission \"{{name}}\"?",
+    "titleCount_one": "Decommission {{count}} device?",
+    "titleCount_other": "Decommission {{count}} devices?",
+    "typeCount_one": "Type {{count}}, the number of devices, to confirm.",
+    "typeCount_other": "Type {{count}}, the number of devices, to confirm.",
+    "typeName": "Type the device name, {{name}}, to confirm."
+  },
   "deleteAccessKey": {
     "confirmLabel": "Type DELETE to confirm",
     "confirmText": "Do you wish to delete key",
@@ -943,6 +959,7 @@
     "clearSelection": "Clear selection",
     "demoDevice": "Demo Device",
     "demoHelp": "See how simple it is to connect with our AWS demo device, or add your own device from the plus menu in the top left of the screen.",
+    "disabledDevices": "Disabled devices",
     "filterNoResults": "Your filter returned no results",
     "guideHosting": "A device can host its own applications (services), or it can host another service on its local network.",
     "guideSelect": "Select a device to connect to a service, or configure it.",
@@ -1229,6 +1246,7 @@
     "deleteCount_one": "Delete {{count}} device",
     "deleteCount_other": "Delete {{count}} devices",
     "deleteWarning": "Deletion is irreversible and may require device access for recovery.",
+    "disable": "Disable",
     "more": "More",
     "selectedCount_one": "{{count}} device selected",
     "selectedCount_other": "{{count}} devices selected",
@@ -1320,6 +1338,48 @@
     "on": "Always",
     "onHint": "All traffic through remote.it’s reflector — for networks that block UDP",
     "using": "Reaching remote.it through the reflector"
+  },
+  "disabledDevice": {
+    "by": "Disabled by {{by}}",
+    "decommission": "Decommission…",
+    "disabled": "Disabled",
+    "expired": "Disabled: offline past its registration’s timeout. It restores itself when it returns.",
+    "expiredWhen": "Disabled {{when}}: offline past its registration’s timeout. It restores itself when it returns.",
+    "notServing": "It serves nothing until it is restored.",
+    "restore": "Restore",
+    "restoreDevice": "Restore device",
+    "when": "Disabled {{when}}",
+    "whenBy": "Disabled {{when}} by {{by}}"
+  },
+  "disabledDevicesPage": {
+    "count_one": "{{count}} disabled device",
+    "count_other": "{{count}} disabled devices",
+    "decommission": "Decommission…",
+    "decommissionSelected": "Decommission…",
+    "description": "A disabled device serves nothing and is not counted, but keeps its services, shares and settings. Restore it to bring it back as it was, or decommission it to remove it for good.",
+    "empty": "No disabled devices.",
+    "failed": "Disabled devices could not be read.",
+    "more": "Load more",
+    "noAccess": "Disabled devices are seen by their owner and the organization’s admins.",
+    "notServed": "This server does not list disabled devices yet.",
+    "open": "Open",
+    "restore": "Restore",
+    "restoreSelected": "Restore",
+    "selectAll": "Select all",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "title": "Disabled devices"
+  },
+  "disableDevice": {
+    "action": "Disable",
+    "confirmTitle": "Disable \"{{name}}\"?",
+    "confirmTitleCount_one": "Disable {{count}} device?",
+    "confirmTitleCount_other": "Disable {{count}} devices?",
+    "restorable_one": "Nothing is lost: you can restore it at any time, from Disabled devices.",
+    "restorable_other": "Nothing is lost: you can restore them at any time, from Disabled devices.",
+    "stops_one": "It stops serving now: its connections end, and its services, shares and scripts stop working.",
+    "stops_other": "They stop serving now: their connections end, and their services, shares and scripts stop working.",
+    "title": "Disable Device"
   },
   "discovery": {
     "addAsService": "Add as service",
@@ -1508,6 +1568,9 @@
     "title": "Versions",
     "total": "{{size}} stored in all",
     "version": "Version {{version}}"
+  },
+  "filterDrawer": {
+    "disabledDevices": "Disabled devices"
   },
   "globalSearch": {
     "placeholder": "Search device or service name"
