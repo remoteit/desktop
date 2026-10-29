@@ -18,8 +18,8 @@ export const DisableDevice: React.FC<Props> = ({ device, onClick, onCancel }) =>
   const destroying = useSelector((state: State) => state.ui.destroying)
   const [open, setOpen] = useState(false)
 
-  if (device.shared || device.disabled || (device.accountId !== userId && !device.permissions.includes('MANAGE')))
-    return null
+  // Whoever may manage the device may disable it — its owner, a role, or a share that grants MANAGE — as graphql decides.
+  if (device.disabled || (device.accountId !== userId && !device.permissions.includes('MANAGE'))) return null
 
   return (
     <>

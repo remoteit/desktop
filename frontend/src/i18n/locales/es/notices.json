@@ -29,7 +29,6 @@
   "device": {
     "cannotDeleteOnline": "No puedes eliminar un dispositivo en línea. Deselecciona “{{name}}” e inténtalo de nuevo.",
     "cannotDeleteShared": "No puedes eliminar un dispositivo compartido. Deselecciona o abandona “{{name}}” e inténtalo de nuevo.",
-    "cannotDisableShared": "",
     "cannotTransferShared": "No puedes transferir un dispositivo compartido. Deselecciona o abandona “{{name}}” e inténtalo de nuevo.",
     "decommissionedCount_one": "",
     "decommissionedCount_many": "",

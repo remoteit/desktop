@@ -156,11 +156,19 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
     expect(dispatch.devices.fetchDevices).toHaveBeenCalledWith({ ids: ['v1', 'v2'] })
   })
 
-  it('a shared device, or one without MANAGE, is refused before the API is asked', async () => {
-    for (const over of [{ shared: true }, { permissions: [] as IPermission[] }]) {
-      expect(await effects().disable({ ids: ['d1'] }, stateWith({ all: [device('d1', over)] }))).toBe(false)
-    }
+  it('one without MANAGE is refused before the API is asked', async () => {
+    expect(
+      await effects().disable({ ids: ['d1'] }, stateWith({ all: [device('d1', { permissions: [] as IPermission[] })] }))
+    ).toBe(false)
     expect(graphQLDisableDevices).not.toHaveBeenCalled()
+  })
+
+  it('a shared device whose share grants MANAGE is disabled, as graphql allows', async () => {
+    graphQLDisableDevices.mockResolvedValue({ data: {} })
+    expect(
+      await effects().disable({ ids: ['d1'] }, stateWith({ all: [device('d1', { shared: true })], total: 1 }))
+    ).toBe(true)
+    expect(graphQLDisableDevices).toHaveBeenCalled()
   })
 
   it('a refused disable changes nothing', async () => {

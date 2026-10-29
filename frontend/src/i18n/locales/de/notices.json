@@ -29,7 +29,6 @@
   "device": {
     "cannotDeleteOnline": "Ein Online-Gerät kann nicht gelöscht werden. Heben Sie die Auswahl von „{{name}}“ auf und versuchen Sie es erneut.",
     "cannotDeleteShared": "Ein freigegebenes Gerät kann nicht gelöscht werden. Heben Sie die Auswahl von „{{name}}“ auf oder verlassen Sie die Freigabe und versuchen Sie es erneut.",
-    "cannotDisableShared": "",
     "cannotTransferShared": "Ein freigegebenes Gerät kann nicht übertragen werden. Heben Sie die Auswahl von „{{name}}“ auf oder verlassen Sie die Freigabe und versuchen Sie es erneut.",
     "decommissionedCount_one": "",
     "decommissionedCount_other": "",

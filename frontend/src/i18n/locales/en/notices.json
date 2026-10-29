@@ -29,7 +29,6 @@
   "device": {
     "cannotDeleteOnline": "You cannot delete an online device. Deselect \"{{name}}\" and try again.",
     "cannotDeleteShared": "You cannot delete a shared device. Deselect or leave \"{{name}}\" and try again.",
-    "cannotDisableShared": "You cannot disable a shared device. Deselect or leave \"{{name}}\" and try again.",
     "cannotTransferShared": "You cannot transfer a shared device. Deselect or leave \"{{name}}\" and try again.",
     "decommissionedCount_one": "{{count}} device was decommissioned.",
     "decommissionedCount_other": "{{count}} devices were decommissioned.",

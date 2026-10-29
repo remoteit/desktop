@@ -29,7 +29,6 @@
   "device": {
     "cannotDeleteOnline": "オンラインのデバイスは削除できません。「{{name}}」の選択を解除してもう一度お試しください。",
     "cannotDeleteShared": "共有デバイスは削除できません。「{{name}}」の選択を解除するか、共有から退出してもう一度お試しください。",
-    "cannotDisableShared": "",
     "cannotTransferShared": "共有デバイスは譲渡できません。「{{name}}」の選択を解除するか、共有から退出してもう一度お試しください。",
     "decommissionedCount_other": "",
     "deleted": "「{{name}}」を削除しました。",

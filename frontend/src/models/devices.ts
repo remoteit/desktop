@@ -765,6 +765,7 @@ export default createModel<RootModel>()({
     // default), or disabled with it; asked only where one hosts some.
     async disable({ ids: deviceIds, keepHosted }: { ids: string[]; keepHosted?: boolean }, state) {
       if (!deviceIds.length) return false
+      const userId = state.auth?.user?.id
 
       for (const id of deviceIds) {
         const device = selectDevice(state, undefined, id)
@@ -777,16 +778,7 @@ export default createModel<RootModel>()({
           })
           return false
         }
-        if (device.shared) {
-          dispatch.ui.set({
-            errorMessage: i18n.t('notices:device.cannotDisableShared', {
-              name: device.name,
-              defaultValue: 'You cannot disable a shared device. Deselect or leave "{{name}}" and try again.',
-            }),
-          })
-          return false
-        }
-        if (!device.permissions.includes('MANAGE')) {
+        if (!(userId && device.accountId === userId) && !device.permissions.includes('MANAGE')) {
           dispatch.ui.set({
             errorMessage: i18n.t('notices:device.noPermissionDisable', {
               name: device.name,
