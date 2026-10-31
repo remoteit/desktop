@@ -140,6 +140,40 @@ describe('the schema read', () => {
     expect(schema.detail).toContain('failures { reason devices deviceIds }')
   })
 
+  it("asks for the new gate readings and each failure's devices where served, never an object gate as a scalar", () => {
+    const schema = parseRolloutSchema({
+      ...CONTRACT,
+      run: {
+        fields: [
+          ...CONTRACT.run.fields,
+          { name: 'holdCause', args: [], type: scalar('String') },
+          { name: 'stepIndex', args: [], type: nonNull(scalar('Int')) },
+          { name: 'rateFloor', args: [], type: scalar('Float') },
+        ],
+      },
+      gates: {
+        fields: [
+          ...['presenceCpuMax', 'cpuHold', 'cpuAbort', 'memoryAbort', 'queueOldestMs', 'queueOldestHold'].map(name => ({
+            name,
+            type: scalar('Float'),
+          })),
+          { name: 'cpuSource', type: scalar('String') },
+          { name: 'tasks', type: object('PresenceTasks') }, // were it ever an object: left out
+        ],
+      },
+      failure: fields('reason', 'devices', 'deviceIds', 'failedDevices'),
+    })
+    expect(schema.list).toContain('holdCause')
+    expect(schema.list).toContain('stepIndex')
+    expect(schema.list).toContain('rateFloor')
+    expect(schema.list).toContain(
+      'gates { presenceCpuMax cpuHold cpuAbort memoryAbort cpuSource queueOldestMs queueOldestHold }'
+    )
+    expect(schema.detail).toContain(
+      'failures { reason devices deviceIds failedDevices { deviceId transient retrying attempts retryAt } }'
+    )
+  })
+
   it('an API without the controller has no runs', () => {
     expect(parseRolloutSchema({ query: fields('daemonChannels') }).runs).toBe(false)
   })

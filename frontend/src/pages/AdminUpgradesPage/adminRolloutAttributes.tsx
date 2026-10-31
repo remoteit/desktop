@@ -2,7 +2,16 @@ import React from 'react'
 import { Box, Chip, Tooltip } from '@mui/material'
 import { Attribute } from '../../components/Attributes'
 import type { RolloutRun } from '../../services/graphQLDaemonRollout'
-import { active, between, dateTime, failureCount, shortDuration, startedByLabel, stepLabel } from './rolloutHelpers'
+import {
+  active,
+  between,
+  holdCause,
+  dateTime,
+  failureCount,
+  shortDuration,
+  startedByLabel,
+  stepLabel,
+} from './rolloutHelpers'
 
 export type AdminRolloutAttributeOptions = { run?: RolloutRun }
 
@@ -57,7 +66,11 @@ export const adminRolloutAttributes: AdminRolloutAttribute[] = [
       run ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
           <RolloutStateChip run={run} />
-          {run.reason && <Box sx={clip}>{run.reason}</Box>}
+          {(holdCause(run) || run.reason) && (
+            <Box sx={clip}>
+              {holdCause(run) ? `${holdCause(run)?.label}${run.reason ? `: ${run.reason}` : ''}` : run.reason}
+            </Box>
+          )}
         </Box>
       ) : null,
   }),

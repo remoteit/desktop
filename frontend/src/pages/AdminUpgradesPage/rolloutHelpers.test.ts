@@ -6,7 +6,10 @@ import {
   failureRows,
   gateReadings,
   heldForFailures,
+  holdCause,
   parseLadder,
+  retryingDevices,
+  transientDetail,
   shortDuration,
   stepLabel,
   stepTimes,
@@ -95,19 +98,70 @@ describe('step phases', () => {
 })
 
 describe('gates', () => {
-  it('each reading against its threshold', () => {
+  const at = (readings: ReturnType<typeof gateReadings>, id: string) => readings.find(r => r.id === id)!
+
+  it("each reading against the API's own thresholds, the defaults where it gives none", () => {
     const readings = gateReadings(
       { presenceCpuMax: 72, presenceCpuAvg: 40, presenceMemoryMax: 85, failures: 2, refused: 0 },
       0
     )
-    const at = (id: string) => readings.find(r => r.id === id)!
-    expect(at('presenceCpuMax').level).toBe('hold')
-    expect(at('presenceCpuAvg').level).toBe('ok')
-    expect(at('presenceMemoryMax').level).toBe('hold')
-    expect(at('failures')).toMatchObject({ level: 'abort', threshold: 'abort at 0' })
-    expect(at('refused').level).toBe('ok')
-    expect(at('dropped').level).toBe('unknown')
-    expect(gateReadings({ presenceCpuMax: 90 })[0].level).toBe('abort')
+    expect(at(readings, 'presenceCpuMax')).toMatchObject({
+      level: 'warn', // past the line that lowers the rate, short of the hold
+      threshold: 'rate lowered at 70%, holds at 85% for 2 min',
+    })
+    expect(at(readings, 'presenceCpuAvg').level).toBe('info')
+    expect(at(readings, 'presenceMemoryMax')).toMatchObject({ level: 'hold', threshold: 'holds at 80%' })
+    expect(at(readings, 'failures')).toMatchObject({ level: 'hold', threshold: 'holds above 0' })
+    expect(at(readings, 'refused').level).toBe('ok')
+    expect(at(readings, 'dropped').level).toBe('unknown')
+
+    const own = gateReadings({ presenceCpuMax: 72, cpuHold: 75, cpuAbort: 90, memoryAbort: 95, presenceMemoryMax: 85 })
+    expect(at(own, 'presenceCpuMax')).toMatchObject({
+      level: 'ok',
+      threshold: 'rate lowered at 75%, holds at 90% for 2 min',
+    })
+    expect(at(own, 'presenceMemoryMax')).toMatchObject({ level: 'ok', threshold: 'holds at 95%' })
+  })
+
+  it('no failures at threshold 0 is ok; failures within a higher threshold are too', () => {
+    expect(at(gateReadings({ failures: 0 }, 0), 'failures').level).toBe('ok')
+    expect(at(gateReadings({ failures: 3 }, 3), 'failures').level).toBe('ok')
+    expect(at(gateReadings({ failures: 4 }, 3), 'failures').level).toBe('hold')
+  })
+
+  it("presence's queue against its 1 s / 2 min hold; depth, lag, tasks, stale and the CPU source as info", () => {
+    const readings = gateReadings({
+      queueOldestMs: 1400,
+      queueOldestHold: 1000,
+      queueSustainMinutes: 2,
+      queueDepthMax: 812,
+      eventLoopLagMs: 35,
+      tasks: 6,
+      stale: 1,
+      cpuSource: 'presence',
+    })
+    expect(at(readings, 'queueOldestMs')).toMatchObject({ level: 'hold', threshold: 'holds over 1 s for 2 min' })
+    expect(at(gateReadings({ queueOldestMs: 300 }), 'queueOldestMs').level).toBe('ok')
+    for (const id of ['queueDepthMax', 'eventLoopLagMs', 'tasks', 'stale', 'cpuSource'])
+      expect(at(readings, id).level).toBe('info')
+    expect(at(readings, 'cpuSource').value).toBe('presence')
+    expect(at(gateReadings({ stale: true }), 'stale').value).toBe('yes')
+  })
+})
+
+describe('hold causes', () => {
+  it('read for a person, queue and delivery among them, only while holding', () => {
+    expect(holdCause({ state: 'holding', holdCause: 'queue' })?.label).toBe('Presence queue')
+    expect(holdCause({ state: 'holding', holdCause: 'delivery' })?.help).toContain('Resume applies the step again')
+    expect(holdCause({ state: 'holding', holdCause: 'something new' })?.label).toBe('something new')
+    expect(holdCause({ state: 'running', holdCause: 'queue' })).toBeUndefined()
+  })
+
+  it("a failures hold is graphql's holdCause where it gives one, not the reason's words", () => {
+    expect(
+      heldForFailures({ state: 'holding', holdCause: 'queue', reason: 'failed to drain', gates: { failures: 2 } })
+    ).toBe(false)
+    expect(heldForFailures({ state: 'holding', holdCause: 'failures', reason: '', gates: {} })).toBe(true)
   })
 })
 
@@ -123,10 +177,50 @@ describe('failures', () => {
         { reason: 'gone', devices: 2 },
       ])
     ).toEqual([
-      { reason: 'download: 404', devices: 3, reviewed: 0, unreviewed: 3, deviceIds: [] },
-      { reason: 'gone', devices: 2, reviewed: 2, unreviewed: 0, deviceIds: [] },
-      { reason: 'install: disk full', devices: 1, reviewed: 1, unreviewed: 0, deviceIds: [] },
+      { reason: 'download: 404', devices: 3, reviewed: 0, unreviewed: 3, deviceIds: [], failedDevices: [] },
+      { reason: 'gone', devices: 2, reviewed: 2, unreviewed: 0, deviceIds: [], failedDevices: [] },
+      { reason: 'install: disk full', devices: 1, reviewed: 1, unreviewed: 0, deviceIds: [], failedDevices: [] },
     ])
+  })
+
+  it('keeps transient devices still retrying apart from the real failures', () => {
+    const mixed = [
+      {
+        reason: 'download: 404',
+        devices: 2,
+        deviceIds: ['A', 'B'],
+        failedDevices: [
+          { deviceId: 'A', transient: false, retrying: false, attempts: 1 },
+          { deviceId: 'B', transient: true, retrying: true, attempts: 2, retryAt: '2026-10-30T20:05:00Z' },
+        ],
+      },
+      {
+        reason: 'failed (transient, retrying): download timed out',
+        devices: 2,
+        failedDevices: [
+          { deviceId: 'C', transient: true, retrying: true, attempts: 3, retryAt: '2026-10-30T20:02:00Z' },
+          { deviceId: 'D', transient: true, retrying: true, attempts: 1, retryAt: null },
+        ],
+      },
+    ]
+    const rows = failureRows(mixed)
+    expect(rows.map(r => r.reason)).toEqual(['download: 404'])
+    expect(rows[0].deviceIds).toEqual(['A'])
+    const { devices, total } = retryingDevices(mixed)
+    expect(total).toBe(3)
+    expect(devices.map(d => [d.deviceId, d.attempts])).toEqual([
+      ['C', 3],
+      ['B', 2],
+      ['D', 1],
+    ]) // soonest retry first, none last
+    expect(transientDetail(devices[0].reason)).toBe('download timed out')
+  })
+
+  it('a transient reason without devices still counts as retrying', () => {
+    expect(retryingDevices([{ reason: 'failed (transient, retrying): x', devices: 4 }])).toEqual({
+      devices: [],
+      total: 4,
+    })
   })
 
   it("a resume acknowledges the gate's count, else the unreviewed", () => {

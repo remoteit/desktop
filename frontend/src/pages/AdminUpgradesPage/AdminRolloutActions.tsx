@@ -34,7 +34,11 @@ export const AdminRolloutActions: React.FC<Props> = ({ run, served, onDone }) =>
   const step = currentStep(run)
   const holding = run.state === 'holding'
   const rateValue = Number(rate)
-  const rateValid = rate.trim() !== '' && rateValue > 0 && (run.rateCeiling == null || rateValue <= run.rateCeiling)
+  const rateValid =
+    rate.trim() !== '' &&
+    rateValue > 0 &&
+    (run.rateFloor == null || rateValue >= run.rateFloor) &&
+    (run.rateCeiling == null || rateValue <= run.rateCeiling)
   const can = (name: string) => served.has(name) && !busy
 
   return (
@@ -141,8 +145,12 @@ export const AdminRolloutActions: React.FC<Props> = ({ run, served, onDone }) =>
           type="number"
           value={rate}
           onChange={e => setRate(e.target.value)}
-          inputProps={{ min: 0, max: run.rateCeiling ?? undefined, step: 'any' }}
-          helperText={run.rateCeiling != null ? `At most ${run.rateCeiling}/s, the run's ceiling` : undefined}
+          inputProps={{ min: run.rateFloor ?? 0, max: run.rateCeiling ?? undefined, step: 'any' }}
+          helperText={
+            run.rateFloor != null || run.rateCeiling != null
+              ? `Between the run's floor and ceiling: ${run.rateFloor ?? 0} to ${run.rateCeiling ?? '∞'}/s`
+              : undefined
+          }
           error={rate !== '' && !rateValid}
         />
       </Confirm>

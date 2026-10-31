@@ -12,7 +12,21 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
    UNSUPPORTED; one with the channels but no controller has no runs (`runs: false`). */
 
 // deviceIds: not in the contract — the failing devices themselves, where the API names them (a sample, at most).
-export type DaemonFailure = { reason: string; devices: number; deviceIds?: string[] | null }
+export type DaemonFailure = {
+  reason: string
+  devices: number
+  deviceIds?: string[] | null
+  failedDevices?: FailedDevice[] | null
+}
+
+// One failing device of a reason: transient and retrying ones are not counted against the run until they give up.
+export type FailedDevice = {
+  deviceId: string
+  transient?: boolean | null
+  retrying?: boolean | null
+  attempts?: number | null
+  retryAt?: string | null
+}
 
 export type DaemonBuckets = {
   wanted: number
@@ -82,6 +96,8 @@ export type RolloutStep = {
   failed?: number | null
   peakCpu?: number | null
   rate?: number | null
+  change?: number | null
+  skipped?: boolean | null
 }
 
 export type RolloutEvent = { at: string; kind: string; message?: string | null }
@@ -93,10 +109,27 @@ export type RolloutGates = {
   presenceMemoryMax?: number | null
   refused?: number | null
   dropped?: number | null
-  failures?: number | null
-  excludedFailures?: number | null
+  failures?: number | null // real failures not yet reviewed: what the gate counts
+  reviewedFailures?: number | null // acknowledged on a resume, still failing
+  excludedFailures?: number | null // left out by the run's excluded reasons
+  transientFailures?: number | null // the device says transient, and is still retrying
   stuck?: number | null
+  // The thresholds the controller reads against, percent: the rate is lowered at cpuHold, the run held at cpuAbort
+  // (sustained) and at memoryAbort.
+  cpuHold?: number | null
+  cpuAbort?: number | null
+  memoryAbort?: number | null
+  cpuSource?: string | null // where the CPU reading came from
+  queueDepthMax?: number | null
+  queueOldestMs?: number | null
+  queueOldestHold?: number | null // ms: the run holds while the oldest waits longer…
+  queueSustainMinutes?: number | null // …for this long
+  eventLoopLagMs?: number | null
+  tasks?: number | null
+  stale?: number | boolean | null
 }
+
+export type HoldCause = 'failures' | 'cpu' | 'memory' | 'refused' | 'stuck' | 'delivery' | 'queue' | 'manual'
 
 export type RolloutRun = {
   id: string
@@ -106,9 +139,13 @@ export type RolloutRun = {
   fromVersion?: string | null
   state: RolloutState | string
   reason?: string | null
+  holdCause?: HoldCause | string | null // why it holds, while holding
   percent?: number | null
+  stepIndex?: number | null // 0-based, into the ladder
+  soakUntil?: string | null
   ladder?: number[] | null
   rate?: number | null
+  rateFloor?: number | null
   rateCeiling?: number | null
   startedAt?: string | null
   endedAt?: string | null
@@ -137,6 +174,7 @@ export type StartRollout = {
   ladder?: number[]
   soakMinutes?: number
   firstSoakMinutes?: number
+  rateFloor?: number
   rateCeiling?: number
   failureThreshold?: number
   promoteWhenDone?: boolean
@@ -173,9 +211,13 @@ const RUN_SCALARS = [
   'fromVersion',
   'state',
   'reason',
+  'holdCause',
   'percent',
+  'stepIndex',
+  'soakUntil',
   'ladder',
   'rate',
+  'rateFloor',
   'rateCeiling',
   'startedAt',
   'endedAt',
@@ -198,6 +240,8 @@ const STEP_FIELDS = [
   'failed',
   'peakCpu',
   'rate',
+  'change',
+  'skipped',
 ]
 const EVENT_FIELDS = ['at', 'kind', 'message']
 const GATE_FIELDS = [
@@ -208,8 +252,21 @@ const GATE_FIELDS = [
   'refused',
   'dropped',
   'failures',
+  'reviewedFailures',
   'excludedFailures',
+  'transientFailures',
   'stuck',
+  'cpuHold',
+  'cpuAbort',
+  'memoryAbort',
+  'cpuSource',
+  'queueDepthMax',
+  'queueOldestMs',
+  'queueOldestHold',
+  'queueSustainMinutes',
+  'eventLoopLagMs',
+  'tasks',
+  'stale',
 ]
 
 export const ACTIONS = [
@@ -240,7 +297,7 @@ const PROBE = `query DaemonRolloutFields {
   run: __type(name: "DaemonRolloutRun") { fields { name args { name } type { ${TYPE_REF} } } }
   step: __type(name: "DaemonRolloutStep") { fields { name } }
   event: __type(name: "DaemonRolloutEvent") { fields { name } }
-  gates: __type(name: "DaemonRolloutGates") { fields { name } }
+  gates: __type(name: "DaemonRolloutGates") { fields { name type { ${TYPE_REF} } } }
   failure: __type(name: "DaemonRolloutFailure") { fields { name } }
 }`
 
@@ -268,10 +325,23 @@ export function parseRolloutSchema(data: any): RolloutSchema {
   const by = run.find(f => f.name === 'startedBy')
   const startedBy = by ? (named(by.type)?.kind === 'OBJECT' ? 'startedBy { email }' : 'startedBy') : ''
   const steps = runNames.has('steps') ? `steps { ${pick(STEP_FIELDS, names(data?.step))} }` : ''
-  const gates = runNames.has('gates') ? `gates { ${pick(GATE_FIELDS, names(data?.gates))} }` : ''
+  // A gate reading is a scalar: one the API serves as an object is left out rather than asked for without its fields.
+  const gateScalars = new Set(
+    fieldsOf(data?.gates)
+      .filter(f => !f.type || ['SCALAR', 'ENUM'].includes(named(f.type)?.kind || ''))
+      .map(f => f.name)
+  )
+  const gates = runNames.has('gates') ? `gates { ${pick(GATE_FIELDS, gateScalars)} }` : ''
   const delivery = runNames.has('delivery') ? `delivery { ${DELIVERY} }` : ''
-  const ids = names(data?.failure).has('deviceIds')
-  const reasons = ids ? 'failures { reason devices deviceIds } unmanagedReasons { reason devices }' : REASONS
+  const failureFields = names(data?.failure)
+  const ids = failureFields.has('deviceIds')
+  const failed = failureFields.has('failedDevices')
+    ? ' failedDevices { deviceId transient retrying attempts retryAt }'
+    : ''
+  const reasons =
+    ids || failed
+      ? `failures { reason devices${ids ? ' deviceIds' : ''}${failed} } unmanagedReasons { reason devices }`
+      : REASONS
   const rollout = runNames.has('rollout') ? `rollout { ${channelRollout(reasons)} }` : ''
   const eventsField = run.find(f => f.name === 'events')
   const events = eventsField

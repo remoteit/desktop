@@ -154,6 +154,7 @@ const HELD = {
   fromVersion: '1.1.0.1',
   state: 'holding',
   reason: '3 devices failed',
+  holdCause: 'failures',
   percent: 5,
   ladder: [1, 5, 25, 100],
   rate: 10,
@@ -196,8 +197,26 @@ const HELD = {
     candidate: {
       ...STABLE.rollout.candidate,
       failures: [
-        { reason: 'download: 404', devices: 3 },
+        {
+          reason: 'download: 404',
+          devices: 3,
+          deviceIds: ['80:00:00:00:00:00:00:0A'],
+          failedDevices: [{ deviceId: '80:00:00:00:00:00:00:0A', transient: false, retrying: false, attempts: 1 }],
+        },
         { reason: 'install: disk full', devices: 1 },
+        {
+          reason: 'failed (transient, retrying): download timed out',
+          devices: 1,
+          failedDevices: [
+            {
+              deviceId: '80:00:00:00:00:00:00:0B',
+              transient: true,
+              retrying: true,
+              attempts: 2,
+              retryAt: '2026-10-30T20:52:00Z',
+            },
+          ],
+        },
       ],
     },
   },
@@ -211,8 +230,13 @@ const HELD = {
     refused: 0,
     dropped: 0,
     failures: 3,
+    reviewedFailures: 1,
     excludedFailures: 1,
+    transientFailures: 1,
     stuck: 0,
+    cpuHold: 70,
+    cpuAbort: 85,
+    memoryAbort: 80,
   },
 }
 const DONE = {
@@ -307,8 +331,19 @@ describe('AdminUpgradesPage', () => {
     const steps = el.querySelector('[data-steps]')!
     expect(failures.compareDocumentPosition(steps) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(el.querySelector('[data-failure="install: disk full"]')!.textContent).toContain('1 reviewed')
-    expect(el.querySelector('[data-gate="presenceCpuMax"]')!.textContent).toContain('hold 70%, abort 85%')
-    expect(el.querySelector('[data-gate="failures"]')!.textContent).toContain('abort at 0')
+    expect(el.querySelector('[data-gate="presenceCpuMax"]')!.textContent).toContain(
+      'rate lowered at 70%, holds at 85% for 2 min'
+    )
+    expect(el.querySelector('[data-gate="failures"]')!.textContent).toContain('holds above 0')
+    expect(el.querySelector('[data-gate="queueOldestMs"]')).toBeNull() // not given by this API: left out
+    expect(el.querySelector('[data-hold-cause="failures"]')!.textContent).toContain('Failures')
+    // A transient failure still retrying is apart from the real ones, with its attempts.
+    const real = el.querySelector('[data-real-failures]')!
+    expect(real.textContent).not.toContain('timed out')
+    expect(real.querySelector('a[href="/admin/devices/80:00:00:00:00:00:00:0A"]')).not.toBeNull()
+    const retrying = el.querySelector('[data-retrying-device="80:00:00:00:00:00:00:0B"]')!
+    expect(retrying.textContent).toContain('download timed out')
+    expect(retrying.textContent).toContain('2')
     expect(el.querySelector('[data-events]')!.textContent).toContain('3 devices failed')
 
     await click(el, 'Resume')
@@ -332,6 +367,27 @@ describe('AdminUpgradesPage', () => {
     expect(el.querySelector('[data-confirm]')!.textContent).toContain('Reason: cpu too high')
     await act(async () => (el.querySelector('[data-confirm] button') as HTMLButtonElement).click())
     expect(mutate).toHaveBeenCalledWith({ name: 'abortDaemonRollout', id: 'R2', reason: 'cpu too high' })
+  })
+
+  it('a queue hold reads as such, with the queue against its line, and no failures panel first', async () => {
+    run.mockResolvedValue({
+      ...HELD,
+      holdCause: 'queue',
+      reason: 'presence queue oldest 1.4 s for 2 min',
+      gates: {
+        ...HELD.gates,
+        failures: 0,
+        queueOldestMs: 1400,
+        queueOldestHold: 1000,
+        queueSustainMinutes: 2,
+        queueDepthMax: 900,
+      },
+    })
+    const el = await render('/admin/upgrades/R2')
+    expect(el.querySelector('[data-hold-cause="queue"]')!.textContent).toContain('Presence queue')
+    expect(el.textContent).toContain('presence queue oldest 1.4 s for 2 min')
+    expect(el.querySelector('[data-gate="queueOldestMs"]')!.textContent).toContain('holds over 1 s for 2 min')
+    expect(el.textContent).not.toContain('Held for failures')
   })
 
   it('a finished run offers no actions', async () => {

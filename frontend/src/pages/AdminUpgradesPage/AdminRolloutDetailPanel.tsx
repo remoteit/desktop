@@ -21,7 +21,12 @@ import { Title } from '../../components/Title'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
 import { UNSUPPORTED } from '../../services/graphQLDaemon'
-import { RolloutRun, graphQLDaemonRollout, rolloutActionsServed } from '../../services/graphQLDaemonRollout'
+import {
+  DaemonFailure,
+  RolloutRun,
+  graphQLDaemonRollout,
+  rolloutActionsServed,
+} from '../../services/graphQLDaemonRollout'
 import { AdminRolloutActions } from './AdminRolloutActions'
 import { RolloutStateChip } from './adminRolloutAttributes'
 import { RolloutBucketBar } from './RolloutBucketBar'
@@ -36,20 +41,28 @@ import {
   failureRows,
   gateReadings,
   heldForFailures,
+  holdCause,
+  retryingDevices,
   shortDuration,
   startedByLabel,
   stepLabel,
   stepTimes,
+  transientDetail,
+  transientReason,
 } from './rolloutHelpers'
 
 type Props = { showBackArrow?: boolean; onChanged: () => void }
 
 const LEVEL_COLORS: Record<GateLevel, string> = {
   ok: 'success.main',
-  hold: 'warning.main',
-  abort: 'danger.main',
+  warn: 'warning.main',
+  hold: 'danger.main',
+  info: 'grayDarkest.main',
   unknown: 'grayDark.main',
 }
+
+const reading = (value: number | string | null | undefined, unit = '') =>
+  value == null ? '—' : typeof value === 'number' ? `${(Math.round(value * 10) / 10).toLocaleString()}${unit}` : value
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <>
@@ -76,13 +89,83 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
 const cell = { paddingX: 1, paddingY: 0.5, whiteSpace: 'nowrap' } as const
 const n = (value?: number | null) => (value == null ? '—' : value.toLocaleString())
 
+const DeviceLinks: React.FC<{ ids: string[]; of: number }> = ({ ids, of }) =>
+  ids.length ? (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginTop: 0.25 }}>
+      {ids.map(id => (
+        <Link key={id} to={`/admin/devices/${id}`}>
+          {id}
+        </Link>
+      ))}
+      {ids.length < of && (
+        <Typography variant="caption" color="textSecondary">
+          + {n(of - ids.length)} more
+        </Typography>
+      )}
+    </Box>
+  ) : null
+
+// The devices a transient failure is still retrying: not counted against the run unless they give up.
+const RetryingList: React.FC<{ failures?: DaemonFailure[] | null }> = ({ failures }) => {
+  const { devices, total } = retryingDevices(failures)
+  if (!total) return null
+  return (
+    <Box data-retrying sx={{ marginTop: 1.5 }}>
+      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+        Retrying (transient) · {n(total)} device{total === 1 ? '' : 's'}
+      </Typography>
+      <Typography variant="caption" color="textSecondary" component="div">
+        Not counted against the run while they retry; one that gives up becomes a real failure.
+      </Typography>
+      {devices.length ? (
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={cell}>Device</TableCell>
+              <TableCell sx={cell}>Attempts</TableCell>
+              <TableCell sx={cell}>Next retry</TableCell>
+              <TableCell sx={cell}>Reason</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {devices.map(device => (
+              <TableRow key={device.deviceId} data-retrying-device={device.deviceId}>
+                <TableCell sx={cell}>
+                  <Link to={`/admin/devices/${device.deviceId}`}>{device.deviceId}</Link>
+                </TableCell>
+                <TableCell sx={cell}>{n(device.attempts)}</TableCell>
+                <TableCell sx={cell}>{dateTime(device.retryAt)}</TableCell>
+                <TableCell sx={{ ...cell, whiteSpace: 'normal' }}>{transientDetail(device.reason)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        (failures || [])
+          .filter(failure => transientReason(failure.reason))
+          .map(failure => (
+            <Typography key={failure.reason} variant="caption" component="div" sx={{ paddingLeft: 1 }}>
+              <b>{n(failure.devices)}</b> {transientDetail(failure.reason)}
+              <DeviceLinks ids={failure.deviceIds || []} of={failure.devices} />
+            </Typography>
+          ))
+      )}
+    </Box>
+  )
+}
+
 const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, prominent }) => {
-  const rows = failureRows(run.rollout?.candidate?.failures ?? run.rollout?.failures, run.reviewedFailures)
+  const failures = run.rollout?.candidate?.failures ?? run.rollout?.failures
+  const rows = failureRows(failures, run.reviewedFailures)
+  const retrying = <RetryingList failures={failures} />
   if (!rows.length)
     return (
-      <Typography variant="caption" color="textSecondary">
-        No failures
-      </Typography>
+      <Box data-failures>
+        <Typography variant="caption" color="textSecondary">
+          No failures
+        </Typography>
+        {retrying}
+      </Box>
     )
   const showReviewed = rows.some(row => row.reviewed)
   return (
@@ -99,7 +182,7 @@ const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, p
           Held for failures — review them, then Resume to acknowledge.
         </Typography>
       )}
-      <Table size="small">
+      <Table size="small" data-real-failures>
         <TableHead>
           <TableRow>
             <TableCell sx={cell}>Devices</TableCell>
@@ -124,20 +207,7 @@ const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, p
               )}
               <TableCell sx={{ ...cell, whiteSpace: 'normal' }}>
                 {row.reason}
-                {!!row.deviceIds.length && (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginTop: 0.25 }}>
-                    {row.deviceIds.map(id => (
-                      <Link key={id} to={`/admin/devices/${id}`}>
-                        {id}
-                      </Link>
-                    ))}
-                    {row.deviceIds.length < row.devices && (
-                      <Typography variant="caption" color="textSecondary">
-                        + {n(row.devices - row.deviceIds.length)} more
-                      </Typography>
-                    )}
-                  </Box>
-                )}
+                <DeviceLinks ids={row.deviceIds} of={row.devices} />
               </TableCell>
             </TableRow>
           ))}
@@ -148,6 +218,7 @@ const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, p
           This API does not name the failing devices; find them under Devices by their agent's state.
         </Typography>
       )}
+      {retrying}
     </Box>
   )
 }
@@ -213,6 +284,7 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
     )
 
   const failuresHold = heldForFailures(run)
+  const cause = holdCause(run)
   const steps = run.steps || []
   const events = [...(run.events || [])].sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
   const live = active(run)
@@ -220,9 +292,16 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
   return (
     <Container gutterBottom bodyProps={{ verticalOverflow: true, horizontalOverflow: true }} header={header}>
       <Gutters>
-        {run.reason && (
+        {(run.reason || cause) && (
           <Notice severity={run.state === 'aborted' ? 'error' : run.state === 'holding' ? 'warning' : 'info'} fullWidth>
-            {run.reason}
+            {cause ? <span data-hold-cause={run.holdCause}>Held: {cause.label}</span> : run.reason}
+            {cause && (
+              <em>
+                {run.reason}
+                {run.reason && cause.help ? ' — ' : ''}
+                {cause.help}
+              </em>
+            )}
           </Notice>
         )}
         {problem && (
@@ -246,12 +325,14 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
           <Fact label="Mode">{run.mode}</Fact>
           <Fact label="Rate">
             {run.rate != null ? `${run.rate}/s` : '—'}
-            {run.rateCeiling != null && ` (ceiling ${run.rateCeiling}/s)`}
+            {(run.rateFloor != null || run.rateCeiling != null) &&
+              ` (${run.rateFloor ?? '—'} to ${run.rateCeiling ?? '—'}/s)`}
           </Fact>
           <Fact label="Soak">
             {run.soakMinutes != null ? `${run.soakMinutes} min` : '—'}
             {run.firstSoakMinutes != null && ` (first ${run.firstSoakMinutes} min)`}
           </Fact>
+          {run.soakUntil && live && <Fact label="Soaks until">{dateTime(run.soakUntil)}</Fact>}
           <Fact label="Failure threshold">{run.failureThreshold != null ? n(run.failureThreshold) : '—'}</Fact>
           <Fact label="Promote when done">
             {run.promoteWhenDone == null ? '—' : run.promoteWhenDone ? 'yes' : 'no'}
@@ -284,15 +365,18 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
             </TableRow>
           </TableHead>
           <TableBody>
-            {gateReadings(run.gates, run.failureThreshold).map(gate => (
-              <TableRow key={gate.id} data-gate={gate.id}>
-                <TableCell sx={cell}>{gate.label}</TableCell>
-                <TableCell sx={{ ...cell, color: LEVEL_COLORS[gate.level], fontWeight: 500 }}>
-                  {gate.value == null ? '—' : `${Math.round(gate.value * 10) / 10}${gate.unit || ''}`}
-                </TableCell>
-                <TableCell sx={{ ...cell, color: 'grayDarker.main' }}>{gate.threshold}</TableCell>
-              </TableRow>
-            ))}
+            {gateReadings(run.gates, run.failureThreshold)
+              // A reading this API does not give at all (an older controller) is left out, not shown as unknown.
+              .filter(gate => !run.gates || gate.id in run.gates)
+              .map(gate => (
+                <TableRow key={gate.id} data-gate={gate.id}>
+                  <TableCell sx={cell}>{gate.label}</TableCell>
+                  <TableCell sx={{ ...cell, color: LEVEL_COLORS[gate.level], fontWeight: 500 }}>
+                    {reading(gate.value, gate.unit)}
+                  </TableCell>
+                  <TableCell sx={{ ...cell, color: 'grayDarker.main' }}>{gate.threshold}</TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
         {run.gates?.at && (
@@ -360,7 +444,9 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
                       data-step={step.percent}
                       sx={current ? { bgcolor: 'primaryHighlight.main' } : undefined}
                     >
-                      <TableCell sx={{ ...cell, fontWeight: 500 }}>{step.percent}%</TableCell>
+                      <TableCell sx={{ ...cell, fontWeight: 500 }}>
+                        {step.percent}%{step.skipped && <Chip size="small" label="skipped" sx={{ marginLeft: 1 }} />}
+                      </TableCell>
                       <TableCell sx={cell}>{dateTime(step.startedAt)}</TableCell>
                       <TableCell sx={cell}>{shortDuration(times.deliver)}</TableCell>
                       <TableCell sx={cell}>{shortDuration(times.converge)}</TableCell>

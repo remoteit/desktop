@@ -38,6 +38,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
   const [ladder, setLadder] = useState('')
   const [soak, setSoak] = useState('')
   const [firstSoak, setFirstSoak] = useState('')
+  const [rateFloor, setRateFloor] = useState('')
   const [rateCeiling, setRateCeiling] = useState('')
   // The controller holds a run on any failure it counts: 0 unless the operator chooses to tolerate some.
   const [failureThreshold, setFailureThreshold] = useState('0')
@@ -56,7 +57,9 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
     ladderValid &&
     validOptional(soak, 0) &&
     validOptional(firstSoak, 0) &&
+    validOptional(rateFloor, 0.001) &&
     validOptional(rateCeiling, 0.001) &&
+    (optionalNumber(rateFloor) ?? 0) <= (optionalNumber(rateCeiling) ?? Infinity) &&
     validOptional(failureThreshold, 0)
 
   const start: StartRollout = {
@@ -66,6 +69,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
     ladder: parsedLadder,
     soakMinutes: optionalNumber(soak),
     firstSoakMinutes: optionalNumber(firstSoak),
+    rateFloor: optionalNumber(rateFloor),
     rateCeiling: optionalNumber(rateCeiling),
     failureThreshold: optionalNumber(failureThreshold),
     promoteWhenDone: promote,
@@ -150,7 +154,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
             label="Ladder (percent)"
             value={ladder}
             onChange={e => setLadder(e.target.value)}
-            placeholder="1, 5, 25, 50, 100"
+            placeholder="1, 10, 50, 100"
             helperText={ladderValid ? "Blank for the controller's default" : 'Rising percentages, 1 to 100'}
             error={!ladderValid}
             size="small"
@@ -163,7 +167,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
               type="number"
               size="small"
               error={!validOptional(soak, 0)}
-              helperText="Blank for default"
+              helperText="Blank for default (5)"
               fullWidth
             />
             <TextField
@@ -173,11 +177,21 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
               type="number"
               size="small"
               error={!validOptional(firstSoak, 0)}
-              helperText="Blank for default"
+              helperText="Blank for default (10)"
               fullWidth
             />
           </Stack>
           <Stack direction="row" spacing={2}>
+            <TextField
+              label="Rate floor (devices/s)"
+              value={rateFloor}
+              onChange={e => setRateFloor(e.target.value)}
+              type="number"
+              size="small"
+              error={!validOptional(rateFloor, 0.001)}
+              helperText="Blank for default (2)"
+              fullWidth
+            />
             <TextField
               label="Rate ceiling (devices/s)"
               value={rateCeiling}
@@ -185,7 +199,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
               type="number"
               size="small"
               error={!validOptional(rateCeiling, 0.001)}
-              helperText="Blank for default"
+              helperText="Blank for default (15)"
               fullWidth
             />
             <TextField
