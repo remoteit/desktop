@@ -33,7 +33,8 @@ import { Icon } from '../components/Icon'
 
 /* remote.it's proxies (presence-server docs/proxy-plan.md §5): each by its name and region, online or not, its
    endpoints and the sessions open through them, whether it is enabled — taking new endpoints, links and exit sessions,
-   or disabled and draining — and whether it is also a public exit — switched here, apart from its being a proxy. A
+   or disabled: draining for two minutes (out of geo, its connect links kept while DNS caches let go of it), then
+   disabled — and whether it is also a public exit — switched here, apart from its being a proxy. A
    new one starts disabled. A public proxy's
    device is remote.it's (its system account's, graphql services/remoteit-proxies.ts), never a person's: a new one
    installs with the proxy registration code and waits here for its region; one made before that, still in someone's
@@ -47,6 +48,14 @@ export const AdminPublicProxies: React.FC<{ onProblem: (problem: string) => void
   useEffect(() => {
     load()
   }, [load])
+
+  // While one drains, read again every half minute, so the row moves on to disabled by itself.
+  const draining = Array.isArray(devices) && devices.some(d => d.proxy?.state === 'DRAINING')
+  useEffect(() => {
+    if (!draining) return
+    const timer = setInterval(load, 30_000)
+    return () => clearInterval(timer)
+  }, [draining, load])
 
   const change = async (id: string, run: () => Promise<unknown>, failed: string) => {
     setBusy(id)
@@ -124,6 +133,21 @@ export const drainHint = (open: number) =>
     ? '1 open connection keeps running until it closes; it takes no new ones.'
     : `${open} open connections keep running until they close; it takes no new ones.`
 
+// Where a proxy is in its switch: from graphql's state, or its enabled alone from a graphql before the drain.
+const stateOf = (proxy: NonNullable<RemoteitProxyDevice['proxy']>) =>
+  proxy.state ?? (proxy.enabled ? 'ENABLED' : 'DISABLED')
+
+const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+
+// What the row says after its counts: nothing while enabled; draining, the sessions still open and when its connect
+// links go; disabled.
+export const stateLabel = (proxy: NonNullable<RemoteitProxyDevice['proxy']>, open: number) => {
+  const state = stateOf(proxy)
+  if (state === 'ENABLED') return ''
+  if (state === 'DISABLED') return ' · disabled'
+  return ` · draining… (${open} open)${proxy.drainingUntil ? `, links off at ${clock(proxy.drainingUntil)}` : ''}`
+}
+
 // One row a proxy: its name, region, endpoints and open sessions, the device under them (and whose account it is in,
 // when it is not remote.it's yet), greyed while disabled; at its end, moving it to remote.it when it needs to be,
 // renaming one with a bare e<n> to e<n>-r3, whether it is enabled, whether it is a public exit (no exit while it is
@@ -167,7 +191,7 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
           <FormControlLabel
             label={<Typography variant="caption">Enabled</Typography>}
             labelPlacement="start"
-            title="Taking new endpoints, connect links and exit sessions; disabled, it drains"
+            title="Taking new endpoints, connect links and exit sessions; disabled, it drains (enabling it again cancels a drain)"
             control={
               <Switch
                 size="small"
@@ -225,9 +249,10 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
             }}
             onDeny={() => setConfirmDisable(false)}
           >
-            {drainHint(d.openSessions)} Its connect links are served by the other public proxies only, geo stops sending
-            people to it, and it is no one's exit until it is enabled again. Endpoints already on it keep working until
-            they are removed or expire.
+            {drainHint(d.openSessions)} geo stops sending people to it at once, and it is no one's exit until it is
+            enabled again. It keeps its connect links for two more minutes, while DNS caches let go of it; then they are
+            served by the other public proxies only. Endpoints already on it keep working until they are removed or
+            expire.
           </Confirm>
           <Confirm
             open={confirmRename}
@@ -252,7 +277,7 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
         sx={proxy.enabled ? undefined : { opacity: 0.5 }}
         primary={`${proxy.host} · ${proxy.region ?? 'no region'} · ${d.endpoints} endpoint${
           d.endpoints === 1 ? '' : 's'
-        } · ${d.openSessions} open${proxy.enabled ? '' : ' · disabled'}`}
+        } · ${d.openSessions} open${stateLabel(proxy, d.openSessions)}`}
         secondary={
           <>
             {about(d)}
