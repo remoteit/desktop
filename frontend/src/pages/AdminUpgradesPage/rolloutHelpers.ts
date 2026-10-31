@@ -120,21 +120,24 @@ export const deliveryProgress = (delivery?: DaemonDelivery | null) => {
 }
 
 // What a delivery's progress is out of — managed devices only, as the bars — and, where graphql counts it apart, the
-// upgrades alone: devices sent their own running version (ahead) and those already right are bookkeeping, noted
-// beside the progress, not part of it.
-//   With the split (aheadDelivered): upgrades delivered = delivered − ahead, of upgradeTargets (else of the managed
-//   total less the ahead and unchanged).
-//   Without it: delivered (paced + unpaced) of the managed total — total less skippedUnmanaged, unless graphql gives
-//   managedTotal, or already counts total so (an API with the split and no managedTotal).
+// upgrades alone. Upgrades are the paced and unpaced deliveries; devices sent their own running version (ahead,
+// aheadDelivered) and those already right (unchanged) are bookkeeping, noted beside the progress, not part of it.
+//   With the split: upgrades of upgradeTargets — graphql's estimate while planning and delivering, exact once done; an
+//   estimate behind what is already delivered is replaced by the managed devices less the ahead and unchanged.
+//   Without it: paced + unpaced of the managed total (total less skippedUnmanaged), labelled so.
 export function deliveryCounts(delivery: DaemonDelivery) {
-  const sent = (delivery.pacedDelivered || 0) + (delivery.unpacedDelivered || 0) || delivery.delivered || 0
+  const sent =
+    delivery.pacedDelivered != null || delivery.unpacedDelivered != null
+      ? (delivery.pacedDelivered || 0) + (delivery.unpacedDelivered || 0)
+      : delivery.delivered || 0
   const split = delivery.aheadDelivered != null
-  const managedTotal =
-    delivery.managedTotal ?? (split ? delivery.total : Math.max(0, delivery.total - (delivery.skippedUnmanaged || 0)))
+  const managedTotal = delivery.managedTotal ?? Math.max(0, delivery.total - (delivery.skippedUnmanaged || 0))
   if (!split) return { split, managedTotal, delivered: sent, of: managedTotal, kept: undefined }
   const kept = delivery.aheadDelivered || 0
-  const of = delivery.upgradeTargets ?? Math.max(0, managedTotal - kept - (delivery.unchanged || 0))
-  return { split, managedTotal, delivered: Math.max(0, sent - kept), of, kept }
+  const estimate = delivery.upgradeTargets
+  const of =
+    estimate != null && estimate >= sent ? estimate : Math.max(sent, managedTotal - kept - (delivery.unchanged || 0))
+  return { split, managedTotal, delivered: sent, of, kept }
 }
 
 // The ladder's step the run is on: its index (1-based) of the ladder's length, from its percent or else its steps.

@@ -86,10 +86,35 @@ describe('delivery progress', () => {
   })
 
   it('with the split, the progress is the upgrades alone and the ahead are kept, apart', () => {
-    const split = { ...rollback, total: 13317, aheadDelivered: 13206, upgradeTargets: 125 }
-    expect(deliveryCounts(split)).toEqual({ split: true, managedTotal: 13317, delivered: 111, of: 125, kept: 13206 })
-    expect(deliveryCounts({ ...split, upgradeTargets: undefined })).toMatchObject({ of: 111 }) // 13,317 − 13,206 − 0
-    expect(deliveryCounts({ ...rollback, aheadDelivered: 13206, managedTotal: 13317 }).managedTotal).toBe(13317)
+    // As graphql counts it: paced + unpaced are the upgrades; aheadDelivered is bookkeeping beside them.
+    const split = {
+      ...rollback,
+      pacedDelivered: 111,
+      unpacedDelivered: 14,
+      aheadDelivered: 13206,
+      upgradeTargets: 125,
+      managedTotal: 13317,
+    }
+    expect(deliveryCounts(split)).toEqual({ split: true, managedTotal: 13317, delivered: 125, of: 125, kept: 13206 })
+  })
+
+  it('an upgrade estimate behind what is delivered gives way to the managed less the ahead and unchanged', () => {
+    // solo, 2026-10-31 10:43: upgradeTargets 0 while 695 upgrades were delivered.
+    const live = {
+      state: 'held',
+      total: 5628,
+      managedTotal: 3078,
+      upgradeTargets: 0,
+      aheadDelivered: 0,
+      delivered: 695,
+      pacedDelivered: 636,
+      unpacedDelivered: 59,
+      skippedUnmanaged: 2550,
+      unchanged: 0,
+      remaining: 0,
+      perSecond: 15,
+    } as any
+    expect(deliveryCounts(live)).toEqual({ split: true, managedTotal: 3078, delivered: 695, of: 3078, kept: 0 })
   })
 })
 
