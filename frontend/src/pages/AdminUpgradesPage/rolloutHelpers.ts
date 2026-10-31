@@ -1,5 +1,6 @@
 import type {
   DaemonBuckets,
+  DaemonChannelRollout,
   DaemonFailure,
   FailedDevice,
   DaemonDelivery,
@@ -469,9 +470,16 @@ export const runningNewest = (channel?: {
 export const STALLED_COUNTS_MS = 3 * 60 * 1000
 
 // Whether the buckets were counted before the channel last changed (a step applied after the walk): their candidate
-// group is the old percent's, not the new one's.
-export const countsBefore = (checked?: string | null, changedAt?: string | null) => {
-  const counted = checked ? Date.parse(checked) : NaN
+// group is the old percent's, not the new one's. graphql's own word where it gives it — `stale`, else the `change` the
+// walk counted against the channel's latest — else the walk's time against the change's.
+export const countsBefore = (
+  rollout?: Pick<DaemonChannelRollout, 'checked' | 'stale' | 'change'> | null,
+  changedAt?: string | null,
+  latestChange?: number | null
+) => {
+  if (rollout?.stale != null) return rollout.stale
+  if (rollout?.change != null && latestChange != null) return rollout.change < latestChange
+  const counted = rollout?.checked ? Date.parse(rollout.checked) : NaN
   const changed = changedAt ? Date.parse(changedAt) : NaN
   return !isNaN(counted) && !isNaN(changed) && counted < changed
 }

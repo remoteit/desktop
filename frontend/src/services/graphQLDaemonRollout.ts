@@ -46,6 +46,8 @@ export type DaemonChannelRollout = DaemonBuckets & {
   devices: number
   checked: string
   stuckMinutes: number
+  stale?: boolean | null // the walk predates the channel's latest change, where graphql says
+  change?: number | null // the channel change the walk counted, where graphql says
   candidate: DaemonBuckets
   current: DaemonBuckets
   pinned: DaemonBuckets
@@ -220,8 +222,8 @@ type Result<T> = T | 'ERROR' | typeof UNSUPPORTED
 
 const BUCKETS = 'wanted onWanted pending upgrading failed stuck unmanaged offline'
 const REASONS = 'failures { reason devices } unmanagedReasons { reason devices }'
-const channelRollout = (reasons = REASONS, buckets = BUCKETS) => `
-  ${buckets} ${reasons} devices checked stuckMinutes
+const channelRollout = (reasons = REASONS, buckets = BUCKETS, extras = '') => `
+  ${buckets} ${reasons} devices checked stuckMinutes${extras ? ` ${extras}` : ''}
   candidate { ${buckets} ${reasons} }
   current { ${buckets} ${reasons} }
   pinned { ${buckets} ${reasons} }`
@@ -341,6 +343,7 @@ const PROBE = `query DaemonRolloutFields {
   counts: __type(name: "DaemonRolloutCounts") { fields { name } }
   install: __type(name: "DaemonInstall") { fields { name type { ${TYPE_REF} } } }
   delivery: __type(name: "DaemonChannelDelivery") { fields { name } }
+  channelRollout: __type(name: "DaemonRollout") { fields { name } }
 }`
 
 const named = (type?: TypeRef | null): TypeRef | undefined => (type?.ofType ? named(type.ofType) : type || undefined)
@@ -390,7 +393,11 @@ export function parseRolloutSchema(data: any): RolloutSchema {
       : REASONS
   // `ahead`: devices running newer than they are assigned, kept until the candidate reaches them.
   const buckets = names(data?.counts).has('ahead') ? `${BUCKETS} ahead` : BUCKETS
-  const rollout = runNames.has('rollout') ? `rollout { ${channelRollout(reasons, buckets)} }` : ''
+  // Whether the walk predates the channel's latest change, where graphql says so outright: `stale`, or the `change` it
+  // counted (against the channel's).
+  const walkFields = names(data?.channelRollout)
+  const walk = ['stale', 'change'].filter(name => walkFields.has(name)).join(' ')
+  const rollout = runNames.has('rollout') ? `rollout { ${channelRollout(reasons, buckets, walk)} }` : ''
   const eventsField = run.find(f => f.name === 'events')
   const events = eventsField
     ? `events${eventsField.args?.some(a => a.name === 'limit') ? `(limit: ${EVENT_LIMIT})` : ''} { ${pick(
@@ -425,7 +432,7 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     queries: reads,
     mutations,
     returns: pick(['id', 'state', 'reason', 'percent', 'rate'], runNames),
-    channelRollout: channelRollout(REASONS, buckets),
+    channelRollout: channelRollout(REASONS, buckets, walk),
     install: installSelection(fieldsOf(data?.install)),
     delivery: deliverySelection,
     startArgs: (mutations.startDaemonRollout?.args || []).map(arg => arg.name),

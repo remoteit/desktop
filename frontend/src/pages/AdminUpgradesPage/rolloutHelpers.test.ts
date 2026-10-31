@@ -327,10 +327,18 @@ describe('rollback and superseded', () => {
 })
 
 describe('stale counts', () => {
-  it('counted before the channel changed', () => {
-    expect(countsBefore('2026-10-31T10:56:50Z', '2026-10-31T10:56:55Z')).toBe(true)
-    expect(countsBefore('2026-10-31T10:57:00Z', '2026-10-31T10:56:55Z')).toBe(false)
-    expect(countsBefore('2026-10-31T10:56:50Z', null)).toBe(false)
+  it("counted before the channel changed: by the walk time, without graphql's word", () => {
+    expect(countsBefore({ checked: '2026-10-31T10:56:50Z' }, '2026-10-31T10:56:55Z')).toBe(true)
+    expect(countsBefore({ checked: '2026-10-31T10:57:00Z' }, '2026-10-31T10:56:55Z')).toBe(false)
+    expect(countsBefore({ checked: '2026-10-31T10:56:50Z' }, null)).toBe(false)
+  })
+
+  it("graphql's word first: stale, else the walk's change against the channel's", () => {
+    const early = { checked: '2026-10-31T10:56:50Z' }
+    expect(countsBefore({ ...early, stale: false }, '2026-10-31T10:56:55Z')).toBe(false)
+    expect(countsBefore({ checked: '2026-10-31T10:57:00Z', stale: true }, '2026-10-31T10:56:55Z')).toBe(true)
+    expect(countsBefore({ ...early, change: 19 }, '2026-10-31T10:56:55Z', 19)).toBe(false)
+    expect(countsBefore({ ...early, change: 18 }, null, 19)).toBe(true)
   })
 
   it('stalled: over three minutes old while something moves', () => {

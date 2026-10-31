@@ -61,10 +61,11 @@ export const ChannelBars: React.FC<{
   candidate?: string | null
   current?: string | null
   changedAt?: string | null // when the channel last changed (or the run's step started)
+  latestChange?: number | null // the channel's latest change number (its delivery's, or the run step's)
   live?: boolean // a rollout or delivery is moving: counts should be refreshing
-}> = ({ rollout, channel, percent, candidate, current, changedAt, live }) => {
+}> = ({ rollout, channel, percent, candidate, current, changedAt, latestChange, live }) => {
   // Counts taken before the step was applied are the old group's: said so, dimmed, not headlined as the new percent's.
-  const before = countsBefore(rollout?.checked, changedAt)
+  const before = countsBefore(rollout, changedAt, latestChange)
   const stalled = countsStalled(rollout?.checked, live)
   return (
     <>
@@ -191,6 +192,7 @@ export const AdminChannelOverview: React.FC<{
         candidate={channel.candidate?.version}
         current={channel.current?.version}
         changedAt={channel.updated}
+        latestChange={channel.delivery?.change}
         live={live || (!!channel.delivery && channel.delivery.state !== 'done')}
       />
       <ChannelFailures rollout={rollout} />

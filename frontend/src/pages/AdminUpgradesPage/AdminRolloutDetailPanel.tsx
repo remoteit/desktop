@@ -443,6 +443,7 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
                 candidate={run.version}
                 current={run.fromVersion}
                 changedAt={live ? steps[steps.length - 1]?.startedAt : undefined}
+                latestChange={live ? steps[steps.length - 1]?.change : undefined}
                 live={live}
               />
               <Typography variant="caption" color="textSecondary" component="div">

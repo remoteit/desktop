@@ -209,6 +209,13 @@ describe('the schema read', () => {
     expect(parseRolloutSchema(CONTRACT).delivery).not.toContain('aheadDelivered')
   })
 
+  it("asks a channel's walk whether it predates the latest change, where graphql says", () => {
+    const schema = parseRolloutSchema({ ...CONTRACT, channelRollout: fields('wanted', 'checked', 'stale') })
+    expect(schema.channelRollout).toContain('stuckMinutes stale')
+    expect(schema.detail).toContain('stuckMinutes stale')
+    expect(parseRolloutSchema(CONTRACT).channelRollout).not.toContain('stale')
+  })
+
   it('an API without the controller has no runs', () => {
     expect(parseRolloutSchema({ query: fields('daemonChannels') }).runs).toBe(false)
   })
