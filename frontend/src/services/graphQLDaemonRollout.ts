@@ -422,13 +422,14 @@ export function parseRolloutSchema(data: any): RolloutSchema {
 
 // What new installs download (stage-wide): daemonInstall's fields, those its type has where the probe finds it under
 // this name, else the contract's; who set it as an email where it is a user.
-const INSTALL_FIELDS = ['version', 'followsCurrent', 'manifest', 'updatedAt']
+const INSTALL_FIELDS = ['version', 'followsCurrent', 'manifest', 'updatedAt', 'enabled', 'target', 'appliedAt', 'error']
 function installSelection(fields: Field[]): string {
   if (!fields.length) return `${INSTALL_FIELDS.join(' ')} updatedBy`
   const has = new Set(fields.map(f => f.name))
   const by = fields.find(f => f.name === 'updatedBy')
   const updatedBy = by ? (named(by.type)?.kind === 'OBJECT' ? 'updatedBy { email }' : 'updatedBy') : ''
-  return [...INSTALL_FIELDS.filter(name => has.has(name)), updatedBy].filter(Boolean).join(' ')
+  const events = has.has('events') ? 'events { at kind message }' : ''
+  return [...INSTALL_FIELDS.filter(name => has.has(name)), updatedBy, events].filter(Boolean).join(' ')
 }
 
 let schema: Promise<RolloutSchema | 'ERROR'> | undefined
@@ -526,7 +527,12 @@ export type DaemonInstall = {
   followsCurrent?: boolean | null
   manifest?: string | null
   updatedAt?: string | null
-  updatedBy?: string | { email?: string | null } | null
+  updatedBy?: string | { email?: string | null } | null // an email, or "controller" when it reverted by itself
+  enabled?: boolean | null // graphql keeps the install downloads; off, they are whatever was published by hand
+  target?: string | null // what new installs should get: the override, else current
+  appliedAt?: string | null // when graphql last put a version at the top of the downloads
+  error?: string | null // the last failure to put it there, while not yet applied
+  events?: RolloutEvent[] | null // newest first: applied, override, follow, follows, failed
 }
 
 // false where the API does not say.

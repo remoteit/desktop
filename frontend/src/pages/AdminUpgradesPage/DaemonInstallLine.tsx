@@ -31,6 +31,7 @@ export const DaemonInstallLine: React.FC<Props> = ({ install, current, onChanged
   const [choice, setChoice] = useState(FOLLOW)
   const [confirming, setConfirming] = useState(false)
   const [problem, setProblem] = useState<string>()
+  const [history, setHistory] = useState(false)
 
   useEffect(() => {
     let live = true
@@ -62,7 +63,7 @@ export const DaemonInstallLine: React.FC<Props> = ({ install, current, onChanged
   return (
     <Box data-install-line sx={{ marginBottom: 1 }}>
       <Typography variant="caption" component="div">
-        New installs: <b>{install.version || '—'}</b>{' '}
+        New installs: <b>{install.version || install.target || '—'}</b>{' '}
         <span>({install.followsCurrent === false ? 'ahead of current' : 'follows current'})</span>
         {install.updatedAt && (
           <Box component="span" sx={{ color: 'grayDark.main' }}>
@@ -70,6 +71,21 @@ export const DaemonInstallLine: React.FC<Props> = ({ install, current, onChanged
             · set {dateTime(install.updatedAt)}
             {by ? ` by ${by}` : ''}
           </Box>
+        )}
+        {!install.updatedAt && install.appliedAt && (
+          <Box component="span" sx={{ color: 'grayDark.main' }}>
+            {' '}
+            · in place since {dateTime(install.appliedAt)}
+          </Box>
+        )}
+        {!!install.events?.length && (
+          <>
+            {' '}
+            ·{' '}
+            <Link component="button" variant="caption" onClick={() => setHistory(!history)} data-install-history>
+              History
+            </Link>
+          </>
         )}
         {canChange && (
           <>
@@ -81,6 +97,33 @@ export const DaemonInstallLine: React.FC<Props> = ({ install, current, onChanged
           </>
         )}
       </Typography>
+      {install.enabled === false && (
+        <Typography variant="caption" color="textSecondary" component="div">
+          graphql does not keep this stage's install downloads: they are whatever was last published there by hand.
+        </Typography>
+      )}
+      {install.target && install.target !== install.version && (
+        <Typography variant="caption" color="warning.main" component="div" data-install-pending>
+          Putting {install.target} in place for new installs…
+        </Typography>
+      )}
+      {install.error && (
+        <Typography variant="caption" color="error" component="div" data-install-error>
+          Not applied: {install.error}
+        </Typography>
+      )}
+      {history && (
+        <Box data-install-events sx={{ paddingLeft: 1, marginTop: 0.5 }}>
+          {install.events?.map((event, index) => (
+            <Typography key={`${event.at}-${index}`} variant="caption" component="div">
+              <Box component="span" sx={{ color: 'grayDark.main' }}>
+                {dateTime(event.at)}
+              </Box>{' '}
+              <b>{event.kind}</b> {event.message}
+            </Typography>
+          ))}
+        </Box>
+      )}
 
       <Confirm
         open={open && !confirming}

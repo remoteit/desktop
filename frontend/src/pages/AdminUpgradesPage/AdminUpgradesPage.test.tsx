@@ -592,6 +592,10 @@ describe('AdminUpgradesPage', () => {
       manifest: 'https://d/device/1.1.0.3/manifest.json',
       updatedAt: '2026-10-31T15:00:00Z',
       updatedBy: 'evan@remote.it',
+      enabled: true,
+      target: '1.1.0.3',
+      error: null,
+      events: [{ at: '2026-10-31T15:00:01Z', kind: 'applied', message: '1.1.0.3 at the top of the downloads' }],
     })
     packages.mockResolvedValue([
       { version: '1.1.0.3', manifest: 'https://d/3', publishedAt: '2026-10-31T01:00:00Z', platforms: [] },
@@ -602,6 +606,11 @@ describe('AdminUpgradesPage', () => {
     const line = el.querySelector('[data-channel="stable"] [data-install-line]')!
     expect(line.textContent).toContain('New installs: 1.1.0.3 (ahead of current)')
     expect(line.textContent).toContain('by evan@remote.it')
+    expect(line.querySelector('[data-install-pending]')).toBeNull()
+    await act(async () => (line.querySelector('[data-install-history]') as HTMLElement).click())
+    expect(line.querySelector('[data-install-events]')!.textContent).toContain(
+      'applied 1.1.0.3 at the top of the downloads'
+    )
     await act(async () => (line.querySelector('[data-install-change]') as HTMLElement).click())
     await act(async () => {})
     // The choices: Follow current, and published builds no older than current (1.1.0.1); 1.1.0.0 is not offered.
