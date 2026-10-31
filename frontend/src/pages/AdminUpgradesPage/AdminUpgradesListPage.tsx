@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { Box, Button, List, ListSubheader, Stack, Typography } from '@mui/material'
 import { State } from '../../store'
 import { Container } from '../../components/Container'
+import { ScrollContent } from './ScrollContent'
 import { GridList } from '../../components/GridList'
 import { Gutters } from '../../components/Gutters'
 import { LoadingMessage } from '../../components/LoadingMessage'
@@ -61,63 +62,70 @@ export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrad
     )
 
   return (
-    <Container integrated gutterBottom bodyProps={{ verticalOverflow: true, horizontalOverflow: true }} header={header}>
-      <List>
-        <ListSubheader disableGutters>
-          <Gutters>Channels</Gutters>
-        </ListSubheader>
-      </List>
-      <Gutters>
-        {channels === 'ERROR' ? (
-          <Notice severity="error" fullWidth>
-            Could not read the release channels.
-          </Notice>
+    <Container
+      integrated
+      gutterBottom
+      bodyProps={{ verticalOverflow: true, horizontalOverflow: true, className: 'upgrades-scroll' }}
+      header={header}
+    >
+      <ScrollContent>
+        <List>
+          <ListSubheader disableGutters>
+            <Gutters>Channels</Gutters>
+          </ListSubheader>
+        </List>
+        <Gutters>
+          {channels === 'ERROR' ? (
+            <Notice severity="error" fullWidth>
+              Could not read the release channels.
+            </Notice>
+          ) : (
+            channels.map(channel => <AdminChannelOverview key={channel.channel} channel={channel} />)
+          )}
+        </Gutters>
+        <List>
+          <ListSubheader disableGutters>
+            <Gutters>Rollouts</Gutters>
+          </ListSubheader>
+        </List>
+        {runs === undefined ? (
+          <LoadingMessage message="Loading rollouts..." />
+        ) : runs === false || runs === UNSUPPORTED ? (
+          <Gutters>
+            <Notice severity="info" fullWidth>
+              This API has no rollout controller yet.
+              <em>Channels above are live; rollout runs appear once graphql serves daemonRollouts.</em>
+            </Notice>
+          </Gutters>
+        ) : runs === 'ERROR' ? (
+          <Gutters>
+            <Notice severity="error" fullWidth>
+              Could not read the rollouts.
+            </Notice>
+          </Gutters>
+        ) : !runs.length ? (
+          <Gutters>
+            <Notice severity="info" fullWidth>
+              No rollouts yet
+            </Notice>
+          </Gutters>
         ) : (
-          channels.map(channel => <AdminChannelOverview key={channel.channel} channel={channel} />)
+          <Box>
+            <GridList attributes={attributes} required={required} columnWidths={columnWidths} fetching={loading}>
+              {runs.map(run => (
+                <AdminRolloutListItem
+                  key={run.id}
+                  run={run}
+                  required={required}
+                  attributes={attributes}
+                  active={location.pathname === `${UPGRADES_ROUTE}/${run.id}`}
+                  onClick={() => history.push(`${UPGRADES_ROUTE}/${run.id}`)}
+                />
+              ))}
+            </GridList>
+          </Box>
         )}
-      </Gutters>
-      <List>
-        <ListSubheader disableGutters>
-          <Gutters>Rollouts</Gutters>
-        </ListSubheader>
-      </List>
-      {runs === undefined ? (
-        <LoadingMessage message="Loading rollouts..." />
-      ) : runs === false || runs === UNSUPPORTED ? (
-        <Gutters>
-          <Notice severity="info" fullWidth>
-            This API has no rollout controller yet.
-            <em>Channels above are live; rollout runs appear once graphql serves daemonRollouts.</em>
-          </Notice>
-        </Gutters>
-      ) : runs === 'ERROR' ? (
-        <Gutters>
-          <Notice severity="error" fullWidth>
-            Could not read the rollouts.
-          </Notice>
-        </Gutters>
-      ) : !runs.length ? (
-        <Gutters>
-          <Notice severity="info" fullWidth>
-            No rollouts yet
-          </Notice>
-        </Gutters>
-      ) : (
-        <Box>
-          <GridList attributes={attributes} required={required} columnWidths={columnWidths} fetching={loading}>
-            {runs.map(run => (
-              <AdminRolloutListItem
-                key={run.id}
-                run={run}
-                required={required}
-                attributes={attributes}
-                active={location.pathname === `${UPGRADES_ROUTE}/${run.id}`}
-                onClick={() => history.push(`${UPGRADES_ROUTE}/${run.id}`)}
-              />
-            ))}
-          </GridList>
-        </Box>
-      )}
+      </ScrollContent>
     </Container>
   )
 }

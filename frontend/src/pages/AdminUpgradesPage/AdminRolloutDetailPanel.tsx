@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Container } from '../../components/Container'
+import { ScrollContent } from './ScrollContent'
 import { Gutters } from '../../components/Gutters'
 import { Link } from '../../components/Link'
 import { LoadingMessage } from '../../components/LoadingMessage'
@@ -290,211 +291,220 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
   const live = active(run)
 
   return (
-    <Container gutterBottom bodyProps={{ verticalOverflow: true, horizontalOverflow: true }} header={header}>
-      <Gutters>
-        {(run.reason || cause) && (
-          <Notice severity={run.state === 'aborted' ? 'error' : run.state === 'holding' ? 'warning' : 'info'} fullWidth>
-            {cause ? <span data-hold-cause={run.holdCause}>Held: {cause.label}</span> : run.reason}
-            {cause && (
-              <em>
-                {run.reason}
-                {run.reason && cause.help ? ' — ' : ''}
-                {cause.help}
-              </em>
-            )}
-          </Notice>
-        )}
-        {problem && (
-          <Notice severity="error" fullWidth onClose={() => setProblem(undefined)}>
-            {problem}
-          </Notice>
-        )}
-        <AdminRolloutActions
-          run={run}
-          served={served}
-          onDone={async next => {
-            setProblem(next)
-            await load()
-            onChanged()
-          }}
-        />
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 2 }}>
-          <Fact label="Step">{stepLabel(run)}</Fact>
-          <Fact label="Ladder">{run.ladder?.length ? run.ladder.map(p => `${p}%`).join(' → ') : '—'}</Fact>
-          <Fact label="From">{run.fromVersion}</Fact>
-          <Fact label="Mode">{run.mode}</Fact>
-          <Fact label="Rate">
-            {run.rate != null ? `${run.rate}/s` : '—'}
-            {(run.rateFloor != null || run.rateCeiling != null) &&
-              ` (${run.rateFloor ?? '—'} to ${run.rateCeiling ?? '—'}/s)`}
-          </Fact>
-          <Fact label="Soak">
-            {run.soakMinutes != null ? `${run.soakMinutes} min` : '—'}
-            {run.firstSoakMinutes != null && ` (first ${run.firstSoakMinutes} min)`}
-          </Fact>
-          {run.soakUntil && live && <Fact label="Soaks until">{dateTime(run.soakUntil)}</Fact>}
-          <Fact label="Failure threshold">{run.failureThreshold != null ? n(run.failureThreshold) : '—'}</Fact>
-          <Fact label="Promote when done">
-            {run.promoteWhenDone == null ? '—' : run.promoteWhenDone ? 'yes' : 'no'}
-          </Fact>
-          <Fact label="Started">{dateTime(run.startedAt)}</Fact>
-          <Fact label="Ended">{dateTime(run.endedAt)}</Fact>
-          <Fact label="Duration">
-            {shortDuration(between(run.startedAt, run.endedAt ?? (live ? null : run.startedAt)))}
-          </Fact>
-          <Fact label="Started by">{startedByLabel(run.startedBy)}</Fact>
-          {(run.manifest || run.candidateManifest) && (
-            <Fact label="Manifest">{run.manifest || run.candidateManifest}</Fact>
+    <Container
+      gutterBottom
+      bodyProps={{ verticalOverflow: true, horizontalOverflow: true, className: 'upgrades-scroll' }}
+      header={header}
+    >
+      <ScrollContent>
+        <Gutters>
+          {(run.reason || cause) && (
+            <Notice
+              severity={run.state === 'aborted' ? 'error' : run.state === 'holding' ? 'warning' : 'info'}
+              fullWidth
+            >
+              {cause ? <span data-hold-cause={run.holdCause}>Held: {cause.label}</span> : run.reason}
+              {cause && (
+                <em>
+                  {run.reason}
+                  {run.reason && cause.help ? ' — ' : ''}
+                  {cause.help}
+                </em>
+              )}
+            </Notice>
           )}
-        </Box>
-      </Gutters>
+          {problem && (
+            <Notice severity="error" fullWidth onClose={() => setProblem(undefined)}>
+              {problem}
+            </Notice>
+          )}
+          <AdminRolloutActions
+            run={run}
+            served={served}
+            onDone={async next => {
+              setProblem(next)
+              await load()
+              onChanged()
+            }}
+          />
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 2 }}>
+            <Fact label="Step">{stepLabel(run)}</Fact>
+            <Fact label="Ladder">{run.ladder?.length ? run.ladder.map(p => `${p}%`).join(' → ') : '—'}</Fact>
+            <Fact label="From">{run.fromVersion}</Fact>
+            <Fact label="Mode">{run.mode}</Fact>
+            <Fact label="Rate">
+              {run.rate != null ? `${run.rate}/s` : '—'}
+              {(run.rateFloor != null || run.rateCeiling != null) &&
+                ` (${run.rateFloor ?? '—'} to ${run.rateCeiling ?? '—'}/s)`}
+            </Fact>
+            <Fact label="Soak">
+              {run.soakMinutes != null ? `${run.soakMinutes} min` : '—'}
+              {run.firstSoakMinutes != null && ` (first ${run.firstSoakMinutes} min)`}
+            </Fact>
+            {run.soakUntil && live && <Fact label="Soaks until">{dateTime(run.soakUntil)}</Fact>}
+            <Fact label="Failure threshold">{run.failureThreshold != null ? n(run.failureThreshold) : '—'}</Fact>
+            <Fact label="Promote when done">
+              {run.promoteWhenDone == null ? '—' : run.promoteWhenDone ? 'yes' : 'no'}
+            </Fact>
+            <Fact label="Started">{dateTime(run.startedAt)}</Fact>
+            <Fact label="Ended">{dateTime(run.endedAt)}</Fact>
+            <Fact label="Duration">
+              {shortDuration(between(run.startedAt, run.endedAt ?? (live ? null : run.startedAt)))}
+            </Fact>
+            <Fact label="Started by">{startedByLabel(run.startedBy)}</Fact>
+            {(run.manifest || run.candidateManifest) && (
+              <Fact label="Manifest">{run.manifest || run.candidateManifest}</Fact>
+            )}
+          </Box>
+        </Gutters>
 
-      {failuresHold && (
-        <Section title="Failures">
-          <FailureList run={run} prominent />
-        </Section>
-      )}
-
-      <Section title="Gates">
-        <Table size="small" data-gates>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={cell}>Gate</TableCell>
-              <TableCell sx={cell}>Reading</TableCell>
-              <TableCell sx={cell}>Threshold</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {gateReadings(run.gates, run.failureThreshold)
-              // A reading this API does not give at all (an older controller) is left out, not shown as unknown.
-              .filter(gate => !run.gates || gate.id in run.gates)
-              .map(gate => (
-                <TableRow key={gate.id} data-gate={gate.id}>
-                  <TableCell sx={cell}>{gate.label}</TableCell>
-                  <TableCell sx={{ ...cell, color: LEVEL_COLORS[gate.level], fontWeight: 500 }}>
-                    {reading(gate.value, gate.unit)}
-                  </TableCell>
-                  <TableCell sx={{ ...cell, color: 'grayDarker.main' }}>{gate.threshold}</TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-        {run.gates?.at && (
-          <Typography variant="caption" color="textSecondary">
-            Read {dateTime(run.gates.at)}
-          </Typography>
+        {failuresHold && (
+          <Section title="Failures">
+            <FailureList run={run} prominent />
+          </Section>
         )}
-      </Section>
 
-      <Section title="Devices">
-        {run.rollout ? (
-          <>
-            <RolloutBucketBar buckets={run.rollout.candidate} label={`On ${run.version || 'the candidate'}`} />
-            <RolloutBucketBar buckets={run.rollout} label="Whole channel" legend={false} />
-            <Typography variant="caption" color="textSecondary" component="div">
-              Counted {dateTime(run.rollout.checked)} · stuck after {run.rollout.stuckMinutes} min
-            </Typography>
-          </>
-        ) : (
-          <Typography variant="caption" color="textSecondary">
-            No bucket counts on this run
-          </Typography>
-        )}
-        <Box sx={{ marginTop: 1 }}>
-          <RolloutDelivery delivery={run.delivery} />
-        </Box>
-      </Section>
-
-      <Section title="Steps">
-        {!steps.length ? (
-          <Typography variant="caption" color="textSecondary">
-            No steps yet
-          </Typography>
-        ) : (
-          <Box sx={{ overflowX: 'auto' }}>
-            <Table size="small" data-steps>
-              <TableHead>
-                <TableRow>
-                  {[
-                    'Step',
-                    'Started',
-                    'Deliver',
-                    'Converge',
-                    'Soak',
-                    'Paced',
-                    'Unpaced',
-                    'Skipped',
-                    'Failed',
-                    'Peak CPU',
-                    'Rate',
-                  ].map(label => (
-                    <TableCell key={label} sx={cell}>
-                      {label}
+        <Section title="Gates">
+          <Table size="small" data-gates>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={cell}>Gate</TableCell>
+                <TableCell sx={cell}>Reading</TableCell>
+                <TableCell sx={cell}>Threshold</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {gateReadings(run.gates, run.failureThreshold)
+                // A reading this API does not give at all (an older controller) is left out, not shown as unknown.
+                .filter(gate => !run.gates || gate.id in run.gates)
+                .map(gate => (
+                  <TableRow key={gate.id} data-gate={gate.id}>
+                    <TableCell sx={cell}>{gate.label}</TableCell>
+                    <TableCell sx={{ ...cell, color: LEVEL_COLORS[gate.level], fontWeight: 500 }}>
+                      {reading(gate.value, gate.unit)}
                     </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {steps.map((step, index) => {
-                  const current = live && index === steps.length - 1
-                  const times = stepTimes(step, current)
-                  return (
-                    <TableRow
-                      key={`${step.percent}-${index}`}
-                      data-step={step.percent}
-                      sx={current ? { bgcolor: 'primaryHighlight.main' } : undefined}
-                    >
-                      <TableCell sx={{ ...cell, fontWeight: 500 }}>
-                        {step.percent}%{step.skipped && <Chip size="small" label="skipped" sx={{ marginLeft: 1 }} />}
-                      </TableCell>
-                      <TableCell sx={cell}>{dateTime(step.startedAt)}</TableCell>
-                      <TableCell sx={cell}>{shortDuration(times.deliver)}</TableCell>
-                      <TableCell sx={cell}>{shortDuration(times.converge)}</TableCell>
-                      <TableCell sx={cell}>{shortDuration(times.soak)}</TableCell>
-                      <TableCell sx={cell}>{n(step.paced)}</TableCell>
-                      <TableCell sx={cell}>{n(step.unpaced)}</TableCell>
-                      <TableCell sx={cell}>{n(step.skippedUnmanaged)}</TableCell>
-                      <TableCell sx={{ ...cell, color: step.failed ? 'danger.main' : undefined }}>
-                        {n(step.failed)}
-                      </TableCell>
-                      <TableCell sx={cell}>{step.peakCpu == null ? '—' : `${Math.round(step.peakCpu)}%`}</TableCell>
-                      <TableCell sx={cell}>{step.rate == null ? '—' : `${step.rate}/s`}</TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </Box>
-        )}
-      </Section>
-
-      {!failuresHold && (
-        <Section title="Failures">
-          <FailureList run={run} prominent={false} />
+                    <TableCell sx={{ ...cell, color: 'grayDarker.main' }}>{gate.threshold}</TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+          {run.gates?.at && (
+            <Typography variant="caption" color="textSecondary">
+              Read {dateTime(run.gates.at)}
+            </Typography>
+          )}
         </Section>
-      )}
 
-      <Section title="Events">
-        {!events.length ? (
-          <Typography variant="caption" color="textSecondary">
-            No events
-          </Typography>
-        ) : (
-          <Box data-events>
-            {events.map((event, index) => (
-              <Box key={`${event.at}-${index}`} sx={{ display: 'flex', gap: 1, paddingY: 0.25 }}>
-                <Typography variant="caption" color="textSecondary" sx={{ minWidth: 130, flexShrink: 0 }}>
-                  {dateTime(event.at)}
-                </Typography>
-                <Typography variant="caption" sx={{ minWidth: 80, flexShrink: 0, fontWeight: 500 }}>
-                  {event.kind}
-                </Typography>
-                <Typography variant="caption">{event.message}</Typography>
-              </Box>
-            ))}
+        <Section title="Devices">
+          {run.rollout ? (
+            <>
+              <RolloutBucketBar buckets={run.rollout.candidate} label={`On ${run.version || 'the candidate'}`} />
+              <RolloutBucketBar buckets={run.rollout} label="Whole channel" legend={false} />
+              <Typography variant="caption" color="textSecondary" component="div">
+                Counted {dateTime(run.rollout.checked)} · stuck after {run.rollout.stuckMinutes} min
+              </Typography>
+            </>
+          ) : (
+            <Typography variant="caption" color="textSecondary">
+              No bucket counts on this run
+            </Typography>
+          )}
+          <Box sx={{ marginTop: 1 }}>
+            <RolloutDelivery delivery={run.delivery} />
           </Box>
+        </Section>
+
+        <Section title="Steps">
+          {!steps.length ? (
+            <Typography variant="caption" color="textSecondary">
+              No steps yet
+            </Typography>
+          ) : (
+            <Box sx={{ overflowX: 'auto' }}>
+              <Table size="small" data-steps>
+                <TableHead>
+                  <TableRow>
+                    {[
+                      'Step',
+                      'Started',
+                      'Deliver',
+                      'Converge',
+                      'Soak',
+                      'Paced',
+                      'Unpaced',
+                      'Skipped',
+                      'Failed',
+                      'Peak CPU',
+                      'Rate',
+                    ].map(label => (
+                      <TableCell key={label} sx={cell}>
+                        {label}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {steps.map((step, index) => {
+                    const current = live && index === steps.length - 1
+                    const times = stepTimes(step, current)
+                    return (
+                      <TableRow
+                        key={`${step.percent}-${index}`}
+                        data-step={step.percent}
+                        sx={current ? { bgcolor: 'primaryHighlight.main' } : undefined}
+                      >
+                        <TableCell sx={{ ...cell, fontWeight: 500 }}>
+                          {step.percent}%{step.skipped && <Chip size="small" label="skipped" sx={{ marginLeft: 1 }} />}
+                        </TableCell>
+                        <TableCell sx={cell}>{dateTime(step.startedAt)}</TableCell>
+                        <TableCell sx={cell}>{shortDuration(times.deliver)}</TableCell>
+                        <TableCell sx={cell}>{shortDuration(times.converge)}</TableCell>
+                        <TableCell sx={cell}>{shortDuration(times.soak)}</TableCell>
+                        <TableCell sx={cell}>{n(step.paced)}</TableCell>
+                        <TableCell sx={cell}>{n(step.unpaced)}</TableCell>
+                        <TableCell sx={cell}>{n(step.skippedUnmanaged)}</TableCell>
+                        <TableCell sx={{ ...cell, color: step.failed ? 'danger.main' : undefined }}>
+                          {n(step.failed)}
+                        </TableCell>
+                        <TableCell sx={cell}>{step.peakCpu == null ? '—' : `${Math.round(step.peakCpu)}%`}</TableCell>
+                        <TableCell sx={cell}>{step.rate == null ? '—' : `${step.rate}/s`}</TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </Box>
+          )}
+        </Section>
+
+        {!failuresHold && (
+          <Section title="Failures">
+            <FailureList run={run} prominent={false} />
+          </Section>
         )}
-      </Section>
+
+        <Section title="Events">
+          {!events.length ? (
+            <Typography variant="caption" color="textSecondary">
+              No events
+            </Typography>
+          ) : (
+            <Box data-events>
+              {events.map((event, index) => (
+                <Box key={`${event.at}-${index}`} sx={{ display: 'flex', gap: 1, paddingY: 0.25 }}>
+                  <Typography variant="caption" color="textSecondary" sx={{ minWidth: 130, flexShrink: 0 }}>
+                    {dateTime(event.at)}
+                  </Typography>
+                  <Typography variant="caption" sx={{ minWidth: 80, flexShrink: 0, fontWeight: 500 }}>
+                    {event.kind}
+                  </Typography>
+                  <Typography variant="caption">{event.message}</Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Section>
+      </ScrollContent>
     </Container>
   )
 }

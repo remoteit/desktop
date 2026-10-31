@@ -9,6 +9,7 @@ import { AdminRolloutDetailPanel } from './AdminRolloutDetailPanel'
 import { AdminRolloutStartForm } from './AdminRolloutStartForm'
 import { NEW_ROLLOUT } from './rolloutHelpers'
 import { useUpgrades } from './useUpgrades'
+import { UpgradesErrorBoundary } from './UpgradesErrorBoundary'
 import { State } from '../../store'
 import { useContainerWidth } from '../../hooks/useContainerWidth'
 import { useResizablePanel } from '../../hooks/useResizablePanel'
@@ -85,7 +86,9 @@ const AdminRolloutsView: React.FC = () => {
               }}
               ref={leftPanel.panelRef}
             >
-              <AdminUpgradesListPage upgrades={upgrades} />
+              <UpgradesErrorBoundary what="channels and rollouts">
+                <AdminUpgradesListPage upgrades={upgrades} />
+              </UpgradesErrorBoundary>
             </Box>
 
             {hasSelection && (
@@ -100,15 +103,17 @@ const AdminRolloutsView: React.FC = () => {
 
         {showRight && (
           <Box sx={[panelSx, { flex: 1 }]}>
-            {rolloutId === NEW_ROLLOUT ? (
-              <AdminRolloutStartForm
-                channels={Array.isArray(upgrades.channels) ? upgrades.channels : []}
-                showBackArrow={!showLeft}
-                onStarted={upgrades.reload}
-              />
-            ) : (
-              <AdminRolloutDetailPanel key={rolloutId} showBackArrow={!showLeft} onChanged={upgrades.reload} />
-            )}
+            <UpgradesErrorBoundary key={rolloutId} what={rolloutId === NEW_ROLLOUT ? 'start form' : 'rollout'}>
+              {rolloutId === NEW_ROLLOUT ? (
+                <AdminRolloutStartForm
+                  channels={Array.isArray(upgrades.channels) ? upgrades.channels : []}
+                  showBackArrow={!showLeft}
+                  onStarted={upgrades.reload}
+                />
+              ) : (
+                <AdminRolloutDetailPanel key={rolloutId} showBackArrow={!showLeft} onChanged={upgrades.reload} />
+              )}
+            </UpgradesErrorBoundary>
           </Box>
         )}
       </Box>
