@@ -488,3 +488,11 @@ export const countsStalled = (checked?: string | null, live?: boolean, now = Dat
   const counted = checked ? Date.parse(checked) : NaN
   return !!live && !isNaN(counted) && now - counted > STALLED_COUNTS_MS
 }
+
+// The walk's time is the server's; a clock a little ahead of it must not make a walk that landed after the click look
+// older than it.
+const SKEW_MS = 2000
+
+// Whether every channel asked has a walk newer than the click.
+export const recounted = (checked: (string | null | undefined)[], since: number) =>
+  checked.length > 0 && checked.every(at => !!at && Date.parse(at) >= since - SKEW_MS)

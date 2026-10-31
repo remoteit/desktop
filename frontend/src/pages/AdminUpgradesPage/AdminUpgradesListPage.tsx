@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box, Button, List, ListSubheader, Stack, Typography } from '@mui/material'
@@ -17,6 +17,8 @@ import { AdminRolloutListItem } from './AdminRolloutListItem'
 import { adminRolloutAttributes } from './adminRolloutAttributes'
 import { NEW_ROLLOUT, UPGRADES_ROUTE, active, dateTime } from './rolloutHelpers'
 import { Upgrades } from './useUpgrades'
+import { useRecount } from './useRecount'
+import { RecountNote } from './RecountNote'
 import { UpgradesTabs } from './UpgradesTabs'
 
 export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrades }) => {
@@ -25,6 +27,12 @@ export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrad
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(adminRolloutAttributes, a => a.required === true)
   const { channels, runs, loading, fetchedAt, live, reload } = upgrades
+  const shown = Array.isArray(channels) ? channels : []
+  const recount = useRecount(
+    useCallback(() => shown.map(c => c.channel), [channels]),
+    reload,
+    () => shown.map(c => c.rollout?.checked)
+  )
 
   const header = (
     <Gutters>
@@ -35,7 +43,14 @@ export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrad
             {live ? 'Live · ' : ''}
             {fetchedAt ? `read ${dateTime(new Date(fetchedAt).toISOString())}` : ''}
           </Typography>
-          <IconButton icon="sync" title="Refresh" onClick={reload} spin={loading} size="md" />
+          <RecountNote state={recount.state} problem={recount.problem} />
+          <IconButton
+            icon="sync"
+            title="Refresh: recount the channels"
+            onClick={recount.recount}
+            spin={loading || recount.state === 'recounting'}
+            size="md"
+          />
           {runs !== false && runs !== UNSUPPORTED && (
             <Button variant="contained" size="small" onClick={() => history.push(`${UPGRADES_ROUTE}/${NEW_ROLLOUT}`)}>
               New rollout

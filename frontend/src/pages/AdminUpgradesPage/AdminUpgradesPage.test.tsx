@@ -15,8 +15,9 @@ const FALLBACK = vi.hoisted(() => ({
   rateCeiling: 15,
   failureThreshold: 0,
 }))
-const { channels, runs, run, mutate, served, packages, defaults, install, setInstall } = vi.hoisted(() => ({
+const { channels, runs, run, mutate, served, packages, defaults, install, setInstall, refresh } = vi.hoisted(() => ({
   install: vi.fn(),
+  refresh: vi.fn(),
   setInstall: vi.fn(async () => ({ ok: true } as any)),
   packages: vi.fn(),
   defaults: vi.fn(),
@@ -46,6 +47,7 @@ vi.mock('../../services/graphQLDaemonRollout', () => ({
   startDaemonRollout: mutate,
   graphQLDaemonPackages: packages,
   graphQLDaemonInstall: install,
+  refreshDaemonRollout: refresh,
   setDaemonInstall: setInstall,
   startArgsServed: async () => new Set(['rollback']),
   graphQLRolloutDefaults: defaults,
@@ -322,6 +324,7 @@ beforeEach(() => {
   mutate.mockClear()
   packages.mockReset().mockResolvedValue(false)
   install.mockReset().mockResolvedValue(false)
+  refresh.mockReset().mockResolvedValue(false)
   setInstall.mockClear()
   defaults.mockReset().mockResolvedValue(FALLBACK)
 })
@@ -670,5 +673,49 @@ describe('AdminUpgradesPage', () => {
     runs.mockResolvedValue([DONE])
     el = await render('/admin/upgrades')
     expect(el.querySelector('[data-counts-stalled]')).toBeNull()
+  })
+
+  it('refresh recounts where graphql offers it: Recounting… until a walk newer than the click lands', async () => {
+    const old = { ...STABLE, rollout: { ...STABLE.rollout, checked: '2026-10-30T00:00:00Z' } }
+    channels.mockResolvedValue([old])
+    refresh.mockResolvedValue(true)
+    const el = await render('/admin/upgrades')
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await click(el, 'Refresh: recount the channels')
+      expect(refresh).toHaveBeenCalledWith('stable')
+      expect(el.querySelector('[data-recounting]')!.textContent).toBe('Recounting…')
+      channels.mockResolvedValue([{ ...STABLE, rollout: { ...STABLE.rollout, checked: new Date().toISOString() } }])
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3100)
+      })
+      expect(el.querySelector('[data-recounting]')).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('a recount that has not landed in two minutes says it is still under way', async () => {
+    channels.mockResolvedValue([{ ...STABLE, rollout: { ...STABLE.rollout, checked: '2026-10-30T00:00:00Z' } }])
+    refresh.mockResolvedValue(true)
+    const el = await render('/admin/upgrades')
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await click(el, 'Refresh: recount the channels')
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2 * 60 * 1000 + 3500)
+      })
+      expect(el.querySelector('[data-recounting-slow]')).not.toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('without the recount, refresh re-reads', async () => {
+    const el = await render('/admin/upgrades')
+    const before = channels.mock.calls.length
+    await click(el, 'Refresh: recount the channels')
+    expect(channels.mock.calls.length).toBe(before + 1)
+    expect(el.querySelector('[data-recounting]')).toBeNull()
   })
 })

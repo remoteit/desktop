@@ -33,6 +33,8 @@ import { RollbackChip, RolloutStateChip } from './adminRolloutAttributes'
 import { ChannelBars, ChannelFailures, ManagedLine } from './AdminChannelOverview'
 import { RolloutDelivery } from './RolloutDelivery'
 import { usePoll } from './useUpgrades'
+import { useRecount } from './useRecount'
+import { RecountNote } from './RecountNote'
 import {
   GateLevel,
   UPGRADES_ROUTE,
@@ -265,6 +267,12 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
   }, [rolloutId])
 
   usePoll(load, typeof run === 'object' && !!run && active(run))
+  const shownRun = typeof run === 'object' && run ? run : undefined
+  const recount = useRecount(
+    useCallback(() => (shownRun ? [shownRun.channel] : []), [shownRun?.channel]),
+    load,
+    () => [shownRun?.rollout?.checked]
+  )
 
   const handleBack = () => history.push(UPGRADES_ROUTE)
 
@@ -290,7 +298,14 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
         {typeof run === 'object' && run && <RolloutStateChip run={run} />}
         {typeof run === 'object' && run && <RollbackChip run={run} />}
         <Box sx={{ flex: 1 }} />
-        <IconButton icon="sync" title="Refresh" onClick={load} size="md" />
+        <RecountNote state={recount.state} problem={recount.problem} />
+        <IconButton
+          icon="sync"
+          title="Refresh: recount the channel"
+          onClick={recount.recount}
+          spin={recount.state === 'recounting'}
+          size="md"
+        />
       </Box>
     </Box>
   )

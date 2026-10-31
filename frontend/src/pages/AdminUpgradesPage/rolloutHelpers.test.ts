@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   bucketSegments,
+  recounted,
   countsBefore,
   countsStalled,
   runningNewest,
@@ -346,5 +347,15 @@ describe('stale counts', () => {
     expect(countsStalled('2026-10-31T10:56:50Z', true, now)).toBe(true)
     expect(countsStalled('2026-10-31T10:58:00Z', true, now)).toBe(false)
     expect(countsStalled('2026-10-31T10:56:50Z', false, now)).toBe(false)
+  })
+})
+
+describe('recounted', () => {
+  const click = Date.parse('2026-10-31T11:00:00Z')
+  it('every channel asked has a walk from the click on (a couple of seconds of clock skew allowed)', () => {
+    expect(recounted(['2026-10-31T11:00:05Z', '2026-10-31T10:59:59Z'], click)).toBe(true)
+    expect(recounted(['2026-10-31T11:00:05Z', '2026-10-31T10:59:50Z'], click)).toBe(false)
+    expect(recounted([null], click)).toBe(false)
+    expect(recounted([], click)).toBe(false)
   })
 })

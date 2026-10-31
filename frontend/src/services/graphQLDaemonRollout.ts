@@ -48,6 +48,7 @@ export type DaemonChannelRollout = DaemonBuckets & {
   stuckMinutes: number
   stale?: boolean | null // the walk predates the channel's latest change, where graphql says
   change?: number | null // the channel change the walk counted, where graphql says
+  refreshing?: boolean | null // a recount is under way, where graphql says
   candidate: DaemonBuckets
   current: DaemonBuckets
   pinned: DaemonBuckets
@@ -311,6 +312,7 @@ export const ACTIONS = [
   'skipDaemonRolloutStep',
   'setDaemonRolloutRate',
   'setDaemonInstall',
+  'refreshDaemonRollout',
 ] as const
 
 type TypeRef = { kind: string; name?: string | null; ofType?: TypeRef | null }
@@ -396,7 +398,7 @@ export function parseRolloutSchema(data: any): RolloutSchema {
   // Whether the walk predates the channel's latest change, where graphql says so outright: `stale`, or the `change` it
   // counted (against the channel's).
   const walkFields = names(data?.channelRollout)
-  const walk = ['stale', 'change'].filter(name => walkFields.has(name)).join(' ')
+  const walk = ['stale', 'change', 'refreshing'].filter(name => walkFields.has(name)).join(' ')
   const rollout = runNames.has('rollout') ? `rollout { ${channelRollout(reasons, buckets, walk)} }` : ''
   const eventsField = run.find(f => f.name === 'events')
   const events = eventsField
@@ -567,6 +569,14 @@ export async function graphQLDaemonInstall(): Promise<DaemonInstall | null | 'ER
 // A published version new installs take from now on; null follows the stable channel's current release again.
 export const setDaemonInstall = (version: string | null) => graphQLRolloutMutation('setDaemonInstall', { version })
 
+// A recount of a channel's buckets now, where graphql offers one; false where it does not (the page re-reads instead).
+export async function refreshDaemonRollout(channel: string): Promise<boolean | { reason: string }> {
+  const served = await rolloutSchema()
+  if (served === 'ERROR' || !served.mutations.refreshDaemonRollout) return false
+  const result = await graphQLRolloutMutation('refreshDaemonRollout', { channel })
+  return result.ok ? true : { reason: result.reason }
+}
+
 export const sortRuns = (runs: RolloutRun[]) =>
   [...runs].sort((a, b) => (Date.parse(b.startedAt || '') || 0) - (Date.parse(a.startedAt || '') || 0))
 
@@ -602,7 +612,9 @@ export async function graphQLRolloutMutation(
   const field = served.mutations[name]
   if (!field) return { ok: false, reason: `This API has no ${name}.` }
   // A run's fields from a mutation on a run; the install's from the one that sets it.
-  const request = buildCall('mutation', field, variables, name === 'setDaemonInstall' ? served.install : served.returns)
+  const selection =
+    name === 'setDaemonInstall' ? served.install : name === 'refreshDaemonRollout' ? '__typename' : served.returns
+  const request = buildCall('mutation', field, variables, selection)
   const response = await graphQLRequestWithReason(request.query, request.variables)
   if (response === 'ERROR') return { ok: false, reason: `${name} failed.` }
   if ('reason' in response) return { ok: false, reason: response.reason || `${name} was refused.` }
