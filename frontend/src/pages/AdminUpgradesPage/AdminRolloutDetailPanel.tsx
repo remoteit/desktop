@@ -57,6 +57,7 @@ import {
 // first), a hold, an end.
 const EVENT_COLORS: ILookup<string> = {
   promoted: 'success.main',
+  install: 'primary.main', // what new installs download changed
   hold: 'warning.main',
   aborted: 'danger.main',
   superseded: 'grayDarker.main',

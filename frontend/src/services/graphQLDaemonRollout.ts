@@ -303,6 +303,7 @@ export const ACTIONS = [
   'abortDaemonRollout',
   'skipDaemonRolloutStep',
   'setDaemonRolloutRate',
+  'setDaemonInstall',
 ] as const
 
 type TypeRef = { kind: string; name?: string | null; ofType?: TypeRef | null }
@@ -312,7 +313,10 @@ export type RolloutSchema = {
   runs: boolean // daemonRollouts and daemonRollout are served
   list: string // a run's selection in the list
   detail: string // and in its detail
-  queries: Partial<Record<'daemonRollouts' | 'daemonRollout' | 'daemonPackages' | 'daemonRolloutDefaults', Field>>
+  queries: Partial<
+    Record<'daemonRollouts' | 'daemonRollout' | 'daemonPackages' | 'daemonRolloutDefaults' | 'daemonInstall', Field>
+  >
+  install: string // daemonInstall's selection
   mutations: Partial<Record<(typeof ACTIONS)[number], Field>>
   returns: string // what a mutation that returns a run is asked for
   channelRollout: string // a channel's buckets, as daemonChannels asks for them
@@ -329,6 +333,7 @@ const PROBE = `query DaemonRolloutFields {
   gates: __type(name: "DaemonRolloutGates") { fields { name type { ${TYPE_REF} } } }
   failure: __type(name: "DaemonRolloutFailure") { fields { name } }
   counts: __type(name: "DaemonRolloutCounts") { fields { name } }
+  install: __type(name: "DaemonInstall") { fields { name type { ${TYPE_REF} } } }
 }`
 
 const named = (type?: TypeRef | null): TypeRef | undefined => (type?.ofType ? named(type.ofType) : type || undefined)
@@ -395,7 +400,11 @@ export function parseRolloutSchema(data: any): RolloutSchema {
 
   const reads: RolloutSchema['queries'] = {}
   for (const field of queryFields)
-    if (['daemonRollouts', 'daemonRollout', 'daemonPackages', 'daemonRolloutDefaults'].includes(field.name))
+    if (
+      ['daemonRollouts', 'daemonRollout', 'daemonPackages', 'daemonRolloutDefaults', 'daemonInstall'].includes(
+        field.name
+      )
+    )
       reads[field.name as keyof RolloutSchema['queries']] = field
 
   return {
@@ -406,8 +415,20 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     mutations,
     returns: pick(['id', 'state', 'reason', 'percent', 'rate'], runNames),
     channelRollout: channelRollout(REASONS, buckets),
+    install: installSelection(fieldsOf(data?.install)),
     startArgs: (mutations.startDaemonRollout?.args || []).map(arg => arg.name),
   }
+}
+
+// What new installs download (stage-wide): daemonInstall's fields, those its type has where the probe finds it under
+// this name, else the contract's; who set it as an email where it is a user.
+const INSTALL_FIELDS = ['version', 'followsCurrent', 'manifest', 'updatedAt']
+function installSelection(fields: Field[]): string {
+  if (!fields.length) return `${INSTALL_FIELDS.join(' ')} updatedBy`
+  const has = new Set(fields.map(f => f.name))
+  const by = fields.find(f => f.name === 'updatedBy')
+  const updatedBy = by ? (named(by.type)?.kind === 'OBJECT' ? 'updatedBy { email }' : 'updatedBy') : ''
+  return [...INSTALL_FIELDS.filter(name => has.has(name)), updatedBy].filter(Boolean).join(' ')
 }
 
 let schema: Promise<RolloutSchema | 'ERROR'> | undefined
@@ -499,6 +520,28 @@ export async function graphQLRolloutDefaults(): Promise<RolloutDefaults> {
   return defaults && typeof defaults === 'object' ? { ...FALLBACK_DEFAULTS, ...defaults } : FALLBACK_DEFAULTS
 }
 
+// What new installs download, stage-wide: the stable channel's current release unless set ahead of it.
+export type DaemonInstall = {
+  version: string | null
+  followsCurrent?: boolean | null
+  manifest?: string | null
+  updatedAt?: string | null
+  updatedBy?: string | { email?: string | null } | null
+}
+
+// false where the API does not say.
+export async function graphQLDaemonInstall(): Promise<DaemonInstall | null | 'ERROR' | false> {
+  const served = await rolloutSchema()
+  if (served === 'ERROR') return 'ERROR'
+  if (!served.queries.daemonInstall) return false
+  const call = buildCall('query', served.queries.daemonInstall, {}, served.install)
+  const install = await read<DaemonInstall>(call.query, call.variables, 'daemonInstall')
+  return install === UNSUPPORTED ? false : install
+}
+
+// A published version new installs take from now on; null follows the stable channel's current release again.
+export const setDaemonInstall = (version: string | null) => graphQLRolloutMutation('setDaemonInstall', { version })
+
 export const sortRuns = (runs: RolloutRun[]) =>
   [...runs].sort((a, b) => (Date.parse(b.startedAt || '') || 0) - (Date.parse(a.startedAt || '') || 0))
 
@@ -533,7 +576,8 @@ export async function graphQLRolloutMutation(
   if (served === 'ERROR') return { ok: false, reason: 'Could not read what this API serves.' }
   const field = served.mutations[name]
   if (!field) return { ok: false, reason: `This API has no ${name}.` }
-  const request = buildCall('mutation', field, variables, served.returns)
+  // A run's fields from a mutation on a run; the install's from the one that sets it.
+  const request = buildCall('mutation', field, variables, name === 'setDaemonInstall' ? served.install : served.returns)
   const response = await graphQLRequestWithReason(request.query, request.variables)
   if (response === 'ERROR') return { ok: false, reason: `${name} failed.` }
   if ('reason' in response) return { ok: false, reason: response.reason || `${name} was refused.` }

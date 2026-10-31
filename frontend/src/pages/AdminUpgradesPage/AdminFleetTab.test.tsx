@@ -11,6 +11,7 @@ vi.mock('../../services/graphQLFleetVersions', () => ({ graphQLFleetVersions: ve
 vi.mock('../../services/graphQLDaemonRollout', () => ({
   graphQLDaemonChannels: vi.fn(async () => []),
   graphQLDaemonRollouts: vi.fn(async () => []),
+  graphQLDaemonInstall: vi.fn(async () => false),
 }))
 vi.mock('../../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED', DAEMON_CHANNELS: ['stable', 'beta'] }))
 vi.mock('../../components/Link', () => ({ Link: ({ to, children }: any) => <a href={to}>{children}</a> }))

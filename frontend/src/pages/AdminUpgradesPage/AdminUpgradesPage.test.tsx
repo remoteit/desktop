@@ -15,7 +15,9 @@ const FALLBACK = vi.hoisted(() => ({
   rateCeiling: 15,
   failureThreshold: 0,
 }))
-const { channels, runs, run, mutate, served, packages, defaults } = vi.hoisted(() => ({
+const { channels, runs, run, mutate, served, packages, defaults, install, setInstall } = vi.hoisted(() => ({
+  install: vi.fn(),
+  setInstall: vi.fn(async () => ({ ok: true } as any)),
   packages: vi.fn(),
   defaults: vi.fn(),
   channels: vi.fn(),
@@ -31,6 +33,7 @@ const { channels, runs, run, mutate, served, packages, defaults } = vi.hoisted((
         'abortDaemonRollout',
         'skipDaemonRolloutStep',
         'setDaemonRolloutRate',
+        'setDaemonInstall',
       ])
   ),
 }))
@@ -42,6 +45,8 @@ vi.mock('../../services/graphQLDaemonRollout', () => ({
   rolloutAction: mutate,
   startDaemonRollout: mutate,
   graphQLDaemonPackages: packages,
+  graphQLDaemonInstall: install,
+  setDaemonInstall: setInstall,
   startArgsServed: async () => new Set(['rollback']),
   graphQLRolloutDefaults: defaults,
   FALLBACK_DEFAULTS: FALLBACK,
@@ -316,6 +321,8 @@ beforeEach(() => {
   run.mockReset().mockResolvedValue(HELD)
   mutate.mockClear()
   packages.mockReset().mockResolvedValue(false)
+  install.mockReset().mockResolvedValue(false)
+  setInstall.mockClear()
   defaults.mockReset().mockResolvedValue(FALLBACK)
 })
 
@@ -576,5 +583,49 @@ describe('AdminUpgradesPage', () => {
     expect([...bar.querySelectorAll('[data-segment]')].map(s => s.getAttribute('data-segment'))).toContain('ahead')
     expect(bar.textContent).toContain('Ahead 10')
     expect(el.querySelector('[data-rollout="R2"] [data-rollback-chip]')).not.toBeNull()
+  })
+
+  it('says what new installs download on the stable card, and changes it only to builds no older than current', async () => {
+    install.mockResolvedValue({
+      version: '1.1.0.3',
+      followsCurrent: false,
+      manifest: 'https://d/device/1.1.0.3/manifest.json',
+      updatedAt: '2026-10-31T15:00:00Z',
+      updatedBy: 'evan@remote.it',
+    })
+    packages.mockResolvedValue([
+      { version: '1.1.0.3', manifest: 'https://d/3', publishedAt: '2026-10-31T01:00:00Z', platforms: [] },
+      { version: '1.1.0.1', manifest: 'https://d/1', publishedAt: '2026-10-30T01:00:00Z', platforms: [] },
+      { version: '1.1.0.0', manifest: 'https://d/0', publishedAt: '2026-10-29T01:00:00Z', platforms: [] },
+    ])
+    const el = await render('/admin/upgrades')
+    const line = el.querySelector('[data-channel="stable"] [data-install-line]')!
+    expect(line.textContent).toContain('New installs: 1.1.0.3 (ahead of current)')
+    expect(line.textContent).toContain('by evan@remote.it')
+    await act(async () => (line.querySelector('[data-install-change]') as HTMLElement).click())
+    await act(async () => {})
+    // The choices: Follow current, and published builds no older than current (1.1.0.1); 1.1.0.0 is not offered.
+    const select = el.querySelector('[data-field="install-version"]') as HTMLInputElement
+    expect(select.value).toBe('1.1.0.3')
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(select, '1.1.0.0')
+      select.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(select.value).toBe('1.1.0.3') // the select takes only an offered version: 1.1.0.0 is not one
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(select, '__follow__')
+      select.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await click(el, 'Continue')
+    expect(el.querySelector('[data-install-confirm]')!.textContent).toBe(
+      'New installs everywhere will get 1.1.0.1 immediately — there is no gradual rollout for installs.'
+    )
+    await act(async () => (el.querySelector('[data-confirm] button') as HTMLButtonElement).click())
+    expect(setInstall).toHaveBeenCalledWith(null)
+  })
+
+  it('no install line where the API does not say', async () => {
+    const el = await render('/admin/upgrades')
+    expect(el.querySelector('[data-install-line]')).toBeNull()
   })
 })

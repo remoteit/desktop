@@ -5,8 +5,10 @@ import type {
   DaemonChannel,
   DaemonChannelRollout,
   DaemonFailure,
+  DaemonInstall,
 } from '../../services/graphQLDaemonRollout'
 import { RolloutBucketBar } from './RolloutBucketBar'
+import { DaemonInstallLine } from './DaemonInstallLine'
 import { RolloutDelivery } from './RolloutDelivery'
 import { dateTime, managed } from './rolloutHelpers'
 
@@ -112,7 +114,11 @@ export const ChannelFailures: React.FC<{ rollout?: DaemonChannelRollout | null; 
 }
 
 // One release channel as it stands: what it runs and offers, where its devices are, and its delivery.
-export const AdminChannelOverview: React.FC<{ channel: DaemonChannel }> = ({ channel }) => {
+export const AdminChannelOverview: React.FC<{
+  channel: DaemonChannel
+  install?: DaemonInstall | 'ERROR' // stage-wide; shown on the channel it follows (stable)
+  onChanged?: () => void
+}> = ({ channel, install, onChanged }) => {
   const rollout = channel.rollout
   const targeted = channel.accounts.length + channel.devices.length
   return (
@@ -144,6 +150,9 @@ export const AdminChannelOverview: React.FC<{ channel: DaemonChannel }> = ({ cha
           />
         )}
       </Box>
+      {install && install !== 'ERROR' && (
+        <DaemonInstallLine install={install} current={channel.current?.version} onChanged={() => onChanged?.()} />
+      )}
       <ManagedLine buckets={rollout} />
       <ChannelBars
         rollout={rollout}

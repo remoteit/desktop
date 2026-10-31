@@ -18,6 +18,8 @@ import {
   graphQLRolloutMutation,
   graphQLDaemonPackages,
   graphQLRolloutDefaults,
+  graphQLDaemonInstall,
+  setDaemonInstall,
   FALLBACK_DEFAULTS,
   parseRolloutSchema,
   resetRolloutSchema,
@@ -333,5 +335,48 @@ describe("the New rollout form's reads", () => {
     expect(await graphQLDaemonPackages()).toBe(false)
     expect(await graphQLRolloutDefaults()).toEqual(FALLBACK_DEFAULTS)
     expect(request).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('what new installs download', () => {
+  const withInstall = {
+    ...CONTRACT,
+    query: { fields: [...CONTRACT.query.fields, { name: 'daemonInstall', args: [] }] },
+    mutation: {
+      fields: [
+        ...CONTRACT.mutation.fields,
+        {
+          name: 'setDaemonInstall',
+          type: object('DaemonInstall'),
+          args: [{ name: 'version', type: scalar('String') }],
+        },
+      ],
+    },
+    install: {
+      fields: [
+        { name: 'version', type: scalar('String') },
+        { name: 'followsCurrent', type: scalar('Boolean') },
+        { name: 'updatedAt', type: scalar('DateTime') },
+        { name: 'updatedBy', type: object('User') },
+      ],
+    },
+  }
+
+  it("reads it with the fields its type has, and sets it with null for follow current, asking back the install's", async () => {
+    request.mockResolvedValueOnce(answer(withInstall))
+    request.mockResolvedValueOnce(answer({ daemonInstall: { version: '1.1.0.3', followsCurrent: false } }))
+    expect(await graphQLDaemonInstall()).toEqual({ version: '1.1.0.3', followsCurrent: false })
+    expect(sent(1).query).toContain('daemonInstall { version followsCurrent updatedAt updatedBy { email } }')
+    request.mockResolvedValueOnce(answer({ setDaemonInstall: { version: '1.1.0.1', followsCurrent: true } }))
+    expect((await setDaemonInstall(null)).ok).toBe(true)
+    expect(sent(2).variables).toEqual({ version: null })
+    expect(sent(2).query).toContain(
+      'setDaemonInstall(version: $version) { version followsCurrent updatedAt updatedBy { email } }'
+    )
+  })
+
+  it('false where the API does not say', async () => {
+    request.mockResolvedValueOnce(answer(CONTRACT))
+    expect(await graphQLDaemonInstall()).toBe(false)
   })
 })

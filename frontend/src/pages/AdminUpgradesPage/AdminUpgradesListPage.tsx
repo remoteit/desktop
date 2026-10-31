@@ -80,7 +80,14 @@ export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrad
               Could not read the release channels.
             </Notice>
           ) : (
-            channels.map(channel => <AdminChannelOverview key={channel.channel} channel={channel} />)
+            channels.map(channel => (
+              <AdminChannelOverview
+                key={channel.channel}
+                channel={channel}
+                install={channel.channel === 'stable' && upgrades.install ? upgrades.install : undefined}
+                onChanged={reload}
+              />
+            ))
           )}
         </Gutters>
         <List>

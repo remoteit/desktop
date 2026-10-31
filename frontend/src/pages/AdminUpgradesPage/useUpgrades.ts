@@ -5,6 +5,8 @@ import {
   RolloutRun,
   graphQLDaemonChannels,
   graphQLDaemonRollouts,
+  graphQLDaemonInstall,
+  DaemonInstall,
 } from '../../services/graphQLDaemonRollout'
 import { POLL_MS, active } from './rolloutHelpers'
 
@@ -13,6 +15,7 @@ export const RUN_LIMIT = 50
 export type Upgrades = {
   channels?: DaemonChannel[] | 'ERROR' | typeof UNSUPPORTED
   runs?: RolloutRun[] | 'ERROR' | typeof UNSUPPORTED | false // false: this API has no rollout controller
+  install?: DaemonInstall | null | 'ERROR' | false // what new installs download; false where the API does not say
   loading: boolean
   fetchedAt?: number
   live: boolean
@@ -38,6 +41,7 @@ export function usePoll(load: () => Promise<void>, live: boolean) {
 export function useUpgrades(): Upgrades {
   const [channels, setChannels] = useState<Upgrades['channels']>()
   const [runs, setRuns] = useState<Upgrades['runs']>()
+  const [install, setInstall] = useState<Upgrades['install']>()
   const [loading, setLoading] = useState(false)
   const [fetchedAt, setFetchedAt] = useState<number>()
   const mounted = useRef(true)
@@ -51,13 +55,15 @@ export function useUpgrades(): Upgrades {
 
   const reload = useCallback(async () => {
     setLoading(true)
-    const [nextChannels, nextRuns] = await Promise.all([
+    const [nextChannels, nextRuns, nextInstall] = await Promise.all([
       graphQLDaemonChannels(),
       graphQLDaemonRollouts({ limit: RUN_LIMIT }),
+      graphQLDaemonInstall(),
     ])
     if (!mounted.current) return
     setChannels(nextChannels === null ? [] : nextChannels)
     setRuns(nextRuns)
+    setInstall(nextInstall)
     setFetchedAt(Date.now())
     setLoading(false)
   }, [])
@@ -65,5 +71,5 @@ export function useUpgrades(): Upgrades {
   const live = (Array.isArray(runs) && runs.some(active)) || delivering(channels)
   usePoll(reload, live)
 
-  return { channels, runs, loading, fetchedAt, live, reload }
+  return { channels, runs, install, loading, fetchedAt, live, reload }
 }
