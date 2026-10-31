@@ -8,7 +8,8 @@ import {
   VersionOf,
 } from '../../services/fleetVersionsModel'
 
-// The Fleet tab's view, as the URL holds it, so a view can be shared: ?view=fleet&group=…&then=…&of=…&online=1&pct=1&q=…
+// The Fleet tab's view, as the URL holds it, so a view can be shared: ?view=fleet&group=…&then=…&of=…&online=0&pct=1&q=…
+// Online only unless the URL says all (online=0 or online=all); a link from before that said online=1 still reads so.
 export const FLEET_VIEW = 'fleet'
 
 export type FleetChoices = {
@@ -24,7 +25,7 @@ export type FleetChoices = {
 export const DEFAULT_CHOICES: FleetChoices = {
   group: 'packageType',
   of: 'connectd',
-  online: false,
+  online: true,
   percent: false,
   search: '',
   older: false,
@@ -43,7 +44,7 @@ export function readChoices(search: string): FleetChoices {
     group,
     then: then && then !== group ? then : undefined,
     of: params.get('of') === 'package' ? 'package' : 'connectd',
-    online: params.get('online') === '1',
+    online: !['0', 'all', 'false'].includes((params.get('online') || '').toLowerCase()),
     percent: params.get('pct') === '1',
     search: params.get('q') || '',
     older: params.get('older') === '1',
@@ -54,7 +55,7 @@ export function writeChoices(choices: FleetChoices): string {
   const params = new URLSearchParams({ view: FLEET_VIEW, group: choices.group })
   if (choices.then) params.set('then', choices.then)
   if (choices.of !== DEFAULT_CHOICES.of) params.set('of', choices.of)
-  if (choices.online) params.set('online', '1')
+  if (!choices.online) params.set('online', '0')
   if (choices.percent) params.set('pct', '1')
   if (choices.search.trim()) params.set('q', choices.search.trim())
   if (choices.older) params.set('older', '1')

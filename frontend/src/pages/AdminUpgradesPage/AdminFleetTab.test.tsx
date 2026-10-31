@@ -225,10 +225,16 @@ describe('the choices', () => {
     await act(async () => (el.querySelector('[data-version-of="package"]') as HTMLButtonElement).click())
     expect(location.search).toContain('of=package')
     expect((el.querySelector('[data-version-of="desktop"]') as HTMLButtonElement).disabled).toBe(true)
-    await act(async () => (el.querySelector('[data-show="online"]') as HTMLButtonElement).click())
-    expect(location.search).toContain('online=1')
+    // Online only by default; All says so in the URL.
+    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ onlineOnly: true }))
+    await act(async () => (el.querySelector('[data-show="all"]') as HTMLButtonElement).click())
+    expect(location.search).toContain('online=0')
     await act(async () => (el.querySelector('[data-percent]') as HTMLButtonElement).click())
     expect(location.search).toContain('pct=1')
-    expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ versionOf: 'package', onlineOnly: true }))
+    expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ versionOf: 'package', onlineOnly: false }))
+    // The second grouping reads None when empty, its label above it.
+    const then = el.querySelector('[data-choice="then"]')!.closest('.MuiFormControl-root')!
+    expect(then.textContent).toContain('Then by')
+    expect(then.textContent).toContain('None')
   })
 })
