@@ -69,6 +69,9 @@ export type DaemonDelivery = {
   finishedAt: string | null
   retryAt: string | null
   error: string | null
+  aheadDelivered?: number | null // sent their own running version (ahead): kept, not upgraded
+  upgradeTargets?: number | null // the devices this delivery upgrades
+  managedTotal?: number | null // the devices to deliver to, the unmanaged left out
 }
 
 export type DaemonChannel = {
@@ -226,6 +229,8 @@ const CHANNEL_ROLLOUT = channelRollout()
 const DELIVERY = `change version state total delivered pacedDelivered unpacedDelivered skippedUnmanaged failed unchanged
   remaining walked perSecond startedAt finishedAt retryAt error`
 
+const DELIVERY_EXTRAS = ['aheadDelivered', 'upgradeTargets', 'managedTotal']
+
 export const EVENT_LIMIT = 200
 
 // What a run's query asks for, of what the API has: scalars by name, objects with their own fields.
@@ -317,6 +322,7 @@ export type RolloutSchema = {
     Record<'daemonRollouts' | 'daemonRollout' | 'daemonPackages' | 'daemonRolloutDefaults' | 'daemonInstall', Field>
   >
   install: string // daemonInstall's selection
+  delivery: string // a delivery's selection
   mutations: Partial<Record<(typeof ACTIONS)[number], Field>>
   returns: string // what a mutation that returns a run is asked for
   channelRollout: string // a channel's buckets, as daemonChannels asks for them
@@ -334,6 +340,7 @@ const PROBE = `query DaemonRolloutFields {
   failure: __type(name: "DaemonRolloutFailure") { fields { name } }
   counts: __type(name: "DaemonRolloutCounts") { fields { name } }
   install: __type(name: "DaemonInstall") { fields { name type { ${TYPE_REF} } } }
+  delivery: __type(name: "DaemonChannelDelivery") { fields { name } }
 }`
 
 const named = (type?: TypeRef | null): TypeRef | undefined => (type?.ofType ? named(type.ofType) : type || undefined)
@@ -367,7 +374,11 @@ export function parseRolloutSchema(data: any): RolloutSchema {
       .map(f => f.name)
   )
   const gates = runNames.has('gates') ? `gates { ${pick(GATE_FIELDS, gateScalars)} }` : ''
-  const delivery = runNames.has('delivery') ? `delivery { ${DELIVERY} }` : ''
+  // The upgrade/bookkeeping split, where the API counts it: devices sent their own running version (ahead), the
+  // upgrade deliveries' targets, the managed devices alone.
+  const deliveryFields = names(data?.delivery)
+  const deliverySelection = [DELIVERY, ...DELIVERY_EXTRAS.filter(name => deliveryFields.has(name))].join(' ')
+  const delivery = runNames.has('delivery') ? `delivery { ${deliverySelection} }` : ''
   const failureFields = names(data?.failure)
   const ids = failureFields.has('deviceIds')
   const failed = failureFields.has('failedDevices')
@@ -416,6 +427,7 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     returns: pick(['id', 'state', 'reason', 'percent', 'rate'], runNames),
     channelRollout: channelRollout(REASONS, buckets),
     install: installSelection(fieldsOf(data?.install)),
+    delivery: deliverySelection,
     startArgs: (mutations.startDaemonRollout?.args || []).map(arg => arg.name),
   }
 }
@@ -469,7 +481,7 @@ export const graphQLDaemonChannels = async () => {
         current { version manifest rollback }
         candidate { version manifest rollback }
         rollout { ${served === 'ERROR' ? CHANNEL_ROLLOUT : served.channelRollout} }
-        delivery { ${DELIVERY} }
+        delivery { ${served === 'ERROR' ? DELIVERY : served.delivery} }
       }
     }`,
     {},

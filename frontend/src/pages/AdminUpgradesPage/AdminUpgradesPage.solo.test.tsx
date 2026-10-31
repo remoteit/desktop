@@ -103,7 +103,7 @@ describe("the Upgrades page on solo's answers", () => {
     const channel = el.querySelector('[data-channel="stable"]')!
     expect(channel).not.toBeNull()
     expect(channel.textContent).toContain('candidate 1.1.0.20261031011556 at 100%')
-    expect(channel.querySelector('[data-delivery]')!.textContent).toContain('6,733 of 30,808 delivered')
+    expect(channel.querySelector('[data-delivery]')!.textContent).toContain('6,733 of 6,733 managed devices delivered')
     const row = el.querySelector('[data-rollout="65d73d95-3396-45b6-a81b-1f1b9fbad4e7"]')!
     expect(row).not.toBeNull()
     expect(row.textContent).toContain('done')

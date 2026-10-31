@@ -112,10 +112,29 @@ export const dateTime = (iso?: string | null) => {
 export const deliveryProgress = (delivery?: DaemonDelivery | null) => {
   if (!delivery) return undefined
   const done = delivery.state === 'done'
-  const fraction = delivery.total ? delivery.delivered / delivery.total : done ? 1 : 0
+  const counts = deliveryCounts(delivery)
+  const fraction = counts.of ? Math.min(1, counts.delivered / counts.of) : done ? 1 : 0
   const etaMs =
     !done && delivery.remaining && delivery.perSecond > 0 ? (delivery.remaining / delivery.perSecond) * 1000 : undefined
-  return { done, fraction, etaMs }
+  return { done, fraction, etaMs, ...counts }
+}
+
+// What a delivery's progress is out of — managed devices only, as the bars — and, where graphql counts it apart, the
+// upgrades alone: devices sent their own running version (ahead) and those already right are bookkeeping, noted
+// beside the progress, not part of it.
+//   With the split (aheadDelivered): upgrades delivered = delivered − ahead, of upgradeTargets (else of the managed
+//   total less the ahead and unchanged).
+//   Without it: delivered (paced + unpaced) of the managed total — total less skippedUnmanaged, unless graphql gives
+//   managedTotal, or already counts total so (an API with the split and no managedTotal).
+export function deliveryCounts(delivery: DaemonDelivery) {
+  const sent = (delivery.pacedDelivered || 0) + (delivery.unpacedDelivered || 0) || delivery.delivered || 0
+  const split = delivery.aheadDelivered != null
+  const managedTotal =
+    delivery.managedTotal ?? (split ? delivery.total : Math.max(0, delivery.total - (delivery.skippedUnmanaged || 0)))
+  if (!split) return { split, managedTotal, delivered: sent, of: managedTotal, kept: undefined }
+  const kept = delivery.aheadDelivered || 0
+  const of = delivery.upgradeTargets ?? Math.max(0, managedTotal - kept - (delivery.unchanged || 0))
+  return { split, managedTotal, delivered: Math.max(0, sent - kept), of, kept }
 }
 
 // The ladder's step the run is on: its index (1-based) of the ladder's length, from its percent or else its steps.

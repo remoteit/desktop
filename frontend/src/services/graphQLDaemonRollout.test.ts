@@ -201,6 +201,14 @@ describe('the schema read', () => {
     expect(older.startArgs).not.toContain('rollback')
   })
 
+  it('asks a delivery for the upgrade/bookkeeping split where the API counts it', () => {
+    const split = parseRolloutSchema({ ...CONTRACT, delivery: fields('total', 'aheadDelivered', 'upgradeTargets') })
+    expect(split.delivery).toContain('skippedUnmanaged')
+    expect(split.delivery).toContain('aheadDelivered upgradeTargets')
+    expect(split.delivery).not.toContain('managedTotal')
+    expect(parseRolloutSchema(CONTRACT).delivery).not.toContain('aheadDelivered')
+  })
+
   it('an API without the controller has no runs', () => {
     expect(parseRolloutSchema({ query: fields('daemonChannels') }).runs).toBe(false)
   })

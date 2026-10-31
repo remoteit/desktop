@@ -25,11 +25,15 @@ export const RolloutDelivery: React.FC<{ delivery?: DaemonDelivery | null }> = (
         color={stalled ? 'warning' : progress.done ? 'success' : 'primary'}
         sx={{ height: 6, borderRadius: 1, marginY: 0.5 }}
       />
-      <Typography variant="caption" color="textSecondary" component="div">
-        {delivery.delivered.toLocaleString()} of {delivery.total.toLocaleString()} delivered · paced{' '}
-        {delivery.pacedDelivered.toLocaleString()} · unpaced {delivery.unpacedDelivered.toLocaleString()} · skipped
-        unmanaged {delivery.skippedUnmanaged.toLocaleString()} · unchanged {delivery.unchanged.toLocaleString()}
+      <Typography variant="caption" color="textSecondary" component="div" data-delivery-counts>
+        {progress.delivered.toLocaleString()} of {progress.of.toLocaleString()}{' '}
+        {progress.split ? 'upgrades delivered' : 'managed devices delivered'} · paced{' '}
+        {delivery.pacedDelivered.toLocaleString()} · unpaced {delivery.unpacedDelivered.toLocaleString()}
         {!!delivery.failed && <> · failed {delivery.failed.toLocaleString()}</>}
+      </Typography>
+      <Typography variant="caption" color="textSecondary" component="div" data-delivery-bookkeeping>
+        {progress.kept !== undefined && <>{progress.kept.toLocaleString()} kept on their running version · </>}
+        {delivery.unchanged.toLocaleString()} unchanged
       </Typography>
       <Typography variant="caption" color="textSecondary" component="div">
         Started {dateTime(delivery.startedAt)}

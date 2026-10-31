@@ -5,6 +5,7 @@ import {
   supersededBy,
   managed,
   currentStep,
+  deliveryCounts,
   deliveryProgress,
   failureRows,
   gateReadings,
@@ -51,14 +52,44 @@ describe('the bucket bar', () => {
 describe('delivery progress', () => {
   const delivery = { state: 'delivering', total: 1000, delivered: 250, remaining: 750, perSecond: 15 } as any
   it('is delivered of total, with the rest at its pace', () => {
-    expect(deliveryProgress(delivery)).toEqual({ done: false, fraction: 0.25, etaMs: 50000 })
+    expect(deliveryProgress(delivery)).toMatchObject({ done: false, fraction: 0.25, etaMs: 50000 })
   })
   it('a finished one with nothing to deliver is whole, no ETA', () => {
-    expect(deliveryProgress({ ...delivery, state: 'done', total: 0, delivered: 0, remaining: 0 })).toEqual({
+    expect(deliveryProgress({ ...delivery, state: 'done', total: 0, delivered: 0, remaining: 0 })).toMatchObject({
       done: true,
       fraction: 1,
       etaMs: undefined,
     })
+  })
+
+  // Rollback run dcb3d775 at 1%, 2026-10-31: 125 devices moving, the rest of the fleet sent its own version.
+  const rollback = {
+    state: 'done',
+    total: 61787,
+    delivered: 13317,
+    pacedDelivered: 111,
+    unpacedDelivered: 13206,
+    skippedUnmanaged: 48470,
+    unchanged: 0,
+    remaining: 0,
+    perSecond: 15,
+  } as any
+
+  it('counts managed devices only, the unmanaged left out', () => {
+    expect(deliveryCounts(rollback)).toEqual({
+      split: false,
+      managedTotal: 13317,
+      delivered: 13317,
+      of: 13317,
+      kept: undefined,
+    })
+  })
+
+  it('with the split, the progress is the upgrades alone and the ahead are kept, apart', () => {
+    const split = { ...rollback, total: 13317, aheadDelivered: 13206, upgradeTargets: 125 }
+    expect(deliveryCounts(split)).toEqual({ split: true, managedTotal: 13317, delivered: 111, of: 125, kept: 13206 })
+    expect(deliveryCounts({ ...split, upgradeTargets: undefined })).toMatchObject({ of: 111 }) // 13,317 − 13,206 − 0
+    expect(deliveryCounts({ ...rollback, aheadDelivered: 13206, managedTotal: 13317 }).managedTotal).toBe(13317)
   })
 })
 
