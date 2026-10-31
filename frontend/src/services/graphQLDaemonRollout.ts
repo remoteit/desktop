@@ -167,6 +167,29 @@ export type RolloutRun = {
   gates?: RolloutGates | null
 }
 
+// A device package published to the stage's downloads, its manifest and signature both there (graphql daemonPackages).
+export type DaemonPackage = { version: string; manifest: string; publishedAt: string; platforms: string[] }
+
+// What startDaemonRollout takes for each setting not given (graphql daemonRolloutDefaults).
+export type RolloutDefaults = {
+  ladder: number[]
+  soakMinutes: number
+  firstSoakMinutes: number
+  rateFloor: number
+  rateCeiling: number
+  failureThreshold: number
+}
+
+// The controller's defaults as of graphql f75dc73d, for an API that does not say them.
+export const FALLBACK_DEFAULTS: RolloutDefaults = {
+  ladder: [1, 10, 50, 100],
+  soakMinutes: 5,
+  firstSoakMinutes: 10,
+  rateFloor: 2,
+  rateCeiling: 15,
+  failureThreshold: 0,
+}
+
 export type StartRollout = {
   channel: string
   candidateVersion: string
@@ -285,7 +308,7 @@ export type RolloutSchema = {
   runs: boolean // daemonRollouts and daemonRollout are served
   list: string // a run's selection in the list
   detail: string // and in its detail
-  queries: Partial<Record<'daemonRollouts' | 'daemonRollout', Field>>
+  queries: Partial<Record<'daemonRollouts' | 'daemonRollout' | 'daemonPackages' | 'daemonRolloutDefaults', Field>>
   mutations: Partial<Record<(typeof ACTIONS)[number], Field>>
   returns: string // what a mutation that returns a run is asked for
 }
@@ -363,7 +386,8 @@ export function parseRolloutSchema(data: any): RolloutSchema {
 
   const reads: RolloutSchema['queries'] = {}
   for (const field of queryFields)
-    if (field.name === 'daemonRollouts' || field.name === 'daemonRollout') reads[field.name] = field
+    if (['daemonRollouts', 'daemonRollout', 'daemonPackages', 'daemonRolloutDefaults'].includes(field.name))
+      reads[field.name as keyof RolloutSchema['queries']] = field
 
   return {
     runs,
@@ -436,6 +460,30 @@ export async function graphQLDaemonRollout(id: string): Promise<Result<RolloutRu
   if (!served.runs) return false
   const call = buildCall('query', served.queries.daemonRollout as Field, { id }, served.detail)
   return read<RolloutRun>(call.query, call.variables, 'daemonRollout')
+}
+
+// The packages published to the stage, newest first; false where the API does not list them.
+export async function graphQLDaemonPackages(limit = 30): Promise<DaemonPackage[] | 'ERROR' | false> {
+  const served = await rolloutSchema()
+  if (served === 'ERROR') return 'ERROR'
+  if (!served.queries.daemonPackages) return false
+  const call = buildCall('query', served.queries.daemonPackages, { limit }, 'version manifest publishedAt platforms')
+  const packages = await read<DaemonPackage[]>(call.query, call.variables, 'daemonPackages')
+  return Array.isArray(packages) ? packages : packages === null ? [] : 'ERROR'
+}
+
+// The controller's own defaults; FALLBACK_DEFAULTS where the API does not say them or the read fails.
+export async function graphQLRolloutDefaults(): Promise<RolloutDefaults> {
+  const served = await rolloutSchema()
+  if (served === 'ERROR' || !served.queries.daemonRolloutDefaults) return FALLBACK_DEFAULTS
+  const call = buildCall(
+    'query',
+    served.queries.daemonRolloutDefaults,
+    {},
+    'ladder soakMinutes firstSoakMinutes rateFloor rateCeiling failureThreshold'
+  )
+  const defaults = await read<RolloutDefaults>(call.query, call.variables, 'daemonRolloutDefaults')
+  return defaults && typeof defaults === 'object' ? { ...FALLBACK_DEFAULTS, ...defaults } : FALLBACK_DEFAULTS
 }
 
 export const sortRuns = (runs: RolloutRun[]) =>

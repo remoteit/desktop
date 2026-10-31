@@ -7,7 +7,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // The admin Upgrades page: each channel's buckets and delivery, the runs newest first with the live one marked, and a
 // run's detail — a hold for failures puts them first, with what an earlier resume reviewed, and Resume says how many
 // it will mark reviewed; Abort asks a reason, then confirms.
-const { channels, runs, run, mutate, served } = vi.hoisted(() => ({
+const FALLBACK = vi.hoisted(() => ({
+  ladder: [1, 10, 50, 100],
+  soakMinutes: 5,
+  firstSoakMinutes: 10,
+  rateFloor: 2,
+  rateCeiling: 15,
+  failureThreshold: 0,
+}))
+const { channels, runs, run, mutate, served, packages, defaults } = vi.hoisted(() => ({
+  packages: vi.fn(),
+  defaults: vi.fn(),
   channels: vi.fn(),
   runs: vi.fn(),
   run: vi.fn(),
@@ -31,6 +41,9 @@ vi.mock('../../services/graphQLDaemonRollout', () => ({
   rolloutActionsServed: served,
   rolloutAction: mutate,
   startDaemonRollout: mutate,
+  graphQLDaemonPackages: packages,
+  graphQLRolloutDefaults: defaults,
+  FALLBACK_DEFAULTS: FALLBACK,
 }))
 vi.mock('../../services/graphQLFleetVersions', () => ({ graphQLFleetVersions: vi.fn(), graphQLFleetDevices: vi.fn() }))
 vi.mock('../../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED', DAEMON_CHANNELS: ['stable', 'beta'] }))
@@ -291,19 +304,27 @@ beforeEach(() => {
   runs.mockReset().mockResolvedValue([HELD, DONE])
   run.mockReset().mockResolvedValue(HELD)
   mutate.mockClear()
+  packages.mockReset().mockResolvedValue(false)
+  defaults.mockReset().mockResolvedValue(FALLBACK)
 })
 
 describe('AdminUpgradesPage', () => {
-  it("shows each channel's buckets, adding up to wanted, and its delivery", async () => {
+  it("shows each channel's managed buckets, the unmanaged beside them, and its delivery", async () => {
     const el = await render('/admin/upgrades')
     const channel = el.querySelector('[data-channel="stable"]')!
     expect(channel.textContent).toContain('candidate 1.1.0.2 at 10%')
     const bar = channel.querySelector('[data-bucket-bar]')!
     const segments = [...bar.querySelectorAll('[data-segment]')].map(s => s.getAttribute('data-segment'))
-    expect(segments).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'offline', 'unmanaged'])
+    expect(segments).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'offline'])
+    expect(bar.textContent).not.toContain('Unmanaged')
+    expect(bar.textContent).toContain('80 managed devices')
+    const line = channel.querySelector('[data-managed-line]')!
+    expect(line.textContent).toContain('80 managed · 20 unmanaged')
+    expect(line.textContent).not.toContain('no package')
     expect(channel.querySelector('[data-delivery]')!.textContent).toContain('40 of 100 delivered')
     expect(channel.querySelector('[data-delivery]')!.textContent).toContain('ETA 4s')
-    expect(channel.textContent).toContain('no package')
+    await act(async () => (line.querySelector('[data-unmanaged-toggle]') as HTMLElement).click())
+    expect(line.textContent).toContain('no package')
   })
 
   it('lists the runs newest first, the live one marked', async () => {
@@ -396,10 +417,51 @@ describe('AdminUpgradesPage', () => {
     expect(el.querySelector('[data-rollout-actions]')).toBeNull()
   })
 
-  it('the start form holds on any failure unless changed', async () => {
+  it("the start form shows the controller's defaults, each editable", async () => {
+    defaults.mockResolvedValue({ ...FALLBACK, soakMinutes: 7 })
     const el = await render('/admin/upgrades/new')
-    const threshold = el.querySelector('[data-failure-threshold]') as HTMLInputElement
-    expect(threshold.value).toBe('0')
-    expect(threshold.disabled).toBe(false)
+    const field = (name: string) => el.querySelector(`[data-field="${name}"]`) as HTMLInputElement
+    expect(field('ladder').value).toBe('1, 10, 50, 100')
+    expect(field('soak').value).toBe('7') // the server's, not the form's own
+    expect(field('firstSoak').value).toBe('10')
+    expect(field('rateFloor').value).toBe('2')
+    expect(field('rateCeiling').value).toBe('15')
+    expect(field('failureThreshold').value).toBe('0')
+    expect(field('failureThreshold').disabled).toBe(false)
+  })
+
+  it('offers the published versions, newest first, marked; picking one fills its manifest, read-only until Edit', async () => {
+    packages.mockResolvedValue([
+      {
+        version: '1.1.0.3',
+        manifest: 'https://d/device/1.1.0.3/manifest.json',
+        publishedAt: '2026-10-31T01:16:41Z',
+        platforms: ['mac'],
+      },
+      {
+        version: '1.1.0.2',
+        manifest: 'https://d/device/1.1.0.2/manifest.json',
+        publishedAt: '2026-10-30T21:57:55Z',
+        platforms: [],
+      },
+      {
+        version: '1.1.0.1',
+        manifest: 'https://d/device/1.1.0.1/manifest.json',
+        publishedAt: '2026-10-30T19:44:51Z',
+        platforms: [],
+      },
+    ])
+    const el = await render('/admin/upgrades/new')
+    const version = el.querySelector('[data-field="version"]') as HTMLInputElement
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      setter.call(version, '1.1.0.3')
+      version.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    const manifest = el.querySelector('[data-field="manifest"]') as HTMLInputElement
+    expect(manifest.value).toBe('https://d/device/1.1.0.3/manifest.json')
+    expect(manifest.readOnly).toBe(true)
+    await click(el, 'Edit')
+    expect((el.querySelector('[data-field="manifest"]') as HTMLInputElement).readOnly).toBe(false)
   })
 })

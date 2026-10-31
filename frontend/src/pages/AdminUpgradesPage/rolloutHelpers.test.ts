@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   bucketSegments,
+  managed,
   currentStep,
   deliveryProgress,
   failureRows,
@@ -29,19 +30,13 @@ const STABLE = {
 }
 
 describe('the bucket bar', () => {
-  it('segments add up to wanted', () => {
+  it('segments are the managed devices, adding up to wanted less the unmanaged', () => {
     const segments = bucketSegments(STABLE)
-    expect(segments.reduce((sum, s) => sum + s.count, 0)).toBe(STABLE.wanted)
+    expect(managed(STABLE)).toBe(13316)
+    expect(segments.reduce((sum, s) => sum + s.count, 0)).toBe(STABLE.wanted - STABLE.unmanaged)
     expect(segments.reduce((sum, s) => sum + s.fraction, 0)).toBeCloseTo(1)
-    expect(segments.map(s => s.key)).toEqual([
-      'onWanted',
-      'pending',
-      'upgrading',
-      'stuck',
-      'failed',
-      'offline',
-      'unmanaged',
-    ])
+    expect(segments.map(s => s.key)).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'offline'])
+    expect(segments[0].fraction).toBeGreaterThan(0.99) // 13,307 of 13,316, not a sliver of 61,787
   })
 
   it('an empty channel has no shares', () => {

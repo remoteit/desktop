@@ -31,6 +31,7 @@ import {
 import { AdminRolloutActions } from './AdminRolloutActions'
 import { RolloutStateChip } from './adminRolloutAttributes'
 import { RolloutBucketBar } from './RolloutBucketBar'
+import { ManagedLine } from './AdminChannelOverview'
 import { RolloutDelivery } from './RolloutDelivery'
 import { usePoll } from './useUpgrades'
 import {
@@ -400,6 +401,7 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
             <>
               <RolloutBucketBar buckets={run.rollout.candidate} label={`On ${run.version || 'the candidate'}`} />
               <RolloutBucketBar buckets={run.rollout} label="Whole channel" legend={false} />
+              <ManagedLine buckets={run.rollout} />
               <Typography variant="caption" color="textSecondary" component="div">
                 Counted {dateTime(run.rollout.checked)} · stuck after {run.rollout.stuckMinutes} min
               </Typography>

@@ -1,77 +1,128 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { Box, Button, Checkbox, FormControlLabel, MenuItem, Stack, TextField, Typography } from '@mui/material'
+import { Box, Button, Chip, InputAdornment, List, ListItem, MenuItem, TextField, Typography } from '@mui/material'
 import { Confirm } from '../../components/Confirm'
 import { Container } from '../../components/Container'
+import { fieldSx } from '../../components/ServiceForm'
 import { Gutters } from '../../components/Gutters'
+import { ListItemCheckbox } from '../../components/ListItemCheckbox'
 import { Notice } from '../../components/Notice'
 import { Title } from '../../components/Title'
 import { IconButton } from '../../buttons/IconButton'
 import { spacing } from '../../styling'
 import { DAEMON_CHANNELS } from '../../services/graphQLDaemon'
-import { DaemonChannel, StartRollout, startDaemonRollout } from '../../services/graphQLDaemonRollout'
-import { UPGRADES_ROUTE, parseLadder } from './rolloutHelpers'
+import {
+  DaemonChannel,
+  DaemonPackage,
+  FALLBACK_DEFAULTS,
+  RolloutDefaults,
+  RolloutRun,
+  StartRollout,
+  graphQLDaemonPackages,
+  graphQLRolloutDefaults,
+  startDaemonRollout,
+} from '../../services/graphQLDaemonRollout'
+import { UPGRADES_ROUTE, dateTime, parseLadder } from './rolloutHelpers'
 
-type Props = { channels: DaemonChannel[]; showBackArrow?: boolean; onStarted: () => void }
+type Props = { channels: DaemonChannel[]; runs?: RolloutRun[]; showBackArrow?: boolean; onStarted: () => void }
 
 // The manifest a version's release is published at, guessed from the channel's current one: the same URL with the
-// version swapped (https://downloads.<stage>.remote.it/device/<version>/manifest.json).
+// version swapped. Only for an API that does not list the published packages.
 export const manifestFor = (version: string, channel?: DaemonChannel) => {
   const current = channel?.current
   if (!version || !current?.manifest || !current.manifest.includes(current.version)) return ''
   return current.manifest.split(current.version).join(version)
 }
 
-const optionalNumber = (text: string) => (text.trim() === '' ? undefined : Number(text))
-const validOptional = (text: string, min: number) => {
-  const value = optionalNumber(text)
-  return value === undefined || (Number.isFinite(value) && value >= min)
+// What each published version already is to the channel: its current release, its candidate, or one a run has taken.
+export const packageMarks = (version: string, channel?: DaemonChannel, runs: RolloutRun[] = []) => {
+  const marks: string[] = []
+  if (channel?.current?.version === version) marks.push('current')
+  if (channel?.candidate?.version === version) marks.push('candidate')
+  if (runs.some(run => run.channel === channel?.channel && run.version === version && run.mode !== 'manual'))
+    marks.push('used')
+  return marks
 }
 
-export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow, onStarted }) => {
+const number = (text: string) => (text.trim() === '' ? NaN : Number(text))
+const atLeast = (text: string, min: number) => Number.isFinite(number(text)) && number(text) >= min
+
+const formFrom = (defaults: RolloutDefaults) => ({
+  ladder: defaults.ladder.join(', '),
+  soak: String(defaults.soakMinutes),
+  firstSoak: String(defaults.firstSoakMinutes),
+  rateFloor: String(defaults.rateFloor),
+  rateCeiling: String(defaults.rateCeiling),
+  failureThreshold: String(defaults.failureThreshold),
+})
+
+export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], showBackArrow, onStarted }) => {
   const history = useHistory()
   const names = channels.length ? channels.map(c => c.channel) : DAEMON_CHANNELS
   const [channel, setChannel] = useState(names[0])
+  const [packages, setPackages] = useState<DaemonPackage[] | 'ERROR' | false>()
   const [version, setVersion] = useState('')
   const [manifest, setManifest] = useState('')
-  const [manifestTouched, setManifestTouched] = useState(false)
-  const [ladder, setLadder] = useState('')
-  const [soak, setSoak] = useState('')
-  const [firstSoak, setFirstSoak] = useState('')
-  const [rateFloor, setRateFloor] = useState('')
-  const [rateCeiling, setRateCeiling] = useState('')
-  // The controller holds a run on any failure it counts: 0 unless the operator chooses to tolerate some.
-  const [failureThreshold, setFailureThreshold] = useState('0')
+  const [editManifest, setEditManifest] = useState(false)
+  // Every setting shown as it will be: the controller's defaults, filled in once read, each editable.
+  const [form, setForm] = useState(formFrom(FALLBACK_DEFAULTS))
+  const [touched, setTouched] = useState(false)
   const [promote, setPromote] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
   const [problem, setProblem] = useState<string>()
 
+  useEffect(() => {
+    let live = true
+    graphQLDaemonPackages().then(found => live && setPackages(found))
+    graphQLRolloutDefaults().then(defaults => live && !touched && setForm(formFrom(defaults)))
+    return () => {
+      live = false
+    }
+  }, [])
+
+  const change = (patch: Partial<typeof form>) => {
+    setTouched(true)
+    setForm(current => ({ ...current, ...patch }))
+  }
+
   const selected = channels.find(c => c.channel === channel)
-  const shownManifest = manifestTouched ? manifest : manifestFor(version.trim(), selected)
-  const parsedLadder = ladder.trim() ? parseLadder(ladder) : undefined
-  const ladderValid = !ladder.trim() || !!parsedLadder
-  const valid =
-    !!version.trim() &&
-    /^https:\/\//.test(shownManifest.trim()) &&
-    ladderValid &&
-    validOptional(soak, 0) &&
-    validOptional(firstSoak, 0) &&
-    validOptional(rateFloor, 0.001) &&
-    validOptional(rateCeiling, 0.001) &&
-    (optionalNumber(rateFloor) ?? 0) <= (optionalNumber(rateCeiling) ?? Infinity) &&
-    validOptional(failureThreshold, 0)
+  const listed = Array.isArray(packages) && packages.length > 0
+  const picked = listed ? (packages as DaemonPackage[]).find(p => p.version === version) : undefined
+  // A listed version's manifest is the one published with it, unless edited for an unusual case.
+  const shownManifest = editManifest
+    ? manifest
+    : picked?.manifest ?? (listed ? '' : manifestFor(version.trim(), selected))
+
+  const pick = (next: string) => {
+    setVersion(next)
+    const pkg = listed ? (packages as DaemonPackage[]).find(p => p.version === next) : undefined
+    setManifest(pkg?.manifest ?? '')
+    setEditManifest(false)
+  }
+
+  const ladder = parseLadder(form.ladder)
+  const valid = {
+    ladder: !!ladder,
+    soak: atLeast(form.soak, 0),
+    firstSoak: atLeast(form.firstSoak, 0),
+    rateFloor: atLeast(form.rateFloor, 0.1),
+    rateCeiling: atLeast(form.rateCeiling, 0.1) && number(form.rateCeiling) >= number(form.rateFloor),
+    failureThreshold: atLeast(form.failureThreshold, 0) && Number.isInteger(number(form.failureThreshold)),
+  }
+  const ready =
+    !!version.trim() && /^https:\/\//.test(shownManifest.trim()) && Object.values(valid).every(Boolean) && !saving
 
   const start: StartRollout = {
     channel,
     candidateVersion: version.trim(),
     candidateManifest: shownManifest.trim(),
-    ladder: parsedLadder,
-    soakMinutes: optionalNumber(soak),
-    firstSoakMinutes: optionalNumber(firstSoak),
-    rateFloor: optionalNumber(rateFloor),
-    rateCeiling: optionalNumber(rateCeiling),
-    failureThreshold: optionalNumber(failureThreshold),
+    ladder,
+    soakMinutes: number(form.soak),
+    firstSoakMinutes: number(form.firstSoak),
+    rateFloor: number(form.rateFloor),
+    rateCeiling: number(form.rateCeiling),
+    failureThreshold: number(form.failureThreshold),
     promoteWhenDone: promote,
   }
 
@@ -113,121 +164,203 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
     </Box>
   )
 
+  const numberField = (
+    key: 'soak' | 'firstSoak' | 'rateFloor' | 'rateCeiling' | 'failureThreshold',
+    label: string,
+    caption: React.ReactNode,
+    unit?: string
+  ) => (
+    <ListItem sx={fieldSx}>
+      <TextField
+        label={label}
+        variant="filled"
+        type="number"
+        value={form[key]}
+        error={!valid[key]}
+        onChange={e => change({ [key]: e.target.value })}
+        inputProps={{ 'data-field': key, min: 0, step: 'any' }}
+        InputProps={
+          unit
+            ? {
+                endAdornment: (
+                  <InputAdornment position="end" sx={{ marginRight: 1.5 }}>
+                    {unit}
+                  </InputAdornment>
+                ),
+              }
+            : undefined
+        }
+      />
+      <Typography variant="caption">{caption}</Typography>
+    </ListItem>
+  )
+
   return (
     <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header}>
-      <Gutters>
-        {problem && (
+      {problem && (
+        <Gutters>
           <Notice severity="error" fullWidth onClose={() => setProblem(undefined)}>
             {problem}
           </Notice>
-        )}
-        <Stack spacing={2} component="form" data-start-form onSubmit={e => e.preventDefault()}>
-          <TextField select label="Channel" value={channel} onChange={e => setChannel(e.target.value)} size="small">
-            {names.map(name => (
-              <MenuItem key={name} value={name}>
-                {name}
-                {channels.find(c => c.channel === name)?.current?.version &&
-                  ` — now ${channels.find(c => c.channel === name)?.current?.version}`}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            label="Candidate version"
-            value={version}
-            onChange={e => setVersion(e.target.value)}
-            placeholder="1.1.0.20261030215119"
-            size="small"
-            required
+        </Gutters>
+      )}
+      <form data-start-form onSubmit={e => e.preventDefault()}>
+        <List>
+          <ListItem sx={fieldSx}>
+            <TextField
+              select
+              label="Channel"
+              variant="filled"
+              value={channel}
+              onChange={e => setChannel(e.target.value)}
+            >
+              {names.map(name => (
+                <MenuItem key={name} value={name}>
+                  {name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Typography variant="caption">
+              Now on {selected?.current?.version || 'no release'}
+              {selected?.candidate ? `, candidate ${selected.candidate.version} at ${selected.percent}%` : ''}.
+            </Typography>
+          </ListItem>
+
+          <ListItem sx={fieldSx}>
+            {listed ? (
+              <TextField
+                select
+                required
+                label="Candidate version"
+                variant="filled"
+                value={version}
+                onChange={e => pick(e.target.value)}
+                inputProps={{ 'data-field': 'version' }}
+                SelectProps={{ renderValue: value => String(value) }}
+              >
+                {(packages as DaemonPackage[]).map(pkg => (
+                  <MenuItem key={pkg.version} value={pkg.version} data-package={pkg.version}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                      <Box sx={{ flex: 1 }}>
+                        {pkg.version}
+                        <Typography variant="caption" color="textSecondary" component="div">
+                          published {dateTime(pkg.publishedAt)}
+                          {pkg.platforms.length ? ` · ${pkg.platforms.length} platforms` : ''}
+                        </Typography>
+                      </Box>
+                      {packageMarks(pkg.version, selected, runs).map(mark => (
+                        <Chip
+                          key={mark}
+                          size="small"
+                          label={mark}
+                          color={mark === 'current' ? 'primary' : 'default'}
+                          variant={mark === 'current' ? 'filled' : 'outlined'}
+                        />
+                      ))}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </TextField>
+            ) : (
+              <TextField
+                required
+                label="Candidate version"
+                variant="filled"
+                value={version}
+                onChange={e => pick(e.target.value)}
+                inputProps={{ 'data-field': 'version' }}
+              />
+            )}
+            <Typography variant="caption">
+              {listed
+                ? 'The packages published to this stage, newest first: their manifest and signature are both there.'
+                : packages === undefined
+                ? 'Reading the published packages…'
+                : 'This API does not list the published packages: type the version.'}
+            </Typography>
+          </ListItem>
+
+          <ListItem sx={fieldSx}>
+            <TextField
+              required
+              label="Manifest URL"
+              variant="filled"
+              value={shownManifest}
+              onChange={e => setManifest(e.target.value)}
+              inputProps={{ 'data-field': 'manifest', readOnly: !editManifest }}
+              InputProps={{
+                endAdornment: !editManifest && (
+                  <InputAdornment position="end" sx={{ marginRight: 1.5 }}>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setManifest(shownManifest)
+                        setEditManifest(true)
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Typography variant="caption">
+              {editManifest
+                ? 'Edited by hand: devices fetch it and check it against the stage’s release key.'
+                : listed
+                ? 'The manifest published with the version.'
+                : "Guessed from the channel's current manifest."}
+            </Typography>
+          </ListItem>
+
+          <ListItem sx={fieldSx}>
+            <TextField
+              label="Ladder"
+              variant="filled"
+              value={form.ladder}
+              error={!valid.ladder}
+              onChange={e => change({ ladder: e.target.value })}
+              inputProps={{ 'data-field': 'ladder' }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end" sx={{ marginRight: 1.5 }}>
+                    %
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Typography variant="caption">
+              Rising percents of the channel's devices, a step each; the last is where it ends.
+            </Typography>
+          </ListItem>
+
+          {numberField('soak', 'Soak', 'Held clean after each step but the first converges.', 'min')}
+          {numberField('firstSoak', 'First soak', 'Held clean after the first step converges.', 'min')}
+          {numberField('rateFloor', 'Rate floor', 'Deliveries a second at least, when presence is busy.', '/s')}
+          {numberField('rateCeiling', 'Rate ceiling', 'Deliveries a second at most, and to start at.', '/s')}
+          {numberField(
+            'failureThreshold',
+            'Failure threshold',
+            <>
+              Real failures, beyond those reviewed, that hold the run: more than this. <b>0 holds on the first.</b>
+            </>
+          )}
+          <ListItemCheckbox
+            label="Promote when done"
+            subLabel="At the end, the candidate becomes the channel's current release."
+            checked={promote}
+            onClick={checked => setPromote(checked)}
           />
-          <TextField
-            label="Manifest URL"
-            value={shownManifest}
-            onChange={e => {
-              setManifestTouched(true)
-              setManifest(e.target.value)
-            }}
-            helperText={manifestTouched ? undefined : "Guessed from the channel's current manifest — edit to change"}
-            size="small"
-            required
-          />
-          <TextField
-            label="Ladder (percent)"
-            value={ladder}
-            onChange={e => setLadder(e.target.value)}
-            placeholder="1, 10, 50, 100"
-            helperText={ladderValid ? "Blank for the controller's default" : 'Rising percentages, 1 to 100'}
-            error={!ladderValid}
-            size="small"
-          />
-          <Stack direction="row" spacing={2}>
-            <TextField
-              label="Soak (minutes)"
-              value={soak}
-              onChange={e => setSoak(e.target.value)}
-              type="number"
-              size="small"
-              error={!validOptional(soak, 0)}
-              helperText="Blank for default (5)"
-              fullWidth
-            />
-            <TextField
-              label="First soak (minutes)"
-              value={firstSoak}
-              onChange={e => setFirstSoak(e.target.value)}
-              type="number"
-              size="small"
-              error={!validOptional(firstSoak, 0)}
-              helperText="Blank for default (10)"
-              fullWidth
-            />
-          </Stack>
-          <Stack direction="row" spacing={2}>
-            <TextField
-              label="Rate floor (devices/s)"
-              value={rateFloor}
-              onChange={e => setRateFloor(e.target.value)}
-              type="number"
-              size="small"
-              error={!validOptional(rateFloor, 0.001)}
-              helperText="Blank for default (2)"
-              fullWidth
-            />
-            <TextField
-              label="Rate ceiling (devices/s)"
-              value={rateCeiling}
-              onChange={e => setRateCeiling(e.target.value)}
-              type="number"
-              size="small"
-              error={!validOptional(rateCeiling, 0.001)}
-              helperText="Blank for default (15)"
-              fullWidth
-            />
-            <TextField
-              label="Failure threshold"
-              value={failureThreshold}
-              onChange={e => setFailureThreshold(e.target.value)}
-              type="number"
-              size="small"
-              error={!validOptional(failureThreshold, 0)}
-              helperText="0 holds on any failure"
-              fullWidth
-              inputProps={{ 'data-failure-threshold': true }}
-            />
-          </Stack>
-          <FormControlLabel
-            control={<Checkbox checked={promote} onChange={e => setPromote(e.target.checked)} />}
-            label="Promote to current when done"
-          />
-          <Box>
-            <Button variant="contained" disabled={!valid || saving} onClick={() => setConfirming(true)}>
-              {saving ? 'Starting…' : 'Start rollout'}
-            </Button>
-            <Button sx={{ marginLeft: 1 }} onClick={() => history.push(UPGRADES_ROUTE)}>
-              Cancel
-            </Button>
-          </Box>
-        </Stack>
-      </Gutters>
+        </List>
+        <Gutters>
+          <Button variant="contained" disabled={!ready} onClick={() => setConfirming(true)}>
+            {saving ? 'Starting…' : 'Start rollout'}
+          </Button>
+          <Button sx={{ marginLeft: 1 }} onClick={() => history.push(UPGRADES_ROUTE)}>
+            Cancel
+          </Button>
+        </Gutters>
+      </form>
       <Confirm
         open={confirming}
         title="Start this rollout?"
@@ -237,12 +370,13 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, showBackArrow
       >
         <Typography variant="body2">
           {start.candidateVersion} becomes {channel}'s candidate, and the controller delivers it to{' '}
-          {parsedLadder ? `${parsedLadder[0]}%` : 'the first step'} of the channel's devices at once.
+          {ladder ? `${ladder[0]}%` : 'the first step'} of the channel's devices at once.
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1, wordBreak: 'break-all' }}>
           {start.candidateManifest}
           <br />
-          Failure threshold {start.failureThreshold ?? 'default'}
+          Ladder {ladder?.join(', ')}% · soak {start.soakMinutes} min (first {start.firstSoakMinutes}) · rate{' '}
+          {start.rateFloor} to {start.rateCeiling}/s · failure threshold {start.failureThreshold}
           {promote ? ' · promotes when done' : ''}
         </Typography>
       </Confirm>

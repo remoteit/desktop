@@ -30,10 +30,11 @@ export const transientReason = (reason: string) => reason.startsWith(TRANSIENT_R
 export const ACTIVE_STATES = ['running', 'soaking', 'holding']
 export const active = (run?: Pick<RolloutRun, 'state'> | null) => !!run && ACTIVE_STATES.includes(run.state)
 
-export type BucketKey = 'onWanted' | 'pending' | 'upgrading' | 'stuck' | 'failed' | 'offline' | 'unmanaged'
+export type BucketKey = 'onWanted' | 'pending' | 'upgrading' | 'stuck' | 'failed' | 'offline'
 
 // The bar's segments, in order: what is on the wanted release, then on its way, then what needs a look, then what
-// cannot be reached or does not take updates. graphql's buckets partition `wanted`, so they add up to it.
+// cannot be reached now. The managed devices only: graphql's buckets partition `wanted`, and these are all of them but
+// unmanaged (no package, or taking no updates), which a rollout never reaches — shown beside the bar, not in it.
 export const BUCKETS: { key: BucketKey; label: string; color: string; help: string }[] = [
   { key: 'onWanted', label: 'On wanted', color: 'success.main', help: 'Runs the release it should' },
   { key: 'pending', label: 'Pending', color: 'primaryLight.main', help: 'Told, has not started' },
@@ -41,11 +42,14 @@ export const BUCKETS: { key: BucketKey; label: string; color: string; help: stri
   { key: 'stuck', label: 'Stuck', color: 'warning.main', help: 'Online and not converging' },
   { key: 'failed', label: 'Failed', color: 'danger.main', help: 'Its upgrade failed' },
   { key: 'offline', label: 'Offline', color: 'gray.main', help: 'Not reachable now' },
-  { key: 'unmanaged', label: 'Unmanaged', color: 'grayLight.main', help: 'Does not take updates' },
 ]
 
+// The devices a rollout can reach: those given the release, but for the unmanaged.
+export const managed = (buckets?: DaemonBuckets | null) =>
+  Math.max(0, (buckets?.wanted || 0) - (buckets?.unmanaged || 0))
+
 export const bucketSegments = (buckets?: DaemonBuckets | null) => {
-  const total = buckets?.wanted || 0
+  const total = managed(buckets)
   return BUCKETS.map(bucket => {
     const count = buckets?.[bucket.key] || 0
     return { ...bucket, count, fraction: total ? count / total : 0 }

@@ -1,9 +1,9 @@
-import React from 'react'
-import { Box, Chip, Typography } from '@mui/material'
-import type { DaemonChannel, DaemonFailure } from '../../services/graphQLDaemonRollout'
+import React, { useState } from 'react'
+import { Box, Chip, Link, Typography } from '@mui/material'
+import type { DaemonBuckets, DaemonChannel, DaemonFailure } from '../../services/graphQLDaemonRollout'
 import { RolloutBucketBar } from './RolloutBucketBar'
 import { RolloutDelivery } from './RolloutDelivery'
-import { dateTime } from './rolloutHelpers'
+import { dateTime, managed } from './rolloutHelpers'
 
 export const ReasonList: React.FC<{ title: string; reasons?: DaemonFailure[]; color?: string }> = ({
   title,
@@ -22,6 +22,28 @@ export const ReasonList: React.FC<{ title: string; reasons?: DaemonFailure[]; co
       ))}
     </Box>
   ) : null
+
+// How many devices the release reaches and how many it cannot: the unmanaged count opens its reasons.
+export const ManagedLine: React.FC<{ buckets?: DaemonBuckets | null }> = ({ buckets }) => {
+  const [open, setOpen] = useState(false)
+  if (!buckets?.wanted) return null
+  const unmanaged = buckets.unmanaged || 0
+  return (
+    <Box data-managed-line sx={{ marginBottom: 0.5 }}>
+      <Typography variant="caption" color="textSecondary" component="div">
+        {managed(buckets).toLocaleString()} managed ·{' '}
+        {unmanaged && buckets.unmanagedReasons?.length ? (
+          <Link component="button" variant="caption" onClick={() => setOpen(!open)} data-unmanaged-toggle>
+            {unmanaged.toLocaleString()} unmanaged
+          </Link>
+        ) : (
+          `${unmanaged.toLocaleString()} unmanaged`
+        )}
+      </Typography>
+      {open && <ReasonList title="Unmanaged: no package, or no updates" reasons={buckets.unmanagedReasons} />}
+    </Box>
+  )
+}
 
 // One release channel as it stands: what it runs and offers, where its devices are, and its delivery.
 export const AdminChannelOverview: React.FC<{ channel: DaemonChannel }> = ({ channel }) => {
@@ -58,9 +80,9 @@ export const AdminChannelOverview: React.FC<{ channel: DaemonChannel }> = ({ cha
         )}
       </Box>
       <RolloutBucketBar buckets={rollout} label="Channel" />
+      <ManagedLine buckets={rollout} />
       {!!cohort?.wanted && <RolloutBucketBar buckets={cohort} label="Candidate cohort" legend={false} />}
       <ReasonList title="Failures" reasons={rollout?.failures} color="error" />
-      <ReasonList title="Unmanaged" reasons={rollout?.unmanagedReasons} />
       {rollout && (
         <Typography variant="caption" color="textSecondary" component="div" sx={{ marginY: 0.5 }}>
           Counted {dateTime(rollout.checked)} · stuck after {rollout.stuckMinutes} min

@@ -16,6 +16,9 @@ import {
   graphQLDaemonRollout,
   graphQLDaemonRollouts,
   graphQLRolloutMutation,
+  graphQLDaemonPackages,
+  graphQLRolloutDefaults,
+  FALLBACK_DEFAULTS,
   parseRolloutSchema,
   resetRolloutSchema,
   typeString,
@@ -272,6 +275,41 @@ describe('mutations', () => {
       ok: false,
       reason: 'This API has no skipDaemonRolloutStep.',
     })
+    expect(request).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("the New rollout form's reads", () => {
+  const withForm = {
+    ...CONTRACT,
+    query: {
+      fields: [
+        ...CONTRACT.query.fields,
+        { name: 'daemonPackages', args: [{ name: 'limit', type: scalar('Int') }] },
+        { name: 'daemonRolloutDefaults', args: [] },
+      ],
+    },
+  }
+
+  it('the published packages, and the defaults the server keeps', async () => {
+    request.mockResolvedValueOnce(answer(withForm))
+    const pkg = {
+      version: '1.1.0.3',
+      manifest: 'https://d/m.json',
+      publishedAt: '2026-10-31T01:16:41Z',
+      platforms: ['mac'],
+    }
+    request.mockResolvedValueOnce(answer({ daemonPackages: [pkg] }))
+    expect(await graphQLDaemonPackages(5)).toEqual([pkg])
+    expect(sent(1).query).toContain('daemonPackages(limit: $limit) { version manifest publishedAt platforms }')
+    request.mockResolvedValueOnce(answer({ daemonRolloutDefaults: { ...FALLBACK_DEFAULTS, soakMinutes: 7 } }))
+    expect((await graphQLRolloutDefaults()).soakMinutes).toBe(7)
+  })
+
+  it('an API without them: no list, and the fallback defaults, asked nothing', async () => {
+    request.mockResolvedValueOnce(answer(CONTRACT))
+    expect(await graphQLDaemonPackages()).toBe(false)
+    expect(await graphQLRolloutDefaults()).toEqual(FALLBACK_DEFAULTS)
     expect(request).toHaveBeenCalledTimes(1)
   })
 })
