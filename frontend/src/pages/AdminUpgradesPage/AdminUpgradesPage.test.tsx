@@ -42,6 +42,7 @@ vi.mock('../../services/graphQLDaemonRollout', () => ({
   rolloutAction: mutate,
   startDaemonRollout: mutate,
   graphQLDaemonPackages: packages,
+  startArgsServed: async () => new Set(['rollback']),
   graphQLRolloutDefaults: defaults,
   FALLBACK_DEFAULTS: FALLBACK,
 }))
@@ -489,5 +490,91 @@ describe('AdminUpgradesPage', () => {
     expect(manifest.readOnly).toBe(true)
     await click(el, 'Edit')
     expect((el.querySelector('[data-field="manifest"]') as HTMLInputElement).readOnly).toBe(false)
+  })
+
+  it('picking a version older than the devices run warns, and a rollback says so plainly', async () => {
+    packages.mockResolvedValue([
+      {
+        version: '1.1.0.2',
+        manifest: 'https://d/device/1.1.0.2/manifest.json',
+        publishedAt: '2026-10-30T21:57:55Z',
+        platforms: [],
+      },
+      {
+        version: '1.1.0.0',
+        manifest: 'https://d/device/1.1.0.0/manifest.json',
+        publishedAt: '2026-10-29T21:57:55Z',
+        platforms: [],
+      },
+    ])
+    const el = await render('/admin/upgrades/new')
+    const version = el.querySelector('[data-field="version"]') as HTMLInputElement
+    const choose = (value: string) =>
+      act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(version, value)
+        version.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+    await choose('1.1.0.2')
+    expect(el.querySelector('[data-older-warning]')).toBeNull()
+    await choose('1.1.0.0') // older than the channel's candidate 1.1.0.2
+    expect(el.querySelector('[data-older-warning]')!.textContent).toContain('check Rollback to go back')
+    await act(async () => (el.querySelector('input[type="checkbox"]') as HTMLInputElement).click())
+    expect(el.querySelector('[data-older-warning]')).toBeNull()
+    await click(el, 'Start rollout')
+    expect(el.querySelector('[data-rollback-confirm]')!.textContent).toBe('Rollback to 1.1.0.0 from 1.1.0.2.')
+    await act(async () => (el.querySelector('[data-confirm] button') as HTMLButtonElement).click())
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ candidateVersion: '1.1.0.0', rollback: true }))
+  })
+
+  it("the server's refusal of a start is shown", async () => {
+    packages.mockResolvedValue([
+      {
+        version: '1.1.0.0',
+        manifest: 'https://d/device/1.1.0.0/manifest.json',
+        publishedAt: '2026-10-29T21:57:55Z',
+        platforms: [],
+      },
+    ])
+    mutate.mockResolvedValueOnce({ ok: false, reason: 'Older than the running 1.1.0.2: only a rollback goes back' })
+    const el = await render('/admin/upgrades/new')
+    const version = el.querySelector('[data-field="version"]') as HTMLInputElement
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(version, '1.1.0.0')
+      version.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await click(el, 'Start rollout')
+    await act(async () => (el.querySelector('[data-confirm] button') as HTMLButtonElement).click())
+    expect(el.textContent).toContain('only a rollback goes back')
+  })
+
+  it('a superseded rollback run links to the run that took its place, and its promote shows in the log', async () => {
+    run.mockResolvedValue({
+      ...DONE,
+      state: 'superseded',
+      reason: 'superseded by 9f00aa11-2222-3333-4444-555566667777',
+      rollback: true,
+      events: [{ at: '2026-10-30T20:00:00Z', kind: 'promoted', message: '1.1.0.1 promoted to current' }],
+    })
+    const el = await render('/admin/upgrades/R1')
+    const link = el.querySelector('[data-superseded] a') as HTMLAnchorElement
+    expect(link.getAttribute('href')).toBe('/admin/upgrades/9f00aa11-2222-3333-4444-555566667777')
+    expect(el.querySelector('[data-rollback-chip]')).not.toBeNull()
+    expect(el.querySelector('[data-event="promoted"]')!.textContent).toContain('promoted to current')
+    expect(el.querySelector('[data-rollout-actions]')).toBeNull() // not active
+  })
+
+  it('ahead devices have their own segment and legend entry where the API counts them', async () => {
+    channels.mockResolvedValue([
+      {
+        ...STABLE,
+        rollout: { ...STABLE.rollout, onWanted: 50, ahead: 10, candidate: { ...STABLE.rollout.candidate, ahead: 0 } },
+      },
+    ])
+    runs.mockResolvedValue([{ ...HELD, rollback: true }])
+    const el = await render('/admin/upgrades')
+    const bar = el.querySelector('[data-channel="stable"] [data-bucket-bar]')!
+    expect([...bar.querySelectorAll('[data-segment]')].map(s => s.getAttribute('data-segment'))).toContain('ahead')
+    expect(bar.textContent).toContain('Ahead 10')
+    expect(el.querySelector('[data-rollout="R2"] [data-rollback-chip]')).not.toBeNull()
   })
 })

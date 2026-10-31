@@ -30,13 +30,19 @@ export const transientReason = (reason: string) => reason.startsWith(TRANSIENT_R
 export const ACTIVE_STATES = ['running', 'soaking', 'holding']
 export const active = (run?: Pick<RolloutRun, 'state'> | null) => !!run && ACTIVE_STATES.includes(run.state)
 
-export type BucketKey = 'onWanted' | 'pending' | 'upgrading' | 'stuck' | 'failed' | 'offline'
+export type BucketKey = 'onWanted' | 'ahead' | 'pending' | 'upgrading' | 'stuck' | 'failed' | 'offline'
 
 // The bar's segments, in order: what is on the wanted release, then on its way, then what needs a look, then what
 // cannot be reached now. The managed devices only: graphql's buckets partition `wanted`, and these are all of them but
 // unmanaged (no package, or taking no updates), which a rollout never reaches — shown beside the bar, not in it.
 export const BUCKETS: { key: BucketKey; label: string; color: string; help: string }[] = [
   { key: 'onWanted', label: 'On wanted', color: 'success.main', help: 'Runs the release it should' },
+  {
+    key: 'ahead',
+    label: 'Ahead',
+    color: 'guide.main',
+    help: 'Running newer than assigned — kept until the candidate reaches them',
+  },
   { key: 'pending', label: 'Pending', color: 'primaryLight.main', help: 'Told, has not started' },
   { key: 'upgrading', label: 'Upgrading', color: 'primary.main', help: 'Downloading or installing' },
   { key: 'stuck', label: 'Stuck', color: 'warning.main', help: 'Online and not converging' },
@@ -50,7 +56,8 @@ export const managed = (buckets?: DaemonBuckets | null) =>
 
 export const bucketSegments = (buckets?: DaemonBuckets | null) => {
   const total = managed(buckets)
-  return BUCKETS.map(bucket => {
+  // `ahead` only where the API counts it: an older one's bar would otherwise show a bucket it never fills.
+  return BUCKETS.filter(bucket => bucket.key !== 'ahead' || buckets?.ahead != null).map(bucket => {
     const count = buckets?.[bucket.key] || 0
     return { ...bucket, count, fraction: total ? count / total : 0 }
   })
@@ -409,3 +416,27 @@ export const transientDetail = (reason: string) =>
 export const unreviewedCount = (run: Pick<RolloutRun, 'gates' | 'rollout' | 'reviewedFailures'>) =>
   run.gates?.failures ??
   failureRows(run.rollout?.candidate?.failures, run.reviewedFailures).reduce((sum, row) => sum + row.unreviewed, 0)
+
+// A superseded run's reason names the run that took its place ("superseded by <id>").
+export const supersededBy = (run: Pick<RolloutRun, 'state' | 'reason'>) =>
+  run.state === 'superseded' ? run.reason?.match(/superseded by (\S+)/)?.[1] : undefined
+
+// Newer of two dotted versions by each part as a number; undefined when either is missing.
+export const compareVersions = (a: string, b: string) => {
+  const x = a.split('.').map(Number)
+  const y = b.split('.').map(Number)
+  for (let i = 0; i < Math.max(x.length, y.length); i++) {
+    const d = (x[i] ?? 0) - (y[i] ?? 0)
+    if (d) return d
+  }
+  return 0
+}
+
+// The newest the channel's devices may run now: its current release, or its candidate where one is out.
+export const runningNewest = (channel?: {
+  current?: { version: string } | null
+  candidate?: { version: string } | null
+}) =>
+  [channel?.current?.version, channel?.candidate?.version]
+    .filter((v): v is string => !!v)
+    .sort((a, b) => compareVersions(b, a))[0]

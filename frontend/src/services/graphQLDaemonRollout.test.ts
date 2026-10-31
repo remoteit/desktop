@@ -177,6 +177,28 @@ describe('the schema read', () => {
     )
   })
 
+  it('asks for ahead and rollback, and offers the rollback argument, where the API has them', () => {
+    const schema = parseRolloutSchema({
+      ...CONTRACT,
+      run: { fields: [...CONTRACT.run.fields, { name: 'rollback', args: [], type: scalar('Boolean') }] },
+      counts: fields('wanted', 'onWanted', 'ahead'),
+      mutation: {
+        fields: CONTRACT.mutation.fields.map(f =>
+          f.name === 'startDaemonRollout'
+            ? { ...f, args: [...f.args, { name: 'rollback', type: scalar('Boolean') }] }
+            : f
+        ),
+      },
+    })
+    expect(schema.list).toContain('rollback')
+    expect(schema.channelRollout).toContain('offline ahead')
+    expect(schema.detail).toContain('offline ahead')
+    expect(schema.startArgs).toContain('rollback')
+    const older = parseRolloutSchema(CONTRACT)
+    expect(older.channelRollout).not.toContain('ahead')
+    expect(older.startArgs).not.toContain('rollback')
+  })
+
   it('an API without the controller has no runs', () => {
     expect(parseRolloutSchema({ query: fields('daemonChannels') }).runs).toBe(false)
   })

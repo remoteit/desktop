@@ -37,6 +37,7 @@ export type DaemonBuckets = {
   stuck: number
   unmanaged: number
   offline: number
+  ahead?: number // running newer than assigned, where the API counts it
   failures?: DaemonFailure[]
   unmanagedReasons?: DaemonFailure[]
 }
@@ -82,7 +83,7 @@ export type DaemonChannel = {
   delivery: DaemonDelivery | null
 }
 
-export type RolloutState = 'running' | 'soaking' | 'holding' | 'aborted' | 'done' | 'cancelled'
+export type RolloutState = 'running' | 'soaking' | 'holding' | 'aborted' | 'done' | 'cancelled' | 'superseded'
 
 export type RolloutStep = {
   percent: number
@@ -151,6 +152,7 @@ export type RolloutRun = {
   endedAt?: string | null
   startedBy?: string | { email?: string | null } | null
   promoteWhenDone?: boolean | null
+  rollback?: boolean | null // a rollback: the candidate older than what the devices run
   // Not in the contract, read where the API has them: what the run was started with.
   manifest?: string | null
   candidateManifest?: string | null
@@ -201,6 +203,7 @@ export type StartRollout = {
   rateCeiling?: number
   failureThreshold?: number
   promoteWhenDone?: boolean
+  rollback?: boolean
 }
 
 export type RolloutAction =
@@ -214,11 +217,11 @@ type Result<T> = T | 'ERROR' | typeof UNSUPPORTED
 
 const BUCKETS = 'wanted onWanted pending upgrading failed stuck unmanaged offline'
 const REASONS = 'failures { reason devices } unmanagedReasons { reason devices }'
-const channelRollout = (reasons = REASONS) => `
-  ${BUCKETS} ${reasons} devices checked stuckMinutes
-  candidate { ${BUCKETS} ${reasons} }
-  current { ${BUCKETS} ${reasons} }
-  pinned { ${BUCKETS} ${reasons} }`
+const channelRollout = (reasons = REASONS, buckets = BUCKETS) => `
+  ${buckets} ${reasons} devices checked stuckMinutes
+  candidate { ${buckets} ${reasons} }
+  current { ${buckets} ${reasons} }
+  pinned { ${buckets} ${reasons} }`
 const CHANNEL_ROLLOUT = channelRollout()
 const DELIVERY = `change version state total delivered pacedDelivered unpacedDelivered skippedUnmanaged failed unchanged
   remaining walked perSecond startedAt finishedAt retryAt error`
@@ -250,6 +253,7 @@ const RUN_SCALARS = [
   'soakMinutes',
   'firstSoakMinutes',
   'failureThreshold',
+  'rollback',
 ]
 const STEP_FIELDS = [
   'percent',
@@ -311,6 +315,8 @@ export type RolloutSchema = {
   queries: Partial<Record<'daemonRollouts' | 'daemonRollout' | 'daemonPackages' | 'daemonRolloutDefaults', Field>>
   mutations: Partial<Record<(typeof ACTIONS)[number], Field>>
   returns: string // what a mutation that returns a run is asked for
+  channelRollout: string // a channel's buckets, as daemonChannels asks for them
+  startArgs: string[] // what startDaemonRollout takes (rollback, where the API has it)
 }
 
 const TYPE_REF = 'kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } }'
@@ -322,6 +328,7 @@ const PROBE = `query DaemonRolloutFields {
   event: __type(name: "DaemonRolloutEvent") { fields { name } }
   gates: __type(name: "DaemonRolloutGates") { fields { name type { ${TYPE_REF} } } }
   failure: __type(name: "DaemonRolloutFailure") { fields { name } }
+  counts: __type(name: "DaemonRolloutCounts") { fields { name } }
 }`
 
 const named = (type?: TypeRef | null): TypeRef | undefined => (type?.ofType ? named(type.ofType) : type || undefined)
@@ -365,7 +372,9 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     ids || failed
       ? `failures { reason devices${ids ? ' deviceIds' : ''}${failed} } unmanagedReasons { reason devices }`
       : REASONS
-  const rollout = runNames.has('rollout') ? `rollout { ${channelRollout(reasons)} }` : ''
+  // `ahead`: devices running newer than they are assigned, kept until the candidate reaches them.
+  const buckets = names(data?.counts).has('ahead') ? `${BUCKETS} ahead` : BUCKETS
+  const rollout = runNames.has('rollout') ? `rollout { ${channelRollout(reasons, buckets)} }` : ''
   const eventsField = run.find(f => f.name === 'events')
   const events = eventsField
     ? `events${eventsField.args?.some(a => a.name === 'limit') ? `(limit: ${EVENT_LIMIT})` : ''} { ${pick(
@@ -396,6 +405,8 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     queries: reads,
     mutations,
     returns: pick(['id', 'state', 'reason', 'percent', 'rate'], runNames),
+    channelRollout: channelRollout(REASONS, buckets),
+    startArgs: (mutations.startDaemonRollout?.args || []).map(arg => arg.name),
   }
 }
 
@@ -427,20 +438,22 @@ async function read<T>(query: string, variables: ILookup<any>, field: string): P
   return response.data?.data?.[field] ?? null
 }
 
-export const graphQLDaemonChannels = () =>
-  read<DaemonChannel[]>(
+export const graphQLDaemonChannels = async () => {
+  const served = await rolloutSchema()
+  return read<DaemonChannel[]>(
     `query DaemonChannels {
       daemonChannels {
         channel percent updated accounts devices
         current { version manifest rollback }
         candidate { version manifest rollback }
-        rollout { ${CHANNEL_ROLLOUT} }
+        rollout { ${served === 'ERROR' ? CHANNEL_ROLLOUT : served.channelRollout} }
         delivery { ${DELIVERY} }
       }
     }`,
     {},
     'daemonChannels'
   )
+}
 
 // The runs, newest first; false where the API has no rollout controller.
 export async function graphQLDaemonRollouts(
@@ -530,6 +543,12 @@ export async function graphQLRolloutMutation(
 export const startDaemonRollout = (start: StartRollout) => graphQLRolloutMutation('startDaemonRollout', start)
 
 export const rolloutAction = ({ name, ...variables }: RolloutAction) => graphQLRolloutMutation(name, variables)
+
+// What startDaemonRollout takes, so the form offers only what the API will act on.
+export async function startArgsServed(): Promise<Set<string>> {
+  const served = await rolloutSchema()
+  return new Set(served === 'ERROR' ? [] : served.startArgs)
+}
 
 export async function rolloutActionsServed(): Promise<Set<string>> {
   const served = await rolloutSchema()

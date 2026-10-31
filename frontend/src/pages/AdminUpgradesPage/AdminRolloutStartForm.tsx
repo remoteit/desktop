@@ -20,9 +20,10 @@ import {
   StartRollout,
   graphQLDaemonPackages,
   graphQLRolloutDefaults,
+  startArgsServed,
   startDaemonRollout,
 } from '../../services/graphQLDaemonRollout'
-import { UPGRADES_ROUTE, dateTime, parseLadder } from './rolloutHelpers'
+import { UPGRADES_ROUTE, compareVersions, dateTime, parseLadder, runningNewest } from './rolloutHelpers'
 
 type Props = { channels: DaemonChannel[]; runs?: RolloutRun[]; showBackArrow?: boolean; onStarted: () => void }
 
@@ -68,6 +69,9 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
   const [form, setForm] = useState(formFrom(FALLBACK_DEFAULTS))
   const [touched, setTouched] = useState(false)
   const [promote, setPromote] = useState(false)
+  const [rollback, setRollback] = useState(false)
+  // Whether startDaemonRollout takes `rollback`: without it the box is not offered, as the API would drop it.
+  const [rollbackServed, setRollbackServed] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
   const [problem, setProblem] = useState<string>()
@@ -75,6 +79,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
   useEffect(() => {
     let live = true
     graphQLDaemonPackages().then(found => live && setPackages(found))
+    startArgsServed().then(args => live && setRollbackServed(args.has('rollback')))
     graphQLRolloutDefaults().then(defaults => live && !touched && setForm(formFrom(defaults)))
     return () => {
       live = false
@@ -93,6 +98,11 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
   const shownManifest = editManifest
     ? manifest
     : picked?.manifest ?? (listed ? '' : manifestFor(version.trim(), selected))
+
+  // A version older than the newest the channel's devices may run goes back: only a rollback does that, and the server
+  // refuses it otherwise.
+  const newest = runningNewest(selected)
+  const older = !!version.trim() && !!newest && compareVersions(version.trim(), newest) < 0
 
   const pick = (next: string) => {
     setVersion(next)
@@ -124,6 +134,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
     rateCeiling: number(form.rateCeiling),
     failureThreshold: number(form.failureThreshold),
     promoteWhenDone: promote,
+    ...(rollbackServed ? { rollback } : {}),
   }
 
   const submit = async () => {
@@ -272,6 +283,15 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
               />
             )}
             <Typography variant="caption">
+              {older && !rollback && (
+                <Box
+                  component="span"
+                  data-older-warning
+                  sx={{ display: 'block', color: 'warning.main', fontWeight: 500 }}
+                >
+                  Older than what devices run ({newest}) — check Rollback to go back.
+                </Box>
+              )}
               {listed
                 ? 'The packages published to this stage, newest first: their manifest and signature are both there.'
                 : packages === undefined
@@ -345,6 +365,14 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
               Real failures, beyond those reviewed, that hold the run: more than this. <b>0 holds on the first.</b>
             </>
           )}
+          {rollbackServed && (
+            <ListItemCheckbox
+              label="Rollback"
+              subLabel="Take the channel back to an older release: devices on newer ones are told to go back to it."
+              checked={rollback}
+              onClick={checked => setRollback(checked)}
+            />
+          )}
           <ListItemCheckbox
             label="Promote when done"
             subLabel="At the end, the candidate becomes the channel's current release."
@@ -363,11 +391,17 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
       </form>
       <Confirm
         open={confirming}
-        title="Start this rollout?"
-        action="Start"
+        title={rollback ? 'Start this rollback?' : 'Start this rollout?'}
+        action={rollback ? 'Roll back' : 'Start'}
+        color={rollback ? 'warning' : 'primary'}
         onConfirm={submit}
         onDeny={() => setConfirming(false)}
       >
+        {rollback && (
+          <Typography variant="body2" sx={{ fontWeight: 500, marginBottom: 1 }} data-rollback-confirm>
+            Rollback to {start.candidateVersion} from {newest || 'what the devices run'}.
+          </Typography>
+        )}
         <Typography variant="body2">
           {start.candidateVersion} becomes {channel}'s candidate, and the controller delivers it to{' '}
           {ladder ? `${ladder[0]}%` : 'the first step'} of the channel's devices at once.

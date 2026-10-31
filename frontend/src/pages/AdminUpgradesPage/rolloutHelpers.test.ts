@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   bucketSegments,
+  runningNewest,
+  supersededBy,
   managed,
   currentStep,
   deliveryProgress,
@@ -233,5 +235,33 @@ describe('failures', () => {
     expect(heldForFailures({ state: 'holding', reason: 'presence cpu 74%', gates: { failures: 1 } })).toBe(true)
     expect(heldForFailures({ state: 'holding', reason: 'presence cpu 74%', gates: { failures: 0 } })).toBe(false)
     expect(heldForFailures({ state: 'running', reason: 'failed', gates: { failures: 3 } })).toBe(false)
+  })
+})
+
+describe('rollback and superseded', () => {
+  it("names the run that superseded one, and only a superseded one's", () => {
+    expect(supersededBy({ state: 'superseded', reason: 'superseded by abc-123' })).toBe('abc-123')
+    expect(supersededBy({ state: 'aborted', reason: 'superseded by abc-123' })).toBeUndefined()
+  })
+
+  it("the newest a channel's devices may run: its current or its candidate", () => {
+    expect(runningNewest({ current: { version: '1.1.0.9' }, candidate: { version: '1.1.0.10' } })).toBe('1.1.0.10')
+    expect(runningNewest({ current: { version: '1.1.0.9' }, candidate: null })).toBe('1.1.0.9')
+    expect(runningNewest({})).toBeUndefined()
+  })
+
+  it('ahead is a segment only where the API counts it', () => {
+    expect(bucketSegments(STABLE).some(s => s.key === 'ahead')).toBe(false)
+    const withAhead = bucketSegments({ ...STABLE, onWanted: 13300, ahead: 7 })
+    expect(withAhead.map(s => s.key)).toEqual([
+      'onWanted',
+      'ahead',
+      'pending',
+      'upgrading',
+      'stuck',
+      'failed',
+      'offline',
+    ])
+    expect(withAhead.find(s => s.key === 'ahead')!.color).not.toBe('danger.main')
   })
 })

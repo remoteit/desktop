@@ -29,7 +29,7 @@ import {
   rolloutActionsServed,
 } from '../../services/graphQLDaemonRollout'
 import { AdminRolloutActions } from './AdminRolloutActions'
-import { RolloutStateChip } from './adminRolloutAttributes'
+import { RollbackChip, RolloutStateChip } from './adminRolloutAttributes'
 import { ChannelBars, ChannelFailures, ManagedLine } from './AdminChannelOverview'
 import { RolloutDelivery } from './RolloutDelivery'
 import { usePoll } from './useUpgrades'
@@ -48,9 +48,19 @@ import {
   startedByLabel,
   stepLabel,
   stepTimes,
+  supersededBy,
   transientDetail,
   transientReason,
 } from './rolloutHelpers'
+
+// Events worth catching the eye in the log: a candidate made current (a new rollout promotes a fully rolled-out one
+// first), a hold, an end.
+const EVENT_COLORS: ILookup<string> = {
+  promoted: 'success.main',
+  hold: 'warning.main',
+  aborted: 'danger.main',
+  superseded: 'grayDarker.main',
+}
 
 type Props = { showBackArrow?: boolean; onChanged: () => void }
 
@@ -277,6 +287,7 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
           <Title>{typeof run === 'object' && run ? `${run.version || 'Rollout'} on ${run.channel}` : 'Rollout'}</Title>
         </Typography>
         {typeof run === 'object' && run && <RolloutStateChip run={run} />}
+        {typeof run === 'object' && run && <RollbackChip run={run} />}
         <Box sx={{ flex: 1 }} />
         <IconButton icon="sync" title="Refresh" onClick={load} size="md" />
       </Box>
@@ -318,7 +329,17 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
               severity={run.state === 'aborted' ? 'error' : run.state === 'holding' ? 'warning' : 'info'}
               fullWidth
             >
-              {cause ? <span data-hold-cause={run.holdCause}>Held: {cause.label}</span> : run.reason}
+              {cause ? (
+                <span data-hold-cause={run.holdCause}>Held: {cause.label}</span>
+              ) : supersededBy(run) ? (
+                <span data-superseded>
+                  Superseded by{' '}
+                  <Link to={`${UPGRADES_ROUTE}/${supersededBy(run)}`}>{supersededBy(run)?.slice(0, 8)}</Link>: a newer
+                  rollout of this channel took its place.
+                </span>
+              ) : (
+                run.reason
+              )}
               {cause && (
                 <em>
                   {run.reason}
@@ -512,11 +533,18 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
           ) : (
             <Box data-events>
               {events.map((event, index) => (
-                <Box key={`${event.at}-${index}`} sx={{ display: 'flex', gap: 1, paddingY: 0.25 }}>
+                <Box
+                  key={`${event.at}-${index}`}
+                  data-event={event.kind}
+                  sx={{ display: 'flex', gap: 1, paddingY: 0.25 }}
+                >
                   <Typography variant="caption" color="textSecondary" sx={{ minWidth: 130, flexShrink: 0 }}>
                     {dateTime(event.at)}
                   </Typography>
-                  <Typography variant="caption" sx={{ minWidth: 80, flexShrink: 0, fontWeight: 500 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ minWidth: 80, flexShrink: 0, fontWeight: 500, color: EVENT_COLORS[event.kind] }}
+                  >
                     {event.kind}
                   </Typography>
                   <Typography variant="caption">{event.message}</Typography>
