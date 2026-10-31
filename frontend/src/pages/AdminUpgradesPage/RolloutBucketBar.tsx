@@ -3,18 +3,25 @@ import { Box, Tooltip, Typography } from '@mui/material'
 import type { DaemonBuckets } from '../../services/graphQLDaemonRollout'
 import { bucketSegments, managed, percentOf } from './rolloutHelpers'
 
-type Props = { buckets?: DaemonBuckets | null; label?: React.ReactNode; legend?: boolean }
+type Props = { buckets?: DaemonBuckets | null; label?: React.ReactNode; hint?: React.ReactNode; legend?: boolean }
 
 // The managed devices' buckets as one bar, each segment its share of those a rollout can reach.
-export const RolloutBucketBar: React.FC<Props> = ({ buckets, label, legend = true }) => {
+export const RolloutBucketBar: React.FC<Props> = ({ buckets, label, hint, legend = true }) => {
   const segments = bucketSegments(buckets)
   const wanted = managed(buckets)
   return (
     <Box sx={{ marginBottom: 1.5 }} data-bucket-bar>
       {label && (
-        <Typography variant="caption" color="textSecondary" component="div" sx={{ marginBottom: 0.5 }}>
-          {label} · {wanted.toLocaleString()} managed devices
-        </Typography>
+        <Box sx={{ marginBottom: 0.5 }}>
+          <Typography variant="body2" component="div" data-bar-heading sx={{ fontWeight: 500 }}>
+            {label} · {wanted.toLocaleString()} devices
+          </Typography>
+          {hint && (
+            <Typography variant="caption" color="textSecondary" component="div" data-bar-hint>
+              {hint}
+            </Typography>
+          )}
+        </Box>
       )}
       <Box
         sx={{

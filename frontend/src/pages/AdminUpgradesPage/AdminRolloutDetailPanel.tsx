@@ -30,8 +30,7 @@ import {
 } from '../../services/graphQLDaemonRollout'
 import { AdminRolloutActions } from './AdminRolloutActions'
 import { RolloutStateChip } from './adminRolloutAttributes'
-import { RolloutBucketBar } from './RolloutBucketBar'
-import { ManagedLine } from './AdminChannelOverview'
+import { ChannelBars, ChannelFailures, ManagedLine } from './AdminChannelOverview'
 import { RolloutDelivery } from './RolloutDelivery'
 import { usePoll } from './useUpgrades'
 import {
@@ -157,12 +156,26 @@ const RetryingList: React.FC<{ failures?: DaemonFailure[] | null }> = ({ failure
 }
 
 const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, prominent }) => {
+  const split = !!run.rollout?.candidate?.failures
   const failures = run.rollout?.candidate?.failures ?? run.rollout?.failures
   const rows = failureRows(failures, run.reviewedFailures)
-  const retrying = <RetryingList failures={failures} />
+  // The candidate group's are what the run counts; the rest of the channel's follow, apart.
+  const group = (
+    <Typography variant="caption" color="textSecondary" component="div" data-failure-group sx={{ marginBottom: 0.5 }}>
+      {split ? 'Candidate group — what the run counts' : 'Whole channel'}
+    </Typography>
+  )
+  const rest = split ? <ChannelFailures rollout={run.rollout} skipCandidate /> : null
+  const retrying = (
+    <>
+      <RetryingList failures={failures} />
+      {rest}
+    </>
+  )
   if (!rows.length)
     return (
       <Box data-failures>
+        {group}
         <Typography variant="caption" color="textSecondary">
           No failures
         </Typography>
@@ -184,6 +197,7 @@ const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, p
           Held for failures — review them, then Resume to acknowledge.
         </Typography>
       )}
+      {group}
       <Table size="small" data-real-failures>
         <TableHead>
           <TableRow>
@@ -399,9 +413,14 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
         <Section title="Devices">
           {run.rollout ? (
             <>
-              <RolloutBucketBar buckets={run.rollout.candidate} label={`On ${run.version || 'the candidate'}`} />
-              <RolloutBucketBar buckets={run.rollout} label="Whole channel" legend={false} />
               <ManagedLine buckets={run.rollout} />
+              <ChannelBars
+                rollout={run.rollout}
+                channel={run.channel}
+                percent={run.percent}
+                candidate={run.version}
+                current={run.fromVersion}
+              />
               <Typography variant="caption" color="textSecondary" component="div">
                 Counted {dateTime(run.rollout.checked)} · stuck after {run.rollout.stuckMinutes} min
               </Typography>

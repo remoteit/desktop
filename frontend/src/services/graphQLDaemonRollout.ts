@@ -218,7 +218,7 @@ const channelRollout = (reasons = REASONS) => `
   ${BUCKETS} ${reasons} devices checked stuckMinutes
   candidate { ${BUCKETS} ${reasons} }
   current { ${BUCKETS} ${reasons} }
-  pinned { ${BUCKETS} }`
+  pinned { ${BUCKETS} ${reasons} }`
 const CHANNEL_ROLLOUT = channelRollout()
 const DELIVERY = `change version state total delivered pacedDelivered unpacedDelivered skippedUnmanaged failed unchanged
   remaining walked perSecond startedAt finishedAt retryAt error`

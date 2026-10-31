@@ -135,7 +135,17 @@ const STABLE = {
       offline: 0,
       failures: [{ reason: 'download: 404', devices: 2 }],
     },
-    current: { wanted: 90, onWanted: 55, pending: 4, upgrading: 4, failed: 0, stuck: 0, unmanaged: 20, offline: 7 },
+    current: {
+      wanted: 90,
+      onWanted: 55,
+      pending: 4,
+      upgrading: 4,
+      failed: 0,
+      stuck: 0,
+      unmanaged: 20,
+      offline: 7,
+      failures: [],
+    },
     pinned: { wanted: 0, onWanted: 0, pending: 0, upgrading: 0, failed: 0, stuck: 0, unmanaged: 0, offline: 0 },
   },
   delivery: {
@@ -317,8 +327,24 @@ describe('AdminUpgradesPage', () => {
     const segments = [...bar.querySelectorAll('[data-segment]')].map(s => s.getAttribute('data-segment'))
     expect(segments).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'offline'])
     expect(bar.textContent).not.toContain('Unmanaged')
-    expect(bar.textContent).toContain('80 managed devices')
+    const bars = [...channel.querySelectorAll('[data-bucket-bar]')]
+    expect(bars.map(b => b.querySelector('[data-bar-heading]')!.textContent)).toEqual([
+      'Whole channel: every managed device on stable · 80 devices',
+      'Candidate group: the 10% selected for 1.1.0.2 · 10 devices',
+    ])
+    expect(bars[0].querySelector('[data-bar-hint]')!.textContent).toContain('outside the candidate group want current')
+    expect(bars[1].querySelector('[data-bar-hint]')!.textContent).toContain('chosen to run the candidate')
+    // The candidate group has the same legend, with its counts.
+    expect(bars[1].textContent).toContain('On wanted 5')
+    expect(bars[1].textContent).toContain('Failed 2')
     const line = channel.querySelector('[data-managed-line]')!
+    // The managed line heads the card, above both bars.
+    expect(line.compareDocumentPosition(bars[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // Failures by group, where graphql gives the split.
+    const failures = channel.querySelector('[data-channel-failures]')!
+    expect(failures.textContent).toContain('Failures · candidate group')
+    expect(failures.textContent).toContain('2 download: 404')
+    expect(failures.textContent).toContain('Failures · rest of the channel: none')
     expect(line.textContent).toContain('80 managed · 20 unmanaged')
     expect(line.textContent).not.toContain('no package')
     expect(channel.querySelector('[data-delivery]')!.textContent).toContain('40 of 100 delivered')
