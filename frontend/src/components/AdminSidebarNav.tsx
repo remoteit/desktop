@@ -136,6 +136,19 @@ export const AdminSidebarNav: React.FC = () => {
           <ListItemText primary="Proxies & exits" />
         </ListItemButton>
       )}
+
+      {deviceSessions && (
+        <ListItemButton
+          dense
+          selected={currentPath.includes('/admin/upgrades')}
+          onClick={() => handleNavClick('/admin/upgrades')}
+        >
+          <ListItemIcon>
+            <Icon name="cloud-arrow-up" size="md" />
+          </ListItemIcon>
+          <ListItemText primary="Upgrades" />
+        </ListItemButton>
+      )}
     </List>
   )
 }

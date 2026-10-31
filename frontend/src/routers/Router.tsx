@@ -72,6 +72,7 @@ import { AdminEnterpriseLicensesListPage } from '../pages/AdminEnterpriseLicense
 import { AdminAddonLicensesListPage } from '../pages/AdminAddonLicensesPage/AdminAddonLicensesListPage'
 import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { AdminProxiesPage } from '../pages/AdminProxiesPage'
+import { AdminUpgradesPage } from '../pages/AdminUpgradesPage/AdminUpgradesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
@@ -484,6 +485,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
               <Route path="/admin/proxies">
                 <AdminProxiesPage />
+              </Route>
+              <Route path="/admin/upgrades/:rolloutId?">
+                <AdminUpgradesPage />
               </Route>
               <Redirect to="/admin/users" />
             </Switch>
