@@ -16,6 +16,7 @@ import { AdminRolloutListItem } from './AdminRolloutListItem'
 import { adminRolloutAttributes } from './adminRolloutAttributes'
 import { NEW_ROLLOUT, UPGRADES_ROUTE, dateTime } from './rolloutHelpers'
 import { Upgrades } from './useUpgrades'
+import { UpgradesTabs } from './UpgradesTabs'
 
 export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrades }) => {
   const history = useHistory()
@@ -41,6 +42,7 @@ export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrad
           )}
         </Stack>
       </Stack>
+      <UpgradesTabs value="rollouts" />
     </Gutters>
   )
 

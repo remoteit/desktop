@@ -32,6 +32,7 @@ vi.mock('../../services/graphQLDaemonRollout', () => ({
   rolloutAction: mutate,
   startDaemonRollout: mutate,
 }))
+vi.mock('../../services/graphQLFleetVersions', () => ({ graphQLFleetVersions: vi.fn(), graphQLFleetDevices: vi.fn() }))
 vi.mock('../../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED', DAEMON_CHANNELS: ['stable', 'beta'] }))
 vi.mock('../../components/Confirm', () => ({
   Confirm: ({ open, title, children, onConfirm, action, disabled }: any) =>

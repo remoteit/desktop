@@ -1,8 +1,10 @@
 import React from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
 import { AdminUpgradesListPage } from './AdminUpgradesListPage'
+import { AdminFleetTab } from './AdminFleetTab'
+import { isFleetView } from './fleetHelpers'
 import { AdminRolloutDetailPanel } from './AdminRolloutDetailPanel'
 import { AdminRolloutStartForm } from './AdminRolloutStartForm'
 import { NEW_ROLLOUT } from './rolloutHelpers'
@@ -46,8 +48,14 @@ const handleSx = (theme: import('@mui/material').Theme) => ({
 })
 
 /* Device package upgrades (admin): each release channel's devices and delivery, the rollout runs that take a candidate
-   up its ladder, and one run in detail with its controls. English only, as the rest of /admin. */
+   up its ladder, and one run in detail with its controls; or, in its Fleet tab (?view=fleet), the fleet's versions.
+   English only, as the rest of /admin. */
 export const AdminUpgradesPage: React.FC = () => {
+  const location = useLocation()
+  return isFleetView(location.search) ? <AdminFleetTab /> : <AdminRolloutsView />
+}
+
+const AdminRolloutsView: React.FC = () => {
   const { rolloutId } = useParams<{ rolloutId?: string }>()
   const upgrades = useUpgrades()
   const layout = useSelector((state: State) => state.ui.layout)
