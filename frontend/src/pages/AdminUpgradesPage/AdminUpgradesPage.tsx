@@ -107,6 +107,7 @@ const AdminRolloutsView: React.FC = () => {
               {rolloutId === NEW_ROLLOUT ? (
                 <AdminRolloutStartForm
                   channels={Array.isArray(upgrades.channels) ? upgrades.channels : []}
+                  runs={Array.isArray(upgrades.runs) ? upgrades.runs : []}
                   showBackArrow={!showLeft}
                   onStarted={upgrades.reload}
                 />

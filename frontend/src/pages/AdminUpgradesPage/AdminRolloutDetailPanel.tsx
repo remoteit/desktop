@@ -29,10 +29,12 @@ import {
   rolloutActionsServed,
 } from '../../services/graphQLDaemonRollout'
 import { AdminRolloutActions } from './AdminRolloutActions'
-import { RolloutStateChip } from './adminRolloutAttributes'
-import { RolloutBucketBar } from './RolloutBucketBar'
+import { RollbackChip, RolloutStateChip } from './adminRolloutAttributes'
+import { ChannelBars, ChannelFailures, ManagedLine } from './AdminChannelOverview'
 import { RolloutDelivery } from './RolloutDelivery'
 import { usePoll } from './useUpgrades'
+import { useRecount } from './useRecount'
+import { RecountNote } from './RecountNote'
 import {
   GateLevel,
   UPGRADES_ROUTE,
@@ -48,9 +50,20 @@ import {
   startedByLabel,
   stepLabel,
   stepTimes,
+  supersededBy,
   transientDetail,
   transientReason,
 } from './rolloutHelpers'
+
+// Events worth catching the eye in the log: a candidate made current (a new rollout promotes a fully rolled-out one
+// first), a hold, an end.
+const EVENT_COLORS: ILookup<string> = {
+  promoted: 'success.main',
+  install: 'primary.main', // what new installs download changed
+  hold: 'warning.main',
+  aborted: 'danger.main',
+  superseded: 'grayDarker.main',
+}
 
 type Props = { showBackArrow?: boolean; onChanged: () => void }
 
@@ -156,12 +169,26 @@ const RetryingList: React.FC<{ failures?: DaemonFailure[] | null }> = ({ failure
 }
 
 const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, prominent }) => {
+  const split = !!run.rollout?.candidate?.failures
   const failures = run.rollout?.candidate?.failures ?? run.rollout?.failures
   const rows = failureRows(failures, run.reviewedFailures)
-  const retrying = <RetryingList failures={failures} />
+  // The candidate group's are what the run counts; the rest of the channel's follow, apart.
+  const group = (
+    <Typography variant="caption" color="textSecondary" component="div" data-failure-group sx={{ marginBottom: 0.5 }}>
+      {split ? 'Candidate group — what the run counts' : 'Whole channel'}
+    </Typography>
+  )
+  const rest = split ? <ChannelFailures rollout={run.rollout} skipCandidate /> : null
+  const retrying = (
+    <>
+      <RetryingList failures={failures} />
+      {rest}
+    </>
+  )
   if (!rows.length)
     return (
       <Box data-failures>
+        {group}
         <Typography variant="caption" color="textSecondary">
           No failures
         </Typography>
@@ -183,6 +210,7 @@ const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, p
           Held for failures — review them, then Resume to acknowledge.
         </Typography>
       )}
+      {group}
       <Table size="small" data-real-failures>
         <TableHead>
           <TableRow>
@@ -239,6 +267,12 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
   }, [rolloutId])
 
   usePoll(load, typeof run === 'object' && !!run && active(run))
+  const shownRun = typeof run === 'object' && run ? run : undefined
+  const recount = useRecount(
+    useCallback(() => (shownRun ? [shownRun.channel] : []), [shownRun?.channel]),
+    load,
+    () => [shownRun?.rollout?.checked]
+  )
 
   const handleBack = () => history.push(UPGRADES_ROUTE)
 
@@ -262,8 +296,16 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
           <Title>{typeof run === 'object' && run ? `${run.version || 'Rollout'} on ${run.channel}` : 'Rollout'}</Title>
         </Typography>
         {typeof run === 'object' && run && <RolloutStateChip run={run} />}
+        {typeof run === 'object' && run && <RollbackChip run={run} />}
         <Box sx={{ flex: 1 }} />
-        <IconButton icon="sync" title="Refresh" onClick={load} size="md" />
+        <RecountNote state={recount.state} problem={recount.problem} />
+        <IconButton
+          icon="sync"
+          title="Refresh: recount the channel"
+          onClick={recount.recount}
+          spin={recount.state === 'recounting'}
+          size="md"
+        />
       </Box>
     </Box>
   )
@@ -303,7 +345,17 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
               severity={run.state === 'aborted' ? 'error' : run.state === 'holding' ? 'warning' : 'info'}
               fullWidth
             >
-              {cause ? <span data-hold-cause={run.holdCause}>Held: {cause.label}</span> : run.reason}
+              {cause ? (
+                <span data-hold-cause={run.holdCause}>Held: {cause.label}</span>
+              ) : supersededBy(run) ? (
+                <span data-superseded>
+                  Superseded by{' '}
+                  <Link to={`${UPGRADES_ROUTE}/${supersededBy(run)}`}>{supersededBy(run)?.slice(0, 8)}</Link>: a newer
+                  rollout of this channel took its place.
+                </span>
+              ) : (
+                run.reason
+              )}
               {cause && (
                 <em>
                   {run.reason}
@@ -398,8 +450,17 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
         <Section title="Devices">
           {run.rollout ? (
             <>
-              <RolloutBucketBar buckets={run.rollout.candidate} label={`On ${run.version || 'the candidate'}`} />
-              <RolloutBucketBar buckets={run.rollout} label="Whole channel" legend={false} />
+              <ManagedLine buckets={run.rollout} />
+              <ChannelBars
+                rollout={run.rollout}
+                channel={run.channel}
+                percent={run.percent}
+                candidate={run.version}
+                current={run.fromVersion}
+                changedAt={live ? steps[steps.length - 1]?.startedAt : undefined}
+                latestChange={live ? steps[steps.length - 1]?.change : undefined}
+                live={live}
+              />
               <Typography variant="caption" color="textSecondary" component="div">
                 Counted {dateTime(run.rollout.checked)} · stuck after {run.rollout.stuckMinutes} min
               </Typography>
@@ -491,11 +552,18 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
           ) : (
             <Box data-events>
               {events.map((event, index) => (
-                <Box key={`${event.at}-${index}`} sx={{ display: 'flex', gap: 1, paddingY: 0.25 }}>
+                <Box
+                  key={`${event.at}-${index}`}
+                  data-event={event.kind}
+                  sx={{ display: 'flex', gap: 1, paddingY: 0.25 }}
+                >
                   <Typography variant="caption" color="textSecondary" sx={{ minWidth: 130, flexShrink: 0 }}>
                     {dateTime(event.at)}
                   </Typography>
-                  <Typography variant="caption" sx={{ minWidth: 80, flexShrink: 0, fontWeight: 500 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ minWidth: 80, flexShrink: 0, fontWeight: 500, color: EVENT_COLORS[event.kind] }}
+                  >
                     {event.kind}
                   </Typography>
                   <Typography variant="caption">{event.message}</Typography>

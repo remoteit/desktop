@@ -7,7 +7,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // The admin Upgrades page: each channel's buckets and delivery, the runs newest first with the live one marked, and a
 // run's detail — a hold for failures puts them first, with what an earlier resume reviewed, and Resume says how many
 // it will mark reviewed; Abort asks a reason, then confirms.
-const { channels, runs, run, mutate, served } = vi.hoisted(() => ({
+const FALLBACK = vi.hoisted(() => ({
+  ladder: [1, 10, 50, 100],
+  soakMinutes: 5,
+  firstSoakMinutes: 10,
+  rateFloor: 2,
+  rateCeiling: 15,
+  failureThreshold: 0,
+}))
+const { channels, runs, run, mutate, served, packages, defaults, install, setInstall, refresh } = vi.hoisted(() => ({
+  install: vi.fn(),
+  refresh: vi.fn(),
+  setInstall: vi.fn(async () => ({ ok: true } as any)),
+  packages: vi.fn(),
+  defaults: vi.fn(),
   channels: vi.fn(),
   runs: vi.fn(),
   run: vi.fn(),
@@ -21,6 +34,7 @@ const { channels, runs, run, mutate, served } = vi.hoisted(() => ({
         'abortDaemonRollout',
         'skipDaemonRolloutStep',
         'setDaemonRolloutRate',
+        'setDaemonInstall',
       ])
   ),
 }))
@@ -31,6 +45,13 @@ vi.mock('../../services/graphQLDaemonRollout', () => ({
   rolloutActionsServed: served,
   rolloutAction: mutate,
   startDaemonRollout: mutate,
+  graphQLDaemonPackages: packages,
+  graphQLDaemonInstall: install,
+  refreshDaemonRollout: refresh,
+  setDaemonInstall: setInstall,
+  startArgsServed: async () => new Set(['rollback']),
+  graphQLRolloutDefaults: defaults,
+  FALLBACK_DEFAULTS: FALLBACK,
 }))
 vi.mock('../../services/graphQLFleetVersions', () => ({ graphQLFleetVersions: vi.fn(), graphQLFleetDevices: vi.fn() }))
 vi.mock('../../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED', DAEMON_CHANNELS: ['stable', 'beta'] }))
@@ -122,7 +143,17 @@ const STABLE = {
       offline: 0,
       failures: [{ reason: 'download: 404', devices: 2 }],
     },
-    current: { wanted: 90, onWanted: 55, pending: 4, upgrading: 4, failed: 0, stuck: 0, unmanaged: 20, offline: 7 },
+    current: {
+      wanted: 90,
+      onWanted: 55,
+      pending: 4,
+      upgrading: 4,
+      failed: 0,
+      stuck: 0,
+      unmanaged: 20,
+      offline: 7,
+      failures: [],
+    },
     pinned: { wanted: 0, onWanted: 0, pending: 0, upgrading: 0, failed: 0, stuck: 0, unmanaged: 0, offline: 0 },
   },
   delivery: {
@@ -291,19 +322,48 @@ beforeEach(() => {
   runs.mockReset().mockResolvedValue([HELD, DONE])
   run.mockReset().mockResolvedValue(HELD)
   mutate.mockClear()
+  packages.mockReset().mockResolvedValue(false)
+  install.mockReset().mockResolvedValue(false)
+  refresh.mockReset().mockResolvedValue(false)
+  setInstall.mockClear()
+  defaults.mockReset().mockResolvedValue(FALLBACK)
 })
 
 describe('AdminUpgradesPage', () => {
-  it("shows each channel's buckets, adding up to wanted, and its delivery", async () => {
+  it("shows each channel's managed buckets, the unmanaged beside them, and its delivery", async () => {
     const el = await render('/admin/upgrades')
     const channel = el.querySelector('[data-channel="stable"]')!
     expect(channel.textContent).toContain('candidate 1.1.0.2 at 10%')
     const bar = channel.querySelector('[data-bucket-bar]')!
     const segments = [...bar.querySelectorAll('[data-segment]')].map(s => s.getAttribute('data-segment'))
-    expect(segments).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'offline', 'unmanaged'])
-    expect(channel.querySelector('[data-delivery]')!.textContent).toContain('40 of 100 delivered')
+    expect(segments).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'offline'])
+    expect(bar.textContent).not.toContain('Unmanaged')
+    const bars = [...channel.querySelectorAll('[data-bucket-bar]')]
+    expect(bars.map(b => b.querySelector('[data-bar-heading]')!.textContent)).toEqual([
+      'Whole channel: every managed device on stable · 80 devices',
+      'Candidate group: the 10% selected for 1.1.0.2 · 10 devices',
+    ])
+    expect(bars[0].querySelector('[data-bar-hint]')!.textContent).toContain('outside the candidate group want current')
+    expect(bars[1].querySelector('[data-bar-hint]')!.textContent).toContain('chosen to run the candidate')
+    // The candidate group has the same legend, with its counts.
+    expect(bars[1].textContent).toContain('On wanted 5')
+    expect(bars[1].textContent).toContain('Failed 2')
+    const line = channel.querySelector('[data-managed-line]')!
+    // The managed line heads the card, above both bars.
+    expect(line.compareDocumentPosition(bars[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // Failures by group, where graphql gives the split.
+    const failures = channel.querySelector('[data-channel-failures]')!
+    expect(failures.textContent).toContain('Failures · candidate group')
+    expect(failures.textContent).toContain('2 download: 404')
+    expect(failures.textContent).toContain('Failures · rest of the channel: none')
+    expect(line.textContent).toContain('80 managed · 20 unmanaged')
+    expect(line.textContent).not.toContain('no package')
+    expect(channel.querySelector('[data-delivery]')!.textContent).toContain('40 of 80 managed devices delivered')
+    expect(channel.querySelector('[data-delivery]')!.textContent).not.toContain('skipped')
+    expect(channel.querySelector('[data-delivery-bookkeeping]')!.textContent).toBe('0 unchanged')
     expect(channel.querySelector('[data-delivery]')!.textContent).toContain('ETA 4s')
-    expect(channel.textContent).toContain('no package')
+    await act(async () => (line.querySelector('[data-unmanaged-toggle]') as HTMLElement).click())
+    expect(line.textContent).toContain('no package')
   })
 
   it('lists the runs newest first, the live one marked', async () => {
@@ -396,10 +456,266 @@ describe('AdminUpgradesPage', () => {
     expect(el.querySelector('[data-rollout-actions]')).toBeNull()
   })
 
-  it('the start form holds on any failure unless changed', async () => {
+  it("the start form shows the controller's defaults, each editable", async () => {
+    defaults.mockResolvedValue({ ...FALLBACK, soakMinutes: 7 })
     const el = await render('/admin/upgrades/new')
-    const threshold = el.querySelector('[data-failure-threshold]') as HTMLInputElement
-    expect(threshold.value).toBe('0')
-    expect(threshold.disabled).toBe(false)
+    const field = (name: string) => el.querySelector(`[data-field="${name}"]`) as HTMLInputElement
+    expect(field('ladder').value).toBe('1, 10, 50, 100')
+    expect(field('soak').value).toBe('7') // the server's, not the form's own
+    expect(field('firstSoak').value).toBe('10')
+    expect(field('rateFloor').value).toBe('2')
+    expect(field('rateCeiling').value).toBe('15')
+    expect(field('failureThreshold').value).toBe('0')
+    expect(field('failureThreshold').disabled).toBe(false)
+  })
+
+  it('offers the published versions, newest first, marked; picking one fills its manifest, read-only until Edit', async () => {
+    packages.mockResolvedValue([
+      {
+        version: '1.1.0.3',
+        manifest: 'https://d/device/1.1.0.3/manifest.json',
+        publishedAt: '2026-10-31T01:16:41Z',
+        platforms: ['mac'],
+      },
+      {
+        version: '1.1.0.2',
+        manifest: 'https://d/device/1.1.0.2/manifest.json',
+        publishedAt: '2026-10-30T21:57:55Z',
+        platforms: [],
+      },
+      {
+        version: '1.1.0.1',
+        manifest: 'https://d/device/1.1.0.1/manifest.json',
+        publishedAt: '2026-10-30T19:44:51Z',
+        platforms: [],
+      },
+    ])
+    const el = await render('/admin/upgrades/new')
+    const version = el.querySelector('[data-field="version"]') as HTMLInputElement
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      setter.call(version, '1.1.0.3')
+      version.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    const manifest = el.querySelector('[data-field="manifest"]') as HTMLInputElement
+    expect(manifest.value).toBe('https://d/device/1.1.0.3/manifest.json')
+    expect(manifest.readOnly).toBe(true)
+    await click(el, 'Edit')
+    expect((el.querySelector('[data-field="manifest"]') as HTMLInputElement).readOnly).toBe(false)
+  })
+
+  it('picking a version older than the devices run warns, and a rollback says so plainly', async () => {
+    packages.mockResolvedValue([
+      {
+        version: '1.1.0.2',
+        manifest: 'https://d/device/1.1.0.2/manifest.json',
+        publishedAt: '2026-10-30T21:57:55Z',
+        platforms: [],
+      },
+      {
+        version: '1.1.0.0',
+        manifest: 'https://d/device/1.1.0.0/manifest.json',
+        publishedAt: '2026-10-29T21:57:55Z',
+        platforms: [],
+      },
+    ])
+    const el = await render('/admin/upgrades/new')
+    const version = el.querySelector('[data-field="version"]') as HTMLInputElement
+    const choose = (value: string) =>
+      act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(version, value)
+        version.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+    await choose('1.1.0.2')
+    expect(el.querySelector('[data-older-warning]')).toBeNull()
+    await choose('1.1.0.0') // older than the channel's candidate 1.1.0.2
+    expect(el.querySelector('[data-older-warning]')!.textContent).toContain('check Rollback to go back')
+    await act(async () => (el.querySelector('input[type="checkbox"]') as HTMLInputElement).click())
+    expect(el.querySelector('[data-older-warning]')).toBeNull()
+    await click(el, 'Start rollout')
+    expect(el.querySelector('[data-rollback-confirm]')!.textContent).toBe('Rollback to 1.1.0.0 from 1.1.0.2.')
+    await act(async () => (el.querySelector('[data-confirm] button') as HTMLButtonElement).click())
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ candidateVersion: '1.1.0.0', rollback: true }))
+  })
+
+  it("the server's refusal of a start is shown", async () => {
+    packages.mockResolvedValue([
+      {
+        version: '1.1.0.0',
+        manifest: 'https://d/device/1.1.0.0/manifest.json',
+        publishedAt: '2026-10-29T21:57:55Z',
+        platforms: [],
+      },
+    ])
+    mutate.mockResolvedValueOnce({ ok: false, reason: 'Older than the running 1.1.0.2: only a rollback goes back' })
+    const el = await render('/admin/upgrades/new')
+    const version = el.querySelector('[data-field="version"]') as HTMLInputElement
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(version, '1.1.0.0')
+      version.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await click(el, 'Start rollout')
+    await act(async () => (el.querySelector('[data-confirm] button') as HTMLButtonElement).click())
+    expect(el.textContent).toContain('only a rollback goes back')
+  })
+
+  it('a superseded rollback run links to the run that took its place, and its promote shows in the log', async () => {
+    run.mockResolvedValue({
+      ...DONE,
+      state: 'superseded',
+      reason: 'superseded by 9f00aa11-2222-3333-4444-555566667777',
+      rollback: true,
+      events: [{ at: '2026-10-30T20:00:00Z', kind: 'promoted', message: '1.1.0.1 promoted to current' }],
+    })
+    const el = await render('/admin/upgrades/R1')
+    const link = el.querySelector('[data-superseded] a') as HTMLAnchorElement
+    expect(link.getAttribute('href')).toBe('/admin/upgrades/9f00aa11-2222-3333-4444-555566667777')
+    expect(el.querySelector('[data-rollback-chip]')).not.toBeNull()
+    expect(el.querySelector('[data-event="promoted"]')!.textContent).toContain('promoted to current')
+    expect(el.querySelector('[data-rollout-actions]')).toBeNull() // not active
+  })
+
+  it('ahead devices have their own segment and legend entry where the API counts them', async () => {
+    channels.mockResolvedValue([
+      {
+        ...STABLE,
+        rollout: { ...STABLE.rollout, onWanted: 50, ahead: 10, candidate: { ...STABLE.rollout.candidate, ahead: 0 } },
+      },
+    ])
+    runs.mockResolvedValue([{ ...HELD, rollback: true }])
+    const el = await render('/admin/upgrades')
+    const bar = el.querySelector('[data-channel="stable"] [data-bucket-bar]')!
+    expect([...bar.querySelectorAll('[data-segment]')].map(s => s.getAttribute('data-segment'))).toContain('ahead')
+    expect(bar.textContent).toContain('Ahead 10')
+    expect(el.querySelector('[data-rollout="R2"] [data-rollback-chip]')).not.toBeNull()
+  })
+
+  it('says what new installs download on the stable card, and changes it only to builds no older than current', async () => {
+    install.mockResolvedValue({
+      version: '1.1.0.3',
+      followsCurrent: false,
+      manifest: 'https://d/device/1.1.0.3/manifest.json',
+      updatedAt: '2026-10-31T15:00:00Z',
+      updatedBy: 'evan@remote.it',
+      enabled: true,
+      target: '1.1.0.3',
+      error: null,
+      events: [{ at: '2026-10-31T15:00:01Z', kind: 'applied', message: '1.1.0.3 at the top of the downloads' }],
+    })
+    packages.mockResolvedValue([
+      { version: '1.1.0.3', manifest: 'https://d/3', publishedAt: '2026-10-31T01:00:00Z', platforms: [] },
+      { version: '1.1.0.1', manifest: 'https://d/1', publishedAt: '2026-10-30T01:00:00Z', platforms: [] },
+      { version: '1.1.0.0', manifest: 'https://d/0', publishedAt: '2026-10-29T01:00:00Z', platforms: [] },
+    ])
+    const el = await render('/admin/upgrades')
+    const line = el.querySelector('[data-channel="stable"] [data-install-line]')!
+    expect(line.textContent).toContain('New installs: 1.1.0.3 (ahead of current)')
+    expect(line.textContent).toContain('by evan@remote.it')
+    expect(line.querySelector('[data-install-pending]')).toBeNull()
+    await act(async () => (line.querySelector('[data-install-history]') as HTMLElement).click())
+    expect(line.querySelector('[data-install-events]')!.textContent).toContain(
+      'applied 1.1.0.3 at the top of the downloads'
+    )
+    await act(async () => (line.querySelector('[data-install-change]') as HTMLElement).click())
+    await act(async () => {})
+    // The choices: Follow current, and published builds no older than current (1.1.0.1); 1.1.0.0 is not offered.
+    const select = el.querySelector('[data-field="install-version"]') as HTMLInputElement
+    expect(select.value).toBe('1.1.0.3')
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(select, '1.1.0.0')
+      select.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(select.value).toBe('1.1.0.3') // the select takes only an offered version: 1.1.0.0 is not one
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(select, '__follow__')
+      select.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await click(el, 'Continue')
+    expect(el.querySelector('[data-install-confirm]')!.textContent).toBe(
+      'New installs everywhere will get 1.1.0.1 immediately — there is no gradual rollout for installs.'
+    )
+    await act(async () => (el.querySelector('[data-confirm] button') as HTMLButtonElement).click())
+    expect(setInstall).toHaveBeenCalledWith(null)
+  })
+
+  it('no install line where the API does not say', async () => {
+    const el = await render('/admin/upgrades')
+    expect(el.querySelector('[data-install-line]')).toBeNull()
+  })
+
+  it("counts taken before the channel's step say so, dimmed, and the old group is not headlined as the new percent's", async () => {
+    channels.mockResolvedValue([
+      {
+        ...STABLE,
+        percent: 50,
+        updated: '2026-10-31T10:56:55Z',
+        rollout: { ...STABLE.rollout, checked: '2026-10-31T10:56:50Z' },
+      },
+    ])
+    const el = await render('/admin/upgrades')
+    const card = el.querySelector('[data-channel="stable"]')!
+    expect(card.querySelector('[data-counts-before]')!.textContent).toBe('Counts from before the 50% step — updating…')
+    expect(card.querySelector('[data-counts-dimmed]')).not.toBeNull()
+    const headings = [...card.querySelectorAll('[data-bar-heading]')].map(h => h.textContent)
+    expect(headings[1]).toContain('as counted before the 50% step')
+    expect(headings[1]).not.toContain('the 50% selected')
+  })
+
+  it('warns when counts stop refreshing while the channel moves, and not when it is still', async () => {
+    // STABLE's delivery is under way, its counts from 2026-10-30.
+    let el = await render('/admin/upgrades')
+    expect(el.querySelector('[data-channel="stable"] [data-counts-stalled]')!.textContent).toContain(
+      'Counts haven’t refreshed since'
+    )
+    expect(el.querySelector('[data-channel="stable"] [data-counts-before]')).toBeNull()
+    document.body.innerHTML = ''
+    channels.mockResolvedValue([{ ...STABLE, delivery: { ...STABLE.delivery, state: 'done' } }])
+    runs.mockResolvedValue([DONE])
+    el = await render('/admin/upgrades')
+    expect(el.querySelector('[data-counts-stalled]')).toBeNull()
+  })
+
+  it('refresh recounts where graphql offers it: Recounting… until a walk newer than the click lands', async () => {
+    const old = { ...STABLE, rollout: { ...STABLE.rollout, checked: '2026-10-30T00:00:00Z' } }
+    channels.mockResolvedValue([old])
+    refresh.mockResolvedValue(true)
+    const el = await render('/admin/upgrades')
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await click(el, 'Refresh: recount the channels')
+      expect(refresh).toHaveBeenCalledWith('stable')
+      expect(el.querySelector('[data-recounting]')!.textContent).toBe('Recounting…')
+      channels.mockResolvedValue([{ ...STABLE, rollout: { ...STABLE.rollout, checked: new Date().toISOString() } }])
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3100)
+      })
+      expect(el.querySelector('[data-recounting]')).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('a recount that has not landed in two minutes says it is still under way', async () => {
+    channels.mockResolvedValue([{ ...STABLE, rollout: { ...STABLE.rollout, checked: '2026-10-30T00:00:00Z' } }])
+    refresh.mockResolvedValue(true)
+    const el = await render('/admin/upgrades')
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await click(el, 'Refresh: recount the channels')
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2 * 60 * 1000 + 3500)
+      })
+      expect(el.querySelector('[data-recounting-slow]')).not.toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('without the recount, refresh re-reads', async () => {
+    const el = await render('/admin/upgrades')
+    const before = channels.mock.calls.length
+    await click(el, 'Refresh: recount the channels')
+    expect(channels.mock.calls.length).toBe(before + 1)
+    expect(el.querySelector('[data-recounting]')).toBeNull()
   })
 })

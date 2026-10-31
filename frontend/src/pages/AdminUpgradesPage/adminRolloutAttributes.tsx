@@ -27,7 +27,14 @@ const STATE_COLORS: ILookup<'primary' | 'warning' | 'error' | 'success' | 'defau
   aborted: 'error',
   done: 'success',
   cancelled: 'default',
+  superseded: 'default',
 }
+
+// A rollback run says so wherever it is shown.
+export const RollbackChip: React.FC<{ run?: Pick<RolloutRun, 'rollback'> }> = ({ run }) =>
+  run?.rollback ? (
+    <Chip size="small" color="warning" label="rollback" data-rollback-chip sx={{ marginLeft: 1 }} />
+  ) : null
 
 export const RolloutStateChip: React.FC<{ run: Pick<RolloutRun, 'state' | 'reason'> }> = ({ run }) => {
   const chip = (
@@ -52,6 +59,7 @@ export const adminRolloutAttributes: AdminRolloutAttribute[] = [
     value: ({ run }: AdminRolloutAttributeOptions) => (
       <Box sx={clip}>
         {run?.version || '—'}
+        <RollbackChip run={run} />
         <Box component="span" sx={{ color: 'grayDark.main', marginLeft: 1 }}>
           {run?.channel}
         </Box>

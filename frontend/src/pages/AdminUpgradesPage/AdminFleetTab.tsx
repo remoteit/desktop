@@ -54,6 +54,8 @@ export const DRILL_LIMIT = 200
 
 type Drill = { row: FleetRow | null; column: MatrixColumn | null; title: string }
 
+// Both groupings as wide as their label and longest choice: a select is otherwise as wide as what it shows.
+const selectSx = { minWidth: 240, maxWidth: '100%' } as const
 const headSx = { fontWeight: 600, whiteSpace: 'nowrap', paddingX: 1, paddingY: 0.5 } as const
 const cellSx = { whiteSpace: 'nowrap', paddingX: 1, paddingY: 0.25, textAlign: 'right', fontVariantNumeric: 'tabular-nums' } as const
 
@@ -137,6 +139,8 @@ export const AdminFleetTab: React.FC = () => {
           size="small"
           label="Group by"
           value={choices.group}
+          sx={selectSx}
+          InputLabelProps={{ shrink: true }}
           onChange={e => choose({ group: e.target.value as FleetChoices['group'], then: undefined })}
           inputProps={{ 'data-choice': 'group' }}
         >
@@ -151,12 +155,13 @@ export const AdminFleetTab: React.FC = () => {
           size="small"
           label="Then by"
           value={choices.then || ''}
+          sx={selectSx}
+          InputLabelProps={{ shrink: true }}
+          SelectProps={{ displayEmpty: true }}
           onChange={e => choose({ then: (e.target.value || undefined) as FleetChoices['then'] })}
           inputProps={{ 'data-choice': 'then' }}
         >
-          <MenuItem value="">
-            <em>nothing</em>
-          </MenuItem>
+          <MenuItem value="">None</MenuItem>
           {FLEET_DIMENSIONS.filter(d => d.key !== choices.group).map(d => (
             <MenuItem key={d.key} value={d.key}>
               {d.label}

@@ -24,13 +24,22 @@ const column = (version: string, devices: number, behind: number | null = null, 
 
 describe('the choices in the URL', () => {
   it('read back as written, the defaults left out', () => {
-    const choices = { ...DEFAULT_CHOICES, group: 'account' as const, then: 'os' as const, online: true, percent: true, search: 'acme', older: true }
+    const choices = { ...DEFAULT_CHOICES, group: 'account' as const, then: 'os' as const, online: false, percent: true, search: 'acme', older: true }
     const search = writeChoices(choices)
-    expect(search).toBe('?view=fleet&group=account&then=os&online=1&pct=1&q=acme&older=1')
+    expect(search).toBe('?view=fleet&group=account&then=os&online=0&pct=1&q=acme&older=1')
     expect(isFleetView(search)).toBe(true)
     expect(readChoices(search)).toEqual(choices)
     expect(writeChoices(DEFAULT_CHOICES)).toBe('?view=fleet&group=packageType')
     expect(readChoices(writeChoices({ ...DEFAULT_CHOICES, of: 'package' })).of).toBe('package')
+  })
+
+  it('online only unless the URL says all: online=0 or online=all; online=1 as before', () => {
+    expect(DEFAULT_CHOICES.online).toBe(true)
+    expect(readChoices('?view=fleet').online).toBe(true)
+    expect(readChoices('?view=fleet&online=1').online).toBe(true)
+    expect(readChoices('?view=fleet&online=0').online).toBe(false)
+    expect(readChoices('?view=fleet&online=all').online).toBe(false)
+    expect(writeChoices(DEFAULT_CHOICES)).not.toContain('online')
   })
 
   it('anything unknown is the default; a second dimension like the first is none', () => {

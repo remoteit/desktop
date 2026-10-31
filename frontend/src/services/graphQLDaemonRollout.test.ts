@@ -16,6 +16,11 @@ import {
   graphQLDaemonRollout,
   graphQLDaemonRollouts,
   graphQLRolloutMutation,
+  graphQLDaemonPackages,
+  graphQLRolloutDefaults,
+  graphQLDaemonInstall,
+  setDaemonInstall,
+  FALLBACK_DEFAULTS,
   parseRolloutSchema,
   resetRolloutSchema,
   typeString,
@@ -174,6 +179,43 @@ describe('the schema read', () => {
     )
   })
 
+  it('asks for ahead and rollback, and offers the rollback argument, where the API has them', () => {
+    const schema = parseRolloutSchema({
+      ...CONTRACT,
+      run: { fields: [...CONTRACT.run.fields, { name: 'rollback', args: [], type: scalar('Boolean') }] },
+      counts: fields('wanted', 'onWanted', 'ahead'),
+      mutation: {
+        fields: CONTRACT.mutation.fields.map(f =>
+          f.name === 'startDaemonRollout'
+            ? { ...f, args: [...f.args, { name: 'rollback', type: scalar('Boolean') }] }
+            : f
+        ),
+      },
+    })
+    expect(schema.list).toContain('rollback')
+    expect(schema.channelRollout).toContain('offline ahead')
+    expect(schema.detail).toContain('offline ahead')
+    expect(schema.startArgs).toContain('rollback')
+    const older = parseRolloutSchema(CONTRACT)
+    expect(older.channelRollout).not.toContain('ahead')
+    expect(older.startArgs).not.toContain('rollback')
+  })
+
+  it('asks a delivery for the upgrade/bookkeeping split where the API counts it', () => {
+    const split = parseRolloutSchema({ ...CONTRACT, delivery: fields('total', 'aheadDelivered', 'upgradeTargets') })
+    expect(split.delivery).toContain('skippedUnmanaged')
+    expect(split.delivery).toContain('aheadDelivered upgradeTargets')
+    expect(split.delivery).not.toContain('managedTotal')
+    expect(parseRolloutSchema(CONTRACT).delivery).not.toContain('aheadDelivered')
+  })
+
+  it("asks a channel's walk whether it predates the latest change, where graphql says", () => {
+    const schema = parseRolloutSchema({ ...CONTRACT, channelRollout: fields('wanted', 'checked', 'stale') })
+    expect(schema.channelRollout).toContain('stuckMinutes stale')
+    expect(schema.detail).toContain('stuckMinutes stale')
+    expect(parseRolloutSchema(CONTRACT).channelRollout).not.toContain('stale')
+  })
+
   it('an API without the controller has no runs', () => {
     expect(parseRolloutSchema({ query: fields('daemonChannels') }).runs).toBe(false)
   })
@@ -273,5 +315,83 @@ describe('mutations', () => {
       reason: 'This API has no skipDaemonRolloutStep.',
     })
     expect(request).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("the New rollout form's reads", () => {
+  const withForm = {
+    ...CONTRACT,
+    query: {
+      fields: [
+        ...CONTRACT.query.fields,
+        { name: 'daemonPackages', args: [{ name: 'limit', type: scalar('Int') }] },
+        { name: 'daemonRolloutDefaults', args: [] },
+      ],
+    },
+  }
+
+  it('the published packages, and the defaults the server keeps', async () => {
+    request.mockResolvedValueOnce(answer(withForm))
+    const pkg = {
+      version: '1.1.0.3',
+      manifest: 'https://d/m.json',
+      publishedAt: '2026-10-31T01:16:41Z',
+      platforms: ['mac'],
+    }
+    request.mockResolvedValueOnce(answer({ daemonPackages: [pkg] }))
+    expect(await graphQLDaemonPackages(5)).toEqual([pkg])
+    expect(sent(1).query).toContain('daemonPackages(limit: $limit) { version manifest publishedAt platforms }')
+    request.mockResolvedValueOnce(answer({ daemonRolloutDefaults: { ...FALLBACK_DEFAULTS, soakMinutes: 7 } }))
+    expect((await graphQLRolloutDefaults()).soakMinutes).toBe(7)
+  })
+
+  it('an API without them: no list, and the fallback defaults, asked nothing', async () => {
+    request.mockResolvedValueOnce(answer(CONTRACT))
+    expect(await graphQLDaemonPackages()).toBe(false)
+    expect(await graphQLRolloutDefaults()).toEqual(FALLBACK_DEFAULTS)
+    expect(request).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('what new installs download', () => {
+  const withInstall = {
+    ...CONTRACT,
+    query: { fields: [...CONTRACT.query.fields, { name: 'daemonInstall', args: [] }] },
+    mutation: {
+      fields: [
+        ...CONTRACT.mutation.fields,
+        {
+          name: 'setDaemonInstall',
+          type: object('DaemonInstall'),
+          args: [{ name: 'version', type: scalar('String') }],
+        },
+      ],
+    },
+    install: {
+      fields: [
+        { name: 'version', type: scalar('String') },
+        { name: 'followsCurrent', type: scalar('Boolean') },
+        { name: 'updatedAt', type: scalar('DateTime') },
+        { name: 'updatedBy', type: object('User') },
+      ],
+    },
+  }
+
+  it("reads it with the fields its type has, and sets it with null for follow current, asking back the install's", async () => {
+    request.mockResolvedValueOnce(answer(withInstall))
+    request.mockResolvedValueOnce(answer({ daemonInstall: { version: '1.1.0.3', followsCurrent: false } }))
+    expect(await graphQLDaemonInstall()).toEqual({ version: '1.1.0.3', followsCurrent: false })
+    expect(sent(1).query).toContain('daemonInstall { version followsCurrent updatedAt updatedBy { email } }')
+    request.mockResolvedValueOnce(answer({ setDaemonInstall: { version: '1.1.0.1', followsCurrent: true } }))
+    expect((await setDaemonInstall(null)).ok).toBe(true)
+    expect(sent(2).variables).toEqual({ version: null })
+    expect(sent(2).query).toContain(
+      'setDaemonInstall(version: $version) { version followsCurrent updatedAt updatedBy { email } }'
+    )
+  })
+
+  it('false where the API does not say', async () => {
+    request.mockResolvedValueOnce(answer(CONTRACT))
+    expect(await graphQLDaemonInstall()).toBe(false)
   })
 })

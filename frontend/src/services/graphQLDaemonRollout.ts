@@ -37,6 +37,7 @@ export type DaemonBuckets = {
   stuck: number
   unmanaged: number
   offline: number
+  ahead?: number // running newer than assigned, where the API counts it
   failures?: DaemonFailure[]
   unmanagedReasons?: DaemonFailure[]
 }
@@ -45,6 +46,9 @@ export type DaemonChannelRollout = DaemonBuckets & {
   devices: number
   checked: string
   stuckMinutes: number
+  stale?: boolean | null // the walk predates the channel's latest change, where graphql says
+  change?: number | null // the channel change the walk counted, where graphql says
+  refreshing?: boolean | null // a recount is under way, where graphql says
   candidate: DaemonBuckets
   current: DaemonBuckets
   pinned: DaemonBuckets
@@ -68,6 +72,9 @@ export type DaemonDelivery = {
   finishedAt: string | null
   retryAt: string | null
   error: string | null
+  aheadDelivered?: number | null // sent their own running version (ahead): kept, not upgraded
+  upgradeTargets?: number | null // the devices this delivery upgrades
+  managedTotal?: number | null // the devices to deliver to, the unmanaged left out
 }
 
 export type DaemonChannel = {
@@ -82,7 +89,7 @@ export type DaemonChannel = {
   delivery: DaemonDelivery | null
 }
 
-export type RolloutState = 'running' | 'soaking' | 'holding' | 'aborted' | 'done' | 'cancelled'
+export type RolloutState = 'running' | 'soaking' | 'holding' | 'aborted' | 'done' | 'cancelled' | 'superseded'
 
 export type RolloutStep = {
   percent: number
@@ -151,6 +158,7 @@ export type RolloutRun = {
   endedAt?: string | null
   startedBy?: string | { email?: string | null } | null
   promoteWhenDone?: boolean | null
+  rollback?: boolean | null // a rollback: the candidate older than what the devices run
   // Not in the contract, read where the API has them: what the run was started with.
   manifest?: string | null
   candidateManifest?: string | null
@@ -167,6 +175,29 @@ export type RolloutRun = {
   gates?: RolloutGates | null
 }
 
+// A device package published to the stage's downloads, its manifest and signature both there (graphql daemonPackages).
+export type DaemonPackage = { version: string; manifest: string; publishedAt: string; platforms: string[] }
+
+// What startDaemonRollout takes for each setting not given (graphql daemonRolloutDefaults).
+export type RolloutDefaults = {
+  ladder: number[]
+  soakMinutes: number
+  firstSoakMinutes: number
+  rateFloor: number
+  rateCeiling: number
+  failureThreshold: number
+}
+
+// The controller's defaults as of graphql f75dc73d, for an API that does not say them.
+export const FALLBACK_DEFAULTS: RolloutDefaults = {
+  ladder: [1, 10, 50, 100],
+  soakMinutes: 5,
+  firstSoakMinutes: 10,
+  rateFloor: 2,
+  rateCeiling: 15,
+  failureThreshold: 0,
+}
+
 export type StartRollout = {
   channel: string
   candidateVersion: string
@@ -178,6 +209,7 @@ export type StartRollout = {
   rateCeiling?: number
   failureThreshold?: number
   promoteWhenDone?: boolean
+  rollback?: boolean
 }
 
 export type RolloutAction =
@@ -191,14 +223,16 @@ type Result<T> = T | 'ERROR' | typeof UNSUPPORTED
 
 const BUCKETS = 'wanted onWanted pending upgrading failed stuck unmanaged offline'
 const REASONS = 'failures { reason devices } unmanagedReasons { reason devices }'
-const channelRollout = (reasons = REASONS) => `
-  ${BUCKETS} ${reasons} devices checked stuckMinutes
-  candidate { ${BUCKETS} ${reasons} }
-  current { ${BUCKETS} ${reasons} }
-  pinned { ${BUCKETS} }`
+const channelRollout = (reasons = REASONS, buckets = BUCKETS, extras = '') => `
+  ${buckets} ${reasons} devices checked stuckMinutes${extras ? ` ${extras}` : ''}
+  candidate { ${buckets} ${reasons} }
+  current { ${buckets} ${reasons} }
+  pinned { ${buckets} ${reasons} }`
 const CHANNEL_ROLLOUT = channelRollout()
 const DELIVERY = `change version state total delivered pacedDelivered unpacedDelivered skippedUnmanaged failed unchanged
   remaining walked perSecond startedAt finishedAt retryAt error`
+
+const DELIVERY_EXTRAS = ['aheadDelivered', 'upgradeTargets', 'managedTotal']
 
 export const EVENT_LIMIT = 200
 
@@ -227,6 +261,7 @@ const RUN_SCALARS = [
   'soakMinutes',
   'firstSoakMinutes',
   'failureThreshold',
+  'rollback',
 ]
 const STEP_FIELDS = [
   'percent',
@@ -276,6 +311,8 @@ export const ACTIONS = [
   'abortDaemonRollout',
   'skipDaemonRolloutStep',
   'setDaemonRolloutRate',
+  'setDaemonInstall',
+  'refreshDaemonRollout',
 ] as const
 
 type TypeRef = { kind: string; name?: string | null; ofType?: TypeRef | null }
@@ -285,9 +322,15 @@ export type RolloutSchema = {
   runs: boolean // daemonRollouts and daemonRollout are served
   list: string // a run's selection in the list
   detail: string // and in its detail
-  queries: Partial<Record<'daemonRollouts' | 'daemonRollout', Field>>
+  queries: Partial<
+    Record<'daemonRollouts' | 'daemonRollout' | 'daemonPackages' | 'daemonRolloutDefaults' | 'daemonInstall', Field>
+  >
+  install: string // daemonInstall's selection
+  delivery: string // a delivery's selection
   mutations: Partial<Record<(typeof ACTIONS)[number], Field>>
   returns: string // what a mutation that returns a run is asked for
+  channelRollout: string // a channel's buckets, as daemonChannels asks for them
+  startArgs: string[] // what startDaemonRollout takes (rollback, where the API has it)
 }
 
 const TYPE_REF = 'kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } }'
@@ -299,6 +342,10 @@ const PROBE = `query DaemonRolloutFields {
   event: __type(name: "DaemonRolloutEvent") { fields { name } }
   gates: __type(name: "DaemonRolloutGates") { fields { name type { ${TYPE_REF} } } }
   failure: __type(name: "DaemonRolloutFailure") { fields { name } }
+  counts: __type(name: "DaemonRolloutCounts") { fields { name } }
+  install: __type(name: "DaemonInstall") { fields { name type { ${TYPE_REF} } } }
+  delivery: __type(name: "DaemonChannelDelivery") { fields { name } }
+  channelRollout: __type(name: "DaemonRollout") { fields { name } }
 }`
 
 const named = (type?: TypeRef | null): TypeRef | undefined => (type?.ofType ? named(type.ofType) : type || undefined)
@@ -332,7 +379,11 @@ export function parseRolloutSchema(data: any): RolloutSchema {
       .map(f => f.name)
   )
   const gates = runNames.has('gates') ? `gates { ${pick(GATE_FIELDS, gateScalars)} }` : ''
-  const delivery = runNames.has('delivery') ? `delivery { ${DELIVERY} }` : ''
+  // The upgrade/bookkeeping split, where the API counts it: devices sent their own running version (ahead), the
+  // upgrade deliveries' targets, the managed devices alone.
+  const deliveryFields = names(data?.delivery)
+  const deliverySelection = [DELIVERY, ...DELIVERY_EXTRAS.filter(name => deliveryFields.has(name))].join(' ')
+  const delivery = runNames.has('delivery') ? `delivery { ${deliverySelection} }` : ''
   const failureFields = names(data?.failure)
   const ids = failureFields.has('deviceIds')
   const failed = failureFields.has('failedDevices')
@@ -342,7 +393,13 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     ids || failed
       ? `failures { reason devices${ids ? ' deviceIds' : ''}${failed} } unmanagedReasons { reason devices }`
       : REASONS
-  const rollout = runNames.has('rollout') ? `rollout { ${channelRollout(reasons)} }` : ''
+  // `ahead`: devices running newer than they are assigned, kept until the candidate reaches them.
+  const buckets = names(data?.counts).has('ahead') ? `${BUCKETS} ahead` : BUCKETS
+  // Whether the walk predates the channel's latest change, where graphql says so outright: `stale`, or the `change` it
+  // counted (against the channel's).
+  const walkFields = names(data?.channelRollout)
+  const walk = ['stale', 'change', 'refreshing'].filter(name => walkFields.has(name)).join(' ')
+  const rollout = runNames.has('rollout') ? `rollout { ${channelRollout(reasons, buckets, walk)} }` : ''
   const eventsField = run.find(f => f.name === 'events')
   const events = eventsField
     ? `events${eventsField.args?.some(a => a.name === 'limit') ? `(limit: ${EVENT_LIMIT})` : ''} { ${pick(
@@ -363,7 +420,12 @@ export function parseRolloutSchema(data: any): RolloutSchema {
 
   const reads: RolloutSchema['queries'] = {}
   for (const field of queryFields)
-    if (field.name === 'daemonRollouts' || field.name === 'daemonRollout') reads[field.name] = field
+    if (
+      ['daemonRollouts', 'daemonRollout', 'daemonPackages', 'daemonRolloutDefaults', 'daemonInstall'].includes(
+        field.name
+      )
+    )
+      reads[field.name as keyof RolloutSchema['queries']] = field
 
   return {
     runs,
@@ -372,7 +434,23 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     queries: reads,
     mutations,
     returns: pick(['id', 'state', 'reason', 'percent', 'rate'], runNames),
+    channelRollout: channelRollout(REASONS, buckets, walk),
+    install: installSelection(fieldsOf(data?.install)),
+    delivery: deliverySelection,
+    startArgs: (mutations.startDaemonRollout?.args || []).map(arg => arg.name),
   }
+}
+
+// What new installs download (stage-wide): daemonInstall's fields, those its type has where the probe finds it under
+// this name, else the contract's; who set it as an email where it is a user.
+const INSTALL_FIELDS = ['version', 'followsCurrent', 'manifest', 'updatedAt', 'enabled', 'target', 'appliedAt', 'error']
+function installSelection(fields: Field[]): string {
+  if (!fields.length) return `${INSTALL_FIELDS.join(' ')} updatedBy`
+  const has = new Set(fields.map(f => f.name))
+  const by = fields.find(f => f.name === 'updatedBy')
+  const updatedBy = by ? (named(by.type)?.kind === 'OBJECT' ? 'updatedBy { email }' : 'updatedBy') : ''
+  const events = has.has('events') ? 'events { at kind message }' : ''
+  return [...INSTALL_FIELDS.filter(name => has.has(name)), updatedBy, events].filter(Boolean).join(' ')
 }
 
 let schema: Promise<RolloutSchema | 'ERROR'> | undefined
@@ -403,20 +481,22 @@ async function read<T>(query: string, variables: ILookup<any>, field: string): P
   return response.data?.data?.[field] ?? null
 }
 
-export const graphQLDaemonChannels = () =>
-  read<DaemonChannel[]>(
+export const graphQLDaemonChannels = async () => {
+  const served = await rolloutSchema()
+  return read<DaemonChannel[]>(
     `query DaemonChannels {
       daemonChannels {
         channel percent updated accounts devices
         current { version manifest rollback }
         candidate { version manifest rollback }
-        rollout { ${CHANNEL_ROLLOUT} }
-        delivery { ${DELIVERY} }
+        rollout { ${served === 'ERROR' ? CHANNEL_ROLLOUT : served.channelRollout} }
+        delivery { ${served === 'ERROR' ? DELIVERY : served.delivery} }
       }
     }`,
     {},
     'daemonChannels'
   )
+}
 
 // The runs, newest first; false where the API has no rollout controller.
 export async function graphQLDaemonRollouts(
@@ -436,6 +516,65 @@ export async function graphQLDaemonRollout(id: string): Promise<Result<RolloutRu
   if (!served.runs) return false
   const call = buildCall('query', served.queries.daemonRollout as Field, { id }, served.detail)
   return read<RolloutRun>(call.query, call.variables, 'daemonRollout')
+}
+
+// The packages published to the stage, newest first; false where the API does not list them.
+export async function graphQLDaemonPackages(limit = 30): Promise<DaemonPackage[] | 'ERROR' | false> {
+  const served = await rolloutSchema()
+  if (served === 'ERROR') return 'ERROR'
+  if (!served.queries.daemonPackages) return false
+  const call = buildCall('query', served.queries.daemonPackages, { limit }, 'version manifest publishedAt platforms')
+  const packages = await read<DaemonPackage[]>(call.query, call.variables, 'daemonPackages')
+  return Array.isArray(packages) ? packages : packages === null ? [] : 'ERROR'
+}
+
+// The controller's own defaults; FALLBACK_DEFAULTS where the API does not say them or the read fails.
+export async function graphQLRolloutDefaults(): Promise<RolloutDefaults> {
+  const served = await rolloutSchema()
+  if (served === 'ERROR' || !served.queries.daemonRolloutDefaults) return FALLBACK_DEFAULTS
+  const call = buildCall(
+    'query',
+    served.queries.daemonRolloutDefaults,
+    {},
+    'ladder soakMinutes firstSoakMinutes rateFloor rateCeiling failureThreshold'
+  )
+  const defaults = await read<RolloutDefaults>(call.query, call.variables, 'daemonRolloutDefaults')
+  return defaults && typeof defaults === 'object' ? { ...FALLBACK_DEFAULTS, ...defaults } : FALLBACK_DEFAULTS
+}
+
+// What new installs download, stage-wide: the stable channel's current release unless set ahead of it.
+export type DaemonInstall = {
+  version: string | null
+  followsCurrent?: boolean | null
+  manifest?: string | null
+  updatedAt?: string | null
+  updatedBy?: string | { email?: string | null } | null // an email, or "controller" when it reverted by itself
+  enabled?: boolean | null // graphql keeps the install downloads; off, they are whatever was published by hand
+  target?: string | null // what new installs should get: the override, else current
+  appliedAt?: string | null // when graphql last put a version at the top of the downloads
+  error?: string | null // the last failure to put it there, while not yet applied
+  events?: RolloutEvent[] | null // newest first: applied, override, follow, follows, failed
+}
+
+// false where the API does not say.
+export async function graphQLDaemonInstall(): Promise<DaemonInstall | null | 'ERROR' | false> {
+  const served = await rolloutSchema()
+  if (served === 'ERROR') return 'ERROR'
+  if (!served.queries.daemonInstall) return false
+  const call = buildCall('query', served.queries.daemonInstall, {}, served.install)
+  const install = await read<DaemonInstall>(call.query, call.variables, 'daemonInstall')
+  return install === UNSUPPORTED ? false : install
+}
+
+// A published version new installs take from now on; null follows the stable channel's current release again.
+export const setDaemonInstall = (version: string | null) => graphQLRolloutMutation('setDaemonInstall', { version })
+
+// A recount of a channel's buckets now, where graphql offers one; false where it does not (the page re-reads instead).
+export async function refreshDaemonRollout(channel: string): Promise<boolean | { reason: string }> {
+  const served = await rolloutSchema()
+  if (served === 'ERROR' || !served.mutations.refreshDaemonRollout) return false
+  const result = await graphQLRolloutMutation('refreshDaemonRollout', { channel })
+  return result.ok ? true : { reason: result.reason }
 }
 
 export const sortRuns = (runs: RolloutRun[]) =>
@@ -472,7 +611,10 @@ export async function graphQLRolloutMutation(
   if (served === 'ERROR') return { ok: false, reason: 'Could not read what this API serves.' }
   const field = served.mutations[name]
   if (!field) return { ok: false, reason: `This API has no ${name}.` }
-  const request = buildCall('mutation', field, variables, served.returns)
+  // A run's fields from a mutation on a run; the install's from the one that sets it.
+  const selection =
+    name === 'setDaemonInstall' ? served.install : name === 'refreshDaemonRollout' ? '__typename' : served.returns
+  const request = buildCall('mutation', field, variables, selection)
   const response = await graphQLRequestWithReason(request.query, request.variables)
   if (response === 'ERROR') return { ok: false, reason: `${name} failed.` }
   if ('reason' in response) return { ok: false, reason: response.reason || `${name} was refused.` }
@@ -482,6 +624,12 @@ export async function graphQLRolloutMutation(
 export const startDaemonRollout = (start: StartRollout) => graphQLRolloutMutation('startDaemonRollout', start)
 
 export const rolloutAction = ({ name, ...variables }: RolloutAction) => graphQLRolloutMutation(name, variables)
+
+// What startDaemonRollout takes, so the form offers only what the API will act on.
+export async function startArgsServed(): Promise<Set<string>> {
+  const served = await rolloutSchema()
+  return new Set(served === 'ERROR' ? [] : served.startArgs)
+}
 
 export async function rolloutActionsServed(): Promise<Set<string>> {
   const served = await rolloutSchema()

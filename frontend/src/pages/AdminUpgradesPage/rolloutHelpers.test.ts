@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import {
   bucketSegments,
+  recounted,
+  countsBefore,
+  countsStalled,
+  runningNewest,
+  supersededBy,
+  managed,
   currentStep,
+  deliveryCounts,
   deliveryProgress,
   failureRows,
   gateReadings,
@@ -29,19 +36,13 @@ const STABLE = {
 }
 
 describe('the bucket bar', () => {
-  it('segments add up to wanted', () => {
+  it('segments are the managed devices, adding up to wanted less the unmanaged', () => {
     const segments = bucketSegments(STABLE)
-    expect(segments.reduce((sum, s) => sum + s.count, 0)).toBe(STABLE.wanted)
+    expect(managed(STABLE)).toBe(13316)
+    expect(segments.reduce((sum, s) => sum + s.count, 0)).toBe(STABLE.wanted - STABLE.unmanaged)
     expect(segments.reduce((sum, s) => sum + s.fraction, 0)).toBeCloseTo(1)
-    expect(segments.map(s => s.key)).toEqual([
-      'onWanted',
-      'pending',
-      'upgrading',
-      'stuck',
-      'failed',
-      'offline',
-      'unmanaged',
-    ])
+    expect(segments.map(s => s.key)).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'offline'])
+    expect(segments[0].fraction).toBeGreaterThan(0.99) // 13,307 of 13,316, not a sliver of 61,787
   })
 
   it('an empty channel has no shares', () => {
@@ -54,14 +55,69 @@ describe('the bucket bar', () => {
 describe('delivery progress', () => {
   const delivery = { state: 'delivering', total: 1000, delivered: 250, remaining: 750, perSecond: 15 } as any
   it('is delivered of total, with the rest at its pace', () => {
-    expect(deliveryProgress(delivery)).toEqual({ done: false, fraction: 0.25, etaMs: 50000 })
+    expect(deliveryProgress(delivery)).toMatchObject({ done: false, fraction: 0.25, etaMs: 50000 })
   })
   it('a finished one with nothing to deliver is whole, no ETA', () => {
-    expect(deliveryProgress({ ...delivery, state: 'done', total: 0, delivered: 0, remaining: 0 })).toEqual({
+    expect(deliveryProgress({ ...delivery, state: 'done', total: 0, delivered: 0, remaining: 0 })).toMatchObject({
       done: true,
       fraction: 1,
       etaMs: undefined,
     })
+  })
+
+  // Rollback run dcb3d775 at 1%, 2026-10-31: 125 devices moving, the rest of the fleet sent its own version.
+  const rollback = {
+    state: 'done',
+    total: 61787,
+    delivered: 13317,
+    pacedDelivered: 111,
+    unpacedDelivered: 13206,
+    skippedUnmanaged: 48470,
+    unchanged: 0,
+    remaining: 0,
+    perSecond: 15,
+  } as any
+
+  it('counts managed devices only, the unmanaged left out', () => {
+    expect(deliveryCounts(rollback)).toEqual({
+      split: false,
+      managedTotal: 13317,
+      delivered: 13317,
+      of: 13317,
+      kept: undefined,
+    })
+  })
+
+  it('with the split, the progress is the upgrades alone and the ahead are kept, apart', () => {
+    // As graphql counts it: paced + unpaced are the upgrades; aheadDelivered is bookkeeping beside them.
+    const split = {
+      ...rollback,
+      pacedDelivered: 111,
+      unpacedDelivered: 14,
+      aheadDelivered: 13206,
+      upgradeTargets: 125,
+      managedTotal: 13317,
+    }
+    expect(deliveryCounts(split)).toEqual({ split: true, managedTotal: 13317, delivered: 125, of: 125, kept: 13206 })
+  })
+
+  it('an upgrade estimate behind what is delivered gives way to the managed less the ahead and unchanged', () => {
+    // solo, 2026-10-31 10:43: upgradeTargets 0 while 695 upgrades were delivered.
+    const live = {
+      state: 'held',
+      total: 5628,
+      managedTotal: 3078,
+      upgradeTargets: 0,
+      aheadDelivered: 0,
+      delivered: 695,
+      pacedDelivered: 636,
+      unpacedDelivered: 59,
+      skippedUnmanaged: 2550,
+      unchanged: 0,
+      remaining: 0,
+      perSecond: 15,
+    } as any
+    expect(deliveryCounts(live)).toEqual({ split: true, managedTotal: 3078, delivered: 695, of: 3078, kept: 0 })
   })
 })
 
@@ -238,5 +294,68 @@ describe('failures', () => {
     expect(heldForFailures({ state: 'holding', reason: 'presence cpu 74%', gates: { failures: 1 } })).toBe(true)
     expect(heldForFailures({ state: 'holding', reason: 'presence cpu 74%', gates: { failures: 0 } })).toBe(false)
     expect(heldForFailures({ state: 'running', reason: 'failed', gates: { failures: 3 } })).toBe(false)
+  })
+})
+
+describe('rollback and superseded', () => {
+  it("names the run that superseded one, and only a superseded one's", () => {
+    const id = '9f00aa11-2222-3333-4444-555566667777'
+    expect(supersededBy({ state: 'superseded', reason: `superseded by ${id}` })).toBe(id)
+    expect(supersededBy({ state: 'superseded', reason: 'superseded by a later change' })).toBeUndefined()
+    expect(supersededBy({ state: 'aborted', reason: `superseded by ${id}` })).toBeUndefined()
+  })
+
+  it("the newest a channel's devices may run: its current or its candidate", () => {
+    expect(runningNewest({ current: { version: '1.1.0.9' }, candidate: { version: '1.1.0.10' } })).toBe('1.1.0.10')
+    expect(runningNewest({ current: { version: '1.1.0.9' }, candidate: null })).toBe('1.1.0.9')
+    expect(runningNewest({})).toBeUndefined()
+  })
+
+  it('ahead is a segment only where the API counts it', () => {
+    expect(bucketSegments(STABLE).some(s => s.key === 'ahead')).toBe(false)
+    const withAhead = bucketSegments({ ...STABLE, onWanted: 13300, ahead: 7 })
+    expect(withAhead.map(s => s.key)).toEqual([
+      'onWanted',
+      'ahead',
+      'pending',
+      'upgrading',
+      'stuck',
+      'failed',
+      'offline',
+    ])
+    expect(withAhead.find(s => s.key === 'ahead')!.color).not.toBe('danger.main')
+  })
+})
+
+describe('stale counts', () => {
+  it("counted before the channel changed: by the walk time, without graphql's word", () => {
+    expect(countsBefore({ checked: '2026-10-31T10:56:50Z' }, '2026-10-31T10:56:55Z')).toBe(true)
+    expect(countsBefore({ checked: '2026-10-31T10:57:00Z' }, '2026-10-31T10:56:55Z')).toBe(false)
+    expect(countsBefore({ checked: '2026-10-31T10:56:50Z' }, null)).toBe(false)
+  })
+
+  it("graphql's word first: stale, else the walk's change against the channel's", () => {
+    const early = { checked: '2026-10-31T10:56:50Z' }
+    expect(countsBefore({ ...early, stale: false }, '2026-10-31T10:56:55Z')).toBe(false)
+    expect(countsBefore({ checked: '2026-10-31T10:57:00Z', stale: true }, '2026-10-31T10:56:55Z')).toBe(true)
+    expect(countsBefore({ ...early, change: 19 }, '2026-10-31T10:56:55Z', 19)).toBe(false)
+    expect(countsBefore({ ...early, change: 18 }, null, 19)).toBe(true)
+  })
+
+  it('stalled: over three minutes old while something moves', () => {
+    const now = Date.parse('2026-10-31T11:00:00Z')
+    expect(countsStalled('2026-10-31T10:56:50Z', true, now)).toBe(true)
+    expect(countsStalled('2026-10-31T10:58:00Z', true, now)).toBe(false)
+    expect(countsStalled('2026-10-31T10:56:50Z', false, now)).toBe(false)
+  })
+})
+
+describe('recounted', () => {
+  const click = Date.parse('2026-10-31T11:00:00Z')
+  it('every channel asked has a walk from the click on (a couple of seconds of clock skew allowed)', () => {
+    expect(recounted(['2026-10-31T11:00:05Z', '2026-10-31T10:59:59Z'], click)).toBe(true)
+    expect(recounted(['2026-10-31T11:00:05Z', '2026-10-31T10:59:50Z'], click)).toBe(false)
+    expect(recounted([null], click)).toBe(false)
+    expect(recounted([], click)).toBe(false)
   })
 })

@@ -1,5 +1,6 @@
 import type {
   DaemonBuckets,
+  DaemonChannelRollout,
   DaemonFailure,
   FailedDevice,
   DaemonDelivery,
@@ -30,23 +31,34 @@ export const transientReason = (reason: string) => reason.startsWith(TRANSIENT_R
 export const ACTIVE_STATES = ['running', 'soaking', 'holding']
 export const active = (run?: Pick<RolloutRun, 'state'> | null) => !!run && ACTIVE_STATES.includes(run.state)
 
-export type BucketKey = 'onWanted' | 'pending' | 'upgrading' | 'stuck' | 'failed' | 'offline' | 'unmanaged'
+export type BucketKey = 'onWanted' | 'ahead' | 'pending' | 'upgrading' | 'stuck' | 'failed' | 'offline'
 
 // The bar's segments, in order: what is on the wanted release, then on its way, then what needs a look, then what
-// cannot be reached or does not take updates. graphql's buckets partition `wanted`, so they add up to it.
+// cannot be reached now. The managed devices only: graphql's buckets partition `wanted`, and these are all of them but
+// unmanaged (no package, or taking no updates), which a rollout never reaches — shown beside the bar, not in it.
 export const BUCKETS: { key: BucketKey; label: string; color: string; help: string }[] = [
   { key: 'onWanted', label: 'On wanted', color: 'success.main', help: 'Runs the release it should' },
+  {
+    key: 'ahead',
+    label: 'Ahead',
+    color: 'guide.main',
+    help: 'Running newer than assigned — kept until the candidate reaches them',
+  },
   { key: 'pending', label: 'Pending', color: 'primaryLight.main', help: 'Told, has not started' },
   { key: 'upgrading', label: 'Upgrading', color: 'primary.main', help: 'Downloading or installing' },
   { key: 'stuck', label: 'Stuck', color: 'warning.main', help: 'Online and not converging' },
   { key: 'failed', label: 'Failed', color: 'danger.main', help: 'Its upgrade failed' },
   { key: 'offline', label: 'Offline', color: 'gray.main', help: 'Not reachable now' },
-  { key: 'unmanaged', label: 'Unmanaged', color: 'grayLight.main', help: 'Does not take updates' },
 ]
 
+// The devices a rollout can reach: those given the release, but for the unmanaged.
+export const managed = (buckets?: DaemonBuckets | null) =>
+  Math.max(0, (buckets?.wanted || 0) - (buckets?.unmanaged || 0))
+
 export const bucketSegments = (buckets?: DaemonBuckets | null) => {
-  const total = buckets?.wanted || 0
-  return BUCKETS.map(bucket => {
+  const total = managed(buckets)
+  // `ahead` only where the API counts it: an older one's bar would otherwise show a bucket it never fills.
+  return BUCKETS.filter(bucket => bucket.key !== 'ahead' || buckets?.ahead != null).map(bucket => {
     const count = buckets?.[bucket.key] || 0
     return { ...bucket, count, fraction: total ? count / total : 0 }
   })
@@ -101,10 +113,32 @@ export const dateTime = (iso?: string | null) => {
 export const deliveryProgress = (delivery?: DaemonDelivery | null) => {
   if (!delivery) return undefined
   const done = delivery.state === 'done'
-  const fraction = delivery.total ? delivery.delivered / delivery.total : done ? 1 : 0
+  const counts = deliveryCounts(delivery)
+  const fraction = counts.of ? Math.min(1, counts.delivered / counts.of) : done ? 1 : 0
   const etaMs =
     !done && delivery.remaining && delivery.perSecond > 0 ? (delivery.remaining / delivery.perSecond) * 1000 : undefined
-  return { done, fraction, etaMs }
+  return { done, fraction, etaMs, ...counts }
+}
+
+// What a delivery's progress is out of — managed devices only, as the bars — and, where graphql counts it apart, the
+// upgrades alone. Upgrades are the paced and unpaced deliveries; devices sent their own running version (ahead,
+// aheadDelivered) and those already right (unchanged) are bookkeeping, noted beside the progress, not part of it.
+//   With the split: upgrades of upgradeTargets — graphql's estimate while planning and delivering, exact once done; an
+//   estimate behind what is already delivered is replaced by the managed devices less the ahead and unchanged.
+//   Without it: paced + unpaced of the managed total (total less skippedUnmanaged), labelled so.
+export function deliveryCounts(delivery: DaemonDelivery) {
+  const sent =
+    delivery.pacedDelivered != null || delivery.unpacedDelivered != null
+      ? (delivery.pacedDelivered || 0) + (delivery.unpacedDelivered || 0)
+      : delivery.delivered || 0
+  const split = delivery.aheadDelivered != null
+  const managedTotal = delivery.managedTotal ?? Math.max(0, delivery.total - (delivery.skippedUnmanaged || 0))
+  if (!split) return { split, managedTotal, delivered: sent, of: managedTotal, kept: undefined }
+  const kept = delivery.aheadDelivered || 0
+  const estimate = delivery.upgradeTargets
+  const of =
+    estimate != null && estimate >= sent ? estimate : Math.max(sent, managedTotal - kept - (delivery.unchanged || 0))
+  return { split, managedTotal, delivered: sent, of, kept }
 }
 
 // The ladder's step the run is on: its index (1-based) of the ladder's length, from its percent or else its steps.
@@ -405,3 +439,60 @@ export const transientDetail = (reason: string) =>
 export const unreviewedCount = (run: Pick<RolloutRun, 'gates' | 'rollout' | 'reviewedFailures'>) =>
   run.gates?.failures ??
   failureRows(run.rollout?.candidate?.failures, run.reviewedFailures).reduce((sum, row) => sum + row.unreviewed, 0)
+
+// A superseded run's reason names the run that took its place ("superseded by <id>"); a manual run's "superseded by a
+// later change" names none.
+export const supersededBy = (run: Pick<RolloutRun, 'state' | 'reason'>) =>
+  run.state === 'superseded' ? run.reason?.match(/superseded by ([0-9a-f]{8}-[0-9a-f-]+)/i)?.[1] : undefined
+
+// Newer of two dotted versions by each part as a number; undefined when either is missing.
+export const compareVersions = (a: string, b: string) => {
+  const x = a.split('.').map(Number)
+  const y = b.split('.').map(Number)
+  for (let i = 0; i < Math.max(x.length, y.length); i++) {
+    const d = (x[i] ?? 0) - (y[i] ?? 0)
+    if (d) return d
+  }
+  return 0
+}
+
+// The newest the channel's devices may run now: its current release, or its candidate where one is out.
+export const runningNewest = (channel?: {
+  current?: { version: string } | null
+  candidate?: { version: string } | null
+}) =>
+  [channel?.current?.version, channel?.candidate?.version]
+    .filter((v): v is string => !!v)
+    .sort((a, b) => compareVersions(b, a))[0]
+
+// Counts older than this, while a rollout or delivery moves, have stopped refreshing (they are recounted about every
+// 66 s).
+export const STALLED_COUNTS_MS = 3 * 60 * 1000
+
+// Whether the buckets were counted before the channel last changed (a step applied after the walk): their candidate
+// group is the old percent's, not the new one's. graphql's own word where it gives it — `stale`, else the `change` the
+// walk counted against the channel's latest — else the walk's time against the change's.
+export const countsBefore = (
+  rollout?: Pick<DaemonChannelRollout, 'checked' | 'stale' | 'change'> | null,
+  changedAt?: string | null,
+  latestChange?: number | null
+) => {
+  if (rollout?.stale != null) return rollout.stale
+  if (rollout?.change != null && latestChange != null) return rollout.change < latestChange
+  const counted = rollout?.checked ? Date.parse(rollout.checked) : NaN
+  const changed = changedAt ? Date.parse(changedAt) : NaN
+  return !isNaN(counted) && !isNaN(changed) && counted < changed
+}
+
+export const countsStalled = (checked?: string | null, live?: boolean, now = Date.now()) => {
+  const counted = checked ? Date.parse(checked) : NaN
+  return !!live && !isNaN(counted) && now - counted > STALLED_COUNTS_MS
+}
+
+// The walk's time is the server's; a clock a little ahead of it must not make a walk that landed after the click look
+// older than it.
+const SKEW_MS = 2000
+
+// Whether every channel asked has a walk newer than the click.
+export const recounted = (checked: (string | null | undefined)[], since: number) =>
+  checked.length > 0 && checked.every(at => !!at && Date.parse(at) >= since - SKEW_MS)
