@@ -240,8 +240,10 @@ describe('failures', () => {
 
 describe('rollback and superseded', () => {
   it("names the run that superseded one, and only a superseded one's", () => {
-    expect(supersededBy({ state: 'superseded', reason: 'superseded by abc-123' })).toBe('abc-123')
-    expect(supersededBy({ state: 'aborted', reason: 'superseded by abc-123' })).toBeUndefined()
+    const id = '9f00aa11-2222-3333-4444-555566667777'
+    expect(supersededBy({ state: 'superseded', reason: `superseded by ${id}` })).toBe(id)
+    expect(supersededBy({ state: 'superseded', reason: 'superseded by a later change' })).toBeUndefined()
+    expect(supersededBy({ state: 'aborted', reason: `superseded by ${id}` })).toBeUndefined()
   })
 
   it("the newest a channel's devices may run: its current or its candidate", () => {

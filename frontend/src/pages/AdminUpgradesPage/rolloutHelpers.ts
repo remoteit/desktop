@@ -417,9 +417,10 @@ export const unreviewedCount = (run: Pick<RolloutRun, 'gates' | 'rollout' | 'rev
   run.gates?.failures ??
   failureRows(run.rollout?.candidate?.failures, run.reviewedFailures).reduce((sum, row) => sum + row.unreviewed, 0)
 
-// A superseded run's reason names the run that took its place ("superseded by <id>").
+// A superseded run's reason names the run that took its place ("superseded by <id>"); a manual run's "superseded by a
+// later change" names none.
 export const supersededBy = (run: Pick<RolloutRun, 'state' | 'reason'>) =>
-  run.state === 'superseded' ? run.reason?.match(/superseded by (\S+)/)?.[1] : undefined
+  run.state === 'superseded' ? run.reason?.match(/superseded by ([0-9a-f]{8}-[0-9a-f-]+)/i)?.[1] : undefined
 
 // Newer of two dotted versions by each part as a number; undefined when either is missing.
 export const compareVersions = (a: string, b: string) => {
