@@ -463,3 +463,20 @@ export const runningNewest = (channel?: {
   [channel?.current?.version, channel?.candidate?.version]
     .filter((v): v is string => !!v)
     .sort((a, b) => compareVersions(b, a))[0]
+
+// Counts older than this, while a rollout or delivery moves, have stopped refreshing (they are recounted about every
+// 66 s).
+export const STALLED_COUNTS_MS = 3 * 60 * 1000
+
+// Whether the buckets were counted before the channel last changed (a step applied after the walk): their candidate
+// group is the old percent's, not the new one's.
+export const countsBefore = (checked?: string | null, changedAt?: string | null) => {
+  const counted = checked ? Date.parse(checked) : NaN
+  const changed = changedAt ? Date.parse(changedAt) : NaN
+  return !isNaN(counted) && !isNaN(changed) && counted < changed
+}
+
+export const countsStalled = (checked?: string | null, live?: boolean, now = Date.now()) => {
+  const counted = checked ? Date.parse(checked) : NaN
+  return !!live && !isNaN(counted) && now - counted > STALLED_COUNTS_MS
+}

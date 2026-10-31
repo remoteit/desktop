@@ -639,4 +639,36 @@ describe('AdminUpgradesPage', () => {
     const el = await render('/admin/upgrades')
     expect(el.querySelector('[data-install-line]')).toBeNull()
   })
+
+  it("counts taken before the channel's step say so, dimmed, and the old group is not headlined as the new percent's", async () => {
+    channels.mockResolvedValue([
+      {
+        ...STABLE,
+        percent: 50,
+        updated: '2026-10-31T10:56:55Z',
+        rollout: { ...STABLE.rollout, checked: '2026-10-31T10:56:50Z' },
+      },
+    ])
+    const el = await render('/admin/upgrades')
+    const card = el.querySelector('[data-channel="stable"]')!
+    expect(card.querySelector('[data-counts-before]')!.textContent).toBe('Counts from before the 50% step — updating…')
+    expect(card.querySelector('[data-counts-dimmed]')).not.toBeNull()
+    const headings = [...card.querySelectorAll('[data-bar-heading]')].map(h => h.textContent)
+    expect(headings[1]).toContain('as counted before the 50% step')
+    expect(headings[1]).not.toContain('the 50% selected')
+  })
+
+  it('warns when counts stop refreshing while the channel moves, and not when it is still', async () => {
+    // STABLE's delivery is under way, its counts from 2026-10-30.
+    let el = await render('/admin/upgrades')
+    expect(el.querySelector('[data-channel="stable"] [data-counts-stalled]')!.textContent).toContain(
+      'Counts haven’t refreshed since'
+    )
+    expect(el.querySelector('[data-channel="stable"] [data-counts-before]')).toBeNull()
+    document.body.innerHTML = ''
+    channels.mockResolvedValue([{ ...STABLE, delivery: { ...STABLE.delivery, state: 'done' } }])
+    runs.mockResolvedValue([DONE])
+    el = await render('/admin/upgrades')
+    expect(el.querySelector('[data-counts-stalled]')).toBeNull()
+  })
 })

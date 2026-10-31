@@ -10,7 +10,7 @@ import type {
 import { RolloutBucketBar } from './RolloutBucketBar'
 import { DaemonInstallLine } from './DaemonInstallLine'
 import { RolloutDelivery } from './RolloutDelivery'
-import { dateTime, managed } from './rolloutHelpers'
+import { countsBefore, countsStalled, dateTime, managed } from './rolloutHelpers'
 
 export const ReasonList: React.FC<{ title: string; reasons?: DaemonFailure[]; color?: string }> = ({
   title,
@@ -60,26 +60,55 @@ export const ChannelBars: React.FC<{
   percent?: number | null
   candidate?: string | null
   current?: string | null
-}> = ({ rollout, channel, percent, candidate, current }) => (
-  <>
-    <RolloutBucketBar
-      buckets={rollout}
-      label={`Whole channel: every managed device on ${channel}`}
-      hint={
-        candidate
-          ? `Devices outside the candidate group want current${current ? ` (${current})` : ''}.`
-          : `Every device wants current${current ? ` (${current})` : ''}.`
-      }
-    />
-    {candidate && !!rollout?.candidate?.wanted && (
-      <RolloutBucketBar
-        buckets={rollout.candidate}
-        label={`Candidate group: the ${percent ?? '—'}% selected for ${candidate}`}
-        hint="Devices chosen to run the candidate."
-      />
-    )}
-  </>
-)
+  changedAt?: string | null // when the channel last changed (or the run's step started)
+  live?: boolean // a rollout or delivery is moving: counts should be refreshing
+}> = ({ rollout, channel, percent, candidate, current, changedAt, live }) => {
+  // Counts taken before the step was applied are the old group's: said so, dimmed, not headlined as the new percent's.
+  const before = countsBefore(rollout?.checked, changedAt)
+  const stalled = countsStalled(rollout?.checked, live)
+  return (
+    <>
+      {before && (
+        <Typography
+          variant="caption"
+          color="warning.main"
+          component="div"
+          data-counts-before
+          sx={{ marginBottom: 0.5 }}
+        >
+          Counts from before the {percent ?? '—'}% step — updating…
+        </Typography>
+      )}
+      {stalled && (
+        <Typography variant="caption" color="error" component="div" data-counts-stalled sx={{ marginBottom: 0.5 }}>
+          Counts haven’t refreshed since {dateTime(rollout?.checked)}
+        </Typography>
+      )}
+      <Box sx={before ? { opacity: 0.55 } : undefined} data-counts-dimmed={before || undefined}>
+        <RolloutBucketBar
+          buckets={rollout}
+          label={`Whole channel: every managed device on ${channel}`}
+          hint={
+            candidate
+              ? `Devices outside the candidate group want current${current ? ` (${current})` : ''}.`
+              : `Every device wants current${current ? ` (${current})` : ''}.`
+          }
+        />
+        {candidate && !!rollout?.candidate?.wanted && (
+          <RolloutBucketBar
+            buckets={rollout.candidate}
+            label={
+              before
+                ? `Candidate group for ${candidate}, as counted before the ${percent ?? '—'}% step`
+                : `Candidate group: the ${percent ?? '—'}% selected for ${candidate}`
+            }
+            hint="Devices chosen to run the candidate."
+          />
+        )}
+      </Box>
+    </>
+  )
+}
 
 // Failures by the group they are in, where graphql gives the split (the candidate group; the rest — current and pinned);
 // else the channel's, labelled so.
@@ -118,7 +147,8 @@ export const AdminChannelOverview: React.FC<{
   channel: DaemonChannel
   install?: DaemonInstall | 'ERROR' // stage-wide; shown on the channel it follows (stable)
   onChanged?: () => void
-}> = ({ channel, install, onChanged }) => {
+  live?: boolean // a rollout of this channel is active
+}> = ({ channel, install, onChanged, live }) => {
   const rollout = channel.rollout
   const targeted = channel.accounts.length + channel.devices.length
   return (
@@ -160,6 +190,8 @@ export const AdminChannelOverview: React.FC<{
         percent={channel.percent}
         candidate={channel.candidate?.version}
         current={channel.current?.version}
+        changedAt={channel.updated}
+        live={live || (!!channel.delivery && channel.delivery.state !== 'done')}
       />
       <ChannelFailures rollout={rollout} />
       {rollout && (

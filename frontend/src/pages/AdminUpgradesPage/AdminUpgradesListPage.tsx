@@ -15,7 +15,7 @@ import { UNSUPPORTED } from '../../services/graphQLDaemon'
 import { AdminChannelOverview } from './AdminChannelOverview'
 import { AdminRolloutListItem } from './AdminRolloutListItem'
 import { adminRolloutAttributes } from './adminRolloutAttributes'
-import { NEW_ROLLOUT, UPGRADES_ROUTE, dateTime } from './rolloutHelpers'
+import { NEW_ROLLOUT, UPGRADES_ROUTE, active, dateTime } from './rolloutHelpers'
 import { Upgrades } from './useUpgrades'
 import { UpgradesTabs } from './UpgradesTabs'
 
@@ -86,6 +86,7 @@ export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrad
                 channel={channel}
                 install={channel.channel === 'stable' && upgrades.install ? upgrades.install : undefined}
                 onChanged={reload}
+                live={Array.isArray(runs) && runs.some(run => run.channel === channel.channel && active(run))}
               />
             ))
           )}

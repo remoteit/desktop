@@ -442,6 +442,8 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
                 percent={run.percent}
                 candidate={run.version}
                 current={run.fromVersion}
+                changedAt={live ? steps[steps.length - 1]?.startedAt : undefined}
+                live={live}
               />
               <Typography variant="caption" color="textSecondary" component="div">
                 Counted {dateTime(run.rollout.checked)} · stuck after {run.rollout.stuckMinutes} min

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   bucketSegments,
+  countsBefore,
+  countsStalled,
   runningNewest,
   supersededBy,
   managed,
@@ -321,5 +323,20 @@ describe('rollback and superseded', () => {
       'offline',
     ])
     expect(withAhead.find(s => s.key === 'ahead')!.color).not.toBe('danger.main')
+  })
+})
+
+describe('stale counts', () => {
+  it('counted before the channel changed', () => {
+    expect(countsBefore('2026-10-31T10:56:50Z', '2026-10-31T10:56:55Z')).toBe(true)
+    expect(countsBefore('2026-10-31T10:57:00Z', '2026-10-31T10:56:55Z')).toBe(false)
+    expect(countsBefore('2026-10-31T10:56:50Z', null)).toBe(false)
+  })
+
+  it('stalled: over three minutes old while something moves', () => {
+    const now = Date.parse('2026-10-31T11:00:00Z')
+    expect(countsStalled('2026-10-31T10:56:50Z', true, now)).toBe(true)
+    expect(countsStalled('2026-10-31T10:58:00Z', true, now)).toBe(false)
+    expect(countsStalled('2026-10-31T10:56:50Z', false, now)).toBe(false)
   })
 })
