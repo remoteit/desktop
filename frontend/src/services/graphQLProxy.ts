@@ -130,13 +130,16 @@ export type RemoteitProxyDevice = {
   system: boolean
   owner: string | null
   endpoints: number
-  proxy: (Pick<Proxy, 'id' | 'region' | 'host'> & { publicExit: boolean }) | null
+  // Sessions open through its endpoints now (presence's connects not yet closed); a public exit's flows are not counted.
+  openSessions: number
+  // enabled: taking new endpoints, links and exit sessions; disabled, it drains — what it has keeps working.
+  proxy: (Pick<Proxy, 'id' | 'region' | 'host'> & { publicExit: boolean; enabled: boolean }) | null
 }
 
 export const graphQLRemoteitProxyDevices = () =>
   read<RemoteitProxyDevice[]>(
     `query RemoteitProxyDevices {
-      remoteitProxyDevices { id name state lastReported system owner endpoints proxy { id region host publicExit } }
+      remoteitProxyDevices { id name state lastReported system owner endpoints openSessions proxy { id region host publicExit enabled } }
     }`,
     {},
     'remoteitProxyDevices',
@@ -168,6 +171,13 @@ export const graphQLRemoveRemoteitProxy = (deviceId: string) =>
     {
       deviceId,
     }
+  )
+
+// A public proxy enabled, or disabled so it takes nothing new and drains.
+export const graphQLSetRemoteitProxyEnabled = (deviceId: string, enabled: boolean) =>
+  graphQLBasicRequest(
+    ` mutation SetRemoteitProxyEnabled($deviceId: String!, $enabled: Boolean!) { setRemoteitProxyEnabled(deviceId: $deviceId, enabled: $enabled) { enabled } }`,
+    { deviceId, enabled }
   )
 
 export const graphQLSetProxyPublicExit = (deviceId: string, publicExit: boolean) =>

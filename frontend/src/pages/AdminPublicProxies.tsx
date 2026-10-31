@@ -20,6 +20,7 @@ import {
   graphQLRemoveRemoteitProxy,
   graphQLSetProxyPublicExit,
   graphQLSetRemoteitProxy,
+  graphQLSetRemoteitProxyEnabled,
   RemoteitProxyDevice,
 } from '../services/graphQLProxy'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
@@ -31,7 +32,9 @@ import { Gutters } from '../components/Gutters'
 import { Icon } from '../components/Icon'
 
 /* remote.it's proxies (presence-server docs/proxy-plan.md §5): each by its name and region, online or not, its
-   endpoints, and whether it is also a public exit — switched here, apart from its being a proxy. A public proxy's
+   endpoints and the sessions open through them, whether it is enabled — taking new endpoints, links and exit sessions,
+   or disabled and draining — and whether it is also a public exit — switched here, apart from its being a proxy. A
+   new one starts disabled. A public proxy's
    device is remote.it's (its system account's, graphql services/remoteit-proxies.ts), never a person's: a new one
    installs with the proxy registration code and waits here for its region; one made before that, still in someone's
    account, is moved to remote.it here. Stopping one removes everyone's endpoints on it. */
@@ -113,16 +116,32 @@ export const bareRemoteitNumber = (host: string) => {
   return n ? Number(n) : undefined
 }
 
-// One row a proxy: its name, region and endpoints, the device under them (and whose account it is in, when it is not
-// remote.it's yet); at its end, moving it to remote.it when it needs to be, renaming one with a bare e<n> to e<n>-r3,
-// whether it is a public exit, and stopping it.
+// What disabling leaves running: the sessions open through it, which the confirmation says before it is disabled.
+export const drainHint = (open: number) =>
+  open === 0
+    ? 'No connections are open through it now; it takes no new ones.'
+    : open === 1
+    ? '1 open connection keeps running until it closes; it takes no new ones.'
+    : `${open} open connections keep running until they close; it takes no new ones.`
+
+// One row a proxy: its name, region, endpoints and open sessions, the device under them (and whose account it is in,
+// when it is not remote.it's yet), greyed while disabled; at its end, moving it to remote.it when it needs to be,
+// renaming one with a bare e<n> to e<n>-r3, whether it is enabled, whether it is a public exit (no exit while it is
+// disabled), and stopping it.
 const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
   const proxy = d.proxy!
   const [confirmExitOff, setConfirmExitOff] = useState(false)
+  const [confirmDisable, setConfirmDisable] = useState(false)
   const [confirmRename, setConfirmRename] = useState(false)
   const bare = proxy.region ? bareRemoteitNumber(proxy.host) : undefined
   const setExit = (on: boolean) =>
     change(d.id, () => graphQLSetProxyPublicExit(d.id, on), `${proxy.host}'s exit was not changed.`)
+  const setEnabled = (on: boolean) =>
+    change(
+      d.id,
+      () => graphQLSetRemoteitProxyEnabled(d.id, on),
+      `${proxy.host} was not ${on ? 'enabled' : 'disabled'}.`
+    )
 
   return (
     <ListItem
@@ -146,14 +165,31 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
             </Button>
           )}
           <FormControlLabel
+            label={<Typography variant="caption">Enabled</Typography>}
+            labelPlacement="start"
+            title="Taking new endpoints, connect links and exit sessions; disabled, it drains"
+            control={
+              <Switch
+                size="small"
+                checked={proxy.enabled}
+                disabled={busy}
+                onChange={() => (proxy.enabled ? setConfirmDisable(true) : setEnabled(true))}
+              />
+            }
+          />
+          <FormControlLabel
             label={<Typography variant="caption">Public exit</Typography>}
             labelPlacement="start"
-            title="An exit for everyone whose plan gives exits, under the policy below"
+            title={
+              proxy.enabled
+                ? 'An exit for everyone whose plan gives exits, under the policy below'
+                : 'No exit while the proxy is disabled'
+            }
             control={
               <Switch
                 size="small"
                 checked={proxy.publicExit}
-                disabled={busy}
+                disabled={busy || !proxy.enabled}
                 onChange={() => (proxy.publicExit ? setConfirmExitOff(true) : setExit(true))}
               />
             }
@@ -181,6 +217,19 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
             Everyone using it as their exit is moved off it.
           </Confirm>
           <Confirm
+            open={confirmDisable}
+            title={`Disable ${proxy.host}?`}
+            onConfirm={() => {
+              setConfirmDisable(false)
+              setEnabled(false)
+            }}
+            onDeny={() => setConfirmDisable(false)}
+          >
+            {drainHint(d.openSessions)} Its connect links are served by the other public proxies only, geo stops sending
+            people to it, and it is no one's exit until it is enabled again. Endpoints already on it keep working until
+            they are removed or expire.
+          </Confirm>
+          <Confirm
             open={confirmRename}
             title={`Rename ${proxy.host} to e${bare}-r3?`}
             onConfirm={() => {
@@ -197,12 +246,13 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
       }
     >
       <ListItemIcon>
-        <Icon name="server" size="md" color={online(d) ? 'primary' : 'grayDark'} />
+        <Icon name="server" size="md" color={online(d) && proxy.enabled ? 'primary' : 'grayDark'} />
       </ListItemIcon>
       <ListItemText
+        sx={proxy.enabled ? undefined : { opacity: 0.5 }}
         primary={`${proxy.host} · ${proxy.region ?? 'no region'} · ${d.endpoints} endpoint${
           d.endpoints === 1 ? '' : 's'
-        }`}
+        } · ${d.openSessions} open${proxy.enabled ? '' : ' · disabled'}`}
         secondary={
           <>
             {about(d)}
@@ -219,7 +269,8 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
 }
 
 // A device the proxy code registered, made a public proxy once it is given its region (an AWS region's name, as the
-// proxies nearest a device are chosen by: us-west-2, eu-west-1…). It takes the next free name, e<n>-r3.
+// proxies nearest a device are chosen by: us-west-2, eu-west-1…). It takes the next free name, e<n>-r3, and starts
+// disabled: enabled above once it is ready to take people.
 const Waiting: React.FC<RowProps> = ({ device: d, busy, change }) => {
   const [region, setRegion] = useState('')
   const valid = /^[a-z]{2}(-[a-z]+)+-\d$/.test(region.trim())
@@ -228,7 +279,17 @@ const Waiting: React.FC<RowProps> = ({ device: d, busy, change }) => {
       <ListItemIcon>
         <Icon name="server" size="md" color={online(d) ? 'primary' : 'grayDark'} />
       </ListItemIcon>
-      <ListItemText primary={d.name ?? d.id} secondary={about(d)} />
+      <ListItemText
+        primary={d.name ?? d.id}
+        secondary={
+          <>
+            {about(d)}
+            <Typography component="span" variant="caption" display="block">
+              Made a public proxy, it starts disabled: enable it once it is ready.
+            </Typography>
+          </>
+        }
+      />
       <Box display="flex" gap={1} alignItems="center" marginLeft={2}>
         <TextField
           size="small"

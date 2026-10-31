@@ -5,12 +5,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // The admin page's public proxies: each of remote.it's proxies with where its device is owned (one still in a person's
 // account offered to move to remote.it), the devices the proxy code registered waiting for a region, and the code shown
 // only when asked.
-const { devices, code, adopt, setRemoteit, setExit } = vi.hoisted(() => ({
+const { devices, code, adopt, setRemoteit, setExit, setEnabled } = vi.hoisted(() => ({
   devices: vi.fn(),
   code: vi.fn(async () => 'PROXY-CODE' as any),
   adopt: vi.fn(async () => ({} as any)),
   setRemoteit: vi.fn(async () => ({} as any)),
   setExit: vi.fn(async () => ({} as any)),
+  setEnabled: vi.fn(async () => ({} as any)),
 }))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLRemoteitProxyDevices: devices,
@@ -19,6 +20,7 @@ vi.mock('../services/graphQLProxy', () => ({
   graphQLSetRemoteitProxy: setRemoteit,
   graphQLRemoveRemoteitProxy: vi.fn(),
   graphQLSetProxyPublicExit: setExit,
+  graphQLSetRemoteitProxyEnabled: setEnabled,
 }))
 vi.mock('../components/Confirm', () => ({
   Confirm: ({ open, title, children, onConfirm }: any) =>
@@ -36,7 +38,7 @@ vi.mock('../components/Icon', () => ({ Icon: () => null }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div>loading</div> }))
 vi.mock('../components/Gutters', () => ({ Gutters: ({ children }: any) => <div>{children}</div> }))
 
-import { AdminPublicProxies, bareRemoteitNumber } from './AdminPublicProxies'
+import { AdminPublicProxies, bareRemoteitNumber, drainHint } from './AdminPublicProxies'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const E1 = {
@@ -47,7 +49,8 @@ const E1 = {
   system: true,
   owner: null,
   endpoints: 2,
-  proxy: { id: 'E1', host: 'e1.r3proxy.com', region: 'us-west-2', publicExit: false },
+  openSessions: 3,
+  proxy: { id: 'E1', host: 'e1.r3proxy.com', region: 'us-west-2', publicExit: false, enabled: true },
 }
 const E2 = {
   ...E1,
@@ -76,6 +79,11 @@ async function render() {
 }
 
 const button = (el: HTMLElement, text: string) => [...el.querySelectorAll('button')].find(b => b.textContent === text)!
+// A row's switch by its label.
+const toggle = (row: Element, label: string) =>
+  [...row.querySelectorAll('label')]
+    .find(l => l.textContent === label)!
+    .querySelector('input[type=checkbox]') as HTMLInputElement
 
 describe('AdminPublicProxies', () => {
   beforeEach(() => {
@@ -91,6 +99,7 @@ describe('AdminPublicProxies', () => {
     expect([...el.querySelectorAll('button')].filter(b => b.textContent === 'Move to remote.it')).toHaveLength(1)
     expect(el.textContent).toContain('Registered, waiting for a region')
     expect(el.textContent).toContain('new-box · offline since then')
+    expect(el.textContent).toContain('Made a public proxy, it starts disabled: enable it once it is ready.')
 
     await act(async () => button(el, 'Move to remote.it').click())
     expect(adopt).toHaveBeenCalledWith('E2')
@@ -105,13 +114,49 @@ describe('AdminPublicProxies', () => {
     expect(rows).toHaveLength(1)
     expect(rows[0].textContent).toContain('e1.r3proxy.com · us-west-2 · 2 endpoints')
     expect(rows[0].textContent).toContain('Public exit')
-    const toggle = rows[0].querySelector('input[type=checkbox]') as HTMLInputElement
-    expect(toggle.checked).toBe(true)
-    await act(async () => toggle.click())
+    const exit = toggle(rows[0], 'Public exit')
+    expect(exit.checked).toBe(true)
+    await act(async () => exit.click())
     expect(setExit).not.toHaveBeenCalled()
     expect(el.querySelector('[data-confirm]')?.textContent).toContain('Stop e1.r3proxy.com being a public exit?')
     await act(async () => button(el, 'Confirm').click())
     expect(setExit).toHaveBeenCalledWith('E1', false)
+  })
+
+  it('shows the sessions open through each; disabling is asked first and says what keeps running', async () => {
+    const el = await render()
+    const row = [...el.querySelectorAll('li')].find(li => li.textContent?.includes('e1.r3proxy.com'))!
+    expect(row.textContent).toContain('e1.r3proxy.com · us-west-2 · 2 endpoints · 3 open')
+    expect(row.textContent).not.toContain('disabled')
+    const enabled = toggle(row, 'Enabled')
+    expect(enabled.checked).toBe(true)
+    await act(async () => enabled.click())
+    expect(setEnabled).not.toHaveBeenCalled()
+    const confirm = el.querySelector('[data-confirm]')!.textContent
+    expect(confirm).toContain('Disable e1.r3proxy.com?')
+    expect(confirm).toContain('3 open connections keep running until they close; it takes no new ones.')
+    await act(async () => button(el, 'Confirm').click())
+    expect(setEnabled).toHaveBeenCalledWith('E1', false)
+    expect(devices).toHaveBeenCalledTimes(2)
+  })
+
+  it('a disabled proxy: greyed and said so, its exit not switchable, enabled again without asking', async () => {
+    devices.mockResolvedValue([{ ...E1, openSessions: 0, proxy: { ...E1.proxy, enabled: false, publicExit: true } }])
+    const el = await render()
+    const row = [...el.querySelectorAll('li')].find(li => li.textContent?.includes('e1.r3proxy.com'))!
+    expect(row.textContent).toContain('e1.r3proxy.com · us-west-2 · 2 endpoints · 0 open · disabled')
+    const exit = toggle(row, 'Public exit')
+    expect(exit.checked).toBe(true) // the admin's setting, kept for when it is enabled again
+    expect(exit.disabled).toBe(true)
+    await act(async () => toggle(row, 'Enabled').click())
+    expect(el.querySelector('[data-confirm]')).toBeNull()
+    expect(setEnabled).toHaveBeenCalledWith('E1', true)
+  })
+
+  it('the drain hint counts what is open', () => {
+    expect(drainHint(0)).toBe('No connections are open through it now; it takes no new ones.')
+    expect(drainHint(1)).toBe('1 open connection keeps running until it closes; it takes no new ones.')
+    expect(drainHint(7)).toBe('7 open connections keep running until they close; it takes no new ones.')
   })
 
   it("makes a waiting device a public proxy only with a region's name", async () => {
