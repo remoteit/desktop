@@ -41,6 +41,7 @@ export type DaemonBuckets = {
   held?: number // managed but blocked: a package hold or lock its admin set, where the API counts it
   failures?: DaemonFailure[]
   unmanagedReasons?: DaemonFailure[]
+  heldReasons?: DaemonFailure[] // what holds them ("held by the device's admin: held on the device (apt-mark hold)")
 }
 
 export type DaemonChannelRollout = DaemonBuckets & {
@@ -390,10 +391,12 @@ export function parseRolloutSchema(data: any): RolloutSchema {
   const failed = failureFields.has('failedDevices')
     ? ' failedDevices { deviceId transient retrying attempts retryAt }'
     : ''
+  // The held by what holds them, where graphql counts them: apart from the failures and the unmanaged.
+  const heldReasons = names(data?.counts).has('heldReasons') ? ' heldReasons { reason devices }' : ''
   const reasons =
-    ids || failed
+    (ids || failed
       ? `failures { reason devices${ids ? ' deviceIds' : ''}${failed} } unmanagedReasons { reason devices }`
-      : REASONS
+      : REASONS) + heldReasons
   // `ahead`: devices running newer than they are assigned, kept until the candidate reaches them. `held`: managed, but
   // blocked by a package hold or lock the device's admin set (DEVICE-TAXONOMY, proposal 3).
   const counts = names(data?.counts)
@@ -437,7 +440,7 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     queries: reads,
     mutations,
     returns: pick(['id', 'state', 'reason', 'percent', 'rate'], runNames),
-    channelRollout: channelRollout(REASONS, buckets, walk),
+    channelRollout: channelRollout(REASONS + heldReasons, buckets, walk),
     install: installSelection(fieldsOf(data?.install)),
     delivery: deliverySelection,
     startArgs: (mutations.startDaemonRollout?.args || []).map(arg => arg.name),

@@ -158,17 +158,23 @@ describe('versions by daemon', () => {
     expect(shownVersion('5.6', 'c', false).majorMinor).toBe(false)
     expect(shownVersion('unknown')).toMatchObject({ text: 'unknown', unknown: true, majorMinor: false })
     expect(shownVersion('go unknown')).toMatchObject({ text: 'Go unknown', unknown: true })
+    // graphql's keys, its implementation beside them.
+    expect(shownVersion('Go 5.6.1.1761000000', 'go', false)).toMatchObject({ text: 'Go 5.6.1.1761000000', majorMinor: false })
+    expect(shownVersion('C 5.6', 'c', true)).toMatchObject({ text: 'C 5.6', majorMinor: true })
+    expect(shownVersion('C unknown', 'c', false)).toMatchObject({ text: 'C unknown', unknown: true, majorMinor: false })
+    expect(shownVersion('none', null, false)).toMatchObject({ text: 'none', implementation: undefined })
     // No daemon named: the version as it is, as before.
     expect(shownVersion('1.1.0.9')).toMatchObject({ text: '1.1.0.9', implementation: undefined, majorMinor: false })
     expect(shownVersion('5.6')).toMatchObject({ text: '5.6', majorMinor: false })
   })
 
-  it("each daemon its own newest columns and its own fold; unknown apart, before none", () => {
+  it("each daemon its own newest columns and its own fold, its unknown last of its own; none last of all", () => {
     const columns = [
       ...Array.from({ length: 9 }, (_, i) => daemon(`go 5.${9 - i}`, 'go', i > 1 ? i - 1 : null)),
+      daemon('Go unknown', 'go'),
       daemon('c 5.6', 'c'),
       daemon('c 5.5', 'c'),
-      column('unknown', 2),
+      daemon('C unknown', 'c'),
       column('none', 4, null, 'none'),
     ]
     const shown = matrixColumns(columns, false)
@@ -180,14 +186,16 @@ describe('versions by daemon', () => {
       'go 5.5',
       'go 5.4',
       'older:go',
+      'Go unknown',
       'c 5.6',
       'c 5.5',
-      'unknown',
+      'C unknown',
       'none',
     ])
     expect(columnHeading(shown[6])).toEqual({ text: 'Go older (3)', majorMinor: false })
-    expect(columnHeading(shown[7])).toEqual({ text: 'C 5.6', majorMinor: true })
-    expect(columnHeading(shown[9]).text).toBe('unknown')
+    expect(columnHeading(shown[7]).text).toBe('Go unknown')
+    expect(columnHeading(shown[8])).toEqual({ text: 'C 5.6', majorMinor: true })
+    expect(columnHeading(shown[10]).text).toBe('C unknown')
     expect(matrixColumns(columns, true).filter(c => c.kind === 'older')).toHaveLength(0)
   })
 })
@@ -207,7 +215,20 @@ describe('names on screen', () => {
     expect(rowName(row('updatedBy', 'remoteit'))).toBe('remote.it rollouts')
     expect(rowName(row('updatedBy', 'package-manager'))).toBe('package manager')
     expect(rowName(row('updatedBy', 'image'))).toBe('container image')
-    expect(rowName(row('feature:exec', 'true'))).toBe('supports exec')
+    expect(rowName(row('feature:exec', 'yes'))).toBe('supports exec')
+    expect(rowName(row('feature:exec', 'no'))).toBe('does not support exec')
+    expect(rowName(row('controlLink', 'true'))).toBe('Control Link')
+    expect(rowName(row('updatedBy', 'unknown'))).toBe('unknown')
+    expect(rowName(row('managed', 'managed'))).toBe('managed')
+    expect(rowName(row('managed', 'managed: held'))).toBe("managed: held by the device's admin")
+    expect(rowName(row('managed', 'unmanaged: updated by package-manager'))).toBe('unmanaged: updated by package manager')
+    expect(rowName(row('managed', 'unmanaged: updated by image'))).toBe('unmanaged: updated by container image')
+    expect(rowName(row('managed', 'unmanaged: classic'))).toBe('unmanaged: Classic')
+    expect(rowName(row('managed', 'unmanaged: no package'))).toBe('unmanaged: no package')
+    expect(rowName(row('managed', 'unmanaged: refused: this device does not take updates'))).toBe(
+      'unmanaged: refused: this device does not take updates'
+    )
+    expect(rowName(row('managed', 'unknown: not reported yet'))).toBe('unknown: not reported yet')
     expect(rowName(row('distribution', 'unknown'))).toBe('unknown')
     expect(rowName(row('os', 'Debian GNU/Linux 12'))).toBe('Debian GNU/Linux 12')
   })

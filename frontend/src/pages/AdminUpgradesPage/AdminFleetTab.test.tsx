@@ -281,24 +281,30 @@ describe('before graphql serves what a device is', () => {
 })
 
 describe('once graphql serves what a device is', () => {
+  // As graphql serves it (graphql-api solo-taxonomy ce86ef62): versions keyed beside their implementation, Go's
+  // columns first, each daemon's unknown last, none last of all.
+  const GO = 'Go 5.6.1.1761000000'
+  const GO_OLD = 'Go 5.6.0.1760000000'
   const TAXONOMY_VIEW = {
     ...VIEW,
     groupBy: ['implementation', 'controlLink'],
     versionOf: 'connectd',
     columns: [
-      { ...count('go 5.6.1', 5, 5), implementation: 'go', label: 'current', behind: null },
-      { ...count('go 5.6.0', 2, 1), implementation: 'go', label: null, behind: 1 },
-      { ...count('c 5.6', 30, 20), implementation: 'c', majorMinor: true, label: null, behind: null },
-      { ...count('c 5.5', 4, 1), implementation: 'c', majorMinor: true, label: null, behind: null },
-      { ...count('unknown', 3, 0), label: null, behind: null },
+      { ...count(GO, 5, 5), implementation: 'go', majorMinor: false, label: 'current', behind: null },
+      { ...count(GO_OLD, 2, 1), implementation: 'go', majorMinor: false, label: null, behind: 1 },
+      { ...count('Go unknown', 1, 1), implementation: 'go', majorMinor: false, label: null, behind: null },
+      { ...count('C 5.6', 30, 20), implementation: 'c', majorMinor: true, label: null, behind: null },
+      { ...count('C 5.5', 4, 1), implementation: 'c', majorMinor: true, label: null, behind: null },
+      { ...count('C unknown', 3, 0), implementation: 'c', majorMinor: false, label: null, behind: null },
+      { ...count('none', 0, 0), implementation: null, majorMinor: false, label: 'none', behind: null },
     ],
     rows: [
-      { key: 'go', values: ['go'], label: 'go', dimension: 'implementation', depth: 0, total: 7, online: 6, cells: [count('go 5.6.1', 5, 5), count('go 5.6.0', 2, 1)] },
-      { key: 'go/true', values: ['go', 'true'], label: 'true', dimension: 'controlLink', depth: 1, parentKey: 'go', total: 7, online: 6, cells: [count('go 5.6.1', 5, 5), count('go 5.6.0', 2, 1)] },
-      { key: 'c', values: ['c'], label: 'c', dimension: 'implementation', depth: 0, total: 37, online: 21, cells: [count('c 5.6', 30, 20), count('c 5.5', 4, 1), count('unknown', 3, 0)] },
-      { key: 'c/false', values: ['c', 'false'], label: 'false', dimension: 'controlLink', depth: 1, parentKey: 'c', total: 37, online: 21, cells: [count('c 5.6', 30, 20), count('c 5.5', 4, 1), count('unknown', 3, 0)] },
+      { key: 'go', values: ['go'], label: 'Go', dimension: 'implementation', depth: 0, parentKey: null, total: 8, online: 7, cells: [count(GO, 5, 5), count(GO_OLD, 2, 1), count('Go unknown', 1, 1)] },
+      { key: 'go/true', values: ['go', 'true'], label: 'Control Link', dimension: 'controlLink', depth: 1, parentKey: 'go', total: 8, online: 7, cells: [count(GO, 5, 5), count(GO_OLD, 2, 1), count('Go unknown', 1, 1)] },
+      { key: 'c', values: ['c'], label: 'C', dimension: 'implementation', depth: 0, parentKey: null, total: 37, online: 21, cells: [count('C 5.6', 30, 20), count('C 5.5', 4, 1), count('C unknown', 3, 0)] },
+      { key: 'c/false', values: ['c', 'false'], label: 'Classic', dimension: 'controlLink', depth: 1, parentKey: 'c', total: 37, online: 21, cells: [count('C 5.6', 30, 20), count('C 5.5', 4, 1), count('C unknown', 3, 0)] },
     ],
-    totals: { devices: 44, online: 27 },
+    totals: { devices: 45, online: 28 },
   }
 
   beforeEach(() => {
@@ -325,11 +331,23 @@ describe('once graphql serves what a device is', () => {
   it('each version beside its daemon, C major.minor marked, unknown its own column, none of them folded together', async () => {
     const el = await render('/admin/upgrades?view=fleet')
     const columns = [...el.querySelectorAll('[data-column]')]
-    expect(columns.map(c => c.getAttribute('data-column'))).toEqual(['go 5.6.1', 'go 5.6.0', 'c 5.6', 'c 5.5', 'unknown'])
-    expect(columns.map(c => c.querySelector('div')!.textContent)).toEqual(['Go 5.6.1', 'Go 5.6.0', 'C 5.6', 'C 5.5', 'unknown'])
-    expect(el.querySelector('[data-column="c 5.6"] [data-major-minor]')!.textContent).toBe('major.minor')
-    expect(el.querySelector('[data-column="go 5.6.1"] [data-major-minor]')).toBeNull()
-    expect(el.querySelector('[data-cell="c|unknown"]')!.textContent).toBe('3')
+    expect(columns.map(c => c.getAttribute('data-column'))).toEqual([GO, GO_OLD, 'Go unknown', 'C 5.6', 'C 5.5', 'C unknown', 'none'])
+    expect(columns.map(c => c.querySelector('div')!.textContent)).toEqual([
+      GO,
+      GO_OLD,
+      'Go unknown',
+      'C 5.6',
+      'C 5.5',
+      'C unknown',
+      'none',
+    ])
+    expect(el.querySelector('[data-column="C 5.6"] [data-major-minor]')!.textContent).toBe('major.minor')
+    expect(el.querySelector(`[data-column="${GO}"] [data-major-minor]`)).toBeNull()
+    expect(el.querySelector('[data-column="C unknown"] [data-major-minor]')).toBeNull()
+    expect(el.querySelector('[data-cell="c|C unknown"]')!.textContent).toBe('3')
+    // A cell's devices by the API's own key.
+    await act(async () => (el.querySelector('[data-cell="c|C 5.6"] [role="button"]') as HTMLElement).click())
+    expect(devices).toHaveBeenLastCalledWith(expect.objectContaining({ values: ['c'], versions: ['C 5.6'] }))
   })
 
   it('the distribution in the names customers see: never CloudShift', async () => {
@@ -353,16 +371,16 @@ describe('once graphql serves what a device is', () => {
       ...TAXONOMY_VIEW,
       groupBy: ['feature:subnet'],
       rows: [
-        { ...TAXONOMY_VIEW.rows[0], key: 'true', values: ['true'], label: 'true', dimension: 'feature:subnet' },
-        { ...TAXONOMY_VIEW.rows[0], key: 'false', values: ['false'], label: 'false', dimension: 'feature:subnet' },
+        { ...TAXONOMY_VIEW.rows[0], key: 'yes', values: ['yes'], label: 'supports subnet', dimension: 'feature:subnet' },
+        { ...TAXONOMY_VIEW.rows[0], key: 'no', values: ['no'], label: 'does not support subnet', dimension: 'feature:subnet' },
       ],
     })
     const el = await render('/admin/upgrades?view=fleet&group=feature:subnet')
     expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['feature:subnet'] }))
     expect((el.querySelector('[data-feature="group"]') as HTMLInputElement).value).toBe('subnet')
     expect(el.querySelector('[data-fleet-matrix] th')!.textContent).toBe('Feature: subnet')
-    expect(el.querySelector('[data-row="true"]')!.textContent).toContain('supports subnet')
-    expect(el.querySelector('[data-row="false"]')!.textContent).toContain("doesn't support subnet")
+    expect(el.querySelector('[data-row="yes"]')!.textContent).toContain('supports subnet')
+    expect(el.querySelector('[data-row="no"]')!.textContent).toContain('does not support subnet')
   })
 
   it("a cell's devices say what each is: daemon, link, package, what upgrades it, its features — a held one blocked", async () => {
@@ -373,12 +391,14 @@ describe('once graphql serves what a device is', () => {
         {
           id: '80:00:00:00:00:00:00:01',
           name: 'pi-1',
-          version: 'go 5.6.1',
+          version: GO,
           online: true,
           lastSeen: 'online',
           package: '1.1.0.9',
+          connectd: '5.6.1.1761000000',
+          connectdMajorMinor: false,
           release: 'current',
-          managed: 'managed',
+          managed: 'managed: held',
           implementation: 'go',
           implementationSource: 'report',
           controlLink: true,
@@ -392,11 +412,14 @@ describe('once graphql serves what a device is', () => {
         {
           id: '80:00:00:00:00:00:00:02',
           name: 'old',
-          version: 'c 5.6',
+          version: 'C 5.6',
           online: true,
           lastSeen: 'online',
+          connectd: '5.6',
+          connectdMajorMinor: true,
+          format: null,
           release: 'no device session',
-          managed: 'unmanaged: no device session',
+          managed: 'unmanaged: classic',
           implementation: 'c',
           implementationSource: 'fallback',
           controlLink: false,
@@ -404,20 +427,42 @@ describe('once graphql serves what a device is', () => {
           featuresSource: 'table',
           distribution: 'remoteit',
           updatedBy: 'package-manager',
+          updateState: null,
+        },
+        {
+          id: '80:00:00:00:00:00:00:03',
+          name: 'box',
+          version: 'Go unknown',
+          online: true,
+          lastSeen: 'online',
+          connectd: null,
+          connectdMajorMinor: false,
+          format: 'container',
+          release: 'current',
+          managed: 'unmanaged: updated by image',
+          implementation: 'go',
+          implementationSource: 'fallback',
+          controlLink: true,
+          features: [],
+          featuresSource: 'table',
+          distribution: 'unknown',
+          updatedBy: 'image',
+          updateState: null,
         },
       ],
     })
     const el = await render('/admin/upgrades?view=fleet')
-    await act(async () => (el.querySelector('[data-cell="go|go 5.6.1"] [role="button"]') as HTMLElement).click())
+    await act(async () => (el.querySelector(`[data-cell="go|${GO}"] [role="button"]`) as HTMLElement).click())
     await act(async () => {})
     const row = (id: string) => el.querySelector(`[data-device="${id}"]`)!
     const pi = row('80:00:00:00:00:00:00:01')
-    expect(pi.querySelector('[data-drill-version]')!.textContent).toBe('Go 5.6.1')
+    expect(pi.querySelector('[data-drill-version]')!.textContent).toBe(GO)
     expect(pi.querySelector('[data-drill-link]')!.textContent).toBe('Control Link')
     expect(pi.querySelector('[data-drill-package]')!.textContent).toBe('remote.it package 1.1.0.9Debian package (.deb)')
     expect(pi.querySelector('[data-drill-updated-by]')!.textContent).toBe('remote.it rollouts')
     expect(pi.querySelector('[data-drill-features]')!.textContent).toBe('remote-upgrade, subnet')
     expect(pi.querySelector('[data-held]')!.textContent).toBe("blocked: held by the device's admin")
+    expect(pi.textContent).toContain("managed: held by the device's admin")
     const old = row('80:00:00:00:00:00:00:02')
     expect(old.querySelector('[data-drill-version]')!.textContent).toBe('C 5.6major.minor')
     expect(old.querySelector('[data-drill-link]')!.textContent).toBe('Classic')
@@ -425,6 +470,12 @@ describe('once graphql serves what a device is', () => {
     expect(old.querySelector('[data-drill-updated-by]')!.textContent).toBe('package manager')
     expect(old.querySelector('[data-drill-features]')!.textContent).toBe('—from its version')
     expect(old.querySelector('[data-held]')).toBeNull()
+    expect(old.textContent).toContain('unmanaged: Classic')
+    const box = row('80:00:00:00:00:00:00:03')
+    expect(box.querySelector('[data-drill-version]')!.textContent).toBe('Go unknown')
+    expect(box.querySelector('[data-drill-package]')!.textContent).toBe('unknowncontainer image')
+    expect(box.querySelector('[data-drill-updated-by]')!.textContent).toBe('container image')
+    expect(box.textContent).toContain('unmanaged: updated by container image')
     expect(el.querySelector('[data-drill]')!.textContent).not.toMatch(/device session|cloud ?shift/i)
   })
 })

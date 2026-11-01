@@ -37,24 +37,44 @@ export const ReasonList: React.FC<{ title: string; reasons?: DaemonFailure[]; co
     </Box>
   ) : null
 
-// How many devices the release reaches and how many it cannot: the unmanaged count opens its reasons.
+// How many devices the release reaches and how many it cannot: the unmanaged count opens its reasons, and the held —
+// managed, but blocked by the device's admin, where graphql counts them — open what holds them.
 export const ManagedLine: React.FC<{ buckets?: DaemonBuckets | null }> = ({ buckets }) => {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState<'unmanaged' | 'held'>()
   if (!buckets?.wanted) return null
   const unmanaged = buckets.unmanaged || 0
+  const held = buckets.held || 0
+  const toggle = (which: 'unmanaged' | 'held') => setOpen(open === which ? undefined : which)
   return (
     <Box data-managed-line sx={{ marginBottom: 1.5 }}>
       <Typography variant="caption" color="textSecondary" component="div">
         {managed(buckets).toLocaleString()} managed ·{' '}
         {unmanaged && buckets.unmanagedReasons?.length ? (
-          <Link component="button" variant="caption" onClick={() => setOpen(!open)} data-unmanaged-toggle>
+          <Link component="button" variant="caption" onClick={() => toggle('unmanaged')} data-unmanaged-toggle>
             {unmanaged.toLocaleString()} unmanaged
           </Link>
         ) : (
           `${unmanaged.toLocaleString()} unmanaged`
         )}
+        {held > 0 && (
+          <>
+            {' · '}
+            {buckets.heldReasons?.length ? (
+              <Link component="button" variant="caption" onClick={() => toggle('held')} data-held-toggle>
+                {held.toLocaleString()} held
+              </Link>
+            ) : (
+              `${held.toLocaleString()} held`
+            )}
+          </>
+        )}
       </Typography>
-      {open && <ReasonList title="Unmanaged: no package, or no updates" reasons={buckets.unmanagedReasons} />}
+      {open === 'unmanaged' && (
+        <ReasonList title="Unmanaged: no package, or no updates" reasons={buckets.unmanagedReasons} />
+      )}
+      {open === 'held' && (
+        <ReasonList title="Held: managed, but blocked by the device's admin" reasons={buckets.heldReasons} />
+      )}
     </Box>
   )
 }

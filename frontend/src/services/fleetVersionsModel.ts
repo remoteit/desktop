@@ -126,6 +126,7 @@ export type FleetDevice = {
   format?: string | null
   updatedBy?: string | null
   updateState?: string | null // held: a package hold or lock its admin set
+  connectdMajorMinor?: boolean | null // its connectd is a classic C device-type major.minor
 }
 export type FleetDevices = { checked: string; total: number; devices: FleetDevice[] }
 
@@ -148,6 +149,7 @@ export const DISTRIBUTION_NAMES: Record<string, string> = {
   'remoteit-cli': 'remote.it CLI',
   desktop: 'remote.it Desktop',
   none: 'no package',
+  unknown: 'unknown',
 }
 export const FORMAT_NAMES: Record<string, string> = {
   tar: 'Linux tarball',
@@ -168,6 +170,7 @@ export const UPDATED_BY_NAMES: Record<string, string> = {
   cli: 'remote.it CLI',
   desktop: 'remote.it Desktop',
   none: 'none',
+  unknown: 'unknown',
 }
 export const HELD = "held by the device's admin"
 
@@ -195,6 +198,17 @@ export const userText = (text?: string | null) =>
     .replace(/\bdevice[ -]sessions?\b/gi, CONTROL_LINK)
     .replace(/\bcloud ?shift( package)?/gi, DISTRIBUTION_NAMES.remoteit)
 
+// Whether a device is moved by our rollouts, as graphql says it (`managed`, `managed: held`, `unmanaged: no package`,
+// `unmanaged: updated by <x>`, `unmanaged: refused: …`, `unmanaged: classic`, `unknown: not reported yet`), in the
+// names people see: what upgrades it by its UI name, a hold as the device's admin's, Classic as such.
+export function managedText(value?: string | null): string {
+  const text = (value ?? '').trim()
+  if (/^managed:\s*held$/i.test(text)) return `managed: ${HELD}`
+  const by = /^((?:unmanaged:\s*)?)updated by (.+)$/i.exec(text)
+  if (by) return `${by[1]}updated by ${updatedByName(by[2]) ?? by[2]}`
+  return userText(text.replace(/^unmanaged:\s*classic$/i, `unmanaged: ${CLASSIC}`))
+}
+
 // A row's own name: its value in the contract's words where the dimension is one of the taxonomy's, else the API's
 // label in today's words.
 export function rowName(row: { dimension: string; values: string[]; label: string }): string {
@@ -209,8 +223,8 @@ export function rowName(row: { dimension: string; values: string[]; label: strin
   else if (row.dimension === 'updatedBy') name = updatedByName(value)
   else if (isFeature(row.dimension)) {
     const feature = featureOf(row.dimension)
-    name = YES.includes(lower) ? `supports ${feature}` : NO.includes(lower) ? `doesn't support ${feature}` : undefined
-  }
+    name = YES.includes(lower) ? `supports ${feature}` : NO.includes(lower) ? `does not support ${feature}` : undefined
+  } else if (row.dimension === 'managed') name = managedText(value)
   return name ?? userText(row.label)
 }
 

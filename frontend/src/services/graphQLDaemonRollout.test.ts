@@ -179,10 +179,13 @@ describe('the schema read', () => {
     )
   })
 
-  it('asks for the held bucket where the API counts it', () => {
-    const schema = parseRolloutSchema({ ...CONTRACT, counts: fields('wanted', 'onWanted', 'ahead', 'held') })
+  it('asks for the held bucket and what holds them where the API counts them', () => {
+    const schema = parseRolloutSchema({ ...CONTRACT, counts: fields('wanted', 'onWanted', 'ahead', 'held', 'heldReasons') })
     expect(schema.channelRollout).toContain('offline ahead held')
+    expect(schema.channelRollout).toContain('unmanagedReasons { reason devices } heldReasons { reason devices }')
     expect(schema.detail).toContain('offline ahead held')
+    expect(schema.detail).toContain('heldReasons { reason devices }')
+    expect(parseRolloutSchema(CONTRACT).detail).not.toContain('heldReasons')
     expect(parseRolloutSchema({ ...CONTRACT, counts: fields('wanted', 'held') }).channelRollout).toContain('offline held')
   })
 

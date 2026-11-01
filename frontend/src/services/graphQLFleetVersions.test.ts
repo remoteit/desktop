@@ -22,7 +22,8 @@ const TODAY = {
 }
 const TAXONOMY = {
   ...TODAY,
-  device: type('id', 'version', 'implementation', 'implementationSource', 'controlLink', 'features', 'featuresSource', 'distribution', 'format', 'updatedBy', 'updateState'),
+  // packageType is deprecated: the probe asks for deprecated fields too, so it is still listed.
+  device: type('id', 'version', 'packageType', 'connectdMajorMinor', 'implementation', 'implementationSource', 'controlLink', 'features', 'featuresSource', 'distribution', 'format', 'updatedBy', 'updateState'),
   column: type('version', 'devices', 'online', 'label', 'behind', 'implementation', 'majorMinor'),
 }
 
@@ -65,12 +66,14 @@ describe('once it does', () => {
   it("asks for each version's daemon, and each device's taxonomy; the old package type only while served", async () => {
     serve(TAXONOMY)
     expect(await graphQLFleetFields()).toContain('controlLink')
+    expect(await graphQLFleetFields()).toContain('packageType')
+    expect(asked('FleetVersionFields')).toContain('FleetDevice") { fields(includeDeprecated: true)')
     await graphQLFleetVersions(query)
     await graphQLFleetDevices({ ...query, values: ['go'] })
     expect(asked('query FleetVersions')).toContain('columns { version devices online label behind implementation majorMinor }')
     const devices = asked('query FleetDevices')!
     expect(devices).toContain(
-      'implementation implementationSource controlLink features featuresSource distribution format updatedBy updateState'
+      'implementation implementationSource controlLink features featuresSource distribution format updatedBy updateState connectdMajorMinor'
     )
     expect(devices).not.toContain('packageType')
   })

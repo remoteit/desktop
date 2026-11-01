@@ -373,15 +373,20 @@ describe('recounted', () => {
 
 describe('held devices', () => {
   it("read as blocked, held by the device's admin, with the mechanism", () => {
-    expect(heldReason('held: apt-mark hold')).toBe(true)
+    const reason = "held by the device's admin: held on the device (apt-mark hold)"
+    expect(heldReason(reason)).toBe(true)
     expect(heldReason('failed: disk full')).toBe(false)
     expect(heldReason('holding')).toBe(false)
-    expect(reasonText('held: apt-mark hold')).toBe("Blocked — held by the device's admin (apt-mark hold)")
-    expect(reasonText('held')).toBe("Blocked — held by the device's admin")
+    expect(reasonText(reason)).toBe("Blocked — held by the device's admin: held on the device (apt-mark hold)")
+    expect(reasonText('held: yum versionlock')).toBe("Blocked — held by the device's admin: yum versionlock")
+    expect(reasonText("held by the device's admin")).toBe("Blocked — held by the device's admin")
     expect(reasonText('download: 404')).toBe('download: 404')
   })
 
   it("any other reason in today's words", () => {
     expect(reasonText('unmanaged: no device session')).toBe('unmanaged: Classic')
+    expect(reasonText('updated by image')).toBe('updated by container image')
+    expect(reasonText('updated by package-manager')).toBe('updated by package manager')
+    expect(reasonText('no package')).toBe('no package')
   })
 })

@@ -95,8 +95,8 @@ export const groupByOf = (choices: FleetChoices): FleetDimension[] =>
 
 // The newest few versions get columns of their own; the rest fold into one "older" column. `none` stays apart, last.
 // Versions compare only within one daemon (DEVICE-TAXONOMY §1): where the API names each version's daemon, each has
-// its own newest columns and its own fold, in the order the API gives them. `unknown` is a column of its own, never
-// folded, before none.
+// its own newest columns and its own fold, in the order the API gives them (Go's, then C's). Each daemon's `unknown`
+// is a column of its own, never folded, last of its daemon's.
 export const OWN_COLUMNS = 6
 
 type Implementation = 'go' | 'c' | undefined
@@ -119,17 +119,17 @@ const shownOf = (column: FleetColumn) => shownVersion(column.version, column.imp
 
 export function matrixColumns(columns: FleetColumn[], expandOlder: boolean): MatrixColumn[] {
   const none = columns.find(c => c.version === NONE)
-  const unknown = columns.filter(c => c.version !== NONE && shownOf(c).unknown)
-  const versions = columns.filter(c => c.version !== NONE && !shownOf(c).unknown)
   const byDaemon = new Map<Implementation, FleetColumn[]>()
-  for (const column of versions) {
+  for (const column of columns.filter(c => c.version !== NONE)) {
     const implementation = shownOf(column).implementation
     byDaemon.set(implementation, [...(byDaemon.get(implementation) || []), column])
   }
   const out: MatrixColumn[] = []
-  for (const [implementation, own] of byDaemon) out.push(...daemonColumns(own, expandOlder, implementation))
-  for (const column of unknown)
-    out.push({ kind: 'unknown', key: column.version, column, implementation: shownOf(column).implementation })
+  for (const [implementation, own] of byDaemon) {
+    out.push(...daemonColumns(own.filter(c => !shownOf(c).unknown), expandOlder, implementation))
+    for (const column of own.filter(c => shownOf(c).unknown))
+      out.push({ kind: 'unknown', key: column.version, column, implementation })
+  }
   if (none) out.push({ kind: 'none', key: NONE, column: none })
   return out
 }

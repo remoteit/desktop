@@ -43,6 +43,7 @@ import {
   fleetDimensions,
   formatName,
   isFeature,
+  managedText,
   rowName,
   shownVersion,
   updatedByName,
@@ -561,7 +562,7 @@ const DrillTable: React.FC<{ devices: FleetDevice[] }> = ({ devices }) => {
       </TableHead>
       <TableBody>
         {devices.map(device => {
-          const version = shownVersion(device.version, device.implementation)
+          const version = shownVersion(device.version, device.implementation, device.connectdMajorMinor || undefined)
           const held = device.updateState === 'held'
           return (
             <TableRow key={device.id} data-device={device.id}>
@@ -625,7 +626,7 @@ const DrillTable: React.FC<{ devices: FleetDevice[] }> = ({ devices }) => {
               <TableCell sx={{ paddingX: 1 }}>
                 {userText(device.release)}
                 <Typography variant="caption" color="textSecondary" component="div">
-                  {userText(device.managed)}
+                  {managedText(device.managed)}
                 </Typography>
                 {held && (
                   <Typography variant="caption" color="warning.main" component="div" data-held>
