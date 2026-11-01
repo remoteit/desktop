@@ -37,7 +37,8 @@ function serve(schema: object) {
       : answer({ fleetVersions: { columns: [] }, fleetDevices: { devices: [] } })
   )
 }
-const asked = (operation: string) => request.mock.calls.map(call => call[0].data.query).find(q => q.includes(operation))
+const call = (operation: string) => request.mock.calls.map(call => call[0].data).find(d => d.query.includes(operation))
+const asked = (operation: string) => call(operation)?.query as string | undefined
 
 beforeEach(() => {
   request.mockReset()
@@ -76,5 +77,36 @@ describe('once it does', () => {
       'implementation implementationSource controlLink features featuresSource distribution format updatedBy updateState connectdMajorMinor'
     )
     expect(devices).not.toContain('packageType')
+  })
+})
+
+describe('counting by days since seen', () => {
+  const takesSeen = {
+    fields: ['fleetVersions', 'fleetDevices'].map(name => ({ name, args: [{ name: 'groupBy' }, { name: 'seenWithinDays' }] })),
+  }
+
+  it('asks for seenWithinDays where both fleet queries take it', async () => {
+    serve({ ...TAXONOMY, query: takesSeen })
+    const { graphQLFleetServed } = await import('./graphQLFleetVersions')
+    expect((await graphQLFleetServed()).seenWithinDays).toBe(true)
+    await graphQLFleetVersions({ ...query, onlineOnly: false, seenWithinDays: 30 })
+    await graphQLFleetDevices({ ...query, onlineOnly: false, seenWithinDays: 30, values: [] })
+    for (const operation of ['query FleetVersions', 'query FleetDevices']) {
+      expect(call(operation).query).toContain('$seenWithinDays: Int')
+      expect(call(operation).query).toContain('seenWithinDays: $seenWithinDays')
+      expect(call(operation).variables.seenWithinDays).toBe(30)
+    }
+  })
+
+  it('never names it on an API without it, even when asked', async () => {
+    serve(TODAY)
+    const { graphQLFleetServed } = await import('./graphQLFleetVersions')
+    expect((await graphQLFleetServed()).seenWithinDays).toBe(false)
+    await graphQLFleetVersions({ ...query, seenWithinDays: 7 })
+    await graphQLFleetDevices({ ...query, seenWithinDays: 7, values: [] })
+    for (const operation of ['query FleetVersions', 'query FleetDevices']) {
+      expect(call(operation).query).not.toContain('seenWithinDays')
+      expect(call(operation).variables).not.toHaveProperty('seenWithinDays')
+    }
   })
 })

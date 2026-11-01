@@ -16,7 +16,7 @@ export * from './fleetVersionsModel'
 type Result<T> = T | 'ERROR' | typeof UNSUPPORTED
 
 const PROBE = `query FleetVersionFields {
-  query: __type(name: "Query") { fields { name } }
+  query: __type(name: "Query") { fields { name args { name } } }
   device: __type(name: "FleetDevice") { fields(includeDeprecated: true) { name } }
   column: __type(name: "FleetVersionColumn") { fields { name } }
 }`
@@ -24,6 +24,7 @@ const PROBE = `query FleetVersionFields {
 type Served = {
   versions: boolean
   devices: boolean
+  seenWithinDays: boolean // both fleet queries take seenWithinDays
   deviceFields: Set<string> // FleetDevice's: what the drill asks for, and which groupings the API serves
   columnFields: Set<string> // FleetVersionColumn's
 }
@@ -41,9 +42,12 @@ export function fleetSchema() {
       }
       const data = response.data?.data
       const names = fieldNames(data?.query)
+      const takes = (field: string, arg: string) =>
+        !!(data?.query?.fields || []).find((f: any) => f.name === field)?.args?.some((a: any) => a.name === arg)
       return {
         versions: names.has('fleetVersions'),
         devices: names.has('fleetDevices'),
+        seenWithinDays: takes('fleetVersions', 'seenWithinDays') && takes('fleetDevices', 'seenWithinDays'),
         deviceFields: fieldNames(data?.device),
         columnFields: fieldNames(data?.column),
       }
@@ -55,6 +59,15 @@ export function fleetSchema() {
 export async function graphQLFleetFields(): Promise<Set<string>> {
   const schema = await fleetSchema()
   return schema === 'ERROR' ? new Set() : schema.deviceFields
+}
+
+// What the Fleet tab offers on this API: the groupings its FleetDevice fields stand for, and whether it counts by
+// days since last seen. Neither where it cannot say.
+export async function graphQLFleetServed(): Promise<{ fields: Set<string>; seenWithinDays: boolean }> {
+  const schema = await fleetSchema()
+  return schema === 'ERROR'
+    ? { fields: new Set(), seenWithinDays: false }
+    : { fields: schema.deviceFields, seenWithinDays: schema.seenWithinDays }
 }
 
 // For tests, and for a change of API or sign-in.
@@ -86,6 +99,17 @@ const DEVICE_EXTRAS = [
   'updateState',
   'connectdMajorMinor',
 ]
+// seenWithinDays only where the API takes it, and only when asked: the variable and the argument both.
+const seenArgs = (served: boolean, query: FleetQuery) =>
+  served && query.seenWithinDays
+    ? { declare: ', $seenWithinDays: Int', pass: ', seenWithinDays: $seenWithinDays' }
+    : { declare: '', pass: '' }
+const withoutSeen = <T extends FleetQuery>(served: boolean, query: T): T => {
+  if (served && query.seenWithinDays) return query
+  const { seenWithinDays, ...rest } = query
+  return rest as T
+}
+
 const pick = (wanted: string[], fields: Set<string>) => wanted.filter(name => fields.has(name))
 // The old package type until the API serves the taxonomy (deprecated from then, and gone a release later): the drill
 // shows what replaced it. The probe lists deprecated fields too, so the old grouping is offered while it is served.
@@ -99,16 +123,17 @@ export async function graphQLFleetVersions(query: FleetQuery): Promise<Result<Fl
   const schema = await fleetSchema()
   if (schema === 'ERROR') return 'ERROR'
   if (!schema.versions) return UNSUPPORTED
+  const seen = seenArgs(schema.seenWithinDays, query)
   return read<FleetVersions>(
-    `query FleetVersions($groupBy: [String!]!, $versionOf: String, $onlineOnly: Boolean, $accountSearch: String, $accountLimit: Int) {
-      fleetVersions(groupBy: $groupBy, versionOf: $versionOf, onlineOnly: $onlineOnly, accountSearch: $accountSearch, accountLimit: $accountLimit) {
+    `query FleetVersions($groupBy: [String!]!, $versionOf: String, $onlineOnly: Boolean, $accountSearch: String, $accountLimit: Int${seen.declare}) {
+      fleetVersions(groupBy: $groupBy, versionOf: $versionOf, onlineOnly: $onlineOnly, accountSearch: $accountSearch, accountLimit: $accountLimit${seen.pass}) {
         checked groupBy versionOf
         columns { ${[COUNT, 'label behind', ...pick(COLUMN_EXTRAS, schema.columnFields)].join(' ')} }
         rows { key values label dimension depth parentKey total online cells { ${COUNT} } }
         totals { devices online }
       }
     }`,
-    { accountSearch: undefined, accountLimit: undefined, ...query },
+    { accountSearch: undefined, accountLimit: undefined, ...withoutSeen(schema.seenWithinDays, query) },
     'fleetVersions'
   )
 }
@@ -119,16 +144,17 @@ export async function graphQLFleetDevices(
   const schema = await fleetSchema()
   if (schema === 'ERROR') return 'ERROR'
   if (!schema.devices) return UNSUPPORTED
+  const seen = seenArgs(schema.seenWithinDays, query)
   return read<FleetDevices>(
     `query FleetDevices($groupBy: [String!]!, $values: [String!]!, $versions: [String!], $versionOf: String, $onlineOnly: Boolean,
-      $accountSearch: String, $accountLimit: Int, $limit: Int) {
+      $accountSearch: String, $accountLimit: Int, $limit: Int${seen.declare}) {
       fleetDevices(groupBy: $groupBy, values: $values, versions: $versions, versionOf: $versionOf, onlineOnly: $onlineOnly,
-        accountSearch: $accountSearch, accountLimit: $accountLimit, limit: $limit) {
+        accountSearch: $accountSearch, accountLimit: $accountLimit, limit: $limit${seen.pass}) {
         checked total
         devices { ${deviceSelection(schema.deviceFields)} }
       }
     }`,
-    query,
+    withoutSeen(schema.seenWithinDays, query),
     'fleetDevices'
   )
 }

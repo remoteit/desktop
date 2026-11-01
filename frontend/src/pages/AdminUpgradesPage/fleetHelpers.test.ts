@@ -27,7 +27,7 @@ const column = (version: string, devices: number, behind: number | null = null, 
 
 describe('the choices in the URL', () => {
   it('read back as written, the defaults left out', () => {
-    const choices = { ...DEFAULT_CHOICES, group: 'account' as const, then: 'os' as const, online: false, percent: true, search: 'acme', older: true }
+    const choices = { ...DEFAULT_CHOICES, group: 'account' as const, then: 'os' as const, show: 'all' as const, percent: true, search: 'acme', older: true }
     const search = writeChoices(choices)
     expect(search).toBe('?view=fleet&group=account&then=os&online=0&pct=1&q=acme&older=1')
     expect(isFleetView(search)).toBe(true)
@@ -37,12 +37,24 @@ describe('the choices in the URL', () => {
   })
 
   it('online only unless the URL says all: online=0 or online=all; online=1 as before', () => {
-    expect(DEFAULT_CHOICES.online).toBe(true)
-    expect(readChoices('?view=fleet').online).toBe(true)
-    expect(readChoices('?view=fleet&online=1').online).toBe(true)
-    expect(readChoices('?view=fleet&online=0').online).toBe(false)
-    expect(readChoices('?view=fleet&online=all').online).toBe(false)
+    expect(DEFAULT_CHOICES.show).toBe('online')
+    expect(readChoices('?view=fleet').show).toBe('online')
+    expect(readChoices('?view=fleet&online=1').show).toBe('online')
+    expect(readChoices('?view=fleet&online=0').show).toBe('all')
+    expect(readChoices('?view=fleet&online=all').show).toBe('all')
+    expect(readChoices('?view=fleet&seen=all').show).toBe('all')
     expect(writeChoices(DEFAULT_CHOICES)).not.toContain('online')
+  })
+
+  it('seen=7 and seen=30 where the API counts by days since seen, else online', () => {
+    const dimensions = undefined
+    expect(readChoices('?view=fleet&seen=7', dimensions, true).show).toBe('7')
+    expect(readChoices('?view=fleet&seen=30', dimensions, true).show).toBe('30')
+    expect(readChoices('?view=fleet&seen=30', dimensions, false).show).toBe('online')
+    expect(readChoices('?view=fleet&seen=12', dimensions, true).show).toBe('online')
+    const days = { ...DEFAULT_CHOICES, show: '30' as const }
+    expect(writeChoices(days)).toBe('?view=fleet&group=packageType&seen=30')
+    expect(readChoices(writeChoices(days), dimensions, true)).toEqual(days)
   })
 
   it('anything unknown is the default; a second dimension like the first is none', () => {

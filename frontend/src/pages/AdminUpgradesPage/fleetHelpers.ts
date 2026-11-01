@@ -8,6 +8,7 @@ import {
   FleetRow,
   IMPLEMENTATION_NAMES,
   NONE,
+  SeenChoice,
   VersionOf,
   featureOf,
   fleetDimensions,
@@ -16,14 +17,15 @@ import {
 } from '../../services/fleetVersionsModel'
 
 // The Fleet tab's view, as the URL holds it, so a view can be shared: ?view=fleet&group=…&then=…&of=…&online=0&pct=1&q=…
-// Online only unless the URL says all (online=0 or online=all); a link from before that said online=1 still reads so.
+// Online only unless the URL says otherwise: seen=7 or seen=30 (where the API counts by days since seen; otherwise
+// online), or all (online=0, online=all, or seen=all). A link from before that said online=1 still reads so.
 export const FLEET_VIEW = 'fleet'
 
 export type FleetChoices = {
   group: FleetDimension
   then?: FleetDimension
   of: VersionOf
-  online: boolean
+  show: SeenChoice
   percent: boolean
   search: string
   older: boolean // the older versions shown one by one
@@ -32,10 +34,18 @@ export type FleetChoices = {
 export const DEFAULT_CHOICES: FleetChoices = {
   group: 'packageType',
   of: 'connectd',
-  online: true,
+  show: 'online',
   percent: false,
   search: '',
   older: false,
+}
+
+// Which devices the URL says to count; 7 and 30 days only where the API counts by them.
+function readSeen(params: URLSearchParams, seenServed: boolean): SeenChoice {
+  const seen = (params.get('seen') || '').toLowerCase()
+  if (seen === 'all' || ['0', 'all', 'false'].includes((params.get('online') || '').toLowerCase())) return 'all'
+  if ((seen === '7' || seen === '30') && seenServed) return seen
+  return 'online'
 }
 
 // What a view is grouped by unless the URL says: by daemon, then by Control Link, where the API serves them; else, as
@@ -62,7 +72,11 @@ export const featureDimension = (name = DEFAULT_FEATURE): FleetDimension => `${F
 
 export const isFleetView = (search: string) => new URLSearchParams(search).get('view') === FLEET_VIEW
 
-export function readChoices(search: string, dimensions: DimensionChoice[] = fleetDimensions()): FleetChoices {
+export function readChoices(
+  search: string,
+  dimensions: DimensionChoice[] = fleetDimensions(),
+  seenServed = false
+): FleetChoices {
   const params = new URLSearchParams(search)
   const named = dimension(params.get('group'), dimensions)
   const fallback = defaultGrouping(dimensions)
@@ -72,7 +86,7 @@ export function readChoices(search: string, dimensions: DimensionChoice[] = flee
     group,
     then: then && then !== group ? then : undefined,
     of: params.get('of') === 'package' ? 'package' : 'connectd',
-    online: !['0', 'all', 'false'].includes((params.get('online') || '').toLowerCase()),
+    show: readSeen(params, seenServed),
     percent: params.get('pct') === '1',
     search: params.get('q') || '',
     older: params.get('older') === '1',
@@ -83,7 +97,8 @@ export function writeChoices(choices: FleetChoices): string {
   const params = new URLSearchParams({ view: FLEET_VIEW, group: choices.group })
   if (choices.then) params.set('then', choices.then)
   if (choices.of !== DEFAULT_CHOICES.of) params.set('of', choices.of)
-  if (!choices.online) params.set('online', '0')
+  if (choices.show === 'all') params.set('online', '0')
+  if (choices.show === '7' || choices.show === '30') params.set('seen', choices.show)
   if (choices.percent) params.set('pct', '1')
   if (choices.search.trim()) params.set('q', choices.search.trim())
   if (choices.older) params.set('older', '1')

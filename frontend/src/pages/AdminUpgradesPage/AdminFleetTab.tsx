@@ -45,11 +45,13 @@ import {
   isFeature,
   managedText,
   rowName,
+  seenDays,
   shownVersion,
   updatedByName,
   userText,
 } from '../../services/fleetVersionsModel'
-import { graphQLFleetDevices, graphQLFleetFields, graphQLFleetVersions } from '../../services/graphQLFleetVersions'
+import { graphQLFleetDevices, graphQLFleetServed, graphQLFleetVersions } from '../../services/graphQLFleetVersions'
+import { SeenToggle, shownSuffix } from './SeenToggle'
 import { UpgradesTabs } from './UpgradesTabs'
 import { UPGRADES_ROUTE, dateTime } from './rolloutHelpers'
 import {
@@ -119,10 +121,15 @@ const FeaturePicker: React.FC<{
 export const AdminFleetTab: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
-  // Which groupings this API serves, read from its schema before the first count: the default grouping depends on it.
-  const [fields, setFields] = useState<Set<string>>()
+  // Which groupings this API serves, and whether it counts by days since seen, read from its schema before the first
+  // count: the default grouping depends on it.
+  const [served, setServed] = useState<{ fields: Set<string>; seenWithinDays: boolean }>()
+  const fields = served?.fields
   const dimensions = useMemo(() => fleetDimensions(fields), [fields])
-  const choices = useMemo(() => readChoices(location.search, dimensions), [location.search, dimensions])
+  const choices = useMemo(
+    () => readChoices(location.search, dimensions, !!served?.seenWithinDays),
+    [location.search, dimensions, served?.seenWithinDays]
+  )
   const [view, setView] = useState<FleetVersions | 'ERROR' | typeof UNSUPPORTED>()
   const [loading, setLoading] = useState(false)
   const [drill, setDrill] = useState<Drill>()
@@ -132,9 +139,9 @@ export const AdminFleetTab: React.FC = () => {
 
   useEffect(() => {
     mounted.current = true
-    graphQLFleetFields()
-      .catch(() => new Set<string>())
-      .then(served => mounted.current && setFields(served || new Set()))
+    graphQLFleetServed()
+      .catch(() => undefined)
+      .then(next => mounted.current && setServed(next || { fields: new Set(), seenWithinDays: false }))
     return () => {
       mounted.current = false
     }
@@ -147,10 +154,11 @@ export const AdminFleetTab: React.FC = () => {
     () => ({
       groupBy: groupByOf(choices),
       versionOf: choices.of,
-      onlineOnly: choices.online,
+      onlineOnly: choices.show === 'online',
+      seenWithinDays: seenDays(choices.show),
       accountSearch: choices.search || undefined,
     }),
-    [choices.group, choices.then, choices.of, choices.online, choices.search]
+    [choices.group, choices.then, choices.of, choices.show, choices.search]
   )
 
   const load = useCallback(async () => {
@@ -259,20 +267,11 @@ export const AdminFleetTab: React.FC = () => {
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={choices.online ? 'online' : 'all'}
-          onChange={(_, value) => value && choose({ online: value === 'online' })}
-          aria-label="Show"
-        >
-          <ToggleButton value="all" data-show="all">
-            All
-          </ToggleButton>
-          <ToggleButton value="online" data-show="online">
-            Online
-          </ToggleButton>
-        </ToggleButtonGroup>
+        <SeenToggle
+          value={choices.show}
+          days={!!served?.seenWithinDays}
+          onChange={show => choose({ show })}
+        />
         <ToggleButton
           size="small"
           value="percent"
@@ -484,7 +483,7 @@ const FleetMatrix: React.FC<{
       </Table>
       {!view.rows.length && (
         <Notice severity="info" fullWidth>
-          No devices{choices.online ? ' online' : ''}.
+          No devices{shownSuffix(choices.show)}.
         </Notice>
       )}
     </Box>

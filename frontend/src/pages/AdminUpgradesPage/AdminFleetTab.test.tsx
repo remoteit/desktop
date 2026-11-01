@@ -6,11 +6,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // The Upgrades page's Fleet tab: until graphql serves fleetVersions it says so; then a matrix of groups by version,
 // the releases labelled, the older amber and folded, totals, a cell's devices on a click — and the choices in the URL.
-const { versions, devices, fields } = vi.hoisted(() => ({ versions: vi.fn(), devices: vi.fn(), fields: vi.fn() }))
+const { versions, devices, fields, seenServed } = vi.hoisted(() => ({
+  versions: vi.fn(),
+  devices: vi.fn(),
+  fields: vi.fn(),
+  seenServed: vi.fn(),
+}))
 vi.mock('../../services/graphQLFleetVersions', () => ({
   graphQLFleetVersions: versions,
   graphQLFleetDevices: devices,
-  graphQLFleetFields: fields,
+  graphQLFleetServed: async () => ({ fields: await fields(), seenWithinDays: await seenServed() }),
 }))
 vi.mock('../../services/graphQLDaemonRollout', () => ({
   graphQLDaemonChannels: vi.fn(async () => []),
@@ -148,6 +153,7 @@ const TAXONOMY = new Set([
 beforeEach(() => {
   document.body.innerHTML = ''
   fields.mockReset().mockResolvedValue(new Set(['id', 'version', 'packageType']))
+  seenServed.mockReset().mockResolvedValue(false)
   versions.mockReset().mockResolvedValue(VIEW)
   devices.mockReset().mockResolvedValue({
     checked: VIEW.checked,
@@ -190,6 +196,7 @@ describe('the Fleet tab', () => {
       groupBy: ['account', 'os'],
       versionOf: 'package',
       onlineOnly: true,
+      seenWithinDays: undefined,
       accountSearch: 'acme',
     })
   })
@@ -482,5 +489,46 @@ describe('once graphql serves what a device is', () => {
     expect(box.querySelector('[data-drill-updated-by]')!.textContent).toBe('container image')
     expect(box.textContent).toContain('unmanaged: updated by container image')
     expect(el.querySelector('[data-drill]')!.textContent).not.toMatch(/device session|cloud ?shift/i)
+  })
+})
+
+describe('which devices: Online · 7 days · 30 days · All', () => {
+  const shown = (el: HTMLElement) => [...el.querySelectorAll('[data-seen-toggle] [data-show]')].map(b => b.getAttribute('data-show'))
+
+  it('until graphql counts by days since seen: Online and All alone, and a link that says 7 days reads Online', async () => {
+    const el = await render('/admin/upgrades?view=fleet&group=packageType&seen=7')
+    expect(shown(el)).toEqual(['online', 'all'])
+    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ onlineOnly: true, seenWithinDays: undefined }))
+  })
+
+  it('then all four, Online by default; each in the URL, and the drill follows the choice', async () => {
+    seenServed.mockResolvedValue(true)
+    const el = await render('/admin/upgrades?view=fleet&group=packageType&of=package')
+    expect(shown(el)).toEqual(['online', '7', '30', 'all'])
+    expect(el.querySelector('[data-show="online"]')!.getAttribute('aria-pressed')).toBe('true')
+    expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: true, seenWithinDays: undefined }))
+
+    await act(async () => (el.querySelector('[data-show="30"]') as HTMLButtonElement).click())
+    await act(async () => {})
+    expect(location.search).toContain('seen=30')
+    expect(location.search).not.toContain('online=')
+    expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: false, seenWithinDays: 30 }))
+    await act(async () => (el.querySelector(`[data-cell="deb|${VERSIONS[1]}"] [role="button"]`) as HTMLElement).click())
+    expect(devices).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: false, seenWithinDays: 30 }))
+
+    await act(async () => (el.querySelector('[data-show="7"]') as HTMLButtonElement).click())
+    expect(location.search).toContain('seen=7')
+    await act(async () => (el.querySelector('[data-show="all"]') as HTMLButtonElement).click())
+    expect(location.search).toContain('online=0')
+    expect(location.search).not.toContain('seen=')
+    expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: false, seenWithinDays: undefined }))
+  })
+
+  it("old links keep their meaning: online=1 is Online, online=0 and online=all are All", async () => {
+    seenServed.mockResolvedValue(true)
+    await render('/admin/upgrades?view=fleet&group=packageType&online=1')
+    expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: true }))
+    await render('/admin/upgrades?view=fleet&group=packageType&online=all')
+    expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: false, seenWithinDays: undefined }))
   })
 })

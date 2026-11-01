@@ -130,10 +130,23 @@ export type FleetDevice = {
 }
 export type FleetDevices = { checked: string; total: number; devices: FleetDevice[] }
 
+/* Which devices a view counts by when they were last seen: online now, seen within 7 or 30 days, or all. The Fleet
+   tab and the Upgrades page share the choice; 7 and 30 days need the API to say (seenWithinDays on the fleet,
+   offline age bands on the rollout counts), and are offered only where it does. */
+export const SEEN_CHOICES = [
+  { key: 'online', label: 'Online' },
+  { key: '7', label: '7 days' },
+  { key: '30', label: '30 days' },
+  { key: 'all', label: 'All' },
+] as const
+export type SeenChoice = (typeof SEEN_CHOICES)[number]['key']
+export const seenDays = (seen: SeenChoice) => (seen === '7' ? 7 : seen === '30' ? 30 : undefined)
+
 export type FleetQuery = {
   groupBy: FleetDimension[]
   versionOf: VersionOf
   onlineOnly?: boolean
+  seenWithinDays?: number // seen within the last N days: only where the API serves it
   accountSearch?: string
   accountLimit?: number
 }
