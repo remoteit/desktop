@@ -64,7 +64,7 @@ const count = (version: string, devices: number, online = 0) => ({ version, devi
 const VERSIONS = ['1.1.0.9', '1.1.0.8', '1.1.0.7', '1.1.0.6', '1.1.0.5', '1.1.0.4', '1.1.0.3', '1.1.0.2']
 const VIEW = {
   checked: '2026-10-30T23:49:49.983Z',
-  groupBy: ['packageType'],
+  groupBy: ['os'],
   versionOf: 'package',
   columns: [
     { ...count(VERSIONS[0], 3, 3), label: 'candidate', behind: null },
@@ -77,7 +77,7 @@ const VIEW = {
       key: 'deb',
       values: ['deb'],
       label: 'deb',
-      dimension: 'packageType',
+      dimension: 'os',
       depth: 0,
       parentKey: null,
       total: 41,
@@ -88,7 +88,7 @@ const VIEW = {
       key: 'bare%20connectd',
       values: ['bare connectd'],
       label: 'bare connectd',
-      dimension: 'packageType',
+      dimension: 'os',
       depth: 0,
       parentKey: null,
       total: 10,
@@ -133,12 +133,10 @@ async function render(path: string) {
   return el
 }
 
-// FleetDevice's fields once graphql serves what a device is (DEVICE-TAXONOMY's build contract), the old package type
-// still among them.
+// FleetDevice's fields once graphql serves what a device is (DEVICE-TAXONOMY's build contract).
 const TAXONOMY = new Set([
   'id',
   'version',
-  'packageType',
   'implementation',
   'implementationSource',
   'controlLink',
@@ -152,7 +150,7 @@ const TAXONOMY = new Set([
 
 beforeEach(() => {
   document.body.innerHTML = ''
-  fields.mockReset().mockResolvedValue(new Set(['id', 'version', 'packageType']))
+  fields.mockReset().mockResolvedValue(new Set(['id', 'version']))
   seenServed.mockReset().mockResolvedValue(false)
   versions.mockReset().mockResolvedValue(VIEW)
   devices.mockReset().mockResolvedValue({
@@ -165,7 +163,6 @@ beforeEach(() => {
         version: VERSIONS[1],
         online: true,
         lastSeen: 'online',
-        packageType: 'deb',
         package: VERSIONS[1],
         os: 'Debian GNU/Linux 12',
         arch: 'arm64',
@@ -180,7 +177,7 @@ beforeEach(() => {
 describe('the Fleet tab', () => {
   it('says the API is not there yet until graphql serves fleetVersions', async () => {
     versions.mockResolvedValue('UNSUPPORTED')
-    const el = await render('/admin/upgrades?view=fleet&group=packageType')
+    const el = await render('/admin/upgrades?view=fleet&group=os')
     expect(el.textContent).toContain('This API has no fleet view yet')
   })
 
@@ -202,7 +199,7 @@ describe('the Fleet tab', () => {
   })
 
   it('the newest six versions their own columns, the rest folded, none last; the releases labelled, the older amber', async () => {
-    const el = await render('/admin/upgrades?view=fleet&group=packageType&of=package')
+    const el = await render('/admin/upgrades?view=fleet&group=os&of=package')
     const columns = [...el.querySelectorAll('[data-column]')].map(c => c.getAttribute('data-column'))
     expect(columns).toEqual([...VERSIONS.slice(0, 6), 'older', 'none'])
     expect(el.querySelector(`[data-column="${VERSIONS[1]}"]`)!.textContent).toContain('current')
@@ -223,17 +220,17 @@ describe('the Fleet tab', () => {
   })
 
   it('percentages of each row, in the URL', async () => {
-    const el = await render('/admin/upgrades?view=fleet&group=packageType&pct=1')
+    const el = await render('/admin/upgrades?view=fleet&group=os&pct=1')
     expect(el.querySelector(`[data-cell="deb|${VERSIONS[1]}"]`)!.textContent).toBe('97.6%')
     expect(el.querySelector('[data-cell="deb|total"]')!.textContent).toBe('41')
   })
 
   it("a cell's devices on a click, linked to the device", async () => {
-    const el = await render('/admin/upgrades?view=fleet&group=packageType&of=package')
+    const el = await render('/admin/upgrades?view=fleet&group=os&of=package')
     await act(async () => (el.querySelector(`[data-cell="deb|${VERSIONS[1]}"] [role="button"]`) as HTMLElement).click())
     await act(async () => {})
     expect(devices).toHaveBeenCalledWith(
-      expect.objectContaining({ groupBy: ['packageType'], values: ['deb'], versions: [VERSIONS[1]], limit: 200 })
+      expect.objectContaining({ groupBy: ['os'], values: ['deb'], versions: [VERSIONS[1]], limit: 200 })
     )
     const drill = el.querySelector('[data-drill]')!
     expect(drill.textContent).toContain('The first 1 of 40, online first')
@@ -250,7 +247,7 @@ describe('the Fleet tab', () => {
 
 describe('the choices', () => {
   it('each change goes into the URL; the desktop app version is offered but not recorded', async () => {
-    const el = await render('/admin/upgrades?view=fleet&group=packageType')
+    const el = await render('/admin/upgrades?view=fleet&group=os')
     await act(async () => (el.querySelector('[data-version-of="package"]') as HTMLButtonElement).click())
     expect(location.search).toContain('of=package')
     expect((el.querySelector('[data-version-of="desktop"]') as HTMLButtonElement).disabled).toBe(true)
@@ -269,11 +266,11 @@ describe('the choices', () => {
 })
 
 describe('before graphql serves what a device is', () => {
-  it('groups by package type, as today, and offers none of the new groupings', async () => {
+  it('groups by OS, and offers none of the new groupings', async () => {
     const el = await render('/admin/upgrades?view=fleet')
-    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['packageType'] }))
-    expect(el.querySelector('[data-fleet-matrix] th')!.textContent).toBe('Package type')
-    expect(el.textContent).not.toContain('(old)')
+    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['os'] }))
+    expect(el.querySelector('[data-fleet-matrix] th')!.textContent).toBe('OS')
+    expect(el.textContent).not.toMatch(/package type/i)
   })
 
   it("the API's own words for a device without a Control Link are not shown", async () => {
@@ -281,7 +278,7 @@ describe('before graphql serves what a device is', () => {
       ...VIEW,
       rows: [{ ...VIEW.rows[0], key: 'c', values: ['connectd, no device session'], label: 'connectd, no device session' }],
     })
-    const el = await render('/admin/upgrades?view=fleet&group=packageType')
+    const el = await render('/admin/upgrades?view=fleet&group=os')
     expect(el.textContent).toContain('connectd, Classic')
     expect(el.textContent).not.toMatch(/device session/i)
   })
@@ -330,9 +327,13 @@ describe('once graphql serves what a device is', () => {
     expect(label('c/false')).toBe('Classic')
   })
 
-  it('a link that names the old package type still opens it', async () => {
-    await render('/admin/upgrades?view=fleet&group=packageType')
-    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['packageType'] }))
+  it('a link that names the retired package type opens the default grouping, by daemon then Control Link', async () => {
+    for (const path of ['?view=fleet&group=packageType', '?view=fleet&group=packageType&then=os', '?view=fleet&then=packageType']) {
+      versions.mockClear()
+      const el = await render(`/admin/upgrades${path}`)
+      expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['implementation', 'controlLink'] }))
+      expect(el.textContent).not.toMatch(/package type/i)
+    }
   })
 
   it('each version beside its daemon, C major.minor marked, unknown its own column, none of them folded together', async () => {
@@ -472,6 +473,7 @@ describe('once graphql serves what a device is', () => {
     expect(pi.querySelector('[data-drill-link]')!.textContent).toBe('Control Link')
     expect(pi.querySelector('[data-drill-package]')!.textContent).toBe('remote.it package 1.1.0.9Debian package (.deb)')
     expect(pi.querySelector('[data-drill-updated-by]')!.textContent).toBe('remote.it rollouts')
+    expect(pi.querySelector('[data-drill-format]')!.getAttribute('title')).toBe('Package format')
     expect(pi.querySelector('[data-drill-features]')!.textContent).toBe('remote-upgrade, subnet')
     expect(pi.querySelector('[data-held]')!.textContent).toBe("blocked: held by the device's admin")
     expect(pi.textContent).toContain("managed: held by the device's admin")
@@ -496,14 +498,14 @@ describe('which devices: Online · 7 days · 30 days · All', () => {
   const shown = (el: HTMLElement) => [...el.querySelectorAll('[data-seen-toggle] [data-show]')].map(b => b.getAttribute('data-show'))
 
   it('until graphql counts by days since seen: Online and All alone, and a link that says 7 days reads Online', async () => {
-    const el = await render('/admin/upgrades?view=fleet&group=packageType&seen=7')
+    const el = await render('/admin/upgrades?view=fleet&group=os&seen=7')
     expect(shown(el)).toEqual(['online', 'all'])
     expect(versions).toHaveBeenCalledWith(expect.objectContaining({ onlineOnly: true, seenWithinDays: undefined }))
   })
 
   it('then all four, Online by default; each in the URL, and the drill follows the choice', async () => {
     seenServed.mockResolvedValue(true)
-    const el = await render('/admin/upgrades?view=fleet&group=packageType&of=package')
+    const el = await render('/admin/upgrades?view=fleet&group=os&of=package')
     expect(shown(el)).toEqual(['online', '7', '30', 'all'])
     expect(el.querySelector('[data-show="online"]')!.getAttribute('aria-pressed')).toBe('true')
     expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: true, seenWithinDays: undefined }))
@@ -526,9 +528,25 @@ describe('which devices: Online · 7 days · 30 days · All', () => {
 
   it("old links keep their meaning: online=1 is Online, online=0 and online=all are All", async () => {
     seenServed.mockResolvedValue(true)
-    await render('/admin/upgrades?view=fleet&group=packageType&online=1')
+    await render('/admin/upgrades?view=fleet&group=os&online=1')
     expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: true }))
-    await render('/admin/upgrades?view=fleet&group=packageType&online=all')
+    await render('/admin/upgrades?view=fleet&group=os&online=all')
     expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: false, seenWithinDays: undefined }))
+  })
+})
+
+describe('the package format grouping', () => {
+  it('reads "Package format", in the choice and the heading; the URL and the API keep format', async () => {
+    fields.mockResolvedValue(TAXONOMY)
+    versions.mockResolvedValue({
+      ...VIEW,
+      groupBy: ['format'],
+      rows: [{ ...VIEW.rows[0], key: 'deb', values: ['deb'], label: 'deb', dimension: 'format' }],
+    })
+    const el = await render('/admin/upgrades?view=fleet&group=format')
+    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['format'] }))
+    expect(el.querySelector('[data-fleet-matrix] th')!.textContent).toBe('Package format')
+    expect(el.querySelector('[data-choice="group"]')!.closest('.MuiFormControl-root')!.textContent).toContain('Package format')
+    expect(el.querySelector('[data-row="deb"]')!.textContent).toContain('Debian package (.deb)')
   })
 })

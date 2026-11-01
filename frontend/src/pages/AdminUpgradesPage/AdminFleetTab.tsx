@@ -595,16 +595,19 @@ const DrillTable: React.FC<{ devices: FleetDevice[] }> = ({ devices }) => {
                     {distributionName(device.distribution) || device.distribution || '—'}
                     {device.package && device.package !== device.version ? ` ${device.package}` : ''}
                     {device.format && (
-                      <Typography variant="caption" color="textSecondary" component="div">
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        component="div"
+                        title="Package format"
+                        data-drill-format
+                      >
                         {formatName(device.format) || device.format}
                       </Typography>
                     )}
                   </>
                 ) : (
-                  <>
-                    {userText(device.packageType)}
-                    {device.package && device.package !== device.version ? ` ${device.package}` : ''}
-                  </>
+                  device.package || '—'
                 )}
               </TableCell>
               {has('updatedBy') && (

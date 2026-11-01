@@ -32,7 +32,8 @@ export type FleetChoices = {
 }
 
 export const DEFAULT_CHOICES: FleetChoices = {
-  group: 'packageType',
+  group: 'implementation',
+  then: 'controlLink',
   of: 'connectd',
   show: 'online',
   percent: false,
@@ -48,12 +49,13 @@ function readSeen(params: URLSearchParams, seenServed: boolean): SeenChoice {
   return 'online'
 }
 
-// What a view is grouped by unless the URL says: by daemon, then by Control Link, where the API serves them; else, as
-// before graphql served the taxonomy, by package type.
+// What a view is grouped by unless the URL says (an old link's package type included): by daemon, then by Control
+// Link. An API without them — from before graphql served what a device is — by OS.
+export const FALLBACK_GROUP: FleetDimension = 'os'
 export function defaultGrouping(dimensions: DimensionChoice[] = fleetDimensions()): Pick<FleetChoices, 'group' | 'then'> {
   const has = (key: string) => dimensions.some(d => d.key === key)
   if (has('implementation')) return { group: 'implementation', then: has('controlLink') ? 'controlLink' : undefined }
-  return { group: DEFAULT_CHOICES.group, then: undefined }
+  return { group: FALLBACK_GROUP, then: undefined }
 }
 
 export const DEFAULT_FEATURE = FEATURES[0]

@@ -17,13 +17,12 @@ import { graphQLFleetDevices, graphQLFleetFields, graphQLFleetVersions, resetFle
 const type = (...names: string[]) => ({ fields: names.map(name => ({ name })) })
 const TODAY = {
   query: type('fleetVersions', 'fleetDevices'),
-  device: type('id', 'version', 'packageType', 'release', 'managed'),
+  device: type('id', 'version', 'release', 'managed'),
   column: type('version', 'devices', 'online', 'label', 'behind'),
 }
 const TAXONOMY = {
   ...TODAY,
-  // packageType is deprecated: the probe asks for deprecated fields too, so it is still listed.
-  device: type('id', 'version', 'packageType', 'connectdMajorMinor', 'implementation', 'implementationSource', 'controlLink', 'features', 'featuresSource', 'distribution', 'format', 'updatedBy', 'updateState'),
+  device: type('id', 'version', 'connectdMajorMinor', 'implementation', 'implementationSource', 'controlLink', 'features', 'featuresSource', 'distribution', 'format', 'updatedBy', 'updateState'),
   column: type('version', 'devices', 'online', 'label', 'behind', 'implementation', 'majorMinor'),
 }
 
@@ -53,7 +52,7 @@ describe('before graphql serves what a device is', () => {
     await graphQLFleetDevices({ ...query, values: [] })
     expect(asked('query FleetVersions')).toContain('columns { version devices online label behind }')
     expect(asked('query FleetDevices')).toContain(
-      'devices { id name version online lastSeen packageType package connectd os arch platform accountId account release managed }'
+      'devices { id name version online lastSeen package connectd os arch platform accountId account release managed }'
     )
   })
 
@@ -64,11 +63,10 @@ describe('before graphql serves what a device is', () => {
 })
 
 describe('once it does', () => {
-  it("asks for each version's daemon, and each device's taxonomy; the old package type only while served", async () => {
+  it("asks for each version's daemon, and each device's taxonomy; never the retired package type", async () => {
     serve(TAXONOMY)
     expect(await graphQLFleetFields()).toContain('controlLink')
-    expect(await graphQLFleetFields()).toContain('packageType')
-    expect(asked('FleetVersionFields')).toContain('FleetDevice") { fields(includeDeprecated: true)')
+    expect(asked('FleetVersionFields')).toContain('FleetDevice") { fields { name } }')
     await graphQLFleetVersions(query)
     await graphQLFleetDevices({ ...query, values: ['go'] })
     expect(asked('query FleetVersions')).toContain('columns { version devices online label behind implementation majorMinor }')

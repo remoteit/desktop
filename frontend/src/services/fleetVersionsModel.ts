@@ -2,7 +2,6 @@
    shapes it answers in — apart from the calls (graphQLFleetVersions.ts), so the page's helpers need no API client. */
 
 export const FLEET_DIMENSIONS = [
-  { key: 'packageType', label: 'Package type' },
   { key: 'os', label: 'OS' },
   { key: 'osVersion', label: 'OS version' },
   { key: 'arch', label: 'CPU arch' },
@@ -24,7 +23,7 @@ export const TAXONOMY_DIMENSIONS = [
   { key: 'implementation', label: 'Daemon', field: 'implementation' },
   { key: 'controlLink', label: 'Control Link', field: 'controlLink' },
   { key: 'distribution', label: 'Distribution', field: 'distribution' },
-  { key: 'format', label: 'Format', field: 'distribution' },
+  { key: 'format', label: 'Package format', field: 'distribution' },
   { key: 'updatedBy', label: 'Updated by', field: 'updatedBy' },
   { key: 'feature', label: 'Feature', field: 'features' },
 ] as const
@@ -42,14 +41,10 @@ export type DimensionChoice = { key: BaseDimension | TaxonomyDimension; label: s
 export const isFeature = (key?: string | null): key is `feature:${string}` => !!key?.startsWith(FEATURE_PREFIX)
 export const featureOf = (key: string) => key.slice(FEATURE_PREFIX.length)
 
-// The groupings this API serves, by the FleetDevice fields it has: today's alone until graphql serves the taxonomy,
-// and then the old package type as "(old)" for as long as it is still served.
+// The groupings this API serves: what a device is, by the FleetDevice fields it has, then the rest.
 export function fleetDimensions(fields: ReadonlySet<string> = new Set()): DimensionChoice[] {
   const taxonomy = TAXONOMY_DIMENSIONS.filter(d => fields.has(d.field))
-  const base: DimensionChoice[] = FLEET_DIMENSIONS.filter(
-    d => d.key !== 'packageType' || !taxonomy.length || fields.has('packageType')
-  ).map(d => (d.key === 'packageType' && taxonomy.length ? { key: d.key, label: 'Package type (old)' } : d))
-  return [...taxonomy.map(({ key, label }) => ({ key, label })), ...base]
+  return [...taxonomy.map(({ key, label }) => ({ key, label })), ...FLEET_DIMENSIONS]
 }
 
 // A grouping's heading: a feature's names the feature.
@@ -106,7 +101,6 @@ export type FleetDevice = {
   version: string
   online: boolean
   lastSeen: string
-  packageType?: string | null // the old grouping's value, while the API serves it
   package?: string | null
   connectd?: string | null
   os?: string | null

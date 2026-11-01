@@ -17,7 +17,7 @@ type Result<T> = T | 'ERROR' | typeof UNSUPPORTED
 
 const PROBE = `query FleetVersionFields {
   query: __type(name: "Query") { fields { name args { name } } }
-  device: __type(name: "FleetDevice") { fields(includeDeprecated: true) { name } }
+  device: __type(name: "FleetDevice") { fields { name } }
   column: __type(name: "FleetVersionColumn") { fields { name } }
 }`
 
@@ -85,7 +85,7 @@ async function read<T>(query: string, variables: ILookup<any>, field: string): P
 
 const COUNT = 'version devices online'
 const COLUMN_EXTRAS = ['implementation', 'majorMinor']
-const DEVICE = 'id name version online lastSeen packageType package connectd os arch platform accountId account release managed'
+const DEVICE = 'id name version online lastSeen package connectd os arch platform accountId account release managed'
 // What the device is (DEVICE-TAXONOMY's build contract), asked for only where the API serves it.
 const DEVICE_EXTRAS = [
   'implementation',
@@ -111,13 +111,7 @@ const withoutSeen = <T extends FleetQuery>(served: boolean, query: T): T => {
 }
 
 const pick = (wanted: string[], fields: Set<string>) => wanted.filter(name => fields.has(name))
-// The old package type until the API serves the taxonomy (deprecated from then, and gone a release later): the drill
-// shows what replaced it. The probe lists deprecated fields too, so the old grouping is offered while it is served.
-const deviceSelection = (fields: Set<string>) =>
-  [
-    ...DEVICE.split(' ').filter(name => name !== 'packageType' || !fields.has('implementation')),
-    ...pick(DEVICE_EXTRAS, fields),
-  ].join(' ')
+const deviceSelection = (fields: Set<string>) => [DEVICE, ...pick(DEVICE_EXTRAS, fields)].join(' ')
 
 export async function graphQLFleetVersions(query: FleetQuery): Promise<Result<FleetVersions>> {
   const schema = await fleetSchema()

@@ -12,6 +12,8 @@ import {
   shownCount,
   writeChoices,
 } from './fleetHelpers'
+// What a device is (graphql docs/DEVICE-TAXONOMY.md): offered once the API serves its fields.
+const TAXONOMY = new Set(['implementation', 'controlLink', 'distribution', 'updatedBy', 'features'])
 import { fleetDimensions, rowName, shownVersion, userText } from '../../services/fleetVersionsModel'
 
 // The Fleet tab's helpers: its choices in the URL, the newest versions in columns of their own and the rest folded,
@@ -32,7 +34,7 @@ describe('the choices in the URL', () => {
     expect(search).toBe('?view=fleet&group=account&then=os&online=0&pct=1&q=acme&older=1')
     expect(isFleetView(search)).toBe(true)
     expect(readChoices(search)).toEqual(choices)
-    expect(writeChoices(DEFAULT_CHOICES)).toBe('?view=fleet&group=packageType')
+    expect(writeChoices(DEFAULT_CHOICES)).toBe('?view=fleet&group=implementation&then=controlLink')
     expect(readChoices(writeChoices({ ...DEFAULT_CHOICES, of: 'package' })).of).toBe('package')
   })
 
@@ -47,18 +49,18 @@ describe('the choices in the URL', () => {
   })
 
   it('seen=7 and seen=30 where the API counts by days since seen, else online', () => {
-    const dimensions = undefined
+    const dimensions = fleetDimensions(TAXONOMY)
     expect(readChoices('?view=fleet&seen=7', dimensions, true).show).toBe('7')
     expect(readChoices('?view=fleet&seen=30', dimensions, true).show).toBe('30')
     expect(readChoices('?view=fleet&seen=30', dimensions, false).show).toBe('online')
     expect(readChoices('?view=fleet&seen=12', dimensions, true).show).toBe('online')
     const days = { ...DEFAULT_CHOICES, show: '30' as const }
-    expect(writeChoices(days)).toBe('?view=fleet&group=packageType&seen=30')
+    expect(writeChoices(days)).toBe('?view=fleet&group=implementation&then=controlLink&seen=30')
     expect(readChoices(writeChoices(days), dimensions, true)).toEqual(days)
   })
 
   it('anything unknown is the default; a second dimension like the first is none', () => {
-    expect(readChoices('?view=fleet&group=color&then=packageType&of=desktop')).toEqual(DEFAULT_CHOICES)
+    expect(readChoices('?view=fleet&group=color&then=os&of=desktop', fleetDimensions(TAXONOMY))).toEqual(DEFAULT_CHOICES)
     expect(isFleetView('?group=os')).toBe(false)
   })
 })
@@ -112,39 +114,40 @@ describe('a cell', () => {
 })
 
 // What a device is (graphql docs/DEVICE-TAXONOMY.md): offered once the API serves its fields, in the contract's names.
-const TAXONOMY = new Set(['implementation', 'controlLink', 'distribution', 'updatedBy', 'features', 'packageType'])
 
 describe('the groupings this API serves', () => {
-  it("today's alone until graphql serves the taxonomy, package type unmarked and the default", () => {
-    const today = fleetDimensions(new Set(['id', 'packageType']))
+  it("today's alone until graphql serves the taxonomy, grouped by OS; no package type, ever", () => {
+    const today = fleetDimensions(new Set(['id']))
     expect(today.map(d => d.key)).not.toContain('implementation')
-    expect(today.find(d => d.key === 'packageType')!.label).toBe('Package type')
-    expect(defaultGrouping(today)).toEqual({ group: 'packageType', then: undefined })
-    expect(readChoices('?view=fleet', today)).toEqual(DEFAULT_CHOICES)
-    expect(readChoices('?view=fleet&group=implementation', today).group).toBe('packageType')
-    expect(readChoices('?view=fleet&group=feature:subnet', today).group).toBe('packageType')
+    expect(today.map(d => d.key as string)).not.toContain('packageType')
+    expect(defaultGrouping(today)).toEqual({ group: 'os', then: undefined })
+    expect(readChoices('?view=fleet&group=implementation', today).group).toBe('os')
+    expect(readChoices('?view=fleet&group=feature:subnet', today).group).toBe('os')
+    expect(readChoices('?view=fleet&group=packageType', today).group).toBe('os')
   })
 
-  it('then the taxonomy first, in the names the contract gives, and the package type as old while served', () => {
-    const dimensions = fleetDimensions(TAXONOMY)
+  it('then the taxonomy first, in the names the contract gives', () => {
+    const dimensions = fleetDimensions(new Set([...TAXONOMY, 'packageType']))
     expect(dimensions.slice(0, 6).map(d => d.label)).toEqual([
       'Daemon',
       'Control Link',
       'Distribution',
-      'Format',
+      'Package format',
       'Updated by',
       'Feature',
     ])
-    expect(dimensions.find(d => d.key === 'packageType')!.label).toBe('Package type (old)')
-    const gone = fleetDimensions(new Set([...TAXONOMY].filter(f => f !== 'packageType')))
-    expect(gone.map(d => d.key)).not.toContain('packageType')
+    expect(dimensions.map(d => d.key as string)).not.toContain('packageType')
+    expect(dimensions.map(d => d.label)).not.toContain('Package type (old)')
   })
 
   it('by daemon, then by Control Link, unless the URL says', () => {
     const dimensions = fleetDimensions(TAXONOMY)
     expect(readChoices('?view=fleet', dimensions)).toMatchObject({ group: 'implementation', then: 'controlLink' })
     expect(readChoices('?view=fleet&group=os', dimensions)).toMatchObject({ group: 'os', then: undefined })
-    expect(readChoices('?view=fleet&group=packageType', dimensions).group).toBe('packageType')
+    // A link from before: the retired package type falls back to the default grouping.
+    expect(readChoices('?view=fleet&group=packageType', dimensions)).toMatchObject({ group: 'implementation', then: 'controlLink' })
+    expect(readChoices('?view=fleet&group=packageType&then=os', dimensions)).toMatchObject({ group: 'implementation', then: 'controlLink' })
+    expect(readChoices('?view=fleet&group=os&then=packageType', dimensions)).toMatchObject({ group: 'os', then: undefined })
   })
 
   it('a feature grouping by its name, read back as written', () => {
