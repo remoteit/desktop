@@ -421,7 +421,7 @@ describe('once graphql serves what a device is', () => {
           release: 'no device session',
           managed: 'unmanaged: classic',
           implementation: 'c',
-          implementationSource: 'fallback',
+          implementationSource: 'classic',
           controlLink: false,
           features: [],
           featuresSource: 'table',
@@ -441,7 +441,7 @@ describe('once graphql serves what a device is', () => {
           release: 'current',
           managed: 'unmanaged: updated by image',
           implementation: 'go',
-          implementationSource: 'fallback',
+          implementationSource: 'controlLink',
           controlLink: true,
           features: [],
           featuresSource: 'table',
@@ -457,6 +457,11 @@ describe('once graphql serves what a device is', () => {
     const row = (id: string) => el.querySelector(`[data-device="${id}"]`)!
     const pi = row('80:00:00:00:00:00:00:01')
     expect(pi.querySelector('[data-drill-version]')!.textContent).toBe(GO)
+    // Where its daemon comes from, on hover.
+    const source = (id: string) => row(id).querySelector('[data-implementation-source]')!.getAttribute('aria-label')
+    expect(source('80:00:00:00:00:00:00:01')).toBe('reported by the device')
+    expect(source('80:00:00:00:00:00:00:02')).toBe('Classic device, so C')
+    expect(source('80:00:00:00:00:00:00:03')).toBe('Control Link device, so Go')
     expect(pi.querySelector('[data-drill-link]')!.textContent).toBe('Control Link')
     expect(pi.querySelector('[data-drill-package]')!.textContent).toBe('remote.it package 1.1.0.9Debian package (.deb)')
     expect(pi.querySelector('[data-drill-updated-by]')!.textContent).toBe('remote.it rollouts')

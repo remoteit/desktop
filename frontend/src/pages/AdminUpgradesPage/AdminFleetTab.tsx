@@ -526,10 +526,12 @@ const FleetDrill: React.FC<{ drill: Drill; devices?: FleetDevices | 'ERROR' | ty
 
 const drillCell = { paddingX: 1, whiteSpace: 'nowrap' } as const
 
+// Where a device's daemon comes from (implementationSource): its own report, else its kind — every Control Link
+// device without a report runs Go, every Classic one C.
 const SOURCES: Record<string, string> = {
-  flags: 'marked in its device type',
-  report: 'as it reports',
-  fallback: 'no mark: taken to be C',
+  report: 'reported by the device',
+  controlLink: 'Control Link device, so Go',
+  classic: 'Classic device, so C',
 }
 
 // The devices of a cell: what each runs and is — its daemon and version, Control Link or Classic, the package that
@@ -574,7 +576,7 @@ const DrillTable: React.FC<{ devices: FleetDevice[] }> = ({ devices }) => {
               </TableCell>
               <TableCell sx={drillCell} data-drill-version>
                 <Tooltip title={device.implementationSource ? SOURCES[device.implementationSource] || '' : ''}>
-                  <span>{version.text}</span>
+                  <span data-implementation-source={device.implementationSource || undefined}>{version.text}</span>
                 </Tooltip>
                 {version.majorMinor && (
                   <Typography variant="caption" color="textSecondary" component="div">

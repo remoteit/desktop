@@ -118,7 +118,7 @@ export type FleetDevice = {
   managed: string
   // What the device is, where the API serves it (graphql docs/DEVICE-TAXONOMY.md, the build contract).
   implementation?: string | null // go | c
-  implementationSource?: string | null // flags | report | fallback
+  implementationSource?: string | null // report | controlLink | classic
   controlLink?: boolean | null
   features?: string[] | null
   featuresSource?: string | null // report | table
