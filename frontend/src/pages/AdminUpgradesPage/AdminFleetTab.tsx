@@ -25,15 +25,30 @@ import { Notice } from '../../components/Notice'
 import { IconButton } from '../../buttons/IconButton'
 import { UNSUPPORTED } from '../../services/graphQLDaemon'
 import {
-  FLEET_DIMENSIONS,
+  CLASSIC,
+  CONTROL_LINK,
+  DimensionChoice,
+  FEATURES,
   FleetCount,
+  FleetDevice,
   FleetDevices,
+  FleetDimension,
   FleetRow,
   FleetVersions,
-  NONE,
+  HELD,
   VERSION_OF,
+  dimensionLabel,
+  distributionName,
+  featureOf,
+  fleetDimensions,
+  formatName,
+  isFeature,
+  rowName,
+  shownVersion,
+  updatedByName,
+  userText,
 } from '../../services/fleetVersionsModel'
-import { graphQLFleetDevices, graphQLFleetVersions } from '../../services/graphQLFleetVersions'
+import { graphQLFleetDevices, graphQLFleetFields, graphQLFleetVersions } from '../../services/graphQLFleetVersions'
 import { UpgradesTabs } from './UpgradesTabs'
 import { UPGRADES_ROUTE, dateTime } from './rolloutHelpers'
 import {
@@ -41,6 +56,9 @@ import {
   MatrixColumn,
   behindShade,
   cellOf,
+  choiceOf,
+  columnHeading,
+  featureDimension,
   groupByOf,
   matrixColumns,
   onlineTitle,
@@ -59,13 +77,51 @@ const selectSx = { minWidth: 240, maxWidth: '100%' } as const
 const headSx = { fontWeight: 600, whiteSpace: 'nowrap', paddingX: 1, paddingY: 0.5 } as const
 const cellSx = { whiteSpace: 'nowrap', paddingX: 1, paddingY: 0.25, textAlign: 'right', fontVariantNumeric: 'tabular-nums' } as const
 
+// A menu entry as a grouping: Feature as its first feature (another than the first grouping's).
+const dimensionFor = (value: string, exclude?: FleetDimension): FleetDimension =>
+  value === 'feature' ? featureDimension(FEATURES.find(f => featureDimension(f) !== exclude)) : (value as FleetDimension)
+
+// Which feature a Feature grouping counts: "supports X" and not.
+const FeaturePicker: React.FC<{
+  value: FleetDimension
+  name: 'group' | 'then'
+  exclude?: FleetDimension
+  onChange: (value: FleetDimension) => void
+}> = ({ value, name, exclude, onChange }) => {
+  const current = featureOf(value)
+  const names = FEATURES.includes(current) ? FEATURES : [...FEATURES, current]
+  return (
+    <TextField
+      select
+      size="small"
+      label="Feature"
+      value={current}
+      sx={{ minWidth: 180 }}
+      InputLabelProps={{ shrink: true }}
+      onChange={e => onChange(featureDimension(e.target.value))}
+      inputProps={{ 'data-feature': name }}
+    >
+      {names
+        .filter(feature => featureDimension(feature) !== exclude)
+        .map(feature => (
+          <MenuItem key={feature} value={feature}>
+            {feature}
+          </MenuItem>
+        ))}
+    </TextField>
+  )
+}
+
 /* The fleet's versions (admin): a matrix of device groups by the version they run, newest on the left — the current
    and candidate releases labelled, each older version a darker amber the further behind, the oldest folded into
    "older" — each cell its devices (click for the list, hover for online and offline). The choices live in the URL. */
 export const AdminFleetTab: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
-  const choices = useMemo(() => readChoices(location.search), [location.search])
+  // Which groupings this API serves, read from its schema before the first count: the default grouping depends on it.
+  const [fields, setFields] = useState<Set<string>>()
+  const dimensions = useMemo(() => fleetDimensions(fields), [fields])
+  const choices = useMemo(() => readChoices(location.search, dimensions), [location.search, dimensions])
   const [view, setView] = useState<FleetVersions | 'ERROR' | typeof UNSUPPORTED>()
   const [loading, setLoading] = useState(false)
   const [drill, setDrill] = useState<Drill>()
@@ -75,6 +131,9 @@ export const AdminFleetTab: React.FC = () => {
 
   useEffect(() => {
     mounted.current = true
+    graphQLFleetFields()
+      .catch(() => new Set<string>())
+      .then(served => mounted.current && setFields(served || new Set()))
     return () => {
       mounted.current = false
     }
@@ -94,12 +153,13 @@ export const AdminFleetTab: React.FC = () => {
   )
 
   const load = useCallback(async () => {
+    if (!fields) return
     setLoading(true)
     const next = await graphQLFleetVersions(query)
     if (!mounted.current) return
     setView(next)
     setLoading(false)
-  }, [query])
+  }, [query, fields])
 
   useEffect(() => {
     setDrill(undefined)
@@ -138,36 +198,53 @@ export const AdminFleetTab: React.FC = () => {
           select
           size="small"
           label="Group by"
-          value={choices.group}
+          value={choiceOf(choices.group)}
           sx={selectSx}
           InputLabelProps={{ shrink: true }}
-          onChange={e => choose({ group: e.target.value as FleetChoices['group'], then: undefined })}
+          onChange={e => choose({ group: dimensionFor(e.target.value), then: undefined })}
           inputProps={{ 'data-choice': 'group' }}
         >
-          {FLEET_DIMENSIONS.map(d => (
+          {dimensions.map(d => (
             <MenuItem key={d.key} value={d.key}>
               {d.label}
             </MenuItem>
           ))}
         </TextField>
+        {isFeature(choices.group) && (
+          <FeaturePicker
+            value={choices.group}
+            name="group"
+            onChange={group => choose({ group, then: choices.then === group ? undefined : choices.then })}
+          />
+        )}
         <TextField
           select
           size="small"
           label="Then by"
-          value={choices.then || ''}
+          value={choiceOf(choices.then)}
           sx={selectSx}
           InputLabelProps={{ shrink: true }}
           SelectProps={{ displayEmpty: true }}
-          onChange={e => choose({ then: (e.target.value || undefined) as FleetChoices['then'] })}
+          onChange={e => choose({ then: e.target.value ? dimensionFor(e.target.value, choices.group) : undefined })}
           inputProps={{ 'data-choice': 'then' }}
         >
           <MenuItem value="">None</MenuItem>
-          {FLEET_DIMENSIONS.filter(d => d.key !== choices.group).map(d => (
-            <MenuItem key={d.key} value={d.key}>
-              {d.label}
-            </MenuItem>
-          ))}
+          {dimensions
+            .filter(d => d.key !== choices.group)
+            .map(d => (
+              <MenuItem key={d.key} value={d.key}>
+                {d.label}
+              </MenuItem>
+            ))}
         </TextField>
+        {isFeature(choices.then) && (
+          <FeaturePicker
+            value={choices.then}
+            name="then"
+            exclude={choices.group}
+            onChange={then => choose({ then })}
+          />
+        )}
         <ToggleButtonGroup
           exclusive
           size="small"
@@ -220,7 +297,7 @@ export const AdminFleetTab: React.FC = () => {
     </Gutters>
   )
 
-  if (view === undefined) return <LoadingMessage message="Counting the fleet..." />
+  if (view === undefined || !fields) return <LoadingMessage message="Counting the fleet..." />
 
   if (view === UNSUPPORTED)
     return (
@@ -251,6 +328,7 @@ export const AdminFleetTab: React.FC = () => {
         <FleetMatrix
           view={view}
           choices={choices}
+          dimensions={dimensions}
           onExpand={() => choose({ older: !choices.older })}
           onOpen={open}
           drill={drill}
@@ -264,12 +342,13 @@ export const AdminFleetTab: React.FC = () => {
 const FleetMatrix: React.FC<{
   view: FleetVersions
   choices: FleetChoices
+  dimensions: DimensionChoice[]
   onExpand: () => void
   onOpen: (drill: Drill) => void
   drill?: Drill
-}> = ({ view, choices, onExpand, onOpen, drill }) => {
+}> = ({ view, choices, dimensions, onExpand, onOpen, drill }) => {
   const columns = matrixColumns(view.columns, choices.older)
-  const folded = view.columns.filter(c => c.version !== NONE).length - columns.filter(c => c.kind === 'version').length
+  const folded = columns.filter(c => c.kind === 'older').length
   const totals: FleetRow = {
     key: '',
     values: [],
@@ -280,8 +359,7 @@ const FleetMatrix: React.FC<{
     online: view.totals.online,
     cells: view.columns,
   }
-  const versionLabel = (column: MatrixColumn) =>
-    column.kind === 'older' ? `older (${column.versions.length})` : column.kind === 'none' ? 'none' : column.key
+  const versionLabel = (column: MatrixColumn) => columnHeading(column).text
   const shade = (column: MatrixColumn) =>
     behindShade(column.kind === 'older' ? column.behind : column.kind === 'version' ? column.column.behind : null)
   const active = (row: FleetRow | null, column: MatrixColumn | null) =>
@@ -290,7 +368,7 @@ const FleetMatrix: React.FC<{
   const count = (row: FleetRow, column: MatrixColumn | null, isTotal = false) => {
     const value: FleetCount = column ? cellOf(row, column) : { version: '', devices: row.total, online: row.online }
     const target = isTotal ? null : row
-    const title = `${row.label}${column ? ` · ${versionLabel(column)}` : ''}`
+    const title = `${rowName(row)}${column ? ` · ${versionLabel(column)}` : ''}`
     return (
       <TableCell
         key={column?.key || 'total'}
@@ -335,7 +413,7 @@ const FleetMatrix: React.FC<{
           <TableRow>
             <TableCell sx={{ ...headSx, position: 'sticky', left: 0, zIndex: 3, backgroundColor: 'white.main' }}>
               {groupByOf(choices)
-                .map(key => FLEET_DIMENSIONS.find(d => d.key === key)?.label)
+                .map(key => dimensionLabel(key, dimensions))
                 .join(' › ')}
             </TableCell>
             <TableCell sx={{ ...headSx, textAlign: 'right' }}>Total</TableCell>
@@ -352,12 +430,19 @@ const FleetMatrix: React.FC<{
                 ) : (
                   <Box>{versionLabel(column)}</Box>
                 )}
+                {columnHeading(column).majorMinor && (
+                  <Tooltip title="A classic C device reports no full version: this is the major.minor its device type carries">
+                    <Typography variant="caption" color="textSecondary" component="div" data-major-minor>
+                      major.minor
+                    </Typography>
+                  </Tooltip>
+                )}
                 {column.kind === 'version' && column.column.label && (
                   <Chip
                     size="small"
                     color={/candidate/.test(column.column.label) ? 'primary' : undefined}
                     variant={/candidate/.test(column.column.label) ? 'filled' : 'outlined'}
-                    label={column.column.label}
+                    label={userText(column.column.label)}
                     sx={{ marginTop: 0.25 }}
                   />
                 )}
@@ -381,9 +466,9 @@ const FleetMatrix: React.FC<{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}
-                title={row.label}
+                title={rowName(row)}
               >
-                {row.label}
+                {rowName(row)}
               </TableCell>
               {count(row, null)}
               {columns.map(column => count(row, column))}
@@ -431,45 +516,127 @@ const FleetDrill: React.FC<{ drill: Drill; devices?: FleetDevices | 'ERROR' | ty
             : `${devices.total.toLocaleString()} devices`}
         </Typography>
         <Box sx={{ overflowX: 'auto' }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                {['Device', 'Version', 'Status', 'Package', 'OS', 'Account', 'Release'].map(title => (
-                  <TableCell key={title} sx={headSx}>
-                    {title}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {devices.devices.map(device => (
-                <TableRow key={device.id} data-device={device.id}>
-                  <TableCell sx={{ paddingX: 1 }}>
-                    <Link to={`/admin/devices/${device.id}`}>{device.name || device.id}</Link>
-                    <Typography variant="caption" color="textSecondary" component="div">
-                      {device.id}
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ paddingX: 1, whiteSpace: 'nowrap' }}>{device.version}</TableCell>
-                  <TableCell sx={{ paddingX: 1, whiteSpace: 'nowrap' }}>{device.lastSeen}</TableCell>
-                  <TableCell sx={{ paddingX: 1, whiteSpace: 'nowrap' }}>
-                    {device.packageType}
-                    {device.package && device.package !== device.version ? ` ${device.package}` : ''}
-                  </TableCell>
-                  <TableCell sx={{ paddingX: 1 }}>{[device.os, device.arch].filter(Boolean).join(' · ') || '—'}</TableCell>
-                  <TableCell sx={{ paddingX: 1 }}>{device.account || device.accountId || '—'}</TableCell>
-                  <TableCell sx={{ paddingX: 1 }}>
-                    {device.release}
-                    <Typography variant="caption" color="textSecondary" component="div">
-                      {device.managed}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DrillTable devices={devices.devices} />
         </Box>
       </>
     )}
   </Box>
 )
+
+const drillCell = { paddingX: 1, whiteSpace: 'nowrap' } as const
+
+const SOURCES: Record<string, string> = {
+  flags: 'marked in its device type',
+  report: 'as it reports',
+  fallback: 'no mark: taken to be C',
+}
+
+// The devices of a cell: what each runs and is — its daemon and version, Control Link or Classic, the package that
+// shipped it and what upgrades it, what it supports — where the API says, else as before the taxonomy.
+const DrillTable: React.FC<{ devices: FleetDevice[] }> = ({ devices }) => {
+  const has = (field: keyof FleetDevice) => devices.some(device => device[field] != null)
+  const taxonomy = has('implementation') || has('controlLink') || has('distribution')
+  const titles = [
+    'Device',
+    'Version',
+    'Status',
+    ...(has('controlLink') ? ['Link'] : []),
+    'Package',
+    ...(has('updatedBy') ? ['Updated by'] : []),
+    ...(has('features') ? ['Features'] : []),
+    'OS',
+    'Account',
+    'Release',
+  ]
+  return (
+    <Table size="small">
+      <TableHead>
+        <TableRow>
+          {titles.map(title => (
+            <TableCell key={title} sx={headSx}>
+              {title}
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {devices.map(device => {
+          const version = shownVersion(device.version, device.implementation)
+          const held = device.updateState === 'held'
+          return (
+            <TableRow key={device.id} data-device={device.id}>
+              <TableCell sx={{ paddingX: 1 }}>
+                <Link to={`/admin/devices/${device.id}`}>{device.name || device.id}</Link>
+                <Typography variant="caption" color="textSecondary" component="div">
+                  {device.id}
+                </Typography>
+              </TableCell>
+              <TableCell sx={drillCell} data-drill-version>
+                <Tooltip title={device.implementationSource ? SOURCES[device.implementationSource] || '' : ''}>
+                  <span>{version.text}</span>
+                </Tooltip>
+                {version.majorMinor && (
+                  <Typography variant="caption" color="textSecondary" component="div">
+                    major.minor
+                  </Typography>
+                )}
+              </TableCell>
+              <TableCell sx={drillCell}>{userText(device.lastSeen)}</TableCell>
+              {has('controlLink') && (
+                <TableCell sx={drillCell} data-drill-link>
+                  {device.controlLink == null ? '—' : device.controlLink ? CONTROL_LINK : CLASSIC}
+                </TableCell>
+              )}
+              <TableCell sx={drillCell} data-drill-package>
+                {taxonomy ? (
+                  <>
+                    {distributionName(device.distribution) || device.distribution || '—'}
+                    {device.package && device.package !== device.version ? ` ${device.package}` : ''}
+                    {device.format && (
+                      <Typography variant="caption" color="textSecondary" component="div">
+                        {formatName(device.format) || device.format}
+                      </Typography>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {userText(device.packageType)}
+                    {device.package && device.package !== device.version ? ` ${device.package}` : ''}
+                  </>
+                )}
+              </TableCell>
+              {has('updatedBy') && (
+                <TableCell sx={drillCell} data-drill-updated-by>
+                  {updatedByName(device.updatedBy) || device.updatedBy || '—'}
+                </TableCell>
+              )}
+              {has('features') && (
+                <TableCell sx={{ paddingX: 1 }} data-drill-features>
+                  {device.features?.length ? device.features.join(', ') : '—'}
+                  {device.featuresSource === 'table' && (
+                    <Typography variant="caption" color="textSecondary" component="div">
+                      from its version
+                    </Typography>
+                  )}
+                </TableCell>
+              )}
+              <TableCell sx={{ paddingX: 1 }}>{[device.os, device.arch].filter(Boolean).join(' · ') || '—'}</TableCell>
+              <TableCell sx={{ paddingX: 1 }}>{device.account || device.accountId || '—'}</TableCell>
+              <TableCell sx={{ paddingX: 1 }}>
+                {userText(device.release)}
+                <Typography variant="caption" color="textSecondary" component="div">
+                  {userText(device.managed)}
+                </Typography>
+                {held && (
+                  <Typography variant="caption" color="warning.main" component="div" data-held>
+                    blocked: {HELD}
+                  </Typography>
+                )}
+              </TableCell>
+            </TableRow>
+          )
+        })}
+      </TableBody>
+    </Table>
+  )
+}

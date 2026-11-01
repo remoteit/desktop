@@ -6,8 +6,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // The Upgrades page's Fleet tab: until graphql serves fleetVersions it says so; then a matrix of groups by version,
 // the releases labelled, the older amber and folded, totals, a cell's devices on a click — and the choices in the URL.
-const { versions, devices } = vi.hoisted(() => ({ versions: vi.fn(), devices: vi.fn() }))
-vi.mock('../../services/graphQLFleetVersions', () => ({ graphQLFleetVersions: versions, graphQLFleetDevices: devices }))
+const { versions, devices, fields } = vi.hoisted(() => ({ versions: vi.fn(), devices: vi.fn(), fields: vi.fn() }))
+vi.mock('../../services/graphQLFleetVersions', () => ({
+  graphQLFleetVersions: versions,
+  graphQLFleetDevices: devices,
+  graphQLFleetFields: fields,
+}))
 vi.mock('../../services/graphQLDaemonRollout', () => ({
   graphQLDaemonChannels: vi.fn(async () => []),
   graphQLDaemonRollouts: vi.fn(async () => []),
@@ -124,8 +128,26 @@ async function render(path: string) {
   return el
 }
 
+// FleetDevice's fields once graphql serves what a device is (DEVICE-TAXONOMY's build contract), the old package type
+// still among them.
+const TAXONOMY = new Set([
+  'id',
+  'version',
+  'packageType',
+  'implementation',
+  'implementationSource',
+  'controlLink',
+  'features',
+  'featuresSource',
+  'distribution',
+  'format',
+  'updatedBy',
+  'updateState',
+])
+
 beforeEach(() => {
   document.body.innerHTML = ''
+  fields.mockReset().mockResolvedValue(new Set(['id', 'version', 'packageType']))
   versions.mockReset().mockResolvedValue(VIEW)
   devices.mockReset().mockResolvedValue({
     checked: VIEW.checked,
@@ -236,5 +258,173 @@ describe('the choices', () => {
     const then = el.querySelector('[data-choice="then"]')!.closest('.MuiFormControl-root')!
     expect(then.textContent).toContain('Then by')
     expect(then.textContent).toContain('None')
+  })
+})
+
+describe('before graphql serves what a device is', () => {
+  it('groups by package type, as today, and offers none of the new groupings', async () => {
+    const el = await render('/admin/upgrades?view=fleet')
+    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['packageType'] }))
+    expect(el.querySelector('[data-fleet-matrix] th')!.textContent).toBe('Package type')
+    expect(el.textContent).not.toContain('(old)')
+  })
+
+  it("the API's own words for a device without a Control Link are not shown", async () => {
+    versions.mockResolvedValue({
+      ...VIEW,
+      rows: [{ ...VIEW.rows[0], key: 'c', values: ['connectd, no device session'], label: 'connectd, no device session' }],
+    })
+    const el = await render('/admin/upgrades?view=fleet&group=packageType')
+    expect(el.textContent).toContain('connectd, Classic')
+    expect(el.textContent).not.toMatch(/device session/i)
+  })
+})
+
+describe('once graphql serves what a device is', () => {
+  const TAXONOMY_VIEW = {
+    ...VIEW,
+    groupBy: ['implementation', 'controlLink'],
+    versionOf: 'connectd',
+    columns: [
+      { ...count('go 5.6.1', 5, 5), implementation: 'go', label: 'current', behind: null },
+      { ...count('go 5.6.0', 2, 1), implementation: 'go', label: null, behind: 1 },
+      { ...count('c 5.6', 30, 20), implementation: 'c', majorMinor: true, label: null, behind: null },
+      { ...count('c 5.5', 4, 1), implementation: 'c', majorMinor: true, label: null, behind: null },
+      { ...count('unknown', 3, 0), label: null, behind: null },
+    ],
+    rows: [
+      { key: 'go', values: ['go'], label: 'go', dimension: 'implementation', depth: 0, total: 7, online: 6, cells: [count('go 5.6.1', 5, 5), count('go 5.6.0', 2, 1)] },
+      { key: 'go/true', values: ['go', 'true'], label: 'true', dimension: 'controlLink', depth: 1, parentKey: 'go', total: 7, online: 6, cells: [count('go 5.6.1', 5, 5), count('go 5.6.0', 2, 1)] },
+      { key: 'c', values: ['c'], label: 'c', dimension: 'implementation', depth: 0, total: 37, online: 21, cells: [count('c 5.6', 30, 20), count('c 5.5', 4, 1), count('unknown', 3, 0)] },
+      { key: 'c/false', values: ['c', 'false'], label: 'false', dimension: 'controlLink', depth: 1, parentKey: 'c', total: 37, online: 21, cells: [count('c 5.6', 30, 20), count('c 5.5', 4, 1), count('unknown', 3, 0)] },
+    ],
+    totals: { devices: 44, online: 27 },
+  }
+
+  beforeEach(() => {
+    fields.mockResolvedValue(TAXONOMY)
+    versions.mockResolvedValue(TAXONOMY_VIEW)
+  })
+
+  it('groups by daemon, then by Control Link, unless the URL says; the rows in the names customers see', async () => {
+    const el = await render('/admin/upgrades?view=fleet')
+    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['implementation', 'controlLink'] }))
+    expect(el.querySelector('[data-fleet-matrix] th')!.textContent).toBe('Daemon › Control Link')
+    const label = (key: string) => el.querySelector(`[data-row="${key}"] th, [data-row="${key}"] td`)!.textContent
+    expect(label('go')).toBe('Go')
+    expect(label('go/true')).toBe('Control Link')
+    expect(label('c')).toBe('C')
+    expect(label('c/false')).toBe('Classic')
+  })
+
+  it('a link that names the old package type still opens it', async () => {
+    await render('/admin/upgrades?view=fleet&group=packageType')
+    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['packageType'] }))
+  })
+
+  it('each version beside its daemon, C major.minor marked, unknown its own column, none of them folded together', async () => {
+    const el = await render('/admin/upgrades?view=fleet')
+    const columns = [...el.querySelectorAll('[data-column]')]
+    expect(columns.map(c => c.getAttribute('data-column'))).toEqual(['go 5.6.1', 'go 5.6.0', 'c 5.6', 'c 5.5', 'unknown'])
+    expect(columns.map(c => c.querySelector('div')!.textContent)).toEqual(['Go 5.6.1', 'Go 5.6.0', 'C 5.6', 'C 5.5', 'unknown'])
+    expect(el.querySelector('[data-column="c 5.6"] [data-major-minor]')!.textContent).toBe('major.minor')
+    expect(el.querySelector('[data-column="go 5.6.1"] [data-major-minor]')).toBeNull()
+    expect(el.querySelector('[data-cell="c|unknown"]')!.textContent).toBe('3')
+  })
+
+  it('the distribution in the names customers see: never CloudShift', async () => {
+    versions.mockResolvedValue({
+      ...TAXONOMY_VIEW,
+      groupBy: ['distribution'],
+      rows: [
+        { ...TAXONOMY_VIEW.rows[0], key: 'remoteit', values: ['remoteit'], label: 'CloudShift package', dimension: 'distribution' },
+        { ...TAXONOMY_VIEW.rows[0], key: 'remoteit-device', values: ['remoteit-device'], label: 'remoteit-device', dimension: 'distribution' },
+        { ...TAXONOMY_VIEW.rows[0], key: 'odd', values: ['odd'], label: 'a CloudShift build', dimension: 'distribution' },
+      ],
+    })
+    const el = await render('/admin/upgrades?view=fleet&group=distribution')
+    expect(el.querySelector('[data-row="remoteit"]')!.textContent).toContain('remote.it package (classic)')
+    expect(el.querySelector('[data-row="remoteit-device"]')!.textContent).toContain('remote.it package')
+    expect(el.textContent).not.toMatch(/cloud ?shift/i)
+  })
+
+  it('a feature grouping names its feature, with a picker for which, and reads supports or not', async () => {
+    versions.mockResolvedValue({
+      ...TAXONOMY_VIEW,
+      groupBy: ['feature:subnet'],
+      rows: [
+        { ...TAXONOMY_VIEW.rows[0], key: 'true', values: ['true'], label: 'true', dimension: 'feature:subnet' },
+        { ...TAXONOMY_VIEW.rows[0], key: 'false', values: ['false'], label: 'false', dimension: 'feature:subnet' },
+      ],
+    })
+    const el = await render('/admin/upgrades?view=fleet&group=feature:subnet')
+    expect(versions).toHaveBeenCalledWith(expect.objectContaining({ groupBy: ['feature:subnet'] }))
+    expect((el.querySelector('[data-feature="group"]') as HTMLInputElement).value).toBe('subnet')
+    expect(el.querySelector('[data-fleet-matrix] th')!.textContent).toBe('Feature: subnet')
+    expect(el.querySelector('[data-row="true"]')!.textContent).toContain('supports subnet')
+    expect(el.querySelector('[data-row="false"]')!.textContent).toContain("doesn't support subnet")
+  })
+
+  it("a cell's devices say what each is: daemon, link, package, what upgrades it, its features — a held one blocked", async () => {
+    devices.mockResolvedValue({
+      checked: VIEW.checked,
+      total: 2,
+      devices: [
+        {
+          id: '80:00:00:00:00:00:00:01',
+          name: 'pi-1',
+          version: 'go 5.6.1',
+          online: true,
+          lastSeen: 'online',
+          package: '1.1.0.9',
+          release: 'current',
+          managed: 'managed',
+          implementation: 'go',
+          implementationSource: 'report',
+          controlLink: true,
+          features: ['remote-upgrade', 'subnet'],
+          featuresSource: 'report',
+          distribution: 'remoteit-device',
+          format: 'deb',
+          updatedBy: 'remoteit',
+          updateState: 'held',
+        },
+        {
+          id: '80:00:00:00:00:00:00:02',
+          name: 'old',
+          version: 'c 5.6',
+          online: true,
+          lastSeen: 'online',
+          release: 'no device session',
+          managed: 'unmanaged: no device session',
+          implementation: 'c',
+          implementationSource: 'fallback',
+          controlLink: false,
+          features: [],
+          featuresSource: 'table',
+          distribution: 'remoteit',
+          updatedBy: 'package-manager',
+        },
+      ],
+    })
+    const el = await render('/admin/upgrades?view=fleet')
+    await act(async () => (el.querySelector('[data-cell="go|go 5.6.1"] [role="button"]') as HTMLElement).click())
+    await act(async () => {})
+    const row = (id: string) => el.querySelector(`[data-device="${id}"]`)!
+    const pi = row('80:00:00:00:00:00:00:01')
+    expect(pi.querySelector('[data-drill-version]')!.textContent).toBe('Go 5.6.1')
+    expect(pi.querySelector('[data-drill-link]')!.textContent).toBe('Control Link')
+    expect(pi.querySelector('[data-drill-package]')!.textContent).toBe('remote.it package 1.1.0.9Debian package (.deb)')
+    expect(pi.querySelector('[data-drill-updated-by]')!.textContent).toBe('remote.it rollouts')
+    expect(pi.querySelector('[data-drill-features]')!.textContent).toBe('remote-upgrade, subnet')
+    expect(pi.querySelector('[data-held]')!.textContent).toBe("blocked: held by the device's admin")
+    const old = row('80:00:00:00:00:00:00:02')
+    expect(old.querySelector('[data-drill-version]')!.textContent).toBe('C 5.6major.minor')
+    expect(old.querySelector('[data-drill-link]')!.textContent).toBe('Classic')
+    expect(old.querySelector('[data-drill-package]')!.textContent).toBe('remote.it package (classic)')
+    expect(old.querySelector('[data-drill-updated-by]')!.textContent).toBe('package manager')
+    expect(old.querySelector('[data-drill-features]')!.textContent).toBe('—from its version')
+    expect(old.querySelector('[data-held]')).toBeNull()
+    expect(el.querySelector('[data-drill]')!.textContent).not.toMatch(/device session|cloud ?shift/i)
   })
 })

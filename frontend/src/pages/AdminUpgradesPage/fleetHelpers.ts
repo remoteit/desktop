@@ -1,11 +1,18 @@
 import {
-  FLEET_DIMENSIONS,
+  DimensionChoice,
+  FEATURES,
+  FEATURE_PREFIX,
   FleetColumn,
   FleetCount,
   FleetDimension,
   FleetRow,
+  IMPLEMENTATION_NAMES,
   NONE,
   VersionOf,
+  featureOf,
+  fleetDimensions,
+  isFeature,
+  shownVersion,
 } from '../../services/fleetVersionsModel'
 
 // The Fleet tab's view, as the URL holds it, so a view can be shared: ?view=fleet&group=…&then=…&of=…&online=0&pct=1&q=…
@@ -31,15 +38,36 @@ export const DEFAULT_CHOICES: FleetChoices = {
   older: false,
 }
 
-const dimension = (value: string | null): FleetDimension | undefined =>
-  FLEET_DIMENSIONS.find(d => d.key === value)?.key
+// What a view is grouped by unless the URL says: by daemon, then by Control Link, where the API serves them; else, as
+// before graphql served the taxonomy, by package type.
+export function defaultGrouping(dimensions: DimensionChoice[] = fleetDimensions()): Pick<FleetChoices, 'group' | 'then'> {
+  const has = (key: string) => dimensions.some(d => d.key === key)
+  if (has('implementation')) return { group: 'implementation', then: has('controlLink') ? 'controlLink' : undefined }
+  return { group: DEFAULT_CHOICES.group, then: undefined }
+}
+
+export const DEFAULT_FEATURE = FEATURES[0]
+const FEATURE_NAME = /^[a-z0-9][a-z0-9._-]{0,47}$/i
+
+// A grouping the URL names, if this API serves it: a feature's by its name.
+const dimension = (value: string | null, dimensions: DimensionChoice[]): FleetDimension | undefined => {
+  if (isFeature(value))
+    return dimensions.some(d => d.key === 'feature') && FEATURE_NAME.test(featureOf(value)) ? value : undefined
+  return dimensions.find(d => d.key === value && d.key !== 'feature')?.key as FleetDimension | undefined
+}
+
+// The menu entry a grouping is under: every feature's is Feature.
+export const choiceOf = (key?: FleetDimension) => (isFeature(key) ? 'feature' : key || '')
+export const featureDimension = (name = DEFAULT_FEATURE): FleetDimension => `${FEATURE_PREFIX}${name}`
 
 export const isFleetView = (search: string) => new URLSearchParams(search).get('view') === FLEET_VIEW
 
-export function readChoices(search: string): FleetChoices {
+export function readChoices(search: string, dimensions: DimensionChoice[] = fleetDimensions()): FleetChoices {
   const params = new URLSearchParams(search)
-  const group = dimension(params.get('group')) || DEFAULT_CHOICES.group
-  const then = dimension(params.get('then'))
+  const named = dimension(params.get('group'), dimensions)
+  const fallback = defaultGrouping(dimensions)
+  const group = named || fallback.group
+  const then = named ? dimension(params.get('then'), dimensions) : fallback.then
   return {
     group,
     then: then && then !== group ? then : undefined,
@@ -66,33 +94,75 @@ export const groupByOf = (choices: FleetChoices): FleetDimension[] =>
   choices.then ? [choices.group, choices.then] : [choices.group]
 
 // The newest few versions get columns of their own; the rest fold into one "older" column. `none` stays apart, last.
+// Versions compare only within one daemon (DEVICE-TAXONOMY §1): where the API names each version's daemon, each has
+// its own newest columns and its own fold, in the order the API gives them. `unknown` is a column of its own, never
+// folded, before none.
 export const OWN_COLUMNS = 6
 
+type Implementation = 'go' | 'c' | undefined
+
 export type MatrixColumn =
-  | { kind: 'version'; key: string; column: FleetColumn }
-  | { kind: 'older'; key: 'older'; versions: string[]; devices: number; online: number; behind: number | null }
+  | { kind: 'version'; key: string; column: FleetColumn; implementation?: Implementation }
+  | {
+      kind: 'older'
+      key: string
+      versions: string[]
+      devices: number
+      online: number
+      behind: number | null
+      implementation?: Implementation
+    }
+  | { kind: 'unknown'; key: string; column: FleetColumn; implementation?: Implementation }
   | { kind: 'none'; key: typeof NONE; column: FleetColumn }
 
+const shownOf = (column: FleetColumn) => shownVersion(column.version, column.implementation, column.majorMinor)
+
 export function matrixColumns(columns: FleetColumn[], expandOlder: boolean): MatrixColumn[] {
-  const versions = columns.filter(c => c.version !== NONE)
   const none = columns.find(c => c.version === NONE)
+  const unknown = columns.filter(c => c.version !== NONE && shownOf(c).unknown)
+  const versions = columns.filter(c => c.version !== NONE && !shownOf(c).unknown)
+  const byDaemon = new Map<Implementation, FleetColumn[]>()
+  for (const column of versions) {
+    const implementation = shownOf(column).implementation
+    byDaemon.set(implementation, [...(byDaemon.get(implementation) || []), column])
+  }
+  const out: MatrixColumn[] = []
+  for (const [implementation, own] of byDaemon) out.push(...daemonColumns(own, expandOlder, implementation))
+  for (const column of unknown)
+    out.push({ kind: 'unknown', key: column.version, column, implementation: shownOf(column).implementation })
+  if (none) out.push({ kind: 'none', key: NONE, column: none })
+  return out
+}
+
+function daemonColumns(versions: FleetColumn[], expandOlder: boolean, implementation: Implementation): MatrixColumn[] {
   const own = expandOlder || versions.length <= OWN_COLUMNS + 1 ? versions : versions.slice(0, OWN_COLUMNS)
   const folded = versions.slice(own.length)
-  const out: MatrixColumn[] = own.map(column => ({ kind: 'version', key: column.version, column }))
+  const out: MatrixColumn[] = own.map(column => ({ kind: 'version', key: column.version, column, implementation }))
   if (folded.length) {
     const behinds = folded.map(c => c.behind).filter((b): b is number => typeof b === 'number')
     out.push({
       kind: 'older',
-      key: 'older',
+      key: implementation ? `older:${implementation}` : 'older',
       versions: folded.map(c => c.version),
       devices: folded.reduce((sum, c) => sum + c.devices, 0),
       online: folded.reduce((sum, c) => sum + c.online, 0),
       // As far behind as its newest: the fold is at least that old.
       behind: behinds.length ? Math.min(...behinds) : null,
+      implementation,
     })
   }
-  if (none) out.push({ kind: 'none', key: NONE, column: none })
   return out
+}
+
+// A column's heading: the version beside its daemon, the fold with its count.
+export function columnHeading(column: MatrixColumn): { text: string; majorMinor: boolean } {
+  if (column.kind === 'none') return { text: 'none', majorMinor: false }
+  if (column.kind === 'older') {
+    const daemon = column.implementation ? `${IMPLEMENTATION_NAMES[column.implementation]} ` : ''
+    return { text: `${daemon}older (${column.versions.length})`, majorMinor: false }
+  }
+  const shown = shownOf(column.column)
+  return { text: shown.text, majorMinor: shown.majorMinor }
 }
 
 // A row's count under a column: a version's, the fold's sum, none's.

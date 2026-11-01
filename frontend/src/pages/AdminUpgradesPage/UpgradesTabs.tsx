@@ -2,9 +2,10 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { Tab, Tabs } from '@mui/material'
 import { UPGRADES_ROUTE } from './rolloutHelpers'
-import { DEFAULT_CHOICES, writeChoices } from './fleetHelpers'
+import { FLEET_VIEW } from './fleetHelpers'
 
-// The Upgrades page's two views: the channels and their rollouts, and the fleet's versions.
+// The Upgrades page's two views: the channels and their rollouts, and the fleet's versions — grouped as this API's
+// default unless the URL says (fleetHelpers' defaultGrouping).
 export const UpgradesTabs: React.FC<{ value: 'rollouts' | 'fleet' }> = ({ value }) => {
   const history = useHistory()
   return (
@@ -14,7 +15,7 @@ export const UpgradesTabs: React.FC<{ value: 'rollouts' | 'fleet' }> = ({ value 
         value="fleet"
         label="Fleet"
         data-tab="fleet"
-        onClick={() => value !== 'fleet' && history.push(`${UPGRADES_ROUTE}${writeChoices(DEFAULT_CHOICES)}`)}
+        onClick={() => value !== 'fleet' && history.push(`${UPGRADES_ROUTE}?view=${FLEET_VIEW}`)}
       />
     </Tabs>
   )

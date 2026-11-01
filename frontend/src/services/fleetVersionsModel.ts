@@ -15,11 +15,54 @@ export const FLEET_DIMENSIONS = [
   { key: 'lastSeen', label: 'Last seen' },
 ] as const
 
-export type FleetDimension = (typeof FLEET_DIMENSIONS)[number]['key']
+/* What a device is (graphql docs/DEVICE-TAXONOMY.md): which daemon, whether it has a Control Link, who shipped it in
+   what format, what upgrades it, and what it supports. Each grouping is offered once the API serves its per-device
+   field on FleetDevice (`field`), so a portal ahead of graphql offers only today's. Format rides with distribution:
+   the format was always reported, and graphql groups by it from the same release. `feature` stands for
+   `feature:<name>`, one grouping per feature. */
+export const TAXONOMY_DIMENSIONS = [
+  { key: 'implementation', label: 'Daemon', field: 'implementation' },
+  { key: 'controlLink', label: 'Control Link', field: 'controlLink' },
+  { key: 'distribution', label: 'Distribution', field: 'distribution' },
+  { key: 'format', label: 'Format', field: 'distribution' },
+  { key: 'updatedBy', label: 'Updated by', field: 'updatedBy' },
+  { key: 'feature', label: 'Feature', field: 'features' },
+] as const
+
+// The starting feature names (the build contract); a device may report others, which the picker offers too.
+export const FEATURES = ['remote-upgrade', 'upgrade-window', 'transient-report', 'disable', 'decommission', 'exec', 'subnet']
+export const FEATURE_PREFIX = 'feature:'
+
+export type BaseDimension = (typeof FLEET_DIMENSIONS)[number]['key']
+export type TaxonomyDimension = (typeof TAXONOMY_DIMENSIONS)[number]['key']
+export type FleetDimension = BaseDimension | Exclude<TaxonomyDimension, 'feature'> | `feature:${string}`
+// A grouping as the menus offer it: every feature is the one entry, `feature`.
+export type DimensionChoice = { key: BaseDimension | TaxonomyDimension; label: string }
+
+export const isFeature = (key?: string | null): key is `feature:${string}` => !!key?.startsWith(FEATURE_PREFIX)
+export const featureOf = (key: string) => key.slice(FEATURE_PREFIX.length)
+
+// The groupings this API serves, by the FleetDevice fields it has: today's alone until graphql serves the taxonomy,
+// and then the old package type as "(old)" for as long as it is still served.
+export function fleetDimensions(fields: ReadonlySet<string> = new Set()): DimensionChoice[] {
+  const taxonomy = TAXONOMY_DIMENSIONS.filter(d => fields.has(d.field))
+  const base: DimensionChoice[] = FLEET_DIMENSIONS.filter(
+    d => d.key !== 'packageType' || !taxonomy.length || fields.has('packageType')
+  ).map(d => (d.key === 'packageType' && taxonomy.length ? { key: d.key, label: 'Package type (old)' } : d))
+  return [...taxonomy.map(({ key, label }) => ({ key, label })), ...base]
+}
+
+// A grouping's heading: a feature's names the feature.
+export const dimensionLabel = (key: string, dimensions: DimensionChoice[] = fleetDimensions()) =>
+  isFeature(key)
+    ? `Feature: ${featureOf(key)}`
+    : dimensions.find(d => d.key === key)?.label ||
+      [...TAXONOMY_DIMENSIONS, ...FLEET_DIMENSIONS].find(d => d.key === key)?.label ||
+      key
 
 export const VERSION_OF = [
   { key: 'connectd', label: 'connectd', help: 'What the daemon reports, else what its device type carries: every device has one' },
-  { key: 'package', label: 'Package', help: 'The package it came in: none without a device session' },
+  { key: 'package', label: 'Package', help: 'The package it came in: none on a Classic device' },
   { key: 'desktop', label: 'Desktop app', help: 'Not recorded: the desktop app reports its version to nothing graphql keeps', disabled: true },
 ] as const
 
@@ -29,7 +72,14 @@ export const NONE = 'none'
 export const OTHER = '~other'
 
 export type FleetCount = { version: string; devices: number; online: number }
-export type FleetColumn = FleetCount & { label?: string | null; behind?: number | null }
+// implementation, majorMinor: where the API says them — a version's daemon (versions compare within one alone), and a
+// classic C device's version being its device type's major.minor rather than a full version.
+export type FleetColumn = FleetCount & {
+  label?: string | null
+  behind?: number | null
+  implementation?: string | null
+  majorMinor?: boolean | null
+}
 export type FleetRow = {
   key: string
   values: string[]
@@ -56,7 +106,7 @@ export type FleetDevice = {
   version: string
   online: boolean
   lastSeen: string
-  packageType: string
+  packageType?: string | null // the old grouping's value, while the API serves it
   package?: string | null
   connectd?: string | null
   os?: string | null
@@ -66,6 +116,16 @@ export type FleetDevice = {
   account?: string | null
   release: string
   managed: string
+  // What the device is, where the API serves it (graphql docs/DEVICE-TAXONOMY.md, the build contract).
+  implementation?: string | null // go | c
+  implementationSource?: string | null // flags | report | fallback
+  controlLink?: boolean | null
+  features?: string[] | null
+  featuresSource?: string | null // report | table
+  distribution?: string | null
+  format?: string | null
+  updatedBy?: string | null
+  updateState?: string | null // held: a package hold or lock its admin set
 }
 export type FleetDevices = { checked: string; total: number; devices: FleetDevice[] }
 
@@ -75,4 +135,106 @@ export type FleetQuery = {
   onlineOnly?: boolean
   accountSearch?: string
   accountLimit?: number
+}
+
+/* The names a customer and an admin see for what a device is (graphql docs/DEVICE-TAXONOMY.md, "UI names"). Values
+   not listed show as the API gives them. "CloudShift" is the name of a repository, never of anything on screen. */
+export const IMPLEMENTATION_NAMES: Record<string, string> = { go: 'Go', c: 'C' }
+export const CONTROL_LINK = 'Control Link'
+export const CLASSIC = 'Classic'
+export const DISTRIBUTION_NAMES: Record<string, string> = {
+  'remoteit-device': 'remote.it package',
+  remoteit: 'remote.it package (classic)',
+  'remoteit-cli': 'remote.it CLI',
+  desktop: 'remote.it Desktop',
+  none: 'no package',
+}
+export const FORMAT_NAMES: Record<string, string> = {
+  tar: 'Linux tarball',
+  deb: 'Debian package (.deb)',
+  rpm: 'RPM package',
+  apk: 'Alpine package (.apk)',
+  ipk: 'OpenWrt package (.ipk)',
+  pkg: 'macOS installer (.pkg)',
+  msi: 'Windows installer (.msi)',
+  zip: 'Windows (zip)',
+  container: 'container image',
+  none: 'no package (binary only)',
+}
+export const UPDATED_BY_NAMES: Record<string, string> = {
+  remoteit: 'remote.it rollouts',
+  'package-manager': 'package manager',
+  image: 'container image',
+  cli: 'remote.it CLI',
+  desktop: 'remote.it Desktop',
+  none: 'none',
+}
+export const HELD = "held by the device's admin"
+
+const named = (names: Record<string, string>, value?: string | null) =>
+  value == null ? undefined : names[value.trim().toLowerCase()]
+
+export const implementationName = (value?: string | null) => named(IMPLEMENTATION_NAMES, value)
+export const distributionName = (value?: string | null) => named(DISTRIBUTION_NAMES, value)
+export const formatName = (value?: string | null) => named(FORMAT_NAMES, value)
+export const updatedByName = (value?: string | null) => named(UPDATED_BY_NAMES, value)
+
+const YES = ['true', 'yes', '1', 'supported', 'control link', 'controllink']
+const NO = ['false', 'no', '0', 'unsupported', 'classic']
+export const controlLinkName = (value?: string | boolean | null) => {
+  const text = String(value ?? '').toLowerCase()
+  return YES.includes(text) ? CONTROL_LINK : NO.includes(text) ? CLASSIC : undefined
+}
+
+// Text the API wrote for people, in today's words: "device session" leaves what anyone reads (DEVICE-TAXONOMY §6,
+// stage 1), and "CloudShift" never reaches it.
+export const userText = (text?: string | null) =>
+  (text ?? '')
+    .replace(/\bno device[ -]sessions?\b/gi, CLASSIC)
+    .replace(/\bwithout a device[ -]session\b/gi, `on a ${CLASSIC} device`)
+    .replace(/\bdevice[ -]sessions?\b/gi, CONTROL_LINK)
+    .replace(/\bcloud ?shift( package)?/gi, DISTRIBUTION_NAMES.remoteit)
+
+// A row's own name: its value in the contract's words where the dimension is one of the taxonomy's, else the API's
+// label in today's words.
+export function rowName(row: { dimension: string; values: string[]; label: string }): string {
+  const value = row.values[row.values.length - 1]
+  if (value === OTHER) return userText(row.label)
+  const lower = (value ?? '').toLowerCase()
+  let name: string | undefined
+  if (row.dimension === 'implementation') name = implementationName(value)
+  else if (row.dimension === 'controlLink') name = controlLinkName(value)
+  else if (row.dimension === 'distribution') name = distributionName(value)
+  else if (row.dimension === 'format') name = formatName(value)
+  else if (row.dimension === 'updatedBy') name = updatedByName(value)
+  else if (isFeature(row.dimension)) {
+    const feature = featureOf(row.dimension)
+    name = YES.includes(lower) ? `supports ${feature}` : NO.includes(lower) ? `doesn't support ${feature}` : undefined
+  }
+  return name ?? userText(row.label)
+}
+
+// A version as the columns and the drill show it: its daemon beside it ("Go 5.6.1", "C 5.6"), never inside it; a
+// classic C device's device-type major.minor marked as such; `unknown` as itself. The daemon is the API's
+// `implementation` where it says it, else a "go"/"c" the version is keyed with; neither, the version as it is.
+export type ShownVersion = { implementation?: 'go' | 'c'; version: string; majorMinor: boolean; unknown: boolean; text: string }
+export function shownVersion(
+  version: string,
+  implementation?: string | null,
+  majorMinor?: boolean | null
+): ShownVersion {
+  const keyed = /^(go|c)[\s:/_-]+(.+)$/i.exec(version)
+  const impl = (implementation || keyed?.[1] || '').toLowerCase()
+  const known = impl === 'go' || impl === 'c' ? (impl as 'go' | 'c') : undefined
+  const bare = known && keyed ? keyed[2] : version
+  const unknown = /^unknown\b/i.test(bare)
+  const short = majorMinor ?? (known === 'c' && /^\d+\.\d+$/.test(bare))
+  const shown = unknown ? 'unknown' : bare
+  return {
+    implementation: known,
+    version: bare,
+    majorMinor: !unknown && !!short,
+    unknown,
+    text: known ? `${IMPLEMENTATION_NAMES[known]} ${shown}` : shown,
+  }
 }

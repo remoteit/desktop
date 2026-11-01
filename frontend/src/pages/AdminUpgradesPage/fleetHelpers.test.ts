@@ -3,6 +3,8 @@ import {
   DEFAULT_CHOICES,
   behindShade,
   cellOf,
+  columnHeading,
+  defaultGrouping,
   isFleetView,
   matrixColumns,
   onlineTitle,
@@ -10,6 +12,7 @@ import {
   shownCount,
   writeChoices,
 } from './fleetHelpers'
+import { fleetDimensions, rowName, shownVersion, userText } from '../../services/fleetVersionsModel'
 
 // The Fleet tab's helpers: its choices in the URL, the newest versions in columns of their own and the rest folded,
 // amber for the older, and a cell as a count or a share of its row.
@@ -93,5 +96,128 @@ describe('a cell', () => {
     expect(shownCount(1, 3, true)).toBe('33.3%')
     expect(shownCount(0, 0, true)).toBe('—')
     expect(onlineTitle({ devices: 10, online: 7 })).toBe('7 online · 3 offline')
+  })
+})
+
+// What a device is (graphql docs/DEVICE-TAXONOMY.md): offered once the API serves its fields, in the contract's names.
+const TAXONOMY = new Set(['implementation', 'controlLink', 'distribution', 'updatedBy', 'features', 'packageType'])
+
+describe('the groupings this API serves', () => {
+  it("today's alone until graphql serves the taxonomy, package type unmarked and the default", () => {
+    const today = fleetDimensions(new Set(['id', 'packageType']))
+    expect(today.map(d => d.key)).not.toContain('implementation')
+    expect(today.find(d => d.key === 'packageType')!.label).toBe('Package type')
+    expect(defaultGrouping(today)).toEqual({ group: 'packageType', then: undefined })
+    expect(readChoices('?view=fleet', today)).toEqual(DEFAULT_CHOICES)
+    expect(readChoices('?view=fleet&group=implementation', today).group).toBe('packageType')
+    expect(readChoices('?view=fleet&group=feature:subnet', today).group).toBe('packageType')
+  })
+
+  it('then the taxonomy first, in the names the contract gives, and the package type as old while served', () => {
+    const dimensions = fleetDimensions(TAXONOMY)
+    expect(dimensions.slice(0, 6).map(d => d.label)).toEqual([
+      'Daemon',
+      'Control Link',
+      'Distribution',
+      'Format',
+      'Updated by',
+      'Feature',
+    ])
+    expect(dimensions.find(d => d.key === 'packageType')!.label).toBe('Package type (old)')
+    const gone = fleetDimensions(new Set([...TAXONOMY].filter(f => f !== 'packageType')))
+    expect(gone.map(d => d.key)).not.toContain('packageType')
+  })
+
+  it('by daemon, then by Control Link, unless the URL says', () => {
+    const dimensions = fleetDimensions(TAXONOMY)
+    expect(readChoices('?view=fleet', dimensions)).toMatchObject({ group: 'implementation', then: 'controlLink' })
+    expect(readChoices('?view=fleet&group=os', dimensions)).toMatchObject({ group: 'os', then: undefined })
+    expect(readChoices('?view=fleet&group=packageType', dimensions).group).toBe('packageType')
+  })
+
+  it('a feature grouping by its name, read back as written', () => {
+    const dimensions = fleetDimensions(TAXONOMY)
+    const choices = readChoices('?view=fleet&group=feature:subnet&then=feature:exec', dimensions)
+    expect(choices).toMatchObject({ group: 'feature:subnet', then: 'feature:exec' })
+    expect(readChoices(writeChoices(choices), dimensions)).toEqual(choices)
+    expect(readChoices('?view=fleet&group=feature:', dimensions).group).toBe('implementation')
+    expect(readChoices('?view=fleet&group=feature', dimensions).group).toBe('implementation')
+  })
+})
+
+describe('versions by daemon', () => {
+  const daemon = (version: string, implementation: string, behind: number | null = null) => ({
+    ...column(version, 1, behind),
+    implementation,
+  })
+
+  it('beside the daemon, never inside it; C major.minor marked; unknown as itself', () => {
+    expect(shownVersion('5.6.1', 'go')).toMatchObject({ text: 'Go 5.6.1', majorMinor: false })
+    expect(shownVersion('c 5.6')).toMatchObject({ implementation: 'c', version: '5.6', text: 'C 5.6', majorMinor: true })
+    expect(shownVersion('c:5.7.0')).toMatchObject({ text: 'C 5.7.0', majorMinor: false })
+    expect(shownVersion('5.6', 'c', false).majorMinor).toBe(false)
+    expect(shownVersion('unknown')).toMatchObject({ text: 'unknown', unknown: true, majorMinor: false })
+    expect(shownVersion('go unknown')).toMatchObject({ text: 'Go unknown', unknown: true })
+    // No daemon named: the version as it is, as before.
+    expect(shownVersion('1.1.0.9')).toMatchObject({ text: '1.1.0.9', implementation: undefined, majorMinor: false })
+    expect(shownVersion('5.6')).toMatchObject({ text: '5.6', majorMinor: false })
+  })
+
+  it("each daemon its own newest columns and its own fold; unknown apart, before none", () => {
+    const columns = [
+      ...Array.from({ length: 9 }, (_, i) => daemon(`go 5.${9 - i}`, 'go', i > 1 ? i - 1 : null)),
+      daemon('c 5.6', 'c'),
+      daemon('c 5.5', 'c'),
+      column('unknown', 2),
+      column('none', 4, null, 'none'),
+    ]
+    const shown = matrixColumns(columns, false)
+    expect(shown.map(c => c.key)).toEqual([
+      'go 5.9',
+      'go 5.8',
+      'go 5.7',
+      'go 5.6',
+      'go 5.5',
+      'go 5.4',
+      'older:go',
+      'c 5.6',
+      'c 5.5',
+      'unknown',
+      'none',
+    ])
+    expect(columnHeading(shown[6])).toEqual({ text: 'Go older (3)', majorMinor: false })
+    expect(columnHeading(shown[7])).toEqual({ text: 'C 5.6', majorMinor: true })
+    expect(columnHeading(shown[9]).text).toBe('unknown')
+    expect(matrixColumns(columns, true).filter(c => c.kind === 'older')).toHaveLength(0)
+  })
+})
+
+describe('names on screen', () => {
+  const row = (dimension: string, value: string, label = value) => ({ dimension, values: [value], label })
+
+  it("each value in the contract's names", () => {
+    expect(rowName(row('implementation', 'go'))).toBe('Go')
+    expect(rowName(row('controlLink', 'false'))).toBe('Classic')
+    expect(rowName(row('distribution', 'remoteit'))).toBe('remote.it package (classic)')
+    expect(rowName(row('distribution', 'remoteit-device'))).toBe('remote.it package')
+    expect(rowName(row('distribution', 'remoteit-cli'))).toBe('remote.it CLI')
+    expect(rowName(row('distribution', 'desktop'))).toBe('remote.it Desktop')
+    expect(rowName(row('distribution', 'none'))).toBe('no package')
+    expect(rowName(row('format', 'ipk'))).toBe('OpenWrt package (.ipk)')
+    expect(rowName(row('updatedBy', 'remoteit'))).toBe('remote.it rollouts')
+    expect(rowName(row('updatedBy', 'package-manager'))).toBe('package manager')
+    expect(rowName(row('updatedBy', 'image'))).toBe('container image')
+    expect(rowName(row('feature:exec', 'true'))).toBe('supports exec')
+    expect(rowName(row('distribution', 'unknown'))).toBe('unknown')
+    expect(rowName(row('os', 'Debian GNU/Linux 12'))).toBe('Debian GNU/Linux 12')
+  })
+
+  it('no device session, and no CloudShift, whatever the API wrote', () => {
+    expect(userText('connectd, no device session')).toBe('connectd, Classic')
+    expect(userText('unmanaged: no device session')).toBe('unmanaged: Classic')
+    expect(userText('none without a device session')).toBe('none on a Classic device')
+    expect(userText('Device sessions')).toBe('Control Link')
+    expect(userText('CloudShift package')).toBe('remote.it package (classic)')
+    expect(rowName(row('distribution', 'weird', 'cloudshift oem'))).toBe('remote.it package (classic) oem')
   })
 })
