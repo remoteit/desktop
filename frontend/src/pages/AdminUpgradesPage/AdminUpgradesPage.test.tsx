@@ -292,6 +292,7 @@ const store = {
   dispatch: () => {},
 } as any
 
+let seenAt: { pathname: string; search: string } = { pathname: '', search: '' }
 async function render(path: string) {
   const el = document.createElement('div')
   document.body.appendChild(el)
@@ -303,6 +304,13 @@ async function render(path: string) {
             <Route path="/admin/upgrades/:rolloutId?">
               <AdminUpgradesPage />
             </Route>
+            <Route
+              path="*"
+              render={({ location: at }) => {
+                at && (seenAt = at)
+                return null
+              }}
+            />
           </MemoryRouter>
         </ThemeProvider>
       </Provider>
@@ -616,6 +624,72 @@ describe('AdminUpgradesPage', () => {
     const line = el.querySelector('[data-channel="stable"] [data-managed-line]')!
     await act(async () => (line.querySelector('[data-unmanaged-toggle]') as HTMLElement).click())
     expect(line.textContent).toContain('20 updated by container image')
+  })
+
+  it('no Online · 7 days · 30 days · All until graphql counts the offline by age: every offline device counted', async () => {
+    const el = await render('/admin/upgrades?seen=online')
+    expect(el.querySelector('[data-upgrades-seen] [data-seen-toggle]')).toBeNull()
+    const line = el.querySelector('[data-channel="stable"] [data-managed-line]')!
+    expect(line.textContent).toContain('80 managed')
+    expect(line.querySelector('[data-hidden-offline]')).toBeNull()
+    expect(el.querySelector('[data-channel="stable"] [data-bucket-bar]')!.textContent).toContain('Offline 7')
+  })
+
+  describe('with the offline by age', () => {
+    // stable's 7 offline: 2 under a day, 1 for 1–7 days, 1 for 7–30 days, 3 over 30 days.
+    const bands = { offlineUnder1d: 2, offline1to7d: 1, offline7to30d: 1, offlineOver30d: 3 }
+    beforeEach(() => {
+      channels.mockResolvedValue([{ ...STABLE, rollout: { ...STABLE.rollout, ...bands } }])
+      run.mockResolvedValue({ ...HELD, rollout: { ...HELD.rollout, ...bands } })
+    })
+    const pressed = (el: HTMLElement) =>
+      el.querySelector('[data-upgrades-seen] [aria-pressed="true"]')?.getAttribute('data-show')
+
+    it('30 days by default: the older offline left out of the bar and the managed count, and said so', async () => {
+      const el = await render('/admin/upgrades')
+      expect(pressed(el)).toBe('30')
+      const channel = el.querySelector('[data-channel="stable"]')!
+      const line = channel.querySelector('[data-managed-line]')!
+      expect(line.textContent).toContain('77 managed')
+      expect(line.querySelector('[data-hidden-offline]')!.textContent).toContain('3 offline over 30 days not shown')
+      const bar = channel.querySelector('[data-bucket-bar]')!
+      expect(bar.textContent).toContain('Offline 4')
+      expect(bar.querySelector('[data-bar-heading]')!.textContent).toContain('77 devices')
+    })
+
+    it('each choice in the URL: 7 days, Online with no offline segment, All with every one', async () => {
+      const el = await render('/admin/upgrades')
+      const choose = (key: string) =>
+        act(async () => (el.querySelector(`[data-upgrades-seen] [data-show="${key}"]`) as HTMLElement).click())
+      const channel = () => el.querySelector('[data-channel="stable"]')!
+      await choose('7')
+      expect(seenAt.search).toBe('?seen=7')
+      expect(channel().querySelector('[data-bucket-bar]')!.textContent).toContain('Offline 3')
+      expect(channel().querySelector('[data-hidden-offline]')!.textContent).toContain('4 offline over 7 days not shown')
+      await choose('online')
+      expect(seenAt.search).toBe('?seen=online')
+      expect(channel().querySelector('[data-segment="offline"]')).toBeNull()
+      expect(channel().querySelector('[data-bucket-bar]')!.textContent).not.toContain('Offline')
+      expect(channel().querySelector('[data-hidden-offline]')!.textContent).toContain('7 offline not shown')
+      await choose('all')
+      expect(seenAt.search).toBe('?seen=all')
+      expect(channel().querySelector('[data-managed-line]')!.textContent).toContain('80 managed')
+      expect(channel().querySelector('[data-hidden-offline]')).toBeNull()
+      await choose('30')
+      expect(seenAt.search).toBe('') // the default left out
+    })
+
+    it("a run's detail reads the same choice, carried from the channels to it", async () => {
+      const el = await render('/admin/upgrades?seen=7')
+      await act(async () => (el.querySelector('[data-rollout="R2"]') as HTMLElement).click())
+      await act(async () => {})
+      expect(seenAt.pathname).toBe('/admin/upgrades/R2')
+      expect(seenAt.search).toBe('?seen=7')
+      const detail = el.querySelectorAll('[data-managed-line]')
+      expect(detail[detail.length - 1].querySelector('[data-hidden-offline]')!.textContent).toContain(
+        'offline over 7 days not shown'
+      )
+    })
   })
 
   it('ahead devices have their own segment and legend entry where the API counts them', async () => {

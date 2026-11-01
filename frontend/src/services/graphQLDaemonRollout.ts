@@ -38,6 +38,12 @@ export type DaemonBuckets = {
   unmanaged: number
   offline: number
   ahead?: number // running newer than assigned, where the API counts it
+  // The offline by how long ago each was last seen, where graphql counts them so; offline stays their total.
+  offlineUnder1d?: number
+  offline1to7d?: number
+  offline7to30d?: number
+  offlineOver30d?: number
+  offlineNeverSeen?: number
   held?: number // managed but blocked: a package hold or lock its admin set, where the API counts it
   failures?: DaemonFailure[]
   unmanagedReasons?: DaemonFailure[]
@@ -234,6 +240,14 @@ const CHANNEL_ROLLOUT = channelRollout()
 const DELIVERY = `change version state total delivered pacedDelivered unpacedDelivered skippedUnmanaged failed unchanged
   remaining walked perSecond startedAt finishedAt retryAt error`
 
+export const OFFLINE_BANDS = [
+  'offlineUnder1d',
+  'offline1to7d',
+  'offline7to30d',
+  'offlineOver30d',
+  'offlineNeverSeen',
+] as const
+
 const DELIVERY_EXTRAS = ['aheadDelivered', 'upgradeTargets', 'managedTotal']
 
 export const EVENT_LIMIT = 200
@@ -400,7 +414,8 @@ export function parseRolloutSchema(data: any): RolloutSchema {
   // `ahead`: devices running newer than they are assigned, kept until the candidate reaches them. `held`: managed, but
   // blocked by a package hold or lock the device's admin set (DEVICE-TAXONOMY, proposal 3).
   const counts = names(data?.counts)
-  const buckets = [BUCKETS, ...['ahead', 'held'].filter(name => counts.has(name))].join(' ')
+  // The offline by age, where graphql counts them so (what the page's Online · 7 days · 30 days · All reads).
+  const buckets = [BUCKETS, ...['ahead', 'held', ...OFFLINE_BANDS].filter(name => counts.has(name))].join(' ')
   // Whether the walk predates the channel's latest change, where graphql says so outright: `stale`, or the `change` it
   // counted (against the channel's).
   const walkFields = names(data?.channelRollout)

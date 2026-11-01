@@ -15,7 +15,8 @@ import { UNSUPPORTED } from '../../services/graphQLDaemon'
 import { AdminChannelOverview } from './AdminChannelOverview'
 import { AdminRolloutListItem } from './AdminRolloutListItem'
 import { adminRolloutAttributes } from './adminRolloutAttributes'
-import { NEW_ROLLOUT, UPGRADES_ROUTE, active, dateTime } from './rolloutHelpers'
+import { NEW_ROLLOUT, UPGRADES_ROUTE, active, dateTime, hasOfflineBands } from './rolloutHelpers'
+import { UpgradesSeenToggle, keepSeen } from './upgradesSeen'
 import { Upgrades } from './useUpgrades'
 import { useRecount } from './useRecount'
 import { RecountNote } from './RecountNote'
@@ -52,13 +53,20 @@ export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrad
             size="md"
           />
           {runs !== false && runs !== UNSUPPORTED && (
-            <Button variant="contained" size="small" onClick={() => history.push(`${UPGRADES_ROUTE}/${NEW_ROLLOUT}`)}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => history.push(keepSeen(`${UPGRADES_ROUTE}/${NEW_ROLLOUT}`, location.search))}
+            >
               New rollout
             </Button>
           )}
         </Stack>
       </Stack>
       <UpgradesTabs value="rollouts" />
+      <Box sx={{ marginTop: 1 }} data-upgrades-seen>
+        <UpgradesSeenToggle bands={shown.some(c => hasOfflineBands(c.rollout))} />
+      </Box>
     </Gutters>
   )
 
@@ -142,7 +150,7 @@ export const AdminUpgradesListPage: React.FC<{ upgrades: Upgrades }> = ({ upgrad
                   required={required}
                   attributes={attributes}
                   active={location.pathname === `${UPGRADES_ROUTE}/${run.id}`}
-                  onClick={() => history.push(`${UPGRADES_ROUTE}/${run.id}`)}
+                  onClick={() => history.push(keepSeen(`${UPGRADES_ROUTE}/${run.id}`, location.search))}
                 />
               ))}
             </GridList>

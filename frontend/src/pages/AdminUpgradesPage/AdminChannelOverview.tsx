@@ -10,7 +10,8 @@ import type {
 import { RolloutBucketBar } from './RolloutBucketBar'
 import { DaemonInstallLine } from './DaemonInstallLine'
 import { RolloutDelivery } from './RolloutDelivery'
-import { countsBefore, countsStalled, dateTime, heldReason, managed, reasonText } from './rolloutHelpers'
+import { countsBefore, countsStalled, dateTime, heldReason, hiddenNote, managed, reasonText } from './rolloutHelpers'
+import { useUpgradesSeen } from './upgradesSeen'
 
 export const ReasonList: React.FC<{ title: string; reasons?: DaemonFailure[]; color?: string }> = ({
   title,
@@ -41,14 +42,16 @@ export const ReasonList: React.FC<{ title: string; reasons?: DaemonFailure[]; co
 // managed, but blocked by the device's admin, where graphql counts them — open what holds them.
 export const ManagedLine: React.FC<{ buckets?: DaemonBuckets | null }> = ({ buckets }) => {
   const [open, setOpen] = useState<'unmanaged' | 'held'>()
+  const seen = useUpgradesSeen()
   if (!buckets?.wanted) return null
+  const note = hiddenNote(buckets, seen)
   const unmanaged = buckets.unmanaged || 0
   const held = buckets.held || 0
   const toggle = (which: 'unmanaged' | 'held') => setOpen(open === which ? undefined : which)
   return (
     <Box data-managed-line sx={{ marginBottom: 1.5 }}>
       <Typography variant="caption" color="textSecondary" component="div">
-        {managed(buckets).toLocaleString()} managed ·{' '}
+        {managed(buckets, seen).toLocaleString()} managed ·{' '}
         {unmanaged && buckets.unmanagedReasons?.length ? (
           <Link component="button" variant="caption" onClick={() => toggle('unmanaged')} data-unmanaged-toggle>
             {unmanaged.toLocaleString()} unmanaged
@@ -67,6 +70,12 @@ export const ManagedLine: React.FC<{ buckets?: DaemonBuckets | null }> = ({ buck
               `${held.toLocaleString()} held`
             )}
           </>
+        )}
+        {note && (
+          <Box component="span" data-hidden-offline>
+            {' · '}
+            {note}
+          </Box>
         )}
       </Typography>
       {open === 'unmanaged' && (

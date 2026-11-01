@@ -9,6 +9,7 @@ import { AdminRolloutDetailPanel } from './AdminRolloutDetailPanel'
 import { AdminRolloutStartForm } from './AdminRolloutStartForm'
 import { NEW_ROLLOUT } from './rolloutHelpers'
 import { useUpgrades } from './useUpgrades'
+import { UpgradesSeenContext, readUpgradesSeen } from './upgradesSeen'
 import { UpgradesErrorBoundary } from './UpgradesErrorBoundary'
 import { State } from '../../store'
 import { useContainerWidth } from '../../hooks/useContainerWidth'
@@ -58,6 +59,7 @@ export const AdminUpgradesPage: React.FC = () => {
 
 const AdminRolloutsView: React.FC = () => {
   const { rolloutId } = useParams<{ rolloutId?: string }>()
+  const location = useLocation()
   const upgrades = useUpgrades()
   const layout = useSelector((state: State) => state.ui.layout)
 
@@ -73,51 +75,53 @@ const AdminRolloutsView: React.FC = () => {
   const showRight = hasSelection
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }} ref={containerRef}>
-      <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
-        {showLeft && (
-          <>
-            <Box
-              sx={panelSx}
-              style={{
-                width: hasSelection ? leftPanel.width : undefined,
-                minWidth: hasSelection ? leftPanel.width : undefined,
-                flex: hasSelection ? undefined : 1,
-              }}
-              ref={leftPanel.panelRef}
-            >
-              <UpgradesErrorBoundary what="channels and rollouts">
-                <AdminUpgradesListPage upgrades={upgrades} />
+    <UpgradesSeenContext.Provider value={readUpgradesSeen(location.search)}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }} ref={containerRef}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
+          {showLeft && (
+            <>
+              <Box
+                sx={panelSx}
+                style={{
+                  width: hasSelection ? leftPanel.width : undefined,
+                  minWidth: hasSelection ? leftPanel.width : undefined,
+                  flex: hasSelection ? undefined : 1,
+                }}
+                ref={leftPanel.panelRef}
+              >
+                <UpgradesErrorBoundary what="channels and rollouts">
+                  <AdminUpgradesListPage upgrades={upgrades} />
+                </UpgradesErrorBoundary>
+              </Box>
+
+              {hasSelection && (
+                <Box sx={{ position: 'relative', height: '100%' }}>
+                  <Box sx={handleSx} onMouseDown={leftPanel.onDown}>
+                    <Box className={leftPanel.grab ? 'active' : undefined} />
+                  </Box>
+                </Box>
+              )}
+            </>
+          )}
+
+          {showRight && (
+            <Box sx={[panelSx, { flex: 1 }]}>
+              <UpgradesErrorBoundary key={rolloutId} what={rolloutId === NEW_ROLLOUT ? 'start form' : 'rollout'}>
+                {rolloutId === NEW_ROLLOUT ? (
+                  <AdminRolloutStartForm
+                    channels={Array.isArray(upgrades.channels) ? upgrades.channels : []}
+                    runs={Array.isArray(upgrades.runs) ? upgrades.runs : []}
+                    showBackArrow={!showLeft}
+                    onStarted={upgrades.reload}
+                  />
+                ) : (
+                  <AdminRolloutDetailPanel key={rolloutId} showBackArrow={!showLeft} onChanged={upgrades.reload} />
+                )}
               </UpgradesErrorBoundary>
             </Box>
-
-            {hasSelection && (
-              <Box sx={{ position: 'relative', height: '100%' }}>
-                <Box sx={handleSx} onMouseDown={leftPanel.onDown}>
-                  <Box className={leftPanel.grab ? 'active' : undefined} />
-                </Box>
-              </Box>
-            )}
-          </>
-        )}
-
-        {showRight && (
-          <Box sx={[panelSx, { flex: 1 }]}>
-            <UpgradesErrorBoundary key={rolloutId} what={rolloutId === NEW_ROLLOUT ? 'start form' : 'rollout'}>
-              {rolloutId === NEW_ROLLOUT ? (
-                <AdminRolloutStartForm
-                  channels={Array.isArray(upgrades.channels) ? upgrades.channels : []}
-                  runs={Array.isArray(upgrades.runs) ? upgrades.runs : []}
-                  showBackArrow={!showLeft}
-                  onStarted={upgrades.reload}
-                />
-              ) : (
-                <AdminRolloutDetailPanel key={rolloutId} showBackArrow={!showLeft} onChanged={upgrades.reload} />
-              )}
-            </UpgradesErrorBoundary>
-          </Box>
-        )}
+          )}
+        </Box>
       </Box>
-    </Box>
+    </UpgradesSeenContext.Provider>
   )
 }

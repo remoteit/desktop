@@ -8,7 +8,7 @@ import type {
   RolloutRun,
   RolloutStep,
 } from '../../services/graphQLDaemonRollout'
-import { HELD, managedText } from '../../services/fleetVersionsModel'
+import { HELD, SeenChoice, managedText } from '../../services/fleetVersionsModel'
 
 export const UPGRADES_ROUTE = '/admin/upgrades'
 export const NEW_ROLLOUT = 'new'
@@ -70,17 +70,46 @@ export const BUCKETS: { key: BucketKey; label: string; color: string; help: stri
   { key: 'offline', label: 'Offline', color: 'gray.main', help: 'Not reachable now' },
 ]
 
-// The devices a rollout can reach: those given the release, but for the unmanaged.
-export const managed = (buckets?: DaemonBuckets | null) =>
-  Math.max(0, (buckets?.wanted || 0) - (buckets?.unmanaged || 0))
+// Whether graphql counts these buckets' offline by how long ago each was last seen.
+export const hasOfflineBands = (buckets?: DaemonBuckets | null) => buckets?.offlineUnder1d != null
 
-export const bucketSegments = (buckets?: DaemonBuckets | null) => {
-  const total = managed(buckets)
+/* The offline a choice of Online · 7 days · 30 days · All shows, and those it leaves out: 7 days the under-a-day and
+   1–7 days, 30 days those and 7–30 days, All every one, Online none. Never seen counts only under All. Without the
+   bands, every offline device is shown, whatever the choice. */
+export function offlineShown(buckets: DaemonBuckets | null | undefined, seen: SeenChoice = 'all') {
+  const offline = buckets?.offline || 0
+  if (!hasOfflineBands(buckets) || seen === 'all') return { shown: offline, hidden: 0 }
+  const band = (key: keyof DaemonBuckets) => Number(buckets?.[key] || 0)
+  const recent = band('offlineUnder1d') + band('offline1to7d')
+  const shown = Math.min(offline, seen === 'online' ? 0 : seen === '7' ? recent : recent + band('offline7to30d'))
+  return { shown, hidden: offline - shown }
+}
+
+// What leaving them out says: "1,105 offline over 30 days not shown".
+export function hiddenNote(buckets: DaemonBuckets | null | undefined, seen: SeenChoice = 'all'): string | undefined {
+  const { hidden } = offlineShown(buckets, seen)
+  if (!hidden) return undefined
+  const what =
+    seen === 'online' ? 'offline' : `offline over ${seen} days${buckets?.offlineNeverSeen ? ' or never seen' : ''}`
+  return `${hidden.toLocaleString()} ${what} not shown`
+}
+
+// The devices a rollout can reach: those given the release, but for the unmanaged — and for the offline the choice
+// leaves out.
+export const managed = (buckets?: DaemonBuckets | null, seen: SeenChoice = 'all') =>
+  Math.max(0, (buckets?.wanted || 0) - (buckets?.unmanaged || 0) - offlineShown(buckets, seen).hidden)
+
+export const bucketSegments = (buckets?: DaemonBuckets | null, seen: SeenChoice = 'all') => {
+  const total = managed(buckets, seen)
+  const offline = offlineShown(buckets, seen).shown
   // `ahead` and `held` only where the API counts them: an older one's bar would otherwise show a bucket it never fills.
-  return BUCKETS.filter(bucket => !['ahead', 'held'].includes(bucket.key) || buckets?.[bucket.key] != null).map(bucket => {
-    const count = buckets?.[bucket.key] || 0
-    return { ...bucket, count, fraction: total ? count / total : 0 }
-  })
+  // Online: no offline segment at all, where the counts say how long the offline have been so.
+  return BUCKETS.filter(bucket => !['ahead', 'held'].includes(bucket.key) || buckets?.[bucket.key] != null)
+    .filter(bucket => bucket.key !== 'offline' || seen !== 'online' || !hasOfflineBands(buckets))
+    .map(bucket => {
+      const count = bucket.key === 'offline' ? offline : buckets?.[bucket.key] || 0
+      return { ...bucket, count, fraction: total ? count / total : 0 }
+    })
 }
 
 // Devices told of the release that have yet to take it: the rollout's work in flight.

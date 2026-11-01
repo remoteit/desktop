@@ -179,6 +179,17 @@ describe('the schema read', () => {
     )
   })
 
+  it('asks for the offline by age where the API counts them so', () => {
+    const bands = ['offlineUnder1d', 'offline1to7d', 'offline7to30d', 'offlineOver30d', 'offlineNeverSeen']
+    const schema = parseRolloutSchema({ ...CONTRACT, counts: fields('wanted', 'held', ...bands) })
+    expect(schema.channelRollout).toContain(`offline held ${bands.join(' ')}`)
+    expect(schema.detail).toContain(bands.join(' '))
+    const four = parseRolloutSchema({ ...CONTRACT, counts: fields('wanted', ...bands.slice(0, 4)) })
+    expect(four.channelRollout).toContain(bands.slice(0, 4).join(' '))
+    expect(four.channelRollout).not.toContain('offlineNeverSeen')
+    expect(parseRolloutSchema(CONTRACT).channelRollout).not.toContain('offlineUnder1d')
+  })
+
   it('asks for the held bucket and what holds them where the API counts them', () => {
     const schema = parseRolloutSchema({ ...CONTRACT, counts: fields('wanted', 'onWanted', 'ahead', 'held', 'heldReasons') })
     expect(schema.channelRollout).toContain('offline ahead held')

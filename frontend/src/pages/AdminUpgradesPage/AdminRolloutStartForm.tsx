@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { Box, Button, Chip, InputAdornment, List, ListItem, MenuItem, TextField, Typography } from '@mui/material'
 import { Confirm } from '../../components/Confirm'
 import { Container } from '../../components/Container'
@@ -23,6 +23,7 @@ import {
   startArgsServed,
   startDaemonRollout,
 } from '../../services/graphQLDaemonRollout'
+import { keepSeen } from './upgradesSeen'
 import { UPGRADES_ROUTE, compareVersions, dateTime, parseLadder, runningNewest } from './rolloutHelpers'
 
 type Props = { channels: DaemonChannel[]; runs?: RolloutRun[]; showBackArrow?: boolean; onStarted: () => void }
@@ -59,6 +60,7 @@ const formFrom = (defaults: RolloutDefaults) => ({
 
 export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], showBackArrow, onStarted }) => {
   const history = useHistory()
+  const location = useLocation()
   const names = channels.length ? channels.map(c => c.channel) : DAEMON_CHANNELS
   const [channel, setChannel] = useState(names[0])
   const [packages, setPackages] = useState<DaemonPackage[] | 'ERROR' | false>()
@@ -145,7 +147,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
     setSaving(false)
     if (!result.ok) return setProblem(result.reason)
     onStarted()
-    history.push(result.data?.id ? `${UPGRADES_ROUTE}/${result.data.id}` : UPGRADES_ROUTE)
+    history.push(keepSeen(result.data?.id ? `${UPGRADES_ROUTE}/${result.data.id}` : UPGRADES_ROUTE, location.search))
   }
 
   const header = (
@@ -163,7 +165,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
           <IconButton
             icon="chevron-left"
             title="Back to Upgrades"
-            onClick={() => history.push(UPGRADES_ROUTE)}
+            onClick={() => history.push(keepSeen(UPGRADES_ROUTE, location.search))}
             size="md"
             color="grayDarker"
           />
@@ -384,7 +386,7 @@ export const AdminRolloutStartForm: React.FC<Props> = ({ channels, runs = [], sh
           <Button variant="contained" disabled={!ready} onClick={() => setConfirming(true)}>
             {saving ? 'Starting…' : 'Start rollout'}
           </Button>
-          <Button sx={{ marginLeft: 1 }} onClick={() => history.push(UPGRADES_ROUTE)}>
+          <Button sx={{ marginLeft: 1 }} onClick={() => history.push(keepSeen(UPGRADES_ROUTE, location.search))}>
             Cancel
           </Button>
         </Gutters>

@@ -2,13 +2,15 @@ import React from 'react'
 import { Box, Tooltip, Typography } from '@mui/material'
 import type { DaemonBuckets } from '../../services/graphQLDaemonRollout'
 import { bucketSegments, managed, percentOf } from './rolloutHelpers'
+import { useUpgradesSeen } from './upgradesSeen'
 
 type Props = { buckets?: DaemonBuckets | null; label?: React.ReactNode; hint?: React.ReactNode; legend?: boolean }
 
 // The managed devices' buckets as one bar, each segment its share of those a rollout can reach.
 export const RolloutBucketBar: React.FC<Props> = ({ buckets, label, hint, legend = true }) => {
-  const segments = bucketSegments(buckets)
-  const wanted = managed(buckets)
+  const seen = useUpgradesSeen()
+  const segments = bucketSegments(buckets, seen)
+  const wanted = managed(buckets, seen)
   return (
     <Box sx={{ marginBottom: 1.5 }} data-bucket-bar>
       {label && (

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 import {
   Box,
   Chip,
@@ -33,6 +33,7 @@ import { RollbackChip, RolloutStateChip } from './adminRolloutAttributes'
 import { ChannelBars, ChannelFailures, ManagedLine } from './AdminChannelOverview'
 import { RolloutDelivery } from './RolloutDelivery'
 import { usePoll } from './useUpgrades'
+import { UpgradesSeenToggle, keepSeen } from './upgradesSeen'
 import { useRecount } from './useRecount'
 import { RecountNote } from './RecountNote'
 import {
@@ -45,6 +46,7 @@ import {
   gateReadings,
   heldForFailures,
   heldReason,
+  hasOfflineBands,
   reasonText,
   holdCause,
   retryingDevices,
@@ -257,6 +259,7 @@ const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, p
 export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChanged }) => {
   const { rolloutId } = useParams<{ rolloutId?: string }>()
   const history = useHistory()
+  const location = useLocation()
   const [run, setRun] = useState<RolloutRun | null | false | 'ERROR' | typeof UNSUPPORTED>()
   const [served, setServed] = useState<Set<string>>(new Set())
   const [problem, setProblem] = useState<string>()
@@ -276,7 +279,7 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
     () => [shownRun?.rollout?.checked]
   )
 
-  const handleBack = () => history.push(UPGRADES_ROUTE)
+  const handleBack = () => history.push(keepSeen(UPGRADES_ROUTE, location.search))
 
   const header = (
     <Box>
@@ -352,8 +355,10 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
               ) : supersededBy(run) ? (
                 <span data-superseded>
                   Superseded by{' '}
-                  <Link to={`${UPGRADES_ROUTE}/${supersededBy(run)}`}>{supersededBy(run)?.slice(0, 8)}</Link>: a newer
-                  rollout of this channel took its place.
+                  <Link to={keepSeen(`${UPGRADES_ROUTE}/${supersededBy(run)}`, location.search)}>
+                    {supersededBy(run)?.slice(0, 8)}
+                  </Link>
+                  : a newer rollout of this channel took its place.
                 </span>
               ) : (
                 run.reason
@@ -452,6 +457,9 @@ export const AdminRolloutDetailPanel: React.FC<Props> = ({ showBackArrow, onChan
         <Section title="Devices">
           {run.rollout ? (
             <>
+              <Box sx={{ marginBottom: 1 }} data-upgrades-seen>
+                <UpgradesSeenToggle bands={hasOfflineBands(run.rollout)} />
+              </Box>
               <ManagedLine buckets={run.rollout} />
               <ChannelBars
                 rollout={run.rollout}

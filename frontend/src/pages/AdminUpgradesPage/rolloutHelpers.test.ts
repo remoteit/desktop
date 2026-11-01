@@ -14,6 +14,8 @@ import {
   gateReadings,
   heldForFailures,
   heldReason,
+  hiddenNote,
+  offlineShown,
   reasonText,
   holdCause,
   parseLadder,
@@ -388,5 +390,65 @@ describe('held devices', () => {
     expect(reasonText('updated by image')).toBe('updated by container image')
     expect(reasonText('updated by package-manager')).toBe('updated by package manager')
     expect(reasonText('no package')).toBe('no package')
+  })
+})
+
+describe('Online · 7 days · 30 days · All on the counts', () => {
+  // 100 given the release, 20 unmanaged: 80 managed, of them 30 offline — 4 under a day, 6 for 1–7 days, 8 for
+  // 7–30 days, 10 over 30 days and 2 never seen.
+  const counts = {
+    wanted: 100,
+    onWanted: 45,
+    pending: 2,
+    upgrading: 1,
+    failed: 1,
+    stuck: 1,
+    unmanaged: 20,
+    offline: 30,
+    offlineUnder1d: 4,
+    offline1to7d: 6,
+    offline7to30d: 8,
+    offlineOver30d: 10,
+    offlineNeverSeen: 2,
+  }
+  const offline = (seen: any) => bucketSegments(counts, seen).find(s => s.key === 'offline')
+
+  it('7 days: under a day and 1–7 days; 30 days: also 7–30; All: every band; Online: no offline segment', () => {
+    expect(offlineShown(counts, '7')).toEqual({ shown: 10, hidden: 20 })
+    expect(offlineShown(counts, '30')).toEqual({ shown: 18, hidden: 12 })
+    expect(offlineShown(counts, 'all')).toEqual({ shown: 30, hidden: 0 })
+    expect(offlineShown(counts, 'online')).toEqual({ shown: 0, hidden: 30 })
+    expect(offline('7')!.count).toBe(10)
+    expect(offline('30')!.count).toBe(18)
+    expect(offline('all')!.count).toBe(30)
+    expect(offline('online')).toBeUndefined()
+  })
+
+  it('the managed count leaves out what the choice hides, and the segments still add up to it', () => {
+    expect(managed(counts)).toBe(80)
+    expect(managed(counts, '30')).toBe(68)
+    expect(managed(counts, 'online')).toBe(50)
+    for (const seen of ['online', '7', '30', 'all'] as const) {
+      const segments = bucketSegments(counts, seen)
+      expect(segments.reduce((sum, s) => sum + s.count, 0)).toBe(managed(counts, seen))
+    }
+  })
+
+  it('says how many it hides', () => {
+    expect(hiddenNote(counts, '30')).toBe('12 offline over 30 days or never seen not shown')
+    expect(hiddenNote({ ...counts, offlineNeverSeen: 0, offlineOver30d: 12 }, '30')).toBe('12 offline over 30 days not shown')
+    expect(hiddenNote(counts, '7')).toBe('20 offline over 7 days or never seen not shown')
+    expect(hiddenNote(counts, 'online')).toBe('30 offline not shown')
+    expect(hiddenNote(counts, 'all')).toBeUndefined()
+  })
+
+  it('without the bands every offline device counts, whatever the choice', () => {
+    const { offlineUnder1d, offline1to7d, offline7to30d, offlineOver30d, offlineNeverSeen, ...plain } = counts
+    for (const seen of ['online', '7', '30', 'all'] as const) {
+      expect(offlineShown(plain, seen)).toEqual({ shown: 30, hidden: 0 })
+      expect(managed(plain, seen)).toBe(80)
+      expect(hiddenNote(plain, seen)).toBeUndefined()
+    }
+    expect(bucketSegments(plain, 'online').map(s => s.key)).toContain('offline')
   })
 })
