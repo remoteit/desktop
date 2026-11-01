@@ -124,17 +124,22 @@ export type FleetDevice = {
 }
 export type FleetDevices = { checked: string; total: number; devices: FleetDevice[] }
 
-/* Which devices a view counts by when they were last seen: online now, seen within 7 or 30 days, or all. The Fleet
-   tab and the Upgrades page share the choice; 7 and 30 days need the API to say (seenWithinDays on the fleet,
+/* Which devices a view counts by when they were last seen: online now, seen within 1, 7 or 30 days, or all. The Fleet
+   tab and the Upgrades page share the choice; the days need the API to say (seenWithinDays on the fleet,
    offline age bands on the rollout counts), and are offered only where it does. */
 export const SEEN_CHOICES = [
   { key: 'online', label: 'Online' },
+  { key: '1', label: '1 day' },
   { key: '7', label: '7 days' },
   { key: '30', label: '30 days' },
   { key: 'all', label: 'All' },
 ] as const
 export type SeenChoice = (typeof SEEN_CHOICES)[number]['key']
-export const seenDays = (seen: SeenChoice) => (seen === '7' ? 7 : seen === '30' ? 30 : undefined)
+export const SEEN_DAYS = ['1', '7', '30'] as const
+export const isSeenDays = (value: string): value is (typeof SEEN_DAYS)[number] => (SEEN_DAYS as readonly string[]).includes(value)
+export const seenDays = (seen: SeenChoice) => (isSeenDays(seen) ? Number(seen) : undefined)
+// "1 day", "7 days".
+export const daysText = (days: string | number) => `${days} ${Number(days) === 1 ? 'day' : 'days'}`
 
 export type FleetQuery = {
   groupBy: FleetDimension[]

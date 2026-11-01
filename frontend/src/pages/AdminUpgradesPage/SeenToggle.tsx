@@ -2,7 +2,7 @@ import React from 'react'
 import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { SEEN_CHOICES, SeenChoice } from '../../services/fleetVersionsModel'
 
-// Which devices to count by when they were last seen: Online · 7 days · 30 days · All — the days only where the API
+// Which devices to count by when they were last seen: Online · 1 day · 7 days · 30 days · All — the days only where the API
 // counts by them.
 export const SeenToggle: React.FC<{ value: SeenChoice; days: boolean; onChange: (value: SeenChoice) => void }> = ({
   value,
@@ -27,4 +27,10 @@ export const SeenToggle: React.FC<{ value: SeenChoice; days: boolean; onChange: 
 
 // "No devices …": what the choice left in.
 export const shownSuffix = (seen: SeenChoice) =>
-  seen === 'online' ? ' online' : seen === 'all' ? '' : ` seen in the last ${seen} days`
+  seen === 'online'
+    ? ' online'
+    : seen === 'all'
+    ? ''
+    : seen === '1'
+    ? ' seen in the last day'
+    : ` seen in the last ${seen} days`

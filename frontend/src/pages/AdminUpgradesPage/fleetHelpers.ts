@@ -13,11 +13,12 @@ import {
   featureOf,
   fleetDimensions,
   isFeature,
+  isSeenDays,
   shownVersion,
 } from '../../services/fleetVersionsModel'
 
 // The Fleet tab's view, as the URL holds it, so a view can be shared: ?view=fleet&group=…&then=…&of=…&online=0&pct=1&q=…
-// Online only unless the URL says otherwise: seen=7 or seen=30 (where the API counts by days since seen; otherwise
+// Online only unless the URL says otherwise: seen=1, seen=7 or seen=30 (where the API counts by days since seen; otherwise
 // online), or all (online=0, online=all, or seen=all). A link from before that said online=1 still reads so.
 export const FLEET_VIEW = 'fleet'
 
@@ -41,11 +42,11 @@ export const DEFAULT_CHOICES: FleetChoices = {
   older: false,
 }
 
-// Which devices the URL says to count; 7 and 30 days only where the API counts by them.
+// Which devices the URL says to count; the days only where the API counts by them.
 function readSeen(params: URLSearchParams, seenServed: boolean): SeenChoice {
   const seen = (params.get('seen') || '').toLowerCase()
   if (seen === 'all' || ['0', 'all', 'false'].includes((params.get('online') || '').toLowerCase())) return 'all'
-  if ((seen === '7' || seen === '30') && seenServed) return seen
+  if (isSeenDays(seen) && seenServed) return seen
   return 'online'
 }
 
@@ -100,7 +101,7 @@ export function writeChoices(choices: FleetChoices): string {
   if (choices.then) params.set('then', choices.then)
   if (choices.of !== DEFAULT_CHOICES.of) params.set('of', choices.of)
   if (choices.show === 'all') params.set('online', '0')
-  if (choices.show === '7' || choices.show === '30') params.set('seen', choices.show)
+  if (isSeenDays(choices.show)) params.set('seen', choices.show)
   if (choices.percent) params.set('pct', '1')
   if (choices.search.trim()) params.set('q', choices.search.trim())
   if (choices.older) params.set('older', '1')

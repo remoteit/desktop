@@ -3,9 +3,9 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { SEEN_CHOICES, SeenChoice } from '../../services/fleetVersionsModel'
 import { SeenToggle } from './SeenToggle'
 
-/* The Upgrades page's Online · 7 days · 30 days · All: which offline devices its bars, legends and managed counts
+/* The Upgrades page's Online · 1 day · 7 days · 30 days · All: which offline devices its bars, legends and managed counts
    include, by how long ago they were last seen. 30 days by default (the Fleet tab's default is Online). In the URL as
-   ?seen=online|7|30|all, the default left out, and carried from the channels to a run and back. Offered only where
+   ?seen=online|1|7|30|all, the default left out, and carried from the channels to a run and back. Offered only where
    graphql counts the offline by age (DaemonRolloutCounts' offline bands); without them every count is as before. */
 export const UPGRADES_SEEN_DEFAULT: SeenChoice = '30'
 

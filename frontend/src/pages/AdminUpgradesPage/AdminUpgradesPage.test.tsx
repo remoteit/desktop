@@ -648,6 +648,13 @@ describe('AdminUpgradesPage', () => {
     it('30 days by default: the older offline left out of the bar and the managed count, and said so', async () => {
       const el = await render('/admin/upgrades')
       expect(pressed(el)).toBe('30')
+      expect([...el.querySelectorAll('[data-upgrades-seen] [data-show]')].map(b => b.getAttribute('data-show'))).toEqual([
+        'online',
+        '1',
+        '7',
+        '30',
+        'all',
+      ])
       const channel = el.querySelector('[data-channel="stable"]')!
       const line = channel.querySelector('[data-managed-line]')!
       expect(line.textContent).toContain('77 managed')
@@ -666,6 +673,10 @@ describe('AdminUpgradesPage', () => {
       expect(seenAt.search).toBe('?seen=7')
       expect(channel().querySelector('[data-bucket-bar]')!.textContent).toContain('Offline 3')
       expect(channel().querySelector('[data-hidden-offline]')!.textContent).toContain('4 offline over 7 days not shown')
+      await choose('1')
+      expect(seenAt.search).toBe('?seen=1')
+      expect(channel().querySelector('[data-bucket-bar]')!.textContent).toContain('Offline 2')
+      expect(channel().querySelector('[data-hidden-offline]')!.textContent).toContain('5 offline over 1 day not shown')
       await choose('online')
       expect(seenAt.search).toBe('?seen=online')
       expect(channel().querySelector('[data-segment="offline"]')).toBeNull()

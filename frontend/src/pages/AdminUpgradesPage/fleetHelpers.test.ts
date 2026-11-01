@@ -50,6 +50,9 @@ describe('the choices in the URL', () => {
 
   it('seen=7 and seen=30 where the API counts by days since seen, else online', () => {
     const dimensions = fleetDimensions(TAXONOMY)
+    expect(readChoices('?view=fleet&seen=1', dimensions, true).show).toBe('1')
+    expect(readChoices('?view=fleet&seen=1', dimensions, false).show).toBe('online')
+    expect(writeChoices({ ...DEFAULT_CHOICES, show: '1' })).toContain('seen=1')
     expect(readChoices('?view=fleet&seen=7', dimensions, true).show).toBe('7')
     expect(readChoices('?view=fleet&seen=30', dimensions, true).show).toBe('30')
     expect(readChoices('?view=fleet&seen=30', dimensions, false).show).toBe('online')

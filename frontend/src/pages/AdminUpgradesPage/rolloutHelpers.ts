@@ -8,7 +8,7 @@ import type {
   RolloutRun,
   RolloutStep,
 } from '../../services/graphQLDaemonRollout'
-import { HELD, SeenChoice, managedText } from '../../services/fleetVersionsModel'
+import { HELD, SeenChoice, daysText, managedText } from '../../services/fleetVersionsModel'
 
 export const UPGRADES_ROUTE = '/admin/upgrades'
 export const NEW_ROLLOUT = 'new'
@@ -73,15 +73,17 @@ export const BUCKETS: { key: BucketKey; label: string; color: string; help: stri
 // Whether graphql counts these buckets' offline by how long ago each was last seen.
 export const hasOfflineBands = (buckets?: DaemonBuckets | null) => buckets?.offlineUnder1d != null
 
-/* The offline a choice of Online · 7 days · 30 days · All shows, and those it leaves out: 7 days the under-a-day and
-   1–7 days, 30 days those and 7–30 days, All every one, Online none. Never seen counts only under All. Without the
+/* The offline a choice of Online · 1 day · 7 days · 30 days · All shows, and those it leaves out: 1 day the
+   under-a-day alone, 7 days those and 1–7 days, 30 days those and 7–30 days, All every one, Online none. Never seen counts only under All. Without the
    bands, every offline device is shown, whatever the choice. */
 export function offlineShown(buckets: DaemonBuckets | null | undefined, seen: SeenChoice = 'all') {
   const offline = buckets?.offline || 0
   if (!hasOfflineBands(buckets) || seen === 'all') return { shown: offline, hidden: 0 }
   const band = (key: keyof DaemonBuckets) => Number(buckets?.[key] || 0)
-  const recent = band('offlineUnder1d') + band('offline1to7d')
-  const shown = Math.min(offline, seen === 'online' ? 0 : seen === '7' ? recent : recent + band('offline7to30d'))
+  const day = band('offlineUnder1d')
+  const week = day + band('offline1to7d')
+  const within = { online: 0, '1': day, '7': week, '30': week + band('offline7to30d') }[seen]
+  const shown = Math.min(offline, within)
   return { shown, hidden: offline - shown }
 }
 
@@ -90,7 +92,7 @@ export function hiddenNote(buckets: DaemonBuckets | null | undefined, seen: Seen
   const { hidden } = offlineShown(buckets, seen)
   if (!hidden) return undefined
   const what =
-    seen === 'online' ? 'offline' : `offline over ${seen} days${buckets?.offlineNeverSeen ? ' or never seen' : ''}`
+    seen === 'online' ? 'offline' : `offline over ${daysText(seen)}${buckets?.offlineNeverSeen ? ' or never seen' : ''}`
   return `${hidden.toLocaleString()} ${what} not shown`
 }
 

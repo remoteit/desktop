@@ -494,7 +494,7 @@ describe('once graphql serves what a device is', () => {
   })
 })
 
-describe('which devices: Online · 7 days · 30 days · All', () => {
+describe('which devices: Online · 1 day · 7 days · 30 days · All', () => {
   const shown = (el: HTMLElement) => [...el.querySelectorAll('[data-seen-toggle] [data-show]')].map(b => b.getAttribute('data-show'))
 
   it('until graphql counts by days since seen: Online and All alone, and a link that says 7 days reads Online', async () => {
@@ -506,7 +506,7 @@ describe('which devices: Online · 7 days · 30 days · All', () => {
   it('then all four, Online by default; each in the URL, and the drill follows the choice', async () => {
     seenServed.mockResolvedValue(true)
     const el = await render('/admin/upgrades?view=fleet&group=os&of=package')
-    expect(shown(el)).toEqual(['online', '7', '30', 'all'])
+    expect(shown(el)).toEqual(['online', '1', '7', '30', 'all'])
     expect(el.querySelector('[data-show="online"]')!.getAttribute('aria-pressed')).toBe('true')
     expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: true, seenWithinDays: undefined }))
 
@@ -520,6 +520,9 @@ describe('which devices: Online · 7 days · 30 days · All', () => {
 
     await act(async () => (el.querySelector('[data-show="7"]') as HTMLButtonElement).click())
     expect(location.search).toContain('seen=7')
+    await act(async () => (el.querySelector('[data-show="1"]') as HTMLButtonElement).click())
+    expect(location.search).toContain('seen=1')
+    expect(versions).toHaveBeenLastCalledWith(expect.objectContaining({ onlineOnly: false, seenWithinDays: 1 }))
     await act(async () => (el.querySelector('[data-show="all"]') as HTMLButtonElement).click())
     expect(location.search).toContain('online=0')
     expect(location.search).not.toContain('seen=')

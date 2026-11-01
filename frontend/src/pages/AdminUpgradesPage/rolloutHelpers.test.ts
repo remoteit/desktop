@@ -413,7 +413,9 @@ describe('Online · 7 days · 30 days · All on the counts', () => {
   }
   const offline = (seen: any) => bucketSegments(counts, seen).find(s => s.key === 'offline')
 
-  it('7 days: under a day and 1–7 days; 30 days: also 7–30; All: every band; Online: no offline segment', () => {
+  it('1 day: under a day alone; 7 days: also 1–7 days; 30 days: also 7–30; All: every band; Online: no offline segment', () => {
+    expect(offlineShown(counts, '1')).toEqual({ shown: 4, hidden: 26 })
+    expect(offline('1')!.count).toBe(4)
     expect(offlineShown(counts, '7')).toEqual({ shown: 10, hidden: 20 })
     expect(offlineShown(counts, '30')).toEqual({ shown: 18, hidden: 12 })
     expect(offlineShown(counts, 'all')).toEqual({ shown: 30, hidden: 0 })
@@ -428,7 +430,7 @@ describe('Online · 7 days · 30 days · All on the counts', () => {
     expect(managed(counts)).toBe(80)
     expect(managed(counts, '30')).toBe(68)
     expect(managed(counts, 'online')).toBe(50)
-    for (const seen of ['online', '7', '30', 'all'] as const) {
+    for (const seen of ['online', '1', '7', '30', 'all'] as const) {
       const segments = bucketSegments(counts, seen)
       expect(segments.reduce((sum, s) => sum + s.count, 0)).toBe(managed(counts, seen))
     }
@@ -438,13 +440,14 @@ describe('Online · 7 days · 30 days · All on the counts', () => {
     expect(hiddenNote(counts, '30')).toBe('12 offline over 30 days or never seen not shown')
     expect(hiddenNote({ ...counts, offlineNeverSeen: 0, offlineOver30d: 12 }, '30')).toBe('12 offline over 30 days not shown')
     expect(hiddenNote(counts, '7')).toBe('20 offline over 7 days or never seen not shown')
+    expect(hiddenNote({ ...counts, offlineNeverSeen: 0, offlineOver30d: 12 }, '1')).toBe('26 offline over 1 day not shown')
     expect(hiddenNote(counts, 'online')).toBe('30 offline not shown')
     expect(hiddenNote(counts, 'all')).toBeUndefined()
   })
 
   it('without the bands every offline device counts, whatever the choice', () => {
     const { offlineUnder1d, offline1to7d, offline7to30d, offlineOver30d, offlineNeverSeen, ...plain } = counts
-    for (const seen of ['online', '7', '30', 'all'] as const) {
+    for (const seen of ['online', '1', '7', '30', 'all'] as const) {
       expect(offlineShown(plain, seen)).toEqual({ shown: 30, hidden: 0 })
       expect(managed(plain, seen)).toBe(80)
       expect(hiddenNote(plain, seen)).toBeUndefined()
