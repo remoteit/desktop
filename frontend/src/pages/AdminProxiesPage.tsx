@@ -72,7 +72,7 @@ export const AdminProxiesPage: React.FC = () => {
     if (policy === UNSUPPORTED)
       return (
         <Notice severity="info" fullWidth>
-          This API does not serve device sessions, and so has no exit nodes. Point Test Settings → API Target at a stage
+          This API does not serve Control Link devices, and so has no exit nodes. Point Test Settings → API Target at a stage
           that does (local or dev).
         </Notice>
       )

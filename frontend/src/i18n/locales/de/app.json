@@ -124,6 +124,7 @@
     "summaryUnlimited": "{{name}} kann alle Geräte in jeder Organisation erreichen, der Sie angehören."
   },
   "agentStatus": {
+    "held": "Blockiert — vom Administrator des Geräts zurückgehalten",
     "update": ""
   },
   "androidSetup": {
@@ -838,6 +839,8 @@
     "follow": "",
     "followAccount": "",
     "followAccountHint": "",
+    "held": "Blockiert — vom Administrator des Geräts zurückgehalten",
+    "heldHint": "Eine Paketsperre auf dem Gerät. Es wird aktualisiert, sobald die Sperre aufgehoben ist.",
     "hold": "",
     "holdHint": "",
     "installed": "",

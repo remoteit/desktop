@@ -126,6 +126,7 @@
     "summaryUnlimited": "{{name}} puede acceder a todos los dispositivos de todas las organizaciones a las que perteneces."
   },
   "agentStatus": {
+    "held": "Bloqueado — retenido por el administrador del dispositivo",
     "update": ""
   },
   "androidSetup": {
@@ -846,6 +847,8 @@
     "follow": "",
     "followAccount": "",
     "followAccountHint": "",
+    "held": "Bloqueado — retenido por el administrador del dispositivo",
+    "heldHint": "Un bloqueo de paquete en el dispositivo. Se actualizará cuando se levante el bloqueo.",
     "hold": "",
     "holdHint": "",
     "installed": "",

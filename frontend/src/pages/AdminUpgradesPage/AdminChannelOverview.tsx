@@ -10,7 +10,7 @@ import type {
 import { RolloutBucketBar } from './RolloutBucketBar'
 import { DaemonInstallLine } from './DaemonInstallLine'
 import { RolloutDelivery } from './RolloutDelivery'
-import { countsBefore, countsStalled, dateTime, managed } from './rolloutHelpers'
+import { countsBefore, countsStalled, dateTime, heldReason, managed, reasonText } from './rolloutHelpers'
 
 export const ReasonList: React.FC<{ title: string; reasons?: DaemonFailure[]; color?: string }> = ({
   title,
@@ -23,8 +23,15 @@ export const ReasonList: React.FC<{ title: string; reasons?: DaemonFailure[]; co
         {title}
       </Typography>
       {reasons.map(reason => (
-        <Typography key={reason.reason} variant="caption" component="div" sx={{ paddingLeft: 1 }} color={color}>
-          <b>{reason.devices.toLocaleString()}</b> {reason.reason}
+        <Typography
+          key={reason.reason}
+          variant="caption"
+          component="div"
+          sx={{ paddingLeft: 1 }}
+          color={heldReason(reason.reason) ? 'textSecondary' : color}
+          data-held={heldReason(reason.reason) || undefined}
+        >
+          <b>{reason.devices.toLocaleString()}</b> {reasonText(reason.reason)}
         </Typography>
       ))}
     </Box>

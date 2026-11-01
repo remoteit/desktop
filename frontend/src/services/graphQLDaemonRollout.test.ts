@@ -179,6 +179,13 @@ describe('the schema read', () => {
     )
   })
 
+  it('asks for the held bucket where the API counts it', () => {
+    const schema = parseRolloutSchema({ ...CONTRACT, counts: fields('wanted', 'onWanted', 'ahead', 'held') })
+    expect(schema.channelRollout).toContain('offline ahead held')
+    expect(schema.detail).toContain('offline ahead held')
+    expect(parseRolloutSchema({ ...CONTRACT, counts: fields('wanted', 'held') }).channelRollout).toContain('offline held')
+  })
+
   it('asks for ahead and rollback, and offers the rollback argument, where the API has them', () => {
     const schema = parseRolloutSchema({
       ...CONTRACT,
@@ -198,6 +205,7 @@ describe('the schema read', () => {
     expect(schema.startArgs).toContain('rollback')
     const older = parseRolloutSchema(CONTRACT)
     expect(older.channelRollout).not.toContain('ahead')
+    expect(older.channelRollout).not.toContain('held')
     expect(older.startArgs).not.toContain('rollback')
   })
 

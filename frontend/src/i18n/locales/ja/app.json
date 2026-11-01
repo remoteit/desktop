@@ -122,6 +122,7 @@
     "summaryUnlimited": "{{name}} は、所属するすべての組織のすべてのデバイスにアクセスできます。"
   },
   "agentStatus": {
+    "held": "ブロック中 — デバイスの管理者が保留しています",
     "update": ""
   },
   "androidSetup": {
@@ -830,6 +831,8 @@
     "follow": "",
     "followAccount": "",
     "followAccountHint": "",
+    "held": "ブロック中 — デバイスの管理者が保留しています",
+    "heldHint": "デバイス上でパッケージが保留またはロックされています。保留が解除されるとアップグレードされます。",
     "hold": "",
     "holdHint": "",
     "installed": "",

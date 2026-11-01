@@ -44,6 +44,8 @@ import {
   failureRows,
   gateReadings,
   heldForFailures,
+  heldReason,
+  reasonText,
   holdCause,
   retryingDevices,
   shortDuration,
@@ -234,8 +236,8 @@ const FailureList: React.FC<{ run: RolloutRun; prominent: boolean }> = ({ run, p
                   {row.reviewed ? <Chip size="small" label={`${n(row.reviewed)} reviewed`} /> : '—'}
                 </TableCell>
               )}
-              <TableCell sx={{ ...cell, whiteSpace: 'normal' }}>
-                {row.reason}
+              <TableCell sx={{ ...cell, whiteSpace: 'normal' }} data-held={heldReason(row.reason) || undefined}>
+                {reasonText(row.reason)}
                 <DeviceLinks ids={row.deviceIds} of={row.devices} />
               </TableCell>
             </TableRow>

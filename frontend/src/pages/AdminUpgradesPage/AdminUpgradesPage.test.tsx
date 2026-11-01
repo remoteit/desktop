@@ -575,6 +575,48 @@ describe('AdminUpgradesPage', () => {
     expect(el.querySelector('[data-rollout-actions]')).toBeNull() // not active
   })
 
+  it("held devices: their own segment where the API counts them, and blocked by the device's admin in the reasons", async () => {
+    channels.mockResolvedValue([
+      {
+        ...STABLE,
+        rollout: {
+          ...STABLE.rollout,
+          onWanted: 57,
+          held: 3,
+          failures: [{ reason: 'held: apt-mark hold', devices: 3 }],
+          candidate: { ...STABLE.rollout.candidate, failures: [{ reason: 'held: yum versionlock', devices: 1 }] },
+        },
+      },
+    ])
+    const el = await render('/admin/upgrades')
+    const channel = el.querySelector('[data-channel="stable"]')!
+    const bar = channel.querySelector('[data-bucket-bar]')!
+    expect([...bar.querySelectorAll('[data-segment]')].map(s => s.getAttribute('data-segment'))).toContain('held')
+    expect(bar.textContent).toContain('Held 3')
+    const failures = channel.querySelector('[data-channel-failures]')!
+    expect(failures.textContent).toContain("Blocked — held by the device's admin (yum versionlock)")
+    expect(failures.querySelector('[data-held]')).not.toBeNull()
+    expect(failures.textContent).not.toContain('held: ')
+  })
+
+  it("a held reason among a run's failures reads blocked, with its mechanism", async () => {
+    runs.mockResolvedValue([HELD])
+    run.mockResolvedValue({
+      ...HELD,
+      rollout: {
+        ...HELD.rollout,
+        candidate: {
+          ...HELD.rollout.candidate,
+          failures: [...HELD.rollout.candidate.failures, { reason: 'held: opkg hold', devices: 2 }],
+        },
+      },
+    })
+    const el = await render('/admin/upgrades/R2')
+    const row = el.querySelector('[data-failure="held: opkg hold"]')
+    expect(row).not.toBeNull()
+    expect(row!.textContent).toContain("Blocked — held by the device's admin (opkg hold)")
+  })
+
   it('ahead devices have their own segment and legend entry where the API counts them', async () => {
     channels.mockResolvedValue([
       {

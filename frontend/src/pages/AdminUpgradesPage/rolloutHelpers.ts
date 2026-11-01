@@ -8,6 +8,7 @@ import type {
   RolloutRun,
   RolloutStep,
 } from '../../services/graphQLDaemonRollout'
+import { HELD, userText } from '../../services/fleetVersionsModel'
 
 export const UPGRADES_ROUTE = '/admin/upgrades'
 export const NEW_ROLLOUT = 'new'
@@ -28,10 +29,21 @@ export const QUEUE_SUSTAIN_MINUTES = 2
 export const TRANSIENT_REASON = 'failed (transient, retrying)'
 export const transientReason = (reason: string) => reason.startsWith(TRANSIENT_REASON)
 
+// A device whose package its admin holds or locks (apt-mark hold, versionlock, an apk pin, opkg hold): managed, but
+// blocked — never a failure of ours. Its reason is the state and the mechanism: "held: apt-mark hold". Any other reason
+// is the API's, in today's words (no "device session").
+const HELD_REASON = /^held\b[\s:—-]*/i
+export const heldReason = (reason: string) => HELD_REASON.test(reason)
+export const reasonText = (reason: string) => {
+  if (!heldReason(reason)) return userText(reason)
+  const mechanism = reason.replace(HELD_REASON, '').trim()
+  return `Blocked — ${HELD}${mechanism ? ` (${mechanism})` : ''}`
+}
+
 export const ACTIVE_STATES = ['running', 'soaking', 'holding']
 export const active = (run?: Pick<RolloutRun, 'state'> | null) => !!run && ACTIVE_STATES.includes(run.state)
 
-export type BucketKey = 'onWanted' | 'ahead' | 'pending' | 'upgrading' | 'stuck' | 'failed' | 'offline'
+export type BucketKey = 'onWanted' | 'ahead' | 'pending' | 'upgrading' | 'stuck' | 'failed' | 'held' | 'offline'
 
 // The bar's segments, in order: what is on the wanted release, then on its way, then what needs a look, then what
 // cannot be reached now. The managed devices only: graphql's buckets partition `wanted`, and these are all of them but
@@ -48,6 +60,12 @@ export const BUCKETS: { key: BucketKey; label: string; color: string; help: stri
   { key: 'upgrading', label: 'Upgrading', color: 'primary.main', help: 'Downloading or installing' },
   { key: 'stuck', label: 'Stuck', color: 'warning.main', help: 'Online and not converging' },
   { key: 'failed', label: 'Failed', color: 'danger.main', help: 'Its upgrade failed' },
+  {
+    key: 'held',
+    label: 'Held',
+    color: 'grayDarker.main',
+    help: `Blocked — ${HELD}: a package hold or lock. It takes the release once the hold is lifted`,
+  },
   { key: 'offline', label: 'Offline', color: 'gray.main', help: 'Not reachable now' },
 ]
 
@@ -57,8 +75,8 @@ export const managed = (buckets?: DaemonBuckets | null) =>
 
 export const bucketSegments = (buckets?: DaemonBuckets | null) => {
   const total = managed(buckets)
-  // `ahead` only where the API counts it: an older one's bar would otherwise show a bucket it never fills.
-  return BUCKETS.filter(bucket => bucket.key !== 'ahead' || buckets?.ahead != null).map(bucket => {
+  // `ahead` and `held` only where the API counts them: an older one's bar would otherwise show a bucket it never fills.
+  return BUCKETS.filter(bucket => !['ahead', 'held'].includes(bucket.key) || buckets?.[bucket.key] != null).map(bucket => {
     const count = buckets?.[bucket.key] || 0
     return { ...bucket, count, fraction: total ? count / total : 0 }
   })

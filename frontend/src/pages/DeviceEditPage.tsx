@@ -72,7 +72,7 @@ export const DeviceEditPage: React.FC = () => {
               <DevicePolicyRow
                 deviceId={device.id}
                 name="initiators"
-                label={t('deviceSetting.initiators', 'Device sessions from this device')}
+                label={t('deviceSetting.initiators', 'Control Link connections from this device')}
               />
             )}
           </List>

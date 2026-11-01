@@ -9,7 +9,15 @@ vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/grap
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
 
-import { UNSUPPORTED, daemonVersion, graphQLDeviceDaemon, runningVersion, updating } from './graphQLDaemon'
+import {
+  UNSUPPORTED,
+  daemonVersion,
+  graphQLDeviceDaemon,
+  held,
+  resetDeviceDaemonFields,
+  runningVersion,
+  updating,
+} from './graphQLDaemon'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { exposes, graphQLDeviceNetworks, initiates, roleFor, targeted } from './graphQLDeviceNetworks'
 
@@ -25,6 +33,7 @@ const daemon = {
 beforeEach(() => {
   request.mockReset()
   uiSet.mockReset()
+  resetDeviceDaemonFields()
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -55,6 +64,34 @@ describe('reading the device agent', () => {
     request.mockResolvedValue({ data: { errors: [{ message: 'boom' }] }, headers: {} })
     expect(await graphQLDeviceDaemon(daemon.deviceId)).toBe('ERROR')
     expect(uiSet).not.toHaveBeenCalled()
+  })
+})
+
+describe("a device held by its admin", () => {
+  it('asks for updateState where the API has it', async () => {
+    request.mockResolvedValue({ data: { data: { deviceDaemon: { ...daemon, updateState: 'held' } } }, headers: {} })
+    expect(held((await graphQLDeviceDaemon(daemon.deviceId)) as any)).toBe(true)
+    expect(request.mock.calls[0][0].data.query).toContain('updateState')
+  })
+
+  it('an API without updateState answers without it, and is not asked for it again', async () => {
+    request
+      .mockResolvedValueOnce({
+        data: { errors: [{ message: 'Cannot query field "updateState" on type "DeviceDaemon".' }] },
+        headers: {},
+      })
+      .mockResolvedValue({ data: { data: { deviceDaemon: daemon } }, headers: {} })
+    expect(await graphQLDeviceDaemon(daemon.deviceId)).toEqual(daemon)
+    await graphQLDeviceDaemon(daemon.deviceId)
+    expect(request.mock.calls.map(call => call[0].data.query.includes('updateState'))).toEqual([true, false, false])
+    expect(uiSet).not.toHaveBeenCalled()
+  })
+
+  it('is held where the device reports the hold, or graphql reads one', () => {
+    expect(held({ update: { state: 'held' } })).toBe(true)
+    expect(held({ update: { state: 'refused' }, updateState: 'held' })).toBe(true)
+    expect(held({ update: { state: 'refused' } })).toBe(false)
+    expect(held(null)).toBe(false)
   })
 })
 

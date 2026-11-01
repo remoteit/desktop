@@ -124,6 +124,7 @@
     "summaryUnlimited": "{{name}} can reach all devices in every organization you belong to."
   },
   "agentStatus": {
+    "held": "Blocked — held by the device's admin",
     "update": "{{state}} {{version}}"
   },
   "androidSetup": {
@@ -838,6 +839,8 @@
     "follow": "Follow",
     "followAccount": "Follow the account's channel",
     "followAccountHint": "Drop a channel set for this device alone",
+    "held": "Blocked — held by the device's admin",
+    "heldHint": "A package hold or lock on the device. It upgrades once the hold is lifted.",
     "hold": "Hold at this version",
     "holdHint": "It takes no upgrades until released",
     "installed": "Installed {{version}}",
@@ -862,7 +865,7 @@
     "started": "Upgrade to {{version}} started",
     "target": "The version it should run",
     "targetRollback": "{{version}} (a rollback)",
-    "unsupported": "This API does not serve device sessions. Point Test Settings → API Target at a stage that does (local or dev).",
+    "unsupported": "This API does not serve Control Link devices. Point Test Settings → API Target at a stage that does (local or dev).",
     "upgrades": "Upgrades",
     "upToDate": "Up to date"
   },
@@ -1237,7 +1240,7 @@
     "remoteit": "One of remote.it's proxies: {{host}}",
     "removeConfirm": "Stop using it as a proxy?",
     "removeConfirmBody": "Every endpoint on it is removed, for everyone using one.",
-    "unsupported": "This API does not serve device sessions. Point Test Settings → API Target at a stage that does (local or dev).",
+    "unsupported": "This API does not serve Control Link devices. Point Test Settings → API Target at a stage that does (local or dev).",
     "use": "Use as a proxy",
     "usedBy": "For you and the people who may connect to it",
     "usedByEveryone": "For everyone"
@@ -1273,7 +1276,7 @@
     "controlLocal": "Set only on the device",
     "controlOff": "Turned off on the device by its administrator",
     "controlOn": "Turned on on the device by its administrator",
-    "initiators": "Device sessions from this device",
+    "initiators": "Control Link connections from this device",
     "onDevice": "Set on the device",
     "onDeviceBy": "Set on the device by {{by}}",
     "onDeviceConfiguration": "Set on the device, in its configuration",
@@ -3027,8 +3030,8 @@
     "customAPITargetHint": "Point at a URL the authorization server has not registered.",
     "customGraphQLURL": "Custom GraphQL URL (advanced)",
     "customWebSocketURL": "Custom WebSocket URL (advanced)",
-    "deviceSessions": "Device sessions",
-    "deviceSessionsHint": "The device agent's status and upgrades. Needs an API that serves device sessions (local or dev).",
+    "deviceSessions": "Control Link devices",
+    "deviceSessionsHint": "The device agent's status and upgrades. Needs an API that serves Control Link devices (local or dev).",
     "disableTestUI": "Disable Test UI",
     "disableTestUIHint": "To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift.",
     "experimental": "Experimental",

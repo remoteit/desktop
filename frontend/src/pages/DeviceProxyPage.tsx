@@ -146,7 +146,7 @@ export const DeviceProxyPage: React.FC = () => {
         <Notice severity="info" fullWidth>
           {t(
             'deviceProxy.unsupported',
-            'This API does not serve device sessions. Point Test Settings → API Target at a stage that does (local or dev).'
+            'This API does not serve Control Link devices. Point Test Settings → API Target at a stage that does (local or dev).'
           )}
         </Notice>
       )

@@ -360,10 +360,10 @@ export const TestPage: React.FC = () => {
       <List>
         <ListItemSetting
           hideIcon
-          label={t('testPage.deviceSessions', 'Device sessions')}
+          label={t('testPage.deviceSessions', 'Control Link devices')}
           subLabel={t(
             'testPage.deviceSessionsHint',
-            "The device agent's status and upgrades. Needs an API that serves device sessions (local or dev)."
+            "The device agent's status and upgrades. Needs an API that serves Control Link devices (local or dev)."
           )}
           toggle={deviceSessions}
           onClick={() => dispatch.ui.setPersistent({ deviceSessions: !deviceSessions })}

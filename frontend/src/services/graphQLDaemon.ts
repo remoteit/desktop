@@ -16,6 +16,7 @@ export type DaemonUpdateState =
   | 'installed'
   | 'failed'
   | 'refused'
+  | 'held' // a package hold or lock its admin set (apt-mark hold, versionlock, …): the detail names it
 
 export type DeviceDaemon = {
   deviceId: string
@@ -27,7 +28,12 @@ export type DeviceDaemon = {
   hold: boolean
   pinned?: { version: string } | null // rolled back: pinned to this release until released
   rollbackTo?: { version: string } | null // where a rollback would take it
+  updateState?: string | null // held where graphql finds a hold, from an older daemon's refusal too; where it serves it
 }
+
+// Held by the device's admin: a package hold or lock (managed, but blocked), as the device reports it or graphql reads it.
+export const held = (daemon?: { update?: { state: string } | null; updateState?: string | null } | null) =>
+  daemon?.update?.state === 'held' || daemon?.updateState === 'held'
 
 export type DaemonSettings = { autoUpdate: boolean; channel: string }
 
@@ -62,9 +68,11 @@ async function read<T>(
   return response.data?.data?.[field] ?? null
 }
 
-export const graphQLDeviceDaemon = (deviceId: string) =>
-  read<DeviceDaemon>(
-    `query DeviceDaemon($deviceId: String!) {
+// updateState only where the API has it: one without answers without it, and is not asked again.
+let withUpdateState = true
+
+export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemon | null | 'ERROR' | typeof UNSUPPORTED> {
+  const query = `query DeviceDaemon($deviceId: String!) {
       deviceDaemon(deviceId: $deviceId) {
         deviceId
         running
@@ -74,12 +82,27 @@ export const graphQLDeviceDaemon = (deviceId: string) =>
         channel
         hold
         pinned { version }
-        rollbackTo { version }
+        rollbackTo { version }${withUpdateState ? '\n        updateState' : ''}
       }
-    }`,
-    { deviceId },
-    'deviceDaemon'
-  )
+    }`
+  const variables = { deviceId }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  const errors = response.data?.errors
+  if (withUpdateState && withoutDeviceSessions(errors, 'updateState')) {
+    withUpdateState = false
+    return graphQLDeviceDaemon(deviceId)
+  }
+  const reported = graphQLGetErrors(response, true, { query, variables })
+  if (withoutDeviceSessions(reported, 'deviceDaemon')) return UNSUPPORTED
+  if (reported) return 'ERROR'
+  return response.data?.data?.deviceDaemon ?? null
+}
+
+// For tests, and for a change of API.
+export const resetDeviceDaemonFields = () => {
+  withUpdateState = true
+}
 
 export const graphQLDaemonSettings = (accountId?: string) =>
   read<DaemonSettings>(

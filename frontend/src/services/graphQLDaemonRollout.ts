@@ -38,6 +38,7 @@ export type DaemonBuckets = {
   unmanaged: number
   offline: number
   ahead?: number // running newer than assigned, where the API counts it
+  held?: number // managed but blocked: a package hold or lock its admin set, where the API counts it
   failures?: DaemonFailure[]
   unmanagedReasons?: DaemonFailure[]
 }
@@ -393,8 +394,10 @@ export function parseRolloutSchema(data: any): RolloutSchema {
     ids || failed
       ? `failures { reason devices${ids ? ' deviceIds' : ''}${failed} } unmanagedReasons { reason devices }`
       : REASONS
-  // `ahead`: devices running newer than they are assigned, kept until the candidate reaches them.
-  const buckets = names(data?.counts).has('ahead') ? `${BUCKETS} ahead` : BUCKETS
+  // `ahead`: devices running newer than they are assigned, kept until the candidate reaches them. `held`: managed, but
+  // blocked by a package hold or lock the device's admin set (DEVICE-TAXONOMY, proposal 3).
+  const counts = names(data?.counts)
+  const buckets = [BUCKETS, ...['ahead', 'held'].filter(name => counts.has(name))].join(' ')
   // Whether the walk predates the channel's latest change, where graphql says so outright: `stale`, or the `change` it
   // counted (against the channel's).
   const walkFields = names(data?.channelRollout)

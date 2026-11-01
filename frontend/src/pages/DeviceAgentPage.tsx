@@ -9,6 +9,7 @@ import {
   graphQLDeviceDaemon,
   graphQLSetDeviceDaemon,
   daemonVersion,
+  held,
   runningVersion,
   updating,
 } from '../services/graphQLDaemon'
@@ -72,6 +73,8 @@ export const DeviceAgentPage: React.FC = () => {
         return t('deviceAgent.failed', 'Upgrade to {{version}} failed', { version })
       case 'refused':
         return t('deviceAgent.refused', 'Refused {{version}}', { version })
+      case 'held':
+        return t('deviceAgent.held', "Blocked — held by the device's admin")
       default:
         return `${update.state} ${version}`
     }
@@ -84,7 +87,7 @@ export const DeviceAgentPage: React.FC = () => {
         <Notice severity="info" fullWidth>
           {t(
             'deviceAgent.unsupported',
-            'This API does not serve device sessions. Point Test Settings → API Target at a stage that does (local or dev).'
+            'This API does not serve Control Link devices. Point Test Settings → API Target at a stage that does (local or dev).'
           )}
         </Notice>
       )
@@ -101,7 +104,9 @@ export const DeviceAgentPage: React.FC = () => {
         </Notice>
       )
 
-    const failed = daemon.update && ['failed', 'refused'].includes(daemon.update.state)
+    // Held by the device's admin (a package hold or lock): blocked, not failed — it upgrades once the hold is lifted.
+    const blocked = held(daemon)
+    const failed = !blocked && daemon.update && ['failed', 'refused'].includes(daemon.update.state)
     const running = runningVersion(daemon)
     const upToDate = !daemon.update && (!daemon.target || daemon.target.version === running)
 
@@ -139,18 +144,30 @@ export const DeviceAgentPage: React.FC = () => {
                 : t('deviceAgent.noTargetHint', 'Its channel names no release')
             }
           />
-          <ListItemSetting
-            icon={failed ? 'exclamation-triangle' : updating(daemon) ? 'spinner-third' : 'circle-check'}
-            iconColor={failed ? 'danger' : updating(daemon) ? 'primary' : 'success'}
-            label={
-              daemon.update
-                ? stateLabel(daemon.update)
-                : upToDate
-                ? t('deviceAgent.upToDate', 'Up to date')
-                : t('deviceAgent.noUpdate', 'No upgrade reported')
-            }
-            subLabel={daemon.update?.detail || undefined}
-          />
+          {blocked ? (
+            <ListItemSetting
+              icon="lock"
+              iconColor="warning"
+              label={t('deviceAgent.held', "Blocked — held by the device's admin")}
+              subLabel={
+                daemon.update?.detail ||
+                t('deviceAgent.heldHint', 'A package hold or lock on the device. It upgrades once the hold is lifted.')
+              }
+            />
+          ) : (
+            <ListItemSetting
+              icon={failed ? 'exclamation-triangle' : updating(daemon) ? 'spinner-third' : 'circle-check'}
+              iconColor={failed ? 'danger' : updating(daemon) ? 'primary' : 'success'}
+              label={
+                daemon.update
+                  ? stateLabel(daemon.update)
+                  : upToDate
+                  ? t('deviceAgent.upToDate', 'Up to date')
+                  : t('deviceAgent.noUpdate', 'No upgrade reported')
+              }
+              subLabel={daemon.update?.detail || undefined}
+            />
+          )}
         </List>
         <List>
           <ListSubheader>{t('deviceAgent.upgrades', 'Upgrades')}</ListSubheader>

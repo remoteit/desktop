@@ -13,6 +13,8 @@ import {
   failureRows,
   gateReadings,
   heldForFailures,
+  heldReason,
+  reasonText,
   holdCause,
   parseLadder,
   retryingDevices,
@@ -43,6 +45,15 @@ describe('the bucket bar', () => {
     expect(segments.reduce((sum, s) => sum + s.fraction, 0)).toBeCloseTo(1)
     expect(segments.map(s => s.key)).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'offline'])
     expect(segments[0].fraction).toBeGreaterThan(0.99) // 13,307 of 13,316, not a sliver of 61,787
+  })
+
+  it("a held bucket where the API counts it: managed, but blocked by the device's admin", () => {
+    const held = { ...STABLE, onWanted: STABLE.onWanted - 4, held: 4 }
+    const segments = bucketSegments(held)
+    expect(segments.map(s => s.key)).toEqual(['onWanted', 'pending', 'upgrading', 'stuck', 'failed', 'held', 'offline'])
+    expect(segments.find(s => s.key === 'held')).toMatchObject({ label: 'Held', count: 4 })
+    expect(segments.find(s => s.key === 'held')!.help).toContain("held by the device's admin")
+    expect(segments.reduce((sum, s) => sum + s.count, 0)).toBe(STABLE.wanted - STABLE.unmanaged)
   })
 
   it('an empty channel has no shares', () => {
@@ -357,5 +368,20 @@ describe('recounted', () => {
     expect(recounted(['2026-10-31T11:00:05Z', '2026-10-31T10:59:50Z'], click)).toBe(false)
     expect(recounted([null], click)).toBe(false)
     expect(recounted([], click)).toBe(false)
+  })
+})
+
+describe('held devices', () => {
+  it("read as blocked, held by the device's admin, with the mechanism", () => {
+    expect(heldReason('held: apt-mark hold')).toBe(true)
+    expect(heldReason('failed: disk full')).toBe(false)
+    expect(heldReason('holding')).toBe(false)
+    expect(reasonText('held: apt-mark hold')).toBe("Blocked — held by the device's admin (apt-mark hold)")
+    expect(reasonText('held')).toBe("Blocked — held by the device's admin")
+    expect(reasonText('download: 404')).toBe('download: 404')
+  })
+
+  it("any other reason in today's words", () => {
+    expect(reasonText('unmanaged: no device session')).toBe('unmanaged: Classic')
   })
 })
