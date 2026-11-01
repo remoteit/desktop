@@ -16,6 +16,29 @@
     content="default-src 'self' 'unsafe-inline' https: ws:; script-src 'self' 'unsafe-inline' https://static.zdassets.com https://www.googletagmanager.com https://www.google-analytics.com; object-src 'none'" />
   <link rel="manifest" href="/brand/manifest.json" />
   <title>Loading...</title>
+  <script>
+    // Boot watchdog. The app renders only once every script and stylesheet before it has arrived, and the browser
+    // never gives up on a transfer that stalls mid-file — a CDN edge does that now and then to a long one — so the
+    // page would sit on this splash for good. No file finished for 30 s and the app not started (main.tsx sets
+    // __appBooted): reload once (the files already here come from the cache). Once per two minutes per tab, so a
+    // page that cannot start is never a reload loop.
+    (function () {
+      var STALL_MS = 30000, KEY = 'bootReloadAt', last = -1, quietSince = Date.now()
+      var timer = setInterval(function () {
+        if (window.__appBooted) return clearInterval(timer)
+        var done = performance.getEntriesByType('resource').length
+        if (done !== last) { last = done; quietSince = Date.now(); return }
+        if (Date.now() - quietSince < STALL_MS) return
+        clearInterval(timer)
+        try {
+          if (Date.now() - Number(sessionStorage.getItem(KEY) || 0) < 120000) return
+          sessionStorage.setItem(KEY, String(Date.now()))
+        } catch (e) { return }
+        console.warn('BOOT: nothing loaded for ' + STALL_MS / 1000 + ' s and the app has not started — reloading')
+        location.reload()
+      }, 2000)
+    })()
+  </script>
 </head>
 
 <body>

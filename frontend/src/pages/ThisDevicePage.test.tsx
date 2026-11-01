@@ -6,6 +6,8 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
   }),
+  // The page's imports reach src/i18n, which plugs this in at load.
+  initReactI18next: { type: '3rdParty', init: () => {} },
 }))
 vi.mock('../components/Container', () => ({ Container: ({ children }: any) => <div>{children}</div> }))
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => null }))

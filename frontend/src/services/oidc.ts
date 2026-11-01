@@ -14,6 +14,7 @@ import {
 } from '../constants'
 import { thisDevice, ThisDevice, AuthAccount } from './thisDevice'
 import { toBase64url, decodeBase64url } from '../helpers/base64url'
+import { idbOpen } from '../helpers/idbOpen'
 import { httpsOnly } from '../helpers/utilHelper'
 
 /**
@@ -1119,12 +1120,7 @@ type DpopKey = { pair: CryptoKeyPair; header: string }
 let dpopPair: Promise<DpopKey | null> | undefined
 
 function idb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const open = indexedDB.open(DPOP_DB, 1)
-    open.onupgradeneeded = () => open.result.createObjectStore(DPOP_STORE)
-    open.onsuccess = () => resolve(open.result)
-    open.onerror = () => reject(open.error)
-  })
+  return idbOpen(indexedDB, DPOP_DB, 1, db => db.createObjectStore(DPOP_STORE))
 }
 async function idbReq<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => IDBRequest): Promise<T> {
   const db = await idb()
@@ -1160,6 +1156,8 @@ async function dpopKey(): Promise<DpopKey | null> {
         )
         return { pair, header }
       } catch {
+        // Not remembered: a store that timed out or failed this time is asked again by the next call (a new sign-in).
+        dpopPair = undefined
         return null
       }
     })()

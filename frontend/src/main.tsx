@@ -20,6 +20,9 @@ import { EMBEDDED } from './constants'
 import { registerHttpBridge } from './services/thisDeviceHttp'
 import { registerCapacitorBridge } from './services/thisDeviceCapacitor'
 
+// Every module has arrived: index.html's boot watchdog stands down.
+;(window as Window & { __appBooted?: boolean }).__appBooted = true
+
 // The bridge to the machine (services/thisDevice), before anything asks for it — the sign-in asks first (models/auth
 // init): a phone shell's ThisDevice plugin, or in the embedded build the menu app's, over its local server; none in a
 // browser or the prod mobile app.

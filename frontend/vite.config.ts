@@ -1,6 +1,30 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+
+// CloudFront compresses only files of 1,000 to 10,000,000 bytes: anything bigger goes out uncompressed — the 12 MB
+// vendor chunk was 4.8x its brotli size on the wire, and a transfer that long sometimes stalls at the edge, leaving the
+// page on its splash with `load` never fired. A web build with such a file fails here instead of shipping it.
+const CLOUDFRONT_COMPRESS_MAX = 10_000_000
+function compressibleChunks(): Plugin {
+  return {
+    name: 'compressible-chunks',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const tooBig = Object.values(bundle)
+        .map(file => ({
+          name: file.fileName,
+          bytes: Buffer.byteLength(file.type === 'chunk' ? file.code : (file.source as string | Uint8Array)),
+        }))
+        .filter(file => /\.(js|css)$/.test(file.name) && file.bytes > CLOUDFRONT_COMPRESS_MAX)
+      if (tooBig.length)
+        this.error(
+          `over CloudFront's ${CLOUDFRONT_COMPRESS_MAX}-byte compression limit (split it in manualChunks): ` +
+            tooBig.map(file => `${file.name} ${file.bytes}`).join(', ')
+        )
+    },
+  }
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -30,13 +54,17 @@ export default defineConfig(({ mode }) => {
                 )
               )
                 return
+              // Font Awesome's whole packs (components/Icon adds them all, as icon names come from data) are ~9 MB of
+              // the vendor code: a chunk each keeps every file under CloudFront's 10 MB compression ceiling.
+              const icons = /[\\/]node_modules[\\/]@fortawesome[\\/]([a-z-]+)-svg-icons[\\/]/.exec(id)
+              if (icons) return `icons-${icons[1]}`
               return 'vendor'
             }
           },
         },
       },
     },
-    plugins: [react()],
+    plugins: [react(), compressibleChunks()],
     resolve: {
       alias: { '@common': path.resolve(__dirname, '../common/src') },
     },
