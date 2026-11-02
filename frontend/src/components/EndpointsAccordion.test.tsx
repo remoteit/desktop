@@ -34,6 +34,9 @@ vi.mock('../buttons/ConfirmIconButton', () => ({ ConfirmIconButton: () => null }
 vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: () => null }))
 vi.mock('./Timestamp', () => ({ Timestamp: () => null }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
+vi.mock('./ProxyAccessList', () => ({
+  ProxyAccessList: ({ scope }: any) => <div data-visitors>{scope.serviceId}</div>,
+}))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
@@ -93,5 +96,22 @@ describe('the endpoint form’s proxy choice', () => {
     expect(field.querySelector('.MuiSelect-select')?.textContent).toBe('e1.solo.r3proxy.com (us-west-2)')
     await makeIt(container)
     expect((create.mock.calls[0] as any[])[1].proxyId).toBe('E1')
+  })
+})
+
+describe('who used the endpoints', () => {
+  it('is shown to whoever manages the service, and to no one else', async () => {
+    document.body.innerHTML = ''
+    const render = async (permissions: string[]) => {
+      const container = document.createElement('div')
+      document.body.appendChild(container)
+      const device = { id: 'DEVICE', permissions } as any
+      await act(async () =>
+        createRoot(container).render(<EndpointsAccordion device={device} service={{ id: 'SERVICE' } as any} />)
+      )
+      return container
+    }
+    expect((await render(['MANAGE'])).querySelector('[data-visitors]')?.textContent).toBe('SERVICE')
+    expect((await render(['CONNECT'])).querySelector('[data-visitors]')).toBeNull()
   })
 })

@@ -19,12 +19,15 @@ export type ExitPolicy = {
   blockUdp: number[]
   flowsPerSecond: number
   logDays: number
+  accessLogDays?: number // how long the proxies' access log is kept (an API before it: absent)
   updated: string | null
   updatedBy: string | null
   suspensions: ExitSuspension[]
 }
 
-export type ExitPolicyChange = Partial<Pick<ExitPolicy, 'blockTcp' | 'blockUdp' | 'flowsPerSecond' | 'logDays'>>
+export type ExitPolicyChange = Partial<
+  Pick<ExitPolicy, 'blockTcp' | 'blockUdp' | 'flowsPerSecond' | 'logDays' | 'accessLogDays'>
+>
 
 const POLICY_FIELDS =
   'blockTcp blockUdp flowsPerSecond logDays updated updatedBy suspensions { accountId reason suspended suspendedBy }'
@@ -36,15 +39,29 @@ export async function graphQLExitPolicy() {
   const errors = graphQLGetErrors(response, true, { query, variables: {} })
   if (withoutDeviceSessions(errors, 'exitPolicy')) return UNSUPPORTED
   if (errors) return 'ERROR' as const
-  return (response.data?.data?.exitPolicy ?? null) as ExitPolicy | null
+  const policy = (response.data?.data?.exitPolicy ?? null) as ExitPolicy | null
+  // Apart: an API from before it has no such field, and asking for it with the rest would fail the policy too.
+  if (policy) policy.accessLogDays = await graphQLAccessLogDays()
+  return policy
+}
+
+async function graphQLAccessLogDays(): Promise<number | undefined> {
+  const query = `query AccessLogDays { exitPolicy { accessLogDays } }`
+  const response = await post({ query, variables: {} })
+  if (response === 'ERROR') return undefined
+  return response.data?.data?.exitPolicy?.accessLogDays ?? undefined
 }
 
 export const graphQLSetExitPolicy = (change: ExitPolicyChange) =>
   graphQLBasicRequest(
-    ` mutation SetExitPolicy($blockTcp: [Int!], $blockUdp: [Int!], $flowsPerSecond: Int, $logDays: Int) {
+    change.accessLogDays === undefined
+      ? ` mutation SetExitPolicy($blockTcp: [Int!], $blockUdp: [Int!], $flowsPerSecond: Int, $logDays: Int) {
         setExitPolicy(blockTcp: $blockTcp, blockUdp: $blockUdp, flowsPerSecond: $flowsPerSecond, logDays: $logDays) {
           ${POLICY_FIELDS}
         }
+      }`
+      : ` mutation SetAccessLogDays($accessLogDays: Int) {
+        setExitPolicy(accessLogDays: $accessLogDays) { accessLogDays }
       }`,
     change
   )

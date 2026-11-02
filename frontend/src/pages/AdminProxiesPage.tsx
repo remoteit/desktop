@@ -21,6 +21,7 @@ import {
 import { parsePorts } from '../helpers/portListHelper'
 import { AdminProxyLimits } from './AdminProxyLimits'
 import { AdminPublicProxies } from './AdminPublicProxies'
+import { AdminProxyAccess } from './AdminProxyAccess'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -32,8 +33,8 @@ import { Icon } from '../components/Icon'
 
 /* remote.it's proxies and exit nodes (presence-server docs/proxy-plan.md §5, §8): each plan's limits on them; the
    policy every exit keeps — what it refuses beyond what every exit refuses, how fast one account may open flows, how
-   long its flow log is kept — and the accounts stopped from using exits; and the public proxies themselves, each a
-   public exit or not. A change takes effect at once. Admins only;
+   long its flow log is kept — and the accounts stopped from using exits; the public proxies themselves, each a
+   public exit or not; and who used them, and how long that is kept. A change takes effect at once. Admins only;
    English only, as the rest of /admin. */
 export const AdminProxiesPage: React.FC = () => {
   const [policy, setPolicy] = useState<ExitPolicy | null | 'ERROR' | typeof UNSUPPORTED>()
@@ -61,7 +62,12 @@ export const AdminProxiesPage: React.FC = () => {
     save({ [which]: ports })
   }
 
-  const saveNumber = (which: 'flowsPerSecond' | 'logDays', text: string, min: number, max: number) => {
+  const saveNumber = (
+    which: 'flowsPerSecond' | 'logDays' | 'accessLogDays',
+    text: string,
+    min: number,
+    max: number
+  ) => {
     const value = Number(text)
     if (!Number.isInteger(value) || value < min || value > max) return setProblem(`${text} is not ${min} to ${max}.`)
     save({ [which]: value })
@@ -91,6 +97,7 @@ export const AdminProxiesPage: React.FC = () => {
           </Notice>
         )}
         <AdminPublicProxies onProblem={setProblem} />
+        <AdminProxyAccess />
         <List>
           <ListSubheader>Plan limits</ListSubheader>
         </List>
@@ -141,6 +148,19 @@ export const AdminProxiesPage: React.FC = () => {
             onSave={value => saveNumber('logDays', String(value), 1, 3650)}
           />
         </List>
+        {policy.accessLogDays !== undefined && (
+          <List>
+            <ListSubheader>Proxies: access log</ListSubheader>
+            <InlineTextFieldSetting
+              icon="clock-rotate-left"
+              label="Days the access log is kept"
+              value={policy.accessLogDays}
+              disabled={saving}
+              filter={/[^0-9]/g}
+              onSave={value => saveNumber('accessLogDays', String(value), 1, 3650)}
+            />
+          </List>
+        )}
         {policy.updated && (
           <Gutters>
             <Typography variant="caption" color="textSecondary">

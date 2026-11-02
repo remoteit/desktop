@@ -2567,6 +2567,34 @@
     "applicationPath": "Ruta de la aplicación",
     "title": "Se encontró información faltante"
   },
+  "proxyAccess": {
+    "all": "Todos",
+    "bytes": "{{in}} recibidos, {{out}} enviados",
+    "code": "error {{code}}",
+    "error": "No se pudieron leer los visitantes.",
+    "failures": "No atendidos",
+    "masked": "dirección parcialmente oculta",
+    "more": "Más",
+    "noAddress": "dirección desconocida",
+    "none": "No hay visitantes en los días conservados.",
+    "outcome": {
+      "abandoned": "Se fue antes de ser atendido",
+      "addressRefused": "Dirección no permitida",
+      "busy": "Sin sesión: demasiados en espera",
+      "passwordRefused": "Contraseña incorrecta",
+      "rateLimited": "Demasiados intentos de contraseña",
+      "refused": "Sin sesión: rechazada",
+      "served": "Atendido",
+      "ticketRefused": "Inicio de sesión rechazado",
+      "timedOut": "Sin sesión: tiempo agotado",
+      "unanswered": "Sin sesión: sin respuesta",
+      "unknown": "Desconocido",
+      "unknownEndpoint": "No existe ese endpoint"
+    },
+    "passwordFailures": "contraseñas incorrectas: {{number}}",
+    "show": "Mostrar",
+    "title": "Visitantes recientes"
+  },
   "publicSetting": {
     "ipLatching": "IP Latching",
     "label": "Seguridad",

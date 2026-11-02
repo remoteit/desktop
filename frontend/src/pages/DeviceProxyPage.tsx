@@ -16,6 +16,7 @@ import {
 } from '../services/graphQLProxy'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceExitOffer } from '../components/DeviceExitSection'
+import { ProxyAccessList } from '../components/ProxyAccessList'
 import { CONFIGURATION } from '../components/DeviceSettingRow'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -280,6 +281,15 @@ export const DeviceProxyPage: React.FC = () => {
               />
             </List>
           </>
+        )}
+        {proxy && (isPublic ? admin : manage) && (
+          <List>
+            <ListSubheader>{t('proxyAccess.title', 'Recent visitors')}</ListSubheader>
+            <ProxyAccessList
+              scope={isPublic ? { admin: true, proxyId: device.id } : { proxyId: device.id }}
+              showEndpoint
+            />
+          </List>
         )}
         {!listening && (
           <Gutters>

@@ -19,6 +19,7 @@ import { SelectSetting } from './SelectSetting'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
+import { ProxyAccessList } from './ProxyAccessList'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
 
@@ -27,8 +28,8 @@ const KIND_ICON: Record<EndpointKind, string> = { https: 'globe', tcp: 'arrow-ri
 type Props = { device: IDevice; service: IService }
 
 /* A service's endpoints on proxies (presence-server docs/proxy-plan.md): its addresses through remote.it's proxies or
-   one of yours — a name for https, a port for tcp and udp — and making one. Device-session API only: on an API without
-   it, nothing shows. */
+   one of yours — a name for https, a port for tcp and udp — and making one; and, for whoever manages the service, who
+   used them (components/ProxyAccessList.tsx). Device-session API only: on an API without it, nothing shows. */
 export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   const { t } = useTranslation()
   const [endpoints, setEndpoints] = useState<Endpoint[] | 'ERROR' | typeof UNSUPPORTED>()
@@ -170,6 +171,14 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
           }}
           busy={busy}
         />
+      )}
+      {manage && (
+        <>
+          <Typography variant="subtitle2" paddingX={2} paddingTop={1}>
+            {t('proxyAccess.title', 'Recent visitors')}
+          </Typography>
+          <ProxyAccessList scope={{ serviceId: service.id }} showEndpoint />
+        </>
       )}
     </AccordionMenuItem>
   )

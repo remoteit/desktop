@@ -2517,6 +2517,34 @@
     "applicationPath": "Anwendungspfad",
     "title": "Fehlende Informationen gefunden"
   },
+  "proxyAccess": {
+    "all": "Alle",
+    "bytes": "{{in}} empfangen, {{out}} gesendet",
+    "code": "Fehler {{code}}",
+    "error": "Die Besucher konnten nicht gelesen werden.",
+    "failures": "Nicht bedient",
+    "masked": "Adresse teilweise verborgen",
+    "more": "Mehr",
+    "noAddress": "unbekannte Adresse",
+    "none": "Keine Besucher im Aufbewahrungszeitraum.",
+    "outcome": {
+      "abandoned": "Vor der Bedienung gegangen",
+      "addressRefused": "Adresse nicht erlaubt",
+      "busy": "Keine Sitzung: zu viele wartend",
+      "passwordRefused": "Falsches Passwort",
+      "rateLimited": "Zu viele Passwortversuche",
+      "refused": "Keine Sitzung: abgelehnt",
+      "served": "Bedient",
+      "ticketRefused": "Anmeldung abgelehnt",
+      "timedOut": "Keine Sitzung: Zeitüberschreitung",
+      "unanswered": "Keine Sitzung: keine Antwort",
+      "unknown": "Unbekannt",
+      "unknownEndpoint": "Kein solcher Endpunkt"
+    },
+    "passwordFailures": "falsche Passwörter: {{number}}",
+    "show": "Anzeigen",
+    "title": "Letzte Besucher"
+  },
   "publicSetting": {
     "ipLatching": "IP-Latching",
     "label": "Sicherheit",

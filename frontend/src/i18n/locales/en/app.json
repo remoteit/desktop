@@ -2517,6 +2517,34 @@
     "applicationPath": "Application path",
     "title": "Missing info found"
   },
+  "proxyAccess": {
+    "all": "All",
+    "bytes": "{{in}} in, {{out}} out",
+    "code": "error {{code}}",
+    "error": "Could not read the visitors.",
+    "failures": "Not served",
+    "masked": "address partly hidden",
+    "more": "More",
+    "noAddress": "unknown address",
+    "none": "No visitors in the days kept.",
+    "outcome": {
+      "abandoned": "Left before being served",
+      "addressRefused": "Address not allowed",
+      "busy": "No session: too many waiting",
+      "passwordRefused": "Wrong password",
+      "rateLimited": "Too many password attempts",
+      "refused": "No session: refused",
+      "served": "Served",
+      "ticketRefused": "Sign-in refused",
+      "timedOut": "No session: timed out",
+      "unanswered": "No session: no answer",
+      "unknown": "Unknown",
+      "unknownEndpoint": "No such endpoint"
+    },
+    "passwordFailures": "wrong passwords: {{number}}",
+    "show": "Show",
+    "title": "Recent visitors"
+  },
   "publicSetting": {
     "ipLatching": "IP Latching",
     "label": "Security",

@@ -2467,6 +2467,34 @@
     "applicationPath": "アプリケーションパス",
     "title": "不足している情報が見つかりました"
   },
+  "proxyAccess": {
+    "all": "すべて",
+    "bytes": "受信 {{in}}、送信 {{out}}",
+    "code": "エラー {{code}}",
+    "error": "訪問者を読み込めませんでした。",
+    "failures": "未処理",
+    "masked": "アドレスは一部非表示",
+    "more": "さらに表示",
+    "noAddress": "不明なアドレス",
+    "none": "保存期間内の訪問者はいません。",
+    "outcome": {
+      "abandoned": "処理前に離脱",
+      "addressRefused": "許可されていないアドレス",
+      "busy": "セッションなし: 待機中が多すぎます",
+      "passwordRefused": "パスワードが違います",
+      "rateLimited": "パスワードの試行回数が多すぎます",
+      "refused": "セッションなし: 拒否",
+      "served": "処理済み",
+      "ticketRefused": "サインインが拒否されました",
+      "timedOut": "セッションなし: タイムアウト",
+      "unanswered": "セッションなし: 応答なし",
+      "unknown": "不明",
+      "unknownEndpoint": "該当するエンドポイントがありません"
+    },
+    "passwordFailures": "間違ったパスワード: {{number}}",
+    "show": "表示",
+    "title": "最近の訪問者"
+  },
   "publicSetting": {
     "ipLatching": "IPラッチング",
     "label": "セキュリティ",
