@@ -1916,6 +1916,9 @@
   "localSubnetConnect": {
     "address": "",
     "launch": "",
+    "loop": "",
+    "loopTitle": "",
+    "openAnyway": "",
     "ports": "",
     "sshHint": "",
     "title": ""
@@ -2966,6 +2969,7 @@
   "serviceScheme": {
     "answersHttp": "",
     "answersHttps": "",
+    "redirectsHttps": "",
     "switchHttp": "",
     "switchHttps": ""
   },

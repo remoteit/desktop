@@ -8,7 +8,7 @@ const { read, cloudUpdateService, updateService, sessions } = vi.hoisted(() => (
   updateService: vi.fn().mockResolvedValue(undefined),
   sessions: { on: true },
 }))
-vi.mock('../services/graphQLDetectedScheme', () => ({ graphQLDetectedSchemes: read }))
+vi.mock('../services/graphQLDetectedScheme', () => ({ graphQLDetectedSchemes: read, HTTP_TYPE: 7, HTTPS_TYPE: 8 }))
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => sessions.on }))
 vi.mock('../store', () => ({}))
 vi.mock('react-redux', () => ({ useDispatch: () => ({ devices: { cloudUpdateService, updateService } }) }))
@@ -50,12 +50,19 @@ beforeEach(() => {
 describe('schemeSuggestion', () => {
   it('suggests HTTPS for an http service that answers https, on the detected port', () => {
     const detected = { set: 'http', serves: 'https', port: 443, detected: null }
-    expect(schemeSuggestion(detected, http)).toEqual({ typeID: 8, port: 443, serves: 'https' })
+    expect(schemeSuggestion(detected, http)).toEqual({ typeID: 8, port: 443, serves: 'https', redirect: false })
   })
 
   it('suggests HTTP for an https service that answers plain http', () => {
     const detected = { set: 'https', serves: 'http', port: 8080, detected: null }
-    expect(schemeSuggestion(detected, https)).toEqual({ typeID: 7, port: 8080, serves: 'http' })
+    expect(schemeSuggestion(detected, https)).toEqual({ typeID: 7, port: 8080, serves: 'http', redirect: false })
+  })
+
+  it('says a redirect to HTTPS, followed by the device or passed back to the browser', () => {
+    for (const redirect of ['followed', 'passed'] as const) {
+      const detected = { set: 'http', serves: 'https', port: 443, detected: null, redirect }
+      expect(schemeSuggestion(detected, http)).toEqual({ typeID: 8, port: 443, serves: 'https', redirect: true })
+    }
   })
 
   it('suggests nothing when nothing was found, or the service already matches', () => {
@@ -77,6 +84,16 @@ describe('ServiceSchemeSuggestion', () => {
     expect(container.querySelector('[data-notice]')).toBeNull()
   })
 
+  it('says a plain service redirects to HTTPS, and switches it to 8 on the port it redirects to', async () => {
+    read.mockResolvedValue({ S: { set: 'http', serves: 'https', port: 443, detected: null, redirect: 'passed' } })
+    const container = await render(http)
+    expect(container.textContent).toContain('This service redirects to HTTPS. Switch to port 443 (HTTPS)?')
+    expect(container.textContent).not.toContain('answers over HTTPS')
+    await act(async () => container.querySelector('button')!.click())
+    expect(cloudUpdateService).toHaveBeenCalledWith({ form: { ...http, typeID: 8, port: 443 }, deviceId: 'D' })
+    expect(updateService).toHaveBeenCalledWith({ id: 'S', set: { typeID: 8, port: 443 } })
+  })
+
   it('offers plain HTTP the other way round', async () => {
     read.mockResolvedValue({ S: { set: 'https', serves: 'http', port: 8080, detected: null } })
     const container = await render(https)
@@ -93,7 +110,7 @@ describe('ServiceSchemeSuggestion', () => {
   })
 
   it('does not ask for someone who cannot edit the service', async () => {
-    read.mockResolvedValue({ S: { set: 'http', serves: 'https', port: 443, detected: null } })
+    read.mockResolvedValue({ S: { set: 'http', serves: 'https', port: 443, detected: null, redirect: 'passed' } })
     const viewer = { ...device, permissions: ['VIEW'] } as unknown as IDevice
     expect((await render(http, viewer)).querySelector('[data-notice]')).toBeNull()
     expect(read).not.toHaveBeenCalled()

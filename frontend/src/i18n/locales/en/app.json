@@ -1876,6 +1876,9 @@
   "localSubnetConnect": {
     "address": "resolves here to {{address}}",
     "launch": "Open in the browser",
+    "loop": "This service redirects to HTTPS, so its page would keep sending the browser back to itself. Switch it to port {{port}} (HTTPS) in its configuration to open it.",
+    "loopTitle": "This page would loop",
+    "openAnyway": "Open anyway",
     "ports": "Every port of the service: {{ports}}",
     "sshHint": "Works from a machine signed in on its remote.it device app",
     "title": "On this machine — no connection to start"
@@ -2902,6 +2905,7 @@
   "serviceScheme": {
     "answersHttp": "This service answers plain HTTP — switch its type to HTTP (port {{port}})?",
     "answersHttps": "This service answers over HTTPS — switch its type to HTTPS (port {{port}})?",
+    "redirectsHttps": "This service redirects to HTTPS. Switch to port {{port}} (HTTPS)?",
     "switchHttp": "Switch to HTTP",
     "switchHttps": "Switch to HTTPS"
   },

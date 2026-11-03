@@ -7,6 +7,7 @@ import { REGEX_LAST_PATH } from '../../constants'
 import { ListItemBack } from '../../components/ListItemBack'
 import { ServiceForm } from '../../components/ServiceForm'
 import { Gutters } from '../../components/Gutters'
+import { ServiceSchemeSuggestion } from '../../components/ServiceSchemeSuggestion'
 
 type Props = { device?: IDevice }
 
@@ -34,6 +35,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   return (
     <Gutters size="md" bottom={null}>
       <ListItemBack title={t('serviceEditPage.title', 'Service configuration')} to="connect" />
+      <ServiceSchemeSuggestion device={device} service={service} />
       <ServiceForm
         device={device}
         service={service}
