@@ -20,6 +20,7 @@ import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { ProxyAccessList } from './ProxyAccessList'
+import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
 
@@ -37,6 +38,12 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   const [adding, setAdding] = useState(false)
   const [busy, setBusy] = useState(false)
   const manage = device.permissions.includes('MANAGE')
+  // Public-proxy transfer is charged to the account whose service it is, and only on remote.it's proxies.
+  const usage = useTransferUsageHint(
+    device.owner?.id,
+    'proxy',
+    Array.isArray(endpoints) && endpoints.some(endpoint => endpoint.proxy.kind === 'remoteit')
+  )
 
   const load = useCallback(async () => {
     setEndpoints(await graphQLServiceEndpoints(device.id, service.id))
@@ -156,6 +163,11 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
             </ListItem>
           ))}
         </List>
+      )}
+      {usage && (
+        <Box paddingX={2} paddingBottom={1}>
+          <TransferUsageHintText hint={usage} />
+        </Box>
       )}
       {adding && (
         <EndpointForm

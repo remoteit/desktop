@@ -1,8 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { getActiveId, getUserAdmin } from '../selectors/state'
+import { getUserAdmin } from '../selectors/state'
 import { useTranslation } from 'react-i18next'
-import { List, ListItem, ListItemIcon, ListSubheader, Typography } from '@mui/material'
+import { List, ListSubheader, Typography } from '@mui/material'
 import { DeviceContext } from '../services/Context'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import {
@@ -17,7 +17,6 @@ import {
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceExitOffer } from '../components/DeviceExitSection'
 import { ProxyAccessList } from '../components/ProxyAccessList'
-import { TransferUsageHintText, useTransferUsageHint } from '../components/TransferUsage'
 import { CONFIGURATION } from '../components/DeviceSettingRow'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -101,7 +100,6 @@ export const DeviceProxyPage: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
   const admin = useSelector(getUserAdmin)
-  const activeId = useSelector(getActiveId)
   const [proxy, setProxy] = useState<Proxy | null | 'ERROR' | typeof UNSUPPORTED>()
   const [publicExit, setPublicExit] = useState<boolean>()
   const [saving, setSaving] = useState(false)
@@ -130,11 +128,8 @@ export const DeviceProxyPage: React.FC = () => {
     load()
   }, [load])
 
-  const isPublic = typeof proxy === 'object' && proxy?.kind === 'remoteit'
-  // Public-proxy transfer is charged to the account whose service it is: the device's owner, else the active account.
-  const usage = useTransferUsageHint(device?.owner?.id || activeId, 'proxy', isPublic)
-
   if (!device) return null
+  const isPublic = typeof proxy === 'object' && proxy?.kind === 'remoteit'
   const manage = device.permissions.includes('MANAGE') && !device.shared
 
   const run = async (change: () => Promise<unknown>) => {
@@ -235,12 +230,6 @@ export const DeviceProxyPage: React.FC = () => {
                 host: proxy.host,
               })}
             />
-          )}
-          {usage && (
-            <ListItem dense>
-              <ListItemIcon />
-              <TransferUsageHintText hint={usage} />
-            </ListItem>
           )}
         </List>
         {proxy && !isPublic && (

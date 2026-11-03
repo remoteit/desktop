@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { useSelector } from 'react-redux'
 import { ListItem, ListItemIcon } from '@mui/material'
-import { State } from '../store'
 import {
   ExitChooser,
   ExitInfo,
@@ -65,9 +63,8 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { info, chooser, exits, protect, publicExit, load } = useDeviceExit(device.id, true)
   const [saving, setSaving] = useState(false)
   const manage = device.permissions.includes('MANAGE')
-  // Exit transfer is charged to the account that used the exit: the person signed in.
-  const userId = useSelector((state: State) => state.auth.user?.id)
-  const usage = useTransferUsageHint(userId, 'exit', manage && publicExit)
+  // The device's own exit traffic is charged to its account, the owner's, not to whoever views it.
+  const usage = useTransferUsageHint(device.owner?.id, 'exit', manage && publicExit)
 
   if (!info) return null
 

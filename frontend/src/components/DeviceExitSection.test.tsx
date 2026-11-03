@@ -18,7 +18,6 @@ vi.mock('../services/graphQLProxy', () => ({
   graphQLProxyPublicExit: publicExit,
   graphQLSetDeviceExit: setExit,
 }))
-vi.mock('react-redux', () => ({ useSelector: (select: any) => select({ auth: { user: { id: 'USER' } } }) }))
 vi.mock('../services/transferUsage', () => ({ fetchTransferUsage: usage, UNSUPPORTED: 'UNSUPPORTED' }))
 vi.mock('../helpers/dateHelper', () => ({ getLocale: () => 'en-US' }))
 vi.mock('./ListItemSetting', () => ({
@@ -63,7 +62,7 @@ const none = {
 async function render(part: 'choice' | 'offer', settings?: any, permissions = ['MANAGE']) {
   const container = document.createElement('div')
   const root = createRoot(container)
-  const device = { id: 'LAPTOP', permissions } as any
+  const device = { id: 'LAPTOP', permissions, owner: { id: 'OWNER' } } as any
   await act(async () =>
     root.render(
       part === 'choice' ? <DeviceExitChoice device={device} /> : <DeviceExitOffer device={device} settings={settings} />
@@ -194,12 +193,12 @@ describe('the account’s public-exit transfer under the exit picker', () => {
     ['with an allowance', row(), '8.2 of 10 GB this month'],
     ['over it', row({ usedBytes: 12e9, over: true }), `Slowed to 5 Mbit/s until ${resets}`],
     ['with no allowance', row({ allowanceBytes: null }), '8.2 GB this month'],
-  ])('through one of remote.it’s public exits, %s: the signed-in person’s', async (_, answer, text) => {
+  ])('through one of remote.it’s public exits, %s: the device owner’s', async (_, answer, text) => {
     through('E1', true)
     usage.mockResolvedValue([answer])
     const page = await render('choice')
     expect(publicExit).toHaveBeenCalledWith('E1')
-    expect(usage).toHaveBeenCalledWith('USER')
+    expect(usage).toHaveBeenCalledWith('OWNER')
     expect(hint(page)!.textContent).toBe(text)
     expect(hint(page)!.getAttribute('data-over')).toBe(answer.over ? 'true' : null)
   })
