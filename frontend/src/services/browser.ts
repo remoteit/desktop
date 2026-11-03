@@ -1,5 +1,5 @@
 import { IP_PRIVATE } from '@common/constants'
-import { PORTAL, MODE, REGEX_SCHEME } from '../constants'
+import { PORTAL, MODE } from '../constants'
 import { State, store } from '../store'
 import { fullVersion } from '../helpers/versionHelper'
 import { AppLauncher } from '@capacitor/app-launcher'
@@ -167,8 +167,11 @@ export async function windowOpen(url?: string, windowName?: string, external?: b
       external ? await AppLauncher.openUrl({ url }) : await Browser.open({ url, windowName })
     } catch (error) {
       console.error('URL error:', error, { url, windowName, external })
-      const scheme = url.match(REGEX_SCHEME)?.[0]
-      store.dispatch.ui.set({ errorMessage: `We couldn't find an application to handle ${scheme}` })
+      // The in-app browser refuses a well-formed web link too — "Unable to display URL" while it still holds a page
+      // it was not told was closed — and the system browser opens any http(s) link.
+      if (!external && REGEX_WEB_URL.test(url) && (await openInSystem(url))) return
+      const reason = error instanceof Error && error.message ? ` (${error.message})` : ''
+      store.dispatch.ui.set({ errorMessage: `We couldn't open ${url}${reason}` })
     }
     return
   }
@@ -178,6 +181,17 @@ export async function windowOpen(url?: string, windowName?: string, external?: b
   } catch (error) {
     console.error('window.open error:', error)
     store.dispatch.ui.set({ errorMessage: `${error.message}: ${url}, ${windowName}` })
+  }
+}
+
+const REGEX_WEB_URL = /^https?:\/\//i
+
+async function openInSystem(url: string) {
+  try {
+    return (await AppLauncher.openUrl({ url })).completed
+  } catch (error) {
+    console.error('URL error:', error, { url, system: true })
+    return false
   }
 }
 
