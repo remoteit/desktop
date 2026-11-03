@@ -3230,6 +3230,19 @@
     "transfer": "Übertragen",
     "transferring": "Wird übertragen..."
   },
+  "transferUsage": {
+    "error": "",
+    "exit": "",
+    "noLimit": "",
+    "otherDevices_one": "",
+    "otherDevices_other": "",
+    "proxy": "",
+    "resets": "",
+    "slowed": "",
+    "slowedUntil": "",
+    "title": "",
+    "used": ""
+  },
   "unauthorizedPage": {
     "device": "Gerät",
     "deviceMayBeRemoved": "Das Gerät wurde möglicherweise entfernt ({{deviceID}})",

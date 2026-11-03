@@ -3298,6 +3298,20 @@
     "transfer": "Transferir",
     "transferring": "Transfiriendo..."
   },
+  "transferUsage": {
+    "error": "",
+    "exit": "",
+    "noLimit": "",
+    "otherDevices_one": "",
+    "otherDevices_many": "",
+    "otherDevices_other": "",
+    "proxy": "",
+    "resets": "",
+    "slowed": "",
+    "slowedUntil": "",
+    "title": "",
+    "used": ""
+  },
   "unauthorizedPage": {
     "device": "dispositivo",
     "deviceMayBeRemoved": "Es posible que el dispositivo haya sido eliminado ({{deviceID}})",

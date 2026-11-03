@@ -3230,6 +3230,19 @@
     "transfer": "Transfer",
     "transferring": "Transferring..."
   },
+  "transferUsage": {
+    "error": "Usage could not be read right now.",
+    "exit": "Public exit transfer",
+    "noLimit": "{{used}} used, no limit",
+    "otherDevices_one": "{{count}} other device",
+    "otherDevices_other": "{{count}} other devices",
+    "proxy": "Public proxy transfer",
+    "resets": "Resets {{date}}",
+    "slowed": "Slowed to {{rate}} Mbit/s until {{date}}",
+    "slowedUntil": "Slowed until {{date}}",
+    "title": "Usage this month",
+    "used": "{{used}} of {{allowance}} used"
+  },
   "unauthorizedPage": {
     "device": "device",
     "deviceMayBeRemoved": "Device may have been removed ({{deviceID}})",

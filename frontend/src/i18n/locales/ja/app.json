@@ -3162,6 +3162,18 @@
     "transfer": "譲渡",
     "transferring": "譲渡中..."
   },
+  "transferUsage": {
+    "error": "",
+    "exit": "",
+    "noLimit": "",
+    "otherDevices_other": "",
+    "proxy": "",
+    "resets": "",
+    "slowed": "",
+    "slowedUntil": "",
+    "title": "",
+    "used": ""
+  },
   "unauthorizedPage": {
     "device": "デバイス",
     "deviceMayBeRemoved": "デバイスが削除された可能性があります({{deviceID}})",

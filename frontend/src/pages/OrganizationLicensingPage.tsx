@@ -7,6 +7,7 @@ import { LicensingSetting } from '../components/LicensingSetting'
 import { useSelector } from 'react-redux'
 import { Container } from '../components/Container'
 import { FileStorageLimit } from '../components/FileStorageUsage'
+import { TransferUsage } from '../components/TransferUsage'
 import { selectActiveAccountId } from '../selectors/accounts'
 
 export const OrganizationLicensingPage: React.FC = () => {
@@ -20,6 +21,7 @@ export const OrganizationLicensingPage: React.FC = () => {
     <Container gutterBottom header={<Typography variant="h1">{t('organizationLicensingPage.title', 'License')}</Typography>}>
       <LicensingSetting licenses={licenses} limits={limits} />
       <FileStorageLimit accountId={accountId} />
+      <TransferUsage accountId={accountId} />
     </Container>
   )
 }
