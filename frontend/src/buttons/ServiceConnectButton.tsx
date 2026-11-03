@@ -18,6 +18,7 @@ import { useApplication } from '../hooks/useApplication'
 import { Link } from '../components/Link'
 import { LocalPortConnect } from '../components/LocalPortConnect'
 import { useLocalPort } from '../hooks/useLocalPort'
+import { wantsHttps } from '../services/localPorts'
 
 export const ServiceConnectButton: React.FC = () => {
   const { t } = useTranslation()
@@ -43,7 +44,8 @@ export const ServiceConnectButton: React.FC = () => {
   const named = !onPort && ((!!local && !proxy) || gateway)
   const usePort = () => {
     setPortAsked(true)
-    localPort.open()
+    // A web service asks for https the first time (graphql serves it where it can); after that, as the person left it.
+    localPort.open(undefined, wantsHttps(!!web, localPort.local) || undefined)
   }
   const portLink = localPort.offered && (
     <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>

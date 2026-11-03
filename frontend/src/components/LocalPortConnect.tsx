@@ -18,7 +18,11 @@ import { Icon } from './Icon'
    connects on demand, under <name>.at.remote.it — or localhost, where a resolver here drops answers of 127.0.0.1. Shown
    as its type would be used: a web service as the http URL Launch opens, an SSH service as the ssh command, anything
    else as host:port. What is copied is what is shown. The port is the same every time; the person may choose their own,
-   which is kept from then on. Disconnect stops the listening; the port and the name are kept for next time. */
+   which is kept from then on. Disconnect stops the listening; the port and the name are kept for next time.
+   https (graphql-api docs/LOCAL-PORT.md, "TLS"): where the port is served over https, a web service is shown and
+   launched as https://<name>:<port>; "Use http instead" reopens it plain, on the same port — the way out when the
+   handshake fails (the browser shows a connection error) or the name does not resolve here, since the certificate
+   names the name alone. "Use https" goes back, offered while this machine can serve it. */
 type Props = { state: LocalPortState; service?: IService; connection?: IConnection }
 
 export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }) => {
@@ -157,10 +161,22 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
             {t('localPortConnect.changePort', 'Change port')}
           </Link>
         )}
+        {web && local.https && (
+          <Link onClick={() => state.open(undefined, false)} data-testid="local-port-use-http">
+            {t('localPortConnect.useHttp', 'Does not open? Use http instead')}
+          </Link>
+        )}
+        {web && !local.https && local.httpsAvailable && names && (
+          <Link onClick={() => state.open(undefined, true)} data-testid="local-port-use-https">
+            {t('localPortConnect.useHttps', 'Use https')}
+          </Link>
+        )}
         <Link
           onClick={() => {
             setNamesResolve(!names)
             setNames(!names)
+            // localhost cannot be served under the name's certificate: plain from here.
+            if (names && local.https) state.open(undefined, false)
           }}
         >
           {names

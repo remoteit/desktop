@@ -24,12 +24,14 @@ export type LocalPort = {
   state: 'closed' | 'pending' | 'listening' | 'failed'
   detail: string | null
   initiatorId: string | null
+  https: boolean // served over https (keyless, under *.at.remote.it); while closed, whether it was asked for
+  httpsAvailable: boolean // this machine's daemon and the stage can serve it over https
 }
 
 // This machine's device, and what is known of the shell it runs in.
 export type Machine = { id: string; platform?: string; localPorts?: boolean }
 
-const FIELDS = 'deviceId serviceId name host port open state detail initiatorId'
+const FIELDS = 'deviceId serviceId name host port open state detail initiatorId https httpsAvailable'
 
 // The machine this page runs on, when it runs our daemon: the shell's own device (thisDevice) in an app, else the device
 // the DNS beacon was seen by — the same detection as "On this machine" (services/localSubnet). null: none here.
@@ -73,15 +75,18 @@ export async function graphQLLocalPort(deviceId: string, serviceId: string): Pro
   return response !== 'ERROR' ? response.data?.data?.localPorts?.[0] ?? null : null
 }
 
-// Opens it — on the port it had, or `port` from now on. A refusal comes back in graphql's words (the port is in use).
+// Opens it — on the port it had, or `port` from now on; over https (true) or plain (false) from now on, or as it was.
+// graphql serves it over https only where it can (httpsAvailable), plain otherwise. A refusal comes back in graphql's
+// words (the port is in use).
 export async function openLocalPort(
   deviceId: string,
   serviceId: string,
-  port?: number
+  port?: number,
+  https?: boolean
 ): Promise<LocalPort | { reason: string }> {
   const response = await graphQLRequestWithReason(
-    `mutation OpenLocalPort($deviceId: String!, $serviceId: String!, $port: Int) { openLocalPort(deviceId: $deviceId, serviceId: $serviceId, port: $port) { ${FIELDS} } }`,
-    { deviceId, serviceId, port }
+    `mutation OpenLocalPort($deviceId: String!, $serviceId: String!, $port: Int, $https: Boolean) { openLocalPort(deviceId: $deviceId, serviceId: $serviceId, port: $port, https: $https) { ${FIELDS} } }`,
+    { deviceId, serviceId, port, https }
   )
   if (response === 'ERROR') return { reason: '' }
   if ('reason' in response) return response
@@ -99,10 +104,13 @@ export async function closeLocalPort(deviceId: string, serviceId: string): Promi
 // The host to hand out: the name where it works here, else localhost.
 export const localPortHost = (local: Pick<LocalPort, 'host'>, names: boolean) => (names ? local.host : 'localhost')
 
-// What a web service is opened at: http, the name or localhost, the port. Never https: the port serves the service as
-// it is, plain.
-export const localPortWebURL = (local: Pick<LocalPort, 'host' | 'port'>, names: boolean) =>
-  `http://${localPortHost(local, names)}:${local.port}`
+// What a web service is opened at: https://<name>:<port> where the port is served over https (graphql-api
+// docs/LOCAL-PORT.md, "TLS") — its certificate names <name> alone, so never localhost — else http, the name or localhost.
+export const localPortWebURL = (local: Pick<LocalPort, 'host' | 'port'> & Partial<Pick<LocalPort, 'https'>>, names: boolean) =>
+  local.https ? `https://${local.host}:${local.port}` : `http://${localPortHost(local, names)}:${local.port}`
+
+// Whether to ask for https when a service is first opened on a local port: a web service, never opened before.
+export const wantsHttps = (web: boolean, local?: Pick<LocalPort, 'initiatorId'> | null) => web && !local?.initiatorId
 
 /* Whether *.at.remote.it resolves here: the person's choice, else the probe's remembered answer, else probed — where
    a page can probe. A page served over http from this machine (the Desktop app's window, the menu's) asks its own

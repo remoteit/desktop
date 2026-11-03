@@ -56,6 +56,8 @@ const LOCAL: LocalPort = {
   state: 'listening',
   detail: null,
   initiatorId: 'i1',
+  https: false,
+  httpsAvailable: false,
 }
 
 describe('LocalPortConnect', () => {
@@ -130,6 +132,45 @@ describe('LocalPortConnect', () => {
     })
     act(() => [...container.querySelectorAll('a')].find(a => a.textContent === 'Use this port')!.click())
     expect(state.open).toHaveBeenCalledWith(8080)
+  })
+
+  const link = (text: string) => [...container.querySelectorAll('a')].find(a => a.textContent === text)
+
+  it('served over https: shown, copied and launched as https on the name; http offered as the way out', async () => {
+    state.local = { ...LOCAL, https: true, httpsAvailable: true }
+    await render()
+    expect(copied()).toBe('https://ui-pi.at.remote.it:33000')
+    act(() => container.querySelector<HTMLButtonElement>('[data-testid="launch"]')!.click())
+    expect(windowOpen).toHaveBeenCalledExactlyOnceWith('https://ui-pi.at.remote.it:33000', '_blank')
+    expect(link('Use https')).toBeUndefined()
+    act(() => link('Does not open? Use http instead')!.click())
+    expect(state.open).toHaveBeenCalledWith(undefined, false)
+  })
+
+  it('https available but plain: http, and https offered; not available: neither link', async () => {
+    state.local = { ...LOCAL, httpsAvailable: true }
+    await render()
+    expect(copied()).toBe('http://ui-pi.at.remote.it:33000')
+    act(() => link('Use https')!.click())
+    expect(state.open).toHaveBeenCalledWith(undefined, true)
+
+    state.local = { ...LOCAL }
+    await render()
+    expect(link('Use https')).toBeUndefined()
+    expect(link('Does not open? Use http instead')).toBeUndefined()
+  })
+
+  it('https, then localhost: the certificate names the name alone, so plain from there', async () => {
+    state.local = { ...LOCAL, https: true, httpsAvailable: true }
+    await render()
+    act(() => link('Name does not open? Use localhost')!.click())
+    expect(state.open).toHaveBeenCalledWith(undefined, false)
+  })
+
+  it('not a web service: never https links', async () => {
+    state.local = { ...LOCAL, https: false, httpsAvailable: true }
+    await render({ service: { ...service, typeID: 28, attributes: {} }, connection: { ...connection, typeID: 28 } })
+    expect(link('Use https')).toBeUndefined()
   })
 
   it('says why it is not listening', async () => {

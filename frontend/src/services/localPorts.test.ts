@@ -11,6 +11,7 @@ vi.mock('./browser', () => ({ default: { isIOS: false } }))
 
 import {
   localPortWebURL,
+  wantsHttps,
   namesResolve,
   offersLocalPorts,
   openLocalPort,
@@ -101,5 +102,32 @@ describe('the name or localhost', () => {
     expect(await namesResolve()).toBe(false)
     setNamesResolve(true)
     expect(await namesResolve()).toBe(true)
+  })
+})
+
+describe('https (graphql-api docs/LOCAL-PORT.md, "TLS")', () => {
+  const local = { host: 'ui-pi.at.remote.it', port: 33000 }
+
+  it('https on the name where it is served so — never localhost, which the certificate does not name; else http', () => {
+    expect(localPortWebURL({ ...local, https: true }, true)).toBe('https://ui-pi.at.remote.it:33000')
+    expect(localPortWebURL({ ...local, https: true }, false)).toBe('https://ui-pi.at.remote.it:33000')
+    expect(localPortWebURL({ ...local, https: false }, true)).toBe('http://ui-pi.at.remote.it:33000')
+    expect(localPortWebURL({ ...local, https: false }, false)).toBe('http://localhost:33000')
+  })
+
+  it('asked for the first time a web service is opened; after that, as the person left it', () => {
+    expect(wantsHttps(true, null)).toBe(true)
+    expect(wantsHttps(true, { initiatorId: null })).toBe(true)
+    expect(wantsHttps(true, { initiatorId: 'i1' })).toBe(false)
+    expect(wantsHttps(false, null)).toBe(false)
+  })
+
+  it('the open sends https, and the fields are read', async () => {
+    request.mockResolvedValue({ data: { data: { openLocalPort: { ...local, https: true, httpsAvailable: true } } } })
+    await openLocalPort('M', 'S', undefined, true)
+    const [query, variables] = request.mock.calls[0]
+    expect(query).toContain('https: $https')
+    expect(query).toContain('httpsAvailable')
+    expect(variables).toEqual({ deviceId: 'M', serviceId: 'S', port: undefined, https: true })
   })
 })

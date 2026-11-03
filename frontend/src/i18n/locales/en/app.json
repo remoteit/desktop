@@ -1869,6 +1869,8 @@
     "pending": "Starting on this machine…",
     "port": "Port",
     "title": "On a local port of this machine",
+    "useHttp": "Does not open? Use http instead",
+    "useHttps": "Use https",
     "useLocalhost": "Name does not open? Use localhost",
     "useName": "Use {{name}}",
     "usePort": "Use this port"

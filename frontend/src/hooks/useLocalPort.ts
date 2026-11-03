@@ -17,7 +17,7 @@ export type LocalPortState = {
   local?: LocalPort // the service's local port here, open or closed, once read
   error?: string // why the last open was refused, in graphql's words
   busy: boolean
-  open: (port?: number) => Promise<void>
+  open: (port?: number, https?: boolean) => Promise<void>
   close: () => Promise<void>
 }
 
@@ -72,11 +72,11 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
   }, [polling, local, machineId, serviceId])
 
   const open = useCallback(
-    async (port?: number) => {
+    async (port?: number, https?: boolean) => {
       if (!machineId || !serviceId) return
       setBusy(true)
       setError(undefined)
-      const answer = await openLocalPort(machineId, serviceId, port)
+      const answer = await openLocalPort(machineId, serviceId, port, https)
       setBusy(false)
       if ('reason' in answer) return setError(answer.reason || undefined)
       setLocal(answer)

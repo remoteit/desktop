@@ -1829,6 +1829,8 @@
     "pending": "",
     "port": "",
     "title": "",
+    "useHttp": "",
+    "useHttps": "",
     "useLocalhost": "",
     "useName": "",
     "usePort": ""
