@@ -1816,6 +1816,23 @@
     "title": "自動設定するサービスを選択してください",
     "typeAndPort": "{{type}} - {{port}}"
   },
+  "localPortConnect": {
+    "cancel": "",
+    "changePort": "",
+    "closed": "",
+    "connect": "",
+    "disconnect": "",
+    "failed": "",
+    "launch": "",
+    "listening": "",
+    "opening": "",
+    "pending": "",
+    "port": "",
+    "title": "",
+    "useLocalhost": "",
+    "useName": "",
+    "usePort": ""
+  },
   "localSubnetConnect": {
     "address": "",
     "launch": "",
@@ -2744,6 +2761,7 @@
     "guideBodyDesktop": "このエンドポイントでネットワークリクエストの待ち受けを開始します。リクエストがあると自動的に接続し、アイドル状態になると切断します。",
     "guideTitleBrowser": "接続の開始",
     "guideTitleDesktop": "オンデマンド接続",
+    "useLocalPort": "",
     "useProxy": ""
   },
   "serviceDefaultsPage": {
@@ -3001,6 +3019,8 @@
     "hideTestUIBackgrounds": "テストUIの背景を非表示にする",
     "licenseMessageCleared": "ライセンスメッセージがクリアされました",
     "licensingOptions": "ライセンスオプション",
+    "localPortsOnPhone": "",
+    "localPortsOnPhoneHint": "",
     "mintError": "このターゲットはトークン発行時に拒否されました: {{error}}",
     "overrideDefaultAPIs": "デフォルトのAPIをオーバーライド",
     "overrideLicensesAndLimits": "ライセンスと制限をオーバーライド",

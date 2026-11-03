@@ -16,6 +16,8 @@ import { useSubnetReach } from '../hooks/useLocalSubnetName'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
 import { useApplication } from '../hooks/useApplication'
 import { Link } from '../components/Link'
+import { LocalPortConnect } from '../components/LocalPortConnect'
+import { useLocalPort } from '../hooks/useLocalPort'
 
 export const ServiceConnectButton: React.FC = () => {
   const { t } = useTranslation()
@@ -30,7 +32,24 @@ export const ServiceConnectButton: React.FC = () => {
   const web = useApplication(service, connection).urlForm
   const ssh = service?.typeID === 28
   const gateway = !local && reach.checked && !!reach.name && (!!web || ssh) && !proxy
-  const named = (!!local && !proxy) || gateway
+  // A local port of this machine (services/localPorts), where it runs our daemon: asked for here, or open already —
+  // then it is what the panel shows, until it is disconnected.
+  const localPort = useLocalPort(service?.id, device?.id)
+  const [portAsked, setPortAsked] = useState(false)
+  const onPort = localPort.offered && (portAsked || !!localPort.local?.open)
+  useEffect(() => {
+    if (localPort.local && !localPort.local.open && !localPort.busy) setPortAsked(false)
+  }, [localPort.local?.open, localPort.busy])
+  const named = !onPort && ((!!local && !proxy) || gateway)
+  const usePort = () => {
+    setPortAsked(true)
+    localPort.open()
+  }
+  const portLink = localPort.offered && (
+    <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
+      <Link onClick={usePort}>{t('serviceConnectButton.useLocalPort', 'Connect on a local port instead')}</Link>
+    </Typography>
+  )
   // The name works here, so the proxy is not in use: an error an earlier proxy attempt left on the connection — saved
   // with it, so back on every reload, and red on the service — is stale, and cleared. A proxy attempt asked for after
   // this sets its own.
@@ -86,7 +105,11 @@ export const ServiceConnectButton: React.FC = () => {
           }
         >
           <Gutters size="md" sx={{ display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }} bottom={null}>
-            {named ? (
+            {onPort ? (
+              <Box sx={{ width: '100%' }}>
+                <LocalPortConnect state={localPort} service={service} connection={connection} />
+              </Box>
+            ) : named ? (
               <Box sx={{ width: '100%' }}>
                 {local ? (
                   <LocalSubnetConnect local={local} service={service} connection={connection} />
@@ -110,6 +133,7 @@ export const ServiceConnectButton: React.FC = () => {
                     {t('serviceConnectButton.useProxy', 'Connect through the proxy instead')}
                   </Link>
                 </Typography>
+                {portLink}
               </Box>
             ) : (
               <>
@@ -125,6 +149,7 @@ export const ServiceConnectButton: React.FC = () => {
               </>
             )}
           </Gutters>
+          {!onPort && !named && portLink && <Gutters size="md" top={null} bottom={null}>{portLink}</Gutters>}
         </GuideBubble>
         <ConnectionErrorMessage connection={connection} visible={showError} />
       </Gutters>

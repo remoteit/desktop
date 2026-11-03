@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useRef } from 'react'
+import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { emit } from '../../services/Controller'
 import { Button } from '@mui/material'
@@ -17,6 +18,17 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
     (state: State) => state.backend.updateStatus
   )
   const dispatch = useDispatch<Dispatch>()
+  const history = useHistory()
+  // Seven taps on About within a few seconds open the Test UI: the way in on a phone, which has no Alt-Shift menu.
+  const taps = useRef<number[]>([])
+  const tapAbout = () => {
+    const now = Date.now()
+    taps.current = [...taps.current.filter(at => now - at < 4000), now]
+    if (taps.current.length < 7) return
+    taps.current = []
+    dispatch.ui.setPersistent({ testUI: 'HIGHLIGHT' })
+    history.push('/settings/test')
+  }
   const updateAvailable = downloaded && version !== currentVersion
 
   let label = t('updateSetting.about', 'About')
@@ -80,6 +92,7 @@ export const UpdateSetting: React.FC<{ preferences: IPreferences; os?: Ios }> = 
           </>
         }
         icon="copyright"
+        onClick={tapAbout}
         secondaryContent={
           error ? (
             <ColorChip label={t('updateSetting.updateFailed', 'Update failed')} color="warning" size="small" />

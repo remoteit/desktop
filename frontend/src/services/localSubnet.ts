@@ -55,6 +55,20 @@ async function askBeacon(id: string): Promise<LocalSubnetName | null> {
   return typeof name === 'string' ? { name } : null
 }
 
+// The device a probe of this page's was seen by — this machine's — when the person manages it (graphql subnetProbe's
+// deviceId): what a local port is opened on (services/localPorts). null: no daemon here, or an API without the field.
+export async function beaconDevice(): Promise<string | null> {
+  if (Date.now() < absentUntil) return null
+  const token = await seenProbe()
+  if (!token) return null
+  const response = await graphQLBasicRequest(
+    'query SubnetProbeDevice($token: String!) { subnetProbe(token: $token) { seen deviceId } }',
+    { token }
+  )
+  const id = response !== 'ERROR' ? response.data?.data?.subnetProbe?.deviceId : undefined
+  return typeof id === 'string' ? id : null
+}
+
 let probe: { at: number; token: Promise<string | null> } | undefined
 
 function seenProbe(): Promise<string | null> {

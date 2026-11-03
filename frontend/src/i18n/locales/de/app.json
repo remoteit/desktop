@@ -1856,6 +1856,23 @@
     "title": "Wählen Sie gefundene Dienste für die automatische Einrichtung aus",
     "typeAndPort": "{{type}} - {{port}}"
   },
+  "localPortConnect": {
+    "cancel": "",
+    "changePort": "",
+    "closed": "",
+    "connect": "",
+    "disconnect": "",
+    "failed": "",
+    "launch": "",
+    "listening": "",
+    "opening": "",
+    "pending": "",
+    "port": "",
+    "title": "",
+    "useLocalhost": "",
+    "useName": "",
+    "usePort": ""
+  },
   "localSubnetConnect": {
     "address": "",
     "launch": "",
@@ -2807,6 +2824,7 @@
     "guideBodyDesktop": "Beginnen Sie, an diesem Endpunkt auf Netzwerkanfragen zu warten. Bei einer Anfrage wird die Verbindung automatisch hergestellt und bei Inaktivität wieder getrennt.",
     "guideTitleBrowser": "Eine Verbindung starten",
     "guideTitleDesktop": "Bei Bedarf verbinden",
+    "useLocalPort": "",
     "useProxy": ""
   },
   "serviceDefaultsPage": {
@@ -3068,6 +3086,8 @@
     "hideTestUIBackgrounds": "Test-UI-Hintergründe ausblenden",
     "licenseMessageCleared": "Lizenzmeldung gelöscht",
     "licensingOptions": "Lizenzierungsoptionen",
+    "localPortsOnPhone": "",
+    "localPortsOnPhoneHint": "",
     "mintError": "Dieses Ziel wurde beim Token-Mint abgelehnt: {{error}}",
     "overrideDefaultAPIs": "Standard-APIs überschreiben",
     "overrideLicensesAndLimits": "Lizenzen und Limits überschreiben",

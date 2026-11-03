@@ -73,6 +73,7 @@ export const TestPage: React.FC = () => {
   const chatEnabled = useChatEnabled()
   const deviceSessions = useSelector(selectDeviceSessionsSetting)
   const virtualDevices = useSelector(selectVirtualDevicesSetting)
+  const localPortsOnPhone = useSelector((state: State) => !!state.ui.localPortsOnPhone)
   const proxyFleet = useSelector((state: State) => state.ui.proxyFleet)
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {
@@ -381,6 +382,16 @@ export const TestPage: React.FC = () => {
             dispatch.ui.setPersistent({ virtualDevices: !virtualDevices })
             dispatch.devices.fetchList()
           }}
+        />
+        <ListItemSetting
+          hideIcon
+          label={t('testPage.localPortsOnPhone', 'Local ports on iPhone')}
+          subLabel={t(
+            'testPage.localPortsOnPhoneHint',
+            'Offer "Connect on a local port" on an iPhone whose app does not say it works there yet: for testing whether Safari and other apps reach it.'
+          )}
+          toggle={localPortsOnPhone}
+          onClick={() => dispatch.ui.setPersistent({ localPortsOnPhone: !localPortsOnPhone })}
         />
         <SelectSetting
           hideIcon

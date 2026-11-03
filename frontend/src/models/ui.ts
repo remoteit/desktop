@@ -33,6 +33,7 @@ const SAVED_ACROSS_LOGOUT = [
   'testUI',
   'deviceSessions',
   'virtualDevices',
+  'localPortsOnPhone',
   'proxyFleet',
   'updateNoticeCleared',
   'deviceTimeSeries',
@@ -50,6 +51,8 @@ export type UIState = {
   deviceSessions?: boolean
   // Test UI → Experimental: virtual devices (useVirtualDevices)
   virtualDevices?: boolean
+  // Test UI → Experimental: offer local ports on an iPhone whose app does not say they work (services/localPorts)
+  localPortsOnPhone?: boolean
   // Test UI → Experimental: which proxies connections and connect links ask for; none, the API stage's default
   proxyFleet?: 'LEGACY' | 'CONNECTD'
   apis: {
@@ -142,6 +145,7 @@ export const defaultState: UIState = {
   testUI: undefined,
   deviceSessions: undefined,
   virtualDevices: undefined,
+  localPortsOnPhone: undefined,
   proxyFleet: undefined,
   apis: {},
   layout: {

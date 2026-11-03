@@ -71,9 +71,13 @@
    1.8.0 (additive): the notification permission ('notifications'; PermissionName 'notifications'), where the shell has
    one to ask for — Android's, whose tunnel shows an ongoing notification (Android 13 and later ask the person). Offered,
    permissions.get answers it beside the other two and permissions.request asks it; not offered, permissions.get
-   answers the two alone and the page never names it. */
+   answers the two alone and the page never names it.
 
-export const BRIDGE_VERSION = '1.8.0'
+   1.9.0 (additive): 'localPorts' — another app on this machine reaches a port the engine listens on at 127.0.0.1
+   (graphql-api docs/LOCAL-PORT.md). Only a phone's shell says it, once that is known to work there; a desktop's need
+   not, where it always does. Without it, a phone is offered no local ports. */
+
+export const BRIDGE_VERSION = '1.9.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -93,6 +97,7 @@ export type Capability =
   | 'remove' // 1.5.0: device.remove — take the device off this machine (DeviceStatus.device.removal)
   | 'start' // 1.6.0: device.start — start remote.it again on a machine where it was stopped (engine 'stopped')
   | 'notifications' // 1.8.0: the notification permission, in permissions.get and permissions.request ('permissions')
+  | 'localPorts' // 1.9.0: other apps here reach the engine's 127.0.0.1 listeners — a phone offers local ports only with it
 
 export type Platform = 'mac' | 'windows' | 'linux' | 'ios' | 'android'
 export type Shell = 'menu' | 'capacitor'

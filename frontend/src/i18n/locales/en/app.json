@@ -1856,6 +1856,23 @@
     "title": "Select any found services to auto setup",
     "typeAndPort": "{{type}} - {{port}}"
   },
+  "localPortConnect": {
+    "cancel": "Cancel",
+    "changePort": "Change port",
+    "closed": "Closed",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "failed": "Not listening: {{detail}}",
+    "launch": "Open in the browser",
+    "listening": "Listening — connects when used, closes when idle",
+    "opening": "Opening a local port…",
+    "pending": "Starting on this machine…",
+    "port": "Port",
+    "title": "On a local port of this machine",
+    "useLocalhost": "Name does not open? Use localhost",
+    "useName": "Use {{name}}",
+    "usePort": "Use this port"
+  },
   "localSubnetConnect": {
     "address": "resolves here to {{address}}",
     "launch": "Open in the browser",
@@ -2807,6 +2824,7 @@
     "guideBodyDesktop": "Start listening on this endpoint for network requests. On request, automatically create the connection and disconnect when idle.",
     "guideTitleBrowser": "Starting a connection",
     "guideTitleDesktop": "Connect on demand",
+    "useLocalPort": "Connect on a local port instead",
     "useProxy": "Connect through the proxy instead"
   },
   "serviceDefaultsPage": {
@@ -3068,6 +3086,8 @@
     "hideTestUIBackgrounds": "Hide test UI backgrounds",
     "licenseMessageCleared": "License message cleared",
     "licensingOptions": "Licensing Options",
+    "localPortsOnPhone": "Local ports on iPhone",
+    "localPortsOnPhoneHint": "Offer \"Connect on a local port\" on an iPhone whose app does not say it works there yet: for testing whether Safari and other apps reach it.",
     "mintError": "This target was refused at token mint: {{error}}",
     "overrideDefaultAPIs": "Override default APIs",
     "overrideLicensesAndLimits": "Override licenses and limits",

@@ -1896,6 +1896,23 @@
     "title": "Selecciona los servicios encontrados para la configuración automática",
     "typeAndPort": "{{type}} - {{port}}"
   },
+  "localPortConnect": {
+    "cancel": "",
+    "changePort": "",
+    "closed": "",
+    "connect": "",
+    "disconnect": "",
+    "failed": "",
+    "launch": "",
+    "listening": "",
+    "opening": "",
+    "pending": "",
+    "port": "",
+    "title": "",
+    "useLocalhost": "",
+    "useName": "",
+    "usePort": ""
+  },
   "localSubnetConnect": {
     "address": "",
     "launch": "",
@@ -2870,6 +2887,7 @@
     "guideBodyDesktop": "Empieza a escuchar solicitudes de red en este endpoint. Cuando llegue una solicitud, la conexión se crea automáticamente y se cierra cuando está inactiva.",
     "guideTitleBrowser": "Iniciar una conexión",
     "guideTitleDesktop": "Conexión bajo demanda",
+    "useLocalPort": "",
     "useProxy": ""
   },
   "serviceDefaultsPage": {
@@ -3135,6 +3153,8 @@
     "hideTestUIBackgrounds": "Ocultar fondos de la interfaz de prueba",
     "licenseMessageCleared": "Mensaje de licencia borrado",
     "licensingOptions": "Opciones de licencia",
+    "localPortsOnPhone": "",
+    "localPortsOnPhoneHint": "",
     "mintError": "Este destino fue rechazado al emitir el token: {{error}}",
     "overrideDefaultAPIs": "Anular las API predeterminadas",
     "overrideLicensesAndLimits": "Anular licencias y límites",
