@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -7,6 +8,8 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from '@mui/material'
@@ -22,6 +25,7 @@ import { parsePorts } from '../helpers/portListHelper'
 import { AdminProxyLimits } from './AdminProxyLimits'
 import { AdminPublicProxies } from './AdminPublicProxies'
 import { AdminProxyAccess } from './AdminProxyAccess'
+import { AdminTransferUsage } from './AdminTransferUsage'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -31,12 +35,32 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 
-/* remote.it's proxies and exit nodes (presence-server docs/proxy-plan.md §5, §8): each plan's limits on them; the
-   policy every exit keeps — what it refuses beyond what every exit refuses, how fast one account may open flows, how
-   long its flow log is kept — and the accounts stopped from using exits; the public proxies themselves, each a
-   public exit or not; and who used them, and how long that is kept. A change takes effect at once. Admins only;
-   English only, as the rest of /admin. */
+export const PROXIES_ROUTE = '/admin/proxies'
+
+export type ProxiesView = 'proxies' | 'access' | 'limits' | 'usage'
+
+const VIEWS: { value: ProxiesView; label: string }[] = [
+  { value: 'proxies', label: 'Proxies' },
+  { value: 'access', label: 'Access log' },
+  { value: 'limits', label: 'Limits & policy' },
+  { value: 'usage', label: 'Usage' },
+]
+
+// The tab is the URL's ?view=, so a link or a reload lands on it; the Proxies tab has none.
+export const proxiesView = (search: string): ProxiesView => {
+  const view = new URLSearchParams(search).get('view')
+  return VIEWS.find(v => v.value === view)?.value ?? 'proxies'
+}
+
+/* remote.it's proxies and exit nodes (presence-server docs/proxy-plan.md §5, §8), a tab each: the public proxies
+   themselves, each a public exit or not; who used them; each plan's limits on them, the policy every exit keeps — what
+   it refuses beyond what every exit refuses, how fast one account may open flows, how long its flow log and the
+   proxies' access log are kept — and the accounts stopped from using exits; and each account's public transfer this
+   month. A change takes effect at once. Admins only; English only, as the rest of /admin. */
 export const AdminProxiesPage: React.FC = () => {
+  const history = useHistory()
+  const location = useLocation()
+  const view = proxiesView(location.search)
   const [policy, setPolicy] = useState<ExitPolicy | null | 'ERROR' | typeof UNSUPPORTED>()
   const [saving, setSaving] = useState(false)
   const [problem, setProblem] = useState<string>()
@@ -74,6 +98,8 @@ export const AdminProxiesPage: React.FC = () => {
   }
 
   const body = () => {
+    // Its own reads, each failing quietly: nothing of the exit policy stands in its way.
+    if (view === 'usage') return <AdminTransferUsage />
     if (policy === undefined) return <LoadingMessage />
     if (policy === UNSUPPORTED)
       return (
@@ -96,80 +122,84 @@ export const AdminProxiesPage: React.FC = () => {
             {problem}
           </Notice>
         )}
-        <AdminPublicProxies onProblem={setProblem} />
-        <AdminProxyAccess />
-        <List>
-          <ListSubheader>Plan limits</ListSubheader>
-        </List>
-        <AdminProxyLimits />
-        <List>
-          <ListSubheader>Exit nodes: refused</ListSubheader>
-          <InlineTextFieldSetting
-            icon="ban"
-            label="TCP ports"
-            value={policy.blockTcp.join(', ')}
-            placeholder="none"
-            disabled={saving}
-            filter={/[^0-9, ]/g}
-            onSave={value => savePorts('blockTcp', String(value))}
-          />
-          <InlineTextFieldSetting
-            icon="ban"
-            label="UDP ports"
-            value={policy.blockUdp.join(', ')}
-            placeholder="none"
-            disabled={saving}
-            filter={/[^0-9, ]/g}
-            onSave={value => savePorts('blockUdp', String(value))}
-          />
-        </List>
-        <Gutters>
-          <Typography variant="caption" color="textSecondary">
-            Beyond what every exit node refuses: loopback, link-local, multicast, 100.64.0.0/10 and outbound mail (TCP
-            25).
-          </Typography>
-        </Gutters>
-        <List>
-          <ListSubheader>Exit nodes: limits</ListSubheader>
-          <InlineTextFieldSetting
-            icon="gauge-high"
-            label="New flows an account may open a second (0, no cap)"
-            value={policy.flowsPerSecond}
-            disabled={saving}
-            filter={/[^0-9]/g}
-            onSave={value => saveNumber('flowsPerSecond', String(value), 0, 100000)}
-          />
-          <InlineTextFieldSetting
-            icon="clock-rotate-left"
-            label="Days the flow log is kept"
-            value={policy.logDays}
-            disabled={saving}
-            filter={/[^0-9]/g}
-            onSave={value => saveNumber('logDays', String(value), 1, 3650)}
-          />
-        </List>
-        {policy.accessLogDays !== undefined && (
-          <List>
-            <ListSubheader>Proxies: access log</ListSubheader>
-            <InlineTextFieldSetting
-              icon="clock-rotate-left"
-              label="Days the access log is kept"
-              value={policy.accessLogDays}
-              disabled={saving}
-              filter={/[^0-9]/g}
-              onSave={value => saveNumber('accessLogDays', String(value), 1, 3650)}
-            />
-          </List>
+        {view === 'proxies' && <AdminPublicProxies onProblem={setProblem} />}
+        {view === 'access' && <AdminProxyAccess />}
+        {view === 'limits' && (
+          <>
+            <List>
+              <ListSubheader>Plan limits</ListSubheader>
+            </List>
+            <AdminProxyLimits />
+            <List>
+              <ListSubheader>Exit nodes: refused</ListSubheader>
+              <InlineTextFieldSetting
+                icon="ban"
+                label="TCP ports"
+                value={policy.blockTcp.join(', ')}
+                placeholder="none"
+                disabled={saving}
+                filter={/[^0-9, ]/g}
+                onSave={value => savePorts('blockTcp', String(value))}
+              />
+              <InlineTextFieldSetting
+                icon="ban"
+                label="UDP ports"
+                value={policy.blockUdp.join(', ')}
+                placeholder="none"
+                disabled={saving}
+                filter={/[^0-9, ]/g}
+                onSave={value => savePorts('blockUdp', String(value))}
+              />
+            </List>
+            <Gutters>
+              <Typography variant="caption" color="textSecondary">
+                Beyond what every exit node refuses: loopback, link-local, multicast, 100.64.0.0/10 and outbound mail
+                (TCP 25).
+              </Typography>
+            </Gutters>
+            <List>
+              <ListSubheader>Exit nodes: limits</ListSubheader>
+              <InlineTextFieldSetting
+                icon="gauge-high"
+                label="New flows an account may open a second (0, no cap)"
+                value={policy.flowsPerSecond}
+                disabled={saving}
+                filter={/[^0-9]/g}
+                onSave={value => saveNumber('flowsPerSecond', String(value), 0, 100000)}
+              />
+              <InlineTextFieldSetting
+                icon="clock-rotate-left"
+                label="Days the flow log is kept"
+                value={policy.logDays}
+                disabled={saving}
+                filter={/[^0-9]/g}
+                onSave={value => saveNumber('logDays', String(value), 1, 3650)}
+              />
+            </List>
+            {policy.accessLogDays !== undefined && (
+              <List>
+                <ListSubheader>Proxies: access log</ListSubheader>
+                <InlineTextFieldSetting
+                  icon="clock-rotate-left"
+                  label="Days the access log is kept"
+                  value={policy.accessLogDays}
+                  disabled={saving}
+                  filter={/[^0-9]/g}
+                  onSave={value => saveNumber('accessLogDays', String(value), 1, 3650)}
+                />
+              </List>
+            )}
+            {policy.updated && (
+              <Gutters>
+                <Typography variant="caption" color="textSecondary">
+                  Last changed <Timestamp date={new Date(policy.updated)} />
+                  {policy.updatedBy ? ` by ${policy.updatedBy}` : ''}
+                </Typography>
+              </Gutters>
+            )}
+            <Suspensions policy={policy} onChange={load} onProblem={setProblem} />
+          </>
         )}
-        {policy.updated && (
-          <Gutters>
-            <Typography variant="caption" color="textSecondary">
-              Last changed <Timestamp date={new Date(policy.updated)} />
-              {policy.updatedBy ? ` by ${policy.updatedBy}` : ''}
-            </Typography>
-          </Gutters>
-        )}
-        <Suspensions policy={policy} onChange={load} onProblem={setProblem} />
       </>
     )
   }
@@ -182,6 +212,20 @@ export const AdminProxiesPage: React.FC = () => {
       header={
         <Gutters>
           <Typography variant="h1">Proxies &amp; exits</Typography>
+          <Tabs value={view} TabIndicatorProps={{ sx: { display: 'none' } }} sx={{ minHeight: 0, marginTop: 1 }}>
+            {VIEWS.map(v => (
+              <Tab
+                key={v.value}
+                value={v.value}
+                label={v.label}
+                data-tab={v.value}
+                onClick={() =>
+                  v.value !== view &&
+                  history.push(v.value === 'proxies' ? PROXIES_ROUTE : `${PROXIES_ROUTE}?view=${v.value}`)
+                }
+              />
+            ))}
+          </Tabs>
         </Gutters>
       }
     >
