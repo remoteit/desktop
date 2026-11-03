@@ -13,6 +13,7 @@ import { Notice } from '../../components/Notice'
 import { Dispatch, State } from '../../store'
 import { graphQLAdminUpdateEmail, graphQLAdminDeleteUser, graphQLRemoveAdmin } from '../../services/graphQLMutation'
 import { ChangeEmailDialog } from './ChangeEmailDialog'
+import { TransferUsage } from '../../components/TransferUsage'
 
 export const AdminUserAccountPanel: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
@@ -229,6 +230,7 @@ export const AdminUserAccountPanel: React.FC = () => {
           />
         </ListItem>
       </List>
+      <TransferUsage accountId={user.id} hideError />
 
       <Typography variant="subtitle1" sx={{ marginTop: 3, paddingX: 2 }}>
         <Title>Admin Actions</Title>

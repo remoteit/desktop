@@ -22,8 +22,9 @@ const SHOWN_DEVICES = 3
 
 /* The account's public transfer this month (services/transferUsage), under its file storage on the License pages: a
    bar each for public exit and public proxy against the plan's allowance, and which devices sent the exit transfer.
-   Nothing where the API has no usage to show; a quiet line where it could not be read. */
-export const TransferUsage: React.FC<{ accountId?: string }> = ({ accountId }) => {
+   Nothing where the API has no usage to show; a quiet line where it could not be read, or nothing with hideError (an
+   admin's view of another account, where the group is an extra). */
+export const TransferUsage: React.FC<{ accountId?: string; hideError?: boolean }> = ({ accountId, hideError }) => {
   const { t } = useTranslation()
   const [usage, setUsage] = useState<Usage[] | 'ERROR' | null>()
 
@@ -39,7 +40,7 @@ export const TransferUsage: React.FC<{ accountId?: string }> = ({ accountId }) =
     }
   }, [accountId])
 
-  if (!usage || (Array.isArray(usage) && !usage.length)) return null
+  if (!usage || (Array.isArray(usage) && !usage.length) || (usage === 'ERROR' && hideError)) return null
 
   const labels: ILookup<string> = {
     exit: t('transferUsage.exit', 'Public exit transfer'),
