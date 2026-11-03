@@ -1,6 +1,6 @@
 import React from 'react'
-import { Button, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
-import { ThisDevice } from '../../services/thisDevice'
+import { Box, Button, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
+import { ExitRef, ThisDevice } from '../../services/thisDevice'
 import { Icon } from '../Icon'
 import { ThisDeviceModel } from './model'
 import {
@@ -33,7 +33,10 @@ export const ThisDeviceMain: React.FC<{
   signedIn: boolean
   // The device's name, editable — the page's, signed in (it renames the device in the account); plain text without.
   nameEditor?: React.ReactNode
-}> = ({ device, m, signedIn, nameEditor }) => {
+  // The account's public-exit transfer, under the exit picker — the page's, signed in. shown: the exit chosen is one of
+  // remote.it's, the only ones charged. Called whether shown or not, so what it renders keeps what it read.
+  renderExitUsage?: (shown: boolean) => React.ReactNode
+}> = ({ device, m, signedIn, nameEditor, renderExitUsage }) => {
   const { t, has, status, kind } = m
   const d = status?.device
   const advanced =
@@ -99,9 +102,11 @@ export const ThisDeviceMain: React.FC<{
       )}
 
       {has('access') && <AccessPart device={device} m={m} />}
-      {has('protect') && <ProtectPart device={device} m={m} />}
+      {has('protect') && <ProtectPart device={device} m={m} renderExitUsage={renderExitUsage} />}
       {m.servicesVia && <ServicesPart device={device} m={m} />}
-      {!m.switches && (has('vpn') || has('exit')) && <VpnPart device={device} m={m} />}
+      {!m.switches && (has('vpn') || has('exit')) && (
+        <VpnPart device={device} m={m} renderExitUsage={renderExitUsage} />
+      )}
 
       {has('status') && status && (
         <Card section="more">
@@ -210,7 +215,9 @@ const AccessPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ devi
   )
 }
 
-const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
+type PartProps = { device: ThisDevice; m: ThisDeviceModel; renderExitUsage?: (shown: boolean) => React.ReactNode }
+
+const ProtectPart: React.FC<PartProps> = ({ device, m, renderExitUsage }) => {
   const { t, status, kind, exits } = m
   const protect = status?.protect
   const protectOn = !!protect?.on
@@ -251,6 +258,7 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
       )}
       {/* The device it goes through, always shown, on or off (Evan, 2026-10-25). */}
       <ListItem>
+        <Box width="100%">
           <TextField
             select
             fullWidth
@@ -280,7 +288,9 @@ const ProtectPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ dev
               </MenuItem>
             ))}
           </TextField>
-        </ListItem>
+          <ExitUsage render={renderExitUsage} exit={protect?.route} />
+        </Box>
+      </ListItem>
     </Card>
   )
 }
@@ -369,7 +379,7 @@ const ServicesPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ de
   )
 }
 
-const VpnPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
+const VpnPart: React.FC<PartProps> = ({ device, m, renderExitUsage }) => {
   const { t, has, status, exits } = m
   const vpnOn = !!status?.vpn.on
   return (
@@ -392,28 +402,39 @@ const VpnPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device,
       )}
       {has('exit') && (
         <ListItem>
-          <TextField
-            select
-            fullWidth
-            size="small"
-            label={t('thisDevice.exit', 'Exit')}
-            value={status?.exit?.id ?? ''}
-            disabled={m.busy}
-            // "None" is a choice like the others: shown, and the label kept above it, in every engine
-            InputLabelProps={{ shrink: true }}
-            SelectProps={{ displayEmpty: true }}
-            inputProps={{ 'data-control': 'exit' }}
-            onChange={e => m.act(async () => m.setStatus(await device.call('exit.set', { id: e.target.value || null })))}
-          >
-            <MenuItem value="">{t('thisDevice.exitNone', 'None — the usual way out')}</MenuItem>
-            {exits.map(x => (
-              <MenuItem key={x.id} value={x.id}>
-                {exitLabel(x)}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Box width="100%">
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label={t('thisDevice.exit', 'Exit')}
+              value={status?.exit?.id ?? ''}
+              disabled={m.busy}
+              // "None" is a choice like the others: shown, and the label kept above it, in every engine
+              InputLabelProps={{ shrink: true }}
+              SelectProps={{ displayEmpty: true }}
+              inputProps={{ 'data-control': 'exit' }}
+              onChange={e => m.act(async () => m.setStatus(await device.call('exit.set', { id: e.target.value || null })))}
+            >
+              <MenuItem value="">{t('thisDevice.exitNone', 'None — the usual way out')}</MenuItem>
+              {exits.map(x => (
+                <MenuItem key={x.id} value={x.id}>
+                  {exitLabel(x)}
+                </MenuItem>
+              ))}
+            </TextField>
+            <ExitUsage render={renderExitUsage} exit={status?.exit} />
+          </Box>
         </ListItem>
       )}
     </List>
   )
 }
+
+// Under an exit picker, set in from the field's edge as its helper text is.
+const ExitUsage: React.FC<{ render?: (shown: boolean) => React.ReactNode; exit?: ExitRef }> = ({ render, exit }) =>
+  render ? (
+    <Box marginX={1.75} marginTop={0.5} sx={{ '&:empty': { display: 'none' } }}>
+      {render(exit?.kind === 'remoteit')}
+    </Box>
+  ) : null

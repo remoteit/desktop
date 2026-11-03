@@ -3233,6 +3233,8 @@
   "transferUsage": {
     "error": "",
     "exit": "",
+    "hintNoLimit": "",
+    "hintUsed": "",
     "noLimit": "",
     "otherDevices_one": "",
     "otherDevices_other": "",

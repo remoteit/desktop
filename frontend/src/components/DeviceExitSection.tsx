@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
+import { useSelector } from 'react-redux'
+import { ListItem, ListItemIcon } from '@mui/material'
+import { State } from '../store'
 import {
   ExitChooser,
   ExitInfo,
@@ -9,6 +12,7 @@ import {
   graphQLDeviceExitChooser,
   graphQLDeviceProtect,
   graphQLExits,
+  graphQLProxyPublicExit,
   graphQLSetDeviceExit,
 } from '../services/graphQLProxy'
 import { settingOn } from '../services/graphQLDeviceSettings'
@@ -16,19 +20,21 @@ import type { DeviceSettings } from '../hooks/useDeviceSettings'
 import { DeviceSettingRow } from './DeviceSettingRow'
 import { ListItemSetting } from './ListItemSetting'
 import { SelectSetting } from './SelectSetting'
+import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
 
 /* A device and exit nodes (presence-server docs/proxy-plan.md §8): the exit its traffic goes out through — one you may
    use, chosen on Configure (DeviceExitChoice) — and whether it offers itself as one, on Proxy & exit
    (DeviceExitOffer): a device setting (exit_node) switched by whoever manages it, where the API has device settings;
    else what its own configuration says. Device sessions only; nothing shows where the API lacks them. */
 
-// The device's exit and, for the choice, who chose it, the exits it may use and its Protect (the route kept while off):
-// read again after each change.
+// The device's exit and, for the choice, who chose it, the exits it may use, its Protect (the route kept while off) and
+// whether the exit or route is one of remote.it's public exits, the only ones charged: read again after each change.
 function useDeviceExit(deviceId: string, choice: boolean) {
   const [info, setInfo] = useState<ExitInfo | null>()
   const [chooser, setChooser] = useState<ExitChooser | null>(null)
   const [exits, setExits] = useState<{ id: string; name: string }[]>([])
   const [protect, setProtect] = useState<ProtectInfo | null>(null)
+  const [publicExit, setPublicExit] = useState(false)
 
   const load = useCallback(async () => {
     const answer = await graphQLDeviceExit(deviceId)
@@ -40,21 +46,28 @@ function useDeviceExit(deviceId: string, choice: boolean) {
     if (Array.isArray(list)) setExits(list.filter(e => e.id !== deviceId))
     const kept = await graphQLDeviceProtect(deviceId)
     setProtect(kept && typeof kept === 'object' ? kept : null)
+    const via =
+      (answer && typeof answer === 'object' && answer.exit?.id) ||
+      (kept && typeof kept === 'object' && kept.on === false && kept.route)
+    setPublicExit(via ? !!(await graphQLProxyPublicExit(via)) : false)
   }, [deviceId, choice])
 
   useEffect(() => {
     load()
   }, [load])
 
-  return { info, chooser, exits, protect, load }
+  return { info, chooser, exits, protect, publicExit, load }
 }
 
 // The exit the device's traffic goes out through, with who chose it and what the machine's administrator allows.
 export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
-  const { info, chooser, exits, protect, load } = useDeviceExit(device.id, true)
+  const { info, chooser, exits, protect, publicExit, load } = useDeviceExit(device.id, true)
   const [saving, setSaving] = useState(false)
   const manage = device.permissions.includes('MANAGE')
+  // Exit transfer is charged to the account that used the exit: the person signed in.
+  const userId = useSelector((state: State) => state.auth.user?.id)
+  const usage = useTransferUsageHint(userId, 'exit', manage && publicExit)
 
   if (!info) return null
 
@@ -96,6 +109,12 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           )}
           onChange={via => choose(via || null)}
         />
+      )}
+      {usage && (
+        <ListItem dense>
+          <ListItemIcon />
+          <TransferUsageHintText hint={usage} />
+        </ListItem>
       )}
       {route && (
         <ListItemSetting

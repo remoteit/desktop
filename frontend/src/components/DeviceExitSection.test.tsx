@@ -2,19 +2,25 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi } from 'vitest'
 
-const { exit, chooser, protect, setExit } = vi.hoisted(() => ({
+const { exit, chooser, protect, setExit, publicExit, usage } = vi.hoisted(() => ({
   exit: vi.fn(),
   chooser: vi.fn(),
   protect: vi.fn(async () => null as any),
   setExit: vi.fn(async () => true as any),
+  publicExit: vi.fn(async (_id: string) => undefined as boolean | undefined),
+  usage: vi.fn(async (_accountId?: string) => [] as any),
 }))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLDeviceExit: exit,
   graphQLDeviceExitChooser: chooser,
   graphQLDeviceProtect: protect,
   graphQLExits: async () => [{ id: 'EXIT', name: 'office' }],
+  graphQLProxyPublicExit: publicExit,
   graphQLSetDeviceExit: setExit,
 }))
+vi.mock('react-redux', () => ({ useSelector: (select: any) => select({ auth: { user: { id: 'USER' } } }) }))
+vi.mock('../services/transferUsage', () => ({ fetchTransferUsage: usage, UNSUPPORTED: 'UNSUPPORTED' }))
+vi.mock('../helpers/dateHelper', () => ({ getLocale: () => 'en-US' }))
 vi.mock('./ListItemSetting', () => ({
   ListItemSetting: ({ label, subLabel, button, onButtonClick }: any) => (
     <div data-item>
@@ -158,5 +164,83 @@ describe('who chose the exit, and the machine’s policy', () => {
     page = await render('choice')
     expect(page.textContent).not.toContain('Protect')
     protect.mockResolvedValue(null)
+  })
+})
+
+describe('the account’s public-exit transfer under the exit picker', () => {
+  const resetsAt = '2026-12-01T00:00:00.000Z'
+  const resets = new Date(resetsAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  const row = (fields = {}) => ({
+    kind: 'exit',
+    month: '2026-11',
+    usedBytes: 8.2e9,
+    allowanceBytes: 10e9,
+    rateBps: 5e6,
+    over: false,
+    resetsAt,
+    devices: [],
+    ...fields,
+  })
+  const hint = (c: HTMLElement) => c.querySelector('[data-testid="transfer-usage-hint"]')
+  const through = (id: string | null, isPublic: boolean | undefined) => {
+    exit.mockResolvedValue({ offersExit: false, exit: id ? { id, name: 'e1' } : null })
+    chooser.mockResolvedValue(none)
+    protect.mockResolvedValue(null)
+    publicExit.mockReset().mockResolvedValue(isPublic)
+    usage.mockReset()
+  }
+
+  it.each([
+    ['with an allowance', row(), '8.2 of 10 GB this month'],
+    ['over it', row({ usedBytes: 12e9, over: true }), `Slowed to 5 Mbit/s until ${resets}`],
+    ['with no allowance', row({ allowanceBytes: null }), '8.2 GB this month'],
+  ])('through one of remote.it’s public exits, %s: the signed-in person’s', async (_, answer, text) => {
+    through('E1', true)
+    usage.mockResolvedValue([answer])
+    const page = await render('choice')
+    expect(publicExit).toHaveBeenCalledWith('E1')
+    expect(usage).toHaveBeenCalledWith('USER')
+    expect(hint(page)!.textContent).toBe(text)
+    expect(hint(page)!.getAttribute('data-over')).toBe(answer.over ? 'true' : null)
+  })
+
+  it('the route kept while Protect is off counts as the exit', async () => {
+    through(null, true)
+    protect.mockResolvedValue({ on: false, route: 'E1', routeName: 'e1' })
+    usage.mockResolvedValue([row()])
+    const page = await render('choice')
+    expect(publicExit).toHaveBeenCalledWith('E1')
+    expect(hint(page)!.textContent).toBe('8.2 of 10 GB this month')
+    protect.mockResolvedValue(null)
+  })
+
+  it('nothing for an exit not remote.it’s, none chosen, or an API that cannot say, and nothing asked', async () => {
+    for (const [id, isPublic] of [
+      ['EXIT', false],
+      ['EXIT', undefined],
+      [null, true],
+    ] as const) {
+      through(id, isPublic)
+      usage.mockResolvedValue([row()])
+      expect(hint(await render('choice'))).toBeNull()
+      expect(usage).not.toHaveBeenCalled()
+    }
+    // Nor for someone who does not manage it: there is no picker.
+    through('E1', true)
+    expect(hint(await render('choice', undefined, []))).toBeNull()
+  })
+
+  it('nothing where the usage cannot be read, the exit choice unharmed', async () => {
+    through('E1', true)
+    usage.mockRejectedValue(new Error('network'))
+    let page = await render('choice')
+    expect(hint(page)).toBeNull()
+    expect(page.querySelector('[data-select]')?.textContent).toBe('open')
+    for (const answer of ['ERROR', 'UNSUPPORTED', []]) {
+      usage.mockResolvedValue(answer)
+      page = await render('choice')
+      expect(hint(page)).toBeNull()
+      expect(page.querySelector('[data-select]')?.textContent).toBe('open')
+    }
   })
 })

@@ -12,17 +12,29 @@ vi.mock('react-i18next', () => ({
 vi.mock('../components/Container', () => ({ Container: ({ children }: any) => <div>{children}</div> }))
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => null }))
 vi.mock('../components/ThisDeviceSignIn', () => ({ ThisDeviceSignIn: () => null }))
+const { usage } = vi.hoisted(() => ({ usage: vi.fn() }))
+vi.mock('../services/transferUsage', () => ({ fetchTransferUsage: usage, UNSUPPORTED: 'UNSUPPORTED' }))
+vi.mock('../helpers/dateHelper', async importOriginal => ({
+  ...(await importOriginal<object>()),
+  getLocale: () => 'en-US',
+}))
 
 import { ThisDevicePart, ThisDeviceView } from '../components/thisDevice/ThisDeviceView'
 import { ThisDevice, Capability } from '../services/thisDevice'
 import { createMockBridge, MockBridge, MockBridgeOptions } from '../services/thisDeviceMock'
+import { TransferUsageHint } from '../components/TransferUsage'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 // "This device" draws itself from the bridge's capabilities alone (device-package docs/one-app-plan.md), against a
 // mock shell: what a capability is not offered for never shows, and the platform changes nothing. Three pages — the
 // page itself (main), Details and Advanced — each drawn here as its part of the view.
 
-type Props = { signedIn?: boolean; part?: ThisDevicePart; renderName?: (uid: string, name: string) => React.ReactNode }
+type Props = {
+  signedIn?: boolean
+  part?: ThisDevicePart
+  renderName?: (uid: string, name: string) => React.ReactNode
+  renderExitUsage?: (shown: boolean) => React.ReactNode
+}
 
 // A part on a mock shell's bridge: another part can be mounted on the same one (mount), as the pages share the machine.
 async function mount(bridge: MockBridge, props: Props = {}) {
@@ -688,5 +700,85 @@ describe('This device follows what the shell offers', () => {
   it('a shell before 1.7.0 (no info event): as it offered at boot', async () => {
     const { container } = await render({ capabilities: desktop, info: { bridgeVersion: '1.6.0' } })
     expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
+  })
+
+  describe('the account’s public-exit transfer under the exit picker', () => {
+    const US_WEST = '80:00:00:00:01:0B:00:03' // remote.it's (kind remoteit)
+    const OFFICE = '80:00:00:00:01:0B:00:01' // a device of the account's
+    const resetsAt = '2026-12-01T00:00:00.000Z'
+    const resets = new Date(resetsAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    const exit = (fields = {}) => ({
+      kind: 'exit',
+      month: '2026-11',
+      usedBytes: 8.2e9,
+      allowanceBytes: 10e9,
+      rateBps: 5e6,
+      over: false,
+      resetsAt,
+      devices: [],
+      ...fields,
+    })
+    // As the page renders it, signed in.
+    const renderExitUsage = (shown: boolean) => <TransferUsageHint accountId="USER" kind="exit" shown={shown} />
+    const hint = (c: HTMLElement) => c.querySelector('[data-section="protect"] [data-testid="transfer-usage-hint"]')
+
+    it.each([
+      ['with an allowance', exit(), '8.2 of 10 GB this month'],
+      ['over it', exit({ usedBytes: 12e9, over: true }), `Slowed to 5 Mbit/s until ${resets}`],
+      ['with no allowance', exit({ allowanceBytes: null }), '8.2 GB this month'],
+    ])('routed through remote.it’s exit, %s', async (_, row, text) => {
+      usage.mockReset().mockResolvedValue([row])
+      const { container } = await render({ route: US_WEST }, { renderExitUsage })
+      expect(usage).toHaveBeenCalledWith('USER')
+      expect(hint(container)!.textContent).toBe(text)
+      expect(hint(container)!.getAttribute('data-over')).toBe(row.over ? 'true' : null)
+    })
+
+    it('nothing for a device’s exit, and nothing asked until remote.it’s is chosen', async () => {
+      usage.mockReset().mockResolvedValue([exit()])
+      const { container } = await render({ route: OFFICE }, { renderExitUsage })
+      expect(hint(container)).toBeNull()
+      expect(usage).not.toHaveBeenCalled()
+      // Route through changed to remote.it's: asked then, and said under it.
+      await act(async () => {
+        const input = container.querySelector('input[data-control="route"]') as HTMLInputElement
+        const props = Object.keys(input).find(k => k.startsWith('__reactProps'))!
+        ;(input as any)[props].onChange({ target: { value: US_WEST } })
+      })
+      await act(async () => {})
+      expect(usage).toHaveBeenCalledTimes(1)
+      expect(hint(container)!.textContent).toBe('8.2 of 10 GB this month')
+    })
+
+    it('nothing where the usage cannot be read, and the page stands', async () => {
+      usage.mockReset().mockResolvedValue('ERROR')
+      const { container } = await render({ route: US_WEST }, { renderExitUsage })
+      expect(hint(container)).toBeNull()
+      expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
+      expect(container.querySelector('.MuiAlert-root')).toBeNull()
+      usage.mockReset().mockRejectedValue(new Error('network'))
+      expect(hint((await render({ route: US_WEST }, { renderExitUsage })).container)).toBeNull()
+      usage.mockReset().mockResolvedValue('UNSUPPORTED')
+      expect(hint((await render({ route: US_WEST }, { renderExitUsage })).container)).toBeNull()
+    })
+
+    it('a shell before Protect: under its exit picker, for remote.it’s exit', async () => {
+      usage.mockReset().mockResolvedValue([exit()])
+      const caps: Capability[] = ['status', 'vpn', 'exit', 'settings']
+      const status = { vpn: { on: true }, exit: { id: US_WEST, name: 'US West', kind: 'remoteit', state: 'up' } } as any
+      const { container } = await render({ capabilities: caps, status }, { renderExitUsage })
+      const line = () => container.querySelector('[data-section="vpn"] [data-testid="transfer-usage-hint"]')
+      expect(line()!.textContent).toBe('8.2 of 10 GB this month')
+      const office = { vpn: { on: true }, exit: { id: OFFICE, name: 'Office', kind: 'device', state: 'up' } } as any
+      const other = await render({ capabilities: caps, status: office }, { renderExitUsage })
+      expect(other.container.querySelector('[data-testid="transfer-usage-hint"]')).toBeNull()
+    })
+
+    it('nothing without the page’s renderer (signed out)', async () => {
+      usage.mockReset().mockResolvedValue([exit()])
+      const { container } = await render({ route: US_WEST })
+      expect(container.querySelector('[data-testid="transfer-usage-hint"]')).toBeNull()
+      expect(usage).not.toHaveBeenCalled()
+    })
   })
 })

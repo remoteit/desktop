@@ -3233,6 +3233,8 @@
   "transferUsage": {
     "error": "Usage could not be read right now.",
     "exit": "Public exit transfer",
+    "hintNoLimit": "{{used}} this month",
+    "hintUsed": "{{used}} of {{allowance}} this month",
     "noLimit": "{{used}} used, no limit",
     "otherDevices_one": "{{count}} other device",
     "otherDevices_other": "{{count}} other devices",

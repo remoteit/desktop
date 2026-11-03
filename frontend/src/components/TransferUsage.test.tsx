@@ -18,7 +18,7 @@ vi.mock('react-i18next', () => {
   }
 })
 
-import { TransferUsage, gigabytes, megabits } from './TransferUsage'
+import { TransferUsage, TransferUsageHint, TransferUsageKind, gigabytes, megabits } from './TransferUsage'
 import { lightColors } from '../styling'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -145,5 +145,72 @@ describe('TransferUsage', () => {
     expect(gigabytes(20e9)).toBe('20 GB')
     expect(megabits(1e6)).toBe('1')
     expect(megabits(512e3)).toBe('0.5')
+  })
+})
+
+describe('TransferUsageHint', () => {
+  beforeEach(() => read.mockReset())
+
+  async function hint(kind: TransferUsageKind, shown = true) {
+    const container = document.createElement('div')
+    const root = createRoot(container)
+    const draw = (shown: boolean) =>
+      act(async () =>
+        root.render(
+          <ThemeProvider theme={theme}>
+            <TransferUsageHint accountId="ACCOUNT" kind={kind} shown={shown} />
+          </ThemeProvider>
+        )
+      )
+    await draw(shown)
+    const line = () => container.querySelector('[data-testid="transfer-usage-hint"]')
+    return { container, line, draw }
+  }
+
+  it('the used amount against the allowance, one line for its own kind', async () => {
+    read.mockResolvedValue([exit({ usedBytes: 8.2e9 }), proxy()])
+    const { line } = await hint('exit')
+    expect(read).toHaveBeenCalledWith('ACCOUNT')
+    expect(line()!.textContent).toBe('8.2 of 10 GB this month')
+    expect(line()!.getAttribute('data-over')).toBeNull()
+    expect((await hint('proxy')).line()!.textContent).toBe('1.25 of 5 GB this month')
+  })
+
+  it('over the allowance: how far it is slowed and until when, in the warning colour', async () => {
+    read.mockResolvedValue([exit({ usedBytes: 12e9, over: true, rateBps: 5e6 }), proxy()])
+    const { line } = await hint('exit')
+    expect(line()!.textContent).toBe(`Slowed to 5 Mbit/s until ${resets}`)
+    expect(line()!.getAttribute('data-over')).toBe('true')
+  })
+
+  it('no allowance: what was used', async () => {
+    read.mockResolvedValue([exit({ usedBytes: 8.2e9, allowanceBytes: null }), proxy()])
+    expect((await hint('exit')).line()!.textContent).toBe('8.2 GB this month')
+  })
+
+  it('not shown (not a remote.it exit or proxy): nothing, and nothing asked', async () => {
+    read.mockResolvedValue([exit(), proxy()])
+    const { container } = await hint('exit', false)
+    expect(container.textContent).toBe('')
+    expect(read).not.toHaveBeenCalled()
+  })
+
+  it('asked once, however often it is shown and hidden', async () => {
+    read.mockResolvedValue([exit(), proxy()])
+    const { line, draw } = await hint('exit')
+    await draw(false)
+    expect(line()).toBeNull()
+    await draw(true)
+    expect(line()!.textContent).toBe('3.5 of 10 GB this month')
+    expect(read).toHaveBeenCalledTimes(1)
+  })
+
+  it('nothing where the query fails, the API lacks the field, or the kind is missing', async () => {
+    read.mockRejectedValue(new Error('network'))
+    expect((await hint('exit')).container.textContent).toBe('')
+    for (const answer of ['ERROR', 'UNSUPPORTED', [], [proxy()], [{ kind: 'exit' }]]) {
+      read.mockResolvedValue(answer)
+      expect((await hint('exit')).container.textContent).toBe('')
+    }
   })
 })

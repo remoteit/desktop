@@ -11,6 +11,7 @@ import { DeviceContext } from '../services/Context'
 import { selectDevice } from '../selectors/devices'
 import { useThisDevice } from '../hooks/useThisDevice'
 import { ThisDevicePart, ThisDeviceView } from '../components/thisDevice/ThisDeviceView'
+import { TransferUsageHint } from '../components/TransferUsage'
 
 /* "This device" (device-package docs/one-app-plan.md): the machine this page runs on, the same page on every
    platform. What it shows comes from the shell's capabilities only (thisDevice.info().capabilities) — never from which
@@ -32,6 +33,7 @@ export const ThisDevicePage: React.FC = () => {
   const { t } = useTranslation()
   const device = useThisDevice()
   const signedIn = useSelector((state: State) => state.auth.authenticated)
+  const userId = useSelector((state: State) => state.auth.user?.id)
   const match = useRouteMatch<{ part?: string }>('/this-device/:part')
   const part: ThisDevicePart =
     match?.params.part === 'details' ? 'details' : match?.params.part === 'advanced' ? 'advanced' : 'main'
@@ -69,6 +71,10 @@ export const ThisDevicePage: React.FC = () => {
             signedIn={signedIn}
             part={part}
             renderName={signedIn ? (uid, name) => <ThisDeviceName uid={uid} name={name} /> : undefined}
+            // Exit transfer is charged to the account that used the exit: the person signed in here.
+            renderExitUsage={
+              signedIn ? shown => <TransferUsageHint accountId={userId} kind="exit" shown={shown} /> : undefined
+            }
           />
         </>
       )}

@@ -11,12 +11,14 @@ export type ThisDevicePart = 'main' | 'details' | 'advanced'
 
 // signedIn false: nothing of the account's (the device's page in remote.it, renaming it) — the bridge's parts alone.
 // renderName: the device's name as the page draws it, editable where it can be (the page's, signed in); plain without.
+// renderExitUsage: the account's public-exit transfer under the exit picker (the page's, signed in); nothing without.
 export const ThisDeviceView: React.FC<{
   device: ThisDevice
   signedIn?: boolean
   part?: ThisDevicePart
   renderName?: (uid: string, name: string) => React.ReactNode
-}> = ({ device, signedIn = true, part = 'main', renderName }) => {
+  renderExitUsage?: (shown: boolean) => React.ReactNode
+}> = ({ device, signedIn = true, part = 'main', renderName, renderExitUsage }) => {
   const m = useThisDeviceModel(device)
   const { t } = m
 
@@ -56,6 +58,7 @@ export const ThisDeviceView: React.FC<{
           m={m}
           signedIn={signedIn}
           nameEditor={d?.uid && renderName ? renderName(d.uid, d.name) : undefined}
+          renderExitUsage={renderExitUsage}
         />
       )}
     </Box>

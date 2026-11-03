@@ -3165,6 +3165,8 @@
   "transferUsage": {
     "error": "",
     "exit": "",
+    "hintNoLimit": "",
+    "hintUsed": "",
     "noLimit": "",
     "otherDevices_other": "",
     "proxy": "",
