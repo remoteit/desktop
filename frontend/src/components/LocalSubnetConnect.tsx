@@ -5,7 +5,7 @@ import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { windowOpen } from '../services/browser'
 import { emit } from '../services/Controller'
-import { LocalSubnetName } from '../services/localSubnet'
+import { LocalSubnetName, subnetWebURL } from '../services/localSubnet'
 import { useApplication } from '../hooks/useApplication'
 import { saveLaunchTokens } from '../helpers/connectionHelper'
 import { PromptModal } from './PromptModal'
@@ -16,10 +16,11 @@ import { Icon } from './Icon'
 /* A service reached by its name on this machine: the device daemon here resolves it (services/localSubnet), so there
    is nothing to start — the name and port are the connection. Copy it into ssh, a browser, a database client, or
    launch it as its type would a connection — the same templates and launch methods, the name as the host and the
-   service's own port. A web service launches as https://<name>/: port 443 on a name is the host's web service, under
-   the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md). An SSH service is shown and
-   copied as the command that reaches it, plain `ssh`: the console's works as it is from a machine signed in on its
-   remote.it device app, which gets a certificate for its own ssh (connectd remoteit-device ssh-config). A multi-port
+   service's own port. A web service launches as https://<name>: port 443 on a name is the host's web service, under
+   the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md) — and that URL is what is
+   shown and copied, since <name>:<port> is the service's own port, plain http. An SSH service is shown and copied as
+   the command that reaches it, plain `ssh`: the console's works as it is from a machine signed in on its remote.it
+   device app, which gets a certificate for its own ssh (connectd remoteit-device ssh-config). A multi-port
    service is reached here on every port it lists, each by its own number (graphql-api docs/MULTI-PORT-SERVICES.md), so
    they are all shown; what is copied and launched is the first, as for a connection. */
 type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection }
@@ -28,7 +29,6 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection
   const { t } = useTranslation()
   const port = service?.port
   const ssh = service?.typeID === 28
-  const endpoint = ssh ? sshCommand(local.name, port) : port ? `${local.name}:${port}` : local.name
   // The service's connection with the name in place of the proxy's address: never saved, only launched from.
   const here = useMemo<IConnection | undefined>(
     () =>
@@ -47,10 +47,17 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection
   const [prompt, setPrompt] = useState(false)
   const web = app.urlForm
   const launchable = web || app.canLaunch
+  const endpoint = web
+    ? subnetWebURL(local.name)
+    : ssh
+    ? sshCommand(local.name, port)
+    : port
+    ? `${local.name}:${port}`
+    : local.name
 
   const launch = (tokens: ILookup<string> = {}) => {
     setPrompt(false)
-    if (web) return windowOpen(`https://${local.name}/`, '_blank')
+    if (web) return windowOpen(endpoint, '_blank')
     saveLaunchTokens(service?.id, tokens)
     const command = app.preview(tokens)
     if (app.launchType === 'URL') windowOpen(command, '_blank', !command.startsWith('http'))

@@ -24,6 +24,10 @@ const PROBE_KEPT_MS = 60_000
 
 export type LocalSubnetName = { name: string; address?: string }
 
+// A web service by its name: https on 443, which the device ends under the stage's certificate and forwards to the
+// service on its own port (presence-server docs/subnet-https.md) — so never the service's port.
+export const subnetWebURL = (name: string) => `https://${name}`
+
 const kept = new Map<string, { at: number; answer: Promise<LocalSubnetName | null> }>()
 let absentUntil = 0
 
