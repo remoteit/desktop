@@ -122,7 +122,15 @@ export const graphQLRemoveProxy = (deviceId: string) =>
 // The admin page of remote.it's public proxies (graphql remoteitProxyDevices): each of remote.it's proxies and where its
 // device is owned — a public proxy's must be remote.it's system account's — and each device the proxy registration code
 // registered that is not a proxy yet.
-export type ProxyState = 'ENABLED' | 'DRAINING' | 'DISABLED'
+// A public proxy's state (graphql-api docs/PROXY-DRAIN.md): ACTIVE in service; DRAINING taking nothing new while it
+// serves what it has; RETIRED out of service (a new one starts so).
+export type ProxyState = 'ACTIVE' | 'DRAINING' | 'RETIRED'
+
+// Its open connections by protocol, by its daemon's word (about.proxy.open); none from a daemon that does not say them.
+export type ProxyOpenConnections = { https: number; tcp: number; udp: number; total: number; reported: string | null }
+
+// While draining or retired: whether its instance can be stopped with nothing dropped, and why.
+export type ProxyDrain = { safeToStop: boolean; reason: string; dnsClearAt: string | null; deadline: string | null }
 
 export type RemoteitProxyDevice = {
   id: string
@@ -134,15 +142,14 @@ export type RemoteitProxyDevice = {
   endpoints: number
   // Sessions open through its endpoints now (presence's connects not yet closed); a public exit's flows are not counted.
   openSessions: number
-  // enabled: taking new endpoints, links and exit sessions. Disabled, it drains in two phases: DRAINING at once — out
-  // of geo, nothing new, no exit, but its connect links kept until drainingUntil, while DNS caches let go of it — then
-  // DISABLED, its links gone. What it has otherwise keeps working.
+  openConnections: ProxyOpenConnections | null
+  drain: ProxyDrain | null
   proxy:
     | (Pick<Proxy, 'id' | 'region' | 'host'> & {
         publicExit: boolean
-        enabled: boolean
         state: ProxyState
-        drainingUntil: string | null
+        drainingSince: string | null
+        drainMaxWaitMinutes: number | null
       })
     | null
 }
@@ -150,7 +157,9 @@ export type RemoteitProxyDevice = {
 export const graphQLRemoteitProxyDevices = () =>
   read<RemoteitProxyDevice[]>(
     `query RemoteitProxyDevices {
-      remoteitProxyDevices { id name state lastReported system owner endpoints openSessions proxy { id region host publicExit enabled state drainingUntil } }
+      remoteitProxyDevices { id name state lastReported system owner endpoints openSessions
+        openConnections { https tcp udp total reported } drain { safeToStop reason dnsClearAt deadline }
+        proxy { id region host publicExit state drainingSince drainMaxWaitMinutes } }
     }`,
     {},
     'remoteitProxyDevices',
@@ -184,12 +193,22 @@ export const graphQLRemoveRemoteitProxy = (deviceId: string) =>
     }
   )
 
-// A public proxy enabled, or disabled so it takes nothing new and drains.
-export const graphQLSetRemoteitProxyEnabled = (deviceId: string, enabled: boolean) =>
+// A public proxy drained (nothing new; it serves what it has, waiting up to maxWaitMinutes for its connections),
+// put back in service, or retired (refused while connections are open, unless forced).
+export const graphQLDrainProxy = (id: string, maxWaitMinutes: number) =>
   graphQLBasicRequest(
-    ` mutation SetRemoteitProxyEnabled($deviceId: String!, $enabled: Boolean!) { setRemoteitProxyEnabled(deviceId: $deviceId, enabled: $enabled) { enabled } }`,
-    { deviceId, enabled }
+    ` mutation DrainProxy($id: String!, $maxWaitMinutes: Int) { drainProxy(id: $id, maxWaitMinutes: $maxWaitMinutes) { state } }`,
+    { id, maxWaitMinutes }
   )
+
+export const graphQLUndrainProxy = (id: string) =>
+  graphQLBasicRequest(` mutation UndrainProxy($id: String!) { undrainProxy(id: $id) { state } }`, { id })
+
+export const graphQLRetireProxy = (id: string, force = false) =>
+  graphQLBasicRequest(` mutation RetireProxy($id: String!, $force: Boolean) { retireProxy(id: $id, force: $force) { state } }`, {
+    id,
+    force,
+  })
 
 export const graphQLSetProxyPublicExit = (deviceId: string, publicExit: boolean) =>
   graphQLBasicRequest(

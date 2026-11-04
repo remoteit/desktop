@@ -5,13 +5,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // The admin page's public proxies: each of remote.it's proxies with where its device is owned (one still in a person's
 // account offered to move to remote.it), the devices the proxy code registered waiting for a region, and the code shown
 // only when asked.
-const { devices, code, adopt, setRemoteit, setExit, setEnabled } = vi.hoisted(() => ({
+const { devices, code, adopt, setRemoteit, setExit, drain, undrain, retire } = vi.hoisted(() => ({
   devices: vi.fn(),
   code: vi.fn(async () => 'PROXY-CODE' as any),
   adopt: vi.fn(async () => ({} as any)),
   setRemoteit: vi.fn(async () => ({} as any)),
   setExit: vi.fn(async () => ({} as any)),
-  setEnabled: vi.fn(async () => ({} as any)),
+  drain: vi.fn(async () => ({} as any)),
+  undrain: vi.fn(async () => ({} as any)),
+  retire: vi.fn(async () => ({} as any)),
 }))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLRemoteitProxyDevices: devices,
@@ -20,7 +22,9 @@ vi.mock('../services/graphQLProxy', () => ({
   graphQLSetRemoteitProxy: setRemoteit,
   graphQLRemoveRemoteitProxy: vi.fn(),
   graphQLSetProxyPublicExit: setExit,
-  graphQLSetRemoteitProxyEnabled: setEnabled,
+  graphQLDrainProxy: drain,
+  graphQLUndrainProxy: undrain,
+  graphQLRetireProxy: retire,
 }))
 vi.mock('../components/Confirm', () => ({
   Confirm: ({ open, title, children, onConfirm }: any) =>
@@ -38,7 +42,7 @@ vi.mock('../components/Icon', () => ({ Icon: () => null }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div>loading</div> }))
 vi.mock('../components/Gutters', () => ({ Gutters: ({ children }: any) => <div>{children}</div> }))
 
-import { AdminPublicProxies, bareRemoteitNumber, drainHint, stateLabel } from './AdminPublicProxies'
+import { AdminPublicProxies, bareRemoteitNumber, drainHint, openCount, stateLabel } from './AdminPublicProxies'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const E1 = {
@@ -50,14 +54,16 @@ const E1 = {
   owner: null,
   endpoints: 2,
   openSessions: 3,
+  openConnections: null as any,
+  drain: null as any,
   proxy: {
     id: 'E1',
     host: 'e1.r3proxy.com',
     region: 'us-west-2',
     publicExit: false,
-    enabled: true,
-    state: 'ENABLED',
-    drainingUntil: null,
+    state: 'ACTIVE',
+    drainingSince: null as string | null,
+    drainMaxWaitMinutes: null as number | null,
   },
 }
 const E2 = {
@@ -107,7 +113,7 @@ describe('AdminPublicProxies', () => {
     expect([...el.querySelectorAll('button')].filter(b => b.textContent === 'Move to remote.it')).toHaveLength(1)
     expect(el.textContent).toContain('Registered, waiting for a region')
     expect(el.textContent).toContain('new-box · offline since then')
-    expect(el.textContent).toContain('Made a public proxy, it starts disabled: enable it once it is ready.')
+    expect(el.textContent).toContain('Made a public proxy, it starts retired: undrain it once it is ready.')
 
     await act(async () => button(el, 'Move to remote.it').click())
     expect(adopt).toHaveBeenCalledWith('E2')
@@ -131,61 +137,91 @@ describe('AdminPublicProxies', () => {
     expect(setExit).toHaveBeenCalledWith('E1', false)
   })
 
-  it('shows the sessions open through each; disabling is asked first and says what keeps running', async () => {
+  const rowOf = (el: HTMLElement) => [...el.querySelectorAll('li')].find(li => li.textContent?.includes('e1.r3proxy.com'))!
+  const inRow = (row: Element, text: string) => [...row.querySelectorAll('button')].find(b => b.textContent === text)
+
+  it('an active proxy: its open connections by its daemon; Drain is asked first with a max wait, and says what keeps running', async () => {
+    devices.mockResolvedValue([{ ...E1, openConnections: { https: 2, tcp: 1, udp: 1, total: 4, reported: null } }])
     const el = await render()
-    const row = [...el.querySelectorAll('li')].find(li => li.textContent?.includes('e1.r3proxy.com'))!
-    expect(row.textContent).toContain('e1.r3proxy.com · us-west-2 · 2 endpoints · 3 open')
-    expect(row.textContent).not.toContain('disabled')
-    const enabled = toggle(row, 'Enabled')
-    expect(enabled.checked).toBe(true)
-    await act(async () => enabled.click())
-    expect(setEnabled).not.toHaveBeenCalled()
+    const row = rowOf(el)
+    expect(row.textContent).toContain('e1.r3proxy.com · us-west-2 · 2 endpoints · 4 open')
+    expect(row.textContent).toContain('https 2 · tcp 1 · udp 1')
+    expect(inRow(row, 'Undrain')).toBeUndefined()
+    await act(async () => inRow(row, 'Drain')!.click())
+    expect(drain).not.toHaveBeenCalled()
     const confirm = el.querySelector('[data-confirm]')!.textContent
-    expect(confirm).toContain('Disable e1.r3proxy.com?')
-    expect(confirm).toContain('3 open connections keep running until they close; it takes no new ones.')
-    expect(confirm).toContain('keeps its connect links for two more minutes')
+    expect(confirm).toContain('Drain e1.r3proxy.com?')
+    expect(confirm).toContain('4 open connections keep running until they close; it takes no new ones.')
+    expect(confirm).toContain('safe to stop')
+    const input = el.querySelector('[data-confirm] input') as HTMLInputElement
+    await act(async () => {
+      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      set.call(input, '90')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
     await act(async () => button(el, 'Confirm').click())
-    expect(setEnabled).toHaveBeenCalledWith('E1', false)
+    expect(drain).toHaveBeenCalledWith('E1', 90)
     expect(devices).toHaveBeenCalledTimes(2)
   })
 
-  it('a disabled proxy: greyed and said so, its exit not switchable, enabled again without asking', async () => {
+  it('a draining proxy not yet safe to stop: says why; Retire is asked first and then forced; Undrain is not asked', async () => {
     devices.mockResolvedValue([
-      { ...E1, openSessions: 0, proxy: { ...E1.proxy, enabled: false, state: 'DISABLED', publicExit: true } },
+      {
+        ...E1,
+        openSessions: 0,
+        openConnections: { https: 0, tcp: 2, udp: 0, total: 2, reported: null },
+        drain: { safeToStop: false, reason: '2 connections open (https 0, tcp 2, udp 0)', dnsClearAt: null, deadline: null },
+        proxy: { ...E1.proxy, state: 'DRAINING', publicExit: true },
+      },
     ])
     const el = await render()
-    const row = [...el.querySelectorAll('li')].find(li => li.textContent?.includes('e1.r3proxy.com'))!
-    expect(row.textContent).toContain('e1.r3proxy.com · us-west-2 · 2 endpoints · 0 open · disabled')
-    const exit = toggle(row, 'Public exit')
-    expect(exit.checked).toBe(true) // the admin's setting, kept for when it is enabled again
-    expect(exit.disabled).toBe(true)
-    await act(async () => toggle(row, 'Enabled').click())
-    expect(el.querySelector('[data-confirm]')).toBeNull()
-    expect(setEnabled).toHaveBeenCalledWith('E1', true)
+    const row = rowOf(el)
+    expect(row.textContent).toContain('· 2 open · draining — wait: 2 connections open (https 0, tcp 2, udp 0)')
+    expect(toggle(row, 'Public exit').disabled).toBe(true)
+    expect(inRow(row, 'Drain')).toBeUndefined()
+    await act(async () => inRow(row, 'Retire')!.click())
+    expect(retire).not.toHaveBeenCalled()
+    expect(el.querySelector('[data-confirm]')!.textContent).toContain('the 2 connections open through it are dropped')
+    await act(async () => button(el, 'Confirm').click())
+    expect(retire).toHaveBeenCalledWith('E1', true)
+    await act(async () => inRow(rowOf(el), 'Undrain')!.click())
+    expect(undrain).toHaveBeenCalledWith('E1')
   })
 
-  it('a draining proxy: says so with what is open and when its links go; enabling it again (cancelling) is not asked', async () => {
-    const until = '2026-10-31T18:42:00Z'
+  it('a draining proxy safe to stop: says so, and Retire goes without asking or forcing', async () => {
     devices.mockResolvedValue([
-      { ...E1, openSessions: 2, proxy: { ...E1.proxy, enabled: false, state: 'DRAINING', drainingUntil: until } },
+      {
+        ...E1,
+        openConnections: { https: 0, tcp: 0, udp: 0, total: 0, reported: null },
+        drain: { safeToStop: true, reason: 'nothing is open through it', dnsClearAt: null, deadline: null },
+        proxy: { ...E1.proxy, state: 'DRAINING' },
+      },
     ])
     const el = await render()
-    const row = [...el.querySelectorAll('li')].find(li => li.textContent?.includes('e1.r3proxy.com'))!
-    const at = new Date(until).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-    expect(row.textContent).toContain(
-      `e1.r3proxy.com · us-west-2 · 2 endpoints · 2 open · draining… (2 open), links off at ${at}`
-    )
-    expect(toggle(row, 'Enabled').checked).toBe(false)
-    await act(async () => toggle(row, 'Enabled').click())
+    const row = rowOf(el)
+    expect(row.textContent).toContain('· 0 open · draining — safe to stop (nothing is open through it)')
+    await act(async () => inRow(row, 'Retire')!.click())
     expect(el.querySelector('[data-confirm]')).toBeNull()
-    expect(setEnabled).toHaveBeenCalledWith('E1', true)
+    expect(retire).toHaveBeenCalledWith('E1', false)
   })
 
-  it('the state label, and a graphql from before the drain (no state) read by enabled', () => {
-    expect(stateLabel(E1.proxy as any, 3)).toBe('')
-    expect(stateLabel({ ...E1.proxy, state: 'DISABLED', enabled: false } as any, 0)).toBe(' · disabled')
-    expect(stateLabel({ ...E1.proxy, state: undefined, enabled: false } as any, 0)).toBe(' · disabled')
-    expect(stateLabel({ ...E1.proxy, state: 'DRAINING', enabled: false } as any, 1)).toBe(' · draining… (1 open)')
+  it('a retired proxy: said so, only Undrain', async () => {
+    devices.mockResolvedValue([{ ...E1, openSessions: 0, proxy: { ...E1.proxy, state: 'RETIRED' } }])
+    const el = await render()
+    const row = rowOf(el)
+    expect(row.textContent).toContain('· 0 open · retired')
+    expect(inRow(row, 'Retire')).toBeUndefined()
+    expect(inRow(row, 'Drain')).toBeUndefined()
+    await act(async () => inRow(row, 'Undrain')!.click())
+    expect(undrain).toHaveBeenCalledWith('E1')
+  })
+
+  it('the state label, and the open count from a daemon that does not say it', () => {
+    expect(stateLabel(E1 as any)).toBe('')
+    expect(stateLabel({ ...E1, proxy: { ...E1.proxy, state: 'RETIRED' } } as any)).toBe(' · retired')
+    expect(stateLabel({ ...E1, proxy: { ...E1.proxy, state: 'DRAINING' } } as any)).toBe(' · draining…')
+    expect(openCount(E1 as any)).toBe(3)
+    expect(openCount({ ...E1, openConnections: { https: 1, tcp: 0, udp: 0, total: 1, reported: null } } as any)).toBe(1)
   })
 
   it('the drain hint counts what is open', () => {

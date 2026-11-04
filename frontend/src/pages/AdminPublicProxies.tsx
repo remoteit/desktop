@@ -15,12 +15,14 @@ import {
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import {
   graphQLAdoptRemoteitProxy,
+  graphQLDrainProxy,
   graphQLRemoteitProxyCode,
   graphQLRemoteitProxyDevices,
   graphQLRemoveRemoteitProxy,
+  graphQLRetireProxy,
   graphQLSetProxyPublicExit,
   graphQLSetRemoteitProxy,
-  graphQLSetRemoteitProxyEnabled,
+  graphQLUndrainProxy,
   RemoteitProxyDevice,
 } from '../services/graphQLProxy'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
@@ -32,10 +34,10 @@ import { Gutters } from '../components/Gutters'
 import { Icon } from '../components/Icon'
 
 /* remote.it's proxies (presence-server docs/proxy-plan.md §5): each by its name and region, online or not, its
-   endpoints and the sessions open through them, whether it is enabled — taking new endpoints, links and exit sessions,
-   or disabled: draining for two minutes (out of geo, its connect links kept while DNS caches let go of it), then
-   disabled — and whether it is also a public exit — switched here, apart from its being a proxy. A
-   new one starts disabled. A public proxy's
+   endpoints and the connections open through it, its state (graphql-api docs/PROXY-DRAIN.md) — active; draining,
+   taking nothing new while it serves what it has, with whether it is safe to stop; or retired, serving nothing — with
+   Drain, Undrain and Retire, and whether it is also a public exit — switched here, apart from its being a proxy. A
+   new one starts retired. A public proxy's
    device is remote.it's (its system account's, graphql services/remoteit-proxies.ts), never a person's: a new one
    installs with the proxy registration code and waits here for its region; one made before that, still in someone's
    account, is moved to remote.it here. Stopping one removes everyone's endpoints on it. */
@@ -49,7 +51,7 @@ export const AdminPublicProxies: React.FC<{ onProblem: (problem: string) => void
     load()
   }, [load])
 
-  // While one drains, read again every half minute, so the row moves on to disabled by itself.
+  // While one drains, read again every half minute, so its open connections and safe to stop move on by themselves.
   const draining = Array.isArray(devices) && devices.some(d => d.proxy?.state === 'DRAINING')
   useEffect(() => {
     if (!draining) return
@@ -125,7 +127,7 @@ export const bareRemoteitNumber = (host: string) => {
   return n ? Number(n) : undefined
 }
 
-// What disabling leaves running: the sessions open through it, which the confirmation says before it is disabled.
+// What draining leaves running: the connections open through it, which the confirmation says before it drains.
 export const drainHint = (open: number) =>
   open === 0
     ? 'No connections are open through it now; it takes no new ones.'
@@ -133,38 +135,46 @@ export const drainHint = (open: number) =>
     ? '1 open connection keeps running until it closes; it takes no new ones.'
     : `${open} open connections keep running until they close; it takes no new ones.`
 
-// Where a proxy is in its switch: from graphql's state, or its enabled alone from a graphql before the drain.
-const stateOf = (proxy: NonNullable<RemoteitProxyDevice['proxy']>) =>
-  proxy.state ?? (proxy.enabled ? 'ENABLED' : 'DISABLED')
+// The connections open through it: its daemon's count, or, from a daemon that does not say it, the sessions graphql knows.
+export const openCount = (d: RemoteitProxyDevice) => d.openConnections?.total ?? d.openSessions
 
-const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-
-// What the row says after its counts: nothing while enabled; draining, the sessions still open and when its connect
-// links go; disabled.
-export const stateLabel = (proxy: NonNullable<RemoteitProxyDevice['proxy']>, open: number) => {
-  const state = stateOf(proxy)
-  if (state === 'ENABLED') return ''
-  if (state === 'DISABLED') return ' · disabled'
-  return ` · draining… (${open} open)${proxy.drainingUntil ? `, links off at ${clock(proxy.drainingUntil)}` : ''}`
+// What the row says after its counts: nothing while active; draining, whether it is safe to stop and why; retired.
+export const stateLabel = (d: RemoteitProxyDevice) => {
+  const state = d.proxy?.state
+  if (state === 'RETIRED') return ' · retired'
+  if (state !== 'DRAINING') return ''
+  if (!d.drain) return ' · draining…'
+  return d.drain.safeToStop ? ` · draining — safe to stop (${d.drain.reason})` : ` · draining — wait: ${d.drain.reason}`
 }
 
-// One row a proxy: its name, region, endpoints and open sessions, the device under them (and whose account it is in,
-// when it is not remote.it's yet), greyed while disabled; at its end, moving it to remote.it when it needs to be,
-// renaming one with a bare e<n> to e<n>-r3, whether it is enabled, whether it is a public exit (no exit while it is
-// disabled), and stopping it.
+export const DEFAULT_MAX_WAIT = 60
+
+// One row a proxy: its name, region, endpoints and open connections, its state and whether it is safe to stop, the
+// device under them (and whose account it is in, when it is not remote.it's yet), greyed unless active; at its end,
+// moving it to remote.it when it needs to be, renaming one with a bare e<n> to e<n>-r3, Drain / Undrain / Retire, whether
+// it is a public exit (no exit unless active), and stopping it being a proxy.
 const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
   const proxy = d.proxy!
   const [confirmExitOff, setConfirmExitOff] = useState(false)
-  const [confirmDisable, setConfirmDisable] = useState(false)
+  const [confirmDrain, setConfirmDrain] = useState(false)
+  const [confirmRetire, setConfirmRetire] = useState(false)
   const [confirmRename, setConfirmRename] = useState(false)
+  const [maxWait, setMaxWait] = useState(String(DEFAULT_MAX_WAIT))
   const bare = proxy.region ? bareRemoteitNumber(proxy.host) : undefined
+  const active = proxy.state === 'ACTIVE'
+  const open = openCount(d)
+  const wait = Number(maxWait)
+  const waitValid = Number.isInteger(wait) && wait >= 1 && wait <= 7 * 24 * 60
   const setExit = (on: boolean) =>
     change(d.id, () => graphQLSetProxyPublicExit(d.id, on), `${proxy.host}'s exit was not changed.`)
-  const setEnabled = (on: boolean) =>
+  const drain = () => change(d.id, () => graphQLDrainProxy(d.id, wait), `${proxy.host} was not drained.`)
+  const undrain = () => change(d.id, () => graphQLUndrainProxy(d.id), `${proxy.host} was not put back in service.`)
+  // Retired when safe; otherwise asked first, and then forced: what is still open is dropped.
+  const retire = (force: boolean) =>
     change(
       d.id,
-      () => graphQLSetRemoteitProxyEnabled(d.id, on),
-      `${proxy.host} was not ${on ? 'enabled' : 'disabled'}.`
+      () => graphQLRetireProxy(d.id, force),
+      `${proxy.host} was not retired${force ? '' : ': connections are still open through it'}.`
     )
 
   return (
@@ -188,32 +198,39 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
               Rename e{bare}-r3
             </Button>
           )}
-          <FormControlLabel
-            label={<Typography variant="caption">Enabled</Typography>}
-            labelPlacement="start"
-            title="Taking new endpoints, connect links and exit sessions; disabled, it drains (enabling it again cancels a drain)"
-            control={
-              <Switch
-                size="small"
-                checked={proxy.enabled}
-                disabled={busy}
-                onChange={() => (proxy.enabled ? setConfirmDisable(true) : setEnabled(true))}
-              />
-            }
-          />
+          {active && (
+            <Button size="small" variant="outlined" disabled={busy} onClick={() => setConfirmDrain(true)}>
+              Drain
+            </Button>
+          )}
+          {!active && (
+            <Button size="small" variant="outlined" disabled={busy} onClick={undrain}>
+              Undrain
+            </Button>
+          )}
+          {proxy.state !== 'RETIRED' && (
+            <Button
+              size="small"
+              variant={d.drain?.safeToStop ? 'contained' : 'outlined'}
+              disabled={busy}
+              onClick={() => (d.drain?.safeToStop ? retire(false) : setConfirmRetire(true))}
+            >
+              Retire
+            </Button>
+          )}
           <FormControlLabel
             label={<Typography variant="caption">Public exit</Typography>}
             labelPlacement="start"
             title={
-              proxy.enabled
+              active
                 ? 'An exit for everyone whose plan gives exits, under the policy below'
-                : 'No exit while the proxy is disabled'
+                : 'No exit unless the proxy is in service'
             }
             control={
               <Switch
                 size="small"
                 checked={proxy.publicExit}
-                disabled={busy || !proxy.enabled}
+                disabled={busy || !active}
                 onChange={() => (proxy.publicExit ? setConfirmExitOff(true) : setExit(true))}
               />
             }
@@ -241,18 +258,42 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
             Everyone using it as their exit is moved off it.
           </Confirm>
           <Confirm
-            open={confirmDisable}
-            title={`Disable ${proxy.host}?`}
+            open={confirmDrain}
+            title={`Drain ${proxy.host}?`}
+            disabled={!waitValid}
             onConfirm={() => {
-              setConfirmDisable(false)
-              setEnabled(false)
+              setConfirmDrain(false)
+              drain()
             }}
-            onDeny={() => setConfirmDisable(false)}
+            onDeny={() => setConfirmDrain(false)}
           >
-            {drainHint(d.openSessions)} geo stops sending people to it at once, and it is no one's exit until it is
-            enabled again. It keeps its connect links for two more minutes, while DNS caches let go of it; then they are
-            served by the other public proxies only. Endpoints already on it keep working until they are removed or
-            expire.
+            {drainHint(open)} geo stops sending people to it at once, and it is no one's exit until it is undrained. Its
+            endpoints and connect links keep working while it drains. This page says when it is safe to stop: nothing
+            open, DNS caches clear and no temporary endpoint left to use — or the max wait over. Then stop its instance
+            and retire it.
+            <TextField
+              size="small"
+              type="number"
+              label="Max wait (minutes)"
+              value={maxWait}
+              error={!waitValid}
+              onChange={e => setMaxWait(e.target.value)}
+              sx={{ display: 'block', marginTop: 2 }}
+            />
+          </Confirm>
+          <Confirm
+            open={confirmRetire}
+            title={`Retire ${proxy.host} anyway?`}
+            onConfirm={() => {
+              setConfirmRetire(false)
+              retire(true)
+            }}
+            onDeny={() => setConfirmRetire(false)}
+          >
+            It is not safe to stop yet{d.drain ? `: ${d.drain.reason}` : active ? ': it is in service — drain it first' : ''}.
+            Retired, it serves nothing: {open === 1 ? 'the 1 connection' : `the ${open} connections`} open through it
+            {open === 1 ? ' is' : ' are'} dropped, its temporary endpoints and connect links go, and its permanent
+            endpoints stop working until it is undrained.
           </Confirm>
           <Confirm
             open={confirmRename}
@@ -271,16 +312,21 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
       }
     >
       <ListItemIcon>
-        <Icon name="server" size="md" color={online(d) && proxy.enabled ? 'primary' : 'grayDark'} />
+        <Icon name="server" size="md" color={online(d) && active ? 'primary' : 'grayDark'} />
       </ListItemIcon>
       <ListItemText
-        sx={proxy.enabled ? undefined : { opacity: 0.5 }}
+        sx={active ? undefined : { opacity: 0.6 }}
         primary={`${proxy.host} · ${proxy.region ?? 'no region'} · ${d.endpoints} endpoint${
           d.endpoints === 1 ? '' : 's'
-        } · ${d.openSessions} open${stateLabel(proxy, d.openSessions)}`}
+        } · ${open} open${stateLabel(d)}`}
         secondary={
           <>
             {about(d)}
+            {d.openConnections && (
+              <Typography component="span" variant="caption" display="block">
+                https {d.openConnections.https} · tcp {d.openConnections.tcp} · udp {d.openConnections.udp}
+              </Typography>
+            )}
             {!d.system && (
               <Typography component="span" variant="caption" color="warning.main" display="block">
                 In {d.owner ?? 'another'} account: move it, and its shares end and its owner no longer sees it.
@@ -295,7 +341,7 @@ const PublicProxy: React.FC<RowProps> = ({ device: d, busy, change }) => {
 
 // A device the proxy code registered, made a public proxy once it is given its region (an AWS region's name, as the
 // proxies nearest a device are chosen by: us-west-2, eu-west-1…). It takes the next free name, e<n>-r3, and starts
-// disabled: enabled above once it is ready to take people.
+// retired: undrained above once it is ready to take people.
 const Waiting: React.FC<RowProps> = ({ device: d, busy, change }) => {
   const [region, setRegion] = useState('')
   const valid = /^[a-z]{2}(-[a-z]+)+-\d$/.test(region.trim())
@@ -310,7 +356,7 @@ const Waiting: React.FC<RowProps> = ({ device: d, busy, change }) => {
           <>
             {about(d)}
             <Typography component="span" variant="caption" display="block">
-              Made a public proxy, it starts disabled: enable it once it is ready.
+              Made a public proxy, it starts retired: undrain it once it is ready.
             </Typography>
           </>
         }
