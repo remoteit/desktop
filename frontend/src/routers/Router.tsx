@@ -94,15 +94,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const virtualDevices = useVirtualDevices()
 
   useEffect(() => {
-    const initialRoute = window.localStorage.getItem('initialRoute')
-    if (initialRoute) {
-      if (initialRoute !== location.pathname) history.push(initialRoute)
-      console.log('UI REDIRECT INIT', initialRoute)
-      window.localStorage.removeItem('initialRoute')
-    }
-  }, [])
-
-  useEffect(() => {
     if (redirect) {
       console.log('UI REDIRECT', redirect)
       history.push(redirect)

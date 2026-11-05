@@ -154,7 +154,32 @@ const tokenStore = (): Storage => {
   }
 }
 
-type Flow = { verifier: string; state: string; nonce: string; redirectUri: string }
+/** `route` is where in the app the authorize left from (see appRoute). */
+type Flow = { verifier: string; state: string; nonce: string; redirectUri: string; route?: string }
+
+/* THE ROUTE AN AUTHORIZE LEAVES FROM rides its flow and is put back when the sign-in completes: the AS returns to
+   /authCallback, which carries no fragment, so a deep link — the proxy's #/endpoint-sign-in?endpoint=…&return=…, a
+   shared device link — would otherwise come back as the app's start. Kept in the flow, so only the callback that
+   completes THIS sign-in restores it, in whichever tab of this browser that happens (a set-password link opens a new
+   one, which finds the flow in takeFlow's shared record).
+
+   ONLY EVER THIS DOCUMENT'S FRAGMENT, set by a fragment navigation (returnToRoute), which cannot leave the page: a
+   crafted link reaches nothing it would not reach opened by someone already signed in. The shape keeps out what is
+   not a path of the app's own router — "//host" and "\" (an authority or a slash to URL parsers), a scheme,
+   whitespace, control characters — and the bound keeps a crafted fragment from filling the storage the flow is
+   written to. The app's start ("/") is not worth carrying. */
+const ROUTE_MAX = 8192
+function appRoute(route: unknown): string | undefined {
+  if (typeof route !== 'string' || route.length < 2 || route.length > ROUTE_MAX) return undefined
+  if (!route.startsWith('/') || route.startsWith('//') || /[\\\s\u0000-\u001f\u007f]/.test(route)) return undefined
+  return route
+}
+/** Back to `route` — a fragment navigation, so the hash router follows it (it listens for hashchange) whether it was
+ *  made before this or is made after; replace() keeps the callback's own history entry from becoming a second one. */
+function returnToRoute(route: string | undefined): void {
+  const back = appRoute(route)
+  if (back && window.location.hash !== `#${back}`) window.location.replace(`#${back}`)
+}
 
 function rememberFlow(flow: Flow): void {
   sessionStorage.setItem(FLOW_KEY, JSON.stringify(flow))
@@ -664,7 +689,13 @@ export async function oidcStart(
   const [d] = await Promise.all([discover(), refreshMcpDetailType()])
   const verifier = randomB64u(48)
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-  const flow: Flow = { verifier, state: randomB64u(16), nonce: randomB64u(16), redirectUri: redirectUri() }
+  const flow: Flow = {
+    verifier,
+    state: randomB64u(16),
+    nonce: randomB64u(16),
+    redirectUri: redirectUri(),
+    route: appRoute(window.location.hash.slice(1)),
+  }
   rememberFlow(flow)
   const url = new URL(d.authorization_endpoint)
   const params: { [key: string]: string } = {
@@ -720,6 +751,25 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
   const flow = takeFlow(state)
   cleanUrl()
   if (!flow) throw new OidcError('expired', 'Sign-in state mismatch')
+  // The route goes back however the sign-in ends: a refused or failed one leaves the person on it, so the sign-in
+  // screen's "Try again" carries it into the next flow. Another account arriving (the add-account path) starts at the
+  // app's start instead, as activating a saved one does — the route was the previous account's.
+  let route = flow.route
+  try {
+    const { claims, previousSub } = await exchangeCallback(flow, query)
+    if (previousSub && claims?.sub && claims.sub !== previousSub) route = undefined
+    return claims
+  } finally {
+    returnToRoute(route)
+  }
+}
+
+/** The callback's code exchanged for this flow's tokens, stored, with whose session was active before; a refusal or
+ *  failure thrown. */
+async function exchangeCallback(
+  flow: Flow,
+  query: URLSearchParams
+): Promise<{ claims: OidcClaims; previousSub?: string }> {
   const error = query.get('error')
   if (error) {
     const refused = new OidcError('refused', query.get('error_description') || error)
@@ -779,7 +829,7 @@ export async function oidcCompleteFromUrl(): Promise<OidcClaims | undefined> {
     /* non-fatal */
   }
   access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
-  return claims
+  return { claims, previousSub }
 }
 
 /** Current access token for `resource` ('' when signed out). Mints are SERIALIZED, not
