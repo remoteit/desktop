@@ -8,10 +8,13 @@ import { UNSUPPORTED } from '../services/graphQLDaemon'
 import {
   ProxyGroup,
   graphQLAccountProxyGroups,
+  graphQLAddProxyGroupTag,
   graphQLDeleteProxyGroup,
+  graphQLRemoveProxyGroupTag,
   graphQLSharedProxyGroups,
   graphQLUnshareProxyGroup,
   proxyGroupSharesServed,
+  proxyGroupTagsServed,
   refusalOf,
 } from '../services/graphQLProxyGroups'
 import {
@@ -25,6 +28,8 @@ import {
 } from '../helpers/proxyGroupHelper'
 import { useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
 import { ProxyGroupShareDialog } from '../components/ProxyGroupShareDialog'
+import { ProxyGroupTagEditor } from '../components/ProxyGroupTagEditor'
+import { Tags } from '../components/Tags'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -38,9 +43,10 @@ import { Icon } from '../components/Icon'
 /* The account's own proxy and exit groups (graphql-api docs/PROXY-GROUPS.md §11): each with its devices, the devices
    using it as their exit and its endpoints. A group whose last device has gone is kept — its name, endpoints and users,
    dormant — until it is deleted here; Delete says what goes with it. Each is shared from here with people, to use as
-   their exit (Share), and the groups shared with you are listed below theirs, each to leave. Seen by those who may
-   manage devices here, as the account's disabled devices are. The full groups UI comes later: this lists them, shares
-   them, and deletes an empty one. */
+   their exit (Share), and tagged with the account's tags, by which a role scoped by tags reaches it; a tag clicked shows
+   only the groups carrying it. The groups shared with you are listed below theirs, each to leave. Seen by those who may
+   manage devices here, as the account's disabled devices are, each the groups they manage: a role scoped by tags, those
+   its tags reach. The full groups UI comes later: this lists them, shares and tags them, and deletes an empty one. */
 export const ProxyGroupsPage: React.FC = () => {
   const { t } = useTranslation()
   const accountId = useSelector(selectActiveAccountId)
@@ -49,6 +55,9 @@ export const ProxyGroupsPage: React.FC = () => {
   const [shared, setShared] = useState<ProxyGroup[]>([])
   const [sharing, setSharing] = useState<string>() // the label of the group whose shares are open
   const [shares, setShares] = useState(false)
+  const [tagging, setTagging] = useState(false) // the API tags groups
+  const [tagFilter, setTagFilter] = useState<ITag>() // only the groups carrying it are shown
+  const [tagRefusal, setTagRefusal] = useState<string>()
   const [deleting, setDeleting] = useState<ProxyGroup>()
   const [leaving, setLeaving] = useState<ProxyGroup>()
   const [refusal, setRefusal] = useState<string>()
@@ -57,6 +66,7 @@ export const ProxyGroupsPage: React.FC = () => {
   const load = useCallback(async () => {
     const served = await proxyGroupSharesServed()
     setShares(served)
+    setTagging(await proxyGroupTagsServed())
     setGroups(await graphQLAccountProxyGroups(accountId))
     const theirs = served ? await graphQLSharedProxyGroups() : []
     setShared(Array.isArray(theirs) ? theirs : [])
@@ -100,7 +110,21 @@ export const ProxyGroupsPage: React.FC = () => {
     setRefusal(undefined)
   }
 
+  // A tag put on or taken off, then the groups read again: a refusal is said above the list, in graphql's words.
+  const retag = async (change: () => ReturnType<typeof graphQLAddProxyGroupTag>) => {
+    setBusy(true)
+    const refused = refusalOf(await change())
+    setBusy(false)
+    setTagRefusal(
+      refused === undefined
+        ? undefined
+        : refused || t('proxyGroupsPage.tagsNotChanged', 'Its tags could not be changed.')
+    )
+    await load()
+  }
+
   const open = Array.isArray(groups) ? groups.find(group => group.label === sharing) : undefined
+  const shown = Array.isArray(groups) && tagFilter ? groups.filter(group => carries(group, tagFilter)) : groups
   const myShare = (group: ProxyGroup) => group.access?.[0]?.user.email ?? ''
 
   return (
@@ -122,6 +146,11 @@ export const ProxyGroupsPage: React.FC = () => {
         </>
       }
     >
+      {tagRefusal && (
+        <Notice severity="error" gutterTop>
+          {tagRefusal}
+        </Notice>
+      )}
       {groups === undefined ? (
         <LoadingMessage />
       ) : groups === UNSUPPORTED ? (
@@ -140,7 +169,20 @@ export const ProxyGroupsPage: React.FC = () => {
         </Body>
       ) : (
         <List>
-          {groups.map(group => (
+          {tagFilter && (
+            <ListItem data-tag-filter={tagFilter.name}>
+              <ListItemText
+                primary={t('proxyGroupsPage.tagFilter', 'Groups tagged')}
+                secondary={
+                  !Array.isArray(shown) || !shown.length
+                    ? t('proxyGroupsPage.tagFilterNone', 'None of your groups carries it.')
+                    : undefined
+                }
+              />
+              <Tags tags={[tagFilter]} onDelete={() => setTagFilter(undefined)} />
+            </ListItem>
+          )}
+          {(Array.isArray(shown) ? shown : []).map(group => (
             <ListItem
               key={group.label}
               data-group={group.label}
@@ -168,7 +210,24 @@ export const ProxyGroupsPage: React.FC = () => {
               <ListItemIcon>
                 <Icon name={group.host ? 'server' : 'door-open'} size="md" fixedWidth />
               </ListItemIcon>
-              <ListItemText primary={group.name} secondary={groupLines(t, group)} />
+              <ListItemText
+                primary={group.name}
+                secondaryTypographyProps={{ component: 'div' }}
+                secondary={
+                  <>
+                    {groupLines(t, group)}
+                    {tagging && group.tags && !group.remoteit && (
+                      <ProxyGroupTagEditor
+                        group={group}
+                        disabled={busy}
+                        onAdd={tag => retag(() => graphQLAddProxyGroupTag(group.label, [tag.name]))}
+                        onRemove={tag => retag(() => graphQLRemoveProxyGroupTag(group.label, [tag.name]))}
+                        onClick={setTagFilter}
+                      />
+                    )}
+                  </>
+                }
+              />
             </ListItem>
           ))}
         </List>
@@ -248,6 +307,10 @@ export const ProxyGroupsPage: React.FC = () => {
     </Container>
   )
 }
+
+// Whether a group carries a tag, by name case aside, as graphql compares tag names.
+export const carries = (group: ProxyGroup, tag: ITag): boolean =>
+  !!group.tags?.some(carried => carried.name.toLowerCase() === tag.name.toLowerCase())
 
 // A group of the account, in words: its devices, its use — dormant when it is —, and who it is shared with.
 export function groupLines(t: TFunction, group: ProxyGroup): string {

@@ -2733,6 +2733,9 @@
     "sharedHeading": "Shared with you",
     "sharedNotOffered": "No device in it is in service: it cannot be chosen until one is.",
     "sharedOffered": "A device of yours can use it as its exit.",
+    "tagFilter": "Groups tagged",
+    "tagFilterNone": "None of your groups carries it.",
+    "tagsNotChanged": "Its tags could not be changed.",
     "title": "Proxy and exit groups",
     "unsupported": "This server does not have proxy and exit groups."
   },

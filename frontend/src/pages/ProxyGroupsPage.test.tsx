@@ -2,13 +2,15 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { groups, deleteGroup, access, shared, unshare, sharing } = vi.hoisted(() => ({
+const { groups, deleteGroup, access, shared, unshare, sharing, addTag, removeTag } = vi.hoisted(() => ({
   groups: vi.fn(async (_accountId: string) => [] as any),
   deleteGroup: vi.fn(async (_label: string, _confirm: boolean) => ({} as any)),
   access: { manages: true },
   shared: vi.fn(async () => [] as any),
   unshare: vi.fn(async (_label: string, _emails: string[]) => ({} as any)),
-  sharing: { served: true },
+  sharing: { served: true, tags: true },
+  addTag: vi.fn(async (_label: string, _names: string[]) => ({} as any)),
+  removeTag: vi.fn(async (_label: string, _names: string[]) => ({} as any)),
 }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'ACCOUNT' }))
@@ -19,8 +21,33 @@ vi.mock('../services/graphQLProxyGroups', () => ({
   graphQLDeleteProxyGroup: deleteGroup,
   graphQLSharedProxyGroups: shared,
   graphQLUnshareProxyGroup: unshare,
+  graphQLAddProxyGroupTag: addTag,
+  graphQLRemoveProxyGroupTag: removeTag,
   proxyGroupSharesServed: async () => sharing.served,
+  proxyGroupTagsServed: async () => sharing.tags,
   refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
+}))
+// A group's tags are their editor's own test's (ProxyGroupTagEditor.test.tsx): here, what it was given, and its three
+// ways back — a tag added, one removed, one clicked.
+vi.mock('../components/ProxyGroupTagEditor', () => ({
+  ProxyGroupTagEditor: ({ group, disabled, onAdd, onRemove, onClick }: any) => (
+    <div data-tags={group.tags.map((tag: any) => tag.name).join('|')} data-disabled={disabled ? '' : undefined}>
+      <button data-add onClick={() => onAdd({ name: 'prod', color: 2 })} />
+      {group.tags.map((tag: any) => (
+        <span key={tag.name}>
+          <button data-remove={tag.name} onClick={() => onRemove(tag)} />
+          <button data-click={tag.name} onClick={() => onClick(tag)} />
+        </span>
+      ))}
+    </div>
+  ),
+}))
+vi.mock('../components/Tags', () => ({
+  Tags: ({ tags, onDelete }: any) => (
+    <span data-filter-chip={tags.map((tag: any) => tag.name).join('|')}>
+      <button data-clear onClick={() => onDelete(tags[0])} />
+    </span>
+  ),
 }))
 // The share dialog is its own test's (ProxyGroupShareDialog.test.tsx): here, which group it opened for.
 vi.mock('../components/ProxyGroupShareDialog', () => ({
@@ -101,10 +128,13 @@ beforeEach(() => {
   document.body.innerHTML = ''
   access.manages = true
   sharing.served = true
+  sharing.tags = true
   groups.mockReset().mockResolvedValue([OFFICE, OLD_MAC, SHOP, SPARE])
   deleteGroup.mockReset().mockResolvedValue({})
   shared.mockReset().mockResolvedValue([])
   unshare.mockReset().mockResolvedValue({})
+  addTag.mockReset().mockResolvedValue({})
+  removeTag.mockReset().mockResolvedValue({})
 })
 
 describe('the account’s proxy and exit groups', () => {
@@ -230,5 +260,83 @@ describe('sharing the account’s groups, and those shared with you', () => {
     await act(async () => leave.click())
     expect(unshare).toHaveBeenCalledWith('gxxx', ['me@example.com'])
     expect(theirs('gxxx')).toBeNull()
+  })
+})
+
+describe('the account’s tags on its groups', () => {
+  const lab = { name: 'lab', color: 1 }
+  const prod = { name: 'Prod', color: 2 }
+  const tagsOf = (label: string) => row(label).querySelector('[data-tags]')?.getAttribute('data-tags')
+  const press = (label: string, selector: string) =>
+    act(async () => (row(label).querySelector(selector) as HTMLButtonElement).click())
+
+  it('each group shows its tags; one added or taken off is asked of graphql, and the groups read again', async () => {
+    groups.mockResolvedValue([
+      { ...OFFICE, tags: [lab] },
+      { ...SPARE, tags: [] },
+    ])
+    await render()
+    expect(tagsOf('gaaa')).toBe('lab')
+    expect(tagsOf('gddd')).toBe('')
+    groups.mockClear()
+    await press('gddd', '[data-add]')
+    expect(addTag).toHaveBeenCalledWith('gddd', ['prod'])
+    expect(groups).toHaveBeenCalledTimes(1)
+    await press('gaaa', '[data-remove="lab"]')
+    expect(removeTag).toHaveBeenCalledWith('gaaa', ['lab'])
+    expect(groups).toHaveBeenCalledTimes(2)
+    expect(document.body.querySelector('[data-notice]')).toBeNull()
+  })
+
+  it('a refusal is said in graphql’s words, above the list', async () => {
+    groups.mockResolvedValue([{ ...OFFICE, tags: [] }])
+    addTag.mockResolvedValue({ reason: 'prod is not a tag of the group’s account: its administrators make tags' })
+    await render()
+    await press('gaaa', '[data-add]')
+    expect(document.body.querySelector('[data-notice]')?.textContent).toBe(
+      'prod is not a tag of the group’s account: its administrators make tags'
+    )
+    addTag.mockResolvedValue('ERROR')
+    await press('gaaa', '[data-add]')
+    expect(document.body.querySelector('[data-notice]')?.textContent).toBe('Its tags could not be changed.')
+    addTag.mockResolvedValue({})
+    await press('gaaa', '[data-add]')
+    expect(document.body.querySelector('[data-notice]')).toBeNull()
+  })
+
+  it('a tag clicked shows only the groups carrying it, its name compared case aside; its chip shows them all again', async () => {
+    groups.mockResolvedValue([
+      { ...OFFICE, tags: [lab, prod] },
+      { ...OLD_MAC, tags: [{ name: 'prod', color: 2 }] },
+      { ...SPARE, tags: [] },
+    ])
+    await render()
+    await press('gaaa', '[data-click="Prod"]')
+    expect(document.body.querySelector('[data-tag-filter]')?.textContent).toContain('Groups tagged')
+    expect(row('gaaa')).not.toBeNull()
+    expect(row('gbbb')).not.toBeNull()
+    expect(row('gddd')).toBeNull()
+    await press('gaaa', '[data-click="lab"]')
+    expect(row('gbbb')).toBeNull()
+    await act(async () => (document.body.querySelector('[data-clear]') as HTMLButtonElement).click())
+    expect(document.body.querySelector('[data-tag-filter]')).toBeNull()
+    for (const label of ['gaaa', 'gbbb', 'gddd']) expect(row(label)).not.toBeNull()
+  })
+
+  it('a tag no group carries any longer: said so, the filter still there to clear', async () => {
+    groups.mockResolvedValue([{ ...OFFICE, tags: [lab] }])
+    await render()
+    await press('gaaa', '[data-click="lab"]')
+    groups.mockResolvedValue([{ ...OFFICE, tags: [] }])
+    await press('gaaa', '[data-remove="lab"]')
+    expect(row('gaaa')).toBeNull()
+    expect(document.body.querySelector('[data-tag-filter]')?.textContent).toContain('None of your groups carries it.')
+  })
+
+  it('an API that tags no groups: no tags shown', async () => {
+    sharing.tags = false
+    groups.mockResolvedValue([OFFICE])
+    await render()
+    expect(row('gaaa').querySelector('[data-tags]')).toBeNull()
   })
 })
