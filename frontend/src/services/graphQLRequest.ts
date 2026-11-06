@@ -181,6 +181,7 @@ export async function graphQLUser(accountId: string) {
               notificationUrl
               pushNotifications
               pushCategories
+              restoreNotifications
             }
             attributes
             info {

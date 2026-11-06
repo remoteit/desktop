@@ -3050,6 +3050,8 @@
     "notifications": "Notifications",
     "notifyEmail": "Email",
     "notifyPush": "Mobile push",
+    "notifyRestore": "Device restore emails",
+    "notifyRestoreHelp": "A device you manage, but do not own, is restored with a restore code. Its owner is always emailed.",
     "notifySystem": "System notification",
     "notifyWebhook": "Webhook",
     "pictureError": "Your picture could not be changed. Try again.",

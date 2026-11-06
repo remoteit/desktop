@@ -2986,6 +2986,8 @@
     "notifications": "通知",
     "notifyEmail": "メール",
     "notifyPush": "モバイルプッシュ",
+    "notifyRestore": "デバイス復元メール",
+    "notifyRestoreHelp": "管理しているが所有していないデバイスが復元コードで復元されたとき。所有者には常にメールが送信されます。",
     "notifySystem": "システム通知",
     "notifyWebhook": "Webhook",
     "pictureError": "画像を変更できませんでした。もう一度お試しください。",

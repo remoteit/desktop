@@ -596,6 +596,8 @@ declare global {
     notificationUrl?: string
     pushNotifications?: boolean | null
     pushCategories?: IPushCategory[] | null
+    // Mail when a device the account manages, but does not own, is restored (null = on). Account-level only.
+    restoreNotifications?: boolean | null
   }
 
   type IPushCategory = 'state' | 'connect' | 'access' | 'jobs' | 'account'

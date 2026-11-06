@@ -3114,6 +3114,8 @@
     "notifications": "Notificaciones",
     "notifyEmail": "Correo electrónico",
     "notifyPush": "Push móvil",
+    "notifyRestore": "Correos de restauración de dispositivos",
+    "notifyRestoreHelp": "Un dispositivo que administra, pero del que no es propietario, se restaura con un código de restauración. Su propietario siempre recibe un correo.",
     "notifySystem": "Notificación del sistema",
     "notifyWebhook": "Webhook",
     "pictureError": "No se pudo cambiar tu imagen. Inténtalo de nuevo.",

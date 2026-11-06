@@ -3050,6 +3050,8 @@
     "notifications": "Benachrichtigungen",
     "notifyEmail": "E-Mail",
     "notifyPush": "Mobile Push",
+    "notifyRestore": "E-Mails zur Gerätewiederherstellung",
+    "notifyRestoreHelp": "Ein Gerät, das Sie verwalten, aber nicht besitzen, wird mit einem Wiederherstellungscode wiederhergestellt. Sein Besitzer erhält immer eine E-Mail.",
     "notifySystem": "Systembenachrichtigung",
     "notifyWebhook": "Webhook",
     "pictureError": "Ihr Bild konnte nicht geändert werden. Versuchen Sie es erneut.",

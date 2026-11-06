@@ -475,14 +475,15 @@ export async function graphQLDeleteTag(name: string, accountId: string) {
 
 export async function graphQLNotificationSettings(params: INotificationSetting) {
   return await graphQLBasicRequest(
-    ` mutation NotificationSettings($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String, $pushNotifications: Boolean, $pushCategories: [String!]) {
+    ` mutation NotificationSettings($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String, $pushNotifications: Boolean, $pushCategories: [String!], $restoreNotifications: Boolean) {
         setNotificationSettings(
-          emailNotifications: $emailNotifications, 
-          desktopNotifications: $desktopNotifications, 
-          urlNotifications: $urlNotifications, 
+          emailNotifications: $emailNotifications,
+          desktopNotifications: $desktopNotifications,
+          urlNotifications: $urlNotifications,
           notificationUrl: $notificationUrl,
           pushNotifications: $pushNotifications,
-          pushCategories: $pushCategories
+          pushCategories: $pushCategories,
+          restoreNotifications: $restoreNotifications
         )
       }`,
     params

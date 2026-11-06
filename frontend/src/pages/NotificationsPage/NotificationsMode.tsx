@@ -3,6 +3,7 @@ import { TextField, Button, List, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { Gutters } from '../../components/Gutters'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
+import { ListItemSetting } from '../../components/ListItemSetting'
 import { PushCategoryList } from '../../components/PushCategoryList'
 import { Link } from '../../components/Link'
 import { Quote } from '../../components/Quote'
@@ -20,6 +21,7 @@ export const NotificationMode: React.FC = () => {
     desktopNotifications,
     pushNotifications,
     pushCategories,
+    restoreNotifications,
   } = useSelector((state: State) => state.user.notificationSettings)
   const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
@@ -28,6 +30,7 @@ export const NotificationMode: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState(false)
   const changed = webHookUrl !== notificationUrl
+  const restoreOn = restoreNotifications !== false
   const metadata: INotificationSetting = {
     desktopNotifications: desktopNotifications,
     emailNotifications: emailNotifications,
@@ -35,6 +38,7 @@ export const NotificationMode: React.FC = () => {
     notificationUrl: webHookUrl,
     pushNotifications,
     pushCategories,
+    restoreNotifications,
   }
 
   useEffect(() => {
@@ -111,6 +115,17 @@ export const NotificationMode: React.FC = () => {
           offIcon="envelope-slash"
           checked={emailNotifications}
           onClick={onEmailChange}
+        />
+        {/* Its own switch, not under Email: a restore is an access change, mailed whatever the device mail says. */}
+        <ListItemSetting
+          icon={restoreOn ? 'envelope' : 'envelope-slash'}
+          label={t('settings.notifyRestore', 'Device restore emails')}
+          subLabel={t(
+            'settings.notifyRestoreHelp',
+            'A device you manage, but do not own, is restored with a restore code. Its owner is always emailed.'
+          )}
+          toggle={restoreOn}
+          onClick={() => updateNotificationSettings({ ...metadata, restoreNotifications: !restoreOn })}
         />
         <ListItemSwitch
           label={t('settings.notifyWebhook', 'Webhook')}
