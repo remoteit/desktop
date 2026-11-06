@@ -684,6 +684,29 @@
     "secretWarning": "Sie werden diesen geheimen Schlüssel nicht erneut sehen. Bitte laden Sie ihn herunter und speichern Sie ihn im Verzeichnis .remoteit Ihres Home-Ordners.",
     "title": "Anmeldedaten"
   },
+  "createJoinKey": {
+    "create": "Erstellen",
+    "createdTitle": "Beitrittsschlüssel erstellt",
+    "creating": "Wird erstellt...",
+    "description": "Eine Maschine mit diesem Schlüssel erstellt neue Geräte von {{product}} und sonst nichts. Der Schlüssel wird nur einmal angezeigt, bei seiner Erstellung.",
+    "download": "Herunterladen",
+    "expires": "Läuft ab",
+    "expiresHelp": "Optional: Danach erstellt er keine Geräte mehr",
+    "expiresPast": "Ein Zeitpunkt in der Zukunft",
+    "joinRate": "Beitritte pro Minute",
+    "joinRateHelp": "Optional: wie viele Geräte er pro Minute erstellen darf (leer: 10)",
+    "maxJoins": "Maximale Beitritte",
+    "maxJoinsHelp": "Optional: wie viele Geräte er insgesamt erstellen darf",
+    "name": "Name",
+    "nameHelp": "Wo er verwendet wird, etwa eine Flotte, ein Standort oder eine CI-Pipeline",
+    "nameRequired": "Ein Name ist erforderlich",
+    "nameTooLong": "Höchstens {{max}} Zeichen",
+    "onceBody": "Er wird nicht noch einmal angezeigt: remote.it speichert nur seine öffentliche Hälfte. Geht er verloren, widerrufen Sie ihn und erstellen Sie einen neuen.",
+    "onceTitle": "Kopieren oder laden Sie diesen Schlüssel jetzt herunter",
+    "title": "Beitrittsschlüssel erstellen",
+    "use": "Übergeben Sie ihn der Maschine als {{env}}, oder speichern Sie ihn in einer Datei, die nur der Daemon lesen kann, und geben Sie die Datei in {{file}} an.",
+    "wholeNumber": "Eine ganze Zahl ab 1"
+  },
   "creditCard": {
     "cardEndingIn": "{{brand}} endend auf {{last}}",
     "expiredDate": "Abgelaufen {{month}}/{{year}}",
@@ -2482,6 +2505,50 @@
     "productName": "Produktname",
     "title": "Produkt erstellen"
   },
+  "productJoinKeys": {
+    "by": "von {{email}}",
+    "create": "Beitrittsschlüssel erstellen",
+    "created": "Erstellt",
+    "description": "Für die Automatisierung: Übergeben Sie einen Schlüssel der Maschine als {{env}} oder in einer Datei, die {{file}} angibt. Ein Schlüssel erstellt neue Geräte dieses Produkts und sonst nichts, und er wird nur bei seiner Erstellung angezeigt.",
+    "expired": "Abgelaufen",
+    "expires": "Läuft ab",
+    "full": "Alle Beitritte verbraucht",
+    "joins": "Beigetretene Geräte: {{joins}}",
+    "joinsOfMax": "Beigetretene Geräte: {{joins}} von {{max}}",
+    "lastUsed": "Zuletzt verwendet",
+    "neverUsed": "Nie verwendet",
+    "noExpiry": "Kein Ablaufdatum",
+    "none": "Noch keine Beitrittsschlüssel.",
+    "revoke": "Schlüssel widerrufen",
+    "revokeAction": "Schlüssel widerrufen",
+    "revokeBody": "Ab jetzt kann kein Gerät mehr mit diesem Schlüssel beitreten. Die von ihm erstellten Geräte sind nicht betroffen: Entfernen Sie sie separat, falls der Schlüssel offengelegt wurde. Dies kann nicht rückgängig gemacht werden.",
+    "revoked": "Widerrufen",
+    "revokeTitle": "Beitrittsschlüssel „{{name}}“ widerrufen?",
+    "title": "Beitrittsschlüssel",
+    "unused": "Ungenutzt"
+  },
+  "productOneTimeCodes": {
+    "add": "Ein Gerät hinzufügen",
+    "codeLabel": "Einmalcode",
+    "copy": "Code kopieren",
+    "description": "Zum manuellen Hinzufügen eines Geräts: Jeder Code registriert ein einziges Gerät, innerhalb von {{hours}} Stunden.",
+    "dialogTitle": "Ein Gerät hinzufügen",
+    "expired": "Abgelaufen",
+    "expires": "Läuft ab",
+    "giveCode": "Geben Sie diesen Code dem Installationsprogramm des Geräts als Registrierungscode ({{env}}). Er registriert ein Gerät.",
+    "issued": "Ausgegeben",
+    "none": "Noch keine Einmalcodes.",
+    "revoke": "Code widerrufen",
+    "revokeAction": "Code widerrufen",
+    "revokeBody": "Ab jetzt kann sich kein Gerät mehr mit diesem Code registrieren. Dies kann nicht rückgängig gemacht werden.",
+    "revoked": "Widerrufen",
+    "revokeTitle": "Einmalcode widerrufen?",
+    "runCommand": "Führen Sie diesen Befehl auf dem Gerät aus. Der enthaltene Code registriert ein Gerät.",
+    "title": "Einmalcodes",
+    "used": "Verwendet",
+    "usedAt": "Verwendet",
+    "validFor": "{{hours}} Stunden nach der Erstellung"
+  },
   "productOptionMenu": {
     "adminRequired": "Administratorrechte erforderlich",
     "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
@@ -2504,14 +2571,17 @@
     "current": "Aktuell",
     "description": "Beim Rotieren wird ein neuer Code für den Registrierungsbefehl ausgegeben. Frühere Codes registrieren weiterhin Geräte, bis Sie sie widerrufen; bereits registrierte Geräte sind nicht betroffen.",
     "issued": "Ausgegeben",
+    "lastUsed": "Zuletzt verwendet",
+    "noUse": "Keine Verwendung erfasst",
+    "reusableTitle": "Wiederverwendbare Codes",
     "revoke": "Code widerrufen",
     "revokeAction": "Code widerrufen",
     "revokeBody": "Ab jetzt kann sich kein Gerät mehr mit diesem Code registrieren, und Geräte können sich nicht mehr mit einer Dienst-ID dieses Produkts registrieren. Bereits registrierte Geräte sind nicht betroffen. Dies kann nicht rückgängig gemacht werden.",
     "revoked": "Widerrufen",
-    "revokeLast": "Zuerst rotieren: Dies ist der einzige gültige Code",
+    "revokeLastBody": "Dies ist der letzte wiederverwendbare Code des Produkts: Der Registrierungsbefehl funktioniert nicht mehr, und Geräte registrieren sich mit seinen Beitrittsschlüsseln und Einmalcodes.",
+    "revokeLastCredential": "Zuerst den Code rotieren oder einen Beitrittsschlüssel erstellen: Dies ist der einzige gültige Code",
     "revokeTitle": "Registrierungscode widerrufen?",
-    "rotate": "Code rotieren",
-    "title": "Registrierungscodes"
+    "rotate": "Code rotieren"
   },
   "productsActionBar": {
     "adminRequired": "Administratorrechte erforderlich",
@@ -2537,6 +2607,9 @@
     "removeServiceConfirmPrefix": "Möchten Sie den Dienst wirklich entfernen",
     "serviceMayHaveBeenRemoved": "Der Dienst wurde möglicherweise entfernt.",
     "serviceNotFound": "Dienst nicht gefunden"
+  },
+  "productSettingsPage": {
+    "warningTitle": "Stellen Sie dieses Produkt auf Beitrittsschlüssel um"
   },
   "productsHeaderButtons": {
     "adminRequired": "Administratorrechte erforderlich"

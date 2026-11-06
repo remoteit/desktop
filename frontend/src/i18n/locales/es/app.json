@@ -688,6 +688,29 @@
     "secretWarning": "No volverás a ver esta clave secreta. Descárgala y guárdala en el directorio .remoteit de tu carpeta de inicio.",
     "title": "Credenciales"
   },
+  "createJoinKey": {
+    "create": "Crear",
+    "createdTitle": "Clave de unión creada",
+    "creating": "Creando...",
+    "description": "Una máquina con esta clave crea dispositivos nuevos de {{product}}, y nada más. La clave se muestra una sola vez, al crearla.",
+    "download": "Descargar",
+    "expires": "Caduca",
+    "expiresHelp": "Opcional: después de esta fecha no crea dispositivos",
+    "expiresPast": "Una fecha futura",
+    "joinRate": "Uniones por minuto",
+    "joinRateHelp": "Opcional: cuántos dispositivos puede crear por minuto (10 si se deja vacío)",
+    "maxJoins": "Máximo de uniones",
+    "maxJoinsHelp": "Opcional: cuántos dispositivos puede crear en total",
+    "name": "Nombre",
+    "nameHelp": "Dónde se usa, como una flota, un sitio o una canalización de CI",
+    "nameRequired": "El nombre es obligatorio",
+    "nameTooLong": "Como máximo {{max}} caracteres",
+    "onceBody": "No se volverá a mostrar: remote.it solo guarda su mitad pública. Si se pierde, revóquela y cree otra.",
+    "onceTitle": "Copie o descargue esta clave ahora",
+    "title": "Crear clave de unión",
+    "use": "Entréguela a la máquina como {{env}}, o guárdela en un archivo que solo el daemon pueda leer e indique ese archivo en {{file}}.",
+    "wholeNumber": "Un número entero de 1 o más"
+  },
   "creditCard": {
     "cardEndingIn": "{{brand}} terminada en {{last}}",
     "expiredDate": "Vencida {{month}}/{{year}}",
@@ -2530,6 +2553,50 @@
     "productName": "Nombre del producto",
     "title": "Crear producto"
   },
+  "productJoinKeys": {
+    "by": "por {{email}}",
+    "create": "Crear clave de unión",
+    "created": "Creada",
+    "description": "Para automatización: entregue una clave a la máquina como {{env}}, o en un archivo indicado por {{file}}. Una clave crea dispositivos nuevos de este producto, y nada más, y solo se muestra al crearla.",
+    "expired": "Caducada",
+    "expires": "Caduca",
+    "full": "Uniones agotadas",
+    "joins": "Dispositivos unidos: {{joins}}",
+    "joinsOfMax": "Dispositivos unidos: {{joins}} de {{max}}",
+    "lastUsed": "Último uso",
+    "neverUsed": "Nunca usada",
+    "noExpiry": "Sin caducidad",
+    "none": "Todavía no hay claves de unión.",
+    "revoke": "Revocar clave",
+    "revokeAction": "Revocar clave",
+    "revokeBody": "A partir de ahora ningún dispositivo podrá unirse con esta clave. Los dispositivos que creó no se ven afectados: elimínelos por separado si la clave se filtró. Esto no se puede deshacer.",
+    "revoked": "Revocada",
+    "revokeTitle": "¿Revocar la clave de unión «{{name}}»?",
+    "title": "Claves de unión",
+    "unused": "Sin uso"
+  },
+  "productOneTimeCodes": {
+    "add": "Agregar un dispositivo",
+    "codeLabel": "Código de un solo uso",
+    "copy": "Copiar código",
+    "description": "Para agregar un dispositivo a mano: cada código registra un solo dispositivo, en un plazo de {{hours}} horas.",
+    "dialogTitle": "Agregar un dispositivo",
+    "expired": "Caducado",
+    "expires": "Caduca",
+    "giveCode": "Entregue este código al instalador del dispositivo como su código de registro ({{env}}). Registra un dispositivo.",
+    "issued": "Emitido",
+    "none": "Todavía no hay códigos de un solo uso.",
+    "revoke": "Revocar código",
+    "revokeAction": "Revocar código",
+    "revokeBody": "A partir de ahora ningún dispositivo podrá registrarse con este código. Esto no se puede deshacer.",
+    "revoked": "Revocado",
+    "revokeTitle": "¿Revocar el código de un solo uso?",
+    "runCommand": "Ejecute este comando en el dispositivo. El código que contiene registra un dispositivo.",
+    "title": "Códigos de un solo uso",
+    "used": "Usado",
+    "usedAt": "Usado",
+    "validFor": "{{hours}} horas después de su creación"
+  },
   "productOptionMenu": {
     "adminRequired": "Se requieren permisos de administrador",
     "cannotBeUndone": "Esta acción no se puede deshacer.",
@@ -2552,14 +2619,17 @@
     "current": "Actual",
     "description": "Al rotar se emite un código nuevo para el comando de registro. Los códigos anteriores siguen registrando dispositivos hasta que los revoque; los dispositivos ya registrados no se ven afectados.",
     "issued": "Emitido",
+    "lastUsed": "Último uso",
+    "noUse": "Sin uso registrado",
+    "reusableTitle": "Códigos reutilizables",
     "revoke": "Revocar código",
     "revokeAction": "Revocar código",
     "revokeBody": "A partir de ahora ningún dispositivo podrá registrarse con este código, y los dispositivos ya no podrán registrarse con un ID de servicio de este producto. Los dispositivos ya registrados no se ven afectados. Esto no se puede deshacer.",
     "revoked": "Revocado",
-    "revokeLast": "Rote primero: este es el único código vigente",
+    "revokeLastBody": "Es el último código reutilizable del producto: el comando de registro deja de funcionar y los dispositivos se registran con sus claves de unión y códigos de un solo uso.",
+    "revokeLastCredential": "Primero rote el código o cree una clave de unión: este es el único código vigente",
     "revokeTitle": "¿Revocar el código de registro?",
-    "rotate": "Rotar código",
-    "title": "Códigos de registro"
+    "rotate": "Rotar código"
   },
   "productsActionBar": {
     "adminRequired": "Se requieren permisos de administrador",
@@ -2587,6 +2657,9 @@
     "removeServiceConfirmPrefix": "¿Seguro que deseas quitar el servicio",
     "serviceMayHaveBeenRemoved": "Es posible que el servicio se haya eliminado.",
     "serviceNotFound": "Servicio no encontrado"
+  },
+  "productSettingsPage": {
+    "warningTitle": "Pase este producto a claves de unión"
   },
   "productsHeaderButtons": {
     "adminRequired": "Se requieren permisos de administrador"

@@ -684,6 +684,29 @@
     "secretWarning": "You will not see this secret key again. Please download and save it in the .remoteit directory of your home folder.",
     "title": "Credentials"
   },
+  "createJoinKey": {
+    "create": "Create",
+    "createdTitle": "Join Key Created",
+    "creating": "Creating...",
+    "description": "A machine holding the key creates new devices of {{product}}, and nothing else. The key is shown once, when it is created.",
+    "download": "Download",
+    "expires": "Expires",
+    "expiresHelp": "Optional: it creates no device after this",
+    "expiresPast": "A time in the future",
+    "joinRate": "Joins a minute",
+    "joinRateHelp": "Optional: how many devices it may create a minute (10 if left empty)",
+    "maxJoins": "Maximum joins",
+    "maxJoinsHelp": "Optional: how many devices it may create in all",
+    "name": "Name",
+    "nameHelp": "Where it is used, such as a fleet, a site or a CI pipeline",
+    "nameRequired": "A name is required",
+    "nameTooLong": "At most {{max}} characters",
+    "onceBody": "It will not be shown again: remote.it keeps only its public half. If it is lost, revoke it and create another.",
+    "onceTitle": "Copy or download this key now",
+    "title": "Create Join Key",
+    "use": "Give it to the machine as {{env}}, or save it in a file only the daemon can read and name the file in {{file}}.",
+    "wholeNumber": "A whole number of 1 or more"
+  },
   "creditCard": {
     "cardEndingIn": "{{brand}} ending in {{last}}",
     "expiredDate": "Expired {{month}}/{{year}}",
@@ -2482,6 +2505,50 @@
     "productName": "Product Name",
     "title": "Create Product"
   },
+  "productJoinKeys": {
+    "by": "by {{email}}",
+    "create": "Create Join Key",
+    "created": "Created",
+    "description": "For automation: give a key to the machine as {{env}}, or in a file named by {{file}}. A key creates new devices of this product and nothing else, and is shown only when it is created.",
+    "expired": "Expired",
+    "expires": "Expires",
+    "full": "All joins used",
+    "joins": "Devices joined: {{joins}}",
+    "joinsOfMax": "Devices joined: {{joins}} of {{max}}",
+    "lastUsed": "Last used",
+    "neverUsed": "Never used",
+    "noExpiry": "No expiry",
+    "none": "No join keys yet.",
+    "revoke": "Revoke Key",
+    "revokeAction": "Revoke Key",
+    "revokeBody": "No device can join with this key from now on. The devices it created are not affected: remove them separately if the key leaked. This cannot be undone.",
+    "revoked": "Revoked",
+    "revokeTitle": "Revoke join key \"{{name}}\"?",
+    "title": "Join Keys",
+    "unused": "Unused"
+  },
+  "productOneTimeCodes": {
+    "add": "Add One Device",
+    "codeLabel": "One-time Code",
+    "copy": "Copy code",
+    "description": "For adding one device by hand: each code registers a single device, within {{hours}} hours.",
+    "dialogTitle": "Add One Device",
+    "expired": "Expired",
+    "expires": "Expires",
+    "giveCode": "Give this code to the device's installer as its registration code ({{env}}). It registers one device.",
+    "issued": "Issued",
+    "none": "No one-time codes yet.",
+    "revoke": "Revoke Code",
+    "revokeAction": "Revoke Code",
+    "revokeBody": "No device can register with this code from now on. This cannot be undone.",
+    "revoked": "Revoked",
+    "revokeTitle": "Revoke one-time code?",
+    "runCommand": "Run this command on the device. The code in it registers one device.",
+    "title": "One-time Codes",
+    "used": "Used",
+    "usedAt": "Used",
+    "validFor": "{{hours}} hours after it was made"
+  },
   "productOptionMenu": {
     "adminRequired": "Admin permissions required",
     "cannotBeUndone": "This action cannot be undone.",
@@ -2504,14 +2571,17 @@
     "current": "Current",
     "description": "Rotating issues a new code for the registration command. Earlier codes keep registering devices until you revoke them; devices already registered are not affected.",
     "issued": "Issued",
+    "lastUsed": "Last used",
+    "noUse": "No use recorded",
+    "reusableTitle": "Reusable Codes",
     "revoke": "Revoke Code",
     "revokeAction": "Revoke Code",
     "revokeBody": "No device can register with this code from now on, and devices can no longer register with a service ID of this product. Devices already registered are not affected. This cannot be undone.",
     "revoked": "Revoked",
-    "revokeLast": "Rotate first: this is the only code in force",
+    "revokeLastBody": "It is the product's last reusable code: the registration command stops working, and devices register with its join keys and one-time codes.",
+    "revokeLastCredential": "Rotate the code or create a join key first: this is the only code in force",
     "revokeTitle": "Revoke registration code?",
-    "rotate": "Rotate Code",
-    "title": "Registration Codes"
+    "rotate": "Rotate Code"
   },
   "productsActionBar": {
     "adminRequired": "Admin permissions required",
@@ -2537,6 +2607,9 @@
     "removeServiceConfirmPrefix": "Are you sure you want to remove the service",
     "serviceMayHaveBeenRemoved": "The service may have been removed.",
     "serviceNotFound": "Service not found"
+  },
+  "productSettingsPage": {
+    "warningTitle": "Move this product to join keys"
   },
   "productsHeaderButtons": {
     "adminRequired": "Admin permissions required"

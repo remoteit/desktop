@@ -1,4 +1,4 @@
-import { graphQLBasicRequest } from './graphQL'
+import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 
 export async function graphQLPlatformTypes() {
   return await graphQLBasicRequest(
@@ -70,7 +70,32 @@ export async function graphQLDeviceProduct(id: string, accountId?: string) {
                   code
                   created
                   revoked
+                  lastUsed
                 }
+                oneTimeCodes {
+                  code
+                  created
+                  revoked
+                  expires
+                  used
+                  lastUsed
+                }
+                joinKeys {
+                  id
+                  name
+                  creator { id email }
+                  created
+                  expires
+                  revoked
+                  lastUsed
+                  joins
+                  maxJoins
+                  joinRate
+                  inForce
+                  unused
+                  suggestion
+                }
+                registrationWarning
                 tags
                 source
                 created
@@ -205,6 +230,54 @@ export async function graphQLRevokeDeviceProductCode(productId: string, code: st
         }
       }`,
     { productId, code }
+  )
+}
+
+export async function graphQLCreateDeviceProductOneTimeCode(productId: string) {
+  return await graphQLBasicRequest(
+    ` mutation CreateDeviceProductOneTimeCode($productId: ID!) {
+        createDeviceProductOneTimeCode(productId: $productId) {
+          code
+          created
+          revoked
+          expires
+          used
+          lastUsed
+        }
+      }`,
+    { productId }
+  )
+}
+
+// The answer carries the key itself, once: the caller hands it to the person and keeps it nowhere. A refusal comes back
+// as graphql's reason, for the form to show.
+export async function graphQLCreateDeviceProductJoinKey(input: {
+  productId: string
+  name: string
+  expires?: string
+  joinRate?: number
+  maxJoins?: number
+}) {
+  return await graphQLRequestWithReason(
+    ` mutation CreateDeviceProductJoinKey($productId: ID!, $name: String!, $expires: DateTime, $joinRate: Int, $maxJoins: Int) {
+        createDeviceProductJoinKey(productId: $productId, name: $name, expires: $expires, joinRate: $joinRate, maxJoins: $maxJoins) {
+          key
+          joinKey { id }
+        }
+      }`,
+    input
+  )
+}
+
+export async function graphQLRevokeDeviceProductJoinKey(productId: string, id: string) {
+  return await graphQLBasicRequest(
+    ` mutation RevokeDeviceProductJoinKey($productId: ID!, $id: ID!) {
+        revokeDeviceProductJoinKey(productId: $productId, id: $id) {
+          id
+          revoked
+        }
+      }`,
+    { productId, id }
   )
 }
 

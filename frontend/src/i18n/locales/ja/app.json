@@ -680,6 +680,29 @@
     "secretWarning": "このシークレットキーは二度と表示されません。ホームフォルダの.remoteitディレクトリにダウンロードして保存してください。",
     "title": "認証情報"
   },
+  "createJoinKey": {
+    "create": "作成",
+    "createdTitle": "参加キーを作成しました",
+    "creating": "作成中...",
+    "description": "このキーを持つマシンは{{product}}の新しいデバイスを作成でき、それ以外のことはできません。キーは作成時に一度だけ表示されます。",
+    "download": "ダウンロード",
+    "expires": "有効期限",
+    "expiresHelp": "任意: この日時以降はデバイスを作成しません",
+    "expiresPast": "未来の日時を指定してください",
+    "joinRate": "1分あたりの参加数",
+    "joinRateHelp": "任意: 1分あたりに作成できるデバイス数(空欄の場合は10)",
+    "maxJoins": "最大参加数",
+    "maxJoinsHelp": "任意: 作成できるデバイスの総数",
+    "name": "名前",
+    "nameHelp": "使用場所(フリート、拠点、CIパイプラインなど)",
+    "nameRequired": "名前は必須です",
+    "nameTooLong": "{{max}}文字以内で入力してください",
+    "onceBody": "このキーは再表示されません。remote.it が保存するのは公開部分だけです。紛失した場合は取り消して、新しいキーを作成してください。",
+    "onceTitle": "今すぐこのキーをコピーまたはダウンロードしてください",
+    "title": "参加キーを作成",
+    "use": "マシンに {{env}} として渡すか、デーモンだけが読み取れるファイルに保存して、そのファイルを {{file}} で指定してください。",
+    "wholeNumber": "1以上の整数を入力してください"
+  },
   "creditCard": {
     "cardEndingIn": "{{last}} で終わる{{brand}}",
     "expiredDate": "有効期限切れ {{month}}/{{year}}",
@@ -2434,6 +2457,50 @@
     "productName": "プロダクト名",
     "title": "プロダクトを作成"
   },
+  "productJoinKeys": {
+    "by": "作成者: {{email}}",
+    "create": "参加キーを作成",
+    "created": "作成日",
+    "description": "自動化向け: キーをマシンに {{env}} として渡すか、{{file}} で指定したファイルに保存します。キーはこのプロダクトの新しいデバイスを作成するだけで、作成時にのみ表示されます。",
+    "expired": "期限切れ",
+    "expires": "有効期限",
+    "full": "参加数の上限に到達",
+    "joins": "参加したデバイス: {{joins}}",
+    "joinsOfMax": "参加したデバイス: {{joins}} / {{max}}",
+    "lastUsed": "最終使用日時",
+    "neverUsed": "未使用",
+    "noExpiry": "有効期限なし",
+    "none": "参加キーはまだありません。",
+    "revoke": "キーを取り消す",
+    "revokeAction": "キーを取り消す",
+    "revokeBody": "今後、このキーでデバイスが参加することはできません。このキーで作成されたデバイスには影響しません。キーが漏洩した場合は、それらのデバイスを個別に削除してください。この操作は元に戻せません。",
+    "revoked": "取り消し済み",
+    "revokeTitle": "参加キー「{{name}}」を取り消しますか?",
+    "title": "参加キー",
+    "unused": "長期間未使用"
+  },
+  "productOneTimeCodes": {
+    "add": "デバイスを1台追加",
+    "codeLabel": "ワンタイムコード",
+    "copy": "コードをコピー",
+    "description": "デバイスを手動で1台追加するためのコードです。各コードは{{hours}}時間以内に1台のデバイスだけを登録できます。",
+    "dialogTitle": "デバイスを1台追加",
+    "expired": "期限切れ",
+    "expires": "有効期限",
+    "giveCode": "このコードをデバイスのインストーラーに登録コード({{env}})として渡してください。登録できるデバイスは1台です。",
+    "issued": "発行日",
+    "none": "ワンタイムコードはまだありません。",
+    "revoke": "コードを取り消す",
+    "revokeAction": "コードを取り消す",
+    "revokeBody": "今後、このコードでデバイスを登録することはできません。この操作は元に戻せません。",
+    "revoked": "取り消し済み",
+    "revokeTitle": "ワンタイムコードを取り消しますか?",
+    "runCommand": "このコマンドをデバイスで実行してください。含まれるコードで登録できるデバイスは1台です。",
+    "title": "ワンタイムコード",
+    "used": "使用済み",
+    "usedAt": "使用日時",
+    "validFor": "作成から{{hours}}時間後"
+  },
   "productOptionMenu": {
     "adminRequired": "管理者権限が必要です",
     "cannotBeUndone": "この操作は元に戻せません。",
@@ -2456,14 +2523,17 @@
     "current": "現在",
     "description": "ローテーションすると、登録コマンド用の新しいコードが発行されます。以前のコードは取り消すまでデバイスを登録し続けます。登録済みのデバイスには影響しません。",
     "issued": "発行日",
+    "lastUsed": "最終使用日時",
+    "noUse": "使用記録なし",
+    "reusableTitle": "再利用可能なコード",
     "revoke": "コードを取り消す",
     "revokeAction": "コードを取り消す",
     "revokeBody": "今後、このコードでデバイスを登録することはできません。また、このプロダクトのサービスIDでデバイスを登録することもできなくなります。登録済みのデバイスには影響しません。この操作は元に戻せません。",
     "revoked": "取り消し日",
-    "revokeLast": "先にローテーションしてください: これが唯一の有効なコードです",
+    "revokeLastBody": "これはプロダクトの最後の再利用可能なコードです。登録コマンドは使えなくなり、デバイスは参加キーとワンタイムコードで登録することになります。",
+    "revokeLastCredential": "先にコードをローテーションするか、参加キーを作成してください: これが唯一の有効なコードです",
     "revokeTitle": "登録コードを取り消しますか?",
-    "rotate": "コードをローテーション",
-    "title": "登録コード"
+    "rotate": "コードをローテーション"
   },
   "productsActionBar": {
     "adminRequired": "管理者権限が必要です",
@@ -2487,6 +2557,9 @@
     "removeServiceConfirmPrefix": "次のサービスを削除してもよろしいですか",
     "serviceMayHaveBeenRemoved": "サービスが削除された可能性があります。",
     "serviceNotFound": "サービスが見つかりません"
+  },
+  "productSettingsPage": {
+    "warningTitle": "このプロダクトを参加キーに移行してください"
   },
   "productsHeaderButtons": {
     "adminRequired": "管理者権限が必要です"

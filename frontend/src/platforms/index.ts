@@ -194,6 +194,13 @@ class Platforms {
   componentByType(type: number): IPlatform['component'] {
     return this.component(this.lookup[type])
   }
+
+  // The install command for a code, where the client renders it: a platform whose catalogue row has its own template,
+  // substituted as the registration page substitutes it. Undefined otherwise: the generic installer is graphql's alone.
+  codeCommand(type: number | undefined, code: string): string | undefined {
+    const command = type === undefined ? undefined : this.get(this.lookup[type]).installation?.command
+    return typeof command === 'string' ? command.split('[CODE]').join(code) : undefined
+  }
 }
 
 export const platforms = new Platforms()

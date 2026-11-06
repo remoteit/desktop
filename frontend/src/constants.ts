@@ -183,6 +183,10 @@ export const BT_UUIDS = {
 // Mirrors REGISTRATION_EXPIRATION in graphql-api/src/constants.ts (86400s) — keep in sync
 export const REGISTRATION_CODE_EXPIRATION_HOURS = 24
 
+// Where a Control Link daemon takes a product join key from (connectd README): the key, or a file holding it.
+export const JOIN_KEY_ENV = 'REMOTEIT_JOIN_KEY'
+export const JOIN_KEY_FILE_ENV = 'REMOTEIT_JOIN_KEY_FILE'
+
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
 

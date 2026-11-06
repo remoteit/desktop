@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { Box, List, ListItem, ListItemText, Stack, Typography } from '@mui/material'
 import { IDeviceProduct } from '../models/products'
+import { selectPermissions } from '../selectors/organizations'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { DynamicButton } from '../buttons/DynamicButton'
 import { ColorChip } from './ColorChip'
@@ -11,11 +13,13 @@ import { dispatch } from '../store'
 
 type Props = { product: IDeviceProduct }
 
-// Every registration code the product has issued, newest first. The newest code in force is the one in the registration
-// command; the others in force still register devices until revoked. The last code in force cannot be revoked (graphql
-// refuses it), so its revoke button is disabled: rotate first.
+// Every reusable registration code the product has issued, newest first, each with its last use, so it is clear when
+// one can go. The newest code in force is the one in the registration command; the others in force still register
+// devices until revoked. The last code in force can be revoked only while a join key is in force (graphql refuses it
+// otherwise, so the product keeps a way to register devices): without one its revoke button is disabled.
 export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   const { t } = useTranslation()
+  const admin = useSelector(selectPermissions).includes('ADMIN')
   const [rotating, setRotating] = useState(false)
   const [revoking, setRevoking] = useState<string>()
 
@@ -24,6 +28,9 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   const codes = product.registrationCodes || []
   const inForce = codes.filter(code => !code.revoked)
   const current = inForce[0]?.code
+  const keyInForce = !!product.joinKeys?.some(key => key.inForce)
+  const last = inForce.length <= 1
+  const locked = last && !keyInForce
 
   const rotate = async () => {
     setRotating(true)
@@ -41,14 +48,14 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
     <Box sx={{ marginTop: 3 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle2" color="textSecondary">
-          {t('productRegistrationCodes.title', 'Registration Codes')}
+          {t('productRegistrationCodes.reusableTitle', 'Reusable Codes')}
         </Typography>
         <DynamicButton
           size="small"
           icon="rotate"
           title={t('productRegistrationCodes.rotate', 'Rotate Code')}
           loading={rotating}
-          disabled={busy}
+          disabled={!admin || busy}
           onClick={rotate}
         />
       </Stack>
@@ -63,6 +70,8 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
           <ListItem
             key={code.code}
             disableGutters
+            // Room for the action: the theme's list padding leaves none.
+            sx={{ paddingRight: 6 }}
             secondaryAction={
               !code.revoked && (
                 <ConfirmIconButton
@@ -77,18 +86,29 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
                           'productRegistrationCodes.revokeBody',
                           'No device can register with this code from now on, and devices can no longer register with a service ID of this product. Devices already registered are not affected. This cannot be undone.'
                         )}
+                        {last && (
+                          <em>
+                            {t(
+                              'productRegistrationCodes.revokeLastBody',
+                              "It is the product's last reusable code: the registration command stops working, and devices register with its join keys and one-time codes."
+                            )}
+                          </em>
+                        )}
                       </Notice>
                     ),
                   }}
                   name="ban"
                   forceTitle
                   title={
-                    inForce.length > 1
-                      ? t('productRegistrationCodes.revoke', 'Revoke Code')
-                      : t('productRegistrationCodes.revokeLast', 'Rotate first: this is the only code in force')
+                    locked
+                      ? t(
+                          'productRegistrationCodes.revokeLastCredential',
+                          'Rotate the code or create a join key first: this is the only code in force'
+                        )
+                      : t('productRegistrationCodes.revoke', 'Revoke Code')
                   }
                   loading={revoking === code.code}
-                  disabled={inForce.length <= 1 || busy}
+                  disabled={!admin || locked || busy}
                   onClick={() => revoke(code.code)}
                 />
               )
@@ -99,19 +119,36 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <Typography
                     variant="body2"
-                    sx={{ fontFamily: "'Roboto Mono', monospace", textDecoration: code.revoked ? 'line-through' : undefined }}
+                    sx={{
+                      fontFamily: "'Roboto Mono', monospace",
+                      textDecoration: code.revoked ? 'line-through' : undefined,
+                    }}
                     color={code.revoked ? 'textSecondary' : undefined}
                   >
                     {code.code}
                   </Typography>
                   {code.code === current && (
-                    <ColorChip label={t('productRegistrationCodes.current', 'Current')} size="small" color="primary" variant="contained" />
+                    <ColorChip
+                      label={t('productRegistrationCodes.current', 'Current')}
+                      size="small"
+                      color="primary"
+                      variant="contained"
+                    />
                   )}
                 </Stack>
               }
               secondary={
                 <>
                   {t('productRegistrationCodes.issued', 'Issued')} <Timestamp date={new Date(code.created)} />
+                  {' · '}
+                  {code.lastUsed ? (
+                    <>
+                      {t('productRegistrationCodes.lastUsed', 'Last used')}{' '}
+                      <Timestamp date={new Date(code.lastUsed)} variant="minutes" />
+                    </>
+                  ) : (
+                    t('productRegistrationCodes.noUse', 'No use recorded')
+                  )}
                   {code.revoked && (
                     <>
                       {' · '}
