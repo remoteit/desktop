@@ -24,9 +24,9 @@ export const isChatPopout = bootQuery.has(CHAT_POPOUT_PARAM)
 // this id and non-owner tabs ignore them.
 const popoutId = bootQuery.get(CHAT_POPOUT_PARAM) || ''
 /* The account scope of the window that opened this popout — the store's initial accounts.activeId
-   (store.ts). The popout persists nothing, so without it every org-scoped read — the chat
-   entitlement gate above all — would fall back to the PERSONAL account, refusing a chat that is
-   licensed only for an organization. User-controlled like the rest of the URL, and safe that way:
+   (store.ts). The popout persists nothing, so without it every org-scoped read — the chat's org
+   above all — would fall back to the PERSONAL account, and the popout's turns would name a
+   different org than the opener's. User-controlled like the rest of the URL, and safe that way:
    a scope the user is no member of is cleared again by accounts.parse. */
 export const popoutScopeId = bootQuery.get(SCOPE_PARAM) || ''
 
@@ -168,7 +168,7 @@ export function checkPopoutPresence(handlers: PopoutMainHandlers): void {
 export function broadcastChatSignout(): void {
   post({ type: 'signout' })
   // The popout is being closed deliberately — a lagging poll must not
-  // race in afterward and force `open: true` into freshly-reset state.
+  // race in afterward and report it lost into freshly-reset state.
   stopPolling()
 }
 

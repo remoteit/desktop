@@ -53,6 +53,7 @@ const ServiceSelectLookup: ILookup<string, string> = {
     user {
       id
       email
+      picture
     }
   }`,
 
@@ -119,6 +120,7 @@ const DeviceSelectLookup: ILookup<string, string> = {
     user {
       id
       email
+      picture
     }
     scripting
   }`,
@@ -145,6 +147,7 @@ const DeviceSelectLookup: ILookup<string, string> = {
   owner {
     id
     email
+    picture
   }`,
 
   presence: `
@@ -161,6 +164,8 @@ const DeviceSelectLookup: ILookup<string, string> = {
   notificationSettings {
     emailNotifications
     desktopNotifications
+    pushNotifications
+    pushCategories
   }`,
 
   deviceTimeSeries: `

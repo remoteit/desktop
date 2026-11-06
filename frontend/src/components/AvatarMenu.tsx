@@ -15,6 +15,8 @@ import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
 import { oidcAccounts, oidcRefreshBrowserAccounts } from '../services/oidc'
 import { emit } from '../services/Controller'
+import browser from '../services/browser'
+import { DESKTOP_HELP_LINK } from '../constants'
 
 const ENTER_DELAY = 300
 const LEAVE_DELAY = 400 // must be longer than transition duration
@@ -38,6 +40,11 @@ export const AvatarMenu: React.FC = () => {
   const remoteUI = useSelector(isRemoteUI)
   const testUI = useSelector((state: State) => ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''))
   const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
+  const switchConfirm = {
+    title: t('agentSwitch.title', 'Switch accounts?'),
+    action: t('agentSwitch.switch', 'Switch'),
+    children: t('agentSwitch.message', 'Switching accounts will stop all connections.'),
+  }
   const licenseIndicator = useSelector(selectLicenseIndicator)
   const activeUser = useSelector(selectActiveUser)
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
@@ -119,12 +126,7 @@ export const AvatarMenu: React.FC = () => {
           badge={licenseIndicator}
           onClick={handleClose}
         />
-        <ListItemLink
-          title={t('nav.support', 'Support')}
-          icon="life-ring"
-          href="https://link.remote.it/documentation-desktop/overview"
-          dense
-        />
+        <ListItemLink title={t('nav.support', 'Support')} icon="life-ring" href={DESKTOP_HELP_LINK} dense />
         <ListItemLink title={t('nav.apis', 'APIs')} icon="books" href="https://link.remote.it/docs/api" dense />
         <ListItemLocation
           title={t('nav.bugReport', 'Bug Report')}
@@ -200,9 +202,9 @@ export const AvatarMenu: React.FC = () => {
                   ? a.email
                   : undefined
               }
-              icon={
-                <Avatar email={a.email} src={a.picture || null} fallback={a.name || a.email} size={24} border={0} />
-              }
+              icon={<Avatar email={a.email} picture={a.picture} fallback={a.name} size={24} border={0} />}
+              confirm={browser.hasBackend}
+              confirmProps={switchConfirm}
               onClick={async () => {
                 handleClose()
                 await dispatch.auth.activateAccount(a.sub)
@@ -212,6 +214,8 @@ export const AvatarMenu: React.FC = () => {
         <ListItemSetting
           label={t('nav.switchAccount', 'Switch account')}
           icon="users"
+          confirm={browser.hasBackend}
+          confirmProps={switchConfirm}
           onClick={async () => {
             handleClose()
             await dispatch.auth.switchAccount()

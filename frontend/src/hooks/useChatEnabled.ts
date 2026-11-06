@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import { State } from '../store'
-import { selectLimitsLookup } from '../selectors/organizations'
+import { useSelector, useDispatch } from 'react-redux'
+import { State, Dispatch } from '../store'
+import { selectUserLimitsLookup } from '../selectors/organizations'
 import browser from '../services/browser'
 import { useViewportSelect, useViewportWiderThan } from './useViewportWidth'
 import {
   CHAT_FEATURE,
-  CHAT_PANEL_WIDTH,
+  CHAT_AGENT_GUIDE,
   CHAT_PANEL_WIDTH_MIN,
   CHAT_PANEL_WIDTH_MAX,
   CHAT_MIN_CONTENT_WIDTH,
@@ -18,17 +18,35 @@ import {
   ORGANIZATION_BAR_WIDTH,
 } from '../constants'
 
-/* Whether the Remote.It AI chat exists for this user at all — the single gate the header
+/* Whether the Remote.It AI chat exists for this user at all — the single gate the chat
    button, the docked column and everything the panel loads hang off. Nothing chat-related
    mounts without it, so a user without the feature makes no agent requests.
 
-   It is a LICENSE feature, read exactly the way tagging/saml/roles are, which means it
-   follows the ACCOUNT you are viewing: the chat is scoped to the organization in the
-   sidebar selector, so an org whose license does not carry the agent does not get one.
-   Nothing skips this gate — not a dev build, not the AI portal. The limit comes from the
-   ai-agent add-on licence (Admin → Add-ons); an account holding it can still switch the
-   feature off in Test Settings → Features, and one without it has no row there. */
-export const useChatEnabled = (): boolean => useSelector((state: State) => !!selectLimitsLookup(state)[CHAT_FEATURE])
+   It is a LICENSE feature, but unlike tagging/saml/roles it follows the SIGNED-IN USER,
+   not the account you are viewing: the ai-agent add-on licence (Admin → Add-ons) is
+   granted to a person, so switching to an organization neither grants nor takes away the
+   chat. Nothing skips this gate — not a dev build, not the AI portal. A user holding it
+   can still switch the feature off in Test Settings → Features, and one without it has
+   no row there. */
+export const useChatEnabled = (): boolean =>
+  useSelector((state: State) => !!selectUserLimitsLookup(state)[CHAT_FEATURE])
+
+/* The chat is showing in this window: the person hasn't closed it, and it isn't popped out into its own. */
+export const useChatOpen = (): boolean => useSelector((state: State) => state.ui.chatOpen && !state.ui.chatPoppedOut)
+
+/* The chat button's contract for the header and the mobile bottom bar. Using it finishes the tour step
+   aimed at it: the bottom-bar bubble wraps only the icon, so taps beside it never reached its dismiss. */
+export const useChatToggle = () => {
+  const enabled = useChatEnabled()
+  const open = useChatOpen()
+  const poppedOut = useSelector((state: State) => state.ui.chatPoppedOut)
+  const dispatch = useDispatch<Dispatch>()
+  const toggle = () => {
+    dispatch.ui.pop(CHAT_AGENT_GUIDE)
+    dispatch.ui.setPersistent({ chatOpen: !open })
+  }
+  return { show: enabled && !poppedOut, open, toggle }
+}
 
 /* The widest the chat column may be dragged: whatever the window holds once the
    content keeps CHAT_MIN_CONTENT_WIDTH. The sidebar does not cap the drag — the layout
@@ -47,9 +65,9 @@ export const chatMaxWidth = (viewport: number): number =>
    display still docks (narrower) on a small one instead of sticking as an
    overlay the user has no handle to resize. */
 const chatWidthFor = (stored: number, viewport: number): number =>
-  Math.min(Math.max(stored || CHAT_PANEL_WIDTH, CHAT_PANEL_WIDTH_MIN), chatMaxWidth(viewport))
+  Math.min(Math.max(stored, CHAT_PANEL_WIDTH_MIN), chatMaxWidth(viewport))
 export const useChatWidth = (): number => {
-  const stored = useSelector((state: State) => state.chat.width)
+  const stored = useSelector((state: State) => state.ui.chatWidth)
   return useViewportSelect(w => chatWidthFor(stored, w))
 }
 
@@ -64,7 +82,7 @@ export const useChatWidth = (): number => {
    determines is what let the panel flip out from under a drag. */
 export const useChatDocked = (): boolean => {
   const enabled = useChatEnabled()
-  const open = useSelector((state: State) => state.chat.open)
+  const open = useChatOpen()
   const fits = useViewportWiderThan(CHAT_PANEL_WIDTH_MIN + CHAT_MIN_CONTENT_WIDTH)
   return enabled && open && !browser.isMobile && fits
 }
@@ -79,7 +97,7 @@ export const useChatDocked = (): boolean => {
    every frame of a resize or a chat drag. */
 export const useLayoutBreakpoints = () => {
   const docked = useChatDocked()
-  const stored = useSelector((state: State) => state.chat.width)
+  const stored = useSelector((state: State) => state.ui.chatWidth)
   const packed = useViewportSelect(w => layoutBreakpoints(docked ? w - chatWidthFor(stored, w) : w))
   return useMemo(
     () => ({

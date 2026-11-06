@@ -10,6 +10,7 @@ import {
   fetchUsage,
   UsageLimitError,
   AgentStreamEndedError,
+  AgentNotLicensedError,
   type ConversationSummary,
   type Usage,
   agentHealth,
@@ -26,7 +27,6 @@ import {
 // Value import is deref'd only inside effects, so the store/model cycle is safe
 import { store } from '../store'
 import type { State } from '../store'
-import { CHAT_PANEL_WIDTH } from '../constants'
 import i18n from '../i18n'
 import { withTimeout } from '../helpers/sleep'
 import { latestWins } from '../helpers/latestWins'
@@ -45,9 +45,6 @@ export type ChatAssistantMessage = { role: 'assistant'; text: string; toolCalls:
 export type ChatTranscriptMessage = { role: 'user'; text: string } | ChatAssistantMessage
 
 export type IChatState = {
-  open: boolean
-  /** Docked column width in px — drag-resized, persisted */
-  width: number
   messages: ChatTranscriptMessage[]
   conversationId: string
   turnId: string
@@ -56,9 +53,6 @@ export type IChatState = {
   usage: Usage | null
   /** The signed-in user id this chat belongs to — reset the chat when it changes. */
   ownerId: string
-  /** Org the agent is scoped to; null = uninitialized, user id = personal */
-  /** Conversation currently lives in the popout window (main window only) */
-  poppedOut: boolean
   streaming: boolean
   pendingConfirmation: { toolUseId: string; toolName: string; input: Record<string, unknown> } | null
   error: string | null
@@ -66,8 +60,6 @@ export type IChatState = {
 }
 
 export const defaultChatState: IChatState = {
-  open: true,
-  width: CHAT_PANEL_WIDTH,
   messages: [],
   conversationId: '',
   turnId: '',
@@ -75,7 +67,6 @@ export const defaultChatState: IChatState = {
   conversations: [],
   usage: null,
   ownerId: '',
-  poppedOut: false,
   streaming: false,
   pendingConfirmation: null,
   error: null,
@@ -123,6 +114,8 @@ const sessionExpiredError = () =>
   i18n.t('notices:chat.sessionExpired', {
     defaultValue: 'The agent lost its authority mid-turn — your session may have been revoked or refreshed. Try again.',
   })
+
+const notLicensedError = () => i18n.t('chat.notLicensed', { defaultValue: "Remote.It Agent isn't enabled for you." })
 
 const usageLimitMessage = (e: UsageLimitError): string => {
   const when = formatReset(e.resetsAt)
@@ -235,7 +228,10 @@ export default createModel<RootModel>()({
         flushDeltas()
         if (error instanceof AgentAuthError) dispatch.chat.endTurn(authRequiredError())
         else if (error instanceof UsageLimitError) dispatch.chat.endTurn(usageLimitMessage(error))
-        else if (error instanceof AgentStreamEndedError)
+        else if (error instanceof AgentNotLicensedError) {
+          dispatch.chat.endTurn(notLicensedError())
+          dispatch.organization.fetch()
+        } else if (error instanceof AgentStreamEndedError)
           // An interruption, not a completion — a cut-off must not leave a truncated reply
           // looking complete with the composer open for another send.
           dispatch.chat.endTurn(
@@ -244,7 +240,8 @@ export default createModel<RootModel>()({
                 'The connection to the agent closed before it finished — the answer may be incomplete. Try again.',
             })
           )
-        else if ((error as Error).name !== 'AbortError') dispatch.chat.endTurn((error as Error).message)
+        else if ((error as Error).name !== 'AbortError' && !controller.signal.aborted)
+          dispatch.chat.endTurn((error as Error).message)
       } finally {
         flushDeltas()
         if (abortController === controller) abortController = null
@@ -507,6 +504,8 @@ export default createModel<RootModel>()({
        here would land in the purge-to-reload window and re-persist the pre-signout state. */
     async signOut(_: void, state) {
       broadcastChatSignout()
+      // The saved flag outlives ui.reset; left set, the next sign-in hid the dock until the dead popout's ping timed out
+      if (state?.ui?.chatPoppedOut) dispatch.ui.setPersistent({ chatPoppedOut: false })
       // Aborting covers the STREAM; the generation covers every other load in flight. Without it a
       // slow history pick started under this account passed its own guard after the reset (its
       // ticket unchanged, nothing streaming) and wrote this account's transcript into the store the

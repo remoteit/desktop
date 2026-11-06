@@ -127,6 +127,11 @@
     "held": "Blocked — held by the device's admin",
     "update": "{{state}} {{version}}"
   },
+  "agentSwitch": {
+    "message": "Switching accounts will stop all connections.",
+    "switch": "Switch",
+    "title": "Switch accounts?"
+  },
   "androidSetup": {
     "guideBody": "You can set up your Android device, or follow the simple instructions to set up one of the commonly used platforms.",
     "guideTitle": "Select a device",
@@ -326,7 +331,7 @@
     "deleteConversation": "Delete",
     "deny": "Deny",
     "guideAgentBody": "Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.",
-    "guideAgentTitle": "Meet Remote.It AI",
+    "guideAgentTitle": "Meet Remote.It Agent",
     "guideComposeBody": "Type a question, or say what you want changed. Anything that alters your account pauses for your approval first.",
     "guideComposeTitle": "Just ask",
     "guideHistoryBody": "Chats are saved. Switch between them, or start a new one, from here.",
@@ -336,13 +341,13 @@
     "inputPlaceholder": "Chat with Remote.It",
     "interrupted": "Interrupted",
     "introBody": "Manage your devices, connections, and services — just ask.",
-    "introTitle": "Remote.It AI",
+    "introTitle": "Remote.It Agent",
     "newChat": "New Chat",
     "newPrompt1": "How do I add my first device?",
     "newPrompt2": "Try it out with the demo device",
     "newPrompt3": "How do I reach a Raspberry Pi without port forwarding?",
     "newSession": "New chat",
-    "notLicensed": "Remote.It AI is not available for this account.",
+    "notLicensed": "Remote.It Agent isn't enabled for you.",
     "popIn": "Pop back in",
     "popOut": "Pop out",
     "prompt1": "Which of my devices are offline?",
@@ -356,7 +361,7 @@
     "toolRequest": "The agent wants to run <tool>{{tool}}</tool>",
     "toolsUsed_one": "Used {{count}} tool",
     "toolsUsed_other": "Used {{count}} tools",
-    "unavailable": "Remote.It AI is temporarily unavailable. Try again in a few minutes.",
+    "unavailable": "Remote.It Agent is temporarily unavailable. Try again in a few minutes.",
     "untitled": "New conversation",
     "usage": "Usage",
     "usageResets": "Resets {{when}}",
@@ -1619,7 +1624,6 @@
     "dismissAll": "dismiss all"
   },
   "header": {
-    "aiAgent": "AI Agent",
     "back": "Back",
     "create": "Create",
     "deviceSearch": "Device Search",
@@ -1901,9 +1905,13 @@
     "emailSent": "We emailed you a code to confirm your first factor. It works for 10 minutes, only in this browser.",
     "failed": "Something went wrong — try again.",
     "federated": "You sign in with an identity provider (like Google), so there is no Remote.It password to change. You can set one up to use alongside your provider.",
+    "kind": {
+      "passkey": "Passkey",
+      "sms": "Text message",
+      "totp": "Authenticator app"
+    },
     "locked": "Too many wrong codes. Codes are locked for 15 minutes.",
     "lockedUntil": "Codes are locked until {{when}}.",
-    "method": "Method",
     "newCodes": "New recovery codes",
     "phone": "Mobile number (+15555550123)",
     "prefer": "Ask for this first",
@@ -2000,6 +2008,7 @@
   "nav": {
     "account": "Account",
     "admin": "Admin",
+    "agent": "Agent",
     "announcements": "Announcements",
     "apis": "APIs",
     "bugReport": "Bug Report",
@@ -2102,6 +2111,7 @@
     "custom": "Custom",
     "email": "Email",
     "globalSettings": "Global Settings",
+    "push": "Mobile push",
     "systemNotification": "System notification",
     "title": "Device Notifications"
   },
@@ -2375,7 +2385,8 @@
   },
   "passkeys": {
     "add": "Add a Passkey",
-    "explainer": "A passkey signs you in with a touch instead of a code. Passkeys are added on your Remote.It account page.",
+    "added": "Passkey added",
+    "explainer": "A passkey signs you in with a touch instead of a code. Adding one opens your Remote.It sign-in page, then brings you back here.",
     "title": "Passkeys"
   },
   "passwordStrengthInput": {
@@ -2489,6 +2500,19 @@
     "service": "Service",
     "unknown": "Unknown"
   },
+  "productRegistrationCodes": {
+    "current": "Current",
+    "description": "Rotating issues a new code for the registration command. Earlier codes keep registering devices until you revoke them; devices already registered are not affected.",
+    "issued": "Issued",
+    "revoke": "Revoke Code",
+    "revokeAction": "Revoke Code",
+    "revokeBody": "No device can register with this code from now on, and devices can no longer register with a service ID of this product. Devices already registered are not affected. This cannot be undone.",
+    "revoked": "Revoked",
+    "revokeLast": "Rotate first: this is the only code in force",
+    "revokeTitle": "Revoke registration code?",
+    "rotate": "Rotate Code",
+    "title": "Registration Codes"
+  },
   "productsActionBar": {
     "adminRequired": "Admin permissions required",
     "clearSelection": "Clear selection",
@@ -2573,6 +2597,25 @@
     "latchHelp": "The connection will latch onto the first device to connect with IP restriction.",
     "none": "None",
     "openHelp": "Any device will be able to connect while the connection is active."
+  },
+  "push": {
+    "channels": {
+      "connectOthers": "Connections to your devices",
+      "connectOwn": "Your connections",
+      "deviceState": "Device online / offline"
+    }
+  },
+  "pushCategories": {
+    "access": "Access changes",
+    "accessHelp": "Someone shares a device with you or removes your access, or a device is transferred or deleted.",
+    "account": "Account security",
+    "accountHelp": "A sign-in to your account, or a change to its password, phone number, or two-factor settings.",
+    "connect": "Connections",
+    "connectHelp": "Anyone, including you, connects to or disconnects from a device you have access to.",
+    "jobs": "Scripts",
+    "jobsHelp": "A script you run, or one run on your account, starts, finishes, fails, or is cancelled.",
+    "state": "Online / offline",
+    "stateHelp": "A device you have access to goes offline or comes back online."
   },
   "qualityDetails": {
     "availability": "Availability:",
@@ -2927,17 +2970,21 @@
     "email": "Email",
     "emailLanguage": "Email Language",
     "graphs": "Graphs",
-    "gravatarEdit": "To edit or add a profile image please visit",
-    "gravatarImported": "Your profile picture is imported from the free service Gravatar.",
     "invalidUrl": "Please provide a valid URL",
     "license": "License",
     "memberSince": "Member since",
     "notificationMethod": "Method",
     "notifications": "Notifications",
     "notifyEmail": "Email",
+    "notifyPush": "Mobile push",
     "notifySystem": "System notification",
     "notifyWebhook": "Webhook",
+    "pictureError": "Your picture could not be changed. Try again.",
+    "picturePermission": "Changing your picture needs a permission your session doesn’t carry yet.",
+    "pictureVisible": "Your picture is visible to others. Without one, your Gravatar is shown.",
     "profile": "Profile",
+    "refreshPermissions": "Refresh permissions",
+    "removePicture": "Remove",
     "security": "Security",
     "signOutEverywhere": "Sign out everywhere",
     "signOutEverywhereButton": "Sign Out Everywhere",
@@ -2946,6 +2993,7 @@
     "tags": "Tags",
     "testSettings": "Test Settings",
     "title": "Settings",
+    "uploadPicture": "Upload picture",
     "urlEndpoint": "URL endpoint",
     "visitWeb": "Visit Remote.It on the web",
     "webhookHelp": "Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds."
@@ -2990,9 +3038,11 @@
     "services": "Services"
   },
   "signIn": {
-    "autoStopped": "Automatic sign-in stopped after repeated attempts. Select Sign In to try again.",
-    "button": "Sign In",
+    "agentOwnedDetail": "{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:",
+    "autoPaused": "Automatic sign-in stopped after repeated attempts. Choose how to sign in below.",
     "cancel": "Cancel",
+    "continueEmail": "Continue with email",
+    "continueInBrowser": "Continue in your browser",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
     "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
     "errorRateLimitedWait_one": "Too many sign-in attempts from this network. Please try again in about a minute.",
@@ -3001,11 +3051,14 @@
     "errorUnavailable": "The sign-in service is temporarily unavailable. Please try again in a few minutes.",
     "errorUnknown": "Sign in didn't complete. Please try again.",
     "errorUnreachable": "We couldn't reach the sign-in service. Check your internet connection, then try again.",
+    "heading": "Sign in",
+    "help": "Get help",
+    "noAccount": "Don't have an account?",
+    "openAgain": "Open again",
+    "or": "or",
     "redirecting": "Taking you to sign in…",
-    "retry": "Try again",
-    "subtitle": "We'll open your browser to sign you in with Remote.It Single Sign-On.",
-    "title": "Sign in to {{app}}",
-    "waiting": "Waiting for your browser… finish signing in there."
+    "signUp": "Sign up",
+    "switchToProduction": "Switch to production"
   },
   "statusChip": {
     "connected": "Connected",
@@ -3072,6 +3125,11 @@
     "agentURLInvalid": "Agent service URL must start with https://",
     "aiAgent": "AI Agent",
     "apiTarget": "API Target",
+    "apnsEnvironment": "Push Environment",
+    "apnsProduction": "APNs production",
+    "apnsProductionHint": "TestFlight and App Store builds",
+    "apnsSandbox": "APNs sandbox",
+    "apnsSandboxHint": "Development-signed builds and the simulator",
     "backgroundWork": "AI background work",
     "backgroundWorkOff": "The agent only works while you are here.",
     "backgroundWorkOn": "The agent can read and watch while you are away.",
@@ -3108,7 +3166,11 @@
     "setServiceLicensesHint": "Will set all devices licensing in order to: UNKNOWN, EVALUATION, LICENSED, UNLICENSED, NON_COMMERCIAL, LEGACY",
     "showLatestAnnouncement": "Show latest announcement",
     "showLatestAnnouncementHint": "Previews the latest announcement without changing its read status.",
+    "stageLabel": "{{name}} stage",
     "switchGraphQLAPIs": "Switch GraphQL APIs",
+    "switchStageAction": "Sign out and switch",
+    "switchStageMessage": "You will be signed out and asked to sign in again at {{issuer}}. Other accounts saved in this app are removed.",
+    "switchStageTitle": "Switch to the {{name}} stage?",
     "testOptions": "Test Options",
     "title": "Test Settings",
     "virtualDevices": "Virtual devices",

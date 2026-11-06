@@ -13,6 +13,7 @@ import { spacing } from '../../styling'
 import { OAUTH_ISSUER, PORTAL_URL } from '../../constants'
 import { Dispatch, State } from '../../store'
 import browser, { windowOpen } from '../../services/browser'
+import { oidcIdToken } from '../../services/oidc'
 
 export const AdminUserDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>()
@@ -70,12 +71,14 @@ export const AdminUserDetailPage: React.FC = () => {
     // the support session lands here rather than on whichever redirect URI the client lists first
     // (the AS validates it against the registration). The desktop app shows local backend data
     // and its 127.0.0.1 origin is no portal's, so from there the session runs in the web portal.
+    // `id_token_hint` says WHO is asking. The browser may hold other accounts — the admin console
+    // signed in as someone else — and without it the AS acts as whichever one is active there,
+    // not the account signed in here (permitteer docs/as-elevation.md, "the launch's account").
     const origin = browser.isElectron ? new URL(PORTAL_URL).origin : window.location.origin
-    windowOpen(
-      `${OAUTH_ISSUER}/elevate/launch?user=${encodeURIComponent(
-        user.email || user.id
-      )}&client=remoteit_portal&origin=${encodeURIComponent(origin)}`
-    )
+    const params = new URLSearchParams({ user: user.email || user.id, client: 'remoteit_portal', origin })
+    const hint = oidcIdToken()
+    if (hint) params.set('id_token_hint', hint)
+    windowOpen(`${OAUTH_ISSUER}/elevate/launch?${params}`)
   }
 
   return (

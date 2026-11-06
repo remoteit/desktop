@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { platforms } from '.'
+
+// Every platform module, loaded once before the cases: under a full run vitest 5's module runner can take longer than a
+// test's 5 s default to import them all, and a case that timed out mid-import left the next reading half-loaded modules.
+beforeAll(() => platforms.initialize(), 30_000)
 
 // A phone or tablet registers as what it is (graphql-api db/migrations/2026-10-11-tablet-platform-types.sql): each of
 // the four is named for itself and drawn with its family's logo.

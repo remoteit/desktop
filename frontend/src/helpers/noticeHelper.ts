@@ -7,6 +7,9 @@ export const BANNER_TYPES: INoticeType[] = ['BANNER', 'BANNER_WARN', 'BANNER_DAN
 
 export const isBannerType = (type?: INoticeType) => !!type && BANNER_TYPES.includes(type)
 
+// The start date, unlike the last save, doesn't move when a notice is edited.
+export const publishedAt = (announcement: IAnnouncement) => announcement.from ?? announcement.modified
+
 export const bannerSeverity = (type?: INoticeType): NoticeProps['severity'] => {
   switch (type) {
     case 'BANNER_DANGER':

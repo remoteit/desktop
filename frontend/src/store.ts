@@ -2,11 +2,13 @@ import { numericVersion } from './helpers/versionHelper'
 import { models, RootModel } from './models'
 import { defaultChatState, IChatState } from './models/chat'
 import { isChatPopout, popoutScopeId } from './services/chatPopout'
+import { oidcIsSupportTab } from './services/oidc'
 import { createLogger, ReduxLoggerOptions } from 'redux-logger'
 import { init, RematchDispatch, RematchRootState } from '@rematch/core'
 import { createTransform, PersistConfig } from 'redux-persist'
 import persistPlugin, { getPersistor } from '@rematch/persist'
 import DateTransform from './helpers/DateTransform'
+import { PERSISTED_MODELS } from './models/persistedModels'
 import immerPlugin from '@rematch/immer'
 import localForage from 'localforage'
 
@@ -24,9 +26,6 @@ const chatTransform = createTransform(
     conversationId: inbound.conversationId,
     title: inbound.title,
     ownerId: inbound.ownerId,
-    open: inbound.open,
-    width: inbound.width,
-    poppedOut: inbound.poppedOut,
   }),
   (outbound: Partial<IChatState>) => ({ ...defaultChatState, ...outbound }),
   { whitelist: ['chat'] }
@@ -43,29 +42,14 @@ const noopStorage = {
   removeItem: () => Promise.resolve(),
 }
 
+export const persistsState = !isChatPopout && !oidcIsSupportTab()
+
 const persistConfig: PersistConfig<RootModel> = {
   key: 'app',
   version: numericVersion(),
-  // The popout persists nothing (noopStorage) so it cannot clobber the main window's 'app' key.
-  storage: isChatPopout ? noopStorage : localForage,
-  whitelist: [
-    'accounts',
-    'announcements',
-    'applicationTypes',
-    'chat',
-    'connections',
-    'contacts',
-    'devices',
-    'files',
-    'jobs',
-    'networks',
-    'organization',
-    'plans',
-    'products',
-    'sessions',
-    'tags',
-    'user',
-  ],
+  // The popout and support tabs persist nothing (noopStorage), so neither can clobber the main window's 'app' key.
+  storage: persistsState ? localForage : noopStorage,
+  whitelist: [...PERSISTED_MODELS],
   throttle: 1000,
   transforms: [DateTransform, chatTransform],
 }
@@ -78,7 +62,7 @@ export const store = init<RootModel>({
     middlewares: [createLogger(loggerConfig)],
     // The popout persists nothing, so its account scope — the one the opening window handed it on
     // the URL — is its INITIAL state, exactly where a rehydrated main window's would come from.
-    // Every org-scoped read (the chat entitlement gate above all) then resolves the same way in
+    // Every org-scoped read (the chat's org above all) then resolves the same way in
     // both windows; accounts.parse still clears a scope the user is no member of.
     ...(isChatPopout && popoutScopeId
       ? { initialState: { accounts: { ...models.accounts.state, activeId: popoutScopeId } } }

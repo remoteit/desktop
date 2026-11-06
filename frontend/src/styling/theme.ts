@@ -1,6 +1,6 @@
 import browser from '../services/browser'
 import brand from '@common/brand/config'
-import { lightColors, darkColors, spacing, radius, fontSizes } from './'
+import { lightColors, darkColors, spacing, radius, fontSizes, LIST_ITEM_PADDING_Y, LIST_ITEM_MARGIN_Y } from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
 import { ArrowIcon } from '../components/ArrowIcon'
 import { State } from '../store'
@@ -59,10 +59,10 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
   const ListItemStyles: ComponentsOverrides<Theme>['MuiListItemButton'] & ComponentsOverrides<Theme>['MuiListItem'] = {
     root: {
       opacity: 1,
-      marginTop: 1,
-      marginBottom: 1,
+      marginTop: LIST_ITEM_MARGIN_Y,
+      marginBottom: LIST_ITEM_MARGIN_Y,
       borderRadius: radius.sm,
-      padding: `5px 0px`,
+      padding: `${LIST_ITEM_PADDING_Y}px 0px`,
       '&.Mui-selected': { backgroundColor: palette.primaryHighlight.main },
       '&.Mui-selected:hover': { backgroundColor: palette.primaryLighter.main },
       '& > .hidden, & > div > .hidden': { opacity: 0, transition: 'opacity 200ms 100ms' },

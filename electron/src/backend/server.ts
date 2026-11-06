@@ -4,10 +4,10 @@ import debug from 'debug'
 import EventBus from './EventBus'
 import express, { Express } from 'express'
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import https from 'https'
 import user from './User'
-import cors from 'cors'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
 import systemInfo from './systemInfo'
@@ -15,10 +15,52 @@ import socketioAuth from 'socketio-auth'
 import Preferences from './preferences'
 import environment from './environment'
 import { createServer } from 'http'
-import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR } from './constants'
+import { WEB_PORT, SSL_PORT, WEB_DIR, SSL_DIR, START_ORIGIN } from './constants'
 import { IP_PRIVATE, IP_OPEN } from '@common/constants'
+import { agentOwnedMessage } from '@common/agentOwner'
 
 const d = debug('Server')
+
+// socketio-auth 0.1.1 hides unauthenticated sockets from broadcasts through socket.io 2 internals that
+// socket.io 4 removed, so broadcasts go to this room, which a socket joins only once it authenticates.
+export const AUTHENTICATED = 'authenticated'
+
+const APP_PORTS: Record<string, number> = { 'http:': WEB_PORT, 'https:': SSL_PORT }
+const LOOPBACK = ['localhost', IP_PRIVATE, '[::1]']
+const LOOPBACK_ADDRESSES = [IP_PRIVATE, '::1', `::ffff:${IP_PRIVATE}`]
+
+// os.networkInterfaces() throws a SystemError on some platforms; that must refuse the origin, not escape allowRequest.
+const interfaceAddresses = () => {
+  try {
+    return Object.values(os.networkInterfaces())
+      .flatMap(list => list ?? [])
+      .map(({ address }) => (address.includes(':') ? `[${address}]` : address))
+  } catch (error) {
+    Logger.warn('NETWORK INTERFACES UNAVAILABLE', { error })
+    return []
+  }
+}
+
+// Allowlisted by hostname, not matched to the Host header: a DNS-rebound name that resolves here still sends
+// its own name as the Origin. This machine's own names resolve through mDNS or LAN DNS, which a site can't steer.
+const ownHostnames = () => {
+  const name = os.hostname().toLowerCase()
+  return [...LOOPBACK, ...interfaceAddresses(), name, `${name.split('.')[0]}.local`]
+}
+
+export const isOwnOrigin = (origin?: string, host?: string) => {
+  let url: URL
+  try {
+    url = new URL(origin ?? '')
+  } catch {
+    return false
+  }
+  if (url.origin === START_ORIGIN) return true
+  // Remote.It connections and port forwards serve the app on another loopback port; DNS rebinding never yields one.
+  if (LOOPBACK.includes(url.hostname) && url.host === host?.toLowerCase()) return true
+  const port = Number(url.port) || (url.protocol === 'https:' ? 443 : 80)
+  return port === APP_PORTS[url.protocol] && ownHostnames().includes(url.hostname)
+}
 
 class Server {
   public io?: SocketIO.Server
@@ -40,13 +82,20 @@ class Server {
     //   next()
     // })
 
-    this.app.use(cors())
     this.app.use(express.static(WEB_DIR))
     this.app.use('/v1/callback', express.static(WEB_DIR))
+    this.app.get('/authCallback', this.authCallback)
     this.app.use('/authCallback', express.static(WEB_DIR))
     this.app.use('/', router)
 
+    router.get('/authRedirect', (request, response) => {
+      response.json(app.deepLinks ? {} : { redirectUri: `http://${IP_PRIVATE}:${WEB_PORT}/authCallback` })
+    })
+
     router.get('/system', async (request, response) => {
+      // A DNS-rebound page is same-origin with this server, so dropping CORS alone doesn't stop it reading this.
+      const { host } = request.headers
+      if (!isOwnOrigin(`${request.protocol}://${host}`, host)) return response.sendStatus(403)
       const system = await systemInfo()
       Logger.info('SEND SYSTEM INFO', { system })
       response.send(system)
@@ -78,7 +127,7 @@ class Server {
         Logger.info('HTTPS SERVER STARTED', { port: SSL_PORT, directory: WEB_DIR })
       })
 
-    this.io = new SocketIO.Server()
+    this.io = new SocketIO.Server({ allowRequest: this.allowRequest })
     this.io.attach(server)
     this.io.attach(secureServer)
 
@@ -90,6 +139,23 @@ class Server {
     }
 
     socketioAuth(this.io, authOptions)
+  }
+
+  // The desktop window's sign-in returns here when deep links are off; any other callback is a browser's own.
+  authCallback: express.RequestHandler = async (request, response, next) => {
+    const page =
+      request.path === '/authCallback' &&
+      LOOPBACK_ADDRESSES.includes(request.socket.remoteAddress ?? '') &&
+      (await app.takeAuthCallback(new URL(request.originalUrl, START_ORIGIN).search))
+    if (!page) return next()
+    response.type('html').send(page)
+  }
+
+  allowRequest: SocketIO.ServerOptions['allowRequest'] = (request, callback) => {
+    const { origin, host } = request.headers
+    if (isOwnOrigin(origin, host)) return callback(null, true)
+    Logger.warn('SOCKET ORIGIN REFUSED', { origin, host })
+    callback('Origin not allowed', false)
   }
 
   authenticate = async (
@@ -138,17 +204,8 @@ class Server {
           signedInID: admin.guid,
         })
 
-        const command = environment.isWindows
-          ? `'remoteit signout' from an Administrator Command Prompt`
-          : `'sudo remoteit signout' from your terminal`
-
-        return callback(
-          new Error(
-            `${admin.username} (${admin.guid}) is already signed in. They must first sign in and back out to allow ${credentials.username} (${credentials.guid}) to sign in.
-            Or you can run ${command}.`
-          ),
-          false
-        )
+        const command = environment.isWindows ? 'remoteit signout' : 'sudo remoteit signout'
+        return callback(new Error(agentOwnedMessage({ username: admin.username, command })), false)
       }
     }
     // No user
@@ -159,6 +216,7 @@ class Server {
   }
 
   postAuthenticate = (socket: SocketIO.Socket) => {
+    socket.join(AUTHENTICATED)
     this.socket = socket
     Logger.info('POST AUTHENTICATE')
     EventBus.emit(this.EVENTS.ready)

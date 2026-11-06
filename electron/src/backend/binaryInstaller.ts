@@ -136,7 +136,7 @@ export class BinaryInstaller {
         })
       }
 
-      commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
 
       await commands.exec()
       resolve()
@@ -195,20 +195,6 @@ export class BinaryInstaller {
         }
       })
     }
-  }
-
-  envVar(): string {
-    if (!preferences.get().switchApi) return ''
-
-    const remoteAPI = preferences.get().apiURL
-    const graphqlURL = preferences.get().apiGraphqlURL
-
-    let envVar = ''
-
-    if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `
-    if (graphqlURL) envVar += `ENVAR_REMOTEIT_API_GRAPHQL_URL=${graphqlURL} `
-
-    return envVar
   }
 
   async cliUpdated(): Promise<boolean> {

@@ -24,7 +24,8 @@ export function SignInPage({ layout }: Props) {
   return (
     <Panel layout={layout} header={false}>
       <Body
-        sx={{ paddingTop: short ? '20px' : 0, paddingBottom: short ? '50vh' : 0, '& > div': { maxWidth: 440 } }}
+        // 4vh below lifts the centred content to where the eye reads the middle.
+        sx={{ paddingTop: short ? '20px' : 0, paddingBottom: short ? '50vh' : '4vh', '& > div': { maxWidth: 440 } }}
         center={!short}
       >
         <SignInApp />

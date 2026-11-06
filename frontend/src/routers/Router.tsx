@@ -93,11 +93,23 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const testUI = useSelector((state: State) => !!state.ui.testUI)
   const virtualDevices = useVirtualDevices()
 
+  // A push tap's route (services/pushNotifications), kept across the webview reload of a mobile sign-in
+  useEffect(() => {
+    const initialRoute = window.localStorage.getItem('initialRoute')
+    if (initialRoute) {
+      if (initialRoute !== location.pathname) history.push(initialRoute)
+      console.log('UI REDIRECT INIT', initialRoute)
+      window.localStorage.removeItem('initialRoute')
+    }
+  }, [])
+
   useEffect(() => {
     if (redirect) {
       console.log('UI REDIRECT', redirect)
       history.push(redirect)
       ui.set({ redirect: undefined })
+      // A push tap writes both; left behind, the next cold start would replay it
+      if (window.localStorage.getItem('initialRoute') === redirect) window.localStorage.removeItem('initialRoute')
     }
     analytics.pageView(location.pathname)
   }, [history.location, ui, redirect])

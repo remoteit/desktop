@@ -181,6 +181,7 @@ declare global {
     image: string
     body: string | React.ReactNode
     modified?: Date
+    from?: Date
     until?: Date
     read?: Date
   }

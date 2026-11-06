@@ -179,6 +179,8 @@ export async function graphQLUser(accountId: string) {
               urlNotifications
               notificationEmail
               notificationUrl
+              pushNotifications
+              pushCategories
             }
             attributes
             info {
@@ -247,6 +249,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
             owner {
               id
               email
+              picture
             }
             connections {
               service {
@@ -267,6 +270,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               user {
                 id
                 email
+                picture
               }
             }
           }
@@ -419,6 +423,7 @@ export async function graphQLFetchOrganizations(ids: string[]) {
                   user {
                     id
                     email
+                    picture
                   }
                 }
                 reseller {
@@ -432,6 +437,7 @@ export async function graphQLFetchOrganizations(ids: string[]) {
                     user {
                       id
                       email
+                      picture
                       created
                       limits {
                         ${LIMITS_QUERY}
@@ -542,6 +548,7 @@ export async function graphQLFetchGuests(accountId: string) {
               user {
                 id
                 email
+                picture
               }
               devices {
                 id

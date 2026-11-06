@@ -27,6 +27,21 @@ export async function signOutEverywhere(): Promise<OidcResourceResult<{ ended: n
   return await call('/devices/sign-out-all', { method: 'POST' })
 }
 
+/** Upload the account's picture (permitteer docs/INTEGRATION.md "Avatars"): a `data:` URI of a
+ *  PNG, JPEG or WebP of at most 64 KB. Answers the new picture URL. */
+export async function setAccountPicture(image: string): Promise<OidcResourceResult<{ picture: string | null }>> {
+  return await call('/avatar', {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ image }),
+  })
+}
+
+/** No picture at all — the sign-in provider's included — until the next upload. */
+export async function removeAccountPicture(): Promise<OidcResourceResult<{ picture: string | null }>> {
+  return await call('/avatar', { method: 'DELETE' })
+}
+
 /** The person's connected apps — the AS account API's own view rows, unreshaped. */
 export async function accountApps(): Promise<OidcResourceResult<{ items: IAuthorizedAgent[] }>> {
   return await call('/apps')

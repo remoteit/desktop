@@ -11,7 +11,7 @@ export function resetErrorCount() {
   errorCount = 0
 }
 
-export async function post(data: ILookup<any, string> = {}, path: string = '') {
+export async function post(data: ILookup<any, string> = {}, path: string = '', silent = false) {
   if (store.getState().ui.offline) return 'ERROR'
 
   // graphql at its URL; a REST route (a path) under the API's REST root (getApiRestURL: on the unified front, /api).
@@ -33,7 +33,7 @@ export async function post(data: ILookup<any, string> = {}, path: string = '') {
     return await axios.request(request)
   } catch (error) {
     console.error('POST ERROR', { data, path })
-    await apiError(error)
+    await apiError(error, silent)
     return 'ERROR'
   }
 }
@@ -49,7 +49,7 @@ export async function postFile(file: File, data: ILookup<any, string> = {}, path
   return await post(form, path)
 }
 
-export async function apiError(error: unknown) {
+export async function apiError(error: unknown, silent = false) {
   const { ui, auth } = store.dispatch
   console.error('API ERROR:', error)
   console.trace()
@@ -61,10 +61,11 @@ export async function apiError(error: unknown) {
     if (!navigator.onLine) network.offline()
 
     if (error.response?.status === 429) {
-      ui.set({
-        errorMessage:
-          'API request failure. Your API usage has been throttled. Check the usage on your account and if issues persist please contact support.',
-      })
+      if (!silent)
+        ui.set({
+          errorMessage:
+            'API request failure. Your API usage has been throttled. Check the usage on your account and if issues persist please contact support.',
+        })
       return
     }
 
@@ -81,7 +82,7 @@ export async function apiError(error: unknown) {
     }
   }
 
-  if (error instanceof Error || axios.isAxiosError(error)) {
+  if (!silent && (error instanceof Error || axios.isAxiosError(error))) {
     ui.set({ errorMessage: error.message })
   }
 }

@@ -1,14 +1,16 @@
-import md5 from 'md5'
-import React, { useMemo, useState } from 'react'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
+import React, { useEffect, useMemo, useState } from 'react'
 import { createColor } from '../../helpers/uiHelper'
+import { httpsOnly } from '../../helpers/utilHelper'
 import { labelLookup } from '../../models/labels'
+import { useAccountPicture } from '../../hooks/useAccountPicture'
+import { useUserPicture } from '../../hooks/useUserPicture'
 import { Avatar as MuiAvatar, Box, Tooltip } from '@mui/material'
 import { spacing } from '../../styling'
 
 export interface Props {
   email?: string
-  // The picture: undefined is the email's Gravatar, null none — the letter alone.
-  src?: string | null
   size?: number
   button?: boolean
   tooltip?: boolean
@@ -18,29 +20,67 @@ export interface Props {
   border?: number
   fallback?: string
   marginRight?: number
+  picture?: string
   children?: React.ReactNode
 }
 
+/* The first of `urls` that loads (meanwhile the last one that did), never one still loading: MUI's Avatar
+   shows a blank <img> while its src loads, so a load that never errors (iOS) would hide the initial for good. */
+function useFirstLoaded(urls: string[]) {
+  const [loaded, setLoaded] = useState<string>()
+
+  useEffect(() => {
+    let active = true
+    const load = (index: number) => {
+      if (index >= urls.length) return
+      const image = new Image()
+      image.onload = () => active && setLoaded(urls[index])
+      image.onerror = () => active && load(index + 1)
+      image.src = urls[index]
+    }
+    load(0)
+    return () => {
+      active = false
+    }
+  }, [urls])
+
+  return loaded && urls.includes(loaded) ? loaded : undefined
+}
+
 export const Avatar: React.FC<Props> = React.memo(
-  ({ email, src, size = 36, title, button, inline, tooltip, active, border = 1, fallback, marginRight, children }) => {
-    // d=404: Gravatar answers 404 where there is no picture. (A default it does not know is taken for a URL and
-    // redirected to, over plain http — which an app under App Transport Security leaves pending, never failed.)
-    const url = useMemo(
-      () =>
-        src === undefined
-          ? `https://www.gravatar.com/avatar/${md5(email || '')}?s=${size * 2}&d=404`
-          : src || undefined,
-      [src, email, size]
-    )
-    // The letter on its colour is the avatar; the picture covers it only once it has loaded, so a picture pending,
-    // refused or missing never blanks it, and nothing waits on an outside host.
-    const [loaded, setLoaded] = useState<string>()
+  ({
+    email,
+    size = 36,
+    title,
+    button,
+    inline,
+    tooltip,
+    active,
+    border = 1,
+    fallback,
+    marginRight,
+    picture,
+    children,
+  }) => {
+    const signedIn = useAccountPicture(email)
+    const known = useUserPicture(email)
+    const urls = useMemo(() => {
+      const hash = bytesToHex(sha256(utf8ToBytes((email || '').trim().toLowerCase())))
+      const gravatar = `https://www.gravatar.com/avatar/${hash}?s=${size * 2}&d=404`
+      // An account signed in here goes by its token's picture: graphql's URL is unversioned, so CloudFront
+      // can serve a removed picture for an hour.
+      const fromGraphql = signedIn === undefined ? known : undefined
+      return [...new Set([signedIn, httpsOnly(picture), fromGraphql, gravatar])].filter((url): url is string => !!url)
+    }, [email, size, picture, signedIn, known])
+    const url = useFirstLoaded(urls)
     const color = useMemo(() => createColor(email), [email])
     fallback = (fallback || email || '?').substring(0, 1).toUpperCase()
 
     let Element = (
       <>
         <MuiAvatar
+          alt={email}
+          src={url}
           sx={theme => ({
             color: theme.palette.alwaysWhite.main,
             fontSize: size * 0.625,
@@ -55,24 +95,6 @@ export const Avatar: React.FC<Props> = React.memo(
           })}
         >
           <div>{fallback}</div>
-          {url && (
-            <Box
-              component="img"
-              key={url}
-              src={url}
-              alt={email}
-              onLoad={() => setLoaded(url)}
-              onError={() => setLoaded(undefined)}
-              sx={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                visibility: loaded === url ? 'visible' : 'hidden',
-              }}
-            />
-          )}
         </MuiAvatar>
         {children}
       </>

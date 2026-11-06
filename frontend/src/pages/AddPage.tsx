@@ -90,7 +90,9 @@ export const AddPage: React.FC = () => {
               minWidth: 140,
               minHeight: 100,
               margin: '1px',
+              textAlign: 'center',
             },
+            '& .MuiListItemIcon-root': { display: 'flex' },
             [theme.breakpoints.down('sm')]: {
               '& .MuiListItemButton-root, & .MuiListItem-root': { width: 110, minWidth: 110 },
             },

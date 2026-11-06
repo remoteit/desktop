@@ -23,6 +23,7 @@ vi.mock('../hooks/useSafeArea', () => ({ default: () => ({ insets: {} }) }))
 vi.mock('../hooks/useCapacitor', () => ({ default: () => () => {} }))
 vi.mock('../hooks/useChatEnabled', () => ({
   useChatEnabled: () => false,
+  useChatDocked: () => false,
   useSidebarWidth: () => 200,
   useLayoutBreakpoints: () => ({ hideSidebar: false, singlePanel: false, triplePanel: false, mobile: false }),
 }))
