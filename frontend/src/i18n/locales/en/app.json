@@ -3040,6 +3040,7 @@
   "signIn": {
     "agentOwnedDetail": "{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:",
     "autoPaused": "Automatic sign-in stopped after repeated attempts. Choose how to sign in below.",
+    "button": "Sign In",
     "cancel": "Cancel",
     "continueEmail": "Continue with email",
     "continueInBrowser": "Continue in your browser",
@@ -3057,8 +3058,10 @@
     "openAgain": "Open again",
     "or": "or",
     "redirecting": "Taking you to sign in…",
+    "retry": "Try again",
     "signUp": "Sign up",
-    "switchToProduction": "Switch to production"
+    "switchToProduction": "Switch to production",
+    "waiting": "Waiting for your browser… finish signing in there."
   },
   "statusChip": {
     "connected": "Connected",

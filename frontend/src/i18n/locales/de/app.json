@@ -3040,6 +3040,7 @@
   "signIn": {
     "agentOwnedDetail": "{{owner}} ist auf diesem Computer noch angemeldet. Melden Sie sich zuerst als {{owner}} an und wieder ab, oder führen Sie Folgendes in einem Terminal als Administrator aus:",
     "autoPaused": "Die automatische Anmeldung wurde nach mehreren Versuchen beendet. Wählen Sie unten aus, wie Sie sich anmelden möchten.",
+    "button": "Anmelden",
     "cancel": "Abbrechen",
     "continueEmail": "Mit E-Mail fortfahren",
     "continueInBrowser": "Fahren Sie in Ihrem Browser fort",
@@ -3057,8 +3058,10 @@
     "openAgain": "Erneut öffnen",
     "or": "oder",
     "redirecting": "Weiterleitung zur Anmeldung…",
+    "retry": "Erneut versuchen",
     "signUp": "Registrieren",
-    "switchToProduction": "Zur Produktionsumgebung wechseln"
+    "switchToProduction": "Zur Produktionsumgebung wechseln",
+    "waiting": "Warten auf Ihren Browser … schließen Sie die Anmeldung dort ab."
   },
   "statusChip": {
     "connected": "Verbunden",
