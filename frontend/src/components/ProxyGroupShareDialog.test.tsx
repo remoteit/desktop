@@ -62,13 +62,13 @@ const action = (text: string) =>
     b => b.textContent === text
   )!
 
-async function render(group: any = GROUP) {
+async function render(group: any = GROUP, emails?: string[]) {
   const onChanged = vi.fn()
   const container = document.createElement('div')
   document.body.appendChild(container)
   await act(async () =>
     createRoot(container).render(
-      <ProxyGroupShareDialog group={group} open onClose={() => undefined} onChanged={onChanged} />
+      <ProxyGroupShareDialog group={group} open emails={emails} onClose={() => undefined} onChanged={onChanged} />
     )
   )
   return onChanged
@@ -98,6 +98,14 @@ describe('sharing a group', () => {
     await act(async () => button('Stop sharing with sam@example.com').click())
     expect(unshare).toHaveBeenCalledWith('gaaa', ['sam@example.com'])
     expect(onChanged).toHaveBeenCalledTimes(2)
+  })
+
+  it('opened for a person — from a device’s share page —, shares with them as it opens', async () => {
+    const onChanged = await render({ ...GROUP, access: [] }, ['dee@example.com'])
+    expect(action('Share').disabled).toBe(false)
+    await act(async () => action('Share').click())
+    expect(share).toHaveBeenCalledWith('gaaa', ['dee@example.com'])
+    expect(onChanged).toHaveBeenCalledTimes(1)
   })
 
   it('a refusal is said in graphql’s words, and nothing is reloaded', async () => {

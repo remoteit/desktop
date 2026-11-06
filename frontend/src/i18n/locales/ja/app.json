@@ -3109,8 +3109,11 @@
     "shareToGuest": "ゲストに共有"
   },
   "shareExit": {
+    "groupHint": "",
+    "groupShared": "",
     "hint": "",
-    "label": ""
+    "label": "",
+    "shareGroup": ""
   },
   "sharingForm": {
     "allowScriptExecution": "スクリプトの実行を許可",

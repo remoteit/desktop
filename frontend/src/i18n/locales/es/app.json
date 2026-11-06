@@ -3241,8 +3241,11 @@
     "shareToGuest": "Compartir con un invitado"
   },
   "shareExit": {
+    "groupHint": "",
+    "groupShared": "",
     "hint": "",
-    "label": ""
+    "label": "",
+    "shareGroup": ""
   },
   "sharingForm": {
     "allowScriptExecution": "Permitir la ejecución de scripts",

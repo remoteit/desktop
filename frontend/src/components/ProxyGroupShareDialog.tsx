@@ -25,6 +25,7 @@ import { Notice } from './Notice'
 type Props = {
   group: ProxyGroup
   open: boolean
+  emails?: string[] // the addresses chosen as it opens: a device's share page opens it for its person
   onClose: () => void
   onChanged: () => void
 }
@@ -33,13 +34,13 @@ type Props = {
    as a device is shared, may then send a device of theirs out through the group, whichever of its devices takes the
    traffic — nothing on those devices themselves. Those it is shared with now, each removable; the organization's members
    are not offered, as for a network: what they may use is their role's. A refusal is said in graphql's words. */
-export const ProxyGroupShareDialog: React.FC<Props> = ({ group, open, onClose, onChanged }) => {
+export const ProxyGroupShareDialog: React.FC<Props> = ({ group, open, emails: chosen = [], onClose, onChanged }) => {
   const { t } = useTranslation()
   const contacts = useSelector((state: State) => {
     const organization = selectOrganization(state)
     return selectContacts(state).filter(c => !organization.members.some(m => m.user.id === c.id))
   })
-  const [emails, setEmails] = useState<string[]>([])
+  const [emails, setEmails] = useState<string[]>(chosen)
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
   const shares = group.access ?? []

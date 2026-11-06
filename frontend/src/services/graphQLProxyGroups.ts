@@ -69,10 +69,11 @@ export const graphQLSharedProxyGroups = () =>
     data => data?.login?.sharedProxyGroups ?? []
   )
 
-// The group a device is in, as a proxy or an exit; none for one that is neither.
-export const graphQLDeviceGroup = (deviceId: string) =>
+// The group a device is in, as a proxy or an exit — with its sharing where the API shares groups; none for one that is
+// neither.
+export const graphQLDeviceGroup = async (deviceId: string) =>
   read<ProxyGroup | null>(
-    `query DeviceGroup($id: [String!]!) { login { device(id: $id) { id group { ${GROUP_FIELDS} } } } }`,
+    `query DeviceGroup($id: [String!]!) { login { device(id: $id) { id group { ${await groupFields()} } } } }`,
     { id: [deviceId] },
     'group',
     data => data?.login?.device?.[0]?.group ?? null

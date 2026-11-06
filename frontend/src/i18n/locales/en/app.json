@@ -3175,8 +3175,11 @@
     "shareToGuest": "Share to a guest"
   },
   "shareExit": {
+    "groupHint": "Through its group, {{group}}: share the group to let them",
+    "groupShared": "Through its group, {{group}}, which is shared with them",
     "hint": "Send their traffic out through this device, as a VPN would",
-    "label": "Use as an exit node"
+    "label": "Use as an exit node",
+    "shareGroup": "Share group"
   },
   "sharingForm": {
     "allowScriptExecution": "Allow script execution",
