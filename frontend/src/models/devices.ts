@@ -674,8 +674,8 @@ export default createModel<RootModel>()({
       const accountId = selectActiveAccountId(state)
       const result = await graphQLRestoreDevice({ id: deviceId, accountId })
       if (result !== 'ERROR') {
+        // Never logged: a restore code re-keys the device for whoever holds it.
         let { restoreCommand, restoreCode } = result?.data?.data?.login?.account?.device?.[0]
-        console.log('GET RESTORE CODE', restoreCode)
         return { restoreCommand, restoreCode }
       }
       return {}

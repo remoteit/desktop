@@ -10,25 +10,25 @@ type Props = Omit<DialogProps, 'open'> & {
 
 export const RestoreModal: React.FC<Props> = ({ device }) => {
   const { showRestoreModal } = useSelector((state: State) => state.ui)
-  const [loading, setLoading] = useState<boolean>(false)
   const [result, setResult] = useState<{ restoreCommand?: string; restoreCode?: string }>({})
   const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
 
+  // One read for each opening, keyed on the device's id and not its object, which changes with every device update: a
+  // Control Link device's restore code is minted fresh by each request and the one before cancelled, so a read again
+  // while open would cancel the code just copied. The one query asks restoreCode and restoreCommand together, so both
+  // carry the same code. A read that answers after the modal closed is dropped.
   useEffect(() => {
-    if (!showRestoreModal || loading) return
-    ;(async () => {
-      setLoading(true)
-      const result = await dispatch.devices.getRestoreCommand(device.id)
-      setResult(result)
-      setLoading(false)
-    })()
-
-    return function cleanup() {
+    if (!showRestoreModal) return
+    let open = true
+    dispatch.devices.getRestoreCommand(device.id).then(fetched => {
+      if (open) setResult(fetched)
+    })
+    return () => {
+      open = false
       setResult({})
-      setLoading(false)
     }
-  }, [device, showRestoreModal])
+  }, [device.id, showRestoreModal])
 
   function onClose() {
     dispatch.ui.set({ showRestoreModal: false })
