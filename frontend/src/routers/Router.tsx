@@ -59,6 +59,7 @@ import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { ThisDevicePage } from '../pages/ThisDevicePage'
 import { DisabledDevicesPage } from '../pages/DisabledDevicesPage'
+import { ProxyGroupsPage } from '../pages/ProxyGroupsPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
@@ -240,6 +241,11 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path="/devices/disabled">
         <Panel layout={layout}>
           <DisabledDevicesPage />
+        </Panel>
+      </Route>
+      <Route path="/devices/groups">
+        <Panel layout={layout}>
+          <ProxyGroupsPage />
         </Panel>
       </Route>
       <Route path="/devices/transfer">

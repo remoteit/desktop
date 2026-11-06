@@ -2,14 +2,20 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi } from 'vitest'
 
-const { exit, chooser, protect, setExit, publicExit, usage } = vi.hoisted(() => ({
-  exit: vi.fn(),
-  chooser: vi.fn(),
-  protect: vi.fn(async () => null as any),
-  setExit: vi.fn(async () => true as any),
-  publicExit: vi.fn(async (_id: string) => undefined as boolean | undefined),
-  usage: vi.fn(async (_accountId?: string) => [] as any),
-}))
+const { exit, chooser, protect, setExit, publicExit, usage, deviceGroup, exitGroup, leave, deleteGroup } = vi.hoisted(
+  () => ({
+    exit: vi.fn(),
+    chooser: vi.fn(),
+    protect: vi.fn(async () => null as any),
+    setExit: vi.fn(async () => true as any),
+    publicExit: vi.fn(async (_id: string) => undefined as boolean | undefined),
+    usage: vi.fn(async (_accountId?: string) => [] as any),
+    deviceGroup: vi.fn(async (_id: string) => null as any),
+    exitGroup: vi.fn(async (_id: string) => null as any),
+    leave: vi.fn(async (_id: string) => ({} as any)),
+    deleteGroup: vi.fn(async (_label: string, _confirm: boolean) => ({} as any)),
+  })
+)
 vi.mock('../services/graphQLProxy', () => ({
   graphQLDeviceExit: exit,
   graphQLDeviceExitChooser: chooser,
@@ -19,6 +25,14 @@ vi.mock('../services/graphQLProxy', () => ({
   graphQLSetDeviceExit: setExit,
 }))
 vi.mock('../services/transferUsage', () => ({ fetchTransferUsage: usage, UNSUPPORTED: 'UNSUPPORTED' }))
+vi.mock('../services/graphQLProxyGroups', () => ({
+  graphQLDeviceGroup: deviceGroup,
+  graphQLDeviceExitGroup: exitGroup,
+  graphQLLeaveProxyGroup: leave,
+  graphQLDeleteProxyGroup: deleteGroup,
+  refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
+}))
+vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
 vi.mock('../helpers/dateHelper', () => ({ getLocale: () => 'en-US' }))
 vi.mock('./ListItemSetting', () => ({
   ListItemSetting: ({ label, subLabel, button, onButtonClick }: any) => (
@@ -30,9 +44,14 @@ vi.mock('./ListItemSetting', () => ({
   ),
 }))
 vi.mock('../services/graphQLDeviceSettings', () => ({ settingOn: (s: any) => !!s?.value?.on }))
+// A switch: its label and value, the confirmation it asks first (if any), and a click that flips it.
 vi.mock('./DeviceSettingRow', () => ({
-  DeviceSettingRow: ({ label, on, setting }: any) => (
-    <div data-switch>
+  DeviceSettingRow: ({ label, on, setting, confirm, confirmProps, onChange }: any) => (
+    <div
+      data-switch
+      data-confirm={confirm ? confirmProps?.children : ''}
+      onClick={() => onChange(!(on ?? setting.value.on))}
+    >
       {label} {String(on ?? setting.value.on)}
     </div>
   ),
@@ -40,11 +59,15 @@ vi.mock('./DeviceSettingRow', () => ({
 vi.mock('./SelectSetting', () => ({
   SelectSetting: ({ disabled }: any) => <div data-select>{disabled ? 'locked' : 'open'}</div>,
 }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
-  }),
-}))
+vi.mock('react-i18next', () => {
+  const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
+  return {
+    useTranslation: () => ({
+      t: (_key: string, a: any, b?: any) =>
+        typeof a === 'string' ? fill(a, b) : fill(a.count === 1 ? a.defaultValue_one : a.defaultValue_other, a),
+    }),
+  }
+})
 
 import { DeviceExitChoice, DeviceExitOffer, chosenLine, policyLine } from './DeviceExitSection'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
@@ -61,8 +84,9 @@ const none = {
 
 async function render(part: 'choice' | 'offer', settings?: any, permissions = ['MANAGE']) {
   const container = document.createElement('div')
+  document.body.appendChild(container)
   const root = createRoot(container)
-  const device = { id: 'LAPTOP', permissions, owner: { id: 'OWNER' } } as any
+  const device = { id: 'LAPTOP', name: 'Laptop', permissions, owner: { id: 'OWNER' } } as any
   await act(async () =>
     root.render(
       part === 'choice' ? <DeviceExitChoice device={device} /> : <DeviceExitOffer device={device} settings={settings} />
@@ -241,5 +265,88 @@ describe('the account’s public-exit transfer under the exit picker', () => {
       expect(hint(page)).toBeNull()
       expect(page.querySelector('[data-select]')?.textContent).toBe('open')
     }
+  })
+})
+
+describe('an exit in a group', () => {
+  const member = (id: string, kind = 'exit') => ({ id, name: id, kind, state: 'active' })
+  const group = (members: any[]) => ({
+    label: 'gabc123',
+    name: 'Laptop exits',
+    remoteit: false,
+    host: null,
+    members,
+    users: 3,
+    endpoints: 0,
+  })
+  const setting = { name: 'exit_node', value: { on: true, lan: false }, control: 'cloud+local' }
+  const button = (text: string) =>
+    [...document.body.querySelectorAll('button')].find(b => b.textContent?.includes(text)) as HTMLButtonElement
+  const offer = (c: HTMLElement) => c.querySelector('[data-switch]') as HTMLElement
+
+  async function offering(members: any[]) {
+    document.body.innerHTML = ''
+    exit.mockResolvedValue({ offersExit: true, exit: null })
+    chooser.mockResolvedValue(none)
+    deviceGroup.mockResolvedValue(group(members))
+    leave.mockClear().mockResolvedValue({})
+    deleteGroup.mockClear().mockResolvedValue({})
+    const settings = { setting: () => setting, set: vi.fn(async () => true) }
+    return { page: await render('offer', settings), settings }
+  }
+
+  it('the last exit in its group turned off: asks whether to delete the group too, keeping it by default', async () => {
+    const { page, settings } = await offering([member('LAPTOP')])
+    expect(offer(page).dataset.confirm).toBe('')
+    await act(async () => offer(page).click())
+    expect(document.body.textContent).toContain('Stop offering Laptop as an exit node?')
+    expect(document.body.textContent).toContain('It is the last device in its group, Laptop exits.')
+    expect(document.body.textContent).toContain('3 devices use it as their exit, and it has no endpoints.')
+    await act(async () => button('Keep the group').click())
+    expect(settings.set).toHaveBeenCalledWith('exit_node', { on: false, lan: false })
+    expect(leave).not.toHaveBeenCalled()
+    expect(deleteGroup).not.toHaveBeenCalled()
+  })
+
+  it('deleting the group too: its exit off, the device taken out of the group, then the group deleted, confirmed', async () => {
+    const { page, settings } = await offering([member('LAPTOP')])
+    await act(async () => offer(page).click())
+    await act(async () => button('Delete the group too').click())
+    expect(settings.set).toHaveBeenCalledWith('exit_node', { on: false, lan: false })
+    expect(leave).toHaveBeenCalledWith('LAPTOP')
+    expect(deleteGroup).toHaveBeenCalledWith('gabc123', true)
+    // Taken out, but the group not deleted: said.
+    const again = await offering([member('LAPTOP')])
+    deleteGroup.mockResolvedValue({ reason: 'A device joined Laptop exits meanwhile: it is not deleted' })
+    await act(async () => offer(again.page).click())
+    await act(async () => button('Delete the group too').click())
+    expect(document.body.textContent).toContain('A device joined Laptop exits meanwhile')
+  })
+
+  it('not the last device, or a proxy too: a plain confirmation of what happens to those using the group', async () => {
+    let { page } = await offering([member('LAPTOP'), member('PI')])
+    expect(offer(page).dataset.confirm).toBe(
+      'Those using its group, Laptop exits, as their exit go out through another exit in it, or wait for one.'
+    )
+    ;({ page } = await offering([member('LAPTOP', 'own')]))
+    expect(offer(page).dataset.confirm).toContain('It stays in its group, Laptop exits, as a proxy.')
+    await act(async () => offer(page).click())
+    expect(document.body.textContent).not.toContain('Keep the group')
+  })
+
+  it('a device whose exit is a group with no device taking its traffic: the group shown as its exit, and why it waits', async () => {
+    document.body.innerHTML = ''
+    exit.mockResolvedValue({ offersExit: false, exit: null })
+    chooser.mockResolvedValue(none)
+    protect.mockResolvedValue(null)
+    exitGroup.mockResolvedValue({ label: 'gabc123', group: { name: 'Office Mac' } })
+    const page = await render('choice')
+    expect(exitGroup).toHaveBeenCalledWith('LAPTOP')
+    expect(page.textContent).toContain('No device in Office Mac takes its traffic now')
+    // Through a member now, or none chosen: not asked, nothing said.
+    exitGroup.mockClear().mockResolvedValue(null)
+    exit.mockResolvedValue({ offersExit: false, exit: { id: 'EXIT', name: 'office' } })
+    expect((await render('choice')).textContent).not.toContain('takes its traffic now')
+    expect(exitGroup).not.toHaveBeenCalled()
   })
 })

@@ -944,6 +944,9 @@
     "label": "Descripción del dispositivo"
   },
   "deviceExit": {
+    "groupNotDeleted": "",
+    "groupWaiting": "",
+    "groupWaitingHint": "",
     "lan": "",
     "lanHint": "",
     "lanOnConfirm": "",
@@ -952,6 +955,9 @@
     "offer": "",
     "offerOffConfirm": "",
     "offerOffConfirmBody": "",
+    "offerOffOthers": "",
+    "offerOffStays": "",
+    "offerOffWaiting": "",
     "offers": "",
     "offersHint": "",
     "offersNot": "",
@@ -1260,6 +1266,7 @@
     "domain": "",
     "error": "",
     "exitHeading": "",
+    "groupNotDeleted": "",
     "host": "",
     "hostPreview": "",
     "listening": "",
@@ -1294,6 +1301,8 @@
     "remoteit": "",
     "removeConfirm": "",
     "removeConfirmBody": "",
+    "removeOthers": "",
+    "removeStaysExit": "",
     "unsupported": "",
     "use": "",
     "usedBy": "",
@@ -1646,7 +1655,8 @@
     "version": "Versión {{version}}"
   },
   "filterDrawer": {
-    "disabledDevices": ""
+    "disabledDevices": "",
+    "proxyGroups": ""
   },
   "globalSearch": {
     "placeholder": "Buscar nombre de dispositivo o servicio"
@@ -1848,6 +1858,16 @@
     "singleIpRestrictionName": "Restricción de IP única",
     "singleIpRestrictionNote": "Permite que solo una dirección IP se conecte a este dispositivo en la red local.",
     "yourLocalIpAddress": "Tu dirección IP local"
+  },
+  "lastInGroup": {
+    "delete": "",
+    "keep": "",
+    "keepEndpoints": "",
+    "keepUsers": "",
+    "keepWaits": "",
+    "last": "",
+    "titleExit": "",
+    "titleProxy": ""
   },
   "launchTypeSelect": {
     "label": "Método de inicio",
@@ -2713,6 +2733,35 @@
     "passwordFailures": "contraseñas incorrectas: {{number}}",
     "show": "Mostrar",
     "title": "Visitantes recientes"
+  },
+  "proxyGroup": {
+    "deleteEndpoints": "",
+    "deleteNothing": "",
+    "deleteUsers": "",
+    "deleteUsersEndpoints": "",
+    "endpoints_one": "",
+    "endpoints_many": "",
+    "endpoints_other": "",
+    "endpointsNone": "",
+    "use": "",
+    "usedBy_one": "",
+    "usedBy_many": "",
+    "usedBy_other": "",
+    "usedByNone": ""
+  },
+  "proxyGroupsPage": {
+    "delete": "",
+    "deleteAction": "",
+    "deleteTitle": "",
+    "description": "",
+    "devices": "",
+    "failed": "",
+    "noDevices": "",
+    "noManageAccess": "",
+    "none": "",
+    "notDeleted": "",
+    "title": "",
+    "unsupported": ""
   },
   "publicSetting": {
     "ipLatching": "IP Latching",

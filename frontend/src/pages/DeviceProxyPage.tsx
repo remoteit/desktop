@@ -14,8 +14,11 @@ import {
   graphQLSetProxy,
   graphQLSetProxyPublicExit,
 } from '../services/graphQLProxy'
+import { ProxyGroup, graphQLDeleteProxyGroup, graphQLDeviceGroup, refusalOf } from '../services/graphQLProxyGroups'
+import { groupOrNone, lastInGroup, proxyOffLine } from '../helpers/proxyGroupHelper'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceExitOffer } from '../components/DeviceExitSection'
+import { LastInGroupDialog } from '../components/LastInGroupDialog'
 import { ProxyAccessList } from '../components/ProxyAccessList'
 import { CONFIGURATION } from '../components/DeviceSettingRow'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
@@ -37,7 +40,9 @@ import type { TFunction } from 'i18next'
    proxies (pages/AdminPublicProxies.tsx), and says so here. Exit: whether
    it offers itself as an exit node (components/DeviceExitSection.tsx) and, for one of remote.it's, whether it is a
    public exit for everyone whose plan gives exits. The exit its own traffic goes out through is chosen on Configure.
-   Behind the device-sessions flag. */
+   Every proxy is in a group (graphql-api docs/PROXY-GROUPS.md §11), whose endpoints are the group's: stopping the last
+   device in one being a proxy asks whether to delete the group too, or keep it for another device
+   (components/LastInGroupDialog.tsx). Behind the device-sessions flag. */
 
 // Where the device's listening disagrees with its being a proxy, and why: the machine's administrator, its setting kept
 // on the device, or a change made there. None where they agree.
@@ -105,6 +110,9 @@ export const DeviceProxyPage: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [newName, setNewName] = useState('')
   const [domain, setDomain] = useState<string>()
+  const [group, setGroup] = useState<ProxyGroup | null>()
+  const [leaving, setLeaving] = useState(false)
+  const [refusal, setRefusal] = useState<string>()
   const settings = useDeviceSettings(device?.id)
   const listening = settings.setting('proxy')
   const subnetName = useDeviceSessionInfo(device?.id)?.subnetName
@@ -120,11 +128,17 @@ export const DeviceProxyPage: React.FC = () => {
         ? await graphQLProxyPublicExit(device.id)
         : undefined
     )
+    setGroup(
+      found && typeof found === 'object' && found.kind === 'own'
+        ? groupOrNone(await graphQLDeviceGroup(device.id))
+        : undefined
+    )
   }, [device?.id])
 
   useEffect(() => {
     setProxy(undefined)
     setNewName('')
+    setRefusal(undefined)
     load()
   }, [load])
 
@@ -139,6 +153,15 @@ export const DeviceProxyPage: React.FC = () => {
   }
   const save = (set: Parameters<typeof graphQLSetProxy>[1] | 'remove') =>
     run(() => (set === 'remove' ? graphQLRemoveProxy(device.id) : graphQLSetProxy(device.id, set)))
+  // The last device in its group and no exit: no longer a proxy, it leaves the group, which is kept unless deleted too.
+  const leavesGroup = !isPublic && !!proxy && lastInGroup(group, device.id) && !settingOn(settings.setting('exit_node'))
+  const removeWithGroup = (deleted: ProxyGroup) =>
+    run(async () => {
+      if ((await graphQLRemoveProxy(device.id)) === 'ERROR') return 'ERROR'
+      const refused = refusalOf(await graphQLDeleteProxyGroup(deleted.label, true))
+      if (refused !== undefined)
+        setRefusal(refused || t('deviceProxy.groupNotDeleted', 'Its group could not be deleted.'))
+    })
 
   const body = () => {
     if (proxy === undefined) return <LoadingMessage />
@@ -184,17 +207,44 @@ export const DeviceProxyPage: React.FC = () => {
             }
             toggle={!!proxy}
             disabled={(isPublic ? !admin : !manage) || saving}
-            confirm={!!proxy}
+            confirm={!!proxy && !leavesGroup}
             confirmProps={{
               title: t('deviceProxy.removeConfirm', 'Stop using it as a proxy?'),
-              children: t('deviceProxy.removeConfirmBody', 'Every endpoint on it is removed, for everyone using one.'),
+              children: isPublic
+                ? t('deviceProxy.removeConfirmBody', 'Every endpoint on it is removed, for everyone using one.')
+                : proxyOffLine(t, group, device.id),
             }}
             onClick={() =>
               isPublic
                 ? run(() => graphQLRemoveRemoteitProxy(device.id))
+                : leavesGroup
+                ? setLeaving(true)
                 : save(proxy ? 'remove' : newProxyFields(newName))
             }
           />
+          {leavesGroup && group && (
+            <LastInGroupDialog
+              open={leaving}
+              group={group}
+              device={device.name}
+              action="proxy"
+              busy={saving}
+              onCancel={() => setLeaving(false)}
+              onKeep={() => {
+                setLeaving(false)
+                save('remove')
+              }}
+              onDelete={() => {
+                setLeaving(false)
+                removeWithGroup(group)
+              }}
+            />
+          )}
+          {refusal && (
+            <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+              {refusal}
+            </Notice>
+          )}
           {!proxy && manage && (
             <>
               <InlineTextFieldSetting

@@ -933,6 +933,9 @@
     "label": "Device Description"
   },
   "deviceExit": {
+    "groupNotDeleted": "Its group could not be deleted.",
+    "groupWaiting": "No device in {{group}} takes its traffic now",
+    "groupWaitingHint": "Its traffic stops until one does: a device added to the group, or one in it offering itself again. Or choose another exit.",
     "lan": "Its local network too",
     "lanHint": "Traffic sent out through it may reach the network it is on",
     "lanOnConfirm": "Let its local network be reached?",
@@ -941,6 +944,9 @@
     "offer": "Offer itself as an exit node",
     "offerOffConfirm": "Stop offering it as an exit node?",
     "offerOffConfirmBody": "Everyone sending their traffic out through it now is cut off.",
+    "offerOffOthers": "Those using its group, {{group}}, as their exit go out through another exit in it, or wait for one.",
+    "offerOffStays": "It stays in its group, {{group}}, as a proxy.",
+    "offerOffWaiting": "The devices using the group as their exit have their traffic stopped until it offers itself again, or another exit is added.",
     "offers": "Offers itself as an exit node",
     "offersHint": "People you allow (its share or role says exit) can send their traffic out through it",
     "offersNot": "Not an exit node",
@@ -1234,6 +1240,7 @@
     "domain": "Your own domain for its https names",
     "error": "Could not read the proxies.",
     "exitHeading": "Exit",
+    "groupNotDeleted": "Its group could not be deleted.",
     "host": "Where it is reached",
     "hostPreview": "Where it will be reached, when that name is free",
     "listening": "Listening, though not a proxy: its proxy setting is on",
@@ -1268,6 +1275,8 @@
     "remoteit": "One of remote.it's proxies: {{host}}",
     "removeConfirm": "Stop using it as a proxy?",
     "removeConfirmBody": "Every endpoint on it is removed, for everyone using one.",
+    "removeOthers": "The other devices in its group, {{group}}, go on serving its endpoints.",
+    "removeStaysExit": "It stays in its group, {{group}}, as an exit. The group keeps its endpoints: they work again once a proxy is added to it.",
     "unsupported": "This API does not serve Control Link devices. Point Test Settings → API Target at a stage that does (local or dev).",
     "use": "Use as a proxy",
     "usedBy": "For you and the people who may connect to it",
@@ -1611,7 +1620,8 @@
     "version": "Version {{version}}"
   },
   "filterDrawer": {
-    "disabledDevices": "Disabled devices"
+    "disabledDevices": "Disabled devices",
+    "proxyGroups": "Proxy and exit groups"
   },
   "globalSearch": {
     "placeholder": "Search device or service name"
@@ -1811,6 +1821,16 @@
     "singleIpRestrictionName": "Single IP Restriction",
     "singleIpRestrictionNote": "Only allow a single IP address to connect to this device on the local network.",
     "yourLocalIpAddress": "Your local IP address"
+  },
+  "lastInGroup": {
+    "delete": "Delete the group too",
+    "keep": "Keep the group",
+    "keepEndpoints": "Its endpoints keep their addresses, and work again then.",
+    "keepUsers": "The devices using it stay on it, and their traffic stops until then.",
+    "keepWaits": "Kept, it waits for another device to be added to it.",
+    "last": "It is the last device in its group, {{group}}.",
+    "titleExit": "Stop offering {{device}} as an exit node?",
+    "titleProxy": "Stop using {{device}} as a proxy?"
   },
   "launchTypeSelect": {
     "label": "Launch method",
@@ -2663,6 +2683,33 @@
     "passwordFailures": "wrong passwords: {{number}}",
     "show": "Show",
     "title": "Recent visitors"
+  },
+  "proxyGroup": {
+    "deleteEndpoints": "Deleted, its endpoints are removed.",
+    "deleteNothing": "Deleted, nothing else changes: nothing uses it.",
+    "deleteUsers": "Deleted, the devices using it go their usual way.",
+    "deleteUsersEndpoints": "Deleted, the devices using it go their usual way, and its endpoints are removed.",
+    "endpoints_one": "it has {{count}} endpoint",
+    "endpoints_other": "it has {{count}} endpoints",
+    "endpointsNone": "it has no endpoints",
+    "use": "{{used}}, and {{has}}.",
+    "usedBy_one": "{{count}} device uses it as its exit",
+    "usedBy_other": "{{count}} devices use it as their exit",
+    "usedByNone": "No device uses it as its exit"
+  },
+  "proxyGroupsPage": {
+    "delete": "Delete group",
+    "deleteAction": "Delete",
+    "deleteTitle": "Delete {{group}}?",
+    "description": "Every proxy and exit is in a group, its own to begin with. A group whose last device has gone is kept — its endpoints, and the devices using it as their exit — for another device to be added to it, until you delete it.",
+    "devices": "In it: {{names}}.",
+    "failed": "The groups could not be read.",
+    "noDevices": "No device in it.",
+    "noManageAccess": "Groups are seen by those who may manage devices here.",
+    "none": "No groups yet: a device made a proxy or an exit is put in one.",
+    "notDeleted": "It could not be deleted.",
+    "title": "Proxy and exit groups",
+    "unsupported": "This server does not have proxy and exit groups."
   },
   "publicSetting": {
     "ipLatching": "IP Latching",

@@ -16,6 +16,7 @@ import { List } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { ListItemLocation } from './ListItemLocation'
 import { useDeviceDisable, useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
+import { useProxyGroupsServed } from '../hooks/useProxyGroupsServed'
 
 const sortFilters = [
   { value: 'name', name: 'Name' },
@@ -50,6 +51,8 @@ export const FilterDrawer: React.FC = () => {
   const disableServed = useDeviceDisable()
   const disabledAccess = useDisabledDevicesAccess()
   const disabledView = !!disableServed && disabledAccess
+  // The account's proxy and exit groups, those with no device in them too: for the same people, where the API has them.
+  const groupsView = !!useProxyGroupsServed() && disabledAccess
 
   const update = values => {
     values = { ...values, from: defaultState.from }
@@ -156,14 +159,24 @@ export const FilterDrawer: React.FC = () => {
           },
         ]}
       />
-      {disabledView && (
+      {(disabledView || groupsView) && (
         <List>
-          <ListItemLocation
-            title={t('filterDrawer.disabledDevices', 'Disabled devices')}
-            icon="ban"
-            to="/devices/disabled"
-            dense
-          />
+          {disabledView && (
+            <ListItemLocation
+              title={t('filterDrawer.disabledDevices', 'Disabled devices')}
+              icon="ban"
+              to="/devices/disabled"
+              dense
+            />
+          )}
+          {groupsView && (
+            <ListItemLocation
+              title={t('filterDrawer.proxyGroups', 'Proxy and exit groups')}
+              icon="layer-group"
+              to="/devices/groups"
+              dense
+            />
+          )}
         </List>
       )}
     </Drawer>

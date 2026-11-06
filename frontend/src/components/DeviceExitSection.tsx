@@ -14,16 +14,30 @@ import {
   graphQLSetDeviceExit,
 } from '../services/graphQLProxy'
 import { settingOn } from '../services/graphQLDeviceSettings'
+import {
+  ProxyGroup,
+  graphQLDeleteProxyGroup,
+  graphQLDeviceExitGroup,
+  graphQLDeviceGroup,
+  graphQLLeaveProxyGroup,
+  refusalOf,
+} from '../services/graphQLProxyGroups'
+import { exitOffLine, groupOrNone, lastInGroup } from '../helpers/proxyGroupHelper'
 import type { DeviceSettings } from '../hooks/useDeviceSettings'
 import { DeviceSettingRow } from './DeviceSettingRow'
+import { LastInGroupDialog } from './LastInGroupDialog'
 import { ListItemSetting } from './ListItemSetting'
+import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
 
 /* A device and exit nodes (presence-server docs/proxy-plan.md §8): the exit its traffic goes out through — one you may
    use, chosen on Configure (DeviceExitChoice) — and whether it offers itself as one, on Proxy & exit
    (DeviceExitOffer): a device setting (exit_node) switched by whoever manages it, where the API has device settings;
-   else what its own configuration says. Device sessions only; nothing shows where the API lacks them. */
+   else what its own configuration says. Every exit is in a group (graphql-api docs/PROXY-GROUPS.md §11): an exit chosen
+   as a group with no device taking its traffic now is said so, and turning off the last exit in a group asks whether
+   to delete the group too (components/LastInGroupDialog.tsx). Device sessions only; nothing shows where the API lacks
+   them. */
 
 // The device's exit and, for the choice, who chose it, the exits it may use, its Protect (the route kept while off) and
 // whether the exit or route is one of remote.it's public exits, the only ones charged: read again after each change.
@@ -33,11 +47,17 @@ function useDeviceExit(deviceId: string, choice: boolean) {
   const [exits, setExits] = useState<{ id: string; name: string }[]>([])
   const [protect, setProtect] = useState<ProtectInfo | null>(null)
   const [publicExit, setPublicExit] = useState(false)
+  const [group, setGroup] = useState<ProxyGroup | null>()
+  const [waiting, setWaiting] = useState<{ label: string; name: string } | null>(null)
 
   const load = useCallback(async () => {
     const answer = await graphQLDeviceExit(deviceId)
     setInfo(answer && typeof answer === 'object' ? answer : null)
-    if (!choice) return
+    if (!choice) {
+      // The group it is in, as an exit: whether it is the last device in it.
+      setGroup(answer && typeof answer === 'object' ? groupOrNone(await graphQLDeviceGroup(deviceId)) : undefined)
+      return
+    }
     const who = await graphQLDeviceExitChooser(deviceId)
     setChooser(who && typeof who === 'object' ? who : null)
     const list = await graphQLExits()
@@ -48,19 +68,24 @@ function useDeviceExit(deviceId: string, choice: boolean) {
       (answer && typeof answer === 'object' && answer.exit?.id) ||
       (kept && typeof kept === 'object' && kept.on === false && kept.route)
     setPublicExit(via ? !!(await graphQLProxyPublicExit(via)) : false)
+    // An exit group with no device taking its traffic now — none left in it, or none offering itself — is chosen still:
+    // its traffic stops until one does.
+    const exitGroup =
+      answer && typeof answer === 'object' && !answer.exit ? await graphQLDeviceExitGroup(deviceId) : null
+    setWaiting(exitGroup ? { label: exitGroup.label, name: exitGroup.group?.name || exitGroup.label } : null)
   }, [deviceId, choice])
 
   useEffect(() => {
     load()
   }, [load])
 
-  return { info, chooser, exits, protect, publicExit, load }
+  return { info, chooser, exits, protect, publicExit, group, waiting, load }
 }
 
 // The exit the device's traffic goes out through, with who chose it and what the machine's administrator allows.
 export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
-  const { info, chooser, exits, protect, publicExit, load } = useDeviceExit(device.id, true)
+  const { info, chooser, exits, protect, publicExit, waiting, load } = useDeviceExit(device.id, true)
   const [saving, setSaving] = useState(false)
   const manage = device.permissions.includes('MANAGE')
   // The device's own exit traffic is charged to its account, the owner's, not to whoever views it.
@@ -68,12 +93,13 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 
   if (!info) return null
 
-  const current = info.exit?.id || ''
+  const current = info.exit?.id || waiting?.label || ''
   const choices = [
     { key: '', name: t('deviceExit.none', 'None — its usual way out') },
     ...exits.map(e => ({ key: e.id, name: e.name })),
   ]
   if (info.exit && !exits.some(e => e.id === info.exit?.id)) choices.push({ key: info.exit.id, name: info.exit.name })
+  if (waiting) choices.push({ key: waiting.label, name: waiting.name })
 
   // The machine's administrator's policy holds over the portal: under local or never, nothing is chosen here.
   const policy = chooser?.exitPolicy
@@ -127,6 +153,17 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           onButtonClick={() => choose(route)}
         />
       )}
+      {waiting && (
+        <ListItemSetting
+          icon="triangle-exclamation"
+          iconColor="warning"
+          label={t('deviceExit.groupWaiting', 'No device in {{group}} takes its traffic now', { group: waiting.name })}
+          subLabel={t(
+            'deviceExit.groupWaitingHint',
+            'Its traffic stops until one does: a device added to the group, or one in it offering itself again. Or choose another exit.'
+          )}
+        />
+      )}
       {chosenBy && <ListItemSetting icon="user" label={chosenBy} />}
       {policyText && <ListItemSetting icon="lock" label={policyText.label} subLabel={policyText.hint} />}
     </>
@@ -136,8 +173,10 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 // Whether the device offers itself as an exit node, and its local network with it: rows of the caller's list.
 export const DeviceExitOffer: React.FC<{ device: IDevice; settings?: DeviceSettings }> = ({ device, settings }) => {
   const { t } = useTranslation()
-  const { info, load } = useDeviceExit(device.id, false)
+  const { info, group, load } = useDeviceExit(device.id, false)
   const [saving, setSaving] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [refusal, setRefusal] = useState<string>()
   const manage = device.permissions.includes('MANAGE')
 
   if (!info) return null
@@ -146,6 +185,21 @@ export const DeviceExitOffer: React.FC<{ device: IDevice; settings?: DeviceSetti
   const offer = async (value: { on: boolean; lan: boolean }) => {
     setSaving(true)
     if (await settings?.set('exit_node', value)) await load()
+    setSaving(false)
+  }
+  // The last device in its group, and in it as an exit alone: turned off, the group is left with no exit — kept, or
+  // deleted too, the device taken out of it first.
+  const last = settingOn(exitNode) && lastInGroup(group, device.id) && group?.members?.[0].kind === 'exit'
+  const offWithGroup = async (deleted: ProxyGroup) => {
+    setSaving(true)
+    if (await settings?.set('exit_node', { on: false, lan: !!exitNode?.value?.lan })) {
+      const refused =
+        refusalOf(await graphQLLeaveProxyGroup(device.id)) ??
+        refusalOf(await graphQLDeleteProxyGroup(deleted.label, true))
+      if (refused !== undefined)
+        setRefusal(refused || t('deviceExit.groupNotDeleted', 'Its group could not be deleted.'))
+      await load()
+    }
     setSaving(false)
   }
 
@@ -162,16 +216,36 @@ export const DeviceExitOffer: React.FC<{ device: IDevice; settings?: DeviceSetti
               'People you allow (its share or role says exit) can send their traffic out through it'
             )}
             disabled={saving}
-            confirm={settingOn(exitNode)}
+            confirm={settingOn(exitNode) && !last}
             confirmProps={{
               title: t('deviceExit.offerOffConfirm', 'Stop offering it as an exit node?'),
-              children: t(
-                'deviceExit.offerOffConfirmBody',
-                'Everyone sending their traffic out through it now is cut off.'
-              ),
+              children: exitOffLine(t, group, device.id),
             }}
-            onChange={on => offer({ on, lan: !!exitNode.value?.lan })}
+            onChange={on => (last && !on ? setLeaving(true) : offer({ on, lan: !!exitNode.value?.lan }))}
           />
+          {last && group && (
+            <LastInGroupDialog
+              open={leaving}
+              group={group}
+              device={device.name}
+              action="exit"
+              busy={saving}
+              onCancel={() => setLeaving(false)}
+              onKeep={() => {
+                setLeaving(false)
+                offer({ on: false, lan: !!exitNode.value?.lan })
+              }}
+              onDelete={() => {
+                setLeaving(false)
+                offWithGroup(group)
+              }}
+            />
+          )}
+          {refusal && (
+            <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+              {refusal}
+            </Notice>
+          )}
           {settingOn(exitNode) && (
             <DeviceSettingRow
               setting={exitNode}

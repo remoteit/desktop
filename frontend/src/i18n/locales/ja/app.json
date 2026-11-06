@@ -922,6 +922,9 @@
     "label": "デバイスの説明"
   },
   "deviceExit": {
+    "groupNotDeleted": "",
+    "groupWaiting": "",
+    "groupWaitingHint": "",
     "lan": "",
     "lanHint": "",
     "lanOnConfirm": "",
@@ -930,6 +933,9 @@
     "offer": "",
     "offerOffConfirm": "",
     "offerOffConfirmBody": "",
+    "offerOffOthers": "",
+    "offerOffStays": "",
+    "offerOffWaiting": "",
     "offers": "",
     "offersHint": "",
     "offersNot": "",
@@ -1208,6 +1214,7 @@
     "domain": "",
     "error": "",
     "exitHeading": "",
+    "groupNotDeleted": "",
     "host": "",
     "hostPreview": "",
     "listening": "",
@@ -1242,6 +1249,8 @@
     "remoteit": "",
     "removeConfirm": "",
     "removeConfirmBody": "",
+    "removeOthers": "",
+    "removeStaysExit": "",
     "unsupported": "",
     "use": "",
     "usedBy": "",
@@ -1576,7 +1585,8 @@
     "version": "バージョン {{version}}"
   },
   "filterDrawer": {
-    "disabledDevices": ""
+    "disabledDevices": "",
+    "proxyGroups": ""
   },
   "globalSearch": {
     "placeholder": "デバイス名またはサービス名を検索"
@@ -1774,6 +1784,16 @@
     "singleIpRestrictionName": "単一IP制限",
     "singleIpRestrictionNote": "ローカルネットワーク上でこのデバイスに接続できるIPアドレスを1つだけに制限します。",
     "yourLocalIpAddress": "お使いのローカルIPアドレス"
+  },
+  "lastInGroup": {
+    "delete": "",
+    "keep": "",
+    "keepEndpoints": "",
+    "keepUsers": "",
+    "keepWaits": "",
+    "last": "",
+    "titleExit": "",
+    "titleProxy": ""
   },
   "launchTypeSelect": {
     "label": "起動方法",
@@ -2613,6 +2633,31 @@
     "passwordFailures": "間違ったパスワード: {{number}}",
     "show": "表示",
     "title": "最近の訪問者"
+  },
+  "proxyGroup": {
+    "deleteEndpoints": "",
+    "deleteNothing": "",
+    "deleteUsers": "",
+    "deleteUsersEndpoints": "",
+    "endpoints_other": "",
+    "endpointsNone": "",
+    "use": "",
+    "usedBy_other": "",
+    "usedByNone": ""
+  },
+  "proxyGroupsPage": {
+    "delete": "",
+    "deleteAction": "",
+    "deleteTitle": "",
+    "description": "",
+    "devices": "",
+    "failed": "",
+    "noDevices": "",
+    "noManageAccess": "",
+    "none": "",
+    "notDeleted": "",
+    "title": "",
+    "unsupported": ""
   },
   "publicSetting": {
     "ipLatching": "IPラッチング",
