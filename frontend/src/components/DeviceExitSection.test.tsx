@@ -2,20 +2,33 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi } from 'vitest'
 
-const { exit, chooser, protect, setExit, publicExit, usage, deviceGroup, exitGroup, leave, deleteGroup, shared } =
-  vi.hoisted(() => ({
-    exit: vi.fn(),
-    chooser: vi.fn(),
-    protect: vi.fn(async () => null as any),
-    setExit: vi.fn(async () => true as any),
-    publicExit: vi.fn(async (_id: string) => undefined as boolean | undefined),
-    usage: vi.fn(async (_accountId?: string) => [] as any),
-    deviceGroup: vi.fn(async (_id: string) => null as any),
-    exitGroup: vi.fn(async (_id: string) => null as any),
-    leave: vi.fn(async (_id: string) => ({} as any)),
-    deleteGroup: vi.fn(async (_label: string, _confirm: boolean) => ({} as any)),
-    shared: vi.fn(async () => [] as any),
-  }))
+const {
+  exit,
+  chooser,
+  protect,
+  setExit,
+  publicExit,
+  usage,
+  deviceGroup,
+  exitGroup,
+  leave,
+  deleteGroup,
+  shared,
+  networks,
+} = vi.hoisted(() => ({
+  exit: vi.fn(),
+  chooser: vi.fn(),
+  protect: vi.fn(async () => null as any),
+  setExit: vi.fn(async () => true as any),
+  publicExit: vi.fn(async (_id: string) => undefined as boolean | undefined),
+  usage: vi.fn(async (_accountId?: string) => [] as any),
+  deviceGroup: vi.fn(async (_id: string) => null as any),
+  exitGroup: vi.fn(async (_id: string) => null as any),
+  leave: vi.fn(async (_id: string) => ({} as any)),
+  deleteGroup: vi.fn(async (_label: string, _confirm: boolean) => ({} as any)),
+  shared: vi.fn(async () => [] as any),
+  networks: vi.fn(async (_id: string) => [] as any),
+}))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLDeviceExit: exit,
   graphQLDeviceExitChooser: chooser,
@@ -31,6 +44,7 @@ vi.mock('../services/graphQLProxyGroups', () => ({
   graphQLLeaveProxyGroup: leave,
   graphQLDeleteProxyGroup: deleteGroup,
   graphQLSharedProxyGroups: shared,
+  graphQLDeviceNetworkExitGroups: networks,
   refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
 }))
 vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
@@ -377,6 +391,28 @@ describe('an exit in a group', () => {
     expect(select.getAttribute('data-value')).toBe('gshared')
     expect(select.getAttribute('data-choices')).not.toContain('MAC=')
     shared.mockResolvedValue([])
+    exitGroup.mockResolvedValue(null)
+  })
+
+  it('the groups its networks make available, which you may not use yourself, are among the exits; one chosen shows as itself', async () => {
+    document.body.innerHTML = ''
+    chooser.mockResolvedValue(none)
+    protect.mockResolvedValue(null)
+    networks.mockResolvedValue([{ id: 'grouter', name: 'Home router' }])
+    exit.mockResolvedValue({ offersExit: false, exit: null })
+    exitGroup.mockResolvedValue(null)
+    let select = (await render('choice')).querySelector('[data-select]')!
+    expect(networks).toHaveBeenCalledWith('LAPTOP')
+    expect(select.getAttribute('data-choices')).toBe(
+      '=None — its usual way out|EXIT=office|grouter=Home router · by its network'
+    )
+    // Through it now, by a member you do not see: the group is what is chosen.
+    exit.mockResolvedValue({ offersExit: false, exit: { id: 'ROUTER', name: 'Router' } })
+    exitGroup.mockResolvedValue({ label: 'grouter', group: null, dormant: false })
+    select = (await render('choice')).querySelector('[data-select]')!
+    expect(select.getAttribute('data-value')).toBe('grouter')
+    expect(select.getAttribute('data-choices')).not.toContain('ROUTER=')
+    networks.mockResolvedValue([])
     exitGroup.mockResolvedValue(null)
   })
 

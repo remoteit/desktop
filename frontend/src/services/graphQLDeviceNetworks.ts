@@ -1,11 +1,12 @@
 import { post } from './post'
-import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
+import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 
 /* Networks of devices (presence-server docs/device-principals.md §2, §8): each network's devices — initiators, targets
    or both, and what a target exposes (the services the network lists, all of them, any port of its own) — its tag
-   rules, the services it lists, and the people it is shared with. The fields exist only where the API serves device
-   sessions, so the read is silent and an API without them answers UNSUPPORTED. */
+   rules, the services it lists, the people it is shared with, and the exit groups it makes available to its devices.
+   The fields exist only where the API serves device sessions, so the read is silent and an API without them answers
+   UNSUPPORTED. */
 
 export type NetworkDeviceRole = 'INITIATOR' | 'TARGET' | 'BOTH'
 export type NetworkDeviceScope = 'LISTED' | 'ALL'
@@ -148,6 +149,46 @@ export async function graphQLDeviceNetworks(
   if (errors) return 'ERROR'
   return response.data?.data?.login?.account?.networks ?? []
 }
+
+// A network's exits are groups (graphql-api docs/PROXY-GROUPS.md §11, "A network's exits are groups"): the own exit
+// groups it makes available to its devices — each one initiating on it may send its traffic out through one, whichever
+// of the group's devices takes it, while it is offered. Asked apart from the networks themselves, so an API before them
+// still shows the networks: it answers UNSUPPORTED.
+export type NetworkExitGroup = {
+  label: string
+  name: string
+  offered: boolean // one of its devices in service and offering itself as an exit
+  dormant: boolean // no device in it in service: chosen by no one, its users going their usual way until one is
+  owner: { id: string; email: string | null } | null
+}
+
+// Each of the account's networks' exit groups, by network.
+export async function graphQLNetworkExitGroups(
+  accountId?: string
+): Promise<Map<string, NetworkExitGroup[]> | 'ERROR' | typeof UNSUPPORTED> {
+  const query = `query NetworkExitGroups($accountId: String) {
+    login { account(id: $accountId) { networks { id exitGroups { label name offered dormant owner { id email } } } } }
+  }`
+  const variables = { accountId }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  const errors = graphQLGetErrors(response, true, { query, variables })
+  if (withoutDeviceSessions(errors, 'exitGroups') || withoutDeviceSessions(errors, 'kind')) return UNSUPPORTED
+  if (errors) return 'ERROR'
+  const networks: { id: string; exitGroups?: NetworkExitGroup[] }[] =
+    response.data?.data?.login?.account?.networks ?? []
+  return new Map(networks.map(network => [network.id, network.exitGroups ?? []]))
+}
+
+// One of your exit groups made available on a network you manage, or no longer — from the network's side or the
+// group's. A refusal comes back in graphql's words.
+export const graphQLSetNetworkExitGroup = (networkId: string, label: string, exit: boolean) =>
+  graphQLRequestWithReason(
+    ` mutation SetNetworkExitGroup($networkId: String!, $group: String!, $exit: Boolean!) {
+      setNetworkExitGroup(networkId: $networkId, group: $group, exit: $exit)
+    }`,
+    { networkId, group: label, exit }
+  )
 
 // A device you manage onto a network you manage — or a change of its role or what it exposes there.
 export const graphQLAddNetworkDevice = (
