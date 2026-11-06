@@ -933,6 +933,8 @@
     "label": "Device Description"
   },
   "deviceExit": {
+    "groupDormant": "Its exit, {{group}}, is dormant",
+    "groupDormantHint": "No device in the group is in service, so its traffic goes its usual way, Protect off for it, until one is — then it goes out through the group again by itself. Or choose another exit.",
     "groupNotDeleted": "Its group could not be deleted.",
     "groupWaiting": "No device in {{group}} takes its traffic now",
     "groupWaitingHint": "Its traffic stops until one does: a device added to the group, or one in it offering itself again. Or choose another exit.",
@@ -1825,6 +1827,7 @@
   "lastInGroup": {
     "delete": "Delete the group too",
     "keep": "Keep the group",
+    "keepDormant": "The devices using it stay on it, dormant: their traffic goes its usual way until a device added to it is in service.",
     "keepEndpoints": "Its endpoints keep their addresses, and work again then.",
     "keepUsers": "The devices using it stay on it, and their traffic stops until then.",
     "keepWaits": "Kept, it waits for another device to be added to it.",
@@ -2689,13 +2692,25 @@
     "deleteNothing": "Deleted, nothing else changes: nothing uses it.",
     "deleteUsers": "Deleted, the devices using it go their usual way.",
     "deleteUsersEndpoints": "Deleted, the devices using it go their usual way, and its endpoints are removed.",
+    "dormant": "No device in it is in service: the devices using it are dormant, their traffic going its usual way until one is.",
     "endpoints_one": "it has {{count}} endpoint",
     "endpoints_other": "it has {{count}} endpoints",
     "endpointsNone": "it has no endpoints",
+    "sharedChoice": "{{group}} · shared by {{email}}",
+    "sharedWith": "Shared with {{emails}}.",
     "use": "{{used}}, and {{has}}.",
     "usedBy_one": "{{count}} device uses it as its exit",
     "usedBy_other": "{{count}} devices use it as their exit",
     "usedByNone": "No device uses it as its exit"
+  },
+  "proxyGroupShare": {
+    "description": "Those you share it with can send a device of theirs out through it as its exit, whichever device in it takes the traffic. They get nothing on its devices themselves.",
+    "failed": "It could not be changed.",
+    "none": "Shared with no one yet.",
+    "remove": "Stop sharing with {{email}}",
+    "share": "Share",
+    "sharing": "Sharing...",
+    "title": "Share {{group}}"
   },
   "proxyGroupsPage": {
     "delete": "Delete group",
@@ -2704,10 +2719,20 @@
     "description": "Every proxy and exit is in a group, its own to begin with. A group whose last device has gone is kept — its endpoints, and the devices using it as their exit — for another device to be added to it, until you delete it.",
     "devices": "In it: {{names}}.",
     "failed": "The groups could not be read.",
+    "leave": "Leave group",
+    "leaveAction": "Leave",
+    "leaveBody": "You can no longer use it as an exit: a device of yours using it goes its usual way.",
+    "leaveTitle": "Leave {{group}}?",
     "noDevices": "No device in it.",
     "noManageAccess": "Groups are seen by those who may manage devices here.",
     "none": "No groups yet: a device made a proxy or an exit is put in one.",
     "notDeleted": "It could not be deleted.",
+    "notLeft": "It could not be left.",
+    "share": "Share group",
+    "sharedBy": "Shared by {{email}}.",
+    "sharedHeading": "Shared with you",
+    "sharedNotOffered": "No device in it is in service: it cannot be chosen until one is.",
+    "sharedOffered": "A device of yours can use it as its exit.",
     "title": "Proxy and exit groups",
     "unsupported": "This server does not have proxy and exit groups."
   },

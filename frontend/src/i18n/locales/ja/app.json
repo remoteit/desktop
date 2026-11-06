@@ -922,6 +922,8 @@
     "label": "デバイスの説明"
   },
   "deviceExit": {
+    "groupDormant": "",
+    "groupDormantHint": "",
     "groupNotDeleted": "",
     "groupWaiting": "",
     "groupWaitingHint": "",
@@ -1788,6 +1790,7 @@
   "lastInGroup": {
     "delete": "",
     "keep": "",
+    "keepDormant": "",
     "keepEndpoints": "",
     "keepUsers": "",
     "keepWaits": "",
@@ -2639,11 +2642,23 @@
     "deleteNothing": "",
     "deleteUsers": "",
     "deleteUsersEndpoints": "",
+    "dormant": "",
     "endpoints_other": "",
     "endpointsNone": "",
+    "sharedChoice": "",
+    "sharedWith": "",
     "use": "",
     "usedBy_other": "",
     "usedByNone": ""
+  },
+  "proxyGroupShare": {
+    "description": "",
+    "failed": "",
+    "none": "",
+    "remove": "",
+    "share": "",
+    "sharing": "",
+    "title": ""
   },
   "proxyGroupsPage": {
     "delete": "",
@@ -2652,10 +2667,20 @@
     "description": "",
     "devices": "",
     "failed": "",
+    "leave": "",
+    "leaveAction": "",
+    "leaveBody": "",
+    "leaveTitle": "",
     "noDevices": "",
     "noManageAccess": "",
     "none": "",
     "notDeleted": "",
+    "notLeft": "",
+    "share": "",
+    "sharedBy": "",
+    "sharedHeading": "",
+    "sharedNotOffered": "",
+    "sharedOffered": "",
     "title": "",
     "unsupported": ""
   },

@@ -6,8 +6,9 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
    location, every other an account's own, a group of one made with its first device. A device chooses an exit group
    and remote.it picks the member its traffic goes through. Who may use an own group is its owner's to decide, so a
    group outlives its devices: left with none, it keeps its name, its endpoints and the devices using it as their exit,
-   until its account deletes it. Device-session API only: an API without it answers UNSUPPORTED. The words for them are
-   helpers/proxyGroupHelper.ts's. */
+   dormant — their traffic going its usual way — until a device in it is in service again, or its account deletes it.
+   An own group may be shared with people, to use as their exit. Device-session API only: an API without it answers
+   UNSUPPORTED. The words for them are helpers/proxyGroupHelper.ts's. */
 
 export type ProxyGroupMember = {
   id: string
@@ -15,6 +16,9 @@ export type ProxyGroupMember = {
   kind: 'remoteit' | 'own' | 'exit' // one of remote.it's proxies, an own proxy, or a device offering itself as an exit
   state: string
 }
+
+// A person a group is shared with, to use as their exit.
+export type ProxyGroupShare = { user: { id: string; email: string | null } }
 
 export type ProxyGroup = {
   label: string
@@ -24,9 +28,18 @@ export type ProxyGroup = {
   members: ProxyGroupMember[] | null // none for one the reader does not manage
   users: number | null // the devices whose exit it is
   endpoints: number | null
+  // From an API that shares groups:
+  access?: ProxyGroupShare[] // everyone it is shared with, for whoever may see them; your own share, for a sharee
+  offered?: boolean // one of its devices in service and offering itself as an exit
+  dormant?: boolean // no device in it in service: chosen by no one, its users kept dormant
+  owner?: { id: string; email: string | null } | null
 }
 
 const GROUP_FIELDS = 'label name remoteit host members { id name kind state } users endpoints'
+const SHARING_FIELDS = 'access { user { id email } } offered dormant owner { id email }'
+
+// The fields asked of a group: its sharing too where the API shares groups.
+const groupFields = async () => ((await proxyGroupSharesServed()) ? `${GROUP_FIELDS} ${SHARING_FIELDS}` : GROUP_FIELDS)
 
 async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
   const response = await post({ query, variables })
@@ -38,12 +51,22 @@ async function read<T>(query: string, variables: ILookup<any>, marker: string, p
 }
 
 // An account's own groups — those with no device in them too — for whoever manages it.
-export const graphQLAccountProxyGroups = (accountId: string) =>
+export const graphQLAccountProxyGroups = async (accountId: string) =>
   read<ProxyGroup[]>(
-    `query AccountProxyGroups($accountId: String) { login { id account(id: $accountId) { proxyGroups { ${GROUP_FIELDS} } } } }`,
+    `query AccountProxyGroups($accountId: String) { login { id account(id: $accountId) { proxyGroups { ${await groupFields()} } } } }`,
     { accountId },
     'proxyGroups',
     data => data?.login?.account?.proxyGroups ?? []
+  )
+
+// The groups other accounts share with you, to use as your exit — those not offered now too. An API that shares no
+// groups answers UNSUPPORTED.
+export const graphQLSharedProxyGroups = () =>
+  read<ProxyGroup[]>(
+    `query SharedProxyGroups { login { id sharedProxyGroups { label name remoteit host ${SHARING_FIELDS} } } }`,
+    {},
+    'sharedProxyGroups',
+    data => data?.login?.sharedProxyGroups ?? []
   )
 
 // The group a device is in, as a proxy or an exit; none for one that is neither.
@@ -55,8 +78,9 @@ export const graphQLDeviceGroup = (deviceId: string) =>
     data => data?.login?.device?.[0]?.group ?? null
   )
 
-// The exit group a device's traffic goes through while Protect is on — its label and, for whoever manages the group,
-// its name and members; none for no exit, or one that is a device.
+// The exit group a device's traffic goes through while Protect is on — its label, whether it is dormant (no device in
+// it in service: its traffic goes its usual way until one is), and for whoever manages the group or has it shared, its
+// name; none for no exit, or one that is a device. An API before dormancy answers it as not.
 export async function graphQLDeviceExitGroup(deviceId: string) {
   const label = await read<string | null>(
     `query DeviceExitGroup($id: [String!]!) { login { device(id: $id) { id exitGroup } } }`,
@@ -71,8 +95,30 @@ export async function graphQLDeviceExitGroup(deviceId: string) {
     'proxyGroup',
     data => data?.proxyGroup ?? null
   )
-  return { label, group: group && typeof group === 'object' ? group : null }
+  const dormant = await read<boolean>(
+    `query DeviceExitDormant($id: [String!]!) { login { device(id: $id) { id exitDormant } } }`,
+    { id: [deviceId] },
+    'exitDormant',
+    data => data?.login?.device?.[0]?.exitDormant === true
+  )
+  return { label, group: group && typeof group === 'object' ? group : null, dormant: dormant === true }
 }
+
+// Shares one of your groups with people, by email, to use as their exit; an address with no account gets one. A
+// refusal comes back in graphql's words.
+export const graphQLShareProxyGroup = (label: string, emails: string[]) =>
+  graphQLRequestWithReason(
+    ` mutation ShareProxyGroup($group: String!, $email: [String!]!) { shareProxyGroup(group: $group, email: $email) }`,
+    { group: label, email: emails }
+  )
+
+// Stops sharing a group with people — or, by your own address, leaves one shared with you. Every device whose exit stood
+// on such a share alone loses it, and goes its usual way.
+export const graphQLUnshareProxyGroup = (label: string, emails: string[]) =>
+  graphQLRequestWithReason(
+    ` mutation UnshareProxyGroup($group: String!, $email: [String!]!) { unshareProxyGroup(group: $group, email: $email) }`,
+    { group: label, email: emails }
+  )
 
 // Deletes an own group with no device in it. While devices use it as their exit or it has endpoints, graphql refuses it
 // unless confirmed: confirmed, their exit ends and the endpoints are removed. A refusal comes back in graphql's words.
@@ -93,16 +139,22 @@ export const graphQLLeaveProxyGroup = (deviceId: string) =>
 export const refusalOf = (result: Awaited<ReturnType<typeof graphQLRequestWithReason>>): string | undefined =>
   result === 'ERROR' ? '' : 'reason' in result ? result.reason : undefined
 
-// Whether the API has groups an account can list and delete: asked once of its schema, again after a failed ask.
-let served: Promise<boolean> | undefined
-export function proxyGroupsServed(): Promise<boolean> {
-  if (!served)
-    served = post({ query: `{ mutation: __type(name: "Mutation") { fields { name } } }` }).then(response => {
+// The API's mutations, asked once of its schema, again after a failed ask: none while unknown.
+let mutations: Promise<Set<string> | null> | undefined
+function served(name: string): Promise<boolean> {
+  if (!mutations)
+    mutations = post({ query: `{ mutation: __type(name: "Mutation") { fields { name } } }` }).then(response => {
       if (response === 'ERROR') {
-        served = undefined
-        return false
+        mutations = undefined
+        return null
       }
-      return !!response.data?.data?.mutation?.fields?.some((f: { name: string }) => f.name === 'deleteProxyGroup')
+      return new Set<string>((response.data?.data?.mutation?.fields ?? []).map((f: { name: string }) => f.name))
     })
-  return served
+  return mutations.then(names => !!names?.has(name))
 }
+
+// Whether the API has groups an account can list and delete.
+export const proxyGroupsServed = () => served('deleteProxyGroup')
+
+// Whether it shares groups, and keeps the users of one with no device in service dormant.
+export const proxyGroupSharesServed = () => served('shareProxyGroup')

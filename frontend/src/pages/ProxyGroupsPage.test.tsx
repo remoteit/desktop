@@ -2,10 +2,13 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { groups, deleteGroup, access } = vi.hoisted(() => ({
+const { groups, deleteGroup, access, shared, unshare, sharing } = vi.hoisted(() => ({
   groups: vi.fn(async (_accountId: string) => [] as any),
   deleteGroup: vi.fn(async (_label: string, _confirm: boolean) => ({} as any)),
   access: { manages: true },
+  shared: vi.fn(async () => [] as any),
+  unshare: vi.fn(async (_label: string, _emails: string[]) => ({} as any)),
+  sharing: { served: true },
 }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'ACCOUNT' }))
@@ -14,7 +17,14 @@ vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
 vi.mock('../services/graphQLProxyGroups', () => ({
   graphQLAccountProxyGroups: groups,
   graphQLDeleteProxyGroup: deleteGroup,
+  graphQLSharedProxyGroups: shared,
+  graphQLUnshareProxyGroup: unshare,
+  proxyGroupSharesServed: async () => sharing.served,
   refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
+}))
+// The share dialog is its own test's (ProxyGroupShareDialog.test.tsx): here, which group it opened for.
+vi.mock('../components/ProxyGroupShareDialog', () => ({
+  ProxyGroupShareDialog: ({ group }: any) => <div data-share-dialog={group.label} />,
 }))
 vi.mock('../components/Container', () => ({
   Container: ({ header, children }: any) => (
@@ -31,8 +41,8 @@ vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div>load
 vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
 vi.mock('../buttons/IconButton', () => ({
-  IconButton: ({ title, onClick }: any) => (
-    <button data-delete onClick={onClick}>
+  IconButton: ({ title, icon, onClick, disabled }: any) => (
+    <button data-delete={icon === 'trash' ? '' : undefined} data-icon={icon} disabled={disabled} onClick={onClick}>
       {title}
     </button>
   ),
@@ -90,8 +100,11 @@ async function render() {
 beforeEach(() => {
   document.body.innerHTML = ''
   access.manages = true
+  sharing.served = true
   groups.mockReset().mockResolvedValue([OFFICE, OLD_MAC, SHOP, SPARE])
   deleteGroup.mockReset().mockResolvedValue({})
+  shared.mockReset().mockResolvedValue([])
+  unshare.mockReset().mockResolvedValue({})
 })
 
 describe('the account’s proxy and exit groups', () => {
@@ -149,5 +162,73 @@ describe('the account’s proxy and exit groups', () => {
     groups.mockClear()
     expect((await render()).textContent).toContain('Groups are seen by those who may manage devices here.')
     expect(groups).not.toHaveBeenCalled()
+  })
+})
+
+describe('sharing the account’s groups, and those shared with you', () => {
+  const share = (id: string, email: string) => ({ user: { id, email } })
+  const pat = { id: 'PAT', email: 'pat@example.com' }
+
+  it('each group says who it is shared with, and whether its users are dormant; Share opens its dialog', async () => {
+    groups.mockResolvedValue([
+      { ...OFFICE, access: [share('SAM', 'sam@example.com')], offered: true, dormant: false },
+      { ...OLD_MAC, access: [], offered: false, dormant: true },
+    ])
+    await render()
+    expect(row('gaaa').textContent).toContain('Shared with sam@example.com.')
+    expect(row('gbbb').textContent).toContain(
+      'No device in it is in service: the devices using it are dormant, their traffic going its usual way until one is.'
+    )
+    expect(row('gaaa').textContent).not.toContain('dormant')
+    await act(async () => (row('gbbb').querySelector('[data-icon="share"]') as HTMLButtonElement).click())
+    expect(document.body.querySelector('[data-share-dialog]')?.getAttribute('data-share-dialog')).toBe('gbbb')
+  })
+
+  it('an API that shares no groups: no Share, and none listed as shared with you', async () => {
+    sharing.served = false
+    shared.mockResolvedValue([
+      { label: 'gxxx', name: 'Theirs', access: [share('ME', 'me@example.com')], offered: true, owner: pat },
+    ])
+    await render()
+    expect(document.body.querySelector('[data-icon="share"]')).toBeNull()
+    expect(document.body.textContent).not.toContain('Shared with you')
+    expect(shared).not.toHaveBeenCalled()
+  })
+
+  it('the groups shared with you: whose, whether a device can choose it now, and Leave — confirmed, by your own address', async () => {
+    shared.mockResolvedValue([
+      {
+        label: 'gxxx',
+        name: 'Pat exits',
+        access: [share('ME', 'me@example.com')],
+        offered: true,
+        dormant: false,
+        owner: pat,
+      },
+      {
+        label: 'gyyy',
+        name: 'Old Mac',
+        access: [share('ME', 'me@example.com')],
+        offered: false,
+        dormant: true,
+        owner: pat,
+      },
+    ])
+    await render()
+    const theirs = (label: string) => document.body.querySelector(`[data-shared="${label}"]`) as HTMLElement
+    expect(document.body.textContent).toContain('Shared with you')
+    expect(theirs('gxxx').textContent).toContain('Shared by pat@example.com. A device of yours can use it as its exit.')
+    expect(theirs('gyyy').textContent).toContain('No device in it is in service: it cannot be chosen until one is.')
+    await act(async () =>
+      (theirs('gxxx').querySelector('[data-icon="arrow-right-from-bracket"]') as HTMLButtonElement).click()
+    )
+    expect(document.body.textContent).toContain('Leave Pat exits?')
+    shared.mockResolvedValue([])
+    const leave = [...document.body.querySelectorAll('.MuiDialogActions-root button')].find(b =>
+      b.textContent?.includes('Leave')
+    ) as HTMLButtonElement
+    await act(async () => leave.click())
+    expect(unshare).toHaveBeenCalledWith('gxxx', ['me@example.com'])
+    expect(theirs('gxxx')).toBeNull()
   })
 })

@@ -52,7 +52,7 @@ describe('taking away the last device in its group', () => {
     expect(text).toContain('It is the last device in its group, Office Mac group.')
     expect(text).toContain('3 devices use it as their exit, and it has 2 endpoints.')
     expect(text).toContain('Kept, it waits for another device to be added to it.')
-    expect(text).toContain('their traffic stops until then')
+    expect(text).toContain('dormant: their traffic goes its usual way until a device added to it is in service')
     expect(text).toContain('Deleted, the devices using it go their usual way, and its endpoints are removed.')
   })
 

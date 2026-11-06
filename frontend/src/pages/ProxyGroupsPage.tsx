@@ -9,10 +9,22 @@ import {
   ProxyGroup,
   graphQLAccountProxyGroups,
   graphQLDeleteProxyGroup,
+  graphQLSharedProxyGroups,
+  graphQLUnshareProxyGroup,
+  proxyGroupSharesServed,
   refusalOf,
 } from '../services/graphQLProxyGroups'
-import { deletingLine, deletingTakesAway, emptyGroup, groupUse } from '../helpers/proxyGroupHelper'
+import {
+  deletingLine,
+  deletingTakesAway,
+  dormantLine,
+  dormantUsers,
+  emptyGroup,
+  groupUse,
+  sharedLine,
+} from '../helpers/proxyGroupHelper'
 import { useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
+import { ProxyGroupShareDialog } from '../components/ProxyGroupShareDialog'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
@@ -24,19 +36,31 @@ import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
 
 /* The account's own proxy and exit groups (graphql-api docs/PROXY-GROUPS.md §11): each with its devices, the devices
-   using it as their exit and its endpoints. A group whose last device has gone is kept — its name, endpoints and users —
-   until it is deleted here; Delete says what goes with it. Seen by those who may manage devices here, as the account's
-   disabled devices are. The full groups UI comes later: this lists them, and deletes an empty one. */
+   using it as their exit and its endpoints. A group whose last device has gone is kept — its name, endpoints and users,
+   dormant — until it is deleted here; Delete says what goes with it. Each is shared from here with people, to use as
+   their exit (Share), and the groups shared with you are listed below theirs, each to leave. Seen by those who may
+   manage devices here, as the account's disabled devices are. The full groups UI comes later: this lists them, shares
+   them, and deletes an empty one. */
 export const ProxyGroupsPage: React.FC = () => {
   const { t } = useTranslation()
   const accountId = useSelector(selectActiveAccountId)
   const access = useDisabledDevicesAccess()
   const [groups, setGroups] = useState<ProxyGroup[] | 'ERROR' | typeof UNSUPPORTED>()
+  const [shared, setShared] = useState<ProxyGroup[]>([])
+  const [sharing, setSharing] = useState<string>() // the label of the group whose shares are open
+  const [shares, setShares] = useState(false)
   const [deleting, setDeleting] = useState<ProxyGroup>()
+  const [leaving, setLeaving] = useState<ProxyGroup>()
   const [refusal, setRefusal] = useState<string>()
   const [busy, setBusy] = useState(false)
 
-  const load = useCallback(async () => setGroups(await graphQLAccountProxyGroups(accountId)), [accountId])
+  const load = useCallback(async () => {
+    const served = await proxyGroupSharesServed()
+    setShares(served)
+    setGroups(await graphQLAccountProxyGroups(accountId))
+    const theirs = served ? await graphQLSharedProxyGroups() : []
+    setShared(Array.isArray(theirs) ? theirs : [])
+  }, [accountId])
 
   useEffect(() => {
     setGroups(undefined)
@@ -61,10 +85,23 @@ export const ProxyGroupsPage: React.FC = () => {
     await load()
   }
 
+  const leave = async (group: ProxyGroup, email: string) => {
+    setBusy(true)
+    const refused = refusalOf(await graphQLUnshareProxyGroup(group.label, [email]))
+    setBusy(false)
+    if (refused !== undefined) return setRefusal(refused || t('proxyGroupsPage.notLeft', 'It could not be left.'))
+    setLeaving(undefined)
+    await load()
+  }
+
   const close = () => {
     setDeleting(undefined)
+    setLeaving(undefined)
     setRefusal(undefined)
   }
+
+  const open = Array.isArray(groups) ? groups.find(group => group.label === sharing) : undefined
+  const myShare = (group: ProxyGroup) => group.access?.[0]?.user.email ?? ''
 
   return (
     <Container
@@ -108,23 +145,85 @@ export const ProxyGroupsPage: React.FC = () => {
               key={group.label}
               data-group={group.label}
               secondaryAction={
-                emptyGroup(group) && (
-                  <IconButton
-                    icon="trash"
-                    title={t('proxyGroupsPage.delete', 'Delete group')}
-                    disabled={busy}
-                    onClick={() => setDeleting(group)}
-                  />
-                )
+                <>
+                  {shares && group.access && !group.remoteit && (
+                    <IconButton
+                      icon="share"
+                      title={t('proxyGroupsPage.share', 'Share group')}
+                      disabled={busy}
+                      onClick={() => setSharing(group.label)}
+                    />
+                  )}
+                  {emptyGroup(group) && (
+                    <IconButton
+                      icon="trash"
+                      title={t('proxyGroupsPage.delete', 'Delete group')}
+                      disabled={busy}
+                      onClick={() => setDeleting(group)}
+                    />
+                  )}
+                </>
               }
             >
               <ListItemIcon>
                 <Icon name={group.host ? 'server' : 'door-open'} size="md" fixedWidth />
               </ListItemIcon>
-              <ListItemText primary={group.name} secondary={`${membersLine(t, group)} ${groupUse(t, group)}`} />
+              <ListItemText primary={group.name} secondary={groupLines(t, group)} />
             </ListItem>
           ))}
         </List>
+      )}
+      {!!shared.length && (
+        <>
+          <Gutters top="lg">
+            <Typography variant="subtitle1">{t('proxyGroupsPage.sharedHeading', 'Shared with you')}</Typography>
+          </Gutters>
+          <List>
+            {shared.map(group => (
+              <ListItem
+                key={group.label}
+                data-shared={group.label}
+                secondaryAction={
+                  <IconButton
+                    icon="arrow-right-from-bracket"
+                    title={t('proxyGroupsPage.leave', 'Leave group')}
+                    disabled={busy || !myShare(group)}
+                    onClick={() => setLeaving(group)}
+                  />
+                }
+              >
+                <ListItemIcon>
+                  <Icon name="door-open" size="md" fixedWidth />
+                </ListItemIcon>
+                <ListItemText primary={group.name} secondary={sharedGroupLine(t, group)} />
+              </ListItem>
+            ))}
+          </List>
+        </>
+      )}
+      {open && <ProxyGroupShareDialog group={open} open onClose={() => setSharing(undefined)} onChanged={load} />}
+      {leaving && (
+        <Confirm
+          open
+          title={t('proxyGroupsPage.leaveTitle', 'Leave {{group}}?', { group: leaving.name })}
+          action={t('proxyGroupsPage.leaveAction', 'Leave')}
+          color="error"
+          disabled={busy}
+          onConfirm={() => leave(leaving, myShare(leaving))}
+          onDeny={close}
+        >
+          <Typography variant="body2" gutterBottom>
+            {t(
+              'proxyGroupsPage.leaveBody',
+              'You can no longer use it as an exit: a device of yours using it goes its usual way.'
+            )}
+          </Typography>
+          {refusal && (
+            <Notice severity="error" fullWidth>
+              {refusal}
+            </Notice>
+          )}
+        </Confirm>
       )}
       {deleting && (
         <Confirm
@@ -148,6 +247,24 @@ export const ProxyGroupsPage: React.FC = () => {
       )}
     </Container>
   )
+}
+
+// A group of the account, in words: its devices, its use — dormant when it is —, and who it is shared with.
+export function groupLines(t: TFunction, group: ProxyGroup): string {
+  return [membersLine(t, group), groupUse(t, group), dormantUsers(group) ? dormantLine(t) : '', sharedLine(t, group)]
+    .filter(Boolean)
+    .join(' ')
+}
+
+// A group shared with you, in words: whose it is, and whether a device can choose it now.
+export function sharedGroupLine(t: TFunction, group: ProxyGroup): string {
+  const whose = group.owner?.email
+    ? t('proxyGroupsPage.sharedBy', 'Shared by {{email}}.', { email: group.owner.email })
+    : ''
+  const now = group.offered
+    ? t('proxyGroupsPage.sharedOffered', 'A device of yours can use it as its exit.')
+    : t('proxyGroupsPage.sharedNotOffered', 'No device in it is in service: it cannot be chosen until one is.')
+  return [whose, now].filter(Boolean).join(' ')
 }
 
 // Who is in a group, in words: its devices by name, or none.

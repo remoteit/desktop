@@ -2,8 +2,10 @@ import type { TFunction } from 'i18next'
 import type { ProxyGroup } from '../services/graphQLProxyGroups'
 
 /* Proxy and exit groups, as the portal says them (graphql-api docs/PROXY-GROUPS.md §11, "Who may use an own group, and
-   empty groups"): who uses a group and what it has, and what taking away its last device — keeping the group, or
-   deleting it too — does to them. */
+   empty groups", "Sharing an own group", "Empty groups are not offered; their users are dormant"): who uses a group and
+   what it has, who it is shared with, and what taking away its last device — keeping the group, or deleting it too —
+   does to them. A group with no device in service is dormant: no device may choose it, and those using it go their
+   usual way until one is in service again. */
 
 // A device's group as the API answered it: the group, none (the device is in none), or unknown (an API without groups,
 // or a read that failed) — where nothing is said of a group.
@@ -53,15 +55,42 @@ export function deletingLine(t: TFunction, group: Pick<ProxyGroup, 'users' | 'en
   return t('proxyGroup.deleteNothing', 'Deleted, nothing else changes: nothing uses it.')
 }
 
-// What keeping a group whose last device goes does to what it has.
+// What keeping a group whose last device goes does to what it has: its users dormant, their traffic going its usual way.
 export function keepingLines(t: TFunction, group: Pick<ProxyGroup, 'users' | 'endpoints'>): string[] {
   const lines = [t('lastInGroup.keepWaits', 'Kept, it waits for another device to be added to it.')]
   if (group.users)
-    lines.push(t('lastInGroup.keepUsers', 'The devices using it stay on it, and their traffic stops until then.'))
+    lines.push(
+      t(
+        'lastInGroup.keepDormant',
+        'The devices using it stay on it, dormant: their traffic goes its usual way until a device added to it is in service.'
+      )
+    )
   if (group.endpoints)
     lines.push(t('lastInGroup.keepEndpoints', 'Its endpoints keep their addresses, and work again then.'))
   return lines
 }
+
+// Whether a group's users are dormant now: it has none in service, and some use it.
+export const dormantUsers = (group: Pick<ProxyGroup, 'dormant' | 'users'>) => !!group.dormant && !!group.users
+
+// Its users dormant, in words.
+export const dormantLine = (t: TFunction) =>
+  t(
+    'proxyGroup.dormant',
+    'No device in it is in service: the devices using it are dormant, their traffic going its usual way until one is.'
+  )
+
+// Who a group is shared with, in words; none where it is shared with no one, or the API does not say.
+export function sharedLine(t: TFunction, group: Pick<ProxyGroup, 'access'>): string {
+  const emails = (group.access ?? []).map(share => share.user.email || share.user.id)
+  return emails.length ? t('proxyGroup.sharedWith', 'Shared with {{emails}}.', { emails: emails.join(', ') }) : ''
+}
+
+// A group shared with you as an exit choice is named: its name, and whose it is.
+export const sharedChoiceName = (t: TFunction, group: Pick<ProxyGroup, 'name' | 'owner'>) =>
+  group.owner?.email
+    ? t('proxyGroup.sharedChoice', '{{group}} · shared by {{email}}', { group: group.name, email: group.owner.email })
+    : group.name
 
 // What stopping a device being a proxy does to its group, where it is not the last device in it (or stays in it as an
 // exit): its group's endpoints are the group's. Unknown group: an API from before groups kept them, so as it said then.

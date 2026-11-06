@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   deletingLine,
   deletingTakesAway,
+  dormantLine,
+  dormantUsers,
   emptyGroup,
   exitOffLine,
   groupOrNone,
@@ -9,6 +11,8 @@ import {
   keepingLines,
   lastInGroup,
   proxyOffLine,
+  sharedChoiceName,
+  sharedLine,
 } from './proxyGroupHelper'
 import type { ProxyGroup, ProxyGroupMember } from '../services/graphQLProxyGroups'
 
@@ -69,15 +73,25 @@ describe('what a group has, and what keeping or deleting it does', () => {
     expect(groupUse(t, { users: 3, endpoints: 2 })).toBe('3 devices use it as their exit, and it has 2 endpoints.')
   })
 
-  it('kept, it waits for another device: its users’ traffic stops until then, its endpoints keep their addresses', () => {
+  it('kept, it waits for another device: its users dormant, going their usual way, its endpoints keeping their addresses', () => {
     expect(keepingLines(t, { users: 0, endpoints: 0 })).toEqual([
       'Kept, it waits for another device to be added to it.',
     ])
     expect(keepingLines(t, { users: 3, endpoints: 2 })).toEqual([
       'Kept, it waits for another device to be added to it.',
-      'The devices using it stay on it, and their traffic stops until then.',
+      'The devices using it stay on it, dormant: their traffic goes its usual way until a device added to it is in service.',
       'Its endpoints keep their addresses, and work again then.',
     ])
+  })
+
+  it('dormant users: only while it has none in service and some use it', () => {
+    expect(dormantUsers({ dormant: true, users: 2 })).toBe(true)
+    expect(dormantUsers({ dormant: true, users: 0 })).toBe(false)
+    expect(dormantUsers({ dormant: false, users: 2 })).toBe(false)
+    expect(dormantUsers({ users: 2 })).toBe(false) // an API before dormancy
+    expect(dormantLine(t)).toBe(
+      'No device in it is in service: the devices using it are dormant, their traffic going its usual way until one is.'
+    )
   })
 
   it('deleted, its users go their usual way and its endpoints are removed', () => {
@@ -87,6 +101,24 @@ describe('what a group has, and what keeping or deleting it does', () => {
     expect(deletingLine(t, { users: 3, endpoints: 0 })).toBe('Deleted, the devices using it go their usual way.')
     expect(deletingLine(t, { users: 0, endpoints: 2 })).toBe('Deleted, its endpoints are removed.')
     expect(deletingLine(t, { users: 0, endpoints: 0 })).toBe('Deleted, nothing else changes: nothing uses it.')
+  })
+})
+
+describe('a group shared with people', () => {
+  const share = (id: string, email: string | null) => ({ user: { id, email } })
+  it('says who it is shared with; nothing for no one, or an API that does not say', () => {
+    expect(sharedLine(t, { access: [share('S', 'sam@example.com'), share('N', null)] })).toBe(
+      'Shared with sam@example.com, N.'
+    )
+    expect(sharedLine(t, { access: [] })).toBe('')
+    expect(sharedLine(t, {})).toBe('')
+  })
+
+  it('a group shared with you is named with whose it is, among the exits', () => {
+    expect(sharedChoiceName(t, { name: 'Office Mac', owner: { id: 'P', email: 'pat@example.com' } })).toBe(
+      'Office Mac · shared by pat@example.com'
+    )
+    expect(sharedChoiceName(t, { name: 'Office Mac', owner: null })).toBe('Office Mac')
   })
 })
 

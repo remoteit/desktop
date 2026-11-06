@@ -2,8 +2,8 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi } from 'vitest'
 
-const { exit, chooser, protect, setExit, publicExit, usage, deviceGroup, exitGroup, leave, deleteGroup } = vi.hoisted(
-  () => ({
+const { exit, chooser, protect, setExit, publicExit, usage, deviceGroup, exitGroup, leave, deleteGroup, shared } =
+  vi.hoisted(() => ({
     exit: vi.fn(),
     chooser: vi.fn(),
     protect: vi.fn(async () => null as any),
@@ -14,8 +14,8 @@ const { exit, chooser, protect, setExit, publicExit, usage, deviceGroup, exitGro
     exitGroup: vi.fn(async (_id: string) => null as any),
     leave: vi.fn(async (_id: string) => ({} as any)),
     deleteGroup: vi.fn(async (_label: string, _confirm: boolean) => ({} as any)),
-  })
-)
+    shared: vi.fn(async () => [] as any),
+  }))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLDeviceExit: exit,
   graphQLDeviceExitChooser: chooser,
@@ -30,6 +30,7 @@ vi.mock('../services/graphQLProxyGroups', () => ({
   graphQLDeviceExitGroup: exitGroup,
   graphQLLeaveProxyGroup: leave,
   graphQLDeleteProxyGroup: deleteGroup,
+  graphQLSharedProxyGroups: shared,
   refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
 }))
 vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
@@ -57,7 +58,11 @@ vi.mock('./DeviceSettingRow', () => ({
   ),
 }))
 vi.mock('./SelectSetting', () => ({
-  SelectSetting: ({ disabled }: any) => <div data-select>{disabled ? 'locked' : 'open'}</div>,
+  SelectSetting: ({ disabled, value, values }: any) => (
+    <div data-select data-value={value} data-choices={values.map((v: any) => `${v.key}=${v.name}`).join('|')}>
+      {disabled ? 'locked' : 'open'}
+    </div>
+  ),
 }))
 vi.mock('react-i18next', () => {
   const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
@@ -332,6 +337,47 @@ describe('an exit in a group', () => {
     expect(offer(page).dataset.confirm).toContain('It stays in its group, Laptop exits, as a proxy.')
     await act(async () => offer(page).click())
     expect(document.body.textContent).not.toContain('Keep the group')
+  })
+
+  it('a dormant exit: the group shown as its exit, said dormant — its traffic its usual way — and no Protect to turn on', async () => {
+    document.body.innerHTML = ''
+    exit.mockResolvedValue({ offersExit: false, exit: null })
+    chooser.mockResolvedValue(none)
+    // The device says Protect off, its route the group: dormant, that is not offered to turn on.
+    protect.mockResolvedValue({ on: false, route: 'gabc123', routeName: 'Office Mac' })
+    exitGroup.mockResolvedValue({ label: 'gabc123', group: { name: 'Office Mac' }, dormant: true })
+    const page = await render('choice')
+    expect(page.textContent).toContain('Its exit, Office Mac, is dormant')
+    expect(page.textContent).toContain('its traffic goes its usual way, Protect off for it, until one is')
+    expect(page.textContent).not.toContain('takes its traffic now')
+    expect(page.textContent).not.toContain('Protect: off')
+    expect(page.querySelector('[data-select]')?.getAttribute('data-value')).toBe('gabc123')
+    protect.mockResolvedValue(null)
+    exitGroup.mockResolvedValue(null)
+  })
+
+  it('the groups shared with you, offered, are among the exits, named with whose they are; one chosen shows as itself', async () => {
+    document.body.innerHTML = ''
+    chooser.mockResolvedValue(none)
+    protect.mockResolvedValue(null)
+    shared.mockResolvedValue([
+      { label: 'gshared', name: 'Pat exits', offered: true, owner: { id: 'PAT', email: 'pat@example.com' } },
+      { label: 'gempty', name: 'Old Mac', offered: false, owner: { id: 'PAT', email: 'pat@example.com' } },
+    ])
+    exit.mockResolvedValue({ offersExit: false, exit: null })
+    exitGroup.mockResolvedValue(null)
+    let select = (await render('choice')).querySelector('[data-select]')!
+    expect(select.getAttribute('data-choices')).toBe(
+      '=None — its usual way out|EXIT=office|gshared=Pat exits · shared by pat@example.com'
+    )
+    // Through it now, by its member: the group is what is chosen.
+    exit.mockResolvedValue({ offersExit: false, exit: { id: 'MAC', name: 'Office Mac' } })
+    exitGroup.mockResolvedValue({ label: 'gshared', group: null, dormant: false })
+    select = (await render('choice')).querySelector('[data-select]')!
+    expect(select.getAttribute('data-value')).toBe('gshared')
+    expect(select.getAttribute('data-choices')).not.toContain('MAC=')
+    shared.mockResolvedValue([])
+    exitGroup.mockResolvedValue(null)
   })
 
   it('a device whose exit is a group with no device taking its traffic: the group shown as its exit, and why it waits', async () => {
