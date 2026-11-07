@@ -50,7 +50,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { DeviceNetworkGraph } from '../components/DeviceNetworkGraph'
-import { NetworkExitGroups } from '../components/NetworkExitGroups'
+import { NetworkExits } from '../components/NetworkExits'
 import { selectActiveAccountId } from '../selectors/accounts'
 
 /* A network of devices (docs/superpowers/specs/2026-09-30-device-sessions-ui-design.md §3): its devices, each an
@@ -515,7 +515,7 @@ export const DeviceNetworkPage: React.FC = () => {
               )}
             </Box>
           )}
-          <NetworkExitGroups network={network} accountId={accountId} />
+          <NetworkExits network={network} accountId={accountId} />
         </List>
       ) : (
         <List>

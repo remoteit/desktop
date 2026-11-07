@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const { share, unshare } = vi.hoisted(() => ({
-  share: vi.fn(async (_label: string, _emails: string[]) => ({} as any)),
-  unshare: vi.fn(async (_label: string, _emails: string[]) => ({} as any)),
+  share: vi.fn(async (_exit: string, _emails: string[]) => ({} as any)),
+  unshare: vi.fn(async (_exit: string, _emails: string[]) => ({} as any)),
 }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
 vi.mock('../selectors/contacts', () => ({
@@ -14,9 +14,8 @@ vi.mock('../selectors/contacts', () => ({
   ],
 }))
 vi.mock('../selectors/organizations', () => ({ selectOrganization: () => ({ members: [{ user: { id: 'MEMBER' } }] }) }))
-vi.mock('../services/graphQLProxyGroups', () => ({
-  graphQLShareProxyGroup: share,
-  graphQLUnshareProxyGroup: unshare,
+vi.mock('../services/graphQLExits', () => ({ graphQLShareExit: share, graphQLUnshareExit: unshare }))
+vi.mock('../services/graphQL', () => ({
   refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
 }))
 // The address picker: its offered contacts, and a way to pick addresses.
@@ -41,18 +40,13 @@ vi.mock('react-i18next', () => {
   return { useTranslation: () => ({ t: (_key: string, a: any, b?: any) => (typeof a === 'string' ? fill(a, b) : '') }) }
 })
 
-import { ProxyGroupShareDialog } from './ProxyGroupShareDialog'
+import { ExitShareDialog } from './ExitShareDialog'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
-const GROUP = {
-  label: 'gaaa',
+const EXIT = {
+  id: 'xaaa',
   name: 'Office Mac',
-  remoteit: false,
-  host: null,
-  members: [],
-  users: 1,
-  endpoints: 0,
-  access: [{ user: { id: 'SAM', email: 'sam@example.com' } }],
+  access: [{ user: { id: 'SAM', email: 'sam@example.com' }, sharedBy: null, created: '2026-11-07T00:00:00Z' }],
 }
 const button = (text: string) =>
   [...document.body.querySelectorAll('button')].find(b => b.textContent?.includes(text)) as HTMLButtonElement
@@ -62,14 +56,12 @@ const action = (text: string) =>
     b => b.textContent === text
   )!
 
-async function render(group: any = GROUP, emails?: string[]) {
+async function render(exit: any = EXIT) {
   const onChanged = vi.fn()
   const container = document.createElement('div')
   document.body.appendChild(container)
   await act(async () =>
-    createRoot(container).render(
-      <ProxyGroupShareDialog group={group} open emails={emails} onClose={() => undefined} onChanged={onChanged} />
-    )
+    createRoot(container).render(<ExitShareDialog exit={exit} open onClose={() => undefined} onChanged={onChanged} />)
   )
   return onChanged
 }
@@ -80,7 +72,7 @@ beforeEach(() => {
   unshare.mockReset().mockResolvedValue({})
 })
 
-describe('sharing a group', () => {
+describe('sharing an exit', () => {
   it('lists who it is shared with, and offers contacts but the organization’s members', async () => {
     await render()
     expect(document.body.textContent).toContain('Share Office Mac')
@@ -94,29 +86,21 @@ describe('sharing a group', () => {
     expect(button('Share').disabled).toBe(true)
     await act(async () => button('pick').click())
     await act(async () => action('Share').click())
-    expect(share).toHaveBeenCalledWith('gaaa', ['dee@example.com'])
+    expect(share).toHaveBeenCalledWith('xaaa', ['dee@example.com'])
     await act(async () => button('Stop sharing with sam@example.com').click())
-    expect(unshare).toHaveBeenCalledWith('gaaa', ['sam@example.com'])
+    expect(unshare).toHaveBeenCalledWith('xaaa', ['sam@example.com'])
     expect(onChanged).toHaveBeenCalledTimes(2)
-  })
-
-  it('opened for a person — from a device’s share page —, shares with them as it opens', async () => {
-    const onChanged = await render({ ...GROUP, access: [] }, ['dee@example.com'])
-    expect(action('Share').disabled).toBe(false)
-    await act(async () => action('Share').click())
-    expect(share).toHaveBeenCalledWith('gaaa', ['dee@example.com'])
-    expect(onChanged).toHaveBeenCalledTimes(1)
   })
 
   it('a refusal is said in graphql’s words, and nothing is reloaded', async () => {
     share.mockResolvedValue({
-      reason: 'Member@example.com is a member of the group’s account: what they may use is their role’s',
+      reason: 'Member@example.com is a member of the exit’s account: what they may use is their role’s',
     })
-    const onChanged = await render({ ...GROUP, access: [] })
+    const onChanged = await render({ ...EXIT, access: [] })
     expect(document.body.textContent).toContain('Shared with no one yet.')
     await act(async () => button('pick').click())
     await act(async () => action('Share').click())
-    expect(document.body.querySelector('[data-notice]')?.textContent).toContain('is a member of the group’s account')
+    expect(document.body.querySelector('[data-notice]')?.textContent).toContain('is a member of the exit’s account')
     expect(onChanged).not.toHaveBeenCalled()
   })
 })

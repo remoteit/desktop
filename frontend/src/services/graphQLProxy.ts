@@ -1,25 +1,32 @@
 import { post } from './post'
-import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
+import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
+import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
 
-/* Proxies and endpoints (graphql resolvers/proxy-endpoint-resolver.ts, presence-server docs/proxy-plan.md): an
-   endpoint is one way into a device service through a proxy — a name on https, or a port for tcp and udp — on
-   remote.it's proxies or on a device of yours made one. Device-session API only: an API without it answers
-   UNSUPPORTED, for the caller to hide itself. */
+/* Proxies and their endpoints (graphql-api docs/PROXY-GROUPS.md §13, presence-server docs/proxy-plan.md): a proxy is a
+   host under which endpoints into device services are reached — a name on https, a port for tcp and udp — run by
+   devices, every device running it serving every endpoint of it. remote.it's are at a location; an own proxy is its
+   account's: made, then devices added to run it, and kept — its host and endpoints — until its account deletes it. An
+   endpoint is made on a proxy. A refusal comes back in graphql's words. Device-session API only: an API without it
+   answers UNSUPPORTED, for the caller to hide itself. */
 
 export type ProxyCertificate = 'own' | 'ready' | 'pending'
 
 export type Proxy = {
   id: string
-  kind: 'remoteit' | 'own'
-  region: string | null
-  host: string
-  name: string | null // an own proxy's, before its account's slug ('' for the slug alone)
-  domain: string | null
+  name: string // remote.it's by its location ("remote.it pdx1a"), an own proxy by its name
+  host: string // the name its endpoints are under
+  domain: string | null // an own proxy's own domain for its https names
+  remoteit: boolean
   publicEndpoints: boolean
-  publicExit?: boolean // one of remote.it's offered as an exit to everyone whose plan gives exits (an API before it: absent)
+  location: string | null
+  provider: string
+  activation: 'auto' | 'admin'
   manage: boolean
-  certificate: ProxyCertificate
+  owner: { id: string; email: string | null } | null
+  devices: ProxyDevice[] | null // for whoever manages it
+  endpoints: number | null // for whoever manages it
+  certificate: ProxyCertificate | null // an own proxy's; remote.it's devices hold their own
 }
 
 export type EndpointKind = 'https' | 'tcp' | 'udp'
@@ -29,7 +36,7 @@ export type EndpointLifetime = 'temporary' | 'permanent'
 export type Endpoint = {
   id: string
   serviceId: string
-  proxy: Pick<Proxy, 'id' | 'kind' | 'host' | 'region'>
+  proxy: Pick<Proxy, 'id' | 'name' | 'host' | 'remoteit'>
   kind: EndpointKind
   lifetime: EndpointLifetime
   access: EndpointAccess
@@ -46,14 +53,16 @@ export type NewEndpoint = {
   kind: EndpointKind
   access: EndpointAccess
   lifetime: EndpointLifetime
-  proxyId?: string
+  proxy?: string
   lockedIp?: string
   allow?: string[]
 }
 
-const PROXY_FIELDS = 'id kind region host name domain publicEndpoints manage certificate'
+// What a list of proxies to choose from needs.
+const CHOICE_FIELDS = 'id name host domain remoteit publicEndpoints location provider'
+const FIELDS = `${CHOICE_FIELDS} activation manage owner { id email } endpoints certificate devices { ${PROXY_DEVICE_FIELDS} }`
 const ENDPOINT_FIELDS =
-  'id serviceId proxy { id kind host region } kind lifetime access lockedIp allow host port url created expires'
+  'id serviceId proxy { id name host remoteit } kind lifetime access lockedIp allow host port url created expires'
 
 async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
   const response = await post({ query, variables })
@@ -64,19 +73,94 @@ async function read<T>(query: string, variables: ILookup<any>, marker: string, p
   return pick(response.data?.data)
 }
 
-export const graphQLProxies = () =>
-  read<Proxy[]>(`query Proxies { proxies { ${PROXY_FIELDS} } }`, {}, 'proxies', data => data?.proxies ?? [])
+// A proxy to make an endpoint on.
+export type ProxyChoice = Pick<Proxy, 'id' | 'name' | 'host' | 'domain' | 'remoteit' | 'publicEndpoints' | 'location' | 'provider'>
 
-// Which of remote.it's proxies are public exits, apart: an API from before the switch has no such field, and asking
-// for it with the rest would fail the proxies too. Undefined where it cannot say.
-export async function graphQLProxyPublicExit(deviceId: string): Promise<boolean | undefined> {
-  const result = await read<{ id: string; publicExit: boolean }[]>(
-    `query ProxyPublicExits { proxies { id publicExit } }`,
+// The proxies you may make endpoints on, each run in service: remote.it's, your own, and those your role reaches.
+export const graphQLProxies = () =>
+  read<ProxyChoice[]>(
+    `query Proxies { proxies { ${CHOICE_FIELDS} } }`,
     {},
     'proxies',
     data => data?.proxies ?? []
   )
-  return Array.isArray(result) ? result.find(p => p.id === deviceId)?.publicExit : undefined
+
+// An account's own proxies you manage, those no device runs too.
+export const graphQLAccountProxies = (accountId: string) =>
+  read<Proxy[]>(
+    `query AccountProxies($accountId: String) { login { id account(id: $accountId) { id proxies { ${FIELDS} } } } }`,
+    { accountId },
+    'proxies',
+    data => data?.login?.account?.proxies ?? []
+  )
+
+// One proxy: one you manage, or one you may make endpoints on. None for another.
+export const graphQLProxy = (id: string) =>
+  read<Proxy | null>(`query Proxy($id: String!) { proxy(id: $id) { ${FIELDS} } }`, { id }, 'proxy', data => data?.proxy ?? null)
+
+// Made in your account, or one you manage, under <label>-<slug> of the stage's proxy domain (the label made from the
+// name when none is given): then devices are added to run it.
+export async function graphQLCreateProxy(set: {
+  name: string
+  label?: string
+  domain?: string
+  publicEndpoints?: boolean
+  accountId?: string
+}): Promise<Proxy | { reason: string }> {
+  const result = await graphQLRequestWithReason(
+    ` mutation CreateProxy($name: String!, $label: String, $domain: String, $publicEndpoints: Boolean, $accountId: String) {
+      createProxy(name: $name, label: $label, domain: $domain, publicEndpoints: $publicEndpoints, accountId: $accountId) { ${FIELDS} }
+    }`,
+    set
+  )
+  if (result === 'ERROR') return { reason: '' }
+  if ('reason' in result) return result
+  return result.data?.data?.createProxy
+}
+
+// Its name; and, with a label, its host — which moves every endpoint's address, and its certificate is issued again.
+export const graphQLRenameProxy = (proxy: string, set: { name?: string; label?: string }) =>
+  graphQLRequestWithReason(
+    ` mutation RenameProxy($proxy: String!, $name: String, $label: String) {
+      renameProxy(proxy: $proxy, name: $name, label: $label) { id }
+    }`,
+    { proxy, ...set }
+  )
+
+// How its new devices go into service: auto, by themselves once their checks pass; admin, when an admin puts them in.
+export const graphQLSetProxyActivation = (proxy: string, activation: 'auto' | 'admin') =>
+  graphQLRequestWithReason(
+    ` mutation SetProxyActivation($proxy: String!, $activation: String!) {
+      setProxyActivation(proxy: $proxy, activation: $activation) { id }
+    }`,
+    { proxy, activation }
+  )
+
+// One no device runs. With endpoints, refused unless confirmed: confirmed, they are removed.
+export const graphQLDeleteProxy = (proxy: string, confirm: boolean) =>
+  graphQLRequestWithReason(
+    ` mutation DeleteProxy($proxy: String!, $confirm: Boolean) { deleteProxy(proxy: $proxy, confirm: $confirm) }`,
+    { proxy, confirm }
+  )
+
+// The endpoints of a proxy no device runs, to another proxy of its account: each address before and after, and,
+// applied, done. Refused on a name or port clash.
+export type EndpointsMove = { addresses: { endpoint: string; kind: string; from: string; to: string }[]; applied: boolean }
+
+export async function graphQLMoveProxyEndpoints(
+  from: string,
+  to: string,
+  apply: boolean
+): Promise<EndpointsMove | { reason: string }> {
+  const result = await graphQLRequestWithReason(
+    ` mutation MoveProxyEndpoints($from: String!, $to: String!, $apply: Boolean) {
+      moveProxyEndpoints(from: $from, to: $to, apply: $apply) { addresses { endpoint kind from to } applied }
+    }`,
+    { from, to, apply }
+  )
+  if (result === 'ERROR') return { reason: '' }
+  if ('reason' in result) return result
+  return result.data?.data?.moveProxyEndpoints ?? { reason: '' }
 }
 
 // A service's endpoints: all of them for whoever manages it, otherwise one's own.
@@ -90,11 +174,12 @@ export const graphQLServiceEndpoints = (deviceId: string, serviceId: string) =>
     data => data?.login?.device?.[0]?.services?.find((s: { id: string }) => s.id === serviceId)?.endpoints ?? []
   )
 
+// Made on the proxy named, or remote.it's nearest the device in service.
 export const graphQLCreateEndpoint = (serviceId: string, endpoint: NewEndpoint) =>
   graphQLBasicRequest(
     ` mutation CreateEndpoint($serviceId: String!, $kind: String!, $access: String!, $lifetime: String,
-        $proxyId: String, $lockedIp: String, $allow: [String!]) {
-        createEndpoint(serviceId: $serviceId, kind: $kind, access: $access, lifetime: $lifetime, proxyId: $proxyId,
+        $proxy: String, $lockedIp: String, $allow: [String!]) {
+        createEndpoint(serviceId: $serviceId, kind: $kind, access: $access, lifetime: $lifetime, proxy: $proxy,
           lockedIp: $lockedIp, allow: $allow) { ${ENDPOINT_FIELDS} }
       }`,
     { serviceId, ...endpoint }
@@ -103,198 +188,6 @@ export const graphQLCreateEndpoint = (serviceId: string, endpoint: NewEndpoint) 
 export const graphQLRemoveEndpoint = (id: string) =>
   graphQLBasicRequest(` mutation RemoveEndpoint($id: String!) { removeEndpoint(id: $id) }`, { id })
 
-export const graphQLSetProxy = (
-  deviceId: string,
-  set: { name?: string; domain?: string | null; publicEndpoints?: boolean }
-) =>
-  graphQLBasicRequest(
-    ` mutation SetProxy($deviceId: String!, $name: String, $domain: String, $publicEndpoints: Boolean) {
-        setProxy(deviceId: $deviceId, name: $name, domain: $domain, publicEndpoints: $publicEndpoints) { ${PROXY_FIELDS} }
-      }`,
-    { deviceId, ...set }
-  )
-
-export const graphQLRemoveProxy = (deviceId: string) =>
-  graphQLBasicRequest(` mutation RemoveProxy($deviceId: String!) { removeProxy(deviceId: $deviceId) }`, { deviceId })
-
-// remote.it's own proxies, for everyone — and, apart, offered as an exit to everyone whose plan gives exits: set by
-// remote.it's admins (the API refuses anyone else).
-// The admin page of remote.it's public proxies (graphql remoteitProxyDevices): each of remote.it's proxies and where its
-// device is owned — a public proxy's must be remote.it's system account's — and each device the proxy registration code
-// registered that is not a proxy yet.
-// A public proxy's state (graphql-api docs/PROXY-DRAIN.md): ACTIVE in service; DRAINING taking nothing new while it
-// serves what it has; RETIRED out of service (a new one starts so).
-export type ProxyState = 'ACTIVE' | 'DRAINING' | 'RETIRED'
-
-// Its open connections by protocol, by its daemon's word (about.proxy.open); none from a daemon that does not say them.
-export type ProxyOpenConnections = { https: number; tcp: number; udp: number; total: number; reported: string | null }
-
-// While draining or retired: whether its instance can be stopped with nothing dropped, and why.
-export type ProxyDrain = { safeToStop: boolean; reason: string; dnsClearAt: string | null; deadline: string | null }
-
-export type RemoteitProxyDevice = {
-  id: string
-  name: string | null
-  state: string | null
-  lastReported: string | null
-  system: boolean
-  owner: string | null
-  endpoints: number
-  // Sessions open through its endpoints now (presence's connects not yet closed); a public exit's flows are not counted.
-  openSessions: number
-  openConnections: ProxyOpenConnections | null
-  drain: ProxyDrain | null
-  proxy:
-    | (Pick<Proxy, 'id' | 'region' | 'host'> & {
-        publicExit: boolean
-        state: ProxyState
-        drainingSince: string | null
-        drainMaxWaitMinutes: number | null
-      })
-    | null
-}
-
-export const graphQLRemoteitProxyDevices = () =>
-  read<RemoteitProxyDevice[]>(
-    `query RemoteitProxyDevices {
-      remoteitProxyDevices { id name state lastReported system owner endpoints openSessions
-        openConnections { https tcp udp total reported } drain { safeToStop reason dnsClearAt deadline }
-        proxy { id region host publicExit state drainingSince drainMaxWaitMinutes } }
-    }`,
-    {},
-    'remoteitProxyDevices',
-    data => data?.remoteitProxyDevices ?? []
-  )
-
-// The code a device installs with to be remote.it's, to become a public proxy: a secret, asked for only when shown.
-export async function graphQLRemoteitProxyCode(): Promise<string | 'ERROR'> {
-  const response = await graphQLBasicRequest(` mutation RemoteitProxyCode { remoteitProxyCode }`)
-  return response === 'ERROR' ? 'ERROR' : response?.data?.data?.remoteitProxyCode ?? 'ERROR'
-}
-
-// Moves one of remote.it's proxies made before they were the system account's into it.
-export const graphQLAdoptRemoteitProxy = (deviceId: string) =>
-  graphQLBasicRequest(` mutation AdoptRemoteitProxy($deviceId: String!) { adoptRemoteitProxy(deviceId: $deviceId) }`, {
-    deviceId,
-  })
-
-// Made one of remote.it's proxies, e<n>-r3, the next free n — or with a number, moved to e<number>-r3.
-export const graphQLSetRemoteitProxy = (deviceId: string, region: string, number?: number) =>
-  graphQLBasicRequest(
-    ` mutation SetRemoteitProxy($deviceId: String!, $region: String!, $number: Int) { setRemoteitProxy(deviceId: $deviceId, region: $region, number: $number) { host } }`,
-    { deviceId, region, number }
-  )
-
-export const graphQLRemoveRemoteitProxy = (deviceId: string) =>
-  graphQLBasicRequest(
-    ` mutation RemoveRemoteitProxy($deviceId: String!) { removeRemoteitProxy(deviceId: $deviceId) }`,
-    {
-      deviceId,
-    }
-  )
-
-// A public proxy drained (nothing new; it serves what it has, waiting up to maxWaitMinutes for its connections),
-// put back in service, or retired (refused while connections are open, unless forced).
-export const graphQLDrainProxy = (id: string, maxWaitMinutes: number) =>
-  graphQLBasicRequest(
-    ` mutation DrainProxy($id: String!, $maxWaitMinutes: Int) { drainProxy(id: $id, maxWaitMinutes: $maxWaitMinutes) { state } }`,
-    { id, maxWaitMinutes }
-  )
-
-export const graphQLUndrainProxy = (id: string) =>
-  graphQLBasicRequest(` mutation UndrainProxy($id: String!) { undrainProxy(id: $id) { state } }`, { id })
-
-export const graphQLRetireProxy = (id: string, force = false) =>
-  graphQLBasicRequest(` mutation RetireProxy($id: String!, $force: Boolean) { retireProxy(id: $id, force: $force) { state } }`, {
-    id,
-    force,
-  })
-
-export const graphQLSetProxyPublicExit = (deviceId: string, publicExit: boolean) =>
-  graphQLBasicRequest(
-    ` mutation SetProxyPublicExit($deviceId: String!, $publicExit: Boolean!) { setProxyPublicExit(deviceId: $deviceId, publicExit: $publicExit) { publicExit } }`,
-    { deviceId, publicExit }
-  )
-
 // Where an endpoint is reached, as a person would type it.
 export const endpointAddress = (endpoint: Pick<Endpoint, 'kind' | 'url' | 'host' | 'port'>) =>
   endpoint.kind === 'https' ? endpoint.url : `${endpoint.host}:${endpoint.port}`
-
-// Exit nodes (proxy-plan.md §8): using a device as one is its own grant — its owner's always, anyone else's by their
-// share or organization role. A share's is set apart from what sharing again resets.
-export const graphQLShareExit = (deviceId: string, email: string) =>
-  read<boolean>(
-    `query ShareExit($id: [String!]!) { login { device(id: $id) { id access { user { email } exit } } } }`,
-    { id: [deviceId] },
-    'exit',
-    data =>
-      !!data?.login?.device?.[0]?.access?.find(
-        (a: { user?: { email?: string } }) => a.user?.email?.toLowerCase() === email.toLowerCase()
-      )?.exit
-  )
-
-export const graphQLSetShareExit = (deviceId: string, email: string, exit: boolean) =>
-  graphQLBasicRequest(
-    ` mutation SetShareExit($deviceId: String!, $email: String!, $exit: Boolean!) {
-        setShareExit(deviceId: $deviceId, email: $email, exit: $exit)
-      }`,
-    { deviceId, email, exit }
-  )
-
-// A device's exit (proxy-plan.md §8, phase 3): the exit nodes a person may use, the one a device goes through, and
-// whether it offers itself as one.
-export type ExitInfo = { offersExit: boolean; exit: { id: string; name: string } | null }
-
-export const graphQLDeviceExit = (deviceId: string) =>
-  read<ExitInfo | null>(
-    `query DeviceExit($id: [String!]!) { login { device(id: $id) { id offersExit exit { id name } } } }`,
-    { id: [deviceId] },
-    'offersExit',
-    data => data?.login?.device?.[0] ?? null
-  )
-
-// Who chose a device's exit — on the device (the OS user there) or in the portal (a person) — and what the machine's
-// administrator decided of it on the device (device-package docs/menu-app.md §3): who may choose it (cloud+local,
-// local, never), the exits allowed (null: every one), the exit pinned. Asked apart from the exit itself, so an API
-// before these fields still shows the exit.
-export type ExitChooser = {
-  exitSetOnDevice: boolean | null
-  exitSetOnDeviceBy: string | null
-  exitSetBy: { email: string | null } | null
-  exitPolicy: 'cloud+local' | 'local' | 'never' | null
-  exitAllowed: string[] | null
-  exitPinned: string | null
-}
-
-export const graphQLDeviceExitChooser = (deviceId: string) =>
-  read<ExitChooser | null>(
-    `query DeviceExitChooser($id: [String!]!) {
-      login { device(id: $id) { id exitSetOnDevice exitSetOnDeviceBy exitSetBy { email } exitPolicy exitAllowed exitPinned } }
-    }`,
-    { id: [deviceId] },
-    'exitSetOnDeviceBy',
-    data => data?.login?.device?.[0] ?? null
-  )
-
-// remote.it Protect on a device, as its engine keeps it (connectd's about.protect; graphql DeviceAbout.protect): on or
-// off, and the exit it routes through — said while Protect is off too, which the device's exit (none then) cannot say.
-// Turning it on from here is choosing that exit as the device's exit (graphQLSetDeviceExit): either side sets, the newer
-// stands. Asked apart, so an API before the field still shows the exit.
-export type ProtectInfo = { on: boolean | null; route: string | null; routeName: string | null }
-
-export const graphQLDeviceProtect = (deviceId: string) =>
-  read<ProtectInfo | null>(
-    `query DeviceProtect($id: [String!]!) { login { device(id: $id) { id about { protect { on route routeName } } } } }`,
-    { id: [deviceId] },
-    'protect',
-    data => data?.login?.device?.[0]?.about?.protect ?? null
-  )
-
-export const graphQLExits = () =>
-  read<{ id: string; name: string }[]>(`query Exits { exits { id name } }`, {}, 'exits', data => data?.exits ?? [])
-
-export const graphQLSetDeviceExit = (deviceId: string, via: string | null) =>
-  graphQLBasicRequest(
-    ` mutation SetDeviceExit($deviceId: String!, $via: String) { setDeviceExit(deviceId: $deviceId, via: $via) }`,
-    { deviceId, via }
-  )

@@ -52,28 +52,19 @@ vi.mock('./TagEditor', () => ({
   ),
 }))
 
-import { ProxyGroupTagEditor } from './ProxyGroupTagEditor'
+import { ExitTagEditor } from './ExitTagEditor'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const LAB = { name: 'lab', color: 1 }
 const PROD = { name: 'prod', color: 2 }
-const GROUP = {
-  label: 'gaaa',
-  name: 'Office Mac',
-  remoteit: false,
-  host: null,
-  members: [],
-  users: 1,
-  endpoints: 0,
-  tags: [LAB],
-}
+const EXIT = { id: 'xaaa', tags: [LAB] }
 const find = (selector: string) => document.body.querySelector(selector) as HTMLElement
 
-async function render(props: Partial<React.ComponentProps<typeof ProxyGroupTagEditor>> = {}) {
+async function render(props: Partial<React.ComponentProps<typeof ExitTagEditor>> = {}) {
   const handlers = { onAdd: vi.fn(), onRemove: vi.fn(), onClick: vi.fn() }
   const container = document.createElement('div')
   document.body.appendChild(container)
-  await act(async () => createRoot(container).render(<ProxyGroupTagEditor group={GROUP} {...handlers} {...props} />))
+  await act(async () => createRoot(container).render(<ExitTagEditor exit={EXIT} {...handlers} {...props} />))
   return handlers
 }
 
@@ -84,13 +75,13 @@ beforeEach(() => {
   create.mockClear()
 })
 
-describe('a group’s tags', () => {
-  it('shows the group’s tags, each to take off and to click; the account’s tags offered, those it carries apart', async () => {
+describe('an exit’s tags', () => {
+  it('shows the exit’s tags, each to take off and to click; the account’s tags offered, those it carries apart', async () => {
     const { onRemove, onClick, onAdd } = await render()
     expect(find('[data-chips]').getAttribute('data-chips')).toBe('lab')
     expect(find('[data-editor]').getAttribute('data-offered')).toBe('lab|prod')
     expect(find('[data-editor]').getAttribute('data-filtered')).toBe('lab')
-    // One editor a group, so '#' opens none of them.
+    // One editor an exit, so '#' opens none of them.
     expect(find('[data-editor]').getAttribute('data-shortcut')).toBe('no')
     await act(async () => find('[data-delete="lab"]').click())
     expect(onRemove).toHaveBeenCalledWith(LAB)
@@ -100,7 +91,7 @@ describe('a group’s tags', () => {
     expect(onAdd).toHaveBeenCalledWith(LAB)
   })
 
-  it('a new tag is the account’s administrators’ to make: made first, then put on the group', async () => {
+  it('a new tag is the account’s administrators’ to make: made first, then put on the exit', async () => {
     const { onAdd } = await render()
     expect(find('[data-editor]').getAttribute('data-adding')).toBe('yes')
     await act(async () => find('[data-new]').click())

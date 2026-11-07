@@ -19,15 +19,7 @@ import {
   updating,
 } from './graphQLDaemon'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
-import {
-  exposes,
-  graphQLDeviceNetworks,
-  graphQLNetworkExitGroups,
-  graphQLSetNetworkExitGroup,
-  initiates,
-  roleFor,
-  targeted,
-} from './graphQLDeviceNetworks'
+import { exposes, graphQLDeviceNetworks, initiates, roleFor, targeted } from './graphQLDeviceNetworks'
 
 const daemon = {
   deviceId: '80:00:00:00:00:00:00:01',
@@ -183,45 +175,6 @@ describe('device networks', () => {
       headers: {},
     })
     expect(await graphQLDeviceNetworks('ACCOUNT')).toBe('ERROR')
-  })
-
-  it("reads each network's exit groups apart from the networks; an API without them is UNSUPPORTED, silently", async () => {
-    const mac = { label: 'gmac', name: 'Office Mac', offered: true, dormant: false, owner: { id: 'PAT', email: 'p@x' } }
-    request.mockResolvedValue({
-      data: {
-        data: {
-          login: {
-            account: {
-              networks: [
-                { id: 'N', exitGroups: [mac] },
-                { id: 'L', exitGroups: [] },
-              ],
-            },
-          },
-        },
-      },
-      headers: {},
-    })
-    const groups = await graphQLNetworkExitGroups('ACCOUNT')
-    expect(groups instanceof Map && [...groups]).toEqual([
-      ['N', [mac]],
-      ['L', []],
-    ])
-    expect(request.mock.calls.at(-1)?.[0].data.variables).toEqual({ accountId: 'ACCOUNT' })
-    request.mockResolvedValue({
-      data: { errors: [{ message: 'Cannot query field "exitGroups" on type "Network".' }] },
-      headers: {},
-    })
-    expect(await graphQLNetworkExitGroups('ACCOUNT')).toBe(UNSUPPORTED)
-    expect(uiSet).not.toHaveBeenCalled()
-  })
-
-  it('makes a group available on a network, or no longer, a refusal in graphql’s words', async () => {
-    request.mockResolvedValue({ data: { data: { setNetworkExitGroup: true } }, headers: {} })
-    await graphQLSetNetworkExitGroup('N', 'gmac', true)
-    expect(request.mock.calls.at(-1)?.[0].data.variables).toEqual({ networkId: 'N', group: 'gmac', exit: true })
-    request.mockResolvedValue({ data: { errors: [{ message: 'no access' }] }, headers: {} })
-    expect(await graphQLSetNetworkExitGroup('N', 'gmac', false)).toEqual({ reason: 'No access' })
   })
 
   it('a device that is both initiates and is a target', () => {

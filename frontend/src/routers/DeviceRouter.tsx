@@ -13,7 +13,7 @@ import { DeviceUsersPage } from '../pages/DeviceUsersPage'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
 import { DeviceAgentPage } from '../pages/DeviceAgentPage'
-import { DeviceProxyPage } from '../pages/DeviceProxyPage'
+import { DeviceRunsPage } from '../pages/DeviceRunsPage'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
@@ -83,8 +83,8 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
             </Route>
           )}
           {deviceSessions && !device?.virtual && (
-            <Route path="/devices/:deviceID/proxy">
-              <DeviceProxyPage />
+            <Route path="/devices/:deviceID/runs">
+              <DeviceRunsPage />
             </Route>
           )}
           <Route path="/devices/:deviceID/details">

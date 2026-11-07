@@ -9,6 +9,10 @@ vi.mock('react-redux', () => ({
   useSelector: (select: any) => select({ ui: { destroying: false } }),
 }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
+// What the device runs is its own component's (RunActionDialog.test.tsx): here, which device and action it was given.
+vi.mock('./RunActionDialog', () => ({
+  DeviceRunEffects: ({ deviceId, action }: any) => <div data-run-effects={`${action}:${deviceId}`} />,
+}))
 vi.mock('react-i18next', () => {
   const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
   return {
@@ -57,6 +61,17 @@ describe('DecommissionDialog', () => {
     expect(text).toMatch(/shares/)
     expect(text).toMatch(/settings/)
     expect(text).toMatch(/keeps checking in until that software is removed, and is refused quietly/)
+  })
+
+  it('one device: says what it runs, taken out of each; several: not', async () => {
+    await render([{ id: 'd1', name: 'Kitchen Pi' }])
+    expect(document.body.querySelector('[data-run-effects]')?.getAttribute('data-run-effects')).toBe('DECOMMISSION:d1')
+    document.body.innerHTML = ''
+    await render([
+      { id: 'd1', name: 'a' },
+      { id: 'd2', name: 'b' },
+    ])
+    expect(document.body.querySelector('[data-run-effects]')).toBeNull()
   })
 
   it('one device: confirmed only by its name typed', async () => {

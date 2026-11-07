@@ -59,7 +59,14 @@ import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
 import { ThisDevicePage } from '../pages/ThisDevicePage'
 import { DisabledDevicesPage } from '../pages/DisabledDevicesPage'
-import { ProxyGroupsPage } from '../pages/ProxyGroupsPage'
+import { ExitsPage } from '../pages/ExitsPage'
+import { ExitPage } from '../pages/ExitPage'
+import { ExitAddPage } from '../pages/ExitAddPage'
+import { ProxiesPage } from '../pages/ProxiesPage'
+import { ProxyPage } from '../pages/ProxyPage'
+import { ProxyAddPage } from '../pages/ProxyAddPage'
+import { ChooseOne } from '../components/ChooseOne'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
@@ -93,6 +100,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   // Connected Apps depends on an API that ships with the MCP production release
   const testUI = useSelector((state: State) => !!state.ui.testUI)
   const virtualDevices = useVirtualDevices()
+  const deviceSessions = useDeviceSessions()
 
   // A push tap's route (services/pushNotifications), kept across the webview reload of a mobile sign-in
   useEffect(() => {
@@ -182,6 +190,51 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <NetworkRouter layout={layout} />
         </DeviceContextWrapper>
       </Route>
+      {/* Exits and proxies: what devices run (graphql-api docs/PROXY-GROUPS.md §13). The exit share mail links #exits. */}
+      {deviceSessions && (
+        <Route path="/exits">
+          <DynamicPanel
+            primary={<ExitsPage />}
+            secondary={
+              <Switch>
+                <Route path="/exits/new">
+                  <ExitAddPage />
+                </Route>
+                <Route path="/exits/:exitID">
+                  <ExitPage />
+                </Route>
+                <Route path="/exits">
+                  <ChooseOne kind="exit" />
+                </Route>
+              </Switch>
+            }
+            root="/exits"
+            layout={layout}
+          />
+        </Route>
+      )}
+      {deviceSessions && (
+        <Route path="/proxies">
+          <DynamicPanel
+            primary={<ProxiesPage />}
+            secondary={
+              <Switch>
+                <Route path="/proxies/new">
+                  <ProxyAddPage />
+                </Route>
+                <Route path="/proxies/:proxyID">
+                  <ProxyPage />
+                </Route>
+                <Route path="/proxies">
+                  <ChooseOne kind="proxy" />
+                </Route>
+              </Switch>
+            }
+            root="/proxies"
+            layout={layout}
+          />
+        </Route>
+      )}
       {/* Add */}
       <Route path="/add/raspberrypi-options">
         <Panel layout={layout}>
@@ -241,11 +294,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path="/devices/disabled">
         <Panel layout={layout}>
           <DisabledDevicesPage />
-        </Panel>
-      </Route>
-      <Route path="/devices/groups">
-        <Panel layout={layout}>
-          <ProxyGroupsPage />
         </Panel>
       </Route>
       <Route path="/devices/transfer">

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { List, ListItem, ListItemIcon, ListItemText, TextField, Typography } from '@mui/material'
 import { Dispatch, State } from '../store'
 import { Confirm } from './Confirm'
+import { DeviceRunEffects } from './RunActionDialog'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
@@ -72,6 +73,8 @@ export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, on
           </ListItem>
         ))}
       </List>
+      {/* One device: what it runs, and that it is taken out of each. */}
+      {single && <DeviceRunEffects deviceId={devices[0].id} action="DECOMMISSION" />}
       <Typography variant="body2" gutterBottom>
         {t(
           'decommission.legacy',

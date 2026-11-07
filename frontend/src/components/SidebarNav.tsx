@@ -17,6 +17,7 @@ import { getLocale } from '../helpers/dateHelper'
 import { spacing } from '../styling'
 import { getHasPartner } from '../models/partnerStats'
 import { useThisDevice, useThisDevicePage } from '../hooks/useThisDevice'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 
 const listSx = (theme: Theme) => ({
   position: 'static',
@@ -50,6 +51,8 @@ export const SidebarNav: React.FC = () => {
   // "This device": only in an app (thisDevice present), and only with its flag (hooks/useThisDevice).
   const thisDevicePage = useThisDevicePage()
   const thisDevice = useThisDevice()
+  // Exits and proxies are the device-session API's.
+  const deviceSessions = useDeviceSessions()
 
   if (remoteUI)
     return (
@@ -138,6 +141,12 @@ export const SidebarNav: React.FC = () => {
               </Tooltip>
             )}
           </ListItemLocation>
+          {deviceSessions && (
+            <ListItemLocation title={t('nav.exits', 'Exits')} icon="door-open" to="/exits" match="/exits" dense />
+          )}
+          {deviceSessions && (
+            <ListItemLocation title={t('nav.proxies', 'Proxies')} icon="server" to="/proxies" match="/proxies" dense />
+          )}
         </>
       )}
       <ListItemLocation

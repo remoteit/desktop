@@ -74,10 +74,10 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
             )}
             {deviceSessions && !device.virtual && (
               <ListItemLocation
-                title={t('deviceHeaderMenu.proxy', 'Proxy & exit')}
+                title={t('deviceHeaderMenu.runs', 'Runs')}
                 icon="server"
                 iconColor="grayDarker"
-                to={`/devices/${device.id}/proxy`}
+                to={`/devices/${device.id}/runs`}
                 dense
               />
             )}

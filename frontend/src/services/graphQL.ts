@@ -26,6 +26,11 @@ export async function graphQLRequestWithReason(query: String, variables: ILookup
   return { reason: reason.charAt(0).toUpperCase() + reason.slice(1) }
 }
 
+// A refusal's words, from a request made with graphQLRequestWithReason: '' where none was said; none for one that went
+// through.
+export const refusalOf = (result: Awaited<ReturnType<typeof graphQLRequestWithReason>>): string | undefined =>
+  result === 'ERROR' ? '' : 'reason' in result ? result.reason : undefined
+
 // For batched per-account queries: one account the token can't read must not discard the ones that resolved.
 export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
   const response = await post({ query, variables })

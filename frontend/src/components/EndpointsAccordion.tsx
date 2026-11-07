@@ -6,7 +6,7 @@ import {
   EndpointAccess,
   EndpointKind,
   EndpointLifetime,
-  Proxy,
+  ProxyChoice,
   endpointAddress,
   graphQLCreateEndpoint,
   graphQLProxies,
@@ -34,7 +34,7 @@ type Props = { device: IDevice; service: IService }
 export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   const { t } = useTranslation()
   const [endpoints, setEndpoints] = useState<Endpoint[] | 'ERROR' | typeof UNSUPPORTED>()
-  const [proxies, setProxies] = useState<Proxy[]>([])
+  const [proxies, setProxies] = useState<ProxyChoice[]>([])
   const [adding, setAdding] = useState(false)
   const [busy, setBusy] = useState(false)
   const manage = device.permissions.includes('MANAGE')
@@ -42,7 +42,7 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   const usage = useTransferUsageHint(
     device.owner?.id,
     'proxy',
-    Array.isArray(endpoints) && endpoints.some(endpoint => endpoint.proxy.kind === 'remoteit')
+    Array.isArray(endpoints) && endpoints.some(endpoint => endpoint.proxy.remoteit)
   )
 
   const load = useCallback(async () => {
@@ -155,7 +155,7 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
                     ) : (
                       t('endpoints.temporary', 'temporary')
                     )}
-                    {endpoint.proxy.kind === 'own' &&
+                    {!endpoint.proxy.remoteit &&
                       ` · ${t('endpoints.via', 'via {{host}}', { host: endpoint.proxy.host })}`}
                   </>
                 }
@@ -197,14 +197,14 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
 }
 
 type FormProps = {
-  proxies: Proxy[]
+  proxies: ProxyChoice[]
   manage: boolean
   busy: boolean
   onCreate: (endpoint: {
     kind: EndpointKind
     access: EndpointAccess
     lifetime: EndpointLifetime
-    proxyId?: string
+    proxy?: string
     lockedIp?: string
     allow?: string[]
   }) => void
@@ -244,7 +244,7 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
             { key: '', name: t('endpoints.nearest', "remote.it's, nearest the device") },
             ...usable.map(p => ({
               key: p.id,
-              name: p.kind === 'own' ? p.host : `${p.host}${p.region ? ` (${p.region})` : ''}`,
+              name: p.remoteit ? [p.name, p.provider].filter(Boolean).join(' · ') : `${p.name} · ${p.host}`,
             })),
           ]}
           onChange={setProxyId}
@@ -309,7 +309,7 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
             kind,
             access: chosenAccess,
             lifetime,
-            proxyId: proxyId || undefined,
+            proxy: proxyId || undefined,
             lockedIp: chosenAccess === 'ip-locked' ? lockedIp : undefined,
             allow:
               chosenAccess === 'cidr'

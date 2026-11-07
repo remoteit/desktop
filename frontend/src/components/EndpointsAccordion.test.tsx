@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Making an endpoint: the proxy choice defaults to remote.it's nearest the device, which shows its name like any other
-// choice and sends no proxy; a named proxy sends its id.
+// choice and sends no proxy; a proxy chosen — remote.it's by its name and where, an own one by its name and host — is
+// sent by its id.
 const { create, endpoints, usage } = vi.hoisted(() => ({
   create: vi.fn(async () => ({} as any)),
   endpoints: vi.fn(async () => [] as any),
@@ -13,15 +14,24 @@ vi.mock('../services/graphQLProxy', () => ({
   graphQLServiceEndpoints: endpoints,
   graphQLProxies: async () => [
     {
-      id: 'E1',
-      kind: 'remoteit',
-      region: 'us-west-2',
-      host: 'e1.solo.r3proxy.com',
-      name: null,
+      id: 'P1',
+      name: 'remote.it pdx1a',
+      host: 'pdx1a-r3.solo.r3proxy.com',
       domain: null,
+      remoteit: true,
       publicEndpoints: true,
-      manage: false,
-      certificate: 'ready',
+      location: 'pdx1',
+      provider: 'AWS us-west-2 (Boardman)',
+    },
+    {
+      id: 'P2',
+      name: 'Office gateway',
+      host: 'gw-acme.solo.r3proxy.com',
+      domain: null,
+      remoteit: false,
+      publicEndpoints: true,
+      location: null,
+      provider: '',
     },
   ],
   graphQLCreateEndpoint: create,
@@ -91,20 +101,22 @@ describe('the endpoint form’s proxy choice', () => {
   it('sends no proxy for the nearest choice', async () => {
     await makeIt(await openForm())
     expect(create).toHaveBeenCalledTimes(1)
-    expect((create.mock.calls[0] as any[])[1].proxyId).toBeUndefined()
+    expect((create.mock.calls[0] as any[])[1].proxy).toBeUndefined()
   })
 
   it('shows and sends a named proxy', async () => {
     const container = await openForm()
     const field = proxyField(container)
     await act(async () => (field.closest('.MuiListItemButton-root') as HTMLElement).click())
+    const options = [...document.querySelectorAll('[role="option"]')].map(o => o.textContent)
+    expect(options).toContain('remote.it pdx1a · AWS us-west-2 (Boardman)')
     const option = [...document.querySelectorAll('[role="option"]')].find(o =>
-      o.textContent?.includes('e1.solo.r3proxy.com')
+      o.textContent?.includes('gw-acme.solo.r3proxy.com')
     ) as HTMLElement
     await act(async () => option.click())
-    expect(field.querySelector('.MuiSelect-select')?.textContent).toBe('e1.solo.r3proxy.com (us-west-2)')
+    expect(field.querySelector('.MuiSelect-select')?.textContent).toBe('Office gateway · gw-acme.solo.r3proxy.com')
     await makeIt(container)
-    expect((create.mock.calls[0] as any[])[1].proxyId).toBe('E1')
+    expect((create.mock.calls[0] as any[])[1].proxy).toBe('P2')
   })
 })
 
@@ -142,7 +154,7 @@ describe('the account’s public-proxy transfer under the endpoints', () => {
   const endpoint = (kind: 'remoteit' | 'own') => ({
     id: `EP-${kind}`,
     serviceId: 'SERVICE',
-    proxy: { id: 'P', kind, host: 'e1.solo.r3proxy.com', region: null },
+    proxy: { id: 'P', name: kind === 'remoteit' ? 'remote.it pdx1a' : 'Office gateway', host: 'e1.solo.r3proxy.com', remoteit: kind === 'remoteit' },
     kind: 'https',
     lifetime: 'temporary',
     access: 'public',

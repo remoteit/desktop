@@ -8,6 +8,7 @@ import { DeleteButton } from '../buttons/DeleteButton'
 import { Typography } from '@mui/material'
 import { Notice } from './Notice'
 import { useDeviceDisable } from '../hooks/useDeviceDisable'
+import { DeviceRunEffects } from './RunActionDialog'
 
 type Props = {
   device?: IDevice
@@ -154,11 +155,17 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
     )
   }
 
+  // What it runs, said too: a deleted device keeps its place in each proxy and exit, serving nothing while disabled.
   const button = (
     <DeleteButton
       menuItem={menuItem}
       icon={icon}
-      warning={warning}
+      warning={
+        <>
+          {warning}
+          {!device.virtual && <DeviceRunEffects deviceId={device.id} action="DELETE" />}
+        </>
+      }
       title={title}
       disabled={disabled || setupBusy}
       destroying={destroying || setupDeletingDevice}

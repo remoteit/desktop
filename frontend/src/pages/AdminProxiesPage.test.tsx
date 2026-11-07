@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Admin → Proxies & exits as tabs: Proxies · Access log · Limits & policy · Usage, the tab in the URL's ?view=, each
-// tab its own sections; Usage shown whatever became of the exit policy.
+// Admin → Proxies & exits as tabs: Proxies · Exits · Machines · Access log · Limits & policy · Usage, the tab in the
+// URL's ?view=, each tab its own sections; Usage shown whatever became of the exit policy.
 const { policy } = vi.hoisted(() => ({ policy: vi.fn() }))
 vi.mock('../services/graphQLExitPolicy', () => ({
   graphQLExitPolicy: policy,
@@ -12,7 +12,11 @@ vi.mock('../services/graphQLExitPolicy', () => ({
   graphQLSetExitSuspended: vi.fn(),
 }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
-vi.mock('./AdminPublicProxies', () => ({ AdminPublicProxies: () => <div data-section="proxies" /> }))
+vi.mock('./AdminRemoteit', () => ({
+  AdminRemoteitProxies: () => <div data-section="proxies" />,
+  AdminRemoteitExits: () => <div data-section="exits" />,
+  AdminRemoteitMachines: () => <div data-section="machines" />,
+}))
 vi.mock('./AdminProxyAccess', () => ({ AdminProxyAccess: () => <div data-section="access" /> }))
 vi.mock('./AdminProxyLimits', () => ({ AdminProxyLimits: () => <div data-section="limits" /> }))
 vi.mock('./AdminTransferUsage', () => ({ AdminTransferUsage: () => <div data-section="usage" /> }))
@@ -81,16 +85,20 @@ describe('AdminProxiesPage', () => {
 
   it('reads the tab from ?view=, the Proxies tab without one', () => {
     expect(proxiesView('')).toBe('proxies')
+    expect(proxiesView('?view=exits')).toBe('exits')
+    expect(proxiesView('?view=machines')).toBe('machines')
     expect(proxiesView('?view=access')).toBe('access')
     expect(proxiesView('?view=limits')).toBe('limits')
     expect(proxiesView('?view=usage')).toBe('usage')
     expect(proxiesView('?view=nonsense')).toBe('proxies')
   })
 
-  it('shows four tabs, the Proxies tab first, with the public proxies alone', async () => {
+  it('shows six tabs, the Proxies tab first, with remote.it’s proxies alone', async () => {
     const c = await render()
     expect([...c.querySelectorAll('[data-tab]')].map(t => t.textContent)).toEqual([
       'Proxies',
+      'Exits',
+      'Machines',
       'Access log',
       'Limits & policy',
       'Usage',
@@ -102,6 +110,14 @@ describe('AdminProxiesPage', () => {
 
   it('switches tab into the URL, each with its own sections', async () => {
     const c = await render()
+
+    await act(async () => tab(c, 'exits').click())
+    expect(location.search).toBe('?view=exits')
+    expect(sections(c)).toEqual(['exits'])
+
+    await act(async () => tab(c, 'machines').click())
+    expect(location.search).toBe('?view=machines')
+    expect(sections(c)).toEqual(['machines'])
 
     await act(async () => tab(c, 'access').click())
     expect(location.search).toBe('?view=access')

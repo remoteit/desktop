@@ -9,8 +9,6 @@ import { selectContacts } from '../../selectors/contacts'
 import { useGuests } from '../../hooks/useGuests'
 import { ContactSelector } from '../../components/ContactSelector'
 import { SharingForm } from '../../components/SharingForm'
-import { ShareExitSetting } from '../../components/ShareExitSetting'
-import { useDeviceSessions } from '../../hooks/useDeviceSessions'
 import { getAccess } from '../../helpers/userHelper'
 import { Container } from '../../components/Container'
 import { Gutters } from '../../components/Gutters'
@@ -30,7 +28,6 @@ export const SharePage: React.FC = () => {
   const guest = guests.find(g => g.id === userID)
   const email = guest?.email || ''
   const history = useHistory()
-  const deviceSessions = useDeviceSessions()
 
   useEffect(() => {
     ;(async () => {
@@ -92,7 +89,6 @@ export const SharePage: React.FC = () => {
       }
     >
       {device && <SharingForm device={device} user={guest} />}
-      {deviceSessions && device && email && <ShareExitSetting device={device} email={email} />}
     </Container>
   )
 }

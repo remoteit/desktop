@@ -16,39 +16,39 @@ import {
 import { State } from '../store'
 import { selectContacts } from '../selectors/contacts'
 import { selectOrganization } from '../selectors/organizations'
-import { ProxyGroup, graphQLShareProxyGroup, graphQLUnshareProxyGroup, refusalOf } from '../services/graphQLProxyGroups'
+import { refusalOf } from '../services/graphQL'
+import { Exit, graphQLShareExit, graphQLUnshareExit } from '../services/graphQLExits'
 import { IconButton } from '../buttons/IconButton'
 import { ContactSelector } from './ContactSelector'
 import { Avatar } from './Avatar'
 import { Notice } from './Notice'
 
 type Props = {
-  group: ProxyGroup
+  exit: Pick<Exit, 'id' | 'name' | 'access'>
   open: boolean
-  emails?: string[] // the addresses chosen as it opens: a device's share page opens it for its person
   onClose: () => void
   onChanged: () => void
 }
 
-/* Sharing one of the account's groups (graphql-api docs/PROXY-GROUPS.md §11, "Sharing an own group"): people, by email
-   as a device is shared, may then send a device of theirs out through the group, whichever of its devices takes the
-   traffic — nothing on those devices themselves. Those it is shared with now, each removable; the organization's members
-   are not offered, as for a network: what they may use is their role's. A refusal is said in graphql's words. */
-export const ProxyGroupShareDialog: React.FC<Props> = ({ group, open, emails: chosen = [], onClose, onChanged }) => {
+/* Sharing one of the account's exits (graphql-api docs/PROXY-GROUPS.md §13): people, by email as a device is shared,
+   may then send a device of theirs out through the exit, whichever of its devices takes the traffic — nothing on those
+   devices themselves. Those it is shared with now, each removable; the organization's members are not offered, as for a
+   network: what they may use is their role's. A refusal is said in graphql's words. */
+export const ExitShareDialog: React.FC<Props> = ({ exit, open, onClose, onChanged }) => {
   const { t } = useTranslation()
   const contacts = useSelector((state: State) => {
     const organization = selectOrganization(state)
     return selectContacts(state).filter(c => !organization.members.some(m => m.user.id === c.id))
   })
-  const [emails, setEmails] = useState<string[]>(chosen)
+  const [emails, setEmails] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
-  const shares = group.access ?? []
+  const shares = exit.access
 
-  const done = async (result: Awaited<ReturnType<typeof graphQLShareProxyGroup>>) => {
+  const done = async (result: Awaited<ReturnType<typeof graphQLShareExit>>) => {
     setBusy(false)
     const refused = refusalOf(result)
-    if (refused !== undefined) return setRefusal(refused || t('proxyGroupShare.failed', 'It could not be changed.'))
+    if (refused !== undefined) return setRefusal(refused || t('exitShare.failed', 'It could not be changed.'))
     setRefusal(undefined)
     setEmails([])
     onChanged()
@@ -56,22 +56,22 @@ export const ProxyGroupShareDialog: React.FC<Props> = ({ group, open, emails: ch
 
   const share = async () => {
     setBusy(true)
-    await done(await graphQLShareProxyGroup(group.label, emails))
+    await done(await graphQLShareExit(exit.id, emails))
   }
 
   const remove = async (email: string) => {
     setBusy(true)
-    await done(await graphQLUnshareProxyGroup(group.label, [email]))
+    await done(await graphQLUnshareExit(exit.id, [email]))
   }
 
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={onClose}>
-      <DialogTitle>{t('proxyGroupShare.title', 'Share {{group}}', { group: group.name })}</DialogTitle>
+      <DialogTitle>{t('exitShare.title', 'Share {{exit}}', { exit: exit.name })}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="textSecondary" gutterBottom>
           {t(
-            'proxyGroupShare.description',
-            'Those you share it with can send a device of theirs out through it as its exit, whichever device in it takes the traffic. They get nothing on its devices themselves.'
+            'exitShare.description',
+            'Those you share it with can send a device of theirs out through it as its exit, whichever of its devices takes the traffic. They get nothing on its devices themselves.'
           )}
         </Typography>
         <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />
@@ -88,7 +88,7 @@ export const ProxyGroupShareDialog: React.FC<Props> = ({ group, open, emails: ch
               secondaryAction={
                 <IconButton
                   icon="trash"
-                  title={t('proxyGroupShare.remove', 'Stop sharing with {{email}}', { email: user.email || user.id })}
+                  title={t('exitShare.remove', 'Stop sharing with {{email}}', { email: user.email || user.id })}
                   disabled={busy || !user.email}
                   onClick={() => user.email && remove(user.email)}
                 />
@@ -103,7 +103,7 @@ export const ProxyGroupShareDialog: React.FC<Props> = ({ group, open, emails: ch
         </List>
         {!shares.length && (
           <Typography variant="body2" color="textSecondary">
-            {t('proxyGroupShare.none', 'Shared with no one yet.')}
+            {t('exitShare.none', 'Shared with no one yet.')}
           </Typography>
         )}
       </DialogContent>
@@ -112,7 +112,7 @@ export const ProxyGroupShareDialog: React.FC<Props> = ({ group, open, emails: ch
           {t('common.close', 'Close')}
         </Button>
         <Button variant="contained" color="primary" disabled={busy || !emails.length} onClick={share}>
-          {busy ? t('proxyGroupShare.sharing', 'Sharing...') : t('proxyGroupShare.share', 'Share')}
+          {busy ? t('exitShare.sharing', 'Sharing...') : t('exitShare.share', 'Share')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -23,7 +23,7 @@ import {
 } from '../services/graphQLExitPolicy'
 import { parsePorts } from '../helpers/portListHelper'
 import { AdminProxyLimits } from './AdminProxyLimits'
-import { AdminPublicProxies } from './AdminPublicProxies'
+import { AdminRemoteitExits, AdminRemoteitMachines, AdminRemoteitProxies } from './AdminRemoteit'
 import { AdminProxyAccess } from './AdminProxyAccess'
 import { AdminTransferUsage } from './AdminTransferUsage'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
@@ -37,10 +37,12 @@ import { Icon } from '../components/Icon'
 
 export const PROXIES_ROUTE = '/admin/proxies'
 
-export type ProxiesView = 'proxies' | 'access' | 'limits' | 'usage'
+export type ProxiesView = 'proxies' | 'exits' | 'machines' | 'access' | 'limits' | 'usage'
 
 const VIEWS: { value: ProxiesView; label: string }[] = [
   { value: 'proxies', label: 'Proxies' },
+  { value: 'exits', label: 'Exits' },
+  { value: 'machines', label: 'Machines' },
   { value: 'access', label: 'Access log' },
   { value: 'limits', label: 'Limits & policy' },
   { value: 'usage', label: 'Usage' },
@@ -52,11 +54,12 @@ export const proxiesView = (search: string): ProxiesView => {
   return VIEWS.find(v => v.value === view)?.value ?? 'proxies'
 }
 
-/* remote.it's proxies and exit nodes (presence-server docs/proxy-plan.md §5, §8), a tab each: the public proxies
-   themselves, each a public exit or not; who used them; each plan's limits on them, the policy every exit keeps — what
-   it refuses beyond what every exit refuses, how fast one account may open flows, how long its flow log and the
-   proxies' access log are kept — and the accounts stopped from using exits; and each account's public transfer this
-   month. A change takes effect at once. Admins only; English only, as the rest of /admin. */
+/* remote.it's proxies and exits (graphql-api docs/PROXY-GROUPS.md §13, presence-server docs/proxy-plan.md §5, §8), a
+   tab each: the proxies, the exits, and the machines that run them (pages/AdminRemoteit.tsx); who used the proxies;
+   each plan's limits on them, the policy every exit keeps — what it refuses beyond what every exit refuses, how fast
+   one account may open flows, how long its flow log and the proxies' access log are kept — and the accounts stopped
+   from using exits; and each account's public transfer this month. A change takes effect at once. Admins only; English
+   only, as the rest of /admin. */
 export const AdminProxiesPage: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
@@ -122,7 +125,9 @@ export const AdminProxiesPage: React.FC = () => {
             {problem}
           </Notice>
         )}
-        {view === 'proxies' && <AdminPublicProxies onProblem={setProblem} />}
+        {view === 'proxies' && <AdminRemoteitProxies onProblem={setProblem} />}
+        {view === 'exits' && <AdminRemoteitExits onProblem={setProblem} />}
+        {view === 'machines' && <AdminRemoteitMachines onProblem={setProblem} />}
         {view === 'access' && <AdminProxyAccess />}
         {view === 'limits' && (
           <>
