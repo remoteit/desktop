@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
+import { Box, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { Exit, graphQLOfferedExits } from '../services/graphQLExits'
 import { useAccountExits } from '../hooks/useAccountExits'
@@ -91,7 +91,12 @@ export const ExitsPage: React.FC = () => {
                 title={exit.name}
                 subtitle={ownLine(t, exit)}
               >
-                {!!exit.tags.length && <Tags tags={exit.tags} max={exit.tags.length} onClick={tag => setTagFilter(tag)} />}
+                {/* A tag clicked filters the list: it does not open the exit too. */}
+                {!!exit.tags.length && (
+                  <Box display="flex" gap={0.5} onClick={event => event.stopPropagation()}>
+                    <Tags tags={exit.tags} max={exit.tags.length} onClick={tag => setTagFilter(tag)} />
+                  </Box>
+                )}
               </ListItemLocation>
             ))}
             {!own.length && (

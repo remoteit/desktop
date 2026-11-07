@@ -1,17 +1,99 @@
-import { describe, it, expect, vi } from 'vitest'
-
-vi.mock('../services/graphQLExits', () => ({}))
-vi.mock('../services/graphQL', () => ({ refusalOf: vi.fn() }))
-vi.mock('./TransferUsage', () => ({ TransferUsageHintText: () => null, useTransferUsageHint: () => null }))
-vi.mock('./ListItemSetting', () => ({ ListItemSetting: () => null }))
-vi.mock('./SelectSetting', () => ({ SelectSetting: () => null }))
-vi.mock('./Notice', () => ({ Notice: () => null }))
-
-import { choiceName, chosenLine, policyLine } from './DeviceExitSection'
+import React, { act } from 'react'
+import { createRoot } from 'react-dom/client'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { DeviceExit } from '../services/graphQLExits'
 
+const { deviceExit, offered, protect, setExit, usageHint } = vi.hoisted(() => ({
+  deviceExit: vi.fn(async (_deviceId: string) => null as any),
+  offered: vi.fn(async (_deviceId?: string) => [] as any),
+  protect: vi.fn(async (_deviceId: string) => null as any),
+  setExit: vi.fn(async (_deviceId: string, _via: string | null) => ({} as any)),
+  // How the hint reads the usage is TransferUsage.test.tsx's: here, whose transfer it is and whether it is shown.
+  usageHint: vi.fn((_accountId: string | undefined, _kind: string, shown: boolean) =>
+    shown ? { text: '8.2 of 10 GB this month', over: false } : null
+  ),
+}))
+vi.mock('../services/graphQLExits', () => ({
+  graphQLDeviceExit: deviceExit,
+  graphQLDeviceProtect: protect,
+  graphQLOfferedExits: offered,
+  graphQLSetDeviceExit: setExit,
+}))
+vi.mock('../services/graphQL', () => ({
+  refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
+}))
+vi.mock('./TransferUsage', () => ({
+  useTransferUsageHint: usageHint,
+  TransferUsageHintText: ({ hint }: any) => <p data-usage>{hint.text}</p>,
+}))
+vi.mock('./Notice', () => ({
+  Notice: ({ children, onClose }: any) => (
+    <div data-notice>
+      {children}
+      {onClose && <button data-close onClick={onClose} />}
+    </div>
+  ),
+}))
+// A row: its label and sub-label, and its button (if any).
+vi.mock('./ListItemSetting', () => ({
+  ListItemSetting: ({ icon, label, subLabel, button, disabled, onButtonClick }: any) => (
+    <div data-item={icon}>
+      {label}
+      {subLabel ? ` — ${subLabel}` : ''}
+      {button ? (
+        <button data-button disabled={disabled} onClick={onButtonClick}>
+          {button}
+        </button>
+      ) : null}
+    </div>
+  ),
+}))
+// The choice: its value, whether it is disabled, and each option a button that picks it — clickable even while
+// disabled, so the component's own guard is what is tested.
+vi.mock('./SelectSetting', () => ({
+  SelectSetting: ({ disabled, value, values, onChange }: any) => (
+    <div data-select data-value={value} data-disabled={String(!!disabled)}>
+      {values.map((each: any) => (
+        <button key={each.key} data-choice={each.key} onClick={() => onChange(each.key)}>
+          {each.name}
+        </button>
+      ))}
+    </div>
+  ),
+}))
+vi.mock('react-i18next', () => {
+  const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
+  return {
+    useTranslation: () => ({
+      t: (_key: string, a: any, b?: any) =>
+        typeof a === 'string' ? fill(a, b) : fill(a.count === 1 ? a.defaultValue_one : a.defaultValue_other, a),
+    }),
+  }
+})
+
+import { DeviceExitChoice, choiceName, chosenLine, policyLine } from './DeviceExitSection'
+;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
+
 const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
-const chooser = (fields: Partial<DeviceExit> = {}): DeviceExit => ({
+
+const OWNER = { id: 'OWNER', email: 'owner@example.com' }
+const PAT = { id: 'PAT', email: 'pat@example.com' }
+const NED = { id: 'NED', email: 'ned@example.com' }
+const pdx = { id: 'pdx1a', name: 'remote.it pdx1a', remoteit: true, owner: null }
+const office = { id: 'xoffice', name: 'Office', remoteit: false, owner: OWNER }
+const pats = { id: 'xpat', name: 'Pat exit', remoteit: false, owner: PAT }
+const router = { id: 'xrouter', name: 'Home router', remoteit: false, owner: NED }
+const spare = { id: 'xspare', name: 'Spare', remoteit: false, owner: OWNER }
+
+// An exit as a device uses it: offered, and not dormant, unless said.
+const uses = (exit: typeof office | typeof pdx, fields: { offered?: boolean; dormant?: boolean } = {}) => ({
+  ...exit,
+  offered: true,
+  dormant: false,
+  ...fields,
+})
+
+const none: DeviceExit = {
   usesExit: null,
   usesExitThrough: null,
   exitDormant: false,
@@ -21,51 +103,391 @@ const chooser = (fields: Partial<DeviceExit> = {}): DeviceExit => ({
   exitPolicy: 'cloud+local',
   exitAllowed: null,
   exitPinned: null,
-  ...fields,
+}
+const exitOf = (fields: Partial<DeviceExit> = {}): DeviceExit => ({ ...none, ...fields })
+
+async function render(permissions = ['VIEW', 'MANAGE']) {
+  document.body.innerHTML = ''
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const device = { id: 'LAPTOP', name: 'Laptop', permissions, owner: OWNER } as any
+  await act(async () => createRoot(container).render(<DeviceExitChoice device={device} />))
+  return container
+}
+const click = async (element: Element | null | undefined) => act(async () => (element as HTMLElement).click())
+const select = (page: HTMLElement) => page.querySelector('[data-select]') as HTMLElement
+const choices = (page: HTMLElement) =>
+  [...page.querySelectorAll('[data-choice]')].map(each => `${each.getAttribute('data-choice')}=${each.textContent}`)
+const choice = (page: HTMLElement, key: string) => page.querySelector(`[data-choice="${key}"]`)
+const notice = (page: HTMLElement) => page.querySelector('[data-notice]')?.textContent ?? null
+const protectRow = (page: HTMLElement) => page.querySelector('[data-item="shield-alt"]')
+
+beforeEach(() => {
+  deviceExit.mockReset().mockResolvedValue(exitOf())
+  // For the device: remote.it's by its account's plan, its account's own, one shared with the person choosing, and one
+  // its network gives it. For the person choosing: their own and the one shared with them.
+  offered
+    .mockReset()
+    .mockImplementation(async (deviceId?: string) => (deviceId ? [pdx, office, pats, router] : [office, pats]))
+  protect.mockReset().mockResolvedValue(null)
+  setExit.mockReset().mockResolvedValue({})
+  usageHint.mockClear()
 })
 
-describe('an exit offered for a device, named', () => {
-  const mine = new Set(['xha', 'xshared'])
-  const pat = { id: 'PAT', email: 'pat@example.com' }
+describe('the exit a device’s traffic goes out through', () => {
+  it('offers the exits offered for the device, named: remote.it’s and its account’s own by name, another account’s by whose it is, one its networks give it so', async () => {
+    const page = await render()
+    expect(offered).toHaveBeenCalledWith('LAPTOP')
+    expect(offered).toHaveBeenCalledWith()
+    expect(choices(page)).toEqual([
+      '=None — its usual way out',
+      'pdx1a=remote.it pdx1a',
+      'xoffice=Office',
+      'xpat=Pat exit · pat@example.com’s',
+      'xrouter=Home router · by its network',
+    ])
+    expect(select(page).dataset.value).toBe('')
+  })
 
-  it('remote.it’s and the account’s own by name; another account’s by whose; one its networks give it, so', () => {
-    expect(choiceName(t, { id: 'pdx1a', name: 'remote.it pdx1a', remoteit: true, owner: null }, 'ME', mine)).toBe(
-      'remote.it pdx1a'
+  it('shows the exit in use as chosen; one no longer offered for it still shows, as itself', async () => {
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office) }))
+    let page = await render()
+    expect(select(page).dataset.value).toBe('xoffice')
+    expect(choices(page).filter(each => each.startsWith('xoffice='))).toEqual(['xoffice=Office'])
+
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses({ ...pats, id: 'xold', name: 'Old exit' }) }))
+    page = await render()
+    expect(select(page).dataset.value).toBe('xold')
+    expect(choices(page).at(-1)).toBe('xold=Old exit')
+  })
+
+  it('a dormant exit stays chosen, with no device available: its traffic goes its usual way until one is', async () => {
+    deviceExit.mockResolvedValue(
+      exitOf({
+        usesExit: uses(spare, { offered: false, dormant: true }),
+        usesExitThrough: { id: 'MAC', name: 'Office Mac' },
+        exitDormant: true,
+      })
     )
-    expect(choiceName(t, { id: 'xha', name: 'HA Derby', remoteit: false, owner: { id: 'ME', email: 'me@x' } }, 'ME', mine)).toBe(
-      'HA Derby'
+    const page = await render()
+    expect(select(page).dataset.value).toBe('xspare')
+    expect(choices(page).at(-1)).toBe('xspare=Spare · no device available')
+    expect(page.textContent).toContain(
+      'Its exit, Spare, is dormant — No device available: none of the exit’s devices is in service, so its traffic goes its usual way, Protect off for it, until one is'
     )
-    expect(choiceName(t, { id: 'xshared', name: 'Office', remoteit: false, owner: pat }, 'ME', mine)).toBe(
-      'Office · pat@example.com’s'
+    expect(page.textContent).not.toContain('takes its traffic now')
+    expect(page.textContent).not.toContain('Going out through')
+  })
+
+  it('an exit none of whose devices takes its traffic now: said, its traffic stopped until one does', async () => {
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office, { offered: false }) }))
+    const page = await render()
+    expect(page.textContent).toContain(
+      'None of Office’s devices takes its traffic now — Its traffic stops until one does: a device added to the exit, or one of its devices offering itself again.'
     )
-    expect(choiceName(t, { id: 'xnet', name: 'Router', remoteit: false, owner: pat }, 'ME', mine)).toBe(
-      'Router · by its network'
+    expect(page.textContent).not.toContain('is dormant')
+    expect(page.textContent).not.toContain('Going out through')
+  })
+
+  it('says the device of the exit its new connections go through now, where graphql says one', async () => {
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office), usesExitThrough: { id: 'MAC', name: 'Office Mac' } }))
+    let page = await render()
+    expect(page.textContent).toContain(
+      'Going out through Office Mac now — remote.it picks the device of the exit its new connections go through'
     )
+    expect(page.textContent).not.toContain('takes its traffic now')
+
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office) }))
+    page = await render()
+    expect(select(page).dataset.value).toBe('xoffice')
+    expect(page.textContent).not.toContain('Going out through')
+  })
+
+  it('choosing an exit sends the device’s traffic out through it, and reads its exit again; None stops it', async () => {
+    const page = await render()
+    expect(deviceExit).toHaveBeenCalledTimes(1)
+    await click(choice(page, 'xpat'))
+    expect(setExit).toHaveBeenCalledWith('LAPTOP', 'xpat')
+    expect(deviceExit).toHaveBeenCalledTimes(2)
+    expect(notice(page)).toBeNull()
+
+    await click(choice(page, ''))
+    expect(setExit).toHaveBeenLastCalledWith('LAPTOP', null)
+  })
+
+  it('while a choice is being made, the choice is disabled and another is not sent', async () => {
+    let answer: (value: unknown) => void = () => {}
+    setExit.mockImplementationOnce(() => new Promise(resolve => (answer = resolve)))
+    const page = await render()
+    await click(choice(page, 'xpat'))
+    expect(select(page).dataset.disabled).toBe('true')
+    await click(choice(page, 'xoffice'))
+    expect(setExit).toHaveBeenCalledTimes(1)
+    await act(async () => answer({}))
+    expect(select(page).dataset.disabled).toBe('false')
+  })
+
+  it('a refusal is said in graphql’s words, or that nothing was changed; it goes when closed, or once a choice goes through', async () => {
+    const page = await render()
+    setExit.mockResolvedValueOnce({ reason: 'Pat exit has no device in service: it can be chosen once one is' })
+    await click(choice(page, 'xpat'))
+    expect(notice(page)).toBe('Pat exit has no device in service: it can be chosen once one is')
+    expect(deviceExit).toHaveBeenCalledTimes(2)
+
+    setExit.mockResolvedValueOnce('ERROR')
+    await click(choice(page, 'xoffice'))
+    expect(notice(page)).toBe('It was not changed: try again.')
+    await click(page.querySelector('[data-close]'))
+    expect(notice(page)).toBeNull()
+
+    setExit.mockResolvedValueOnce({ reason: 'Not an exit you or the device may use' })
+    await click(choice(page, 'xrouter'))
+    expect(notice(page)).toBe('Not an exit you or the device may use')
+    await click(choice(page, 'xoffice'))
+    expect(notice(page)).toBeNull()
+  })
+
+  it('one who does not manage the device: what the device says, and no choice', async () => {
+    protect.mockResolvedValue({ on: false, route: 'xoffice', routeName: 'Office' })
+    const page = await render(['VIEW'])
+    expect(protectRow(page)?.textContent).toContain('Protect: off — route Office')
+    expect(select(page)).toBeNull()
+  })
+
+  it('nothing where the API has no device exits or the device’s exit cannot be read, and nothing more is asked', async () => {
+    for (const answer of ['UNSUPPORTED', 'ERROR', null]) {
+      deviceExit.mockClear().mockResolvedValue(answer)
+      offered.mockClear()
+      protect.mockClear()
+      expect((await render()).textContent).toBe('')
+      expect(deviceExit).toHaveBeenCalledWith('LAPTOP')
+      expect(offered).not.toHaveBeenCalled()
+      expect(protect).not.toHaveBeenCalled()
+    }
   })
 })
 
-describe('who chose the exit, and what the machine’s administrator decided', () => {
-  it('chosen on the device, by its OS user where it said, or in the portal by a person', () => {
-    expect(chosenLine(t, chooser({ exitSetOnDevice: true, exitSetOnDeviceBy: 'bob' }))).toBe('Set on the device by bob')
-    expect(chosenLine(t, chooser({ exitSetOnDevice: true }))).toBe('Set on the device')
-    expect(chosenLine(t, chooser({ exitSetOnDevice: false, exitSetBy: { email: 'pat@example.com' } }))).toBe(
-      'Set by pat@example.com'
+describe('an exit offered for the device, named', () => {
+  it('the exits offered to the person choosing unread: none said to be its network’s, whose each is still said', async () => {
+    offered.mockImplementation(async (deviceId?: string) => (deviceId ? [pdx, office, pats, router] : 'ERROR'))
+    const page = await render()
+    expect(choices(page)).toEqual([
+      '=None — its usual way out',
+      'pdx1a=remote.it pdx1a',
+      'xoffice=Office',
+      'xpat=Pat exit · pat@example.com’s',
+      'xrouter=Home router · ned@example.com’s',
+    ])
+    expect(choiceName(t, router, 'OWNER', null)).toBe('Home router · ned@example.com’s')
+  })
+
+  const mine = new Set(['xoffice', 'xpat'])
+
+  it('remote.it’s by its name, whoever it is offered to', () => {
+    expect(choiceName(t, pdx, 'OWNER', new Set())).toBe('remote.it pdx1a')
+  })
+
+  it('one the device’s networks give it, not offered to the person choosing: said so', () => {
+    expect(choiceName(t, router, 'OWNER', mine)).toBe('Home router · by its network')
+  })
+
+  it('another account’s by whose it is; the device’s own account’s, or one whose account has no email, by its name', () => {
+    expect(choiceName(t, pats, 'OWNER', mine)).toBe('Pat exit · pat@example.com’s')
+    expect(choiceName(t, office, 'OWNER', mine)).toBe('Office')
+    expect(choiceName(t, { ...pats, owner: { id: 'PAT', email: null } }, 'OWNER', mine)).toBe('Pat exit')
+  })
+})
+
+describe('Protect off on the device', () => {
+  it('says the route it keeps, and turns Protect on through it by choosing that exit', async () => {
+    protect.mockResolvedValue({ on: false, route: 'xoffice', routeName: 'Office (kept)' })
+    const page = await render()
+    expect(protect).toHaveBeenCalledWith('LAPTOP')
+    expect(protectRow(page)?.textContent).toContain(
+      'Protect: off — route Office (kept) — Turned off on the device, which keeps Office (kept) to route through when Protect is on again'
     )
-    expect(chosenLine(t, chooser())).toBeNull()
+    const on = protectRow(page)?.querySelector('[data-button]')
+    expect(on?.textContent).toBe('Turn on')
+    await click(on)
+    expect(setExit).toHaveBeenCalledWith('LAPTOP', 'xoffice')
+  })
+
+  it('names the route by the exits offered where the device does not, else by its id', async () => {
+    protect.mockResolvedValue({ on: false, route: 'xoffice', routeName: null })
+    expect(protectRow(await render())?.textContent).toContain('Protect: off — route Office —')
+    protect.mockResolvedValue({ on: false, route: 'xgone', routeName: null })
+    expect(protectRow(await render())?.textContent).toContain('Protect: off — route xgone —')
+  })
+
+  it('one who does not manage the device, or a machine whose administrator keeps its exit local or allows none: said, not turned on here', async () => {
+    protect.mockResolvedValue({ on: false, route: 'xoffice', routeName: 'Office' })
+    let page = await render(['VIEW'])
+    expect(protectRow(page)?.textContent).toContain('Protect: off — route Office')
+    expect(page.querySelector('[data-button]')).toBeNull()
+    for (const exitPolicy of ['local', 'never'] as const) {
+      deviceExit.mockResolvedValue(exitOf({ exitPolicy }))
+      page = await render()
+      expect(protectRow(page)?.textContent).toContain('Protect: off — route Office')
+      expect(page.querySelector('[data-button]')).toBeNull()
+    }
+  })
+
+  it('not while its exit is dormant: Protect is off for it until a device of the exit is in service', async () => {
+    protect.mockResolvedValue({ on: false, route: 'xspare', routeName: 'Spare' })
+    deviceExit.mockResolvedValue(
+      exitOf({ usesExit: uses(spare, { offered: false, dormant: true }), exitDormant: true })
+    )
+    let page = await render()
+    expect(page.textContent).toContain('Its exit, Spare, is dormant')
+    expect(page.textContent).not.toContain('Protect: off')
+    expect(page.querySelector('[data-button]')).toBeNull()
+
+    // Protect turned off as well, its exit kept dormant: the exit kept is said, with nothing to turn on through yet —
+    // where, not dormant, it is turned on through it.
+    deviceExit.mockResolvedValue(exitOf({ exitDormant: true }))
+    page = await render()
+    expect(select(page)).not.toBeNull()
+    expect(page.querySelector('[data-item="moon"]')?.textContent).toBe(
+      'Protect: off — its exit, Spare, is kept, with no device available — None of the exit’s devices is in service: Protect can be turned on through it once one is. Or choose another exit.'
+    )
+    expect(protectRow(page)).toBeNull()
+    expect(page.querySelector('[data-button]')).toBeNull()
+    deviceExit.mockResolvedValue(exitOf({ exitDormant: false }))
+    expect(protectRow(await render())?.textContent).toContain('Protect: off — route Spare')
+  })
+
+  it('nothing said while an exit is in use, while Protect is on, with no route kept, or where the device does not say', async () => {
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office) }))
+    protect.mockResolvedValue({ on: false, route: 'xoffice', routeName: 'Office' })
+    let page = await render()
+    expect(select(page).dataset.value).toBe('xoffice')
+    expect(page.textContent).not.toContain('Protect: off')
+
+    deviceExit.mockResolvedValue(exitOf())
+    for (const kept of [
+      { on: true, route: 'xoffice', routeName: 'Office' },
+      { on: false, route: null, routeName: null },
+      { on: null, route: 'xoffice', routeName: 'Office' },
+      null,
+      'UNSUPPORTED',
+      'ERROR',
+    ]) {
+      protect.mockClear().mockResolvedValue(kept)
+      page = await render()
+      expect(protect).toHaveBeenCalledWith('LAPTOP')
+      expect(select(page)).not.toBeNull()
+      expect(page.textContent).not.toContain('Protect: off')
+    }
+  })
+})
+
+describe('who chose the exit, and the machine’s policy', () => {
+  it('says who chose it: on the device, by whom; or in the portal', () => {
+    expect(chosenLine(t, { ...none, exitSetOnDevice: true, exitSetOnDeviceBy: 'bob' })).toBe('Set on the device by bob')
+    expect(chosenLine(t, { ...none, exitSetOnDevice: true })).toBe('Set on the device')
+    expect(chosenLine(t, { ...none, exitSetOnDevice: false, exitSetBy: { email: 'ann@example.com' } })).toBe(
+      'Set by ann@example.com'
+    )
+    expect(chosenLine(t, { ...none, exitSetBy: { email: null } })).toBeNull()
+    expect(chosenLine(t, none)).toBeNull()
     expect(chosenLine(t, null)).toBeNull()
   })
 
-  it('no exit, a local choice, a pinned exit, or only some exits; nothing to say under the default', () => {
-    expect(policyLine(t, chooser())).toBeNull()
-    expect(policyLine(t, chooser({ exitPolicy: 'local' }))?.label).toBe('This machine’s administrator keeps its exit local')
-    expect(policyLine(t, chooser({ exitPolicy: 'never' }))?.label).toBe('This machine’s administrator allows it no exit')
-    expect(policyLine(t, chooser({ exitPinned: 'pdx1a' }))?.label).toBe(
-      'Pinned by this machine’s administrator to pdx1a'
-    )
-    expect(policyLine(t, chooser({ exitAllowed: ['pdx1a', 'xha'] }))).toEqual({
-      label: 'This machine’s administrator allows only some exits',
-      hint: 'pdx1a, xha',
+  it('says what the administrator decided', () => {
+    expect(policyLine(t, none)).toBeNull()
+    expect(policyLine(t, null)).toBeNull()
+    expect(policyLine(t, { ...none, exitPolicy: 'local' })).toEqual({
+      label: 'This machine’s administrator keeps its exit local',
+      hint: 'Its exit is chosen on the device only; the portal cannot change it',
     })
-    expect(policyLine(t, chooser({ exitAllowed: [] }))?.hint).toBe('None is allowed')
+    expect(policyLine(t, { ...none, exitPolicy: 'never' })).toEqual({
+      label: 'This machine’s administrator allows it no exit',
+      hint: 'Set on the device: sudo remoteit-device policy',
+    })
+    expect(policyLine(t, { ...none, exitPinned: 'xoffice' })).toEqual({
+      label: 'Pinned by this machine’s administrator to xoffice',
+      hint: 'The pinned exit holds over any chosen here',
+    })
+    expect(policyLine(t, { ...none, exitAllowed: ['xoffice', 'pdx1a'] })).toEqual({
+      label: 'This machine’s administrator allows only some exits',
+      hint: 'xoffice, pdx1a',
+    })
+    expect(policyLine(t, { ...none, exitAllowed: [] })?.hint).toBe('None is allowed')
+    // No exit at all holds over any exit pinned or allowed.
+    expect(
+      policyLine(t, { ...none, exitPolicy: 'never', exitPinned: 'xoffice', exitAllowed: ['xoffice'] })?.label
+    ).toBe('This machine’s administrator allows it no exit')
+  })
+
+  it('shows them, and locks the choice where the administrator keeps the exit local or allows none', async () => {
+    deviceExit.mockResolvedValue(
+      exitOf({ usesExit: uses(office), exitSetOnDevice: true, exitSetOnDeviceBy: 'bob', exitPolicy: 'local' })
+    )
+    let page = await render()
+    expect(page.textContent).toContain('Set on the device by bob')
+    expect(page.textContent).toContain(
+      'This machine’s administrator keeps its exit local — Its exit is chosen on the device only; the portal cannot change it'
+    )
+    expect(select(page).dataset.disabled).toBe('true')
+
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office), exitPolicy: 'never' }))
+    page = await render()
+    expect(page.textContent).toContain('This machine’s administrator allows it no exit')
+    expect(select(page).dataset.disabled).toBe('true')
+
+    deviceExit.mockResolvedValue(
+      exitOf({ usesExit: uses(office), exitPinned: 'xoffice', exitSetBy: { email: 'ann@example.com' } })
+    )
+    page = await render()
+    expect(page.textContent).toContain('Set by ann@example.com')
+    expect(page.textContent).toContain('Pinned by this machine’s administrator to xoffice')
+    expect(select(page).dataset.disabled).toBe('false')
+  })
+
+  it('says who chose it only while an exit is in use', async () => {
+    deviceExit.mockResolvedValue(exitOf({ exitSetBy: { email: 'ann@example.com' } }))
+    const page = await render()
+    expect(select(page).dataset.value).toBe('')
+    expect(page.textContent).not.toContain('Set by')
+  })
+})
+
+describe('the account’s transfer this month, under the choice', () => {
+  const usage = (page: HTMLElement) => page.querySelector('[data-usage]')?.textContent ?? null
+
+  it('for one of remote.it’s exits in use: the device owner’s', async () => {
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(pdx) }))
+    const page = await render()
+    expect(usageHint).toHaveBeenLastCalledWith('OWNER', 'exit', true)
+    expect(usage(page)).toBe('8.2 of 10 GB this month')
+  })
+
+  it('for the route Protect keeps while off, when it is one of remote.it’s', async () => {
+    protect.mockResolvedValue({ on: false, route: 'pdx1a', routeName: null })
+    const page = await render()
+    expect(protectRow(page)?.textContent).toContain('Protect: off — route remote.it pdx1a')
+    expect(usageHint).toHaveBeenLastCalledWith('OWNER', 'exit', true)
+    expect(usage(page)).toBe('8.2 of 10 GB this month')
+  })
+
+  it('none for an own exit, for none in use, or for one who does not manage the device', async () => {
+    const through = { id: 'E1', name: 'e1' }
+    for (const [answer, permissions, shown] of [
+      [exitOf({ usesExit: uses(office), usesExitThrough: through }), ['VIEW', 'MANAGE'], 'Going out through e1 now'],
+      [exitOf(), ['VIEW', 'MANAGE'], 'None — its usual way out'],
+      [exitOf({ usesExit: uses(pdx), usesExitThrough: through }), ['VIEW'], 'Going out through e1 now'],
+    ] as const) {
+      deviceExit.mockResolvedValue(answer)
+      const page = await render([...permissions])
+      expect(page.textContent).toContain(shown)
+      expect(usageHint).toHaveBeenLastCalledWith('OWNER', 'exit', false)
+      expect(usage(page)).toBeNull()
+    }
+    // The route Protect keeps, an own exit.
+    protect.mockResolvedValue({ on: false, route: 'xoffice', routeName: null })
+    deviceExit.mockResolvedValue(exitOf())
+    const page = await render()
+    expect(protectRow(page)?.textContent).toContain('Protect: off — route Office')
+    expect(usage(page)).toBeNull()
   })
 })

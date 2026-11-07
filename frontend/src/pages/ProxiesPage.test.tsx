@@ -144,13 +144,24 @@ describe('the account’s proxies', () => {
   })
 
   it('lists remote.it’s apart, by name with their host and provider, none of the account’s own among them', async () => {
-    proxies.mockResolvedValue([PDX, { ...PDX, id: 'R2', name: 'remote.it sea1a', host: 'sea1a.dev.r3proxy.com', provider: '' }, GATEWAY])
+    proxies.mockResolvedValue([
+      PDX,
+      { ...PDX, id: 'R2', name: 'remote.it sea1a', host: 'sea1a.dev.r3proxy.com', provider: '' },
+      GATEWAY,
+    ])
     const page = await render()
     expect(page.textContent).toContain('remote.it’s')
     const remoteit = [...page.querySelectorAll('[data-remoteit]')]
     expect(remoteit.map(item => item.getAttribute('data-remoteit'))).toEqual(['R1', 'R2'])
-    expect(remoteit[0].textContent).toBe('remote.it pdx1apdx1a.dev.r3proxy.com · AWS us-west-2 (Boardman)')
-    expect(remoteit[1].textContent).toBe('remote.it sea1asea1a.dev.r3proxy.com')
+    const lines = remoteit.map(item => [
+      item.querySelector('.MuiListItemText-primary')?.textContent,
+      item.querySelector('.MuiListItemText-secondary')?.textContent,
+    ])
+    expect(lines).toEqual([
+      ['remote.it pdx1a', 'pdx1a.dev.r3proxy.com · AWS us-west-2 (Boardman)'],
+      ['remote.it sea1a', 'sea1a.dev.r3proxy.com'],
+    ])
+    expect(page.querySelector('[data-proxy="R1"]')).toBeNull()
   })
 
   it('no list of remote.it’s where none could be read, or there are none', async () => {
@@ -207,6 +218,8 @@ describe('a proxy of the account in a line', () => {
   })
 
   it('its host alone where its devices, endpoints and certificate are not read', () => {
-    expect(proxyLine(t, { ...GATEWAY, devices: null, endpoints: null, certificate: null })).toBe('gw-acme.dev.r3proxy.com')
+    expect(proxyLine(t, { ...GATEWAY, devices: null, endpoints: null, certificate: null })).toBe(
+      'gw-acme.dev.r3proxy.com'
+    )
   })
 })

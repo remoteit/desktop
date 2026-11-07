@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { List, ListItem, ListItemText, ListSubheader, MenuItem, TextField, Typography } from '@mui/material'
@@ -43,9 +43,15 @@ import { Title } from '../components/Title'
    available: those using it go their usual way until one is. For someone it is shared with: whose it is, whether a
    device may choose it now, and leaving it. */
 export const ExitPage: React.FC = () => {
+  const { exitID } = useParams<{ exitID: string }>()
+  // All the page holds is one exit's — its dialogs, its picker, its answers —: another exit's address starts afresh, so
+  // a dialog opened on one never acts on the next.
+  return <OneExit key={exitID} exitID={exitID} />
+}
+
+const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
   const { t } = useTranslation()
   const history = useHistory()
-  const { exitID } = useParams<{ exitID: string }>()
   const [exit, setExit] = useState<Exit | null | 'ERROR' | typeof UNSUPPORTED>()
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<{ severity: 'error' | 'info'; text: string }>()
@@ -57,8 +63,14 @@ export const ExitPage: React.FC = () => {
   const [moving, setMoving] = useState(false)
 
   const { reload: reloadList } = useAccountExits()
+  const reads = useRef(0)
 
-  const load = useCallback(async () => setExit(await graphQLExit(exitID)), [exitID])
+  // Only the last read asked for is shown: one answered late never overwrites a newer one.
+  const load = useCallback(async () => {
+    const read = ++reads.current
+    const answer = await graphQLExit(exitID)
+    if (read === reads.current) setExit(answer)
+  }, [exitID])
   // The exit read again after a change, and the list beside it.
   const refresh = async () => {
     reloadList()
@@ -66,9 +78,6 @@ export const ExitPage: React.FC = () => {
   }
 
   useEffect(() => {
-    setExit(undefined)
-    setNotice(undefined)
-    setAdding(false)
     load()
   }, [load])
 
@@ -108,16 +117,20 @@ export const ExitPage: React.FC = () => {
     setBusy(false)
   }
 
-  const remove = async () => {
-    if (await change(() => graphQLDeleteExit(exit.id, !!exit.users), t('exitPage.notDeleted', 'It was not deleted.')))
-      history.push('/exits')
+  // Deleted or left, it is gone from here: the list opens, read again, and the exit is not.
+  const gone = async (run: () => ReturnType<typeof graphQLLeaveExitShare>, failed: string) => {
+    setBusy(true)
+    const refused = refusalOf(await run())
+    setBusy(false)
     setDeleting(false)
-  }
-
-  const leave = async () => {
-    if (await change(() => graphQLLeaveExitShare(exit.id), t('exitPage.notLeft', 'It was not left.'))) history.push('/exits')
     setLeaving(false)
+    if (refused !== undefined) return setNotice({ severity: 'error', text: refused || failed })
+    reloadList()
+    history.push('/exits')
   }
+  const remove = () =>
+    gone(() => graphQLDeleteExit(exit.id, !!exit.users), t('exitPage.notDeleted', 'It was not deleted.'))
+  const leave = () => gone(() => graphQLLeaveExitShare(exit.id), t('exitPage.notLeft', 'It was not left.'))
 
   const failed = t('exitPage.notChanged', 'It was not changed: try again.')
 
@@ -133,7 +146,11 @@ export const ExitPage: React.FC = () => {
           <Gutters top={null} bottom="sm">
             <Typography variant="body2" color="textSecondary">
               {exit.remoteit
-                ? t('exitPage.remoteit', 'One of remote.it’s exits · {{provider}}', { provider: exit.provider })
+                ? exit.provider || exit.location
+                  ? t('exitPage.remoteit', 'One of remote.it’s exits · {{provider}}', {
+                      provider: exit.provider || exit.location,
+                    })
+                  : t('exitPage.remoteitNowhere', 'One of remote.it’s exits')
                 : shared && exit.owner?.email
                 ? t('exitPage.sharedBy', 'Shared with you by {{email}}', { email: exit.owner.email })
                 : usersLine(t, exit.users)}
@@ -393,24 +410,30 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
   onMoved,
 }) => {
   const { t } = useTranslation()
-  const [targets, setTargets] = useState<Exit[]>()
+  const [targets, setTargets] = useState<Exit[] | 'ERROR'>()
   const [to, setTo] = useState('')
   const [preview, setPreview] = useState<number>()
   const [refusal, setRefusal] = useState<string>()
   const [busy, setBusy] = useState(false)
+  // The exit chosen last: what an earlier choice's answer says is not shown for it.
+  const chosen = useRef('')
 
   useEffect(() => {
     if (!exit.owner) return
     graphQLAccountExits(exit.owner.id).then(read =>
-      setTargets(read && typeof read === 'object' ? read.own.filter(each => each.id !== exit.id && !each.dormant) : [])
+      setTargets(
+        read && typeof read === 'object' ? read.own.filter(each => each.id !== exit.id && !each.dormant) : 'ERROR'
+      )
     )
   }, [exit.id, exit.owner?.id])
 
   const choose = async (target: string) => {
+    chosen.current = target
     setTo(target)
     setPreview(undefined)
     setRefusal(undefined)
     const said = await graphQLMoveExitUsers(exit.id, target, false)
+    if (chosen.current !== target) return
     if ('reason' in said) setRefusal(said.reason || t('exitPage.moveFailed', 'The move could not be said: try again.'))
     else setPreview(said.users)
   }
@@ -419,11 +442,11 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
     setBusy(true)
     const done = await graphQLMoveExitUsers(exit.id, to, true)
     setBusy(false)
-    if ('reason' in done) return setRefusal(done.reason || t('exitPage.moveFailed', 'The move could not be said: try again.'))
+    if ('reason' in done) return setRefusal(done.reason || t('exitPage.moveNotMade', 'The move was not made: try again.'))
     onMoved()
   }
 
-  const target = targets?.find(each => each.id === to)
+  const target = Array.isArray(targets) ? targets.find(each => each.id === to) : undefined
   return (
     <Confirm
       open
@@ -435,6 +458,10 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
     >
       {targets === undefined ? (
         <LoadingMessage />
+      ) : targets === 'ERROR' ? (
+        <Notice severity="error" fullWidth>
+          {t('exitPage.moveUnread', 'Its account’s exits could not be read: try again.')}
+        </Notice>
       ) : !targets.length ? (
         <Typography variant="body2">
           {t('exitPage.moveNone', 'No other exit of its account has a device in service to take them.')}

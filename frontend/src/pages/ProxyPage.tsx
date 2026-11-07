@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useHistory, useParams } from 'react-router-dom'
@@ -16,7 +16,7 @@ import {
   graphQLRenameProxy,
   graphQLSetProxyActivation,
 } from '../services/graphQLProxy'
-import { NAME_MAX, validLabel } from '../services/subnetNames'
+import { NAME_MAX, graphQLAccountSlug, validLabel } from '../services/subnetNames'
 import { deleteProxyLine, endpointsLine, stillRunsLine } from '../helpers/runsHelper'
 import { useAccountProxies } from '../hooks/useAccountExits'
 import { RunDevicePicker, addEach } from '../components/RunDevicePicker'
@@ -35,8 +35,10 @@ import { Title } from '../components/Title'
 // An own proxy's host is <label>-<slug>.<proxy domain>: its label, letters and digits, before the account's slug.
 export const labelOf = (host: string) => host.split('.')[0].split('-')[0]
 
-// The host a new label gives it: the slug and the domain kept.
-export const hostWith = (host: string, label: string) => `${label}${host.slice(labelOf(host).length)}`
+// The host a new label gives it, as graphql makes it: under the account's slug as it is now — which may differ from the
+// one in its host, changed since —, or, where that cannot be read, the one in its host; the proxy domain kept.
+export const hostWith = (host: string, label: string, slug?: string | null) =>
+  slug ? `${label}-${slug}${host.slice(host.indexOf('.'))}` : `${label}${host.slice(labelOf(host).length)}`
 
 /* One proxy (graphql-api docs/PROXY-GROUPS.md §13). For whoever manages it: its name, its host — its label renamed
    moves every endpoint's address, and its certificate is issued again —, its own domain and whether it takes public
@@ -45,9 +47,15 @@ export const hostWith = (host: string, label: string) => `${label}${host.slice(l
    page), and, once no device runs it, moving its endpoints to another proxy of its account and deleting it, saying
    what goes. */
 export const ProxyPage: React.FC = () => {
+  const { proxyID } = useParams<{ proxyID: string }>()
+  // All the page holds is one proxy's — its dialogs, its picker, its answers —: another proxy's address starts afresh,
+  // so a dialog opened on one never acts on the next.
+  return <OneProxy key={proxyID} proxyID={proxyID} />
+}
+
+const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
   const { t } = useTranslation()
   const history = useHistory()
-  const { proxyID } = useParams<{ proxyID: string }>()
   const [proxy, setProxy] = useState<Proxy | null | 'ERROR' | typeof UNSUPPORTED>()
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<{ severity: 'error' | 'info'; text: string }>()
@@ -55,9 +63,17 @@ export const ProxyPage: React.FC = () => {
   const [refusals, setRefusals] = useState<ILookup<string>>({})
   const [deleting, setDeleting] = useState(false)
   const [moving, setMoving] = useState(false)
+  const [slug, setSlug] = useState<string | null>()
   const { reload: reloadList } = useAccountProxies()
+  const reads = useRef(0)
+  const ownerId = proxy && typeof proxy === 'object' && !proxy.remoteit ? proxy.owner?.id : undefined
 
-  const load = useCallback(async () => setProxy(await graphQLProxy(proxyID)), [proxyID])
+  // Only the last read asked for is shown: one answered late never overwrites a newer one.
+  const load = useCallback(async () => {
+    const read = ++reads.current
+    const answer = await graphQLProxy(proxyID)
+    if (read === reads.current) setProxy(answer)
+  }, [proxyID])
   // The proxy read again after a change, and the list beside it.
   const refresh = async () => {
     reloadList()
@@ -65,11 +81,16 @@ export const ProxyPage: React.FC = () => {
   }
 
   useEffect(() => {
-    setProxy(undefined)
-    setNotice(undefined)
-    setAdding(false)
     load()
   }, [load])
+
+  // The account's slug as it is now: a new label's host is made under it.
+  useEffect(() => {
+    if (!ownerId) return
+    graphQLAccountSlug(ownerId)
+      .then(answer => setSlug(typeof answer === 'string' && answer !== 'ERROR' && answer !== UNSUPPORTED ? answer : null))
+      .catch(() => setSlug(null))
+  }, [ownerId])
 
   if (proxy === undefined) return <LoadingMessage />
   if (proxy === UNSUPPORTED || proxy === 'ERROR' || proxy === null)
@@ -85,6 +106,8 @@ export const ProxyPage: React.FC = () => {
 
   const own = !proxy.remoteit
   const devices = proxy.devices ?? []
+
+  const failed = t('proxyPage.notChanged', 'It was not changed: try again.')
 
   const change = async (run: () => Promise<Parameters<typeof refusalOf>[0]>, failed: string) => {
     setBusy(true)
@@ -104,13 +127,23 @@ export const ProxyPage: React.FC = () => {
     setBusy(false)
   }
 
+  // Deleted, it is gone from here: the list opens, read again, and the proxy is not.
   const remove = async () => {
-    if (await change(() => graphQLDeleteProxy(proxy.id, !!proxy.endpoints), t('proxyPage.notDeleted', 'It was not deleted.')))
-      history.push('/proxies')
+    setBusy(true)
+    const refused = refusalOf(await graphQLDeleteProxy(proxy.id, !!proxy.endpoints))
+    setBusy(false)
     setDeleting(false)
+    if (refused !== undefined)
+      return setNotice({ severity: 'error', text: refused || t('proxyPage.notDeleted', 'It was not deleted.') })
+    reloadList()
+    history.push('/proxies')
   }
 
-  const failed = t('proxyPage.notChanged', 'It was not changed: try again.')
+  // A field saved as it was is no change: never sent — a label sent again would move its host to the account's slug.
+  const rename = (set: { name?: string; label?: string }) =>
+    (set.name !== undefined && set.name === proxy.name) || (set.label !== undefined && set.label === labelOf(proxy.host))
+      ? undefined
+      : change(() => graphQLRenameProxy(proxy.id, set), failed)
 
   return (
     <Container
@@ -148,7 +181,7 @@ export const ProxyPage: React.FC = () => {
                 value={proxy.name}
                 maxLength={255}
                 disabled={busy}
-                onSave={name => change(() => graphQLRenameProxy(proxy.id, { name: String(name).trim() }), failed)}
+                onSave={name => rename({ name: String(name).trim() })}
               />
             )}
             {own ? (
@@ -170,11 +203,11 @@ export const ProxyPage: React.FC = () => {
                     ? t(
                         'proxyPage.labelMoves',
                         'Its host becomes {{host}}: every endpoint’s address moves to it, and its certificate is issued again — https names fail until then.',
-                        { host: hostWith(proxy.host, value) }
+                        { host: hostWith(proxy.host, value, slug) }
                       )
                     : undefined
                 }
-                onSave={label => change(() => graphQLRenameProxy(proxy.id, { label: String(label) }), failed)}
+                onSave={label => rename({ label: String(label) })}
               />
             ) : (
               <ListItemSetting icon="globe" label={proxy.host} subLabel={t('proxyPage.hostHint', 'Where it is reached')} />
@@ -358,24 +391,28 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
   onMoved,
 }) => {
   const { t } = useTranslation()
-  const [targets, setTargets] = useState<Proxy[]>()
+  const [targets, setTargets] = useState<Proxy[] | 'ERROR'>()
   const [to, setTo] = useState('')
   const [preview, setPreview] = useState<EndpointsMove>()
   const [refusal, setRefusal] = useState<string>()
   const [busy, setBusy] = useState(false)
+  // The proxy chosen last: what an earlier choice's answer says is not shown for it.
+  const chosen = useRef('')
 
   useEffect(() => {
     if (!proxy.owner) return
     graphQLAccountProxies(proxy.owner.id).then(read =>
-      setTargets(Array.isArray(read) ? read.filter(each => each.id !== proxy.id) : [])
+      setTargets(Array.isArray(read) ? read.filter(each => each.id !== proxy.id) : 'ERROR')
     )
   }, [proxy.id, proxy.owner?.id])
 
   const choose = async (target: string) => {
+    chosen.current = target
     setTo(target)
     setPreview(undefined)
     setRefusal(undefined)
     const said = await graphQLMoveProxyEndpoints(proxy.id, target, false)
+    if (chosen.current !== target) return
     if ('reason' in said) setRefusal(said.reason || t('proxyPage.moveFailed', 'The move could not be said: try again.'))
     else setPreview(said)
   }
@@ -385,7 +422,7 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
     const done = await graphQLMoveProxyEndpoints(proxy.id, to, true)
     setBusy(false)
     if ('reason' in done)
-      return setRefusal(done.reason || t('proxyPage.moveFailed', 'The move could not be said: try again.'))
+      return setRefusal(done.reason || t('proxyPage.moveNotMade', 'The move was not made: try again.'))
     onMoved()
   }
 
@@ -401,6 +438,10 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
     >
       {targets === undefined ? (
         <LoadingMessage />
+      ) : targets === 'ERROR' ? (
+        <Notice severity="error" fullWidth>
+          {t('proxyPage.moveUnread', 'Its account’s proxies could not be read: try again.')}
+        </Notice>
       ) : !targets.length ? (
         <Typography variant="body2">{t('proxyPage.moveNone', 'Its account has no other proxy to take them.')}</Typography>
       ) : (

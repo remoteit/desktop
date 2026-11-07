@@ -30,7 +30,8 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const [info, setInfo] = useState<DeviceExit | null>()
   const [offered, setOffered] = useState<Offered[]>([])
-  const [mine, setMine] = useState<Set<string>>(new Set())
+  // The exits offered to the person choosing; null where they could not be read, and so whose each is is unknown.
+  const [mine, setMine] = useState<Set<string> | null>(null)
   const [protect, setProtect] = useState<ProtectInfo | null>(null)
   const [saving, setSaving] = useState(false)
   const [refusal, setRefusal] = useState<string>()
@@ -47,7 +48,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
       graphQLDeviceProtect(device.id),
     ])
     setOffered(Array.isArray(forDevice) ? forDevice : [])
-    setMine(new Set(Array.isArray(forMe) ? forMe.map(exit => exit.id) : []))
+    setMine(Array.isArray(forMe) ? new Set(forMe.map(exit => exit.id)) : null)
     setProtect(kept && typeof kept === 'object' ? kept : null)
   }, [device.id])
 
@@ -60,6 +61,8 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   // exit here — the device takes the newer choice, as it takes any. Not while its exit is dormant: Protect is off for it
   // until a device of the exit is in service.
   const route = info && !exit && !info.exitDormant && protect?.on === false && protect.route ? protect.route : null
+  // Protect off, its exit kept and dormant: nothing to turn on through yet, but the exit kept is said.
+  const keptDormant = info && !exit && info.exitDormant && protect?.on === false && protect.route ? protect.route : null
   const charged = manage && (exit?.remoteit || !!offered.find(each => each.id === route)?.remoteit)
   // The device's own exit traffic is charged to its account, the owner's, not to whoever views it.
   const usage = useTransferUsageHint(device.owner?.id, 'exit', !!charged)
@@ -84,6 +87,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const chosenBy = exit ? chosenLine(t, info) : null
   const policyText = policyLine(t, info)
   const routeName = route ? protect?.routeName || offered.find(each => each.id === route)?.name || route : null
+  const keptName = keptDormant ? protect?.routeName || keptDormant : null
 
   const choose = async (via: string | null) => {
     if (saving) return
@@ -137,6 +141,19 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           onButtonClick={() => choose(route)}
         />
       )}
+      {keptName && (
+        <ListItemSetting
+          icon="moon"
+          iconColor="grayDarker"
+          label={t('deviceExit.keptDormant', 'Protect: off — its exit, {{exit}}, is kept, with no device available', {
+            exit: keptName,
+          })}
+          subLabel={t(
+            'deviceExit.keptDormantHint',
+            'None of the exit’s devices is in service: Protect can be turned on through it once one is. Or choose another exit.'
+          )}
+        />
+      )}
       {exit && info.exitDormant && (
         <ListItemSetting
           icon="moon"
@@ -174,10 +191,11 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 
 type T = TFunction
 
-// An exit offered for the device, named: whose it is where not its account's, or that its networks give it.
-export function choiceName(t: T, exit: Offered, accountId: string | undefined, mine: Set<string>): string {
+// An exit offered for the device, named: whose it is where not its account's, or that its networks give it — said only
+// where the exits offered to the person choosing were read (mine), else unknown.
+export function choiceName(t: T, exit: Offered, accountId: string | undefined, mine: Set<string> | null): string {
   if (exit.remoteit) return exit.name
-  if (!mine.has(exit.id)) return t('deviceExit.byNetwork', '{{exit}} · by its network', { exit: exit.name })
+  if (mine && !mine.has(exit.id)) return t('deviceExit.byNetwork', '{{exit}} · by its network', { exit: exit.name })
   if (exit.owner && exit.owner.id !== accountId && exit.owner.email)
     return t('deviceExit.whose', '{{exit}} · {{email}}’s', { exit: exit.name, email: exit.owner.email })
   return exit.name

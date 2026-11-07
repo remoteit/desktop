@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { Box, Button, Checkbox, List, ListItemButton, ListItemIcon, ListItemText, TextField, Typography } from '@mui/material'
@@ -51,10 +51,23 @@ export const RunDevicePicker: React.FC<Props> = ({
         !excluded.has(device.id.toUpperCase())
     )
     .sort((a, b) => a.name.localeCompare(b.name))
+  // The search field shows with more than eight to choose from, and stays while a search is set, so a search is never
+  // left narrowing the list unseen.
+  const searching = candidates.length > 8 || !!search
   const shown = search.trim()
     ? candidates.filter(device => device.name.toLowerCase().includes(search.trim().toLowerCase()))
     : candidates
   const refused = Object.keys(refusals)
+  // Only the chosen devices it still lists are counted and added: one added meanwhile, or gone, is no longer chosen.
+  const listed = chosen.filter(id => candidates.some(device => device.id === id))
+  const ids = candidates.map(device => device.id).join()
+
+  useEffect(() => {
+    setChosen(list => {
+      const still = list.filter(id => candidates.some(device => device.id === id))
+      return still.length === list.length ? list : still
+    })
+  }, [ids])
 
   const toggle = (id: string) => setChosen(list => (list.includes(id) ? list.filter(each => each !== id) : [...list, id]))
 
@@ -72,7 +85,7 @@ export const RunDevicePicker: React.FC<Props> = ({
           ))}
         </Notice>
       )}
-      {candidates.length > 8 && (
+      {searching && (
         <TextField
           size="small"
           fullWidth
@@ -108,13 +121,13 @@ export const RunDevicePicker: React.FC<Props> = ({
         <Button
           variant="contained"
           size="small"
-          disabled={busy || !chosen.length}
+          disabled={busy || !listed.length}
           data-add
-          onClick={() => onAdd(chosen.filter(id => candidates.some(device => device.id === id)))}
+          onClick={() => onAdd(listed)}
         >
           {action ||
             t('runDevicePicker.add', {
-              count: chosen.length,
+              count: listed.length,
               defaultValue_one: 'Add {{count}} device',
               defaultValue_other: 'Add {{count}} devices',
             })}

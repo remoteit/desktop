@@ -73,7 +73,8 @@ export const AdminRemoteitProxies: React.FC<{ onProblem: Problem }> = ({ onProbl
   useInterval(load, Array.isArray(proxies) && proxies.some(p => p.devices?.some(d => d.state === 'DRAINING')))
 
   if (proxies === undefined) return <LoadingMessage />
-  if (!Array.isArray(proxies)) return null // the page above says why
+  if (proxies === 'ERROR') return <Unread what="remote.it's proxies" />
+  if (!Array.isArray(proxies)) return null // an API without them: the page above says why
 
   return (
     <>
@@ -156,6 +157,7 @@ export const AdminRemoteitExits: React.FC<{ onProblem: Problem }> = ({ onProblem
   }, [load])
 
   if (exits === undefined) return <LoadingMessage />
+  if (exits === 'ERROR') return <Unread what="remote.it's exits" />
   if (!Array.isArray(exits)) return null
 
   return (
@@ -239,6 +241,7 @@ export const AdminRemoteitMachines: React.FC<{ onProblem: Problem }> = ({ onProb
   )
 
   if (machines === undefined) return <LoadingMessage />
+  if (machines === 'ERROR') return <Unread what="the machines" />
   if (!Array.isArray(machines)) return null
 
   return (
@@ -512,6 +515,13 @@ const RegistrationCode: React.FC<{ onProblem: Problem }> = ({ onProblem }) => {
     </List>
   )
 }
+
+// A list that could not be read: said, not shown as none.
+const Unread: React.FC<{ what: string }> = ({ what }) => (
+  <Notice severity="error" fullWidth>
+    Could not read {what}.
+  </Notice>
+)
 
 // Read again every half minute while asked: a drain's open connections and safe to stop move on by themselves.
 function useInterval(run: () => void, on: boolean) {
