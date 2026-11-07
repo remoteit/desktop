@@ -19,7 +19,15 @@ import {
   updating,
 } from './graphQLDaemon'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
-import { exposes, graphQLDeviceNetworks, initiates, roleFor, targeted } from './graphQLDeviceNetworks'
+import {
+  exposes,
+  graphQLDeviceNetworks,
+  graphQLNetworkExitGroups,
+  graphQLSetNetworkExitGroup,
+  initiates,
+  roleFor,
+  targeted,
+} from './graphQLDeviceNetworks'
 
 const daemon = {
   deviceId: '80:00:00:00:00:00:00:01',
@@ -67,7 +75,7 @@ describe('reading the device agent', () => {
   })
 })
 
-describe("a device held by its admin", () => {
+describe('a device held by its admin', () => {
   it('asks for updateState where the API has it', async () => {
     request.mockResolvedValue({ data: { data: { deviceDaemon: { ...daemon, updateState: 'held' } } }, headers: {} })
     expect(held((await graphQLDeviceDaemon(daemon.deviceId)) as any)).toBe(true)
@@ -98,12 +106,18 @@ describe("a device held by its admin", () => {
 describe('runningVersion', () => {
   it("is the package's version — what releases, and a target, name — not the daemon's", () => {
     expect(
-      runningVersion({ ...daemon, running: 'connectd-go 5.6.1.20261022213015', package: { version: '1.1.0.20261022213015' } } as any)
+      runningVersion({
+        ...daemon,
+        running: 'connectd-go 5.6.1.20261022213015',
+        package: { version: '1.1.0.20261022213015' },
+      } as any)
     ).toBe('1.1.0.20261022213015')
   })
 
   it("is the daemon's, its name dropped, for one from before packages were versioned", () => {
-    expect(runningVersion({ ...daemon, running: 'connectd-go 5.6.1.20261001', package: null } as any)).toBe('5.6.1.20261001')
+    expect(runningVersion({ ...daemon, running: 'connectd-go 5.6.1.20261001', package: null } as any)).toBe(
+      '5.6.1.20261001'
+    )
     expect(runningVersion({ ...daemon, running: null } as any)).toBe(null)
   })
 })
@@ -111,7 +125,11 @@ describe('runningVersion', () => {
 describe('daemonVersion', () => {
   it("is the daemon's own, whatever package it came in", () => {
     expect(
-      daemonVersion({ ...daemon, running: 'connectd-go 5.6.1.20261022213015', package: { version: '1.1.0.20261022213015' } } as any)
+      daemonVersion({
+        ...daemon,
+        running: 'connectd-go 5.6.1.20261022213015',
+        package: { version: '1.1.0.20261022213015' },
+      } as any)
     ).toBe('5.6.1.20261022213015')
   })
 })
@@ -165,6 +183,45 @@ describe('device networks', () => {
       headers: {},
     })
     expect(await graphQLDeviceNetworks('ACCOUNT')).toBe('ERROR')
+  })
+
+  it("reads each network's exit groups apart from the networks; an API without them is UNSUPPORTED, silently", async () => {
+    const mac = { label: 'gmac', name: 'Office Mac', offered: true, dormant: false, owner: { id: 'PAT', email: 'p@x' } }
+    request.mockResolvedValue({
+      data: {
+        data: {
+          login: {
+            account: {
+              networks: [
+                { id: 'N', exitGroups: [mac] },
+                { id: 'L', exitGroups: [] },
+              ],
+            },
+          },
+        },
+      },
+      headers: {},
+    })
+    const groups = await graphQLNetworkExitGroups('ACCOUNT')
+    expect(groups instanceof Map && [...groups]).toEqual([
+      ['N', [mac]],
+      ['L', []],
+    ])
+    expect(request.mock.calls.at(-1)?.[0].data.variables).toEqual({ accountId: 'ACCOUNT' })
+    request.mockResolvedValue({
+      data: { errors: [{ message: 'Cannot query field "exitGroups" on type "Network".' }] },
+      headers: {},
+    })
+    expect(await graphQLNetworkExitGroups('ACCOUNT')).toBe(UNSUPPORTED)
+    expect(uiSet).not.toHaveBeenCalled()
+  })
+
+  it('makes a group available on a network, or no longer, a refusal in graphql’s words', async () => {
+    request.mockResolvedValue({ data: { data: { setNetworkExitGroup: true } }, headers: {} })
+    await graphQLSetNetworkExitGroup('N', 'gmac', true)
+    expect(request.mock.calls.at(-1)?.[0].data.variables).toEqual({ networkId: 'N', group: 'gmac', exit: true })
+    request.mockResolvedValue({ data: { errors: [{ message: 'no access' }] }, headers: {} })
+    expect(await graphQLSetNetworkExitGroup('N', 'gmac', false)).toEqual({ reason: 'No access' })
   })
 
   it('a device that is both initiates and is a target', () => {

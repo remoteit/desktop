@@ -953,6 +953,7 @@
     "lanHint": "",
     "lanOnConfirm": "",
     "lanOnConfirmBody": "",
+    "networkGroup": "",
     "none": "",
     "offer": "",
     "offerOffConfirm": "",
@@ -2142,6 +2143,18 @@
   },
   "networkAddPage": {
     "title": "Nueva red"
+  },
+  "networkExits": {
+    "add": "",
+    "choose": "",
+    "dormant": "",
+    "failed": "",
+    "none": "",
+    "notOffered": "",
+    "offered": "",
+    "remove": "",
+    "title": "",
+    "whose": ""
   },
   "networkHeaderMenu": {
     "deleteNetwork": "Eliminar red",

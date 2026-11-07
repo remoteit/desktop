@@ -942,6 +942,7 @@
     "lanHint": "Traffic sent out through it may reach the network it is on",
     "lanOnConfirm": "Let its local network be reached?",
     "lanOnConfirmBody": "Everyone who may use it as an exit can then reach the devices on the network it is on.",
+    "networkGroup": "{{group}} · by its network",
     "none": "None — its usual way out",
     "offer": "Offer itself as an exit node",
     "offerOffConfirm": "Stop offering it as an exit node?",
@@ -2102,6 +2103,18 @@
   },
   "networkAddPage": {
     "title": "New network"
+  },
+  "networkExits": {
+    "add": "Make an exit group available",
+    "choose": "Exit group",
+    "dormant": "Dormant: no device in it is in service, so it cannot be chosen until one is",
+    "failed": "Not changed: try again",
+    "none": "No exit group: its devices send their traffic out through an exit only by their own choice. Make one of your exit groups available, and each device initiating here may choose it.",
+    "notOffered": "No device in it offers itself as an exit now",
+    "offered": "Its devices may choose it now",
+    "remove": "Stop making it available",
+    "title": "Exits",
+    "whose": "{{state}} · {{email}}’s"
   },
   "networkHeaderMenu": {
     "deleteNetwork": "Delete Network",

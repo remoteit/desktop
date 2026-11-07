@@ -82,6 +82,23 @@ export const graphQLSharedProxyGroups = () =>
     data => data?.login?.sharedProxyGroups ?? []
   )
 
+// The exit groups a device may use as itself that you may not yourself — those its networks make available (graphql
+// exitGroups with the device, less your own exitGroups), offered now — chosen for it as the group. An API before a
+// network's exit groups answers none.
+export async function graphQLDeviceNetworkExitGroups(deviceId: string): Promise<{ id: string; name: string }[]> {
+  const query = `query DeviceNetworkExitGroups($deviceId: String) {
+    mine: exitGroups { id }
+    device: exitGroups(deviceId: $deviceId) { id name remoteit }
+  }`
+  const variables = { deviceId }
+  const response = await post({ query, variables })
+  if (response === 'ERROR' || graphQLGetErrors(response, true, { query, variables })) return []
+  const mine = new Set<string>((response.data?.data?.mine ?? []).map((group: { id: string }) => group.id))
+  return (response.data?.data?.device ?? [])
+    .filter((group: { id: string; remoteit: boolean }) => !group.remoteit && !mine.has(group.id))
+    .map(({ id, name }: { id: string; name: string }) => ({ id, name }))
+}
+
 // The group a device is in, as a proxy or an exit — with its sharing where the API shares groups; none for one that is
 // neither.
 export const graphQLDeviceGroup = async (deviceId: string) =>

@@ -19,6 +19,7 @@ import {
   graphQLDeleteProxyGroup,
   graphQLDeviceExitGroup,
   graphQLDeviceGroup,
+  graphQLDeviceNetworkExitGroups,
   graphQLLeaveProxyGroup,
   graphQLSharedProxyGroups,
   refusalOf,
@@ -37,19 +38,21 @@ import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
    (DeviceExitOffer): a device setting (exit_node) switched by whoever manages it, where the API has device settings;
    else what its own configuration says. Every exit is in a group (graphql-api docs/PROXY-GROUPS.md §11): an exit chosen
    as a group with no device taking its traffic now is said so — dormant when no device in the group is in service, its
-   traffic going its usual way until one is —, the groups shared with the person choosing are among the exits while
-   offered, and turning off the last exit in a group asks whether to delete the group too
-   (components/LastInGroupDialog.tsx). Device sessions only; nothing shows where the API lacks them. */
+   traffic going its usual way until one is —, the groups shared with the person choosing and those the device's
+   networks make available are among the exits while offered, and turning off the last exit in a group asks whether to
+   delete the group too (components/LastInGroupDialog.tsx). Device sessions only; nothing shows where the API lacks
+   them. */
 
 // The device's exit and, for the choice, who chose it, the exits it may use — the groups shared with the person
-// choosing among them, while offered —, its Protect (the route kept while off), the group it goes through and whether
-// that is dormant, and whether the exit or route is one of remote.it's public exits, the only ones charged: read again
-// after each change.
+// choosing among them, and those its networks make available to it, while offered —, its Protect (the route kept while
+// off), the group it goes through and whether that is dormant, and whether the exit or route is one of remote.it's public
+// exits, the only ones charged: read again after each change.
 function useDeviceExit(deviceId: string, choice: boolean) {
   const [info, setInfo] = useState<ExitInfo | null>()
   const [chooser, setChooser] = useState<ExitChooser | null>(null)
   const [exits, setExits] = useState<{ id: string; name: string }[]>([])
   const [shared, setShared] = useState<ProxyGroup[]>([])
+  const [given, setGiven] = useState<{ id: string; name: string }[]>([])
   const [protect, setProtect] = useState<ProtectInfo | null>(null)
   const [publicExit, setPublicExit] = useState(false)
   const [group, setGroup] = useState<ProxyGroup | null>()
@@ -70,17 +73,21 @@ function useDeviceExit(deviceId: string, choice: boolean) {
     const theirs = await graphQLSharedProxyGroups()
     const offered = Array.isArray(theirs) ? theirs.filter(g => g.offered) : []
     setShared(offered)
+    // The groups its networks make available, which the device may use as itself though the person choosing may not.
+    const networks = await graphQLDeviceNetworkExitGroups(deviceId)
+    setGiven(networks)
     const kept = await graphQLDeviceProtect(deviceId)
     setProtect(kept && typeof kept === 'object' ? kept : null)
     const via =
       (answer && typeof answer === 'object' && answer.exit?.id) ||
       (kept && typeof kept === 'object' && kept.on === false && kept.route)
     setPublicExit(via ? !!(await graphQLProxyPublicExit(via)) : false)
-    // The exit group it goes through: one shared with you is chosen as the group, and one with no device taking its
-    // traffic now — none left in it, or none offering itself — is chosen still, its traffic stopped until one does, or
-    // dormant, going its usual way, while no device in it is in service. Asked where it can be either.
+    // The exit group it goes through: one shared with you, or one its networks make available, is chosen as the group,
+    // and one with no device taking its traffic now — none left in it, or none offering itself — is chosen still, its
+    // traffic stopped until one does, or dormant, going its usual way, while no device in it is in service. Asked where
+    // it can be either.
     const exitGroup =
-      answer && typeof answer === 'object' && (!answer.exit || offered.length)
+      answer && typeof answer === 'object' && (!answer.exit || offered.length || networks.length)
         ? await graphQLDeviceExitGroup(deviceId)
         : null
     setThrough(
@@ -95,13 +102,16 @@ function useDeviceExit(deviceId: string, choice: boolean) {
   }, [load])
 
   const waiting = through && info && !info.exit ? through : null
-  return { info, chooser, exits, shared, protect, publicExit, group, through, waiting, load }
+  return { info, chooser, exits, shared, given, protect, publicExit, group, through, waiting, load }
 }
 
 // The exit the device's traffic goes out through, with who chose it and what the machine's administrator allows.
 export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
-  const { info, chooser, exits, shared, protect, publicExit, through, waiting, load } = useDeviceExit(device.id, true)
+  const { info, chooser, exits, shared, given, protect, publicExit, through, waiting, load } = useDeviceExit(
+    device.id,
+    true
+  )
   const [saving, setSaving] = useState(false)
   const manage = device.permissions.includes('MANAGE')
   // The device's own exit traffic is charged to its account, the owner's, not to whoever views it.
@@ -109,13 +119,21 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 
   if (!info) return null
 
-  // A group shared with you is chosen as the group, whichever of its devices takes the traffic: shown as itself.
-  const sharedThrough = through && shared.some(g => g.label === through.label) ? through.label : ''
+  // A group shared with you, or one its networks make available, is chosen as the group, whichever of its devices takes
+  // the traffic: shown as itself.
+  const sharedThrough =
+    through && (shared.some(g => g.label === through.label) || given.some(g => g.id === through.label))
+      ? through.label
+      : ''
   const current = sharedThrough || info.exit?.id || waiting?.label || ''
   const choices = [
     { key: '', name: t('deviceExit.none', 'None — its usual way out') },
     ...exits.map(e => ({ key: e.id, name: e.name })),
     ...shared.map(g => ({ key: g.label, name: sharedChoiceName(t, g) })),
+    ...given.map(g => ({
+      key: g.id,
+      name: t('deviceExit.networkGroup', '{{group}} · by its network', { group: g.name }),
+    })),
   ]
   if (info.exit && !sharedThrough && !exits.some(e => e.id === info.exit?.id))
     choices.push({ key: info.exit.id, name: info.exit.name })

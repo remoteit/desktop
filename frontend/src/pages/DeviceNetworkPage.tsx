@@ -50,6 +50,8 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { DeviceNetworkGraph } from '../components/DeviceNetworkGraph'
+import { NetworkExitGroups } from '../components/NetworkExitGroups'
+import { selectActiveAccountId } from '../selectors/accounts'
 
 /* A network of devices (docs/superpowers/specs/2026-09-30-device-sessions-ui-design.md §3): its devices, each an
    initiator (a switch) and a target as soon as it exposes something — all its services, any port of its own, or
@@ -79,6 +81,7 @@ export const DeviceNetworkPage: React.FC = () => {
   const [show, setShow] = useState<'ALL' | 'INITIATORS' | 'TARGETS'>('ALL')
   const tags = useSelector(selectTags)
   const dark = useSelector((state: State) => state.ui.themeDark)
+  const accountId = useSelector(selectActiveAccountId)
 
   const network = Array.isArray(networks) ? networks.find(n => n.id === networkID) : undefined
   if (networks === undefined) return <LoadingMessage />
@@ -512,6 +515,7 @@ export const DeviceNetworkPage: React.FC = () => {
               )}
             </Box>
           )}
+          <NetworkExitGroups network={network} accountId={accountId} />
         </List>
       ) : (
         <List>

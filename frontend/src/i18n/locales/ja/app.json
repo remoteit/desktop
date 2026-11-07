@@ -931,6 +931,7 @@
     "lanHint": "",
     "lanOnConfirm": "",
     "lanOnConfirmBody": "",
+    "networkGroup": "",
     "none": "",
     "offer": "",
     "offerOffConfirm": "",
@@ -2062,6 +2063,18 @@
   },
   "networkAddPage": {
     "title": "新しいネットワーク"
+  },
+  "networkExits": {
+    "add": "",
+    "choose": "",
+    "dormant": "",
+    "failed": "",
+    "none": "",
+    "notOffered": "",
+    "offered": "",
+    "remove": "",
+    "title": "",
+    "whose": ""
   },
   "networkHeaderMenu": {
     "deleteNetwork": "ネットワークを削除",
