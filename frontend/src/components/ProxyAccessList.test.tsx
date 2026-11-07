@@ -31,7 +31,8 @@ import { FAILURES } from '../services/graphQLProxyAccess'
 
 const visit = {
   id: 'a1',
-  proxyId: 'E1',
+  proxyId: 'P1',
+  deviceId: 'E1',
   endpointId: 'ep',
   serviceId: 'S1',
   kind: 'https',
@@ -48,10 +49,10 @@ const visit = {
   passwordFailures: 0,
 }
 
-async function render(scope: any) {
+async function render(scope: any, devices?: ILookup<string>) {
   const el = document.createElement('div')
   document.body.appendChild(el)
-  await act(async () => createRoot(el).render(<ProxyAccessList scope={scope} />))
+  await act(async () => createRoot(el).render(<ProxyAccessList scope={scope} devices={devices} />))
   return el
 }
 
@@ -91,16 +92,27 @@ describe('ProxyAccessList', () => {
   })
 
   it('filters by outcome, and pages on from the last', async () => {
-    const el = await render({ proxyId: 'P1' })
+    const el = await render({ proxy: 'P1' })
     const select = el.querySelector('select[data-filter]') as HTMLSelectElement
     await act(async () => {
       select.value = 'failures'
       select.dispatchEvent(new Event('change', { bubbles: true }))
     })
-    expect(access).toHaveBeenLastCalledWith({ proxyId: 'P1' }, [...FAILURES], undefined)
+    expect(access).toHaveBeenLastCalledWith({ proxy: 'P1' }, [...FAILURES], undefined)
     const more = [...el.querySelectorAll('button')].find(b => b.textContent === 'More')!
     await act(async () => more.click())
-    expect(access).toHaveBeenLastCalledWith({ proxyId: 'P1' }, [...FAILURES], '1:a2')
+    expect(access).toHaveBeenLastCalledWith({ proxy: 'P1' }, [...FAILURES], '1:a2')
+  })
+
+  it('names the device that served each visit, where asked to — its id where it has no name', async () => {
+    let el = await render({ proxy: 'P1' }, { E1: 'e1-r3.solo.r3proxy.com' })
+    expect(el.textContent).toContain(' · e1-r3.solo.r3proxy.com')
+    document.body.innerHTML = ''
+    el = await render({ admin: true }, {})
+    expect(el.textContent).toContain(' · E1')
+    document.body.innerHTML = ''
+    el = await render({ deviceId: 'E1' })
+    expect(el.textContent).not.toContain(' · E1')
   })
 
   it('shows nothing on an API without proxies', async () => {

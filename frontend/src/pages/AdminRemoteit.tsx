@@ -20,13 +20,16 @@ import { graphQLSetProxyActivation } from '../services/graphQLProxy'
 import {
   Location,
   RemoteitMachine,
+  Renumbered,
   graphQLAdoptRemoteitProxy,
   graphQLCreateRemoteit,
   graphQLRemoteitExits,
   graphQLRemoteitMachines,
   graphQLRemoteitProxies,
   graphQLRemoteitProxyCode,
+  graphQLRenumberProxyDevice,
 } from '../services/graphQLRemoteit'
+import { Confirm } from '../components/Confirm'
 import { runStateLabel, stillRunsLine } from '../helpers/runsHelper'
 import { RunListItem } from '../components/RunListItem'
 import { RunActions } from '../components/RunActions'
@@ -122,7 +125,9 @@ export const AdminRemoteitProxies: React.FC<{ onProblem: Problem }> = ({ onProbl
                 setTold(stillRunsLine(t, machine.name, runs))
                 await load()
               }}
-            />
+            >
+              {device.host && <Renumber deviceId={device.id} host={device.host} onDone={load} />}
+            </RunListItem>
           ))}
           <AddMachine
             kind="proxy"
@@ -343,6 +348,85 @@ const Machine: React.FC<{ machine: RemoteitMachine; onProblem: Problem; onChange
         }
       />
     </ListItem>
+  )
+}
+
+// The number in one of remote.it's devices' own name, e<number>-r3.
+export const numberOf = (host: string) => Number(/^e(\d+)-r3\./.exec(host)?.[1]) || undefined
+
+/* One of remote.it's devices running a proxy given another number, e<number>-r3: said first — its name before and
+   after (URLs under the old one stop reaching it), its certificate kept under the new name or still to come, and
+   whether the new name has an address for its proxy's record —, then done. */
+const Renumber: React.FC<{ deviceId: string; host: string; onDone: () => void }> = ({ deviceId, host, onDone }) => {
+  const [number, setNumber] = useState('')
+  const [said, setSaid] = useState<Renumbered | { reason: string }>()
+  const [busy, setBusy] = useState(false)
+  const valid = /^[1-9][0-9]{0,3}$/.test(number) && Number(number) !== numberOf(host)
+
+  const ask = async () => {
+    setBusy(true)
+    setSaid(await graphQLRenumberProxyDevice(deviceId, Number(number), false))
+    setBusy(false)
+  }
+
+  const apply = async () => {
+    setBusy(true)
+    const done = await graphQLRenumberProxyDevice(deviceId, Number(number), true)
+    setBusy(false)
+    if ('reason' in done) return setSaid({ reason: done.reason || 'It was not renumbered: try again.' })
+    setSaid(undefined)
+    setNumber('')
+    onDone()
+  }
+
+  const preview = said && !('reason' in said) ? said : undefined
+  return (
+    <Box display="flex" gap={1} alignItems="center" marginTop={0.5} data-renumber={deviceId}>
+      <TextField
+        size="small"
+        label="New number"
+        placeholder={String((numberOf(host) ?? 0) + 1)}
+        value={number}
+        sx={{ width: 120 }}
+        onChange={event => setNumber(event.target.value.trim())}
+      />
+      <Button size="small" variant="outlined" disabled={busy || !valid} onClick={ask}>
+        Renumber
+      </Button>
+      <Confirm
+        open={!!said}
+        title={preview ? `Rename ${preview.from} to ${preview.to}?` : 'Renumber'}
+        action="Renumber"
+        color="error"
+        disabled={busy || !preview}
+        onConfirm={apply}
+        onDeny={() => setSaid(undefined)}
+      >
+        {said && 'reason' in said ? (
+          <Notice severity="error" fullWidth>
+            {said.reason || 'What it would do could not be said: try again.'}
+          </Notice>
+        ) : (
+          preview && (
+            <Typography variant="body2" component="div" data-renumber-says>
+              <p>URLs under {preview.from} stop reaching it.</p>
+              <p>
+                {preview.certificate === 'moved'
+                  ? `Its certificate is kept under ${preview.to}, still serving its proxy's names, and one naming ${preview.to} is issued within a day.`
+                  : `It holds no certificate yet: one naming ${preview.to} is issued within a day.`}
+              </p>
+              <p>
+                {preview.record === null
+                  ? "This stage does not manage the proxies' DNS."
+                  : preview.record
+                  ? `${preview.to} has an address: it stays in its proxy's record.`
+                  : `${preview.to} has no address yet: it is left out of its proxy's record until it has one.`}
+              </p>
+            </Typography>
+          )
+        )}
+      </Confirm>
+    </Box>
   )
 }
 

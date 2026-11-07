@@ -14,6 +14,7 @@ const {
   addExitDevice,
   setProxyActivation,
   setExitActivation,
+  renumber,
   after,
 } = vi.hoisted(() => ({
   proxies: vi.fn(async () => [] as any),
@@ -26,6 +27,7 @@ const {
   addExitDevice: vi.fn(async (_exit: string, _deviceId: string) => ({ runs: {} } as any)),
   setProxyActivation: vi.fn(async (_proxy: string, _activation: string) => ({} as any)),
   setExitActivation: vi.fn(async (_exit: string, _activation: string) => ({} as any)),
+  renumber: vi.fn(async (_deviceId: string, _number: number, _apply: boolean) => ({} as any)),
   // What a machine runs after an action on it: the exit alone, in service.
   after: {
     proxy: null,
@@ -39,6 +41,19 @@ vi.mock('../services/graphQLRemoteit', () => ({
   graphQLCreateRemoteit: create,
   graphQLRemoteitProxyCode: code,
   graphQLAdoptRemoteitProxy: adopt,
+  graphQLRenumberProxyDevice: renumber,
+}))
+vi.mock('../components/Confirm', () => ({
+  Confirm: ({ open, title, action, disabled, children, onConfirm, onDeny }: any) =>
+    open ? (
+      <div data-confirm={title}>
+        {children}
+        <button data-confirm-action disabled={disabled} onClick={onConfirm}>
+          {action}
+        </button>
+        <button data-deny onClick={onDeny} />
+      </div>
+    ) : null,
 }))
 vi.mock('../services/graphQLDeviceRuns', () => ({
   graphQLAddProxyDevice: addProxyDevice,
@@ -52,7 +67,7 @@ vi.mock('../services/graphQL', () => ({
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
 // A machine in a proxy or an exit: what it was given, and its actions' end.
 vi.mock('../components/RunListItem', () => ({
-  RunListItem: ({ kind, run, name, title, activation, manage, onChanged }: any) => (
+  RunListItem: ({ kind, run, name, title, activation, manage, onChanged, lan, children }: any) => (
     <div
       data-run={run.id}
       data-kind={kind}
@@ -60,8 +75,10 @@ vi.mock('../components/RunListItem', () => ({
       data-title={title}
       data-activation={activation}
       data-manage={manage ? '' : undefined}
+      data-lan={lan ? '' : undefined}
     >
       <button data-changed onClick={() => onChanged(after, { id: run.id, name: run.name || run.id })} />
+      {children}
     </div>
   ),
 }))
@@ -467,6 +484,80 @@ describe('remote.it’s proxies', () => {
   })
 })
 
+describe('renumbering one of remote.it’s proxy machines', () => {
+  const proxy = (id: string) => $(`[data-remoteit-proxy="${id}"]`)!
+  const renumberOf = (id: string) => $(`[data-renumber="${id}"]`, proxy('R1'))!
+  // What graphql says a renumbering does.
+  const said = (fields: any = {}) => ({
+    from: 'e1-r3.dev.r3proxy.com',
+    to: 'e3-r3.dev.r3proxy.com',
+    certificate: 'moved',
+    record: true,
+    applied: false,
+    ...fields,
+  })
+
+  beforeEach(() => renumber.mockReset().mockResolvedValue(said()))
+
+  it('offered for a machine with its own name; a number checked as typed, not the one it has', async () => {
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    expect($('[data-run="E2"] [data-renumber]', proxy('R1'))).toBeNull()
+    const go = button('Renumber', renumberOf('E1'))!
+    expect(go.disabled).toBe(true)
+    await type('New number', '1', renumberOf('E1'))
+    expect(go.disabled).toBe(true)
+    await type('New number', 'x3', renumberOf('E1'))
+    expect(go.disabled).toBe(true)
+    await type('New number', '3', renumberOf('E1'))
+    expect(go.disabled).toBe(false)
+  })
+
+  it('said first — its name before and after, its certificate, its address for the record —, then done, and all read again', async () => {
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    await type('New number', '3', renumberOf('E1'))
+    await click(button('Renumber', renumberOf('E1')))
+    expect(renumber).toHaveBeenCalledWith('E1', 3, false)
+    expect($('[data-confirm]')?.getAttribute('data-confirm')).toBe(
+      'Rename e1-r3.dev.r3proxy.com to e3-r3.dev.r3proxy.com?'
+    )
+    expect($('[data-renumber-says]')?.textContent).toBe(
+      "URLs under e1-r3.dev.r3proxy.com stop reaching it." +
+        "Its certificate is kept under e3-r3.dev.r3proxy.com, still serving its proxy's names, and one naming e3-r3.dev.r3proxy.com is issued within a day." +
+        'e3-r3.dev.r3proxy.com has an address: it stays in its proxy\'s record.'
+    )
+    proxies.mockClear()
+    renumber.mockResolvedValue(said({ applied: true }))
+    await click($('[data-confirm-action]'))
+    expect(renumber).toHaveBeenLastCalledWith('E1', 3, true)
+    expect($('[data-confirm]')).toBeNull()
+    expect(proxies).toHaveBeenCalled()
+  })
+
+  it('a new name with no address, or a machine holding no certificate yet: said so', async () => {
+    renumber.mockResolvedValue(said({ certificate: 'pending', record: false }))
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    await type('New number', '3', renumberOf('E1'))
+    await click(button('Renumber', renumberOf('E1')))
+    expect($('[data-renumber-says]')?.textContent).toContain(
+      'It holds no certificate yet: one naming e3-r3.dev.r3proxy.com is issued within a day.'
+    )
+    expect($('[data-renumber-says]')?.textContent).toContain(
+      "e3-r3.dev.r3proxy.com has no address yet: it is left out of its proxy's record until it has one."
+    )
+  })
+
+  it('refused — a number another machine holds — said in graphql’s words, nothing done', async () => {
+    renumber.mockResolvedValue({ reason: 'E3-r3.dev.r3proxy.com is another device’s' })
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    await type('New number', '3', renumberOf('E1'))
+    await click(button('Renumber', renumberOf('E1')))
+    expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe('E3-r3.dev.r3proxy.com is another device’s')
+    expect(($('[data-confirm-action]') as HTMLButtonElement).disabled).toBe(true)
+    await click($('[data-deny]'))
+    expect(renumber).not.toHaveBeenCalledWith('E1', 3, true)
+  })
+})
+
 describe('remote.it’s exits', () => {
   const exit = (id: string) => $(`[data-remoteit-exit="${id}"]`)!
 
@@ -477,6 +568,8 @@ describe('remote.it’s exits', () => {
     expect(subheader(exit('X2'))).toBe('remote.it sea1a · sea1 · 1 user · not offered: no machine takes traffic')
     expect(subheader(exit('X3'))).toBe('remote.it nyc1a · sea1 · 0 users · not offered: no machine takes traffic')
     const e1 = $('[data-run="E1"]', exit('X1'))!
+    // remote.it's exits reach no network of their machines: no LAN to set.
+    expect(e1.hasAttribute('data-lan')).toBe(false)
     expect(e1.getAttribute('data-kind')).toBe('exit')
     expect(e1.getAttribute('data-name')).toBe('remote.it pdx1a')
     expect(e1.getAttribute('data-activation')).toBe('auto')

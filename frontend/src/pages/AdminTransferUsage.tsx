@@ -338,8 +338,8 @@ const Exits: React.FC<{ exits?: AdminExitTotal[] | 'ERROR' }> = ({ exits }) => {
           {[...exits]
             .sort((a, b) => b.bytes - a.bytes)
             .map(exit => (
-              <TableRow key={exit.exitId} data-exit={exit.exitId}>
-                <TableCell>{exit.name || exit.exitId}</TableCell>
+              <TableRow key={exit.deviceId} data-exit={exit.deviceId}>
+                <TableCell>{exit.name || exit.deviceId}</TableCell>
                 <TableCell>{gigabytes(exit.bytes)}</TableCell>
                 <TableCell>{exit.accounts}</TableCell>
               </TableRow>

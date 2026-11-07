@@ -47,8 +47,8 @@ const PAGE = {
 }
 
 const EXITS = [
-  { exitId: 'X1', name: 'edge-1', bytes: 2e9, accounts: 3 },
-  { exitId: 'X2', name: null, bytes: 30e9, accounts: 9 },
+  { deviceId: 'X1', name: 'edge-1', bytes: 2e9, accounts: 3 },
+  { deviceId: 'X2', name: null, bytes: 30e9, accounts: 9 },
 ]
 
 const flush = () => act(async () => {})

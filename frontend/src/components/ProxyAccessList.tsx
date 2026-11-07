@@ -16,7 +16,8 @@ import { SelectSetting } from './SelectSetting'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
 
-type Props = { scope: AccessScope; showEndpoint?: boolean; showProxy?: boolean }
+// devices: each visit says the device that served it, by these names (its id where none).
+type Props = { scope: AccessScope; showEndpoint?: boolean; devices?: ILookup<string> }
 
 export function outcomeLabel(t: TFunction, outcome: AccessOutcome | string): string {
   switch (outcome) {
@@ -50,9 +51,10 @@ const bytes = (n: number) =>
   n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(1)} MB`
 
 /* Who used a proxy endpoint, when, and how it ended (services/graphQLProxyAccess.ts): a service's endpoints, a proxy's,
-   or remote.it's public proxies'; newest first, filtered by outcome, a page at a time. The visitor's address is masked
-   by graphql for whoever does not manage the proxy. Device-session API only: on an API without it, nothing shows. */
-export const ProxyAccessList: React.FC<Props> = ({ scope, showEndpoint, showProxy }) => {
+   a device's, or remote.it's proxies'; newest first, filtered by outcome, a page at a time. The visitor's address is
+   masked by graphql for whoever does not manage the proxy. Device-session API only: on an API without it, nothing
+   shows. */
+export const ProxyAccessList: React.FC<Props> = ({ scope, showEndpoint, devices }) => {
   const { t } = useTranslation()
   const [filter, setFilter] = useState('')
   const [items, setItems] = useState<ProxyAccess[]>()
@@ -113,7 +115,7 @@ export const ProxyAccessList: React.FC<Props> = ({ scope, showEndpoint, showProx
       {!!items?.length && (
         <List dense disablePadding>
           {items.map(access => (
-            <ListItem key={`${access.proxyId}:${access.id}`}>
+            <ListItem key={`${access.deviceId}:${access.id}`}>
               <ListItemIcon>
                 <Icon
                   name={access.outcome === 'served' ? 'check' : 'ban'}
@@ -143,7 +145,7 @@ export const ProxyAccessList: React.FC<Props> = ({ scope, showEndpoint, showProx
                       in: bytes(access.bytesIn),
                       out: bytes(access.bytesOut),
                     })}
-                    {showProxy && ` · ${access.proxyId}`}
+                    {devices && ` · ${devices[access.deviceId] || access.deviceId}`}
                     {showEndpoint &&
                       ` · ${access.kind}${access.name ? ` ${access.name}` : ''}${
                         access.port ? ` :${access.port}` : ''

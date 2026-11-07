@@ -114,7 +114,7 @@ export function proxyLine(t: TFunction, proxy: Proxy): string {
   return [
     proxy.host,
     runsOnLine(t, proxy.devices),
-    endpointsLine(t, proxy.endpoints),
+    endpointsLine(t, proxy.endpointCount),
     proxy.certificate === 'pending' ? t('proxiesPage.certificatePending', 'Certificate pending') : '',
   ]
     .filter(Boolean)

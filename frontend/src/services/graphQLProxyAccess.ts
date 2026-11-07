@@ -26,7 +26,8 @@ export type AccessOutcome = (typeof ACCESS_OUTCOMES)[number]
 
 export type ProxyAccess = {
   id: string
-  proxyId: string
+  proxyId: string | null // the proxy it came through (Proxy.id); none in a record kept before records named it
+  deviceId: string // the device that served it
   endpointId: string | null
   serviceId: string | null
   kind: string
@@ -49,10 +50,15 @@ export type ProxyAccess = {
 
 export type ProxyAccessPage = { items: ProxyAccess[]; hasMore: boolean; last: string | null }
 
-// Whose visitors: a service's, a proxy's, or — admins — remote.it's public proxies' (one, or all of them).
-export type AccessScope = { serviceId: string } | { proxyId: string } | { admin: true; proxyId?: string }
+// Whose visitors: a service's, a proxy's, those a device served, or — admins — remote.it's proxies' (one proxy's, one
+// device's, or all of them).
+export type AccessScope =
+  | { serviceId: string }
+  | { proxy: string }
+  | { deviceId: string }
+  | { admin: true; proxy?: string; deviceId?: string }
 
-const FIELDS = `items { id proxyId endpointId serviceId kind name port visitor visitorPort masked started ended durationMs
+const FIELDS = `items { id proxyId deviceId endpointId serviceId kind name port visitor visitorPort masked started ended durationMs
   bytesIn bytesOut outcome code reason userEmail passwordFailures } hasMore last`
 
 // Every outcome but served: the filter "not served".
@@ -62,15 +68,20 @@ export async function graphQLProxyAccess(scope: AccessScope, outcomes?: string[]
   const admin = 'admin' in scope
   const field = admin ? 'adminProxyAccess' : 'proxyAccess'
   const query = admin
-    ? `query AdminProxyAccess($proxyId: String, $outcomes: [String!], $after: String, $size: Int) {
-        adminProxyAccess(proxyId: $proxyId, outcomes: $outcomes, after: $after, size: $size) { ${FIELDS} }
+    ? `query AdminProxyAccess($proxy: String, $deviceId: String, $outcomes: [String!], $after: String, $size: Int) {
+        adminProxyAccess(proxy: $proxy, deviceId: $deviceId, outcomes: $outcomes, after: $after, size: $size) {
+          ${FIELDS}
+        }
       }`
-    : `query ProxyAccess($serviceId: String, $proxyId: String, $outcomes: [String!], $after: String, $size: Int) {
-        proxyAccess(serviceId: $serviceId, proxyId: $proxyId, outcomes: $outcomes, after: $after, size: $size) { ${FIELDS} }
+    : `query ProxyAccess($serviceId: String, $proxy: String, $deviceId: String, $outcomes: [String!], $after: String,
+        $size: Int) {
+        proxyAccess(serviceId: $serviceId, proxy: $proxy, deviceId: $deviceId, outcomes: $outcomes, after: $after,
+          size: $size) { ${FIELDS} }
       }`
   const variables = {
     serviceId: 'serviceId' in scope ? scope.serviceId : undefined,
-    proxyId: 'proxyId' in scope ? scope.proxyId : undefined,
+    proxy: 'proxy' in scope ? scope.proxy : undefined,
+    deviceId: 'deviceId' in scope ? scope.deviceId : undefined,
     outcomes: outcomes?.length ? outcomes : undefined,
     after,
     size,

@@ -38,26 +38,37 @@ const effect = (fields: Partial<DeviceActionEffect> = {}): DeviceActionEffect =>
 })
 
 describe('a device’s state in what it runs', () => {
-  it('in a word: joining before anything else, then in service, draining or retired', () => {
+  it('in a word: disabled before anything else, then joining, in service, draining or retired', () => {
     expect(runStateLabel(t, run())).toBe('In service')
     expect(runStateLabel(t, run({ state: 'DRAINING' }))).toBe('Draining')
     expect(runStateLabel(t, run({ state: 'RETIRED' }))).toBe('Retired')
     expect(runStateLabel(t, run({ state: 'RETIRED', joining: true }))).toBe('Joining')
+    expect(runStateLabel(t, run({ joining: true, disabled: true }))).toBe('Disabled')
   })
 
-  it('what a joining device waits for: its failing checks by their reasons, else an admin or nothing', () => {
+  it('what a joining device waits for: its checks failed, apart from those pending — waiting, nothing to put right', () => {
     const checks = [
-      { name: 'health', passed: true, reason: 'online' },
-      { name: 'policy', passed: false, reason: 'its machine forbids exits' },
-      { name: 'nat', passed: false, reason: 'its NAT rewrites ports' },
+      { name: 'health', passed: true, pending: false, reason: 'online' },
+      { name: 'nat', passed: false, pending: false, reason: 'its NAT rewrites ports' },
+      { name: 'policy', passed: false, pending: true, reason: 'the machine turns its exit node on itself' },
     ]
     expect(runDetail(t, run({ joining: true, checks }))).toBe(
-      'Waiting for its checks: its machine forbids exits; its NAT rewrites ports'
+      'Its checks fail: its NAT rewrites ports · Waiting: the machine turns its exit node on itself'
+    )
+    expect(runDetail(t, run({ joining: true, checks: [checks[0], checks[2]] }))).toBe(
+      'Waiting: the machine turns its exit node on itself'
+    )
+    expect(runDetail(t, run({ joining: true, checks: [checks[0], checks[1]] }))).toBe(
+      'Its checks fail: its NAT rewrites ports'
     )
     expect(runDetail(t, run({ joining: true, checks: [checks[0]] }), 'admin')).toBe(
       'Its checks pass: it waits for an admin to put it in service'
     )
     expect(runDetail(t, run({ joining: true }), 'auto')).toBe('Its checks pass: it goes into service by itself')
+  })
+
+  it('a disabled device serves nothing, whatever its state there', () => {
+    expect(runDetail(t, run({ disabled: true }))).toBe('Its device is disabled: it serves nothing until it is restored')
   })
 
   it('what a draining or retired device does, and why a device in service takes no traffic', () => {
@@ -84,10 +95,10 @@ describe('an exit or a proxy in a line', () => {
     expect(endpointsLine(t, 0)).toBe('No endpoints')
   })
 
-  it('no device available for an exit with none in service; nothing to say of one offered', () => {
+  it('no device available for an exit none of whose devices carries its traffic; nothing to say of one offered', () => {
     expect(availabilityLabel(t, { offered: false, dormant: true })).toBe('No device available')
     expect(availabilityLine(t, { offered: false, dormant: true })).toBe(
-      'No device available: the devices using it go their usual way until one of its devices is in service.'
+      'No device available: none of its devices carries its traffic, so the devices using it go their usual way until one does.'
     )
     expect(availabilityLabel(t, { offered: false, dormant: false })).toBe('Not taking traffic now')
     expect(availabilityLabel(t, { offered: true, dormant: false })).toBe('')
@@ -111,8 +122,7 @@ describe('what an action does to each proxy and exit, said first', () => {
   })
 
   it('a deleted device keeps its place, serving nothing while it is disabled', () => {
-    // graphql answers a delete with the state it keeps.
-    expect(effectLines(t, effect({ after: 'active' }), 'DELETE')[0]).toBe(
+    expect(effectLines(t, effect({ after: 'disabled' }))[0]).toBe(
       'Exit Office Mac: in service → serving nothing while it is disabled'
     )
   })
@@ -139,10 +149,10 @@ describe('what an action does to each proxy and exit, said first', () => {
     const last = effectLines(t, effect({ users: 5, moved: 2, inService: 0, dormant: true }))
     expect(last[1]).toBe('2 devices going out through it now wait for another of its devices.')
     expect(last[2]).toBe(
-      'No device available after: the 5 devices using it go their usual way until one is in service.'
+      'No device available after: the 5 devices using it go their usual way until one of its devices carries traffic again.'
     )
     expect(effectLines(t, effect({ inService: 0, dormant: true }))[1]).toBe(
-      'No device available after, until one is in service.'
+      'No device available after, until one of its devices carries traffic again.'
     )
   })
 

@@ -37,7 +37,8 @@ export type AdminTransferUsageFilter = {
   after?: string
 }
 
-export type AdminExitTotal = { exitId: string; name: string | null; bytes: number; accounts: number }
+// What one device of remote.it's public exits carried in a month.
+export type AdminExitTotal = { deviceId: string; name: string | null; bytes: number; accounts: number }
 
 const USAGE = 'kind month usedBytes allowanceBytes rateBps over resetsAt'
 
@@ -51,7 +52,7 @@ const PAGE_QUERY = `query AdminTransferUsage($month: String, $search: String, $o
 }`
 
 const EXITS_QUERY = `query AdminExitTransfer($month: String) {
-  adminExitTransfer(month: $month) { exitId name bytes accounts }
+  adminExitTransfer(month: $month) { deviceId name bytes accounts }
 }`
 
 async function read<T>(query: string, variables: ILookup<any>, field: string): Promise<T | 'ERROR'> {

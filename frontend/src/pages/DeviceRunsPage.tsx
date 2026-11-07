@@ -94,6 +94,8 @@ export const DeviceRunsPage: React.FC = () => {
               title={t('deviceRuns.exit', 'Exit {{name}}', { name: runs.exit.exit.name })}
               to={runs.exit.exit.remoteit ? (admin ? '/admin/proxies?view=exits' : undefined) : `/exits/${runs.exit.exit.id}`}
               manage={manage}
+              lan={!runs.exit.exit.remoteit}
+              onRefresh={load}
               onChanged={changed}
             />
           ) : (
@@ -142,7 +144,7 @@ export const DeviceRunsPage: React.FC = () => {
         {manage && runs.proxy && (
           <List>
             <ListSubheader>{t('proxyAccess.title', 'Recent visitors')}</ListSubheader>
-            <ProxyAccessList scope={{ proxyId: device.id }} showEndpoint />
+            <ProxyAccessList scope={{ deviceId: device.id }} showEndpoint />
           </List>
         )}
       </>

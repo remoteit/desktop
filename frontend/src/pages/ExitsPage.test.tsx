@@ -96,6 +96,9 @@ const device = (id: string, name: string | null): ExitDevice => ({
   offering: true,
   refusal: null,
   health: null,
+  disabled: false,
+  lan: false,
+  lanRefusal: null,
 })
 const exit = (id: string, name: string, more: Partial<Exit> = {}): Exit => ({
   id,
@@ -104,6 +107,7 @@ const exit = (id: string, name: string, more: Partial<Exit> = {}): Exit => ({
   location: null,
   provider: '',
   activation: 'auto',
+  manage: true,
   offered: true,
   dormant: false,
   owner: ME,

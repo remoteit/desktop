@@ -6,7 +6,8 @@ import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
    picks the one a device's new connections go through. remote.it's are at a location and offered by plan; an own exit
    is its account's: made, then devices added to run it, and kept — its users and all — until its account deletes it.
-   With no device in service it is dormant: no device may choose it, and those using it go their usual way until one is.
+   With no device carrying its flows — serving, not disabled, and offering itself — it is dormant: no device may choose
+   it, and those using it go their usual way until one carries them again.
    An own exit is shared with people, tagged with its account's tags, and offered on networks. A device's exit is the
    one it uses (Device.usesExit), apart from the one it runs (Device.runs). A refusal comes back in graphql's words.
    Device-session API only: an API without it answers UNSUPPORTED. */
@@ -15,6 +16,10 @@ export type UserRef = { id: string; email: string | null }
 
 export type ExitShare = { user: UserRef; sharedBy: { email: string | null } | null; created: string }
 
+// Why an exit is offered: OWN, its account is yours; SHARED, shared with you; ROLE, your role in its account reaches it;
+// NETWORK, a network the device initiates on makes it available; PLAN, remote.it's, by the plan.
+export type ExitReason = 'OWN' | 'SHARED' | 'ROLE' | 'NETWORK' | 'PLAN'
+
 export type Exit = {
   id: string // its label: what a device's exit names, never changed
   name: string
@@ -22,8 +27,9 @@ export type Exit = {
   location: string | null
   provider: string
   activation: 'auto' | 'admin'
-  offered: boolean // one of its devices serving and offering itself
-  dormant: boolean // an own exit with no device in service
+  manage: boolean
+  offered: boolean // one of its devices carrying its flows: serving, not disabled, and offering itself
+  dormant: boolean // an own exit with no device carrying its flows
   owner: UserRef | null // none for one of remote.it's
   devices: ExitDevice[] | null // for whoever manages it
   users: number | null // the devices using it, for whoever manages it
@@ -33,7 +39,7 @@ export type Exit = {
 }
 
 // Every field but the networks: what a list shows of each.
-const FIELDS = `id name remoteit location provider activation offered dormant users owner { id email }
+const FIELDS = `id name remoteit location provider activation manage offered dormant users owner { id email }
   devices { ${EXIT_DEVICE_FIELDS} } access { user { id email } sharedBy { email } created } tags { name color created }`
 
 // An exit as read, its tags' dates as dates.
@@ -65,10 +71,16 @@ export const graphQLAccountExits = (accountId: string) =>
 
 // The exits you may send a device's traffic through, offered now — remote.it's by plan, your own, those shared with you,
 // those your role reaches — and, with a device you manage, those it may use as itself: its networks', and remote.it's
-// by its account's plan.
+// by its account's plan — each with why it is offered. Never the exit the device runs.
+export type OfferedExit = Pick<Exit, 'id' | 'name' | 'remoteit' | 'location' | 'provider' | 'owner'> & {
+  reasons: ExitReason[] | null
+}
+
 export const graphQLOfferedExits = (deviceId?: string) =>
-  read<Pick<Exit, 'id' | 'name' | 'remoteit' | 'location' | 'provider' | 'owner'>[]>(
-    `query OfferedExits($deviceId: String) { exits(deviceId: $deviceId) { id name remoteit location provider owner { id email } } }`,
+  read<OfferedExit[]>(
+    `query OfferedExits($deviceId: String) {
+      exits(deviceId: $deviceId) { id name remoteit location provider owner { id email } reasons }
+    }`,
     { deviceId },
     'exits',
     data => data?.exits ?? []

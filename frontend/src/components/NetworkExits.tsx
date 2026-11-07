@@ -140,7 +140,7 @@ export function exitLine(t: TFunction, exit: NetworkExit, networkOwner: string):
   const state = exit.offered
     ? t('networkExits.offered', 'Its devices may choose it now')
     : exit.dormant
-    ? t('networkExits.dormant', 'No device available: it cannot be chosen until one of its devices is in service')
+    ? t('networkExits.dormant', 'No device available: it cannot be chosen until one of its devices carries its traffic')
     : t('networkExits.notOffered', 'None of its devices takes traffic now')
   return exit.owner && exit.owner.id !== networkOwner && exit.owner.email
     ? t('networkExits.whose', '{{state}} · {{email}}’s', { state, email: exit.owner.email })

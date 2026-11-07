@@ -2,8 +2,22 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }))
+const { push, setLan } = vi.hoisted(() => ({
+  push: vi.fn(),
+  setLan: vi.fn(async (_deviceId: string, _lan: boolean) => ({ runs: {} } as any)),
+}))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
+vi.mock('../services/graphQLDeviceRuns', () => ({ graphQLSetExitDeviceLan: setLan }))
+vi.mock('./Confirm', () => ({
+  Confirm: ({ open, title, children, onConfirm, onDeny }: any) =>
+    open ? (
+      <div data-confirm={title}>
+        {children}
+        <button data-yes onClick={onConfirm} />
+        <button data-no onClick={onDeny} />
+      </div>
+    ) : null,
+}))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 vi.mock('./Link', () => ({ Link: ({ to, children }: any) => <a data-link={to}>{children}</a> }))
 // Its actions are their own test's (RunActions.test.tsx): here, what they were given, and an answer.
@@ -36,7 +50,21 @@ const proxyRun = (fields: any = {}) =>
     ...fields,
   } as any)
 const exitRun = (fields: any = {}) =>
-  ({ id: 'MAC', name: 'Office Mac', state: 'ACTIVE', joining: false, checks: [], established: true, offering: true, refusal: null, health: null, ...fields } as any)
+  ({
+    id: 'MAC',
+    name: 'Office Mac',
+    state: 'ACTIVE',
+    joining: false,
+    disabled: false,
+    checks: [],
+    established: true,
+    offering: true,
+    refusal: null,
+    health: null,
+    lan: false,
+    lanRefusal: null,
+    ...fields,
+  } as any)
 
 async function render(props: any) {
   document.body.innerHTML = ''
@@ -46,15 +74,18 @@ async function render(props: any) {
   return container
 }
 
-beforeEach(() => push.mockReset())
+beforeEach(() => {
+  push.mockReset()
+  setLan.mockReset().mockResolvedValue({ runs: {} })
+})
 
 describe('a device in a proxy or an exit', () => {
   it('its name and state, what it waits for, and a link to it', async () => {
-    const checks = [{ name: 'policy', passed: false, reason: 'its machine forbids exits' }]
+    const checks = [{ name: 'policy', passed: false, pending: false, reason: 'its machine forbids exits' }]
     const row = await render({ kind: 'exit', run: exitRun({ state: 'RETIRED', joining: true, checks }), name: 'HA Derby', to: '/devices/MAC/runs' })
     expect(row.textContent).toContain('Office Mac')
     expect(row.querySelector('[data-run-state]')?.textContent).toBe('Joining')
-    expect(row.textContent).toContain('Waiting for its checks: its machine forbids exits')
+    expect(row.textContent).toContain('Its checks fail: its machine forbids exits')
     await act(async () => (row.querySelector('[data-run]') as HTMLElement).click())
     expect(push).toHaveBeenCalledWith('/devices/MAC/runs')
   })
@@ -107,3 +138,70 @@ describe('what its machine says of it', () => {
     expect(machineLines(t, 'exit', exitRun())).toEqual([])
   })
 })
+
+describe('a disabled device', () => {
+  it('says so, whatever its state there, and serves nothing until restored', async () => {
+    const row = await render({ kind: 'exit', run: exitRun({ disabled: true }), name: 'HA Derby' })
+    expect(row.querySelector('[data-run-state]')?.textContent).toBe('Disabled')
+    expect(row.textContent).toContain('Its device is disabled: it serves nothing until it is restored')
+  })
+})
+
+describe('an own exit’s device: its local network too', () => {
+  const lanSwitch = (row: HTMLElement) => row.querySelector('[data-lan] input') as HTMLInputElement
+
+  it('turned on only once asked, as everyone who may use the exit can then reach the network; read again after', async () => {
+    const onRefresh = vi.fn()
+    const row = await render({ kind: 'exit', run: exitRun(), name: 'HA Derby', manage: true, lan: true, onRefresh })
+    expect(row.querySelector('[data-lan]')?.getAttribute('data-lan')).toBe('off')
+    await act(async () => lanSwitch(row).click())
+    expect(setLan).not.toHaveBeenCalled()
+    expect(document.body.querySelector('[data-confirm]')?.textContent).toContain(
+      'Everyone who may use the exit can then reach the devices on the network Office Mac is on.'
+    )
+    await act(async () => (document.body.querySelector('[data-yes]') as HTMLElement).click())
+    expect(setLan).toHaveBeenCalledWith('MAC', true)
+    expect(onRefresh).toHaveBeenCalled()
+  })
+
+  it('turned off at once; a refusal is said in graphql’s words', async () => {
+    const row = await render({ kind: 'exit', run: exitRun({ lan: true }), name: 'HA Derby', manage: true, lan: true })
+    setLan.mockResolvedValue({ reason: 'Its administrator keeps its exit node local' })
+    await act(async () => lanSwitch(row).click())
+    expect(setLan).toHaveBeenCalledWith('MAC', false)
+    expect(row.querySelector('[data-lan-error]')?.textContent).toBe('Its administrator keeps its exit node local')
+  })
+
+  it('where it cannot be set from here: why, and how it stands, in place of the switch', async () => {
+    let row = await render({
+      kind: 'exit',
+      run: exitRun({ lan: true, lanRefusal: 'its administrator keeps its exit node local' }),
+      name: 'HA Derby',
+      manage: true,
+      lan: true,
+    })
+    expect(row.querySelector('[data-lan]')).toBeNull()
+    expect(row.querySelector('[data-lan-refusal]')?.textContent).toBe(
+      'Its local network too: on — its administrator keeps its exit node local'
+    )
+    row = await render({
+      kind: 'exit',
+      run: exitRun({ lanRefusal: 'its administrator forbids exits' }),
+      name: 'HA Derby',
+      manage: true,
+      lan: true,
+    })
+    expect(row.querySelector('[data-lan-refusal]')?.textContent).toBe(
+      'Its local network: not reached — its administrator forbids exits'
+    )
+  })
+
+  it('not for a proxy, remote.it’s exits, or one who may not manage it', async () => {
+    expect((await render({ kind: 'exit', run: exitRun(), name: 'pdx1a', manage: true })).querySelector('[data-lan]')).toBeNull()
+    expect((await render({ kind: 'exit', run: exitRun(), name: 'HA Derby', lan: true })).querySelector('[data-lan]')).toBeNull()
+    expect(
+      (await render({ kind: 'proxy', run: proxyRun(), name: 'Gateway', manage: true, lan: true })).querySelector('[data-lan]')
+    ).toBeNull()
+  })
+})
+

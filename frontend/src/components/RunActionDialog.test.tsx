@@ -152,6 +152,27 @@ describe('an action on a device: what it does, said first', () => {
     expect(runAction).toHaveBeenCalledWith('device', E1.id, 'RETIRE', { maxWaitMinutes: undefined, force: true })
   })
 
+  it('an exit-only device’s retire, refused while what is open through it is not known, may be forced too', async () => {
+    const refusal = 'its daemon does not say what is open through it: retire it with force to end whatever is'
+    effects.mockImplementation(async (_id, _action, force) =>
+      force ? [effect({ kind: 'exit', sessions: null })] : [effect({ kind: 'exit', sessions: null, refusal })]
+    )
+    await open()
+    expect(confirm().disabled).toBe(true)
+    await act(async () => (find('input[type="checkbox"]') as HTMLInputElement).click())
+    expect(confirm().disabled).toBe(false)
+    await act(async () => confirm().click())
+    expect(runAction).toHaveBeenCalledWith('device', E1.id, 'RETIRE', { maxWaitMinutes: undefined, force: true })
+  })
+
+  it('a retire refused for anything else stays refused, forced or not', async () => {
+    effects.mockResolvedValue([effect({ refusal: 'It runs Office, which serves others' })])
+    await open()
+    await act(async () => (find('input[type="checkbox"]') as HTMLInputElement).click())
+    expect(effects).toHaveBeenLastCalledWith(E1.id, 'RETIRE', true)
+    expect(confirm().disabled).toBe(true)
+  })
+
   it('any other refusal stands: said, and nothing can be done', async () => {
     effects.mockResolvedValue([
       effect({ after: 'gone', refusal: 'it runs remote.it pdx1a, which serves others: drain it there first, then retire it' }),
@@ -199,7 +220,7 @@ describe('what deleting or decommissioning a device does to what it runs', () =>
   }
 
   it('each proxy and exit it runs, a deleted device keeping its place, serving nothing', async () => {
-    effects.mockResolvedValue([effect({ after: 'active' })])
+    effects.mockResolvedValue([effect({ after: 'disabled' })])
     const page = await render('DELETE')
     expect(effects).toHaveBeenCalledWith(E1.id, 'DELETE')
     expect(page.textContent).toContain('It runs these, and they change so:')

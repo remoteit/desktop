@@ -26,10 +26,24 @@ import {
   graphQLAddExitDevice,
   graphQLAddProxyDevice,
   graphQLRunAction,
+  graphQLRunCandidates,
+  graphQLSetExitDeviceLan,
   RunAction,
 } from './graphQLDeviceRuns'
-import { graphQLCreateEndpoint } from './graphQLProxy'
-import { graphQLCreateRemoteit, graphQLRemoteitExits, graphQLRemoteitProxyCode } from './graphQLRemoteit'
+import {
+  graphQLCreateEndpoint,
+  graphQLRenameProxy,
+  graphQLSetProxyDomain,
+  graphQLSetProxyLabel,
+  graphQLSetProxyPublicEndpoints,
+} from './graphQLProxy'
+import {
+  graphQLCreateRemoteit,
+  graphQLRemoteitExits,
+  graphQLRemoteitProxyCode,
+  graphQLRenumberProxyDevice,
+} from './graphQLRemoteit'
+import { graphQLProxyAccess } from './graphQLProxyAccess'
 
 const answer = (data: object) => ({ data: { data }, headers: {} })
 const errors = (...errors: (string | { message: string; extensions?: object })[]) => ({
@@ -146,6 +160,12 @@ describe('one exit', () => {
 })
 
 describe('the exits offered', () => {
+  it('each with why it is offered', async () => {
+    request.mockResolvedValue(answer({ exits: [{ ...mac, reasons: ['SHARED', 'NETWORK'] }] }))
+    expect(await graphQLOfferedExits('DEV')).toEqual([{ ...mac, reasons: ['SHARED', 'NETWORK'] }])
+    expect(asked().query).toContain('reasons')
+  })
+
   it('to you, or, with a device you manage, those it may use as itself too', async () => {
     request.mockResolvedValue(answer({ exits: [mac] }))
     expect(await graphQLOfferedExits('DEV')).toEqual([mac])
@@ -402,3 +422,94 @@ describe('remote.it’s proxies and exits', () => {
     expect(await graphQLRemoteitProxyCode()).toBe('ERROR')
   })
 })
+
+describe('the devices that could run a proxy or an exit', () => {
+  const candidate = { id: 'DEV', name: 'Office Mac', fit: true, refusal: null, runs: { proxy: null, exit: null } }
+
+  it('for the exit or proxy named, each fit or why not, and what it runs', async () => {
+    request.mockResolvedValue(answer({ exitCandidates: [candidate] }))
+    expect(await graphQLRunCandidates('exit', { id: 'xmac' })).toEqual([candidate])
+    expect(asked().query).toContain('exitCandidates(exit: $id')
+    expect(asked().variables).toEqual({ id: 'xmac', accountId: undefined, deviceIds: undefined })
+    request.mockResolvedValue(answer({ proxyCandidates: [] }))
+    expect(await graphQLRunCandidates('proxy', { accountId: 'ACCOUNT' }, ['DEV'])).toEqual([])
+    expect(asked().query).toContain('proxyCandidates(proxy: $id')
+    expect(asked().variables).toEqual({ id: undefined, accountId: 'ACCOUNT', deviceIds: ['DEV'] })
+  })
+
+  it('a refusal — too many to weigh whole — in graphql’s words', async () => {
+    request.mockResolvedValue(refusal('the account has 1200 devices: name those to weigh (deviceIds), at most 1000'))
+    expect(await graphQLRunCandidates('exit', { id: 'xmac' })).toEqual({
+      reason: 'The account has 1200 devices: name those to weigh (deviceIds), at most 1000',
+    })
+  })
+})
+
+describe('an exit device’s local network', () => {
+  it('set, answering what the device runs; refused in graphql’s words', async () => {
+    request.mockResolvedValue(answer({ setExitDeviceLan: RUNS }))
+    expect(await graphQLSetExitDeviceLan('DEV', true)).toEqual({ runs: RUNS })
+    expect(asked().variables).toEqual({ deviceId: 'DEV', lan: true })
+    expect(asked().query).toContain('lan lanRefusal')
+    request.mockResolvedValue(refusal('its administrator keeps its exit node local'))
+    expect(await graphQLSetExitDeviceLan('DEV', false)).toEqual({ reason: 'Its administrator keeps its exit node local' })
+  })
+})
+
+describe('a proxy’s names and public endpoints', () => {
+  const moved = { host: 'gw2-acme.r3proxy.com', domain: null, addresses: [], certificate: 'pending', applied: false }
+
+  it('its name alone renamed', async () => {
+    request.mockResolvedValue(answer({ renameProxy: { id: 'P1' } }))
+    await graphQLRenameProxy('P1', 'Gateway')
+    expect(asked().variables).toEqual({ proxy: 'P1', name: 'Gateway' })
+  })
+
+  it('a label or a domain: what moves said, or with apply done; refused in graphql’s words', async () => {
+    request.mockResolvedValue(answer({ setProxyLabel: moved }))
+    expect(await graphQLSetProxyLabel('P1', 'gw2', false)).toEqual(moved)
+    expect(asked().variables).toEqual({ proxy: 'P1', label: 'gw2', apply: false })
+    request.mockResolvedValue(answer({ setProxyDomain: { ...moved, applied: true } }))
+    expect(await graphQLSetProxyDomain('P1', null, true)).toEqual({ ...moved, applied: true })
+    expect(asked().variables).toEqual({ proxy: 'P1', domain: null, apply: true })
+    request.mockResolvedValue(refusal('r3proxy.com is remote.it’s'))
+    expect(await graphQLSetProxyDomain('P1', 'r3proxy.com', false)).toEqual({ reason: 'R3proxy.com is remote.it’s' })
+  })
+
+  it('public endpoints given up, confirmed or not', async () => {
+    request.mockResolvedValue(answer({ setProxyPublicEndpoints: { id: 'P1', publicEndpoints: false } }))
+    await graphQLSetProxyPublicEndpoints('P1', false, true)
+    expect(asked().variables).toEqual({ proxy: 'P1', publicEndpoints: false, confirm: true })
+  })
+})
+
+describe('renumbering one of remote.it’s machines', () => {
+  it('said, or with apply done; refused in graphql’s words', async () => {
+    const said = { from: 'e1-r3.x', to: 'e3-r3.x', certificate: 'moved', record: true, applied: false }
+    request.mockResolvedValue(answer({ renumberProxyDevice: said }))
+    expect(await graphQLRenumberProxyDevice('E1', 3, false)).toEqual(said)
+    expect(asked().variables).toEqual({ deviceId: 'E1', number: 3, apply: false })
+    request.mockResolvedValue(refusal('e3-r3.x is another device’s'))
+    expect(await graphQLRenumberProxyDevice('E1', 3, true)).toEqual({ reason: 'E3-r3.x is another device’s' })
+  })
+})
+
+describe('who visited a proxy', () => {
+  const page = { items: [], hasMore: false, last: null }
+
+  it('a service’s, a proxy’s or a device’s; for admins, one proxy’s, one machine’s, or all', async () => {
+    request.mockResolvedValue(answer({ proxyAccess: page }))
+    await graphQLProxyAccess({ proxy: 'P1' })
+    expect(asked().variables).toMatchObject({ proxy: 'P1', deviceId: undefined, serviceId: undefined })
+    await graphQLProxyAccess({ deviceId: 'E1' })
+    expect(asked().variables).toMatchObject({ deviceId: 'E1', proxy: undefined })
+    expect(asked().query).toContain('deviceId')
+    request.mockResolvedValue(answer({ adminProxyAccess: page }))
+    await graphQLProxyAccess({ admin: true, proxy: 'P1' })
+    expect(asked().query).toContain('adminProxyAccess(proxy: $proxy, deviceId: $deviceId')
+    expect(asked().variables).toMatchObject({ proxy: 'P1', deviceId: undefined })
+    await graphQLProxyAccess({ admin: true })
+    expect(asked().variables).toMatchObject({ proxy: undefined, deviceId: undefined })
+  })
+})
+

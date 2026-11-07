@@ -91,8 +91,8 @@ export const ExitAddPage: React.FC = () => {
             </Typography>
             <RunDevicePicker
               kind="exit"
+                  target={exit.id}
               ownerId={exit.owner?.id || accountId}
-              exclude={[]}
               busy={busy}
               refusals={refusals}
               onAdd={add}

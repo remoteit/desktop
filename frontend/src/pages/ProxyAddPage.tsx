@@ -128,8 +128,8 @@ export const ProxyAddPage: React.FC = () => {
             </Typography>
             <RunDevicePicker
               kind="proxy"
+                  target={proxy.id}
               ownerId={proxy.owner?.id || accountId}
-              exclude={[]}
               busy={busy}
               refusals={refusals}
               onAdd={add}

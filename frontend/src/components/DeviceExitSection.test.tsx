@@ -79,11 +79,13 @@ const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}
 const OWNER = { id: 'OWNER', email: 'owner@example.com' }
 const PAT = { id: 'PAT', email: 'pat@example.com' }
 const NED = { id: 'NED', email: 'ned@example.com' }
-const pdx = { id: 'pdx1a', name: 'remote.it pdx1a', remoteit: true, owner: null }
-const office = { id: 'xoffice', name: 'Office', remoteit: false, owner: OWNER }
-const pats = { id: 'xpat', name: 'Pat exit', remoteit: false, owner: PAT }
-const router = { id: 'xrouter', name: 'Home router', remoteit: false, owner: NED }
-const spare = { id: 'xspare', name: 'Spare', remoteit: false, owner: OWNER }
+// Each as exits(deviceId) offers it, with why: remote.it's by plan, the account's own, one shared with the person
+// choosing, and one the device's network gives it.
+const pdx = { id: 'pdx1a', name: 'remote.it pdx1a', remoteit: true, owner: null, reasons: ['PLAN'] as any }
+const office = { id: 'xoffice', name: 'Office', remoteit: false, owner: OWNER, reasons: ['OWN'] as any }
+const pats = { id: 'xpat', name: 'Pat exit', remoteit: false, owner: PAT, reasons: ['SHARED'] as any }
+const router = { id: 'xrouter', name: 'Home router', remoteit: false, owner: NED, reasons: ['NETWORK'] as any }
+const spare = { id: 'xspare', name: 'Spare', remoteit: false, owner: OWNER, reasons: ['OWN'] as any }
 
 // An exit as a device uses it: offered, and not dormant, unless said.
 const uses = (exit: typeof office | typeof pdx, fields: { offered?: boolean; dormant?: boolean } = {}) => ({
@@ -124,21 +126,18 @@ const protectRow = (page: HTMLElement) => page.querySelector('[data-item="shield
 
 beforeEach(() => {
   deviceExit.mockReset().mockResolvedValue(exitOf())
-  // For the device: remote.it's by its account's plan, its account's own, one shared with the person choosing, and one
-  // its network gives it. For the person choosing: their own and the one shared with them.
-  offered
-    .mockReset()
-    .mockImplementation(async (deviceId?: string) => (deviceId ? [pdx, office, pats, router] : [office, pats]))
+  offered.mockReset().mockResolvedValue([pdx, office, pats, router])
   protect.mockReset().mockResolvedValue(null)
   setExit.mockReset().mockResolvedValue({})
   usageHint.mockClear()
 })
 
 describe('the exit a device’s traffic goes out through', () => {
-  it('offers the exits offered for the device, named: remote.it’s and its account’s own by name, another account’s by whose it is, one its networks give it so', async () => {
+  it('offers the exits offered for the device, named by why: remote.it’s and its account’s own by name, another account’s by whose it is, one its networks give it so', async () => {
     const page = await render()
     expect(offered).toHaveBeenCalledWith('LAPTOP')
-    expect(offered).toHaveBeenCalledWith()
+    // Why each is offered is graphql's to say: nothing more is asked.
+    expect(offered).toHaveBeenCalledTimes(1)
     expect(choices(page)).toEqual([
       '=None — its usual way out',
       'pdx1a=remote.it pdx1a',
@@ -173,7 +172,7 @@ describe('the exit a device’s traffic goes out through', () => {
     expect(select(page).dataset.value).toBe('xspare')
     expect(choices(page).at(-1)).toBe('xspare=Spare · no device available')
     expect(page.textContent).toContain(
-      'Its exit, Spare, is dormant — No device available: none of the exit’s devices is in service, so its traffic goes its usual way, Protect off for it, until one is'
+      'Its exit, Spare, is dormant — No device available: none of the exit’s devices carries its traffic, so its traffic goes its usual way, Protect off for it, until one does'
     )
     expect(page.textContent).not.toContain('takes its traffic now')
     expect(page.textContent).not.toContain('Going out through')
@@ -268,33 +267,28 @@ describe('the exit a device’s traffic goes out through', () => {
 })
 
 describe('an exit offered for the device, named', () => {
-  it('the exits offered to the person choosing unread: none said to be its network’s, whose each is still said', async () => {
-    offered.mockImplementation(async (deviceId?: string) => (deviceId ? [pdx, office, pats, router] : 'ERROR'))
-    const page = await render()
-    expect(choices(page)).toEqual([
-      '=None — its usual way out',
-      'pdx1a=remote.it pdx1a',
-      'xoffice=Office',
-      'xpat=Pat exit · pat@example.com’s',
-      'xrouter=Home router · ned@example.com’s',
-    ])
-    expect(choiceName(t, router, 'OWNER', null)).toBe('Home router · ned@example.com’s')
+  it('remote.it’s by its name, by plan', () => {
+    expect(choiceName(t, pdx)).toBe('remote.it pdx1a')
   })
 
-  const mine = new Set(['xoffice', 'xpat'])
-
-  it('remote.it’s by its name, whoever it is offered to', () => {
-    expect(choiceName(t, pdx, 'OWNER', new Set())).toBe('remote.it pdx1a')
+  it('the account’s own by its name, whatever else holds', () => {
+    expect(choiceName(t, office)).toBe('Office')
+    expect(choiceName(t, { ...office, reasons: ['OWN', 'NETWORK'] })).toBe('Office')
   })
 
-  it('one the device’s networks give it, not offered to the person choosing: said so', () => {
-    expect(choiceName(t, router, 'OWNER', mine)).toBe('Home router · by its network')
+  it('one shared with you, or reached by your role, by whose it is; one with no email by its name', () => {
+    expect(choiceName(t, pats)).toBe('Pat exit · pat@example.com’s')
+    expect(choiceName(t, { ...pats, reasons: ['ROLE'] })).toBe('Pat exit · pat@example.com’s')
+    expect(choiceName(t, { ...pats, reasons: ['SHARED', 'NETWORK'] })).toBe('Pat exit · pat@example.com’s')
+    expect(choiceName(t, { ...pats, owner: { id: 'PAT', email: null } })).toBe('Pat exit')
   })
 
-  it('another account’s by whose it is; the device’s own account’s, or one whose account has no email, by its name', () => {
-    expect(choiceName(t, pats, 'OWNER', mine)).toBe('Pat exit · pat@example.com’s')
-    expect(choiceName(t, office, 'OWNER', mine)).toBe('Office')
-    expect(choiceName(t, { ...pats, owner: { id: 'PAT', email: null } }, 'OWNER', mine)).toBe('Pat exit')
+  it('one its networks alone give it: said so', () => {
+    expect(choiceName(t, router)).toBe('Home router · by its network')
+  })
+
+  it('with no reasons said, by whose it is', () => {
+    expect(choiceName(t, { ...router, reasons: null })).toBe('Home router · ned@example.com’s')
   })
 })
 
@@ -348,7 +342,7 @@ describe('Protect off on the device', () => {
     page = await render()
     expect(select(page)).not.toBeNull()
     expect(page.querySelector('[data-item="moon"]')?.textContent).toBe(
-      'Protect: off — its exit, Spare, is kept, with no device available — None of the exit’s devices is in service: Protect can be turned on through it once one is. Or choose another exit.'
+      'Protect: off — its exit, Spare, is kept, with no device available — None of the exit’s devices carries its traffic: Protect can be turned on through it once one does. Or choose another exit.'
     )
     expect(protectRow(page)).toBeNull()
     expect(page.querySelector('[data-button]')).toBeNull()

@@ -93,7 +93,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
       </Gutters>
     )
 
-  const manage = exit.devices !== null
+  const manage = exit.manage
   const own = !exit.remoteit
   const devices = exit.devices ?? []
   const shared = !manage && !!exit.access.length
@@ -222,8 +222,8 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
               <Gutters>
                 <RunDevicePicker
                   kind="exit"
+                  target={exit.id}
                   ownerId={exit.owner.id}
-                  exclude={devices.map(device => device.id)}
                   busy={busy}
                   refusals={refusals}
                   onAdd={add}
@@ -239,6 +239,8 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                 activation={exit.activation}
                 to={`/devices/${device.id}/runs`}
                 manage
+                lan={own}
+                onRefresh={refresh}
                 onChanged={async (runs, which) => {
                   setNotice({ severity: 'info', text: stillRunsLine(t, which.name, runs) })
                   await refresh()

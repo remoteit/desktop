@@ -10,8 +10,9 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 
 export type RunState = 'ACTIVE' | 'DRAINING' | 'RETIRED'
 
-// One of the checks a device waiting to go into service must pass: certificate, health, policy or nat.
-export type RunCheck = { name: string; passed: boolean; reason: string }
+// One of the checks a device waiting to go into service must pass: certificate, health, policy or nat. One pending is
+// not passed yet and waits on what comes by itself — the machine turning its exit node on — rather than failed.
+export type RunCheck = { name: string; passed: boolean; pending: boolean; reason: string }
 
 type Run = {
   id: string // the device
@@ -21,6 +22,7 @@ type Run = {
   activeSince: string | null
   drainingSince: string | null
   checks: RunCheck[]
+  disabled: boolean // its device disabled (deleted, restorable): it serves nothing, whatever its state, until restored
 }
 
 export type ProxyOpenConnections = {
@@ -50,6 +52,8 @@ export type ExitDevice = Run & {
   offering: boolean // its exit node on and its machine's policy allowing exits
   refusal: string | null // why it takes no exit flows now, by its machine
   health: string | null // presence's verdict, for a device running one of remote.it's proxies
+  lan: boolean // its exit's users reach the machine's own network through it
+  lanRefusal: string | null // why its LAN cannot be set from the cloud: kept local or forbidden there, or remote.it's
   exit?: { id: string; name: string; remoteit: boolean }
 }
 
@@ -63,7 +67,7 @@ export type DeviceActionEffect = {
   id: string
   name: string
   state: RunState
-  after: string // active, draining or retired; gone for one it leaves
+  after: string // active, draining or retired; gone for one it leaves; disabled for a delete, which keeps its place
   sessions: number | null // the connections open through it, by its daemon's word: none from one that does not say
   ends: boolean // whether the action ends them (a drain keeps them)
   endpoints: number // a proxy's: kept on the proxy, served by its devices still serving
@@ -74,10 +78,10 @@ export type DeviceActionEffect = {
   refusal: string | null
 }
 
-const RUN_FIELDS = 'id name state joining activeSince drainingSince checks { name passed reason }'
+const RUN_FIELDS = 'id name state joining activeSince drainingSince disabled checks { name passed pending reason }'
 export const PROXY_DEVICE_FIELDS = `${RUN_FIELDS} host drainMaxWaitMinutes health { state since reason } certificate
   openConnections { https tcp udp exit total reported } drain { safeToStop reason dnsClearAt deadline }`
-export const EXIT_DEVICE_FIELDS = `${RUN_FIELDS} established offering refusal health`
+export const EXIT_DEVICE_FIELDS = `${RUN_FIELDS} established offering refusal health lan lanRefusal`
 export const RUNS_FIELDS = `proxy { ${PROXY_DEVICE_FIELDS} proxy { id name host remoteit } }
   exit { ${EXIT_DEVICE_FIELDS} exit { id name remoteit } }`
 const EFFECT_FIELDS = 'kind id name state after sessions ends endpoints users moved inService dormant refusal'
@@ -198,3 +202,38 @@ export const graphQLAddExitDevice = (exit: string, deviceId: string) =>
     }`,
     { exit, deviceId }
   )
+
+// Whether the exit's users reach the machine's own network through a device running it. Refused where its
+// administrator keeps its exit node local, or forbids exits, and for remote.it's exits (ExitDevice.lanRefusal).
+export const graphQLSetExitDeviceLan = (deviceId: string, lan: boolean) =>
+  change(
+    'setExitDeviceLan',
+    ` mutation SetExitDeviceLan($deviceId: String!, $lan: Boolean!) {
+      setExitDeviceLan(deviceId: $deviceId, lan: $lan) { ${RUNS_FIELDS} }
+    }`,
+    { deviceId, lan }
+  )
+
+// A device that could run a proxy or an exit — the one named, or a new one of the account —, or why not, in the words
+// adding it would refuse with, and what it runs now: added, it leaves the one of this kind it runs.
+export type RunCandidate = { id: string; name: string | null; fit: boolean; refusal: string | null; runs: DeviceRuns }
+
+// The devices weighed: the account's you manage, or — an account of more than 1,000 devices — those named, at most 1,000.
+// A refusal comes back in graphql's words.
+export async function graphQLRunCandidates(
+  kind: 'proxy' | 'exit',
+  of: { id?: string; accountId?: string },
+  deviceIds?: string[]
+): Promise<RunCandidate[] | { reason: string }> {
+  const field = kind === 'proxy' ? 'proxyCandidates' : 'exitCandidates'
+  const result = await graphQLRequestWithReason(
+    `query ${kind === 'proxy' ? 'ProxyCandidates' : 'ExitCandidates'}($id: String, $accountId: String, $deviceIds: [String!]) {
+      ${field}(${kind}: $id, accountId: $accountId, deviceIds: $deviceIds) { id name fit refusal runs { ${RUNS_FIELDS} } }
+    }`,
+    { id: of.id, accountId: of.accountId, deviceIds }
+  )
+  if (result === 'ERROR') return { reason: '' }
+  if ('reason' in result) return result
+  return result.data?.data?.[field] ?? []
+}
+

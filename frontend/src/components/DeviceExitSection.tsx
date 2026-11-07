@@ -5,7 +5,7 @@ import { ListItem, ListItemIcon } from '@mui/material'
 import { refusalOf } from '../services/graphQL'
 import {
   DeviceExit,
-  Exit,
+  OfferedExit,
   ProtectInfo,
   graphQLDeviceExit,
   graphQLDeviceProtect,
@@ -17,21 +17,18 @@ import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
 
-type Offered = Pick<Exit, 'id' | 'name' | 'remoteit' | 'owner'>
-
 /* The exit a device's traffic goes out through (graphql-api docs/PROXY-GROUPS.md §13): Device.usesExit — apart from the
-   exit it runs (its Runs) —, chosen here among the exits offered for it (exits, with the device): remote.it's by plan,
-   its account's own, those shared with the person choosing or reached by their role, and those its networks make
-   available to it. With no device of it in service the exit is dormant — no device available —: its traffic goes its
-   usual way, Protect off for it, until one is, and the choice is kept. Who chose it, and what the machine's
+   exit it runs (its Runs) —, chosen here among the exits offered for it (exits, with the device; never the one it runs),
+   each named by why it is offered: remote.it's by plan, its account's own, those shared with the person choosing or
+   reached by their role, and those its networks make available to it. With none of its devices carrying its traffic the
+   exit is dormant — no device available —: its traffic goes its usual way, Protect off for it, until one does, and the
+   choice is kept. Who chose it, and what the machine's
    administrator decided of it there, are said; their policy holds over the portal. remote.it's exits are the only ones
    charged. Device sessions only; nothing shows where the API lacks them. */
 export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const [info, setInfo] = useState<DeviceExit | null>()
-  const [offered, setOffered] = useState<Offered[]>([])
-  // The exits offered to the person choosing; null where they could not be read, and so whose each is is unknown.
-  const [mine, setMine] = useState<Set<string> | null>(null)
+  const [offered, setOffered] = useState<OfferedExit[]>([])
   const [protect, setProtect] = useState<ProtectInfo | null>(null)
   const [saving, setSaving] = useState(false)
   const [refusal, setRefusal] = useState<string>()
@@ -41,14 +38,8 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
     const answer = await graphQLDeviceExit(device.id)
     setInfo(answer && typeof answer === 'object' ? answer : null)
     if (!answer || typeof answer !== 'object') return
-    // Those offered for the device, and — apart — those offered to the person choosing: the rest its networks give it.
-    const [forDevice, forMe, kept] = await Promise.all([
-      graphQLOfferedExits(device.id),
-      graphQLOfferedExits(),
-      graphQLDeviceProtect(device.id),
-    ])
+    const [forDevice, kept] = await Promise.all([graphQLOfferedExits(device.id), graphQLDeviceProtect(device.id)])
     setOffered(Array.isArray(forDevice) ? forDevice : [])
-    setMine(Array.isArray(forMe) ? new Set(forMe.map(exit => exit.id)) : null)
     setProtect(kept && typeof kept === 'object' ? kept : null)
   }, [device.id])
 
@@ -71,7 +62,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 
   const choices = [
     { key: '', name: t('deviceExit.none', 'None — its usual way out') },
-    ...offered.map(each => ({ key: each.id, name: choiceName(t, each, device.owner?.id, mine) })),
+    ...offered.map(each => ({ key: each.id, name: choiceName(t, each) })),
   ]
   if (exit && !offered.some(each => each.id === exit.id))
     choices.push({
@@ -150,7 +141,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           })}
           subLabel={t(
             'deviceExit.keptDormantHint',
-            'None of the exit’s devices is in service: Protect can be turned on through it once one is. Or choose another exit.'
+            'None of the exit’s devices carries its traffic: Protect can be turned on through it once one does. Or choose another exit.'
           )}
         />
       )}
@@ -161,7 +152,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           label={t('deviceExit.dormant', 'Its exit, {{exit}}, is dormant', { exit: exit.name })}
           subLabel={t(
             'deviceExit.dormantHint',
-            'No device available: none of the exit’s devices is in service, so its traffic goes its usual way, Protect off for it, until one is — then it goes out through the exit again by itself. Or choose another exit.'
+            'No device available: none of the exit’s devices carries its traffic, so its traffic goes its usual way, Protect off for it, until one does — then it goes out through the exit again by itself. Or choose another exit.'
           )}
         />
       )}
@@ -191,14 +182,17 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 
 type T = TFunction
 
-// An exit offered for the device, named: whose it is where not its account's, or that its networks give it — said only
-// where the exits offered to the person choosing were read (mine), else unknown.
-export function choiceName(t: T, exit: Offered, accountId: string | undefined, mine: Set<string> | null): string {
-  if (exit.remoteit) return exit.name
-  if (mine && !mine.has(exit.id)) return t('deviceExit.byNetwork', '{{exit}} · by its network', { exit: exit.name })
-  if (exit.owner && exit.owner.id !== accountId && exit.owner.email)
-    return t('deviceExit.whose', '{{exit}} · {{email}}’s', { exit: exit.name, email: exit.owner.email })
-  return exit.name
+// An exit offered for the device, named by why it is offered: remote.it's and your own by name; one shared with you or
+// reached by your role by whose it is; one its networks alone give it, so. With no reasons said, by whose it is.
+export function choiceName(t: T, exit: Pick<OfferedExit, 'name' | 'remoteit' | 'owner' | 'reasons'>): string {
+  const reasons = exit.reasons ?? []
+  const whose = exit.owner?.email
+    ? t('deviceExit.whose', '{{exit}} · {{email}}’s', { exit: exit.name, email: exit.owner.email })
+    : exit.name
+  if (exit.remoteit || reasons.includes('OWN') || reasons.includes('PLAN')) return exit.name
+  if (reasons.includes('SHARED') || reasons.includes('ROLE')) return whose
+  if (reasons.includes('NETWORK')) return t('deviceExit.byNetwork', '{{exit}} · by its network', { exit: exit.name })
+  return whose
 }
 
 // Who chose the exit in force: someone on the device (its OS user, when the device said), or a person in the portal.

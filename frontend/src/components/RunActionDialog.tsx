@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Checkbox, FormControlLabel, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
 import {
-  DeviceAction,
   DeviceActionEffect,
   DeviceRuns,
   RunAction,
@@ -66,11 +65,12 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
   const wait = Number(maxWait)
   const waitValid = action !== 'DRAIN' || (Number.isInteger(wait) && wait >= 1 && wait <= 7 * 24 * 60)
   const refused = Array.isArray(effects) && effects.some(effect => effect.refusal)
-  // A retire refused only for the connections open through it: ending them is the person's to choose.
+  // A retire refused for what is open through it — or not known to be closed — may end it, the person choosing: the
+  // effects are read again forced, and any refusal left stands.
   const forcible =
     action === 'RETIRE' &&
     Array.isArray(effects) &&
-    (force || effects.some(effect => effect.refusal && effect.sessions && effect.state !== 'RETIRED'))
+    (force || effects.some(effect => effect.refusal && effect.state !== 'RETIRED'))
 
   const act = async () => {
     setBusy(true)
@@ -104,12 +104,12 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
       ) : !effects.length ? (
         <Typography variant="body2">{t('runAction.nothing', 'It runs no proxy or exit.')}</Typography>
       ) : (
-        <EffectList effects={effects} action={action} />
+        <EffectList effects={effects} />
       )}
       {forcible && (
         <FormControlLabel
           control={<Checkbox checked={force} onChange={event => setForce(event.target.checked)} />}
-          label={t('runAction.force', 'End the connections open through it: retire it now')}
+          label={t('runAction.forceRetire', 'Retire it now, ending whatever is open through it')}
         />
       )}
       {action === 'DRAIN' && (
@@ -133,12 +133,12 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
 }
 
 // What an action does to each proxy and exit a device runs: a line for each, its refusal standing out.
-export const EffectList: React.FC<{ effects: DeviceActionEffect[]; action: DeviceAction }> = ({ effects, action }) => {
+export const EffectList: React.FC<{ effects: DeviceActionEffect[] }> = ({ effects }) => {
   const { t } = useTranslation()
   return (
     <List dense disablePadding data-effects>
       {effects.map(effect => {
-        const [first, ...rest] = effectLines(t, effect, action)
+        const [first, ...rest] = effectLines(t, effect)
         return (
           <ListItem key={`${effect.kind}:${effect.id}`} disableGutters data-effect={effect.kind}>
             <ListItemText
@@ -179,7 +179,7 @@ export const DeviceRunEffects: React.FC<{ deviceId: string; action: 'DELETE' | '
       <Typography variant="body2" marginTop={2} data-run-effects>
         {t('runAction.runs', 'It runs these, and they change so:')}
       </Typography>
-      <EffectList effects={effects} action={action} />
+      <EffectList effects={effects} />
     </>
   )
 }

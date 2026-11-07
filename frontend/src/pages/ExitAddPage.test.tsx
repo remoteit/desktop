@@ -22,11 +22,11 @@ vi.mock('../hooks/useAccountExits', () => ({ useAccountExits: () => ({ value: un
 vi.mock('../selectors/devices', () => ({ getAllDevices: () => [] }))
 vi.mock('../components/RunDevicePicker', async () => ({
   ...(await vi.importActual<typeof import('../components/RunDevicePicker')>('../components/RunDevicePicker')),
-  RunDevicePicker: ({ kind, ownerId, exclude, busy, refusals, onAdd, onSkip }: any) => (
+  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, onAdd, onSkip }: any) => (
     <div
       data-picker={kind}
       data-owner={ownerId}
-      data-exclude={exclude.join('|')}
+      data-for={target}
       data-busy={busy ? 'yes' : 'no'}
       data-refusals={Object.entries(refusals)
         .map(([id, reason]) => `${id}: ${reason}`)
@@ -37,6 +37,7 @@ vi.mock('../components/RunDevicePicker', async () => ({
     </div>
   ),
 }))
+vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('../components/Container', () => ({
   Container: ({ header, children }: any) => (
     <div>
@@ -71,6 +72,7 @@ const MADE: Exit = {
   location: null,
   provider: '',
   activation: 'auto',
+  manage: true,
   offered: false,
   dormant: true,
   owner: { id: 'ACCOUNT', email: 'me@example.com' },
@@ -172,7 +174,7 @@ describe('making an exit', () => {
     const shown = find('[data-picker]')
     expect(shown.getAttribute('data-picker')).toBe('exit')
     expect(shown.getAttribute('data-owner')).toBe('ACCOUNT')
-    expect(shown.getAttribute('data-exclude')).toBe('')
+    expect(shown.getAttribute('data-for')).toBe('xnew')
     expect(shown.getAttribute('data-refusals')).toBe('')
     expect(reload).toHaveBeenCalledTimes(1)
   })

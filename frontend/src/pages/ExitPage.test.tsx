@@ -64,11 +64,11 @@ vi.mock('../hooks/useAccountExits', () => ({ useAccountExits: () => ({ value: un
 vi.mock('../selectors/devices', () => ({ getAllDevices: () => [] }))
 vi.mock('../components/RunDevicePicker', async () => ({
   ...(await vi.importActual<typeof import('../components/RunDevicePicker')>('../components/RunDevicePicker')),
-  RunDevicePicker: ({ kind, ownerId, exclude, busy, refusals, onAdd }: any) => (
+  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, onAdd }: any) => (
     <div
       data-picker={kind}
       data-owner={ownerId}
-      data-exclude={exclude.join('|')}
+      data-for={target}
       data-busy={busy ? 'yes' : 'no'}
       data-refusals={Object.entries(refusals)
         .map(([id, reason]) => `${id}: ${reason}`)
@@ -81,7 +81,7 @@ vi.mock('../components/RunDevicePicker', async () => ({
 // A device it runs is RunListItem's own: here, what it was given, and one of its actions done — answering what the
 // device runs after, as RunActions does.
 vi.mock('../components/RunListItem', () => ({
-  RunListItem: ({ kind, run, name, activation, to, manage, onChanged }: any) => (
+  RunListItem: ({ kind, run, name, activation, to, manage, onChanged, lan, onRefresh }: any) => (
     <div
       data-run={run.id}
       data-kind={kind}
@@ -89,8 +89,10 @@ vi.mock('../components/RunListItem', () => ({
       data-activation={activation}
       data-to={to}
       data-manage={manage ? 'yes' : 'no'}
+      data-lan={lan ? 'yes' : 'no'}
     >
       <button data-acted onClick={() => onChanged(after.runs, { id: run.id, name: run.name || run.id })} />
+      <button data-lan-set onClick={onRefresh} />
     </div>
   ),
 }))
@@ -241,6 +243,9 @@ const device = (id: string, name: string | null, more: Partial<ExitDevice> = {})
   offering: true,
   refusal: null,
   health: null,
+  disabled: false,
+  lan: false,
+  lanRefusal: null,
   ...more,
 })
 const exit = (id: string, name: string, more: Partial<Exit> = {}): Exit => ({
@@ -250,6 +255,7 @@ const exit = (id: string, name: string, more: Partial<Exit> = {}): Exit => ({
   location: null,
   provider: '',
   activation: 'auto',
+  manage: true,
   offered: true,
   dormant: false,
   owner: ME,
@@ -283,7 +289,14 @@ const IDLE = exit('xidle', 'Old Mac', {
 // Yours, with no device in service either.
 const SPARE = exit('xspare', 'Spare', { offered: false, dormant: true })
 // Pat's, shared with you: your own share alone, nothing of managing it.
-const PATS = exit('xpat', 'Pat’s exit', { owner: PAT, devices: null, users: null, access: [share(ME)], networks: null })
+const PATS = exit('xpat', 'Pat’s exit', {
+  owner: PAT,
+  manage: false,
+  devices: null,
+  users: null,
+  access: [share(ME)],
+  networks: null,
+})
 // remote.it's, as a remote.it admin managing it reads it.
 const PDX = exit('xpdx', 'remote.it pdx1a', {
   remoteit: true,
@@ -346,11 +359,14 @@ describe('one of your exits', () => {
     expect(find('[data-notice]')).toBeNull()
   })
 
-  it('with none of its devices in service, warns there is no device available; with none taking traffic, says so', async () => {
+  it('with none of its devices carrying its traffic, warns there is no device available; with none taking traffic, says so', async () => {
     await render(IDLE)
     expect(find('[data-notice="warning"]').textContent).toBe(
-      'No device available: the devices using it go their usual way until one of its devices is in service.'
+      'No device available: none of its devices carries its traffic, so the devices using it go their usual way until one does.'
     )
+    // Its device in service, carrying nothing — its exit node off on the machine —: dormant all the same.
+    await render({ ...OFFICE, offered: false, dormant: true })
+    expect(find('[data-notice="warning"]').textContent).toContain('No device available: none of its devices carries')
     await render({ ...OFFICE, offered: false })
     expect(find('[data-notice="warning"]').textContent).toBe('None of its devices takes traffic now.')
   })
@@ -452,7 +468,7 @@ describe('adding devices to it', () => {
     const shown = find('[data-picker]')
     expect(shown.getAttribute('data-picker')).toBe('exit')
     expect(shown.getAttribute('data-owner')).toBe('ACCOUNT')
-    expect(shown.getAttribute('data-exclude')).toBe('MAC|PI')
+    expect(shown.getAttribute('data-for')).toBe('xoffice')
     expect(shown.getAttribute('data-refusals')).toBe('')
   })
 
@@ -753,6 +769,12 @@ describe('an exit shared with you', () => {
     expect(push).not.toHaveBeenCalled()
   })
 
+  it('one graphql says you manage, though its devices are not read: managed all the same', async () => {
+    await render({ ...OFFICE, devices: null })
+    expect(find('[data-select]')).not.toBeNull()
+    expect(find('[data-runs-on]')).not.toBeNull()
+  })
+
   it('one you reach by your role, not shared with you: nothing to leave', async () => {
     await render({ ...PATS, access: [] })
     expect(setting('arrow-right-from-bracket')).toBeNull()
@@ -773,7 +795,7 @@ describe('one of remote.it’s exits', () => {
   })
 
   it('for anyone else: where it is, and nothing to change or leave', async () => {
-    await render({ ...PDX, devices: null, users: null, networks: null })
+    await render({ ...PDX, manage: false, devices: null, users: null, networks: null })
     expect(find('[data-header]').textContent).toContain('One of remote.it’s exits · AWS')
     expect(find('[data-select]')).toBeNull()
     expect(find('[data-runs-on]')).toBeNull()
@@ -820,6 +842,18 @@ describe('another exit’s address', () => {
     expect(find('[data-title]').textContent).toBe('Old Mac')
     expect(find('[data-notice="error"]')).toBeNull()
     expect(find('[data-picker]')).toBeNull()
+  })
+})
+
+describe('its devices’ local network', () => {
+  it('set on each device of an own exit, the exit read again after; never on remote.it’s', async () => {
+    await render(OFFICE)
+    expect(find('[data-run="MAC"]').getAttribute('data-lan')).toBe('yes')
+    await click(find('[data-run="MAC"] [data-lan-set]'))
+    expect(readExit).toHaveBeenCalledTimes(2)
+    expect(reload).toHaveBeenCalled()
+    await render(PDX)
+    expect(find('[data-run="E1"]').getAttribute('data-lan')).toBe('no')
   })
 })
 

@@ -130,7 +130,7 @@ describe('a network’s exits', () => {
 
   it('says an exit with no device available, or none of its devices taking traffic, and whose it is when another account’s', () => {
     expect(exitLine(t, { ...mac, offered: false, dormant: true }, 'PAT')).toBe(
-      'No device available: it cannot be chosen until one of its devices is in service'
+      'No device available: it cannot be chosen until one of its devices carries its traffic'
     )
     expect(exitLine(t, { ...mac, offered: false }, 'PAT')).toBe('None of its devices takes traffic now')
     expect(exitLine(t, { ...mac, owner: { id: 'NED', email: 'ned@example.com' } }, 'PAT')).toBe(

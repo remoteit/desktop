@@ -82,7 +82,7 @@ const GATEWAY = {
   manage: true,
   owner: { id: 'ACCOUNT', email: 'pat@example.com' },
   devices: [run('D1', 'Office Mac')],
-  endpoints: 2,
+  endpointCount: 2,
   certificate: 'ready',
 } as any
 const NAS = {
@@ -91,7 +91,7 @@ const NAS = {
   name: 'NAS',
   host: 'nas-acme.dev.r3proxy.com',
   devices: [],
-  endpoints: 0,
+  endpointCount: 0,
   certificate: 'pending',
 }
 const PDX = {
@@ -212,13 +212,13 @@ describe('a proxy of the account in a line', () => {
   })
 
   it('its devices by name, or by id where a device has none, and its endpoint counted', () => {
-    expect(proxyLine(t, { ...GATEWAY, devices: [run('D1', 'Office Mac'), run('D9', null)], endpoints: 1 })).toBe(
+    expect(proxyLine(t, { ...GATEWAY, devices: [run('D1', 'Office Mac'), run('D9', null)], endpointCount: 1 })).toBe(
       'gw-acme.dev.r3proxy.com · Runs on Office Mac, D9 · 1 endpoint'
     )
   })
 
   it('its host alone where its devices, endpoints and certificate are not read', () => {
-    expect(proxyLine(t, { ...GATEWAY, devices: null, endpoints: null, certificate: null })).toBe(
+    expect(proxyLine(t, { ...GATEWAY, devices: null, endpointCount: null, certificate: null })).toBe(
       'gw-acme.dev.r3proxy.com'
     )
   })

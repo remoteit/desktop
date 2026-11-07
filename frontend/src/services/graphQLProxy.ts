@@ -7,7 +7,8 @@ import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
    host under which endpoints into device services are reached — a name on https, a port for tcp and udp — run by
    devices, every device running it serving every endpoint of it. remote.it's are at a location; an own proxy is its
    account's: made, then devices added to run it, and kept — its host and endpoints — until its account deletes it. An
-   endpoint is made on a proxy. A refusal comes back in graphql's words. Device-session API only: an API without it
+   endpoint is made on a proxy. A slug change moves no proxy: its host keeps the slug it was made or last labelled under
+   until its label is set again. A refusal comes back in graphql's words. Device-session API only: an API without it
    answers UNSUPPORTED, for the caller to hide itself. */
 
 export type ProxyCertificate = 'own' | 'ready' | 'pending'
@@ -15,7 +16,8 @@ export type ProxyCertificate = 'own' | 'ready' | 'pending'
 export type Proxy = {
   id: string
   name: string // remote.it's by its location ("remote.it pdx1a"), an own proxy by its name
-  host: string // the name its endpoints are under
+  host: string // the name its endpoints are under: <label>-<the slug it is under>.<proxy domain>
+  label: string | null // an own proxy's host's first part, before the slug; none for remote.it's
   domain: string | null // an own proxy's own domain for its https names
   remoteit: boolean
   publicEndpoints: boolean
@@ -25,7 +27,8 @@ export type Proxy = {
   manage: boolean
   owner: { id: string; email: string | null } | null
   devices: ProxyDevice[] | null // for whoever manages it
-  endpoints: number | null // for whoever manages it
+  endpointCount: number | null // for whoever manages it
+  endpoints?: Endpoint[] // oldest first: every one for whoever manages it, else those you made on it; its page's
   certificate: ProxyCertificate | null // an own proxy's; remote.it's devices hold their own
 }
 
@@ -60,9 +63,12 @@ export type NewEndpoint = {
 
 // What a list of proxies to choose from needs.
 const CHOICE_FIELDS = 'id name host domain remoteit publicEndpoints location provider'
-const FIELDS = `${CHOICE_FIELDS} activation manage owner { id email } endpoints certificate devices { ${PROXY_DEVICE_FIELDS} }`
 const ENDPOINT_FIELDS =
   'id serviceId proxy { id name host remoteit } kind lifetime access lockedIp allow host port url created expires'
+// A list's: no endpoints but their count. A proxy's page: its endpoints too.
+const FIELDS = `${CHOICE_FIELDS} label activation manage owner { id email } endpointCount certificate
+  devices { ${PROXY_DEVICE_FIELDS} }`
+const PAGE_FIELDS = `${FIELDS} endpoints { ${ENDPOINT_FIELDS} }`
 
 async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
   const response = await post({ query, variables })
@@ -94,9 +100,14 @@ export const graphQLAccountProxies = (accountId: string) =>
     data => data?.login?.account?.proxies ?? []
   )
 
-// One proxy: one you manage, or one you may make endpoints on. None for another.
+// One proxy, with its endpoints: one you manage, or one you may make endpoints on. None for another.
 export const graphQLProxy = (id: string) =>
-  read<Proxy | null>(`query Proxy($id: String!) { proxy(id: $id) { ${FIELDS} } }`, { id }, 'proxy', data => data?.proxy ?? null)
+  read<Proxy | null>(
+    `query Proxy($id: String!) { proxy(id: $id) { ${PAGE_FIELDS} } }`,
+    { id },
+    'proxy',
+    data => data?.proxy ?? null
+  )
 
 // Made in your account, or one you manage, under <label>-<slug> of the stage's proxy domain (the label made from the
 // name when none is given): then devices are added to run it.
@@ -118,13 +129,61 @@ export async function graphQLCreateProxy(set: {
   return result.data?.data?.createProxy
 }
 
-// Its name; and, with a label, its host — which moves every endpoint's address, and its certificate is issued again.
-export const graphQLRenameProxy = (proxy: string, set: { name?: string; label?: string }) =>
+// Its name, for people: no address moves.
+export const graphQLRenameProxy = (proxy: string, name: string) =>
   graphQLRequestWithReason(
-    ` mutation RenameProxy($proxy: String!, $name: String, $label: String) {
-      renameProxy(proxy: $proxy, name: $name, label: $label) { id }
+    ` mutation RenameProxy($proxy: String!, $name: String!) { renameProxy(proxy: $proxy, name: $name) { id } }`,
+    { proxy, name }
+  )
+
+/* Its names: its host, <label>-<the account's slug now> — a changed label, or the same one after the account's slug
+   changed, which is how a proxy takes the new slug —, and its own domain for its https names, or none. Each says first
+   what it would do — every endpoint address that moves, before and after, and the certificate its https endpoints are
+   served with after: own (the domain's, put on its devices by its owner), ready, or pending (issued within a day: until
+   then its https endpoints are not served) — and is done with apply. The old host's certificate goes. */
+export type NamesMove = {
+  host: string
+  domain: string | null
+  addresses: { endpoint: string; kind: string; from: string; to: string }[]
+  certificate: ProxyCertificate
+  applied: boolean
+}
+
+const NAMES_FIELDS = 'host domain addresses { endpoint kind from to } certificate applied'
+
+async function names(field: string, mutation: string, variables: ILookup<any>): Promise<NamesMove | { reason: string }> {
+  const result = await graphQLRequestWithReason(mutation, variables)
+  if (result === 'ERROR') return { reason: '' }
+  if ('reason' in result) return result
+  return result.data?.data?.[field] ?? { reason: '' }
+}
+
+export const graphQLSetProxyLabel = (proxy: string, label: string, apply: boolean) =>
+  names(
+    'setProxyLabel',
+    ` mutation SetProxyLabel($proxy: String!, $label: String!, $apply: Boolean) {
+      setProxyLabel(proxy: $proxy, label: $label, apply: $apply) { ${NAMES_FIELDS} }
     }`,
-    { proxy, ...set }
+    { proxy, label, apply }
+  )
+
+export const graphQLSetProxyDomain = (proxy: string, domain: string | null, apply: boolean) =>
+  names(
+    'setProxyDomain',
+    ` mutation SetProxyDomain($proxy: String!, $domain: String, $apply: Boolean) {
+      setProxyDomain(proxy: $proxy, domain: $domain, apply: $apply) { ${NAMES_FIELDS} }
+    }`,
+    { proxy, domain, apply }
+  )
+
+// Whether it takes public endpoints. Off while it has public endpoints, refused unless confirmed, saying how many:
+// confirmed, they are removed.
+export const graphQLSetProxyPublicEndpoints = (proxy: string, publicEndpoints: boolean, confirm: boolean) =>
+  graphQLRequestWithReason(
+    ` mutation SetProxyPublicEndpoints($proxy: String!, $publicEndpoints: Boolean!, $confirm: Boolean) {
+      setProxyPublicEndpoints(proxy: $proxy, publicEndpoints: $publicEndpoints, confirm: $confirm) { id publicEndpoints }
+    }`,
+    { proxy, publicEndpoints, confirm }
   )
 
 // How its new devices go into service: auto, by themselves once their checks pass; admin, when an admin puts them in.

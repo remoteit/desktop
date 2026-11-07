@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { FormControlLabel, ListItem, ListItemButton, ListItemIcon, ListItemText, Switch, Typography } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import type { DeviceRuns, ExitDevice, ProxyDevice } from '../services/graphQLDeviceRuns'
+import { DeviceRuns, ExitDevice, ProxyDevice, graphQLSetExitDeviceLan } from '../services/graphQLDeviceRuns'
 import { runDetail, runStateLabel } from '../helpers/runsHelper'
 import { RunActions } from './RunActions'
+import { Confirm } from './Confirm'
 import { Link } from './Link'
 import { Icon } from './Icon'
 
@@ -18,16 +19,33 @@ type Props = {
   to?: string // where its title leads: the device's page, or the proxy's or exit's
   manage?: boolean // its actions offered
   onChanged?: (runs: DeviceRuns, device: { id: string; name: string }) => void
+  // An own exit's device: whether its users reach the machine's own network, set here; read again after.
+  lan?: boolean
+  onRefresh?: () => void
+  children?: React.ReactNode // more of what may be done with it, under its actions
 }
 
-/* A device in a proxy or an exit it runs: its state there — in service, draining, retired, or joining with what it
-   waits for —, what its machine says of it (a proxy's health, certificate, open connections and whether it is safe to
-   stop; why an exit's device takes no traffic), and, for whoever manages both, its actions in it alone. */
-export const RunListItem: React.FC<Props> = ({ kind, run, name, title, activation, to, manage, onChanged }) => {
+/* A device in a proxy or an exit it runs: its state there — in service, draining, retired, joining with what it waits
+   for, or disabled —, what its machine says of it (a proxy's health, certificate, open connections and whether it is
+   safe to stop; why an exit's device takes no traffic), and, for whoever manages both, its actions in it alone and, on
+   an own exit, whether its users reach the machine's own network. */
+export const RunListItem: React.FC<Props> = ({
+  kind,
+  run,
+  name,
+  title,
+  activation,
+  to,
+  manage,
+  onChanged,
+  lan,
+  onRefresh,
+  children,
+}) => {
   const { t } = useTranslation()
   const history = useHistory()
   const device = { id: run.id, name: run.name || run.id }
-  const inactive = run.state !== 'ACTIVE' || run.joining
+  const inactive = run.state !== 'ACTIVE' || run.joining || run.disabled
   const lines = [runDetail(t, run, activation), ...machineLines(t, kind, run)].filter(Boolean)
   // With its actions, the row is no link — each click would take it —: its title is.
   const actions = !!manage && !!onChanged
@@ -55,9 +73,11 @@ export const RunListItem: React.FC<Props> = ({ kind, run, name, title, activatio
                 {line}
               </Typography>
             ))}
+            {kind === 'exit' && lan && manage && <ExitLan run={run as ExitDevice} onDone={onRefresh} />}
             {actions && (
               <RunActions device={device} scope={{ kind, name }} run={run} onDone={runs => onChanged?.(runs, device)} />
             )}
+            {children}
           </>
         }
       />
@@ -70,6 +90,74 @@ export const RunListItem: React.FC<Props> = ({ kind, run, name, title, activatio
     </ListItemButton>
   ) : (
     <ListItem data-run={run.id}>{content}</ListItem>
+  )
+}
+
+/* Whether the exit's users reach this machine's own network through it (its exit node's lan), set by the cloud: asked
+   before it is turned on, since everyone who may use the exit can then reach the devices there. Where it cannot be set
+   from here — its administrator keeps its exit node local, or forbids exits — the reason is said in place of the
+   switch, with how it stands; a refusal is said in graphql's words. */
+const ExitLan: React.FC<{ run: ExitDevice; onDone?: () => void }> = ({ run, onDone }) => {
+  const { t } = useTranslation()
+  const [asking, setAsking] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [refusal, setRefusal] = useState<string>()
+
+  const set = async (on: boolean) => {
+    setAsking(false)
+    setBusy(true)
+    const result = await graphQLSetExitDeviceLan(run.id, on)
+    setBusy(false)
+    if ('reason' in result) return setRefusal(result.reason || t('runs.lanNotSet', 'It was not changed: try again.'))
+    setRefusal(undefined)
+    onDone?.()
+  }
+
+  if (run.lanRefusal)
+    return (
+      <Typography component="div" variant="caption" color="textSecondary" data-lan-refusal>
+        {run.lan
+          ? t('runs.lanOnRefused', 'Its local network too: on — {{reason}}', { reason: run.lanRefusal })
+          : t('runs.lanOffRefused', 'Its local network: not reached — {{reason}}', { reason: run.lanRefusal })}
+      </Typography>
+    )
+
+  return (
+    <>
+      <FormControlLabel
+        data-lan={run.lan ? 'on' : 'off'}
+        control={
+          <Switch
+            size="small"
+            checked={run.lan}
+            disabled={busy}
+            onChange={event => (event.target.checked ? setAsking(true) : set(false))}
+          />
+        }
+        label={
+          <Typography variant="caption">
+            {t('runs.lan', 'Its local network too: the exit’s users may reach the network this machine is on')}
+          </Typography>
+        }
+      />
+      {refusal && (
+        <Typography component="div" variant="caption" color="error" data-lan-error>
+          {refusal}
+        </Typography>
+      )}
+      <Confirm
+        open={asking}
+        title={t('runs.lanConfirm', 'Let its local network be reached?')}
+        onConfirm={() => set(true)}
+        onDeny={() => setAsking(false)}
+      >
+        {t(
+          'runs.lanConfirmBody',
+          'Everyone who may use the exit can then reach the devices on the network {{device}} is on.',
+          { device: run.name || run.id }
+        )}
+      </Confirm>
+    </>
   )
 }
 

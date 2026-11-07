@@ -1,6 +1,5 @@
 import type { TFunction } from 'i18next'
 import type {
-  DeviceAction,
   DeviceActionEffect,
   DeviceRuns,
   ExitDevice,
@@ -10,33 +9,45 @@ import type {
 import type { Exit } from '../services/graphQLExits'
 
 /* Proxies and exits, and the devices that run them, as the portal says them (graphql-api docs/PROXY-GROUPS.md §13): a
-   device's state in each — in service, draining, retired, or joining while it waits for its checks or an admin —, what
-   an action on a device does to each proxy and exit it runs before it is taken, what the device still runs after, and
-   what deleting a proxy or an exit takes away. An own exit with no device in service has no device available: those
-   using it go their usual way until one is in service again. */
+   device's state in each — in service, draining, retired, joining while it waits for its checks or an admin, or
+   disabled —, what an action on a device does to each proxy and exit it runs before it is taken, what the device still
+   runs after, and what deleting a proxy or an exit takes away. An own exit none of whose devices carries its flows —
+   serving, not disabled, and offering itself — has no device available: those using it go their usual way until one
+   does. */
 
-type Run = Pick<ExitDevice | ProxyDevice, 'state' | 'joining' | 'checks'>
+type Run = Pick<ExitDevice | ProxyDevice, 'state' | 'joining' | 'checks'> & { disabled?: boolean }
 
-// A device's state in a proxy or an exit, in a word or two.
-export function runStateLabel(t: TFunction, run: Pick<Run, 'state' | 'joining'>): string {
+// A device's state in a proxy or an exit, in a word or two: disabled, whatever its state there, before anything else.
+export function runStateLabel(t: TFunction, run: Pick<Run, 'state' | 'joining' | 'disabled'>): string {
+  if (run.disabled) return t('runs.disabledLabel', 'Disabled')
   if (run.joining) return t('runs.joining', 'Joining')
   if (run.state === 'ACTIVE') return t('runs.active', 'In service')
   if (run.state === 'DRAINING') return t('runs.draining', 'Draining')
   return t('runs.retired', 'Retired')
 }
 
-// The checks still failing, by their reasons.
-export const failing = (checks: RunCheck[]) => checks.filter(check => !check.passed)
+// The checks failed — something to put right —, and those pending, waiting on what comes by itself.
+export const failing = (checks: RunCheck[]) => checks.filter(check => !check.passed && !check.pending)
+export const pending = (checks: RunCheck[]) => checks.filter(check => !check.passed && check.pending)
 
-// What its state means now: what a joining device waits for — its checks, or an admin —, what a draining or retired one
-// does, and why a device in an exit takes no flows.
+// What its state means now: a disabled device serves nothing; what a joining one waits for — its checks, failed or
+// pending, or an admin —, what a draining or retired one does, and why a device in an exit takes no flows.
 export function runDetail(t: TFunction, run: Run & { refusal?: string | null }, activation?: string): string {
+  if (run.disabled) return t('runs.disabled', 'Its device is disabled: it serves nothing until it is restored')
   if (run.joining) {
-    const waits = failing(run.checks)
-    if (waits.length)
-      return t('runs.waitsFor', 'Waiting for its checks: {{reasons}}', {
-        reasons: waits.map(check => check.reason).join('; '),
-      })
+    const failed = failing(run.checks)
+    const waits = pending(run.checks)
+    if (failed.length || waits.length)
+      return [
+        failed.length
+          ? t('runs.checksFail', 'Its checks fail: {{reasons}}', { reasons: failed.map(check => check.reason).join('; ') })
+          : '',
+        waits.length
+          ? t('runs.waitsOn', 'Waiting: {{reasons}}', { reasons: waits.map(check => check.reason).join('; ') })
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' · ')
     return activation === 'admin'
       ? t('runs.waitsForAdmin', 'Its checks pass: it waits for an admin to put it in service')
       : t('runs.goesIntoService', 'Its checks pass: it goes into service by itself')
@@ -73,20 +84,20 @@ export function availabilityLabel(t: TFunction, exit: Pick<Exit, 'offered' | 'do
   return ''
 }
 
-// Whether a device may choose an exit now: none of its devices in service is no device available.
+// Whether a device may choose an exit now: none of its devices carrying its traffic is no device available.
 export function availabilityLine(t: TFunction, exit: Pick<Exit, 'offered' | 'dormant'>): string {
   if (exit.dormant)
     return t(
       'exits.noDeviceAvailable',
-      'No device available: the devices using it go their usual way until one of its devices is in service.'
+      'No device available: none of its devices carries its traffic, so the devices using it go their usual way until one does.'
     )
   if (!exit.offered) return t('exits.notOffered', 'None of its devices takes traffic now.')
   return ''
 }
 
 // A proxy's endpoints.
-export function endpointsLine(t: TFunction, endpoints: number | null): string {
-  if (endpoints === null) return ''
+export function endpointsLine(t: TFunction, endpoints: number | null | undefined): string {
+  if (endpoints == null) return ''
   return endpoints
     ? t('proxies.endpoints', {
         count: endpoints,
@@ -99,12 +110,12 @@ export function endpointsLine(t: TFunction, endpoints: number | null): string {
 // What an action does to one proxy or exit a device runs: its state before and after — a deleted device keeps its
 // place, serving nothing while it is disabled —, the connections it ends or keeps, a proxy's endpoints and an exit's
 // users, whether an exit is left with no device available, and a refusal.
-export function effectLines(t: TFunction, effect: DeviceActionEffect, action?: DeviceAction): string[] {
+export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] {
   const kind = effect.kind === 'proxy' ? t('runs.proxy', 'Proxy') : t('runs.exit', 'Exit')
   const from = runStateLabel(t, { state: effect.state, joining: false }).toLowerCase()
-  const after = action === 'DELETE' ? 'RETIRED' : effect.after.toUpperCase()
+  const after = effect.after.toUpperCase()
   const to =
-    action === 'DELETE'
+    after === 'DISABLED'
       ? t('runEffect.disabled', 'serving nothing while it is disabled')
       : after === 'GONE'
       ? t('runEffect.gone', 'taken out of it')
@@ -164,11 +175,11 @@ export function effectLines(t: TFunction, effect: DeviceActionEffect, action?: D
         ? t('runEffect.dormantUsers', {
             count: effect.users,
             defaultValue_one:
-              'No device available after: the {{count}} device using it goes its usual way until one is in service.',
+              'No device available after: the {{count}} device using it goes its usual way until one of its devices carries traffic again.',
             defaultValue_other:
-              'No device available after: the {{count}} devices using it go their usual way until one is in service.',
+              'No device available after: the {{count}} devices using it go their usual way until one of its devices carries traffic again.',
           })
-        : t('runEffect.dormant', 'No device available after, until one is in service.')
+        : t('runEffect.dormant', 'No device available after, until one of its devices carries traffic again.')
     )
   if (effect.refusal) lines.push(t('runEffect.refused', 'Refused: {{refusal}}.', { refusal: effect.refusal }))
   return lines

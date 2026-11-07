@@ -28,11 +28,11 @@ vi.mock('../hooks/useAccountExits', () => ({ useAccountProxies: () => ({ value: 
 vi.mock('../selectors/devices', () => ({ getAllDevices: () => [] }))
 vi.mock('../components/RunDevicePicker', async importOriginal => ({
   ...(await importOriginal<typeof import('../components/RunDevicePicker')>()),
-  RunDevicePicker: ({ kind, ownerId, exclude, busy, refusals, onAdd, onSkip }: any) => (
+  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, onAdd, onSkip }: any) => (
     <div
       data-picker={kind}
       data-owner={ownerId}
-      data-exclude={exclude.join('|')}
+      data-for={target}
       data-refusals={JSON.stringify(refusals)}
     >
       <button data-add disabled={busy} onClick={() => onAdd(picker.chosen)} />
@@ -40,6 +40,7 @@ vi.mock('../components/RunDevicePicker', async importOriginal => ({
     </div>
   ),
 }))
+vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('../components/Container', () => ({
   Container: ({ header, children }: any) => (
     <div>
@@ -209,7 +210,7 @@ describe('a new proxy', () => {
     const shown = $('[data-picker]')!
     expect(shown.getAttribute('data-picker')).toBe('proxy')
     expect(shown.getAttribute('data-owner')).toBe('ACCOUNT')
-    expect(shown.getAttribute('data-exclude')).toBe('')
+    expect(shown.getAttribute('data-for')).toBe('P1')
   })
 
   it('the devices chosen are added one after another, then its page is opened', async () => {
@@ -283,6 +284,17 @@ describe('a new proxy', () => {
     await click(make())
     expect($('[data-notice]')).toBeNull()
     expect($('[data-picker]')).not.toBeNull()
+  })
+
+  it('a domain of remote.it’s, or another proxy’s, refused: said in graphql’s words, the domain left to change', async () => {
+    createProxy.mockResolvedValue({ reason: 'R3proxy.com is remote.it’s: use a domain of your own' })
+    await render()
+    await type(NAME, 'Gateway')
+    await type(DOMAIN, 'gw.r3proxy.com')
+    await click(make())
+    expect($('[data-notice="error"]')?.textContent).toBe('R3proxy.com is remote.it’s: use a domain of your own')
+    expect(input(DOMAIN).value).toBe('gw.r3proxy.com')
+    expect($('[data-picker]')).toBeNull()
   })
 
   it('while it is being made, it cannot be made again', async () => {
