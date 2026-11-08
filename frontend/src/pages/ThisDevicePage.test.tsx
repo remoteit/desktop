@@ -20,7 +20,7 @@ vi.mock('../helpers/dateHelper', async importOriginal => ({
 }))
 
 import { ThisDevicePart, ThisDeviceView } from '../components/thisDevice/ThisDeviceView'
-import { ThisDevice, Capability } from '../services/thisDevice'
+import { BridgeError, ThisDevice, Capability } from '../services/thisDevice'
 import { createMockBridge, MockBridge, MockBridgeOptions } from '../services/thisDeviceMock'
 import { TransferUsageHint } from '../components/TransferUsage'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
@@ -234,6 +234,25 @@ describe('This device', () => {
     const relay = advanced.container.querySelector('[data-setting="websocket"] input') as HTMLInputElement
     expect(relay.disabled).toBe(true)
     expect(advanced.container.querySelector('[data-setting="websocket"]')!.textContent).toContain('administrator')
+  })
+
+  it('a prompt the person cancelled says nothing; any other failure is said', async () => {
+    const bridge = createMockBridge()
+    const call = bridge.transport.call
+    let failure: BridgeError | undefined
+    bridge.transport.call = (async (method: any, args: any) => {
+      if (method === 'settings.set' && failure) throw failure
+      return call(method, args)
+    }) as typeof call
+    const { container } = await mount(bridge)
+    const printers = () => container.querySelector('[data-setting="printers"] input') as HTMLInputElement
+    failure = new BridgeError('cancelled', 'the administrator’s confirmation was cancelled')
+    await act(async () => printers().click())
+    expect(container.querySelector('[role="alert"]')).toBeNull()
+    expect(printers().checked).toBe(true)
+    failure = new BridgeError('failed', 'the daemon did not answer')
+    await act(async () => printers().click())
+    expect(container.querySelector('[role="alert"]')!.textContent).toContain('the daemon did not answer')
   })
 
   it('the printers are Access’s: not shown while it is off', async () => {

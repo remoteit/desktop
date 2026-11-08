@@ -39,7 +39,9 @@ export const useThisDeviceModel = (device: ThisDevice) => {
     try {
       await run()
     } catch (e: any) {
-      setError(e?.message || String(e))
+      // A prompt the person cancelled — the administrator's, to offer the machine as an exit or a proxy — is their no:
+      // nothing to say, as the menu says nothing.
+      if (e?.code !== 'cancelled') setError(e?.message || String(e))
     } finally {
       setBusy(false)
     }
