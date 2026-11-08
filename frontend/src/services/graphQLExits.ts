@@ -132,11 +132,11 @@ export const graphQLSetExitActivation = (exit: string, activation: 'auto' | 'adm
 // it joins — a machine whose administrator keeps its exit node local stays as set there. Opening is refused for
 // remote.it's and for one with a device you do not manage (Exit.lanRefusal says so first); closing needs only managing
 // it. A refusal comes back in graphql's words.
-export const graphQLSetExitLan = (exitId: string, lan: boolean) =>
-  graphQLRequestWithReason(
-    ` mutation SetExitLan($exitId: String!, $lan: Boolean!) { setExitLan(exitId: $exitId, lan: $lan) { id } }`,
-    { exitId, lan }
-  )
+export const graphQLSetExitLan = (exit: string, lan: boolean) =>
+  graphQLRequestWithReason(` mutation SetExitLan($exit: String!, $lan: Boolean!) { setExitLan(exit: $exit, lan: $lan) { id } }`, {
+    exit,
+    lan,
+  })
 
 // One no device runs. While devices use it, refused unless confirmed: confirmed, their exit ends and its shares go.
 export const graphQLDeleteExit = (exit: string, confirm: boolean) =>

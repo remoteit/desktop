@@ -452,10 +452,10 @@ describe('its devices’ local networks: the exit’s setting', () => {
   it('opened or closed on the exit by its id; refused in graphql’s words, or none said where the request failed', async () => {
     request.mockResolvedValue(answer({ setExitLan: { id: 'xmac' } }))
     expect(await graphQLSetExitLan('xmac', true)).toEqual(answer({ setExitLan: { id: 'xmac' } }))
-    expect(asked().variables).toEqual({ exitId: 'xmac', lan: true })
-    expect(asked().query).toContain('setExitLan(exitId: $exitId, lan: $lan)')
+    expect(asked().variables).toEqual({ exit: 'xmac', lan: true })
+    expect(asked().query).toContain('setExitLan(exit: $exit, lan: $lan)')
     await graphQLSetExitLan('xmac', false)
-    expect(asked().variables).toEqual({ exitId: 'xmac', lan: false })
+    expect(asked().variables).toEqual({ exit: 'xmac', lan: false })
     request.mockResolvedValue(refusal('garage Pi is not a device you manage'))
     expect(await graphQLSetExitLan('xmac', true)).toEqual({ reason: 'Garage Pi is not a device you manage' })
     expect(uiSet).not.toHaveBeenCalled()
