@@ -5,6 +5,7 @@ import type { TFunction } from 'i18next'
 import { Box, Button, Checkbox, List, ListItemButton, ListItemIcon, ListItemText, TextField, Typography } from '@mui/material'
 import { getAllDevices } from '../selectors/devices'
 import { RunCandidate, graphQLRunCandidates } from '../services/graphQLDeviceRuns'
+import { lanAddWarning } from '../helpers/runsHelper'
 import { LoadingMessage } from './LoadingMessage'
 import { Notice } from './Notice'
 
@@ -21,6 +22,8 @@ type Props = {
   busy?: boolean
   // Each device refused, by id, with graphql's words: said by its name, left chosen to try again. Each answer read again.
   refusals?: ILookup<string>
+  // An exit whose users reach its devices' local networks: each device added opens its own to them, said before.
+  lan?: boolean
   action?: string
   onAdd: (deviceIds: string[]) => void
   onSkip?: () => void
@@ -32,13 +35,15 @@ type Props = {
    refuse with — another account's, a client only, its administrator forbidding it on the machine, not online to say
    what it can be, using the exit itself, or serving others in another — said beside it. Those running it already are
    listed with it, not here. A search narrows them by name, and more than one is chosen at once. Each joins out of
-   service and goes into service as the activation says, once its checks pass. */
+   service and goes into service as the activation says, once its checks pass. Added to an exit whose users reach its
+   devices' local networks, each takes that too: said above the button, naming those chosen, before any is added. */
 export const RunDevicePicker: React.FC<Props> = ({
   kind,
   target,
   ownerId,
   busy,
   refusals = NO_REFUSALS,
+  lan,
   action,
   onAdd,
   onSkip,
@@ -156,6 +161,16 @@ export const RunDevicePicker: React.FC<Props> = ({
             </ListItemButton>
           ))}
         </List>
+      )}
+      {kind === 'exit' && lan && (
+        <Notice severity="warning" fullWidth gutterTop>
+          <span data-lan-warning>
+            {lanAddWarning(
+              t,
+              listed.map(id => nameOf(fit.find(candidate => candidate.id === id) ?? { id, name: null }))
+            )}
+          </span>
+        </Notice>
       )}
       <Box display="flex" gap={1} marginTop={1}>
         <Button variant="contained" size="small" disabled={busy || !listed.length} data-add onClick={() => onAdd(listed)}>

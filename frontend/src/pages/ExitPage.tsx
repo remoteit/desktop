@@ -16,6 +16,7 @@ import {
   graphQLRemoveExitTag,
   graphQLRenameExit,
   graphQLSetExitActivation,
+  graphQLSetExitLan,
   graphQLSetNetworkExit,
 } from '../services/graphQLExits'
 import { availabilityLine, deleteExitLines, stillRunsLine, usersLine } from '../helpers/runsHelper'
@@ -36,12 +37,14 @@ import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
-/* One exit (graphql-api docs/PROXY-GROUPS.md §13). For whoever manages it: its name and activation, the devices it runs
-   on — each with its state and checks, its actions in this exit, and what the device still runs after one — and adding
-   more, the devices using it, who it is shared with, its tags, the networks it is offered on, and, once no device runs
-   it, moving its users to another exit and deleting it, saying what goes. With no device in service it has no device
-   available: those using it go their usual way until one is. For someone it is shared with: whose it is, whether a
-   device may choose it now, and leaving it. */
+/* One exit (graphql-api docs/PROXY-GROUPS.md §13). For whoever manages it: its name and activation, whether its users
+   reach its devices' local networks — the exit's setting, asked before it is opened, and closed at once —, the devices
+   it runs on — each with its state and checks, its local network as its machine has it, its actions in this exit, and
+   what the device still runs after one — and adding more, saying first whose network that opens, the devices using it,
+   who it is shared with, its tags, the networks it is offered on, and, once no device runs it, moving its users to
+   another exit and deleting it, saying what goes. With no device in service it has no device available: those using it
+   go their usual way until one is. For someone it is shared with: whose it is, whether a device may choose it now,
+   whether it reaches its devices' networks, and leaving it. */
 export const ExitPage: React.FC = () => {
   const { exitID } = useParams<{ exitID: string }>()
   // All the page holds is one exit's — its dialogs, its picker, its answers —: another exit's address starts afresh, so
@@ -61,6 +64,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
   const [deleting, setDeleting] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [moving, setMoving] = useState(false)
+  const [openingLan, setOpeningLan] = useState(false)
 
   const { reload: reloadList } = useAccountExits()
   const reads = useRef(0)
@@ -134,6 +138,17 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
 
   const failed = t('exitPage.notChanged', 'It was not changed: try again.')
 
+  // Its devices' local networks: opened once asked, as everyone who may use the exit can then reach what is on them;
+  // closed at once. Why you may not open them is said beside it: off, as it stays off; on, as it could not be opened
+  // again.
+  const setLan = (lan: boolean) => change(() => graphQLSetExitLan(exit.id, lan), failed)
+  const lanRefused = !exit.lanRefusal
+    ? ''
+    : exit.lan
+    ? t('exitPage.lanOnRefused', 'Once off, you can’t turn it on again: {{reason}}', { reason: exit.lanRefusal })
+    : t('exitPage.lanRefused', 'You can’t turn it on: {{reason}}', { reason: exit.lanRefusal })
+  const lanDevices = devices.map(device => device.name || device.id)
+
   return (
     <Container
       gutterBottom
@@ -199,6 +214,25 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                 change(() => graphQLSetExitActivation(exit.id, activation as Exit['activation']), failed)
               }
             />
+            {own && (
+              <ListItemSetting
+                icon="network-wired"
+                label={t('exitPage.lan', 'Its users reach its devices’ local networks')}
+                subLabel={
+                  <>
+                    {t('exitPage.lanHint', 'Each device’s network: printers, files, its router')}
+                    {lanRefused && (
+                      <Typography component="span" variant="caption" display="block" data-lan-refusal>
+                        {lanRefused}
+                      </Typography>
+                    )}
+                  </>
+                }
+                toggle={exit.lan}
+                disabled={busy || (!exit.lan && !!exit.lanRefusal)}
+                onClick={() => (exit.lan ? setLan(false) : setOpeningLan(true))}
+              />
+            )}
           </List>
         )}
         {manage && (
@@ -226,6 +260,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                   ownerId={exit.owner.id}
                   busy={busy}
                   refusals={refusals}
+                  lan={exit.lan}
                   onAdd={add}
                 />
               </Gutters>
@@ -240,7 +275,6 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                 to={`/devices/${device.id}/runs`}
                 manage
                 lan={own}
-                onRefresh={refresh}
                 onChanged={async (runs, which) => {
                   setNotice({ severity: 'info', text: stillRunsLine(t, which.name, runs) })
                   await refresh()
@@ -348,6 +382,15 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
             />
           </List>
         )}
+        {!manage && own && exit.lan && (
+          <List data-lan-reach>
+            <ListItemSetting
+              icon="network-wired"
+              label={t('exitPage.lanReach', 'Through it, you reach its devices’ local networks')}
+              subLabel={t('exitPage.lanHint', 'Each device’s network: printers, files, its router')}
+            />
+          </List>
+        )}
         {shared && (
           <List>
             <ListItemSetting
@@ -386,6 +429,34 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
             {line}
           </Typography>
         ))}
+      </Confirm>
+      <Confirm
+        open={openingLan}
+        title={t('exitPage.lanTitle', 'Open its devices’ local networks?')}
+        action={t('exitPage.lanOpen', 'Turn on')}
+        disabled={busy}
+        onConfirm={() => {
+          setOpeningLan(false)
+          setLan(true)
+        }}
+        onDeny={() => setOpeningLan(false)}
+      >
+        <Typography variant="body2" gutterBottom>
+          {lanDevices.length
+            ? t(
+                'exitPage.lanOpenSays',
+                'Everyone who may use {{exit}} can then reach the local networks of {{devices}} — printers, files, routers — and of each device added later.',
+                { exit: exit.name, devices: lanDevices.join(', ') }
+              )
+            : t(
+                'exitPage.lanOpenSaysNone',
+                'Everyone who may use {{exit}} can then reach the local network of each device added to it — printers, files, routers.',
+                { exit: exit.name }
+              )}
+        </Typography>
+        <Typography variant="body2">
+          {t('exitPage.lanOpenMachines', 'Each machine’s administrator keeps the last word, on the machine.')}
+        </Typography>
       </Confirm>
       <Confirm
         open={leaving}

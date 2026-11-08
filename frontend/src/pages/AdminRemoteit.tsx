@@ -30,7 +30,7 @@ import {
   graphQLRenumberProxyDevice,
 } from '../services/graphQLRemoteit'
 import { Confirm } from '../components/Confirm'
-import { runStateLabel, stillRunsLine } from '../helpers/runsHelper'
+import { lanAddWarning, runStateLabel, stillRunsLine } from '../helpers/runsHelper'
 import { RunListItem } from '../components/RunListItem'
 import { RunActions } from '../components/RunActions'
 import { SelectSetting } from '../components/SelectSetting'
@@ -215,6 +215,7 @@ export const AdminRemoteitExits: React.FC<{ onProblem: Problem }> = ({ onProblem
           ))}
           <AddMachine
             kind="exit"
+            lan={exit.lan}
             machines={machines.filter(machine => !machine.exit)}
             onAdd={async deviceId => {
               const added = await graphQLAddExitDevice(exit.id, deviceId)
@@ -431,17 +432,21 @@ const Renumber: React.FC<{ deviceId: string; host: string; onDone: () => void }>
 }
 
 // Machines to add to a proxy or an exit: those running none of its kind. One of remote.it's proxies' machines takes
-// e<number>-r3 as its own name — the next free one, or the number given.
+// e<number>-r3 as its own name — the next free one, or the number given. An exit whose users reach its devices' local
+// networks — never remote.it's — opens each machine's added: said before, as wherever a device is added to an exit.
 const AddMachine: React.FC<{
   kind: 'proxy' | 'exit'
+  lan?: boolean
   machines: RemoteitMachine[]
   onAdd: (deviceId: string, number?: number) => Promise<void>
-}> = ({ kind, machines, onAdd }) => {
+}> = ({ kind, lan, machines, onAdd }) => {
+  const { t } = useTranslation()
   const [chosen, setChosen] = useState('')
   const [number, setNumber] = useState('')
   const [busy, setBusy] = useState(false)
   if (!machines.length) return null
   const numberValid = !number || /^[1-9][0-9]{0,3}$/.test(number)
+  const picked = machines.find(each => each.id === chosen)
   return (
     <ListItem>
       <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
@@ -484,6 +489,11 @@ const AddMachine: React.FC<{
         >
           Add
         </Button>
+        {kind === 'exit' && lan && (
+          <Typography variant="caption" color="warning.main" width="100%" data-lan-warning>
+            {lanAddWarning(t, picked ? [picked.name ?? picked.id] : [])}
+          </Typography>
+        )}
       </Box>
     </ListItem>
   )

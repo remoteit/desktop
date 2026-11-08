@@ -19,15 +19,18 @@ import {
   graphQLNetworkExits,
   graphQLOfferedExits,
   graphQLSetDeviceExit,
+  graphQLSetExitLan,
   graphQLSetNetworkExit,
 } from './graphQLExits'
+import * as deviceRuns from './graphQLDeviceRuns'
 import {
+  EXIT_DEVICE_FIELDS,
   graphQLActionEffects,
   graphQLAddExitDevice,
   graphQLAddProxyDevice,
+  graphQLDeviceRuns,
   graphQLRunAction,
   graphQLRunCandidates,
-  graphQLSetExitDeviceLan,
   RunAction,
 } from './graphQLDeviceRuns'
 import {
@@ -445,14 +448,45 @@ describe('the devices that could run a proxy or an exit', () => {
   })
 })
 
-describe('an exit device’s local network', () => {
-  it('set, answering what the device runs; refused in graphql’s words', async () => {
-    request.mockResolvedValue(answer({ setExitDeviceLan: RUNS }))
-    expect(await graphQLSetExitDeviceLan('DEV', true)).toEqual({ runs: RUNS })
-    expect(asked().variables).toEqual({ deviceId: 'DEV', lan: true })
-    expect(asked().query).toContain('lan lanRefusal')
-    request.mockResolvedValue(refusal('its administrator keeps its exit node local'))
-    expect(await graphQLSetExitDeviceLan('DEV', false)).toEqual({ reason: 'Its administrator keeps its exit node local' })
+describe('its devices’ local networks: the exit’s setting', () => {
+  it('opened or closed on the exit by its id; refused in graphql’s words, or none said where the request failed', async () => {
+    request.mockResolvedValue(answer({ setExitLan: { id: 'xmac' } }))
+    expect(await graphQLSetExitLan('xmac', true)).toEqual(answer({ setExitLan: { id: 'xmac' } }))
+    expect(asked().variables).toEqual({ exitId: 'xmac', lan: true })
+    expect(asked().query).toContain('setExitLan(exitId: $exitId, lan: $lan)')
+    await graphQLSetExitLan('xmac', false)
+    expect(asked().variables).toEqual({ exitId: 'xmac', lan: false })
+    request.mockResolvedValue(refusal('garage Pi is not a device you manage'))
+    expect(await graphQLSetExitLan('xmac', true)).toEqual({ reason: 'Garage Pi is not a device you manage' })
+    expect(uiSet).not.toHaveBeenCalled()
+    ui.offline = true
+    expect(await graphQLSetExitLan('xmac', false)).toBe('ERROR')
+  })
+
+  it('read with each exit — open or not, and why you may not open it — and each device as its machine has it', async () => {
+    request.mockResolvedValue(answer({ exit: { ...mac, lan: true, lanRefusal: null, tags: [] } }))
+    expect(await graphQLExit('xmac')).toMatchObject({ lan: true, lanRefusal: null })
+    expect(asked().query).toMatch(/\bdormant lan lanRefusal\b/)
+    expect(asked().query).toContain(`devices { ${EXIT_DEVICE_FIELDS} }`)
+    request.mockResolvedValue(answer({ login: { id: 'ME', account: { id: 'ACCOUNT', exits: [], sharedExits: [] } } }))
+    await graphQLAccountExits('ACCOUNT')
+    expect(asked().query).toMatch(/exits \{[^}]*\blan lanRefusal\b.*\} sharedExits \{[^}]*\blan lanRefusal\b/s)
+  })
+
+  it('a device in an exit says why its LAN is not as its exit says; nothing of the device’s own to set any more', async () => {
+    expect(EXIT_DEVICE_FIELDS).toMatch(/\blan lanReason$/)
+    expect(EXIT_DEVICE_FIELDS).not.toContain('lanRefusal')
+    request.mockResolvedValue(answer({ login: { device: [{ id: 'DEV', runs: RUNS }] } }))
+    await graphQLDeviceRuns('DEV')
+    expect(asked().query).toContain('lan lanReason')
+    expect(asked().query).not.toContain('lanRefusal')
+    expect('graphQLSetExitDeviceLan' in deviceRuns).toBe(false)
+  })
+
+  it('remote.it’s exits are read with theirs too — never open —, so adding a machine says what it opens as anywhere', async () => {
+    request.mockResolvedValue(answer({ remoteitExits: [] }))
+    await graphQLRemoteitExits()
+    expect(asked().query).toMatch(/\busers lan devices \{/)
   })
 })
 

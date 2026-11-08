@@ -91,10 +91,11 @@ export const ExitAddPage: React.FC = () => {
             </Typography>
             <RunDevicePicker
               kind="exit"
-                  target={exit.id}
+              target={exit.id}
               ownerId={exit.owner?.id || accountId}
               busy={busy}
               refusals={refusals}
+              lan={exit.lan}
               onAdd={add}
               onSkip={() => history.push(`/exits/${exit.id}`)}
             />

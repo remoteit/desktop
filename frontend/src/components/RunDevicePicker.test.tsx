@@ -238,6 +238,38 @@ describe('choosing devices to run a proxy or an exit', () => {
   })
 })
 
+describe('adding devices to an exit whose users reach its devices’ local networks', () => {
+  const warning = (page: HTMLElement) => page.querySelector('[data-lan-warning]')?.textContent
+
+  it('says so plainly before any is added, naming those chosen as they are chosen', async () => {
+    const page = await render({ lan: true })
+    expect(page.querySelector('[data-notice="warning"] [data-lan-warning]')).not.toBeNull()
+    expect(warning(page)).toBe(
+      'This exit lets its users reach its devices’ local networks: each device added opens its network to them.'
+    )
+    await click(row(page, 'A1'))
+    expect(warning(page)).toBe(
+      'This exit lets its users reach its devices’ local networks: adding Mac opens its network to them.'
+    )
+    await click(row(page, 'B1'))
+    expect(warning(page)).toBe(
+      'This exit lets its users reach its devices’ local networks: adding Mac, Pi opens their networks to them.'
+    )
+    expect(onAdd).not.toHaveBeenCalled()
+    await click(add(page))
+    expect(onAdd).toHaveBeenCalledWith(['A1', 'B1'])
+  })
+
+  it('nothing said for an exit whose users do not reach them, or for a proxy', async () => {
+    let page = await render()
+    await click(row(page, 'A1'))
+    expect(warning(page)).toBeUndefined()
+    page = await render({ kind: 'proxy', target: 'P1', lan: true })
+    await click(row(page, 'A1'))
+    expect(warning(page)).toBeUndefined()
+  })
+})
+
 describe('adding devices one after another', () => {
   it('adds each in turn, the next once the one before is answered', async () => {
     const answers: ((result: { runs: unknown } | { reason: string }) => void)[] = []

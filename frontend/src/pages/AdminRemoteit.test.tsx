@@ -195,6 +195,7 @@ const EXIT = {
   activation: 'auto',
   offered: true,
   dormant: false,
+  lan: false,
   users: 3,
   latitude: 45.8,
   longitude: -119.7,
@@ -568,8 +569,9 @@ describe('remote.it’s exits', () => {
     expect(subheader(exit('X2'))).toBe('remote.it sea1a · sea1 · 1 user · not offered: no machine takes traffic')
     expect(subheader(exit('X3'))).toBe('remote.it nyc1a · sea1 · 0 users · not offered: no machine takes traffic')
     const e1 = $('[data-run="E1"]', exit('X1'))!
-    // remote.it's exits reach no network of their machines: no LAN to set.
+    // remote.it's exits reach no network of their machines: a machine's is said only where open or not the cloud's.
     expect(e1.hasAttribute('data-lan')).toBe(false)
+    expect($('[data-lan-warning]')).toBeNull()
     expect(e1.getAttribute('data-kind')).toBe('exit')
     expect(e1.getAttribute('data-name')).toBe('remote.it pdx1a')
     expect(e1.getAttribute('data-activation')).toBe('auto')
@@ -598,6 +600,22 @@ describe('remote.it’s exits', () => {
     await click($('[data-pick="M3"]', exit('X1')))
     await click(button('Add', exit('X1')))
     expect(onProblem).toHaveBeenLastCalledWith('The machine was not added.')
+  })
+
+  it('a machine added to one whose LAN were open would say first that it opens its own', async () => {
+    // Never so for remote.it's: said as wherever a device is added to an exit.
+    exits.mockResolvedValue([{ ...EXIT, lan: true }])
+    await render(<AdminRemoteitExits onProblem={vi.fn()} />)
+    expect($('[data-lan-warning]', exit('X1'))?.textContent).toBe(
+      'This exit lets its users reach its devices’ local networks: each device added opens its network to them.'
+    )
+    await click($('[data-pick="M3"]', exit('X1')))
+    expect($('[data-lan-warning]', exit('X1'))?.textContent).toBe(
+      'This exit lets its users reach its devices’ local networks: adding spare opens its network to them.'
+    )
+    expect(addExitDevice).not.toHaveBeenCalled()
+    await click(button('Add', exit('X1')))
+    expect(addExitDevice).toHaveBeenCalledWith('X1', 'M3')
   })
 
   it('sets how a machine added goes into service; a refusal is said', async () => {

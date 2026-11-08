@@ -38,7 +38,9 @@ vi.mock('./Confirm', () => ({
   ),
 }))
 vi.mock('./LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
-vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
+vi.mock('./Notice', () => ({
+  Notice: ({ severity, children }: any) => <div data-notice={severity}>{children}</div>,
+}))
 // A text field as an input; a choice as a button for each of its options.
 vi.mock('@mui/material', async () => {
   const actual: any = await vi.importActual('@mui/material')
@@ -60,7 +62,12 @@ vi.mock('@mui/material', async () => {
 })
 vi.mock('react-i18next', () => {
   const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
-  return { useTranslation: () => ({ t: (_key: string, text: string, values?: any) => fill(text, values) }) }
+  return {
+    useTranslation: () => ({
+      t: (_key: string, a: any, b?: any) =>
+        typeof a === 'string' ? fill(a, b) : fill(a.count === 1 ? a.defaultValue_one : a.defaultValue_other, a),
+    }),
+  }
 })
 
 import { MakeRunDialog } from './MakeRunDialog'
@@ -83,7 +90,13 @@ async function open(kind: 'exit' | 'proxy') {
 beforeEach(() => {
   document.body.innerHTML = ''
   calls.length = 0
-  accountExits.mockReset().mockResolvedValue({ own: [{ id: 'xha', name: 'HA Derby' }], shared: [] })
+  accountExits.mockReset().mockResolvedValue({
+    own: [
+      { id: 'xha', name: 'HA Derby', lan: false },
+      { id: 'xlan', name: 'Office', lan: true },
+    ],
+    shared: [],
+  })
   createExit.mockReset().mockImplementation(async name => {
     calls.push('create')
     return { id: 'xnew', name }
@@ -142,6 +155,22 @@ describe('making a device an exit: one action of two calls', () => {
     addExit.mockResolvedValue({ reason: 'It uses HA Derby as its own exit: choose another for it first' })
     await act(async () => confirm().click())
     expect(deleteExit).not.toHaveBeenCalled()
+  })
+
+  it('to one of its exits whose users reach its devices’ local networks: says first that its own opens to them', async () => {
+    await open('exit')
+    expect(find('[data-lan-warning]')).toBeNull()
+    await act(async () => (find('input[value="existing"]') as HTMLInputElement).click())
+    await act(async () => find('[data-pick="xlan"]').click())
+    expect(find('[data-notice="warning"] [data-lan-warning]').textContent).toBe(
+      'This exit lets its users reach its devices’ local networks: adding Office Mac opens its network to them.'
+    )
+    expect(addExit).not.toHaveBeenCalled()
+    await act(async () => find('[data-pick="xha"]').click())
+    expect(find('[data-lan-warning]')).toBeNull()
+    await act(async () => find('[data-pick="xlan"]').click())
+    await act(async () => confirm().click())
+    expect(addExit).toHaveBeenCalledWith('xlan', 'MAC')
   })
 
   it('an account with no exit offers none to add it to', async () => {

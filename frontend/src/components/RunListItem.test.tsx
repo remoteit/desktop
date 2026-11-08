@@ -2,22 +2,8 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { push, setLan } = vi.hoisted(() => ({
-  push: vi.fn(),
-  setLan: vi.fn(async (_deviceId: string, _lan: boolean) => ({ runs: {} } as any)),
-}))
+const { push } = vi.hoisted(() => ({ push: vi.fn() }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
-vi.mock('../services/graphQLDeviceRuns', () => ({ graphQLSetExitDeviceLan: setLan }))
-vi.mock('./Confirm', () => ({
-  Confirm: ({ open, title, children, onConfirm, onDeny }: any) =>
-    open ? (
-      <div data-confirm={title}>
-        {children}
-        <button data-yes onClick={onConfirm} />
-        <button data-no onClick={onDeny} />
-      </div>
-    ) : null,
-}))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 vi.mock('./Link', () => ({ Link: ({ to, children }: any) => <a data-link={to}>{children}</a> }))
 // Its actions are their own test's (RunActions.test.tsx): here, what they were given, and an answer.
@@ -62,7 +48,7 @@ const exitRun = (fields: any = {}) =>
     refusal: null,
     health: null,
     lan: false,
-    lanRefusal: null,
+    lanReason: null,
     ...fields,
   } as any)
 
@@ -76,7 +62,6 @@ async function render(props: any) {
 
 beforeEach(() => {
   push.mockReset()
-  setLan.mockReset().mockResolvedValue({ runs: {} })
 })
 
 describe('a device in a proxy or an exit', () => {
@@ -147,61 +132,59 @@ describe('a disabled device', () => {
   })
 })
 
-describe('an own exit’s device: its local network too', () => {
-  const lanSwitch = (row: HTMLElement) => row.querySelector('[data-lan] input') as HTMLInputElement
+describe('an exit’s device: its local network, as its machine has it', () => {
+  const lan = (row: HTMLElement) => row.querySelector('[data-lan]') as HTMLElement | null
 
-  it('turned on only once asked, as everyone who may use the exit can then reach the network; read again after', async () => {
-    const onRefresh = vi.fn()
-    const row = await render({ kind: 'exit', run: exitRun(), name: 'HA Derby', manage: true, lan: true, onRefresh })
-    expect(row.querySelector('[data-lan]')?.getAttribute('data-lan')).toBe('off')
-    await act(async () => lanSwitch(row).click())
-    expect(setLan).not.toHaveBeenCalled()
-    expect(document.body.querySelector('[data-confirm]')?.textContent).toContain(
-      'Everyone who may use the exit can then reach the devices on the network Office Mac is on.'
-    )
-    await act(async () => (document.body.querySelector('[data-yes]') as HTMLElement).click())
-    expect(setLan).toHaveBeenCalledWith('MAC', true)
-    expect(onRefresh).toHaveBeenCalled()
+  it('an own exit’s: open or closed to the exit’s users, read only — nothing to set on the device', async () => {
+    const own = { kind: 'exit', name: 'HA Derby', lan: true }
+    let row = await render({ ...own, run: exitRun(), manage: true, onChanged: vi.fn() })
+    expect(lan(row)?.getAttribute('data-lan')).toBe('closed')
+    expect(lan(row)?.textContent).toBe('Its local network: closed to the exit’s users')
+    expect(row.querySelector('input')).toBeNull()
+    row = await render({ ...own, run: exitRun({ lan: true }) })
+    expect(lan(row)?.getAttribute('data-lan')).toBe('open')
+    expect(lan(row)?.textContent).toBe('Its local network: open to the exit’s users')
   })
 
-  it('turned off at once; a refusal is said in graphql’s words', async () => {
-    const row = await render({ kind: 'exit', run: exitRun({ lan: true }), name: 'HA Derby', manage: true, lan: true })
-    setLan.mockResolvedValue({ reason: 'Its administrator keeps its exit node local' })
-    await act(async () => lanSwitch(row).click())
-    expect(setLan).toHaveBeenCalledWith('MAC', false)
-    expect(row.querySelector('[data-lan-error]')?.textContent).toBe('Its administrator keeps its exit node local')
-  })
-
-  it('where it cannot be set from here: why, and how it stands, in place of the switch', async () => {
+  it('where it is not as its exit says, or not the cloud’s to set: why, in graphql’s words', async () => {
     let row = await render({
       kind: 'exit',
-      run: exitRun({ lan: true, lanRefusal: 'its administrator keeps its exit node local' }),
+      run: exitRun({ lan: true, lanReason: 'its administrator keeps its exit node local' }),
       name: 'HA Derby',
-      manage: true,
       lan: true,
     })
-    expect(row.querySelector('[data-lan]')).toBeNull()
-    expect(row.querySelector('[data-lan-refusal]')?.textContent).toBe(
-      'Its local network too: on — its administrator keeps its exit node local'
+    expect(lan(row)?.textContent).toBe(
+      'Its local network: open to the exit’s users — its administrator keeps its exit node local'
     )
-    row = await render({
-      kind: 'exit',
-      run: exitRun({ lanRefusal: 'its administrator forbids exits' }),
-      name: 'HA Derby',
-      manage: true,
-      lan: true,
-    })
-    expect(row.querySelector('[data-lan-refusal]')?.textContent).toBe(
-      'Its local network: not reached — its administrator forbids exits'
-    )
+    row = await render({ kind: 'exit', run: exitRun({ lanReason: 'its machine closed it' }), name: 'Derby', lan: true })
+    expect(lan(row)?.textContent).toBe('Its local network: closed to the exit’s users — its machine closed it')
   })
 
-  it('not for a proxy, remote.it’s exits, or one who may not manage it', async () => {
-    expect((await render({ kind: 'exit', run: exitRun(), name: 'pdx1a', manage: true })).querySelector('[data-lan]')).toBeNull()
-    expect((await render({ kind: 'exit', run: exitRun(), name: 'HA Derby', lan: true })).querySelector('[data-lan]')).toBeNull()
+  it('a remote.it exit’s device — they reach no network of their machines —: said only where open or not the cloud’s', async () => {
+    expect(lan(await render({ kind: 'exit', run: exitRun(), name: 'pdx1a', manage: true }))).toBeNull()
+    expect(lan(await render({ kind: 'exit', run: exitRun({ lan: true }), name: 'pdx1a' }))?.textContent).toBe(
+      'Its local network: open to the exit’s users'
+    )
     expect(
-      (await render({ kind: 'proxy', run: proxyRun(), name: 'Gateway', manage: true, lan: true })).querySelector('[data-lan]')
-    ).toBeNull()
+      lan(await render({ kind: 'exit', run: exitRun({ lanReason: 'its administrator forbids exits' }), name: 'pdx1a' }))
+        ?.textContent
+    ).toBe('Its local network: closed to the exit’s users — its administrator forbids exits')
+  })
+
+  it('a proxy’s device: nothing of a local network', async () => {
+    expect(lan(await render({ kind: 'proxy', run: proxyRun({ lan: true }), name: 'Gateway', lan: true }))).toBeNull()
+  })
+
+  it('from the device’s page: set on the exit, linked unless the row links there already; not said with a reason', async () => {
+    const at = { kind: 'exit', name: 'HA Derby', lan: true, lanSetOn: '/exits/xha', to: '/exits/xha' }
+    const acting = { manage: true, onChanged: vi.fn() }
+    let row = await render({ ...at, ...acting, run: exitRun({ lan: true }) })
+    expect(lan(row)?.textContent).toBe('Its local network: open to the exit’s users · Set on the exit')
+    expect(lan(row)?.querySelector('[data-link]')?.getAttribute('data-link')).toBe('/exits/xha')
+    row = await render({ ...at, run: exitRun() })
+    expect(lan(row)?.textContent).toBe('Its local network: closed to the exit’s users · Set on the exit')
+    expect(lan(row)?.querySelector('[data-link]')).toBeNull()
+    row = await render({ ...at, ...acting, run: exitRun({ lanReason: 'its machine closed it' }) })
+    expect(lan(row)?.textContent).toBe('Its local network: closed to the exit’s users — its machine closed it')
   })
 })
-

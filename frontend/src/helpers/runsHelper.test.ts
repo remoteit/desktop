@@ -6,6 +6,9 @@ import {
   deleteProxyLine,
   effectLines,
   endpointsLine,
+  lanAddWarning,
+  lanLabel,
+  lanLine,
   runDetail,
   runStateLabel,
   runsOnLine,
@@ -205,5 +208,43 @@ describe('what deleting takes away', () => {
     expect(deleteProxyLine(t, 3)).toBe('Its 3 endpoints are removed, for everyone using one.')
     expect(deleteProxyLine(t, 1)).toBe('Its endpoint is removed, for everyone using it.')
     expect(deleteProxyLine(t, 0)).toBe('It has no endpoints: nothing else changes.')
+  })
+})
+
+describe('its devices’ local networks: the exit’s setting', () => {
+  it('an exit whose users reach them, in a few words; nothing for one whose users do not', () => {
+    expect(lanLabel(t, { lan: true })).toBe('Its users reach its devices’ local networks')
+    expect(lanLabel(t, { lan: false })).toBe('')
+  })
+
+  it('a device’s own, open or closed to the exit’s users, with why where it is not as its exit says', () => {
+    expect(lanLine(t, { lan: true, lanReason: null })).toBe('Its local network: open to the exit’s users')
+    expect(lanLine(t, { lan: false, lanReason: null })).toBe('Its local network: closed to the exit’s users')
+    expect(lanLine(t, { lan: true, lanReason: 'its administrator keeps its exit node local' })).toBe(
+      'Its local network: open to the exit’s users — its administrator keeps its exit node local'
+    )
+    expect(lanLine(t, { lan: false, lanReason: 'its machine closed it' })).toBe(
+      'Its local network: closed to the exit’s users — its machine closed it'
+    )
+  })
+
+  it('a remote.it exit’s machine: closed goes without saying; open, or a reason, is said', () => {
+    expect(lanLine(t, { lan: false, lanReason: null }, false)).toBe('')
+    expect(lanLine(t, { lan: true, lanReason: null }, false)).toBe('Its local network: open to the exit’s users')
+    expect(lanLine(t, { lan: false, lanReason: 'its administrator forbids exits' }, false)).toBe(
+      'Its local network: closed to the exit’s users — its administrator forbids exits'
+    )
+  })
+
+  it('said before devices are added to an exit whose users reach them: those chosen by name, or any', () => {
+    expect(lanAddWarning(t, [])).toBe(
+      'This exit lets its users reach its devices’ local networks: each device added opens its network to them.'
+    )
+    expect(lanAddWarning(t, ['Office Mac'])).toBe(
+      'This exit lets its users reach its devices’ local networks: adding Office Mac opens its network to them.'
+    )
+    expect(lanAddWarning(t, ['Office Mac', 'Garage Pi'])).toBe(
+      'This exit lets its users reach its devices’ local networks: adding Office Mac, Garage Pi opens their networks to them.'
+    )
   })
 })

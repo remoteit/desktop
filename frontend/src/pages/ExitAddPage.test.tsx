@@ -22,12 +22,13 @@ vi.mock('../hooks/useAccountExits', () => ({ useAccountExits: () => ({ value: un
 vi.mock('../selectors/devices', () => ({ getAllDevices: () => [] }))
 vi.mock('../components/RunDevicePicker', async () => ({
   ...(await vi.importActual<typeof import('../components/RunDevicePicker')>('../components/RunDevicePicker')),
-  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, onAdd, onSkip }: any) => (
+  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, lan, onAdd, onSkip }: any) => (
     <div
       data-picker={kind}
       data-owner={ownerId}
       data-for={target}
       data-busy={busy ? 'yes' : 'no'}
+      data-lan={lan ? 'open' : 'closed'}
       data-refusals={Object.entries(refusals)
         .map(([id, reason]) => `${id}: ${reason}`)
         .join('|')}
@@ -64,7 +65,7 @@ vi.mock('react-i18next', () => {
 import { ExitAddPage } from './ExitAddPage'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
-// As graphql makes it: in the active account, run by no device yet.
+// As graphql makes it: in the active account, run by no device yet, its devices' local networks closed.
 const MADE: Exit = {
   id: 'xnew',
   name: 'Office',
@@ -75,6 +76,8 @@ const MADE: Exit = {
   manage: true,
   offered: false,
   dormant: true,
+  lan: false,
+  lanRefusal: null,
   owner: { id: 'ACCOUNT', email: 'me@example.com' },
   devices: [],
   users: 0,
@@ -242,6 +245,14 @@ describe('adding its devices', () => {
     expect(addDevice).toHaveBeenLastCalledWith('xnew', 'D2')
     expect(create).toHaveBeenCalledTimes(1)
     expect(push).toHaveBeenCalledWith('/exits/xnew')
+  })
+
+  it('the picker is told whether the exit made lets its users reach its devices’ local networks', async () => {
+    await made()
+    expect(find('[data-picker]').getAttribute('data-lan')).toBe('closed')
+    create.mockResolvedValue({ ...MADE, lan: true })
+    await made()
+    expect(find('[data-picker]').getAttribute('data-lan')).toBe('open')
   })
 
   it('Not now opens its page with no device added', async () => {

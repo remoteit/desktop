@@ -41,9 +41,12 @@ export const graphQLRemoteitProxies = () =>
     data => data?.remoteitProxies ?? []
   )
 
+// Each with its lan — never open on remote.it's, yet asked, so a machine added says what it opens as anywhere else.
 export const graphQLRemoteitExits = () =>
   read<(Exit & { latitude: number | null; longitude: number | null })[]>(
-    `query RemoteitExits { remoteitExits { ${LOCATED} latitude longitude offered users devices { ${EXIT_DEVICE_FIELDS} } } }`,
+    `query RemoteitExits {
+      remoteitExits { ${LOCATED} latitude longitude offered users lan devices { ${EXIT_DEVICE_FIELDS} } }
+    }`,
     'remoteitExits',
     data => data?.remoteitExits ?? []
   )

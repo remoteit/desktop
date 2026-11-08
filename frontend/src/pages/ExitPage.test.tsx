@@ -15,6 +15,7 @@ const {
   addTag,
   removeTag,
   setNetworkExit,
+  setLan,
   addDevice,
   reload,
   push,
@@ -32,6 +33,7 @@ const {
   addTag: vi.fn(async (_exit: string, _names: string[]) => ({} as any)),
   removeTag: vi.fn(async (_exit: string, _names: string[]) => ({} as any)),
   setNetworkExit: vi.fn(async (_networkId: string, _exit: string, _available: boolean) => ({} as any)),
+  setLan: vi.fn(async (_exitId: string, _lan: boolean) => ({} as any)),
   addDevice: vi.fn(async (_exit: string, _deviceId: string) => ({ runs: { proxy: null, exit: null } } as any)),
   reload: vi.fn(),
   push: vi.fn(),
@@ -55,6 +57,7 @@ vi.mock('../services/graphQLExits', () => ({
   graphQLAddExitTag: addTag,
   graphQLRemoveExitTag: removeTag,
   graphQLSetNetworkExit: setNetworkExit,
+  graphQLSetExitLan: setLan,
 }))
 vi.mock('../services/graphQLDeviceRuns', () => ({ graphQLAddExitDevice: addDevice }))
 // The list beside the page is the store's (hooks/useAccountStore.ts): here, its being read again.
@@ -64,12 +67,13 @@ vi.mock('../hooks/useAccountExits', () => ({ useAccountExits: () => ({ value: un
 vi.mock('../selectors/devices', () => ({ getAllDevices: () => [] }))
 vi.mock('../components/RunDevicePicker', async () => ({
   ...(await vi.importActual<typeof import('../components/RunDevicePicker')>('../components/RunDevicePicker')),
-  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, onAdd }: any) => (
+  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, lan, onAdd }: any) => (
     <div
       data-picker={kind}
       data-owner={ownerId}
       data-for={target}
       data-busy={busy ? 'yes' : 'no'}
+      data-lan={lan ? 'open' : 'closed'}
       data-refusals={Object.entries(refusals)
         .map(([id, reason]) => `${id}: ${reason}`)
         .join('|')}
@@ -81,7 +85,7 @@ vi.mock('../components/RunDevicePicker', async () => ({
 // A device it runs is RunListItem's own: here, what it was given, and one of its actions done — answering what the
 // device runs after, as RunActions does.
 vi.mock('../components/RunListItem', () => ({
-  RunListItem: ({ kind, run, name, activation, to, manage, onChanged, lan, onRefresh }: any) => (
+  RunListItem: ({ kind, run, name, activation, to, manage, onChanged, lan }: any) => (
     <div
       data-run={run.id}
       data-kind={kind}
@@ -92,7 +96,6 @@ vi.mock('../components/RunListItem', () => ({
       data-lan={lan ? 'yes' : 'no'}
     >
       <button data-acted onClick={() => onChanged(after.runs, { id: run.id, name: run.name || run.id })} />
-      <button data-lan-set onClick={onRefresh} />
     </div>
   ),
 }))
@@ -138,15 +141,19 @@ vi.mock('../components/SelectSetting', () => ({
     </div>
   ),
 }))
-// A setting row, by its icon: its label, its line, and its button.
+// A setting row, by its icon: its label, its line, and its button — or its switch, on or off, clicked as the row is.
 vi.mock('../components/ListItemSetting', () => ({
-  ListItemSetting: ({ icon, label, subLabel, button, disabled, onButtonClick }: any) => (
+  ListItemSetting: ({ icon, label, subLabel, button, toggle, disabled, onButtonClick, onClick }: any) => (
     <div data-setting={icon}>
       <span data-label>{label}</span>
       <span data-sub-label>{subLabel}</span>
-      <button disabled={disabled} onClick={onButtonClick}>
-        {button}
-      </button>
+      {toggle === undefined ? (
+        <button disabled={disabled} onClick={onButtonClick}>
+          {button}
+        </button>
+      ) : (
+        <button data-toggle={toggle ? 'on' : 'off'} disabled={disabled} onClick={onClick} />
+      )}
     </div>
   ),
 }))
@@ -245,7 +252,7 @@ const device = (id: string, name: string | null, more: Partial<ExitDevice> = {})
   health: null,
   disabled: false,
   lan: false,
-  lanRefusal: null,
+  lanReason: null,
   ...more,
 })
 const exit = (id: string, name: string, more: Partial<Exit> = {}): Exit => ({
@@ -258,6 +265,8 @@ const exit = (id: string, name: string, more: Partial<Exit> = {}): Exit => ({
   manage: true,
   offered: true,
   dormant: false,
+  lan: false,
+  lanRefusal: null,
   owner: ME,
   devices: [],
   users: 0,
@@ -338,7 +347,7 @@ async function render(read: Exit | null | string, id = read && typeof read === '
 }
 
 beforeEach(() => {
-  for (const mock of [rename, setActivation, deleteExit, leaveShare, addTag, removeTag, setNetworkExit])
+  for (const mock of [rename, setActivation, deleteExit, leaveShare, addTag, removeTag, setNetworkExit, setLan])
     mock.mockReset().mockResolvedValue({})
   readExit.mockReset().mockResolvedValue(null)
   accountExits.mockReset().mockResolvedValue({ own: [], shared: [] })
@@ -416,6 +425,7 @@ describe('one of your exits', () => {
     expect(settingButton('user-group').disabled).toBe(true)
     expect(find('[data-tag-editor]').getAttribute('data-disabled')).toBe('yes')
     expect(button('Stop offering it on Home').disabled).toBe(true)
+    expect((find('[data-toggle]') as HTMLButtonElement).disabled).toBe(true)
     await act(async () => renamed({}))
     expect((find('[data-rename]') as HTMLButtonElement).disabled).toBe(false)
     expect(find('[data-tag-editor]').getAttribute('data-disabled')).toBe('no')
@@ -845,15 +855,113 @@ describe('another exit’s address', () => {
   })
 })
 
-describe('its devices’ local network', () => {
-  it('set on each device of an own exit, the exit read again after; never on remote.it’s', async () => {
+describe('its devices’ local networks: the exit’s setting', () => {
+  const lan = () => setting('network-wired')
+  const toggle = () => lan().querySelector('[data-toggle]') as HTMLButtonElement
+  const GARAGE_PI = 'Garage Pi is not a device you manage'
+
+  it('one switch on an own exit, worded for people: whether its users reach its devices’ local networks', async () => {
+    await render(OFFICE)
+    expect(lan().querySelector('[data-label]')?.textContent).toBe('Its users reach its devices’ local networks')
+    expect(lan().querySelector('[data-sub-label]')?.textContent).toBe(
+      'Each device’s network: printers, files, its router'
+    )
+    expect(toggle().getAttribute('data-toggle')).toBe('off')
+    expect(toggle().disabled).toBe(false)
+  })
+
+  it('turned on once asked, naming whose networks it opens; then the exit read again with the list beside it', async () => {
+    await render(OFFICE)
+    await click(toggle())
+    expect(setLan).not.toHaveBeenCalled()
+    expect(find('[data-confirm]').getAttribute('data-confirm')).toBe('Open its devices’ local networks?')
+    expect(says()).toEqual([
+      'Everyone who may use Office can then reach the local networks of Office Mac, Garage Pi — printers, files, routers — and of each device added later.',
+      'Each machine’s administrator keeps the last word, on the machine.',
+    ])
+    expect(confirmAction().textContent).toBe('Turn on')
+    await click(confirmAction())
+    expect(setLan).toHaveBeenCalledWith('xoffice', true)
+    expect(find('[data-confirm]')).toBeNull()
+    expect(readExit).toHaveBeenCalledTimes(2)
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('denied, nothing is set; with no device yet, it opens each device added to it', async () => {
+    await render(SPARE)
+    await click(toggle())
+    expect(says()[0]).toBe(
+      'Everyone who may use Spare can then reach the local network of each device added to it — printers, files, routers.'
+    )
+    await click(find('[data-deny]'))
+    expect(find('[data-confirm]')).toBeNull()
+    expect(setLan).not.toHaveBeenCalled()
+  })
+
+  it('on: whoever manages it turns it off at once — even one who could not open it again, which is said', async () => {
+    await render({ ...OFFICE, lan: true, lanRefusal: GARAGE_PI })
+    expect(toggle().getAttribute('data-toggle')).toBe('on')
+    expect(toggle().disabled).toBe(false)
+    expect(lan().querySelector('[data-lan-refusal]')?.textContent).toBe(
+      'Once off, you can’t turn it on again: Garage Pi is not a device you manage'
+    )
+    await click(toggle())
+    expect(find('[data-confirm]')).toBeNull()
+    expect(setLan).toHaveBeenCalledWith('xoffice', false)
+    expect(readExit).toHaveBeenCalledTimes(2)
+  })
+
+  it('off, and not yours to open — a device of it you do not manage —: the switch off, and why', async () => {
+    await render({ ...OFFICE, lanRefusal: GARAGE_PI })
+    expect(toggle().getAttribute('data-toggle')).toBe('off')
+    expect(toggle().disabled).toBe(true)
+    expect(lan().querySelector('[data-lan-refusal]')?.textContent).toBe(
+      'You can’t turn it on: Garage Pi is not a device you manage'
+    )
+    await render(OFFICE)
+    expect(lan().querySelector('[data-lan-refusal]')).toBeNull()
+  })
+
+  it('refused as it is set: said above in graphql’s words, or that it was not changed', async () => {
+    await render(OFFICE)
+    setLan.mockResolvedValue({ reason: GARAGE_PI })
+    await click(toggle())
+    await click(confirmAction())
+    expect(find('[data-notice="error"]').textContent).toBe(GARAGE_PI)
+    await render({ ...OFFICE, lan: true })
+    setLan.mockResolvedValue('ERROR')
+    await click(toggle())
+    expect(find('[data-notice="error"]').textContent).toBe('It was not changed: try again.')
+  })
+
+  it('remote.it’s exits have no switch: they reach no network of their machines', async () => {
+    await render(PDX)
+    expect(lan()).toBeNull()
+  })
+
+  it('each device says its own read only — an own exit’s closed too —, remote.it’s only where open or not theirs', async () => {
     await render(OFFICE)
     expect(find('[data-run="MAC"]').getAttribute('data-lan')).toBe('yes')
-    await click(find('[data-run="MAC"] [data-lan-set]'))
-    expect(readExit).toHaveBeenCalledTimes(2)
-    expect(reload).toHaveBeenCalled()
     await render(PDX)
     expect(find('[data-run="E1"]').getAttribute('data-lan')).toBe('no')
+  })
+
+  it('the picker is told whether it is open, to say first whose network an add opens', async () => {
+    await render(OFFICE)
+    await click(button('Add devices'))
+    expect(find('[data-picker]').getAttribute('data-lan')).toBe('closed')
+    await render({ ...OFFICE, lan: true })
+    await click(button('Add devices'))
+    expect(find('[data-picker]').getAttribute('data-lan')).toBe('open')
+  })
+
+  it('shared with you: that you reach its devices’ networks said, with nothing to set, where you do', async () => {
+    await render({ ...PATS, lan: true })
+    expect(find('[data-lan-reach]').textContent).toContain('Through it, you reach its devices’ local networks')
+    expect(find('[data-lan-reach] [data-toggle]')).toBeNull()
+    await render(PATS)
+    expect(find('[data-lan-reach]')).toBeNull()
+    expect(lan()).toBeNull()
   })
 })
 

@@ -38,8 +38,14 @@ vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div dat
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
 // A proxy or exit the device runs: what it was given, and an action on it answering what the device runs after.
 vi.mock('../components/RunListItem', () => ({
-  RunListItem: ({ kind, title, to, manage, onChanged, run, lan }: any) => (
-    <div data-run={kind} data-to={to ?? ''} data-manage={manage ? 'yes' : 'no'} data-lan={lan ? 'yes' : 'no'}>
+  RunListItem: ({ kind, title, to, manage, onChanged, run, lan, lanSetOn }: any) => (
+    <div
+      data-run={kind}
+      data-to={to ?? ''}
+      data-manage={manage ? 'yes' : 'no'}
+      data-lan={lan ? 'yes' : 'no'}
+      data-lan-set-on={lanSetOn ?? ''}
+    >
       {title}
       <button data-act={kind} onClick={() => onChanged(AFTER, { id: run.id, name: 'Office Mac' })} />
     </div>
@@ -116,8 +122,10 @@ describe('what a device runs', () => {
     expect(find('[data-run="proxy"]').textContent).toBe('Proxy Remote-Dragon')
     expect(find('[data-run="proxy"]').getAttribute('data-to')).toBe('/proxies/P-OWN')
     expect(find('[data-run="exit"]').getAttribute('data-manage')).toBe('yes')
-    // Its own exit's LAN is set here; remote.it's reach no network of theirs.
+    // Its own exit's LAN is said, closed too, and where it is set: on the exit. remote.it's reach no network of theirs.
     expect(find('[data-run="exit"]').getAttribute('data-lan')).toBe('yes')
+    expect(find('[data-run="exit"]').getAttribute('data-lan-set-on')).toBe('/exits/xha')
+    expect(find('[data-run="proxy"]').getAttribute('data-lan-set-on')).toBe('')
     expect(find('[data-everything]').getAttribute('data-everything')).toBe('device')
     expect(find('[data-visitors]').getAttribute('data-visitors')).toBe('MAC')
     expect(find('[data-make]')).toBeNull()
@@ -174,6 +182,7 @@ describe('what a device runs', () => {
     await render()
     expect(find('[data-run="exit"]').getAttribute('data-to')).toBe('/admin/proxies?view=exits')
     expect(find('[data-run="exit"]').getAttribute('data-lan')).toBe('no')
+    expect(find('[data-run="exit"]').getAttribute('data-lan-set-on')).toBe('')
     expect(find('[data-run="proxy"]').getAttribute('data-to')).toBe('/admin/proxies?view=proxies')
     admin.is = false
     await render()

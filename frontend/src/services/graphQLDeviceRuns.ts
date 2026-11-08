@@ -52,8 +52,10 @@ export type ExitDevice = Run & {
   offering: boolean // its exit node on and its machine's policy allowing exits
   refusal: string | null // why it takes no exit flows now, by its machine
   health: string | null // presence's verdict, for a device running one of remote.it's proxies
-  lan: boolean // its exit's users reach the machine's own network through it
-  lanRefusal: string | null // why its LAN cannot be set from the cloud: kept local or forbidden there, or remote.it's
+  lan: boolean // its exit's users reach the machine's own network through it now, as the machine has it
+  // Why it is not as its exit says, or not the cloud's to set: its administrator keeps its exit node local (set on the
+  // machine) or forbids exits, or its machine closed it. None where it follows its exit (Exit.lan).
+  lanReason: string | null
   exit?: { id: string; name: string; remoteit: boolean }
 }
 
@@ -81,7 +83,7 @@ export type DeviceActionEffect = {
 const RUN_FIELDS = 'id name state joining activeSince drainingSince disabled checks { name passed pending reason }'
 export const PROXY_DEVICE_FIELDS = `${RUN_FIELDS} host drainMaxWaitMinutes health { state since reason } certificate
   openConnections { https tcp udp exit total reported } drain { safeToStop reason dnsClearAt deadline }`
-export const EXIT_DEVICE_FIELDS = `${RUN_FIELDS} established offering refusal health lan lanRefusal`
+export const EXIT_DEVICE_FIELDS = `${RUN_FIELDS} established offering refusal health lan lanReason`
 export const RUNS_FIELDS = `proxy { ${PROXY_DEVICE_FIELDS} proxy { id name host remoteit } }
   exit { ${EXIT_DEVICE_FIELDS} exit { id name remoteit } }`
 const EFFECT_FIELDS = 'kind id name state after sessions ends endpoints users moved inService dormant refusal'
@@ -193,7 +195,9 @@ export const graphQLAddProxyDevice = (proxy: string, deviceId: string, number?: 
     { proxy, deviceId, number }
   )
 
-// A device added to an exit: it joins out of service and goes into service as the exit's activation says.
+// A device added to an exit: it joins out of service and goes into service as the exit's activation says. It takes the
+// exit's LAN as it joins — where the exit's users reach its devices' local networks, its own is opened to them — and
+// leaving closes it.
 export const graphQLAddExitDevice = (exit: string, deviceId: string) =>
   change(
     'addExitDevice',
@@ -201,17 +205,6 @@ export const graphQLAddExitDevice = (exit: string, deviceId: string) =>
       addExitDevice(exit: $exit, deviceId: $deviceId) { ${RUNS_FIELDS} }
     }`,
     { exit, deviceId }
-  )
-
-// Whether the exit's users reach the machine's own network through a device running it. Refused where its
-// administrator keeps its exit node local, or forbids exits, and for remote.it's exits (ExitDevice.lanRefusal).
-export const graphQLSetExitDeviceLan = (deviceId: string, lan: boolean) =>
-  change(
-    'setExitDeviceLan',
-    ` mutation SetExitDeviceLan($deviceId: String!, $lan: Boolean!) {
-      setExitDeviceLan(deviceId: $deviceId, lan: $lan) { ${RUNS_FIELDS} }
-    }`,
-    { deviceId, lan }
   )
 
 // A device that could run a proxy or an exit — the one named, or a new one of the account —, or why not, in the words

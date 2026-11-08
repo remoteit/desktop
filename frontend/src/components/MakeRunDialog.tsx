@@ -4,6 +4,7 @@ import { FormControlLabel, MenuItem, Radio, RadioGroup, TextField, Typography } 
 import { DeviceRuns, graphQLAddExitDevice, graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
 import { graphQLAccountExits, graphQLCreateExit, graphQLDeleteExit } from '../services/graphQLExits'
 import { graphQLAccountProxies, graphQLCreateProxy, graphQLDeleteProxy } from '../services/graphQLProxy'
+import { lanAddWarning } from '../helpers/runsHelper'
 import { LoadingMessage } from './LoadingMessage'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
@@ -15,13 +16,13 @@ type Props = {
   onDone: (runs: DeviceRuns, made?: { id: string; name: string }) => void
 }
 
-type Choice = { id: string; name: string }
+type Choice = { id: string; name: string; lan?: boolean } // an exit's lan: its users reach its devices' local networks
 
 /* "Make this device an exit" and "Make this device a proxy" (graphql-api docs/PROXY-GROUPS.md §13, "No shortcuts"): one
    action of two calls — a new exit or proxy made in the device's account, then the device added to it — or the device
    added to one of the account's own. A new one whose add is refused is deleted again, so nothing is left behind, and
    the refusal is said in graphql's words. The device joins out of service, and goes into service once its checks
-   pass. */
+   pass. Added to an exit whose users reach its devices' local networks, it opens its own to them: said before. */
 export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }) => {
   const { t } = useTranslation()
   const [choices, setChoices] = useState<Choice[]>()
@@ -45,7 +46,7 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
       const proxies = await graphQLAccountProxies(device.ownerId)
       return Array.isArray(proxies) ? proxies : []
     }
-    own().then(list => setChoices(list.map(({ id, name }) => ({ id, name }))))
+    own().then(list => setChoices(list.map(({ id, name, lan }) => ({ id, name, lan }))))
   }, [kind, device.ownerId])
 
   const make = async () => {
@@ -80,6 +81,7 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
   }
 
   const ready = mode === 'new' ? !!name.trim() : !!chosen
+  const opensLan = kind === 'exit' && mode === 'existing' && !!choices?.find(choice => choice.id === chosen)?.lan
   return (
     <Confirm
       open
@@ -152,6 +154,11 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
               'It joins out of service and goes into service once its checks pass, serving every endpoint on the proxy. Its proxy setting is turned on.'
             )}
       </Typography>
+      {opensLan && (
+        <Notice severity="warning" fullWidth gutterTop>
+          <span data-lan-warning>{lanAddWarning(t, [device.name])}</span>
+        </Notice>
+      )}
       {refusal && (
         <Notice severity="error" fullWidth gutterTop>
           {refusal}

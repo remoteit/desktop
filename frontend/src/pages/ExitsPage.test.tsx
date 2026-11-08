@@ -98,7 +98,7 @@ const device = (id: string, name: string | null): ExitDevice => ({
   health: null,
   disabled: false,
   lan: false,
-  lanRefusal: null,
+  lanReason: null,
 })
 const exit = (id: string, name: string, more: Partial<Exit> = {}): Exit => ({
   id,
@@ -110,6 +110,8 @@ const exit = (id: string, name: string, more: Partial<Exit> = {}): Exit => ({
   manage: true,
   offered: true,
   dormant: false,
+  lan: false,
+  lanRefusal: null,
   owner: ME,
   devices: [],
   users: 0,
@@ -205,6 +207,18 @@ describe('the exits page', () => {
     expect(sharedRow('xned').getAttribute('data-color')).toBe('primary')
     // Not among your own.
     expect(ownShown()).toEqual(['xoffice'])
+  })
+
+  it('one whose users reach its devices’ local networks says so in its line, yours or shared with you', async () => {
+    store.value = { own: [{ ...OFFICE, lan: true }, SPARE], shared: [{ ...PATS, lan: true }] }
+    await render()
+    expect(lineOf(row('xoffice'))).toBe(
+      'Runs on Office Mac, PI · 2 devices use it as their exit · Its users reach its devices’ local networks'
+    )
+    expect(lineOf(row('xspare'))).not.toContain('local networks')
+    expect(lineOf(sharedRow('xpat'))).toBe(
+      'Shared by pat@example.com · A device of yours may use it · Its users reach its devices’ local networks'
+    )
   })
 
   it('none shared with you: no such list', async () => {

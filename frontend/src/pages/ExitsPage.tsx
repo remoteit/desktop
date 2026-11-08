@@ -5,7 +5,7 @@ import { Box, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typogra
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { Exit, graphQLOfferedExits } from '../services/graphQLExits'
 import { useAccountExits } from '../hooks/useAccountExits'
-import { availabilityLabel, runsOnLine, usersLine } from '../helpers/runsHelper'
+import { availabilityLabel, lanLabel, runsOnLine, usersLine } from '../helpers/runsHelper'
 import { useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -20,10 +20,11 @@ import { Icon } from '../components/Icon'
 type Remoteit = Awaited<ReturnType<typeof graphQLOfferedExits>>
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what a device sends its traffic out through, run by devices. The
-   account's own — each with the devices it runs on, the devices using it, and no device available when none of its
-   devices is in service —, those other accounts share with you, and remote.it's, offered by plan. An own exit or one
-   shared with you opens on its page (pages/ExitPage.tsx); a tag clicked shows only the exits carrying it. New exit
-   makes one, then its devices are added (pages/ExitAddPage.tsx). Behind the device-sessions flag. */
+   account's own — each with the devices it runs on, the devices using it, whether its users reach its devices' local
+   networks, and no device available when none of its devices is in service —, those other accounts share with you, and
+   remote.it's, offered by plan. An own exit or one shared with you opens on its page (pages/ExitPage.tsx); a tag
+   clicked shows only the exits carrying it. New exit makes one, then its devices are added (pages/ExitAddPage.tsx).
+   Behind the device-sessions flag. */
 export const ExitsPage: React.FC = () => {
   const { t } = useTranslation()
   const manage = useDisabledDevicesAccess()
@@ -146,16 +147,18 @@ export const ExitsPage: React.FC = () => {
 export const carries = (exit: Pick<Exit, 'tags'>, tag: ITag): boolean =>
   exit.tags.some(carried => carried.name.toLowerCase() === tag.name.toLowerCase())
 
-// One of yours, in a line: the devices it runs on, the devices using it, and no device available when so.
+// One of yours, in a line: the devices it runs on, the devices using it, whether its users reach its devices' local
+// networks, and no device available when so.
 export function ownLine(t: TFunction, exit: Exit): string {
-  return [runsOnLine(t, exit.devices), usersLine(t, exit.users), availabilityLabel(t, exit)]
+  return [runsOnLine(t, exit.devices), usersLine(t, exit.users), lanLabel(t, exit), availabilityLabel(t, exit)]
     .filter(Boolean)
     .join(' · ')
 }
 
-// One shared with you, in a line: whose it is, and whether a device of yours may choose it now.
+// One shared with you, in a line: whose it is, whether a device of yours may choose it now, and whether its users reach
+// its devices' local networks.
 export function sharedLine(t: TFunction, exit: Exit): string {
   const whose = exit.owner?.email ? t('exitsPage.sharedBy', 'Shared by {{email}}', { email: exit.owner.email }) : ''
   const now = exit.offered ? t('exitsPage.sharedOffered', 'A device of yours may use it') : availabilityLabel(t, exit)
-  return [whose, now].filter(Boolean).join(' · ')
+  return [whose, now, lanLabel(t, exit)].filter(Boolean).join(' · ')
 }

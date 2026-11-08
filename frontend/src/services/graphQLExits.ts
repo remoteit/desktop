@@ -8,9 +8,12 @@ import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
    is its account's: made, then devices added to run it, and kept — its users and all — until its account deletes it.
    With no device carrying its flows — serving, not disabled, and offering itself — it is dormant: no device may choose
    it, and those using it go their usual way until one carries them again.
-   An own exit is shared with people, tagged with its account's tags, and offered on networks. A device's exit is the
-   one it uses (Device.usesExit), apart from the one it runs (Device.runs). A refusal comes back in graphql's words.
-   Device-session API only: an API without it answers UNSUPPORTED. */
+   An own exit is shared with people, tagged with its account's tags, and offered on networks. Whether its users reach
+   its devices' local networks is the exit's setting (Exit.lan): users choose an exit, not the device carrying their
+   flows, so their reach stays as the cloud moves them. Each device takes it as it joins, and its machine's
+   administrator keeps the last word (ExitDevice.lanReason). A device's exit is the one it uses (Device.usesExit), apart
+   from the one it runs (Device.runs). A refusal comes back in graphql's words. Device-session API only: an API without
+   it answers UNSUPPORTED. */
 
 export type UserRef = { id: string; email: string | null }
 
@@ -30,6 +33,10 @@ export type Exit = {
   manage: boolean
   offered: boolean // one of its devices carrying its flows: serving, not disabled, and offering itself
   dormant: boolean // an own exit with no device carrying its flows
+  lan: boolean // its users reach its devices' local networks; never remote.it's
+  // Why you may not open its devices' networks: it is remote.it's, or a device of it is not yours to manage (named).
+  // None where you may. Closing them needs only managing it.
+  lanRefusal: string | null
   owner: UserRef | null // none for one of remote.it's
   devices: ExitDevice[] | null // for whoever manages it
   users: number | null // the devices using it, for whoever manages it
@@ -39,8 +46,9 @@ export type Exit = {
 }
 
 // Every field but the networks: what a list shows of each.
-const FIELDS = `id name remoteit location provider activation manage offered dormant users owner { id email }
-  devices { ${EXIT_DEVICE_FIELDS} } access { user { id email } sharedBy { email } created } tags { name color created }`
+const FIELDS = `id name remoteit location provider activation manage offered dormant lan lanRefusal users
+  owner { id email } devices { ${EXIT_DEVICE_FIELDS} } access { user { id email } sharedBy { email } created }
+  tags { name color created }`
 
 // An exit as read, its tags' dates as dates.
 const parsed = (exit: Exit): Exit =>
@@ -118,6 +126,16 @@ export const graphQLSetExitActivation = (exit: string, activation: 'auto' | 'adm
   graphQLRequestWithReason(
     ` mutation SetExitActivation($exit: String!, $activation: String!) { setExitActivation(exit: $exit, activation: $activation) { id } }`,
     { exit, activation }
+  )
+
+// Whether its users reach its devices' local networks: each device it runs on takes it at once, and each added later as
+// it joins — a machine whose administrator keeps its exit node local stays as set there. Opening is refused for
+// remote.it's and for one with a device you do not manage (Exit.lanRefusal says so first); closing needs only managing
+// it. A refusal comes back in graphql's words.
+export const graphQLSetExitLan = (exitId: string, lan: boolean) =>
+  graphQLRequestWithReason(
+    ` mutation SetExitLan($exitId: String!, $lan: Boolean!) { setExitLan(exitId: $exitId, lan: $lan) { id } }`,
+    { exitId, lan }
   )
 
 // One no device runs. While devices use it, refused unless confirmed: confirmed, their exit ends and its shares go.

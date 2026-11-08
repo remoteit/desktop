@@ -11,9 +11,9 @@ import type { Exit } from '../services/graphQLExits'
 /* Proxies and exits, and the devices that run them, as the portal says them (graphql-api docs/PROXY-GROUPS.md §13): a
    device's state in each — in service, draining, retired, joining while it waits for its checks or an admin, or
    disabled —, what an action on a device does to each proxy and exit it runs before it is taken, what the device still
-   runs after, and what deleting a proxy or an exit takes away. An own exit none of whose devices carries its flows —
-   serving, not disabled, and offering itself — has no device available: those using it go their usual way until one
-   does. */
+   runs after, what deleting a proxy or an exit takes away, and an exit's devices' local networks — the exit's to open,
+   each machine's administrator keeping the last word. An own exit none of whose devices carries its flows — serving,
+   not disabled, and offering itself — has no device available: those using it go their usual way until one does. */
 
 type Run = Pick<ExitDevice | ProxyDevice, 'state' | 'joining' | 'checks'> & { disabled?: boolean }
 
@@ -93,6 +93,44 @@ export function availabilityLine(t: TFunction, exit: Pick<Exit, 'offered' | 'dor
     )
   if (!exit.offered) return t('exits.notOffered', 'None of its devices takes traffic now.')
   return ''
+}
+
+// An exit whose users reach its devices' local networks, in a few words: none for one whose users do not.
+export const lanLabel = (t: TFunction, exit: Pick<Exit, 'lan'>): string =>
+  exit.lan ? t('exits.lan', 'Its users reach its devices’ local networks') : ''
+
+/* An exit's device's local network as its machine has it — open to the exit's users or closed — and why, where it is
+   not as its exit says or not the cloud's to set: its administrator keeps its exit node local, forbids exits, or its
+   machine closed it. remote.it's exits reach no network of their machines, so `always` false says one only where it is
+   open or has a reason: closed goes without saying there. */
+export function lanLine(t: TFunction, run: Pick<ExitDevice, 'lan' | 'lanReason'>, always = true): string {
+  const reason = run.lanReason
+  if (!always && !run.lan && !reason) return ''
+  if (run.lan)
+    return reason
+      ? t('runs.lanOpenBecause', 'Its local network: open to the exit’s users — {{reason}}', { reason })
+      : t('runs.lanOpen', 'Its local network: open to the exit’s users')
+  return reason
+    ? t('runs.lanClosedBecause', 'Its local network: closed to the exit’s users — {{reason}}', { reason })
+    : t('runs.lanClosed', 'Its local network: closed to the exit’s users')
+}
+
+// Said before devices are added to an exit whose users reach its devices' local networks: each added opens its own to
+// them. The devices chosen by name, or any device where none is chosen yet.
+export function lanAddWarning(t: TFunction, devices: string[]): string {
+  if (!devices.length)
+    return t(
+      'runs.lanAddAny',
+      'This exit lets its users reach its devices’ local networks: each device added opens its network to them.'
+    )
+  return t('runs.lanAdd', {
+    count: devices.length,
+    devices: devices.join(', '),
+    defaultValue_one:
+      'This exit lets its users reach its devices’ local networks: adding {{devices}} opens its network to them.',
+    defaultValue_other:
+      'This exit lets its users reach its devices’ local networks: adding {{devices}} opens their networks to them.',
+  })
 }
 
 // A proxy's endpoints.
