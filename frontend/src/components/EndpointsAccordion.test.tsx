@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Making an endpoint: the proxy choice defaults to remote.it's nearest the device, which shows its name like any other
-// choice and sends no proxy; a proxy chosen — remote.it's by its name and where, an own one by its name and host — is
-// sent by its id.
+// choice and sends no proxy; a proxy chosen — remote.it's by its name and where, an own one by its name and host, and a
+// local network one marked so — is sent by its id.
 const { create, endpoints, usage } = vi.hoisted(() => ({
   create: vi.fn(async () => ({} as any)),
   endpoints: vi.fn(async () => [] as any),
@@ -19,6 +19,7 @@ vi.mock('../services/graphQLProxy', () => ({
       host: 'pdx1a-r3.solo.r3proxy.com',
       domain: null,
       remoteit: true,
+      local: false,
       publicEndpoints: true,
       location: 'pdx1',
       provider: 'AWS us-west-2 (Boardman)',
@@ -29,6 +30,18 @@ vi.mock('../services/graphQLProxy', () => ({
       host: 'gw-acme.solo.r3proxy.com',
       domain: null,
       remoteit: false,
+      local: false,
+      publicEndpoints: true,
+      location: null,
+      provider: '',
+    },
+    {
+      id: 'P3',
+      name: 'Printers',
+      host: 'printers-acme.solo.r3proxy.com',
+      domain: null,
+      remoteit: false,
+      local: true,
       publicEndpoints: true,
       location: null,
       provider: '',
@@ -36,7 +49,7 @@ vi.mock('../services/graphQLProxy', () => ({
   ],
   graphQLCreateEndpoint: create,
   graphQLRemoveEndpoint: vi.fn(),
-  endpointAddress: () => '',
+  endpointAddress: (endpoint: any) => (endpoint.kind === 'https' ? endpoint.url : `${endpoint.host}:${endpoint.port}`),
 }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
 vi.mock('../buttons/IconButton', () => ({
@@ -118,6 +131,65 @@ describe('the endpoint form’s proxy choice', () => {
     await makeIt(container)
     expect((create.mock.calls[0] as any[])[1].proxy).toBe('P2')
   })
+
+  it('marks a proxy reached on its devices’ own network only', async () => {
+    const field = proxyField(await openForm())
+    await act(async () => (field.closest('.MuiListItemButton-root') as HTMLElement).click())
+    const options = [...document.querySelectorAll('[role="option"]')].map(o => o.textContent)
+    expect(options).toContain('Printers · printers-acme.solo.r3proxy.com · Local network')
+    expect(options).toContain('Office gateway · gw-acme.solo.r3proxy.com')
+  })
+})
+
+describe('an endpoint on a local network proxy', () => {
+  const local = (kind: 'https' | 'tcp') => ({
+    id: `EP-${kind}`,
+    serviceId: 'SERVICE',
+    proxy: { id: 'P3', name: 'Printers', host: 'printers-acme.solo.r3proxy.com', remoteit: false, local: true },
+    kind,
+    lifetime: 'permanent',
+    access: 'public',
+    lockedIp: null,
+    allow: null,
+    host: kind === 'https' ? 'ipp-acme.solo.r3proxy.com' : 'printers-acme.solo.r3proxy.com',
+    port: kind === 'https' ? null : 40001,
+    url: kind === 'https' ? 'https://ipp-acme.solo.r3proxy.com' : 'tcp://printers-acme.solo.r3proxy.com:40001',
+    localAddresses:
+      kind === 'https'
+        ? ['https://ipp-acme.local', 'https://192.168.1.20:40443']
+        : ['printers-acme.local:40001', '192.168.1.20:40001'],
+    created: '2026-11-01T00:00:00.000Z',
+    expires: null,
+  })
+
+  beforeEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('its public name first; Local network only; then its .local name and each device’s IP and port, an https one’s with the browser’s warning', async () => {
+    endpoints.mockResolvedValue([local('https'), local('tcp')])
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const device = { id: 'DEVICE', permissions: ['CONNECT'] } as any
+    await act(async () =>
+      createRoot(container).render(<EndpointsAccordion device={device} service={{ id: 'SERVICE' } as any} />)
+    )
+    await act(async () => {})
+    const [https, tcp] = [...container.querySelectorAll('li.MuiListItem-root')]
+    expect(https.querySelector('.MuiListItemText-primary')?.textContent).toBe('https://ipp-acme.solo.r3proxy.com')
+    expect(https.querySelector('.MuiListItemText-secondary')?.textContent).toContain(
+      'via printers-acme.solo.r3proxy.com · Local network only'
+    )
+    expect([...https.querySelectorAll('[data-local-address]')].map(line => line.textContent)).toEqual([
+      'https://ipp-acme.local · the browser warns about the certificate here',
+      'https://192.168.1.20:40443 · the browser warns about the certificate here',
+    ])
+    expect(tcp.querySelector('.MuiListItemText-primary')?.textContent).toBe('printers-acme.solo.r3proxy.com:40001')
+    expect([...tcp.querySelectorAll('[data-local-address]')].map(line => line.textContent)).toEqual([
+      'printers-acme.local:40001',
+      '192.168.1.20:40001',
+    ])
+  })
 })
 
 describe('who used the endpoints', () => {
@@ -154,15 +226,22 @@ describe('the account’s public-proxy transfer under the endpoints', () => {
   const endpoint = (kind: 'remoteit' | 'own') => ({
     id: `EP-${kind}`,
     serviceId: 'SERVICE',
-    proxy: { id: 'P', name: kind === 'remoteit' ? 'remote.it pdx1a' : 'Office gateway', host: 'e1.solo.r3proxy.com', remoteit: kind === 'remoteit' },
+    proxy: {
+      id: 'P',
+      name: kind === 'remoteit' ? 'remote.it pdx1a' : 'Office gateway',
+      host: kind === 'remoteit' ? 'pdx1a-r3.solo.r3proxy.com' : 'gw-acme.solo.r3proxy.com',
+      remoteit: kind === 'remoteit',
+      local: false,
+    },
     kind: 'https',
     lifetime: 'temporary',
     access: 'public',
     lockedIp: null,
     allow: null,
-    host: 'x.e1.solo.r3proxy.com',
+    host: 'x-acme.solo.r3proxy.com',
     port: null,
-    url: 'https://x.e1.solo.r3proxy.com',
+    url: 'https://x-acme.solo.r3proxy.com',
+    localAddresses: [],
     created: '2026-11-01T00:00:00.000Z',
     expires: null,
   })

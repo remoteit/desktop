@@ -20,6 +20,7 @@ import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { ProxyAccessList } from './ProxyAccessList'
+import { EndpointLocalAddresses } from './EndpointLocalAddresses'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
@@ -29,8 +30,10 @@ const KIND_ICON: Record<EndpointKind, string> = { https: 'globe', tcp: 'arrow-ri
 type Props = { device: IDevice; service: IService }
 
 /* A service's endpoints on proxies (presence-server docs/proxy-plan.md): its addresses through remote.it's proxies or
-   one of yours — a name for https, a port for tcp and udp — and making one; and, for whoever manages the service, who
-   used them (components/ProxyAccessList.tsx). Device-session API only: on an API without it, nothing shows. */
+   one of yours — a name for https, a port for tcp and udp; on a local network proxy (graphql-api docs/PROXY-GROUPS.md
+   §14), said to be reached on its devices' own network only, with its .local name and each device's IP and port after
+   its public name — and making one; and, for whoever manages the service, who used them
+   (components/ProxyAccessList.tsx). Device-session API only: on an API without it, nothing shows. */
 export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   const { t } = useTranslation()
   const [endpoints, setEndpoints] = useState<Endpoint[] | 'ERROR' | typeof UNSUPPORTED>()
@@ -116,6 +119,8 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
           {endpoints.map(endpoint => (
             <ListItem
               key={endpoint.id}
+              // Room for both its actions: its lines wrap before them, never under them.
+              sx={{ paddingRight: 14 }}
               secondaryAction={
                 <Box display="flex">
                   <CopyIconButton value={endpointAddress(endpoint)} title={t('endpoints.copy', 'Copy the address')} />
@@ -141,6 +146,7 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
               <ListItemText
                 primary={endpointAddress(endpoint)}
                 primaryTypographyProps={{ sx: { wordBreak: 'break-all' } }}
+                secondaryTypographyProps={{ component: 'div' }}
                 secondary={
                   <>
                     {accessLabel(endpoint)}
@@ -157,6 +163,8 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
                     )}
                     {!endpoint.proxy.remoteit &&
                       ` · ${t('endpoints.via', 'via {{host}}', { host: endpoint.proxy.host })}`}
+                    {endpoint.proxy.local && ` · ${t('proxies.localOnlyNone', 'Local network only')}`}
+                    <EndpointLocalAddresses endpoint={endpoint} />
                   </>
                 }
               />
@@ -244,7 +252,9 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
             { key: '', name: t('endpoints.nearest', "remote.it's, nearest the device") },
             ...usable.map(p => ({
               key: p.id,
-              name: p.remoteit ? [p.name, p.provider].filter(Boolean).join(' · ') : `${p.name} · ${p.host}`,
+              name: p.remoteit
+                ? [p.name, p.provider].filter(Boolean).join(' · ')
+                : [p.name, p.host, p.local ? t('proxies.local', 'Local network') : ''].filter(Boolean).join(' · '),
             })),
           ]}
           onChange={setProxyId}

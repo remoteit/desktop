@@ -34,8 +34,13 @@ import {
   RunAction,
 } from './graphQLDeviceRuns'
 import {
+  graphQLAccountProxies,
   graphQLCreateEndpoint,
+  graphQLCreateProxy,
+  graphQLProxies,
+  graphQLProxy,
   graphQLRenameProxy,
+  graphQLServiceEndpoints,
   graphQLSetProxyDomain,
   graphQLSetProxyLabel,
   graphQLSetProxyPublicEndpoints,
@@ -490,6 +495,77 @@ describe('its devices’ local networks: the exit’s setting', () => {
   })
 })
 
+describe('Internet or Local network', () => {
+  const office = {
+    id: 'P1',
+    name: 'Office',
+    host: 'office-acme.solo.r3proxy.com',
+    local: true,
+    localNetwork: '192.168.1.0/24',
+  }
+
+  it('a proxy made Internet or Local network, as asked; neither said, graphql’s Internet', async () => {
+    request.mockResolvedValue(answer({ createProxy: office }))
+    expect(await graphQLCreateProxy({ name: 'Office', local: true, accountId: 'ACCOUNT' })).toEqual(office)
+    expect(asked().variables).toEqual({ name: 'Office', local: true, accountId: 'ACCOUNT' })
+    expect(asked().query).toContain('$local: Boolean')
+    expect(asked().query).toContain('local: $local')
+    await graphQLCreateProxy({ name: 'Gateway' })
+    expect(asked().variables).toEqual({ name: 'Gateway' })
+  })
+
+  it('read with each proxy: its kind, a local one’s network, and each device’s addresses and outside test', async () => {
+    request.mockResolvedValue(answer({ proxy: office }))
+    expect(await graphQLProxy('P1')).toEqual(office)
+    for (const field of ['local', 'localNetwork', 'localAddresses', 'privateAddress', 'publicAddress', 'network'])
+      expect(asked().query).toContain(field)
+    expect(asked().query).toContain('reachable reachReason')
+    request.mockResolvedValue(answer({ login: { account: { proxies: [office] } } }))
+    expect(await graphQLAccountProxies('ACCOUNT')).toEqual([office])
+    expect(asked().query).toContain('localNetwork')
+    expect(asked().query).toContain('reachable reachReason')
+  })
+
+  it('a list to choose from marks the local ones; a service’s endpoints say theirs, with their local addresses', async () => {
+    request.mockResolvedValue(answer({ proxies: [office] }))
+    await graphQLProxies()
+    expect(asked().query).toContain('remoteit local publicEndpoints')
+    const endpoint = {
+      id: 'E1',
+      proxy: office,
+      localAddresses: ['https://pi-acme.local', 'https://192.168.1.20:40443'],
+    }
+    request.mockResolvedValue(
+      answer({ login: { device: [{ id: 'DEV', services: [{ id: 'S1', endpoints: [endpoint] }] }] } })
+    )
+    expect(await graphQLServiceEndpoints('DEV', 'S1')).toEqual([endpoint])
+    expect(asked().query).toContain('proxy { id name host remoteit local }')
+    expect(asked().query).toContain('localAddresses')
+  })
+
+  it('a device on another network than a local proxy’s: refused as it is added, in graphql’s words, and no candidate', async () => {
+    request.mockResolvedValue(refusal('laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)'))
+    expect(await graphQLAddProxyDevice('P1', 'DEV')).toEqual({
+      reason: 'Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)',
+    })
+    const candidate = {
+      id: 'DEV',
+      name: 'Laptop',
+      fit: false,
+      refusal: 'Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)',
+      runs: { proxy: null, exit: null },
+    }
+    request.mockResolvedValue(answer({ proxyCandidates: [candidate] }))
+    expect(await graphQLRunCandidates('proxy', { id: 'P1' })).toEqual([candidate])
+  })
+
+  it('what a device runs says whether its proxy is a local one', async () => {
+    request.mockResolvedValue(answer({ login: { device: [{ id: 'DEV', runs: RUNS }] } }))
+    await graphQLDeviceRuns('DEV')
+    expect(asked().query).toContain('proxy { id name host remoteit local }')
+  })
+})
+
 describe('a proxy’s names and public endpoints', () => {
   const moved = { host: 'gw2-acme.r3proxy.com', domain: null, addresses: [], certificate: 'pending', applied: false }
 
@@ -519,7 +595,7 @@ describe('a proxy’s names and public endpoints', () => {
 
 describe('renumbering one of remote.it’s machines', () => {
   it('said, or with apply done; refused in graphql’s words', async () => {
-    const said = { from: 'e1-r3.x', to: 'e3-r3.x', certificate: 'moved', record: true, applied: false }
+    const said = { from: 'e1-r3.x', to: 'e3-r3.x', certificate: 'ready', record: true, applied: false }
     request.mockResolvedValue(answer({ renumberProxyDevice: said }))
     expect(await graphQLRenumberProxyDevice('E1', 3, false)).toEqual(said)
     expect(asked().variables).toEqual({ deviceId: 'E1', number: 3, apply: false })

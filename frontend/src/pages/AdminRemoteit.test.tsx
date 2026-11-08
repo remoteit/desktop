@@ -167,7 +167,7 @@ const run = (id: string, name: string | null, extra: any = {}) => ({
   checks: [],
   ...extra,
 })
-const PDX_PROXY = { id: 'R1', name: 'remote.it pdx1a', host: 'pdx1a.dev.r3proxy.com', remoteit: true }
+const PDX_PROXY = { id: 'R1', name: 'remote.it pdx1a', host: 'pdx1a-r3.dev.r3proxy.com', remoteit: true }
 const PDX_EXIT = { id: 'X1', name: 'remote.it pdx1a', remoteit: true }
 const PROXY = {
   ...PDX_PROXY,
@@ -182,7 +182,7 @@ const SEA_PROXY = {
   ...PROXY,
   id: 'R2',
   name: 'remote.it sea1a',
-  host: 'sea1a.dev.r3proxy.com',
+  host: 'sea1a-r3.dev.r3proxy.com',
   location: 'sea1',
   provider: '',
   activation: 'admin',
@@ -295,8 +295,8 @@ describe('remote.it’s proxies', () => {
 
   it('each with its host and where it is, the machines running it by their own names, and its activation', async () => {
     await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
-    expect(subheader(proxy('R1'))).toBe('remote.it pdx1a · pdx1a.dev.r3proxy.com · AWS us-west-2 (Boardman)')
-    expect(subheader(proxy('R2'))).toBe('remote.it sea1a · sea1a.dev.r3proxy.com · sea1')
+    expect(subheader(proxy('R1'))).toBe('remote.it pdx1a · pdx1a-r3.dev.r3proxy.com · AWS us-west-2 (Boardman)')
+    expect(subheader(proxy('R2'))).toBe('remote.it sea1a · sea1a-r3.dev.r3proxy.com · sea1')
     const e1 = $('[data-run="E1"]', proxy('R1'))!
     expect(e1.getAttribute('data-kind')).toBe('proxy')
     expect(e1.getAttribute('data-name')).toBe('remote.it pdx1a')
@@ -488,11 +488,11 @@ describe('remote.it’s proxies', () => {
 describe('renumbering one of remote.it’s proxy machines', () => {
   const proxy = (id: string) => $(`[data-remoteit-proxy="${id}"]`)!
   const renumberOf = (id: string) => $(`[data-renumber="${id}"]`, proxy('R1'))!
-  // What graphql says a renumbering does.
+  // What graphql says a renumbering does: the certificate, the stage's, as it is — a number changes nothing of it.
   const said = (fields: any = {}) => ({
     from: 'e1-r3.dev.r3proxy.com',
     to: 'e3-r3.dev.r3proxy.com',
-    certificate: 'moved',
+    certificate: 'ready',
     record: true,
     applied: false,
     ...fields,
@@ -522,8 +522,8 @@ describe('renumbering one of remote.it’s proxy machines', () => {
       'Rename e1-r3.dev.r3proxy.com to e3-r3.dev.r3proxy.com?'
     )
     expect($('[data-renumber-says]')?.textContent).toBe(
-      "URLs under e1-r3.dev.r3proxy.com stop reaching it." +
-        "Its certificate is kept under e3-r3.dev.r3proxy.com, still serving its proxy's names, and one naming e3-r3.dev.r3proxy.com is issued within a day." +
+      'e1-r3.dev.r3proxy.com stops reaching it: e3-r3.dev.r3proxy.com does.' +
+        "Its certificate, remote.it's for every proxy name, covers e3-r3.dev.r3proxy.com already." +
         'e3-r3.dev.r3proxy.com has an address: it stays in its proxy\'s record.'
     )
     proxies.mockClear()
@@ -534,13 +534,13 @@ describe('renumbering one of remote.it’s proxy machines', () => {
     expect(proxies).toHaveBeenCalled()
   })
 
-  it('a new name with no address, or a machine holding no certificate yet: said so', async () => {
+  it('a new name with no address, or the stage’s certificate not issued yet: said so', async () => {
     renumber.mockResolvedValue(said({ certificate: 'pending', record: false }))
     await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
     await type('New number', '3', renumberOf('E1'))
     await click(button('Renumber', renumberOf('E1')))
     expect($('[data-renumber-says]')?.textContent).toContain(
-      'It holds no certificate yet: one naming e3-r3.dev.r3proxy.com is issued within a day.'
+      "remote.it's certificate for every proxy name is not issued yet: until it is, its https names fail."
     )
     expect($('[data-renumber-says]')?.textContent).toContain(
       "e3-r3.dev.r3proxy.com has no address yet: it is left out of its proxy's record until it has one."

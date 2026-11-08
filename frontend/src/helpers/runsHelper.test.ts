@@ -9,6 +9,8 @@ import {
   lanAddWarning,
   lanLabel,
   lanLine,
+  outOfService,
+  proxyKindLabel,
   runDetail,
   runStateLabel,
   runsOnLine,
@@ -79,6 +81,56 @@ describe('a device’s state in what it runs', () => {
     expect(runDetail(t, run({ state: 'RETIRED' }))).toBe('Serves nothing')
     expect(runDetail(t, run({ refusal: 'nat-rewrites-ports' }))).toBe('Takes no traffic now: nat-rewrites-ports')
     expect(runDetail(t, run())).toBe('')
+  })
+})
+
+describe('a device in service in an own proxy, out of it', () => {
+  const offNetwork = {
+    name: 'network',
+    passed: false,
+    pending: false,
+    reason: 'Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)',
+  }
+  const waiting = { name: 'policy', passed: false, pending: true, reason: 'its machine turns its proxy on itself' }
+
+  it('failing a check — a local proxy’s on another network —, or not reachable from the internet', () => {
+    expect(outOfService(run({ checks: [offNetwork] }))).toBe(true)
+    expect(outOfService(run({ reachable: false }))).toBe(true)
+    expect(outOfService(run({ reachable: true }))).toBe(false)
+    expect(outOfService(run({ reachable: null }))).toBe(false)
+    expect(outOfService(run({ checks: [waiting] }))).toBe(false)
+    expect(outOfService(run())).toBe(false)
+    // Not in service to begin with: its state says it.
+    expect(outOfService(run({ state: 'DRAINING', reachable: false }))).toBe(false)
+    expect(outOfService(run({ state: 'RETIRED', joining: true, checks: [offNetwork] }))).toBe(false)
+  })
+
+  it('in a word: out of service; said why as a joining device’s checks are', () => {
+    expect(runStateLabel(t, run({ checks: [offNetwork] }))).toBe('Out of service')
+    expect(runStateLabel(t, run({ reachable: false }))).toBe('Out of service')
+    expect(runStateLabel(t, run({ reachable: false, disabled: true }))).toBe('Disabled')
+    expect(runDetail(t, run({ checks: [offNetwork] }))).toBe(
+      'Its checks fail: Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)'
+    )
+    expect(runDetail(t, run({ checks: [waiting] }))).toBe('')
+  })
+
+  it('what the device runs after an action says it too', () => {
+    const runs = {
+      proxy: { ...run({ reachable: false }), proxy: { name: 'Gateway' } },
+      exit: null,
+    } as unknown as DeviceRuns
+    expect(stillRunsLine(t, 'Pi', runs)).toBe('Pi runs the proxy Gateway (out of service).')
+  })
+})
+
+describe('an own proxy’s kind', () => {
+  it('Local network only, on its network once it has one; or Internet', () => {
+    expect(proxyKindLabel(t, { local: true, localNetwork: '192.168.1.0/24' })).toBe(
+      'Local network only: 192.168.1.0/24'
+    )
+    expect(proxyKindLabel(t, { local: true, localNetwork: null })).toBe('Local network only')
+    expect(proxyKindLabel(t, { local: false, localNetwork: null })).toBe('Internet')
   })
 })
 

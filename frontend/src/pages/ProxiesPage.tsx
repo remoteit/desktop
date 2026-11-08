@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next'
 import { List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { Proxy, graphQLProxies } from '../services/graphQLProxy'
-import { endpointsLine, runsOnLine } from '../helpers/runsHelper'
+import { endpointsLine, outOfService, runsOnLine } from '../helpers/runsHelper'
 import { useAccountProxies } from '../hooks/useAccountExits'
 import { useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
 import { ListItemLocation } from '../components/ListItemLocation'
@@ -18,10 +18,11 @@ import { Icon } from '../components/Icon'
 
 type Choice = Exclude<Awaited<ReturnType<typeof graphQLProxies>>, 'ERROR' | typeof UNSUPPORTED>[number]
 
-/* Proxies (graphql-api docs/PROXY-GROUPS.md §13): a host under which endpoints into device services are reached, run by
-   devices. The account's own — each with its host, the devices it runs on, its endpoints and its certificate — open on
-   their page (pages/ProxyPage.tsx); remote.it's, which anyone may make endpoints on, are listed. New proxy makes one,
-   then its devices are added (pages/ProxyAddPage.tsx). Behind the device-sessions flag. */
+/* Proxies (graphql-api docs/PROXY-GROUPS.md §13 and §14): where endpoints into device services are reached, run by
+   devices. The account's own — each with its host, the devices it runs on, its endpoints and its certificate, and
+   marked where it is reached on its devices' own network only — open on their page (pages/ProxyPage.tsx); remote.it's,
+   which anyone may make endpoints on, are listed. New proxy makes one, then its devices are added
+   (pages/ProxyAddPage.tsx). Behind the device-sessions flag. */
 export const ProxiesPage: React.FC = () => {
   const { t } = useTranslation()
   const manage = useDisabledDevicesAccess()
@@ -48,7 +49,7 @@ export const ProxiesPage: React.FC = () => {
             <Typography variant="body2" color="textSecondary">
               {t(
                 'proxiesPage.description',
-                'A proxy gives a service an address anyone you choose can reach: a name for https, a port for tcp and udp. A proxy runs on devices: make one, then add the devices that run it.'
+                'A proxy gives a service an address anyone you choose can reach — from the internet, or on its devices’ own network only: a name for https, a port for tcp and udp. A proxy runs on devices: make one, then add the devices that run it.'
               )}
             </Typography>
           </Gutters>
@@ -74,7 +75,16 @@ export const ProxiesPage: React.FC = () => {
                 to={`/proxies/${proxy.id}`}
                 match={`/proxies/${proxy.id}`}
                 icon={<Icon name="server" size="md" color={serving(proxy) ? 'primary' : 'grayDark'} fixedWidth />}
-                title={proxy.name}
+                title={
+                  <>
+                    {proxy.name}
+                    {proxy.local && (
+                      <Typography component="span" variant="caption" color="textSecondary" marginLeft={1} data-local>
+                        {t('proxies.local', 'Local network')}
+                      </Typography>
+                    )}
+                  </>
+                }
                 subtitle={proxyLine(t, proxy)}
               />
             ))}
@@ -105,9 +115,12 @@ export const ProxiesPage: React.FC = () => {
   )
 }
 
-// Whether any of its devices is in service.
+// Whether any of its devices is in service: not joining or disabled, and not out of it — failing a check, or not
+// reachable from the internet.
 export const serving = (proxy: Pick<Proxy, 'devices'>) =>
-  !!proxy.devices?.some(device => device.state === 'ACTIVE' && !device.joining)
+  !!proxy.devices?.some(
+    device => device.state === 'ACTIVE' && !device.joining && !device.disabled && !outOfService(device)
+  )
 
 // One of yours, in a line: its host, the devices it runs on, its endpoints, and a certificate still to come.
 export function proxyLine(t: TFunction, proxy: Proxy): string {

@@ -90,6 +90,8 @@ const MADE = {
   host: 'gw-acme.dev.r3proxy.com',
   domain: null,
   remoteit: false,
+  local: false,
+  localNetwork: null,
   publicEndpoints: true,
   location: null,
   provider: '',
@@ -115,6 +117,7 @@ const field = (label: string) =>
     | undefined
 const input = (label: string) => field(label)!.querySelector('input') as HTMLInputElement
 const make = () => [...document.body.querySelectorAll('button')].find(b => b.textContent === 'Make the proxy')!
+const kind = (value: 'internet' | 'local') => $(`input[type=radio][value="${value}"]`) as HTMLInputElement
 async function type(label: string, text: string) {
   const element = input(label)
   await act(async () => {
@@ -179,6 +182,7 @@ describe('a new proxy', () => {
       label: 'gw',
       domain: 'proxy.example.com',
       publicEndpoints: false,
+      local: false,
       accountId: 'ACCOUNT',
     })
   })
@@ -193,8 +197,61 @@ describe('a new proxy', () => {
       label: undefined,
       domain: undefined,
       publicEndpoints: true,
+      local: false,
       accountId: 'ACCOUNT',
     })
+  })
+
+  it('is Internet or Local network, each said in a line, and said to be chosen for good; Internet unless chosen', async () => {
+    await render()
+    const choice = $('[data-proxy-kind]')!
+    expect(choice.getAttribute('data-proxy-kind')).toBe('internet')
+    expect(kind('internet').checked).toBe(true)
+    expect(choice.textContent).toBe(
+      'Reached from' +
+        'Internet' +
+        'Reached from anywhere its devices can be reached.' +
+        'Local network' +
+        'Reached only on its devices’ own network, for printers, PCs and anything without remote.it.' +
+        'Chosen now: it cannot be changed later.'
+    )
+    await click(kind('local'))
+    expect(kind('local').checked).toBe(true)
+    expect($('[data-proxy-kind]')?.getAttribute('data-proxy-kind')).toBe('local')
+    await type(NAME, 'Printers')
+    await click(make())
+    expect(createProxy).toHaveBeenCalledWith(expect.objectContaining({ name: 'Printers', local: true }))
+  })
+
+  it('made Local network: says it is reached on its devices’ own network only, and that its devices are all on one', async () => {
+    createProxy.mockResolvedValue({ ...MADE, local: true })
+    await render()
+    await type(NAME, 'Printers')
+    await click(kind('local'))
+    await click(make())
+    expect(document.body.textContent).toContain(
+      'Made: it is reached at gw-acme.dev.r3proxy.com, on its devices’ own network only. Now choose the devices that run it, all on one network — the first one added sets it: each goes into service once its checks pass.'
+    )
+    expect($('[data-picker]')?.getAttribute('data-for')).toBe('P1')
+  })
+
+  it('a device on another network than the local proxy’s first device: refused in graphql’s words, said by it in the picker', async () => {
+    createProxy.mockResolvedValue({ ...MADE, local: true })
+    addDevice.mockImplementation(async (_proxy: string, id: string) =>
+      id === 'D2'
+        ? { reason: 'Laptop is on another network (10.0.0.0/24) than Gateway (192.168.1.0/24)' }
+        : { runs: { proxy: null, exit: null } }
+    )
+    await render()
+    await type(NAME, 'Gateway')
+    await click(kind('local'))
+    await click(make())
+    picker.chosen = ['D1', 'D2']
+    await click($('[data-picker] [data-add]'))
+    expect($('[data-picker]')?.getAttribute('data-refusals')).toBe(
+      '{"D2":"Laptop is on another network (10.0.0.0/24) than Gateway (192.168.1.0/24)"}'
+    )
+    expect(push).not.toHaveBeenCalled()
   })
 
   it('made: says where it is reached, the list beside it read again, and the devices that run it chosen of its account', async () => {
@@ -203,7 +260,7 @@ describe('a new proxy', () => {
     await click(make())
     expect($('[data-header]')?.textContent).toBe('Gateway')
     expect(document.body.textContent).toContain(
-      'Made: it is reached under gw-acme.dev.r3proxy.com. Now choose the devices that run it: each goes into service once its checks pass.'
+      'Made: it is reached at gw-acme.dev.r3proxy.com. Now choose the devices that run it: each goes into service once its checks pass.'
     )
     expect(field(NAME)).toBeUndefined()
     expect(reload).toHaveBeenCalledTimes(1)
@@ -304,6 +361,7 @@ describe('a new proxy', () => {
     await type(NAME, 'Gateway')
     await click(make())
     expect(make().disabled).toBe(true)
+    expect(kind('local').disabled).toBe(true)
     await act(async () => answer.release({ reason: 'Its account has no slug yet: set one first' }))
     expect(make().disabled).toBe(false)
     expect(createProxy).toHaveBeenCalledTimes(1)

@@ -33,6 +33,11 @@ const proxyRun = (fields: any = {}) =>
     certificate: 'ready',
     openConnections: null,
     drain: null,
+    privateAddress: null,
+    publicAddress: null,
+    network: null,
+    reachable: null,
+    reachReason: null,
     ...fields,
   } as any)
 const exitRun = (fields: any = {}) =>
@@ -108,7 +113,7 @@ describe('what its machine says of it', () => {
       )
     ).toEqual([
       'Health: unhealthy — its NAT keepalive failed',
-      'Its certificate is issued within a day: until then https names fail',
+      'remote.it’s certificate is not issued yet: until it is, https names fail',
       'Open: https 2 · tcp 1 · udp 0',
       'Not safe to stop yet: 3 connections open',
     ])
@@ -121,6 +126,71 @@ describe('what its machine says of it', () => {
     expect(machineLines(t, 'exit', exitRun({ health: 'healthy' }))).toEqual([])
     expect(machineLines(t, 'exit', exitRun({ health: 'unknown' }))).toEqual(['Health: unknown'])
     expect(machineLines(t, 'exit', exitRun())).toEqual([])
+  })
+})
+
+describe('a device of an own proxy: Internet or Local network', () => {
+  // An own proxy's device: no host or health of its own, as remote.it's have.
+  const own = (fields: any = {}) => proxyRun({ id: 'PI', name: 'Printer Pi', host: null, health: null, ...fields })
+  const state = (row: HTMLElement) => row.querySelector('[data-run-state]')?.textContent
+
+  it('an Internet proxy’s: reachable from the internet; or not, why in graphql’s words, and out of service', async () => {
+    expect(machineLines(t, 'proxy', own({ reachable: true, publicAddress: '203.0.113.5' }))).toEqual([
+      'Reachable from the internet',
+    ])
+    expect(
+      machineLines(t, 'proxy', own({ reachable: false, reachReason: 'a connection to 203.0.113.5:40001 timed out' }))
+    ).toEqual(['Not reachable from the internet: a connection to 203.0.113.5:40001 timed out'])
+    expect(machineLines(t, 'proxy', own({ reachable: false }))).toEqual(['Not reachable from the internet'])
+    let row = await render({ kind: 'proxy', run: own({ reachable: false, reachReason: 'refused' }), name: 'Gateway' })
+    expect(state(row)).toBe('Out of service')
+    expect(row.textContent).toContain('Not reachable from the internet: refused')
+    row = await render({ kind: 'proxy', run: own({ reachable: true }), name: 'Gateway' })
+    expect(state(row)).toBe('In service')
+  })
+
+  it('not tested, or not judged yet: nothing said of it', () => {
+    expect(machineLines(t, 'proxy', own())).toEqual([])
+  })
+
+  it('a local proxy’s: its private address, said only for a local proxy', async () => {
+    const pi = own({ privateAddress: '192.168.1.20', network: '192.168.1.0/24' })
+    expect(machineLines(t, 'proxy', pi, true)).toEqual(['Private address: 192.168.1.20'])
+    expect(machineLines(t, 'proxy', pi)).toEqual([])
+    const row = await render({ kind: 'proxy', run: pi, name: 'Office', local: true })
+    expect(state(row)).toBe('In service')
+    expect(row.textContent).toContain('Private address: 192.168.1.20')
+  })
+
+  it('a local proxy’s on another network: its failed network check said as checks are, out of service until it is back', async () => {
+    const checks = [
+      {
+        name: 'network',
+        passed: false,
+        pending: false,
+        reason: 'Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)',
+      },
+    ]
+    const row = await render({
+      kind: 'proxy',
+      run: own({ name: 'Laptop', privateAddress: '10.0.0.7', checks }),
+      name: 'Office',
+      local: true,
+    })
+    expect(state(row)).toBe('Out of service')
+    expect(row.textContent).toContain(
+      'Its checks fail: Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)'
+    )
+    expect(row.textContent).toContain('Private address: 10.0.0.7')
+    // Put back to wait for its checks, it says so the same way.
+    const joining = await render({
+      kind: 'proxy',
+      run: own({ name: 'Laptop', state: 'RETIRED', joining: true, checks }),
+      name: 'Office',
+      local: true,
+    })
+    expect(state(joining)).toBe('Joining')
+    expect(joining.textContent).toContain('Its checks fail: Laptop is on another network')
   })
 })
 

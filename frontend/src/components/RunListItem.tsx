@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next'
 import { ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { DeviceRuns, ExitDevice, ProxyDevice } from '../services/graphQLDeviceRuns'
-import { lanLine, runDetail, runStateLabel } from '../helpers/runsHelper'
+import { lanLine, outOfService, runDetail, runStateLabel } from '../helpers/runsHelper'
 import { RunActions } from './RunActions'
 import { Link } from './Link'
 import { Icon } from './Icon'
@@ -23,14 +23,17 @@ type Props = {
   lan?: boolean
   // Where its exit is, to say there that its local network is set: from the device's page, not the exit's own.
   lanSetOn?: string
+  // A local network proxy's device: its private address said, where its proxy's names lead on its network.
+  local?: boolean
   children?: React.ReactNode // more of what may be done with it, under its actions
 }
 
-/* A device in a proxy or an exit it runs: its state there — in service, draining, retired, joining with what it waits
-   for, or disabled —, what its machine says of it (a proxy's health, certificate, open connections and whether it is
-   safe to stop; why an exit's device takes no traffic), an exit's device's local network as its machine has it — the
-   exit's setting, read here, with why where it is not as the exit says —, and, for whoever manages both, its actions in
-   it alone. */
+/* A device in a proxy or an exit it runs: its state there — in service, out of service, draining, retired, joining with
+   what it waits for, or disabled —, what its machine says of it (a proxy's health, certificate, open connections and
+   whether it is safe to stop; a local proxy's device's private address; whether an Internet proxy's device is reached
+   from the internet; why an exit's device takes no traffic), an exit's device's local network as its machine has it —
+   the exit's setting, read here, with why where it is not as the exit says —, and, for whoever manages both, its
+   actions in it alone. */
 export const RunListItem: React.FC<Props> = ({
   kind,
   run,
@@ -42,13 +45,14 @@ export const RunListItem: React.FC<Props> = ({
   onChanged,
   lan,
   lanSetOn,
+  local,
   children,
 }) => {
   const { t } = useTranslation()
   const history = useHistory()
   const device = { id: run.id, name: run.name || run.id }
-  const inactive = run.state !== 'ACTIVE' || run.joining || run.disabled
-  const lines = [runDetail(t, run, activation), ...machineLines(t, kind, run)].filter(Boolean)
+  const inactive = run.state !== 'ACTIVE' || run.joining || run.disabled || outOfService(run)
+  const lines = [runDetail(t, run, activation), ...machineLines(t, kind, run, local)].filter(Boolean)
   // With its actions, the row is no link — each click would take it —: its title is.
   const actions = !!manage && !!onChanged
   const heading = title ?? device.name
@@ -115,9 +119,15 @@ export const RunListItem: React.FC<Props> = ({
   )
 }
 
-// What its machine says of it beyond its state: a proxy's health, certificate, open connections and drain; an exit's
-// device's health.
-export function machineLines(t: TFunction, kind: 'proxy' | 'exit', run: ProxyDevice | ExitDevice): string[] {
+// What its machine says of it beyond its state: a proxy's health — or, an own Internet proxy's, whether it is reached
+// from the internet —, a local proxy's device's private address, its certificate, open connections and drain; an
+// exit's device's health.
+export function machineLines(
+  t: TFunction,
+  kind: 'proxy' | 'exit',
+  run: ProxyDevice | ExitDevice,
+  local?: boolean
+): string[] {
   const lines: string[] = []
   if (kind === 'proxy') {
     const proxy = run as ProxyDevice
@@ -127,8 +137,19 @@ export function machineLines(t: TFunction, kind: 'proxy' | 'exit', run: ProxyDev
           ? t('runs.healthReason', 'Health: {{state}} — {{reason}}', proxy.health)
           : t('runs.health', 'Health: {{state}}', proxy.health)
       )
+    if (proxy.reachable) lines.push(t('runs.reachable', 'Reachable from the internet'))
+    else if (proxy.reachable === false)
+      lines.push(
+        proxy.reachReason
+          ? t('runs.unreachableBecause', 'Not reachable from the internet: {{reason}}', { reason: proxy.reachReason })
+          : t('runs.unreachable', 'Not reachable from the internet')
+      )
+    if (local && proxy.privateAddress)
+      lines.push(t('runs.privateAddress', 'Private address: {{address}}', { address: proxy.privateAddress }))
     if (proxy.certificate === 'pending')
-      lines.push(t('runs.certificatePending', 'Its certificate is issued within a day: until then https names fail'))
+      lines.push(
+        t('runs.certificatePending', 'remote.it’s certificate is not issued yet: until it is, https names fail')
+      )
     if (proxy.openConnections?.total)
       lines.push(
         t('runs.open', 'Open: https {{https}} · tcp {{tcp}} · udp {{udp}}', {

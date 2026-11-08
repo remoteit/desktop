@@ -106,7 +106,10 @@ beforeEach(() => {
     return { runs: RUNS }
   })
   deleteExit.mockReset().mockResolvedValue({})
-  accountProxies.mockReset().mockResolvedValue([{ id: 'P-OWN', name: 'Remote-Dragon' }])
+  accountProxies.mockReset().mockResolvedValue([
+    { id: 'P-OWN', name: 'Remote-Dragon', local: false },
+    { id: 'P-LAN', name: 'Office printers', local: true },
+  ])
   createProxy.mockReset().mockImplementation(async ({ name }) => ({ id: 'P-NEW', name }))
   addProxy.mockReset().mockResolvedValue({ runs: RUNS })
   deleteProxy.mockReset().mockResolvedValue({})
@@ -196,7 +199,7 @@ describe('making a device a proxy', () => {
     const { onDone } = await open('proxy')
     expect(find('h2').textContent).toBe('Make Office Mac a proxy')
     await act(async () => confirm().click())
-    expect(createProxy).toHaveBeenCalledWith({ name: 'Office Mac proxy', accountId: 'ACCOUNT' })
+    expect(createProxy).toHaveBeenCalledWith({ name: 'Office Mac proxy', local: false, accountId: 'ACCOUNT' })
     expect(addProxy).toHaveBeenCalledWith('P-NEW', 'MAC')
     expect(onDone).toHaveBeenCalledWith(RUNS, { id: 'P-NEW', name: 'Office Mac proxy' })
     addProxy.mockResolvedValue({ reason: 'The device and the proxy are in different accounts' })
@@ -212,5 +215,51 @@ describe('making a device a proxy', () => {
     await act(async () => confirm().click())
     expect(createProxy).not.toHaveBeenCalled()
     expect(addProxy).toHaveBeenCalledWith('P-OWN', 'MAC')
+  })
+
+  it('a new one is Internet or Local network, chosen there for good; Internet unless chosen', async () => {
+    await open('proxy')
+    expect(find('[data-proxy-kind]').getAttribute('data-proxy-kind')).toBe('internet')
+    expect(find('[data-proxy-kind]').textContent).toContain('Chosen now: it cannot be changed later.')
+    await act(async () => (find('input[value="local"]') as HTMLInputElement).click())
+    expect(find('[data-proxy-kind]').getAttribute('data-proxy-kind')).toBe('local')
+    await act(async () => confirm().click())
+    expect(createProxy).toHaveBeenCalledWith({ name: 'Office Mac proxy', local: true, accountId: 'ACCOUNT' })
+    expect(addProxy).toHaveBeenCalledWith('P-NEW', 'MAC')
+  })
+
+  it('the kind is asked of a new proxy alone: not of one of the account’s, nor of an exit', async () => {
+    await open('proxy')
+    await act(async () => (find('input[value="existing"]') as HTMLInputElement).click())
+    expect(find('[data-proxy-kind]')).toBeNull()
+    document.body.innerHTML = ''
+    await open('exit')
+    expect(find('[data-proxy-kind]')).toBeNull()
+  })
+
+  it('the account’s proxies reached on their devices’ network only are marked', async () => {
+    await open('proxy')
+    await act(async () => (find('input[value="existing"]') as HTMLInputElement).click())
+    expect([...document.body.querySelectorAll('[data-pick]')].map(pick => pick.textContent)).toEqual([
+      'Remote-Dragon',
+      'Office printers · Local network',
+    ])
+  })
+
+  it('added to a local one on another network than the device’s: refused in graphql’s words, nothing made or deleted', async () => {
+    addProxy.mockResolvedValue({
+      reason: 'Office Mac is on another network (10.0.0.0/24) than Office printers (192.168.1.0/24)',
+    })
+    const { onDone } = await open('proxy')
+    await act(async () => (find('input[value="existing"]') as HTMLInputElement).click())
+    await act(async () => find('[data-pick="P-LAN"]').click())
+    await act(async () => confirm().click())
+    expect(addProxy).toHaveBeenCalledWith('P-LAN', 'MAC')
+    expect(find('[data-notice]').textContent).toBe(
+      'Office Mac is on another network (10.0.0.0/24) than Office printers (192.168.1.0/24)'
+    )
+    expect(createProxy).not.toHaveBeenCalled()
+    expect(deleteProxy).not.toHaveBeenCalled()
+    expect(onDone).not.toHaveBeenCalled()
   })
 })

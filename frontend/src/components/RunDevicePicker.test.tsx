@@ -238,6 +238,32 @@ describe('choosing devices to run a proxy or an exit', () => {
   })
 })
 
+describe('adding devices to a local network proxy', () => {
+  const OTHER = 'Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)'
+
+  it('a device on another network than its own: not addable, said why in graphql’s words', async () => {
+    candidates.mockResolvedValue([
+      candidate('A1', 'Printer Pi'),
+      candidate('L1', 'Laptop', { fit: false, refusal: OTHER }),
+    ])
+    const page = await render({ kind: 'proxy', target: 'P-LAN' })
+    expect(candidates).toHaveBeenCalledWith('proxy', { id: 'P-LAN' })
+    expect(listed(page)).toEqual(['A1', 'L1'])
+    expect(row(page, 'L1').getAttribute('data-fit')).toBe('no')
+    expect(row(page, 'L1').textContent).toBe(`Laptop${OTHER}`)
+    await click(row(page, 'L1'))
+    expect(chosen(page, 'L1')).toBe(false)
+    expect(add(page).disabled).toBe(true)
+  })
+
+  it('one refused as it is added — the first added set another network —: said by its name in graphql’s words', async () => {
+    candidates.mockResolvedValue([candidate('A1', 'Printer Pi'), candidate('L1', 'Laptop')])
+    const page = await render({ kind: 'proxy', target: 'P-LAN' })
+    await rerender({ kind: 'proxy', target: 'P-LAN', refusals: { L1: OTHER } })
+    expect([...page.querySelectorAll('[data-refused]')].map(each => each.textContent)).toEqual([`Laptop: ${OTHER}`])
+  })
+})
+
 describe('adding devices to an exit whose users reach its devices’ local networks', () => {
   const warning = (page: HTMLElement) => page.querySelector('[data-lan-warning]')?.textContent
 

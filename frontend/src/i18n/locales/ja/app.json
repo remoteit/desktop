@@ -1421,6 +1421,7 @@
     "latchChoice": "",
     "lifetime": "",
     "lifetimeHelp": "",
+    "localAddressHttps": "",
     "lockedIp": "",
     "nearest": "",
     "none": "",
@@ -2713,7 +2714,11 @@
     "deleteEndpoints_other": "",
     "deleteNothing": "",
     "endpoints_other": "",
-    "endpointsNone": ""
+    "endpointsNone": "",
+    "internet": "",
+    "local": "",
+    "localOnly": "",
+    "localOnlyNone": ""
   },
   "proxiesPage": {
     "certificatePending": "",
@@ -2756,6 +2761,7 @@
   },
   "proxyAdd": {
     "chooseDevices": "",
+    "chooseDevicesLocal": "",
     "create": "",
     "description": "",
     "domain": "",
@@ -2766,6 +2772,14 @@
     "notMade": "",
     "publicEndpoints": "",
     "title": ""
+  },
+  "proxyKind": {
+    "fixed": "",
+    "internet": "",
+    "internetHint": "",
+    "label": "",
+    "local": "",
+    "localHint": ""
   },
   "proxyPage": {
     "activation": "",
@@ -2791,14 +2805,17 @@
     "failed": "",
     "host": "",
     "hostHint": "",
+    "kindFixed": "",
     "labelProblem": "",
     "labelSays": "",
     "labelTitle": "",
+    "localNetworkFirst": "",
     "move": "",
     "moveButton": "",
     "moveFailed": "",
     "moveFrom": "",
     "moveHint": "",
+    "moveKept": "",
     "moveNone": "",
     "moveNotMade": "",
     "moveTitle": "",
@@ -3042,7 +3059,10 @@
     "on": "",
     "onNone": "",
     "open": "",
+    "outOfService": "",
+    "privateAddress": "",
     "proxy": "",
+    "reachable": "",
     "refusal": "",
     "retired": "",
     "retiredHint": "",
@@ -3051,6 +3071,8 @@
     "stillExit": "",
     "stillNothing": "",
     "stillProxy": "",
+    "unreachable": "",
+    "unreachableBecause": "",
     "waitsForAdmin": "",
     "waitsOn": ""
   },

@@ -7,41 +7,57 @@ import type {
   RunCheck,
 } from '../services/graphQLDeviceRuns'
 import type { Exit } from '../services/graphQLExits'
+import type { Proxy } from '../services/graphQLProxy'
 
 /* Proxies and exits, and the devices that run them, as the portal says them (graphql-api docs/PROXY-GROUPS.md §13): a
    device's state in each — in service, draining, retired, joining while it waits for its checks or an admin, or
    disabled —, what an action on a device does to each proxy and exit it runs before it is taken, what the device still
    runs after, what deleting a proxy or an exit takes away, and an exit's devices' local networks — the exit's to open,
    each machine's administrator keeping the last word. An own exit none of whose devices carries its flows — serving,
-   not disabled, and offering itself — has no device available: those using it go their usual way until one does. */
+   not disabled, and offering itself — has no device available: those using it go their usual way until one does. An
+   own proxy is Internet or Local network (§14): a device in service in one is out of service while it fails a check —
+   a local proxy's device on another network than its proxy's — or, an Internet proxy's, while the outside test cannot
+   reach it. */
 
-type Run = Pick<ExitDevice | ProxyDevice, 'state' | 'joining' | 'checks'> & { disabled?: boolean }
-
-// A device's state in a proxy or an exit, in a word or two: disabled, whatever its state there, before anything else.
-export function runStateLabel(t: TFunction, run: Pick<Run, 'state' | 'joining' | 'disabled'>): string {
-  if (run.disabled) return t('runs.disabledLabel', 'Disabled')
-  if (run.joining) return t('runs.joining', 'Joining')
-  if (run.state === 'ACTIVE') return t('runs.active', 'In service')
-  if (run.state === 'DRAINING') return t('runs.draining', 'Draining')
-  return t('runs.retired', 'Retired')
+type Run = Pick<ExitDevice | ProxyDevice, 'state' | 'joining' | 'checks'> & {
+  disabled?: boolean
+  reachable?: boolean | null
 }
 
 // The checks failed — something to put right —, and those pending, waiting on what comes by itself.
 export const failing = (checks: RunCheck[]) => checks.filter(check => !check.passed && !check.pending)
 export const pending = (checks: RunCheck[]) => checks.filter(check => !check.passed && check.pending)
 
+// A device in service that is out of it now: failing a check, or not reachable from the internet.
+export const outOfService = (run: Pick<Run, 'state' | 'joining' | 'reachable'> & { checks?: RunCheck[] }) =>
+  run.state === 'ACTIVE' && !run.joining && (run.reachable === false || failing(run.checks ?? []).length > 0)
+
+// A device's state in a proxy or an exit, in a word or two: disabled, whatever its state there, before anything else.
+export function runStateLabel(
+  t: TFunction,
+  run: Pick<Run, 'state' | 'joining' | 'disabled' | 'reachable'> & { checks?: RunCheck[] }
+): string {
+  if (run.disabled) return t('runs.disabledLabel', 'Disabled')
+  if (run.joining) return t('runs.joining', 'Joining')
+  if (run.state === 'ACTIVE')
+    return outOfService(run) ? t('runs.outOfService', 'Out of service') : t('runs.active', 'In service')
+  if (run.state === 'DRAINING') return t('runs.draining', 'Draining')
+  return t('runs.retired', 'Retired')
+}
+
 // What its state means now: a disabled device serves nothing; what a joining one waits for — its checks, failed or
-// pending, or an admin —, what a draining or retired one does, and why a device in an exit takes no flows.
+// pending, or an admin —, the checks a device in service fails, what a draining or retired one does, and why a device
+// in an exit takes no flows.
 export function runDetail(t: TFunction, run: Run & { refusal?: string | null }, activation?: string): string {
   if (run.disabled) return t('runs.disabled', 'Its device is disabled: it serves nothing until it is restored')
+  const failed = failing(run.checks)
+  const checksFail = () =>
+    t('runs.checksFail', 'Its checks fail: {{reasons}}', { reasons: failed.map(check => check.reason).join('; ') })
   if (run.joining) {
-    const failed = failing(run.checks)
     const waits = pending(run.checks)
     if (failed.length || waits.length)
       return [
-        failed.length
-          ? t('runs.checksFail', 'Its checks fail: {{reasons}}', { reasons: failed.map(check => check.reason).join('; ') })
-          : '',
+        failed.length ? checksFail() : '',
         waits.length
           ? t('runs.waitsOn', 'Waiting: {{reasons}}', { reasons: waits.map(check => check.reason).join('; ') })
           : '',
@@ -52,6 +68,7 @@ export function runDetail(t: TFunction, run: Run & { refusal?: string | null }, 
       ? t('runs.waitsForAdmin', 'Its checks pass: it waits for an admin to put it in service')
       : t('runs.goesIntoService', 'Its checks pass: it goes into service by itself')
   }
+  if (run.state === 'ACTIVE' && failed.length) return checksFail()
   if (run.state === 'DRAINING') return t('runs.drainingHint', 'Takes nothing new, and serves what it has')
   if (run.state === 'RETIRED') return t('runs.retiredHint', 'Serves nothing')
   if (run.refusal) return t('runs.refusal', 'Takes no traffic now: {{refusal}}', { refusal: run.refusal })
@@ -131,6 +148,14 @@ export function lanAddWarning(t: TFunction, devices: string[]): string {
     defaultValue_other:
       'This exit lets its users reach its devices’ local networks: adding {{devices}} opens their networks to them.',
   })
+}
+
+// An own proxy's kind, in a few words: Local network only, on its network once it has one, or Internet.
+export function proxyKindLabel(t: TFunction, proxy: Pick<Proxy, 'local' | 'localNetwork'>): string {
+  if (!proxy.local) return t('proxies.internet', 'Internet')
+  return proxy.localNetwork
+    ? t('proxies.localOnly', 'Local network only: {{network}}', { network: proxy.localNetwork })
+    : t('proxies.localOnlyNone', 'Local network only')
 }
 
 // A proxy's endpoints.

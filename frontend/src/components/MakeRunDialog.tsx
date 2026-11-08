@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FormControlLabel, MenuItem, Radio, RadioGroup, TextField, Typography } from '@mui/material'
+import { Box, FormControlLabel, MenuItem, Radio, RadioGroup, TextField, Typography } from '@mui/material'
 import { DeviceRuns, graphQLAddExitDevice, graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
 import { graphQLAccountExits, graphQLCreateExit, graphQLDeleteExit } from '../services/graphQLExits'
 import { graphQLAccountProxies, graphQLCreateProxy, graphQLDeleteProxy } from '../services/graphQLProxy'
 import { lanAddWarning } from '../helpers/runsHelper'
+import { ProxyKindChoice } from './ProxyKindChoice'
 import { LoadingMessage } from './LoadingMessage'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
@@ -16,13 +17,16 @@ type Props = {
   onDone: (runs: DeviceRuns, made?: { id: string; name: string }) => void
 }
 
-type Choice = { id: string; name: string; lan?: boolean } // an exit's lan: its users reach its devices' local networks
+// An exit's lan: its users reach its devices' local networks. A proxy's local: reached on its devices' network only.
+type Choice = { id: string; name: string; lan?: boolean; local?: boolean }
 
 /* "Make this device an exit" and "Make this device a proxy" (graphql-api docs/PROXY-GROUPS.md §13, "No shortcuts"): one
    action of two calls — a new exit or proxy made in the device's account, then the device added to it — or the device
-   added to one of the account's own. A new one whose add is refused is deleted again, so nothing is left behind, and
-   the refusal is said in graphql's words. The device joins out of service, and goes into service once its checks
-   pass. Added to an exit whose users reach its devices' local networks, it opens its own to them: said before. */
+   added to one of the account's own. A new proxy is Internet or Local network, chosen for good (§14); the account's
+   local ones are marked, and one on another network than the device's refuses it. A new one whose add is refused is
+   deleted again, so nothing is left behind, and the refusal is said in graphql's words. The device joins out of
+   service, and goes into service once its checks pass. Added to an exit whose users reach its devices' local networks,
+   it opens its own to them: said before. */
 export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }) => {
   const { t } = useTranslation()
   const [choices, setChoices] = useState<Choice[]>()
@@ -32,6 +36,7 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
       ? t('makeRun.exitName', '{{device}} exit', { device: device.name })
       : t('makeRun.proxyName', '{{device}} proxy', { device: device.name })
   )
+  const [local, setLocal] = useState(false)
   const [chosen, setChosen] = useState('')
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
@@ -41,12 +46,12 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
     const own = async (): Promise<Choice[]> => {
       if (kind === 'exit') {
         const exits = await graphQLAccountExits(device.ownerId)
-        return exits && typeof exits === 'object' ? exits.own : []
+        return exits && typeof exits === 'object' ? exits.own.map(({ id, name, lan }) => ({ id, name, lan })) : []
       }
       const proxies = await graphQLAccountProxies(device.ownerId)
-      return Array.isArray(proxies) ? proxies : []
+      return Array.isArray(proxies) ? proxies.map(({ id, name, local }) => ({ id, name, local })) : []
     }
-    own().then(list => setChoices(list.map(({ id, name, lan }) => ({ id, name, lan }))))
+    own().then(setChoices)
   }, [kind, device.ownerId])
 
   const make = async () => {
@@ -58,7 +63,7 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
       const created =
         kind === 'exit'
           ? await graphQLCreateExit(name.trim(), device.ownerId)
-          : await graphQLCreateProxy({ name: name.trim(), accountId: device.ownerId })
+          : await graphQLCreateProxy({ name: name.trim(), local, accountId: device.ownerId })
       if ('reason' in created) {
         setBusy(false)
         return setRefusal(created.reason || t('makeRun.notMade', 'It was not made: try again.'))
@@ -115,6 +120,11 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
               sx={{ marginLeft: 4, marginBottom: 1 }}
             />
           )}
+          {mode === 'new' && kind === 'proxy' && (
+            <Box marginLeft={4} marginBottom={1}>
+              <ProxyKindChoice local={local} disabled={busy} onChange={setLocal} />
+            </Box>
+          )}
           <FormControlLabel
             value="existing"
             control={<Radio />}
@@ -136,7 +146,7 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
             >
               {choices.map(choice => (
                 <MenuItem key={choice.id} value={choice.id}>
-                  {choice.name}
+                  {choice.local ? `${choice.name} · ${t('proxies.local', 'Local network')}` : choice.name}
                 </MenuItem>
               ))}
             </TextField>

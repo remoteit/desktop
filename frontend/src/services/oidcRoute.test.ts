@@ -24,7 +24,7 @@ vi.mock('../constants', () => ({
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const ISSUER = 'https://login.solo.remote.it'
-const RETURN = 'https://app1.pdx1a-r3.solo.r3proxy.com/dash?tab=2'
+const RETURN = 'https://app1-acme.solo.r3proxy.com/dash?tab=2'
 const ENDPOINT_ROUTE = `/endpoint-sign-in?endpoint=EP-1&return=${encodeURIComponent(RETURN)}`
 
 const json = (body: unknown, status = 200) =>

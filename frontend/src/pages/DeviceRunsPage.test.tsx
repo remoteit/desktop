@@ -38,13 +38,14 @@ vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div dat
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
 // A proxy or exit the device runs: what it was given, and an action on it answering what the device runs after.
 vi.mock('../components/RunListItem', () => ({
-  RunListItem: ({ kind, title, to, manage, onChanged, run, lan, lanSetOn }: any) => (
+  RunListItem: ({ kind, title, to, manage, onChanged, run, lan, lanSetOn, local }: any) => (
     <div
       data-run={kind}
       data-to={to ?? ''}
       data-manage={manage ? 'yes' : 'no'}
       data-lan={lan ? 'yes' : 'no'}
       data-lan-set-on={lanSetOn ?? ''}
+      data-local={local ? 'yes' : 'no'}
     >
       {title}
       <button data-act={kind} onClick={() => onChanged(AFTER, { id: run.id, name: 'Office Mac' })} />
@@ -80,7 +81,7 @@ const proxyRun = (fields: any = {}) => ({
   state: 'ACTIVE',
   joining: false,
   checks: [],
-  proxy: { id: 'P-OWN', name: 'Remote-Dragon', host: 'test-evan.solo.r3proxy.com', remoteit: false },
+  proxy: { id: 'P-OWN', name: 'Remote-Dragon', host: 'test-evan.solo.r3proxy.com', remoteit: false, local: false },
   ...fields,
 })
 const BOTH = { exit: exitRun(), proxy: proxyRun() }
@@ -129,6 +130,20 @@ describe('what a device runs', () => {
     expect(find('[data-everything]').getAttribute('data-everything')).toBe('device')
     expect(find('[data-visitors]').getAttribute('data-visitors')).toBe('MAC')
     expect(find('[data-make]')).toBeNull()
+  })
+
+  it('its proxy’s row is told whether the proxy is reached on its devices’ network only, to say its private address', async () => {
+    await render()
+    expect(find('[data-run="proxy"]').getAttribute('data-local')).toBe('no')
+    deviceRuns.mockResolvedValue({
+      exit: null,
+      proxy: proxyRun({
+        proxy: { id: 'P-LAN', name: 'Office', host: 'office-evan.solo.r3proxy.com', remoteit: false, local: true },
+      }),
+    })
+    await render()
+    expect(find('[data-run="proxy"]').getAttribute('data-local')).toBe('yes')
+    expect(find('[data-run="proxy"]').getAttribute('data-to')).toBe('/proxies/P-LAN')
   })
 
   it('an action on one of them says what the device runs after, and reads it again', async () => {

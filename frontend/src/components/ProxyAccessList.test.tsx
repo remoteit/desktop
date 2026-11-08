@@ -36,7 +36,7 @@ const visit = {
   endpointId: 'ep',
   serviceId: 'S1',
   kind: 'https',
-  name: 'link1.e1.r3proxy.com',
+  name: 'k7q2abcdwxyz.r3proxy.com',
   port: 443,
   started: '2026-11-02T10:00:00Z',
   ended: '2026-11-02T10:00:03Z',

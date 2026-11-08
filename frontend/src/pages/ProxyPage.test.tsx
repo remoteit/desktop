@@ -87,7 +87,7 @@ vi.mock('../components/RunDevicePicker', async importOriginal => ({
 }))
 // A device running it: what it was given, and its actions' end.
 vi.mock('../components/RunListItem', () => ({
-  RunListItem: ({ kind, run, name, activation, to, manage, onChanged }: any) => (
+  RunListItem: ({ kind, run, name, activation, to, manage, local, onChanged }: any) => (
     <div
       data-run={run.id}
       data-kind={kind}
@@ -95,6 +95,7 @@ vi.mock('../components/RunListItem', () => ({
       data-activation={activation}
       data-to={to}
       data-manage={manage ? '' : undefined}
+      data-local={local ? '' : undefined}
     >
       <button data-changed onClick={() => onChanged(drained, { id: run.id, name: run.name || run.id })} />
     </div>
@@ -235,22 +236,28 @@ const run = (id: string, name: string | null, extra: any = {}) => ({
   certificate: 'ready',
   openConnections: null,
   drain: null,
+  privateAddress: null,
+  publicAddress: null,
+  network: null,
+  reachable: null,
+  reachReason: null,
   ...extra,
 })
-// Its endpoints, as graphql lists them: oldest first.
+// Its endpoints, as graphql lists them: oldest first. A tcp one at its proxy's name, an https one at a name of its own.
 const endpointsOf = (count: number) =>
   Array.from({ length: count }, (_, n) => ({
     id: `EP${n + 1}`,
     serviceId: `S${n + 1}`,
-    proxy: { id: 'P1', name: 'Gateway', host: 'gw-acme-corp.dev.r3proxy.com', remoteit: false },
+    proxy: { id: 'P1', name: 'Gateway', host: 'gw-acme-corp.dev.r3proxy.com', remoteit: false, local: false },
     kind: n % 2 ? 'tcp' : 'https',
     lifetime: 'permanent',
     access: n % 2 ? 'cidr' : 'public',
     lockedIp: null,
     allow: null,
-    host: n % 2 ? 'gw-acme-corp.dev.r3proxy.com' : `ep${n + 1}.gw-acme-corp.dev.r3proxy.com`,
+    host: n % 2 ? 'gw-acme-corp.dev.r3proxy.com' : `ep${n + 1}-acme-corp.dev.r3proxy.com`,
     port: n % 2 ? 30000 + n : null,
-    url: `https://ep${n + 1}.gw-acme-corp.dev.r3proxy.com`,
+    url: n % 2 ? `tcp://gw-acme-corp.dev.r3proxy.com:${30000 + n}` : `https://ep${n + 1}-acme-corp.dev.r3proxy.com`,
+    localAddresses: [],
     created: '2026-11-07T00:00:00Z',
     expires: null,
   }))
@@ -261,6 +268,8 @@ const GATEWAY = {
   label: 'gw',
   domain: null,
   remoteit: false,
+  local: false,
+  localNetwork: null,
   publicEndpoints: true,
   location: null,
   provider: '',
@@ -287,7 +296,7 @@ const PDX = {
   ...GATEWAY,
   id: 'R1',
   name: 'remote.it pdx1a',
-  host: 'pdx1a.dev.r3proxy.com',
+  host: 'pdx1a-r3.dev.r3proxy.com',
   remoteit: true,
   location: 'pdx1',
   provider: 'AWS us-west-2 (Boardman)',
@@ -298,13 +307,14 @@ const PDX = {
   endpoints: endpointsOf(5),
   certificate: null,
 }
+// An https endpoint keeps its own name; a tcp one moves to the other proxy's.
 const MOVE = {
   addresses: [
     {
       endpoint: 'EP1',
       kind: 'https',
-      from: 'https://web-gw-acme-corp.dev.r3proxy.com',
-      to: 'https://web-sp-acme-corp.dev.r3proxy.com',
+      from: 'https://web-acme-corp.dev.r3proxy.com',
+      to: 'https://web-acme-corp.dev.r3proxy.com',
     },
     {
       endpoint: 'EP2',
@@ -367,11 +377,11 @@ describe('an own proxy’s host', () => {
     expect(hostWith('gw-acme-corp.dev.r3proxy.com', 'gateway2')).toBe('gateway2-acme-corp.dev.r3proxy.com')
   })
 
-  it('its certificate: its domain’s on its devices, remote.it’s ready, or remote.it’s still to come', () => {
+  it('its certificate: its domain’s on its devices, or remote.it’s for every proxy name — held, or still to come', () => {
     expect(certificateLine(t, 'own')).toBe("Your domain's, on its devices (proxy_cert, proxy_key)")
-    expect(certificateLine(t, 'ready')).toBe("remote.it's, for its names")
+    expect(certificateLine(t, 'ready')).toBe("remote.it's, for every proxy name")
     expect(certificateLine(t, 'pending')).toBe(
-      "remote.it's, issued within a day of its name: until then its https endpoints are not served"
+      "remote.it's, not issued yet: until it is, its https endpoints are not served"
     )
   })
 })
@@ -385,7 +395,7 @@ describe('a proxy’s page', () => {
     expect($('[data-loading]')).not.toBeNull()
     await act(async () => answer.release(GATEWAY))
     expect($('[data-loading]')).toBeNull()
-    expect($('[data-header]')?.textContent).toBe('Gatewaygw-acme-corp.dev.r3proxy.com')
+    expect($('[data-header]')?.textContent).toBe('Gatewaygw-acme-corp.dev.r3proxy.com · Internet')
   })
 
   it('says a proxy that could not be read, and one there is not or that may not be seen', async () => {
@@ -406,16 +416,17 @@ describe('a proxy’s page', () => {
     expect(inline[LABEL].maxLength).toBe(29)
     expect('Gw-1_x'.replace(inline[LABEL].filter, '')).toBe('w1x')
     expect(inline[DOMAIN].value).toBe('')
-    expect(inline[DOMAIN].placeholder).toBe('none: its https names under its host')
-    expect(label('certificate')).toBe("remote.it's, for its names")
+    expect(inline[DOMAIN].placeholder).toBe('none: each https endpoint at a name of its own')
+    expect(label('certificate')).toBe("remote.it's, for every proxy name")
     expect(setting('certificate')?.getAttribute('data-color')).toBe('success')
     expect(label('users')).toBe('Takes public endpoints')
     expect(setting('users')?.querySelector('[data-toggle]')?.getAttribute('data-toggle')).toBe('true')
     expect($(`[data-select="${ACTIVATION}"]`)?.getAttribute('data-value')).toBe('auto')
     expect([...document.body.querySelectorAll('[data-endpoint]')].map(each => each.textContent)).toEqual([
-      'https://ep1.gw-acme-corp.dev.r3proxy.comhttps · public · permanent',
+      'https://ep1-acme-corp.dev.r3proxy.comhttps · public · permanent',
       'gw-acme-corp.dev.r3proxy.com:30001tcp · cidr · permanent',
     ])
+    expect($('[data-local-address]')).toBeNull()
     expect($('[data-endpoints]')?.textContent).toContain(
       '2 endpoints · Made on it from a service’s page, under Proxy endpoints'
     )
@@ -432,9 +443,7 @@ describe('a proxy’s page', () => {
       endpoints: endpointsOf(1),
     })
     expect(inline[DOMAIN].value).toBe('proxy.example.com')
-    expect(label('certificate')).toBe(
-      "remote.it's, issued within a day of its name: until then its https endpoints are not served"
-    )
+    expect(label('certificate')).toBe("remote.it's, not issued yet: until it is, its https endpoints are not served")
     expect(setting('certificate')?.getAttribute('data-color')).toBe('warning')
     expect(setting('users')?.querySelector('[data-toggle]')?.getAttribute('data-toggle')).toBe('false')
     expect($('[data-endpoints]')?.textContent).toContain('1 endpoint ·')
@@ -682,7 +691,7 @@ describe('moving a proxy’s endpoints', () => {
       item.querySelector('.MuiListItemText-secondary')?.textContent,
     ])
     expect(preview).toEqual([
-      ['https://web-sp-acme-corp.dev.r3proxy.com', 'was https://web-gw-acme-corp.dev.r3proxy.com'],
+      ['https://web-acme-corp.dev.r3proxy.com', 'keeps its address'],
       ['sp-acme-corp.dev.r3proxy.com:30001', 'was gw-acme-corp.dev.r3proxy.com:30001'],
     ])
     expect(($('[data-confirm-action]') as HTMLButtonElement).disabled).toBe(false)
@@ -754,6 +763,16 @@ describe('moving a proxy’s endpoints', () => {
     expect($('[data-move-preview]')?.textContent).not.toContain('sp-acme-corp')
   })
 
+  it('the account’s proxies reached on their devices’ network only are marked among those to take them', async () => {
+    accountProxies.mockResolvedValue([IDLE, SPARE, { ...NAS, local: true, localNetwork: '192.168.1.0/24' }])
+    await render(IDLE)
+    await click(settingButton('arrow-right-arrow-left'))
+    expect([...document.body.querySelectorAll('[data-pick]')].map(pick => pick.textContent)).toEqual([
+      'Spare · sp-acme-corp.dev.r3proxy.com',
+      'NAS · nas-acme-corp.dev.r3proxy.com · Local network',
+    ])
+  })
+
   it('its account with no other proxy: says none can take them; Cancel closes it', async () => {
     accountProxies.mockResolvedValue([IDLE])
     await render(IDLE)
@@ -770,11 +789,12 @@ describe('moving a proxy’s endpoints', () => {
 describe('a proxy that is not the account’s own, or not managed', () => {
   it('remote.it’s, for its admins: where it is reached, its activation, endpoints and devices; nothing to rename, add, move or delete', async () => {
     await render(PDX)
-    expect($('[data-header]')?.textContent).toBe('remote.it pdx1aOne of remote.it’s proxies · pdx1a.dev.r3proxy.com')
+    expect($('[data-header]')?.textContent).toBe('remote.it pdx1aOne of remote.it’s proxies · pdx1a-r3.dev.r3proxy.com')
     expect($('[data-inline]')).toBeNull()
-    expect(label('globe')).toBe('pdx1a.dev.r3proxy.com')
+    expect(label('globe')).toBe('pdx1a-r3.dev.r3proxy.com')
     expect(sublabel('globe')).toBe('Where it is reached')
-    for (const icon of ['certificate', 'users', 'arrow-right-arrow-left', 'trash']) expect(setting(icon)).toBeNull()
+    for (const icon of ['certificate', 'users', 'arrow-right-arrow-left', 'trash', 'cloud', 'house-signal'])
+      expect(setting(icon)).toBeNull()
     expect($(`[data-select="${ACTIVATION}"]`)).not.toBeNull()
     expect($('[data-endpoints]')?.textContent).toContain('5 endpoints ·')
     expect($('[data-runs-on] [data-run="E1"]')).not.toBeNull()
@@ -790,7 +810,7 @@ describe('a proxy that is not the account’s own, or not managed', () => {
       endpoints: endpointsOf(1),
       certificate: null,
     })
-    expect($('[data-header]')?.textContent).toBe('Gatewaygw-acme-corp.dev.r3proxy.com')
+    expect($('[data-header]')?.textContent).toBe('Gatewaygw-acme-corp.dev.r3proxy.com · Internet')
     expect([...document.body.querySelectorAll('[data-endpoint]')].map(each => each.getAttribute('data-endpoint'))).toEqual([
       'EP1',
     ])
@@ -812,7 +832,7 @@ describe('a proxy that is not the account’s own, or not managed', () => {
     readProxy.mockResolvedValue(SPARE)
     await act(async () => root!.render(<ProxyPage />))
     expect(readProxy).toHaveBeenLastCalledWith('P2')
-    expect($('[data-header]')?.textContent).toBe('Sparesp-acme-corp.dev.r3proxy.com')
+    expect($('[data-header]')?.textContent).toBe('Sparesp-acme-corp.dev.r3proxy.com · Internet')
     expect($('[data-notice]')).toBeNull()
     expect($('[data-picker]')).toBeNull()
   })
@@ -857,16 +877,17 @@ describe('another proxy’s address, with a dialog open or an answer still to co
 })
 
 describe('a proxy’s names: its host label and its own domain, each move said first', () => {
-  // What graphql says a move does: the host and domain after, each address that moves, and the certificate after.
+  // What graphql says a move does: the host and domain after, each address that moves — a new host moves its tcp and
+  // udp endpoints, its https ones keeping their own names —, and the certificate after.
   const said = (fields: any = {}) => ({
     host: 'gw2-acme-corp.dev.r3proxy.com',
     domain: null,
     addresses: [
       {
-        endpoint: 'EP1',
-        kind: 'https',
-        from: 'https://ep1.gw-acme-corp.dev.r3proxy.com',
-        to: 'https://ep1.gw2-acme-corp.dev.r3proxy.com',
+        endpoint: 'EP2',
+        kind: 'tcp',
+        from: 'gw-acme-corp.dev.r3proxy.com:30001',
+        to: 'gw2-acme-corp.dev.r3proxy.com:30001',
       },
     ],
     certificate: 'pending',
@@ -901,10 +922,10 @@ describe('a proxy’s names: its host label and its own domain, each move said f
     expect(setLabel).toHaveBeenCalledWith('P1', 'gw2', false)
     expect($('[data-confirm-title]')?.textContent).toBe('Move Gateway to gw2-acme-corp.dev.r3proxy.com?')
     expect($('[data-names-addresses]')?.textContent).toBe(
-      'https://ep1.gw2-acme-corp.dev.r3proxy.comwas https://ep1.gw-acme-corp.dev.r3proxy.com'
+      'gw2-acme-corp.dev.r3proxy.com:30001was gw-acme-corp.dev.r3proxy.com:30001'
     )
     expect($('[data-names-certificate]')?.textContent).toBe(
-      'The old host’s certificate goes, and the daily certificate job issues one for gw2-acme-corp.dev.r3proxy.com within a day: until then its https endpoints are not served.'
+      'remote.it’s certificate for every proxy name is not issued yet: until it is, its https endpoints are not served.'
     )
     expect(renameProxy).not.toHaveBeenCalled()
     setLabel.mockResolvedValue(said({ applied: true }))
@@ -953,12 +974,19 @@ describe('a proxy’s names: its host label and its own domain, each move said f
     expect(setting('arrow-right-arrow-left')).toBeNull()
   })
 
-  it('its own domain: its https addresses’ move said first, with its own certificate, then moved; none, back under its host', async () => {
+  it('its own domain: its https addresses’ move said first, with its own certificate, then moved; none, taken off it', async () => {
     setDomain.mockResolvedValue(
       said({
         host: 'gw-acme-corp.dev.r3proxy.com',
         domain: 'proxy.example.com',
-        addresses: [{ endpoint: 'EP1', kind: 'https', from: 'https://ep1.gw-acme-corp.dev.r3proxy.com', to: 'https://ep1.proxy.example.com' }],
+        addresses: [
+          {
+            endpoint: 'EP1',
+            kind: 'https',
+            from: 'https://ep1-acme-corp.dev.r3proxy.com',
+            to: 'https://ep1.proxy.example.com',
+          },
+        ],
         certificate: 'own',
       })
     )
@@ -976,9 +1004,9 @@ describe('a proxy’s names: its host label and its own domain, each move said f
     setDomain.mockResolvedValue(said({ host: 'gw-acme-corp.dev.r3proxy.com', certificate: 'ready' }))
     await act(async () => inline[DOMAIN].onSave(''))
     expect(setDomain).toHaveBeenLastCalledWith('P1', null, false)
-    expect($('[data-confirm-title]')?.textContent).toBe('Put Gateway’s https names back under its host?')
+    expect($('[data-confirm-title]')?.textContent).toBe('Take Gateway’s https names off proxy.example.com?')
     expect($('[data-names-certificate]')?.textContent).toBe(
-      'Its https endpoints are served with remote.it’s certificate for gw-acme-corp.dev.r3proxy.com.'
+      'Its https endpoints are served with remote.it’s certificate for every proxy name.'
     )
   })
 
@@ -1053,3 +1081,97 @@ describe('moving the endpoints, read or made amiss', () => {
   })
 })
 
+describe('Internet or Local network', () => {
+  // A local proxy, on its first device's network: each endpoint at its public name, its .local name, and each device's
+  // IP and port in service.
+  const OFFICE = {
+    ...GATEWAY,
+    id: 'P5',
+    name: 'Office',
+    host: 'office-acme-corp.dev.r3proxy.com',
+    label: 'office',
+    local: true,
+    localNetwork: '192.168.1.0/24',
+    devices: [run('D1', 'Printer Pi', { privateAddress: '192.168.1.20', network: '192.168.1.0/24' })],
+    endpointCount: 2,
+    endpoints: endpointsOf(2).map((endpoint, n) =>
+      n
+        ? {
+            ...endpoint,
+            host: 'office-acme-corp.dev.r3proxy.com',
+            localAddresses: ['office-acme-corp.local:30001', '192.168.1.20:30001'],
+          }
+        : {
+            ...endpoint,
+            localAddresses: ['https://ep1-acme-corp.local', 'https://192.168.1.20:40443'],
+          }
+    ),
+  }
+  const lines = (endpoint: string) =>
+    [...document.body.querySelectorAll(`[data-endpoint="${endpoint}"] [data-local-address]`)].map(
+      line => line.textContent
+    )
+
+  it('an Internet proxy says so beside its host, and on its page what that means, chosen when it was made', async () => {
+    await render()
+    expect($('[data-header]')?.textContent).toBe('Gatewaygw-acme-corp.dev.r3proxy.com · Internet')
+    expect(label('cloud')).toBe('Internet')
+    expect(sublabel('cloud')).toBe(
+      'Reached from anywhere its devices can be reached. Chosen when it was made: it cannot be changed.'
+    )
+    expect(setting('house-signal')).toBeNull()
+  })
+
+  it('a local proxy: Local network only, on its network, beside its host and on its page', async () => {
+    await render(OFFICE)
+    expect($('[data-header]')?.textContent).toBe(
+      'Officeoffice-acme-corp.dev.r3proxy.com · Local network only: 192.168.1.0/24'
+    )
+    expect(label('house-signal')).toBe('Local network only: 192.168.1.0/24')
+    expect(sublabel('house-signal')).toBe(
+      'Reached only on its devices’ own network, for printers, PCs and anything without remote.it. Chosen when it was made: it cannot be changed.'
+    )
+    expect(setting('cloud')).toBeNull()
+  })
+
+  it('a local proxy before its first device: its network is its first device’s', async () => {
+    await render({ ...OFFICE, localNetwork: null, devices: [], endpointCount: 0, endpoints: [] })
+    expect($('[data-header]')?.textContent).toBe('Officeoffice-acme-corp.dev.r3proxy.com · Local network only')
+    expect(label('house-signal')).toBe('Local network only')
+    expect(sublabel('house-signal')).toBe(
+      'Reached only on its devices’ own network, for printers, PCs and anything without remote.it. Its network is its first device’s. Chosen when it was made: it cannot be changed.'
+    )
+  })
+
+  it('a local proxy’s endpoints: the public name first, then the .local name and each device’s IP and port — the browser warns of an https one’s certificate there', async () => {
+    await render(OFFICE)
+    const primary = (endpoint: string) => $(`[data-endpoint="${endpoint}"] .MuiListItemText-primary`)?.textContent
+    expect(primary('EP1')).toBe('https://ep1-acme-corp.dev.r3proxy.com')
+    expect(lines('EP1')).toEqual([
+      'https://ep1-acme-corp.local · the browser warns about the certificate here',
+      'https://192.168.1.20:40443 · the browser warns about the certificate here',
+    ])
+    expect(primary('EP2')).toBe('office-acme-corp.dev.r3proxy.com:30001')
+    expect(lines('EP2')).toEqual(['office-acme-corp.local:30001', '192.168.1.20:30001'])
+  })
+
+  it('one who does not manage a local proxy sees its kind and the addresses of the endpoints they made', async () => {
+    await render({
+      ...OFFICE,
+      manage: false,
+      devices: null,
+      endpointCount: null,
+      endpoints: OFFICE.endpoints.slice(0, 1),
+    })
+    expect($('[data-header]')?.textContent).toContain('Local network only: 192.168.1.0/24')
+    expect(lines('EP1')).toHaveLength(2)
+    expect(setting('house-signal')).toBeNull()
+  })
+
+  it('its devices are told it is a local proxy, to say each one’s private address; an Internet proxy’s are not', async () => {
+    await render(OFFICE)
+    expect($('[data-runs-on] [data-run="D1"]')?.hasAttribute('data-local')).toBe(true)
+    await render()
+    expect($('[data-runs-on] [data-run="D1"]')?.hasAttribute('data-local')).toBe(false)
+  })
+})

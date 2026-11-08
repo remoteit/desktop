@@ -26,11 +26,13 @@ import { Icon } from '../components/Icon'
    state in it — in service, draining, retired, or joining with what it waits for — and a link to it, and the actions on
    it alone, each saying first what it does and after what the device still runs. Its local network is said as its
    machine has it: its exit's setting, changed there (pages/ExitPage.tsx), its machine's administrator keeping the last
-   word. One it does not run: "Make this device an exit" (or a proxy), one action of two calls — made, then the device
-   added — or the device added to one of its account's own (components/MakeRunDialog.tsx). The device's actions act on
-   everything it runs at once, each saying first what it does to each (components/RunActionDialog.tsx). The exit its own
-   traffic goes out through is chosen on Configure. A proxy's device listens only once told to (its proxy setting,
-   turned on as it joins): where it disagrees, it says why; and who has visited it. Behind the device-sessions flag. */
+   word. In its proxy: its private address where the proxy is reached on its network only, or whether it is reached
+   from the internet (§14). One it does not run: "Make this device an exit" (or a proxy), one action of two calls —
+   made, then the device added — or the device added to one of its account's own (components/MakeRunDialog.tsx). The
+   device's actions act on everything it runs at once, each saying first what it does to each
+   (components/RunActionDialog.tsx). The exit its own traffic goes out through is chosen on Configure. A proxy's device
+   listens only once told to (its proxy setting, turned on as it joins): where it disagrees, it says why; and who has
+   visited it. Behind the device-sessions flag. */
 export const DeviceRunsPage: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
@@ -116,6 +118,7 @@ export const DeviceRunsPage: React.FC = () => {
                   : `/proxies/${runs.proxy.proxy.id}`
               }
               manage={manage}
+              local={runs.proxy.proxy.local}
               onChanged={changed}
             />
           ) : (

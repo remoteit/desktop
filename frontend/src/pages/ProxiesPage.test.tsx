@@ -75,6 +75,8 @@ const GATEWAY = {
   host: 'gw-acme.dev.r3proxy.com',
   domain: null,
   remoteit: false,
+  local: false,
+  localNetwork: null,
   publicEndpoints: true,
   location: null,
   provider: '',
@@ -97,9 +99,10 @@ const NAS = {
 const PDX = {
   id: 'R1',
   name: 'remote.it pdx1a',
-  host: 'pdx1a.dev.r3proxy.com',
+  host: 'pdx1a-r3.dev.r3proxy.com',
   domain: null,
   remoteit: true,
+  local: false,
   publicEndpoints: true,
   location: 'pdx1',
   provider: 'AWS us-west-2 (Boardman)',
@@ -143,10 +146,30 @@ describe('the account’s proxies', () => {
     expect(['P1', 'P2', 'P3', 'P4'].map(iconColor)).toEqual(['primary', 'grayDark', 'grayDark', 'grayDark'])
   })
 
+  it('marks one reached on its devices’ own network only beside its name; an Internet one is not marked', async () => {
+    list.value = [GATEWAY, { ...NAS, local: true, localNetwork: '192.168.1.0/24' }]
+    await render()
+    expect(row('P1').querySelector('[data-title]')?.textContent).toBe('Gateway')
+    expect(row('P1').querySelector('[data-local]')).toBeNull()
+    expect(row('P2').querySelector('[data-title]')?.textContent).toBe('NASLocal network')
+    expect(row('P2').querySelector('[data-local]')?.textContent).toBe('Local network')
+  })
+
+  it('a device out of service — failing its network check, or not reachable from the internet — is not serving', async () => {
+    const offNetwork = [{ name: 'network', passed: false, pending: false, reason: 'Laptop is on another network' }]
+    list.value = [
+      { ...GATEWAY, id: 'P5', devices: [run('D5', 'Laptop', { checks: offNetwork })] },
+      { ...GATEWAY, id: 'P6', devices: [run('D6', 'Pi', { reachable: false, reachReason: 'connect timed out' })] },
+      { ...GATEWAY, id: 'P7', devices: [run('D7', 'Mini', { reachable: true })] },
+    ]
+    await render()
+    expect(['P5', 'P6', 'P7'].map(iconColor)).toEqual(['grayDark', 'grayDark', 'primary'])
+  })
+
   it('lists remote.it’s apart, by name with their host and provider, none of the account’s own among them', async () => {
     proxies.mockResolvedValue([
       PDX,
-      { ...PDX, id: 'R2', name: 'remote.it sea1a', host: 'sea1a.dev.r3proxy.com', provider: '' },
+      { ...PDX, id: 'R2', name: 'remote.it sea1a', host: 'sea1a-r3.dev.r3proxy.com', provider: '' },
       GATEWAY,
     ])
     const page = await render()
@@ -158,8 +181,8 @@ describe('the account’s proxies', () => {
       item.querySelector('.MuiListItemText-secondary')?.textContent,
     ])
     expect(lines).toEqual([
-      ['remote.it pdx1a', 'pdx1a.dev.r3proxy.com · AWS us-west-2 (Boardman)'],
-      ['remote.it sea1a', 'sea1a.dev.r3proxy.com'],
+      ['remote.it pdx1a', 'pdx1a-r3.dev.r3proxy.com · AWS us-west-2 (Boardman)'],
+      ['remote.it sea1a', 'sea1a-r3.dev.r3proxy.com'],
     ])
     expect(page.querySelector('[data-proxy="R1"]')).toBeNull()
   })
@@ -203,11 +226,18 @@ describe('the account’s proxies', () => {
 })
 
 describe('a proxy of the account in a line', () => {
-  it('serving: one of its devices in service, not joining', () => {
+  it('serving: one of its devices in service, not joining, disabled or out of service', () => {
     expect(serving(GATEWAY)).toBe(true)
     expect(serving({ devices: [run('D1', 'Office Mac', { joining: true })] } as any)).toBe(false)
     expect(serving({ devices: [run('D1', 'Office Mac', { state: 'RETIRED' })] } as any)).toBe(false)
     expect(serving({ devices: [run('D1', 'Office Mac', { state: 'DRAINING' }), run('D2', 'Spare')] } as any)).toBe(true)
+    expect(serving({ devices: [run('D1', 'Office Mac', { disabled: true })] } as any)).toBe(false)
+    expect(serving({ devices: [run('D1', 'Office Mac', { reachable: false })] } as any)).toBe(false)
+    expect(serving({ devices: [run('D1', 'Office Mac', { reachable: false }), run('D2', 'Spare')] } as any)).toBe(true)
+    const failed = [{ name: 'network', passed: false, pending: false, reason: 'on another network' }]
+    expect(serving({ devices: [run('D1', 'Office Mac', { checks: failed })] } as any)).toBe(false)
+    const waits = [{ name: 'policy', passed: false, pending: true, reason: 'waits for its machine' }]
+    expect(serving({ devices: [run('D1', 'Office Mac', { checks: waits })] } as any)).toBe(true)
     expect(serving({ devices: null })).toBe(false)
   })
 

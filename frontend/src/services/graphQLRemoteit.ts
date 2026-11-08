@@ -90,14 +90,14 @@ export const graphQLAdoptRemoteitProxy = (deviceId: string) =>
     deviceId,
   })
 
-/* One of remote.it's devices running a proxy given another number: its own name e<number>-r3 — URLs under the old one
-   stop reaching it —, its certificate kept under the new name (moved) or issued (pending), and whether the new name has
-   an address for its proxy's record (none: left out of it until it has; null where the stage does not manage the
-   proxies' DNS). Said first, done with apply. */
+/* One of remote.it's devices running a proxy given another number: its own name e<number>-r3 — the old one stops
+   reaching it —, the certificate it serves, the stage's for every proxy name, which a number changes nothing of (ready,
+   or pending: not issued yet), and whether the new name has an address for its proxy's record (none: left out of it
+   until it has; null where the stage does not manage the proxies' DNS). Said first, done with apply. */
 export type Renumbered = {
   from: string
   to: string
-  certificate: 'moved' | 'pending'
+  certificate: 'ready' | 'pending'
   record: boolean | null
   applied: boolean
 }

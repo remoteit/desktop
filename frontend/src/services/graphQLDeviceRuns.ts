@@ -10,8 +10,10 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 
 export type RunState = 'ACTIVE' | 'DRAINING' | 'RETIRED'
 
-// One of the checks a device waiting to go into service must pass: certificate, health, policy or nat. One pending is
-// not passed yet and waits on what comes by itself — the machine turning its exit node on — rather than failed.
+// One of the checks a device waiting to go into service must pass: certificate, health, policy, nat or network. One
+// pending is not passed yet and waits on what comes by itself — the machine turning its exit node on — rather than
+// failed. A local proxy's device on another network than its proxy's fails its network check, and is out of service
+// until it is back.
 export type RunCheck = { name: string; passed: boolean; pending: boolean; reason: string }
 
 type Run = {
@@ -41,10 +43,19 @@ export type ProxyDevice = Run & {
   host: string | null // one of remote.it's devices' own name; none on an own proxy's device
   drainMaxWaitMinutes: number | null
   health: { state: string; since: string | null; reason: string | null } | null // none for an own proxy's
-  certificate: 'own' | 'ready' | 'pending'
+  certificate: 'own' | 'ready' | 'pending' // the stage's for every proxy device (ready or pending), or its own domain's
   openConnections: ProxyOpenConnections | null // none from a daemon that does not say them
   drain: ProxyDrain | null // none while in service
-  proxy?: { id: string; name: string; host: string; remoteit: boolean }
+  // Where it is, as it reports itself: its address on its network, the public address presence sees it at, and its
+  // network (192.168.1.0/24).
+  privateAddress: string | null
+  publicAddress: string | null
+  network: string | null
+  // An own Internet proxy's device, tested from outside: reached, or not — out of service — and why, in plain words.
+  // None where it is not tested (a local proxy's, remote.it's) or not judged yet.
+  reachable: boolean | null
+  reachReason: string | null
+  proxy?: { id: string; name: string; host: string; remoteit: boolean; local: boolean }
 }
 
 export type ExitDevice = Run & {
@@ -82,9 +93,10 @@ export type DeviceActionEffect = {
 
 const RUN_FIELDS = 'id name state joining activeSince drainingSince disabled checks { name passed pending reason }'
 export const PROXY_DEVICE_FIELDS = `${RUN_FIELDS} host drainMaxWaitMinutes health { state since reason } certificate
-  openConnections { https tcp udp exit total reported } drain { safeToStop reason dnsClearAt deadline }`
+  openConnections { https tcp udp exit total reported } drain { safeToStop reason dnsClearAt deadline }
+  privateAddress publicAddress network reachable reachReason`
 export const EXIT_DEVICE_FIELDS = `${RUN_FIELDS} established offering refusal health lan lanReason`
-export const RUNS_FIELDS = `proxy { ${PROXY_DEVICE_FIELDS} proxy { id name host remoteit } }
+export const RUNS_FIELDS = `proxy { ${PROXY_DEVICE_FIELDS} proxy { id name host remoteit local } }
   exit { ${EXIT_DEVICE_FIELDS} exit { id name remoteit } }`
 const EFFECT_FIELDS = 'kind id name state after sessions ends endpoints users moved inService dormant refusal'
 
@@ -185,7 +197,8 @@ export function graphQLRunAction(
 }
 
 // A device added to a proxy: it joins out of service and goes into service as the proxy's activation says. One of
-// remote.it's devices takes e<number>-r3 as its own name, the next free one when none is given.
+// remote.it's devices takes e<number>-r3 as its own name, the next free one when none is given. A local proxy takes
+// only devices on its network — its first device's —: one on another is refused, in graphql's words.
 export const graphQLAddProxyDevice = (proxy: string, deviceId: string, number?: number) =>
   change(
     'addProxyDevice',
@@ -208,7 +221,8 @@ export const graphQLAddExitDevice = (exit: string, deviceId: string) =>
   )
 
 // A device that could run a proxy or an exit — the one named, or a new one of the account —, or why not, in the words
-// adding it would refuse with, and what it runs now: added, it leaves the one of this kind it runs.
+// adding it would refuse with (a local proxy's: on another network than its own), and what it runs now: added, it
+// leaves the one of this kind it runs.
 export type RunCandidate = { id: string; name: string | null; fit: boolean; refusal: string | null; runs: DeviceRuns }
 
 // The devices weighed: the account's you manage, or — an account of more than 1,000 devices — those named, at most 1,000.

@@ -8,22 +8,26 @@ import { graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
 import { Proxy, graphQLCreateProxy } from '../services/graphQLProxy'
 import { NAME_MAX, validLabel } from '../services/subnetNames'
 import { RunDevicePicker, addEach } from '../components/RunDevicePicker'
+import { ProxyKindChoice } from '../components/ProxyKindChoice'
 import { useAccountProxies } from '../hooks/useAccountExits'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
-/* A new proxy (graphql-api docs/PROXY-GROUPS.md §13, "No shortcuts"): made in the account — its name, the label its
-   host takes before the account's slug (made from the name when none is given), your own domain for its https names if
-   it has one, and whether it takes public endpoints —, then the devices that run it are chosen and added: two steps,
-   as graphql has them. One refused is said by name and left to choose again; the proxy is kept either way. */
+/* A new proxy (graphql-api docs/PROXY-GROUPS.md §13, "No shortcuts"; §14): made in the account — its name, whether it
+   is reached from the internet or on its devices' own network only (chosen for good), the label its host takes before
+   the account's slug (made from the name when none is given), your own domain for its https names if it has one, and
+   whether it takes public endpoints —, then the devices that run it are chosen and added: two steps, as graphql has
+   them. A local network proxy's devices are all on one network, its first device's: one on another is said not to fit,
+   and refused if added. One refused is said by name and left to choose again; the proxy is kept either way. */
 export const ProxyAddPage: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
   const accountId = useSelector(selectActiveAccountId)
   const { reload } = useAccountProxies()
   const [name, setName] = useState('')
+  const [local, setLocal] = useState(false)
   const [label, setLabel] = useState('')
   const [domain, setDomain] = useState('')
   const [publicEndpoints, setPublicEndpoints] = useState(true)
@@ -40,6 +44,7 @@ export const ProxyAddPage: React.FC = () => {
       label: label || undefined,
       domain: domain.trim() || undefined,
       publicEndpoints,
+      local,
       accountId,
     })
     setBusy(false)
@@ -75,7 +80,7 @@ export const ProxyAddPage: React.FC = () => {
             <Typography variant="body2" color="textSecondary">
               {t(
                 'proxyAdd.description',
-                'Name it, then choose the devices that run it. Endpoints made on it are reached under its host, served by each of its devices in service.'
+                'Name it, then choose the devices that run it. Each endpoint made on it is served by every one of its devices in service: a tcp or udp one at its name, an https one at a name of its own.'
               )}
             </Typography>
             <TextField
@@ -86,6 +91,7 @@ export const ProxyAddPage: React.FC = () => {
               inputProps={{ maxLength: 255 }}
               onChange={event => setName(event.target.value)}
             />
+            <ProxyKindChoice local={local} disabled={busy} onChange={setLocal} />
             <TextField
               size="small"
               label={t('proxyAdd.label', 'Host label, before your account slug')}
@@ -120,15 +126,21 @@ export const ProxyAddPage: React.FC = () => {
         ) : (
           <>
             <Typography variant="body2" color="textSecondary" gutterBottom>
-              {t(
-                'proxyAdd.chooseDevices',
-                'Made: it is reached under {{host}}. Now choose the devices that run it: each goes into service once its checks pass.',
-                { host: proxy.host }
-              )}
+              {proxy.local
+                ? t(
+                    'proxyAdd.chooseDevicesLocal',
+                    'Made: it is reached at {{host}}, on its devices’ own network only. Now choose the devices that run it, all on one network — the first one added sets it: each goes into service once its checks pass.',
+                    { host: proxy.host }
+                  )
+                : t(
+                    'proxyAdd.chooseDevices',
+                    'Made: it is reached at {{host}}. Now choose the devices that run it: each goes into service once its checks pass.',
+                    { host: proxy.host }
+                  )}
             </Typography>
             <RunDevicePicker
               kind="proxy"
-                  target={proxy.id}
+              target={proxy.id}
               ownerId={proxy.owner?.id || accountId}
               busy={busy}
               refusals={refusals}

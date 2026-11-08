@@ -356,8 +356,9 @@ const Machine: React.FC<{ machine: RemoteitMachine; onProblem: Problem; onChange
 export const numberOf = (host: string) => Number(/^e(\d+)-r3\./.exec(host)?.[1]) || undefined
 
 /* One of remote.it's devices running a proxy given another number, e<number>-r3: said first — its name before and
-   after (URLs under the old one stop reaching it), its certificate kept under the new name or still to come, and
-   whether the new name has an address for its proxy's record —, then done. */
+   after (the old one stops reaching it), the certificate it serves — the stage's, for every proxy name, which the new
+   name is one of —, held or still to come, and whether the new name has an address for its proxy's record —, then
+   done. */
 const Renumber: React.FC<{ deviceId: string; host: string; onDone: () => void }> = ({ deviceId, host, onDone }) => {
   const [number, setNumber] = useState('')
   const [said, setSaid] = useState<Renumbered | { reason: string }>()
@@ -410,11 +411,13 @@ const Renumber: React.FC<{ deviceId: string; host: string; onDone: () => void }>
         ) : (
           preview && (
             <Typography variant="body2" component="div" data-renumber-says>
-              <p>URLs under {preview.from} stop reaching it.</p>
               <p>
-                {preview.certificate === 'moved'
-                  ? `Its certificate is kept under ${preview.to}, still serving its proxy's names, and one naming ${preview.to} is issued within a day.`
-                  : `It holds no certificate yet: one naming ${preview.to} is issued within a day.`}
+                {preview.from} stops reaching it: {preview.to} does.
+              </p>
+              <p>
+                {preview.certificate === 'ready'
+                  ? `Its certificate, remote.it's for every proxy name, covers ${preview.to} already.`
+                  : "remote.it's certificate for every proxy name is not issued yet: until it is, its https names fail."}
               </p>
               <p>
                 {preview.record === null
