@@ -444,7 +444,7 @@ export const TestPage: React.FC = () => {
           label={t('testPage.deviceSessions', 'Control Link devices')}
           subLabel={t(
             'testPage.deviceSessionsHint',
-            "The device agent's status and upgrades. Needs an API that serves Control Link devices (local or dev)."
+            "Exits, proxies, and the device agent's status and upgrades. On by default where the API serves Control Link devices to every account (solo); for local or dev, turn it on here."
           )}
           toggle={deviceSessions}
           onClick={() => dispatch.ui.setPersistent({ deviceSessions: !deviceSessions })}

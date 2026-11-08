@@ -141,13 +141,14 @@ export const SidebarNav: React.FC = () => {
               </Tooltip>
             )}
           </ListItemLocation>
-          {deviceSessions && (
-            <ListItemLocation title={t('nav.exits', 'Exits')} icon="door-open" to="/exits" match="/exits" dense />
-          )}
-          {deviceSessions && (
-            <ListItemLocation title={t('nav.proxies', 'Proxies')} icon="server" to="/proxies" match="/proxies" dense />
-          )}
         </>
+      )}
+      {/* In both layouts: a phone's bottom menu has Connections, Devices and Networks, and nothing else of these. */}
+      {deviceSessions && (
+        <ListItemLocation title={t('nav.exits', 'Exits')} icon="door-open" to="/exits" match="/exits" dense />
+      )}
+      {deviceSessions && (
+        <ListItemLocation title={t('nav.proxies', 'Proxies')} icon="server" to="/proxies" match="/proxies" dense />
       )}
       <ListItemLocation
         title={t('nav.scripting', 'Scripting')}

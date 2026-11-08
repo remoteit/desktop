@@ -3533,7 +3533,7 @@
     "customGraphQLURL": "Custom GraphQL URL (advanced)",
     "customWebSocketURL": "Custom WebSocket URL (advanced)",
     "deviceSessions": "Control Link devices",
-    "deviceSessionsHint": "The device agent's status and upgrades. Needs an API that serves Control Link devices (local or dev).",
+    "deviceSessionsHint": "Exits, proxies, and the device agent's status and upgrades. On by default where the API serves Control Link devices to every account (solo); for local or dev, turn it on here.",
     "disableTestUI": "Disable Test UI",
     "disableTestUIHint": "To re-enable the alpha UI you will have to select the Avatar menu while holding alt-shift.",
     "experimental": "Experimental",
