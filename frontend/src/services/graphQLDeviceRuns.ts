@@ -10,10 +10,12 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 
 export type RunState = 'ACTIVE' | 'DRAINING' | 'RETIRED'
 
-// One of the checks a device waiting to go into service must pass: certificate, health, policy, nat or network. One
-// pending is not passed yet and waits on what comes by itself — the machine turning its exit node on — rather than
-// failed. A local proxy's device on another network than its proxy's fails its network check, and is out of service
-// until it is back.
+// One of the checks a device waiting to go into service must pass: address, certificate, health, policy, nat or
+// network. One pending is not passed yet and waits on what comes by itself — the machine turning its exit node on —
+// rather than failed. A local proxy's device on another network than its proxy's fails its network check, and is out
+// of service until it is back. address (§11 wave 2): whatever answers on 443 at the public address presence sees it at
+// proves it holds the device's key — its address enters its proxy's record only once checked; a local proxy's has
+// none.
 export type RunCheck = { name: string; passed: boolean; pending: boolean; reason: string }
 
 type Run = {

@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { refusalOf } from '../services/graphQL'
-import { DeviceRuns, graphQLAddExitDevice, graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
+import { DeviceRuns, RunCheck, graphQLAddExitDevice, graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
 import { graphQLSetExitActivation, graphQLSetExitProduct } from '../services/graphQLExits'
 import { graphQLSetProxyActivation, graphQLSetProxyProduct } from '../services/graphQLProxy'
 import {
@@ -142,7 +142,9 @@ export const AdminRemoteitProxies: React.FC<{ onProblem: Problem }> = ({ onProbl
                 setTold(stillRunsLine(t, machine.name, runs))
                 await load()
               }}
-            />
+            >
+              <Checks checks={device.checks} />
+            </RunListItem>
           ))}
           <AddMachine
             kind="proxy"
@@ -238,7 +240,9 @@ export const AdminRemoteitExits: React.FC<{ onProblem: Problem }> = ({ onProblem
                 setTold(stillRunsLine(t, machine.name, runs))
                 await load()
               }}
-            />
+            >
+              <Checks checks={device.checks} />
+            </RunListItem>
           ))}
           <AddMachine
             kind="exit"
@@ -377,6 +381,20 @@ const Machine: React.FC<{ machine: RemoteitMachine; onProblem: Problem; onChange
     </ListItem>
   )
 }
+
+/* A machine's checks in a proxy or an exit, each by name, passed, waiting or failed: the address check (§11 wave 2 —
+   whatever answers on 443 at its public address proves it holds its device key, before the address enters the record
+   and the proxy's names are signed for it) with the others. Why one is not passed is its state's line (RunListItem).
+   Joining, graphql gives every check; serving, those failing now: none, nothing to say. */
+const Checks: React.FC<{ checks: RunCheck[] }> = ({ checks }) =>
+  checks.length ? (
+    <Typography component="div" variant="caption" color="textSecondary" data-checks>
+      Checks:{' '}
+      {checks
+        .map(check => `${check.name} ${check.passed ? 'passed' : check.pending ? 'waiting' : 'failed'}`)
+        .join(' · ')}
+    </Typography>
+  ) : null
 
 type ProductRef = { id: string; name: string }
 

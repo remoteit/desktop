@@ -536,6 +536,42 @@ describe('remote.it’s proxies', () => {
   })
 })
 
+describe('a machine’s checks, its address among them', () => {
+  const check = (name: string, passed: boolean, pending = false) => ({
+    name,
+    passed,
+    pending,
+    reason: `${name} reason`,
+  })
+
+  it('joining: each by name, passed, waiting or failed — the address check with the others', async () => {
+    proxies.mockResolvedValue([
+      {
+        ...PROXY,
+        devices: [
+          run('E1', 'e1', {
+            joining: true,
+            checks: [check('address', true), check('certificate', false, true), check('health', false)],
+          }),
+          run('E2', null),
+        ],
+      },
+    ])
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    expect($('[data-run="E1"] [data-checks]')?.textContent).toBe(
+      'Checks: address passed · certificate waiting · health failed'
+    )
+    // Serving with none failing: nothing to say.
+    expect($('[data-run="E2"] [data-checks]')).toBeNull()
+  })
+
+  it('an exit’s machine serving, its address failing now: said', async () => {
+    exits.mockResolvedValue([{ ...EXIT, devices: [run('E1', 'e1', { checks: [check('address', false)] })] }])
+    await render(<AdminRemoteitExits onProblem={vi.fn()} />)
+    expect($('[data-run="E1"] [data-checks]')?.textContent).toBe('Checks: address failed')
+  })
+})
+
 describe('the products whose new devices join a proxy or an exit', () => {
   const proxy = (id: string) => $(`[data-remoteit-proxy="${id}"]`)!
   const exit = (id: string) => $(`[data-remoteit-exit="${id}"]`)!
