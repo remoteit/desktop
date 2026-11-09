@@ -72,18 +72,6 @@
     "label": "サービス",
     "placeholder": "サービスタイプを追加..."
   },
-  "addProductServiceDialog": {
-    "addFailed": "サービスの追加に失敗しました",
-    "addingEllipsis": "追加中...",
-    "enabled": "有効",
-    "nameRequired": "サービス名は必須です",
-    "port": "ポート",
-    "portRange": "ポートは0～65535の数値である必要があります",
-    "serviceName": "サービス名",
-    "serviceType": "サービスタイプ",
-    "title": "サービスを追加",
-    "typeRequired": "サービスタイプは必須です"
-  },
   "addServiceButton": {
     "guideBody": "このデバイスは、新しいサービスをホストするように動的にセットアップできます。",
     "guideTitle": "サービス(アプリケーション)を追加",

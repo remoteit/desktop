@@ -72,18 +72,6 @@
     "label": "DIENST",
     "placeholder": "Diensttyp hinzufügen..."
   },
-  "addProductServiceDialog": {
-    "addFailed": "Hinzufügen des Diensts fehlgeschlagen",
-    "addingEllipsis": "Wird hinzugefügt...",
-    "enabled": "Aktiviert",
-    "nameRequired": "Dienstname ist erforderlich",
-    "port": "Port",
-    "portRange": "Der Port muss eine Zahl zwischen 0 und 65535 sein",
-    "serviceName": "Dienstname",
-    "serviceType": "Diensttyp",
-    "title": "Dienst hinzufügen",
-    "typeRequired": "Diensttyp ist erforderlich"
-  },
   "addServiceButton": {
     "guideBody": "Dieses Gerät kann dynamisch eingerichtet werden, um neue Dienste zu hosten.",
     "guideTitle": "Dienst (Anwendung) hinzufügen",

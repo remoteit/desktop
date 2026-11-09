@@ -72,18 +72,6 @@
     "label": "SERVICIO",
     "placeholder": "Agregar un tipo de servicio..."
   },
-  "addProductServiceDialog": {
-    "addFailed": "No se pudo agregar el servicio",
-    "addingEllipsis": "Agregando...",
-    "enabled": "Habilitado",
-    "nameRequired": "El nombre del servicio es obligatorio",
-    "port": "Puerto",
-    "portRange": "El puerto debe ser un número entre 0 y 65535",
-    "serviceName": "Nombre del servicio",
-    "serviceType": "Tipo de servicio",
-    "title": "Agregar servicio",
-    "typeRequired": "El tipo de servicio es obligatorio"
-  },
   "addServiceButton": {
     "guideBody": "Este dispositivo se puede configurar dinámicamente para alojar nuevos servicios.",
     "guideTitle": "Añadir un servicio (aplicación)",
