@@ -15,6 +15,8 @@ import {
   graphQLCreateDeviceProductOneTimeCode,
   graphQLCreateDeviceProductJoinKey,
   graphQLRevokeDeviceProductJoinKey,
+  graphQLSetDeviceProductLifecycle,
+  ProductLifecycle,
 } from '../services/graphQLDeviceProducts'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { State } from '../store'
@@ -65,6 +67,7 @@ export interface IDeviceProduct {
   oneTimeCodes?: IDeviceProductCode[]
   joinKeys?: IDeviceProductJoinKey[]
   registrationWarning?: string | null
+  lifecycle?: ProductLifecycle
   tags?: string[]
   source?: string
   created: string
@@ -72,8 +75,9 @@ export interface IDeviceProduct {
   services: IProductService[]
 }
 
-// What only the single-product read carries: the product's credentials. Every credential change reads them again,
-// together, so the command, the codes, the keys and the warning never disagree.
+// What only the single-product read carries: the product's credentials, and its lifecycle — whether its devices register
+// again with a join key at every boot. Every credential change reads them again, together, so the command, the codes,
+// the keys and the warning never disagree.
 const CREDENTIAL_FIELDS = [
   'registrationCode',
   'registrationCommand',
@@ -81,6 +85,7 @@ const CREDENTIAL_FIELDS = [
   'oneTimeCodes',
   'joinKeys',
   'registrationWarning',
+  'lifecycle',
 ] as const
 
 export type IProductCredentials = Pick<IDeviceProduct, (typeof CREDENTIAL_FIELDS)[number]>
@@ -241,6 +246,20 @@ export default createModel<RootModel>()({
       if (response === 'ERROR' || !response?.data?.data?.revokeDeviceProductJoinKey) return false
       await dispatch.products.refreshCredentials({ productId, accountId })
       return true
+    },
+
+    // Persistent or ephemeral: refused, in graphql's words, while one of its devices runs a daemon that cannot keep its
+    // identity in memory. Read again as a credential change is.
+    async setLifecycle(
+      { productId, lifecycle }: { productId: string; lifecycle: ProductLifecycle },
+      state
+    ): Promise<{ reason?: string }> {
+      const accountId = selectActiveAccountId(state)
+      const response = await graphQLSetDeviceProductLifecycle(productId, lifecycle)
+      if (response === 'ERROR') return { reason: '' }
+      if ('reason' in response) return { reason: response.reason }
+      await dispatch.products.refreshCredentials({ productId, accountId })
+      return {}
     },
 
     // A product's credentials as graphql has them after one changed, in the account the change was made in: the active

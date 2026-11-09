@@ -53,6 +53,10 @@ export async function graphQLDeviceProducts(options?: {
   )
 }
 
+// A join key as a product lists it: never the key itself, which only its creation answers.
+export const JOIN_KEY_FIELDS =
+  'id name creator { id email } created expires revoked lastUsed joins maxJoins joinRate inForce unused suggestion'
+
 export async function graphQLDeviceProduct(id: string, accountId?: string) {
   return await graphQLBasicRequest(
     ` query DeviceProduct($id: String!, $accountId: String) {
@@ -80,22 +84,9 @@ export async function graphQLDeviceProduct(id: string, accountId?: string) {
                   used
                   lastUsed
                 }
-                joinKeys {
-                  id
-                  name
-                  creator { id email }
-                  created
-                  expires
-                  revoked
-                  lastUsed
-                  joins
-                  maxJoins
-                  joinRate
-                  inForce
-                  unused
-                  suggestion
-                }
+                joinKeys { ${JOIN_KEY_FIELDS} }
                 registrationWarning
+                lifecycle
                 tags
                 source
                 created
@@ -278,6 +269,24 @@ export async function graphQLRevokeDeviceProductJoinKey(productId: string, id: s
         }
       }`,
     { productId, id }
+  )
+}
+
+// Whether a product's devices are persistent or ephemeral (graphql-api docs/PROXY-GROUPS.md §11): an ephemeral device
+// keeps its identity in memory, a new device after a reboot, and is removed when it deregisters or after 10 minutes
+// offline. The change reaches its devices; graphql refuses it, in its words, while one of them runs a daemon that
+// cannot keep its identity so.
+export type ProductLifecycle = 'persistent' | 'ephemeral'
+
+export async function graphQLSetDeviceProductLifecycle(productId: string, lifecycle: ProductLifecycle) {
+  return await graphQLRequestWithReason(
+    ` mutation SetDeviceProductLifecycle($productId: ID!, $lifecycle: String!) {
+        setDeviceProductLifecycle(productId: $productId, lifecycle: $lifecycle) {
+          id
+          lifecycle
+        }
+      }`,
+    { productId, lifecycle }
   )
 }
 

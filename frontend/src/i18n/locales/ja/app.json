@@ -2658,6 +2658,19 @@
     "title": "参加キー",
     "unused": "長期間未使用"
   },
+  "productLifecycle": {
+    "ephemeralMeaning": "",
+    "label": "",
+    "notChanged": "",
+    "persistentMeaning": "",
+    "title": "",
+    "toEphemeral": "",
+    "toEphemeralTitle": "",
+    "toEphemeralWarning": "",
+    "toPersistent": "",
+    "toPersistentBody": "",
+    "toPersistentTitle": ""
+  },
   "productOneTimeCodes": {
     "add": "デバイスを1台追加",
     "codeLabel": "ワンタイムコード",

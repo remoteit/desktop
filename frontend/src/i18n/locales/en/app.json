@@ -2709,6 +2709,19 @@
     "title": "Join Keys",
     "unused": "Unused"
   },
+  "productLifecycle": {
+    "ephemeralMeaning": "Ephemeral devices keep their identity in memory: a daemon restart keeps it, but after a reboot or on a new machine each is a new device, which registers again with a join key. A device is removed when it deregisters, or after 10 minutes offline.",
+    "label": "Ephemeral devices",
+    "notChanged": "The lifecycle was not changed.",
+    "persistentMeaning": "Off: each device keeps its identity on disk, through restarts and reboots, until it is removed.",
+    "title": "Device Lifecycle",
+    "toEphemeral": "Make Ephemeral",
+    "toEphemeralTitle": "Make {{name}}’s devices ephemeral?",
+    "toEphemeralWarning": "Its devices are removed at their next reboot, or after 10 minutes offline, unless the machine can register itself again with a join key.",
+    "toPersistent": "Make Persistent",
+    "toPersistentBody": "Its devices keep their identity on disk from now on, through reboots, and are no longer removed after 10 minutes offline.",
+    "toPersistentTitle": "Make {{name}}’s devices persistent?"
+  },
   "productOneTimeCodes": {
     "add": "Add One Device",
     "codeLabel": "One-time Code",

@@ -8,6 +8,7 @@ const {
   graphQLCreateDeviceProductJoinKey,
   graphQLRevokeDeviceProductJoinKey,
   graphQLCreateDeviceProductOneTimeCode,
+  graphQLSetDeviceProductLifecycle,
 } = vi.hoisted(() => ({
   graphQLDeleteDeviceProduct: vi.fn(),
   graphQLRemoveDeviceProductService: vi.fn(),
@@ -16,6 +17,7 @@ const {
   graphQLCreateDeviceProductJoinKey: vi.fn(),
   graphQLRevokeDeviceProductJoinKey: vi.fn(),
   graphQLCreateDeviceProductOneTimeCode: vi.fn(),
+  graphQLSetDeviceProductLifecycle: vi.fn(),
 }))
 vi.mock('../services/graphQLDeviceProducts', () => ({
   graphQLDeleteDeviceProduct,
@@ -25,6 +27,7 @@ vi.mock('../services/graphQLDeviceProducts', () => ({
   graphQLCreateDeviceProductJoinKey,
   graphQLRevokeDeviceProductJoinKey,
   graphQLCreateDeviceProductOneTimeCode,
+  graphQLSetDeviceProductLifecycle,
 }))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' }))
 
@@ -59,6 +62,7 @@ const credentials = {
   oneTimeCodes: [{ code: 'OTC-1', created: '2026-11-06T10:00:00Z', expires: '2026-11-07T10:00:00Z', used: 0 }],
   joinKeys: [joinKey],
   registrationWarning: null,
+  lifecycle: 'persistent',
 }
 const productRead = (fields: object) => ({
   data: { data: { login: { account: { deviceProducts: { items: [{ id: 'p1', ...fields }] } } } } },
@@ -156,6 +160,27 @@ describe('one-time codes', () => {
   it('answers nothing when the request failed', async () => {
     graphQLCreateDeviceProductOneTimeCode.mockResolvedValue('ERROR')
     expect(await effects().createOneTimeCode('p1', state)).toBeUndefined()
+    expect(dispatch.products.refreshCredentials).not.toHaveBeenCalled()
+  })
+})
+
+describe('lifecycle', () => {
+  it('changed, it is read again with the credentials', async () => {
+    graphQLSetDeviceProductLifecycle.mockResolvedValue({
+      data: { data: { setDeviceProductLifecycle: { id: 'p1', lifecycle: 'ephemeral' } } },
+    })
+    expect(await effects().setLifecycle({ productId: 'p1', lifecycle: 'ephemeral' }, state)).toEqual({})
+    expect(graphQLSetDeviceProductLifecycle).toHaveBeenCalledWith('p1', 'ephemeral')
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: 'p1', accountId: 'acct' })
+  })
+
+  it("refused, graphql's words are answered and nothing is read again; a failed request has none", async () => {
+    graphQLSetDeviceProductLifecycle.mockResolvedValue({ reason: '2 devices run a daemon that cannot' })
+    expect(await effects().setLifecycle({ productId: 'p1', lifecycle: 'ephemeral' }, state)).toEqual({
+      reason: '2 devices run a daemon that cannot',
+    })
+    graphQLSetDeviceProductLifecycle.mockResolvedValue('ERROR')
+    expect(await effects().setLifecycle({ productId: 'p1', lifecycle: 'ephemeral' }, state)).toEqual({ reason: '' })
     expect(dispatch.products.refreshCredentials).not.toHaveBeenCalled()
   })
 })

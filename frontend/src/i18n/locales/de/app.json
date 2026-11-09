@@ -2709,6 +2709,19 @@
     "title": "Beitrittsschlüssel",
     "unused": "Ungenutzt"
   },
+  "productLifecycle": {
+    "ephemeralMeaning": "",
+    "label": "",
+    "notChanged": "",
+    "persistentMeaning": "",
+    "title": "",
+    "toEphemeral": "",
+    "toEphemeralTitle": "",
+    "toEphemeralWarning": "",
+    "toPersistent": "",
+    "toPersistentBody": "",
+    "toPersistentTitle": ""
+  },
   "productOneTimeCodes": {
     "add": "Ein Gerät hinzufügen",
     "codeLabel": "Einmalcode",

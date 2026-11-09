@@ -11,6 +11,7 @@ import { Notice } from '../../components/Notice'
 import { ProductHeaderMenu } from '../../components/ProductHeaderMenu'
 import { productDetailAttributes } from '../../components/ProductAttributes'
 import { ProductJoinKeys } from '../../components/ProductJoinKeys'
+import { ProductLifecycle } from '../../components/ProductLifecycle'
 import { ProductOneTimeCodes } from '../../components/ProductOneTimeCodes'
 import { ProductRegistrationCodes } from '../../components/ProductRegistrationCodes'
 import { getProductModel } from '../../selectors/products'
@@ -53,7 +54,8 @@ export const ProductSettingsPage: React.FC = () => {
   }
 
   // Join keys and one-time codes first: they are how a product registers devices. Reusable codes follow for the
-  // products that still have them; a new product has none, and so no registration command.
+  // products that still have them; a new product has none, and so no registration command. Then whether its devices are
+  // persistent or ephemeral, read with the credentials.
   return (
     <ProductHeaderMenu product={product}>
       <Gutters>
@@ -89,6 +91,8 @@ export const ProductSettingsPage: React.FC = () => {
         )}
 
         {!!product.registrationCodes?.length && <ProductRegistrationCodes product={product} />}
+
+        <ProductLifecycle product={product} />
 
         <Typography variant="subtitle2" color="textSecondary" gutterBottom sx={{ marginTop: 3 }}>
           Details

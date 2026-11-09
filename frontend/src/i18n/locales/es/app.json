@@ -2760,6 +2760,19 @@
     "title": "Claves de unión",
     "unused": "Sin uso"
   },
+  "productLifecycle": {
+    "ephemeralMeaning": "",
+    "label": "",
+    "notChanged": "",
+    "persistentMeaning": "",
+    "title": "",
+    "toEphemeral": "",
+    "toEphemeralTitle": "",
+    "toEphemeralWarning": "",
+    "toPersistent": "",
+    "toPersistentBody": "",
+    "toPersistentTitle": ""
+  },
   "productOneTimeCodes": {
     "add": "Agregar un dispositivo",
     "codeLabel": "Código de un solo uso",
