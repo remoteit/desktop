@@ -357,11 +357,11 @@ describe('no base yet', () => {
     expect($('[data-notice]')).toBeNull()
   })
 
-  it('a plan without it — its limits do not give it —: a paid feature, where plans are, and no form', async () => {
+  it('a plan without it — its limits do not give it —: a paid add-on, where plans are, and no form', async () => {
     limits.value = { 'org-users': 5 }
     await render()
     expect($('[data-proxy-base-plan]')?.textContent).toBe(
-      'The account’s plan does not include a base for its proxies’ names: it is a paid feature, which the Enterprise plan includes.'
+      'The account’s plan does not include a base for its proxies’ names: it is a paid add-on, and the Enterprise plan includes it.'
     )
     expect($('[data-proxy-base-paid]')?.textContent).toBe(PAID)
     expect(inline[LABEL]).toBeUndefined()
@@ -395,6 +395,25 @@ describe('no base yet', () => {
     await render()
     expect(section()).toBe('active')
     expect($('[data-proxy-base-plan]')).toBeNull()
+    expect($('[data-proxy-base-removal]')).toBeNull()
+  })
+
+  it('one remote.it takes away is said ahead, with when: its plan no longer including a base, or not delegated', async () => {
+    limits.value = {}
+    reads(based('active', { proxies: 3, removeAt: '2026-11-10T12:00:00.000Z', removeReason: 'plan' }))
+    await render()
+    expect($('[data-proxy-base-removal]')?.getAttribute('data-proxy-base-removal')).toBe('plan')
+    expect($('[data-proxy-base-removal]')?.textContent).toBe(
+      'The account’s plan no longer includes a base: remote.it removes it — its proxies back under their own names — unless the plan includes one again by 2026-11-10T12:00:00.000Z'
+    )
+  })
+
+  it('a pending one not delegated by its time is said to be removed then', async () => {
+    reads(based('pending', { removeAt: '2026-11-15T23:00:00.000Z', removeReason: 'pending' }))
+    await render()
+    expect($('[data-proxy-base-removal]')?.textContent).toBe(
+      'Not delegated yet: remote.it removes it unless its NS records are found by 2026-11-15T23:00:00.000Z'
+    )
   })
 })
 

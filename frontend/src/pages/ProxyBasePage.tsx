@@ -31,11 +31,12 @@ import { Gutters } from '../components/Gutters'
 import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { PROXY_BASE_LIMIT } from '../constants'
 
-// The plan limit that includes a base (ENTERPRISE's): a plan whose limits do not give it — absent is off, as every
-// feature's — has none, said before anything is typed. Until the account's limits are read, graphql says, refusing a
-// plan without it in its words.
-export const PROXY_BASE_LIMIT = 'proxy-base'
+// The limit that includes a base (PROXY_BASE_LIMIT: the Enterprise plan's, or the Proxy base add-on licence's): an account
+// whose limits do not give it — absent is off, as every feature's — has none, said before anything is typed. Until the
+// account's limits are read, graphql says, refusing a plan without it in its words.
+export { PROXY_BASE_LIMIT }
 
 // Room beside a line for its button, so a long line wraps before it, never under it.
 const BUTTON_ROOM = '120px'
@@ -195,6 +196,24 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
               />
             )}
             {current && <StateLine t={t} base={current} busy={busy} onCheck={check} />}
+            {current?.removeAt && (
+              <ListItem>
+                <Notice severity="warning" fullWidth>
+                  <span data-proxy-base-removal={current.removeReason}>
+                    {current.removeReason === 'plan'
+                      ? t(
+                          'proxyBase.removedPlan',
+                          'The account’s plan no longer includes a base: remote.it removes it — its proxies back under their own names — unless the plan includes one again by'
+                        )
+                      : t(
+                          'proxyBase.removedPending',
+                          'Not delegated yet: remote.it removes it unless its NS records are found by'
+                        )}{' '}
+                    <Timestamp date={new Date(current.removeAt)} variant="minutes" />
+                  </span>
+                </Notice>
+              </ListItem>
+            )}
             <ListItem>
               <ListItemIcon />
               <ListItemText
@@ -294,7 +313,7 @@ const PaidOnly: React.FC<{ t: TFunction }> = ({ t }) => {
       <span data-proxy-base-plan>
         {t(
           'proxyBase.planNone',
-          'The account’s plan does not include a base for its proxies’ names: it is a paid feature, which the Enterprise plan includes.'
+          'The account’s plan does not include a base for its proxies’ names: it is a paid add-on, and the Enterprise plan includes it.'
         )}
       </span>
     </Notice>

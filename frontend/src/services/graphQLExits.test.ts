@@ -751,7 +751,7 @@ describe('the account’s base for its proxies’ names', () => {
     problem: null,
     proxies: 0,
   }
-  const BASE = 'base state nameServers records { name type value found seen } checked problem proxies'
+  const BASE = 'base state nameServers records { name type value found seen } checked problem proxies removeAt removeReason'
   // Proxy by proxy, as each names move says it.
   const list = [
     {

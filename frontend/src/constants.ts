@@ -13,6 +13,9 @@ export const MODE = env.MODE || 'development'
    AI portal defaulted the flag on ahead of the licence (PENDING_FEATURES / CHAT_ALWAYS_ON);
    now a user without the licence — a developer included — sees no chat anywhere. */
 export const CHAT_FEATURE = 'ai-agent'
+/* The limit that includes an account's base for its proxies' names (graphql-api docs/PROXY-GROUPS.md §14, wave 3b): the
+   Enterprise plan's, or the Proxy base add-on licence's, granted per account from Admin → Add-ons as the AI agent's is. */
+export const PROXY_BASE_LIMIT = 'proxy-base'
 export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
 
 // One stage sets the login server with every endpoint: a token works only where its own login server

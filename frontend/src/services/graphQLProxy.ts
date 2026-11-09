@@ -282,9 +282,11 @@ export type AccountProxyBase = {
   checked: string | null // when the delegation was last checked
   problem: string | null // what is not right, in graphql's words
   proxies: number // the account's proxies named under it
+  removeAt?: string | null // when remote.it takes it away unless something changes first
+  removeReason?: 'plan' | 'pending' | null // the plan no longer includes a base, or it is not delegated
 }
 
-const BASE_FIELDS = `base state nameServers ${RECORD_FIELDS} checked problem proxies`
+const BASE_FIELDS = `base state nameServers ${RECORD_FIELDS} checked problem proxies removeAt removeReason`
 
 /* The account's proxies moved under its base, or back to their names before: a names move a proxy — the proxy, its
    name after (under the base, <label>.<base>; back, its host), each endpoint address before and after, and the

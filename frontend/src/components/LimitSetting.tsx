@@ -3,7 +3,7 @@ import { humanizeDays } from '../models/plans'
 import { LinearProgress, Typography, Box } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { spacing } from '../styling'
-import { CHAT_FEATURE } from '../constants'
+import { CHAT_FEATURE, PROXY_BASE_LIMIT } from '../constants'
 
 export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
   const { t } = useTranslation()
@@ -38,6 +38,14 @@ export const LimitSetting: React.FC<{ limit: ILimit }> = ({ limit }) => {
       message = limit.value
         ? t('limitSetting.rolesAvailable', 'Custom roles are available')
         : t('limitSetting.rolesUnavailable', 'Custom roles are unavailable')
+      break
+    case PROXY_BASE_LIMIT:
+      // An account's base for its proxies' names (graphql-api docs/PROXY-GROUPS.md §14, wave 3b): Enterprise's, or the
+      // Proxy base add-on's. Shown where a licence gives it; nothing where none does, as the AI agent's.
+      if (limit.value) {
+        template = 'text'
+        message = t('limitSetting.proxyBaseAvailable', 'An account base for proxies is available')
+      }
       break
     case CHAT_FEATURE:
       // An alpha granted per account (graphql-api docs/AI-AGENT-LICENSE.md, decision 1): accounts
