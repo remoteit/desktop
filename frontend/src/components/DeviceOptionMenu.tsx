@@ -51,7 +51,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   // Only wrapped in a tooltip when disabled — MenuList arrow-key traversal skips a
   // span-wrapped item, so an enabled one has to stay a direct child of the Menu.
   const makeProductItem = (
-    <MenuItem dense key="makeProduct" disabled={!admin} onClick={handleMakeProduct}>
+    <MenuItem dense key="makeProduct" disabled={!admin || !device.loaded} onClick={handleMakeProduct}>
       <ListItemIcon>
         <Icon name="conveyor-belt-boxes" size="md" />
       </ListItemIcon>
