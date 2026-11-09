@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { plugin, listeners, state, set, browser, constants, register, unregister, actor } = vi.hoisted(() => {
+const { plugin, listeners, state, set, open, browser, constants, register, unregister, actor } = vi.hoisted(() => {
   const listeners: Record<string, (event: any) => unknown> = {}
   return {
     listeners,
@@ -19,6 +19,7 @@ const { plugin, listeners, state, set, browser, constants, register, unregister,
     },
     state: { auth: { user: { id: 'user-1' } as any }, ui: { apis: {} as { apnsEnvironment?: string } } },
     set: vi.fn(),
+    open: vi.fn(),
     browser: { isMobile: true, isIOS: true, isAndroid: false },
     constants: {
       APNS_ENVIRONMENT: 'sandbox',
@@ -37,10 +38,12 @@ vi.mock('./browser', () => ({ default: browser }))
 vi.mock('../constants', () => constants)
 vi.mock('./graphQLMutation', () => ({ graphQLRegisterPushToken: register, graphQLUnregisterPushToken: unregister }))
 vi.mock('./oidc', () => ({ oidcActor: actor }))
+vi.mock('./openNotification', () => ({ openNotification: open }))
 vi.mock('../i18n', () => ({ default: { t: (_key: string, value: string) => value } }))
 vi.mock('../helpers/versionHelper', () => ({ version: '3.48.10' }))
 
-import { renderToStaticMarkup } from 'react-dom/server'
+const TIME = '2026-11-09T12:00:00.000Z'
+
 import pushNotifications from './pushNotifications'
 
 beforeEach(() => {
@@ -59,33 +62,51 @@ afterEach(() => {
 })
 
 describe('tap routing', () => {
-  it('routes a running app and survives a sign-in reload', async () => {
+  it('opens a running app on the page with what was tapped, and keeps both for a sign-in reload', async () => {
+    await pushNotifications.listen()
+    listeners.pushNotificationActionPerformed({
+      actionId: 'tap',
+      notification: { title: 'pi went offline', body: 'Linux', data: { url: '/devices/abc', time: TIME } },
+    })
+
+    const tap = { title: 'pi went offline', body: 'Linux', time: Date.parse(TIME) }
+    expect(open).toHaveBeenCalledWith('/devices/abc', tap)
+    expect(window.localStorage.getItem('initialRoute')).toBe('/devices/abc')
+    expect(JSON.parse(window.localStorage.getItem('initialNotice')!)).toEqual(tap)
+  })
+
+  it('reads what was tapped from the data on Android, which hands over nothing else', async () => {
+    await pushNotifications.listen()
+    listeners.pushNotificationActionPerformed({
+      actionId: 'tap',
+      notification: { id: 'm1', data: { url: '/devices/abc', title: 'pi came online', body: 'Linux', time: TIME } },
+    })
+
+    expect(open).toHaveBeenCalledWith('/devices/abc', {
+      title: 'pi came online',
+      body: 'Linux',
+      time: Date.parse(TIME),
+    })
+  })
+
+  it('opens without a time from a server that sends none', async () => {
     await pushNotifications.listen()
     listeners.pushNotificationActionPerformed({ actionId: 'tap', notification: { data: { url: '/devices/abc' } } })
 
-    expect(set).toHaveBeenCalledWith({ redirect: '/devices/abc' })
-    expect(window.localStorage.getItem('initialRoute')).toBe('/devices/abc')
+    expect(open).toHaveBeenCalledWith('/devices/abc', { title: undefined, body: undefined, time: undefined })
   })
 
-  it('shows what was tapped, from the notification on iOS and from its data on Android', async () => {
+  it('signed out, routes only and leaves the notice for the page after sign-in', async () => {
+    state.auth.user = undefined
     await pushNotifications.listen()
     listeners.pushNotificationActionPerformed({
       actionId: 'tap',
-      notification: { title: 'pi went offline', body: 'Linux', data: { url: '/devices/abc' } },
-    })
-    listeners.pushNotificationActionPerformed({
-      actionId: 'tap',
-      notification: { data: { url: '/devices/abc', title: 'pi came online', body: 'Linux' } },
+      notification: { title: 'pi went offline', data: { url: '/devices/abc' } },
     })
 
-    const notices = set.mock.calls.map(([{ redirect, noticeMessage }]) => [
-      redirect,
-      renderToStaticMarkup(noticeMessage),
-    ])
-    expect(notices).toEqual([
-      ['/devices/abc', '<strong>pi went offline</strong><em>Linux</em>'],
-      ['/devices/abc', '<strong>pi came online</strong><em>Linux</em>'],
-    ])
+    expect(open).not.toHaveBeenCalled()
+    expect(set).toHaveBeenCalledWith({ redirect: '/devices/abc' })
+    expect(JSON.parse(window.localStorage.getItem('initialNotice')!)).toMatchObject({ title: 'pi went offline' })
   })
 
   it('ignores a url that is not an app path', async () => {
@@ -93,8 +114,9 @@ describe('tap routing', () => {
     listeners.pushNotificationActionPerformed({ actionId: 'tap', notification: { data: { url: 'https://x.test' } } })
     listeners.pushNotificationActionPerformed({ actionId: 'tap', notification: { data: {} } })
 
-    expect(set).not.toHaveBeenCalled()
+    expect(open).not.toHaveBeenCalled()
     expect(window.localStorage.getItem('initialRoute')).toBeNull()
+    expect(window.localStorage.getItem('initialNotice')).toBeNull()
   })
 
   it('attaches the listeners once however often it is asked', async () => {

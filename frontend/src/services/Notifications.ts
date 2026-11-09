@@ -56,7 +56,7 @@ function stateNotification(event: ICloudEvent) {
       let url = `/devices/${target.deviceId}`
       if (target.service?.id) url += `/${target.service?.id}`
       if (event.authUserId !== target.owner?.id) body += ' - ' + target.owner?.email
-      createNotification(`${target.name} ${actions[event.state]}`, url, { body })
+      createNotification(event, `${target.name} ${actions[event.state]}`, url, { body })
     }
   })
 }
@@ -77,7 +77,7 @@ function connectNotification(event: ICloudEvent) {
       body += '\n- Provide connection feedback'
       url = url.replace('devices', 'feedback')
     }
-    createNotification(title, url, { body })
+    createNotification(event, title, url, { body })
   })
 }
 
@@ -99,7 +99,7 @@ function shareNotification(event: ICloudEvent) {
         const title = `${target.name} ${actions[event.action]}`
         const body = `with ${name} by ${event.actor.email}.`
         const url = event.action === 'add' || event.action === 'update' ? `/devices/${target.id}` : '/devices'
-        createNotification(title, url, { body })
+        createNotification(event, title, url, { body })
       }
     })
   }
@@ -113,20 +113,20 @@ function transferNotification(event: ICloudEvent) {
       if (isReceiving) {
         const title = `${target.name} was transferred to you`
         const body = `from ${event.actor.email}`
-        createNotification(title, `/devices/${target.deviceId}`, { body })
+        createNotification(event, title, `/devices/${target.deviceId}`, { body })
       }
       // Don't notify sender or people losing access
     }
   })
 }
 
-function createNotification(title: string, redirect: string, options?: NotificationOptions) {
+function createNotification(event: ICloudEvent, title: string, redirect: string, options?: NotificationOptions) {
   const notification = new Notification(title, { ...options, icon: browser.isPortal ? icon : undefined })
   notification.onclick = () => {
     // A click leaves the window where it was: a browser tab behind others, Electron's hidden in the tray
     window.focus()
     if (browser.isElectron) emit('open')
-    openNotification(redirect, title, options?.body)
+    openNotification(redirect, { title, body: options?.body, time: event.timestamp })
   }
   notification.onclose = e => e.preventDefault()
 }

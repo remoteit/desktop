@@ -3,7 +3,7 @@ import { APNS_ENVIRONMENT, FIREBASE_CONFIGURED, PUSH_UNREGISTER_TIMEOUT } from '
 import { graphQLRegisterPushToken, graphQLUnregisterPushToken } from './graphQLMutation'
 import { version } from '../helpers/versionHelper'
 import { withTimeout } from '../helpers/sleep'
-import { openNotification } from './openNotification'
+import { openNotification, NotificationTap } from './openNotification'
 import { oidcActor } from './oidc'
 import { store } from '../store'
 import browser from './browser'
@@ -38,8 +38,16 @@ function open({ notification }: ActionPerformed) {
   const url = notification.data?.url
   if (typeof url !== 'string' || !url.startsWith('/')) return
   console.log('PUSH OPENED', url)
+  const tap: NotificationTap = {
+    title: notification.title || notification.data?.title,
+    body: notification.body || notification.data?.body,
+    time: Date.parse(notification.data?.time) || undefined,
+  }
   window.localStorage.setItem('initialRoute', url)
-  openNotification(url, notification.title || notification.data?.title, notification.body || notification.data?.body)
+  window.localStorage.setItem('initialNotice', JSON.stringify(tap))
+  // Signed out it would show over the sign-in page: the Router shows the saved one with the page instead
+  if (store.getState().auth.user) openNotification(url, tap)
+  else store.dispatch.ui.set({ redirect: url })
 }
 
 // Chained so unregister can wait out a registration still in flight: landing after it would re-register a signed-out phone

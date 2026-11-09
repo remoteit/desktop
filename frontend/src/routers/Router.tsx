@@ -68,6 +68,7 @@ import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
+import { restoreNotice } from '../services/openNotification'
 import { AdminRouteGuard } from './AdminRouteGuard'
 import { ADMIN_ADDONS_ROUTE } from '../constants'
 
@@ -86,10 +87,13 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
 
   useEffect(() => {
     const initialRoute = window.localStorage.getItem('initialRoute')
+    const initialNotice = window.localStorage.getItem('initialNotice')
+    window.localStorage.removeItem('initialNotice')
     if (initialRoute) {
       if (initialRoute !== location.pathname) history.push(initialRoute)
       console.log('UI REDIRECT INIT', initialRoute)
       window.localStorage.removeItem('initialRoute')
+      if (initialNotice) restoreNotice(initialNotice)
     }
   }, [])
 
@@ -99,7 +103,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       history.push(redirect)
       ui.set({ redirect: undefined })
       // A push tap writes both; left behind, the next cold start would replay it
-      if (window.localStorage.getItem('initialRoute') === redirect) window.localStorage.removeItem('initialRoute')
+      if (window.localStorage.getItem('initialRoute') === redirect) {
+        window.localStorage.removeItem('initialRoute')
+        window.localStorage.removeItem('initialNotice')
+      }
     }
     analytics.pageView(location.pathname)
   }, [history.location, ui, redirect])
