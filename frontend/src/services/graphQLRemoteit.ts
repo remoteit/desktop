@@ -1,17 +1,20 @@
 import { post } from './post'
-import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
+import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { EXIT_DEVICE_FIELDS, ExitDevice, PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
+import { JOIN_KEY_FIELDS, ProductLifecycle } from './graphQLDeviceProducts'
+import type { IDeviceProductJoinKey } from '../models/products'
 import type { Proxy } from './graphQLProxy'
 import type { Exit } from './graphQLExits'
 
 /* remote.it's proxies and exits, for its admins (graphql-api docs/PROXY-GROUPS.md §13): at a location each — pdx1a the
    exit and pdx1a the proxy, two objects — run by the same machines, remote.it's devices (its system account's). A
-   machine runs at most one proxy and one exit. A new machine installs with the proxy registration code and waits to be
-   added to one; one made before the system account, still in someone's account, is moved to remote.it first. The
-   admin API refuses anyone else. */
+   machine runs at most one proxy and one exit. A new machine registers with a join key of remote.it's proxy product
+   (§11 wave 2) and joins the proxies and exits that take that product's devices, or waits to be added to one; one made
+   before the system account, still in someone's account, is moved to remote.it first. The admin API refuses anyone
+   else. */
 
-// A machine: a device running remote.it's proxies or exits, or one the registration code registered that runs neither.
+// A machine: a device running remote.it's proxies or exits, or one of remote.it's proxy product that runs neither.
 export type RemoteitMachine = {
   id: string
   name: string | null
@@ -78,11 +81,23 @@ export const graphQLCreateRemoteit = (kind: 'proxy' | 'exit', at: Location) =>
     at
   )
 
-// The code a machine installs with to be remote.it's: a secret, asked for only when shown.
-export async function graphQLRemoteitProxyCode(): Promise<string | 'ERROR'> {
-  const response = await graphQLBasicRequest(` mutation RemoteitProxyCode { remoteitProxyCode }`)
-  return response === 'ERROR' ? 'ERROR' : response?.data?.data?.remoteitProxyCode ?? 'ERROR'
+// remote.it's proxy product (§11 wave 2): the system account's, which its machines register with — each with a join key,
+// an ephemeral device of it — and whose new devices join the proxies and exits that name it. Its lifecycle and its join
+// keys, changed with any product's mutations (setDeviceProductLifecycle, createDeviceProductJoinKey,
+// revokeDeviceProductJoinKey); none where it is not made yet.
+export type RemoteitProxyProduct = {
+  id: string
+  name: string
+  lifecycle: ProductLifecycle
+  joinKeys: IDeviceProductJoinKey[]
 }
+
+export const graphQLRemoteitProxyProduct = () =>
+  read<RemoteitProxyProduct | null>(
+    `query RemoteitProxyProduct { remoteitProxyProduct { id name lifecycle joinKeys { ${JOIN_KEY_FIELDS} } } }`,
+    'remoteitProxyProduct',
+    data => data?.remoteitProxyProduct ?? null
+  )
 
 // A machine made before remote.it's were the system account's, moved into it.
 export const graphQLAdoptRemoteitProxy = (deviceId: string) =>

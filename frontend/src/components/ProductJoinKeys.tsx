@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Box, List, ListItem, ListItemText, Stack, Typography } from '@mui/material'
-import { IDeviceProduct, IDeviceProductJoinKey } from '../models/products'
+import { IDeviceProduct, IDeviceProductJoinKey, IJoinKeyInput } from '../models/products'
 import { JOIN_KEY_ENV, JOIN_KEY_FILE_ENV } from '../constants'
 import { selectPermissions } from '../selectors/organizations'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
@@ -13,7 +13,14 @@ import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
 import { dispatch } from '../store'
 
-type Props = { product: IDeviceProduct }
+type Props = {
+  product: Pick<IDeviceProduct, 'id' | 'name' | 'joinKeys'>
+  // A product outside the account's store — remote.it's proxy product, on its admin page —: whether its keys may be
+  // changed, and how. Otherwise the account's permissions decide, and the store changes them.
+  manage?: boolean
+  onCreate?: (input: IJoinKeyInput) => Promise<{ key?: string; reason?: string }>
+  onRevoke?: (id: string) => Promise<unknown>
+}
 
 // Why a key creates no device now, when it does not: graphql's inForce, told apart by graphql's own fields rather than
 // this machine's clock — revoked, at its maximum of joins, or else past its expiry.
@@ -26,16 +33,18 @@ function keyState(key: IDeviceProductJoinKey): 'revoked' | 'expired' | 'full' | 
 
 // The product's join keys, newest first: each creates new devices of the product, for a machine that holds it. The key
 // itself is shown once, by the dialog that creates it; the list carries only what graphql keeps.
-export const ProductJoinKeys: React.FC<Props> = ({ product }) => {
+export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, onRevoke }) => {
   const { t } = useTranslation()
-  const admin = useSelector(selectPermissions).includes('ADMIN')
+  const permitted = useSelector(selectPermissions).includes('ADMIN')
+  const admin = manage ?? permitted
   const [creating, setCreating] = useState(false)
   const [revoking, setRevoking] = useState<string>()
   const keys = product.joinKeys || []
 
   const revoke = async (id: string) => {
     setRevoking(id)
-    await dispatch.products.revokeJoinKey({ productId: product.id, id })
+    if (onRevoke) await onRevoke(id)
+    else await dispatch.products.revokeJoinKey({ productId: product.id, id })
     setRevoking(undefined)
   }
 
@@ -183,7 +192,7 @@ export const ProductJoinKeys: React.FC<Props> = ({ product }) => {
           {t('productJoinKeys.none', 'No join keys yet.')}
         </Typography>
       )}
-      {creating && <CreateJoinKeyDialog product={product} onClose={() => setCreating(false)} />}
+      {creating && <CreateJoinKeyDialog product={product} onCreate={onCreate} onClose={() => setCreating(false)} />}
     </Box>
   )
 }

@@ -1,14 +1,19 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material'
-import { IDeviceProduct } from '../models/products'
+import { IDeviceProduct, IJoinKeyInput } from '../models/products'
 import { JOIN_KEY_ENV, JOIN_KEY_FILE_ENV } from '../constants'
 import { CopyCodeBlock } from './CopyCodeBlock'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 import { dispatch } from '../store'
 
-type Props = { product: IDeviceProduct; onClose: () => void }
+type Props = {
+  product: Pick<IDeviceProduct, 'id' | 'name'>
+  // How the key is made: through the store, unless given (a product outside it — remote.it's proxy product).
+  onCreate?: (input: IJoinKeyInput) => Promise<{ key?: string; reason?: string }>
+  onClose: () => void
+}
 
 type Form = { name: string; expires: string; joinRate: string; maxJoins: string }
 
@@ -42,7 +47,7 @@ function download(name: string, key: string) {
 // graphql's answer until Done unmounts it: it is never put in the store, never logged, and cannot be shown again. While
 // the key is being made or is on screen only Done closes the dialog, so a stray click outside cannot throw away the
 // one copy.
-export const CreateJoinKeyDialog: React.FC<Props> = ({ product, onClose }) => {
+export const CreateJoinKeyDialog: React.FC<Props> = ({ product, onCreate, onClose }) => {
   const { t } = useTranslation()
   const [form, setForm] = useState<Form>(EMPTY)
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({})
@@ -77,13 +82,14 @@ export const CreateJoinKeyDialog: React.FC<Props> = ({ product, onClose }) => {
     setReason(undefined)
     setCreating(true)
     const name = form.name.trim()
-    const result = await dispatch.products.createJoinKey({
+    const input: IJoinKeyInput = {
       productId: product.id,
       name,
       expires: form.expires ? new Date(form.expires).toISOString() : undefined,
       joinRate: form.joinRate ? Number(form.joinRate) : undefined,
       maxJoins: form.maxJoins ? Number(form.maxJoins) : undefined,
-    })
+    }
+    const result = await (onCreate ?? dispatch.products.createJoinKey)(input)
     setCreating(false)
     if (result.key) setCreated({ name, key: result.key })
     else if (result.reason) setReason(result.reason)

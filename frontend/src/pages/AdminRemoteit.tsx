@@ -25,14 +25,21 @@ import {
   graphQLRemoteitExits,
   graphQLRemoteitMachines,
   graphQLRemoteitProxies,
-  graphQLRemoteitProxyCode,
+  graphQLRemoteitProxyProduct,
+  RemoteitProxyProduct,
 } from '../services/graphQLRemoteit'
+import {
+  graphQLCreateDeviceProductJoinKey,
+  graphQLRevokeDeviceProductJoinKey,
+  graphQLSetDeviceProductLifecycle,
+} from '../services/graphQLDeviceProducts'
 import { lanAddWarning, runStateLabel, stillRunsLine } from '../helpers/runsHelper'
 import { RunListItem } from '../components/RunListItem'
 import { RunActions } from '../components/RunActions'
 import { SelectSetting } from '../components/SelectSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
-import { CopyCodeBlock } from '../components/CopyCodeBlock'
+import { ProductJoinKeys } from '../components/ProductJoinKeys'
+import { ProductLifecycleSetting } from '../components/ProductLifecycle'
 import { Timestamp } from '../components/Timestamp'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
@@ -44,8 +51,9 @@ import { Icon } from '../components/Icon'
    page lists the machines running it, each with its state there and its actions in it alone (saying first what each
    does), adds a machine to it, sets its activation, and makes a new one at a location. The machines' page shows
    everything each runs, with the actions on all of it at once — each saying first what it does to each proxy and
-   exit — so taking a machine down never surprises; a machine still in someone's account is moved to remote.it, and the
-   registration code a new machine installs with is shown when asked. English only, as the rest of /admin. */
+   exit — so taking a machine down never surprises; a machine still in someone's account is moved to remote.it; and
+   remote.it's proxy product, which a new machine registers with, has its join keys and lifecycle there. English only,
+   as the rest of /admin. */
 
 type Problem = (problem: string) => void
 type Proxies = Exclude<Awaited<ReturnType<typeof graphQLRemoteitProxies>>, 'ERROR' | typeof UNSUPPORTED>
@@ -255,7 +263,7 @@ export const AdminRemoteitMachines: React.FC<{ onProblem: Problem }> = ({ onProb
         <ListSubheader>Machines</ListSubheader>
         {!machines.length && (
           <ListItem>
-            <ListItemText secondary="None yet: install a machine with the registration code below." />
+            <ListItemText secondary="None yet: a machine registers with a join key of remote.it's proxy product, below." />
           </ListItem>
         )}
         {machines.map(machine => (
@@ -270,7 +278,7 @@ export const AdminRemoteitMachines: React.FC<{ onProblem: Problem }> = ({ onProb
           />
         ))}
       </List>
-      <RegistrationCode onProblem={onProblem} />
+      <ProxyProduct onProblem={onProblem} />
     </>
   )
 }
@@ -475,35 +483,72 @@ const NewAtLocation: React.FC<{ kind: 'proxy' | 'exit'; onProblem: Problem; onMa
   )
 }
 
-// The registration code, shown only when asked: it puts a machine in remote.it's account.
-const RegistrationCode: React.FC<{ onProblem: Problem }> = ({ onProblem }) => {
-  const [code, setCode] = useState<string>()
-  const [asking, setAsking] = useState(false)
+/* remote.it's proxy product (§11 wave 2): what a new machine registers with, by one of its join keys — remoteit-proxy's
+   bin/place-code puts one in Secrets Manager without showing it, and each machine fetches it at boot —, into remote.it's
+   account. Ephemeral, its devices are new at every boot and removed when they deregister or after 10 minutes offline.
+   Its join keys, each made here shown once to copy, saying it is not shown again, and revoked here; its lifecycle; the
+   proxies and exits that take its devices are on their tabs. Nothing where this API has no such product. */
+const ProxyProduct: React.FC<{ onProblem: Problem }> = ({ onProblem }) => {
+  const [product, setProduct] = useState<RemoteitProxyProduct | null | 'ERROR' | typeof UNSUPPORTED>()
 
-  const show = async () => {
-    setAsking(true)
-    const result = await graphQLRemoteitProxyCode()
-    if (result === 'ERROR') onProblem('Could not get the registration code.')
-    else setCode(result)
-    setAsking(false)
+  useEffect(() => {
+    graphQLRemoteitProxyProduct().then(setProduct)
+  }, [])
+
+  if (product === undefined) return <LoadingMessage />
+  if (product === 'ERROR') return <Unread what="remote.it's proxy product" />
+  if (product === UNSUPPORTED) return null
+
+  // Read again after a change. One that fails keeps what is shown — a key on screen stays there — and says so.
+  const reload = async () => {
+    const read = await graphQLRemoteitProxyProduct()
+    if (read === 'ERROR' || read === UNSUPPORTED) onProblem("Could not read remote.it's proxy product again.")
+    else setProduct(read)
   }
 
   return (
-    <List>
-      <ListSubheader>Add a machine</ListSubheader>
+    <List data-proxy-product={product?.id ?? ''}>
+      <ListSubheader>remote.it's proxy product{product ? `: ${product.name}` : ''}</ListSubheader>
       <Gutters>
-        {code ? (
-          <CopyCodeBlock value={code} label="Registration code" />
+        {product ? (
+          <>
+            <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
+              A new machine registers with one of its join keys, into remote.it's account, not yours. It joins the
+              proxies and exits that take this product's devices, and goes into service as each one's activation says;
+              with none, it appears above, running nothing until it is added to one. Keep its keys secret: anyone with
+              one can add a device to remote.it's account.
+            </Typography>
+            <ProductJoinKeys
+              product={product}
+              manage
+              onCreate={async input => {
+                const made = await graphQLCreateDeviceProductJoinKey(input)
+                if (made === 'ERROR') return {}
+                if ('reason' in made) return { reason: made.reason }
+                await reload()
+                return { key: made.data?.data?.createDeviceProductJoinKey?.key }
+              }}
+              onRevoke={async id => {
+                await graphQLRevokeDeviceProductJoinKey(product.id, id)
+                await reload()
+              }}
+            />
+            <ProductLifecycleSetting
+              name={product.name}
+              lifecycle={product.lifecycle}
+              manage
+              onChange={async lifecycle => {
+                const refused = refusalOf(await graphQLSetDeviceProductLifecycle(product.id, lifecycle))
+                await reload()
+                return refused === undefined ? {} : { reason: refused }
+              }}
+            />
+          </>
         ) : (
-          <Button size="small" variant="contained" disabled={asking} onClick={show}>
-            Show the registration code
-          </Button>
+          <Typography variant="caption" color="textSecondary" component="p">
+            remote.it's proxy product is not made yet.
+          </Typography>
         )}
-        <Typography variant="caption" color="textSecondary" component="p" marginTop={1}>
-          Install the device package with this code: the machine registers into remote.it's account, not yours, and
-          appears above, running nothing until it is added to a proxy or an exit. Keep it secret: anyone with it can add
-          a device to remote.it's account.
-        </Typography>
       </Gutters>
     </List>
   )

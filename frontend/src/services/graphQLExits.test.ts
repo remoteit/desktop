@@ -49,7 +49,7 @@ import {
   graphQLSetProxyPublicEndpoints,
   graphQLVerifyProxyName,
 } from './graphQLProxy'
-import { graphQLCreateRemoteit, graphQLRemoteitExits, graphQLRemoteitProxyCode } from './graphQLRemoteit'
+import { graphQLCreateRemoteit, graphQLRemoteitExits, graphQLRemoteitProxyProduct } from './graphQLRemoteit'
 import { graphQLProxyAccess } from './graphQLProxyAccess'
 
 const answer = (data: object) => ({ data: { data }, headers: {} })
@@ -420,11 +420,18 @@ describe('remote.it’s proxies and exits', () => {
     expect(uiSet).not.toHaveBeenCalled()
   })
 
-  it('the code a machine installs with; ERROR where none is given', async () => {
-    request.mockResolvedValue(answer({ remoteitProxyCode: 'CODE' }))
-    expect(await graphQLRemoteitProxyCode()).toBe('CODE')
-    request.mockResolvedValue(answer({ remoteitProxyCode: null }))
-    expect(await graphQLRemoteitProxyCode()).toBe('ERROR')
+  it('the product a machine registers with: its lifecycle and join keys; none not made yet; UNSUPPORTED without', async () => {
+    const product = { id: 'PP', name: 'remote.it proxies', lifecycle: 'ephemeral', joinKeys: [] }
+    request.mockResolvedValue(answer({ remoteitProxyProduct: product }))
+    expect(await graphQLRemoteitProxyProduct()).toEqual(product)
+    expect(asked().query).toContain('remoteitProxyProduct { id name lifecycle joinKeys { id name creator { id email }')
+    request.mockResolvedValue(answer({ remoteitProxyProduct: null }))
+    expect(await graphQLRemoteitProxyProduct()).toBeNull()
+    request.mockResolvedValue(errors('Cannot query field "remoteitProxyProduct" on type "Query".'))
+    expect(await graphQLRemoteitProxyProduct()).toBe(UNSUPPORTED)
+    request.mockResolvedValue(errors('boom'))
+    expect(await graphQLRemoteitProxyProduct()).toBe('ERROR')
+    expect(uiSet).not.toHaveBeenCalled()
   })
 })
 

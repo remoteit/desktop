@@ -8,7 +8,11 @@ const {
   exits,
   machines,
   create,
-  code,
+  product,
+  createJoinKey,
+  revokeJoinKey,
+  setLifecycle,
+  answered,
   adopt,
   addProxyDevice,
   addExitDevice,
@@ -20,7 +24,12 @@ const {
   exits: vi.fn(async () => [] as any),
   machines: vi.fn(async () => [] as any),
   create: vi.fn(async (_kind: string, _at: any) => ({} as any)),
-  code: vi.fn(async () => 'REG-CODE' as any),
+  product: vi.fn(async () => null as any),
+  createJoinKey: vi.fn(async (_input: any) => ({} as any)),
+  revokeJoinKey: vi.fn(async (_productId: string, _id: string) => ({} as any)),
+  setLifecycle: vi.fn(async (_productId: string, _lifecycle: string) => ({} as any)),
+  // What the product's join keys or its lifecycle were answered, for the dialog or the setting to say.
+  answered: { current: undefined as any },
   adopt: vi.fn(async (_deviceId: string) => ({} as any)),
   addProxyDevice: vi.fn(async (_proxy: string, _deviceId: string) => ({ runs: {} } as any)),
   addExitDevice: vi.fn(async (_exit: string, _deviceId: string) => ({ runs: {} } as any)),
@@ -37,8 +46,36 @@ vi.mock('../services/graphQLRemoteit', () => ({
   graphQLRemoteitExits: exits,
   graphQLRemoteitMachines: machines,
   graphQLCreateRemoteit: create,
-  graphQLRemoteitProxyCode: code,
+  graphQLRemoteitProxyProduct: product,
   graphQLAdoptRemoteitProxy: adopt,
+}))
+vi.mock('../services/graphQLDeviceProducts', () => ({
+  graphQLCreateDeviceProductJoinKey: createJoinKey,
+  graphQLRevokeDeviceProductJoinKey: revokeJoinKey,
+  graphQLSetDeviceProductLifecycle: setLifecycle,
+}))
+// remote.it's proxy product's join keys and lifecycle: what they were given, and their changes' ends.
+vi.mock('../components/ProductJoinKeys', () => ({
+  ProductJoinKeys: ({ product, manage, onCreate, onRevoke }: any) => (
+    <div
+      data-join-keys={product.id}
+      data-keys={product.joinKeys.map((key: any) => key.name).join(',')}
+      data-manage={manage ? '' : undefined}
+    >
+      <button
+        data-create
+        onClick={async () => (answered.current = await onCreate({ productId: product.id, name: 'pool' }))}
+      />
+      <button data-revoke onClick={() => onRevoke('K1')} />
+    </div>
+  ),
+}))
+vi.mock('../components/ProductLifecycle', () => ({
+  ProductLifecycleSetting: ({ name, lifecycle, manage, onChange }: any) => (
+    <div data-lifecycle={lifecycle} data-name={name} data-manage={manage ? '' : undefined}>
+      <button data-lifecycle-change onClick={async () => (answered.current = await onChange('persistent'))} />
+    </div>
+  ),
 }))
 vi.mock('../services/graphQLDeviceRuns', () => ({
   graphQLAddProxyDevice: addProxyDevice,
@@ -90,9 +127,6 @@ vi.mock('../components/SelectSetting', () => ({
       ))}
     </div>
   ),
-}))
-vi.mock('../components/CopyCodeBlock', () => ({
-  CopyCodeBlock: ({ value, label }: any) => <div data-code={label}>{value}</div>,
 }))
 vi.mock('../components/Timestamp', () => ({ Timestamp: () => <span>then</span> }))
 vi.mock('../components/Icon', () => ({ Icon: ({ name, color }: any) => <i data-icon={name} data-color={color} /> }))
@@ -207,6 +241,13 @@ const machine = (id: string, name: string | null, extra: any = {}) => ({
   exit: null,
   ...extra,
 })
+// remote.it's proxy product: ephemeral, with one join key.
+const PRODUCT = {
+  id: 'PP',
+  name: 'remote.it proxies',
+  lifecycle: 'ephemeral',
+  joinKeys: [{ id: 'K1', name: 'pdx1a', created: '2026-11-09T10:00:00Z', joins: 2, joinRate: 10, inForce: true }],
+}
 // Runs remote.it pdx1a, the proxy and the exit.
 const E1 = machine('E1', 'e1', {
   proxy: { ...run('E1', 'e1'), proxy: PDX_PROXY },
@@ -262,7 +303,11 @@ beforeEach(() => {
   exits.mockResolvedValue([EXIT, SEA_EXIT])
   machines.mockResolvedValue([E1, SPARE, EXITER])
   create.mockResolvedValue({})
-  code.mockResolvedValue('REG-CODE')
+  product.mockResolvedValue(PRODUCT)
+  createJoinKey.mockResolvedValue({})
+  revokeJoinKey.mockResolvedValue({})
+  setLifecycle.mockResolvedValue({})
+  answered.current = undefined
   adopt.mockResolvedValue({})
   addProxyDevice.mockResolvedValue({ runs: {} })
   addExitDevice.mockResolvedValue({ runs: {} })
@@ -661,35 +706,10 @@ describe('remote.it’s machines', () => {
     expect(machines).toHaveBeenCalledTimes(2)
   })
 
-  it('shows the registration code only when asked; one that could not be had is said', async () => {
-    const onProblem = vi.fn()
-    await render(<AdminRemoteitMachines onProblem={onProblem} />)
-    expect(code).not.toHaveBeenCalled()
-    expect($('[data-code]')).toBeNull()
-    code.mockResolvedValueOnce('ERROR')
-    await click(button('Show the registration code'))
-    expect(onProblem).toHaveBeenLastCalledWith('Could not get the registration code.')
-    expect($('[data-code]')).toBeNull()
-    await click(button('Show the registration code'))
-    expect(code).toHaveBeenCalledTimes(2)
-    expect($('[data-code="Registration code"]')?.textContent).toBe('REG-CODE')
-    expect(button('Show the registration code')).toBeUndefined()
-  })
-
-  it('while the code is asked for, it is not asked again', async () => {
-    const answer = held<any>()
-    code.mockReturnValue(answer.promise)
-    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
-    await click(button('Show the registration code'))
-    expect(button('Show the registration code')!.disabled).toBe(true)
-    await act(async () => answer.release('REG-CODE'))
-    expect($('[data-code]')?.textContent).toBe('REG-CODE')
-  })
-
-  it('none yet: says to install one with the registration code; an API without them shows nothing; one not read says so', async () => {
+  it('none yet: says to register one with a join key; an API without them shows nothing; one not read says so', async () => {
     machines.mockResolvedValue([])
     expect((await render(<AdminRemoteitMachines onProblem={vi.fn()} />)).textContent).toContain(
-      'None yet: install a machine with the registration code below.'
+      "None yet: a machine registers with a join key of remote.it's proxy product, below."
     )
     machines.mockResolvedValue('UNSUPPORTED')
     expect((await render(<AdminRemoteitMachines onProblem={vi.fn()} />)).textContent).toBe('')
@@ -709,5 +729,96 @@ describe('remote.it’s machines', () => {
     await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
     await act(async () => vi.advanceTimersByTime(90_000))
     expect(machines).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('remote.it’s proxy product', () => {
+  const section = () => $('[data-proxy-product]')!
+
+  it('on the machines’ tab: its join keys and its lifecycle, for remote.it’s admins; no registration code', async () => {
+    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
+    expect(subheader(section())).toBe("remote.it's proxy product: remote.it proxies")
+    expect(section().textContent).toContain('A new machine registers with one of its join keys')
+    const keys = $('[data-join-keys]', section())!
+    expect(keys.getAttribute('data-join-keys')).toBe('PP')
+    expect(keys.getAttribute('data-keys')).toBe('pdx1a')
+    expect(keys.hasAttribute('data-manage')).toBe(true)
+    const lifecycle = $('[data-lifecycle]', section())!
+    expect(lifecycle.getAttribute('data-lifecycle')).toBe('ephemeral')
+    expect(lifecycle.getAttribute('data-name')).toBe('remote.it proxies')
+    expect(lifecycle.hasAttribute('data-manage')).toBe(true)
+    expect(document.body.textContent).not.toContain('registration code')
+  })
+
+  it('a join key made: the key answered once, for its dialog to show, and the product read again', async () => {
+    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
+    createJoinKey.mockResolvedValue({
+      data: { data: { createDeviceProductJoinKey: { key: 'r3jk_PP.seed', joinKey: { id: 'K2' } } } },
+    })
+    product.mockResolvedValue({
+      ...PRODUCT,
+      joinKeys: [{ ...PRODUCT.joinKeys[0], id: 'K2', name: 'pool' }, ...PRODUCT.joinKeys],
+    })
+    await click($('[data-create]'))
+    expect(createJoinKey).toHaveBeenCalledWith({ productId: 'PP', name: 'pool' })
+    expect(answered.current).toEqual({ key: 'r3jk_PP.seed' })
+    expect(product).toHaveBeenCalledTimes(2)
+    expect($('[data-join-keys]')?.getAttribute('data-keys')).toBe('pool,pdx1a')
+  })
+
+  it('a join key refused: graphql’s words for its dialog, nothing read again; a failed request, nothing', async () => {
+    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
+    createJoinKey.mockResolvedValue({ reason: 'A name of 1 to 255 characters' })
+    await click($('[data-create]'))
+    expect(answered.current).toEqual({ reason: 'A name of 1 to 255 characters' })
+    createJoinKey.mockResolvedValue('ERROR')
+    await click($('[data-create]'))
+    expect(answered.current).toEqual({})
+    expect(product).toHaveBeenCalledTimes(1)
+  })
+
+  it('a join key revoked, and the product read again', async () => {
+    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
+    await click($('[data-revoke]'))
+    expect(revokeJoinKey).toHaveBeenCalledWith('PP', 'K1')
+    expect(product).toHaveBeenCalledTimes(2)
+  })
+
+  it('its lifecycle changed, and read again; refused, graphql’s words for the setting to say', async () => {
+    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
+    await click($('[data-lifecycle-change]'))
+    expect(setLifecycle).toHaveBeenCalledWith('PP', 'persistent')
+    expect(answered.current).toEqual({})
+    expect(product).toHaveBeenCalledTimes(2)
+    setLifecycle.mockResolvedValue({ reason: '2 devices of remote.it proxies run a daemon that cannot' })
+    await click($('[data-lifecycle-change]'))
+    expect(answered.current).toEqual({ reason: '2 devices of remote.it proxies run a daemon that cannot' })
+    setLifecycle.mockResolvedValue('ERROR')
+    await click($('[data-lifecycle-change]'))
+    expect(answered.current).toEqual({ reason: '' })
+  })
+
+  it('read again and not read: what is shown stays — a key on screen with it —, and it is said', async () => {
+    const onProblem = vi.fn()
+    await render(<AdminRemoteitMachines onProblem={onProblem} />)
+    product.mockResolvedValue('ERROR')
+    await click($('[data-revoke]'))
+    expect(onProblem).toHaveBeenLastCalledWith("Could not read remote.it's proxy product again.")
+    expect($('[data-join-keys]')?.getAttribute('data-keys')).toBe('pdx1a')
+  })
+
+  it('not made yet, said; an API without it shows nothing of it; one not read says so', async () => {
+    product.mockResolvedValue(null)
+    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
+    expect(subheader(section())).toBe("remote.it's proxy product")
+    expect(section().textContent).toContain("remote.it's proxy product is not made yet.")
+    expect($('[data-join-keys]')).toBeNull()
+    product.mockResolvedValue('UNSUPPORTED')
+    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
+    expect($('[data-proxy-product]')).toBeNull()
+    expect(document.body.textContent).toContain('Machines')
+    product.mockResolvedValue('ERROR')
+    await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
+    expect($('[data-notice="error"]')?.textContent).toBe("Could not read remote.it's proxy product.")
   })
 })

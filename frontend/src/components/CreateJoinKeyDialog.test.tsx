@@ -141,6 +141,33 @@ describe('CreateJoinKeyDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
+  it('a product outside the store — remote.it’s proxy product — is made by its own change, and shown once the same', async () => {
+    const onCreate = vi.fn(async () => ({ key: SECRET }))
+    await act(async () =>
+      root.render(
+        <ThemeProvider theme={theme}>
+          <CreateJoinKeyDialog
+            product={{ id: 'PP', name: 'remote.it proxies' }}
+            onCreate={onCreate}
+            onClose={onClose}
+          />
+        </ThemeProvider>
+      )
+    )
+    await type('Name', 'pdx1a')
+    await submit()
+    expect(onCreate).toHaveBeenCalledWith({
+      productId: 'PP',
+      name: 'pdx1a',
+      expires: undefined,
+      joinRate: undefined,
+      maxJoins: undefined,
+    })
+    expect(createJoinKey).not.toHaveBeenCalled()
+    expect(document.body.querySelector('[data-block]')!.getAttribute('data-block')).toBe(SECRET)
+    expect(body()).toContain('It will not be shown again')
+  })
+
   it('sends the expiry as a time', async () => {
     createJoinKey.mockResolvedValue({ key: SECRET })
     await type('Name', 'Line 2')

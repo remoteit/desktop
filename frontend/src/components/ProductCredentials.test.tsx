@@ -173,6 +173,26 @@ describe('ProductJoinKeys', () => {
     expect(button('Revoke Key')!.disabled).toBe(true)
   })
 
+  it('a product outside the store — remote.it’s proxy product —: managed as it is told, revoked by its own change', async () => {
+    permissions.current = ['VIEW']
+    const onRevoke = vi.fn(async () => undefined)
+    await render(
+      <ProductJoinKeys
+        product={{ id: 'PP', name: 'remote.it proxies', joinKeys: [key({})] }}
+        manage
+        onRevoke={onRevoke}
+      />
+    )
+    expect(button('Create Join Key')!.disabled).toBe(false)
+    await act(async () => button('Revoke Key')!.click())
+    const confirm = [...document.body.querySelectorAll('[role="dialog"] button')].find(b =>
+      b.textContent?.includes('Revoke Key')
+    ) as HTMLButtonElement
+    await act(async () => confirm.click())
+    expect(onRevoke).toHaveBeenCalledWith('K1')
+    expect(products.revokeJoinKey).not.toHaveBeenCalled()
+  })
+
   it('says when there are no keys yet', async () => {
     await render(<ProductJoinKeys product={product({})} />)
     expect(body()).toContain('No join keys yet.')
