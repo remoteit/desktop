@@ -23,6 +23,9 @@ type Props = {
   subLabel?: React.ReactNode
   size?: 'small' | 'medium'
   button?: React.ReactNode
+  // The button greyed and not clickable. Apart from disabled, which disables the row and its toggle alone: a disabled
+  // row's button may still be wanted (a connection's log, shown while its logging cannot be changed).
+  buttonDisabled?: boolean
   toggle?: boolean
   tooltip?: string
   disabled?: boolean
@@ -49,6 +52,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
       subLabel,
       size,
       button,
+      buttonDisabled,
       toggle,
       tooltip,
       onClick,
@@ -128,7 +132,7 @@ export const ListItemSetting = React.forwardRef<HTMLDivElement, Props>(
         <ListItemSecondaryAction>
           {secondaryContent}
           {showButton && (
-            <Button onClick={handleButtonClick} color="primary" size="small">
+            <Button onClick={handleButtonClick} color="primary" size="small" disabled={buttonDisabled}>
               {button}
             </Button>
           )}

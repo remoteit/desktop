@@ -43,7 +43,7 @@ export type ProxyDevice = Run & {
   host: string | null // one of remote.it's devices' own name; none on an own proxy's device
   drainMaxWaitMinutes: number | null
   health: { state: string; since: string | null; reason: string | null } | null // none for an own proxy's
-  certificate: 'own' | 'ready' | 'pending' // the stage's for every proxy device (ready or pending), or its own domain's
+  certificate: 'ready' | 'pending' // the stage's, for every proxy name: held, or not issued yet
   openConnections: ProxyOpenConnections | null // none from a daemon that does not say them
   drain: ProxyDrain | null // none while in service
   // Where it is, as it reports itself: its address on its network, the public address presence sees it at, and its

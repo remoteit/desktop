@@ -82,13 +82,11 @@ import { ProxyAddPage } from './ProxyAddPage'
 
 const NAME = 'Name'
 const LABEL = 'Host label, before your account slug'
-const DOMAIN = 'Your own domain for its https names (optional)'
 
 const MADE = {
   id: 'P1',
   name: 'Gateway',
   host: 'gw-acme.dev.r3proxy.com',
-  domain: null,
   remoteit: false,
   local: false,
   localNetwork: null,
@@ -167,11 +165,10 @@ describe('a new proxy', () => {
     expect(make().disabled).toBe(false)
   })
 
-  it('is made in the active account with its name trimmed, its label, its own domain and public endpoints as chosen', async () => {
+  it('is made in the active account with its name trimmed, its label and public endpoints as chosen', async () => {
     await render()
     await type(NAME, ' Gateway ')
     await type(LABEL, 'gw')
-    await type(DOMAIN, ' proxy.example.com ')
     const publicEndpoints = $('input[type=checkbox]') as HTMLInputElement
     expect(publicEndpoints.checked).toBe(true)
     await click(publicEndpoints)
@@ -180,26 +177,33 @@ describe('a new proxy', () => {
     expect(createProxy).toHaveBeenCalledWith({
       name: 'Gateway',
       label: 'gw',
-      domain: 'proxy.example.com',
       publicEndpoints: false,
       local: false,
       accountId: 'ACCOUNT',
     })
   })
 
-  it('with no label or domain given, graphql makes its label from its name, and it takes public endpoints', async () => {
+  it('with no label given, graphql makes its label from its name, and it takes public endpoints', async () => {
     await render()
     await type(NAME, 'Gateway')
-    await type(DOMAIN, '  ')
     await click(make())
     expect(createProxy).toHaveBeenCalledWith({
       name: 'Gateway',
       label: undefined,
-      domain: undefined,
       publicEndpoints: true,
       local: false,
       accountId: 'ACCOUNT',
     })
+  })
+
+  // An own name is its page's, once it is made: it points at the host it is made under.
+  it('asks no own domain or own name: its name, kind, label and public endpoints alone', async () => {
+    await render()
+    expect([...document.body.querySelectorAll('[data-field]')].map(each => each.getAttribute('data-field'))).toEqual([
+      NAME,
+      LABEL,
+    ])
+    expect(document.body.textContent).not.toMatch(/domain/i)
   })
 
   it('is Internet or Local network, each said in a line, and said to be chosen for good; Internet unless chosen', async () => {
@@ -341,17 +345,6 @@ describe('a new proxy', () => {
     await click(make())
     expect($('[data-notice]')).toBeNull()
     expect($('[data-picker]')).not.toBeNull()
-  })
-
-  it('a domain of remote.it’s, or another proxy’s, refused: said in graphql’s words, the domain left to change', async () => {
-    createProxy.mockResolvedValue({ reason: 'R3proxy.com is remote.it’s: use a domain of your own' })
-    await render()
-    await type(NAME, 'Gateway')
-    await type(DOMAIN, 'gw.r3proxy.com')
-    await click(make())
-    expect($('[data-notice="error"]')?.textContent).toBe('R3proxy.com is remote.it’s: use a domain of your own')
-    expect(input(DOMAIN).value).toBe('gw.r3proxy.com')
-    expect($('[data-picker]')).toBeNull()
   })
 
   it('while it is being made, it cannot be made again', async () => {

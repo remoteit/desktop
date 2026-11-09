@@ -5,7 +5,9 @@ import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
 
 /* Proxies and their endpoints (graphql-api docs/PROXY-GROUPS.md §13 and §14, presence-server docs/proxy-plan.md): a
    proxy is reached at its name — its tcp and udp endpoints there, each at a port, and each https endpoint at a name of
-   its own —, every name one label under the stage's proxy zone, served under the stage's one certificate. It is run by
+   its own —, every name one label under the stage's proxy zone, served under the stage's one certificate. An own proxy
+   may be given an own name — a name under a domain its owner controls, verified by DNS records its owner adds —, under
+   which its addresses then are, served under a certificate of its own that remote.it issues and renews. It is run by
    devices, every device running it serving every endpoint of it. remote.it's are at a location; an own proxy is its
    account's: made, then devices added to run it, and kept — its host and endpoints — until its account deletes it. An
    own proxy is Internet — reached wherever its devices can be reached from the internet — or Local network — reached
@@ -14,14 +16,38 @@ import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
    was made or last labelled under until its label is set again. A refusal comes back in graphql's words.
    Device-session API only: an API without it answers UNSUPPORTED, for the caller to hide itself. */
 
-export type ProxyCertificate = 'own' | 'ready' | 'pending'
+// The stage's certificate, for every proxy name: held, or not issued yet.
+export type ProxyCertificate = 'ready' | 'pending'
+
+/* An own proxy's own name (§14, decision 48), at least one label under a domain its owner controls: office.example.com,
+   never example.com itself. Three CNAMEs prove it is theirs: the name and *.<name> at the proxy's name, and
+   _acme-challenge.<name> at a token of remote.it's, through which remote.it issues and renews its certificate. It is
+   pending until they are all found, verified once they are (its addresses not moved yet), active once its addresses are
+   moved under it and served, and broken once a record is gone or wrong after that: it keeps serving until its
+   certificate would need renewing, which then fails. */
+export type ProxyNameState = 'pending' | 'verified' | 'active' | 'broken'
+
+// A record to add where the name's DNS is hosted, and what remote.it found of it at the last check: seen is what DNS
+// answered instead, where it answered something else.
+export type ProxyNameRecord = { name: string; type: string; value: string; found: boolean; seen: string | null }
+
+// The own name's certificate, remote.it's to issue and renew through its _acme-challenge record.
+export type ProxyNameCertificate = 'pending' | 'ready' | 'failed'
+
+export type ProxyOwnName = {
+  name: string
+  state: ProxyNameState
+  records: ProxyNameRecord[]
+  certificate: ProxyNameCertificate | null
+  checked: string | null // when its records were last checked
+  problem: string | null // what is not right, in graphql's words
+}
 
 export type Proxy = {
   id: string
   name: string // remote.it's by its location ("remote.it pdx1a"), an own proxy by its name
   host: string // its name, <label>-<the slug it is under>.<proxy zone>: its tcp and udp endpoints are at it
   label: string | null // an own proxy's host's first part, before the slug; none for remote.it's
-  domain: string | null // an own proxy's own domain for its https names
   remoteit: boolean
   local: boolean // Local network: reached only on its devices' own network. Else Internet. Chosen as it is made
   localNetwork: string | null // a local proxy's network, its first device's (192.168.1.0/24); none before it has one
@@ -35,6 +61,7 @@ export type Proxy = {
   endpointCount: number | null // for whoever manages it
   endpoints?: Endpoint[] // oldest first: every one for whoever manages it, else those you made on it; its page's
   certificate: ProxyCertificate | null // an own proxy's; remote.it's devices hold their own
+  ownName?: ProxyOwnName | null // an own proxy's, for whoever manages it; its page's
 }
 
 export type EndpointKind = 'https' | 'tcp' | 'udp'
@@ -54,7 +81,8 @@ export type Endpoint = {
   port: number | null
   url: string
   // On a local proxy, where it is reached besides its public name: the .local name its devices announce on their
-  // network, then each device's IP and port in service. None on an Internet proxy.
+  // network, then — a tcp or udp one — each device's IP and port in service. An https one has no address at an IP: a
+  // device tells which endpoint a visitor wants by the name asked for. None on an Internet proxy.
   localAddresses: string[]
   created: string
   expires: string | null
@@ -70,13 +98,14 @@ export type NewEndpoint = {
 }
 
 // What a list of proxies to choose from needs.
-const CHOICE_FIELDS = 'id name host domain remoteit local publicEndpoints location provider'
+const CHOICE_FIELDS = 'id name host remoteit local publicEndpoints location provider'
 const ENDPOINT_FIELDS = `id serviceId proxy { id name host remoteit local } kind lifetime access lockedIp allow host
   port url localAddresses created expires`
-// A list's: no endpoints but their count. A proxy's page: its endpoints too.
+const OWN_NAME_FIELDS = 'name state records { name type value found seen } certificate checked problem'
+// A list's: no endpoints but their count. A proxy's page: its endpoints and its own name too.
 const FIELDS = `${CHOICE_FIELDS} label localNetwork activation manage owner { id email } endpointCount certificate
   devices { ${PROXY_DEVICE_FIELDS} }`
-const PAGE_FIELDS = `${FIELDS} endpoints { ${ENDPOINT_FIELDS} }`
+const PAGE_FIELDS = `${FIELDS} ownName { ${OWN_NAME_FIELDS} } endpoints { ${ENDPOINT_FIELDS} }`
 
 async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
   const response = await post({ query, variables })
@@ -90,7 +119,7 @@ async function read<T>(query: string, variables: ILookup<any>, marker: string, p
 // A proxy to make an endpoint on.
 export type ProxyChoice = Pick<
   Proxy,
-  'id' | 'name' | 'host' | 'domain' | 'remoteit' | 'local' | 'publicEndpoints' | 'location' | 'provider'
+  'id' | 'name' | 'host' | 'remoteit' | 'local' | 'publicEndpoints' | 'location' | 'provider'
 >
 
 // The proxies you may make endpoints on, each run in service: remote.it's, your own, and those your role reaches.
@@ -125,16 +154,15 @@ export const graphQLProxy = (id: string) =>
 export async function graphQLCreateProxy(set: {
   name: string
   label?: string
-  domain?: string
   publicEndpoints?: boolean
   local?: boolean
   accountId?: string
 }): Promise<Proxy | { reason: string }> {
   const result = await graphQLRequestWithReason(
-    ` mutation CreateProxy($name: String!, $label: String, $domain: String, $publicEndpoints: Boolean, $local: Boolean,
-        $accountId: String) {
-      createProxy(name: $name, label: $label, domain: $domain, publicEndpoints: $publicEndpoints, local: $local,
-        accountId: $accountId) { ${FIELDS} }
+    ` mutation CreateProxy($name: String!, $label: String, $publicEndpoints: Boolean, $local: Boolean, $accountId: String) {
+      createProxy(name: $name, label: $label, publicEndpoints: $publicEndpoints, local: $local, accountId: $accountId) {
+        ${FIELDS}
+      }
     }`,
     set
   )
@@ -150,23 +178,19 @@ export const graphQLRenameProxy = (proxy: string, name: string) =>
     { proxy, name }
   )
 
-/* Its names: its host, <label>-<the account's slug now> — a changed label, or the same one after the account's slug
-   changed, which is how a proxy takes the new slug —, and its own domain for its https names, or none. Each says first
-   what it would do — every endpoint address that moves, before and after (a new host moves its tcp and udp endpoints;
-   its https ones keep their own names, but for those onto or off its own domain), and the certificate its https
-   endpoints are served with after: own (the domain's, put on its devices by its owner), or the stage's — ready, or
-   pending (not issued yet: until it is, its https endpoints are not served) — and is done with apply. */
-export type NamesMove = {
-  host: string
-  domain: string | null
-  addresses: { endpoint: string; kind: string; from: string; to: string }[]
-  certificate: ProxyCertificate
-  applied: boolean
-}
+// An endpoint's address before and after a move of its proxy's names or endpoints.
+export type AddressMove = { endpoint: string; kind: string; from: string; to: string }
 
-const NAMES_FIELDS = 'host domain addresses { endpoint kind from to } certificate applied'
+/* Its host: <label>-<the account's slug now> — a changed label, or the same one after the account's slug changed, which
+   is how a proxy takes the new slug. Said first what it would do — its host after, every endpoint address that moves
+   (its tcp and udp ones: its https ones keep their own names), and the stage's certificate its https endpoints are
+   served with after, ready or pending (not issued yet: until it is, its https endpoints are not served) — and done with
+   apply. */
+export type NamesMove = { host: string; addresses: AddressMove[]; certificate: ProxyCertificate; applied: boolean }
 
-async function names(field: string, mutation: string, variables: ILookup<any>): Promise<NamesMove | { reason: string }> {
+const NAMES_FIELDS = 'host addresses { endpoint kind from to } certificate applied'
+
+async function names<T>(field: string, mutation: string, variables: ILookup<any>): Promise<T | { reason: string }> {
   const result = await graphQLRequestWithReason(mutation, variables)
   if (result === 'ERROR') return { reason: '' }
   if ('reason' in result) return result
@@ -174,7 +198,7 @@ async function names(field: string, mutation: string, variables: ILookup<any>): 
 }
 
 export const graphQLSetProxyLabel = (proxy: string, label: string, apply: boolean) =>
-  names(
+  names<NamesMove>(
     'setProxyLabel',
     ` mutation SetProxyLabel($proxy: String!, $label: String!, $apply: Boolean) {
       setProxyLabel(proxy: $proxy, label: $label, apply: $apply) { ${NAMES_FIELDS} }
@@ -182,13 +206,48 @@ export const graphQLSetProxyLabel = (proxy: string, label: string, apply: boolea
     { proxy, label, apply }
   )
 
-export const graphQLSetProxyDomain = (proxy: string, domain: string | null, apply: boolean) =>
-  names(
-    'setProxyDomain',
-    ` mutation SetProxyDomain($proxy: String!, $domain: String, $apply: Boolean) {
-      setProxyDomain(proxy: $proxy, domain: $domain, apply: $apply) { ${NAMES_FIELDS} }
+/* Its own name claimed — a first one, or another in place of one its addresses are not under yet —: pending until its
+   records are found, with the records to add. Refused in graphql's words: a name not under a domain (example.com
+   itself), one of remote.it's, another proxy's. */
+export const graphQLSetProxyName = (proxy: string, name: string) =>
+  names<ProxyOwnName>(
+    'setProxyName',
+    ` mutation SetProxyName($proxy: String!, $name: String) {
+      setProxyName(proxy: $proxy, name: $name) { ${OWN_NAME_FIELDS} }
     }`,
-    { proxy, domain, apply }
+    { proxy, name }
+  )
+
+/* Its addresses moved under its own name, or back to remote.it's names: every endpoint address before and after, and
+   the certificate its https endpoints are served with after — the own name's moving under it (pending, ready or
+   failed: not served until it is ready), the stage's moving back (ready or pending). */
+export type OwnNameMove = {
+  addresses: AddressMove[]
+  certificate: ProxyNameCertificate | ProxyCertificate
+  applied: boolean
+}
+
+const OWN_NAME_MOVE_FIELDS = 'addresses { endpoint kind from to } certificate applied'
+
+// Its records checked now (its own name's state read again after says what was found): what moving under it would do,
+// and with apply — its records right — done.
+export const graphQLVerifyProxyName = (proxy: string, apply: boolean) =>
+  names<OwnNameMove>(
+    'verifyProxyName',
+    ` mutation VerifyProxyName($proxy: String!, $apply: Boolean) {
+      verifyProxyName(proxy: $proxy, apply: $apply) { ${OWN_NAME_MOVE_FIELDS} }
+    }`,
+    { proxy, apply }
+  )
+
+// Its own name given up: what moving back to remote.it's names would do, and with apply done.
+export const graphQLRemoveProxyName = (proxy: string, apply: boolean) =>
+  names<OwnNameMove>(
+    'removeProxyName',
+    ` mutation RemoveProxyName($proxy: String!, $apply: Boolean) {
+      removeProxyName(proxy: $proxy, apply: $apply) { ${OWN_NAME_MOVE_FIELDS} }
+    }`,
+    { proxy, apply }
   )
 
 // Whether it takes public endpoints. Off while it has public endpoints, refused unless confirmed, saying how many:
@@ -218,9 +277,9 @@ export const graphQLDeleteProxy = (proxy: string, confirm: boolean) =>
   )
 
 // The endpoints of a proxy no device runs, to another proxy of its account: each address before and after — its tcp
-// and udp ones move to the other proxy's host, its https ones keep their names but onto or off an own domain — and,
-// applied, done. Refused on a name or port clash.
-export type EndpointsMove = { addresses: { endpoint: string; kind: string; from: string; to: string }[]; applied: boolean }
+// and udp ones move to the other proxy's names, its https ones keep their own — and, applied, done. Refused on a name or
+// port clash.
+export type EndpointsMove = { addresses: AddressMove[]; applied: boolean }
 
 export async function graphQLMoveProxyEndpoints(
   from: string,
@@ -263,6 +322,11 @@ export const graphQLCreateEndpoint = (serviceId: string, endpoint: NewEndpoint) 
 export const graphQLRemoveEndpoint = (id: string) =>
   graphQLBasicRequest(` mutation RemoveEndpoint($id: String!) { removeEndpoint(id: $id) }`, { id })
 
-// Where an endpoint is reached, as a person would type it.
+// Where an endpoint is reached, as a person would type it: graphql's url — under its proxy's own name once that is
+// active —, an https one's whole, a tcp or udp one's host and port, its scheme dropped.
 export const endpointAddress = (endpoint: Pick<Endpoint, 'kind' | 'url' | 'host' | 'port'>) =>
-  endpoint.kind === 'https' ? endpoint.url : `${endpoint.host}:${endpoint.port}`
+  endpoint.kind === 'https'
+    ? endpoint.url
+    : endpoint.url.startsWith(`${endpoint.kind}://`)
+    ? endpoint.url.slice(endpoint.kind.length + 3)
+    : `${endpoint.host}:${endpoint.port}`

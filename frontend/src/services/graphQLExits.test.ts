@@ -33,17 +33,21 @@ import {
   graphQLRunCandidates,
   RunAction,
 } from './graphQLDeviceRuns'
+import * as proxies from './graphQLProxy'
 import {
+  endpointAddress,
   graphQLAccountProxies,
   graphQLCreateEndpoint,
   graphQLCreateProxy,
   graphQLProxies,
   graphQLProxy,
+  graphQLRemoveProxyName,
   graphQLRenameProxy,
   graphQLServiceEndpoints,
-  graphQLSetProxyDomain,
   graphQLSetProxyLabel,
+  graphQLSetProxyName,
   graphQLSetProxyPublicEndpoints,
+  graphQLVerifyProxyName,
 } from './graphQLProxy'
 import {
   graphQLCreateRemoteit,
@@ -530,10 +534,11 @@ describe('Internet or Local network', () => {
     request.mockResolvedValue(answer({ proxies: [office] }))
     await graphQLProxies()
     expect(asked().query).toContain('remoteit local publicEndpoints')
+    // An https one at its .local name alone: at an IP, no name tells its devices which endpoint is asked for.
     const endpoint = {
       id: 'E1',
       proxy: office,
-      localAddresses: ['https://pi-acme.local', 'https://192.168.1.20:40443'],
+      localAddresses: ['https://pi-acme.local'],
     }
     request.mockResolvedValue(
       answer({ login: { device: [{ id: 'DEV', services: [{ id: 'S1', endpoints: [endpoint] }] }] } })
@@ -567,7 +572,7 @@ describe('Internet or Local network', () => {
 })
 
 describe('a proxy’s names and public endpoints', () => {
-  const moved = { host: 'gw2-acme.r3proxy.com', domain: null, addresses: [], certificate: 'pending', applied: false }
+  const moved = { host: 'gw2-acme.r3proxy.com', addresses: [], certificate: 'pending', applied: false }
 
   it('its name alone renamed', async () => {
     request.mockResolvedValue(answer({ renameProxy: { id: 'P1' } }))
@@ -575,21 +580,159 @@ describe('a proxy’s names and public endpoints', () => {
     expect(asked().variables).toEqual({ proxy: 'P1', name: 'Gateway' })
   })
 
-  it('a label or a domain: what moves said, or with apply done; refused in graphql’s words', async () => {
+  it('a label: what moves said, or with apply done; refused in graphql’s words', async () => {
     request.mockResolvedValue(answer({ setProxyLabel: moved }))
     expect(await graphQLSetProxyLabel('P1', 'gw2', false)).toEqual(moved)
     expect(asked().variables).toEqual({ proxy: 'P1', label: 'gw2', apply: false })
-    request.mockResolvedValue(answer({ setProxyDomain: { ...moved, applied: true } }))
-    expect(await graphQLSetProxyDomain('P1', null, true)).toEqual({ ...moved, applied: true })
-    expect(asked().variables).toEqual({ proxy: 'P1', domain: null, apply: true })
-    request.mockResolvedValue(refusal('r3proxy.com is remote.it’s'))
-    expect(await graphQLSetProxyDomain('P1', 'r3proxy.com', false)).toEqual({ reason: 'R3proxy.com is remote.it’s' })
+    expect(asked().query).toContain('setProxyLabel(proxy: $proxy, label: $label, apply: $apply) {')
+    expect(asked().query).toContain('host addresses { endpoint kind from to } certificate applied')
+    request.mockResolvedValue(answer({ setProxyLabel: { ...moved, applied: true } }))
+    expect(await graphQLSetProxyLabel('P1', 'gw2', true)).toEqual({ ...moved, applied: true })
+    expect(asked().variables).toEqual({ proxy: 'P1', label: 'gw2', apply: true })
+    request.mockResolvedValue(refusal('gw2-acme.r3proxy.com is another proxy’s'))
+    expect(await graphQLSetProxyLabel('P1', 'gw2', false)).toEqual({
+      reason: 'Gw2-acme.r3proxy.com is another proxy’s',
+    })
   })
 
   it('public endpoints given up, confirmed or not', async () => {
     request.mockResolvedValue(answer({ setProxyPublicEndpoints: { id: 'P1', publicEndpoints: false } }))
     await graphQLSetProxyPublicEndpoints('P1', false, true)
     expect(asked().variables).toEqual({ proxy: 'P1', publicEndpoints: false, confirm: true })
+  })
+})
+
+describe('a proxy’s own name', () => {
+  const ownName = {
+    name: 'office.example.com',
+    state: 'pending',
+    records: [
+      { name: 'office.example.com', type: 'CNAME', value: 'office-acme.solo.r3proxy.com', found: false, seen: null },
+      { name: '*.office.example.com', type: 'CNAME', value: 'office-acme.solo.r3proxy.com', found: false, seen: null },
+      {
+        name: '_acme-challenge.office.example.com',
+        type: 'CNAME',
+        value: '3f9a1c2b4d5e6f70.challenge.solo.r3proxy.com',
+        found: false,
+        seen: 'other.example.net',
+      },
+    ],
+    certificate: null,
+    checked: null,
+    problem: null,
+  }
+  const move = {
+    addresses: [
+      { endpoint: 'E1', kind: 'tcp', from: 'office-acme.solo.r3proxy.com:30001', to: 'office.example.com:30001' },
+    ],
+    certificate: 'pending',
+    applied: false,
+  }
+  const OWN_NAME = 'ownName { name state records { name type value found seen } certificate checked problem }'
+  const MOVE = '{ addresses { endpoint kind from to } certificate applied }'
+
+  it('read with its page: its state, its records as last found, its certificate, when checked and any problem', async () => {
+    request.mockResolvedValue(answer({ proxy: { id: 'P1', ownName } }))
+    expect(await graphQLProxy('P1')).toEqual({ id: 'P1', ownName })
+    expect(asked().query).toContain(OWN_NAME)
+    // A list reads no proxy's own name.
+    request.mockResolvedValue(answer({ login: { account: { proxies: [] } } }))
+    await graphQLAccountProxies('ACCOUNT')
+    expect(asked().query).not.toContain('ownName')
+  })
+
+  it('nothing of the own domain it replaces is read or set any more', async () => {
+    expect('graphQLSetProxyDomain' in proxies).toBe(false)
+    request.mockResolvedValue(answer({ proxy: null }))
+    await graphQLProxy('P1')
+    expect(asked().query).not.toMatch(/\bdomain\b/)
+    request.mockResolvedValue(answer({ login: { account: { proxies: [] } } }))
+    await graphQLAccountProxies('ACCOUNT')
+    expect(asked().query).not.toMatch(/\bdomain\b/)
+    request.mockResolvedValue(answer({ proxies: [] }))
+    await graphQLProxies()
+    expect(asked().query).not.toMatch(/\bdomain\b/)
+    request.mockResolvedValue(answer({ createProxy: { id: 'P1' } }))
+    await graphQLCreateProxy({ name: 'Office' })
+    expect(asked().query).not.toMatch(/\bdomain\b/)
+    request.mockResolvedValue(
+      answer({ setProxyLabel: { host: 'x', addresses: [], certificate: 'ready', applied: false } })
+    )
+    await graphQLSetProxyLabel('P1', 'x', false)
+    expect(asked().query).not.toMatch(/\bdomain\b/)
+  })
+
+  it('claimed: pending, with its records to add; refused in graphql’s words; a failed request says none', async () => {
+    request.mockResolvedValue(answer({ setProxyName: ownName }))
+    expect(await graphQLSetProxyName('P1', 'office.example.com')).toEqual(ownName)
+    expect(asked().variables).toEqual({ proxy: 'P1', name: 'office.example.com' })
+    expect(asked().query).toContain('mutation SetProxyName($proxy: String!, $name: String)')
+    expect(asked().query).toContain(
+      'setProxyName(proxy: $proxy, name: $name) { name state records { name type value found seen } certificate checked problem }'
+    )
+    request.mockResolvedValue(refusal('example.com is a domain: use a name under it, as office.example.com'))
+    expect(await graphQLSetProxyName('P1', 'example.com')).toEqual({
+      reason: 'Example.com is a domain: use a name under it, as office.example.com',
+    })
+    expect(uiSet).not.toHaveBeenCalled()
+    ui.offline = true
+    expect(await graphQLSetProxyName('P1', 'office.example.com')).toEqual({ reason: '' })
+  })
+
+  it('checked now: what moving under it would do, or with apply moved; refused in graphql’s words', async () => {
+    request.mockResolvedValue(answer({ verifyProxyName: move }))
+    expect(await graphQLVerifyProxyName('P1', false)).toEqual(move)
+    expect(asked().variables).toEqual({ proxy: 'P1', apply: false })
+    expect(asked().query).toContain('mutation VerifyProxyName($proxy: String!, $apply: Boolean)')
+    expect(asked().query).toContain(`verifyProxyName(proxy: $proxy, apply: $apply) ${MOVE}`)
+    request.mockResolvedValue(answer({ verifyProxyName: { ...move, certificate: 'ready', applied: true } }))
+    expect(await graphQLVerifyProxyName('P1', true)).toEqual({ ...move, certificate: 'ready', applied: true })
+    expect(asked().variables).toEqual({ proxy: 'P1', apply: true })
+    request.mockResolvedValue(refusal('_acme-challenge.office.example.com is missing'))
+    expect(await graphQLVerifyProxyName('P1', true)).toEqual({
+      reason: '_acme-challenge.office.example.com is missing',
+    })
+    request.mockResolvedValue(answer({ verifyProxyName: null }))
+    expect(await graphQLVerifyProxyName('P1', false)).toEqual({ reason: '' })
+  })
+
+  it('removed: what moving back to remote.it’s names would do, or with apply done', async () => {
+    const back = {
+      ...move,
+      addresses: [{ ...move.addresses[0], from: move.addresses[0].to, to: move.addresses[0].from }],
+    }
+    request.mockResolvedValue(answer({ removeProxyName: back }))
+    expect(await graphQLRemoveProxyName('P1', false)).toEqual(back)
+    expect(asked().variables).toEqual({ proxy: 'P1', apply: false })
+    expect(asked().query).toContain(`removeProxyName(proxy: $proxy, apply: $apply) ${MOVE}`)
+    await graphQLRemoveProxyName('P1', true)
+    expect(asked().variables).toEqual({ proxy: 'P1', apply: true })
+  })
+
+  it('an endpoint’s address is graphql’s url: under the own name once active, a tcp or udp one’s without its scheme', () => {
+    expect(
+      endpointAddress({
+        kind: 'https',
+        url: 'https://pi.office.example.com',
+        host: 'pi.office.example.com',
+        port: null,
+      })
+    ).toBe('https://pi.office.example.com')
+    expect(
+      endpointAddress({
+        kind: 'tcp',
+        url: 'tcp://office.example.com:30001',
+        host: 'office-acme.solo.r3proxy.com',
+        port: 30001,
+      })
+    ).toBe('office.example.com:30001')
+    expect(
+      endpointAddress({ kind: 'udp', url: 'udp://office.example.com:30002', host: 'office.example.com', port: 30002 })
+    ).toBe('office.example.com:30002')
+    // A url not in that form: its host and port.
+    expect(endpointAddress({ kind: 'tcp', url: '', host: 'office-acme.solo.r3proxy.com', port: 30001 })).toBe(
+      'office-acme.solo.r3proxy.com:30001'
+    )
   })
 })
 

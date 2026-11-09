@@ -9,7 +9,6 @@ const {
   moveEndpoints,
   renameProxy,
   setLabel,
-  setDomain,
   setPublic,
   setActivation,
   addDevice,
@@ -19,6 +18,7 @@ const {
   picker,
   inline,
   drained,
+  ownNameRead,
 } = vi.hoisted(() => ({
   readProxy: vi.fn(async (_id: string) => null as any),
   accountProxies: vi.fn(async (_accountId: string) => [] as any),
@@ -26,7 +26,6 @@ const {
   moveEndpoints: vi.fn(async (_from: string, _to: string, _apply: boolean) => ({} as any)),
   renameProxy: vi.fn(async (_proxy: string, _name: string) => ({} as any)),
   setLabel: vi.fn(async (_proxy: string, _label: string, _apply: boolean) => ({} as any)),
-  setDomain: vi.fn(async (_proxy: string, _domain: string | null, _apply: boolean) => ({} as any)),
   setPublic: vi.fn(async (_proxy: string, _on: boolean, _confirm: boolean) => ({} as any)),
   setActivation: vi.fn(async (_proxy: string, _activation: string) => ({} as any)),
   addDevice: vi.fn(async (_proxy: string, _deviceId: string) => ({ runs: { proxy: null, exit: null } } as any)),
@@ -41,6 +40,8 @@ const {
     proxy: { id: 'D1', name: 'Office Mac', state: 'DRAINING', joining: false, proxy: { name: 'Gateway' } },
     exit: null,
   },
+  // What the own name section was answered when it asked for the proxy to be read again.
+  ownNameRead: { value: undefined as any },
 }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }), useParams: () => params }))
 vi.mock('../services/graphQLProxy', () => ({
@@ -50,10 +51,11 @@ vi.mock('../services/graphQLProxy', () => ({
   graphQLMoveProxyEndpoints: moveEndpoints,
   graphQLRenameProxy: renameProxy,
   graphQLSetProxyLabel: setLabel,
-  graphQLSetProxyDomain: setDomain,
   graphQLSetProxyPublicEndpoints: setPublic,
   graphQLSetProxyActivation: setActivation,
-  endpointAddress: (endpoint: any) => (endpoint.kind === 'https' ? endpoint.url : `${endpoint.host}:${endpoint.port}`),
+  // As graphQLProxy's own: graphql's url, a tcp or udp one's without its scheme.
+  endpointAddress: (endpoint: any) =>
+    endpoint.kind === 'https' ? endpoint.url : endpoint.url.replace(/^(tcp|udp):\/\//, ''),
 }))
 vi.mock('../services/graphQLDeviceRuns', () => ({ graphQLAddProxyDevice: addDevice }))
 vi.mock('../services/graphQL', () => ({
@@ -114,14 +116,25 @@ vi.mock('../components/InlineTextFieldSetting', () => ({
     )
   },
 }))
-// A line, by its icon: what it says, and its button.
+// A line, by its icon: what it says, its button — disabled by buttonDisabled, as the real one's — and its toggle.
 vi.mock('../components/ListItemSetting', () => ({
-  ListItemSetting: ({ icon, iconColor, label, subLabel, button, toggle, disabled, onButtonClick, onClick }: any) => (
+  ListItemSetting: ({
+    icon,
+    iconColor,
+    label,
+    subLabel,
+    button,
+    buttonDisabled,
+    toggle,
+    disabled,
+    onButtonClick,
+    onClick,
+  }: any) => (
     <div data-setting={icon} data-color={iconColor}>
       <span data-label>{label}</span>
       <span data-sublabel>{subLabel}</span>
       {button && (
-        <button disabled={disabled} onClick={onButtonClick}>
+        <button disabled={buttonDisabled} onClick={onButtonClick}>
           {button}
         </button>
       )}
@@ -179,6 +192,16 @@ vi.mock('../components/Container', () => ({
 vi.mock('../components/Title', () => ({ Title: ({ children }: any) => <>{children}</> }))
 vi.mock('../components/Gutters', () => ({ Gutters: ({ children }: any) => <>{children}</> }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
+// Its own name is the section's own test's (ProxyOwnName.test.tsx): here, what it was given — the proxy, the page's
+// busy, and a read of the proxy again that answers what it read.
+vi.mock('../components/ProxyOwnName', () => ({
+  ProxyOwnName: ({ proxy, busy, onBusy, onChanged }: any) => (
+    <div data-own-name-section={proxy.ownName?.state ?? 'none'} data-busy={busy ? '' : undefined}>
+      <button data-own-name-busy onClick={() => onBusy(!busy)} />
+      <button data-own-name-changed onClick={async () => (ownNameRead.value = await onChanged())} />
+    </div>
+  ),
+}))
 // Who visited it is the access list's own test's (ProxyAccessList.test.tsx): here, whose visits it was asked for.
 vi.mock('../components/ProxyAccessList', () => ({
   ProxyAccessList: ({ scope, devices }: any) => (
@@ -219,7 +242,6 @@ const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}
 
 const NAME = 'Name'
 const LABEL = 'Host: its label before your account slug'
-const DOMAIN = 'Your own domain for its https names'
 const ACTIVATION = 'A device added goes into service'
 
 const run = (id: string, name: string | null, extra: any = {}) => ({
@@ -266,7 +288,6 @@ const GATEWAY = {
   name: 'Gateway',
   host: 'gw-acme-corp.dev.r3proxy.com',
   label: 'gw',
-  domain: null,
   remoteit: false,
   local: false,
   localNetwork: null,
@@ -279,7 +300,27 @@ const GATEWAY = {
   devices: [run('D1', 'Office Mac')],
   endpointCount: 2, endpoints: endpointsOf(2),
   certificate: 'ready',
+  ownName: null,
 } as any
+// Its own name, its records found.
+const OWN_NAME = {
+  name: 'office.example.com',
+  state: 'pending',
+  records: [
+    { name: 'office.example.com', type: 'CNAME', value: 'gw-acme-corp.dev.r3proxy.com', found: true, seen: null },
+    { name: '*.office.example.com', type: 'CNAME', value: 'gw-acme-corp.dev.r3proxy.com', found: true, seen: null },
+    {
+      name: '_acme-challenge.office.example.com',
+      type: 'CNAME',
+      value: '3f9a1c2b4d5e6f70.challenge.dev.r3proxy.com',
+      found: true,
+      seen: null,
+    },
+  ],
+  certificate: 'ready',
+  checked: '2026-11-08T23:00:00Z',
+  problem: null,
+}
 // No device runs it: its endpoints may be moved, and it deleted.
 const IDLE = { ...GATEWAY, devices: [] }
 const SPARE = {
@@ -370,15 +411,14 @@ beforeEach(() => {
 })
 
 describe('an own proxy’s host', () => {
-  it('its label is what comes before the account’s slug; a new label keeps the slug and the domain', () => {
+  it('its label is what comes before the account’s slug; a new label keeps the slug and the proxy zone', () => {
     expect(labelOf('gw-acme-corp.dev.r3proxy.com')).toBe('gw')
     expect(labelOf('nas2-acme.r3proxy.com')).toBe('nas2')
     expect(hostWith('gw-acme-corp.dev.r3proxy.com', 'nas')).toBe('nas-acme-corp.dev.r3proxy.com')
     expect(hostWith('gw-acme-corp.dev.r3proxy.com', 'gateway2')).toBe('gateway2-acme-corp.dev.r3proxy.com')
   })
 
-  it('its certificate: its domain’s on its devices, or remote.it’s for every proxy name — held, or still to come', () => {
-    expect(certificateLine(t, 'own')).toBe("Your domain's, on its devices (proxy_cert, proxy_key)")
+  it('its certificate: remote.it’s for every proxy name — held, or still to come', () => {
     expect(certificateLine(t, 'ready')).toBe("remote.it's, for every proxy name")
     expect(certificateLine(t, 'pending')).toBe(
       "remote.it's, not issued yet: until it is, its https endpoints are not served"
@@ -407,7 +447,7 @@ describe('a proxy’s page', () => {
     expect($('[data-notice="info"]')?.textContent).toBe('No such proxy, or not one you may see.')
   })
 
-  it('an own proxy, for whoever manages it: its name, host label and own domain to change, its certificate, public endpoints, activation and endpoints', async () => {
+  it('an own proxy, for whoever manages it: its name and host label to change, its certificate, public endpoints, activation, own name and endpoints', async () => {
     await render()
     expect(inline[NAME].value).toBe('Gateway')
     expect(inline[NAME].maxLength).toBe(255)
@@ -415,8 +455,9 @@ describe('a proxy’s page', () => {
     expect(inline[LABEL].displayValue).toBe('gw-acme-corp.dev.r3proxy.com')
     expect(inline[LABEL].maxLength).toBe(29)
     expect('Gw-1_x'.replace(inline[LABEL].filter, '')).toBe('w1x')
-    expect(inline[DOMAIN].value).toBe('')
-    expect(inline[DOMAIN].placeholder).toBe('none: each https endpoint at a name of its own')
+    expect(Object.keys(inline)).toEqual([NAME, LABEL])
+    expect(setting('earth-americas')).toBeNull()
+    expect($('[data-own-name-section]')?.getAttribute('data-own-name-section')).toBe('none')
     expect(label('certificate')).toBe("remote.it's, for every proxy name")
     expect(setting('certificate')?.getAttribute('data-color')).toBe('success')
     expect(label('users')).toBe('Takes public endpoints')
@@ -436,13 +477,11 @@ describe('a proxy’s page', () => {
 
     await render({
       ...GATEWAY,
-      domain: 'proxy.example.com',
       certificate: 'pending',
       publicEndpoints: false,
       endpointCount: 1,
       endpoints: endpointsOf(1),
     })
-    expect(inline[DOMAIN].value).toBe('proxy.example.com')
     expect(label('certificate')).toBe("remote.it's, not issued yet: until it is, its https endpoints are not served")
     expect(setting('certificate')?.getAttribute('data-color')).toBe('warning')
     expect(setting('users')?.querySelector('[data-toggle]')?.getAttribute('data-toggle')).toBe('false')
@@ -795,6 +834,7 @@ describe('a proxy that is not the account’s own, or not managed', () => {
     expect(sublabel('globe')).toBe('Where it is reached')
     for (const icon of ['certificate', 'users', 'arrow-right-arrow-left', 'trash', 'cloud', 'house-signal'])
       expect(setting(icon)).toBeNull()
+    expect($('[data-own-name-section]')).toBeNull()
     expect($(`[data-select="${ACTIVATION}"]`)).not.toBeNull()
     expect($('[data-endpoints]')?.textContent).toContain('5 endpoints ·')
     expect($('[data-runs-on] [data-run="E1"]')).not.toBeNull()
@@ -819,6 +859,7 @@ describe('a proxy that is not the account’s own, or not managed', () => {
     expect($('[data-select]')).toBeNull()
     expect($('[data-runs-on]')).toBeNull()
     expect($('[data-visitors]')).toBeNull()
+    expect($('[data-own-name-section]')).toBeNull()
   })
 
   it('another proxy opened is read anew, the notice and the picker of the one before gone', async () => {
@@ -876,12 +917,11 @@ describe('another proxy’s address, with a dialog open or an answer still to co
   })
 })
 
-describe('a proxy’s names: its host label and its own domain, each move said first', () => {
-  // What graphql says a move does: the host and domain after, each address that moves — a new host moves its tcp and
-  // udp endpoints, its https ones keeping their own names —, and the certificate after.
+describe('a proxy’s host label, each move said first', () => {
+  // What graphql says a move does: the host after, each address that moves — a new host moves its tcp and udp
+  // endpoints, its https ones keeping their own names —, and the certificate after.
   const said = (fields: any = {}) => ({
     host: 'gw2-acme-corp.dev.r3proxy.com',
-    domain: null,
     addresses: [
       {
         endpoint: 'EP2',
@@ -901,7 +941,6 @@ describe('a proxy’s names: its host label and its own domain, each move said f
 
   beforeEach(() => {
     setLabel.mockReset().mockResolvedValue(said())
-    setDomain.mockReset().mockResolvedValue(said())
     vi.mocked(post).mockReset()
   })
 
@@ -909,10 +948,8 @@ describe('a proxy’s names: its host label and its own domain, each move said f
     await render()
     await act(async () => inline[LABEL].onSave('gw'))
     await act(async () => inline[NAME].onSave(' Gateway '))
-    await act(async () => inline[DOMAIN].onSave(''))
     expect(renameProxy).not.toHaveBeenCalled()
     expect(setLabel).not.toHaveBeenCalled()
-    expect(setDomain).not.toHaveBeenCalled()
     expect($('[data-confirm]')).toBeNull()
   })
 
@@ -974,40 +1011,16 @@ describe('a proxy’s names: its host label and its own domain, each move said f
     expect(setting('arrow-right-arrow-left')).toBeNull()
   })
 
-  it('its own domain: its https addresses’ move said first, with its own certificate, then moved; none, taken off it', async () => {
-    setDomain.mockResolvedValue(
-      said({
-        host: 'gw-acme-corp.dev.r3proxy.com',
-        domain: 'proxy.example.com',
-        addresses: [
-          {
-            endpoint: 'EP1',
-            kind: 'https',
-            from: 'https://ep1-acme-corp.dev.r3proxy.com',
-            to: 'https://ep1.proxy.example.com',
-          },
-        ],
-        certificate: 'own',
-      })
+  it('a proxy with an own name: its two CNAMEs said to follow its host, which they point at', async () => {
+    await render({ ...GATEWAY, ownName: { ...OWN_NAME, state: 'active' } })
+    await act(async () => inline[LABEL].onSave('gw2'))
+    expect($('[data-names-own-name]')?.textContent).toBe(
+      'office.example.com and *.office.example.com point at its host: once it moves, point them at gw2-acme-corp.dev.r3proxy.com where your DNS is hosted.'
     )
     await render()
-    await act(async () => inline[DOMAIN].onSave(' Proxy.Example.com '))
-    expect(setDomain).toHaveBeenCalledWith('P1', 'proxy.example.com', false)
-    expect($('[data-confirm-title]')?.textContent).toBe('Give Gateway the domain proxy.example.com?')
-    expect($('[data-names-certificate]')?.textContent).toBe(
-      'Its https endpoints are served with proxy.example.com’s certificate, which you put on its devices (proxy_cert, proxy_key).'
-    )
-    await click($('[data-confirm-action]'))
-    expect(setDomain).toHaveBeenLastCalledWith('P1', 'proxy.example.com', true)
-
-    await render({ ...GATEWAY, domain: 'proxy.example.com' })
-    setDomain.mockResolvedValue(said({ host: 'gw-acme-corp.dev.r3proxy.com', certificate: 'ready' }))
-    await act(async () => inline[DOMAIN].onSave(''))
-    expect(setDomain).toHaveBeenLastCalledWith('P1', null, false)
-    expect($('[data-confirm-title]')?.textContent).toBe('Take Gateway’s https names off proxy.example.com?')
-    expect($('[data-names-certificate]')?.textContent).toBe(
-      'Its https endpoints are served with remote.it’s certificate for every proxy name.'
-    )
+    await act(async () => inline[LABEL].onSave('gw2'))
+    expect($('[data-names-addresses]')).not.toBeNull()
+    expect($('[data-names-own-name]')).toBeNull()
   })
 
   it('a move that moves nothing: said, with nothing to do', async () => {
@@ -1082,8 +1095,8 @@ describe('moving the endpoints, read or made amiss', () => {
 })
 
 describe('Internet or Local network', () => {
-  // A local proxy, on its first device's network: each endpoint at its public name, its .local name, and each device's
-  // IP and port in service.
+  // A local proxy, on its first device's network: each endpoint at its public name and its .local name, and a tcp one at
+  // each device's IP and port in service. An https one has no address at an IP, with no name there to tell it by.
   const OFFICE = {
     ...GATEWAY,
     id: 'P5',
@@ -1099,11 +1112,12 @@ describe('Internet or Local network', () => {
         ? {
             ...endpoint,
             host: 'office-acme-corp.dev.r3proxy.com',
+            url: 'tcp://office-acme-corp.dev.r3proxy.com:30001',
             localAddresses: ['office-acme-corp.local:30001', '192.168.1.20:30001'],
           }
         : {
             ...endpoint,
-            localAddresses: ['https://ep1-acme-corp.local', 'https://192.168.1.20:40443'],
+            localAddresses: ['https://ep1-acme-corp.local'],
           }
     ),
   }
@@ -1143,14 +1157,11 @@ describe('Internet or Local network', () => {
     )
   })
 
-  it('a local proxy’s endpoints: the public name first, then the .local name and each device’s IP and port — the browser warns of an https one’s certificate there', async () => {
+  it('a local proxy’s endpoints: the public name first, then the .local name and a tcp one’s each device’s IP and port — the browser warns of an https one’s certificate there', async () => {
     await render(OFFICE)
     const primary = (endpoint: string) => $(`[data-endpoint="${endpoint}"] .MuiListItemText-primary`)?.textContent
     expect(primary('EP1')).toBe('https://ep1-acme-corp.dev.r3proxy.com')
-    expect(lines('EP1')).toEqual([
-      'https://ep1-acme-corp.local · the browser warns about the certificate here',
-      'https://192.168.1.20:40443 · the browser warns about the certificate here',
-    ])
+    expect(lines('EP1')).toEqual(['https://ep1-acme-corp.local · the browser warns about the certificate here'])
     expect(primary('EP2')).toBe('office-acme-corp.dev.r3proxy.com:30001')
     expect(lines('EP2')).toEqual(['office-acme-corp.local:30001', '192.168.1.20:30001'])
   })
@@ -1164,7 +1175,7 @@ describe('Internet or Local network', () => {
       endpoints: OFFICE.endpoints.slice(0, 1),
     })
     expect($('[data-header]')?.textContent).toContain('Local network only: 192.168.1.0/24')
-    expect(lines('EP1')).toHaveLength(2)
+    expect(lines('EP1')).toHaveLength(1)
     expect(setting('house-signal')).toBeNull()
   })
 
@@ -1173,5 +1184,74 @@ describe('Internet or Local network', () => {
     expect($('[data-runs-on] [data-run="D1"]')?.hasAttribute('data-local')).toBe(true)
     await render()
     expect($('[data-runs-on] [data-run="D1"]')?.hasAttribute('data-local')).toBe(false)
+  })
+})
+
+describe('its own name', () => {
+  const named = (state: string, fields: any = {}) => ({ ...GATEWAY, ownName: { ...OWN_NAME, state, ...fields } })
+
+  beforeEach(() => {
+    ownNameRead.value = undefined
+  })
+
+  it('a section of the page for whoever manages an own proxy, as it stands: none, pending, verified, active or broken', async () => {
+    await render()
+    expect($('[data-own-name-section]')?.getAttribute('data-own-name-section')).toBe('none')
+    for (const state of ['pending', 'verified', 'active', 'broken']) {
+      await render(named(state))
+      expect($('[data-own-name-section]')?.getAttribute('data-own-name-section')).toBe(state)
+    }
+  })
+
+  it('a change it makes holds the page as any other: nothing else can be changed meanwhile', async () => {
+    await render(IDLE)
+    await click($('[data-own-name-busy]'))
+    expect($('[data-own-name-section]')?.hasAttribute('data-busy')).toBe(true)
+    expect(inline[NAME].disabled).toBe(true)
+    expect(inline[LABEL].disabled).toBe(true)
+    expect(settingButton('trash').disabled).toBe(true)
+    expect(($('[data-icon="plus"]') as HTMLButtonElement).disabled).toBe(true)
+    await click($('[data-own-name-busy]'))
+    expect(inline[NAME].disabled).toBe(false)
+    expect(settingButton('trash').disabled).toBe(false)
+  })
+
+  it('after a change, the proxy and the list beside it are read again, and what was read is answered to it', async () => {
+    await render()
+    const verified = named('verified')
+    readProxy.mockResolvedValue(verified)
+    await click($('[data-own-name-changed]'))
+    expect(readProxy).toHaveBeenCalledTimes(2)
+    expect(reloadList).toHaveBeenCalledTimes(1)
+    expect(ownNameRead.value).toEqual(verified)
+    expect($('[data-own-name-section]')?.getAttribute('data-own-name-section')).toBe('verified')
+    readProxy.mockResolvedValue('ERROR')
+    await click($('[data-own-name-changed]'))
+    expect(ownNameRead.value).toBeUndefined()
+  })
+
+  it('served under it — active, or broken until its certificate needs renewing —, its https certificate is the name’s, said there', async () => {
+    for (const state of ['pending', 'verified']) {
+      await render(named(state))
+      expect(label('certificate')).toBe("remote.it's, for every proxy name")
+    }
+    for (const state of ['active', 'broken']) {
+      await render(named(state))
+      expect(setting('certificate')).toBeNull()
+    }
+  })
+
+  it('its endpoints at graphql’s addresses for them: under its own name once that is active', async () => {
+    await render({
+      ...named('active'),
+      endpoints: endpointsOf(2).map((endpoint, n) =>
+        n
+          ? { ...endpoint, host: 'office.example.com', url: 'tcp://office.example.com:30001' }
+          : { ...endpoint, host: 'ep1.office.example.com', url: 'https://ep1.office.example.com' }
+      ),
+    })
+    expect(
+      [...document.body.querySelectorAll('[data-endpoint] .MuiListItemText-primary')].map(each => each.textContent)
+    ).toEqual(['https://ep1.office.example.com', 'office.example.com:30001'])
   })
 })

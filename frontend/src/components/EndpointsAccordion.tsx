@@ -30,10 +30,11 @@ const KIND_ICON: Record<EndpointKind, string> = { https: 'globe', tcp: 'arrow-ri
 type Props = { device: IDevice; service: IService }
 
 /* A service's endpoints on proxies (presence-server docs/proxy-plan.md): its addresses through remote.it's proxies or
-   one of yours — a name for https, a port for tcp and udp; on a local network proxy (graphql-api docs/PROXY-GROUPS.md
-   §14), said to be reached on its devices' own network only, with its .local name and each device's IP and port after
-   its public name — and making one; and, for whoever manages the service, who used them
-   (components/ProxyAccessList.tsx). Device-session API only: on an API without it, nothing shows. */
+   one of yours — a name for https, a port for tcp and udp, at graphql's address for each, under its proxy's own name
+   once that is active; on a local network proxy (graphql-api docs/PROXY-GROUPS.md §14), said to be reached on its
+   devices' own network only, with its .local name and, a tcp or udp one, each device's IP and port after its public
+   name — and making one; and, for whoever manages the service, who used them (components/ProxyAccessList.tsx).
+   Device-session API only: on an API without it, nothing shows. */
 export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   const { t } = useTranslation()
   const [endpoints, setEndpoints] = useState<Endpoint[] | 'ERROR' | typeof UNSUPPORTED>()

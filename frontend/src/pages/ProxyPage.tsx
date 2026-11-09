@@ -17,7 +17,6 @@ import {
   graphQLProxy,
   graphQLRenameProxy,
   graphQLSetProxyActivation,
-  graphQLSetProxyDomain,
   graphQLSetProxyLabel,
   graphQLSetProxyPublicEndpoints,
 } from '../services/graphQLProxy'
@@ -26,6 +25,7 @@ import { deleteProxyLine, endpointsLine, proxyKindLabel, stillRunsLine } from '.
 import { useAccountProxies } from '../hooks/useAccountExits'
 import { RunDevicePicker, addEach } from '../components/RunDevicePicker'
 import { EndpointLocalAddresses } from '../components/EndpointLocalAddresses'
+import { ProxyOwnName } from '../components/ProxyOwnName'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -48,14 +48,15 @@ export const hostWith = (host: string, label: string, slug?: string | null) =>
   slug ? `${label}-${slug}${host.slice(host.indexOf('.'))}` : `${label}${host.slice(labelOf(host).length)}`
 
 /* One proxy (graphql-api docs/PROXY-GROUPS.md §13 and §14). Its kind, for everyone who sees it: Internet, or Local
-   network only, with its network. For whoever manages it: its name; its host and its own domain — each change said
-   first, every endpoint address that moves and the certificate after, then made — and, where the account's slug
-   changed since, moving it onto the new one; its kind, chosen when it was made; whether it takes public endpoints; its
-   certificate and activation; the devices it runs on — each with its state and checks, a local proxy's device's
-   private address, whether an Internet proxy's device is reached from the internet, its actions in this proxy, and
-   what the device still runs after one — and adding more; its endpoints — a local proxy's each at its public name
-   first, then its .local name and each device's IP and port — and who visited them; and, once no device runs it,
-   moving its endpoints to another proxy of its account and deleting it, saying what goes. */
+   network only, with its network. For whoever manages it: its name; its host — a change said first, every endpoint
+   address that moves and the certificate after, then made — and, where the account's slug changed since, moving it
+   onto the new one; its kind, chosen when it was made; whether it takes public endpoints; its certificate and
+   activation; an own proxy's own name (components/ProxyOwnName.tsx); the devices it runs on — each with its state and
+   checks, a local proxy's device's private address, whether an Internet proxy's device is reached from the internet,
+   its actions in this proxy, and what the device still runs after one — and adding more; its endpoints, each at
+   graphql's address for it — under its own name once that is active; a local proxy's at its public name first, then
+   its .local name and, a tcp or udp one, each device's IP and port — and who visited them; and, once no device runs
+   it, moving its endpoints to another proxy of its account and deleting it, saying what goes. */
 export const ProxyPage: React.FC = () => {
   const { proxyID } = useParams<{ proxyID: string }>()
   // All the page holds is one proxy's — its dialogs, its picker, its answers —: another proxy's address starts afresh,
@@ -74,23 +75,25 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
   const [deleting, setDeleting] = useState(false)
   const [moving, setMoving] = useState(false)
   const [slug, setSlug] = useState<string | null>()
-  // A change of its names, said before it is made: its label (its host) or its own domain.
-  const [naming, setNaming] = useState<{ label: string } | { domain: string | null }>()
+  // A new label for its host, its move said before it is made.
+  const [naming, setNaming] = useState<string>()
   const [publicOff, setPublicOff] = useState<string>()
   const { reload: reloadList } = useAccountProxies()
   const reads = useRef(0)
   const ownerId = proxy && typeof proxy === 'object' && !proxy.remoteit ? proxy.owner?.id : undefined
 
-  // Only the last read asked for is shown: one answered late never overwrites a newer one.
+  // Only the last read asked for is shown: one answered late never overwrites a newer one. What was read is answered.
   const load = useCallback(async () => {
     const read = ++reads.current
     const answer = await graphQLProxy(proxyID)
     if (read === reads.current) setProxy(answer)
+    return answer
   }, [proxyID])
   // The proxy read again after a change, and the list beside it.
   const refresh = async () => {
     reloadList()
-    await load()
+    const answer = await load()
+    return answer && typeof answer === 'object' ? answer : undefined
   }
 
   useEffect(() => {
@@ -157,10 +160,10 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
   const label = proxy.label ?? labelOf(proxy.host)
   // Its host under a slug the account no longer has: the same label moves it onto the account's slug now.
   const slugMoved = !!slug && hostWith(proxy.host, label, slug) !== proxy.host
-  // A label or domain saved as it stands — the host under the account's slug already — is no change: nothing is asked.
-  const setLabel = (value: string) => (value === label && !slugMoved ? undefined : setNaming({ label: value }))
-  const setDomain = (value: string) =>
-    value === (proxy.domain ?? '') ? undefined : setNaming({ domain: value || null })
+  // A label saved as it stands — the host under the account's slug already — is no change: nothing is asked.
+  const setLabel = (value: string) => (value === label && !slugMoved ? undefined : setNaming(value))
+  // Its https endpoints served under its own name: the certificate they are served with is the name's, said with it.
+  const underOwnName = proxy.ownName?.state === 'active' || proxy.ownName?.state === 'broken'
 
   // Public endpoints taken on at once; given up, refused while it has some — saying how many —, which are removed only
   // once that is confirmed.
@@ -248,18 +251,8 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                   host: hostWith(proxy.host, label, slug),
                 })}
                 button={t('proxyPage.oldSlugMove', 'Move')}
-                disabled={busy}
-                onButtonClick={() => setNaming({ label })}
-              />
-            )}
-            {own && (
-              <InlineTextFieldSetting
-                icon="earth-americas"
-                label={t('proxyPage.domain', 'Your own domain for its https names')}
-                value={proxy.domain || ''}
-                placeholder={t('proxyPage.domainNone', 'none: each https endpoint at a name of its own')}
-                disabled={busy}
-                onSave={value => setDomain(String(value).trim().toLowerCase())}
+                buttonDisabled={busy}
+                onButtonClick={() => setNaming(label)}
               />
             )}
             {own && (
@@ -282,7 +275,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                   .join(' ')}
               />
             )}
-            {own && proxy.certificate && (
+            {own && proxy.certificate && !underOwnName && (
               <ListItemSetting
                 icon="certificate"
                 iconColor={proxy.certificate === 'pending' ? 'warning' : 'success'}
@@ -318,6 +311,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
             />
           </List>
         )}
+        {proxy.manage && own && <ProxyOwnName proxy={proxy} busy={busy} onBusy={setBusy} onChanged={refresh} />}
         <List data-endpoints>
           <ListSubheader>{t('proxyPage.endpointsTitle', 'Endpoints')}</ListSubheader>
           {(proxy.endpoints ?? []).map(endpoint => (
@@ -417,7 +411,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                   'Its tcp and udp endpoints move to the other proxy’s name; its https ones keep their own'
                 )}
                 button={t('proxyPage.moveButton', 'Move')}
-                disabled={busy}
+                buttonDisabled={busy}
                 onButtonClick={() => setMoving(true)}
               />
             )}
@@ -430,7 +424,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                   : t('proxyPage.deleteHint', 'It is kept until it is deleted, with no device running it too')
               }
               button={t('proxyPage.deleteButton', 'Delete')}
-              disabled={busy || !!devices.length}
+              buttonDisabled={busy || !!devices.length}
               onButtonClick={() => setDeleting(true)}
             />
           </List>
@@ -446,10 +440,10 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
           </List>
         )}
       </Gutters>
-      {naming && (
+      {naming !== undefined && (
         <MoveNames
           proxy={proxy}
-          change={naming}
+          label={naming}
           onClose={() => setNaming(undefined)}
           onMoved={async () => {
             setNaming(undefined)
@@ -501,9 +495,8 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
   )
 }
 
-// An own proxy's certificate: its domain's, on its devices; or remote.it's for every proxy name, held or still to come.
+// An own proxy's certificate: remote.it's for every proxy name, held or still to come.
 export function certificateLine(t: TFunction, certificate: Proxy['certificate']): string {
-  if (certificate === 'own') return t('proxyPage.certificateOwn', "Your domain's, on its devices (proxy_cert, proxy_key)")
   if (certificate === 'ready') return t('proxyPage.certificateReady', "remote.it's, for every proxy name")
   return t(
     'proxyPage.certificatePending',
@@ -511,24 +504,21 @@ export function certificateLine(t: TFunction, certificate: Proxy['certificate'])
   )
 }
 
-/* Its label or its own domain changed: what moves said first — its host and domain after, every endpoint address before
-   and after, and the certificate its https endpoints are served with after (its own domain's, or remote.it's for every
-   proxy name) — then made. Refused in graphql's words: a host another proxy holds, a domain of remote.it's or another
-   proxy's. */
+/* Its label changed: what moves said first — its host after, every endpoint address before and after (its tcp and udp
+   ones), and the certificate its https endpoints are served with after, remote.it's for every proxy name — then made.
+   Its own name, where it has one, points at its host: its records are to follow it. Refused in graphql's words: a host
+   another proxy holds. */
 const MoveNames: React.FC<{
   proxy: Proxy
-  change: { label: string } | { domain: string | null }
+  label: string
   onClose: () => void
   onMoved: () => void
-}> = ({ proxy, change, onClose, onMoved }) => {
+}> = ({ proxy, label, onClose, onMoved }) => {
   const { t } = useTranslation()
   const [said, setSaid] = useState<NamesMove | { reason: string }>()
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
-  const ask = (apply: boolean) =>
-    'label' in change
-      ? graphQLSetProxyLabel(proxy.id, change.label, apply)
-      : graphQLSetProxyDomain(proxy.id, change.domain, apply)
+  const ask = (apply: boolean) => graphQLSetProxyLabel(proxy.id, label, apply)
 
   useEffect(() => {
     ask(false).then(setSaid)
@@ -543,24 +533,15 @@ const MoveNames: React.FC<{
   }
 
   const preview = said && !('reason' in said) ? said : undefined
-  const nothing = !!preview && !preview.addresses.length && preview.host === proxy.host && preview.domain === proxy.domain
+  const nothing = !!preview && !preview.addresses.length && preview.host === proxy.host
   return (
     <Confirm
       open
       maxWidth="sm"
-      title={
-        'label' in change
-          ? t('proxyPage.labelTitle', 'Move {{proxy}} to {{host}}?', {
-              proxy: proxy.name,
-              host: preview?.host ?? hostWith(proxy.host, change.label),
-            })
-          : change.domain
-          ? t('proxyPage.domainTitle', 'Give {{proxy}} the domain {{domain}}?', { proxy: proxy.name, domain: change.domain })
-          : t('proxyPage.domainNoneTitle', 'Take {{proxy}}’s https names off {{domain}}?', {
-              proxy: proxy.name,
-              domain: proxy.domain,
-            })
-      }
+      title={t('proxyPage.labelTitle', 'Move {{proxy}} to {{host}}?', {
+        proxy: proxy.name,
+        host: preview?.host ?? hostWith(proxy.host, label),
+      })}
       action={t('proxyPage.namesMove', 'Move')}
       color="error"
       disabled={busy || !preview || nothing || !!refusal}
@@ -580,6 +561,15 @@ const MoveNames: React.FC<{
           <Typography variant="body2" gutterBottom data-names-certificate>
             {namesCertificateLine(t, said)}
           </Typography>
+          {proxy.ownName && (
+            <Typography variant="body2" gutterBottom data-names-own-name>
+              {t(
+                'proxyPage.namesOwnName',
+                '{{name}} and *.{{name}} point at its host: once it moves, point them at {{host}} where your DNS is hosted.',
+                { name: proxy.ownName.name, host: said.host }
+              )}
+            </Typography>
+          )}
           {said.addresses.length ? (
             <List dense data-names-addresses>
               {said.addresses.map(address => (
@@ -602,14 +592,8 @@ const MoveNames: React.FC<{
   )
 }
 
-// The certificate its https endpoints are served with after a names change.
-export function namesCertificateLine(t: TFunction, said: Pick<NamesMove, 'certificate' | 'host' | 'domain'>): string {
-  if (said.certificate === 'own')
-    return t(
-      'proxyPage.namesOwn',
-      'Its https endpoints are served with {{domain}}’s certificate, which you put on its devices (proxy_cert, proxy_key).',
-      { domain: said.domain }
-    )
+// The certificate its https endpoints are served with after its label changes: remote.it's for every proxy name.
+export function namesCertificateLine(t: TFunction, said: Pick<NamesMove, 'certificate'>): string {
   if (said.certificate === 'ready')
     return t(
       'proxyPage.namesReady',
@@ -622,8 +606,8 @@ export function namesCertificateLine(t: TFunction, said: Pick<NamesMove, 'certif
 }
 
 /* The endpoints of a proxy no device runs, moved to another of its account's: each address before and after said
-   first — a tcp or udp one moves to the other proxy's name, an https one keeps its own but onto or off an own domain
-   —, then the move made. Refused on a name or port clash, in graphql's words. */
+   first — a tcp or udp one moves to the other proxy's name, an https one keeps its own —, then the move made. Refused
+   on a name or port clash, in graphql's words. */
 const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved: () => void }> = ({
   proxy,
   onClose,

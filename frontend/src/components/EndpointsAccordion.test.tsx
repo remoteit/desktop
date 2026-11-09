@@ -17,7 +17,6 @@ vi.mock('../services/graphQLProxy', () => ({
       id: 'P1',
       name: 'remote.it pdx1a',
       host: 'pdx1a-r3.solo.r3proxy.com',
-      domain: null,
       remoteit: true,
       local: false,
       publicEndpoints: true,
@@ -28,7 +27,6 @@ vi.mock('../services/graphQLProxy', () => ({
       id: 'P2',
       name: 'Office gateway',
       host: 'gw-acme.solo.r3proxy.com',
-      domain: null,
       remoteit: false,
       local: false,
       publicEndpoints: true,
@@ -39,7 +37,6 @@ vi.mock('../services/graphQLProxy', () => ({
       id: 'P3',
       name: 'Printers',
       host: 'printers-acme.solo.r3proxy.com',
-      domain: null,
       remoteit: false,
       local: true,
       publicEndpoints: true,
@@ -49,7 +46,9 @@ vi.mock('../services/graphQLProxy', () => ({
   ],
   graphQLCreateEndpoint: create,
   graphQLRemoveEndpoint: vi.fn(),
-  endpointAddress: (endpoint: any) => (endpoint.kind === 'https' ? endpoint.url : `${endpoint.host}:${endpoint.port}`),
+  // As graphQLProxy's own: graphql's url, a tcp or udp one's without its scheme.
+  endpointAddress: (endpoint: any) =>
+    endpoint.kind === 'https' ? endpoint.url : endpoint.url.replace(/^(tcp|udp):\/\//, ''),
 }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
 vi.mock('../buttons/IconButton', () => ({
@@ -58,7 +57,7 @@ vi.mock('../buttons/IconButton', () => ({
   ),
 }))
 vi.mock('../buttons/ConfirmIconButton', () => ({ ConfirmIconButton: () => null }))
-vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: () => null }))
+vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: ({ value }: any) => <span data-copy={value} /> }))
 vi.mock('./Timestamp', async importOriginal => ({
   ...(await importOriginal<object>()),
   Timestamp: () => null,
@@ -154,10 +153,8 @@ describe('an endpoint on a local network proxy', () => {
     host: kind === 'https' ? 'ipp-acme.solo.r3proxy.com' : 'printers-acme.solo.r3proxy.com',
     port: kind === 'https' ? null : 40001,
     url: kind === 'https' ? 'https://ipp-acme.solo.r3proxy.com' : 'tcp://printers-acme.solo.r3proxy.com:40001',
-    localAddresses:
-      kind === 'https'
-        ? ['https://ipp-acme.local', 'https://192.168.1.20:40443']
-        : ['printers-acme.local:40001', '192.168.1.20:40001'],
+    // An https one at its .local name alone: at an IP, no name tells its devices which endpoint is asked for.
+    localAddresses: kind === 'https' ? ['https://ipp-acme.local'] : ['printers-acme.local:40001', '192.168.1.20:40001'],
     created: '2026-11-01T00:00:00.000Z',
     expires: null,
   })
@@ -166,7 +163,7 @@ describe('an endpoint on a local network proxy', () => {
     document.body.innerHTML = ''
   })
 
-  it('its public name first; Local network only; then its .local name and each device’s IP and port, an https one’s with the browser’s warning', async () => {
+  it('its public name first; Local network only; then its .local name and a tcp one’s each device’s IP and port, an https one’s with the browser’s warning', async () => {
     endpoints.mockResolvedValue([local('https'), local('tcp')])
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -182,12 +179,52 @@ describe('an endpoint on a local network proxy', () => {
     )
     expect([...https.querySelectorAll('[data-local-address]')].map(line => line.textContent)).toEqual([
       'https://ipp-acme.local · the browser warns about the certificate here',
-      'https://192.168.1.20:40443 · the browser warns about the certificate here',
     ])
     expect(tcp.querySelector('.MuiListItemText-primary')?.textContent).toBe('printers-acme.solo.r3proxy.com:40001')
     expect([...tcp.querySelectorAll('[data-local-address]')].map(line => line.textContent)).toEqual([
       'printers-acme.local:40001',
       '192.168.1.20:40001',
+    ])
+  })
+})
+
+describe('an endpoint on a proxy with an own name', () => {
+  // As graphql gives them once its own name is active: an https one under it, a tcp one at it.
+  const named = (kind: 'https' | 'tcp') => ({
+    id: `EP-${kind}`,
+    serviceId: 'SERVICE',
+    proxy: { id: 'P2', name: 'Office gateway', host: 'gw-acme.solo.r3proxy.com', remoteit: false, local: false },
+    kind,
+    lifetime: 'permanent',
+    access: 'public',
+    lockedIp: null,
+    allow: null,
+    host: kind === 'https' ? 'pi.office.example.com' : 'office.example.com',
+    port: kind === 'https' ? null : 40001,
+    url: kind === 'https' ? 'https://pi.office.example.com' : 'tcp://office.example.com:40001',
+    localAddresses: [],
+    created: '2026-11-01T00:00:00.000Z',
+    expires: null,
+  })
+
+  it('is shown, and copied, at graphql’s address for it: under the name', async () => {
+    document.body.innerHTML = ''
+    endpoints.mockResolvedValue([named('https'), named('tcp')])
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const device = { id: 'DEVICE', permissions: ['CONNECT'] } as any
+    await act(async () =>
+      createRoot(container).render(<EndpointsAccordion device={device} service={{ id: 'SERVICE' } as any} />)
+    )
+    await act(async () => {})
+    const items = [...container.querySelectorAll('li.MuiListItem-root')]
+    expect(items.map(item => item.querySelector('.MuiListItemText-primary')?.textContent)).toEqual([
+      'https://pi.office.example.com',
+      'office.example.com:40001',
+    ])
+    expect(items.map(item => item.querySelector('[data-copy]')?.getAttribute('data-copy'))).toEqual([
+      'https://pi.office.example.com',
+      'office.example.com:40001',
     ])
   })
 })

@@ -17,10 +17,11 @@ import { Title } from '../components/Title'
 
 /* A new proxy (graphql-api docs/PROXY-GROUPS.md §13, "No shortcuts"; §14): made in the account — its name, whether it
    is reached from the internet or on its devices' own network only (chosen for good), the label its host takes before
-   the account's slug (made from the name when none is given), your own domain for its https names if it has one, and
-   whether it takes public endpoints —, then the devices that run it are chosen and added: two steps, as graphql has
-   them. A local network proxy's devices are all on one network, its first device's: one on another is said not to fit,
-   and refused if added. One refused is said by name and left to choose again; the proxy is kept either way. */
+   the account's slug (made from the name when none is given), and whether it takes public endpoints —, then the devices
+   that run it are chosen and added: two steps, as graphql has them. An own name is given on its page once it is made,
+   its records pointing at its host. A local network proxy's devices are all on one network, its first device's: one on
+   another is said not to fit, and refused if added. One refused is said by name and left to choose again; the proxy is
+   kept either way. */
 export const ProxyAddPage: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
@@ -29,7 +30,6 @@ export const ProxyAddPage: React.FC = () => {
   const [name, setName] = useState('')
   const [local, setLocal] = useState(false)
   const [label, setLabel] = useState('')
-  const [domain, setDomain] = useState('')
   const [publicEndpoints, setPublicEndpoints] = useState(true)
   const [proxy, setProxy] = useState<Proxy>()
   const [busy, setBusy] = useState(false)
@@ -42,7 +42,6 @@ export const ProxyAddPage: React.FC = () => {
     const made = await graphQLCreateProxy({
       name: name.trim(),
       label: label || undefined,
-      domain: domain.trim() || undefined,
       publicEndpoints,
       local,
       accountId,
@@ -105,13 +104,6 @@ export const ProxyAddPage: React.FC = () => {
               }
               inputProps={{ maxLength: NAME_MAX }}
               onChange={event => setLabel(event.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-            />
-            <TextField
-              size="small"
-              label={t('proxyAdd.domain', 'Your own domain for its https names (optional)')}
-              placeholder="proxy.example.com"
-              value={domain}
-              onChange={event => setDomain(event.target.value)}
             />
             <FormControlLabel
               control={<Switch checked={publicEndpoints} onChange={event => setPublicEndpoints(event.target.checked)} />}
