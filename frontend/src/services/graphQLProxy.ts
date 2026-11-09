@@ -364,10 +364,10 @@ export const graphQLSetProxyActivation = (proxy: string, activation: 'auto' | 'a
 export const graphQLSetProxyProduct = (proxy: string, productId: string, joined: boolean) =>
   graphQLRequestWithReason(
     joined
-      ? ` mutation AddProxyProduct($proxy: String!, $productId: String!) {
+      ? ` mutation AddProxyProduct($proxy: String!, $productId: ID!) {
           addProxyProduct(proxy: $proxy, productId: $productId) { id }
         }`
-      : ` mutation RemoveProxyProduct($proxy: String!, $productId: String!) {
+      : ` mutation RemoveProxyProduct($proxy: String!, $productId: ID!) {
           removeProxyProduct(proxy: $proxy, productId: $productId) { id }
         }`,
     { proxy, productId }

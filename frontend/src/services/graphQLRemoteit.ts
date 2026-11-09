@@ -89,7 +89,7 @@ export const graphQLCreateRemoteit = (kind: 'proxy' | 'exit', at: Location) =>
 // remote.it's proxy product (§11 wave 2): the system account's, which its machines register with — each with a join key,
 // an ephemeral device of it — and whose new devices join the proxies and exits that name it. Its lifecycle and its join
 // keys, changed with any product's mutations (setDeviceProductLifecycle, createDeviceProductJoinKey,
-// revokeDeviceProductJoinKey); none where it is not made yet.
+// revokeDeviceProductJoinKey). graphql makes it the first time it is asked for; none is taken for not made yet.
 export type RemoteitProxyProduct = {
   id: string
   name: string

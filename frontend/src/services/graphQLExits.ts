@@ -135,10 +135,10 @@ export const graphQLSetExitActivation = (exit: string, activation: 'auto' | 'adm
 export const graphQLSetExitProduct = (exit: string, productId: string, joined: boolean) =>
   graphQLRequestWithReason(
     joined
-      ? ` mutation AddExitProduct($exit: String!, $productId: String!) {
+      ? ` mutation AddExitProduct($exit: String!, $productId: ID!) {
           addExitProduct(exit: $exit, productId: $productId) { id }
         }`
-      : ` mutation RemoveExitProduct($exit: String!, $productId: String!) {
+      : ` mutation RemoveExitProduct($exit: String!, $productId: ID!) {
           removeExitProduct(exit: $exit, productId: $productId) { id }
         }`,
     { exit, productId }

@@ -440,6 +440,7 @@ describe('remote.it’s proxies and exits', () => {
     request.mockResolvedValue(answer({ addProxyProduct: { id: 'P' } }))
     expect(await graphQLSetProxyProduct('P', 'PP', true)).toEqual(answer({ addProxyProduct: { id: 'P' } }))
     expect(asked().query).toContain('addProxyProduct(proxy: $proxy, productId: $productId)')
+    expect(asked().query).toContain('$productId: ID!')
     expect(asked().variables).toEqual({ proxy: 'P', productId: 'PP' })
     request.mockResolvedValue(answer({ removeProxyProduct: { id: 'P' } }))
     await graphQLSetProxyProduct('P', 'PP', false)
@@ -447,6 +448,7 @@ describe('remote.it’s proxies and exits', () => {
     request.mockResolvedValue(answer({ addExitProduct: { id: 'pdx1a' } }))
     await graphQLSetExitProduct('pdx1a', 'PP', true)
     expect(asked().query).toContain('addExitProduct(exit: $exit, productId: $productId)')
+    expect(asked().query).toContain('$productId: ID!')
     expect(asked().variables).toEqual({ exit: 'pdx1a', productId: 'PP' })
     request.mockResolvedValue(refusal('only the system account’s products join remote.it’s exits'))
     expect(await graphQLSetExitProduct('pdx1a', 'PP', false)).toEqual({
