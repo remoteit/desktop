@@ -8,10 +8,16 @@ const organizations = [
   { id: 'ORG-B', email: 'b@example.com', name: 'Org B' },
 ]
 const muted = vi.fn()
+let stage = 'prod'
 const setOrganization = vi.fn()
 
 vi.mock('react-redux', () => ({ useSelector: (select: (s: typeof state) => unknown) => select(state) }))
 vi.mock('../../store', () => ({ store: { getState: () => state } }))
+vi.mock('../../constants', () => ({
+  get STAGE() {
+    return stage
+  },
+}))
 vi.mock('../../selectors/organizations', () => ({ selectOrganizationOptions: () => organizations }))
 vi.mock('../../components/Avatar', () => ({ Avatar: () => null }))
 vi.mock('../../services/graphQLRequest', () => ({ graphQLOrganizationNotificationSettings: () => muted() }))
@@ -72,6 +78,7 @@ describe('OrganizationNotifications', () => {
     root = createRoot(container)
     muted.mockReset()
     setOrganization.mockReset()
+    stage = 'prod'
   })
 
   afterEach(() => {
@@ -83,6 +90,25 @@ describe('OrganizationNotifications', () => {
     muted.mockResolvedValue('ERROR')
     await render()
     expect(container.innerHTML).toBe('')
+  })
+
+  it('on dev, shows the section with every organization on when the API does not know the field yet', async () => {
+    stage = 'dev'
+    muted.mockResolvedValue('ERROR')
+    await render()
+    expect(container.querySelector('p')?.textContent).toBe('Organizations')
+    expect(button()?.dataset.on).toBe('true')
+    expect(button('Org B')?.dataset.on).toBe('true')
+  })
+
+  it('on dev without the API field, a switch that cannot save goes back on', async () => {
+    stage = 'dev'
+    muted.mockResolvedValue('ERROR')
+    setOrganization.mockResolvedValue('ERROR')
+    await render()
+    await act(async () => button()?.click())
+    expect(setOrganization).toHaveBeenCalledWith('ORG-A', false)
+    expect(button()?.dataset.on).toBe('true')
   })
 
   it('shows each organization on unless it is muted, under an Organizations label', async () => {

@@ -10,6 +10,7 @@ import { graphQLOrganizationNotificationSettings } from '../../services/graphQLR
 import { graphQLSetOrganizationNotificationSettings } from '../../services/graphQLMutation'
 import { inOrder } from '../../helpers/inOrder'
 import { latestWins } from '../../helpers/latestWins'
+import { STAGE } from '../../constants'
 
 // Module-level and keyed by account, as models/user.ts: a sign-out drops queued writes, and a remount loads behind them.
 const writes = inOrder(() => store.getState().auth.user?.id)
@@ -23,7 +24,8 @@ type OrganizationSettings = { organizationId: string; pushNotifications: boolean
 
 const load = async () => {
   const result = await graphQLOrganizationNotificationSettings()
-  if (result === 'ERROR') return null
+  // Dev shows the section without the API field, every organization on, so it can be reviewed before graphql-api#381 ships there.
+  if (result === 'ERROR') return STAGE === 'dev' ? [] : null
   const list: OrganizationSettings[] | undefined = result.data?.data?.login?.notificationSettings?.organizations
   return list ? list.filter(o => o.pushNotifications === false).map(o => normalize(o.organizationId)) : null
 }
