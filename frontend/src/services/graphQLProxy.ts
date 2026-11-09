@@ -6,15 +6,16 @@ import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
 /* Proxies and their endpoints (graphql-api docs/PROXY-GROUPS.md §13 and §14, presence-server docs/proxy-plan.md): a
    proxy is reached at its name — its tcp and udp endpoints there, each at a port, and each https endpoint at a name of
    its own —, every name one label under the stage's proxy zone, served under the stage's one certificate. An own proxy
-   may be given an own name — a name under a domain its owner controls, verified by DNS records its owner adds —, under
-   which its addresses then are, served under a certificate of its own that remote.it issues and renews. It is run by
-   devices, every device running it serving every endpoint of it. remote.it's are at a location; an own proxy is its
-   account's: made, then devices added to run it, and kept — its host and endpoints — until its account deletes it. An
-   own proxy is Internet — reached wherever its devices can be reached from the internet — or Local network — reached
-   only on its devices' own network, where every device of it must be —, chosen as it is made and never changed;
-   remote.it's are Internet. An endpoint is made on a proxy. A slug change moves no proxy: its host keeps the slug it
-   was made or last labelled under until its label is set again. A refusal comes back in graphql's words.
-   Device-session API only: an API without it answers UNSUPPORTED, for the caller to hide itself. */
+   may be given an own name — a name under a domain its owner controls, verified by DNS records its owner adds, or one
+   under its account's base, a subdomain the account delegates to remote.it —, under which its addresses then are,
+   served under a certificate of its own that remote.it issues and renews. It is run by devices, every device running
+   it serving every endpoint of it. remote.it's are at a location; an own proxy is its account's: made, then devices
+   added to run it, and kept — its host and endpoints — until its account deletes it. An own proxy is Internet —
+   reached wherever its devices can be reached from the internet — or Local network — reached only on its devices' own
+   network, where every device of it must be —, chosen as it is made and never changed; remote.it's are Internet. An
+   endpoint is made on a proxy. A slug change moves no proxy: its host keeps the slug it was made or last labelled under
+   until its label is set again. A refusal comes back in graphql's words. Device-session API only: an API without it
+   answers UNSUPPORTED, for the caller to hide itself. */
 
 // The stage's certificate, for every proxy name: held, or not issued yet.
 export type ProxyCertificate = 'ready' | 'pending'
@@ -34,14 +35,23 @@ export type ProxyNameRecord = { name: string; type: string; value: string; found
 // The own name's certificate, remote.it's to issue and renew through its _acme-challenge record.
 export type ProxyNameCertificate = 'pending' | 'ready' | 'failed'
 
+/* How a proxy has its own name: name, one of its own, claimed on its page by the three CNAMEs above; base, given by
+   its account's base (AccountProxyBase) — <label>.<base>, its records and certificate remote.it's to keep —, with no
+   records of its own, neither set nor removed on its page. */
+export type ProxyNameVia = 'name' | 'base'
+
 export type ProxyOwnName = {
   name: string
   state: ProxyNameState
-  records: ProxyNameRecord[]
+  via: ProxyNameVia
+  records: ProxyNameRecord[] // none for one given by the account's base
   certificate: ProxyNameCertificate | null
   checked: string | null // when its records were last checked
   problem: string | null // what is not right, in graphql's words
 }
+
+// An own name as a list of proxies shows it: the name, where it stands, and how it was given.
+export type ProxyOwnNameBrief = Pick<ProxyOwnName, 'name' | 'state' | 'via'>
 
 export type Proxy = {
   id: string
@@ -63,6 +73,9 @@ export type Proxy = {
   certificate: ProxyCertificate | null // an own proxy's; remote.it's devices hold their own
   ownName?: ProxyOwnName | null // an own proxy's, for whoever manages it; its page's
 }
+
+// One of the account's proxies as their list reads it: its own name in brief.
+export type ListedProxy = Omit<Proxy, 'ownName'> & { ownName?: ProxyOwnNameBrief | null }
 
 export type EndpointKind = 'https' | 'tcp' | 'udp'
 export type EndpointAccess = 'public' | 'signed-in' | 'ip-locked' | 'latch' | 'cidr'
@@ -101,10 +114,12 @@ export type NewEndpoint = {
 const CHOICE_FIELDS = 'id name host remoteit local publicEndpoints location provider'
 const ENDPOINT_FIELDS = `id serviceId proxy { id name host remoteit local } kind lifetime access lockedIp allow host
   port url localAddresses created expires`
-const OWN_NAME_FIELDS = 'name state records { name type value found seen } certificate checked problem'
-// A list's: no endpoints but their count. A proxy's page: its endpoints and its own name too.
+const RECORD_FIELDS = 'records { name type value found seen }'
+const OWN_NAME_FIELDS = `name state via ${RECORD_FIELDS} certificate checked problem`
+// A list's: no endpoints but their count, and its own name in brief. A proxy's page: its endpoints and its own name.
 const FIELDS = `${CHOICE_FIELDS} label localNetwork activation manage owner { id email } endpointCount certificate
   devices { ${PROXY_DEVICE_FIELDS} }`
+const LIST_FIELDS = `${FIELDS} ownName { name state via }`
 const PAGE_FIELDS = `${FIELDS} ownName { ${OWN_NAME_FIELDS} } endpoints { ${ENDPOINT_FIELDS} }`
 
 async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
@@ -133,8 +148,8 @@ export const graphQLProxies = () =>
 
 // An account's own proxies you manage, those no device runs too.
 export const graphQLAccountProxies = (accountId: string) =>
-  read<Proxy[]>(
-    `query AccountProxies($accountId: String) { login { id account(id: $accountId) { id proxies { ${FIELDS} } } } }`,
+  read<ListedProxy[]>(
+    `query AccountProxies($accountId: String) { login { id account(id: $accountId) { id proxies { ${LIST_FIELDS} } } } }`,
     { accountId },
     'proxies',
     data => data?.login?.account?.proxies ?? []
@@ -248,6 +263,77 @@ export const graphQLRemoveProxyName = (proxy: string, apply: boolean) =>
       removeProxyName(proxy: $proxy, apply: $apply) { ${OWN_NAME_MOVE_FIELDS} }
     }`,
     { proxy, apply }
+  )
+
+/* The account's base for its proxies' names (§14, decision 48, wave 3b), a paid feature — a plan that includes it;
+   one per account: a subdomain the account controls, proxies.example.com, delegated to remote.it by NS records added
+   at its DNS, to a zone remote.it makes for it. Pending until the delegation is seen; verified once it is (no proxy
+   moved yet); active once the account's proxies are moved under it — each named <label>.<base>, but one with a name of
+   its own, remote.it writing their records and keeping their certificates —; broken once a record is gone or wrong
+   after that. For the account's admins: none for anyone else. Refused in graphql's words: a plan without it, a name
+   reserved, not a subdomain or taken, a base verified or applied held ("remove … first": a pending one is replaced). */
+export type ProxyBaseState = 'pending' | 'verified' | 'active' | 'broken'
+
+export type AccountProxyBase = {
+  base: string
+  state: ProxyBaseState
+  nameServers: string[] // the zone's, remote.it's: what its NS records name
+  records: ProxyNameRecord[] // the NS records to add, each as the last check found it
+  checked: string | null // when the delegation was last checked
+  problem: string | null // what is not right, in graphql's words
+  proxies: number // the account's proxies named under it
+}
+
+const BASE_FIELDS = `base state nameServers ${RECORD_FIELDS} checked problem proxies`
+
+/* The account's proxies moved under its base, or back to their names before: a names move a proxy — the proxy, its
+   name after (under the base, <label>.<base>; back, its host), each endpoint address before and after, and the
+   certificate its https endpoints are served with after (under the base, the base's: pending, ready or failed; back,
+   the stage's) —, each proxy that moves; a proxy with a name of its own moves neither way. Whether it was done, or only
+   said. */
+export type ProxyMove = { proxy: { id: string; name: string }; host: string; ownName: string | null } & OwnNameMove
+export type BaseMove = { moves: ProxyMove[]; applied: boolean }
+
+const BASE_MOVE_FIELDS = `moves { proxy { id name } host ownName ${OWN_NAME_MOVE_FIELDS} } applied`
+
+// The account's base as it stands, for an admin of it; none for another, or before one is set.
+export const graphQLProxyBase = (accountId: string) =>
+  read<AccountProxyBase | null>(
+    `query ProxyBase($accountId: String) { proxyBase(accountId: $accountId) { ${BASE_FIELDS} } }`,
+    { accountId },
+    'proxyBase',
+    data => data?.proxyBase ?? null
+  )
+
+// A base claimed: pending until its delegation is seen, with the NS records to add.
+export const graphQLSetAccountProxyBase = (accountId: string, base: string) =>
+  names<AccountProxyBase>(
+    'setAccountProxyBase',
+    ` mutation SetAccountProxyBase($accountId: String, $base: String!) {
+      setAccountProxyBase(accountId: $accountId, base: $base) { ${BASE_FIELDS} }
+    }`,
+    { accountId, base }
+  )
+
+// Its delegation checked now (the base read again after says what was found): which proxies' addresses would move
+// under it, and with apply — the delegation seen — moved.
+export const graphQLVerifyAccountProxyBase = (accountId: string, apply: boolean) =>
+  names<BaseMove>(
+    'verifyAccountProxyBase',
+    ` mutation VerifyAccountProxyBase($accountId: String, $apply: Boolean) {
+      verifyAccountProxyBase(accountId: $accountId, apply: $apply) { ${BASE_MOVE_FIELDS} }
+    }`,
+    { accountId, apply }
+  )
+
+// The base given up: which proxies' addresses would move back, and with apply moved, its zone deleted.
+export const graphQLRemoveAccountProxyBase = (accountId: string, apply: boolean) =>
+  names<BaseMove>(
+    'removeAccountProxyBase',
+    ` mutation RemoveAccountProxyBase($accountId: String, $apply: Boolean) {
+      removeAccountProxyBase(accountId: $accountId, apply: $apply) { ${BASE_MOVE_FIELDS} }
+    }`,
+    { accountId, apply }
   )
 
 // Whether it takes public endpoints. Off while it has public endpoints, refused unless confirmed, saying how many:

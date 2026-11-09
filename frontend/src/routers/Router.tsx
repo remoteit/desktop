@@ -63,6 +63,7 @@ import { ExitsPage } from '../pages/ExitsPage'
 import { ExitPage } from '../pages/ExitPage'
 import { ExitAddPage } from '../pages/ExitAddPage'
 import { ProxiesPage } from '../pages/ProxiesPage'
+import { ProxyBasePage } from '../pages/ProxyBasePage'
 import { ProxyPage } from '../pages/ProxyPage'
 import { ProxyAddPage } from '../pages/ProxyAddPage'
 import { ChooseOne } from '../components/ChooseOne'
@@ -221,6 +222,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Switch>
                 <Route path="/proxies/new">
                   <ProxyAddPage />
+                </Route>
+                <Route path="/proxies/base">
+                  <ProxyBasePage />
                 </Route>
                 <Route path="/proxies/:proxyID">
                   <ProxyPage />

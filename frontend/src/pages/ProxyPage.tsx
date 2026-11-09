@@ -8,6 +8,7 @@ import { refusalOf } from '../services/graphQL'
 import { graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
 import {
   EndpointsMove,
+  ListedProxy,
   NamesMove,
   Proxy,
   endpointAddress,
@@ -506,8 +507,8 @@ export function certificateLine(t: TFunction, certificate: Proxy['certificate'])
 
 /* Its label changed: what moves said first — its host after, every endpoint address before and after (its tcp and udp
    ones), and the certificate its https endpoints are served with after, remote.it's for every proxy name — then made.
-   Its own name, where it has one, points at its host: its records are to follow it. Refused in graphql's words: a host
-   another proxy holds. */
+   Its own name, where it has one of its own, points at its host: its records are to follow it (remote.it keeps the
+   records of a name its account's base gave it). Refused in graphql's words: a host another proxy holds. */
 const MoveNames: React.FC<{
   proxy: Proxy
   label: string
@@ -561,7 +562,7 @@ const MoveNames: React.FC<{
           <Typography variant="body2" gutterBottom data-names-certificate>
             {namesCertificateLine(t, said)}
           </Typography>
-          {proxy.ownName && (
+          {proxy.ownName && proxy.ownName.via !== 'base' && (
             <Typography variant="body2" gutterBottom data-names-own-name>
               {t(
                 'proxyPage.namesOwnName',
@@ -614,7 +615,7 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
   onMoved,
 }) => {
   const { t } = useTranslation()
-  const [targets, setTargets] = useState<Proxy[] | 'ERROR'>()
+  const [targets, setTargets] = useState<ListedProxy[] | 'ERROR'>()
   const [to, setTo] = useState('')
   const [preview, setPreview] = useState<EndpointsMove>()
   const [refusal, setRefusal] = useState<string>()

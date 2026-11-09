@@ -2,7 +2,7 @@ import React, { act, useState } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { setName, verify, remove, readAgain, busyCalls, inline } = vi.hoisted(() => ({
+const { setName, verify, remove, readAgain, busyCalls, inline, admin } = vi.hoisted(() => ({
   setName: vi.fn(async (_proxy: string, _name: string) => ({} as any)),
   verify: vi.fn(async (_proxy: string, _apply: boolean) => ({} as any)),
   remove: vi.fn(async (_proxy: string, _apply: boolean) => ({} as any)),
@@ -11,6 +11,8 @@ const { setName, verify, remove, readAgain, busyCalls, inline } = vi.hoisted(() 
   busyCalls: [] as boolean[],
   // Each inline field's props, by its label: its value, its checks and its save.
   inline: {} as Record<string, any>,
+  // Whether you administer the account acting as, and the accounts it was asked of.
+  admin: { value: true, asked: [] as any[] },
 }))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLSetProxyName: setName,
@@ -62,6 +64,19 @@ vi.mock('../buttons/CopyIconButton', () => ({
   CopyIconButton: ({ value, title }: any) => <span data-copy={value} title={title} />,
 }))
 vi.mock('./Timestamp', () => ({ Timestamp: ({ date }: any) => <>{date.toISOString()}</> }))
+vi.mock('../hooks/useAccountAdmin', () => ({
+  useAccountAdmin: (accountId?: string | null) => {
+    admin.asked.push(accountId)
+    return admin.value
+  },
+}))
+vi.mock('./Link', () => ({
+  Link: ({ to, children, ...props }: any) => (
+    <a data-to={to} data-own-name-base-link={props['data-own-name-base-link'] ? '' : undefined}>
+      {children}
+    </a>
+  ),
+}))
 vi.mock('./Icon', () => ({ Icon: ({ name, color }: any) => <i data-icon={name} data-color={color} /> }))
 vi.mock('./LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('react-i18next', () => {
@@ -95,6 +110,7 @@ const records = (...found: (true | null | string)[]) =>
 const own = (state: string, fields: any = {}) => ({
   name: 'office.example.com',
   state,
+  via: 'name',
   records: records(true, true, true),
   certificate: null,
   checked: '2026-11-08T23:00:00.000Z',
@@ -194,6 +210,8 @@ function held<T>() {
 }
 
 beforeEach(() => {
+  admin.value = true
+  admin.asked.length = 0
   for (const each of [setName, verify, remove]) each.mockReset().mockResolvedValue({ ...MOVE })
   remove.mockResolvedValue({ ...BACK })
   readAgain.mockReset().mockReturnValue(undefined)
@@ -630,5 +648,101 @@ describe('while one change is being made', () => {
     expect(inline[LABEL].disabled).toBe(false)
     expect(checkNow()!.disabled).toBe(false)
     expect(settingButton('rotate-left')!.disabled).toBe(false)
+  })
+})
+
+describe('a name given by the account’s base', () => {
+  const BASE = 'proxies.example.com'
+  const given = (state: string, fields: any = {}) => ({
+    ...GATEWAY,
+    owner: { id: 'ACCOUNT', email: 'pat@example.com' },
+    ownName: {
+      name: `gw.${BASE}`,
+      state,
+      via: 'base',
+      records: [],
+      certificate: 'ready',
+      checked: '2026-11-08T23:00:00.000Z',
+      problem: null,
+      ...fields,
+    },
+  })
+  const baseLine = () => $('[data-own-name-base]')
+
+  it('read only: the name, under the account’s base — linked to it for its admin —, its certificate; nothing to add, set or remove', async () => {
+    await render(given('active'))
+    expect(section()).toBe('active')
+    expect($('[data-own-name-via="base"]')).not.toBeNull()
+    expect(label('sitemap')).toBe('gw.proxies.example.com')
+    expect(baseLine()?.textContent).toBe('Named under your account’s base proxies.example.com')
+    expect(baseLine()?.getAttribute('data-own-name-base')).toBe(BASE)
+    expect($('[data-own-name-base-link]')?.getAttribute('data-to')).toBe('/proxies/base')
+    expect($('[data-own-name-base-link]')?.textContent).toBe(BASE)
+    // Asked of the proxy's own account: the link is for an admin of that one.
+    expect(admin.asked).toContain('ACCOUNT')
+    expect(label('file-certificate')).toBe('Issued: remote.it renews it')
+    expect(sublabel('file-certificate')).toBe('Its certificate under gw.proxies.example.com')
+    expect($('[data-own-name]')?.textContent).toContain(
+      'remote.it keeps its records and certificate under the account’s base: nothing to add where your DNS is hosted.'
+    )
+    expect(inline[LABEL]).toBeUndefined()
+    expect($('[data-own-name-records]')).toBeNull()
+    expect(checkNow()).toBeNull()
+    expect(stateLine()).toBeNull()
+    for (const icon of ['circle-arrow-right', 'rotate-left']) expect(setting(icon)).toBeNull()
+    expect(document.body.querySelector('button')).toBeNull()
+  })
+
+  it('for someone who does not administer the account: the base said, not linked', async () => {
+    admin.value = false
+    await render(given('active'))
+    expect(baseLine()?.textContent).toBe('Named under your account’s base proxies.example.com')
+    expect($('[data-own-name-base-link]')).toBeNull()
+    expect($('a')).toBeNull()
+  })
+
+  it('a proxy whose account is not known asks of none: not linked', async () => {
+    admin.value = false
+    await render({ ...given('active'), owner: null })
+    expect(admin.asked).toEqual([null])
+    expect($('[data-own-name-base-link]')).toBeNull()
+  })
+
+  it('broken: the base’s to put right, in graphql’s words too; still served, its certificate said', async () => {
+    await render(given('broken', { problem: 'ns-2.awsdns-02.net is missing at proxies.example.com' }))
+    expect(section()).toBe('broken')
+    expect(label('triangle-exclamation')).toBe('Broken: the account’s base needs its records put right')
+    expect(setting('triangle-exclamation')?.getAttribute('data-color')).toBe('danger')
+    expect(sublabel('triangle-exclamation')).toBe('ns-2.awsdns-02.net is missing at proxies.example.com')
+    expect(label('file-certificate')).toBe('Issued: remote.it renews it')
+    expect(checkNow()).toBeNull()
+  })
+
+  it('not under it yet — the base not active —: said, with no certificate', async () => {
+    await render(given('verified', { certificate: null }))
+    expect(label('hourglass')).toBe('Not under it yet: the account’s base is not active')
+    expect(setting('hourglass')?.getAttribute('data-color')).toBe('warning')
+    expect(setting('file-certificate')).toBeNull()
+    expect(checkNow()).toBeNull()
+  })
+
+  it('its certificate not issued yet, or not issued — why in graphql’s words', async () => {
+    await render(given('active', { certificate: 'pending' }))
+    expect(label('file-certificate')).toBe('Not issued yet: until it is, its https endpoints under it are not served')
+    expect(setting('file-certificate')?.getAttribute('data-color')).toBe('warning')
+    await render(given('active', { certificate: 'failed', problem: 'Let’s Encrypt refused the order: rate limited' }))
+    expect(setting('file-certificate')?.getAttribute('data-color')).toBe('danger')
+    expect(sublabel('file-certificate')).toBe(
+      'Its certificate under gw.proxies.example.com · Let’s Encrypt refused the order: rate limited'
+    )
+  })
+
+  it('a name of its own keeps its claim, its records and its actions', async () => {
+    await render(named('active', { certificate: 'ready' }))
+    expect($('[data-own-name-via]')).toBeNull()
+    expect(label('earth-americas')).toBe('office.example.com')
+    expect(rows()).toHaveLength(3)
+    expect(checkNow()).not.toBeNull()
+    expect(label('rotate-left')).toBe('Remove its own name')
   })
 })

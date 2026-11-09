@@ -306,6 +306,7 @@ const GATEWAY = {
 const OWN_NAME = {
   name: 'office.example.com',
   state: 'pending',
+  via: 'name',
   records: [
     { name: 'office.example.com', type: 'CNAME', value: 'gw-acme-corp.dev.r3proxy.com', found: true, seen: null },
     { name: '*.office.example.com', type: 'CNAME', value: 'gw-acme-corp.dev.r3proxy.com', found: true, seen: null },
@@ -1023,6 +1024,16 @@ describe('a proxy’s host label, each move said first', () => {
     expect($('[data-names-own-name]')).toBeNull()
   })
 
+  it('a proxy named under its account’s base: no records of its own to point anywhere, remote.it keeps them', async () => {
+    await render({
+      ...GATEWAY,
+      ownName: { ...OWN_NAME, name: 'gw.proxies.example.com', state: 'active', via: 'base', records: [] },
+    })
+    await act(async () => inline[LABEL].onSave('gw2'))
+    expect($('[data-names-addresses]')).not.toBeNull()
+    expect($('[data-names-own-name]')).toBeNull()
+  })
+
   it('a move that moves nothing: said, with nothing to do', async () => {
     setLabel.mockResolvedValue(said({ host: 'gw-acme-corp.dev.r3proxy.com', addresses: [], certificate: 'ready' }))
     accountSlug('acme')
@@ -1201,6 +1212,14 @@ describe('its own name', () => {
       await render(named(state))
       expect($('[data-own-name-section]')?.getAttribute('data-own-name-section')).toBe(state)
     }
+    // One its account's base gave it is the section's to say too, read only (ProxyOwnName.test.tsx).
+    await render(named('active', { via: 'base', records: [] }))
+    expect($('[data-own-name-section]')?.getAttribute('data-own-name-section')).toBe('active')
+  })
+
+  it('served under a name its account’s base gave it, its https certificate is that name’s too, said there', async () => {
+    await render(named('active', { via: 'base', records: [] }))
+    expect(setting('certificate')).toBeNull()
   })
 
   it('a change it makes holds the page as any other: nothing else can be changed meanwhile', async () => {

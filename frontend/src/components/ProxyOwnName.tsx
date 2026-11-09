@@ -1,37 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import {
-  Box,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material'
+import { List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
 import {
   OwnNameMove,
   Proxy,
-  ProxyNameRecord,
   ProxyOwnName as OwnName,
   graphQLRemoveProxyName,
   graphQLSetProxyName,
   graphQLVerifyProxyName,
 } from '../services/graphQLProxy'
-import { CopyIconButton } from '../buttons/CopyIconButton'
+import { useAccountAdmin } from '../hooks/useAccountAdmin'
+import { DnsRecords, dnsNameOf, dnsNameShape, recordState } from './DnsRecords'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { ListItemSetting } from './ListItemSetting'
 import { LoadingMessage } from './LoadingMessage'
 import { Timestamp } from './Timestamp'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
-import { Icon } from './Icon'
+import { Link } from './Link'
 
 type Props = {
   proxy: Proxy // an own proxy, for whoever manages it
@@ -54,8 +41,15 @@ type Moving = { mode: 'verify' | 'remove'; said?: OwnNameMove }
    moving its addresses under the name does is said, from the check's answer, and made once confirmed (active: the
    name and its certificate said). A record gone or wrong after that is named, and that its certificate's renewal fails
    until it is right (broken). Remove says first what moves back to remote.it's names, then moves it. A refusal is said
-   in graphql's words. */
-export const ProxyOwnName: React.FC<Props> = ({ proxy, busy, onBusy, onChanged }) => {
+   in graphql's words. A name given by the account's base is said, read only (BaseGivenName). */
+export const ProxyOwnName: React.FC<Props> = props =>
+  props.proxy.ownName?.via === 'base' ? (
+    <BaseGivenName proxy={props.proxy} own={props.proxy.ownName} />
+  ) : (
+    <OwnNameClaim {...props} />
+  )
+
+const OwnNameClaim: React.FC<Props> = ({ proxy, busy, onBusy, onChanged }) => {
   const { t } = useTranslation()
   const own = proxy.ownName ?? null
   const [notice, setNotice] = useState<string>()
@@ -137,7 +131,7 @@ export const ProxyOwnName: React.FC<Props> = ({ proxy, busy, onBusy, onChanged }
       </ListItem>
       {!!own?.records.length && (
         <ListItem>
-          <Records t={t} records={own.records} />
+          <DnsRecords t={t} records={own.records} data-own-name-records />
         </ListItem>
       )}
       {notice && (
@@ -188,26 +182,90 @@ export const ProxyOwnName: React.FC<Props> = ({ proxy, busy, onBusy, onChanged }
   )
 }
 
-// A name as typed: trimmed, lower case, without the root's trailing dot.
-export const ownNameOf = (value: string) => value.trim().toLowerCase().replace(/\.$/, '')
+/* A name its account's base gave it, <label>.<base>: said read only — no records of its own, neither set nor removed
+   here —, under which base, linked to the base's page for an admin of the account (pages/ProxyBasePage.tsx); its
+   certificate, the base's, and anything not right with it, which is the base's to put right. */
+const BaseGivenName: React.FC<{ proxy: Proxy; own: OwnName }> = ({ proxy, own }) => {
+  const { t } = useTranslation()
+  const admin = useAccountAdmin(proxy.owner?.id ?? null)
+  const base = baseOf(own.name)
+  const serving = own.state === 'active' || own.state === 'broken'
+  return (
+    <List data-own-name={own.state} data-own-name-via="base">
+      <ListSubheader>{t('ownName.title', 'Own name')}</ListSubheader>
+      <ListItemSetting
+        icon="sitemap"
+        label={own.name}
+        subLabel={
+          <span data-own-name-base={base}>
+            {t('ownName.base', 'Named under your account’s base')}{' '}
+            {admin ? (
+              <Link to="/proxies/base" data-own-name-base-link>
+                {base}
+              </Link>
+            ) : (
+              base
+            )}
+          </span>
+        }
+      />
+      {own.state !== 'active' && (
+        <ListItemSetting
+          icon={own.state === 'broken' ? 'triangle-exclamation' : 'hourglass'}
+          iconColor={own.state === 'broken' ? 'danger' : 'warning'}
+          label={
+            own.state === 'broken'
+              ? t('ownName.baseBroken', 'Broken: the account’s base needs its records put right')
+              : t('ownName.baseWaiting', 'Not under it yet: the account’s base is not active')
+          }
+          subLabel={own.problem ?? undefined}
+        />
+      )}
+      {serving && own.certificate && (
+        <ListItemSetting
+          icon="file-certificate"
+          iconColor={own.certificate === 'ready' ? 'success' : own.certificate === 'failed' ? 'danger' : 'warning'}
+          label={ownCertificateLine(t, own.certificate)}
+          subLabel={[
+            t('ownName.certificate', 'Its certificate under {{name}}', { name: own.name }),
+            // Active, what graphql says is wrong is its certificate's: why it was not issued.
+            own.state === 'active' ? own.problem : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        />
+      )}
+      <ListItem>
+        <ListItemIcon />
+        <ListItemText
+          secondary={t(
+            'ownName.baseHint',
+            'remote.it keeps its records and certificate under the account’s base: nothing to add where your DNS is hosted.'
+          )}
+        />
+      </ListItem>
+    </List>
+  )
+}
 
-const LABEL = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/
+// The base a name it gave is one label under.
+export const baseOf = (name: string) => name.slice(name.indexOf('.') + 1)
+
+// A name as typed: trimmed, lower case, without the root's trailing dot.
+export const ownNameOf = dnsNameOf
 
 // Why a name cannot be an own name, as far as it can be told here: DNS labels — letters, digits and hyphens, joined by
 // dots —, three at least, as a name one label under a domain has. Whether it is under a domain, not one itself
 // (example.co.uk has three labels, and is one), is graphql's to say, in its words.
 export function ownNameProblem(t: TFunction, name: string): string | undefined {
-  const labels = name.split('.')
-  if (name.length > 253 || !labels.every(label => LABEL.test(label)))
-    return t('ownName.problemShape', 'Letters, digits and hyphens, in parts joined by dots')
-  if (labels.length < 3)
+  const shape = dnsNameShape(name)
+  if (shape === 'shape') return t('ownName.problemShape', 'Letters, digits and hyphens, in parts joined by dots')
+  if (shape === 'domain')
     return t('ownName.problemDomain', 'A name under your domain, as office.example.com: not the domain itself')
   return undefined
 }
 
-// Each record as the last check found it.
-export const recordState = (record: ProxyNameRecord): 'found' | 'missing' | 'wrong' =>
-  record.found ? 'found' : record.seen ? 'wrong' : 'missing'
+export { recordState }
 
 // Where it stands, with the last check, any problem graphql says, and Check now: pending, with how many records are
 // found; verified; active; broken, naming each record gone or wrong, and its certificate's renewal failing until then.
@@ -286,71 +344,6 @@ const StateLine: React.FC<{ t: TFunction; own: OwnName; busy: boolean; onCheck: 
     />
   )
 }
-
-// The records to add where its DNS is hosted: each one's name and value with a copy button, its type, and what the last
-// check found.
-const Records: React.FC<{ t: TFunction; records: ProxyNameRecord[] }> = ({ t, records }) => (
-  <Box sx={{ overflowX: 'auto', width: '100%' }}>
-    <Table size="small" data-own-name-records>
-      <TableHead>
-        <TableRow>
-          <TableCell>{t('ownName.recordName', 'Name')}</TableCell>
-          <TableCell>{t('ownName.recordType', 'Type')}</TableCell>
-          <TableCell>{t('ownName.recordValue', 'Value')}</TableCell>
-          <TableCell>{t('ownName.recordState', 'State')}</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {records.map(record => {
-          const state = recordState(record)
-          return (
-            <TableRow key={`${record.type} ${record.name}`} data-record={record.name} data-record-state={state}>
-              <TableCell>
-                <Copyable value={record.name} title={t('ownName.copyName', 'Copy the name')} />
-              </TableCell>
-              <TableCell>{record.type}</TableCell>
-              <TableCell>
-                <Copyable value={record.value} title={t('ownName.copyValue', 'Copy the value')} />
-              </TableCell>
-              <TableCell data-record-found sx={{ whiteSpace: state === 'wrong' ? undefined : 'nowrap' }}>
-                <Icon
-                  name={state === 'found' ? 'check' : state === 'wrong' ? 'times' : 'minus'}
-                  color={state === 'found' ? 'success' : state === 'wrong' ? 'danger' : 'warning'}
-                  size="sm"
-                  inlineLeft
-                />
-                {state === 'found'
-                  ? t('ownName.found', 'Found')
-                  : state === 'wrong'
-                  ? t('ownName.wrong', 'Wrong: answers {{seen}}', { seen: record.seen })
-                  : t('ownName.missing', 'Missing')}
-              </TableCell>
-            </TableRow>
-          )
-        })}
-      </TableBody>
-    </Table>
-  </Box>
-)
-
-// A DNS name, wrapping where it must after a dot, with its copy button beside it.
-const Copyable: React.FC<{ value: string; title: string }> = ({ value, title }) => (
-  <Box display="flex" alignItems="center">
-    <Box component="span">
-      {value.split('.').map((label, n) => (
-        <React.Fragment key={n}>
-          {n > 0 && (
-            <>
-              .<wbr />
-            </>
-          )}
-          {label}
-        </React.Fragment>
-      ))}
-    </Box>
-    <CopyIconButton value={value} title={title} size="sm" />
-  </Box>
-)
 
 // The own name's certificate, remote.it's to issue and renew through its records.
 export function ownCertificateLine(t: TFunction, certificate: OwnName['certificate']): string {

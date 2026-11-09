@@ -628,17 +628,19 @@ describe('a proxy’s own name', () => {
     certificate: 'pending',
     applied: false,
   }
-  const OWN_NAME = 'ownName { name state records { name type value found seen } certificate checked problem }'
+  const OWN_NAME = 'ownName { name state via records { name type value found seen } certificate checked problem }'
   const MOVE = '{ addresses { endpoint kind from to } certificate applied }'
 
   it('read with its page: its state, its records as last found, its certificate, when checked and any problem', async () => {
     request.mockResolvedValue(answer({ proxy: { id: 'P1', ownName } }))
     expect(await graphQLProxy('P1')).toEqual({ id: 'P1', ownName })
     expect(asked().query).toContain(OWN_NAME)
-    // A list reads no proxy's own name.
-    request.mockResolvedValue(answer({ login: { account: { proxies: [] } } }))
-    await graphQLAccountProxies('ACCOUNT')
-    expect(asked().query).not.toContain('ownName')
+    // A list reads each proxy's own name in brief: the name, where it stands, how it was given — no records.
+    const listed = { id: 'P1', ownName: { name: 'office.example.com', state: 'active', via: 'name' } }
+    request.mockResolvedValue(answer({ login: { account: { proxies: [listed] } } }))
+    expect(await graphQLAccountProxies('ACCOUNT')).toEqual([listed])
+    expect(asked().query).toContain('ownName { name state via }')
+    expect(asked().query).not.toContain('records')
   })
 
   it('nothing of the own domain it replaces is read or set any more', async () => {
@@ -668,7 +670,7 @@ describe('a proxy’s own name', () => {
     expect(asked().variables).toEqual({ proxy: 'P1', name: 'office.example.com' })
     expect(asked().query).toContain('mutation SetProxyName($proxy: String!, $name: String)')
     expect(asked().query).toContain(
-      'setProxyName(proxy: $proxy, name: $name) { name state records { name type value found seen } certificate checked problem }'
+      'setProxyName(proxy: $proxy, name: $name) { name state via records { name type value found seen } certificate checked problem }'
     )
     request.mockResolvedValue(refusal('example.com is a domain: use a name under it, as office.example.com'))
     expect(await graphQLSetProxyName('P1', 'example.com')).toEqual({
@@ -733,6 +735,96 @@ describe('a proxy’s own name', () => {
     expect(endpointAddress({ kind: 'tcp', url: '', host: 'office-acme.solo.r3proxy.com', port: 30001 })).toBe(
       'office-acme.solo.r3proxy.com:30001'
     )
+  })
+})
+
+describe('the account’s base for its proxies’ names', () => {
+  const base = {
+    base: 'proxies.example.com',
+    state: 'pending',
+    nameServers: ['ns-1.awsdns-01.org', 'ns-2.awsdns-02.net'],
+    records: [
+      { name: 'proxies.example.com', type: 'NS', value: 'ns-1.awsdns-01.org', found: true, seen: null },
+      { name: 'proxies.example.com', type: 'NS', value: 'ns-2.awsdns-02.net', found: false, seen: null },
+    ],
+    checked: null,
+    problem: null,
+    proxies: 0,
+  }
+  const BASE = 'base state nameServers records { name type value found seen } checked problem proxies'
+  // Proxy by proxy, as each names move says it.
+  const list = [
+    {
+      proxy: { id: 'P1', name: 'Gateway' },
+      host: 'gw-acme.solo.r3proxy.com',
+      ownName: 'gw.proxies.example.com',
+      addresses: [
+        { endpoint: 'E1', kind: 'tcp', from: 'gw-acme.solo.r3proxy.com:30001', to: 'gw.proxies.example.com:30001' },
+      ],
+      certificate: 'pending',
+      applied: false,
+    },
+  ]
+  const moves = { moves: list, applied: false }
+  const MOVES =
+    '{ moves { proxy { id name } host ownName addresses { endpoint kind from to } certificate applied } applied }'
+
+  it('read for an admin of the account: where it stands, its NS records as last found, its name servers, its proxies', async () => {
+    request.mockResolvedValue(answer({ proxyBase: base }))
+    expect(await proxies.graphQLProxyBase('ACCOUNT')).toEqual(base)
+    expect(asked().variables).toEqual({ accountId: 'ACCOUNT' })
+    expect(asked().query).toContain('query ProxyBase($accountId: String)')
+    expect(asked().query).toContain(`proxyBase(accountId: $accountId) { ${BASE} }`)
+    // None set, or not an admin of it: none. A server without it: unsupported. Anything else: an error.
+    request.mockResolvedValue(answer({ proxyBase: null }))
+    expect(await proxies.graphQLProxyBase('ACCOUNT')).toBeNull()
+    request.mockResolvedValue(errors('Cannot query field "proxyBase" on type "Query".'))
+    expect(await proxies.graphQLProxyBase('ACCOUNT')).toBe(UNSUPPORTED)
+    request.mockResolvedValue(errors('Something went wrong'))
+    expect(await proxies.graphQLProxyBase('ACCOUNT')).toBe('ERROR')
+  })
+
+  it('claimed: pending, with its NS records; refused in graphql’s words — a plan without it —; a failed request says none', async () => {
+    request.mockResolvedValue(answer({ setAccountProxyBase: base }))
+    expect(await proxies.graphQLSetAccountProxyBase('ACCOUNT', 'proxies.example.com')).toEqual(base)
+    expect(asked().variables).toEqual({ accountId: 'ACCOUNT', base: 'proxies.example.com' })
+    expect(asked().query).toContain('mutation SetAccountProxyBase($accountId: String, $base: String!)')
+    expect(asked().query).toContain(`setAccountProxyBase(accountId: $accountId, base: $base) { ${BASE} }`)
+    request.mockResolvedValue(refusal('the account’s plan does not include a base for its proxies'))
+    expect(await proxies.graphQLSetAccountProxyBase('ACCOUNT', 'proxies.example.com')).toEqual({
+      reason: 'The account’s plan does not include a base for its proxies',
+    })
+    expect(uiSet).not.toHaveBeenCalled()
+    ui.offline = true
+    expect(await proxies.graphQLSetAccountProxyBase('ACCOUNT', 'proxies.example.com')).toEqual({ reason: '' })
+  })
+
+  it('checked now: which proxies would move under it, or with apply moved; refused in graphql’s words', async () => {
+    request.mockResolvedValue(answer({ verifyAccountProxyBase: moves }))
+    expect(await proxies.graphQLVerifyAccountProxyBase('ACCOUNT', false)).toEqual(moves)
+    expect(asked().variables).toEqual({ accountId: 'ACCOUNT', apply: false })
+    expect(asked().query).toContain('mutation VerifyAccountProxyBase($accountId: String, $apply: Boolean)')
+    expect(asked().query).toContain(`verifyAccountProxyBase(accountId: $accountId, apply: $apply) ${MOVES}`)
+    await proxies.graphQLVerifyAccountProxyBase('ACCOUNT', true)
+    expect(asked().variables).toEqual({ accountId: 'ACCOUNT', apply: true })
+    // No proxy to move is an answer too.
+    request.mockResolvedValue(answer({ verifyAccountProxyBase: { moves: [], applied: false } }))
+    expect(await proxies.graphQLVerifyAccountProxyBase('ACCOUNT', false)).toEqual({ moves: [], applied: false })
+    request.mockResolvedValue(refusal('the account has no base'))
+    expect(await proxies.graphQLVerifyAccountProxyBase('ACCOUNT', false)).toEqual({ reason: 'The account has no base' })
+    request.mockResolvedValue(answer({ verifyAccountProxyBase: null }))
+    expect(await proxies.graphQLVerifyAccountProxyBase('ACCOUNT', false)).toEqual({ reason: '' })
+  })
+
+  it('removed: which proxies would move back, or with apply moved and its zone deleted', async () => {
+    const back = { moves: list.map(each => ({ ...each, ownName: null })), applied: false }
+    request.mockResolvedValue(answer({ removeAccountProxyBase: back }))
+    expect(await proxies.graphQLRemoveAccountProxyBase('ACCOUNT', false)).toEqual(back)
+    expect(asked().variables).toEqual({ accountId: 'ACCOUNT', apply: false })
+    expect(asked().query).toContain('mutation RemoveAccountProxyBase($accountId: String, $apply: Boolean)')
+    expect(asked().query).toContain(`removeAccountProxyBase(accountId: $accountId, apply: $apply) ${MOVES}`)
+    await proxies.graphQLRemoveAccountProxyBase('ACCOUNT', true)
+    expect(asked().variables).toEqual({ accountId: 'ACCOUNT', apply: true })
   })
 })
 

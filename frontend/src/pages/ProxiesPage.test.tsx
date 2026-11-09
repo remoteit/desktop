@@ -2,16 +2,21 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { proxies, list, access } = vi.hoisted(() => ({
+const { proxies, list, base, access } = vi.hoisted(() => ({
   proxies: vi.fn(async () => [] as any),
   list: { value: undefined as any },
-  access: { manages: true },
+  base: { value: null as any },
+  access: { manages: true, admin: true },
 }))
 vi.mock('../services/graphQLProxy', () => ({ graphQLProxies: proxies }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
-// The account's own proxies are the shared store's (hooks/useAccountStore.ts): here, what it holds.
-vi.mock('../hooks/useAccountExits', () => ({ useAccountProxies: () => ({ value: list.value, reload: () => {} }) }))
+// The account's own proxies and its base are the shared store's (hooks/useAccountStore.ts): here, what it holds.
+vi.mock('../hooks/useAccountExits', () => ({
+  useAccountProxies: () => ({ value: list.value, reload: () => {} }),
+  useAccountProxyBase: () => ({ value: base.value, reload: () => {} }),
+}))
 vi.mock('../hooks/useDeviceDisable', () => ({ useDisabledDevicesAccess: () => access.manages }))
+vi.mock('../hooks/useAccountAdmin', () => ({ useAccountAdmin: () => access.admin }))
 // A proxy's row: where it leads, its icon, its title and its line.
 vi.mock('../components/ListItemLocation', () => ({
   ListItemLocation: ({ to, icon, title, subtitle, ...props }: any) => (
@@ -54,7 +59,7 @@ vi.mock('react-i18next', () => {
   }
 })
 
-import { ProxiesPage, proxyLine, serving } from './ProxiesPage'
+import { ProxiesPage, ownNameLine, proxyLine, serving } from './ProxiesPage'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
@@ -119,6 +124,8 @@ const iconColor = (id: string) => row(id).querySelector('[data-icon="server"]')?
 
 beforeEach(() => {
   access.manages = true
+  access.admin = true
+  base.value = null
   list.value = [GATEWAY, NAS]
   proxies.mockReset().mockResolvedValue([])
 })
@@ -249,5 +256,125 @@ describe('a proxy of the account in a line', () => {
     expect(proxyLine(t, { ...GATEWAY, devices: null, endpointCount: null, certificate: null })).toBe(
       'gw-acme.dev.r3proxy.com'
     )
+  })
+})
+
+describe('its own name in its line', () => {
+  const named = (state: string, via = 'name') => ({ ...GATEWAY, ownName: { name: 'gw.example.com', state, via } })
+
+  it('first where it has one, its own or its account base’s, before its host', async () => {
+    list.value = [
+      named('active'),
+      {
+        ...named('active', 'base'),
+        id: 'P2',
+        ownName: { name: 'nas.proxies.example.com', state: 'active', via: 'base' },
+      },
+      NAS,
+    ]
+    await render()
+    expect(subtitle('P1')).toBe('gw.example.com · gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints')
+    expect(subtitle('P2')).toBe('nas.proxies.example.com · gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints')
+  })
+
+  it('not reached under it yet, or no longer right: where it stands said with it', () => {
+    expect(ownNameLine(t, { name: 'gw.example.com', state: 'active', via: 'name' })).toBe('gw.example.com')
+    expect(ownNameLine(t, { name: 'gw.example.com', state: 'pending', via: 'name' })).toBe('gw.example.com (pending)')
+    expect(ownNameLine(t, { name: 'gw.example.com', state: 'verified', via: 'name' })).toBe(
+      'gw.example.com (not moved yet)'
+    )
+    expect(ownNameLine(t, { name: 'gw.proxies.example.com', state: 'broken', via: 'base' })).toBe(
+      'gw.proxies.example.com (broken)'
+    )
+    expect(proxyLine(t, named('pending'))).toBe(
+      'gw.example.com (pending) · gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints'
+    )
+  })
+
+  it('none: its host first, as before', () => {
+    expect(proxyLine(t, { ...GATEWAY, ownName: null })).toBe(
+      'gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints'
+    )
+  })
+})
+
+describe('the account’s base for its proxies’ names', () => {
+  const entry = () => document.body.querySelector('[data-to="/proxies/base"]') as HTMLElement | null
+  const records = (...found: boolean[]) =>
+    found.map((each, n) => ({
+      name: 'proxies.example.com',
+      type: 'NS',
+      value: `ns-${n + 1}.awsdns.org`,
+      found: each,
+      seen: null,
+    }))
+  const BASE = {
+    base: 'proxies.example.com',
+    state: 'pending',
+    nameServers: ['ns-1.awsdns.org', 'ns-2.awsdns.org'],
+    records: records(true, false),
+    checked: null,
+    problem: null,
+    proxies: 0,
+  }
+
+  it('none yet: offered to an admin of the account first, a paid feature, leading to its page', async () => {
+    const page = await render()
+    expect(page.querySelector('[data-proxy-base]')?.getAttribute('data-proxy-base')).toBe('none')
+    expect(page.textContent).toContain('Account base for proxies')
+    expect(entry()?.querySelector('[data-title]')?.textContent).toBe('None')
+    expect(entry()?.querySelector('[data-subtitle]')?.textContent).toBe(
+      'A paid feature: every proxy named under a subdomain you delegate to remote.it'
+    )
+    expect(entry()?.querySelector('[data-icon="sitemap"]')?.getAttribute('data-color')).toBe('grayDark')
+    // Before the account's own proxies.
+    expect(page.textContent!.indexOf('Account base for proxies')).toBeLessThan(page.textContent!.indexOf('Yours'))
+  })
+
+  it('set: its subdomain and where it stands — pending, verified, active with its proxies, broken naming what is missing', async () => {
+    const lines: [any, string, string][] = [
+      [BASE, 'Pending: 1 of 2 NS records found', 'warning'],
+      [
+        { ...BASE, state: 'verified', records: records(true, true) },
+        'Verified: its delegation to remote.it is seen',
+        'warning',
+      ],
+      [
+        { ...BASE, state: 'active', records: records(true, true), proxies: 3 },
+        'Active: 3 proxies named under it',
+        'primary',
+      ],
+      [
+        { ...BASE, state: 'active', records: records(true, true), proxies: 1 },
+        'Active: 1 proxy named under it',
+        'primary',
+      ],
+      [{ ...BASE, state: 'broken' }, 'Broken: NS ns-2.awsdns.org is missing', 'danger'],
+    ]
+    for (const [read, line, color] of lines) {
+      base.value = read
+      const page = await render()
+      expect(page.querySelector('[data-proxy-base]')?.getAttribute('data-proxy-base')).toBe(read.state)
+      expect(entry()?.querySelector('[data-title]')?.textContent).toBe('proxies.example.com')
+      expect(entry()?.querySelector('[data-subtitle]')?.textContent).toBe(line)
+      expect(entry()?.querySelector('[data-icon="sitemap"]')?.getAttribute('data-color')).toBe(color)
+    }
+  })
+
+  it('not offered to anyone who does not administer the account', async () => {
+    access.admin = false
+    base.value = BASE
+    const page = await render()
+    expect(page.querySelector('[data-proxy-base]')).toBeNull()
+    expect(entry()).toBeNull()
+  })
+
+  it('hidden while it is read, where this server has none, and where it could not be read', async () => {
+    for (const read of [undefined, 'UNSUPPORTED', 'ERROR']) {
+      base.value = read
+      const page = await render()
+      expect(page.querySelector('[data-proxy-base]')).toBeNull()
+      expect(page.querySelector('[data-proxy="P1"]')).not.toBeNull()
+    }
   })
 })
