@@ -6,8 +6,8 @@ import { store } from '../../store'
 import { Avatar } from '../../components/Avatar'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { selectOrganizationOptions } from '../../selectors/organizations'
-import { graphQLMutedOrganizations } from '../../services/graphQLRequest'
-import { graphQLSetOrganizationNotifications } from '../../services/graphQLMutation'
+import { graphQLOrganizationNotificationSettings } from '../../services/graphQLRequest'
+import { graphQLSetOrganizationNotificationSettings } from '../../services/graphQLMutation'
 import { inOrder } from '../../helpers/inOrder'
 import { latestWins } from '../../helpers/latestWins'
 
@@ -19,11 +19,13 @@ let stale = false
 // IDs are compared upper-cased, as the API matches them.
 const normalize = (id: string) => id.toUpperCase()
 
+type OrganizationSettings = { organizationId: string; pushNotifications: boolean | null }
+
 const load = async () => {
-  const result = await graphQLMutedOrganizations()
+  const result = await graphQLOrganizationNotificationSettings()
   if (result === 'ERROR') return null
-  const list: string[] | undefined = result.data?.data?.login?.notificationSettings?.mutedOrganizations
-  return list ? list.map(normalize) : null
+  const list: OrganizationSettings[] | undefined = result.data?.data?.login?.notificationSettings?.organizations
+  return list ? list.filter(o => o.pushNotifications === false).map(o => normalize(o.organizationId)) : null
 }
 
 export const OrganizationNotifications: React.FC<{ disabled?: boolean }> = ({ disabled }) => {
@@ -43,7 +45,8 @@ export const OrganizationNotifications: React.FC<{ disabled?: boolean }> = ({ di
     const enabled = muted.includes(key)
     const isNewest = newest.take()
     setMuted(list => list && (enabled ? list.filter(m => m !== key) : [...list, key]))
-    if ((await writes(() => graphQLSetOrganizationNotifications(id, enabled))) === 'ERROR') stale = true
+    // null hands the organization back to the account's push setting rather than forcing it on.
+    if ((await writes(() => graphQLSetOrganizationNotificationSettings(id, enabled ? null : false))) === 'ERROR') stale = true
     // An older toggle reloading would put back a switch that a later write is still changing; a failed
     // reload keeps the switches as they are (and the list stale) rather than hiding the section.
     if (!stale || !isNewest()) return

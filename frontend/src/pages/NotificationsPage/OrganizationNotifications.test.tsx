@@ -14,9 +14,9 @@ vi.mock('react-redux', () => ({ useSelector: (select: (s: typeof state) => unkno
 vi.mock('../../store', () => ({ store: { getState: () => state } }))
 vi.mock('../../selectors/organizations', () => ({ selectOrganizationOptions: () => organizations }))
 vi.mock('../../components/Avatar', () => ({ Avatar: () => null }))
-vi.mock('../../services/graphQLRequest', () => ({ graphQLMutedOrganizations: () => muted() }))
+vi.mock('../../services/graphQLRequest', () => ({ graphQLOrganizationNotificationSettings: () => muted() }))
 vi.mock('../../services/graphQLMutation', () => ({
-  graphQLSetOrganizationNotifications: (...args: unknown[]) => setOrganization(...args),
+  graphQLSetOrganizationNotificationSettings: (...args: unknown[]) => setOrganization(...args),
 }))
 vi.mock('../../components/ListItemSetting', () => ({
   ListItemSetting: ({
@@ -41,9 +41,10 @@ vi.mock('../../components/ListItemSetting', () => ({
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
-const mutedResponse = (list: string[]) => ({
-  data: { data: { login: { notificationSettings: { mutedOrganizations: list } } } },
+const settingsResponse = (organizations: { organizationId: string; pushNotifications: boolean | null }[]) => ({
+  data: { data: { login: { notificationSettings: { organizations } } } },
 })
+const mutedResponse = (ids: string[]) => settingsResponse(ids.map(organizationId => ({ organizationId, pushNotifications: false })))
 
 const deferred = <T,>() => {
   let resolve: (value: T) => void = () => {}
@@ -104,7 +105,19 @@ describe('OrganizationNotifications', () => {
     expect(button()?.dataset.disabled).toBe('true')
   })
 
-  it('turning one off sends enabled false and keeps it off', async () => {
+  it('only an organization whose push is false counts as off', async () => {
+    muted.mockResolvedValue(
+      settingsResponse([
+        { organizationId: 'ORG-A', pushNotifications: null },
+        { organizationId: 'ORG-B', pushNotifications: true },
+      ])
+    )
+    await render()
+    expect(button()?.dataset.on).toBe('true')
+    expect(button('Org B')?.dataset.on).toBe('true')
+  })
+
+  it('turning one off sends push false and keeps it off', async () => {
     muted.mockResolvedValue(mutedResponse([]))
     setOrganization.mockResolvedValue({})
     await render()
@@ -112,6 +125,15 @@ describe('OrganizationNotifications', () => {
     expect(setOrganization).toHaveBeenCalledWith('ORG-A', false)
     expect(button()?.dataset.on).toBe('false')
     expect(muted).toHaveBeenCalledTimes(1)
+  })
+
+  it('turning one back on sends null, so it follows the account setting again', async () => {
+    muted.mockResolvedValue(mutedResponse(['ORG-A']))
+    setOrganization.mockResolvedValue({})
+    await render()
+    await act(async () => button()?.click())
+    expect(setOrganization).toHaveBeenCalledWith('ORG-A', null)
+    expect(button()?.dataset.on).toBe('true')
   })
 
   it('a failed write reloads the list from the API', async () => {

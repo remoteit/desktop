@@ -459,12 +459,12 @@ export async function graphQLNotificationSettings(params: INotificationSetting) 
   )
 }
 
-export async function graphQLSetOrganizationNotifications(organizationId: string, enabled: boolean) {
+export async function graphQLSetOrganizationNotificationSettings(organizationId: string, pushNotifications: boolean | null) {
   return await graphQLBasicRequest(
-    ` mutation SetOrganizationNotifications($organizationId: ID!, $enabled: Boolean!) {
-        setOrganizationNotifications(organizationId: $organizationId, enabled: $enabled)
+    ` mutation SetOrganizationNotificationSettings($organizationId: ID!, $pushNotifications: Boolean) {
+        setOrganizationNotificationSettings(organizationId: $organizationId, pushNotifications: $pushNotifications)
       }`,
-    { organizationId, enabled }
+    { organizationId, pushNotifications }
   )
 }
 
