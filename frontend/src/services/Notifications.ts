@@ -4,6 +4,7 @@ import { selectOrganization } from '../selectors/organizations'
 import { platforms } from '../platforms'
 import { store } from '../store'
 import { openNotification } from './openNotification'
+import { emit } from './Controller'
 import browser from './browser'
 import icon from '../assets/noticeIcon.png'
 
@@ -121,7 +122,12 @@ function transferNotification(event: ICloudEvent) {
 
 function createNotification(title: string, redirect: string, options?: NotificationOptions) {
   const notification = new Notification(title, { ...options, icon: browser.isPortal ? icon : undefined })
-  notification.onclick = () => openNotification(redirect, title, options?.body)
+  notification.onclick = () => {
+    // A click leaves the window where it was: a browser tab behind others, Electron's hidden in the tray
+    window.focus()
+    if (browser.isElectron) emit('open')
+    openNotification(redirect, title, options?.body)
+  }
   notification.onclose = e => e.preventDefault()
 }
 
