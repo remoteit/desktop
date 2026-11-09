@@ -400,6 +400,7 @@
     "productName": "Name",
     "productPlatform": "Plattform",
     "productPlatformDetail": "Plattform",
+    "productServiceHostDetail": "Dienst-Host",
     "productServiceIdDetail": "Dienst-ID",
     "productServicePortDetail": "Port",
     "productServices": "Dienste",

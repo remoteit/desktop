@@ -404,6 +404,7 @@
     "productName": "Nombre",
     "productPlatform": "Plataforma",
     "productPlatformDetail": "Plataforma",
+    "productServiceHostDetail": "Host del servicio",
     "productServiceIdDetail": "ID de servicio",
     "productServicePortDetail": "Puerto",
     "productServices": "Servicios",

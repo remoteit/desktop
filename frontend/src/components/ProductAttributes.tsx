@@ -1,5 +1,6 @@
 import { Chip, Typography } from '@mui/material'
 import React from 'react'
+import { IP_PRIVATE } from '@common/constants'
 import { Attribute } from './Attributes'
 import { Timestamp } from './Timestamp'
 
@@ -103,6 +104,11 @@ export const productServiceDetailAttributes: ProductServiceAttribute[] = [
     id: 'productServiceTypeDetail',
     label: 'Service Type',
     value: ({ productService }: IDataOptions) => productService?.type?.name || 'Unknown',
+  }),
+  new ProductServiceAttribute({
+    id: 'productServiceHostDetail',
+    label: 'Service Host',
+    value: ({ productService }: IDataOptions) => productService?.host || IP_PRIVATE,
   }),
   new ProductServiceAttribute({
     id: 'productServicePortDetail',
