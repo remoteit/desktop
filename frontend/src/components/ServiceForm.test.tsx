@@ -48,7 +48,15 @@ describe('ServiceForm for a web service', () => {
     act(() =>
       root.render(
         <ThemeProvider theme={theme}>
-          <ServiceForm adding compact editable thisDevice={false} hostPort={hostPort} onSubmit={vi.fn()} onCancel={vi.fn()} />
+          <ServiceForm
+            adding
+            compact
+            editable
+            thisDevice={false}
+            hostPort={hostPort}
+            onSubmit={vi.fn()}
+            onCancel={vi.fn()}
+          />
         </ThemeProvider>
       )
     )
