@@ -61,6 +61,7 @@ export const ProductServiceAddPage: React.FC = () => {
       <ServiceForm
         adding
         compact
+        hostPort
         thisDevice={false}
         editable
         disabled={creating}
@@ -72,6 +73,7 @@ export const ProductServiceAddPage: React.FC = () => {
             input: {
               name: (form.name || '').trim(),
               type: String(form.typeID),
+              host: form.host,
               port: form.port || 1,
               enabled: !!form.enabled,
             },
