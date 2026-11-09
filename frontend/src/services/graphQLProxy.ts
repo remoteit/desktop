@@ -72,6 +72,7 @@ export type Proxy = {
   endpoints?: Endpoint[] // oldest first: every one for whoever manages it, else those you made on it; its page's
   certificate: ProxyCertificate | null // an own proxy's; remote.it's devices hold their own
   ownName?: ProxyOwnName | null // an own proxy's, for whoever manages it; its page's
+  products?: { id: string; name: string }[] // the products whose new devices join it; remote.it's admin page's
 }
 
 // One of the account's proxies as their list reads it: its own name in brief.
@@ -355,6 +356,21 @@ export const graphQLSetProxyActivation = (proxy: string, activation: 'auto' | 'a
       setProxyActivation(proxy: $proxy, activation: $activation) { id }
     }`,
     { proxy, activation }
+  )
+
+// A product whose new devices join it (graphql-api docs/PROXY-GROUPS.md §11 wave 2): each device the product registers
+// is added as addProxyDevice adds one, and goes into service as its activation says. Removed, the product adds no device
+// more and takes none out. A refusal in graphql's words.
+export const graphQLSetProxyProduct = (proxy: string, productId: string, joined: boolean) =>
+  graphQLRequestWithReason(
+    joined
+      ? ` mutation AddProxyProduct($proxy: String!, $productId: String!) {
+          addProxyProduct(proxy: $proxy, productId: $productId) { id }
+        }`
+      : ` mutation RemoveProxyProduct($proxy: String!, $productId: String!) {
+          removeProxyProduct(proxy: $proxy, productId: $productId) { id }
+        }`,
+    { proxy, productId }
   )
 
 // One no device runs. With endpoints, refused unless confirmed: confirmed, they are removed.

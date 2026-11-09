@@ -15,8 +15,8 @@ import {
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { refusalOf } from '../services/graphQL'
 import { DeviceRuns, graphQLAddExitDevice, graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
-import { graphQLSetExitActivation } from '../services/graphQLExits'
-import { graphQLSetProxyActivation } from '../services/graphQLProxy'
+import { graphQLSetExitActivation, graphQLSetExitProduct } from '../services/graphQLExits'
+import { graphQLSetProxyActivation, graphQLSetProxyProduct } from '../services/graphQLProxy'
 import {
   Location,
   RemoteitMachine,
@@ -34,6 +34,7 @@ import {
   graphQLSetDeviceProductLifecycle,
 } from '../services/graphQLDeviceProducts'
 import { lanAddWarning, runStateLabel, stillRunsLine } from '../helpers/runsHelper'
+import { Confirm } from '../components/Confirm'
 import { RunListItem } from '../components/RunListItem'
 import { RunActions } from '../components/RunActions'
 import { SelectSetting } from '../components/SelectSetting'
@@ -49,11 +50,11 @@ import { Icon } from '../components/Icon'
    the pdx1a proxy and the pdx1a exit — run by the same machines, remote.it's devices, each shown by its device name
    (§11 wave 2: no e<n>-r3 name of its own). A tab each: the proxies, the exits, and the machines. A proxy's or an exit's
    page lists the machines running it, each with its state there and its actions in it alone (saying first what each
-   does), adds a machine to it, sets its activation, and makes a new one at a location. The machines' page shows
-   everything each runs, with the actions on all of it at once — each saying first what it does to each proxy and
-   exit — so taking a machine down never surprises; a machine still in someone's account is moved to remote.it; and
-   remote.it's proxy product, which a new machine registers with, has its join keys and lifecycle there. English only,
-   as the rest of /admin. */
+   does), adds a machine to it, sets its activation and the products whose new devices join it, and makes a new one at
+   a location. The machines' page shows everything each runs, with the actions on all of it at once — each saying first
+   what it does to each proxy and exit — so taking a machine down never surprises; a machine still in someone's account
+   is moved to remote.it; and remote.it's proxy product, which a new machine registers with, has its join keys and
+   lifecycle there. English only, as the rest of /admin. */
 
 type Problem = (problem: string) => void
 type Proxies = Exclude<Awaited<ReturnType<typeof graphQLRemoteitProxies>>, 'ERROR' | typeof UNSUPPORTED>
@@ -66,6 +67,7 @@ export const AdminRemoteitProxies: React.FC<{ onProblem: Problem }> = ({ onProbl
   const [proxies, setProxies] = useState<Proxies | 'ERROR' | typeof UNSUPPORTED>()
   const [machines, setMachines] = useState<RemoteitMachine[]>([])
   const [told, setTold] = useState<string>()
+  const offered = useOfferedProducts()
 
   const load = useCallback(async () => {
     setProxies(await graphQLRemoteitProxies())
@@ -117,6 +119,17 @@ export const AdminRemoteitProxies: React.FC<{ onProblem: Problem }> = ({ onProbl
               await load()
             }}
           />
+          <RunProducts
+            kind="proxy"
+            name={proxy.name}
+            products={proxy.products ?? []}
+            offered={offered}
+            onChange={async (productId, joined) => {
+              const refused = refusalOf(await graphQLSetProxyProduct(proxy.id, productId, joined))
+              if (refused !== undefined) onProblem(refused || `${proxy.name}'s products were not changed.`)
+              await load()
+            }}
+          />
           {(proxy.devices ?? []).map(device => (
             <RunListItem
               key={device.id}
@@ -152,6 +165,7 @@ export const AdminRemoteitExits: React.FC<{ onProblem: Problem }> = ({ onProblem
   const [exits, setExits] = useState<Exits | 'ERROR' | typeof UNSUPPORTED>()
   const [machines, setMachines] = useState<RemoteitMachine[]>([])
   const [told, setTold] = useState<string>()
+  const offered = useOfferedProducts()
 
   const load = useCallback(async () => {
     setExits(await graphQLRemoteitExits())
@@ -198,6 +212,17 @@ export const AdminRemoteitExits: React.FC<{ onProblem: Problem }> = ({ onProblem
             onChange={async activation => {
               const refused = refusalOf(await graphQLSetExitActivation(exit.id, activation as 'auto' | 'admin'))
               if (refused !== undefined) onProblem(refused || `${exit.name}'s activation was not changed.`)
+              await load()
+            }}
+          />
+          <RunProducts
+            kind="exit"
+            name={exit.name}
+            products={exit.products ?? []}
+            offered={offered}
+            onChange={async (productId, joined) => {
+              const refused = refusalOf(await graphQLSetExitProduct(exit.id, productId, joined))
+              if (refused !== undefined) onProblem(refused || `${exit.name}'s products were not changed.`)
               await load()
             }}
           />
@@ -350,6 +375,104 @@ const Machine: React.FC<{ machine: RemoteitMachine; onProblem: Problem; onChange
         }
       />
     </ListItem>
+  )
+}
+
+type ProductRef = { id: string; name: string }
+
+// The products a proxy or an exit may take new devices from: remote.it's proxy product, which remote.it's machines
+// register with — none where this API has none. Read once: it changes only as the product is made.
+function useOfferedProducts(): ProductRef[] {
+  const [offered, setOffered] = useState<ProductRef[]>([])
+  useEffect(() => {
+    graphQLRemoteitProxyProduct().then(product => {
+      if (product && typeof product === 'object') setOffered([{ id: product.id, name: product.name }])
+    })
+  }, [])
+  return offered
+}
+
+/* The products whose new devices join a proxy or an exit of remote.it's (§11 wave 2): a device one of them registers is
+   added as a machine added below is — out of service, its proxy setting or exit node turned on — and goes into service
+   as the activation says. Removing one is said first: no new device of it joins any more, and none is taken out. */
+const RunProducts: React.FC<{
+  kind: 'proxy' | 'exit'
+  name: string
+  products: ProductRef[]
+  offered: ProductRef[]
+  onChange: (productId: string, joined: boolean) => Promise<void>
+}> = ({ kind, name, products, offered, onChange }) => {
+  const [chosen, setChosen] = useState('')
+  const [removing, setRemoving] = useState<ProductRef>()
+  const [busy, setBusy] = useState(false)
+  const addable = offered.filter(product => !products.some(each => each.id === product.id))
+
+  const change = async (productId: string, joined: boolean) => {
+    setBusy(true)
+    await onChange(productId, joined)
+    setChosen('')
+    setRemoving(undefined)
+    setBusy(false)
+  }
+
+  return (
+    <>
+      {products.map(product => (
+        <ListItem key={product.id} data-run-product={product.id}>
+          <ListItemIcon>
+            <Icon name="box" size="md" color="primary" />
+          </ListItemIcon>
+          <ListItemText
+            primary={`Takes new devices from ${product.name}`}
+            secondary={`A device it registers joins this ${kind} and goes into service as its activation says.`}
+          />
+          <Button size="small" disabled={busy} onClick={() => setRemoving(product)}>
+            Remove
+          </Button>
+        </ListItem>
+      ))}
+      {!products.length && (
+        <ListItem data-run-product="">
+          <ListItemText secondary={`Takes no product's new devices: a machine runs it once it is added below.`} />
+        </ListItem>
+      )}
+      {!!addable.length && (
+        <ListItem>
+          <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+            <TextField
+              select
+              size="small"
+              label="Take new devices from"
+              value={chosen}
+              sx={{ minWidth: 220 }}
+              onChange={event => setChosen(String(event.target.value))}
+            >
+              {addable.map(product => (
+                <MenuItem key={product.id} value={product.id}>
+                  {product.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Button size="small" variant="contained" disabled={busy || !chosen} onClick={() => change(chosen, true)}>
+              Add product
+            </Button>
+          </Box>
+        </ListItem>
+      )}
+      <Confirm
+        open={!!removing}
+        title={`Remove ${removing?.name} from ${name}?`}
+        action="Remove"
+        disabled={busy}
+        onConfirm={() => removing && change(removing.id, false)}
+        onDeny={() => setRemoving(undefined)}
+      >
+        <Typography variant="body2">
+          No new device of {removing?.name} joins {name} any more. Its devices running it now keep running it: take them
+          out on their own.
+        </Typography>
+      </Confirm>
+    </>
   )
 }
 

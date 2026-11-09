@@ -18,6 +18,8 @@ const {
   addExitDevice,
   setProxyActivation,
   setExitActivation,
+  setProxyProduct,
+  setExitProduct,
   after,
 } = vi.hoisted(() => ({
   proxies: vi.fn(async () => [] as any),
@@ -35,6 +37,8 @@ const {
   addExitDevice: vi.fn(async (_exit: string, _deviceId: string) => ({ runs: {} } as any)),
   setProxyActivation: vi.fn(async (_proxy: string, _activation: string) => ({} as any)),
   setExitActivation: vi.fn(async (_exit: string, _activation: string) => ({} as any)),
+  setProxyProduct: vi.fn(async (_proxy: string, _productId: string, _joined: boolean) => ({} as any)),
+  setExitProduct: vi.fn(async (_exit: string, _productId: string, _joined: boolean) => ({} as any)),
   // What a machine runs after an action on it: the exit alone, in service.
   after: {
     proxy: null,
@@ -81,8 +85,26 @@ vi.mock('../services/graphQLDeviceRuns', () => ({
   graphQLAddProxyDevice: addProxyDevice,
   graphQLAddExitDevice: addExitDevice,
 }))
-vi.mock('../services/graphQLProxy', () => ({ graphQLSetProxyActivation: setProxyActivation }))
-vi.mock('../services/graphQLExits', () => ({ graphQLSetExitActivation: setExitActivation }))
+vi.mock('../services/graphQLProxy', () => ({
+  graphQLSetProxyActivation: setProxyActivation,
+  graphQLSetProxyProduct: setProxyProduct,
+}))
+vi.mock('../services/graphQLExits', () => ({
+  graphQLSetExitActivation: setExitActivation,
+  graphQLSetExitProduct: setExitProduct,
+}))
+vi.mock('../components/Confirm', () => ({
+  Confirm: ({ open, title, action, disabled, children, onConfirm, onDeny }: any) =>
+    open ? (
+      <div data-confirm={title}>
+        {children}
+        <button data-confirm-action disabled={disabled} onClick={onConfirm}>
+          {action}
+        </button>
+        <button data-deny onClick={onDeny} />
+      </div>
+    ) : null,
+}))
 vi.mock('../services/graphQL', () => ({
   refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
 }))
@@ -188,6 +210,8 @@ const run = (id: string, name: string | null, extra: any = {}) => ({
 })
 const PDX_PROXY = { id: 'R1', name: 'remote.it pdx1a', host: 'pdx1a-r3.dev.r3proxy.com', remoteit: true }
 const PDX_EXIT = { id: 'X1', name: 'remote.it pdx1a', remoteit: true }
+// remote.it's proxy product, as a proxy or an exit names it: pdx1a's both take its new devices.
+const POOL = { id: 'PP', name: 'remote.it proxies' }
 const PROXY = {
   ...PDX_PROXY,
   location: 'pdx1',
@@ -195,6 +219,7 @@ const PROXY = {
   activation: 'auto',
   latitude: 45.8,
   longitude: -119.7,
+  products: [POOL],
   devices: [run('E1', 'e1'), run('E2', null)],
 }
 const SEA_PROXY = {
@@ -205,6 +230,7 @@ const SEA_PROXY = {
   location: 'sea1',
   provider: '',
   activation: 'admin',
+  products: [],
   devices: [],
 }
 const EXIT = {
@@ -218,6 +244,7 @@ const EXIT = {
   users: 3,
   latitude: 45.8,
   longitude: -119.7,
+  products: [POOL],
   devices: [run('E1', 'e1')],
 }
 const SEA_EXIT = {
@@ -228,6 +255,7 @@ const SEA_EXIT = {
   provider: '',
   offered: false,
   users: 1,
+  products: [],
   devices: [],
 }
 const machine = (id: string, name: string | null, extra: any = {}) => ({
@@ -313,6 +341,8 @@ beforeEach(() => {
   addExitDevice.mockResolvedValue({ runs: {} })
   setProxyActivation.mockResolvedValue({})
   setExitActivation.mockResolvedValue({})
+  setProxyProduct.mockResolvedValue({})
+  setExitProduct.mockResolvedValue({})
 })
 
 afterEach(async () => {
@@ -376,7 +406,7 @@ describe('remote.it’s proxies', () => {
   it('no machine runs no proxy: none offered', async () => {
     machines.mockResolvedValue([E1])
     await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
-    expect($('[data-choose]')).toBeNull()
+    expect($('[data-choose="Add a machine"]')).toBeNull()
     expect(button('Add')).toBeUndefined()
   })
 
@@ -503,6 +533,91 @@ describe('remote.it’s proxies', () => {
     await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
     await act(async () => vi.advanceTimersByTime(90_000))
     expect(proxies).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('the products whose new devices join a proxy or an exit', () => {
+  const proxy = (id: string) => $(`[data-remoteit-proxy="${id}"]`)!
+  const exit = (id: string) => $(`[data-remoteit-exit="${id}"]`)!
+  const TAKE = 'Take new devices from'
+
+  it('each proxy says the products it takes devices from, or none; remote.it’s proxy product offered where not', async () => {
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    expect($('[data-run-product="PP"]', proxy('R1'))?.textContent).toBe(
+      'Takes new devices from remote.it proxiesA device it registers joins this proxy and goes into service as its activation says.Remove'
+    )
+    expect($(`[data-choose="${TAKE}"]`, proxy('R1'))).toBeNull()
+    expect($('[data-run-product=""]', proxy('R2'))?.textContent).toBe(
+      "Takes no product's new devices: a machine runs it once it is added below."
+    )
+    const choose = $(`[data-choose="${TAKE}"]`, proxy('R2'))!
+    expect([...choose.querySelectorAll('[data-pick]')].map(pick => pick.textContent)).toEqual(['remote.it proxies'])
+  })
+
+  it('one added to a proxy, and all read again', async () => {
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    const add = button('Add product', proxy('R2'))!
+    expect(add.disabled).toBe(true)
+    await click($('[data-pick="PP"]', proxy('R2')))
+    await click(add)
+    expect(setProxyProduct).toHaveBeenCalledWith('R2', 'PP', true)
+    expect(proxies).toHaveBeenCalledTimes(2)
+    expect($(`[data-choose="${TAKE}"]`, proxy('R2'))?.getAttribute('data-value')).toBe('')
+  })
+
+  it('one removed only once it is said that no new device joins and none is taken out', async () => {
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    await click(button('Remove', proxy('R1')))
+    expect(setProxyProduct).not.toHaveBeenCalled()
+    expect($('[data-confirm]')?.getAttribute('data-confirm')).toBe('Remove remote.it proxies from remote.it pdx1a?')
+    expect($('[data-confirm]')?.textContent).toContain(
+      'No new device of remote.it proxies joins remote.it pdx1a any more. Its devices running it now keep running it'
+    )
+    await click($('[data-deny]'))
+    expect($('[data-confirm]')).toBeNull()
+    expect(setProxyProduct).not.toHaveBeenCalled()
+    await click(button('Remove', proxy('R1')))
+    await click($('[data-confirm-action]'))
+    expect(setProxyProduct).toHaveBeenCalledWith('R1', 'PP', false)
+    expect($('[data-confirm]')).toBeNull()
+    expect(proxies).toHaveBeenCalledTimes(2)
+  })
+
+  it('a change refused is said in graphql’s words, or that it was not made', async () => {
+    const onProblem = vi.fn()
+    await render(<AdminRemoteitProxies onProblem={onProblem} />)
+    setProxyProduct.mockResolvedValue({ reason: 'Only the system account’s products join remote.it’s proxies' })
+    await click($('[data-pick="PP"]', proxy('R2')))
+    await click(button('Add product', proxy('R2')))
+    expect(onProblem).toHaveBeenLastCalledWith('Only the system account’s products join remote.it’s proxies')
+    setProxyProduct.mockResolvedValue('ERROR')
+    await click($('[data-pick="PP"]', proxy('R2')))
+    await click(button('Add product', proxy('R2')))
+    expect(onProblem).toHaveBeenLastCalledWith("remote.it sea1a's products were not changed.")
+  })
+
+  it('an exit’s the same: added, removed once said, refused in graphql’s words', async () => {
+    const onProblem = vi.fn()
+    await render(<AdminRemoteitExits onProblem={onProblem} />)
+    expect($('[data-run-product="PP"]', exit('X1'))?.textContent).toContain('joins this exit')
+    await click($('[data-pick="PP"]', exit('X2')))
+    await click(button('Add product', exit('X2')))
+    expect(setExitProduct).toHaveBeenCalledWith('X2', 'PP', true)
+    expect(exits).toHaveBeenCalledTimes(2)
+    await click(button('Remove', exit('X1')))
+    await click($('[data-confirm-action]'))
+    expect(setExitProduct).toHaveBeenLastCalledWith('X1', 'PP', false)
+    setExitProduct.mockResolvedValue({ reason: '' })
+    await click(button('Remove', exit('X1')))
+    await click($('[data-confirm-action]'))
+    expect(onProblem).toHaveBeenLastCalledWith("remote.it pdx1a's products were not changed.")
+  })
+
+  it('no product to offer — an API without remote.it’s proxy product —: none offered, those named still said', async () => {
+    product.mockResolvedValue('UNSUPPORTED')
+    await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
+    expect($(`[data-choose="${TAKE}"]`)).toBeNull()
+    expect($('[data-run-product="PP"]', proxy('R1'))).not.toBeNull()
   })
 })
 

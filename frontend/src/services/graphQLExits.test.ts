@@ -20,6 +20,7 @@ import {
   graphQLOfferedExits,
   graphQLSetDeviceExit,
   graphQLSetExitLan,
+  graphQLSetExitProduct,
   graphQLSetNetworkExit,
 } from './graphQLExits'
 import * as deviceRuns from './graphQLDeviceRuns'
@@ -46,10 +47,16 @@ import {
   graphQLServiceEndpoints,
   graphQLSetProxyLabel,
   graphQLSetProxyName,
+  graphQLSetProxyProduct,
   graphQLSetProxyPublicEndpoints,
   graphQLVerifyProxyName,
 } from './graphQLProxy'
-import { graphQLCreateRemoteit, graphQLRemoteitExits, graphQLRemoteitProxyProduct } from './graphQLRemoteit'
+import {
+  graphQLCreateRemoteit,
+  graphQLRemoteitExits,
+  graphQLRemoteitProxies,
+  graphQLRemoteitProxyProduct,
+} from './graphQLRemoteit'
 import { graphQLProxyAccess } from './graphQLProxyAccess'
 
 const answer = (data: object) => ({ data: { data }, headers: {} })
@@ -420,6 +427,34 @@ describe('remote.it’s proxies and exits', () => {
     expect(uiSet).not.toHaveBeenCalled()
   })
 
+  it('their proxies and exits, each with the products whose new devices join it', async () => {
+    request.mockResolvedValue(answer({ remoteitProxies: [] }))
+    await graphQLRemoteitProxies()
+    expect(asked().query).toContain('products { id name }')
+    request.mockResolvedValue(answer({ remoteitExits: [] }))
+    await graphQLRemoteitExits()
+    expect(asked().query).toContain('products { id name }')
+  })
+
+  it('a product whose new devices join a proxy or an exit, added or removed; refused in graphql’s words', async () => {
+    request.mockResolvedValue(answer({ addProxyProduct: { id: 'P' } }))
+    expect(await graphQLSetProxyProduct('P', 'PP', true)).toEqual(answer({ addProxyProduct: { id: 'P' } }))
+    expect(asked().query).toContain('addProxyProduct(proxy: $proxy, productId: $productId)')
+    expect(asked().variables).toEqual({ proxy: 'P', productId: 'PP' })
+    request.mockResolvedValue(answer({ removeProxyProduct: { id: 'P' } }))
+    await graphQLSetProxyProduct('P', 'PP', false)
+    expect(asked().query).toContain('removeProxyProduct(proxy: $proxy, productId: $productId)')
+    request.mockResolvedValue(answer({ addExitProduct: { id: 'pdx1a' } }))
+    await graphQLSetExitProduct('pdx1a', 'PP', true)
+    expect(asked().query).toContain('addExitProduct(exit: $exit, productId: $productId)')
+    expect(asked().variables).toEqual({ exit: 'pdx1a', productId: 'PP' })
+    request.mockResolvedValue(refusal('only the system account’s products join remote.it’s exits'))
+    expect(await graphQLSetExitProduct('pdx1a', 'PP', false)).toEqual({
+      reason: 'Only the system account’s products join remote.it’s exits',
+    })
+    expect(asked().query).toContain('removeExitProduct(exit: $exit, productId: $productId)')
+  })
+
   it('the product a machine registers with: its lifecycle and join keys; none not made yet; UNSUPPORTED without', async () => {
     const product = { id: 'PP', name: 'remote.it proxies', lifecycle: 'ephemeral', joinKeys: [] }
     request.mockResolvedValue(answer({ remoteitProxyProduct: product }))
@@ -495,7 +530,7 @@ describe('its devices’ local networks: the exit’s setting', () => {
   it('remote.it’s exits are read with theirs too — never open —, so adding a machine says what it opens as anywhere', async () => {
     request.mockResolvedValue(answer({ remoteitExits: [] }))
     await graphQLRemoteitExits()
-    expect(asked().query).toMatch(/\busers lan devices \{/)
+    expect(asked().query).toMatch(/\busers lan products \{/)
   })
 })
 

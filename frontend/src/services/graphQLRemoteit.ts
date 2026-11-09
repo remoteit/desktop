@@ -37,18 +37,23 @@ async function read<T>(query: string, marker: string, pick: (data: any) => T) {
   return pick(response.data?.data)
 }
 
+// Each with the products whose new devices join it (§11 wave 2), and its devices.
 export const graphQLRemoteitProxies = () =>
   read<(Proxy & { latitude: number | null; longitude: number | null })[]>(
-    `query RemoteitProxies { remoteitProxies { ${LOCATED} host latitude longitude devices { ${PROXY_DEVICE_FIELDS} } } }`,
+    `query RemoteitProxies {
+      remoteitProxies { ${LOCATED} host latitude longitude products { id name } devices { ${PROXY_DEVICE_FIELDS} } }
+    }`,
     'remoteitProxies',
     data => data?.remoteitProxies ?? []
   )
 
-// Each with its lan — never open on remote.it's, yet asked, so a machine added says what it opens as anywhere else.
+// Each with its lan — never open on remote.it's, yet asked, so a machine added says what it opens as anywhere else —, and
+// the products whose new devices join it.
 export const graphQLRemoteitExits = () =>
   read<(Exit & { latitude: number | null; longitude: number | null })[]>(
     `query RemoteitExits {
-      remoteitExits { ${LOCATED} latitude longitude offered users lan devices { ${EXIT_DEVICE_FIELDS} } }
+      remoteitExits { ${LOCATED} latitude longitude offered users lan products { id name }
+        devices { ${EXIT_DEVICE_FIELDS} } }
     }`,
     'remoteitExits',
     data => data?.remoteitExits ?? []

@@ -43,6 +43,7 @@ export type Exit = {
   access: ExitShare[] // everyone, for whoever may share it; your own share, for someone it is shared with
   tags: ITag[] // for its account and its organization's members
   networks: { id: string; name: string }[] | null // for whoever manages it
+  products?: { id: string; name: string }[] // the products whose new devices join it; remote.it's admin page's
 }
 
 // Every field but the networks: what a list shows of each.
@@ -126,6 +127,21 @@ export const graphQLSetExitActivation = (exit: string, activation: 'auto' | 'adm
   graphQLRequestWithReason(
     ` mutation SetExitActivation($exit: String!, $activation: String!) { setExitActivation(exit: $exit, activation: $activation) { id } }`,
     { exit, activation }
+  )
+
+// A product whose new devices join it (graphql-api docs/PROXY-GROUPS.md §11 wave 2): each device the product registers
+// is added as addExitDevice adds one, and goes into service as its activation says. Removed, the product adds no device
+// more and takes none out. A refusal in graphql's words.
+export const graphQLSetExitProduct = (exit: string, productId: string, joined: boolean) =>
+  graphQLRequestWithReason(
+    joined
+      ? ` mutation AddExitProduct($exit: String!, $productId: String!) {
+          addExitProduct(exit: $exit, productId: $productId) { id }
+        }`
+      : ` mutation RemoveExitProduct($exit: String!, $productId: String!) {
+          removeExitProduct(exit: $exit, productId: $productId) { id }
+        }`,
+    { exit, productId }
   )
 
 // Whether its users reach its devices' local networks: each device it runs on takes it at once, and each added later as
