@@ -49,12 +49,7 @@ import {
   graphQLSetProxyPublicEndpoints,
   graphQLVerifyProxyName,
 } from './graphQLProxy'
-import {
-  graphQLCreateRemoteit,
-  graphQLRemoteitExits,
-  graphQLRemoteitProxyCode,
-  graphQLRenumberProxyDevice,
-} from './graphQLRemoteit'
+import { graphQLCreateRemoteit, graphQLRemoteitExits, graphQLRemoteitProxyCode } from './graphQLRemoteit'
 import { graphQLProxyAccess } from './graphQLProxyAccess'
 
 const answer = (data: object) => ({ data: { data }, headers: {} })
@@ -371,13 +366,11 @@ describe('what an action would do', () => {
 })
 
 describe('a device added', () => {
-  it('to a proxy: one of remote.it’s with the number of its e<number>-r3 name, where given', async () => {
+  it('to a proxy: by its device alone, remote.it’s too, which have no number (§11 wave 2)', async () => {
     request.mockResolvedValue(answer({ addProxyDevice: RUNS }))
-    expect(await graphQLAddProxyDevice('PROXY', 'DEV', 3)).toEqual({ runs: RUNS })
-    expect(asked().variables).toEqual({ proxy: 'PROXY', deviceId: 'DEV', number: 3 })
-    expect(asked().query).toContain('$number: Int')
-    await graphQLAddProxyDevice('PROXY', 'DEV')
+    expect(await graphQLAddProxyDevice('PROXY', 'DEV')).toEqual({ runs: RUNS })
     expect(asked().variables).toEqual({ proxy: 'PROXY', deviceId: 'DEV' })
+    expect(asked().query).not.toContain('number')
   })
 
   it('to an exit; a refusal in graphql’s words', async () => {
@@ -825,17 +818,6 @@ describe('the account’s base for its proxies’ names', () => {
     expect(asked().query).toContain(`removeAccountProxyBase(accountId: $accountId, apply: $apply) ${MOVES}`)
     await proxies.graphQLRemoveAccountProxyBase('ACCOUNT', true)
     expect(asked().variables).toEqual({ accountId: 'ACCOUNT', apply: true })
-  })
-})
-
-describe('renumbering one of remote.it’s machines', () => {
-  it('said, or with apply done; refused in graphql’s words', async () => {
-    const said = { from: 'e1-r3.x', to: 'e3-r3.x', certificate: 'ready', record: true, applied: false }
-    request.mockResolvedValue(answer({ renumberProxyDevice: said }))
-    expect(await graphQLRenumberProxyDevice('E1', 3, false)).toEqual(said)
-    expect(asked().variables).toEqual({ deviceId: 'E1', number: 3, apply: false })
-    request.mockResolvedValue(refusal('e3-r3.x is another device’s'))
-    expect(await graphQLRenumberProxyDevice('E1', 3, true)).toEqual({ reason: 'E3-r3.x is another device’s' })
   })
 })
 

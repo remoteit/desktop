@@ -46,7 +46,7 @@ async function render() {
 
 beforeEach(() => {
   machines.mockReset().mockResolvedValue([
-    { id: 'E1', name: 'e1', proxy: { host: 'e1-r3.solo.r3proxy.com', proxy: { name: 'remote.it pdx1a' } } },
+    { id: 'E1', name: 'e1', proxy: { proxy: { name: 'remote.it pdx1a' } } },
     { id: 'E2', name: 'e2', proxy: null },
   ])
   proxies.mockReset().mockResolvedValue([{ id: 'P1', name: 'remote.it pdx1a' }])
@@ -58,17 +58,17 @@ describe('who visited remote.it’s proxies', () => {
     expect([...document.body.querySelectorAll('[data-option]')].map(each => each.textContent)).toEqual([
       'All of them',
       'remote.it pdx1a',
-      'e1-r3.solo.r3proxy.com (e1)',
+      'e1 (remote.it pdx1a)',
     ])
     expect(scope()).toEqual({ admin: true })
-    expect(devices()).toEqual({ E1: 'e1-r3.solo.r3proxy.com' })
+    expect(devices()).toEqual({ E1: 'e1' })
   })
 
   it('one proxy’s, whichever of its machines served them, each saying which', async () => {
     await render()
     await act(async () => find('[data-option="P1"]').click())
     expect(scope()).toEqual({ admin: true, proxy: 'P1' })
-    expect(devices()).toEqual({ E1: 'e1-r3.solo.r3proxy.com' })
+    expect(devices()).toEqual({ E1: 'e1' })
   })
 
   it('one machine’s, with no machine to say', async () => {

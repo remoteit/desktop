@@ -28,7 +28,6 @@ const proxyRun = (fields: any = {}) =>
     state: 'ACTIVE',
     joining: false,
     checks: [],
-    host: 'e1-r3.solo.r3proxy.com',
     health: { state: 'healthy', since: null, reason: null },
     certificate: 'ready',
     openConnections: null,
@@ -131,7 +130,7 @@ describe('what its machine says of it', () => {
 
 describe('a device of an own proxy: Internet or Local network', () => {
   // An own proxy's device: no host or health of its own, as remote.it's have.
-  const own = (fields: any = {}) => proxyRun({ id: 'PI', name: 'Printer Pi', host: null, health: null, ...fields })
+  const own = (fields: any = {}) => proxyRun({ id: 'PI', name: 'Printer Pi', health: null, ...fields })
   const state = (row: HTMLElement) => row.querySelector('[data-run-state]')?.textContent
 
   it('an Internet proxy’s: reachable from the internet; or not, why in graphql’s words, and out of service', async () => {

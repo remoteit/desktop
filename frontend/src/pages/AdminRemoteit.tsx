@@ -20,16 +20,13 @@ import { graphQLSetProxyActivation } from '../services/graphQLProxy'
 import {
   Location,
   RemoteitMachine,
-  Renumbered,
   graphQLAdoptRemoteitProxy,
   graphQLCreateRemoteit,
   graphQLRemoteitExits,
   graphQLRemoteitMachines,
   graphQLRemoteitProxies,
   graphQLRemoteitProxyCode,
-  graphQLRenumberProxyDevice,
 } from '../services/graphQLRemoteit'
-import { Confirm } from '../components/Confirm'
 import { lanAddWarning, runStateLabel, stillRunsLine } from '../helpers/runsHelper'
 import { RunListItem } from '../components/RunListItem'
 import { RunActions } from '../components/RunActions'
@@ -42,13 +39,13 @@ import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 
 /* remote.it's proxies and exits, for its admins (graphql-api docs/PROXY-GROUPS.md §13): two kinds at a location each —
-   the pdx1a proxy and the pdx1a exit — run by the same machines, remote.it's devices. A tab each: the proxies, the exits,
-   and the machines. A proxy's or an exit's page lists the machines running it, each with its state there and its
-   actions in it alone (saying first what each does), adds a machine to it, sets its activation, and makes a new one at
-   a location. The machines' page shows everything each runs, with the actions on all of it at once — each saying first
-   what it does to each proxy and exit — so taking a machine down never surprises; a machine still in someone's account
-   is moved to remote.it, and the registration code a new machine installs with is shown when asked. English only, as
-   the rest of /admin. */
+   the pdx1a proxy and the pdx1a exit — run by the same machines, remote.it's devices, each shown by its device name
+   (§11 wave 2: no e<n>-r3 name of its own). A tab each: the proxies, the exits, and the machines. A proxy's or an exit's
+   page lists the machines running it, each with its state there and its actions in it alone (saying first what each
+   does), adds a machine to it, sets its activation, and makes a new one at a location. The machines' page shows
+   everything each runs, with the actions on all of it at once — each saying first what it does to each proxy and
+   exit — so taking a machine down never surprises; a machine still in someone's account is moved to remote.it, and the
+   registration code a new machine installs with is shown when asked. English only, as the rest of /admin. */
 
 type Problem = (problem: string) => void
 type Proxies = Exclude<Awaited<ReturnType<typeof graphQLRemoteitProxies>>, 'ERROR' | typeof UNSUPPORTED>
@@ -118,22 +115,19 @@ export const AdminRemoteitProxies: React.FC<{ onProblem: Problem }> = ({ onProbl
               kind="proxy"
               run={device}
               name={proxy.name}
-              title={device.host ? `${device.name || device.id} · ${device.host}` : undefined}
               activation={proxy.activation}
               manage
               onChanged={async (runs, machine) => {
                 setTold(stillRunsLine(t, machine.name, runs))
                 await load()
               }}
-            >
-              {device.host && <Renumber deviceId={device.id} host={device.host} onDone={load} />}
-            </RunListItem>
+            />
           ))}
           <AddMachine
             kind="proxy"
             machines={machines.filter(machine => !machine.proxy)}
-            onAdd={async (deviceId, number) => {
-              const added = await graphQLAddProxyDevice(proxy.id, deviceId, number)
+            onAdd={async deviceId => {
+              const added = await graphQLAddProxyDevice(proxy.id, deviceId)
               if ('reason' in added) onProblem(added.reason || 'The machine was not added.')
               await load()
             }}
@@ -311,8 +305,7 @@ const Machine: React.FC<{ machine: RemoteitMachine; onProblem: Problem; onChange
       <ListItemText
         primary={
           <>
-            {machine.name ?? 'no such device'}
-            {machine.proxy?.host ? ` · ${machine.proxy.host}` : ''} · {online(machine) ? 'online' : 'offline'}
+            {machine.name ?? 'no such device'} · {online(machine) ? 'online' : 'offline'}
             {!online(machine) && machine.lastReported && (
               <>
                 {' '}
@@ -352,103 +345,18 @@ const Machine: React.FC<{ machine: RemoteitMachine; onProblem: Problem; onChange
   )
 }
 
-// The number in one of remote.it's devices' own name, e<number>-r3.
-export const numberOf = (host: string) => Number(/^e(\d+)-r3\./.exec(host)?.[1]) || undefined
-
-/* One of remote.it's devices running a proxy given another number, e<number>-r3: said first — its name before and
-   after (the old one stops reaching it), the certificate it serves — the stage's, for every proxy name, which the new
-   name is one of —, held or still to come, and whether the new name has an address for its proxy's record —, then
-   done. */
-const Renumber: React.FC<{ deviceId: string; host: string; onDone: () => void }> = ({ deviceId, host, onDone }) => {
-  const [number, setNumber] = useState('')
-  const [said, setSaid] = useState<Renumbered | { reason: string }>()
-  const [busy, setBusy] = useState(false)
-  const valid = /^[1-9][0-9]{0,3}$/.test(number) && Number(number) !== numberOf(host)
-
-  const ask = async () => {
-    setBusy(true)
-    setSaid(await graphQLRenumberProxyDevice(deviceId, Number(number), false))
-    setBusy(false)
-  }
-
-  const apply = async () => {
-    setBusy(true)
-    const done = await graphQLRenumberProxyDevice(deviceId, Number(number), true)
-    setBusy(false)
-    if ('reason' in done) return setSaid({ reason: done.reason || 'It was not renumbered: try again.' })
-    setSaid(undefined)
-    setNumber('')
-    onDone()
-  }
-
-  const preview = said && !('reason' in said) ? said : undefined
-  return (
-    <Box display="flex" gap={1} alignItems="center" marginTop={0.5} data-renumber={deviceId}>
-      <TextField
-        size="small"
-        label="New number"
-        placeholder={String((numberOf(host) ?? 0) + 1)}
-        value={number}
-        sx={{ width: 120 }}
-        onChange={event => setNumber(event.target.value.trim())}
-      />
-      <Button size="small" variant="outlined" disabled={busy || !valid} onClick={ask}>
-        Renumber
-      </Button>
-      <Confirm
-        open={!!said}
-        title={preview ? `Rename ${preview.from} to ${preview.to}?` : 'Renumber'}
-        action="Renumber"
-        color="error"
-        disabled={busy || !preview}
-        onConfirm={apply}
-        onDeny={() => setSaid(undefined)}
-      >
-        {said && 'reason' in said ? (
-          <Notice severity="error" fullWidth>
-            {said.reason || 'What it would do could not be said: try again.'}
-          </Notice>
-        ) : (
-          preview && (
-            <Typography variant="body2" component="div" data-renumber-says>
-              <p>
-                {preview.from} stops reaching it: {preview.to} does.
-              </p>
-              <p>
-                {preview.certificate === 'ready'
-                  ? `Its certificate, remote.it's for every proxy name, covers ${preview.to} already.`
-                  : "remote.it's certificate for every proxy name is not issued yet: until it is, its https names fail."}
-              </p>
-              <p>
-                {preview.record === null
-                  ? "This stage does not manage the proxies' DNS."
-                  : preview.record
-                  ? `${preview.to} has an address: it stays in its proxy's record.`
-                  : `${preview.to} has no address yet: it is left out of its proxy's record until it has one.`}
-              </p>
-            </Typography>
-          )
-        )}
-      </Confirm>
-    </Box>
-  )
-}
-
-// Machines to add to a proxy or an exit: those running none of its kind. One of remote.it's proxies' machines takes
-// e<number>-r3 as its own name — the next free one, or the number given. An exit whose users reach its devices' local
+// Machines to add to a proxy or an exit: those running none of its kind. An exit whose users reach its devices' local
 // networks — never remote.it's — opens each machine's added: said before, as wherever a device is added to an exit.
 const AddMachine: React.FC<{
   kind: 'proxy' | 'exit'
   lan?: boolean
   machines: RemoteitMachine[]
-  onAdd: (deviceId: string, number?: number) => Promise<void>
+  onAdd: (deviceId: string) => Promise<void>
 }> = ({ kind, lan, machines, onAdd }) => {
   const { t } = useTranslation()
   const [chosen, setChosen] = useState('')
-  const [number, setNumber] = useState('')
   const [busy, setBusy] = useState(false)
   if (!machines.length) return null
-  const numberValid = !number || /^[1-9][0-9]{0,3}$/.test(number)
   const picked = machines.find(each => each.id === chosen)
   return (
     <ListItem>
@@ -467,26 +375,14 @@ const AddMachine: React.FC<{
             </MenuItem>
           ))}
         </TextField>
-        {kind === 'proxy' && (
-          <TextField
-            size="small"
-            label="e<number>-r3"
-            placeholder="next free"
-            value={number}
-            error={!numberValid}
-            sx={{ width: 130 }}
-            onChange={event => setNumber(event.target.value.trim())}
-          />
-        )}
         <Button
           size="small"
           variant="contained"
-          disabled={busy || !chosen || !numberValid}
+          disabled={busy || !chosen}
           onClick={async () => {
             setBusy(true)
-            await onAdd(chosen, number ? Number(number) : undefined)
+            await onAdd(chosen)
             setChosen('')
-            setNumber('')
             setBusy(false)
           }}
         >

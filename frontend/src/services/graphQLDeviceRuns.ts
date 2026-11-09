@@ -40,7 +40,6 @@ export type ProxyOpenConnections = {
 export type ProxyDrain = { safeToStop: boolean; reason: string; dnsClearAt: string | null; deadline: string | null }
 
 export type ProxyDevice = Run & {
-  host: string | null // one of remote.it's devices' own name; none on an own proxy's device
   drainMaxWaitMinutes: number | null
   health: { state: string; since: string | null; reason: string | null } | null // none for an own proxy's
   certificate: 'ready' | 'pending' // the stage's, for every proxy name: held, or not issued yet
@@ -92,7 +91,7 @@ export type DeviceActionEffect = {
 }
 
 const RUN_FIELDS = 'id name state joining activeSince drainingSince disabled checks { name passed pending reason }'
-export const PROXY_DEVICE_FIELDS = `${RUN_FIELDS} host drainMaxWaitMinutes health { state since reason } certificate
+export const PROXY_DEVICE_FIELDS = `${RUN_FIELDS} drainMaxWaitMinutes health { state since reason } certificate
   openConnections { https tcp udp exit total reported } drain { safeToStop reason dnsClearAt deadline }
   privateAddress publicAddress network reachable reachReason`
 export const EXIT_DEVICE_FIELDS = `${RUN_FIELDS} established offering refusal health lan lanReason`
@@ -196,16 +195,15 @@ export function graphQLRunAction(
   )
 }
 
-// A device added to a proxy: it joins out of service and goes into service as the proxy's activation says. One of
-// remote.it's devices takes e<number>-r3 as its own name, the next free one when none is given. A local proxy takes
-// only devices on its network — its first device's —: one on another is refused, in graphql's words.
-export const graphQLAddProxyDevice = (proxy: string, deviceId: string, number?: number) =>
+// A device added to a proxy: it joins out of service and goes into service as the proxy's activation says. A local
+// proxy takes only devices on its network — its first device's —: one on another is refused, in graphql's words.
+export const graphQLAddProxyDevice = (proxy: string, deviceId: string) =>
   change(
     'addProxyDevice',
-    ` mutation AddProxyDevice($proxy: String!, $deviceId: String!, $number: Int) {
-      addProxyDevice(proxy: $proxy, deviceId: $deviceId, number: $number) { ${RUNS_FIELDS} }
+    ` mutation AddProxyDevice($proxy: String!, $deviceId: String!) {
+      addProxyDevice(proxy: $proxy, deviceId: $deviceId) { ${RUNS_FIELDS} }
     }`,
-    { proxy, deviceId, number }
+    { proxy, deviceId }
   )
 
 // A device added to an exit: it joins out of service and goes into service as the exit's activation says. It takes the

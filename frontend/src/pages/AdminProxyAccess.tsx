@@ -6,7 +6,7 @@ import { SelectSetting } from '../components/SelectSetting'
 
 /* Who used remote.it's proxies (graphql adminProxyAccess): every visitor connection, failures and refusals with their
    reasons, the address whole — one proxy's, whichever of its machines served it; one machine's; or all of them, each
-   saying the machine that served it. Admins only; this page's own words English only, as the rest of /admin. */
+   saying the machine that served it, by its device name. Admins only; this page's own words English only, as the rest of /admin. */
 export const AdminProxyAccess: React.FC = () => {
   const [machines, setMachines] = useState<RemoteitMachine[]>([])
   const [proxies, setProxies] = useState<{ id: string; name: string }[]>([])
@@ -23,7 +23,7 @@ export const AdminProxyAccess: React.FC = () => {
   }, [])
 
   const device = chosen.startsWith('device:') ? chosen.slice('device:'.length) : undefined
-  const names = Object.fromEntries(machines.map(m => [m.id, m.proxy?.host || m.name || m.id]))
+  const names = Object.fromEntries(machines.map(m => [m.id, m.name || m.id]))
 
   return (
     <List>
@@ -37,7 +37,7 @@ export const AdminProxyAccess: React.FC = () => {
           ...proxies.map(p => ({ key: p.id, name: p.name })),
           ...machines.map(m => ({
             key: `device:${m.id}`,
-            name: `${m.proxy?.host || m.proxy?.proxy?.name || m.id} (${m.name ?? m.id})`,
+            name: m.proxy?.proxy?.name ? `${m.name ?? m.id} (${m.proxy.proxy.name})` : m.name ?? m.id,
           })),
         ]}
         onChange={setChosen}

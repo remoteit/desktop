@@ -89,32 +89,3 @@ export const graphQLAdoptRemoteitProxy = (deviceId: string) =>
   graphQLRequestWithReason(` mutation AdoptRemoteitProxy($deviceId: String!) { adoptRemoteitProxy(deviceId: $deviceId) }`, {
     deviceId,
   })
-
-/* One of remote.it's devices running a proxy given another number: its own name e<number>-r3 — the old one stops
-   reaching it —, the certificate it serves, the stage's for every proxy name, which a number changes nothing of (ready,
-   or pending: not issued yet), and whether the new name has an address for its proxy's record (none: left out of it
-   until it has; null where the stage does not manage the proxies' DNS). Said first, done with apply. */
-export type Renumbered = {
-  from: string
-  to: string
-  certificate: 'ready' | 'pending'
-  record: boolean | null
-  applied: boolean
-}
-
-export async function graphQLRenumberProxyDevice(
-  deviceId: string,
-  number: number,
-  apply: boolean
-): Promise<Renumbered | { reason: string }> {
-  const result = await graphQLRequestWithReason(
-    ` mutation RenumberProxyDevice($deviceId: String!, $number: Int!, $apply: Boolean) {
-      renumberProxyDevice(deviceId: $deviceId, number: $number, apply: $apply) { from to certificate record applied }
-    }`,
-    { deviceId, number, apply }
-  )
-  if (result === 'ERROR') return { reason: '' }
-  if ('reason' in result) return result
-  return result.data?.data?.renumberProxyDevice ?? { reason: '' }
-}
-
