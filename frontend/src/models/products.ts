@@ -12,6 +12,8 @@ import {
   graphQLUpdateDeviceProduct,
   graphQLRotateDeviceProductCode,
   graphQLRevokeDeviceProductCode,
+  ProductRegistrationService,
+  ProductServiceInput,
 } from '../services/graphQLDeviceProducts'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { State } from '../store'
@@ -20,6 +22,7 @@ export interface IProductService {
   id: string
   name: string
   type: { id: number; name: string } | null
+  host: string | null
   port: number
   enabled: boolean
 }
@@ -241,7 +244,7 @@ export default createModel<RootModel>()({
     },
 
     async addService(
-      { productId, input }: { productId: string; input: { name: string; type: string; port: number; enabled: boolean } },
+      { productId, input }: { productId: string; input: ProductServiceInput },
       state
     ) {
       const accountId = selectActiveAccountId(state)
@@ -266,7 +269,7 @@ export default createModel<RootModel>()({
       input: {
         platform: number
         tags?: string[]
-        services: { application: number; name?: string; port?: number; enabled?: boolean }[]
+        services: ProductRegistrationService[]
       },
       state
     ) {

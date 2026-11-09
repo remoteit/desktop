@@ -40,6 +40,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
       services: device.services.map(s => ({
         application: s.typeID,
         name: s.name,
+        host: s.host,
         port: s.port,
         enabled: s.enabled,
       })),
