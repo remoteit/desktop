@@ -23,7 +23,7 @@ export interface IProductService {
   name: string
   type: { id: number; name: string } | null
   host: string | null
-  port: number
+  port: number | null
   enabled: boolean
 }
 

@@ -108,7 +108,9 @@ export const productServiceDetailAttributes: ProductServiceAttribute[] = [
   new ProductServiceAttribute({
     id: 'productServiceHostDetail',
     label: 'Service Host',
-    value: ({ productService }: IDataOptions) => productService?.host || IP_PRIVATE,
+    // The API withholds host and port together, and a port it shows is never null.
+    value: ({ productService }: IDataOptions) =>
+      productService?.port == null ? undefined : productService.host || IP_PRIVATE,
   }),
   new ProductServiceAttribute({
     id: 'productServicePortDetail',
