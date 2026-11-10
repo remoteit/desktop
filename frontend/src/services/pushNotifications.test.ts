@@ -62,17 +62,18 @@ afterEach(() => {
 })
 
 describe('tap routing', () => {
-  it('opens a running app on the page with what was tapped, and keeps both for a sign-in reload', async () => {
+  it('opens the page with what was tapped', async () => {
     await pushNotifications.listen()
     listeners.pushNotificationActionPerformed({
       actionId: 'tap',
       notification: { title: 'pi went offline', body: 'Linux', data: { url: '/devices/abc', time: TIME } },
     })
 
-    const tap = { title: 'pi went offline', body: 'Linux', time: Date.parse(TIME) }
-    expect(open).toHaveBeenCalledWith('/devices/abc', tap)
-    expect(window.localStorage.getItem('initialRoute')).toBe('/devices/abc')
-    expect(JSON.parse(window.localStorage.getItem('initialNotice')!)).toEqual(tap)
+    expect(open).toHaveBeenCalledWith('/devices/abc', {
+      title: 'pi went offline',
+      body: 'Linux',
+      time: Date.parse(TIME),
+    })
   })
 
   it('reads what was tapped from the data on Android, which hands over nothing else', async () => {
@@ -96,27 +97,12 @@ describe('tap routing', () => {
     expect(open).toHaveBeenCalledWith('/devices/abc', { title: undefined, body: undefined, time: undefined })
   })
 
-  it('signed out, routes only and leaves the notice for the page after sign-in', async () => {
-    state.auth.user = undefined
-    await pushNotifications.listen()
-    listeners.pushNotificationActionPerformed({
-      actionId: 'tap',
-      notification: { title: 'pi went offline', data: { url: '/devices/abc' } },
-    })
-
-    expect(open).not.toHaveBeenCalled()
-    expect(set).toHaveBeenCalledWith({ redirect: '/devices/abc' })
-    expect(JSON.parse(window.localStorage.getItem('initialNotice')!)).toMatchObject({ title: 'pi went offline' })
-  })
-
   it('ignores a url that is not an app path', async () => {
     await pushNotifications.listen()
     listeners.pushNotificationActionPerformed({ actionId: 'tap', notification: { data: { url: 'https://x.test' } } })
     listeners.pushNotificationActionPerformed({ actionId: 'tap', notification: { data: {} } })
 
     expect(open).not.toHaveBeenCalled()
-    expect(window.localStorage.getItem('initialRoute')).toBeNull()
-    expect(window.localStorage.getItem('initialNotice')).toBeNull()
   })
 
   it('attaches the listeners once however often it is asked', async () => {

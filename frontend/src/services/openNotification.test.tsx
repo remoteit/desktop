@@ -5,12 +5,16 @@ const set = vi.hoisted(() => vi.fn())
 
 vi.mock('../store', () => ({ store: { dispatch: { ui: { set } } } }))
 
-import { openNotification, restoreNotice } from './openNotification'
+import { openNotification, showPendingNotice } from './openNotification'
 
 const NOW = Date.parse('2026-11-09T12:00:00Z')
+const KEY = 'app:pendingNotification'
+
+const notices = () => set.mock.calls.filter(([value]) => 'noticeMessage' in value).map(([value]) => value.noticeMessage)
 
 beforeEach(() => {
   vi.clearAllMocks()
+  window.localStorage.clear()
   vi.useFakeTimers()
   vi.setSystemTime(NOW)
 })
@@ -20,42 +24,47 @@ afterEach(() => {
 })
 
 describe('openNotification', () => {
-  it('opens the page with what was tapped and how long ago it happened', () => {
+  it('opens the page now and shows what was tapped, and how long ago, once the Router opens it', () => {
     openNotification('/devices/abc', { title: 'pi went offline', body: 'Linux', time: NOW - 40 * 60 * 1000 })
 
-    const [{ redirect, noticeMessage }] = set.mock.calls[0]
-    expect(redirect).toBe('/devices/abc')
-    expect(renderToStaticMarkup(noticeMessage)).toBe(
-      '<strong>pi went offline</strong><em>Linux</em><em>40 minutes ago</em>'
-    )
+    expect(set).toHaveBeenCalledWith({ redirect: '/devices/abc' })
+    expect(notices()).toEqual([])
+
+    expect(showPendingNotice('/devices/abc')).toBe('/devices/abc')
+    expect(notices().map(notice => renderToStaticMarkup(notice))).toEqual([
+      '<strong>pi went offline</strong><em>Linux</em><em>40 minutes ago</em>',
+    ])
+    expect(window.localStorage.getItem(KEY)).toBeNull()
   })
 
-  it('leaves out the lines it has nothing for', () => {
+  it('survives a reload: a cold start opens whatever was tapped', () => {
+    openNotification('/devices/abc', { title: 'pi came online', time: NOW - 2 * 60 * 60 * 1000 })
+    set.mockClear()
+
+    expect(showPendingNotice()).toBe('/devices/abc')
+    expect(renderToStaticMarkup(notices()[0])).toBe('<strong>pi came online</strong><em>2 hours ago</em>')
+  })
+
+  it('leaves a tap for another page alone', () => {
     openNotification('/devices/abc', { title: 'pi went offline' })
 
-    expect(renderToStaticMarkup(set.mock.calls[0][0].noticeMessage)).toBe('<strong>pi went offline</strong>')
+    expect(showPendingNotice('/devices/other')).toBeUndefined()
+    expect(notices()).toEqual([])
+    expect(window.localStorage.getItem(KEY)).not.toBeNull()
   })
 
-  it('only opens the page when there is no title, keeping any notice already showing', () => {
+  it('opens the page without a notice when there is no title, keeping any notice already showing', () => {
     openNotification('/devices/abc', {})
 
-    expect(set).toHaveBeenCalledWith({ redirect: '/devices/abc' })
-  })
-})
-
-describe('restoreNotice', () => {
-  it('shows a saved notice', () => {
-    restoreNotice(JSON.stringify({ title: 'pi came online', time: NOW - 2 * 60 * 60 * 1000 }))
-
-    expect(renderToStaticMarkup(set.mock.calls[0][0].noticeMessage)).toBe(
-      '<strong>pi came online</strong><em>2 hours ago</em>'
-    )
+    expect(showPendingNotice()).toBe('/devices/abc')
+    expect(notices()).toEqual([])
   })
 
-  it('shrugs off a saved notice it cannot read', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  it('drops a saved tap it cannot read', () => {
+    window.localStorage.setItem(KEY, '{')
 
-    expect(() => restoreNotice('{')).not.toThrow()
-    expect(set).not.toHaveBeenCalled()
+    expect(showPendingNotice()).toBeUndefined()
+    expect(notices()).toEqual([])
+    expect(window.localStorage.getItem(KEY)).toBeNull()
   })
 })
