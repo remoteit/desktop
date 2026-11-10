@@ -44,7 +44,7 @@
     "@capacitor/android": "^7.6.9",
     "@capacitor/app": "^7.0.1",
     "@capacitor/app-launcher": "^7.0.1",
-    "@capacitor/assets": "^3.0.5",
+    "@capacitor/assets": "^4.0.0",
     "@capacitor/browser": "^7.0.1",
     "@capacitor/cli": "^7.6.9",
     "@capacitor/clipboard": "^7.0.1",
