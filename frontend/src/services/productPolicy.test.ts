@@ -17,14 +17,12 @@ import {
   graphQLProductProxies,
   graphQLProductSyncPreview,
   graphQLSetDeviceProduct,
-  graphQLSetDeviceProductExit,
   graphQLSetDeviceProductSetting,
   graphQLSetDeviceProductSync,
   graphQLSetDevicesProduct,
   lockOf,
   networkOf,
   previewOf,
-  productExit,
   productPolicyServed,
   removes,
   resetProductPolicy,
@@ -84,10 +82,6 @@ const WAVE4: Desc = {
     removeDeviceProductNetwork: {
       type: object('DeviceProduct'),
       args: { productId: nonNull(scalar('ID')), networkId: nonNull(scalar()) },
-    },
-    setDeviceProductExit: {
-      type: object('DeviceProduct'),
-      args: { productId: nonNull(scalar('ID')), exit: scalar() },
     },
     addProxyProduct: { type: object('Proxy'), args: { proxy: nonNull(scalar()), productId: nonNull(scalar('ID')) } },
     removeProxyProduct: { type: object('Proxy'), args: { proxy: nonNull(scalar()), productId: nonNull(scalar('ID')) } },
@@ -185,7 +179,6 @@ describe('whether the API serves product policy', () => {
       product: false,
       settings: false,
       networks: false,
-      exit: false,
       proxies: false,
       devices: false,
       bulk: false,
@@ -201,7 +194,6 @@ describe('whether the API serves product policy', () => {
       product: true,
       settings: true,
       networks: true,
-      exit: true,
       proxies: true,
       devices: true,
       bulk: true,
@@ -285,13 +277,11 @@ describe('calls made as the schema declares them', () => {
     expect(uiSet).not.toHaveBeenCalled()
   })
 
-  it('a product’s setting, null unsetting it; its exit, null leaving it to each device', async () => {
+  it('a product’s setting, null unsetting it', async () => {
     serve(WAVE4, () => ({ ok: true }))
     await graphQLSetDeviceProductSetting('P1', 'subnet', null)
     expect(asked(request.mock.calls.length - 1).variables).toEqual({ productId: 'P1', name: 'subnet', value: null })
     expect(asked(request.mock.calls.length - 1).query).toContain('$value: Any')
-    await graphQLSetDeviceProductExit('P1', null)
-    expect(asked(request.mock.calls.length - 1).variables).toEqual({ productId: 'P1', exit: null })
   })
 
   it('nothing is sent for a call the API does not have', async () => {
@@ -369,7 +359,7 @@ describe('reads', () => {
               {
                 id: 'P1',
                 sync: 'SYNCED',
-                settings: [{ name: 'exit', value: { via: 'xoffice' } }],
+                settings: [{ name: 'subnet', value: true }],
                 networks: [{ id: 'N1', name: 'Plant', role: 'INITIATOR' }],
                 devices: [{ id: 'D1', name: 'pump-1', state: 'active' }],
               },
@@ -384,13 +374,10 @@ describe('reads', () => {
     expect(call.variables).toEqual({ id: 'P1', accountId: 'A1' })
     expect(policy).toEqual({
       sync: 'synced',
-      settings: [{ name: 'exit', value: { via: 'xoffice' } }],
+      settings: [{ name: 'subnet', value: true }],
       networks: [{ id: 'N1', name: 'Plant', role: 'INITIATOR' }],
       devices: [{ id: 'D1', name: 'pump-1', state: 'active' }],
     })
-    expect(productExit((policy as any).settings)).toBe('xoffice')
-    expect(productExit([{ name: 'exit', value: 'xpdx' }])).toBe('xpdx')
-    expect(productExit([])).toBeNull()
   })
 
   it('a device: its product with its level and networks, where it came from, and what the product gives it', async () => {

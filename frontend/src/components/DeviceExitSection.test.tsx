@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { DeviceExit } from '../services/graphQLExits'
 
-const { deviceExit, offered, protect, setExit, usageHint, exitSetting } = vi.hoisted(() => ({
+const { deviceExit, offered, protect, setExit, usageHint } = vi.hoisted(() => ({
   deviceExit: vi.fn(async (_deviceId: string) => null as any),
   offered: vi.fn(async (_deviceId?: string) => [] as any),
   protect: vi.fn(async (_deviceId: string) => null as any),
@@ -12,10 +12,7 @@ const { deviceExit, offered, protect, setExit, usageHint, exitSetting } = vi.hoi
   usageHint: vi.fn((_accountId: string | undefined, _kind: string, shown: boolean) =>
     shown ? { text: '8.2 of 10 GB this month', over: false } : null
   ),
-  // The device's exit setting as Device.settings has it: its product's lock, where its product holds it.
-  exitSetting: vi.fn((_name: string) => undefined as any),
 }))
-vi.mock('../hooks/useDeviceSettings', () => ({ useDeviceSettings: () => ({ setting: exitSetting }) }))
 vi.mock('../services/graphQLExits', () => ({
   graphQLDeviceExit: deviceExit,
   graphQLDeviceProtect: protect,
@@ -54,8 +51,8 @@ vi.mock('./ListItemSetting', () => ({
 // The choice: its value, whether it is disabled, and each option a button that picks it — clickable even while
 // disabled, so the component's own guard is what is tested.
 vi.mock('./SelectSetting', () => ({
-  SelectSetting: ({ disabled, value, values, helpMessage, onChange }: any) => (
-    <div data-select data-value={value} data-disabled={String(!!disabled)} data-help={helpMessage}>
+  SelectSetting: ({ disabled, value, values, onChange }: any) => (
+    <div data-select data-value={value} data-disabled={String(!!disabled)}>
       {values.map((each: any) => (
         <button key={each.key} data-choice={each.key} onClick={() => onChange(each.key)}>
           {each.name}
@@ -133,7 +130,6 @@ beforeEach(() => {
   protect.mockReset().mockResolvedValue(null)
   setExit.mockReset().mockResolvedValue({})
   usageHint.mockClear()
-  exitSetting.mockReset().mockReturnValue(undefined)
 })
 
 describe('the exit a device’s traffic goes out through', () => {
@@ -439,23 +435,6 @@ describe('who chose the exit, and the machine’s policy', () => {
     page = await render()
     expect(page.textContent).toContain('Set by ann@example.com')
     expect(page.textContent).toContain('Pinned by this machine’s administrator to xoffice')
-    expect(select(page).dataset.disabled).toBe('false')
-  })
-
-  it('locks the choice where its product holds it, saying so', async () => {
-    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office) }))
-    exitSetting.mockReturnValue({ name: 'exit', locked: { product: 'Pumps', level: 'enforced', text: null } })
-    let page = await render()
-    expect(exitSetting).toHaveBeenCalledWith('exit')
-    expect(select(page).dataset.disabled).toBe('true')
-    expect(select(page).dataset.help).toBe('Managed by product Pumps (enforced)')
-
-    exitSetting.mockReturnValue({ name: 'exit', locked: { product: 'Pumps', level: 'synced', text: null } })
-    page = await render()
-    expect(select(page).dataset.help).toBe('Set by its product Pumps')
-
-    exitSetting.mockReturnValue({ name: 'exit', locked: null })
-    page = await render()
     expect(select(page).dataset.disabled).toBe('false')
   })
 

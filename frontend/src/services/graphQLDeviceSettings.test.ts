@@ -97,13 +97,12 @@ describe('a device’s settings', () => {
     expect(settingLocked((read as any)[0])).toBe(true)
     expect(settingLocked({ ...subnet, fromProduct: true, locked: null } as any)).toBe(false)
 
-    // Protect is never a product's: whatever graphql says of it, it is not shown as held.
-    const protect = { ...held, name: 'protect' }
-    request.mockResolvedValue({
-      data: { data: { login: { device: [{ id: 'D', settings: [protect] }] } } },
-      headers: {},
-    })
-    expect(await graphQLDeviceSettings('D')).toEqual([{ ...protect, fromProduct: false, locked: null }])
+    // The exit and Protect are never a product's: whatever graphql says of them, they are not shown as held.
+    for (const name of ['exit', 'protect']) {
+      const own = { ...held, name }
+      request.mockResolvedValue({ data: { data: { login: { device: [{ id: 'D', settings: [own] }] } } }, headers: {} })
+      expect(await graphQLDeviceSettings('D')).toEqual([{ ...own, fromProduct: false, locked: null }])
+    }
     request.mockClear()
 
     request.mockResolvedValue({

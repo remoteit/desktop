@@ -1,14 +1,15 @@
 import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
-import { NetworkDeviceRole } from './graphQLDeviceNetworks'
+import type { NetworkDeviceRole } from './graphQLDeviceNetworks'
 
 /* Product policy for Control Link devices (graphql-api docs/PROXY-GROUPS.md §11, "Wave 4: product policy"). A product
-   holds settings and grants — networks, the exit its devices go out through, proxies, tags — and a sync level that says
-   what its devices get of them: template (copied at registration, then the device's own; the default), synced (locked
-   and following the product, the device free to add its own) or enforced (the device exactly the product). A device
-   belongs to a product now (Device.product), apart from the one it registered with (Device.productOrigin). Changing a
-   device's product, or a product's level, is previewed first: what each device gets, what becomes locked, what it
-   loses, and what becomes its own.
+   holds settings and grants — networks, proxies, tags — and a sync level that says what its devices get of them:
+   template (copied at registration, then the device's own; the default), synced (locked and following the product, the
+   device free to add its own) or enforced (the device exactly the product). The exit a device goes out through, and
+   Protect, are never a product's: each device's own at every level. A device belongs to a product now
+   (Device.product), apart from the one it registered with (Device.productOrigin). Changing a device's product, or a
+   product's level, is previewed first: what each device gets, what becomes locked, what it loses, and what becomes its
+   own.
 
    Offered only where the API has it, read from its schema once. graphql's half was built beside this one, so the
    schema also says how each call is made: the arguments' types, and which fields an answer has — an item marked
@@ -19,7 +20,7 @@ import { NetworkDeviceRole } from './graphQLDeviceNetworks'
 export type ProductSync = 'template' | 'synced' | 'enforced'
 export const PRODUCT_SYNCS: ProductSync[] = ['template', 'synced', 'enforced']
 
-// tag, network, service, setting, exit or proxy: as graphql names it, for the preview to group by.
+// tag, network, service, setting or proxy: as graphql names it, for the preview to group by.
 export type ProductItem = { kind: string; name: string }
 
 // What a change of product, or of a product's level, does to one device: the items it is given, those that become
@@ -68,18 +69,16 @@ export type ProductPolicyServed = {
   product: boolean
   settings: boolean
   networks: boolean
-  exit: boolean
   proxies: boolean
   devices: boolean
   bulk: boolean
 }
 
-const NOTHING: ProductPolicyServed = {
+export const NOTHING_SERVED: ProductPolicyServed = {
   device: false,
   product: false,
   settings: false,
   networks: false,
-  exit: false,
   proxies: false,
   devices: false,
   bulk: false,
@@ -161,7 +160,7 @@ export function parseServed(schema: Schema): ProductPolicyServed {
     has(schema, 'DeviceProduct', 'sync') &&
     has(schema, 'Query', 'productSyncPreview') &&
     has(schema, 'Mutation', 'setDeviceProductSync')
-  if (!device && !product) return NOTHING
+  if (!device && !product) return NOTHING_SERVED
   return {
     device,
     product,
@@ -170,7 +169,6 @@ export function parseServed(schema: Schema): ProductPolicyServed {
       product &&
       has(schema, 'DeviceProduct', 'networks') &&
       has(schema, 'Mutation', 'addDeviceProductNetwork', 'removeDeviceProductNetwork'),
-    exit: product && has(schema, 'Mutation', 'setDeviceProductExit'),
     proxies:
       product && has(schema, 'Proxy', 'products') && has(schema, 'Mutation', 'addProxyProduct', 'removeProxyProduct'),
     devices: product && has(schema, 'DeviceProduct', 'devices'),
@@ -187,7 +185,7 @@ function read(): Promise<Read> {
       const first = await readTypes(FIRST)
       if (first === 'ERROR') {
         reading = undefined
-        return { served: NOTHING, schema: {} }
+        return { served: NOTHING_SERVED, schema: {} }
       }
       const served = parseServed(first)
       if (!served.device && !served.product) return { served, schema: first }
@@ -202,7 +200,7 @@ function read(): Promise<Read> {
       const second = await readTypes(answered)
       if (second === 'ERROR') {
         reading = undefined
-        return { served: NOTHING, schema: {} }
+        return { served: NOTHING_SERVED, schema: {} }
       }
       return { served, schema: { ...first, ...second } }
     })()
@@ -395,28 +393,17 @@ export async function graphQLProductSyncPreview(productId: string, sync: Product
 
 // Refused without confirm where anything is removed, in graphql's words.
 export const graphQLSetDeviceProductSync = (productId: string, sync: ProductSync, confirm: boolean) =>
-  ask('Mutation', 'setDeviceProductSync', { productId, sync, confirm }, () => true)
+  ask<true>('Mutation', 'setDeviceProductSync', { productId, sync, confirm }, () => true)
 
 // null unsets it: the devices choose it themselves again.
 export const graphQLSetDeviceProductSetting = (productId: string, name: string, value: any) =>
-  ask('Mutation', 'setDeviceProductSetting', { productId, name, value }, () => true)
+  ask<true>('Mutation', 'setDeviceProductSetting', { productId, name, value }, () => true)
 
 export const graphQLAddDeviceProductNetwork = (productId: string, networkId: string, role: NetworkDeviceRole) =>
-  ask('Mutation', 'addDeviceProductNetwork', { productId, networkId, role }, () => true)
+  ask<true>('Mutation', 'addDeviceProductNetwork', { productId, networkId, role }, () => true)
 
 export const graphQLRemoveDeviceProductNetwork = (productId: string, networkId: string) =>
-  ask('Mutation', 'removeDeviceProductNetwork', { productId, networkId }, () => true)
-
-// The exit its devices go out through, by its id; null leaves it to each device.
-export const graphQLSetDeviceProductExit = (productId: string, exit: string | null) =>
-  ask('Mutation', 'setDeviceProductExit', { productId, exit }, () => true)
-
-// The exit a product sets, from its settings: an exit's id, or { via } as a device's exit setting holds it.
-export function productExit(settings?: ProductSetting[] | null): string | null {
-  const value = settings?.find(setting => setting.name === 'exit')?.value
-  if (!value) return null
-  return typeof value === 'string' ? value : value.via ?? value.id ?? null
-}
+  ask<true>('Mutation', 'removeDeviceProductNetwork', { productId, networkId }, () => true)
 
 export type ProxyGrant = { id: string; name: string; joined: boolean }
 
@@ -499,10 +486,10 @@ export async function graphQLDeviceProductPreview(deviceId: string, productId: s
 // productId null detaches. Refused without confirm where anything would be removed, and where the lifecycle differs
 // and the device's daemon cannot move its key: in graphql's words.
 export const graphQLSetDeviceProduct = (deviceId: string, productId: string | null, confirm: boolean) =>
-  ask('Mutation', 'setDeviceProduct', { deviceId, productId, confirm }, () => true)
+  ask<true>('Mutation', 'setDeviceProduct', { deviceId, productId, confirm }, () => true)
 
 export const graphQLSetDevicesProduct = (deviceIds: string[], productId: string | null, confirm: boolean) =>
-  ask('Mutation', 'setDevicesProduct', { deviceIds, productId, confirm }, () => true)
+  ask<true>('Mutation', 'setDevicesProduct', { deviceIds, productId, confirm }, () => true)
 
 // The account's products with their levels, to choose one to attach a device to.
 export async function graphQLProductChoices(

@@ -68,12 +68,6 @@ export function itemCount(t: TFunction, kind: string, count: number): string {
         defaultValue_one: '{{count}} setting',
         defaultValue_other: '{{count}} settings',
       })
-    case 'exit':
-      return t('productPolicy.exitCount', {
-        count,
-        defaultValue_one: '{{count}} exit',
-        defaultValue_other: '{{count}} exits',
-      })
     case 'proxy':
       return t('productPolicy.proxyCount', {
         count,
@@ -100,8 +94,6 @@ export function itemName(t: TFunction, item: ProductItem): string {
       return t('productPolicy.serviceItem', 'Service {{name}}', { name: item.name })
     case 'setting':
       return t('productPolicy.settingItem', 'Setting {{name}}', { name: item.name })
-    case 'exit':
-      return t('productPolicy.exitItem', 'Exit {{name}}', { name: item.name })
     case 'proxy':
       return t('productPolicy.proxyItem', 'Proxy {{name}}', { name: item.name })
     default:

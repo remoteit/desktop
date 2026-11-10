@@ -10,7 +10,6 @@ import { lockOf, settingPolicyFields, SettingLock } from './productPolicy'
    device's product sets is marked so, and locked under a synced or enforced product. */
 
 export type DeviceSettingName =
-  | 'exit' // the exit its traffic goes out through: set by its own mutation (setDeviceExit), read here for its lock
   | 'exit_node'
   | 'subnet'
   | 'console'
@@ -42,8 +41,9 @@ export type DeviceSetting = {
 
 const FIELDS = 'name value at by onDevice control'
 
-// Settings no product sets: Protect is each device's own at every level, so never shown as its product's.
-const NOT_PRODUCTS = ['protect']
+// Settings no product sets: the exit a device goes out through, and Protect, are each device's own at every level, so
+// never shown as its product's.
+const NOT_PRODUCTS = ['exit', 'protect']
 
 // A setting as read: its product's mark and lock, where the API says them, in one shape.
 function parsed(setting: any): DeviceSetting {
