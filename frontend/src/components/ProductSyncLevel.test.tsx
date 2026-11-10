@@ -37,8 +37,10 @@ vi.mock('./Confirm', () => ({
     ) : null,
 }))
 vi.mock('./ProductPolicyPreview', () => ({
-  ProductPolicyPreview: ({ preview }: any) => (
-    <div data-preview>{preview === undefined ? 'reading' : 'reason' in preview ? preview.reason : preview.length}</div>
+  ProductPolicyPreview: ({ preview, summary }: any) => (
+    <div data-preview data-summary={summary ?? ''}>
+      {preview === undefined ? 'reading' : 'reason' in preview ? preview.reason : preview.length}
+    </div>
   ),
 }))
 vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
@@ -73,8 +75,17 @@ const click = async (page: HTMLElement, selector: string) =>
   act(async () => (page.querySelector(selector) as HTMLElement).click())
 const confirm = (page: HTMLElement) => page.querySelector('[data-confirm]') as HTMLElement | null
 
-const losing = [previewOf({ deviceId: 'D1', removed: [{ kind: 'tag', name: 'mine' }] })]
-const locking = [previewOf({ deviceId: 'D1', locked: [{ kind: 'tag', name: 'prod' }] })]
+// As graphql's productSyncPreview answers: its summary, and each device it changes.
+const losing = {
+  summary: '1 device will lose 1 extra tag',
+  devices: 4,
+  previews: [previewOf({ deviceId: 'D1', removed: [{ kind: 'tag', name: 'mine' }] })],
+}
+const locking = {
+  summary: '1 device will have 1 tag locked',
+  devices: 4,
+  previews: [previewOf({ deviceId: 'D1', locked: [{ kind: 'tag', name: 'prod' }] })],
+}
 
 beforeEach(() => {
   preview.mockReset().mockResolvedValue(locking)
@@ -104,6 +115,9 @@ describe('a product’s sync level', () => {
     expect(confirm(page)?.querySelector('h2')?.textContent).toBe('Make Pumps Synced?')
     expect(confirm(page)?.querySelector('[data-action]')?.textContent).toBe('Make Synced')
     expect(confirm(page)?.querySelector('[data-preview]')?.textContent).toBe('1')
+    expect(confirm(page)?.querySelector('[data-preview]')?.getAttribute('data-summary')).toBe(
+      '1 device will have 1 tag locked'
+    )
     await click(page, '[data-action]')
     expect(setSync).toHaveBeenCalledWith('P1', 'synced', false)
     expect(onChanged).toHaveBeenCalled()

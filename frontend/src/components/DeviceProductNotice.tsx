@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Box, Tooltip, Typography } from '@mui/material'
 import { useDeviceProduct } from '../hooks/useProductPolicy'
 import { DeviceProductRef } from '../services/productPolicy'
-import { managedBy, roleName } from '../helpers/productPolicyHelper'
+import { managedBy } from '../helpers/productPolicyHelper'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
@@ -26,13 +26,11 @@ export function useProductHold(device?: IDevice) {
 }
 
 /* A device whose product holds its items, said on its page: under enforced the page is read-only for them — the device
-   is exactly the product —, under synced they follow the product and the device may add its own. The networks the
-   product makes it a member of are named, as nothing else on the page lists them. */
+   is exactly the product —, under synced they follow the product and the device may add its own. */
 export const DeviceProductNotice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const { product, enforced } = useProductHold(device)
   if (!product) return null
-  const networks = product.networks || []
 
   return (
     <Box data-device-product={product.sync}>
@@ -49,13 +47,6 @@ export const DeviceProductNotice: React.FC<{ device: IDevice }> = ({ device }) =
                 'Its tags, networks and services from the product, and the settings the product sets, are locked and follow the product. It may have its own besides.'
               )}
         </Typography>
-        {!!networks.length && (
-          <Typography variant="caption" component="div" data-device-product-networks>
-            {t('deviceProductNotice.networks', 'Networks from the product: {{networks}}', {
-              networks: networks.map(network => `${network.name} (${roleName(t, network.role)})`).join(', '),
-            })}
-          </Typography>
-        )}
       </Notice>
     </Box>
   )

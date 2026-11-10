@@ -79,21 +79,17 @@ describe('a device’s settings', () => {
     expect(query).toMatch(/setDeviceSetting\(deviceId: \$deviceId, name: \$name, value: \$value\)/)
   })
 
-  it('where the API has product policy: each setting’s mark and lock, read and answered in one shape', async () => {
-    policyFields.mockResolvedValue('fromProduct locked { by product level }')
-    const held = { ...subnet, fromProduct: true, locked: { by: 'product', product: 'Pumps', level: 'synced' } }
+  it('where the API has product policy: a setting its product holds is locked, read and answered in one shape', async () => {
+    policyFields.mockResolvedValue('fromProduct')
+    const held = { ...subnet, fromProduct: true }
     request.mockResolvedValue({
       data: { data: { login: { device: [{ id: 'D', settings: [held, subnet] }] } } },
       headers: {},
     })
     const read = await graphQLDeviceSettings('D')
-    expect(request.mock.calls[0][0].data.query).toContain(
-      'settings { name value at by onDevice control fromProduct locked'
-    )
-    expect(read).toEqual([
-      { ...subnet, fromProduct: true, locked: { product: 'Pumps', level: 'synced', text: null } },
-      subnet,
-    ])
+    expect(request.mock.calls[0][0].data.query).toContain('settings { name value at by onDevice control fromProduct }')
+    // Its product's name and level are the device's (Device.product), not the setting's.
+    expect(read).toEqual([{ ...subnet, fromProduct: true, locked: { product: null, level: null } }, subnet])
     expect(settingLocked((read as any)[0])).toBe(true)
     expect(settingLocked({ ...subnet, fromProduct: true, locked: null } as any)).toBe(false)
 
@@ -106,11 +102,11 @@ describe('a device’s settings', () => {
     request.mockClear()
 
     request.mockResolvedValue({
-      data: { data: { setDeviceSetting: { ...subnet, fromProduct: false, locked: null } } },
+      data: { data: { setDeviceSetting: { ...subnet, fromProduct: false } } },
       headers: {},
     })
     expect(await graphQLSetDeviceSetting('D', 'subnet', true)).toEqual({ ...subnet, fromProduct: false, locked: null })
-    expect(request.mock.calls[0][0].data.query).toContain('{ name value at by onDevice control fromProduct locked')
+    expect(request.mock.calls[0][0].data.query).toContain('{ name value at by onDevice control fromProduct }')
   })
 
   it('a refused change: ERROR', async () => {

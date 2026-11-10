@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { MenuItem, TextField, Typography } from '@mui/material'
 import {
   ProductChoice,
+  ProductPreview,
   graphQLDeviceProductPreview,
   graphQLProductChoices,
   graphQLSetDeviceProduct,
@@ -29,6 +30,9 @@ const NONE = '-'
 // Devices previewed one by one at most; more are moved with what graphql says of them.
 const PREVIEWED = 50
 
+// The most graphql moves at once (setDevicesProduct).
+export const MOVED_AT_ONCE = 350
+
 /* A device's product attached, changed or detached — or several devices' at once (graphql-api docs/PROXY-GROUPS.md §11,
    "Changing a device's product"): a detach from the product it has, everything it holds kept as its own, then an attach
    to the one chosen, whose items apply at its level — template copies them in, synced adds and locks them, enforced
@@ -45,6 +49,7 @@ export const ProductMoveDialog: React.FC<Props> = ({ open, accountId, deviceIds,
   const [refusal, setRefusal] = useState<string>()
   const single = deviceIds.length === 1
   const previewed = deviceIds.length <= PREVIEWED
+  const tooMany = deviceIds.length > MOVED_AT_ONCE
 
   useEffect(() => {
     if (!open) return
@@ -61,9 +66,16 @@ export const ProductMoveDialog: React.FC<Props> = ({ open, accountId, deviceIds,
     if (!previewed) return
     const productId = choice === NONE ? null : choice
     const answers = await Promise.all(deviceIds.map(id => graphQLDeviceProductPreview(id, productId)))
-    const refused = answers.find(answer => answer === 'ERROR' || 'reason' in answer)
-    if (refused) setPreview(refused === 'ERROR' ? { reason: '' } : (refused as { reason: string }))
-    else setPreview(answers as any)
+    const failed = answers.find(answer => answer === 'ERROR' || 'reason' in answer)
+    if (failed) return setPreview(failed === 'ERROR' ? { reason: '' } : (failed as { reason: string }))
+    const previews = answers as ProductPreview[]
+    // A move graphql says cannot be done — a daemon without product-lifecycle, a legacy device —, said in its words.
+    const refused = previews.find(each => each.refusal)
+    if (refused)
+      return setPreview({
+        reason: single ? refused.refusal! : `${refused.name || refused.deviceId}: ${refused.refusal}`,
+      })
+    setPreview(previews)
   }
 
   const chosen = products?.find(product => product.id === target)
@@ -116,10 +128,18 @@ export const ProductMoveDialog: React.FC<Props> = ({ open, accountId, deviceIds,
       }
       action={action}
       color={losing || confirmed ? 'warning' : 'primary'}
-      disabled={saving || !target || (previewed && !Array.isArray(preview))}
+      disabled={saving || tooMany || !target || (previewed && !Array.isArray(preview))}
       onConfirm={confirm}
       onDeny={onClose}
     >
+      {tooMany && (
+        <Notice severity="warning" fullWidth gutterBottom>
+          {t('productMove.tooMany', {
+            max: MOVED_AT_ONCE,
+            defaultValue: 'At most {{max}} devices are moved at once: select fewer.',
+          })}
+        </Notice>
+      )}
       <TextField
         select
         fullWidth

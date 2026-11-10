@@ -56,7 +56,7 @@ async function render(permissions = ['VIEW', 'MANAGE']) {
 }
 const reload = vi.fn()
 const served = { device: true }
-const pumps = { id: 'P1', name: 'Pumps', sync: 'synced', networks: [] }
+const pumps = { id: 'P1', name: 'Pumps', sync: 'synced', lifecycle: 'persistent' }
 
 beforeEach(() => {
   reload.mockReset().mockResolvedValue(undefined)

@@ -53,6 +53,12 @@ describe('a product’s devices', () => {
     ])
   })
 
+  it('the newest listed, and how many more there are', async () => {
+    const page = await render(<ProductDevices devices={[{ id: 'D1', name: 'pump-1', state: 'active' }]} count={140} />)
+    expect(page.textContent).toContain('Devices (140)')
+    expect(page.querySelector('[data-product-devices-more]')?.textContent).toBe('and 139 more')
+  })
+
   it('none: said so', async () => {
     const page = await render(<ProductDevices devices={[]} />)
     expect(page.textContent).toBe('Devices (0)No device belongs to this product.')

@@ -145,6 +145,16 @@ describe('attaching, changing or detaching a device’s product', () => {
     expect(setOne).toHaveBeenCalledWith('D1', null, false)
   })
 
+  it('a move graphql’s preview says cannot be done: said in its words, and not confirmed', async () => {
+    preview.mockResolvedValue({ ...adds, refusal: 'its daemon does not say product-lifecycle: upgrade it first' })
+    await render()
+    await choose('P1')
+    expect(dialog().querySelector('[data-preview]')?.textContent).toBe(
+      'its daemon does not say product-lifecycle: upgrade it first'
+    )
+    expect(action().disabled).toBe(true)
+  })
+
   it('a refusal in graphql’s words, the dialog kept open; a preview refused cannot be confirmed', async () => {
     setOne.mockResolvedValue({
       reason: 'Its daemon cannot move its key between disk and memory: upgrade it to change its lifecycle',
@@ -176,6 +186,24 @@ describe('moving several devices to a product', () => {
     await act(async () => action().click())
     expect(setMany).toHaveBeenCalledWith(['D1', 'D2'], 'P1', false)
     expect(setOne).not.toHaveBeenCalled()
+  })
+
+  it('one device’s refusal among several: named', async () => {
+    preview.mockImplementation(async (id: string) =>
+      id === 'D2' ? { ...adds, deviceId: 'D2', name: 'pump-2', refusal: 'it is not a Control Link device' } : adds
+    )
+    await render({ deviceIds: ['D1', 'D2'] })
+    await choose('P1')
+    expect(dialog().querySelector('[data-preview]')?.textContent).toBe('pump-2: it is not a Control Link device')
+  })
+
+  it('more than graphql moves at once: said, and not offered', async () => {
+    await render({ deviceIds: Array.from({ length: 351 }, (_, i) => `D${i}`) })
+    expect(dialog().querySelector('[data-notice="warning"]')?.textContent).toBe(
+      'At most 350 devices are moved at once: select fewer.'
+    )
+    await choose('P1')
+    expect(action().disabled).toBe(true)
   })
 
   it('too many to preview: moved on graphql’s word, a move into an enforced product warned of and confirmed', async () => {

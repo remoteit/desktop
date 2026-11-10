@@ -31,6 +31,7 @@ export const ProductSyncLevel: React.FC<Props> = ({ productId, name, sync, manag
   const { t } = useTranslation()
   const [target, setTarget] = useState<ProductSync>()
   const [preview, setPreview] = useState<PreviewState>()
+  const [summary, setSummary] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [refusal, setRefusal] = useState<string>()
 
@@ -40,7 +41,8 @@ export const ProductSyncLevel: React.FC<Props> = ({ productId, name, sync, manag
     setPreview(undefined)
     setRefusal(undefined)
     const answer = await graphQLProductSyncPreview(productId, next)
-    setPreview(answer === 'ERROR' ? { reason: '' } : answer)
+    setSummary(answer !== 'ERROR' && 'previews' in answer ? answer.summary : null)
+    setPreview(answer === 'ERROR' ? { reason: '' } : 'previews' in answer ? answer.previews : answer)
   }
 
   const close = () => {
@@ -117,7 +119,7 @@ export const ProductSyncLevel: React.FC<Props> = ({ productId, name, sync, manag
             {syncMeaning(t, target)}
           </Typography>
         )}
-        <ProductPolicyPreview preview={preview} />
+        <ProductPolicyPreview preview={preview} summary={summary} />
       </Confirm>
     </Box>
   )

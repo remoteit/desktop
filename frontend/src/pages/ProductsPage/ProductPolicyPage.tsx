@@ -82,7 +82,7 @@ export const ProductPolicyPage: React.FC = () => {
               registrationWarning={product.registrationWarning}
               onChanged={changed}
             />
-            {policy.devices && <ProductDevices devices={policy.devices} />}
+            {policy.devices && <ProductDevices devices={policy.devices} count={policy.deviceCount} />}
           </>
         )}
       </Gutters>

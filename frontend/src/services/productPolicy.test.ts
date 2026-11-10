@@ -21,7 +21,6 @@ import {
   graphQLSetDeviceProductSetting,
   graphQLSetDeviceProductSync,
   graphQLSetDevicesProduct,
-  lockOf,
   networkOf,
   previewOf,
   productPolicyServed,
@@ -41,9 +40,10 @@ const nonNull = (ofType: Ref): Ref => ({ kind: 'NON_NULL', name: null, ofType })
 const list = (ofType: Ref): Ref => ({ kind: 'LIST', name: null, ofType })
 type Desc = Record<string, Record<string, { type: Ref; args?: Record<string, Ref> }>>
 
-const ITEM = list(nonNull(object('ProductPolicyItem')))
+const ITEM = nonNull(list(nonNull(object('ProductPlanItem'))))
+const REF = object('DeviceProductRef')
 
-// The API as wave 4 builds it.
+// The API as wave 4 built it (graphql-api solo-product-policy 601c3dff: product-policy-resolver.ts).
 const WAVE4: Desc = {
   Query: {
     deviceProductPreview: {
@@ -51,29 +51,29 @@ const WAVE4: Desc = {
       args: { deviceId: nonNull(scalar()), productId: scalar('ID') },
     },
     productSyncPreview: {
-      type: nonNull(list(nonNull(object('DeviceProductPreview')))),
+      type: nonNull(object('ProductSyncPreview')),
       args: { productId: nonNull(scalar('ID')), sync: nonNull(scalar()) },
     },
   },
   Mutation: {
     setDeviceProduct: {
-      type: object('Device'),
+      type: nonNull(object('Device')),
       args: { deviceId: nonNull(scalar()), productId: scalar('ID'), confirm: scalar('Boolean') },
     },
     setDevicesProduct: {
-      type: nonNull(scalar('Boolean')),
+      type: nonNull(list(nonNull(object('Device')))),
       args: { deviceIds: nonNull(list(nonNull(scalar()))), productId: scalar('ID'), confirm: scalar('Boolean') },
     },
     setDeviceProductSync: {
-      type: object('DeviceProduct'),
+      type: nonNull(object('DeviceProduct')),
       args: { productId: nonNull(scalar('ID')), sync: nonNull(scalar()), confirm: scalar('Boolean') },
     },
     setDeviceProductSetting: {
-      type: object('DeviceProduct'),
+      type: nonNull(object('DeviceProduct')),
       args: { productId: nonNull(scalar('ID')), name: nonNull(scalar()), value: scalar('Any') },
     },
     addDeviceProductNetwork: {
-      type: object('DeviceProduct'),
+      type: nonNull(object('DeviceProduct')),
       args: {
         productId: nonNull(scalar('ID')),
         networkId: nonNull(scalar()),
@@ -81,7 +81,7 @@ const WAVE4: Desc = {
       },
     },
     removeDeviceProductNetwork: {
-      type: object('DeviceProduct'),
+      type: nonNull(object('DeviceProduct')),
       args: { productId: nonNull(scalar('ID')), networkId: nonNull(scalar()) },
     },
     addProxyProduct: { type: object('Proxy'), args: { proxy: nonNull(scalar()), productId: nonNull(scalar('ID')) } },
@@ -89,39 +89,66 @@ const WAVE4: Desc = {
   },
   Device: {
     id: { type: scalar() },
-    product: { type: object('DeviceProduct') },
-    productOrigin: { type: object('DeviceProduct') },
+    tags: { type: nonNull(list(nonNull(object('DeviceTag')))), args: { accountId: scalar() } },
+    product: { type: REF },
+    productOrigin: { type: REF },
+  },
+  DeviceProductRef: {
+    id: { type: nonNull(scalar('ID')) },
+    name: { type: nonNull(scalar()) },
+    sync: { type: nonNull(scalar()) },
+    lifecycle: { type: nonNull(scalar()) },
   },
   DeviceProduct: {
     id: { type: scalar('ID') },
     name: { type: scalar() },
     sync: { type: nonNull(scalar()) },
-    settings: { type: list(object('DeviceProductSetting')) },
-    networks: { type: list(object('DeviceProductNetwork')) },
-    devices: { type: list(object('Device')) },
+    settings: { type: nonNull(list(nonNull(object('DeviceProductSetting')))) },
+    networks: { type: nonNull(list(nonNull(object('DeviceProductNetwork')))) },
+    proxies: { type: nonNull(list(nonNull(object('Proxy')))) },
+    deviceCount: { type: scalar('Int') },
+    devices: {
+      type: nonNull(list(nonNull(object('Device')))),
+      args: { size: nonNull(scalar('Int')), from: nonNull(scalar('Int')) },
+    },
   },
   DeviceProductNetwork: {
-    id: { type: scalar() },
+    networkId: { type: nonNull(scalar('ID')) },
     name: { type: scalar() },
-    role: { type: enumOf('NetworkDeviceRole') },
+    role: { type: nonNull(enumOf('NetworkDeviceRole')) },
+    addedBy: { type: nonNull(scalar()) },
+    created: { type: nonNull(scalar('DateTime')) },
+  },
+  ProductSyncPreview: {
+    productId: { type: nonNull(scalar('ID')) },
+    sync: { type: nonNull(scalar()) },
+    summary: { type: nonNull(scalar()) },
+    devices: { type: nonNull(scalar('Int')) },
+    added: { type: nonNull(scalar('Int')) },
+    locked: { type: nonNull(scalar('Int')) },
+    removed: { type: nonNull(scalar('Int')) },
+    confirm: { type: nonNull(scalar('Boolean')) },
+    changes: { type: nonNull(list(nonNull(object('DeviceProductPreview')))) },
   },
   DeviceProductPreview: {
-    deviceId: { type: scalar() },
-    name: { type: scalar() },
+    deviceId: { type: nonNull(scalar('ID')) },
+    deviceName: { type: scalar() },
+    from: { type: REF },
+    to: { type: REF },
+    level: { type: nonNull(scalar()) },
     added: { type: ITEM },
     locked: { type: ITEM },
     removed: { type: ITEM },
-    unlocked: { type: ITEM },
-    warning: { type: scalar() },
+    owned: { type: ITEM },
+    lifecycleFrom: { type: scalar() },
+    lifecycleTo: { type: scalar() },
+    warnings: { type: nonNull(list(nonNull(scalar()))) },
+    refusal: { type: scalar() },
+    confirm: { type: nonNull(scalar('Boolean')) },
   },
-  DeviceSetting: {
-    name: { type: scalar() },
-    fromProduct: { type: scalar('Boolean') },
-    locked: { type: object('DeviceSettingLock') },
-  },
-  DeviceSettingLock: { by: { type: scalar() }, product: { type: scalar() }, level: { type: scalar() } },
-  Tag: { name: { type: scalar() }, fromProduct: { type: scalar('Boolean') } },
-  Service: { id: { type: scalar() }, fromProduct: { type: scalar('Boolean') } },
+  DeviceSetting: { name: { type: scalar() }, fromProduct: { type: nonNull(scalar('Boolean')) } },
+  DeviceTag: { name: { type: scalar() }, fromProduct: { type: nonNull(scalar('Boolean')) } },
+  Service: { id: { type: scalar() }, fromProduct: { type: nonNull(scalar('Boolean')) } },
   Proxy: { id: { type: scalar() }, products: { type: list(object('DeviceProduct')) } },
 }
 
@@ -132,7 +159,7 @@ const OLDER: Desc = {
   Device: { id: { type: scalar() } },
   DeviceProduct: { id: { type: scalar('ID') }, lifecycle: { type: scalar() } },
   DeviceSetting: { name: { type: scalar() } },
-  Tag: { name: { type: scalar() } },
+  DeviceTag: { name: { type: scalar() } },
   Service: { id: { type: scalar() } },
   Proxy: { id: { type: scalar() }, products: { type: list(object('DeviceProduct')) } },
 }
@@ -200,7 +227,9 @@ describe('whether the API serves product policy', () => {
       bulk: true,
     })
     expect(schemaReads()).toBe(2)
-    expect(asked(1).query).toMatch(/"DeviceProductPreview"[\s\S]*"DeviceProductNetwork"[\s\S]*"DeviceSettingLock"/)
+    expect(asked(1).query).toMatch(
+      /"DeviceProductPreview"[\s\S]*"ProductSyncPreview"[\s\S]*"DeviceProductRef"[\s\S]*"DeviceProductNetwork"/
+    )
     await productPolicyServed()
     await settingPolicyFields()
     expect(request).toHaveBeenCalledTimes(2)
@@ -250,14 +279,25 @@ describe('calls made as the schema declares them', () => {
     expect(detach.variables).toEqual({ deviceId: 'D1', productId: null })
   })
 
-  it('an answer that is not an object is asked for nothing', async () => {
-    serve(WAVE4, () => ({ setDevicesProduct: true }))
+  it('a list of objects is asked for its __typename; an answer that is not an object, for nothing', async () => {
+    serve(WAVE4, () => ({ setDevicesProduct: [{ __typename: 'Device' }] }))
     expect(await graphQLSetDevicesProduct(['D1', 'D2'], 'P1', false)).toBe(true)
     const call = asked(request.mock.calls.length - 1)
     expect(call.query).toContain('$deviceIds: [String!]!')
-    expect(call.query).toMatch(
-      /setDevicesProduct\(deviceIds: \$deviceIds, productId: \$productId, confirm: \$confirm\)\s*}/
+    expect(call.query).toContain(
+      'setDevicesProduct(deviceIds: $deviceIds, productId: $productId, confirm: $confirm) { __typename }'
     )
+    const scalarAnswer = {
+      ...WAVE4,
+      Mutation: {
+        ...WAVE4.Mutation,
+        setDevicesProduct: { ...WAVE4.Mutation.setDevicesProduct, type: scalar('Boolean') },
+      },
+    }
+    resetProductPolicy()
+    serve(scalarAnswer, () => ({ setDevicesProduct: true }))
+    await graphQLSetDevicesProduct(['D1'], 'P1', false)
+    expect(asked(request.mock.calls.length - 1).query).toMatch(/confirm: \$confirm\)\s*}/)
   })
 
   it('a refusal comes back in graphql’s words, with no error banner', async () => {
@@ -293,15 +333,27 @@ describe('calls made as the schema declares them', () => {
 })
 
 describe('previews', () => {
+  const warning =
+    'It will be removed at its next reboot or after 10 minutes offline, unless this machine re-registers itself'
   const preview = {
     deviceId: 'D1',
-    name: 'pump-1',
-    added: [{ kind: 'TAG', name: 'prod' }],
-    locked: [{ kind: 'NETWORK', name: 'Plant' }],
+    deviceName: 'pump-1',
+    added: [{ kind: 'tag', name: 'prod' }],
+    locked: [{ kind: 'network', name: 'Plant' }],
     removed: [],
-    unlocked: [],
-    warning:
-      'It will be removed at its next reboot or after 10 minutes offline, unless this machine re-registers itself',
+    owned: [{ kind: 'service', name: 'SSH' }],
+    warnings: [warning],
+    refusal: null,
+  }
+  const read = {
+    deviceId: 'D1',
+    name: 'pump-1',
+    added: [{ kind: 'tag', name: 'prod' }],
+    locked: [{ kind: 'network', name: 'Plant' }],
+    removed: [],
+    owned: [{ kind: 'service', name: 'SSH' }],
+    warnings: [warning],
+    refusal: null,
   }
 
   it('a device’s: asked with the fields its type has, each item by kind and name', async () => {
@@ -310,34 +362,49 @@ describe('previews', () => {
     const call = asked(request.mock.calls.length - 1)
     expect(call.query).toContain('query DeviceProductPreview($deviceId: String!, $productId: ID)')
     expect(call.query).toContain(
-      'deviceId name added { kind name } locked { kind name } removed { kind name } unlocked { kind name } warning'
+      'deviceId deviceName added { kind name } locked { kind name } removed { kind name } owned { kind name } warnings refusal'
     )
-    expect(answer).toEqual({
-      ...preview,
-      added: [{ kind: 'tag', name: 'prod' }],
-      locked: [{ kind: 'network', name: 'Plant' }],
+    expect(answer).toEqual(read)
+  })
+
+  it('why it cannot be done, as graphql says it', async () => {
+    serve(WAVE4, () => ({
+      deviceProductPreview: { ...preview, refusal: 'its daemon cannot move its key: upgrade it first' },
+    }))
+    expect(await graphQLDeviceProductPreview('D1', 'P2')).toMatchObject({
+      refusal: 'its daemon cannot move its key: upgrade it first',
     })
   })
 
   it('a field graphql left out is not asked for', async () => {
-    const { unlocked: _u, warning: _w, ...fields } = WAVE4.DeviceProductPreview
+    const { owned: _o, warnings: _w, ...fields } = WAVE4.DeviceProductPreview
     serve({ ...WAVE4, DeviceProductPreview: fields }, () => ({ deviceProductPreview: preview }))
     await graphQLDeviceProductPreview('D1', null)
     const call = asked(request.mock.calls.length - 1)
-    expect(call.query).not.toContain('unlocked')
-    expect(call.query).not.toContain('warning')
+    expect(call.query).not.toContain('owned')
+    expect(call.query).not.toContain('warnings')
   })
 
-  it('a product level’s: one per device, or one for them all', async () => {
-    serve(WAVE4, () => ({ productSyncPreview: [preview, { ...preview, deviceId: 'D2' }] }))
-    expect((await graphQLProductSyncPreview('P1', 'synced')) as any).toHaveLength(2)
-    serve(WAVE4, () => ({ productSyncPreview: preview }))
-    expect((await graphQLProductSyncPreview('P1', 'synced')) as any).toHaveLength(1)
+  it('a product level’s: graphql’s summary, its devices, and a preview of each it changes', async () => {
+    serve(WAVE4, () => ({
+      productSyncPreview: {
+        summary: '2 devices will lose 3 extra tags',
+        devices: 37,
+        changes: [preview, { ...preview, deviceId: 'D2' }],
+      },
+    }))
+    const answer = (await graphQLProductSyncPreview('P1', 'synced')) as any
+    const call = asked(request.mock.calls.length - 1)
+    expect(call.query).toContain('query ProductSyncPreview($productId: ID!, $sync: String!)')
+    expect(call.query).toContain('summary devices changes { deviceId deviceName added { kind name }')
+    expect(call.variables).toEqual({ productId: 'P1', sync: 'synced' })
+    expect(answer.summary).toBe('2 devices will lose 3 extra tags')
+    expect(answer.devices).toBe(37)
+    expect(answer.previews.map((each: any) => each.deviceId)).toEqual(['D1', 'D2'])
   })
 
   it('items said as plain text are kept as names', () => {
     expect(previewOf({ removed: ['tag dev'] }).removed).toEqual([{ kind: '', name: 'tag dev' }])
-    expect(previewOf({ device: { id: 'D9', name: 'nine' } })).toMatchObject({ deviceId: 'D9', name: 'nine' })
   })
 
   it('in brief: per kind, how many devices, and how many items among them', () => {
@@ -351,7 +418,7 @@ describe('previews', () => {
 })
 
 describe('reads', () => {
-  it('a product: its level, settings, networks and devices', async () => {
+  it('a product: its level, settings, networks, its devices and how many', async () => {
     serve(WAVE4, () => ({
       login: {
         account: {
@@ -359,10 +426,11 @@ describe('reads', () => {
             items: [
               {
                 id: 'P1',
-                sync: 'SYNCED',
+                sync: 'synced',
                 settings: [{ name: 'subnet', value: true }],
-                networks: [{ id: 'N1', name: 'Plant', role: 'INITIATOR' }],
+                networks: [{ networkId: 'N1', name: 'Plant', role: 'INITIATOR' }],
                 devices: [{ id: 'D1', name: 'pump-1', state: 'active' }],
+                deviceCount: 140,
               },
             ],
           },
@@ -371,28 +439,26 @@ describe('reads', () => {
     }))
     const policy = await graphQLProductPolicy('P1', 'A1')
     const call = asked(request.mock.calls.length - 1)
-    expect(call.query).toContain('sync settings { name value } networks { id name role } devices { id name state }')
+    expect(call.query).toContain(
+      'sync settings { name value } networks { networkId name role } devices { id name state } deviceCount'
+    )
     expect(call.variables).toEqual({ id: 'P1', accountId: 'A1' })
     expect(policy).toEqual({
       sync: 'synced',
       settings: [{ name: 'subnet', value: true }],
       networks: [{ id: 'N1', name: 'Plant', role: 'INITIATOR' }],
       devices: [{ id: 'D1', name: 'pump-1', state: 'active' }],
+      deviceCount: 140,
     })
   })
 
-  it('a device: its product with its level and networks, where it came from, and what the product gives it', async () => {
+  it('a device: its product with its level, where it came from, and what the product gives it', async () => {
     serve(WAVE4, () => ({
       login: {
         device: [
           {
             id: 'D1',
-            product: {
-              id: 'P1',
-              name: 'Pumps',
-              sync: 'enforced',
-              networks: [{ id: 'N1', name: 'Plant', role: 'BOTH' }],
-            },
+            product: { id: 'P1', name: 'Pumps', sync: 'enforced', lifecycle: 'ephemeral' },
             productOrigin: { id: 'P0', name: 'Pumps (staging)' },
             tags: [
               { name: 'prod', fromProduct: true },
@@ -400,7 +466,7 @@ describe('reads', () => {
             ],
             services: [
               { id: 'S1', fromProduct: true },
-              { id: 'S2', fromProduct: null },
+              { id: 'S2', fromProduct: false },
             ],
           },
         ],
@@ -408,24 +474,21 @@ describe('reads', () => {
     }))
     const state = await graphQLDeviceProduct('D1', 'A1')
     const call = asked(request.mock.calls.length - 1)
-    expect(call.query).toContain('product { id name sync networks { id name role } }')
+    expect(call.query).toContain('product { id name sync lifecycle }')
     expect(call.query).toContain('productOrigin { id name }')
     expect(call.query).toContain('tags(accountId: $accountId) { name fromProduct }')
     expect(call.query).toContain('services { id fromProduct }')
     expect(state).toEqual({
-      product: { id: 'P1', name: 'Pumps', sync: 'enforced', networks: [{ id: 'N1', name: 'Plant', role: 'BOTH' }] },
+      product: { id: 'P1', name: 'Pumps', sync: 'enforced', lifecycle: 'ephemeral' },
       origin: { id: 'P0', name: 'Pumps (staging)' },
       tags: ['prod'],
       services: ['S1'],
     })
   })
 
-  it('a device with no product, its origin given as an id', async () => {
-    serve({ ...WAVE4, Device: { ...WAVE4.Device, productOrigin: { type: scalar() } } }, () => ({
-      login: { device: [{ id: 'D1', product: null, productOrigin: 'P0' }] },
-    }))
-    expect(await graphQLDeviceProduct('D1')).toMatchObject({ product: null, origin: { id: 'P0', name: null } })
-    expect(asked(request.mock.calls.length - 1).query).toMatch(/productOrigin(?! \{)/)
+  it('a device with no product, and none it registered with', async () => {
+    serve(WAVE4, () => ({ login: { device: [{ id: 'D1', product: null, productOrigin: null }] } }))
+    expect(await graphQLDeviceProduct('D1')).toEqual({ product: null, origin: null, tags: [], services: [] })
   })
 
   it('the account’s proxies, and whether the product’s devices join each', async () => {
@@ -461,20 +524,13 @@ describe('reads', () => {
     expect(asked(request.mock.calls.length - 1).query).toContain('items { id name }')
   })
 
-  it('a setting’s lock, as an object or as words', async () => {
+  it('a setting adds whether its product holds it', async () => {
     serve(WAVE4)
-    expect(await settingPolicyFields()).toBe('fromProduct locked { by product level }')
-    expect(lockOf({ by: 'product', product: 'Pumps', level: 'ENFORCED' })).toEqual({
-      product: 'Pumps',
-      level: 'enforced',
-      text: null,
-    })
-    expect(lockOf('managed by product Pumps')).toEqual({ product: null, level: null, text: 'managed by product Pumps' })
-    expect(lockOf(null)).toBeNull()
+    expect(await settingPolicyFields()).toBe('fromProduct')
   })
 
-  it('a network grant, flat or with its network inside', () => {
-    expect(networkOf({ network: { id: 'N1', name: 'Plant' }, role: 'target' })).toEqual({
+  it('a network grant as graphql gives it: its network’s id, name and role', () => {
+    expect(networkOf({ networkId: 'N1', name: 'Plant', role: 'TARGET', addedBy: 'U1' })).toEqual({
       id: 'N1',
       name: 'Plant',
       role: 'TARGET',

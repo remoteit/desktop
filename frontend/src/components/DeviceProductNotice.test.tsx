@@ -36,9 +36,9 @@ async function render(node: React.ReactElement) {
 afterEach(() => act(() => root.unmount()))
 
 const device = { id: 'D1', permissions: ['MANAGE'] } as any
-const product = (sync: string, networks: any[] = []) => ({ id: 'P1', name: 'Pumps', sync, networks })
-const holding = (sync: string, networks: any[] = []) => ({
-  state: { product: product(sync, networks), origin: null, tags: ['prod'], services: ['S1'] },
+const product = (sync: string) => ({ id: 'P1', name: 'Pumps', sync, lifecycle: 'persistent' })
+const holding = (sync: string) => ({
+  state: { product: product(sync), origin: null, tags: ['prod'], services: ['S1'] },
 })
 
 const Hold = () => {
@@ -67,15 +67,12 @@ describe('what a device holds from its product', () => {
 })
 
 describe('the notice on a device’s page', () => {
-  it('enforced: read-only, managed by the product, its networks named', async () => {
-    hook.current = holding('enforced', [{ id: 'N1', name: 'Plant', role: 'BOTH' }])
+  it('enforced: read-only, managed by the product', async () => {
+    hook.current = holding('enforced')
     const page = await render(<DeviceProductNotice device={device} />)
     expect(page.querySelector('[data-notice]')?.getAttribute('data-notice')).toBe('warning')
     expect(page.textContent).toContain('Managed by product Pumps (enforced)')
     expect(page.textContent).toContain('nothing else is added here')
-    expect(page.querySelector('[data-device-product-networks]')?.textContent).toBe(
-      'Networks from the product: Plant (Initiator and target)'
-    )
   })
 
   it('synced: from the product, locked, the device free to add its own', async () => {
@@ -84,7 +81,6 @@ describe('the notice on a device’s page', () => {
     expect(page.querySelector('[data-notice]')?.getAttribute('data-notice')).toBe('info')
     expect(page.textContent).toContain('From product Pumps')
     expect(page.textContent).toContain('It may have its own besides.')
-    expect(page.querySelector('[data-device-product-networks]')).toBeNull()
   })
 
   it('nothing under template, with no product, or where the API has none', async () => {

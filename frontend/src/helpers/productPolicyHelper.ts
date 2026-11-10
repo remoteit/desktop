@@ -36,7 +36,7 @@ export const managedBy = (t: TFunction, product: string, sync: ProductSync): str
 
 // A setting its product holds: under enforced the device is exactly the product, under synced it follows it.
 export function productLockNote(t: TFunction, locked: SettingLock): string {
-  if (!locked.product) return locked.text || t('deviceSetting.productLocked', 'Set by its product')
+  if (!locked.product) return t('deviceSetting.productLocked', 'Set by its product')
   return locked.level === 'enforced'
     ? t('deviceSetting.productEnforced', 'Managed by product {{product}} (enforced)', { product: locked.product })
     : t('deviceSetting.productSynced', 'Set by its product {{product}}', { product: locked.product })
@@ -146,7 +146,7 @@ export function summaryLines(t: TFunction, summary: PreviewSummary): { severity:
       'info'
     ),
     ...lines(
-      summary.unlocked,
+      summary.owned,
       (devices, items) =>
         t('productPolicy.willOwn', '{{devices}} will keep {{items}} as their own', { devices, items }),
       'info'

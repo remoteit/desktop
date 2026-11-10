@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Chip, CircularProgress, Collapse, Link, List, ListItem, ListItemText, Typography } from '@mui/material'
-import { ProductItem, ProductPreview, summarize } from '../services/productPolicy'
+import { ProductItem, ProductPreview, removes, summarize } from '../services/productPolicy'
 import { itemName, summaryLines } from '../helpers/productPolicyHelper'
 import { Notice } from './Notice'
 
@@ -11,6 +11,7 @@ export type PreviewState = ProductPreview[] | { reason: string } | undefined
 type Props = {
   preview: PreviewState
   single?: boolean // one device's: its items named, not counted
+  summary?: string | null // graphql's own words for a product level's change, said in place of the counts here
 }
 
 // The devices listed one by one at most, beyond the summary.
@@ -19,8 +20,8 @@ const LISTED = 50
 /* What a change of product, or of a product's level, would do (services/productPolicy): what is lost first — only a
    move into, or a raise to, enforced removes anything —, then what is given, locked to the product, or becomes the
    device's own. For one device each item is named; for a product's devices it is said in brief, and each device's
-   changes are there to open. The lifecycle warning, where the move takes a device from persistent to ephemeral. */
-export const ProductPolicyPreview: React.FC<Props> = ({ preview, single }) => {
+   changes are there to open. What graphql warns of — an ephemeral product's removal at reboot —, said once. */
+export const ProductPolicyPreview: React.FC<Props> = ({ preview, single, summary }) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
@@ -43,9 +44,9 @@ export const ProductPolicyPreview: React.FC<Props> = ({ preview, single }) => {
       </Box>
     )
 
-  const warnings = [...new Set(preview.map(each => each.warning).filter((w): w is string => !!w))]
+  const warnings = [...new Set(preview.flatMap(each => each.warnings))]
   const changed = preview.filter(
-    each => each.added.length + each.locked.length + each.removed.length + each.unlocked.length
+    each => each.added.length + each.locked.length + each.removed.length + each.owned.length
   )
 
   return (
@@ -65,7 +66,10 @@ export const ProductPolicyPreview: React.FC<Props> = ({ preview, single }) => {
         <Items preview={changed[0]} />
       ) : (
         <>
-          {summaryLines(t, summarize(changed)).map(line =>
+          {(summary
+            ? [{ severity: removes(changed) ? ('warning' as const) : ('info' as const), text: summary }]
+            : summaryLines(t, summarize(changed))
+          ).map(line =>
             line.severity === 'warning' ? (
               <Notice key={line.text} severity="warning" fullWidth gutterBottom>
                 {line.text}
@@ -112,7 +116,7 @@ const Items: React.FC<{ preview: ProductPreview }> = ({ preview }) => {
     ['removed', t('productPreview.removed', 'Removed'), preview.removed, 'warning'],
     ['added', t('productPreview.added', 'Added'), preview.added, 'default'],
     ['locked', t('productPreview.locked', 'Locked to the product'), preview.locked, 'default'],
-    ['unlocked', t('productPreview.unlocked', 'Becomes its own'), preview.unlocked, 'default'],
+    ['owned', t('productPreview.owned', 'Becomes its own'), preview.owned, 'default'],
   ]
   return (
     <>

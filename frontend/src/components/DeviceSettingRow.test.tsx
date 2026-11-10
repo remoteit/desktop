@@ -120,7 +120,7 @@ describe('a device setting’s row', () => {
   })
 
   it('held by its product: greyed, saying by which, and whether it is enforced', async () => {
-    const synced = { product: 'Pumps', level: 'synced' as const, text: null }
+    const synced = { product: 'Pumps', level: 'synced' as const }
     let page = await render(
       <DeviceSettingRow
         setting={subnet('cloud+local', { fromProduct: true, locked: synced })}

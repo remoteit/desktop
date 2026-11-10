@@ -1265,7 +1265,6 @@
   },
   "deviceProductNotice": {
     "enforced": "",
-    "networks": "",
     "synced": ""
   },
   "deviceProxy": {
@@ -2755,6 +2754,9 @@
     "title": "Crear producto"
   },
   "productDevices": {
+    "more_one": "",
+    "more_many": "",
+    "more_other": "",
     "none": "",
     "title_one": "",
     "title_many": "",
@@ -2831,7 +2833,8 @@
     "none": "",
     "noneMany": "",
     "notChanged": "",
-    "product": ""
+    "product": "",
+    "tooMany": ""
   },
   "productOneTimeCodes": {
     "add": "Agregar un dispositivo",
@@ -2931,10 +2934,10 @@
     "more_other": "",
     "nothing": "",
     "nothingDevice": "",
+    "owned": "",
     "reading": "",
     "removed": "",
-    "showDevices": "",
-    "unlocked": ""
+    "showDevices": ""
   },
   "productRegistrationCodes": {
     "current": "Actual",

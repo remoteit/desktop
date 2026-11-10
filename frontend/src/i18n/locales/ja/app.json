@@ -1213,7 +1213,6 @@
   },
   "deviceProductNotice": {
     "enforced": "",
-    "networks": "",
     "synced": ""
   },
   "deviceProxy": {
@@ -2653,6 +2652,7 @@
     "title": "プロダクトを作成"
   },
   "productDevices": {
+    "more_other": "",
     "none": "",
     "title_other": ""
   },
@@ -2725,7 +2725,8 @@
     "none": "",
     "noneMany": "",
     "notChanged": "",
-    "product": ""
+    "product": "",
+    "tooMany": ""
   },
   "productOneTimeCodes": {
     "add": "デバイスを1台追加",
@@ -2809,10 +2810,10 @@
     "more_other": "",
     "nothing": "",
     "nothingDevice": "",
+    "owned": "",
     "reading": "",
     "removed": "",
-    "showDevices": "",
-    "unlocked": ""
+    "showDevices": ""
   },
   "productRegistrationCodes": {
     "current": "現在",

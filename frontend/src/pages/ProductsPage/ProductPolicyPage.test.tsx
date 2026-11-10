@@ -55,6 +55,7 @@ const POLICY = {
   settings: [{ name: 'subnet', value: true }],
   networks: [{ id: 'N1', name: 'Plant', role: 'TARGET' }],
   devices: [{ id: 'D1', name: 'pump-1', state: 'active' }],
+  deviceCount: 140,
 }
 const reload = vi.fn()
 
@@ -78,7 +79,7 @@ describe('a product’s policy page', () => {
       networks: POLICY.networks,
       registrationWarning: 'Use join keys',
     })
-    expect(children.devices.devices).toBe(POLICY.devices)
+    expect(children.devices).toMatchObject({ devices: POLICY.devices, count: 140 })
   })
 
   it('a change reads the product again, its registration warning with it', async () => {

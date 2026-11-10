@@ -1239,7 +1239,6 @@
   },
   "deviceProductNotice": {
     "enforced": "Its tags, networks and services are the product’s, as are the settings the product sets: they are changed on the product, and nothing else is added here.",
-    "networks": "Networks from the product: {{networks}}",
     "synced": "Its tags, networks and services from the product, and the settings the product sets, are locked and follow the product. It may have its own besides."
   },
   "deviceProxy": {
@@ -2704,6 +2703,8 @@
     "title": "Create Product"
   },
   "productDevices": {
+    "more_one": "and {{count}} more",
+    "more_other": "and {{count}} more",
     "none": "No device belongs to this product.",
     "title_one": "Devices ({{count}})",
     "title_other": "Devices ({{count}})"
@@ -2778,7 +2779,8 @@
     "none": "No product: detach it",
     "noneMany": "No product: detach them",
     "notChanged": "The product was not changed.",
-    "product": "Product"
+    "product": "Product",
+    "tooMany": "At most {{max}} devices are moved at once: select fewer."
   },
   "productOneTimeCodes": {
     "add": "Add One Device",
@@ -2870,10 +2872,10 @@
     "more_other": "and {{count}} more",
     "nothing": "Nothing on its devices changes.",
     "nothingDevice": "Nothing on the device changes.",
+    "owned": "Becomes its own",
     "reading": "Reading what changes…",
     "removed": "Removed",
-    "showDevices": "Show each device",
-    "unlocked": "Becomes its own"
+    "showDevices": "Show each device"
   },
   "productRegistrationCodes": {
     "current": "Current",

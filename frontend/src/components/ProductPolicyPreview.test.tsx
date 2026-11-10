@@ -60,22 +60,22 @@ describe('a preview of a change of product or level', () => {
       added: [tag('prod'), { kind: 'network', name: 'Plant' }],
       locked: [{ kind: 'setting', name: 'subnet' }],
       removed: [tag('mine')],
-      unlocked: [{ kind: 'service', name: 'SSH' }],
+      owned: [{ kind: 'service', name: 'SSH' }],
     })
     const page = await render(<ProductPolicyPreview preview={[preview]} single />)
     const groups = [...page.querySelectorAll('[data-preview-group]')].map(g => g.getAttribute('data-preview-group'))
-    expect(groups).toEqual(['removed', 'added', 'locked', 'unlocked'])
+    expect(groups).toEqual(['removed', 'added', 'locked', 'owned'])
     expect(page.querySelector('[data-preview-group="removed"]')?.textContent).toBe('RemovedTag mine')
     expect(page.querySelector('[data-preview-group="added"]')?.textContent).toBe('AddedTag prodNetwork Plant')
     expect(page.querySelector('[data-preview-group="locked"]')?.textContent).toBe('Locked to the productSetting subnet')
-    expect(page.querySelector('[data-preview-group="unlocked"]')?.textContent).toBe('Becomes its ownService SSH')
+    expect(page.querySelector('[data-preview-group="owned"]')?.textContent).toBe('Becomes its ownService SSH')
   })
 
   it('a product’s devices: in brief, losses as warnings, and each device there to open', async () => {
     const previews = [
-      previewOf({ deviceId: 'D1', name: 'pump-1', removed: [tag('a'), tag('b')], locked: [tag('prod')] }),
-      previewOf({ deviceId: 'D2', name: 'pump-2', removed: [tag('b'), tag('c')], locked: [tag('prod')] }),
-      previewOf({ deviceId: 'D3', name: 'pump-3' }),
+      previewOf({ deviceId: 'D1', deviceName: 'pump-1', removed: [tag('a'), tag('b')], locked: [tag('prod')] }),
+      previewOf({ deviceId: 'D2', deviceName: 'pump-2', removed: [tag('b'), tag('c')], locked: [tag('prod')] }),
+      previewOf({ deviceId: 'D3', deviceName: 'pump-3' }),
     ]
     const page = await render(<ProductPolicyPreview preview={previews} />)
     expect(notices(page, 'warning')).toEqual(['2 devices will lose 3 tags'])
@@ -91,12 +91,19 @@ describe('a preview of a change of product or level', () => {
     expect(page.textContent).toContain('pump-2')
   })
 
-  it('the lifecycle warning, once however many devices it is for', async () => {
+  it('a product level’s change in graphql’s own words, a warning where devices lose items', async () => {
+    const previews = [previewOf({ deviceId: 'D1', removed: [tag('a')] })]
+    const page = await render(<ProductPolicyPreview preview={previews} summary="1 device will lose 1 extra tag" />)
+    expect(notices(page, 'warning')).toEqual(['1 device will lose 1 extra tag'])
+    expect(page.querySelector('[data-preview-line]')).toBeNull()
+  })
+
+  it('what graphql warns of, once however many devices it is for', async () => {
     const warning =
       'It will be removed at its next reboot or after 10 minutes offline, unless this machine re-registers itself'
     const previews = [
-      previewOf({ deviceId: 'D1', warning, added: [tag('a')] }),
-      previewOf({ deviceId: 'D2', warning, added: [tag('a')] }),
+      previewOf({ deviceId: 'D1', warnings: [warning], added: [tag('a')] }),
+      previewOf({ deviceId: 'D2', warnings: [warning], added: [tag('a')] }),
     ]
     const page = await render(<ProductPolicyPreview preview={previews} />)
     expect(notices(page, 'warning')).toEqual([warning])

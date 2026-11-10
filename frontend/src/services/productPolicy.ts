@@ -13,8 +13,7 @@ import type { NetworkDeviceRole } from './graphQLDeviceNetworks'
 
    Offered only where the API has it, read from its schema once. graphql's half was built beside this one, so the
    schema also says how each call is made: the arguments' types, and which fields an answer has — an item marked
-   `fromProduct`, a setting's `locked` reason, a product's networks — so a field graphql chose to leave out is left out
-   here rather than failing the read. A mutation's answer is asked for nothing but its __typename: what the portal shows
+   `fromProduct`, a preview's parts — so a field graphql leaves out is left out here rather than failing the read. A mutation's answer is asked for nothing but its __typename: what the portal shows
    after one is read again. */
 
 export type ProductSync = 'template' | 'synced' | 'enforced'
@@ -23,33 +22,40 @@ export const PRODUCT_SYNCS: ProductSync[] = ['template', 'synced', 'enforced']
 // tag, network, service, setting or proxy: as graphql names it, for the preview to group by.
 export type ProductItem = { kind: string; name: string }
 
-// What a change of product, or of a product's level, does to one device: the items it is given, those that become
-// locked to the product, those it loses (only a move into, or a raise to, enforced removes anything), and those that
-// become its own (a detach, a move away, a product moved down to template). The lifecycle warning, where the move takes
-// it from persistent to ephemeral.
+// What a change of product, or of a product's level, does to one device (graphql's DeviceProductPreview): the items it
+// is given, those it has that become locked to the product, those it loses (only a move into, or a raise to, enforced
+// removes anything), and those that become its own (a detach, a move away, a product moved down to template). What will
+// not be applied or what follows — an ephemeral product's removal at reboot —, and why it cannot be done, if it cannot.
 export type ProductPreview = {
   deviceId: string | null
   name: string | null
   added: ProductItem[]
   locked: ProductItem[]
   removed: ProductItem[]
-  unlocked: ProductItem[]
-  warning: string | null
+  owned: ProductItem[]
+  warnings: string[]
+  refusal: string | null
 }
+
+// What a product's new level does to its devices: graphql's summary of it, how many devices it applies to, and each
+// device it changes.
+export type SyncPreview = { summary: string | null; devices: number | null; previews: ProductPreview[] }
 
 export type ProductNetwork = { id: string; name: string; role: NetworkDeviceRole }
 export type ProductSetting = { name: string; value: any }
 export type ProductDevice = { id: string; name: string; state: string | null }
 
-// What the product page reads beside the product: its level, and each grant or list the API serves (null where not).
+// What the product page reads beside the product: its level, and each grant or list the API serves (null where not) —
+// its devices the first page of them, and how many there are.
 export type ProductPolicy = {
   sync: ProductSync
   settings: ProductSetting[] | null
   networks: ProductNetwork[] | null
   devices: ProductDevice[] | null
+  deviceCount: number | null
 }
 
-export type DeviceProductRef = { id: string; name: string; sync: ProductSync; networks: ProductNetwork[] | null }
+export type DeviceProductRef = { id: string; name: string; sync: ProductSync; lifecycle: string | null }
 
 // A device's product now and the one it registered with, and which of its tags and services the product gives it.
 export type DeviceProductState = {
@@ -59,8 +65,8 @@ export type DeviceProductState = {
   services: string[]
 }
 
-// Why a setting is not the device's to change: its product sets it (at a level), or graphql's words for it.
-export type SettingLock = { product: string | null; level: ProductSync | null; text: string | null }
+// Why a setting is not the device's to change: its product holds it — by name and level where they are known.
+export type SettingLock = { product: string | null; level: ProductSync | null }
 
 // What the API serves of product policy: the device side (a device's product, attached, changed or detached with its
 // preview), the product side (a product's level with its preview), and each part beside them.
@@ -146,8 +152,8 @@ async function readTypes(names: string[]): Promise<Schema | 'ERROR'> {
 }
 
 // The types read first; then those they answer that the portal selects from: the previews, a device's product, a
-// product's networks and devices, a setting's lock.
-const FIRST = ['Query', 'Mutation', 'Device', 'DeviceProduct', 'DeviceSetting', 'Tag', 'Service', 'Proxy']
+// product's networks and devices.
+const FIRST = ['Query', 'Mutation', 'Device', 'DeviceProduct', 'DeviceSetting', 'DeviceTag', 'Service', 'Proxy']
 
 const has = (schema: Schema, type: string, ...fields: string[]) => fields.every(field => !!schema[type]?.[field])
 
@@ -195,7 +201,6 @@ function read(): Promise<Read> {
         first.Device?.product?.type,
         first.DeviceProduct?.networks?.type,
         first.DeviceProduct?.devices?.type,
-        first.DeviceSetting?.locked?.type,
       ].filter((name, i, all): name is string => !!name && !first[name] && all.indexOf(name) === i)
       const second = await readTypes(answered)
       if (second === 'ERROR') {
@@ -278,57 +283,42 @@ const items = (list: any): ProductItem[] =>
     : []
 
 export const previewOf = (preview: any): ProductPreview => ({
-  deviceId: preview?.deviceId ?? preview?.device?.id ?? null,
-  name: preview?.name ?? preview?.device?.name ?? null,
+  deviceId: preview?.deviceId ?? null,
+  name: preview?.deviceName ?? null,
   added: items(preview?.added),
   locked: items(preview?.locked),
   removed: items(preview?.removed),
-  unlocked: items(preview?.unlocked),
-  warning: preview?.warning || null,
+  owned: items(preview?.owned),
+  warnings: (preview?.warnings || []).filter(Boolean),
+  refusal: preview?.refusal || null,
 })
 
 const ROLES: NetworkDeviceRole[] = ['INITIATOR', 'TARGET', 'BOTH']
 
 export const networkOf = (network: any): ProductNetwork => {
   const role = String(network?.role || '').toUpperCase() as NetworkDeviceRole
-  return {
-    id: network?.id ?? network?.network?.id ?? network?.networkId,
-    name: network?.name ?? network?.network?.name ?? '',
-    role: ROLES.includes(role) ? role : 'TARGET',
-  }
+  return { id: network?.networkId, name: network?.name ?? '', role: ROLES.includes(role) ? role : 'TARGET' }
 }
 
-// A setting's lock as graphql says it: { by, product, level } as the device's document has it, or a reason.
-export function lockOf(locked: any): SettingLock | null {
-  if (!locked) return null
-  if (typeof locked === 'object')
-    return {
-      product: locked.product?.name ?? locked.product ?? null,
-      level: locked.level ? syncOf(locked.level) : null,
-      text: locked.reason ?? null,
-    }
-  return { product: null, level: null, text: typeof locked === 'string' ? locked : null }
-}
-
-const NETWORK: Want = { id: true, name: true, role: true, networkId: true, network: 'id name' }
-const LOCKED: Want = { by: true, product: 'name', level: true, reason: true }
+const NETWORK: Want = { networkId: true, name: true, role: true }
 const ITEMS = 'kind name'
 const PREVIEW: Want = {
   deviceId: true,
-  name: true,
-  device: 'id name',
+  deviceName: true,
   added: ITEMS,
   locked: ITEMS,
   removed: ITEMS,
-  unlocked: ITEMS,
-  warning: true,
+  owned: ITEMS,
+  warnings: true,
+  refusal: true,
 }
 
-// The fields a device setting adds where its product may lock it: none where the API has no product policy.
+// The field a device setting adds where its product may hold it (fromProduct: set by a synced or enforced product,
+// locked): none where the API has no product policy.
 export async function settingPolicyFields(): Promise<string> {
   const { served, schema } = await read()
   if (!served.device) return ''
-  return select(schema, 'DeviceSetting', { fromProduct: 'id name', locked: LOCKED })
+  return select(schema, 'DeviceSetting', { fromProduct: true })
 }
 
 type Answer<T> = T | 'ERROR' | { reason: string }
@@ -357,7 +347,7 @@ export async function graphQLProductPolicy(productId: string, accountId?: string
     sync: true,
     ...(served.settings ? { settings: 'name value' } : {}),
     ...(served.networks ? { networks: NETWORK } : {}),
-    ...(served.devices ? { devices: 'id name state' } : {}),
+    ...(served.devices ? { devices: 'id name state', deviceCount: true } : {}),
   })
   const query = `query DeviceProductPolicy($id: String!, $accountId: String) {
     login { account(id: $accountId) { deviceProducts(id: [$id]) { items { id ${fields} } } } }
@@ -375,19 +365,24 @@ export async function graphQLProductPolicy(productId: string, accountId?: string
     devices: served.devices
       ? (product.devices || []).map((d: any) => ({ id: d.id, name: d.name ?? d.id, state: d.state ?? null }))
       : null,
+    deviceCount: typeof product.deviceCount === 'number' ? product.deviceCount : null,
   }
 }
 
-// One preview per device of the product, or one for them all where graphql answers so.
+// graphql's summary ("37 devices will lose 12 extra tags"), and a preview for each device the level changes.
 export async function graphQLProductSyncPreview(productId: string, sync: ProductSync) {
   const { schema } = await read()
   const type = schema.Query?.productSyncPreview?.type
-  return ask<ProductPreview[]>(
+  return ask<SyncPreview>(
     'Query',
     'productSyncPreview',
     { productId, sync },
-    data => (Array.isArray(data) ? data : data ? [data] : []).map(previewOf),
-    select(schema, type, PREVIEW)
+    data => ({
+      summary: data?.summary || null,
+      devices: typeof data?.devices === 'number' ? data.devices : null,
+      previews: (data?.changes || []).map(previewOf),
+    }),
+    select(schema, type, { summary: true, devices: true, changes: PREVIEW })
   )
 }
 
@@ -433,13 +428,15 @@ export async function graphQLDeviceProduct(
 ): Promise<DeviceProductState | 'ERROR'> {
   const { served, schema } = await read()
   if (!served.device) return 'ERROR'
-  const product = select(schema, schema.Device?.product?.type, { id: true, name: true, sync: true, networks: NETWORK })
+  const product = select(schema, schema.Device?.product?.type, { id: true, name: true, sync: true, lifecycle: true })
+  const tag = schema.Device?.tags?.type
   const fields = [
     `product { ${product || 'id name'} }`,
     select(schema, 'Device', { productOrigin: 'id name' }),
-    schema.Tag?.fromProduct &&
-      `tags(accountId: $accountId) { ${select(schema, 'Tag', { name: true, fromProduct: 'id' })} }`,
-    schema.Service?.fromProduct && `services { ${select(schema, 'Service', { id: true, fromProduct: 'id' })} }`,
+    tag &&
+      schema[tag]?.fromProduct &&
+      `tags(accountId: $accountId) { ${select(schema, tag, { name: true, fromProduct: true })} }`,
+    schema.Service?.fromProduct && `services { ${select(schema, 'Service', { id: true, fromProduct: true })} }`,
   ]
     .filter(Boolean)
     .join(' ')
@@ -457,14 +454,10 @@ export async function graphQLDeviceProduct(
           id: device.product.id,
           name: device.product.name ?? '',
           sync: syncOf(device.product.sync),
-          networks: device.product.networks ? device.product.networks.map(networkOf) : null,
+          lifecycle: device.product.lifecycle ?? null,
         }
       : null,
-    origin: !origin
-      ? null
-      : typeof origin === 'object'
-      ? { id: origin.id ?? null, name: origin.name ?? null }
-      : { id: String(origin), name: null },
+    origin: origin ? { id: origin.id ?? null, name: origin.name ?? null } : null,
     tags: (device.tags || []).filter((tag: any) => tag.fromProduct).map((tag: any) => tag.name),
     services: (device.services || []).filter((service: any) => service.fromProduct).map((service: any) => service.id),
   }
@@ -520,11 +513,11 @@ export type PreviewSummary = {
   added: PreviewCount[]
   locked: PreviewCount[]
   removed: PreviewCount[]
-  unlocked: PreviewCount[]
+  owned: PreviewCount[]
 }
 
 export function summarize(previews: ProductPreview[]): PreviewSummary {
-  const count = (part: 'added' | 'locked' | 'removed' | 'unlocked'): PreviewCount[] => {
+  const count = (part: 'added' | 'locked' | 'removed' | 'owned'): PreviewCount[] => {
     const kinds = new Map<string, { devices: number; names: Set<string> }>()
     previews.forEach(preview => {
       const seen = new Set<string>()
@@ -538,7 +531,7 @@ export function summarize(previews: ProductPreview[]): PreviewSummary {
     })
     return [...kinds.entries()].map(([kind, { devices, names }]) => ({ kind, devices, items: names.size }))
   }
-  return { added: count('added'), locked: count('locked'), removed: count('removed'), unlocked: count('unlocked') }
+  return { added: count('added'), locked: count('locked'), removed: count('removed'), owned: count('owned') }
 }
 
 // Whether the change takes anything away, and so must be confirmed.
