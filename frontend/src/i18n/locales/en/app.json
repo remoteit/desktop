@@ -2690,6 +2690,32 @@
     "productName": "Product Name",
     "title": "Create Product"
   },
+  "productDevices": {
+    "none": "No device belongs to this product.",
+    "title_one": "Devices ({{count}})",
+    "title_other": "Devices ({{count}})"
+  },
+  "productGrants": {
+    "add": "Add",
+    "addNetwork": "Add a network",
+    "both": "Initiator and target",
+    "hint": "What its devices are given while they belong to it. A grant needs you to manage what it grants, as adding a device to it does.",
+    "initiator": "Initiator",
+    "networkNotChanged": "Its networks were not changed.",
+    "networks": "Networks",
+    "noNetworks": "None",
+    "proxies": "Proxies",
+    "proxyJoined": "Its devices run this proxy",
+    "proxyNotChanged": "Its proxies were not changed.",
+    "proxyNotJoined": "Its devices do not run this proxy",
+    "removeNetwork": "Remove",
+    "removeNetworkBody": "Its devices that are members through the product leave the network, while it is synced or enforced. Under template they keep what they have.",
+    "removeNetworkTitle": "Take {{name}} off {{network}}?",
+    "role": "As",
+    "target": "Target",
+    "title": "Grants",
+    "warningTitle": "Register its devices with join keys"
+  },
   "productJoinKeys": {
     "by": "by {{email}}",
     "create": "Create Join Key",
@@ -2770,9 +2796,6 @@
     "deviceCount_other": "{{count}} devices",
     "enforced": "Enforced",
     "enforcedMeaning": "Its devices are exactly the product: its items are locked, and nothing else is kept.",
-    "exitCount_one": "{{count}} exit",
-    "exitCount_other": "{{count}} exits",
-    "exitItem": "Exit {{name}}",
     "fromProduct": "From product {{product}}",
     "itemCount_one": "{{count}} item",
     "itemCount_other": "{{count}} items",
@@ -2800,6 +2823,28 @@
     "willLock": "{{devices}} will have {{items}} locked to the product",
     "willLose": "{{devices}} will lose {{items}}",
     "willOwn": "{{devices}} will keep {{items}} as their own"
+  },
+  "productPolicyLink": {
+    "title": "Policy"
+  },
+  "productPolicyPage": {
+    "failed": "Its policy could not be read.",
+    "loading": "Loading its policy...",
+    "unsupported": "Product policy is not available here."
+  },
+  "productPreview": {
+    "added": "Added",
+    "failed": "What would change could not be read.",
+    "hideDevices": "Hide each device",
+    "locked": "Locked to the product",
+    "more_one": "and {{count}} more",
+    "more_other": "and {{count}} more",
+    "nothing": "Nothing on its devices changes.",
+    "nothingDevice": "Nothing on the device changes.",
+    "reading": "Reading what changes…",
+    "removed": "Removed",
+    "showDevices": "Show each device",
+    "unlocked": "Becomes its own"
   },
   "productRegistrationCodes": {
     "current": "Current",
@@ -2842,6 +2887,24 @@
     "serviceMayHaveBeenRemoved": "The service may have been removed.",
     "serviceNotFound": "Service not found"
   },
+  "productSettings": {
+    "console": "Console",
+    "hint": "A setting left to each device is the device’s to choose. One set here is locked on its devices while the product is synced or enforced.",
+    "mcpExec": "AI commands through MCP",
+    "notChanged": "The setting was not changed.",
+    "off": "Off",
+    "on": "On",
+    "scripts": "Allow scripts",
+    "services": "Allow remote access to services",
+    "subnet": "Device subnet",
+    "title": "Device Settings",
+    "unset": "Each device’s own",
+    "unsetButton": "Unset",
+    "websocket": "Reflector (websocket)",
+    "websocketAuto": "Automatic",
+    "websocketOff": "Off",
+    "websocketOn": "Always"
+  },
   "productSettingsPage": {
     "warningTitle": "Move this product to join keys"
   },
@@ -2853,6 +2916,14 @@
     "emptyHelp": "Products are used for bulk device registration and management.",
     "emptyHelpReadOnly": "Products are used for bulk device registration and management. You must have the admin permission to create one.",
     "loading": "Loading products..."
+  },
+  "productSync": {
+    "confirm": "Make {{level}}",
+    "confirmRemove": "{{level}} and Remove",
+    "confirmTitle": "Make {{name}} {{level}}?",
+    "label": "Its devices get its items",
+    "notChanged": "The sync level was not changed.",
+    "title": "Sync Level"
   },
   "productTransferPage": {
     "cancel": "Cancel",

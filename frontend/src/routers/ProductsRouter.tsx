@@ -9,6 +9,7 @@ import { ProductSettingsPage } from '../pages/ProductsPage/ProductSettingsPage'
 import { ProductServiceDetailPage } from '../pages/ProductsPage/ProductServiceDetailPage'
 import { ProductServiceAddPage } from '../pages/ProductsPage/ProductServiceAddPage'
 import { ProductTransferPage } from '../pages/ProductsPage/ProductTransferPage'
+import { ProductPolicyPage } from '../pages/ProductsPage/ProductPolicyPage'
 
 const ProductDetailRoutes: React.FC = () => {
   return (
@@ -21,6 +22,9 @@ const ProductDetailRoutes: React.FC = () => {
       </Route>
       <Route path="/products/:productId/details">
         <ProductSettingsPage />
+      </Route>
+      <Route path="/products/:productId/policy">
+        <ProductPolicyPage />
       </Route>
       <Route path="/products/:productId/:serviceId">
         <ProductServiceDetailPage />

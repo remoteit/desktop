@@ -2690,6 +2690,32 @@
     "productName": "Produktname",
     "title": "Produkt erstellen"
   },
+  "productDevices": {
+    "none": "",
+    "title_one": "",
+    "title_other": ""
+  },
+  "productGrants": {
+    "add": "",
+    "addNetwork": "",
+    "both": "",
+    "hint": "",
+    "initiator": "",
+    "networkNotChanged": "",
+    "networks": "",
+    "noNetworks": "",
+    "proxies": "",
+    "proxyJoined": "",
+    "proxyNotChanged": "",
+    "proxyNotJoined": "",
+    "removeNetwork": "",
+    "removeNetworkBody": "",
+    "removeNetworkTitle": "",
+    "role": "",
+    "target": "",
+    "title": "",
+    "warningTitle": ""
+  },
   "productJoinKeys": {
     "by": "von {{email}}",
     "create": "Beitrittsschlüssel erstellen",
@@ -2770,9 +2796,6 @@
     "deviceCount_other": "",
     "enforced": "",
     "enforcedMeaning": "",
-    "exitCount_one": "",
-    "exitCount_other": "",
-    "exitItem": "",
     "fromProduct": "",
     "itemCount_one": "",
     "itemCount_other": "",
@@ -2800,6 +2823,28 @@
     "willLock": "",
     "willLose": "",
     "willOwn": ""
+  },
+  "productPolicyLink": {
+    "title": ""
+  },
+  "productPolicyPage": {
+    "failed": "",
+    "loading": "",
+    "unsupported": ""
+  },
+  "productPreview": {
+    "added": "",
+    "failed": "",
+    "hideDevices": "",
+    "locked": "",
+    "more_one": "",
+    "more_other": "",
+    "nothing": "",
+    "nothingDevice": "",
+    "reading": "",
+    "removed": "",
+    "showDevices": "",
+    "unlocked": ""
   },
   "productRegistrationCodes": {
     "current": "Aktuell",
@@ -2842,6 +2887,24 @@
     "serviceMayHaveBeenRemoved": "Der Dienst wurde möglicherweise entfernt.",
     "serviceNotFound": "Dienst nicht gefunden"
   },
+  "productSettings": {
+    "console": "",
+    "hint": "",
+    "mcpExec": "",
+    "notChanged": "",
+    "off": "",
+    "on": "",
+    "scripts": "",
+    "services": "",
+    "subnet": "",
+    "title": "",
+    "unset": "",
+    "unsetButton": "",
+    "websocket": "",
+    "websocketAuto": "",
+    "websocketOff": "",
+    "websocketOn": ""
+  },
   "productSettingsPage": {
     "warningTitle": "Stellen Sie dieses Produkt auf Beitrittsschlüssel um"
   },
@@ -2853,6 +2916,14 @@
     "emptyHelp": "Produkte dienen der Massenregistrierung und -verwaltung von Geräten.",
     "emptyHelpReadOnly": "Produkte dienen der Massenregistrierung und -verwaltung von Geräten. Sie benötigen Administratorrechte, um eines zu erstellen.",
     "loading": "Produkte werden geladen..."
+  },
+  "productSync": {
+    "confirm": "",
+    "confirmRemove": "",
+    "confirmTitle": "",
+    "label": "",
+    "notChanged": "",
+    "title": ""
   },
   "productTransferPage": {
     "cancel": "Abbrechen",

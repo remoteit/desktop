@@ -2741,6 +2741,33 @@
     "productName": "Nombre del producto",
     "title": "Crear producto"
   },
+  "productDevices": {
+    "none": "",
+    "title_one": "",
+    "title_many": "",
+    "title_other": ""
+  },
+  "productGrants": {
+    "add": "",
+    "addNetwork": "",
+    "both": "",
+    "hint": "",
+    "initiator": "",
+    "networkNotChanged": "",
+    "networks": "",
+    "noNetworks": "",
+    "proxies": "",
+    "proxyJoined": "",
+    "proxyNotChanged": "",
+    "proxyNotJoined": "",
+    "removeNetwork": "",
+    "removeNetworkBody": "",
+    "removeNetworkTitle": "",
+    "role": "",
+    "target": "",
+    "title": "",
+    "warningTitle": ""
+  },
   "productJoinKeys": {
     "by": "por {{email}}",
     "create": "Crear clave de unión",
@@ -2822,10 +2849,6 @@
     "deviceCount_other": "",
     "enforced": "",
     "enforcedMeaning": "",
-    "exitCount_one": "",
-    "exitCount_many": "",
-    "exitCount_other": "",
-    "exitItem": "",
     "fromProduct": "",
     "itemCount_one": "",
     "itemCount_many": "",
@@ -2859,6 +2882,29 @@
     "willLock": "",
     "willLose": "",
     "willOwn": ""
+  },
+  "productPolicyLink": {
+    "title": ""
+  },
+  "productPolicyPage": {
+    "failed": "",
+    "loading": "",
+    "unsupported": ""
+  },
+  "productPreview": {
+    "added": "",
+    "failed": "",
+    "hideDevices": "",
+    "locked": "",
+    "more_one": "",
+    "more_many": "",
+    "more_other": "",
+    "nothing": "",
+    "nothingDevice": "",
+    "reading": "",
+    "removed": "",
+    "showDevices": "",
+    "unlocked": ""
   },
   "productRegistrationCodes": {
     "current": "Actual",
@@ -2903,6 +2949,24 @@
     "serviceMayHaveBeenRemoved": "Es posible que el servicio se haya eliminado.",
     "serviceNotFound": "Servicio no encontrado"
   },
+  "productSettings": {
+    "console": "",
+    "hint": "",
+    "mcpExec": "",
+    "notChanged": "",
+    "off": "",
+    "on": "",
+    "scripts": "",
+    "services": "",
+    "subnet": "",
+    "title": "",
+    "unset": "",
+    "unsetButton": "",
+    "websocket": "",
+    "websocketAuto": "",
+    "websocketOff": "",
+    "websocketOn": ""
+  },
   "productSettingsPage": {
     "warningTitle": "Pase este producto a claves de unión"
   },
@@ -2914,6 +2978,14 @@
     "emptyHelp": "Los productos se usan para registrar y administrar dispositivos de forma masiva.",
     "emptyHelpReadOnly": "Los productos se usan para registrar y administrar dispositivos de forma masiva. Debes tener el permiso de administrador para crear uno.",
     "loading": "Cargando productos..."
+  },
+  "productSync": {
+    "confirm": "",
+    "confirmRemove": "",
+    "confirmTitle": "",
+    "label": "",
+    "notChanged": "",
+    "title": ""
   },
   "productTransferPage": {
     "cancel": "Cancelar",
