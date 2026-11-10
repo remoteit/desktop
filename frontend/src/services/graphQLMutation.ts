@@ -459,6 +459,15 @@ export async function graphQLNotificationSettings(params: INotificationSetting) 
   )
 }
 
+export async function graphQLSetOrganizationNotificationSettings(organizationId: string, pushNotifications: boolean | null) {
+  return await graphQLBasicRequest(
+    ` mutation SetOrganizationNotificationSettings($organizationId: ID!, $pushNotifications: Boolean) {
+        setOrganizationNotificationSettings(organizationId: $organizationId, pushNotifications: $pushNotifications)
+      }`,
+    { organizationId, pushNotifications }
+  )
+}
+
 export async function graphQLRegisterPushToken(
   platform: 'ios' | 'android',
   token: string,
