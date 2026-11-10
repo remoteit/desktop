@@ -53,11 +53,20 @@ describe('openNotification', () => {
     expect(window.localStorage.getItem(KEY)).not.toBeNull()
   })
 
-  it('opens the page without a notice when there is no title, keeping any notice already showing', () => {
+  it('clears the notice from an earlier tap when this one has no title', () => {
     openNotification('/devices/abc', {})
 
     expect(showPendingNotice()).toBe('/devices/abc')
+    expect(notices()).toEqual([undefined])
+  })
+
+  it('forgets a tap the app never opened, rather than replaying it on a later launch', () => {
+    openNotification('/devices/abc', { title: 'pi went offline' })
+    vi.setSystemTime(NOW + 11 * 60 * 1000)
+
+    expect(showPendingNotice('/devices/abc')).toBeUndefined()
     expect(notices()).toEqual([])
+    expect(window.localStorage.getItem(KEY)).toBeNull()
   })
 
   it('drops a saved tap it cannot read', () => {

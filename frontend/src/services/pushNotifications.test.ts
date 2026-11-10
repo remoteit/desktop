@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { plugin, listeners, state, set, open, browser, constants, register, unregister, actor } = vi.hoisted(() => {
+const { plugin, listeners, state, open, browser, constants, register, unregister, actor } = vi.hoisted(() => {
   const listeners: Record<string, (event: any) => unknown> = {}
   return {
     listeners,
@@ -18,7 +18,6 @@ const { plugin, listeners, state, set, open, browser, constants, register, unreg
       unregister: vi.fn(async () => {}),
     },
     state: { auth: { user: { id: 'user-1' } as any }, ui: { apis: {} as { apnsEnvironment?: string } } },
-    set: vi.fn(),
     open: vi.fn(),
     browser: { isMobile: true, isIOS: true, isAndroid: false },
     constants: {
@@ -33,7 +32,7 @@ const { plugin, listeners, state, set, open, browser, constants, register, unreg
 })
 
 vi.mock('@capacitor/push-notifications', () => ({ PushNotifications: plugin }))
-vi.mock('../store', () => ({ store: { getState: () => state, dispatch: { ui: { set } } } }))
+vi.mock('../store', () => ({ store: { getState: () => state } }))
 vi.mock('./browser', () => ({ default: browser }))
 vi.mock('../constants', () => constants)
 vi.mock('./graphQLMutation', () => ({ graphQLRegisterPushToken: register, graphQLUnregisterPushToken: unregister }))
