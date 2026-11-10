@@ -1,13 +1,16 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
+import { lockOf, settingPolicyFields, SettingLock } from './productPolicy'
 
 /* A device's settings (device-package docs/device-settings.md): each one value, set from either side — here, or on
    the machine, where it is recorded who set it — and the machine administrator's override of it (`control`), which no
    change here passes. graphql's Device.settings and setDeviceSetting. An API without them answers UNSUPPORTED, for
-   the caller to keep its own controls. */
+   the caller to keep its own controls. Where the API has product policy (services/productPolicy), a setting the
+   device's product sets is marked so, and locked under a synced or enforced product. */
 
 export type DeviceSettingName =
+  | 'exit' // the exit its traffic goes out through: set by its own mutation (setDeviceExit), read here for its lock
   | 'exit_node'
   | 'subnet'
   | 'console'
@@ -33,19 +36,28 @@ export type DeviceSetting = {
   by: string | null
   onDevice: boolean
   control: DeviceSettingControl
+  fromProduct?: boolean // its product sets it
+  locked?: SettingLock | null // and holds it: a synced or enforced product's
 }
 
 const FIELDS = 'name value at by onDevice control'
 
+// A setting as read: its product's mark and lock, where the API says them, in one shape.
+function parsed(setting: any): DeviceSetting {
+  if (!setting || (setting.fromProduct === undefined && setting.locked === undefined)) return setting
+  return { ...setting, fromProduct: !!setting.fromProduct, locked: lockOf(setting.locked) }
+}
+
 export async function graphQLDeviceSettings(deviceId: string): Promise<DeviceSetting[] | 'ERROR' | typeof UNSUPPORTED> {
-  const query = `query DeviceSettings($id: [String!]!) { login { device(id: $id) { id settings { ${FIELDS} } } } }`
+  const fields = `${FIELDS} ${await settingPolicyFields()}`.trim()
+  const query = `query DeviceSettings($id: [String!]!) { login { device(id: $id) { id settings { ${fields} } } } }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, 'settings')) return UNSUPPORTED
   if (errors) return 'ERROR'
-  return response.data?.data?.login?.device?.[0]?.settings ?? []
+  return (response.data?.data?.login?.device?.[0]?.settings ?? []).map(parsed)
 }
 
 export async function graphQLSetDeviceSetting(
@@ -53,18 +65,20 @@ export async function graphQLSetDeviceSetting(
   name: DeviceSettingName,
   value: any
 ): Promise<DeviceSetting | 'ERROR'> {
+  const fields = `${FIELDS} ${await settingPolicyFields()}`.trim()
   const response = await graphQLBasicRequest(
     ` mutation SetDeviceSetting($deviceId: String!, $name: String!, $value: Any) {
-        setDeviceSetting(deviceId: $deviceId, name: $name, value: $value) { ${FIELDS} }
+        setDeviceSetting(deviceId: $deviceId, name: $name, value: $value) { ${fields} }
       }`,
     { deviceId, name, value }
   )
-  return response === 'ERROR' ? 'ERROR' : response?.data?.data?.setDeviceSetting ?? 'ERROR'
+  const setting = response === 'ERROR' ? undefined : response?.data?.data?.setDeviceSetting
+  return setting ? parsed(setting) : 'ERROR'
 }
 
-// Fixed by the machine's administrator, or set only on the machine: not to be changed here.
+// Fixed by the machine's administrator, set only on the machine, or held by its product: not to be changed here.
 export const settingLocked = (setting?: DeviceSetting) =>
-  !!setting && ['local', 'off', 'on', 'auto'].includes(setting.control)
+  !!setting && (['local', 'off', 'on', 'auto'].includes(setting.control) || !!setting.locked)
 
 // Whether a device keeps services from being added: its services setting is there and off (graphql refuses addService
 // then). An API without it is as before.

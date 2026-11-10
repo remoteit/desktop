@@ -16,6 +16,8 @@ import { ListItemSetting } from './ListItemSetting'
 import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
+import { useDeviceSettings } from '../hooks/useDeviceSettings'
+import { productLockNote } from '../helpers/productPolicyHelper'
 
 /* The exit a device's traffic goes out through (graphql-api docs/PROXY-GROUPS.md §13): Device.usesExit — apart from the
    exit it runs (its Runs) —, chosen here among the exits offered for it (exits, with the device; never the one it runs),
@@ -33,6 +35,8 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const [saving, setSaving] = useState(false)
   const [refusal, setRefusal] = useState<string>()
   const manage = device.permissions.includes('MANAGE')
+  // An exit its product sets, under synced or enforced, is the product's to change.
+  const productLock = useDeviceSettings(device.id).setting('exit')?.locked
 
   const load = useCallback(async () => {
     const answer = await graphQLDeviceExit(device.id)
@@ -72,9 +76,10 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
         : exit.name,
     })
 
-  // The machine's administrator's policy holds over the portal: under local or never, nothing is chosen here.
+  // The machine's administrator's policy holds over the portal: under local or never, nothing is chosen here. Nor where
+  // its product holds it.
   const policy = info.exitPolicy
-  const locked = policy === 'local' || policy === 'never'
+  const locked = policy === 'local' || policy === 'never' || !!productLock
   const chosenBy = exit ? chosenLine(t, info) : null
   const policyText = policyLine(t, info)
   const routeName = route ? protect?.routeName || offered.find(each => each.id === route)?.name || route : null
@@ -98,10 +103,14 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           value={exit?.id ?? ''}
           values={choices}
           disabled={saving || locked}
-          helpMessage={t(
-            'deviceExit.viaHint',
-            'All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached.'
-          )}
+          helpMessage={
+            productLock
+              ? productLockNote(t, productLock)
+              : t(
+                  'deviceExit.viaHint',
+                  'All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached.'
+                )
+          }
           onChange={via => choose(via || null)}
         />
       )}

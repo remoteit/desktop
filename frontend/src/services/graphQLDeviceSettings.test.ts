@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { uiSet, request } = vi.hoisted(() => ({ uiSet: vi.fn(), request: vi.fn() }))
+const { uiSet, request, policyFields } = vi.hoisted(() => ({
+  uiSet: vi.fn(),
+  request: vi.fn(),
+  policyFields: vi.fn(async () => ''),
+}))
 vi.mock('../store', () => ({
   store: { getState: () => ({ ui: {} }), dispatch: { ui: { set: uiSet, deprecated: vi.fn() } } },
 }))
@@ -8,6 +12,11 @@ vi.mock('./remoteit', () => ({ apiHeaders: vi.fn().mockResolvedValue({ authoriza
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
+// What a setting adds where the API has product policy: read from its schema there (productPolicy.test.ts).
+vi.mock('./productPolicy', async importOriginal => ({
+  ...(await importOriginal<typeof import('./productPolicy')>()),
+  settingPolicyFields: policyFields,
+}))
 
 import { UNSUPPORTED } from './graphQLDaemon'
 import {
@@ -32,6 +41,7 @@ const subnet = {
 beforeEach(() => {
   request.mockReset()
   uiSet.mockReset()
+  policyFields.mockReset().mockResolvedValue('')
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -67,6 +77,32 @@ describe('a device’s settings', () => {
     const { query } = request.mock.calls[0][0].data
     expect(query).toMatch(/mutation SetDeviceSetting\(\$deviceId: String!, \$name: String!, \$value: Any\)/)
     expect(query).toMatch(/setDeviceSetting\(deviceId: \$deviceId, name: \$name, value: \$value\)/)
+  })
+
+  it('where the API has product policy: each setting’s mark and lock, read and answered in one shape', async () => {
+    policyFields.mockResolvedValue('fromProduct locked { by product level }')
+    const held = { ...subnet, fromProduct: true, locked: { by: 'product', product: 'Pumps', level: 'synced' } }
+    request.mockResolvedValue({
+      data: { data: { login: { device: [{ id: 'D', settings: [held, subnet] }] } } },
+      headers: {},
+    })
+    const read = await graphQLDeviceSettings('D')
+    expect(request.mock.calls[0][0].data.query).toContain(
+      'settings { name value at by onDevice control fromProduct locked'
+    )
+    expect(read).toEqual([
+      { ...subnet, fromProduct: true, locked: { product: 'Pumps', level: 'synced', text: null } },
+      subnet,
+    ])
+    expect(settingLocked((read as any)[0])).toBe(true)
+    expect(settingLocked({ ...subnet, fromProduct: true, locked: null } as any)).toBe(false)
+
+    request.mockResolvedValue({
+      data: { data: { setDeviceSetting: { ...subnet, fromProduct: false, locked: null } } },
+      headers: {},
+    })
+    expect(await graphQLSetDeviceSetting('D', 'subnet', true)).toEqual({ ...subnet, fromProduct: false, locked: null })
+    expect(request.mock.calls[1][0].data.query).toContain('{ name value at by onDevice control fromProduct locked')
   })
 
   it('a refused change: ERROR', async () => {
