@@ -1342,6 +1342,17 @@
   "devicePresenceSetting": {
     "label": "Dirección de presencia"
   },
+  "deviceProduct": {
+    "attach": "",
+    "change": "",
+    "none": "",
+    "product": "",
+    "registeredWith": ""
+  },
+  "deviceProductNotice": {
+    "enforced": "",
+    "synced": ""
+  },
   "deviceProxy": {
     "listening": "",
     "listeningAdmin": "",
@@ -1381,6 +1392,7 @@
     "deleteWarning": "La eliminación es irreversible y es posible que necesites acceso al dispositivo para recuperarlo.",
     "disable": "",
     "more": "Más",
+    "moveProduct": "",
     "selectedCount_one": "{{count}} dispositivo seleccionado",
     "selectedCount_many": "{{count}} dispositivos seleccionados",
     "selectedCount_other": "{{count}} dispositivos seleccionados",
@@ -1409,6 +1421,9 @@
     "onDevice": "",
     "onDeviceBy": "",
     "onDeviceConfiguration": "",
+    "productEnforced": "",
+    "productLocked": "",
+    "productSynced": "",
     "updates": ""
   },
   "deviceSetupItem": {
@@ -2894,6 +2909,36 @@
     "productName": "Nombre del producto",
     "title": "Crear producto"
   },
+  "productDevices": {
+    "more_one": "",
+    "more_many": "",
+    "more_other": "",
+    "none": "",
+    "title_one": "",
+    "title_many": "",
+    "title_other": ""
+  },
+  "productGrants": {
+    "add": "",
+    "addNetwork": "",
+    "both": "",
+    "hint": "",
+    "initiator": "",
+    "networkNotChanged": "",
+    "networks": "",
+    "noNetworks": "",
+    "proxies": "",
+    "proxyJoined": "",
+    "proxyNotChanged": "",
+    "proxyNotJoined": "",
+    "removeNetwork": "",
+    "removeNetworkBody": "",
+    "removeNetworkTitle": "",
+    "role": "",
+    "target": "",
+    "title": "",
+    "warningTitle": ""
+  },
   "productJoinKeys": {
     "by": "por {{email}}",
     "create": "Crear clave de unión",
@@ -2928,6 +2973,24 @@
     "toPersistent": "",
     "toPersistentBody": "",
     "toPersistentTitle": ""
+  },
+  "productMove": {
+    "attach": "",
+    "attachTitle": "",
+    "changeTitle": "",
+    "detach": "",
+    "detachMeaning": "",
+    "enforcedMany": "",
+    "manyTitle_one": "",
+    "manyTitle_many": "",
+    "manyTitle_other": "",
+    "move": "",
+    "moveRemove": "",
+    "none": "",
+    "noneMany": "",
+    "notChanged": "",
+    "product": "",
+    "tooMany": ""
   },
   "productOneTimeCodes": {
     "add": "Agregar un dispositivo",
@@ -2968,6 +3031,69 @@
     "productNotFoundHint": "Es posible que el producto se haya eliminado o que no tengas acceso a él.",
     "service": "Servicio",
     "unknown": "Desconocido"
+  },
+  "productPolicy": {
+    "deviceCount_one": "",
+    "deviceCount_many": "",
+    "deviceCount_other": "",
+    "enforced": "",
+    "enforcedMeaning": "",
+    "fromProduct": "",
+    "itemCount_one": "",
+    "itemCount_many": "",
+    "itemCount_other": "",
+    "managedEnforced": "",
+    "networkCount_one": "",
+    "networkCount_many": "",
+    "networkCount_other": "",
+    "networkItem": "",
+    "proxyCount_one": "",
+    "proxyCount_many": "",
+    "proxyCount_other": "",
+    "proxyItem": "",
+    "serviceCount_one": "",
+    "serviceCount_many": "",
+    "serviceCount_other": "",
+    "serviceItem": "",
+    "settingCount_one": "",
+    "settingCount_many": "",
+    "settingCount_other": "",
+    "settingItem": "",
+    "synced": "",
+    "syncedMeaning": "",
+    "tagCount_one": "",
+    "tagCount_many": "",
+    "tagCount_other": "",
+    "tagItem": "",
+    "template": "",
+    "templateMeaning": "",
+    "willGet": "",
+    "willLock": "",
+    "willLose": "",
+    "willOwn": ""
+  },
+  "productPolicyLink": {
+    "title": ""
+  },
+  "productPolicyPage": {
+    "failed": "",
+    "loading": "",
+    "unsupported": ""
+  },
+  "productPreview": {
+    "added": "",
+    "failed": "",
+    "hideDevices": "",
+    "locked": "",
+    "more_one": "",
+    "more_many": "",
+    "more_other": "",
+    "nothing": "",
+    "nothingDevice": "",
+    "owned": "",
+    "reading": "",
+    "removed": "",
+    "showDevices": ""
   },
   "productRegistrationCodes": {
     "current": "Actual",
@@ -3012,6 +3138,24 @@
     "serviceMayHaveBeenRemoved": "Es posible que el servicio se haya eliminado.",
     "serviceNotFound": "Servicio no encontrado"
   },
+  "productSettings": {
+    "console": "",
+    "hint": "",
+    "mcpExec": "",
+    "notChanged": "",
+    "off": "",
+    "on": "",
+    "scripts": "",
+    "services": "",
+    "subnet": "",
+    "title": "",
+    "unset": "",
+    "unsetButton": "",
+    "websocket": "",
+    "websocketAuto": "",
+    "websocketOff": "",
+    "websocketOn": ""
+  },
   "productSettingsPage": {
     "warningTitle": "Pase este producto a claves de unión"
   },
@@ -3023,6 +3167,14 @@
     "emptyHelp": "Los productos se usan para registrar y administrar dispositivos de forma masiva.",
     "emptyHelpReadOnly": "Los productos se usan para registrar y administrar dispositivos de forma masiva. Debes tener el permiso de administrador para crear uno.",
     "loading": "Cargando productos..."
+  },
+  "productSync": {
+    "confirm": "",
+    "confirmRemove": "",
+    "confirmTitle": "",
+    "label": "",
+    "notChanged": "",
+    "title": ""
   },
   "productTransferPage": {
     "cancel": "Cancelar",

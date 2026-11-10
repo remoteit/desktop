@@ -24,6 +24,7 @@ import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { Gutters } from '../components/Gutters'
 import { List } from '@mui/material'
 import { VirtualDeviceSettings } from '../components/VirtualDeviceSettings'
+import { DeviceProductSetting } from '../components/DeviceProductSetting'
 
 export const DeviceEditPage: React.FC = () => {
   const { t } = useTranslation()
@@ -55,6 +56,7 @@ export const DeviceEditPage: React.FC = () => {
         <Gutters size={null}>
           <List>
             <DeviceNameSetting />
+            {deviceSessions && <DeviceProductSetting device={device} />}
             <DeviceSubnetLabelSetting />
             <DeviceDescriptionSetting />
             <DevicePresenceSetting />

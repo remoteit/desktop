@@ -13,6 +13,7 @@ import { IconButton } from '../../buttons/IconButton'
 import { LoadingMessage } from '../../components/LoadingMessage'
 import { ColorChip } from '../../components/ColorChip'
 import { ProductTagEditor } from '../../components/ProductTagEditor'
+import { ProductPolicyLink } from '../../components/ProductPolicyLink'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 import { spacing } from '../../styling'
@@ -83,6 +84,7 @@ export const ProductPage: React.FC = () => {
             <Stack flexWrap="wrap" flexDirection="row" marginLeft={9.5} marginRight={3}>
               <ProductTagEditor product={product} />
             </Stack>
+            <ProductPolicyLink productId={product.id} />
           </List>
         </>
       }

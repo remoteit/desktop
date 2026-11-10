@@ -41,6 +41,7 @@ import { DuplicateCopyNotice } from '../components/DuplicateCopyNotice'
 import { DuplicateKeyNotice } from '../components/DuplicateKeyNotice'
 import { DuplicateCopies } from '../components/DuplicateCopies'
 import { useDuplicateCopies } from '../hooks/useDeviceIdentity'
+import { DeviceProductNotice, ProductMark, useProductHold } from '../components/DeviceProductNotice'
 
 export const DevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -57,6 +58,8 @@ export const DevicePage: React.FC = () => {
   const deviceSessions = useDeviceSessions()
   const sessionDevice = !!useDeviceSessionInfo(deviceSessions && !device?.virtual ? device?.id : undefined)?.agent
     ?.running
+  // Its product's services are marked; under enforced the device is exactly the product, and adds none of its own.
+  const hold = useProductHold(device)
 
   const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
@@ -149,6 +152,7 @@ export const DevicePage: React.FC = () => {
       )}
       {device.duplicate && <DuplicateKeyNotice device={device} />}
       {copies && <DuplicateCopies variant="notice" original={device} copies={copies} accountId={device.accountId} />}
+      <DeviceProductNotice device={device} />
       <Typography variant="subtitle1">
         <Title>{t('devicePage.service', 'Service')}</Title>
         <SortServices />
@@ -159,7 +163,11 @@ export const DevicePage: React.FC = () => {
             button
           />
         )}
-        <AddServiceButton device={device} editable={editable && !closed} link={`/devices/${device.id}/add`} />
+        <AddServiceButton
+          device={device}
+          editable={editable && !closed && !hold.enforced}
+          link={`/devices/${device.id}/add`}
+        />
       </Typography>
       <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
         {editable && closed && (
@@ -233,6 +241,7 @@ export const DevicePage: React.FC = () => {
                   onClick={() => history.push(`/devices/${device.id}/${s.id}`)}
                 />
                 <ListItemText primary={<DeviceName service={s} connection={c} />} />
+                {hold.product && hold.services.includes(s.id) && <ProductMark product={hold.product} />}
                 <NetworksIndicator instance={device} service={s} />
                 <JumpIndicator service={s} device={device} />
                 <ServiceMiniState service={s} connection={c} />

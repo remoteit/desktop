@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { DeviceSetting, DeviceSettingName, settingLocked, settingOn } from '../services/graphQLDeviceSettings'
+import { productLockNote } from '../helpers/productPolicyHelper'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { ListItemSetting } from './ListItemSetting'
 import { SelectSetting } from './SelectSetting'
@@ -22,7 +23,7 @@ type Props = {
 
 /* One device setting's switch (device-package docs/device-settings.md, "Portal"): its value, who set it when that was
    on the device, and the machine administrator's override — under off or on the switch is fixed there and greyed, under
-   local it is set only on the device. */
+   local it is set only on the device. A setting its product holds is greyed too, saying so. */
 export const DeviceSettingRow: React.FC<Props> = ({
   setting,
   icon,
@@ -95,8 +96,8 @@ export const DeviceSettingChoice: React.FC<{
 // Who set a value the device took from its configuration file: not a person.
 export const CONFIGURATION = 'configuration'
 
-// Why a setting is as it is, where that is not the portal's doing: the administrator's override, or a change made on the
-// device. None for a setting set here.
+// Why a setting is as it is, where that is not the portal's doing: the administrator's override, its product holding
+// it, or a change made on the device. None for a setting set here.
 export function settingNote(t: TFunction, setting?: DeviceSetting): string | undefined {
   if (!setting) return undefined
   switch (setting.control) {
@@ -107,6 +108,7 @@ export function settingNote(t: TFunction, setting?: DeviceSetting): string | und
     case 'local':
       return t('deviceSetting.controlLocal', 'Set only on the device')
   }
+  if (setting.locked) return productLockNote(t, setting.locked)
   if (setting.onDevice)
     return setting.by === CONFIGURATION
       ? t('deviceSetting.onDeviceConfiguration', 'Set on the device, in its configuration')

@@ -119,6 +119,41 @@ describe('a device setting’s row', () => {
     expect(page.textContent).toContain('Set only on the device')
   })
 
+  it('held by its product: greyed, saying by which, and whether it is enforced', async () => {
+    const synced = { product: 'Pumps', level: 'synced' as const }
+    let page = await render(
+      <DeviceSettingRow
+        setting={subnet('cloud+local', { fromProduct: true, locked: synced })}
+        label="Subnet"
+        onChange={vi.fn()}
+      />
+    )
+    expect(row(page).disabled).toBe(true)
+    expect(page.textContent).toBe('Subnet — Set by its product Pumps')
+    page = await render(
+      <DeviceSettingRow
+        setting={subnet('cloud+local', { locked: { ...synced, level: 'enforced' } })}
+        label="Subnet"
+        onChange={vi.fn()}
+      />
+    )
+    expect(page.textContent).toBe('Subnet — Managed by product Pumps (enforced)')
+    // The administrator's override on the machine is said first: it holds there whatever the product sets.
+    page = await render(
+      <DeviceSettingRow setting={subnet('off', { locked: synced })} label="Subnet" onChange={vi.fn()} />
+    )
+    expect(page.textContent).toBe('Subnet — Turned off on the device by its administrator')
+    // Marked as the product's but not held (a template product): the portal's to change.
+    page = await render(
+      <DeviceSettingRow
+        setting={subnet('cloud+local', { fromProduct: true, locked: null })}
+        label="Subnet"
+        onChange={vi.fn()}
+      />
+    )
+    expect(row(page).disabled).toBe(false)
+  })
+
   it('the caller’s own disabling holds under any control', async () => {
     const page = await render(
       <DeviceSettingRow setting={subnet('cloud+local')} label="Subnet" disabled onChange={vi.fn()} />

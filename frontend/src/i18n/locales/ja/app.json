@@ -1290,6 +1290,17 @@
   "devicePresenceSetting": {
     "label": "プレゼンスアドレス"
   },
+  "deviceProduct": {
+    "attach": "",
+    "change": "",
+    "none": "",
+    "product": "",
+    "registeredWith": ""
+  },
+  "deviceProductNotice": {
+    "enforced": "",
+    "synced": ""
+  },
   "deviceProxy": {
     "listening": "",
     "listeningAdmin": "",
@@ -1327,6 +1338,7 @@
     "deleteWarning": "削除は元に戻せません。復元するにはデバイスへのアクセスが必要になる場合があります。",
     "disable": "",
     "more": "その他",
+    "moveProduct": "",
     "selectedCount_other": "{{count}}台のデバイスを選択中",
     "transfer": "譲渡",
     "uninstallHint": "最良の結果を得るために、削除前にRemote.Itエージェントをアンインストールしてください。"
@@ -1353,6 +1365,9 @@
     "onDevice": "",
     "onDeviceBy": "",
     "onDeviceConfiguration": "",
+    "productEnforced": "",
+    "productLocked": "",
+    "productSynced": "",
     "updates": ""
   },
   "deviceSetupItem": {
@@ -2788,6 +2803,32 @@
     "productName": "プロダクト名",
     "title": "プロダクトを作成"
   },
+  "productDevices": {
+    "more_other": "",
+    "none": "",
+    "title_other": ""
+  },
+  "productGrants": {
+    "add": "",
+    "addNetwork": "",
+    "both": "",
+    "hint": "",
+    "initiator": "",
+    "networkNotChanged": "",
+    "networks": "",
+    "noNetworks": "",
+    "proxies": "",
+    "proxyJoined": "",
+    "proxyNotChanged": "",
+    "proxyNotJoined": "",
+    "removeNetwork": "",
+    "removeNetworkBody": "",
+    "removeNetworkTitle": "",
+    "role": "",
+    "target": "",
+    "title": "",
+    "warningTitle": ""
+  },
   "productJoinKeys": {
     "by": "作成者: {{email}}",
     "create": "参加キーを作成",
@@ -2822,6 +2863,22 @@
     "toPersistent": "",
     "toPersistentBody": "",
     "toPersistentTitle": ""
+  },
+  "productMove": {
+    "attach": "",
+    "attachTitle": "",
+    "changeTitle": "",
+    "detach": "",
+    "detachMeaning": "",
+    "enforcedMany": "",
+    "manyTitle_other": "",
+    "move": "",
+    "moveRemove": "",
+    "none": "",
+    "noneMany": "",
+    "notChanged": "",
+    "product": "",
+    "tooMany": ""
   },
   "productOneTimeCodes": {
     "add": "デバイスを1台追加",
@@ -2863,6 +2920,53 @@
     "service": "サービス",
     "unknown": "不明"
   },
+  "productPolicy": {
+    "deviceCount_other": "",
+    "enforced": "",
+    "enforcedMeaning": "",
+    "fromProduct": "",
+    "itemCount_other": "",
+    "managedEnforced": "",
+    "networkCount_other": "",
+    "networkItem": "",
+    "proxyCount_other": "",
+    "proxyItem": "",
+    "serviceCount_other": "",
+    "serviceItem": "",
+    "settingCount_other": "",
+    "settingItem": "",
+    "synced": "",
+    "syncedMeaning": "",
+    "tagCount_other": "",
+    "tagItem": "",
+    "template": "",
+    "templateMeaning": "",
+    "willGet": "",
+    "willLock": "",
+    "willLose": "",
+    "willOwn": ""
+  },
+  "productPolicyLink": {
+    "title": ""
+  },
+  "productPolicyPage": {
+    "failed": "",
+    "loading": "",
+    "unsupported": ""
+  },
+  "productPreview": {
+    "added": "",
+    "failed": "",
+    "hideDevices": "",
+    "locked": "",
+    "more_other": "",
+    "nothing": "",
+    "nothingDevice": "",
+    "owned": "",
+    "reading": "",
+    "removed": "",
+    "showDevices": ""
+  },
   "productRegistrationCodes": {
     "current": "現在",
     "description": "ローテーションすると、登録コマンド用の新しいコードが発行されます。以前のコードは取り消すまでデバイスを登録し続けます。登録済みのデバイスには影響しません。",
@@ -2902,6 +3006,24 @@
     "serviceMayHaveBeenRemoved": "サービスが削除された可能性があります。",
     "serviceNotFound": "サービスが見つかりません"
   },
+  "productSettings": {
+    "console": "",
+    "hint": "",
+    "mcpExec": "",
+    "notChanged": "",
+    "off": "",
+    "on": "",
+    "scripts": "",
+    "services": "",
+    "subnet": "",
+    "title": "",
+    "unset": "",
+    "unsetButton": "",
+    "websocket": "",
+    "websocketAuto": "",
+    "websocketOff": "",
+    "websocketOn": ""
+  },
   "productSettingsPage": {
     "warningTitle": "このプロダクトを参加キーに移行してください"
   },
@@ -2913,6 +3035,14 @@
     "emptyHelp": "プロダクトは、デバイスの一括登録と管理に使用します。",
     "emptyHelpReadOnly": "プロダクトは、デバイスの一括登録と管理に使用します。作成するには管理者権限が必要です。",
     "loading": "プロダクトを読み込み中..."
+  },
+  "productSync": {
+    "confirm": "",
+    "confirmRemove": "",
+    "confirmTitle": "",
+    "label": "",
+    "notChanged": "",
+    "title": ""
   },
   "productTransferPage": {
     "cancel": "キャンセル",
