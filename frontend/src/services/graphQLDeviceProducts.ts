@@ -1,5 +1,10 @@
 import { graphQLBasicRequest } from './graphQL'
 
+const SERVICE_FIELDS = 'id name type { id name } host port enabled'
+
+export type ProductServiceInput = { name: string; type: string; host?: string; port: number; enabled: boolean }
+export type ProductRegistrationService = { application: number; name?: string; host?: string; port?: number; enabled?: boolean }
+
 export async function graphQLPlatformTypes() {
   return await graphQLBasicRequest(
     ` query PlatformTypes {
@@ -34,13 +39,7 @@ export async function graphQLDeviceProducts(options?: {
                 source
                 created
                 updated
-                services {
-                  id
-                  name
-                  type { id name }
-                  port
-                  enabled
-                }
+                services { ${SERVICE_FIELDS} }
               }
               total
               hasMore
@@ -75,13 +74,7 @@ export async function graphQLDeviceProduct(id: string, accountId?: string) {
                 source
                 created
                 updated
-                services {
-                  id
-                  name
-                  type { id name }
-                  port
-                  enabled
-                }
+                services { ${SERVICE_FIELDS} }
               }
             }
           }
@@ -106,13 +99,7 @@ export async function graphQLCreateDeviceProduct(input: {
           registrationCode
           created
           updated
-          services {
-            id
-            name
-            type { id name }
-            port
-            enabled
-          }
+          services { ${SERVICE_FIELDS} }
         }
       }`,
     input
@@ -142,13 +129,7 @@ export async function graphQLUpdateDeviceProductSettings(
           registrationCode
           created
           updated
-          services {
-            id
-            name
-            type { id name }
-            port
-            enabled
-          }
+          services { ${SERVICE_FIELDS} }
         }
       }`,
     { id, input }
@@ -157,17 +138,11 @@ export async function graphQLUpdateDeviceProductSettings(
 
 export async function graphQLAddDeviceProductService(
   productId: string,
-  input: { name: string; type: string; port: number; enabled: boolean }
+  input: ProductServiceInput
 ) {
   return await graphQLBasicRequest(
-    ` mutation AddDeviceProductService($productId: ID!, $name: String!, $type: String!, $port: Int!, $enabled: Boolean!) {
-        addDeviceProductService(productId: $productId, name: $name, type: $type, port: $port, enabled: $enabled) {
-          id
-          name
-          type { id name }
-          port
-          enabled
-        }
+    ` mutation AddDeviceProductService($productId: ID!, $name: String!, $type: String!, $host: String, $port: Int!, $enabled: Boolean!) {
+        addDeviceProductService(productId: $productId, name: $name, type: $type, host: $host, port: $port, enabled: $enabled) { ${SERVICE_FIELDS} }
       }`,
     { productId, ...input }
   )
@@ -220,7 +195,7 @@ export async function graphQLTransferDeviceProduct(productId: string, email: str
 export async function graphQLCreateDeviceProductFromRegistration(props: {
   platform: number
   tags?: string[]
-  services: { application: number; name?: string; port?: number; enabled?: boolean }[]
+  services: ProductRegistrationService[]
   accountId?: string
   name?: string
 }) {
@@ -238,13 +213,7 @@ export async function graphQLCreateDeviceProductFromRegistration(props: {
           registrationCommand
           created
           updated
-          services {
-            id
-            name
-            type { id name }
-            port
-            enabled
-          }
+          services { ${SERVICE_FIELDS} }
         }
       }`,
     { accountId, input }
@@ -268,13 +237,7 @@ export async function graphQLUpdateDeviceProduct(
           registrationCommand
           created
           updated
-          services {
-            id
-            name
-            type { id name }
-            port
-            enabled
-          }
+          services { ${SERVICE_FIELDS} }
         }
       }`,
     { id, input }

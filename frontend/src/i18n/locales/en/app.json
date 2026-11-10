@@ -72,18 +72,6 @@
     "label": "SERVICE",
     "placeholder": "Add a service type..."
   },
-  "addProductServiceDialog": {
-    "addFailed": "Failed to add service",
-    "addingEllipsis": "Adding...",
-    "enabled": "Enabled",
-    "nameRequired": "Service name is required",
-    "port": "Port",
-    "portRange": "Port must be a number between 0 and 65535",
-    "serviceName": "Service Name",
-    "serviceType": "Service Type",
-    "title": "Add Service",
-    "typeRequired": "Service type is required"
-  },
   "addServiceButton": {
     "guideBody": "This device can be dynamically set up to host new services.",
     "guideTitle": "Add a service (application)",
@@ -400,6 +388,7 @@
     "productName": "Name",
     "productPlatform": "Platform",
     "productPlatformDetail": "Platform",
+    "productServiceHostDetail": "Service Host",
     "productServiceIdDetail": "Service ID",
     "productServicePortDetail": "Port",
     "productServices": "Services",
