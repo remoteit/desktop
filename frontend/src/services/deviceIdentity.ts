@@ -26,6 +26,7 @@ export type DeviceJoinKey = {
   lastUsed: string | null
   boots: number
   stale: boolean // in force with no boot for 30 days: a suggestion to revoke it, only
+  inForce?: boolean // it brings the device back now, by graphql's clock, where the API says
 }
 
 // A copy split off a device's identity, disabled until its owner decides: what the devices list groups under the device.
@@ -78,8 +79,10 @@ const NONE: Identity = {
   selections: {},
 }
 
-const KEY_FIELDS = ['id', 'name', 'created', 'expires', 'revoked', 'lastUsed', 'boots', 'stale']
-const DUPLICATE_FIELDS = ['kind', 'since', 'address']
+const KEY_FIELDS = ['id', 'name', 'created', 'expires', 'revoked', 'lastUsed', 'boots', 'stale', 'inForce']
+// Beyond the contract's kind, since and address, where the API has them: when it was last seen, roughly where, and the
+// device added for the other machine until it first starts.
+const DUPLICATE_FIELDS = ['kind', 'since', 'seen', 'address', 'place']
 // What an answer that makes something hands back, at its top or one object down (a device, a join key).
 const ANSWER_FIELDS = ['id', 'name', 'key', 'deviceId']
 
@@ -134,7 +137,13 @@ export function parseDeviceIdentity(data: any, types: Record<string, Typed[]> = 
 
   // duplicateOf: the original as { id name } where it is a device, else its id as given.
   const of = device.get('duplicateOf')
-  const duplicateFields = pick(DUPLICATE_FIELDS, device.get('duplicate'))
+  const flagFields = fieldsOfType(device.get('duplicate'))
+  const duplicateFields = [
+    pick(DUPLICATE_FIELDS, device.get('duplicate')),
+    flagFields.some(f => f.name === 'replacement' && objectOf(f)?.kind === 'OBJECT') && 'replacement { id name }',
+  ]
+    .filter(Boolean)
+    .join(' ')
   const fields = [
     of && (named(of.type)?.kind === 'OBJECT' ? 'duplicateOf { id name }' : 'duplicateOf'),
     duplicateFields && `duplicate { ${duplicateFields} }`,
@@ -245,7 +254,12 @@ export function identityAdaptor(d: any): Partial<IDevice> {
       ? {
           kind: kindOf(d.duplicate.kind),
           since: d.duplicate.since ? new Date(d.duplicate.since) : undefined,
+          seen: d.duplicate.seen ? new Date(d.duplicate.seen) : undefined,
           address: d.duplicate.address || undefined,
+          place: d.duplicate.place || undefined,
+          replacement: d.duplicate.replacement?.id
+            ? { id: d.duplicate.replacement.id, name: d.duplicate.replacement.name ?? undefined }
+            : undefined,
         }
       : undefined
   return result
@@ -309,6 +323,7 @@ export async function graphQLDeviceJoinKeys(deviceId: string): Promise<DeviceJoi
     lastUsed: k.lastUsed ?? null,
     boots: k.boots ?? 0,
     stale: !!k.stale,
+    inForce: typeof k.inForce === 'boolean' ? k.inForce : undefined,
   }))
 }
 
@@ -339,6 +354,7 @@ export async function graphQLAddDevice(input: {
   name: string
   productId?: string
   freshBoot: boolean
+  accountId?: string // with no product, the account it is added to, where the API takes one
 }): Promise<{ deviceId?: string; name?: string; key?: string; reason?: string }> {
   const outcome = await identityMutation('addDevice', input)
   return outcome.ok ? madeDevice(outcome.data) : { reason: outcome.reason }

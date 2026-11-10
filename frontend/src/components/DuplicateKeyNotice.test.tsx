@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 const { served } = vi.hoisted(() => ({ served: { current: { addDuplicateDevice: true, joinKeys: true } as any } }))
 vi.mock('../hooks/useDeviceIdentity', () => ({ useDeviceIdentity: () => served.current }))
 vi.mock('../hooks/useDeviceDisable', () => ({ disabledWhen: (date?: Date) => date && 'Nov 9, 10:00' }))
+vi.mock('react-router-dom', () => ({ Link: ({ to, children }: any) => <a href={to}>{children}</a> }))
 // The dialogs are their own tests': here, which one opens, for what, and the hand-off to rotation.
 vi.mock('./AddDuplicateDeviceDialog', () => ({
   AddDuplicateDeviceDialog: ({ device, target, rotate, onRotate, onClose }: any) => (
@@ -112,6 +113,26 @@ describe('DuplicateKeyNotice', () => {
     expect(text()).toContain('From 198.51.100.4.')
     expect(text()).toContain('Update the daemon on that machine')
     expect(buttons()).toEqual([])
+  })
+
+  it('says roughly where the other machine is, where graphql says', async () => {
+    await render(
+      flagged({
+        duplicate: { kind: 'device-join-key', seen: new Date(), address: '203.0.113.7', place: 'Portland, OR' },
+      })
+    )
+    expect(text()).toContain('Seen Nov 9, 10:00 from 203.0.113.7 (Portland, OR).')
+  })
+
+  it('once a device is made for the other machine, it waits for that key’s first boot, rotation still offered', async () => {
+    await render(
+      flagged({
+        duplicate: { kind: 'device-join-key', since: new Date(), replacement: { id: 'D2', name: 'Kiosk (copy)' } },
+      })
+    )
+    expect(container.querySelector('a')!.getAttribute('href')).toBe('/devices/D2')
+    expect(text()).toContain('Kiosk (copy) was made for the other machine: install its key there and restart it.')
+    expect(buttons()).toEqual(['Rotate keys too'])
   })
 
   it('nothing for a device not flagged', async () => {

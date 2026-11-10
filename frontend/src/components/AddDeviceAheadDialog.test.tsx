@@ -24,6 +24,7 @@ vi.mock('react-redux', () => ({
   useSelector: (select: any) => select({}),
 }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
+vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'ORG' }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 vi.mock('./CopyCodeBlock', () => ({ CopyCodeBlock: ({ value, label }: any) => <div data-block={value}>{label}</div> }))
 vi.mock('react-i18next', () => {
@@ -123,7 +124,8 @@ describe('AddDeviceAheadDialog', () => {
     await typeName('Gateway')
     await act(async () => freshBoot().click())
     await act(async () => button('Add').click())
-    expect(addDevice).toHaveBeenCalledWith({ name: 'Gateway', productId: undefined, freshBoot: false })
+    // With no product, the account being looked at.
+    expect(addDevice).toHaveBeenCalledWith({ name: 'Gateway', freshBoot: false, accountId: 'ORG' })
     expect(body()).toContain('takes no licence until it first comes online')
     expect(document.body.querySelector('[data-block]')).toBeNull()
     expect(button('Download')).toBeUndefined()

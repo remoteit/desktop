@@ -46,31 +46,40 @@ const named = (names: string[]) => names.map(name => ({ name, type: scalar('Stri
 const DEVICE_ID = arg('deviceId', nonNull(scalar('String')))
 const NAME = arg('name', nonNull(scalar('String')))
 
-// graphql's schema as wave 3's contract names it.
+// graphql's schema as its branch solo-identity builds it (b56ccc10): the contract's names, and a little more.
 const MUTATIONS = [
   {
     name: 'createDeviceJoinKey',
     args: [DEVICE_ID, NAME, arg('expires', scalar('DateTime'))],
-    type: nonNull(object('CreatedDeviceJoinKey')),
+    type: nonNull(object('DeviceJoinKeyCreated')),
   },
   {
     name: 'revokeDeviceJoinKey',
     args: [DEVICE_ID, arg('id', nonNull(scalar('ID')))],
     type: nonNull(object('DeviceJoinKey')),
   },
-  { name: 'revokeDeviceJoinKeys', args: [DEVICE_ID], type: nonNull(scalar('Int')) },
+  { name: 'revokeDeviceJoinKeys', args: [DEVICE_ID], type: nonNull(list(nonNull(object('DeviceJoinKey')))) },
   {
     name: 'addDevice',
-    args: [NAME, arg('productId', scalar('ID')), arg('freshBoot', scalar('Boolean'))],
+    args: [
+      NAME,
+      arg('productId', scalar('String')),
+      arg('freshBoot', scalar('Boolean')),
+      arg('accountId', scalar('String')),
+    ],
     type: nonNull(object('AddedDevice')),
   },
-  { name: 'keepDuplicate', args: [DEVICE_ID, arg('fromOriginal', scalar('Boolean'))], type: scalar('Boolean') },
+  {
+    name: 'keepDuplicate',
+    args: [DEVICE_ID, arg('fromOriginal', scalar('Boolean'))],
+    type: nonNull(object('Device')),
+  },
   {
     name: 'keepDuplicates',
     args: [arg('deviceIds', nonNull(list(nonNull(scalar('String')))))],
-    type: scalar('Boolean'),
+    type: nonNull(list(nonNull(object('Device')))),
   },
-  { name: 'makeOriginal', args: [DEVICE_ID], type: scalar('Boolean') },
+  { name: 'makeOriginal', args: [DEVICE_ID], type: nonNull(object('Device')) },
   { name: 'addDuplicateDevice', args: [DEVICE_ID, NAME], type: nonNull(object('AddedDevice')) },
 ]
 const DEVICE = [
@@ -78,16 +87,32 @@ const DEVICE = [
   { name: 'joinKeys', type: nonNull(list(nonNull(object('DeviceJoinKey')))) },
   { name: 'duplicateOf', type: object('Device') },
   { name: 'duplicate', type: object('DeviceDuplicate') },
+  { name: 'copies', type: nonNull(list(nonNull(object('Device')))) },
 ]
+const KEY = ['id', 'name', 'creator', 'created', 'expires', 'revoked', 'lastUsed', 'boots', 'inForce', 'stale']
 const TYPES: ILookup<any[]> = {
-  DeviceJoinKey: named(['id', 'name', 'created', 'expires', 'revoked', 'lastUsed', 'boots', 'stale']),
-  DeviceDuplicate: named(['kind', 'since', 'address']),
-  CreatedDeviceJoinKey: named(['id', 'name', 'key']),
+  DeviceJoinKey: named(KEY),
+  DeviceDuplicate: [
+    ...named(['kind', 'since', 'seen', 'address', 'place']),
+    { name: 'replacement', type: object('Device', ['id', 'name', 'state']) },
+  ],
+  DeviceJoinKeyCreated: [
+    ...named(['id', 'name', 'key']),
+    { name: 'joinKey', type: nonNull(object('DeviceJoinKey', KEY)) },
+  ],
   AddedDevice: [
     { name: 'device', type: nonNull(object('Device', ['id', 'name', 'state'])) },
-    { name: 'key', type: scalar('String') },
+    { name: 'joinKey', type: object('DeviceJoinKeyCreated', ['id', 'name', 'key', 'joinKey']) },
   ],
 }
+// The contract's alone: what an API that serves only it is asked for.
+const CONTRACT_TYPES: ILookup<any[]> = {
+  DeviceJoinKey: named(['id', 'name', 'created', 'expires', 'revoked', 'lastUsed', 'boots', 'stale']),
+  DeviceDuplicate: named(['kind', 'since', 'address']),
+  DeviceJoinKeyCreated: named(['id', 'name', 'key']),
+  AddedDevice: TYPES.AddedDevice,
+}
+const FIELDS = '\n  duplicateOf { id name }\n  duplicate { kind since seen address place replacement { id name } }'
 
 type Schema = { mutations?: any[]; device?: any[]; types?: ILookup<any[]> }
 let schema: Schema
@@ -150,7 +175,7 @@ describe('device identity: what the API serves', () => {
       makeOriginal: true,
       addDuplicateDevice: true,
     })
-    expect(await deviceIdentityFields()).toBe('\n  duplicateOf { id name }\n  duplicate { kind since address }')
+    expect(await deviceIdentityFields()).toBe(FIELDS)
     // The probe, then the types the calls select from: two reads, kept.
     await deviceIdentityServed()
     expect(request).toHaveBeenCalledTimes(2)
@@ -165,7 +190,12 @@ describe('device identity: what the API serves', () => {
     expect(served.joinKeys).toBe(true)
     expect(served.duplicates).toBe(false)
     expect(served.keepDuplicate).toBe(false)
-    expect(await deviceIdentityFields()).toBe('\n  duplicate { kind since address }')
+    expect(await deviceIdentityFields()).toBe('\n  duplicate { kind since seen address place replacement { id name } }')
+  })
+
+  it("asks only for the contract's fields where the API has no more", async () => {
+    schema.types = CONTRACT_TYPES
+    expect(await deviceIdentityFields()).toBe('\n  duplicateOf { id name }\n  duplicate { kind since address }')
   })
 
   it("duplicateOf is asked as given where it is the original's id, not a device", async () => {
@@ -198,8 +228,22 @@ describe('identityAdaptor', () => {
     expect(identityAdaptor({ duplicate: { kind: 'key' } }).duplicate).toEqual({
       kind: 'key',
       since: undefined,
+      seen: undefined,
       address: undefined,
+      place: undefined,
+      replacement: undefined,
     })
+    const waiting = identityAdaptor({
+      duplicate: {
+        kind: 'device-join-key',
+        seen: '2026-11-09T11:00:00Z',
+        place: 'Portland, OR',
+        replacement: { id: 'D2', name: 'Kiosk (copy)' },
+      },
+    }).duplicate!
+    expect(waiting.seen?.toISOString()).toBe('2026-11-09T11:00:00.000Z')
+    expect(waiting.place).toBe('Portland, OR')
+    expect(waiting.replacement).toEqual({ id: 'D2', name: 'Kiosk (copy)' })
   })
 })
 
@@ -220,6 +264,7 @@ describe('join keys', () => {
                   revoked: null,
                   lastUsed: '2026-11-09T11:00:00Z',
                   boots: 3,
+                  inForce: true,
                   stale: false,
                 },
                 { id: 'k1', name: 'Image', created: '2026-09-01T10:00:00Z', stale: true },
@@ -240,6 +285,7 @@ describe('join keys', () => {
         lastUsed: '2026-11-09T11:00:00Z',
         boots: 3,
         stale: false,
+        inForce: true,
       },
       {
         id: 'k1',
@@ -250,10 +296,11 @@ describe('join keys', () => {
         lastUsed: null,
         boots: 0,
         stale: true,
+        inForce: undefined,
       },
     ])
     const [read] = called('DeviceJoinKeys')
-    expect(read.query).toMatch(/joinKeys \{ id name created expires revoked lastUsed boots stale \}/)
+    expect(read.query).toMatch(/joinKeys \{ id name created expires revoked lastUsed boots stale inForce \}/)
     expect(read.variables).toEqual({ id: ['D1'] })
   })
 
@@ -267,7 +314,9 @@ describe('join keys', () => {
     expect(await graphQLCreateDeviceJoinKey('D1', 'Rack')).toEqual({ key: 'r3dk_AAAA.c2VlZA' })
     const [first] = called('createDeviceJoinKey')
     expect(first.query).toMatch(/mutation CreateDeviceJoinKey\(\$deviceId: String!, \$name: String!\)/)
-    expect(first.query).toMatch(/createDeviceJoinKey\(deviceId: \$deviceId, name: \$name\) \{ id name key \}/)
+    expect(first.query).toMatch(
+      /createDeviceJoinKey\(deviceId: \$deviceId, name: \$name\) \{ id name key joinKey \{ id name \} \}/
+    )
     expect(first.variables).toEqual({ deviceId: 'D1', name: 'Rack' })
 
     await graphQLCreateDeviceJoinKey('D1', 'Rack', '2027-01-01T00:00:00.000Z')
@@ -286,7 +335,12 @@ describe('join keys', () => {
   })
 
   it('revokes one key, or every one; nothing said where it went through', async () => {
-    answer = () => ({ data: { revokeDeviceJoinKey: { __typename: 'DeviceJoinKey' }, revokeDeviceJoinKeys: 2 } })
+    answer = () => ({
+      data: {
+        revokeDeviceJoinKey: { __typename: 'DeviceJoinKey' },
+        revokeDeviceJoinKeys: [{ __typename: 'DeviceJoinKey' }],
+      },
+    })
     expect(await graphQLRevokeDeviceJoinKey('D1', 'k1')).toBeUndefined()
     expect(await graphQLRevokeDeviceJoinKeys('D1')).toBeUndefined()
     const [one] = called('revokeDeviceJoinKey(')
@@ -294,26 +348,57 @@ describe('join keys', () => {
     expect(one.query).toMatch(/\{ __typename \}/)
     expect(one.variables).toEqual({ deviceId: 'D1', id: 'k1' })
     const [all] = called('revokeDeviceJoinKeys')
-    // A scalar answer is asked for as it is.
-    expect(all.query).not.toMatch(/revokeDeviceJoinKeys\(deviceId: \$deviceId\) \{/)
+    expect(all.query).toMatch(/revokeDeviceJoinKeys\(deviceId: \$deviceId\) \{ __typename \}/)
+  })
+
+  it('a scalar answer is asked for as it is', async () => {
+    schema.mutations = MUTATIONS.map(m =>
+      m.name === 'revokeDeviceJoinKeys' ? { ...m, type: nonNull(scalar('Int')) } : m
+    )
+    answer = () => ({ data: { revokeDeviceJoinKeys: 2 } })
+    expect(await graphQLRevokeDeviceJoinKeys('D1')).toBeUndefined()
+    expect(called('revokeDeviceJoinKeys')[0].query).not.toMatch(/\{ __typename \}/)
   })
 })
 
 describe('a device added ahead, and a duplicate kept as a new device', () => {
   it('addDevice passes what it is given and answers the device and its key once', async () => {
-    answer = () => ({ data: { addDevice: { device: { id: 'D9', name: 'Kiosk 4' }, key: 'r3dk_BBBB.c2VlZA' } } })
+    answer = () => ({
+      data: {
+        addDevice: {
+          device: { id: 'D9', name: 'Kiosk 4' },
+          joinKey: { id: 'k1', name: 'first key', key: 'r3dk_BBBB.c2VlZA' },
+        },
+      },
+    })
     expect(await graphQLAddDevice({ name: 'Kiosk 4', productId: 'P1', freshBoot: true })).toEqual({
       deviceId: 'D9',
       name: 'Kiosk 4',
       key: 'r3dk_BBBB.c2VlZA',
     })
     const [add] = called('addDevice')
-    expect(add.query).toMatch(/\$name: String!, \$productId: ID, \$freshBoot: Boolean/)
-    expect(add.query).toMatch(/\{ device \{ id name \} key \}/)
+    expect(add.query).toMatch(/\$name: String!, \$productId: String, \$freshBoot: Boolean\)/)
+    expect(add.query).toMatch(/\{ device \{ id name \} joinKey \{ id name key \} \}/)
     expect(add.variables).toEqual({ name: 'Kiosk 4', productId: 'P1', freshBoot: true })
 
-    await graphQLAddDevice({ name: 'Kiosk 5', freshBoot: false })
-    expect(called('addDevice')[1].variables).toEqual({ name: 'Kiosk 5', freshBoot: false })
+    // With no product, the account it is added to.
+    answer = () => ({ data: { addDevice: { device: { id: 'D10', name: 'Kiosk 5' }, joinKey: null } } })
+    expect(await graphQLAddDevice({ name: 'Kiosk 5', freshBoot: false, accountId: 'ORG' })).toEqual({
+      deviceId: 'D10',
+      name: 'Kiosk 5',
+      key: undefined,
+    })
+    expect(called('addDevice')[1].query).toMatch(/\$accountId: String/)
+    expect(called('addDevice')[1].variables).toEqual({ name: 'Kiosk 5', freshBoot: false, accountId: 'ORG' })
+  })
+
+  it('an API with no accountId is not sent one', async () => {
+    schema.mutations = MUTATIONS.map(m =>
+      m.name === 'addDevice' ? { ...m, args: m.args.filter(a => a.name !== 'accountId') } : m
+    )
+    answer = () => ({ data: { addDevice: { device: { id: 'D10', name: 'Kiosk 5' } } } })
+    await graphQLAddDevice({ name: 'Kiosk 5', freshBoot: false, accountId: 'ORG' })
+    expect(called('addDevice')[0].variables).toEqual({ name: 'Kiosk 5', freshBoot: false })
   })
 
   it('the answer read wherever graphql puts the device and the key', () => {
@@ -344,7 +429,9 @@ describe('a device added ahead, and a duplicate kept as a new device', () => {
   })
 
   it('addDuplicateDevice answers the new device and its key', async () => {
-    answer = () => ({ data: { addDuplicateDevice: { device: { id: 'D10', name: 'Pump (copy)' }, key: 'r3dk_C' } } })
+    answer = () => ({
+      data: { addDuplicateDevice: { device: { id: 'D10', name: 'Pump (copy)' }, joinKey: { key: 'r3dk_C' } } },
+    })
     expect(await graphQLAddDuplicateDevice('X1', 'Pump (copy)')).toEqual({
       deviceId: 'D10',
       name: 'Pump (copy)',

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Stack } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
+import { Button, Link, Stack } from '@mui/material'
 import { useDeviceIdentity } from '../hooks/useDeviceIdentity'
 import { disabledWhen } from '../hooks/useDeviceDisable'
 import { AddDuplicateDeviceDialog, DuplicateTarget } from './AddDuplicateDeviceDialog'
@@ -10,8 +11,9 @@ import { Notice } from './Notice'
 /* A device flagged as held by another machine too (Device.duplicate; graphql-api docs/PROXY-GROUPS.md §11, "Duplicate
    devices"). Its device join key on a second machine (kind device-join-key): the copy is refused quietly while the
    owner chooses — keep the copy as a new device or make it the original, each a new device whose key goes on that
-   machine, or neither, rotating the device's keys. A daemon that cannot take an identity of its own (kind key): refused,
-   with nothing to choose until it is updated. */
+   machine, or neither, rotating the device's keys. Once a new device is made for the other machine (its `replacement`),
+   the page waits for that key's first boot, rotation still offered. A daemon that cannot take an identity of its own
+   (kind key): refused, with nothing to choose until it is updated. */
 export const DuplicateKeyNotice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const served = useDeviceIdentity()
@@ -20,14 +22,16 @@ export const DuplicateKeyNotice: React.FC<{ device: IDevice }> = ({ device }) =>
   const flag = device.duplicate
   if (!flag) return null
 
-  const when = disabledWhen(flag.since)
+  // When it was last seen, and from where: the other machine's address, and roughly where that is.
+  const when = disabledWhen(flag.seen ?? flag.since)
+  const where = [flag.address, flag.place && `(${flag.place})`].filter(Boolean).join(' ')
   const seen =
-    when && flag.address
-      ? t('duplicateKey.seenFrom', { when, address: flag.address, defaultValue: 'Seen {{when}} from {{address}}.' })
+    when && where
+      ? t('duplicateKey.seenFrom', { when, where, defaultValue: 'Seen {{when}} from {{where}}.' })
       : when
       ? t('duplicateKey.seen', { when, defaultValue: 'Seen {{when}}.' })
-      : flag.address
-      ? t('duplicateKey.from', { address: flag.address, defaultValue: 'From {{address}}.' })
+      : where
+      ? t('duplicateKey.from', { where, defaultValue: 'From {{where}}.' })
       : ''
 
   if (flag.kind !== 'device-join-key')
@@ -50,7 +54,8 @@ export const DuplicateKeyNotice: React.FC<{ device: IDevice }> = ({ device }) =>
     )
 
   const manage = device.permissions.includes('MANAGE')
-  const add = manage && !!served?.addDuplicateDevice
+  const replacement = flag.replacement
+  const add = manage && !!served?.addDuplicateDevice && !replacement
   const rotate = manage && !!served?.joinKeys
 
   return (
@@ -73,7 +78,9 @@ export const DuplicateKeyNotice: React.FC<{ device: IDevice }> = ({ device }) =>
               )}
               {rotate && (
                 <Button size="small" color="error" onClick={() => setChoice('rotate')}>
-                  {t('duplicateKey.rotate', 'Neither: rotate keys')}
+                  {replacement
+                    ? t('duplicateKey.rotateToo', 'Rotate keys too')
+                    : t('duplicateKey.rotate', 'Neither: rotate keys')}
                 </Button>
               )}
             </Stack>
@@ -88,11 +95,24 @@ export const DuplicateKeyNotice: React.FC<{ device: IDevice }> = ({ device }) =>
         </strong>
         <em>
           {seen}{' '}
-          {t('duplicateKey.body', {
-            name: device.name,
-            defaultValue:
-              'Whichever machine is online first is {{name}}; the other is refused quietly until you choose: keep the copy as a new device, make it the original — each a new device whose key you install on that machine — or neither, rotating the keys so the copy cannot sign in at all.',
-          })}
+          {replacement ? (
+            <>
+              <Link component={RouterLink} to={`/devices/${replacement.id}`} color="inherit">
+                {replacement.name || replacement.id}
+              </Link>{' '}
+              {t('duplicateKey.waiting', {
+                name: device.name,
+                defaultValue:
+                  'was made for the other machine: install its key there and restart it. Until it first starts, whichever machine is online first is {{name}}, and the other stays refused.',
+              })}
+            </>
+          ) : (
+            t('duplicateKey.body', {
+              name: device.name,
+              defaultValue:
+                'Whichever machine is online first is {{name}}; the other is refused quietly until you choose: keep the copy as a new device, make it the original — each a new device whose key you install on that machine — or neither, rotating the keys so the copy cannot sign in at all.',
+            })
+          )}
         </em>
       </Notice>
       {(choice === 'copy' || choice === 'original') && (

@@ -20,9 +20,11 @@ import { Notice } from './Notice'
 // At most two keys in force per device (graphql refuses a third): "current" and "next", for a rollover.
 export const KEYS_IN_FORCE = 2
 
-// Why a key brings the device back no more: revoked, or past its expiry.
+// Why a key brings the device back no more: revoked, or past its expiry — by graphql's inForce where it says, rather
+// than this machine's clock.
 export function keyState(key: DeviceJoinKey, now = Date.now()): 'revoked' | 'expired' | undefined {
   if (key.revoked) return 'revoked'
+  if (key.inForce !== undefined) return key.inForce ? undefined : 'expired'
   if (key.expires && Date.parse(key.expires) <= now) return 'expired'
   return undefined
 }

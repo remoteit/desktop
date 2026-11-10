@@ -78,6 +78,7 @@ describe('AddDuplicateDeviceDialog', () => {
     await act(async () => button('Make Device and Key').click())
     expect(addDuplicateDevice).toHaveBeenCalledWith('X1', 'Kiosk (copy)')
     expect(fetchSingleFull).toHaveBeenCalledWith({ id: 'D2', newDevice: true, silent: true })
+    expect(fetchSingleFull).toHaveBeenCalledWith({ id: 'X1', silent: true })
     expect(body()).toContain(
       'Install this key on the copy — the other machine — and restart it: it then boots as Kiosk (copy)'
     )

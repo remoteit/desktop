@@ -418,8 +418,11 @@ declare global {
   // until its owner decides), or key (a daemon that cannot take a new identity: refused, nothing split off).
   interface IDuplicateFlag {
     kind: string
-    since?: Date
-    address?: string
+    since?: Date // first seen
+    seen?: Date // last seen
+    address?: string // the other machine's
+    place?: string // roughly where the other machine is
+    replacement?: { id: string; name?: string } // the device added for the other machine, until it first starts
   }
 
   interface IHostingGateway {

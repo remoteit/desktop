@@ -1515,9 +1515,11 @@
     "keyTitle": "",
     "makeOriginal": "",
     "rotate": "",
+    "rotateToo": "",
     "seen": "",
     "seenFrom": "",
-    "title": ""
+    "title": "",
+    "waiting": ""
   },
   "duration": {
     "ago": "{{duration}}前"

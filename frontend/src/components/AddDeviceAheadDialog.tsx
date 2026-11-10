@@ -16,6 +16,7 @@ import {
 } from '@mui/material'
 import { Dispatch, State } from '../store'
 import { getProductModel } from '../models/products'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLAddDevice } from '../services/deviceIdentity'
 import { DeviceJoinKeyOnce, DownloadJoinKeyButton } from './DeviceJoinKeyOnce'
 import { Notice } from './Notice'
@@ -37,6 +38,7 @@ export const AddDeviceAheadDialog: React.FC<Props> = ({ onClose }) => {
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
   const products = useSelector((state: State) => getProductModel(state).all)
+  const accountId = useSelector(selectActiveAccountId)
   const [name, setName] = useState('')
   const [productId, setProductId] = useState(NO_PRODUCT)
   const [freshBoot, setFreshBoot] = useState(true)
@@ -56,7 +58,10 @@ export const AddDeviceAheadDialog: React.FC<Props> = ({ onClose }) => {
     if (!trimmed) return setError(t('addDeviceAhead.nameRequired', 'A name is required'))
     setReason(undefined)
     setAdding(true)
-    const result = await graphQLAddDevice({ name: trimmed, productId: productId || undefined, freshBoot })
+    // A product's device is its owner's; with none, the account being looked at.
+    const result = await graphQLAddDevice(
+      productId ? { name: trimmed, productId, freshBoot } : { name: trimmed, freshBoot, accountId }
+    )
     setAdding(false)
     if (result.reason !== undefined || (!result.deviceId && !result.key))
       return setReason(result.reason || t('addDeviceAhead.notAdded', 'The device could not be added.'))
@@ -93,7 +98,7 @@ export const AddDeviceAheadDialog: React.FC<Props> = ({ onClose }) => {
                     )
                   : t(
                       'addDeviceAhead.added',
-                      'It has its ID and its product’s setup, and takes no licence until it first comes online.'
+                      'It has its ID and its product’s setup, and takes no licence until it first comes online. Its machine comes in with a restore code: Restore Device, on its page.'
                     )}
               </Typography>
             )}

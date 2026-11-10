@@ -51,7 +51,9 @@ export const AddDuplicateDeviceDialog: React.FC<Props> = ({ device, target, rota
     if (!result.key)
       return setReason(result.reason || t('addDuplicateDevice.notAdded', 'The new device could not be made.'))
     setAdded({ deviceId: result.deviceId, name: result.name || trimmed, key: result.key })
+    // The new device into the list, and X read again: its flag now names the device made for the other machine.
     if (result.deviceId) dispatch.devices.fetchSingleFull({ id: result.deviceId, newDevice: true, silent: true })
+    dispatch.devices.fetchSingleFull({ id: device.id, silent: true })
   }
 
   const done = () => (rotate ? setOffer(true) : onClose())

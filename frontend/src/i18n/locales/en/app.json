@@ -1551,9 +1551,11 @@
     "keyTitle": "Another machine signed in as {{name}} while it was online",
     "makeOriginal": "Make the copy the original",
     "rotate": "Neither: rotate keys",
+    "rotateToo": "Rotate keys too",
     "seen": "Seen {{when}}.",
     "seenFrom": "Seen {{when}} from {{address}}.",
-    "title": "The device join key of {{name}} is in use on another machine"
+    "title": "The device join key of {{name}} is in use on another machine",
+    "waiting": "was made for the other machine: install its key there and restart it. Until it first starts, whichever machine is online first is {{name}}, and the other stays refused."
   },
   "duration": {
     "ago": "{{duration}} ago"

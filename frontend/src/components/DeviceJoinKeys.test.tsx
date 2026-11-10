@@ -216,4 +216,11 @@ describe('joinKeysOffered and keyState', () => {
     expect(keyState(key({ expires: '2026-11-10T00:00:00Z' }), now)).toBeUndefined()
     expect(keyState(key({ revoked: '2026-11-01T00:00:00Z', expires: '2026-01-01T00:00:00Z' }), now)).toBe('revoked')
   })
+
+  it("graphql's inForce, where it says, over this machine's clock", () => {
+    const now = Date.parse('2026-11-09T12:00:00Z')
+    expect(keyState(key({ inForce: true, expires: '2026-11-09T11:59:00Z' }), now)).toBeUndefined()
+    expect(keyState(key({ inForce: false, expires: '2026-11-10T00:00:00Z' }), now)).toBe('expired')
+    expect(keyState(key({ inForce: false, revoked: '2026-11-01T00:00:00Z' }), now)).toBe('revoked')
+  })
 })
