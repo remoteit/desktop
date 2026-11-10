@@ -42,9 +42,13 @@ export type DeviceSetting = {
 
 const FIELDS = 'name value at by onDevice control'
 
+// Settings no product sets: Protect is each device's own at every level, so never shown as its product's.
+const NOT_PRODUCTS = ['protect']
+
 // A setting as read: its product's mark and lock, where the API says them, in one shape.
 function parsed(setting: any): DeviceSetting {
   if (!setting || (setting.fromProduct === undefined && setting.locked === undefined)) return setting
+  if (NOT_PRODUCTS.includes(setting.name)) return { ...setting, fromProduct: false, locked: null }
   return { ...setting, fromProduct: !!setting.fromProduct, locked: lockOf(setting.locked) }
 }
 
