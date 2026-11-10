@@ -65,12 +65,34 @@
     "codeExpiration": "El código caduca en {{hours}}\u00a0horas.",
     "registrationCode": "Código de registro"
   },
+  "addDeviceAhead": {
+    "add": "",
+    "added": "",
+    "addedTitle": "",
+    "adding": "",
+    "description": "",
+    "freshBoot": "",
+    "freshBootHelp": "",
+    "installKey": "",
+    "name": "",
+    "nameRequired": "",
+    "noKey": "",
+    "noProduct": "",
+    "notAdded": "",
+    "open": "",
+    "product": "",
+    "productHelp": "",
+    "title": ""
+  },
   "addFromNetwork": {
     "discover": "",
     "scanForServices": "Buscar servicios",
     "scanNetwork": "Escanear red"
   },
   "addPage": {
+    "addAhead": "",
+    "addAheadHint": "",
+    "addAheadTitle": "",
     "addDevice": "Agregar un dispositivo",
     "addInstance": "Agregar una instancia",
     "addMany": "Agregar varios",

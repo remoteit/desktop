@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { platformText } from '../platforms/text'
 import { useHistory } from 'react-router-dom'
@@ -23,6 +23,9 @@ import { spacing } from '../styling'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { ConveyorBeltBoxes } from '../assets/ConveyorBeltBoxes'
+import { AddDeviceAheadDialog } from '../components/AddDeviceAheadDialog'
+import { useDeviceIdentity } from '../hooks/useDeviceIdentity'
+import { selectCanRegister } from '../selectors/organizations'
 
 export const AddPage: React.FC = () => {
   const { t } = useTranslation()
@@ -33,6 +36,11 @@ export const AddPage: React.FC = () => {
   const history = useHistory()
   const devicePackage = useDeviceSessions()
   const virtualDevices = useVirtualDevices()
+  // A device added ahead of its first boot: a Control Link device, where the API serves addDevice.
+  const identity = useDeviceIdentity()
+  const canRegister = useSelector(selectCanRegister)
+  const addAhead = !!identity?.addDevice && devicePackage && canRegister
+  const [addingAhead, setAddingAhead] = useState(false)
 
   useEffect(() => {
     if (!allApplicationTypes.length) dispatch.applicationTypes.fetchAll()
@@ -211,6 +219,20 @@ export const AddPage: React.FC = () => {
             </ListItemButton>
           </List>
         )}
+        {addAhead && (
+          <List className="addList addSmall" dense disablePadding>
+            <ListSubheader disableGutters>{t('addPage.addAhead', 'Before it boots')}</ListSubheader>
+            <ListItemButton disableGutters onClick={() => setAddingAhead(true)}>
+              <ListItemIcon>
+                <Icon name="calendar-plus" size="xxl" fixedWidth />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('addPage.addAheadTitle', 'Add a device ahead')}
+                secondary={t('addPage.addAheadHint', 'Its key, for one that starts fresh every boot')}
+              />
+            </ListItemButton>
+          </List>
+        )}
         <ClaimDevice className="addList addSmall" />
         <List className="addList addSmall" dense disablePadding>
           <ListSubheader disableGutters>{t('addPage.addMany', 'Add many')}</ListSubheader>
@@ -225,6 +247,7 @@ export const AddPage: React.FC = () => {
           </ListItemButton>
         </List>
       </Stack>
+      {addingAhead && <AddDeviceAheadDialog onClose={() => setAddingAhead(false)} />}
     </Container>
   )
 }

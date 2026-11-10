@@ -65,12 +65,34 @@
     "codeExpiration": "コードは{{hours}}時間で失効します。",
     "registrationCode": "登録コード"
   },
+  "addDeviceAhead": {
+    "add": "",
+    "added": "",
+    "addedTitle": "",
+    "adding": "",
+    "description": "",
+    "freshBoot": "",
+    "freshBootHelp": "",
+    "installKey": "",
+    "name": "",
+    "nameRequired": "",
+    "noKey": "",
+    "noProduct": "",
+    "notAdded": "",
+    "open": "",
+    "product": "",
+    "productHelp": "",
+    "title": ""
+  },
   "addFromNetwork": {
     "discover": "",
     "scanForServices": "サービスをスキャン",
     "scanNetwork": "ネットワークをスキャン"
   },
   "addPage": {
+    "addAhead": "",
+    "addAheadHint": "",
+    "addAheadTitle": "",
     "addDevice": "デバイスを追加",
     "addInstance": "インスタンスを追加",
     "addMany": "複数追加",

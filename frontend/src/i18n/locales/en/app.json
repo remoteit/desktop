@@ -65,12 +65,34 @@
     "codeExpiration": "Code expires in {{hours}}\u00a0hours.",
     "registrationCode": "Registration Code"
   },
+  "addDeviceAhead": {
+    "add": "Add",
+    "added": "It has its ID and its product’s setup, and takes no licence until it first comes online.",
+    "addedTitle": "Added {{name}}",
+    "adding": "Adding...",
+    "description": "Make the device before its machine first boots: its ID, and its product’s services and tags. It takes no licence until it first comes online.",
+    "freshBoot": "This device starts fresh every boot",
+    "freshBootHelp": "It has nowhere to keep its identity: a device join key, shown once now, brings it back as itself at every boot.",
+    "installKey": "Put this key where the machine gets it at boot. Its first boot with it brings the device online.",
+    "name": "Name",
+    "nameRequired": "A name is required",
+    "noKey": "The device was added, but its key did not come back. Issue one from its settings.",
+    "noProduct": "No product",
+    "notAdded": "The device could not be added.",
+    "open": "Open device",
+    "product": "Product",
+    "productHelp": "Optional: the device starts from its services and tags",
+    "title": "Add a Device Ahead"
+  },
   "addFromNetwork": {
     "discover": "What this device sees",
     "scanForServices": "Scan for Services",
     "scanNetwork": "Scan\u00a0network"
   },
   "addPage": {
+    "addAhead": "Before it boots",
+    "addAheadHint": "Its key, for one that starts fresh every boot",
+    "addAheadTitle": "Add a device ahead",
     "addDevice": "Add a device",
     "addInstance": "Add an instance",
     "addMany": "Add many",
