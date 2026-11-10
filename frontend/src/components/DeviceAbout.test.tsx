@@ -13,7 +13,7 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-import { DeviceAbout, fieldLabel, natLabel } from './DeviceAbout'
+import { DeviceAbout, changeLabel, changeText, fieldLabel, natLabel } from './DeviceAbout'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 async function render(deviceId = 'A') {
@@ -149,6 +149,55 @@ describe('DeviceAbout', () => {
     const button = [...container.querySelectorAll('button')].find(b => b.textContent === 'View details')!
     await act(async () => button.click())
     expect(JSON.parse(document.querySelector('[data-about-json]')!.textContent!)).toEqual(about.data)
+  })
+})
+
+describe('history: restores, boots and duplicates', () => {
+  const entry = (kind: string, field: string, before: string | null, after: string | null, detail: string | null) => ({
+    at: '2026-11-09T10:00:00Z',
+    kind,
+    field,
+    before,
+    after,
+    detail,
+    generation: null,
+  })
+
+  it('reads each as what happened, not as a field that changed', async () => {
+    read.mockResolvedValue({
+      about: null,
+      history: [
+        entry('boot', 'boot', 'USB stick', 'Portland, OR', 'from 203.0.113.7'),
+        entry('restore', 'restore', null, 'Seattle, WA', 'from 198.51.100.4'),
+        entry('duplicate', 'copy', null, '80:00:00:00:00:00:00:09', 'from 203.0.113.8'),
+        entry('duplicate', 'device-join-key', null, 'Austin, TX', 'from 192.0.2.1'),
+      ],
+    })
+    const items = [...(await render()).querySelectorAll('li')].map(li => li.textContent).filter(t => t !== 'History')
+    expect(items[0]).toContain('BootWith key USB stick, Portland, OR — from 203.0.113.7')
+    expect(items[1]).toContain('RestoredSeattle, WA — from 198.51.100.4')
+    expect(items[2]).toContain(
+      'DuplicateA machine signed in as it, split off as 80:00:00:00:00:00:00:09 — from 203.0.113.8'
+    )
+    expect(items[3]).toContain(
+      'DuplicateIts device join key in use on another machine, refused, Austin, TX — from 192.0.2.1'
+    )
+  })
+
+  it('every kind of duplicate entry', () => {
+    const t = (_key: string, text: string, values?: any) =>
+      text.replace(/{{(\w+)}}/g, (_: string, k: string) => values?.[k] ?? '')
+    const text = (field: string, after: string | null = null) =>
+      changeText(t as any, entry('duplicate', field, null, after, null) as any)
+    expect(text('copy-of', 'X1')).toBe('Split off from X1: this machine signed in as it')
+    expect(text('key')).toBe('Another machine with its identity, refused')
+    expect(text('kept')).toBe('Kept as a device of its own')
+    expect(text('original', 'Y1')).toBe('Its machine swapped with that of Y1')
+    expect(text('something-new', 'Z')).toBe('something-new, Z')
+    expect(changeLabel(t as any, entry('duplicate', 'kept', null, null, null) as any)).toBe('Duplicate')
+    expect(changeText(t as any, entry('boot', 'boot', null, null, null) as any)).toBe('')
+    expect(changeLabel(t as any, entry('field', 'os.version', '14', '15', null) as any)).toBe('OS version')
+    expect(changeText(t as any, entry('field', 'os.version', null, '15', null) as any)).toBe('nothing → 15')
   })
 })
 

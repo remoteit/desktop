@@ -95,16 +95,6 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
     [t('deviceAbout.package', 'Package'), [sw?.package, sw?.format && `(${sw.format})`].filter(Boolean).join(' ')],
   ]
 
-  const changeText = (change: DeviceAboutChange) => {
-    if (change.kind === 'update')
-      return change.field === 'refused'
-        ? t('deviceAbout.updateRefused', 'Refused the upgrade to {{version}}', { version: change.after })
-        : t('deviceAbout.updateFailed', 'The upgrade to {{version}} failed', { version: change.after })
-    return `${change.before ?? t('deviceAbout.nothing', 'nothing')} → ${
-      change.after ?? t('deviceAbout.nothing', 'nothing')
-    }`
-  }
-
   return (
     <>
       {about?.hardwareChanged && (
@@ -145,11 +135,17 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
               <Box component="span" sx={{ color: 'grayDark.main', minWidth: 160 }}>
                 <Timestamp date={new Date(change.at)} variant="minutes" />
               </Box>
-              <Box component="span" sx={{ minWidth: 180, color: change.kind === 'update' ? 'danger.main' : undefined }}>
-                {change.kind === 'update' ? t('deviceAbout.upgrade', 'Upgrade') : fieldLabel(change.field)}
+              <Box
+                component="span"
+                sx={{
+                  minWidth: 180,
+                  color: change.kind === 'update' || change.kind === 'duplicate' ? 'danger.main' : undefined,
+                }}
+              >
+                {changeLabel(t, change)}
               </Box>
               <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
-                {changeText(change)}
+                {changeText(t, change)}
                 {change.detail && (
                   <Typography component="span" variant="body2" color="grayDark.main">
                     {' '}
@@ -265,6 +261,73 @@ export function natLabel(t: TFunction, mapping: string, filtering: string) {
     }[mapping],
   ].filter(Boolean)
   return how.length ? `${label} (${how.join(', ')})` : label
+}
+
+// What a history entry is: the field that changed, or what happened to the device.
+export function changeLabel(t: TFunction, change: DeviceAboutChange) {
+  switch (change.kind) {
+    case 'update':
+      return t('deviceAbout.upgrade', 'Upgrade')
+    case 'restore':
+      return t('deviceAbout.restored', 'Restored')
+    case 'boot':
+      return t('deviceAbout.boot', 'Boot')
+    case 'duplicate':
+      return t('deviceAbout.duplicate', 'Duplicate')
+    default:
+      return fieldLabel(change.field)
+  }
+}
+
+/* What changed, readably. graphql's entries (services/device-about.ts): an upgrade names its version in `after`; a
+   restore, roughly where from in `after`; a boot, the key's name in `before` and roughly where in `after`; a duplicate
+   says what in `field` — copy (`after` the copy's ID), copy-of (the original's), device-join-key or key (seen on another
+   machine, `after` roughly where), kept, original (the machines swapped, `after` the other device's ID). The address
+   is the entry's detail, shown after it. */
+export function changeText(t: TFunction, change: DeviceAboutChange) {
+  const nothing = t('deviceAbout.nothing', 'nothing')
+  const where = change.after ?? ''
+  switch (change.kind) {
+    case 'update':
+      return change.field === 'refused'
+        ? t('deviceAbout.updateRefused', 'Refused the upgrade to {{version}}', { version: change.after })
+        : t('deviceAbout.updateFailed', 'The upgrade to {{version}} failed', { version: change.after })
+    case 'restore':
+      return where
+    case 'boot':
+      return [change.before && t('deviceAbout.bootKey', 'With key {{key}}', { key: change.before }), where]
+        .filter(Boolean)
+        .join(', ')
+    case 'duplicate':
+      switch (change.field) {
+        case 'copy':
+          return t('deviceAbout.duplicateCopy', 'A machine signed in as it, split off as {{device}}', {
+            device: change.after,
+          })
+        case 'copy-of':
+          return t('deviceAbout.duplicateCopyOf', 'Split off from {{device}}: this machine signed in as it', {
+            device: change.after,
+          })
+        case 'device-join-key':
+          return [t('deviceAbout.duplicateJoinKey', 'Its device join key in use on another machine, refused'), where]
+            .filter(Boolean)
+            .join(', ')
+        case 'key':
+          return [t('deviceAbout.duplicateKey', 'Another machine with its identity, refused'), where]
+            .filter(Boolean)
+            .join(', ')
+        case 'kept':
+          return t('deviceAbout.duplicateKept', 'Kept as a device of its own')
+        case 'original':
+          return t('deviceAbout.duplicateOriginal', 'Its machine swapped with that of {{device}}', {
+            device: change.after,
+          })
+        default:
+          return [change.field, where].filter(Boolean).join(', ')
+      }
+    default:
+      return `${change.before ?? nothing} → ${change.after ?? nothing}`
+  }
 }
 
 const memory = (mb: number) => (mb >= 1024 ? `${Math.round((mb / 1024) * 10) / 10} GB` : `${mb} MB`)

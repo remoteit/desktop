@@ -59,9 +59,12 @@ export type DeviceAbout = {
   hardwareChanged: string | null
 }
 
+// field: one of what the device says changed; update: an upgrade refused or failed; restore: brought back with a restore
+// code; boot: started with a device join key; duplicate: its identity on a second machine (graphql-api
+// docs/PROXY-GROUPS.md §11, "Wave 3: device identity").
 export type DeviceAboutChange = {
   at: string
-  kind: 'field' | 'update'
+  kind: 'field' | 'update' | 'restore' | 'boot' | 'duplicate'
   field: string
   before: string | null
   after: string | null
