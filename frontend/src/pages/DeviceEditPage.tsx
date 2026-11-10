@@ -19,6 +19,7 @@ import { DeviceSubnetLabelSetting } from '../components/DeviceSubnetLabelSetting
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DeviceSshAccess } from '../components/DeviceSshAccess'
 import { DeviceApps } from '../components/DeviceApps'
+import { DeviceJoinKeys } from '../components/DeviceJoinKeys'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { Gutters } from '../components/Gutters'
 import { List } from '@mui/material'
@@ -78,11 +79,13 @@ export const DeviceEditPage: React.FC = () => {
           </List>
         </Gutters>
       )}
-      {/* The device's apps and who may log in through its console: what is set on it, so with its settings. */}
+      {/* The device's apps, who may log in through its console and the keys that bring it back at boot: what is set
+          on it, so with its settings. */}
       {deviceSessions && device && (
         <Gutters>
           <DeviceApps deviceId={device.id} canManage={!!device.permissions?.includes('MANAGE')} />
           <DeviceSshAccess deviceId={device.id} />
+          <DeviceJoinKeys device={device} />
         </Gutters>
       )}
       <NotificationSettings />

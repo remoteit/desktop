@@ -985,6 +985,40 @@
     "lastAddress": "Last resolved address",
     "title": "Hosting"
   },
+  "deviceJoinKeyOnce": {
+    "body": "It will not be shown again: remote.it keeps only its public half. If it is lost, revoke it and issue another.",
+    "download": "Download",
+    "line": "Install line",
+    "title": "Copy or download this key now",
+    "use": "Give it to the device at every boot as {{env}}, or in a file named by {{file}}: from a secret store, a USB stick, or an image built for this device. It then comes back as itself — the same ID, settings, access and history — with new session keys each boot."
+  },
+  "deviceJoinKeys": {
+    "boots": "Boots: {{boots}}",
+    "created": "Issued",
+    "description": "For a device that starts fresh at every boot: a key brings it back as itself — the same ID, settings, access and history. Each key is shown once, when it is issued.",
+    "expired": "Expired",
+    "expires": "Expires",
+    "full": "Two keys are in force, the most a device has: revoke one before issuing another. To roll over, issue the next key, install it, see its first boot here, then revoke the old one.",
+    "issue": "Issue Key",
+    "lastBoot": "Last boot",
+    "neverBooted": "No boot yet",
+    "noExpiry": "No expiry",
+    "none": "No join keys yet.",
+    "notRevoked": "The key could not be revoked.",
+    "revoke": "Revoke Key",
+    "revokeAction": "Revoke Key",
+    "revokeAll": "Revoke all keys",
+    "revokeAllAction": "Revoke All",
+    "revokeAllBody": "For a leaked key: every key stops working at once, and the device cannot come back at its next boot until a new key is issued and installed on it. This cannot be undone.",
+    "revokeAllTitle": "Revoke every join key of \"{{name}}\"?",
+    "revokeBody": "The device cannot boot with this key from now on; the other key in force still brings it back. This cannot be undone.",
+    "revoked": "Revoked",
+    "revokeLastBody": "This is its only key in force: the device cannot come back at its next boot until a new key is issued and installed on it. This cannot be undone.",
+    "revokeTitle": "Revoke join key \"{{name}}\"?",
+    "stale": "No boot in 30 days",
+    "staleSuggestion": "No boot with this key for 30 days: revoke it if nothing holds it any more. Only a suggestion — some devices boot rarely.",
+    "title": "Device Join Keys"
+  },
   "deviceLabelSetting": {
     "label": "Device Label"
   },
@@ -1786,6 +1820,27 @@
     "plan": "Plan",
     "seeInvoice": "See invoice",
     "title": "Billing History"
+  },
+  "issueDeviceJoinKey": {
+    "createdTitle": "Device Join Key Issued",
+    "description": "A machine holding the key comes back as {{name}} at every boot, and nothing else. The key is shown once, when it is issued.",
+    "expires": "Expires",
+    "expiresHelp": "Optional: the device cannot boot with it after this",
+    "expiresPast": "A time in the future",
+    "issue": "Issue",
+    "issuing": "Issuing...",
+    "name": "Name",
+    "nameHelp": "Where it is kept, such as a secret store, a USB stick or an image",
+    "nameRequired": "A name is required",
+    "nameTooLong": "At most {{max}} characters",
+    "noneInForce": "Every earlier key is revoked: the device cannot come back until a new key is issued.",
+    "notIssued": "The key could not be issued.",
+    "notRevoked": "The keys could not be revoked. Nothing changed.",
+    "rotate": "Revoke All and Issue",
+    "rotateDescription": "Every key of {{name}} is revoked, and a new one issued and shown once. Until the new key is installed and the device restarts with it, the device cannot come back — and neither can a copy of an old key.",
+    "rotatedInstall": "Every earlier key of {{name}} is revoked. Install this key where the device gets its key, and restart it.",
+    "rotateTitle": "Rotate Device Join Keys",
+    "title": "Issue Device Join Key"
   },
   "jobAttributes": {
     "fileDeleted": "File Deleted",

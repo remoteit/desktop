@@ -7,6 +7,7 @@ import { CopyCodeBlock } from './CopyCodeBlock'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 import { dispatch } from '../store'
+import { downloadJoinKey } from '../helpers/joinKeyFile'
 
 type Props = {
   product: Pick<IDeviceProduct, 'id' | 'name'>
@@ -26,22 +27,6 @@ const localInputValue = (date: Date) =>
   new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
 
 const wholeNumber = (value: string) => /^\d+$/.test(value.trim()) && Number(value) >= 1 && Number(value) <= INT_MAX
-
-// The file a machine reads with REMOTEIT_JOIN_KEY_FILE: the key alone, on one line (the daemon trims the line end).
-function download(name: string, key: string) {
-  const slug =
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'key'
-  const element = document.createElement('a')
-  element.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(key + '\n')
-  element.setAttribute('download', `remoteit-join-key-${slug}.txt`)
-  element.style.display = 'none'
-  document.body.appendChild(element)
-  element.click()
-  document.body.removeChild(element)
-}
 
 // Creates a join key and shows it once. Mounted only while open, so the key lives in this dialog's state alone, from
 // graphql's answer until Done unmounts it: it is never put in the store, never logged, and cannot be shown again. While
@@ -121,7 +106,7 @@ export const CreateJoinKeyDialog: React.FC<Props> = ({ product, onCreate, onClos
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => download(created.name, created.key)}>
+            <Button onClick={() => downloadJoinKey('remoteit-join-key', created.name, created.key)}>
               <Icon name="download" inlineLeft />
               {t('createJoinKey.download', 'Download')}
             </Button>

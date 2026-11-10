@@ -996,6 +996,40 @@
     "lastAddress": "",
     "title": ""
   },
+  "deviceJoinKeyOnce": {
+    "body": "",
+    "download": "",
+    "line": "",
+    "title": "",
+    "use": ""
+  },
+  "deviceJoinKeys": {
+    "boots": "",
+    "created": "",
+    "description": "",
+    "expired": "",
+    "expires": "",
+    "full": "",
+    "issue": "",
+    "lastBoot": "",
+    "neverBooted": "",
+    "noExpiry": "",
+    "none": "",
+    "notRevoked": "",
+    "revoke": "",
+    "revokeAction": "",
+    "revokeAll": "",
+    "revokeAllAction": "",
+    "revokeAllBody": "",
+    "revokeAllTitle": "",
+    "revokeBody": "",
+    "revoked": "",
+    "revokeLastBody": "",
+    "revokeTitle": "",
+    "stale": "",
+    "staleSuggestion": "",
+    "title": ""
+  },
   "deviceLabelSetting": {
     "label": "Etiqueta del dispositivo"
   },
@@ -1825,6 +1859,27 @@
     "plan": "Plan",
     "seeInvoice": "Ver factura",
     "title": "Historial de facturación"
+  },
+  "issueDeviceJoinKey": {
+    "createdTitle": "",
+    "description": "",
+    "expires": "",
+    "expiresHelp": "",
+    "expiresPast": "",
+    "issue": "",
+    "issuing": "",
+    "name": "",
+    "nameHelp": "",
+    "nameRequired": "",
+    "nameTooLong": "",
+    "noneInForce": "",
+    "notIssued": "",
+    "notRevoked": "",
+    "rotate": "",
+    "rotateDescription": "",
+    "rotatedInstall": "",
+    "rotateTitle": "",
+    "title": ""
   },
   "jobAttributes": {
     "fileDeleted": "Archivo eliminado",

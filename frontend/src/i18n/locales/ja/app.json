@@ -974,6 +974,40 @@
     "lastAddress": "",
     "title": ""
   },
+  "deviceJoinKeyOnce": {
+    "body": "",
+    "download": "",
+    "line": "",
+    "title": "",
+    "use": ""
+  },
+  "deviceJoinKeys": {
+    "boots": "",
+    "created": "",
+    "description": "",
+    "expired": "",
+    "expires": "",
+    "full": "",
+    "issue": "",
+    "lastBoot": "",
+    "neverBooted": "",
+    "noExpiry": "",
+    "none": "",
+    "notRevoked": "",
+    "revoke": "",
+    "revokeAction": "",
+    "revokeAll": "",
+    "revokeAllAction": "",
+    "revokeAllBody": "",
+    "revokeAllTitle": "",
+    "revokeBody": "",
+    "revoked": "",
+    "revokeLastBody": "",
+    "revokeTitle": "",
+    "stale": "",
+    "staleSuggestion": "",
+    "title": ""
+  },
   "deviceLabelSetting": {
     "label": "デバイスラベル"
   },
@@ -1747,6 +1781,27 @@
     "plan": "プラン",
     "seeInvoice": "請求書を見る",
     "title": "請求履歴"
+  },
+  "issueDeviceJoinKey": {
+    "createdTitle": "",
+    "description": "",
+    "expires": "",
+    "expiresHelp": "",
+    "expiresPast": "",
+    "issue": "",
+    "issuing": "",
+    "name": "",
+    "nameHelp": "",
+    "nameRequired": "",
+    "nameTooLong": "",
+    "noneInForce": "",
+    "notIssued": "",
+    "notRevoked": "",
+    "rotate": "",
+    "rotateDescription": "",
+    "rotatedInstall": "",
+    "rotateTitle": "",
+    "title": ""
   },
   "jobAttributes": {
     "fileDeleted": "ファイルが削除されました",
