@@ -84,6 +84,27 @@
     "productHelp": "",
     "title": ""
   },
+  "addDuplicateDevice": {
+    "add": "",
+    "addedTitle": "",
+    "adding": "",
+    "copyDescription": "",
+    "copyName": "",
+    "copyTitle": "",
+    "installOnCopy": "",
+    "installOnOriginal": "",
+    "name": "",
+    "nameRequired": "",
+    "notAdded": "",
+    "notNow": "",
+    "originalDescription": "",
+    "originalName": "",
+    "originalTitle": "",
+    "rotate": "",
+    "rotateBody": "",
+    "rotateTitle": "",
+    "until": ""
+  },
   "addFromNetwork": {
     "discover": "",
     "scanForServices": "Nach Diensten suchen",
@@ -1520,6 +1541,18 @@
     "remove": "",
     "split": "",
     "splitWhen": "",
+    "title": ""
+  },
+  "duplicateKey": {
+    "body": "",
+    "from": "",
+    "keepCopy": "",
+    "keyBody": "",
+    "keyTitle": "",
+    "makeOriginal": "",
+    "rotate": "",
+    "seen": "",
+    "seenFrom": "",
     "title": ""
   },
   "duration": {

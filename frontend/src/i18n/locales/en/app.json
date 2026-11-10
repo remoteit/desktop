@@ -84,6 +84,27 @@
     "productHelp": "Optional: the device starts from its services and tags",
     "title": "Add a Device Ahead"
   },
+  "addDuplicateDevice": {
+    "add": "Make Device and Key",
+    "addedTitle": "{{name}} Added",
+    "adding": "Making...",
+    "copyDescription": "A new device is made with the setup of {{name}}, and its join key shown once. Install that key on the copy: it then boots as the new device, and the original stays {{name}}.",
+    "copyName": "{{name}} (copy)",
+    "copyTitle": "Keep the Copy as a New Device",
+    "installOnCopy": "Install this key on the copy — the other machine — and restart it: it then boots as {{added}}, and the original keeps the key of {{name}}.",
+    "installOnOriginal": "Install this key on the original machine and restart it: it then boots as {{added}}, and the copy, keeping the key of {{name}}, becomes {{name}}.",
+    "name": "Name of the new device",
+    "nameRequired": "A name is required",
+    "notAdded": "The new device could not be made.",
+    "notNow": "Not now",
+    "originalDescription": "A new device is made with the setup of {{name}}, and its join key shown once. Install that key on the original machine: it boots as the new device from then on, and the copy, keeping the key of {{name}}, becomes {{name}}.",
+    "originalName": "{{name}} (original machine)",
+    "originalTitle": "Make the Copy the Original",
+    "rotate": "Rotate keys",
+    "rotateBody": "A copied key may be in more places than the two machines — an image, a USB stick. Rotating revokes every key of {{name}} and issues a new one, shown once, for the machine that is to stay {{name}}.",
+    "rotateTitle": "Rotate the keys of {{name}} too?",
+    "until": "Until then, whichever machine is online first is {{name}}, and the other stays refused."
+  },
   "addFromNetwork": {
     "discover": "What this device sees",
     "scanForServices": "Scan for Services",
@@ -1521,6 +1542,18 @@
     "split": "This machine signed in as {{name}} while {{name}} was online, and was split off.",
     "splitWhen": "This machine signed in as {{name}} while {{name}} was online, and was split off {{when}}.",
     "title": "Duplicate of"
+  },
+  "duplicateKey": {
+    "body": "Whichever machine is online first is {{name}}; the other is refused quietly until you choose: keep the copy as a new device, make it the original — each a new device whose key you install on that machine — or neither, rotating the keys so the copy cannot sign in at all.",
+    "from": "From {{address}}.",
+    "keepCopy": "Keep the copy as a new device",
+    "keyBody": "It was refused: its daemon cannot take an identity of its own. Update the daemon on that machine, and it is split off as a copy you can keep or remove.",
+    "keyTitle": "Another machine signed in as {{name}} while it was online",
+    "makeOriginal": "Make the copy the original",
+    "rotate": "Neither: rotate keys",
+    "seen": "Seen {{when}}.",
+    "seenFrom": "Seen {{when}} from {{address}}.",
+    "title": "The device join key of {{name}} is in use on another machine"
   },
   "duration": {
     "ago": "{{duration}} ago"

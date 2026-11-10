@@ -38,6 +38,7 @@ import { hostedStateTooltip } from '../components/HostedBy'
 import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { DisabledDeviceNotice } from '../components/DisabledDeviceNotice'
 import { DuplicateCopyNotice } from '../components/DuplicateCopyNotice'
+import { DuplicateKeyNotice } from '../components/DuplicateKeyNotice'
 import { DuplicateCopies } from '../components/DuplicateCopies'
 import { useDuplicateCopies } from '../hooks/useDeviceIdentity'
 
@@ -146,6 +147,7 @@ export const DevicePage: React.FC = () => {
           </Notice>
         )
       )}
+      {device.duplicate && <DuplicateKeyNotice device={device} />}
       {copies && <DuplicateCopies variant="notice" original={device} copies={copies} accountId={device.accountId} />}
       <Typography variant="subtitle1">
         <Title>{t('devicePage.service', 'Service')}</Title>
