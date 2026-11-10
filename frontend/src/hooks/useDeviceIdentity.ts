@@ -25,8 +25,8 @@ export function useDeviceIdentity(): IdentityServed | undefined {
 const NO_COPIES = new Map<string, DuplicateCopy[]>()
 
 /* An account's copies awaiting a decision, by the id of the device each copies: read once where the API serves
-   duplicates, and again whenever `refresh` changes — the device list read again. */
-export function useDuplicateCopies(accountId?: string, refresh?: unknown): Map<string, DuplicateCopy[]> {
+   duplicates, and again each time `reading` — the device list being read — ends. */
+export function useDuplicateCopies(accountId?: string, reading?: boolean): Map<string, DuplicateCopy[]> {
   const served = useDeviceIdentity()?.duplicates
   const list = useSyncExternalStore(subscribeDuplicateCopies, () =>
     accountId ? duplicateCopies(accountId) : undefined
@@ -34,11 +34,11 @@ export function useDuplicateCopies(accountId?: string, refresh?: unknown): Map<s
   const read = useRef<string>()
 
   useEffect(() => {
-    if (!served || !accountId) return
+    if (!served || !accountId || reading) return
     const again = read.current === accountId
     read.current = accountId
     requestDuplicateCopies(accountId, again)
-  }, [served, accountId, refresh])
+  }, [served, accountId, reading])
 
   return useMemo(() => (list ? groupCopies(list) : NO_COPIES), [list])
 }

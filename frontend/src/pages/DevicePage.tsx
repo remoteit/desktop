@@ -37,6 +37,9 @@ import { HostedDevices } from '../components/HostedDevices'
 import { hostedStateTooltip } from '../components/HostedBy'
 import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { DisabledDeviceNotice } from '../components/DisabledDeviceNotice'
+import { DuplicateCopyNotice } from '../components/DuplicateCopyNotice'
+import { DuplicateCopies } from '../components/DuplicateCopies'
+import { useDuplicateCopies } from '../hooks/useDeviceIdentity'
 
 export const DevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -51,12 +54,15 @@ export const DevicePage: React.FC = () => {
   // A device-session device is asked what it sees: its daemon reports what it runs, as no legacy agent does. A virtual
   // device has no daemon to ask.
   const deviceSessions = useDeviceSessions()
-  const sessionDevice = !!useDeviceSessionInfo(deviceSessions && !device?.virtual ? device?.id : undefined)?.agent?.running
+  const sessionDevice = !!useDeviceSessionInfo(deviceSessions && !device?.virtual ? device?.id : undefined)?.agent
+    ?.running
 
   const sort = useSelector(selectDeviceModelAttributes).sortServiceOption
   const setupAddingService = useSelector((state: State) => state.ui.setupAddingService)
   const setupDeletingService = useSelector((state: State) => state.ui.setupDeletingService)
   const connectThisDevice = useSelector((state: State) => state.ui.connectThisDevice)
+  // The copies split off this device's identity, awaiting their owner's decision.
+  const copies = useDuplicateCopies(device?.accountId).get(device?.id || '')
 
   if (!device)
     return (
@@ -93,7 +99,11 @@ export const DevicePage: React.FC = () => {
       }
     >
       {device.disabled ? (
-        <DisabledDeviceNotice device={device} />
+        device.duplicateOf ? (
+          <DuplicateCopyNotice device={device} />
+        ) : (
+          <DisabledDeviceNotice device={device} />
+        )
       ) : device.license === 'UNLICENSED' ? (
         <Notice severity="warning" button={<PlanActionChip color="warning" sx={{ marginTop: 1.4 }} />} gutterTop>
           {t('devicePage.deviceUnlicensed', 'Device unlicensed')}
@@ -136,6 +146,7 @@ export const DevicePage: React.FC = () => {
           </Notice>
         )
       )}
+      {copies && <DuplicateCopies variant="notice" original={device} copies={copies} accountId={device.accountId} />}
       <Typography variant="subtitle1">
         <Title>{t('devicePage.service', 'Service')}</Title>
         <SortServices />

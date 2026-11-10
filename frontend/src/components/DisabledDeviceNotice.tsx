@@ -26,6 +26,13 @@ export function disabledDescription(
           'disabledDevice.expired',
           'Disabled: offline past its registration’s timeout. It restores itself when it returns.'
         )
+  if (device.disabledReason === 'duplicate')
+    return when
+      ? t('disabledDevice.duplicateWhen', {
+          when,
+          defaultValue: 'Split off {{when}} as a duplicate of another device: disabled until its owner decides.',
+        })
+      : t('disabledDevice.duplicate', 'A duplicate of another device: disabled until its owner decides.')
   if (when && device.disabledBy)
     return t('disabledDevice.whenBy', { when, by: device.disabledBy, defaultValue: 'Disabled {{when}} by {{by}}' })
   if (when) return t('disabledDevice.when', { when, defaultValue: 'Disabled {{when}}' })

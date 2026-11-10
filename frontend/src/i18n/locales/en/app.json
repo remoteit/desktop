@@ -1419,6 +1419,8 @@
     "by": "Disabled by {{by}}",
     "decommission": "Decommission…",
     "disabled": "Disabled",
+    "duplicate": "A duplicate of another device: disabled until its owner decides.",
+    "duplicateWhen": "Split off {{when}} as a duplicate of another device: disabled until its owner decides.",
     "expired": "Disabled: offline past its registration’s timeout. It restores itself when it returns.",
     "expiredWhen": "Disabled {{when}}: offline past its registration’s timeout. It restores itself when it returns.",
     "notServing": "It serves nothing until it is restored.",
@@ -1488,6 +1490,37 @@
     "unsupported": "This API does not ask devices what they see.",
     "withheldLocal": "This device's local policy doesn't share what listens on it",
     "withheldNetwork": "This device's local policy doesn't share what its network advertises"
+  },
+  "duplicateCopies": {
+    "keepAction": "Keep All",
+    "keepAll": "Keep all",
+    "keepBody": "Each becomes a device of its own: enabled, starting from the setup of {{name}} — its services, tags and product — and taking a licence. {{name}} is unchanged.",
+    "keepTitle_one": "Keep the copy as a new device?",
+    "keepTitle_other": "Keep {{count}} copies as new devices?",
+    "notice": "Machines that signed in as {{name}} while it was online, split off as devices of their own. They are disabled — no access, no licence — until you keep or remove them.",
+    "notKept": "The copies could not be kept.",
+    "removeAll": "Remove all…",
+    "splitOff": "Split off {{when}}",
+    "title_one": "{{count}} copy of {{name}}",
+    "title_other": "{{count}} copies of {{name}}"
+  },
+  "duplicateCopy": {
+    "disabled": "It is disabled — no access, no licence — and idles quietly until you keep it, make it the original, or remove it.",
+    "fromOriginal": "Start from the setup of {{name}}: its services, tags and product",
+    "keep": "Keep as new device",
+    "keepAction": "Keep",
+    "keepBody": "It is enabled as a device of its own and takes a licence. {{name}} is unchanged.",
+    "keepTitle": "Keep \"{{name}}\" as a new device?",
+    "makeOriginal": "Make it the original",
+    "notChanged": "Nothing was changed.",
+    "originalAction": "Swap",
+    "originalBody": "The two machines swap. This machine becomes {{name}}, with its ID, settings, access and history; the machine that is {{name}} now becomes {{copy}}, disabled until you decide.",
+    "originalTitle": "Make \"{{name}}\" the original?",
+    "originalWhen": "It happens at once where both are online, otherwise as each next signs in.",
+    "remove": "Remove…",
+    "split": "This machine signed in as {{name}} while {{name}} was online, and was split off.",
+    "splitWhen": "This machine signed in as {{name}} while {{name}} was online, and was split off {{when}}.",
+    "title": "Duplicate of"
   },
   "duration": {
     "ago": "{{duration}} ago"

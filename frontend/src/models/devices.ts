@@ -35,6 +35,12 @@ import {
 } from '../services/graphQLVirtualDevices'
 import { isSampleId } from '../services/virtualDevicesSample'
 import { graphQLDecommissionDevices, graphQLDisableDevices, graphQLRestoreDevices } from '../services/deviceDisable'
+import {
+  graphQLKeepDuplicate,
+  graphQLKeepDuplicates,
+  graphQLMakeOriginal,
+  requestDuplicateCopies,
+} from '../services/deviceIdentity'
 import { selectTimeSeries } from '../selectors/ui'
 import { listTimeSeriesKey, timeSeriesLoading, timeSeriesWithStyle } from '../helpers/dateHelper'
 import {
@@ -899,6 +905,57 @@ export default createModel<RootModel>()({
       }
       dispatch.ui.set({ destroying: false })
       return result !== 'ERROR'
+    },
+
+    /* Duplicates (graphql-api docs/PROXY-GROUPS.md §11, "Wave 3: device identity"; services/deviceIdentity): copies
+       split off a device's identity, kept as new devices or one made the original. Each answers graphql's refusal for
+       the page to show, or nothing; done, the devices are read again, and the account's copies with them. */
+
+    // One copy kept from its original's setup (services, tags, product) or not; several, each from its original's.
+    async keepDuplicates(
+      { ids, fromOriginal = true }: { ids: string[]; fromOriginal?: boolean },
+      state
+    ): Promise<string | undefined> {
+      if (!ids.length) return
+      const accountId = selectDevice(state, undefined, ids[0])?.accountId || selectActiveAccountId(state)
+      dispatch.ui.set({ destroying: true })
+      const refused =
+        ids.length === 1 ? await graphQLKeepDuplicate(ids[0], fromOriginal) : await graphQLKeepDuplicates(ids)
+      if (refused === undefined) {
+        if (ids.length === 1) await dispatch.devices.fetchSingleFull({ id: ids[0], accountId, silent: true })
+        await dispatch.devices.fetchList()
+        await requestDuplicateCopies(accountId, true)
+        dispatch.ui.set({
+          successMessage: i18n.t('notices:device.duplicatesKept', {
+            count: ids.length,
+            defaultValue_one: 'The copy is now a device of its own.',
+            defaultValue_other: '{{count}} copies are now devices of their own.',
+          }),
+        })
+      }
+      dispatch.ui.set({ destroying: false })
+      return refused
+    },
+
+    // The two machines swap: the copy's becomes the original, the original's becomes the copy and stays disabled — at
+    // once where both are online, else as each next signs in. Both devices are read again.
+    async makeOriginal({ id, originalId }: { id: string; originalId?: string }, state): Promise<string | undefined> {
+      const accountId = selectDevice(state, undefined, id)?.accountId || selectActiveAccountId(state)
+      dispatch.ui.set({ destroying: true })
+      const refused = await graphQLMakeOriginal(id)
+      if (refused === undefined) {
+        await dispatch.devices.fetchSingleFull({ id, accountId, silent: true })
+        if (originalId) await dispatch.devices.fetchSingleFull({ id: originalId, accountId, silent: true })
+        await requestDuplicateCopies(accountId, true)
+        dispatch.ui.set({
+          successMessage: i18n.t(
+            'notices:device.madeOriginal',
+            'The machines swap identities: at once where both are online, otherwise as each next signs in.'
+          ),
+        })
+      }
+      dispatch.ui.set({ destroying: false })
+      return refused
     },
 
     /* Virtual devices (graphql-api docs/VIRTUAL-DEVICES.md). Each reads anew what it changed: the device, and the

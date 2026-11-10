@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom'
 import { GUIDE_START_DATE } from '../constants'
 import { DeviceListContext } from '../services/Context'
 import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { DeviceListHeaderCheckbox } from './DeviceListHeaderCheckbox'
 import { Box, Typography } from '@mui/material'
 import { DeviceListItem } from './DeviceListItem'
@@ -16,6 +16,9 @@ import { isOffline } from '../models/devices'
 import { GuideBubble } from './GuideBubble'
 import { DeviceLoadMore } from './LoadMore'
 import { GridList } from './GridList'
+import { DuplicateCopies } from './DuplicateCopies'
+import { useDuplicateCopies } from '../hooks/useDeviceIdentity'
+import { selectActiveAccountId } from '../selectors/accounts'
 
 export interface DeviceListProps {
   attributes: Attribute[]
@@ -125,6 +128,9 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   const dispatch = useDispatch<Dispatch>()
   const onFirstClick = useCallback(() => dispatch.ui.pop('deviceList'), [dispatch])
   const isScriptsPath = location.pathname.includes('scripts')
+  // The copies split off each device's identity, under it; read again with the list. Not while choosing devices.
+  const accountId = useSelector(selectActiveAccountId)
+  const copies = useDuplicateCopies(restore || select ? undefined : accountId, fetching)
 
   /* Measured wrapper: `width: 100%` resolves against the scroll container, so it reports
      the space this list ACTUALLY has. The GridList inside is deliberately wider than the
@@ -145,21 +151,24 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           // Choosing devices to script: a virtual device has no daemon to run one, so it is left out, not disabled.
           if (select && isScriptsPath && device.virtual) return null
           const disabled = select && !device.scriptable && isScriptsPath
+          const group = copies.get(device.id)
           return (
-            <DeviceListRow
-              key={device.id}
-              device={device}
-              deviceConnections={connections[device.id]}
-              attributes={attributes}
-              required={required}
-              restore={restore}
-              canRestore={canRestore}
-              select={select}
-              mobile={mobile}
-              disabled={disabled}
-              showGuide={!index}
-              onClick={index ? undefined : onFirstClick}
-            />
+            <React.Fragment key={device.id}>
+              <DeviceListRow
+                device={device}
+                deviceConnections={connections[device.id]}
+                attributes={attributes}
+                required={required}
+                restore={restore}
+                canRestore={canRestore}
+                select={select}
+                mobile={mobile}
+                disabled={disabled}
+                showGuide={!index}
+                onClick={index ? undefined : onFirstClick}
+              />
+              {group && <DuplicateCopies original={device} copies={group} accountId={accountId} />}
+            </React.Fragment>
           )
         })}
         <DeviceLoadMore />

@@ -6,18 +6,32 @@ const {
   graphQLDisableDevices,
   graphQLRestoreDevices,
   graphQLDecommissionDevices,
+  graphQLKeepDuplicate,
+  graphQLKeepDuplicates,
+  graphQLMakeOriginal,
+  requestDuplicateCopies,
 } = vi.hoisted(() => ({
   graphQLFetchDeviceList: vi.fn(),
   graphQLDeviceAdaptor: vi.fn(),
   graphQLDisableDevices: vi.fn(),
   graphQLRestoreDevices: vi.fn(),
   graphQLDecommissionDevices: vi.fn(),
+  graphQLKeepDuplicate: vi.fn(),
+  graphQLKeepDuplicates: vi.fn(),
+  graphQLMakeOriginal: vi.fn(),
+  requestDuplicateCopies: vi.fn(),
 }))
 vi.mock('../services/graphQLDevice', () => ({ graphQLFetchDeviceList, graphQLDeviceAdaptor }))
 vi.mock('../services/deviceDisable', () => ({
   graphQLDisableDevices,
   graphQLRestoreDevices,
   graphQLDecommissionDevices,
+}))
+vi.mock('../services/deviceIdentity', () => ({
+  graphQLKeepDuplicate,
+  graphQLKeepDuplicates,
+  graphQLMakeOriginal,
+  requestDuplicateCopies,
 }))
 vi.mock('../services/graphQLMutation', () => ({}))
 vi.mock('../services/graphQLRequest', () => ({}))
@@ -195,5 +209,52 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
     expect(await effects().decommission(['d1', 'd2'])).toBe(true)
     expect(graphQLDecommissionDevices).toHaveBeenCalledWith(['d1', 'd2'])
     expect(dispatch.devices.cleanup).toHaveBeenCalledWith(['d1', 'd2'])
+  })
+})
+
+describe('duplicates (graphql-api docs/PROXY-GROUPS.md §11, wave 3)', () => {
+  const copy = (id: string) => ({ id, name: id, accountId: 'org', disabled: true, permissions: ['MANAGE'] } as IDevice)
+
+  beforeEach(() => {
+    dispatch.ui = { set: vi.fn() }
+    dispatch.devices.fetchSingleFull = vi.fn()
+  })
+
+  it('one copy is kept from its original’s setup or not; the device, the list and the copies read again', async () => {
+    graphQLKeepDuplicate.mockResolvedValue(undefined)
+    const state = stateWith({ all: [copy('Y1')] })
+    expect(await effects().keepDuplicates({ ids: ['Y1'], fromOriginal: false }, state)).toBeUndefined()
+    expect(graphQLKeepDuplicate).toHaveBeenCalledWith('Y1', false)
+    expect(dispatch.devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'Y1', accountId: 'org', silent: true })
+    expect(dispatch.devices.fetchList).toHaveBeenCalled()
+    expect(requestDuplicateCopies).toHaveBeenCalledWith('org', true)
+
+    await effects().keepDuplicates({ ids: ['Y1'] }, state)
+    expect(graphQLKeepDuplicate).toHaveBeenLastCalledWith('Y1', true)
+  })
+
+  it('several are kept together', async () => {
+    graphQLKeepDuplicates.mockResolvedValue(undefined)
+    expect(await effects().keepDuplicates({ ids: ['Y1', 'Y2'] }, stateWith({ all: [] }))).toBeUndefined()
+    expect(graphQLKeepDuplicates).toHaveBeenCalledWith(['Y1', 'Y2'])
+    expect(graphQLKeepDuplicate).not.toHaveBeenCalled()
+    expect(requestDuplicateCopies).toHaveBeenCalledWith('acct', true)
+  })
+
+  it("a refusal is answered in graphql's words, and nothing is read again", async () => {
+    graphQLKeepDuplicates.mockResolvedValue('Licence limit reached')
+    expect(await effects().keepDuplicates({ ids: ['Y1', 'Y2'] }, stateWith({ all: [] }))).toBe('Licence limit reached')
+    expect(dispatch.devices.fetchList).not.toHaveBeenCalled()
+    expect(requestDuplicateCopies).not.toHaveBeenCalled()
+  })
+
+  it('making a copy the original reads both devices again', async () => {
+    graphQLMakeOriginal.mockResolvedValue(undefined)
+    expect(
+      await effects().makeOriginal({ id: 'Y1', originalId: 'X1' }, stateWith({ all: [copy('Y1')] }))
+    ).toBeUndefined()
+    expect(graphQLMakeOriginal).toHaveBeenCalledWith('Y1')
+    expect(dispatch.devices.fetchSingleFull.mock.calls.map((c: any) => c[0].id)).toEqual(['Y1', 'X1'])
+    expect(requestDuplicateCopies).toHaveBeenCalledWith('org', true)
   })
 })

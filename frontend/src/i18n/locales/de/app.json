@@ -1419,6 +1419,8 @@
     "by": "",
     "decommission": "",
     "disabled": "",
+    "duplicate": "",
+    "duplicateWhen": "",
     "expired": "",
     "expiredWhen": "",
     "notServing": "",
@@ -1488,6 +1490,37 @@
     "unsupported": "",
     "withheldLocal": "",
     "withheldNetwork": ""
+  },
+  "duplicateCopies": {
+    "keepAction": "",
+    "keepAll": "",
+    "keepBody": "",
+    "keepTitle_one": "",
+    "keepTitle_other": "",
+    "notice": "",
+    "notKept": "",
+    "removeAll": "",
+    "splitOff": "",
+    "title_one": "",
+    "title_other": ""
+  },
+  "duplicateCopy": {
+    "disabled": "",
+    "fromOriginal": "",
+    "keep": "",
+    "keepAction": "",
+    "keepBody": "",
+    "keepTitle": "",
+    "makeOriginal": "",
+    "notChanged": "",
+    "originalAction": "",
+    "originalBody": "",
+    "originalTitle": "",
+    "originalWhen": "",
+    "remove": "",
+    "split": "",
+    "splitWhen": "",
+    "title": ""
   },
   "duration": {
     "ago": "vor {{duration}}"
