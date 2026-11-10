@@ -244,6 +244,8 @@ export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] 
           })
         : t('runEffect.dormant', 'No device available after, until one of its devices carries traffic again.')
     )
+  if (effect.kind === 'exit' && effect.lanCloses)
+    lines.push(t('runEffect.lanCloses', 'Its users no longer reach this machine’s network (LAN): it closes as the machine leaves.'))
   if (effect.refusal) lines.push(t('runEffect.refused', 'Refused: {{refusal}}.', { refusal: effect.refusal }))
   return lines
 }

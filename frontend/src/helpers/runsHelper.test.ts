@@ -38,6 +38,7 @@ const effect = (fields: Partial<DeviceActionEffect> = {}): DeviceActionEffect =>
   moved: 0,
   inService: 1,
   dormant: false,
+  lanCloses: false,
   refusal: null,
   ...fields,
 })
@@ -209,6 +210,13 @@ describe('what an action does to each proxy and exit, said first', () => {
     expect(effectLines(t, effect({ inService: 0, dormant: true }))[1]).toBe(
       'No device available after, until one of its devices carries traffic again.'
     )
+  })
+
+  it('an exit’s users losing their reach to the machine’s LAN is said; one keeping it, nothing', () => {
+    expect(effectLines(t, effect({ after: 'gone', lanCloses: true })).at(-1)).toBe(
+      'Its users no longer reach this machine’s network (LAN): it closes as the machine leaves.'
+    )
+    expect(effectLines(t, effect({ after: 'disabled' })).join(' ')).not.toContain('LAN')
   })
 
   it('a refusal, in graphql’s words', () => {

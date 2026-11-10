@@ -3199,6 +3199,7 @@
     "endpointsUnserved_one": "Its endpoint stays on the proxy, served by no device until one is in service.",
     "endpointsUnserved_other": "Its {{count}} endpoints stay on the proxy, served by no device until one is in service.",
     "gone": "taken out of it",
+    "lanCloses": "Its users no longer reach this machine’s network (LAN): it closes as the machine leaves.",
     "refused": "Refused: {{refusal}}.",
     "sessionsEnd_one": "The {{count}} connection open through it ends.",
     "sessionsEnd_other": "The {{count}} connections open through it end.",

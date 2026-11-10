@@ -89,6 +89,7 @@ export type DeviceActionEffect = {
   moved: number // of its users, those whose new connections go through this device now
   inService: number // the other devices left in service in it
   dormant: boolean // an own exit left with no device in service
+  lanCloses: boolean // an exit's users reach the machine's network (LAN) now, and the action takes it out of the exit
   refusal: string | null
 }
 
@@ -99,7 +100,7 @@ export const PROXY_DEVICE_FIELDS = `${RUN_FIELDS} drainMaxWaitMinutes health { s
 export const EXIT_DEVICE_FIELDS = `${RUN_FIELDS} established offering refusal health lan lanReason`
 export const RUNS_FIELDS = `proxy { ${PROXY_DEVICE_FIELDS} proxy { id name host remoteit local } }
   exit { ${EXIT_DEVICE_FIELDS} exit { id name remoteit } }`
-const EFFECT_FIELDS = 'kind id name state after sessions ends endpoints users moved inService dormant refusal'
+const EFFECT_FIELDS = 'kind id name state after sessions ends endpoints users moved inService dormant lanCloses refusal'
 
 async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
   const response = await post({ query, variables })
