@@ -11,6 +11,9 @@ import { Icon } from './Icon'
 import { DisableConfirm } from './DisableDevice'
 import { useDeviceDisable } from '../hooks/useDeviceDisable'
 import { selectDevice } from '../selectors/devices'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { useProductPolicyServed } from '../hooks/useProductPolicy'
+import { ProductMoveDialog } from './ProductMoveDialog'
 
 export const DevicesActionMenu: React.FC = () => {
   const { t } = useTranslation()
@@ -25,6 +28,10 @@ export const DevicesActionMenu: React.FC = () => {
   const [confirm, setConfirm] = useState<boolean>(false)
   // Disable where the API has it; an API without it keeps the delete.
   const disable = useDeviceDisable()
+  // Moving devices to a product, where the API has product policy.
+  const policy = useProductPolicyServed()
+  const accountId = useSelector(selectActiveAccountId)
+  const [moving, setMoving] = useState(false)
 
   const handleClose = () => setAnchorEl(null)
   const selectedLabel = t('devicesActionMenu.selectedCount', {
@@ -65,6 +72,21 @@ export const DevicesActionMenu: React.FC = () => {
           </ListItemIcon>
           <ListItemText primary={t('devicesActionMenu.transfer', 'Transfer')} />
         </MenuItem>
+        {policy?.bulk && (
+          <MenuItem
+            dense
+            data-move-product
+            onClick={() => {
+              handleClose()
+              setMoving(true)
+            }}
+          >
+            <ListItemIcon>
+              <Icon name="box" size="md" />
+            </ListItemIcon>
+            <ListItemText primary={t('devicesActionMenu.moveProduct', 'Move to Product')} />
+          </MenuItem>
+        )}
         <MenuItem
           dense
           onClick={() => {
@@ -80,6 +102,15 @@ export const DevicesActionMenu: React.FC = () => {
           />
         </MenuItem>
       </Menu>
+      <ProductMoveDialog
+        open={moving}
+        accountId={accountId}
+        deviceIds={selected}
+        onClose={() => setMoving(false)}
+        onDone={() => {
+          dispatch.devices.fetchDevices({ ids: selected })
+        }}
+      />
       <DisableConfirm
         open={confirm && !!disable}
         devices={selectedDevices}

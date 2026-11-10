@@ -9,12 +9,13 @@ type Props = {
   dot?: boolean
   size?: Sizes
   hideLabels?: boolean
+  locked?: string // why it cannot be deleted here, shown with a lock
   onClick?: (tag: ITag) => void
   onDelete?: (tag: ITag) => void
 }
 
 export const Tag: React.FC<Props> = React.memo(
-  ({ tag, dot, size = 'xs', hideLabels, onClick, onDelete }) => {
+  ({ tag, dot, size = 'xs', hideLabels, locked, onClick, onDelete }) => {
     const getColor = useLabel()
     const color = tag && !hideLabels ? getColor(tag.color) : undefined
 
@@ -54,6 +55,13 @@ export const Tag: React.FC<Props> = React.memo(
           <>
             {!hideLabels && <Icon name="tag" type="solid" size={size} color={color} />}
             {tag.name}
+            {locked && (
+              <Tooltip title={locked} placement="top" arrow>
+                <span data-locked>
+                  <Icon name="lock" size="xxs" color="grayDark" />
+                </span>
+              </Tooltip>
+            )}
           </>
         }
         size="small"

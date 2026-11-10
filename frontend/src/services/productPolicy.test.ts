@@ -13,6 +13,7 @@ import {
   graphQLAddDeviceProductNetwork,
   graphQLDeviceProduct,
   graphQLDeviceProductPreview,
+  graphQLProductChoices,
   graphQLProductPolicy,
   graphQLProductProxies,
   graphQLProductSyncPreview,
@@ -443,6 +444,21 @@ describe('reads', () => {
       { id: 'x1', name: 'Office', joined: true },
       { id: 'x2', name: 'Lab', joined: false },
     ])
+  })
+
+  it('the account’s products to choose from, with their levels where the API has them', async () => {
+    serve(WAVE4, () => ({
+      login: { account: { deviceProducts: { items: [{ id: 'P1', name: 'Pumps', sync: 'enforced' }] } } },
+    }))
+    expect(await graphQLProductChoices('A1')).toEqual([{ id: 'P1', name: 'Pumps', sync: 'enforced' }])
+    expect(asked(request.mock.calls.length - 1).query).toContain('items { id name sync }')
+    resetProductPolicy()
+    const { sync: _s, ...product } = WAVE4.DeviceProduct
+    serve({ ...WAVE4, DeviceProduct: product }, () => ({
+      login: { account: { deviceProducts: { items: [{ id: 'P1', name: 'Pumps' }] } } },
+    }))
+    expect(await graphQLProductChoices('A1')).toEqual([{ id: 'P1', name: 'Pumps', sync: 'template' }])
+    expect(asked(request.mock.calls.length - 1).query).toContain('items { id name }')
   })
 
   it('a setting’s lock, as an object or as words', async () => {

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { TFunction } from 'i18next'
 import { Box, Button, List, ListItem, ListItemText, MenuItem, Stack, TextField, Typography } from '@mui/material'
 import { NetworkDeviceRole } from '../services/graphQLDeviceNetworks'
 import { graphQLSetProxyProduct } from '../services/graphQLProxy'
@@ -17,6 +16,7 @@ import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { ListItemSetting } from './ListItemSetting'
 import { Notice } from './Notice'
+import { roleName } from '../helpers/productPolicyHelper'
 
 type Props = {
   productId: string
@@ -28,13 +28,6 @@ type Props = {
   registrationWarning?: string | null
   onChanged: () => void // read the product again, its registration warning with it
 }
-
-export const roleName = (t: TFunction, role: NetworkDeviceRole) =>
-  role === 'INITIATOR'
-    ? t('productGrants.initiator', 'Initiator')
-    : role === 'BOTH'
-    ? t('productGrants.both', 'Initiator and target')
-    : t('productGrants.target', 'Target')
 
 const ROLES: NetworkDeviceRole[] = ['INITIATOR', 'TARGET', 'BOTH']
 

@@ -7,6 +7,9 @@ import { canEditTags } from '../models/tags'
 import { selectTags } from '../selectors/tags'
 import { TagEditor } from './TagEditor'
 import { Tags } from './Tags'
+import { useProductHold } from './DeviceProductNotice'
+import { managedBy } from '../helpers/productPolicyHelper'
+import { useTranslation } from 'react-i18next'
 
 type Props = { device?: IDevice; button?: string }
 
@@ -16,6 +19,9 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
   const canEdit = useSelector((state: State) => canEditTags(state, accountId))
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
+  const { t } = useTranslation()
+  // Tags its product holds are changed on the product; under enforced the device adds none of its own.
+  const hold = useProductHold(device)
 
   if (!device) return null
 
@@ -24,6 +30,7 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
       <Tags
         showEmpty={!canEdit}
         tags={device.tags}
+        locked={hold.product && { names: hold.tags, title: managedBy(t, hold.product.name, hold.product.sync) }}
         onDelete={canEdit ? tag => dispatch.tags.removeDevice({ tag, device, accountId }) : undefined}
         onClick={tag => {
           dispatch.devices.set({ tag: { values: [tag.name], operator: tag.operator } })
@@ -31,7 +38,7 @@ export const DeviceTagEditor: React.FC<Props> = ({ device, button }) => {
           history.push('/devices')
         }}
       />
-      {canEdit && (
+      {canEdit && !hold.enforced && (
         <TagEditor
           onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
           onSelect={tag => dispatch.tags.addDevice({ tag, device, accountId })}

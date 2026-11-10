@@ -1256,6 +1256,18 @@
   "devicePresenceSetting": {
     "label": "Dirección de presencia"
   },
+  "deviceProduct": {
+    "attach": "",
+    "change": "",
+    "none": "",
+    "product": "",
+    "registeredWith": ""
+  },
+  "deviceProductNotice": {
+    "enforced": "",
+    "networks": "",
+    "synced": ""
+  },
   "deviceProxy": {
     "listening": "",
     "listeningAdmin": "",
@@ -1295,6 +1307,7 @@
     "deleteWarning": "La eliminación es irreversible y es posible que necesites acceso al dispositivo para recuperarlo.",
     "disable": "",
     "more": "Más",
+    "moveProduct": "",
     "selectedCount_one": "{{count}} dispositivo seleccionado",
     "selectedCount_many": "{{count}} dispositivos seleccionados",
     "selectedCount_other": "{{count}} dispositivos seleccionados",
@@ -2802,6 +2815,23 @@
     "toPersistent": "",
     "toPersistentBody": "",
     "toPersistentTitle": ""
+  },
+  "productMove": {
+    "attach": "",
+    "attachTitle": "",
+    "changeTitle": "",
+    "detach": "",
+    "detachMeaning": "",
+    "enforcedMany": "",
+    "manyTitle_one": "",
+    "manyTitle_many": "",
+    "manyTitle_other": "",
+    "move": "",
+    "moveRemove": "",
+    "none": "",
+    "noneMany": "",
+    "notChanged": "",
+    "product": ""
   },
   "productOneTimeCodes": {
     "add": "Agregar un dispositivo",

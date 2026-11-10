@@ -1230,6 +1230,18 @@
   "devicePresenceSetting": {
     "label": "Präsenzadresse"
   },
+  "deviceProduct": {
+    "attach": "",
+    "change": "",
+    "none": "",
+    "product": "",
+    "registeredWith": ""
+  },
+  "deviceProductNotice": {
+    "enforced": "",
+    "networks": "",
+    "synced": ""
+  },
   "deviceProxy": {
     "listening": "",
     "listeningAdmin": "",
@@ -1268,6 +1280,7 @@
     "deleteWarning": "Das Löschen ist unwiderruflich und erfordert für eine Wiederherstellung möglicherweise Gerätezugriff.",
     "disable": "",
     "more": "Mehr",
+    "moveProduct": "",
     "selectedCount_one": "{{count}} Gerät ausgewählt",
     "selectedCount_other": "{{count}} Geräte ausgewählt",
     "transfer": "Übertragen",
@@ -2750,6 +2763,22 @@
     "toPersistent": "",
     "toPersistentBody": "",
     "toPersistentTitle": ""
+  },
+  "productMove": {
+    "attach": "",
+    "attachTitle": "",
+    "changeTitle": "",
+    "detach": "",
+    "detachMeaning": "",
+    "enforcedMany": "",
+    "manyTitle_one": "",
+    "manyTitle_other": "",
+    "move": "",
+    "moveRemove": "",
+    "none": "",
+    "noneMany": "",
+    "notChanged": "",
+    "product": ""
   },
   "productOneTimeCodes": {
     "add": "Ein Gerät hinzufügen",

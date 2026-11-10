@@ -1204,6 +1204,18 @@
   "devicePresenceSetting": {
     "label": "プレゼンスアドレス"
   },
+  "deviceProduct": {
+    "attach": "",
+    "change": "",
+    "none": "",
+    "product": "",
+    "registeredWith": ""
+  },
+  "deviceProductNotice": {
+    "enforced": "",
+    "networks": "",
+    "synced": ""
+  },
   "deviceProxy": {
     "listening": "",
     "listeningAdmin": "",
@@ -1241,6 +1253,7 @@
     "deleteWarning": "削除は元に戻せません。復元するにはデバイスへのアクセスが必要になる場合があります。",
     "disable": "",
     "more": "その他",
+    "moveProduct": "",
     "selectedCount_other": "{{count}}台のデバイスを選択中",
     "transfer": "譲渡",
     "uninstallHint": "最良の結果を得るために、削除前にRemote.Itエージェントをアンインストールしてください。"
@@ -2698,6 +2711,21 @@
     "toPersistent": "",
     "toPersistentBody": "",
     "toPersistentTitle": ""
+  },
+  "productMove": {
+    "attach": "",
+    "attachTitle": "",
+    "changeTitle": "",
+    "detach": "",
+    "detachMeaning": "",
+    "enforcedMany": "",
+    "manyTitle_other": "",
+    "move": "",
+    "moveRemove": "",
+    "none": "",
+    "noneMany": "",
+    "notChanged": "",
+    "product": ""
   },
   "productOneTimeCodes": {
     "add": "デバイスを1台追加",

@@ -491,12 +491,15 @@ export const graphQLSetDeviceProduct = (deviceId: string, productId: string | nu
 export const graphQLSetDevicesProduct = (deviceIds: string[], productId: string | null, confirm: boolean) =>
   ask<true>('Mutation', 'setDevicesProduct', { deviceIds, productId, confirm }, () => true)
 
+export type ProductChoice = { id: string; name: string; sync: ProductSync }
+
 // The account's products with their levels, to choose one to attach a device to.
-export async function graphQLProductChoices(
-  accountId?: string
-): Promise<{ id: string; name: string; sync: ProductSync }[] | 'ERROR'> {
+export async function graphQLProductChoices(accountId?: string): Promise<ProductChoice[] | 'ERROR'> {
+  const { schema } = await read()
   const query = `query ProductChoices($accountId: String) {
-    login { account(id: $accountId) { deviceProducts { items { id name sync } } } }
+    login { account(id: $accountId) { deviceProducts { items { ${
+      select(schema, 'DeviceProduct', { id: true, name: true, sync: true }) || 'id name'
+    } } } } }
   }`
   const variables = { accountId }
   const response = await post({ query, variables })

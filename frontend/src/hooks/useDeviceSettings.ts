@@ -20,6 +20,11 @@ function read(deviceId: string): Read {
   return answer
 }
 
+// Every part of a page showing a device's settings, told to read them again after graphql changed them by something
+// else: the device moved to another product, or detached from one.
+const watchers = new Set<(deviceId: string) => void>()
+export const refreshDeviceSettings = (deviceId: string) => watchers.forEach(watcher => watcher(deviceId))
+
 export type DeviceSettings = {
   // undefined while read; null where the API has no settings (or could not say), for the caller's own controls
   settings: DeviceSetting[] | null | undefined
@@ -67,6 +72,14 @@ export function useDeviceSettings(deviceId?: string): DeviceSettings {
     const result = await read(deviceId)
     setSettings(Array.isArray(result) ? result : null)
   }, [enabled, deviceId])
+
+  useEffect(() => {
+    const watcher = (changed: string) => changed === deviceId && reload()
+    watchers.add(watcher)
+    return () => {
+      watchers.delete(watcher)
+    }
+  }, [deviceId, reload])
 
   return { settings, setting, set, reload }
 }

@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { PreviewCount, PreviewSummary, ProductItem, ProductSync, SettingLock } from '../services/productPolicy'
+import type { NetworkDeviceRole } from '../services/graphQLDeviceNetworks'
 
 /* Product policy said in words (services/productPolicy): a product's sync level, an item its product gives a device
    and holds, and a preview of a change in brief. */
@@ -40,6 +41,14 @@ export function productLockNote(t: TFunction, locked: SettingLock): string {
     ? t('deviceSetting.productEnforced', 'Managed by product {{product}} (enforced)', { product: locked.product })
     : t('deviceSetting.productSynced', 'Set by its product {{product}}', { product: locked.product })
 }
+
+// The role a product's devices take on a network it grants.
+export const roleName = (t: TFunction, role: NetworkDeviceRole) =>
+  role === 'INITIATOR'
+    ? t('productGrants.initiator', 'Initiator')
+    : role === 'BOTH'
+    ? t('productGrants.both', 'Initiator and target')
+    : t('productGrants.target', 'Target')
 
 // "3 tags", "1 network": a count of a kind of item, as graphql names the kind.
 export function itemCount(t: TFunction, kind: string, count: number): string {

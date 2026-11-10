@@ -1230,6 +1230,18 @@
   "devicePresenceSetting": {
     "label": "Presence Address"
   },
+  "deviceProduct": {
+    "attach": "Attach",
+    "change": "Change",
+    "none": "No product",
+    "product": "Product: {{name}} · {{level}}",
+    "registeredWith": "Registered with {{name}}"
+  },
+  "deviceProductNotice": {
+    "enforced": "Its tags, networks and services are the product’s, as are the settings the product sets: they are changed on the product, and nothing else is added here.",
+    "networks": "Networks from the product: {{networks}}",
+    "synced": "Its tags, networks and services from the product, and the settings the product sets, are locked and follow the product. It may have its own besides."
+  },
   "deviceProxy": {
     "listening": "Listening, though not a proxy: its proxy setting is on",
     "listeningAdmin": "Listening, though not a proxy: turned on on the device by its administrator",
@@ -1268,6 +1280,7 @@
     "deleteWarning": "Deletion is irreversible and may require device access for recovery.",
     "disable": "Disable",
     "more": "More",
+    "moveProduct": "Move to Product",
     "selectedCount_one": "{{count}} device selected",
     "selectedCount_other": "{{count}} devices selected",
     "transfer": "Transfer",
@@ -2750,6 +2763,22 @@
     "toPersistent": "Make Persistent",
     "toPersistentBody": "Its devices keep their identity on disk from now on, through reboots, and are no longer removed after 10 minutes offline.",
     "toPersistentTitle": "Make {{name}}’s devices persistent?"
+  },
+  "productMove": {
+    "attach": "Attach",
+    "attachTitle": "Attach it to a product",
+    "changeTitle": "Change its product from {{name}}",
+    "detach": "Detach",
+    "detachMeaning": "Everything it has from its product is kept as its own, memberships included, free to change.",
+    "enforcedMany": "Each device becomes exactly the product: what it has of its own that the product does not is removed.",
+    "manyTitle_one": "Move {{count}} device to a product",
+    "manyTitle_other": "Move {{count}} devices to a product",
+    "move": "Move",
+    "moveRemove": "Move and Remove",
+    "none": "No product: detach it",
+    "noneMany": "No product: detach them",
+    "notChanged": "The product was not changed.",
+    "product": "Product"
   },
   "productOneTimeCodes": {
     "add": "Add One Device",
