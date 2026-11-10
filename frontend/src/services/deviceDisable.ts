@@ -12,7 +12,7 @@ import { graphQLBasicRequest } from './graphQL'
    named `disabled` would fail every list, and deleteDevice still deletes for good, so the portal keeps its delete.
    Whether the API has them is read from its schema once, as multiPortServices and jobRunOptions read theirs. */
 
-export type DisabledReason = 'person' | 'expired'
+export type DisabledReason = 'person' | 'expired' | 'duplicate'
 
 const FIELDS = `
   disabled

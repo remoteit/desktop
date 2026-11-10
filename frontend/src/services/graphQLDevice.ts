@@ -16,6 +16,10 @@ import {
 } from './graphQLVirtualDevices'
 import { multiPortServicesServed } from './multiPortServices'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
+import { deviceIdentityFields, identityAdaptor } from './deviceIdentity'
+
+// What a device query adds where the API serves it: whether it is disabled, and whose duplicate it is.
+const probedDeviceFields = async () => (await deviceDisableFields()) + (await deviceIdentityFields())
 
 const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'license']
 
@@ -211,7 +215,7 @@ const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesO
 export async function graphQLFetchDeviceList(params: gqlOptions) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
-  const disabled = await deviceDisableFields()
+  const probed = await probedDeviceFields()
   const response = await graphQLBasicRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
@@ -223,7 +227,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
             devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, application: $application, platform: $platform) {
               total
               items {
-                ${deviceQueryColumns(params.columns, undefined, virtual, ports)}${disabled}
+                ${deviceQueryColumns(params.columns, undefined, virtual, ports)}${probed}
               }
             }
           }
@@ -258,7 +262,7 @@ export async function graphQLPreloadDevices(params: {
 }) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
-  const disabled = await deviceDisableFields()
+  const probed = await probedDeviceFields()
   const [ids, samples] = virtual === 'sample' ? splitSampleIds(params.ids) : [params.ids, []]
   if (!ids.length) return sampleResponse(samples, 'account')
   const response = await graphQLBasicRequest(
@@ -270,7 +274,7 @@ export async function graphQLPreloadDevices(params: {
           id
           account(id: $accountId) {
             device(id: $ids) {
-              ${deviceQueryColumns(params.columns, undefined, virtual, ports)}${disabled}
+              ${deviceQueryColumns(params.columns, undefined, virtual, ports)}${probed}
             }
           }
         }
@@ -287,7 +291,7 @@ export async function graphQLPreloadDevices(params: {
 export async function graphQLFetchConnections(params: { ids: string[] }) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
-  const disabled = await deviceDisableFields()
+  const probed = await probedDeviceFields()
   const [ids, samples] = virtual === 'sample' ? splitSampleIds(params.ids) : [params.ids, []]
   if (!ids.length) return sampleResponse(samples, 'login')
   const response = await graphQLBasicRequest(
@@ -300,7 +304,7 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
               ['tags', 'deviceTimeSeries'],
               virtual,
               ports
-            )}${disabled}
+            )}${probed}
           }
         }
       }`,
@@ -320,14 +324,14 @@ export async function graphQLFetchFullDevice(
 ) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
-  const disabled = await deviceDisableFields()
+  const probed = await probedDeviceFields()
   if (virtual === 'sample' && splitSampleIds([id])[1].length) return sampleResponse([id], 'login')
   return await graphQLBasicRequest(
     ` query Device($id: [String!]!, $accountId: String${SERVICE_TIME_SERIES_PARAMS + DEVICE_TIME_SERIES_PARAMS}) {
         login {
           id
           device(id: $id) {
-            ${DEVICE_SELECT}${virtual === 'api' ? VIRTUAL_DEVICE_FIELDS + HOSTED_DEVICES_FIELDS : ''}${disabled}
+            ${DEVICE_SELECT}${virtual === 'api' ? VIRTUAL_DEVICE_FIELDS + HOSTED_DEVICES_FIELDS : ''}${probed}
             services {
               ${SERVICE_SELECT}${ports ? SERVICE_PORTS : ''}
             }
@@ -430,6 +434,7 @@ export function graphQLDeviceAdaptor({
       accountId,
       ...virtualAdaptor(d),
       ...disabledAdaptor(d),
+      ...identityAdaptor(d),
     }
   })
   store.dispatch.devices.customAttributes(customAttributes)

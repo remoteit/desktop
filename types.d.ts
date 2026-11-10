@@ -404,8 +404,22 @@ declare global {
     // Disabled (graphql-api docs/DEVICE-DISABLE.md): read only where the API serves it (services/deviceDisable).
     disabled?: boolean // stopped serving, restorable; left out of the device lists
     disabledAt?: Date
-    disabledReason?: 'person' | 'expired' // expired: offline past its registration's timeout, back on its return
+    // expired: offline past its registration's timeout, back on its return. duplicate: a copy split off another
+    // device's identity, disabled until its owner decides (duplicateOf).
+    disabledReason?: 'person' | 'expired' | 'duplicate'
     disabledBy?: string // who disabled it (an email, or as the API gives it), where the API says
+    // Device identity (graphql-api docs/PROXY-GROUPS.md §11, wave 3): read only where the API serves it
+    // (services/deviceIdentity).
+    duplicateOf?: { id: string; name?: string } // the device whose identity this one was split off
+    duplicate?: IDuplicateFlag // another machine holds this device's identity
+  }
+
+  // Another machine signed in with a device's identity while it was online. kind: device-join-key (refused quietly
+  // until its owner decides), or key (a daemon that cannot take a new identity: refused, nothing split off).
+  interface IDuplicateFlag {
+    kind: string
+    since?: Date
+    address?: string
   }
 
   interface IHostingGateway {
