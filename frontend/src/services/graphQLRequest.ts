@@ -156,6 +156,24 @@ export async function graphQLUser(accountId: string) {
   )
 }
 
+// Silent and separate from graphQLUser: an API without the field errors, and the page then hides the section.
+export async function graphQLOrganizationNotificationSettings() {
+  return await graphQLBasicRequest(
+    ` query OrganizationNotificationSettings {
+        login {
+          notificationSettings {
+            organizations {
+              organizationId
+              pushNotifications
+            }
+          }
+        }
+      }`,
+    {},
+    true
+  )
+}
+
 export async function graphQLRegistration(props: {
   name?: string
   tags?: string[]
