@@ -1,6 +1,9 @@
 import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
+import { SchemaField as Field, buildCall, named } from './graphQLSchema'
+
+export { buildCall, typeString } from './graphQLSchema'
 
 /* Device package upgrades, as an admin watches them (graphql's daemon-release resolver and its rollout controller):
    each release channel's buckets and delivery (daemonChannels), and the rollout runs that step a candidate up a ladder
@@ -331,9 +334,6 @@ export const ACTIONS = [
   'refreshDaemonRollout',
 ] as const
 
-type TypeRef = { kind: string; name?: string | null; ofType?: TypeRef | null }
-type Field = { name: string; type?: TypeRef; args?: { name: string; type: TypeRef }[] }
-
 export type RolloutSchema = {
   runs: boolean // daemonRollouts and daemonRollout are served
   list: string // a run's selection in the list
@@ -363,15 +363,6 @@ const PROBE = `query DaemonRolloutFields {
   delivery: __type(name: "DaemonChannelDelivery") { fields { name } }
   channelRollout: __type(name: "DaemonRollout") { fields { name } }
 }`
-
-const named = (type?: TypeRef | null): TypeRef | undefined => (type?.ofType ? named(type.ofType) : type || undefined)
-
-// A type as a variable declares it: [Int!]!, String, …
-export const typeString = (type: TypeRef): string => {
-  if (type.kind === 'NON_NULL') return `${typeString(type.ofType as TypeRef)}!`
-  if (type.kind === 'LIST') return `[${typeString(type.ofType as TypeRef)}]`
-  return type.name || 'String'
-}
 
 export function parseRolloutSchema(data: any): RolloutSchema {
   const fieldsOf = (type: any): Field[] => type?.fields || []
@@ -600,28 +591,6 @@ export async function refreshDaemonRollout(channel: string): Promise<boolean | {
 
 export const sortRuns = (runs: RolloutRun[]) =>
   [...runs].sort((a, b) => (Date.parse(b.startedAt || '') || 0) - (Date.parse(a.startedAt || '') || 0))
-
-// A query or mutation as the API declares it: the variables given that it takes, typed as it types them.
-export function buildCall(
-  operation: 'query' | 'mutation',
-  field: Field,
-  variables: ILookup<any>,
-  selection: string
-): { query: string; variables: ILookup<any> } {
-  const args = (field.args || []).filter(arg => variables[arg.name] !== undefined || arg.type.kind === 'NON_NULL')
-  const declared = args.map(arg => `$${arg.name}: ${typeString(arg.type)}`).join(', ')
-  const passed = args.map(arg => `${arg.name}: $${arg.name}`).join(', ')
-  const returned = named(field.type)?.kind === 'OBJECT' || !field.type ? (selection ? ` { ${selection} }` : '') : ''
-  const used: ILookup<any> = {}
-  for (const arg of args) used[arg.name] = variables[arg.name]
-  const title = field.name.charAt(0).toUpperCase() + field.name.slice(1)
-  return {
-    query: `${operation} ${title}${declared ? `(${declared})` : ''} {
-      ${field.name}${passed ? `(${passed})` : ''}${returned}
-    }`,
-    variables: used,
-  }
-}
 
 // The mutation's own refusal comes back as its reason, for the page to show.
 export async function graphQLRolloutMutation(
