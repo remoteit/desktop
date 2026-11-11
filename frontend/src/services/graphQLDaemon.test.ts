@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { uiSet, request } = vi.hoisted(() => ({ uiSet: vi.fn(), request: vi.fn() }))
+const { uiSet, request, memberFields } = vi.hoisted(() => ({
+  uiSet: vi.fn(),
+  request: vi.fn(),
+  memberFields: vi.fn(async () => ''),
+}))
 vi.mock('../store', () => ({
   store: { getState: () => ({ ui: {} }), dispatch: { ui: { set: uiSet, deprecated: vi.fn() } } },
 }))
@@ -8,6 +12,8 @@ vi.mock('./remoteit', () => ({ apiHeaders: vi.fn().mockResolvedValue({ authoriza
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
+// What a network's member adds where the API has product policy is read from its schema (productPolicy.test.ts).
+vi.mock('./productPolicy', () => ({ memberPolicyFields: memberFields }))
 
 import {
   UNSUPPORTED,
@@ -175,6 +181,19 @@ describe('device networks', () => {
       headers: {},
     })
     expect(await graphQLDeviceNetworks('ACCOUNT')).toBe('ERROR')
+  })
+
+  it("where the API marks a membership its device's product holds, each member says so", async () => {
+    memberFields.mockResolvedValueOnce('fromProduct')
+    const network = {
+      id: 'N',
+      name: 'factory',
+      kind: 'NETWORK',
+      devices: [{ deviceId: 'A', role: 'TARGET', fromProduct: true }],
+    }
+    request.mockResolvedValue({ data: { data: { login: { account: { networks: [network] } } } }, headers: {} })
+    expect(await graphQLDeviceNetworks('ACCOUNT')).toEqual([network])
+    expect(request.mock.calls.at(-1)![0].data.query).toContain('services { id name } fromProduct }')
   })
 
   it('a device that is both initiates and is a target', () => {

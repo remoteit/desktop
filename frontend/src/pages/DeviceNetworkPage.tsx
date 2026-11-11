@@ -132,11 +132,13 @@ export const DeviceNetworkPage: React.FC = () => {
       graphQLAddNetworkDevice(network.id, member.deviceId, { role: roleFor(initiator, exposing), scope, anyPort })
     )
   }
-  // A service listed or not; the member becomes a target with its first, and stops being one with its last.
+  // A service listed or not; the member becomes a target with its first, and stops being one with its last — unless its
+  // product holds the membership: then what the network lists is all that changes.
   const list = (member: NetworkMember, serviceId: string) =>
     act(async () => {
       const listing = !listed.has(serviceId)
       await graphQLListNetworkService(network.id, serviceId, listing)
+      if (member.fromProduct) return
       // What it exposes now, as a target: an initiator's stored scope and any port do not count.
       const all = targeted(member) && member.scope === 'ALL'
       const anyPort = targeted(member) && member.anyPort
@@ -200,6 +202,7 @@ export const DeviceNetworkPage: React.FC = () => {
   }
   const summary = (member: NetworkMember) => {
     const parts: string[] = []
+    if (member.fromProduct) parts.push(t('deviceNetwork.fromProduct', 'From its product'))
     if (initiates(member)) parts.push(t('deviceNetwork.initiator', 'Initiator'))
     if (exposes(network, member))
       parts.push(t('deviceNetwork.targetExposing', 'Target: {{what}}', { what: exposure(member) }))
@@ -615,7 +618,7 @@ const HEADING_WIDTH = `calc(${NAME_WIDTH}px + 16px)` // NAME_WIDTH + the step fr
 /* A device on the network, in two rows of chips: Initiator, All services and Any port, then its services in their own
    order — highlighted when exposed, all of them when All services or Any port is on. A long list folds to its first
    few and "+N more"; open, it can be filtered. */
-const MemberRow: React.FC<{
+export const MemberRow: React.FC<{
   name: string
   member: NetworkMember
   services: ServiceRef[]
@@ -632,14 +635,19 @@ const MemberRow: React.FC<{
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
+  // A membership its device's product holds is the product's: its role, what it exposes as a whole, and whether it is
+  // here at all go with the product's grant (graphql refuses them here). The services the network lists stay the
+  // network's, one by one.
+  const held = !!member.fromProduct
+  const membership = editable && !held
   const exposed = (service: ServiceRef) => allOn || (targeted(member) && listed.has(service.id))
-  const toggle = (label: React.ReactNode, active: boolean, onClick?: () => void, dashed?: boolean) => (
+  const toggle = (label: React.ReactNode, active: boolean, onClick?: () => void, dashed?: boolean, can = editable) => (
     <Chip
       size="small"
       label={label}
       color={active ? 'primary' : 'default'}
       variant={active ? 'filled' : 'outlined'}
-      onClick={editable ? onClick : undefined}
+      onClick={can ? onClick : undefined}
       sx={dashed ? { borderStyle: 'dashed' } : undefined}
     />
   )
@@ -672,14 +680,26 @@ const MemberRow: React.FC<{
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          {toggle(t('deviceNetwork.initiatorToggle', 'Initiator'), initiates(member), on.onInitiator)}
+          {toggle(
+            t('deviceNetwork.initiatorToggle', 'Initiator'),
+            initiates(member),
+            on.onInitiator,
+            false,
+            membership
+          )}
           <Typography variant="caption" color="textSecondary">
             ·
           </Typography>
-          {toggle(t('deviceNetwork.allServices', 'All services'), allOn, on.onAll)}
-          {toggle(t('deviceNetwork.anyPort', 'Any port'), targeted(member) && member.anyPort, on.onAnyPort)}
+          {toggle(t('deviceNetwork.allServices', 'All services'), allOn, on.onAll, false, membership)}
+          {toggle(
+            t('deviceNetwork.anyPort', 'Any port'),
+            targeted(member) && member.anyPort,
+            on.onAnyPort,
+            false,
+            membership
+          )}
           <Box sx={{ marginLeft: 'auto' }}>
-            {editable && (
+            {membership && (
               <IconButton
                 icon="times"
                 title={t('deviceNetwork.remove', 'Remove from the network')}
@@ -713,7 +733,13 @@ const MemberRow: React.FC<{
               )
             : shown.map(service => (
                 <React.Fragment key={service.id}>
-                  {toggle(service.name, exposed(service), () => on.onService(service.id))}
+                  {toggle(
+                    service.name,
+                    exposed(service),
+                    () => on.onService(service.id),
+                    false,
+                    membership || (editable && !allOn && targeted(member))
+                  )}
                 </React.Fragment>
               ))}
           {folded &&

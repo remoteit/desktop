@@ -1,6 +1,7 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
+import { memberPolicyFields } from './productPolicy'
 
 /* Networks of devices (presence-server docs/device-principals.md §2, §8): each network's devices — initiators, targets
    or both, and what a target exposes (the services the network lists, all of them, any port of its own) — its tag
@@ -20,6 +21,9 @@ export type NetworkMember = {
   role: NetworkDeviceRole
   scope: NetworkDeviceScope
   anyPort: boolean
+  // Granted by its device's product, synced or enforced (services/productPolicy): the product's to change, not the
+  // network's — it goes when the product's grant does. Where the API says.
+  fromProduct?: boolean
 }
 
 // A network's devices by tag: an account's devices carrying any (or all) of its tags are members as it says. The
@@ -121,6 +125,7 @@ export const roleFor = (initiator: boolean, exposing: boolean): NetworkDeviceRol
 export async function graphQLDeviceNetworks(
   accountId?: string
 ): Promise<DeviceNetwork[] | 'ERROR' | typeof UNSUPPORTED> {
+  const policy = await memberPolicyFields()
   const query = `query DeviceNetworks($accountId: String) {
     login {
       account(id: $accountId) {
@@ -130,7 +135,9 @@ export async function graphQLDeviceNetworks(
           kind
           permissions
           owner { id email }
-          devices { deviceId role scope anyPort name accountId accountName services { id name } }
+          devices { deviceId role scope anyPort name accountId accountName services { id name }${
+            policy ? ` ${policy}` : ''
+          } }
           deviceRules { id accountId accountName holds editable addedByEmail tags tagColors { name color } operator initiator allServices anyPort devices overridden named { id name services { id name } } }
           ruleAccounts { id name tags }
           connections { service { id name device { id name } } }

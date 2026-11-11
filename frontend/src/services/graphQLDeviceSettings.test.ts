@@ -109,6 +109,29 @@ describe('a device’s settings', () => {
     expect(request.mock.calls[0][0].data.query).toContain('{ name value at by onDevice control fromProduct }')
   })
 
+  it('where the API names the product and its level: the row says which, and how firmly', async () => {
+    policyFields.mockResolvedValue('fromProduct locked { product level }')
+    const named = { ...subnet, fromProduct: true, locked: { product: 'Pumps', level: 'enforced' } }
+    request.mockResolvedValue({ data: { data: { login: { device: [{ id: 'D', settings: [named] }] } } }, headers: {} })
+    const read = await graphQLDeviceSettings('D')
+    expect(request.mock.calls[0][0].data.query).toContain(
+      'settings { name value at by onDevice control fromProduct locked { product level } }'
+    )
+    expect(read).toEqual([{ ...named, locked: { product: 'Pumps', level: 'enforced' } }])
+    expect(settingLocked((read as any)[0])).toBe(true)
+    // A level graphql does not name here is not guessed at; the exit and Protect are never a product's.
+    const odd = { ...named, locked: { product: 'Pumps', level: 'template' } }
+    const exit = { ...named, name: 'exit' }
+    request.mockResolvedValue({
+      data: { data: { login: { device: [{ id: 'D', settings: [odd, exit] }] } } },
+      headers: {},
+    })
+    expect(await graphQLDeviceSettings('D')).toEqual([
+      { ...odd, locked: { product: 'Pumps', level: null } },
+      { ...exit, fromProduct: false, locked: null },
+    ])
+  })
+
   it('a refused change: ERROR', async () => {
     request.mockResolvedValue({ data: { errors: [{ message: 'Set only on the device' }] }, headers: {} })
     expect(await graphQLSetDeviceSetting('D', 'subnet', false)).toBe('ERROR')

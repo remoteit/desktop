@@ -66,7 +66,7 @@ export const DevicePage: React.FC = () => {
   const setupDeletingService = useSelector((state: State) => state.ui.setupDeletingService)
   const connectThisDevice = useSelector((state: State) => state.ui.connectThisDevice)
   // The copies split off this device's identity, awaiting their owner's decision.
-  const copies = useDuplicateCopies(device?.accountId).get(device?.id || '')
+  const copies = useDuplicateCopies(device?.accountId, undefined, device ? [device] : undefined).get(device?.id || '')
 
   if (!device)
     return (

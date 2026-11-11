@@ -19,7 +19,7 @@ import type { NetworkDeviceRole } from './graphQLDeviceNetworks'
 export type ProductSync = 'template' | 'synced' | 'enforced'
 export const PRODUCT_SYNCS: ProductSync[] = ['template', 'synced', 'enforced']
 
-// tag, network, service, setting or proxy: as graphql names it, for the preview to group by.
+// tag, network, service, setting, proxy or exit (one its devices run): as graphql names it, for the preview to group by.
 export type ProductItem = { kind: string; name: string }
 
 // What a change of product, or of a product's level, does to one device (graphql's DeviceProductPreview): the items it
@@ -153,7 +153,17 @@ async function readTypes(names: string[]): Promise<Schema | 'ERROR'> {
 
 // The types read first; then those they answer that the portal selects from: the previews, a device's product, a
 // product's networks and devices.
-const FIRST = ['Query', 'Mutation', 'Device', 'DeviceProduct', 'DeviceSetting', 'DeviceTag', 'Service', 'Proxy']
+const FIRST = [
+  'Query',
+  'Mutation',
+  'Device',
+  'DeviceProduct',
+  'DeviceSetting',
+  'DeviceTag',
+  'NetworkDevice',
+  'Service',
+  'Proxy',
+]
 
 const has = (schema: Schema, type: string, ...fields: string[]) => fields.every(field => !!schema[type]?.[field])
 
@@ -313,13 +323,28 @@ const PREVIEW: Want = {
   refusal: true,
 }
 
-// The field a device setting adds where its product may hold it (fromProduct: set by a synced or enforced product,
-// locked): none where the API has no product policy.
+// The fields a device setting adds where its product may hold it (fromProduct: set by a synced or enforced product,
+// locked), and which product at which level (locked, the shape the settings document gives the daemon): none where the
+// API has no product policy.
 export async function settingPolicyFields(): Promise<string> {
   const { served, schema } = await read()
   if (!served.device) return ''
-  return select(schema, 'DeviceSetting', { fromProduct: true })
+  return select(schema, 'DeviceSetting', { fromProduct: true, locked: 'product level' })
 }
+
+// The field a network's member adds where the API marks a membership its device's product holds (fromProduct: granted
+// by a synced or enforced product, which graphql refuses to remove): none where it does not.
+export async function memberPolicyFields(): Promise<string> {
+  const { served, schema } = await read()
+  if (!served.device && !served.product) return ''
+  return select(schema, 'NetworkDevice', { fromProduct: true })
+}
+
+// A setting's lock as graphql names it: the product's name and its level, where they are known.
+export const settingLockOf = (locked: any): SettingLock => ({
+  product: locked?.product || null,
+  level: locked?.level === 'synced' || locked?.level === 'enforced' ? locked.level : null,
+})
 
 type Answer<T> = T | 'ERROR' | { reason: string }
 

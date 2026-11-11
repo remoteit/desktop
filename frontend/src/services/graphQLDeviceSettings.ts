@@ -1,7 +1,7 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
-import { settingPolicyFields, SettingLock } from './productPolicy'
+import { settingLockOf, settingPolicyFields, SettingLock } from './productPolicy'
 
 /* A device's settings (device-package docs/device-settings.md): each one value, set from either side — here, or on
    the machine, where it is recorded who set it — and the machine administrator's override of it (`control`), which no
@@ -46,11 +46,11 @@ const FIELDS = 'name value at by onDevice control'
 const NOT_PRODUCTS = ['exit', 'protect']
 
 // A setting as read: held by its product where graphql marks it so (fromProduct: its synced or enforced product sets
-// it). The product's name and level are its device's (Device.product), not the setting's.
+// it), named with its level where graphql says (locked); an API that marks it without naming them leaves them unknown.
 function parsed(setting: any): DeviceSetting {
   if (!setting || setting.fromProduct === undefined) return setting
   const held = !!setting.fromProduct && !NOT_PRODUCTS.includes(setting.name)
-  return { ...setting, fromProduct: held, locked: held ? { product: null, level: null } : null }
+  return { ...setting, fromProduct: held, locked: held ? settingLockOf(setting.locked) : null }
 }
 
 export async function graphQLDeviceSettings(deviceId: string): Promise<DeviceSetting[] | 'ERROR' | typeof UNSUPPORTED> {

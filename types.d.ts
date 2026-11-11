@@ -412,6 +412,7 @@ declare global {
     // (services/deviceIdentity).
     duplicateOf?: { id: string; name?: string } // the device whose identity this one was split off
     duplicate?: IDuplicateFlag // another machine holds this device's identity
+    copyCount?: number // how many copies split off this device wait for a decision
   }
 
   // Another machine signed in with a device's identity while it was online. kind: device-join-key (refused quietly

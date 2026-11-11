@@ -24,6 +24,7 @@ import {
   graphQLAddDuplicateDevice,
   graphQLCreateDeviceJoinKey,
   graphQLDeviceJoinKeys,
+  graphQLFetchCopiesOf,
   graphQLFetchDuplicateCopies,
   graphQLKeepDuplicate,
   graphQLKeepDuplicates,
@@ -33,6 +34,9 @@ import {
   groupCopies,
   identityAdaptor,
   madeDevice,
+  requestCopiesOf,
+  requestDuplicateCopies,
+  copiesByOriginal,
   resetDeviceIdentity,
 } from './deviceIdentity'
 
@@ -153,6 +157,7 @@ describe('device identity: what the API serves', () => {
       joinKeys: false,
       addDevice: false,
       duplicates: false,
+      copyCount: false,
       keepDuplicate: false,
       keepDuplicates: false,
       makeOriginal: false,
@@ -170,6 +175,7 @@ describe('device identity: what the API serves', () => {
       joinKeys: true,
       addDevice: true,
       duplicates: true,
+      copyCount: false,
       keepDuplicate: true,
       keepDuplicates: true,
       makeOriginal: true,
@@ -193,6 +199,16 @@ describe('device identity: what the API serves', () => {
     expect(await deviceIdentityFields()).toBe('\n  duplicate { kind since seen address place replacement { id name } }')
   })
 
+  it("counts each device's copies where the API has Device.copyCount beside Device.copies", async () => {
+    schema.device = [...DEVICE, { name: 'copyCount', type: nonNull(scalar('Int')) }]
+    expect((await deviceIdentityServed()).copyCount).toBe(true)
+    expect(await deviceIdentityFields()).toBe(`${FIELDS}\n  copyCount`)
+    resetDeviceIdentity()
+    schema.device = [...DEVICE.filter(f => f.name !== 'copies'), { name: 'copyCount', type: nonNull(scalar('Int')) }]
+    expect((await deviceIdentityServed()).copyCount).toBe(false)
+    expect(await deviceIdentityFields()).toBe(FIELDS)
+  })
+
   it("asks only for the contract's fields where the API has no more", async () => {
     schema.types = CONTRACT_TYPES
     expect(await deviceIdentityFields()).toBe('\n  duplicateOf { id name }\n  duplicate { kind since address }')
@@ -211,6 +227,11 @@ describe('device identity: what the API serves', () => {
 })
 
 describe('identityAdaptor', () => {
+  it('reads how many copies wait under a device', () => {
+    expect(identityAdaptor({ copyCount: 3 })).toEqual({ copyCount: 3 })
+    expect(identityAdaptor({ copyCount: null })).toEqual({ copyCount: 0 })
+  })
+
   it('reads the original as a device or as its id, and a duplicate flag in either spelling', () => {
     expect(identityAdaptor({})).toEqual({})
     expect(identityAdaptor({ duplicateOf: null, duplicate: null })).toEqual({
@@ -482,5 +503,60 @@ describe('the copies awaiting a decision', () => {
     schema.device = [DEVICE[0]]
     expect(await graphQLFetchDuplicateCopies('A1')).toEqual([])
     expect(called('DuplicateCopies')).toHaveLength(0)
+  })
+
+  describe("where the API counts each device's copies", () => {
+    beforeEach(() => {
+      schema.device = [...DEVICE, { name: 'copyCount', type: nonNull(scalar('Int')) }]
+    })
+
+    it('reads the copies of the devices asked for in one query, each from its own', async () => {
+      answer = () => ({
+        data: {
+          login: {
+            device: [
+              { id: 'X1', copies: [copy('Y1', 'X1'), copy('Y2', 'X1'), copy('Y3', 'X1', false)] },
+              { id: 'X2', copies: [] },
+            ],
+          },
+        },
+      })
+      const found = await graphQLFetchCopiesOf(['X1', 'X2'])
+      expect(found === 'ERROR' ? 'ERROR' : [...found.entries()].map(([id, list]) => [id, list.map(c => c.id)])).toEqual(
+        [
+          ['X1', ['Y1', 'Y2']],
+          ['X2', []],
+        ]
+      )
+      const reads = called('CopiesOf')
+      expect(reads).toHaveLength(1)
+      expect(reads[0].variables).toEqual({ ids: ['X1', 'X2'] })
+      expect(reads[0].query).toMatch(/device\(id: \$ids\) \{\s+id\s+copies \{/)
+    })
+
+    it('each device once unless asked again, and again for every device read once its copies are decided on', async () => {
+      let read = 0
+      answer = (_query, variables) => {
+        read++
+        return {
+          data: {
+            login: { device: variables.ids.map((id: string) => ({ id, copies: read === 1 ? [copy('Y1', id)] : [] })) },
+          },
+        }
+      }
+      await requestCopiesOf(['X1'])
+      await requestCopiesOf(['X1'])
+      expect(called('CopiesOf')).toHaveLength(1)
+      expect(
+        copiesByOriginal()
+          .get('X1')!
+          .map(c => c.id)
+      ).toEqual(['Y1'])
+      // Kept or removed: the account's copies asked again reads these devices', not the account's disabled devices.
+      await requestDuplicateCopies('A1', true)
+      expect(called('CopiesOf')).toHaveLength(2)
+      expect(called('DuplicateCopies')).toHaveLength(0)
+      expect(copiesByOriginal().get('X1')).toEqual([])
+    })
   })
 })

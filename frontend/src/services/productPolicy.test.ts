@@ -21,6 +21,7 @@ import {
   graphQLSetDeviceProductSetting,
   graphQLSetDeviceProductSync,
   graphQLSetDevicesProduct,
+  memberPolicyFields,
   networkOf,
   previewOf,
   productPolicyServed,
@@ -527,6 +528,31 @@ describe('reads', () => {
   it('a setting adds whether its product holds it', async () => {
     serve(WAVE4)
     expect(await settingPolicyFields()).toBe('fromProduct')
+  })
+
+  it('a setting adds which product holds it, and how firmly, where the API names them', async () => {
+    serve({
+      ...WAVE4,
+      DeviceSetting: { ...WAVE4.DeviceSetting, locked: { type: object('DeviceSettingLock') } },
+    })
+    expect(await settingPolicyFields()).toBe('fromProduct locked { product level }')
+  })
+
+  it('a network member adds whether its product holds the membership, where the API marks it', async () => {
+    serve({
+      ...WAVE4,
+      NetworkDevice: { deviceId: { type: scalar() }, fromProduct: { type: nonNull(scalar('Boolean')) } },
+    })
+    expect(await memberPolicyFields()).toBe('fromProduct')
+    resetProductPolicy()
+    serve(WAVE4)
+    expect(await memberPolicyFields()).toBe('')
+    resetProductPolicy()
+    serve({
+      ...OLDER,
+      NetworkDevice: { deviceId: { type: scalar() }, fromProduct: { type: nonNull(scalar('Boolean')) } },
+    })
+    expect(await memberPolicyFields()).toBe('')
   })
 
   it('a network grant as graphql gives it: its network’s id, name and role', () => {

@@ -130,7 +130,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   const isScriptsPath = location.pathname.includes('scripts')
   // The copies split off each device's identity, under it; read again with the list. Not while choosing devices.
   const accountId = useSelector(selectActiveAccountId)
-  const copies = useDuplicateCopies(restore || select ? undefined : accountId, fetching)
+  const copies = useDuplicateCopies(restore || select ? undefined : accountId, fetching, devices)
 
   /* Measured wrapper: `width: 100%` resolves against the scroll container, so it reports
      the space this list ACTUALLY has. The GridList inside is deliberately wider than the

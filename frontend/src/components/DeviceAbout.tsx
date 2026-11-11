@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } from '@mui/material'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { Link as RouterLink } from 'react-router-dom'
 import { Box, List, ListItem, ListSubheader, Typography } from '@mui/material'
+import { getAllDevices } from '../selectors/devices'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { useKnownCopies } from '../hooks/useDeviceIdentity'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import {
   DeviceAbout as About,
@@ -23,6 +28,13 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
   const { t } = useTranslation()
   const [read, setRead] = useState<DeviceAboutRead | 'ERROR' | typeof UNSUPPORTED>()
   const [details, setDetails] = useState(false)
+  // The devices this viewer can open, by id: those the portal has read, and the copies awaiting a decision.
+  const devices = useSelector(getAllDevices)
+  const copies = useKnownCopies(useSelector(selectActiveAccountId))
+  const known = useMemo(
+    () => new Map<string, string>([...devices, ...copies].map(device => [device.id, device.name])),
+    [devices, copies]
+  )
 
   useEffect(() => {
     let current = true
@@ -145,7 +157,7 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
                 {changeLabel(t, change)}
               </Box>
               <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
-                {changeText(t, change)}
+                <DeviceMention text={changeText(t, change)} deviceId={otherDevice(change)} known={known} />
                 {change.detail && (
                   <Typography component="span" variant="body2" color="grayDark.main">
                     {' '}
@@ -159,6 +171,32 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
       )}
     </>
   )
+}
+
+/* An entry's text with the other device it names — a copy, the original, the device swapped with — linked to its page
+   by its name, where this viewer can open it; as its ID otherwise. */
+export const DeviceMention: React.FC<{ text: string; deviceId?: string; known: Map<string, string> }> = ({
+  text,
+  deviceId,
+  known,
+}) => {
+  const at = deviceId ? text.indexOf(deviceId) : -1
+  if (!deviceId || at < 0 || !known.has(deviceId)) return <>{text}</>
+  return (
+    <>
+      {text.slice(0, at)}
+      <Link component={RouterLink} to={`/devices/${deviceId}`} title={deviceId}>
+        {known.get(deviceId) || deviceId}
+      </Link>
+      {text.slice(at + deviceId.length)}
+    </>
+  )
+}
+
+// The other device a history entry names: a duplicate's copy, original, or the device its machine was swapped with.
+export function otherDevice(change: DeviceAboutChange): string | undefined {
+  if (change.kind !== 'duplicate' || !change.after) return undefined
+  return ['copy', 'copy-of', 'original', 'kept'].includes(change.field) ? change.after : undefined
 }
 
 // The document exactly as the device said it, and kept: every field, the ones the page leaves out too.
@@ -282,8 +320,8 @@ export function changeLabel(t: TFunction, change: DeviceAboutChange) {
 /* What changed, readably. graphql's entries (services/device-about.ts): an upgrade names its version in `after`; a
    restore, roughly where from in `after`; a boot, the key's name in `before` and roughly where in `after`; a duplicate
    says what in `field` — copy (`after` the copy's ID), copy-of (the original's), device-join-key or key (seen on another
-   machine, `after` roughly where), kept, original (the machines swapped, `after` the other device's ID). The address
-   is the entry's detail, shown after it. */
+   machine, `after` roughly where), kept (`after` the original's ID), original (the machines swapped, `after` the other
+   device's ID). The address is the entry's detail, shown after it. */
 export function changeText(t: TFunction, change: DeviceAboutChange) {
   const nothing = t('deviceAbout.nothing', 'nothing')
   const where = change.after ?? ''
@@ -317,7 +355,11 @@ export function changeText(t: TFunction, change: DeviceAboutChange) {
             .filter(Boolean)
             .join(', ')
         case 'kept':
-          return t('deviceAbout.duplicateKept', 'Kept as a device of its own')
+          return change.after
+            ? t('deviceAbout.duplicateKeptFrom', 'Kept as a device of its own, split off from {{device}}', {
+                device: change.after,
+              })
+            : t('deviceAbout.duplicateKept', 'Kept as a device of its own')
         case 'original':
           return t('deviceAbout.duplicateOriginal', 'Its machine swapped with that of {{device}}', {
             device: change.after,

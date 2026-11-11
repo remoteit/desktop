@@ -2,18 +2,34 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi } from 'vitest'
 
-const { read } = vi.hoisted(() => ({ read: vi.fn() }))
+const { read, devices, copies } = vi.hoisted(() => ({
+  read: vi.fn(),
+  devices: { current: [] as { id: string; name: string }[] },
+  copies: { current: [] as { id: string; name: string }[] },
+}))
 vi.mock('../services/graphQLDeviceAbout', () => ({ graphQLDeviceAbout: read }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
 vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: () => null }))
 vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
+// The devices the portal has read, and the copies awaiting a decision: what a history entry may link.
+vi.mock('react-redux', () => ({ useSelector: (select: any) => select() }))
+vi.mock('../selectors/devices', () => ({ getAllDevices: () => devices.current }))
+vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'A1' }))
+vi.mock('../hooks/useDeviceIdentity', () => ({ useKnownCopies: () => copies.current }))
+vi.mock('react-router-dom', () => ({
+  Link: React.forwardRef(({ to, children, ...rest }: any, ref: any) => (
+    <a ref={ref} href={to} {...rest}>
+      {children}
+    </a>
+  )),
+}))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
   }),
 }))
 
-import { DeviceAbout, changeLabel, changeText, fieldLabel, natLabel } from './DeviceAbout'
+import { DeviceAbout, changeLabel, changeText, fieldLabel, natLabel, otherDevice } from './DeviceAbout'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 async function render(deviceId = 'A') {
@@ -184,6 +200,38 @@ describe('history: restores, boots and duplicates', () => {
     )
   })
 
+  it('the other device an entry names links to its page, by its name, where the viewer can open it', async () => {
+    devices.current = [{ id: 'X1', name: 'Pump' }]
+    copies.current = [{ id: 'Y1', name: 'Pump (copy)' }]
+    read.mockResolvedValue({
+      about: null,
+      history: [
+        entry('duplicate', 'copy', null, 'Y1', 'from 203.0.113.8'),
+        entry('duplicate', 'copy-of', null, 'X1', null),
+        entry('duplicate', 'original', null, 'Z9', null),
+        entry('duplicate', 'kept', null, 'X1', null),
+        entry('boot', 'boot', 'USB stick', 'Portland, OR', null),
+      ],
+    })
+    const page = await render()
+    const items = [...page.querySelectorAll('li')].filter(li => li.textContent !== 'History')
+    const link = (li: Element) => li.querySelector('a')
+    expect(link(items[0])?.getAttribute('href')).toBe('/devices/Y1')
+    expect(items[0].textContent).toContain('A machine signed in as it, split off as Pump (copy) — from 203.0.113.8')
+    expect(link(items[1])?.getAttribute('href')).toBe('/devices/X1')
+    expect(items[1].textContent).toContain('Split off from Pump: this machine signed in as it')
+    // One this viewer cannot open: its ID, as before.
+    expect(link(items[2])).toBeNull()
+    expect(items[2].textContent).toContain('Its machine swapped with that of Z9')
+    expect(link(items[3])?.getAttribute('href')).toBe('/devices/X1')
+    expect(items[3].textContent).toContain('Kept as a device of its own, split off from Pump')
+    // A boot names a key and a place, never another device.
+    expect(link(items[4])).toBeNull()
+    expect(otherDevice(entry('boot', 'boot', 'X1', 'X1', null) as any)).toBeUndefined()
+    devices.current = []
+    copies.current = []
+  })
+
   it('every kind of duplicate entry', () => {
     const t = (_key: string, text: string, values?: any) =>
       text.replace(/{{(\w+)}}/g, (_: string, k: string) => values?.[k] ?? '')
@@ -192,6 +240,7 @@ describe('history: restores, boots and duplicates', () => {
     expect(text('copy-of', 'X1')).toBe('Split off from X1: this machine signed in as it')
     expect(text('key')).toBe('Another machine with its identity, refused')
     expect(text('kept')).toBe('Kept as a device of its own')
+    expect(text('kept', 'X1')).toBe('Kept as a device of its own, split off from X1')
     expect(text('original', 'Y1')).toBe('Its machine swapped with that of Y1')
     expect(text('something-new', 'Z')).toBe('something-new, Z')
     expect(changeLabel(t as any, entry('duplicate', 'kept', null, null, null) as any)).toBe('Duplicate')

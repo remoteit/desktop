@@ -9,7 +9,8 @@ import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
 
    graphql's names: createDeviceJoinKey(deviceId, name, expires) answering { id name key }, revokeDeviceJoinKey(deviceId,
    id), revokeDeviceJoinKeys(deviceId) and Device.joinKeys { id name created expires revoked lastUsed boots stale };
-   addDevice(name, productId, freshBoot); Device.duplicateOf and Device.duplicate { kind since address };
+   addDevice(name, productId, freshBoot); Device.duplicateOf and Device.duplicate { kind since address }; Device.copies,
+   and Device.copyCount (counted for a page of devices in one query) where the API has it;
    keepDuplicate(deviceId, fromOriginal), keepDuplicates(deviceIds), makeOriginal(deviceId) and
    addDuplicateDevice(deviceId, name).
 
@@ -53,6 +54,7 @@ export type IdentityServed = {
   joinKeys: boolean // a device's join keys: listed, issued, revoked one by one and all at once
   addDevice: boolean
   duplicates: boolean // Device.duplicateOf and Device.duplicate
+  copyCount: boolean // Device.copyCount and Device.copies: a listed device's copies read by the device, not by a scan
 } & Record<'keepDuplicate' | 'keepDuplicates' | 'makeOriginal' | 'addDuplicateDevice', boolean>
 
 type Identity = {
@@ -68,6 +70,7 @@ const NONE: Identity = {
     joinKeys: false,
     addDevice: false,
     duplicates: false,
+    copyCount: false,
     keepDuplicate: false,
     keepDuplicates: false,
     makeOriginal: false,
@@ -144,14 +147,16 @@ export function parseDeviceIdentity(data: any, types: Record<string, Typed[]> = 
   ]
     .filter(Boolean)
     .join(' ')
+  const duplicates = !!of
+  const copyCount = duplicates && !!device.get('copyCount') && !!device.get('copies')
   const fields = [
     of && (named(of.type)?.kind === 'OBJECT' ? 'duplicateOf { id name }' : 'duplicateOf'),
     duplicateFields && `duplicate { ${duplicateFields} }`,
+    copyCount && 'copyCount',
   ]
     .filter(Boolean)
     .map(line => `\n  ${line}`)
     .join('')
-  const duplicates = !!of
 
   const selections: Identity['selections'] = {}
   for (const name of ['createDeviceJoinKey', 'addDevice', 'addDuplicateDevice'] as const)
@@ -162,6 +167,7 @@ export function parseDeviceIdentity(data: any, types: Record<string, Typed[]> = 
       joinKeys,
       addDevice: !!mutations.addDevice,
       duplicates,
+      copyCount,
       keepDuplicate: duplicates && !!mutations.keepDuplicate,
       keepDuplicates: duplicates && !!mutations.keepDuplicates,
       makeOriginal: duplicates && !!mutations.makeOriginal,
@@ -228,6 +234,8 @@ export function resetDeviceIdentity() {
   schema = undefined
   copies.clear()
   reading.clear()
+  byOriginal = new Map()
+  readingOf.clear()
 }
 
 // The fields a device query adds: none where the API has no duplicates.
@@ -243,6 +251,7 @@ const kindOf = (kind: unknown) =>
 
 export function identityAdaptor(d: any): Partial<IDevice> {
   const result: Partial<IDevice> = {}
+  if (d.copyCount !== undefined) result.copyCount = Number(d.copyCount) || 0
   if (d.duplicateOf !== undefined)
     result.duplicateOf = !d.duplicateOf
       ? undefined
@@ -385,9 +394,10 @@ export async function graphQLAddDuplicateDevice(
   return outcome.ok ? madeDevice(outcome.data) : { reason: outcome.reason }
 }
 
-/* The copies awaiting their owner's decision: disabled, so left out of the device lists, and read here from the
-   account's disabled devices — those the reader may manage — to be grouped under the device each copies. Kept for the
-   session per account, read again on request. */
+/* The copies awaiting their owner's decision: disabled, so left out of the device lists. Where the API counts each
+   device's copies (Device.copyCount), read by the devices listed with any — one query for them all, from each
+   one's Device.copies —, kept by the device each copies. Otherwise read from the account's disabled devices — those
+   the reader may manage — to be grouped under the device each copies. Kept for the session, read again on request. */
 
 const COPIES_PAGE = 100
 const COPIES_MAX = 1000
@@ -399,10 +409,33 @@ const listeners = new Set<Listener>()
 
 export const duplicateCopies = (accountId: string): DuplicateCopy[] | undefined => copies.get(accountId)
 
+// Each original's copies as read by it (Device.copies), a new map each time one is read.
+let byOriginal = new Map<string, DuplicateCopy[]>()
+const readingOf = new Map<string, Promise<void>>()
+export const copiesByOriginal = () => byOriginal
+const notify = () => listeners.forEach(listener => listener())
+
 export function subscribeDuplicateCopies(listener: Listener) {
   listeners.add(listener)
   return () => {
     listeners.delete(listener)
+  }
+}
+
+// A copy as a device read gives it: one split off another device, and disabled.
+const copyOf = (d: any): DuplicateCopy | undefined => {
+  const identityOf = identityAdaptor(d)
+  if (!identityOf.duplicateOf) return undefined
+  const disabledOf = disabledAdaptor(d)
+  if (!disabledOf.disabled) return undefined
+  return {
+    id: d.id,
+    name: d.name,
+    platform: d.platform ?? undefined,
+    owner: d.owner ?? undefined,
+    permissions: d.permissions || [],
+    disabledAt: disabledOf.disabledAt,
+    duplicateOf: identityOf.duplicateOf,
   }
 }
 
@@ -437,27 +470,75 @@ export async function graphQLFetchDuplicateCopies(accountId: string): Promise<Du
     const devices = response?.data?.data?.login?.account?.devices
     const items: any[] = devices?.items || []
     for (const d of items) {
-      const identityOf = identityAdaptor(d)
-      if (!identityOf.duplicateOf) continue
-      const disabledOf = disabledAdaptor(d)
-      if (!disabledOf.disabled) continue
-      found.push({
-        id: d.id,
-        name: d.name,
-        platform: d.platform ?? undefined,
-        owner: d.owner ?? undefined,
-        permissions: d.permissions || [],
-        disabledAt: disabledOf.disabledAt,
-        duplicateOf: identityOf.duplicateOf,
-      })
+      const copy = copyOf(d)
+      if (copy) found.push(copy)
     }
     if (from + items.length >= (devices?.total || 0) || !items.length) break
   }
   return found
 }
 
-// Read an account's copies: once, unless `again`. A read that fails leaves what was read before.
-export function requestDuplicateCopies(accountId: string, again?: boolean): Promise<void> {
+// These devices' copies, each from its Device.copies: one query for them all.
+export async function graphQLFetchCopiesOf(ids: string[]): Promise<Map<string, DuplicateCopy[]> | 'ERROR'> {
+  const found = new Map<string, DuplicateCopy[]>()
+  const identity = await deviceIdentity()
+  if (!identity.served.copyCount || !ids.length) return found
+  const disabled = await deviceDisableFields()
+  if (!disabled) return found
+  const response = await graphQLBasicRequest(
+    ` query CopiesOf($ids: [String!]!) {
+        login {
+          id
+          device(id: $ids) {
+            id
+            copies {
+              id
+              name
+              platform
+              permissions
+              owner { id email }${disabled}${identity.fields}
+            }
+          }
+        }
+      }`,
+    { ids }
+  )
+  if (response === 'ERROR') return 'ERROR'
+  for (const d of response?.data?.data?.login?.device || [])
+    found.set(
+      d.id,
+      (d.copies || []).map(copyOf).filter((copy: DuplicateCopy | undefined): copy is DuplicateCopy => !!copy)
+    )
+  return found
+}
+
+// Read these devices' copies: each once, unless `again`. A device the read does not answer has none.
+export function requestCopiesOf(ids: string[], again?: boolean): Promise<void> {
+  const wanted = [...new Set(ids)].filter(id => again || (!byOriginal.has(id) && !readingOf.has(id)))
+  if (!wanted.length) return Promise.all(ids.map(id => readingOf.get(id))).then(() => undefined)
+  const read = graphQLFetchCopiesOf(wanted).then(result => {
+    wanted.forEach(id => readingOf.delete(id))
+    if (result === 'ERROR') return
+    byOriginal = new Map(byOriginal)
+    for (const id of wanted) byOriginal.set(id, result.get(id) || [])
+    notify()
+  })
+  wanted.forEach(id => readingOf.set(id, read))
+  return read
+}
+
+// Read an account's copies: once, unless `again`. Where the API counts each device's copies, `again` reads those of
+// the devices read so far once more, as their copies were kept or removed. A read that fails leaves what was read
+// before.
+export async function requestDuplicateCopies(accountId: string, again?: boolean): Promise<void> {
+  if ((await deviceIdentity()).served.copyCount) {
+    if (again && byOriginal.size) await requestCopiesOf([...byOriginal.keys()], true)
+    return
+  }
+  return requestAccountCopies(accountId, again)
+}
+
+function requestAccountCopies(accountId: string, again?: boolean): Promise<void> {
   if (!again && copies.has(accountId)) return Promise.resolve()
   const pending = reading.get(accountId)
   if (pending) return pending
@@ -465,7 +546,7 @@ export function requestDuplicateCopies(accountId: string, again?: boolean): Prom
     reading.delete(accountId)
     if (result === 'ERROR') return
     copies.set(accountId, result)
-    listeners.forEach(listener => listener())
+    notify()
   })
   reading.set(accountId, read)
   return read
