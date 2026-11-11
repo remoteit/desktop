@@ -7,40 +7,73 @@ import { graphQLGetErrors } from './graphQL'
 
    The exit and Protect are the machine's, chosen on it by a signed-in person who manages it or by its administrator.
    A choice a signed-in person made there lasts while their sign-in does: it is withdrawn at their sign-out, and the
-   portal's value stands again. A manager may lend the machine one of their own exits. Who made a choice on the device
-   is said by its OS name (Device.exitSetOnDeviceBy, DeviceSetting.by), which is that account's name here: the
-   sign-in on it names the person.
+   portal's value stands again. A manager may lend the machine one of their own exits. graphql says who stands behind
+   each: Device.exitSetOnDeviceSignedIn, exitSetOnDeviceAdmin and exitThroughPerson for the exit, DeviceSetting.signedIn
+   and admin for Protect.
 
-   Offered only where the API has it, read from its schema once (as services/deviceDisable): the portal meets graphqls
-   without it, where a query naming signIns would fail. */
+   Offered only where the API has them, read from its schema once (as services/deviceDisable): the portal meets graphqls
+   without them, where a query naming them would fail. */
 
 export type DeviceSignIn = {
-  account: string // the OS's id for it: a UID, or a SID on Windows
+  account: string | null // the OS's id for it: a UID, or a SID on Windows; none for an older daemon's one sign-in
   name: string | null // the account's name on the machine
-  person: { id: string; email: string | null } | null
-  since: string | null
+  person: PersonRef
+  since: string
   manages: boolean
 }
 
-const PROBE = `query DeviceSignInFields { device: __type(name: "Device") { fields { name } } }`
+export type PersonRef = { id: string; email: string | null }
 
-let schema: Promise<boolean> | undefined
+type Served = { signIns: boolean; exit: string; setting: string }
 
-export const parseDeviceSignInsServed = (data: any): boolean =>
-  !!data?.device?.fields?.some((field: { name: string }) => field.name === 'signIns')
+const NONE: Served = { signIns: false, exit: '', setting: '' }
 
-// Whether this API has sign-ins per account. Read once; asked again after a failed request.
-export function deviceSignInsServed(): Promise<boolean> {
+const PROBE = `query DeviceSignInFields {
+  device: __type(name: "Device") { fields { name } }
+  setting: __type(name: "DeviceSetting") { fields { name } }
+}`
+
+let schema: Promise<Served> | undefined
+
+// What the API serves of sign-ins per account: Device.signIns, and the fields a device's exit and its settings add for
+// who set them — each only where it is there.
+export function parseDeviceSignIns(data: any): Served {
+  const names = (type: any) => new Set<string>((type?.fields || []).map((field: { name: string }) => field.name))
+  const device = names(data?.device)
+  const setting = names(data?.setting)
+  return {
+    signIns: device.has('signIns'),
+    exit: [
+      device.has('exitSetOnDeviceSignedIn') && 'exitSetOnDeviceSignedIn { id email }',
+      device.has('exitSetOnDeviceAdmin') && 'exitSetOnDeviceAdmin',
+      device.has('exitThroughPerson') && 'exitThroughPerson { id email }',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    setting: [setting.has('signedIn') && 'signedIn { id email }', setting.has('admin') && 'admin']
+      .filter(Boolean)
+      .join(' '),
+  }
+}
+
+function served(): Promise<Served> {
   if (!schema)
     schema = post({ query: PROBE }).then(response => {
       if (response === 'ERROR') {
         schema = undefined
-        return false
+        return NONE
       }
-      return parseDeviceSignInsServed(response.data?.data)
+      return parseDeviceSignIns(response.data?.data)
     })
   return schema
 }
+
+// Whether this API has sign-ins per account. Read once; asked again after a failed request.
+export const deviceSignInsServed = async () => (await served()).signIns
+
+// The fields a device's exit query adds (who chose it on the machine), and a device setting's: none where not served.
+export const exitSignInFields = async () => (await served()).exit
+export const settingSignInFields = async () => (await served()).setting
 
 // One read per device for every part of a page that asks in the same moment.
 const reading = new Map<string, Promise<DeviceSignIn[] | null>>()

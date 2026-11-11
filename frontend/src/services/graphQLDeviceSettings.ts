@@ -2,6 +2,7 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { settingLockOf, settingPolicyFields, SettingLock } from './productPolicy'
+import { PersonRef, settingSignInFields } from './deviceSignIns'
 
 /* A device's settings (device-package docs/device-settings.md): each one value, set from either side — here, or on
    the machine, where it is recorded who set it — and the machine administrator's override of it (`control`), which no
@@ -39,6 +40,10 @@ export type DeviceSetting = {
   control: DeviceSettingControl
   fromProduct?: boolean // its product sets it
   locked?: SettingLock | null // and holds it: a synced or enforced product's
+  // The exit and Protect, where the API says (services/deviceSignIns): the person signed in on the device it was set on
+  // the machine under, which ends at their sign-out; or its administrator, which no sign-in made.
+  signedIn?: PersonRef | null
+  admin?: boolean
 }
 
 const FIELDS = 'name value at by onDevice control'
@@ -48,7 +53,7 @@ const FIELDS = 'name value at by onDevice control'
 const NOT_PRODUCTS = ['exit', 'protect']
 
 // The machine's, every account's on it (graphql-api docs/PROXY-GROUPS.md §15): chosen there only by a signed-in person
-// who manages the device, or its administrator, and one a signed-in person chose ends at their sign-out.
+// who manages the device, or its administrator; one a signed-in person chose ends at their sign-out.
 export const MACHINE_WIDE: DeviceSettingName[] = ['exit', 'protect']
 
 // A setting as read: held by its product where graphql marks it so (fromProduct: its synced or enforced product sets
@@ -59,8 +64,12 @@ function parsed(setting: any): DeviceSetting {
   return { ...setting, fromProduct: held, locked: held ? settingLockOf(setting.locked) : null }
 }
 
+// A setting's fields: its own, and what product policy and sign-ins per account add where the API has them.
+const settingFields = async () =>
+  [FIELDS, await settingPolicyFields(), await settingSignInFields()].filter(Boolean).join(' ')
+
 export async function graphQLDeviceSettings(deviceId: string): Promise<DeviceSetting[] | 'ERROR' | typeof UNSUPPORTED> {
-  const fields = `${FIELDS} ${await settingPolicyFields()}`.trim()
+  const fields = await settingFields()
   const query = `query DeviceSettings($id: [String!]!) { login { device(id: $id) { id settings { ${fields} } } } }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
@@ -76,7 +85,7 @@ export async function graphQLSetDeviceSetting(
   name: DeviceSettingName,
   value: any
 ): Promise<DeviceSetting | 'ERROR'> {
-  const fields = `${FIELDS} ${await settingPolicyFields()}`.trim()
+  const fields = await settingFields()
   const response = await graphQLBasicRequest(
     ` mutation SetDeviceSetting($deviceId: String!, $name: String!, $value: Any) {
         setDeviceSetting(deviceId: $deviceId, name: $name, value: $value) { ${fields} }

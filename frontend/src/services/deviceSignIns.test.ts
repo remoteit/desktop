@@ -9,13 +9,33 @@ vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/grap
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request, isAxiosError: () => false } }))
 
-import { deviceSignInsServed, graphQLDeviceSignIns, resetDeviceSignIns } from './deviceSignIns'
-import { personName, signInByName } from '../helpers/signInHelper'
+import {
+  deviceSignInsServed,
+  exitSignInFields,
+  graphQLDeviceSignIns,
+  resetDeviceSignIns,
+  settingSignInFields,
+} from './deviceSignIns'
 
 // Sign-ins per OS account (graphql-api docs/PROXY-GROUPS.md §15): Device.signIns, asked only where the schema has it.
-const schema = (fields: string[]) => ({ data: { data: { device: { fields: fields.map(name => ({ name })) } } } })
-const pat = { account: '501', name: 'pat', person: { id: 'PAT', email: 'pat@example.com' }, since: '2026-11-10T20:00:00Z', manages: true }
-const sam = { account: 'S-1-5-21-1-2-3-1013', name: 'DESKTOP-7\\sam', person: { id: 'SAM', email: null }, since: null, manages: false }
+const named = (names: string[]) => ({ fields: names.map(name => ({ name })) })
+const schema = (device: string[], setting: string[] = ['name', 'value']) => ({
+  data: { data: { device: named(device), setting: named(setting) } },
+})
+const pat = {
+  account: '501',
+  name: 'pat',
+  person: { id: 'PAT', email: 'pat@example.com' },
+  since: '2026-11-10T20:00:00Z',
+  manages: true,
+}
+const sam = {
+  account: 'S-1-5-21-1-2-3-1013',
+  name: 'DESKTOP-7\\sam',
+  person: { id: 'SAM', email: null },
+  since: null,
+  manages: false,
+}
 const sent = (call: number) => request.mock.calls[call][0].data
 
 beforeEach(() => {
@@ -65,20 +85,26 @@ describe('a device’s sign-ins per account', () => {
   })
 })
 
-describe('the sign-in an OS name says', () => {
-  it('by its account’s name, either case, with or without a Windows domain on either side', () => {
-    expect(signInByName([pat, sam], 'pat')).toBe(pat)
-    expect(signInByName([pat, sam], 'PAT')).toBe(pat)
-    expect(signInByName([pat, sam], 'sam')).toBe(sam)
-    expect(signInByName([pat, sam], 'desktop-7\\Sam')).toBe(sam)
-    expect(signInByName([pat, sam], 'root')).toBeUndefined()
-    expect(signInByName(null, 'pat')).toBeUndefined()
-    expect(signInByName([pat], null)).toBeUndefined()
-  })
-
-  it('named by the person’s email, else the account’s name', () => {
-    expect(personName(pat)).toBe('pat@example.com')
-    expect(personName(sam)).toBe('DESKTOP-7\\sam')
-    expect(personName(undefined)).toBeUndefined()
+describe('who set the exit and Protect on the machine', () => {
+  it('asked for only where the API has each', async () => {
+    request.mockResolvedValueOnce(
+      schema(
+        ['signIns', 'exitSetOnDeviceSignedIn', 'exitSetOnDeviceAdmin', 'exitThroughPerson'],
+        ['name', 'signedIn', 'admin']
+      )
+    )
+    expect(await exitSignInFields()).toBe(
+      'exitSetOnDeviceSignedIn { id email } exitSetOnDeviceAdmin exitThroughPerson { id email }'
+    )
+    expect(await settingSignInFields()).toBe('signedIn { id email } admin')
+    resetDeviceSignIns()
+    request.mockResolvedValueOnce(schema(['signIns', 'exitThroughPerson']))
+    expect(await exitSignInFields()).toBe('exitThroughPerson { id email }')
+    expect(await settingSignInFields()).toBe('')
+    resetDeviceSignIns()
+    request.mockResolvedValueOnce(schema(['id']))
+    expect(await exitSignInFields()).toBe('')
+    expect(await settingSignInFields()).toBe('')
+    expect(request).toHaveBeenCalledTimes(3)
   })
 })

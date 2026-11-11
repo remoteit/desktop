@@ -9,6 +9,9 @@ vi.mock('./remoteit', () => ({ apiHeaders: vi.fn().mockResolvedValue({ authoriza
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
+// What a device's exit adds where the API has sign-ins per account: read from its schema there (deviceSignIns.test.ts).
+const { exitFields } = vi.hoisted(() => ({ exitFields: vi.fn(async () => '') }))
+vi.mock('./deviceSignIns', () => ({ exitSignInFields: exitFields }))
 
 import { UNSUPPORTED } from './graphQLDaemon'
 import {
@@ -242,6 +245,19 @@ describe('a device’s exit', () => {
     request.mockResolvedValue(errors('Cannot query field "usesExit" on type "Device".'))
     expect(await graphQLDeviceExit('DEV')).toBe(UNSUPPORTED)
     expect(uiSet).not.toHaveBeenCalled()
+  })
+
+  it('who chose it on the machine, where the API has sign-ins per account', async () => {
+    exitFields.mockResolvedValueOnce(
+      'exitSetOnDeviceSignedIn { id email } exitSetOnDeviceAdmin exitThroughPerson { id email }'
+    )
+    request.mockResolvedValue(answer({ login: { device: [] } }))
+    await graphQLDeviceExit('DEV')
+    expect(asked().query).toContain(
+      'exitPinned exitSetOnDeviceSignedIn { id email } exitSetOnDeviceAdmin exitThroughPerson { id email }'
+    )
+    await graphQLDeviceExit('DEV')
+    expect(asked().query).not.toContain('exitSetOnDeviceSignedIn')
   })
 
   it('sends its traffic out through an exit, or none; a refusal comes back in graphql’s words', async () => {

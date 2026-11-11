@@ -12,9 +12,6 @@ import {
   graphQLOfferedExits,
   graphQLSetDeviceExit,
 } from '../services/graphQLExits'
-import type { DeviceSignIn } from '../services/deviceSignIns'
-import { personName, signInByName } from '../helpers/signInHelper'
-import { useDeviceSignIns } from '../hooks/useDeviceSignIns'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { settingNote } from './DeviceSettingRow'
 import { ListItemSetting } from './ListItemSetting'
@@ -40,7 +37,6 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const [saving, setSaving] = useState(false)
   const [refusal, setRefusal] = useState<string>()
   const manage = device.permissions.includes('MANAGE')
-  const signIns = useDeviceSignIns(device.id)
   const protectSetting = useDeviceSettings(device.id).setting('protect')
 
   const load = useCallback(async () => {
@@ -84,19 +80,21 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   // The machine's administrator's policy holds over the portal: under local or never, nothing is chosen here.
   const policy = info.exitPolicy
   const locked = policy === 'local' || policy === 'never'
-  const chosenBy = exit ? chosenLine(t, info, signIns) : null
-  const lent = exit ? lentLine(t, info, signIns) : null
+  const chosenBy = exit ? chosenLine(t, info) : null
+  const lent = exit ? lentLine(t, info) : null
   const policyText = policyLine(t, info)
   const routeName = route ? protect?.routeName || offered.find(each => each.id === route)?.name || route : null
   // Who turned Protect off, where the setting says: on this computer by someone signed in, ending at their sign-out.
-  const protectNote = route ? settingNote(t, protectSetting, signIns) : undefined
+  const protectNote = route ? settingNote(t, protectSetting) : undefined
   const keptName = keptDormant ? protect?.routeName || keptDormant : null
 
   const choose = async (via: string | null) => {
     if (saving) return
     setSaving(true)
     const refused = refusalOf(await graphQLSetDeviceExit(device.id, via))
-    setRefusal(refused === undefined ? undefined : refused || t('deviceExit.notChosen', 'It was not changed: try again.'))
+    setRefusal(
+      refused === undefined ? undefined : refused || t('deviceExit.notChosen', 'It was not changed: try again.')
+    )
     await load()
     setSaving(false)
   }
@@ -136,7 +134,11 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           label={t('deviceExit.protectOff', 'Protect: off — route {{name}}', { name: routeName })}
           subLabel={
             protectNote
-              ? `${protectNote}. ${t('deviceExit.protectOffKeeps', 'It keeps {{name}} to route through when Protect is on again', { name: routeName })}`
+              ? `${protectNote}. ${t(
+                  'deviceExit.protectOffKeeps',
+                  'It keeps {{name}} to route through when Protect is on again',
+                  { name: routeName }
+                )}`
               : t(
                   'deviceExit.protectOffHint',
                   'Turned off on the device, which keeps {{name}} to route through when Protect is on again',
@@ -187,7 +189,10 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
         <ListItemSetting
           icon="route"
           label={t('deviceExit.through', 'Going out through {{device}} now', { device: info.usesExitThrough.name })}
-          subLabel={t('deviceExit.throughHint', 'remote.it picks the device of the exit its new connections go through')}
+          subLabel={t(
+            'deviceExit.throughHint',
+            'remote.it picks the device of the exit its new connections go through'
+          )}
         />
       )}
       {chosenBy && <ListItemSetting icon="user" label={chosenBy} subLabel={lent} />}
@@ -214,14 +219,19 @@ export function choiceName(t: T, exit: Pick<OfferedExit, 'name' | 'remoteit' | '
 // Who chose the exit in force: a person signed in on the device, whose choice ends at their sign-out; someone else on
 // it — its administrator, or a daemon from before sign-ins per account — by their OS user, when the device said; or a
 // person in the portal.
-export function chosenLine(t: T, chooser: DeviceExit | null, signIns?: DeviceSignIn[] | null): string | null {
+export function chosenLine(t: T, chooser: DeviceExit | null): string | null {
   if (!chooser) return null
   if (chooser.exitSetOnDevice) {
-    const name = personName(signInByName(signIns, chooser.exitSetOnDeviceBy))
+    const signedIn = chooser.exitSetOnDeviceSignedIn
+    const name = signedIn?.email || signedIn?.id
     if (name)
-      return t('deviceExit.setOnComputerBy', 'Set on this computer by {{name}} — ends when {{name}} signs out', { name })
-    return chooser.exitSetOnDeviceBy
-      ? t('deviceExit.setOnDeviceBy', 'Set on the device by {{name}}', { name: chooser.exitSetOnDeviceBy })
+      return t('deviceExit.setOnComputerBy', 'Set on this computer by {{name}} — ends when {{name}} signs out', {
+        name,
+      })
+    if (chooser.exitSetOnDeviceBy)
+      return t('deviceExit.setOnDeviceBy', 'Set on the device by {{name}}', { name: chooser.exitSetOnDeviceBy })
+    return chooser.exitSetOnDeviceAdmin
+      ? t('deviceExit.setOnDeviceAdmin', 'Set on the device by its administrator')
       : t('deviceExit.setOnDevice', 'Set on the device')
   }
   if (chooser.exitSetBy?.email)
@@ -229,14 +239,16 @@ export function chosenLine(t: T, chooser: DeviceExit | null, signIns?: DeviceSig
   return null
 }
 
-// An exit a signed-in person chose on the device that is their own: lent to the whole machine, all its accounts' traffic
-// through it, while their sign-in lasts.
-export function lentLine(t: T, chooser: DeviceExit | null, signIns?: DeviceSignIn[] | null): string | null {
+// An exit the device could not use as itself, gone through on a person's own access to it: lent to the whole machine,
+// every account's traffic through it.
+export function lentLine(t: T, chooser: DeviceExit | null): string | null {
   const exit = chooser?.usesExit
-  if (!chooser?.exitSetOnDevice || !exit?.owner) return null
-  const signIn = signInByName(signIns, chooser.exitSetOnDeviceBy)
-  if (!signIn?.person || signIn.person.id !== exit.owner.id) return null
-  return t('deviceExit.lent', 'Machine-wide through {{name}}’s exit {{exit}}', { name: personName(signIn), exit: exit.name })
+  const person = chooser?.exitThroughPerson
+  if (!exit || !person) return null
+  return t('deviceExit.lent', 'Machine-wide through {{name}}’s exit {{exit}}', {
+    name: person.email || person.id,
+    exit: exit.name,
+  })
 }
 
 // What the machine's administrator decided of its exit on the device, if anything.

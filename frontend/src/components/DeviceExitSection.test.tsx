@@ -3,8 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { DeviceExit } from '../services/graphQLExits'
 
-const { deviceExit, offered, protect, setExit, usageHint, signIns, settings } = vi.hoisted(() => ({
-  signIns: vi.fn((_deviceId?: string) => null as any),
+const { deviceExit, offered, protect, setExit, usageHint, settings } = vi.hoisted(() => ({
   settings: vi.fn((_deviceId?: string) => [] as any[]),
   deviceExit: vi.fn(async (_deviceId: string) => null as any),
   offered: vi.fn(async (_deviceId?: string) => [] as any),
@@ -21,9 +20,10 @@ vi.mock('../services/graphQLExits', () => ({
   graphQLOfferedExits: offered,
   graphQLSetDeviceExit: setExit,
 }))
-vi.mock('../hooks/useDeviceSignIns', () => ({ useDeviceSignIns: signIns }))
 vi.mock('../hooks/useDeviceSettings', () => ({
-  useDeviceSettings: (deviceId?: string) => ({ setting: (name: string) => settings(deviceId).find(s => s.name === name) }),
+  useDeviceSettings: (deviceId?: string) => ({
+    setting: (name: string) => settings(deviceId).find(s => s.name === name),
+  }),
 }))
 vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('../services/graphQL', () => ({
@@ -140,7 +140,6 @@ beforeEach(() => {
   protect.mockReset().mockResolvedValue(null)
   setExit.mockReset().mockResolvedValue({})
   usageHint.mockClear()
-  signIns.mockReset().mockReturnValue(null)
   settings.mockReset().mockReturnValue([])
 })
 
@@ -400,43 +399,59 @@ describe('who chose the exit, and the machine’s policy', () => {
   })
 
   // Sign-ins per OS account (graphql-api docs/PROXY-GROUPS.md §15): the exit is the machine's, and one a signed-in
-  // person chose on it ends at their sign-out — named by the sign-in on the account the choice's OS name says.
-  const patOn = { account: '501', name: 'pat', person: PAT, since: '2026-11-10T20:00:00Z', manages: true }
-  const samOn = { account: 'S-1-5-21-1-2-3-1013', name: 'DESKTOP-7\\sam', person: NED, since: null, manages: false }
-
-  it('a choice made on the device by someone signed in there: ends at their sign-out; anyone else’s, as before', () => {
-    const onDevice = (by: string) => ({ ...none, exitSetOnDevice: true, exitSetOnDeviceBy: by })
-    expect(chosenLine(t, onDevice('pat'), [patOn, samOn])).toBe(
+  // person chose on it ends at their sign-out.
+  it('a choice made on the device by someone signed in there: ends at their sign-out; its administrator’s, said', () => {
+    const onDevice = { ...none, exitSetOnDevice: true, exitSetOnDeviceBy: 'pat' }
+    expect(chosenLine(t, { ...onDevice, exitSetOnDeviceSignedIn: PAT })).toBe(
       'Set on this computer by pat@example.com — ends when pat@example.com signs out'
     )
-    expect(chosenLine(t, onDevice('Pat'), [patOn])).toContain('Set on this computer by pat@example.com')
-    expect(chosenLine(t, onDevice('sam'), [patOn, samOn])).toContain('by ned@example.com')
-    expect(chosenLine(t, onDevice('root'), [patOn])).toBe('Set on the device by root')
-    expect(chosenLine(t, onDevice('pat'), null)).toBe('Set on the device by pat')
+    expect(chosenLine(t, { ...onDevice, exitSetOnDeviceSignedIn: { id: 'PAT', email: null } })).toContain('by PAT —')
+    expect(chosenLine(t, { ...onDevice, exitSetOnDeviceBy: 'root', exitSetOnDeviceAdmin: true })).toBe(
+      'Set on the device by root'
+    )
+    expect(chosenLine(t, { ...onDevice, exitSetOnDeviceBy: null, exitSetOnDeviceAdmin: true })).toBe(
+      'Set on the device by its administrator'
+    )
+    // An API without them: as before.
+    expect(chosenLine(t, onDevice)).toBe('Set on the device by pat')
   })
 
-  it('a signed-in person’s own exit chosen on the device: lent to the whole machine, said so', () => {
-    const pat = { ...none, usesExit: uses(pats), exitSetOnDevice: true, exitSetOnDeviceBy: 'pat' }
-    expect(lentLine(t, pat, [patOn])).toBe('Machine-wide through pat@example.com’s exit Pat exit')
-    // Not their own, not chosen by them, not chosen on the device, or no sign-ins known: nothing lent.
-    expect(lentLine(t, { ...pat, usesExit: uses(office) }, [patOn])).toBeNull()
-    expect(lentLine(t, { ...pat, exitSetOnDeviceBy: 'root' }, [patOn])).toBeNull()
-    expect(lentLine(t, { ...pat, exitSetOnDevice: false }, [patOn])).toBeNull()
-    expect(lentLine(t, pat, null)).toBeNull()
+  it('an exit gone through on a person’s own access: lent to the whole machine, said so', () => {
+    const pat = { ...none, usesExit: uses(pats), exitSetOnDevice: true, exitThroughPerson: PAT }
+    expect(lentLine(t, pat)).toBe('Machine-wide through pat@example.com’s exit Pat exit')
+    expect(lentLine(t, { ...pat, exitThroughPerson: null })).toBeNull()
+    expect(lentLine(t, { ...pat, usesExit: null })).toBeNull()
   })
 
-  it('shows who set the exit and Protect, from the device’s sign-ins and settings', async () => {
-    signIns.mockReturnValue([patOn])
-    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(pats), exitSetOnDevice: true, exitSetOnDeviceBy: 'pat' }))
+  it('shows who set the exit and Protect', async () => {
+    deviceExit.mockResolvedValue(
+      exitOf({
+        usesExit: uses(pats),
+        exitSetOnDevice: true,
+        exitSetOnDeviceBy: 'pat',
+        exitSetOnDeviceSignedIn: PAT,
+        exitThroughPerson: PAT,
+      })
+    )
     let page = await render()
-    expect(signIns).toHaveBeenCalledWith('LAPTOP')
     expect(page.textContent).toContain(
       'Set on this computer by pat@example.com — ends when pat@example.com signs out — Machine-wide through pat@example.com’s exit Pat exit'
     )
 
     deviceExit.mockResolvedValue(exitOf())
     protect.mockResolvedValue({ on: false, route: 'xoffice', routeName: 'Office' })
-    settings.mockReturnValue([{ name: 'protect', value: false, at: null, by: 'pat', onDevice: true, control: 'cloud+local' }])
+    settings.mockReturnValue([
+      {
+        name: 'protect',
+        value: false,
+        at: null,
+        by: 'pat',
+        onDevice: true,
+        control: 'cloud+local',
+        signedIn: PAT,
+        admin: false,
+      },
+    ])
     page = await render()
     expect(protectRow(page)?.textContent).toContain(
       'Set on this computer by pat@example.com — ends when pat@example.com signs out. It keeps Office to route through when Protect is on again'

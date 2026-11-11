@@ -272,29 +272,32 @@ describe('a device setting whose value is a choice', () => {
 // The exit and Protect are the machine's (graphql-api docs/PROXY-GROUPS.md §15): who set them is said in the portal too,
 // and one a person signed in on the device set ends at their sign-out.
 describe('the machine’s exit and Protect: who set them', () => {
-  const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
-  const pat = { account: '501', name: 'pat', person: { id: 'PAT', email: 'pat@example.com' }, since: null, manages: true }
+  const t = ((_key: string, text: string, values?: any) =>
+    text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
+  const PAT = { id: 'PAT', email: 'pat@example.com' }
   const protect = (more: Partial<DeviceSetting>): DeviceSetting => ({ ...subnet('cloud+local', more), name: 'protect' })
 
-  it('on the device by someone signed in there: ends at their sign-out', () => {
-    expect(settingNote(t, protect({ onDevice: true, by: 'pat' }), [pat])).toBe(
+  it('on the device under a sign-in: ends at its person’s sign-out', () => {
+    expect(settingNote(t, protect({ onDevice: true, by: 'pat', signedIn: PAT }))).toBe(
       'Set on this computer by pat@example.com — ends when pat@example.com signs out'
     )
-    expect(settingNote(t, { ...protect({ onDevice: true, by: 'pat' }), name: 'exit' }, [pat])).toContain('ends when')
+    expect(settingNote(t, { ...protect({ onDevice: true, signedIn: PAT }), name: 'exit' })).toContain('ends when')
   })
 
-  it('on the device by anyone else — the administrator — or with no sign-ins known: as before', () => {
-    expect(settingNote(t, protect({ onDevice: true, by: 'root' }), [pat])).toBe('Set on the device by root')
+  it('on the device by its administrator, or by a daemon from before: as before', () => {
+    expect(settingNote(t, protect({ onDevice: true, by: 'root', admin: true }))).toBe('Set on the device by root')
     expect(settingNote(t, protect({ onDevice: true, by: 'pat' }))).toBe('Set on the device by pat')
   })
 
   it('in the portal: by whom', () => {
-    expect(settingNote(t, protect({ by: 'ann@example.com' }), [pat])).toBe('Set in the portal by ann@example.com')
-    expect(settingNote(t, protect({}), [pat])).toBeUndefined()
+    expect(settingNote(t, protect({ by: 'ann@example.com' }))).toBe('Set in the portal by ann@example.com')
+    expect(settingNote(t, protect({}))).toBeUndefined()
   })
 
-  it('any other setting is as before, whoever is signed in', () => {
-    expect(settingNote(t, subnet('cloud+local', { onDevice: true, by: 'pat' }), [pat])).toBe('Set on the device by pat')
-    expect(settingNote(t, subnet('cloud+local', { by: 'ann@example.com' }), [pat])).toBeUndefined()
+  it('any other setting is as before', () => {
+    expect(settingNote(t, subnet('cloud+local', { onDevice: true, by: 'pat', signedIn: PAT }))).toBe(
+      'Set on the device by pat'
+    )
+    expect(settingNote(t, subnet('cloud+local', { by: 'ann@example.com' }))).toBeUndefined()
   })
 })

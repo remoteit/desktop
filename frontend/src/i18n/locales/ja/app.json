@@ -1004,6 +1004,7 @@
     "setInPortalBy": "",
     "setOnComputerBy": "",
     "setOnDevice": "",
+    "setOnDeviceAdmin": "",
     "setOnDeviceBy": "",
     "through": "",
     "throughHint": "",
@@ -1393,6 +1394,7 @@
     "manages": "",
     "none": "",
     "signedIn": "",
+    "signedInMachine": "",
     "since": ""
   },
   "deviceSshAccess": {

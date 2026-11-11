@@ -2,6 +2,7 @@ import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
+import { PersonRef, exitSignInFields } from './deviceSignIns'
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
    picks the one a device's new connections go through. remote.it's are at a location and offered by plan; an own exit
@@ -242,7 +243,9 @@ export async function graphQLNetworkExits(
    service, its traffic going its usual way until one is —, the device of it its new connections go through now, who
    chose it — on the device (the OS user there) or in the portal — and what the machine's administrator decided of it
    there (device-package docs/menu-app.md §3): who may choose it (cloud+local, local, never), the exits allowed (null:
-   every one), the exit pinned. Read apart from Protect, so an API before its field still shows the exit. */
+   every one), the exit pinned. Read apart from Protect, so an API before its field still shows the exit. The exit is
+   the machine's (§15): where the API says, the person signed in on the device whose choice it is — ending at their
+   sign-out —, whether its administrator chose it, and whose own access to it the machine goes through. */
 export type DeviceExit = {
   usesExit: Pick<Exit, 'id' | 'name' | 'remoteit' | 'owner' | 'offered' | 'dormant'> | null
   usesExitThrough: { id: string; name: string } | null
@@ -253,14 +256,17 @@ export type DeviceExit = {
   exitPolicy: 'cloud+local' | 'local' | 'never' | null
   exitAllowed: string[] | null
   exitPinned: string | null
+  exitSetOnDeviceSignedIn?: PersonRef | null
+  exitSetOnDeviceAdmin?: boolean | null
+  exitThroughPerson?: PersonRef | null
 }
 
-export const graphQLDeviceExit = (deviceId: string) =>
+export const graphQLDeviceExit = async (deviceId: string) =>
   read<DeviceExit | null>(
     `query DeviceExit($id: [String!]!) {
       login { device(id: $id) { id usesExit { id name remoteit owner { id email } offered dormant }
         usesExitThrough { id name } exitDormant exitSetOnDevice exitSetOnDeviceBy exitSetBy { email } exitPolicy
-        exitAllowed exitPinned } }
+        exitAllowed exitPinned ${await exitSignInFields()} } }
     }`,
     { id: [deviceId] },
     'usesExit',

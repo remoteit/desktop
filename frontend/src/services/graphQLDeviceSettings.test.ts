@@ -18,6 +18,10 @@ vi.mock('./productPolicy', async importOriginal => ({
   settingPolicyFields: policyFields,
 }))
 
+// What a setting adds where the API has sign-ins per account (deviceSignIns.test.ts).
+const { signInFields } = vi.hoisted(() => ({ signInFields: vi.fn(async () => '') }))
+vi.mock('./deviceSignIns', () => ({ settingSignInFields: signInFields }))
+
 import { UNSUPPORTED } from './graphQLDaemon'
 import {
   graphQLDeviceSettings,
@@ -49,6 +53,19 @@ describe('a device’s settings', () => {
   it('reads them from Device.settings', async () => {
     request.mockResolvedValue({ data: { data: { login: { device: [{ id: 'D', settings: [subnet] }] } } }, headers: {} })
     expect(await graphQLDeviceSettings('D')).toEqual([subnet])
+  })
+
+  it('who set the exit and Protect on the machine, where the API has sign-ins per account', async () => {
+    signInFields.mockResolvedValueOnce('signedIn { id email } admin')
+    const protect = { ...subnet, name: 'protect', signedIn: { id: 'PAT', email: 'pat@example.com' }, admin: false }
+    request.mockResolvedValue({
+      data: { data: { login: { device: [{ id: 'D', settings: [protect] }] } } },
+      headers: {},
+    })
+    expect(await graphQLDeviceSettings('D')).toEqual([protect])
+    expect(request.mock.calls[0][0].data.query).toContain(
+      'settings { name value at by onDevice control signedIn { id email } admin }'
+    )
   })
 
   it('an API without Device.settings: UNSUPPORTED, and no error banner', async () => {

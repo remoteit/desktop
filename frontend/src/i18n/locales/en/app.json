@@ -1015,6 +1015,7 @@
     "setInPortalBy": "Set in the portal by {{name}}",
     "setOnComputerBy": "Set on this computer by {{name}} — ends when {{name}} signs out",
     "setOnDevice": "Set on the device",
+    "setOnDeviceAdmin": "Set on the device by its administrator",
     "setOnDeviceBy": "Set on the device by {{name}}",
     "through": "Going out through {{device}} now",
     "throughHint": "remote.it picks the device of the exit its new connections go through",
@@ -1421,6 +1422,7 @@
     "manages": "Manages this device: may choose its exit and Protect there",
     "none": "No one is signed in on it",
     "signedIn": "{{person}} signed in on its account {{account}}",
+    "signedInMachine": "{{person}} signed in on it",
     "since": "since"
   },
   "deviceSshAccess": {

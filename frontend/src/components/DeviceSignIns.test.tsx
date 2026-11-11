@@ -32,14 +32,35 @@ async function render() {
 describe('who is signed in on a device', () => {
   it('each account: the person, the account by name, whether they manage it, since when', async () => {
     signIns.mockReturnValue([
-      { account: '501', name: 'pat', person: { id: 'PAT', email: 'pat@example.com' }, since: '2026-11-10T20:00:00Z', manages: true },
-      { account: 'S-1-5-21-1-2-3-1013', name: null, person: { id: 'SAM', email: 'sam@example.com' }, since: null, manages: false },
+      {
+        account: '501',
+        name: 'pat',
+        person: { id: 'PAT', email: 'pat@example.com' },
+        since: '2026-11-10T20:00:00Z',
+        manages: true,
+      },
+      {
+        account: 'S-1-5-21-1-2-3-1013',
+        name: null,
+        person: { id: 'SAM', email: 'sam@example.com' },
+        since: null,
+        manages: false,
+      },
     ])
     expect(await render()).toEqual([
       'pat@example.com signed in on its account pat — Manages this device: may choose its exit and Protect there · since 2026-11-10',
       'sam@example.com signed in on its account S-1-5-21-1-2-3-1013 — Does not manage this device: sees its exit, chosen by someone who does',
     ])
     expect(signIns).toHaveBeenCalledWith('LAPTOP')
+  })
+
+  it('an older daemon’s one sign-in: the machine’s, on no account', async () => {
+    signIns.mockReturnValue([
+      { account: null, name: null, person: { id: 'PAT', email: null }, since: '2026-11-10T20:00:00Z', manages: false },
+    ])
+    expect(await render()).toEqual([
+      'PAT signed in on it — Does not manage this device: sees its exit, chosen by someone who does · since 2026-11-10',
+    ])
   })
 
   it('no one: said; an API without sign-ins per account, or while read: nothing', async () => {
