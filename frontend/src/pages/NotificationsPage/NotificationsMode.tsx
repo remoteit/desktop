@@ -5,6 +5,7 @@ import { Gutters } from '../../components/Gutters'
 import { ListItemSwitch } from '../../components/ListItemSwitch'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { PushCategoryList } from '../../components/PushCategoryList'
+import { ProductNotificationsSetting } from '../../components/ProductNotificationsSetting'
 import { Link } from '../../components/Link'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
@@ -127,6 +128,7 @@ export const NotificationMode: React.FC = () => {
           toggle={restoreOn}
           onClick={() => updateNotificationSettings({ ...metadata, restoreNotifications: !restoreOn })}
         />
+        <ProductNotificationsSetting />
         <ListItemSwitch
           label={t('settings.notifyWebhook', 'Webhook')}
           icon="webhook"
@@ -150,7 +152,10 @@ export const NotificationMode: React.FC = () => {
             helperText={error ? t('settings.invalidUrl', 'Please provide a valid URL') : undefined}
           />
           <Typography variant="caption" color="text.secondary" component="p" marginTop={2} marginBottom={1}>
-            {t('settings.webhookHelp', 'Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds.')}{' '}
+            {t(
+              'settings.webhookHelp',
+              'Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds.'
+            )}{' '}
             <Link href="https://docs.remote.it/developer-tools/webhooks">{t('settings.docs', 'Docs')}</Link>
           </Typography>
           <Button

@@ -14,6 +14,8 @@ vi.mock('react-redux', () => ({
 }))
 vi.mock('../../services/browser', () => ({ default: { isMobile: false } }))
 vi.mock('../../components/Icon', () => ({ Icon: () => null }))
+// Read and set on its own (ProductNotificationsSetting.test.tsx).
+vi.mock('../../components/ProductNotificationsSetting', () => ({ ProductNotificationsSetting: () => null }))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_key: string, a: any) => (typeof a === 'string' ? a : a.defaultValue) }),
 }))

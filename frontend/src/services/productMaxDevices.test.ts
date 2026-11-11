@@ -11,7 +11,12 @@ vi.mock('axios', () => ({ default: { request, isAxiosError: () => false } }))
 
 import {
   devicesOver,
+  graphQLHeldByProduct,
   graphQLProductMaxDevices,
+  graphQLProductNotifications,
+  productCapServed,
+  productFullEventFields,
+  setProductNotifications,
   parseMaxDevices,
   productMaxDevicesServed,
   resetProductMaxDevices,
@@ -118,5 +123,66 @@ describe("a product's maximum of devices: as typed, and past it", () => {
     expect(devicesOver({ maxDevices: 10, devicesCounted: 9 })).toBe(0)
     expect(devicesOver({ maxDevices: null, devicesCounted: 12 })).toBe(0)
     expect(devicesOver({ maxDevices: 10, devicesCounted: null })).toBe(0)
+  })
+})
+
+describe("a product at its maximum: the device's hold, the owner's mail switch, the live event", () => {
+  const full = {
+    data: {
+      data: {
+        ...schema().data.data,
+        device: { fields: [{ name: 'id' }, { name: 'heldByProduct' }] },
+        settings: { fields: [{ name: 'restoreNotifications' }, { name: 'productNotifications' }] },
+        event: { name: 'ProductFullEvent' },
+      },
+    },
+  }
+
+  it('an older API has none of them: nothing more is asked, and the live events add nothing', async () => {
+    request.mockResolvedValueOnce(older)
+    expect(await productCapServed()).toEqual({
+      maxDevices: false,
+      heldByProduct: false,
+      productNotifications: false,
+      event: false,
+    })
+    expect(await graphQLHeldByProduct('D1')).toBeUndefined()
+    expect(await graphQLProductNotifications()).toBeUndefined()
+    expect(await productFullEventFields()).toBe('')
+    expect(request).toHaveBeenCalledTimes(1)
+  })
+
+  it("reads a disabled device's hold, in its account", async () => {
+    request.mockResolvedValueOnce(full).mockResolvedValueOnce({
+      data: {
+        data: {
+          login: {
+            account: {
+              devices: { items: [{ id: 'D1', heldByProduct: 'Its product Cameras has the 2 device(s) it may hold' }] },
+            },
+          },
+        },
+      },
+    })
+    expect(await graphQLHeldByProduct('D1', 'ACCOUNT')).toBe('Its product Cameras has the 2 device(s) it may hold')
+    expect(sent(1).query).toContain('devices(disabled: true, id: $id) { items { id heldByProduct } }')
+    expect(sent(1).variables).toEqual({ accountId: 'ACCOUNT', id: ['D1'] })
+  })
+
+  it('reads the mail switch, none set being on, and sets it alone', async () => {
+    request
+      .mockResolvedValueOnce(full)
+      .mockResolvedValueOnce({ data: { data: { login: { notificationSettings: { productNotifications: null } } } } })
+      .mockResolvedValueOnce({ data: { data: { setNotificationSettings: true } } })
+    expect(await graphQLProductNotifications()).toBe(true)
+    expect(await setProductNotifications(false)).toBe(true)
+    expect(sent(2).variables).toEqual({ productNotifications: false })
+  })
+
+  it("the live events ask for the event's fields where the API has it", async () => {
+    request.mockResolvedValueOnce(full)
+    const fields = await productFullEventFields()
+    expect(fields).toContain('... on ProductFullEvent')
+    expect(fields).toContain('productName')
   })
 })

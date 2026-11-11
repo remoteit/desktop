@@ -39,7 +39,27 @@ export async function notify(event: ICloudEvent) {
 
     case 'DEVICE_TRANSFER':
       transferNotification(event)
+      break
+
+    case 'PRODUCT_FULL':
+      productFullNotification(event)
   }
+}
+
+/*
+  Cameras is at its maximum of 50 devices
+  It refused a device registering with it
+*/
+function productFullNotification(event: ICloudEvent) {
+  if (!event.product) return
+  const name = event.productName || 'A product'
+  const body =
+    event.via === 'restore'
+      ? 'It kept a disabled device from coming back on. Remove or disable a device, or raise its maximum.'
+      : 'It refused a device registering with it. Remove or disable a device, or raise its maximum.'
+  createNotification(`${name} is at its maximum of ${event.maxDevices ?? ''} devices`, `/products/${event.product}`, {
+    body,
+  })
 }
 
 /* 

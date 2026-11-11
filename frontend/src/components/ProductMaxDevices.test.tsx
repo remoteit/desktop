@@ -67,14 +67,14 @@ describe('ProductMaxDevicesSetting', () => {
     )
     expect(body()).toContain('Device Limit')
     expect(body()).toContain('No maximum')
-    expect(body()).toContain('4 device(s) count against it, disabled ones included')
+    expect(body()).toContain('4 device(s) count against it; disabled ones do not')
     expect(body()).not.toContain('over')
   })
 
   it('lowered below its devices: says how many are over, and that none joins until they are removed', async () => {
     await render(<ProductMaxDevicesSetting value={{ maxDevices: 10, devicesCounted: 12 }} manage onChange={onChange} />)
     expect(body()).toContain('10')
-    expect(body()).toContain('2 over: no device joins until 2 are removed.')
+    expect(body()).toContain('2 over: no device joins or comes back on until 2 are removed or disabled.')
   })
 
   it('without a count (not a manager), only the maximum', async () => {

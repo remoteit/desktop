@@ -850,6 +850,7 @@ declare global {
       | 'DEVICE_REFRESH'
       | 'DEVICE_DELETE'
       | 'LICENSE_UPDATED'
+      | 'PRODUCT_FULL'
     state: IDevice['state'] | 'connected' | 'disconnected'
     action: 'add' | 'update' | 'remove'
     timestamp: Timestamp
@@ -897,6 +898,12 @@ declare global {
     quantity?: number
     expiration?: Date
     owner?: IUserRef
+    // A product at its maximum of devices refused one (PRODUCT_FULL): the product, its maximum, and how — a registration,
+    // or a disabled device's restore at its sign-in
+    product?: string
+    productName?: string
+    maxDevices?: number
+    via?: 'registration' | 'restore'
   }
 
   interface IRoute {

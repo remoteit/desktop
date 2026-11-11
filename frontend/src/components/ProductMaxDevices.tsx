@@ -24,9 +24,9 @@ type SettingProps = {
 }
 
 /* How many devices a product may hold (graphql-api docs/PROXY-GROUPS.md §11, "A product's maximum of devices"): none by
-   default, edited in place, emptied (or deleted) for none. Beside it, how many devices count against it — disabled ones
-   too, until removed — and, where the maximum was lowered below them, how many are over: none is removed, and none joins
-   until removals bring the count under. graphql decides who may set it; the field is offered to the account's admins. */
+   default, edited in place, emptied (or deleted) for none. Beside it, how many devices count against it — every one but a
+   disabled one — and, where the maximum was lowered below them, how many are over: none is removed, and none joins until
+   removals or disables bring the count under. graphql decides who may set it; the field is offered to the account's admins. */
 export const ProductMaxDevicesSetting: React.FC<SettingProps> = ({ value, manage, onChange }) => {
   const { t } = useTranslation()
   const [current, setCurrent] = useState<MaxDevices>(value)
@@ -74,7 +74,7 @@ export const ProductMaxDevicesSetting: React.FC<SettingProps> = ({ value, manage
             if (wanted != null && counted != null && wanted < counted)
               return t(
                 'productMaxDevices.below',
-                'It has {{counted}}: none is removed, but no device joins until {{over}} are removed.',
+                'It has {{counted}}: none is removed, but no device joins or comes back on until {{over}} are removed or disabled.',
                 { counted, over: counted - wanted }
               )
             return undefined
@@ -89,15 +89,21 @@ export const ProductMaxDevicesSetting: React.FC<SettingProps> = ({ value, manage
       {counted != null && (
         <Typography variant="caption" color="textSecondary" component="p">
           {t(
-            'productMaxDevices.about',
-            '{{counted}} device(s) count against it, disabled ones included; a removed device frees its place. At the maximum, a device that registers is refused and tries again later.',
+            'productMaxDevices.aboutLive',
+            '{{counted}} device(s) count against it; disabled ones do not, and removing or disabling one frees its place. At the maximum, a device that registers is refused and tries again later, and a disabled one stays disabled. You are emailed the first time it refuses one, then once a day at most while it keeps refusing.',
             { counted }
           )}
         </Typography>
       )}
       {over > 0 && (
         <Notice severity="warning" fullWidth>
-          {t('productMaxDevices.over', '{{over}} over: no device joins until {{over}} are removed.', { over })}
+          {t(
+            'productMaxDevices.overLive',
+            '{{over}} over: no device joins or comes back on until {{over}} are removed or disabled.',
+            {
+              over,
+            }
+          )}
         </Notice>
       )}
       {refusal !== undefined && (

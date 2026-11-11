@@ -8,6 +8,7 @@ import { Dispatch, State } from '../store'
 import { useCanDecommission, disabledWhen } from '../hooks/useDeviceDisable'
 import { DecommissionDialog } from './DecommissionDialog'
 import { Notice } from './Notice'
+import { DeviceProductHold } from './DeviceProductHold'
 
 // When it was disabled, and by whom or why: a person (named where the API says), or the expiry.
 export function disabledDescription(
@@ -80,6 +81,7 @@ export const DisabledDeviceNotice: React.FC<{ device: IDevice }> = ({ device }) 
       >
         <strong>{disabledDescription(t, device)}</strong>
         <em>{t('disabledDevice.notServing', 'It serves nothing until it is restored.')}</em>
+        <DeviceProductHold deviceId={device.id} accountId={device.accountId} />
       </Notice>
       <DecommissionDialog
         open={decommission}

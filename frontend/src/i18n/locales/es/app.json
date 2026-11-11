@@ -2994,12 +2994,12 @@
     "toPersistentTitle": ""
   },
   "productMaxDevices": {
-    "about": "",
+    "aboutLive": "",
     "below": "",
     "label": "",
     "none": "",
     "notChanged": "",
-    "over": "",
+    "overLive": "",
     "placeholder": "",
     "problem": "",
     "title": "",
@@ -3924,6 +3924,8 @@
     "notificationMethod": "Método",
     "notifications": "Notificaciones",
     "notifyEmail": "Correo electrónico",
+    "notifyProductFull": "",
+    "notifyProductFullHelp": "",
     "notifyPush": "Push móvil",
     "notifyRestore": "Correos de restauración de dispositivos",
     "notifyRestoreHelp": "Un dispositivo que administra, pero del que no es propietario, se restaura con un código de restauración. Su propietario siempre recibe un correo.",

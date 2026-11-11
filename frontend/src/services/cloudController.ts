@@ -14,6 +14,7 @@ import { resourceForEventsURL } from '../constants'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
+import { productFullEventFields } from './productMaxDevices'
 import { selectById } from '../selectors/devices'
 import { combinedName } from '@common/nameHelper'
 import {
@@ -264,6 +265,7 @@ class CloudController {
               }
             }
           }
+${await productFullEventFields()}
           ... on LicenseUpdatedEvent {
             owner {
               id
@@ -372,6 +374,11 @@ class CloudController {
         manufacturerType: getManufacturerType(event.manufacturer, reverseProxy),
         expiration: event.expiration && new Date(event.expiration),
         plan: event.plan,
+        // A product at its maximum of devices refused one (ProductFullEvent, where the API has it).
+        product: event.product,
+        productName: event.productName,
+        maxDevices: event.maxDevices,
+        via: event.via,
         job: {
           ...event.job,
           jobDevice: event.jobDevice,
