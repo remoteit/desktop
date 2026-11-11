@@ -7,12 +7,15 @@ import { graphQLBasicRequest } from '../services/graphQL'
 /* Signing in to a proxy's signed-in endpoint (presence-server docs/proxy-plan.md, phase 3): the proxy sends a visitor
    here — #/endpoint-sign-in?endpoint=<id>&return=<the endpoint's URL> — and this, signed in as them, asks graphql for a
    ticket for that endpoint (endpointTicket: only for someone who may connect to its service, and only back to the
-   endpoint's own address) and goes back with it. */
+   endpoint's own address) and goes back with it. A proxy sends a visitor whose session it was refused with
+   &reason=access (graphql-api docs/PROXY-GROUPS.md §16): their pass revoked — a new one is given, as any sign-in —
+   or their access lost, which graphql refuses here, said as access they no longer have. */
 export const EndpointSignInPage: React.FC = () => {
   const { t } = useTranslation()
   const params = new URLSearchParams(useLocation().search)
   const endpoint = params.get('endpoint') || ''
   const back = params.get('return') || ''
+  const lost = params.get('reason') === 'access'
   const [problem, setProblem] = useState<string>()
 
   useEffect(() => {
@@ -25,6 +28,7 @@ export const EndpointSignInPage: React.FC = () => {
     ).then(result => {
       const url = result === 'ERROR' ? null : result?.data?.data?.endpointTicket
       if (url) window.location.replace(url)
+      else if (lost) setProblem(t('endpointSignIn.lost', 'You no longer have access to this endpoint.'))
       else setProblem(t('endpointSignIn.refused', 'You do not have access to this endpoint.'))
     })
   }, [endpoint, back])

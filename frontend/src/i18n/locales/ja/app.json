@@ -1604,6 +1604,7 @@
     "via": ""
   },
   "endpointSignIn": {
+    "lost": "",
     "missing": "",
     "refused": "",
     "signingIn": ""
