@@ -35,6 +35,9 @@ export type MockBridgeOptions = {
   route?: string
   // Whether traffic stops while the exit cannot be reached (protect.killSwitch); true unless said.
   killSwitch?: boolean
+  // 1.10.0: why this account may not choose the exit here (protect.chooseRefusal): the route, Protect on and exit.set
+  // refused with it, as the shell refuses; Protect off still taken. None unless said.
+  chooseRefusal?: string
   // With 'services' or 'lanServices': whether it is on a local network (true unless said), and — a phone's, with
   // 'permissions' — its Local Network permission ('notAsked' unless said; services.set on asks, and a person not
   // refusing grants it).
@@ -173,6 +176,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             return bridge.status
           case 'vpn.set':
           case 'protect.set':
+            if (a.on && options.chooseRefusal) throw new BridgeError('refused', options.chooseRefusal)
             if (a.on) {
               const exit = exits.find(e => e.id === route) ?? (exits.length === 1 ? exits[0] : undefined)
               if (!exit) throw new BridgeError('refused', 'choose an exit to route through first')
@@ -181,6 +185,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             changed()
             return bridge.status
           case 'protect.route': {
+            if (options.chooseRefusal) throw new BridgeError('refused', options.chooseRefusal)
             const exit = exits.find(e => e.id === a.id)
             if (!exit) throw new BridgeError('refused', `${a.id} is not among this device's exits`)
             if (bridge.status.vpn.on) use(exit)
@@ -215,6 +220,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
           case 'exit.list':
             return exits
           case 'exit.set': {
+            if (a.id !== null && options.chooseRefusal) throw new BridgeError('refused', options.chooseRefusal)
             if (a.id === null) use(undefined)
             else {
               const exit = exits.find(e => e.id === a.id)
@@ -345,7 +351,12 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
       ...s,
       access: capabilities.includes('access') ? { on: !!s.subnet?.on } : undefined,
       protect: capabilities.includes('protect')
-        ? { on: s.vpn.on, route: exits.find(e => e.id === route), killSwitch: options.killSwitch ?? true }
+        ? {
+            on: s.vpn.on,
+            route: exits.find(e => e.id === route),
+            killSwitch: options.killSwitch ?? true,
+            ...(options.chooseRefusal ? { chooseRefusal: options.chooseRefusal } : {}),
+          }
         : undefined,
       lanServices: capabilities.includes('lanServices') ? served : undefined,
       services: capabilities.includes('services') ? served : undefined,

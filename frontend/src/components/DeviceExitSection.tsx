@@ -12,6 +12,7 @@ import {
   graphQLOfferedExits,
   graphQLSetDeviceExit,
 } from '../services/graphQLExits'
+import { servingLine } from '../helpers/exitServingHelper'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { settingNote } from './DeviceSettingRow'
 import { ListItemSetting } from './ListItemSetting'
@@ -28,7 +29,11 @@ import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
    administrator decided of it there, are said; their policy holds over the portal. The exit and Protect are the
    machine's (§15): one chosen there by a signed-in person ends at their sign-out, and may be their own exit, lent to the
    whole machine. remote.it's exits are the only ones charged. Device sessions only; nothing shows where the API lacks
-   them. */
+   them.
+   An exit is run by one device or several, and remote.it picks the one its new connections go through: each exit is
+   offered with its devices counted (Exit.serving, where the API counts them), and the device of it in use is said with
+   them. Only someone who manages the device chooses; anyone else sees the choice, read-only. The administrator's
+   policy shows in the list too: an exit it does not allow is there, and not chosen. */
 export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const [info, setInfo] = useState<DeviceExit | null>()
@@ -65,9 +70,9 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 
   if (!info) return null
 
-  const choices = [
+  const choices: ISelect[] = [
     { key: '', name: t('deviceExit.none', 'None — its usual way out') },
-    ...offered.map(each => ({ key: each.id, name: choiceName(t, each) })),
+    ...offered.map(each => choiceOf(t, info, each)),
   ]
   if (exit && !offered.some(each => each.id === exit.id))
     choices.push({
@@ -75,6 +80,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
       name: info.exitDormant
         ? t('deviceExit.choiceDormant', '{{exit}} · no device available', { exit: exit.name })
         : exit.name,
+      description: (!info.exitDormant && servingLine(t, exit.serving)) || undefined,
     })
 
   // The machine's administrator's policy holds over the portal: under local or never, nothing is chosen here.
@@ -101,6 +107,17 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 
   return (
     <>
+      {!manage && (
+        <ListItemSetting
+          icon="arrow-right-from-bracket"
+          label={
+            exit
+              ? t('deviceExit.readOnly', 'Sends its traffic out through {{exit}}', { exit: exit.name })
+              : t('deviceExit.readOnlyNone', 'No exit — its traffic goes its usual way')
+          }
+          subLabel={t('deviceExit.readOnlyHint', 'Only someone who manages this device chooses its exit')}
+        />
+      )}
       {manage && (
         <SelectSetting
           icon="arrow-right-from-bracket"
@@ -189,10 +206,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
         <ListItemSetting
           icon="route"
           label={t('deviceExit.through', 'Going out through {{device}} now', { device: info.usesExitThrough.name })}
-          subLabel={t(
-            'deviceExit.throughHint',
-            'remote.it picks the device of the exit its new connections go through'
-          )}
+          subLabel={throughLine(t, exit.name, exit.serving)}
         />
       )}
       {chosenBy && <ListItemSetting icon="user" label={chosenBy} subLabel={lent} />}
@@ -202,6 +216,27 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 }
 
 type T = TFunction
+
+// An exit offered, as the list shows it: named by why it is offered, its devices counted under it, and — where the
+// machine's administrator allows only some exits — one not among them there, not chosen (graphql would refuse it).
+export function choiceOf(t: T, chooser: Pick<DeviceExit, 'exitAllowed'> | null, exit: OfferedExit): ISelect {
+  const allowed = !chooser?.exitAllowed || chooser.exitAllowed.includes(exit.id)
+  return {
+    key: exit.id,
+    name: choiceName(t, exit),
+    description: allowed
+      ? servingLine(t, exit.serving) ?? undefined
+      : t('deviceExit.notAllowed', 'Not allowed by this machine’s administrator'),
+    disabled: !allowed,
+  }
+}
+
+// Under the device of the exit in use: the exit's devices counted, where the API counts them, and that remote.it picks.
+export function throughLine(t: T, exit: string, serving?: OfferedExit['serving']): string {
+  const picks = t('deviceExit.throughHint', 'remote.it picks the device of the exit its new connections go through')
+  const counted = servingLine(t, serving)
+  return counted ? `${t('deviceExit.throughOf', '{{exit}}: {{counted}}', { exit, counted })}. ${picks}` : picks
+}
 
 // An exit offered for the device, named by why it is offered: remote.it's and your own by name; one shared with you or
 // reached by your role by whose it is; one its networks alone give it, so. With no reasons said, by whose it is.

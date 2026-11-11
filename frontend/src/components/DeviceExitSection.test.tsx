@@ -64,7 +64,13 @@ vi.mock('./SelectSetting', () => ({
   SelectSetting: ({ disabled, value, values, onChange }: any) => (
     <div data-select data-value={value} data-disabled={String(!!disabled)}>
       {values.map((each: any) => (
-        <button key={each.key} data-choice={each.key} onClick={() => onChange(each.key)}>
+        <button
+          key={each.key}
+          data-choice={each.key}
+          data-description={each.description ?? ''}
+          data-off={String(!!each.disabled)}
+          onClick={() => onChange(each.key)}
+        >
           {each.name}
         </button>
       ))}
@@ -81,7 +87,15 @@ vi.mock('react-i18next', () => {
   }
 })
 
-import { DeviceExitChoice, choiceName, chosenLine, lentLine, policyLine } from './DeviceExitSection'
+import {
+  DeviceExitChoice,
+  choiceName,
+  choiceOf,
+  chosenLine,
+  lentLine,
+  policyLine,
+  throughLine,
+} from './DeviceExitSection'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
@@ -131,6 +145,14 @@ const select = (page: HTMLElement) => page.querySelector('[data-select]') as HTM
 const choices = (page: HTMLElement) =>
   [...page.querySelectorAll('[data-choice]')].map(each => `${each.getAttribute('data-choice')}=${each.textContent}`)
 const choice = (page: HTMLElement, key: string) => page.querySelector(`[data-choice="${key}"]`)
+// Each choice's line under it, and whether it may be chosen.
+const described = (page: HTMLElement) =>
+  [...page.querySelectorAll('[data-choice]')].map(
+    each =>
+      `${each.getAttribute('data-choice')}=${each.getAttribute('data-description')}${
+        each.getAttribute('data-off') === 'true' ? ' (off)' : ''
+      }`
+  )
 const notice = (page: HTMLElement) => page.querySelector('[data-notice]')?.textContent ?? null
 const protectRow = (page: HTMLElement) => page.querySelector('[data-item="shield-alt"]')
 
@@ -264,6 +286,25 @@ describe('the exit a device’s traffic goes out through', () => {
     expect(select(page)).toBeNull()
   })
 
+  it('one who does not manage the device sees its exit, read-only, and who may choose it', async () => {
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(pdx), usesExitThrough: { id: 'E2', name: 'e2' } }))
+    let page = await render(['VIEW'])
+    expect(select(page)).toBeNull()
+    expect(page.querySelector('[data-item="arrow-right-from-bracket"]')?.textContent).toBe(
+      'Sends its traffic out through remote.it pdx1a — Only someone who manages this device chooses its exit'
+    )
+    expect(page.textContent).toContain('Going out through e2 now')
+    deviceExit.mockResolvedValue(exitOf())
+    page = await render(['VIEW'])
+    expect(page.querySelector('[data-item="arrow-right-from-bracket"]')?.textContent).toBe(
+      'No exit — its traffic goes its usual way — Only someone who manages this device chooses its exit'
+    )
+    // A manager has the choice, and no read-only line.
+    page = await render()
+    expect(select(page)).not.toBeNull()
+    expect(page.querySelector('[data-item="arrow-right-from-bracket"]')).toBeNull()
+  })
+
   it('nothing where the API has no device exits or the device’s exit cannot be read, and nothing more is asked', async () => {
     for (const answer of ['UNSUPPORTED', 'ERROR', null]) {
       deviceExit.mockClear().mockResolvedValue(answer)
@@ -274,6 +315,89 @@ describe('the exit a device’s traffic goes out through', () => {
       expect(offered).not.toHaveBeenCalled()
       expect(protect).not.toHaveBeenCalled()
     }
+  })
+})
+
+// An exit is run by one device or several, remote.it picking the one a new connection goes through: each is offered with
+// its devices counted, where the API counts them (Exit.serving), and the device of it in use is said with them.
+describe('each exit with its devices counted', () => {
+  const two = { devices: 2, carrying: 2, healthy: 2, draining: 0 }
+
+  it('each choice says how many devices run it and how they stand; nothing where the API does not count them', async () => {
+    offered.mockResolvedValue([
+      { ...pdx, serving: two },
+      { ...office, serving: { devices: 1, carrying: 1, healthy: 1, draining: 0 } },
+      { ...pats, serving: { devices: 3, carrying: 2, healthy: 0, draining: 1 } },
+      router,
+    ])
+    const page = await render()
+    expect(described(page)).toEqual([
+      '=',
+      'pdx1a=2 devices',
+      'xoffice=1 device',
+      'xpat=2 of 3 devices carrying traffic · 1 unhealthy · 1 draining',
+      'xrouter=',
+    ])
+    // The names stay as they were: the count is under each.
+    expect(choices(page)[1]).toBe('pdx1a=remote.it pdx1a')
+  })
+
+  it('the exit in use, no longer offered, keeps its count; a dormant one says none is available instead', async () => {
+    deviceExit.mockResolvedValue(
+      exitOf({ usesExit: { ...uses({ ...pats, id: 'xold', name: 'Old exit' }), serving: two } })
+    )
+    expect(described(await render()).at(-1)).toBe('xold=2 devices')
+    deviceExit.mockResolvedValue(
+      exitOf({
+        usesExit: { ...uses(spare, { offered: false, dormant: true }), serving: { ...two, carrying: 0, healthy: 0 } },
+        exitDormant: true,
+      })
+    )
+    expect(described(await render()).at(-1)).toBe('xspare=')
+  })
+
+  it('the device of the exit in use, with the exit’s devices counted', async () => {
+    deviceExit.mockResolvedValue(
+      exitOf({
+        usesExit: { ...uses(pdx), serving: { devices: 2, carrying: 2, healthy: 1, draining: 0 } },
+        usesExitThrough: { id: 'E1', name: 'e1' },
+      })
+    )
+    const page = await render()
+    expect(page.querySelector('[data-item="route"]')?.textContent).toBe(
+      'Going out through e1 now — remote.it pdx1a: 2 devices · 1 unhealthy. remote.it picks the device of the exit its new connections go through'
+    )
+  })
+
+  it('an exit the machine’s administrator does not allow is listed, and not chosen', async () => {
+    deviceExit.mockResolvedValue(exitOf({ exitAllowed: ['pdx1a'] }))
+    offered.mockResolvedValue([{ ...pdx, serving: two }, office])
+    const page = await render()
+    expect(described(page)).toEqual([
+      '=',
+      'pdx1a=2 devices',
+      'xoffice=Not allowed by this machine’s administrator (off)',
+    ])
+  })
+
+  it('in words', () => {
+    expect(choiceOf(t, null, { ...office, serving: two } as any)).toEqual({
+      key: 'xoffice',
+      name: 'Office',
+      description: '2 devices',
+      disabled: false,
+    })
+    expect(choiceOf(t, { exitAllowed: [] }, pdx as any)).toMatchObject({ disabled: true })
+    expect(choiceOf(t, { exitAllowed: null }, pdx as any)).toEqual({
+      key: 'pdx1a',
+      name: 'remote.it pdx1a',
+      description: undefined,
+      disabled: false,
+    })
+    expect(throughLine(t, 'Office', null)).toBe('remote.it picks the device of the exit its new connections go through')
+    expect(throughLine(t, 'Office', { devices: 2, carrying: 0, healthy: 0, draining: 0 })).toBe(
+      'Office: No device carrying its traffic. remote.it picks the device of the exit its new connections go through'
+    )
   })
 })
 

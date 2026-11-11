@@ -3,6 +3,7 @@ import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
 import { PersonRef, exitSignInFields } from './deviceSignIns'
+import { ExitServing, exitServingFields } from './exitServing'
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
    picks the one a device's new connections go through. remote.it's are at a location and offered by plan; an own exit
@@ -82,14 +83,16 @@ export const graphQLAccountExits = (accountId: string) =>
 // The exits you may send a device's traffic through, offered now — remote.it's by plan, your own, those shared with you,
 // those your role reaches — and, with a device you manage, those it may use as itself: its networks', and remote.it's
 // by its account's plan — each with why it is offered. Never the exit the device runs.
+// Each with its devices counted (serving) where the API counts them.
 export type OfferedExit = Pick<Exit, 'id' | 'name' | 'remoteit' | 'location' | 'provider' | 'owner'> & {
   reasons: ExitReason[] | null
+  serving?: ExitServing | null
 }
 
-export const graphQLOfferedExits = (deviceId?: string) =>
+export const graphQLOfferedExits = async (deviceId?: string) =>
   read<OfferedExit[]>(
     `query OfferedExits($deviceId: String) {
-      exits(deviceId: $deviceId) { id name remoteit location provider owner { id email } reasons }
+      exits(deviceId: $deviceId) { id name remoteit location provider owner { id email } reasons ${await exitServingFields()} }
     }`,
     { deviceId },
     'exits',
@@ -245,9 +248,10 @@ export async function graphQLNetworkExits(
    there (device-package docs/menu-app.md §3): who may choose it (cloud+local, local, never), the exits allowed (null:
    every one), the exit pinned. Read apart from Protect, so an API before its field still shows the exit. The exit is
    the machine's (§15): where the API says, the person signed in on the device whose choice it is — ending at their
-   sign-out —, whether its administrator chose it, and whose own access to it the machine goes through. */
+   sign-out —, whether its administrator chose it, and whose own access to it the machine goes through. Its exit's
+   devices counted (serving) where the API counts them: usesExitThrough is one of them. */
 export type DeviceExit = {
-  usesExit: Pick<Exit, 'id' | 'name' | 'remoteit' | 'owner' | 'offered' | 'dormant'> | null
+  usesExit: (Pick<Exit, 'id' | 'name' | 'remoteit' | 'owner' | 'offered' | 'dormant'> & { serving?: ExitServing | null }) | null
   usesExitThrough: { id: string; name: string } | null
   exitDormant: boolean | null
   exitSetOnDevice: boolean | null
@@ -264,7 +268,7 @@ export type DeviceExit = {
 export const graphQLDeviceExit = async (deviceId: string) =>
   read<DeviceExit | null>(
     `query DeviceExit($id: [String!]!) {
-      login { device(id: $id) { id usesExit { id name remoteit owner { id email } offered dormant }
+      login { device(id: $id) { id usesExit { id name remoteit owner { id email } offered dormant ${await exitServingFields()} }
         usesExitThrough { id name } exitDormant exitSetOnDevice exitSetOnDeviceBy exitSetBy { email } exitPolicy
         exitAllowed exitPinned ${await exitSignInFields()} } }
     }`,
