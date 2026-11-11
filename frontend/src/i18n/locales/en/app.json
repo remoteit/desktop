@@ -1647,6 +1647,7 @@
     "via": "via {{host}}"
   },
   "endpointSignIn": {
+    "lost": "You no longer have access to this endpoint.",
     "missing": "This sign-in link is incomplete.",
     "refused": "You do not have access to this endpoint.",
     "signingIn": "Signing you in…"
