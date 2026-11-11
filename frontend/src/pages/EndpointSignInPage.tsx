@@ -8,7 +8,7 @@ import { graphQLBasicRequest } from '../services/graphQL'
    here — #/endpoint-sign-in?endpoint=<id>&return=<the endpoint's URL> — and this, signed in as them, asks graphql for a
    ticket for that endpoint (endpointTicket: only for someone who may connect to its service, and only back to the
    endpoint's own address) and goes back with it. A proxy sends a visitor whose session it was refused with
-   &reason=access (graphql-api docs/PROXY-GROUPS.md §16): their pass revoked — a new one is given, as any sign-in —
+   &reason=access (graphql-api docs/PROXY-GROUPS.md §17): their pass revoked — a new one is given, as any sign-in —
    or their access lost, which graphql refuses here, said as access they no longer have. */
 export const EndpointSignInPage: React.FC = () => {
   const { t } = useTranslation()
