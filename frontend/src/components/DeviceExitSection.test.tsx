@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { DeviceExit } from '../services/graphQLExits'
 
-const { deviceExit, offered, protect, setExit, usageHint } = vi.hoisted(() => ({
+const { deviceExit, offered, protect, setExit, usageHint, signIns, settings } = vi.hoisted(() => ({
+  signIns: vi.fn((_deviceId?: string) => null as any),
+  settings: vi.fn((_deviceId?: string) => [] as any[]),
   deviceExit: vi.fn(async (_deviceId: string) => null as any),
   offered: vi.fn(async (_deviceId?: string) => [] as any),
   protect: vi.fn(async (_deviceId: string) => null as any),
@@ -19,7 +21,15 @@ vi.mock('../services/graphQLExits', () => ({
   graphQLOfferedExits: offered,
   graphQLSetDeviceExit: setExit,
 }))
+vi.mock('../hooks/useDeviceSignIns', () => ({ useDeviceSignIns: signIns }))
+vi.mock('../hooks/useDeviceSettings', () => ({
+  useDeviceSettings: (deviceId?: string) => ({ setting: (name: string) => settings(deviceId).find(s => s.name === name) }),
+}))
+vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('../services/graphQL', () => ({
+  graphQLBasicRequest: vi.fn(),
+  graphQLGetErrors: vi.fn(),
+  graphQLRequestWithReason: vi.fn(),
   refusalOf: (result: any) => (result === 'ERROR' ? '' : result && 'reason' in result ? result.reason : undefined),
 }))
 vi.mock('./TransferUsage', () => ({
@@ -71,7 +81,7 @@ vi.mock('react-i18next', () => {
   }
 })
 
-import { DeviceExitChoice, choiceName, chosenLine, policyLine } from './DeviceExitSection'
+import { DeviceExitChoice, choiceName, chosenLine, lentLine, policyLine } from './DeviceExitSection'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
@@ -130,6 +140,8 @@ beforeEach(() => {
   protect.mockReset().mockResolvedValue(null)
   setExit.mockReset().mockResolvedValue({})
   usageHint.mockClear()
+  signIns.mockReset().mockReturnValue(null)
+  settings.mockReset().mockReturnValue([])
 })
 
 describe('the exit a device’s traffic goes out through', () => {
@@ -380,11 +392,55 @@ describe('who chose the exit, and the machine’s policy', () => {
     expect(chosenLine(t, { ...none, exitSetOnDevice: true, exitSetOnDeviceBy: 'bob' })).toBe('Set on the device by bob')
     expect(chosenLine(t, { ...none, exitSetOnDevice: true })).toBe('Set on the device')
     expect(chosenLine(t, { ...none, exitSetOnDevice: false, exitSetBy: { email: 'ann@example.com' } })).toBe(
-      'Set by ann@example.com'
+      'Set in the portal by ann@example.com'
     )
     expect(chosenLine(t, { ...none, exitSetBy: { email: null } })).toBeNull()
     expect(chosenLine(t, none)).toBeNull()
     expect(chosenLine(t, null)).toBeNull()
+  })
+
+  // Sign-ins per OS account (graphql-api docs/PROXY-GROUPS.md §15): the exit is the machine's, and one a signed-in
+  // person chose on it ends at their sign-out — named by the sign-in on the account the choice's OS name says.
+  const patOn = { account: '501', name: 'pat', person: PAT, since: '2026-11-10T20:00:00Z', manages: true }
+  const samOn = { account: 'S-1-5-21-1-2-3-1013', name: 'DESKTOP-7\\sam', person: NED, since: null, manages: false }
+
+  it('a choice made on the device by someone signed in there: ends at their sign-out; anyone else’s, as before', () => {
+    const onDevice = (by: string) => ({ ...none, exitSetOnDevice: true, exitSetOnDeviceBy: by })
+    expect(chosenLine(t, onDevice('pat'), [patOn, samOn])).toBe(
+      'Set on this computer by pat@example.com — ends when pat@example.com signs out'
+    )
+    expect(chosenLine(t, onDevice('Pat'), [patOn])).toContain('Set on this computer by pat@example.com')
+    expect(chosenLine(t, onDevice('sam'), [patOn, samOn])).toContain('by ned@example.com')
+    expect(chosenLine(t, onDevice('root'), [patOn])).toBe('Set on the device by root')
+    expect(chosenLine(t, onDevice('pat'), null)).toBe('Set on the device by pat')
+  })
+
+  it('a signed-in person’s own exit chosen on the device: lent to the whole machine, said so', () => {
+    const pat = { ...none, usesExit: uses(pats), exitSetOnDevice: true, exitSetOnDeviceBy: 'pat' }
+    expect(lentLine(t, pat, [patOn])).toBe('Machine-wide through pat@example.com’s exit Pat exit')
+    // Not their own, not chosen by them, not chosen on the device, or no sign-ins known: nothing lent.
+    expect(lentLine(t, { ...pat, usesExit: uses(office) }, [patOn])).toBeNull()
+    expect(lentLine(t, { ...pat, exitSetOnDeviceBy: 'root' }, [patOn])).toBeNull()
+    expect(lentLine(t, { ...pat, exitSetOnDevice: false }, [patOn])).toBeNull()
+    expect(lentLine(t, pat, null)).toBeNull()
+  })
+
+  it('shows who set the exit and Protect, from the device’s sign-ins and settings', async () => {
+    signIns.mockReturnValue([patOn])
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(pats), exitSetOnDevice: true, exitSetOnDeviceBy: 'pat' }))
+    let page = await render()
+    expect(signIns).toHaveBeenCalledWith('LAPTOP')
+    expect(page.textContent).toContain(
+      'Set on this computer by pat@example.com — ends when pat@example.com signs out — Machine-wide through pat@example.com’s exit Pat exit'
+    )
+
+    deviceExit.mockResolvedValue(exitOf())
+    protect.mockResolvedValue({ on: false, route: 'xoffice', routeName: 'Office' })
+    settings.mockReturnValue([{ name: 'protect', value: false, at: null, by: 'pat', onDevice: true, control: 'cloud+local' }])
+    page = await render()
+    expect(protectRow(page)?.textContent).toContain(
+      'Set on this computer by pat@example.com — ends when pat@example.com signs out. It keeps Office to route through when Protect is on again'
+    )
   })
 
   it('says what the administrator decided', () => {
@@ -433,7 +489,7 @@ describe('who chose the exit, and the machine’s policy', () => {
       exitOf({ usesExit: uses(office), exitPinned: 'xoffice', exitSetBy: { email: 'ann@example.com' } })
     )
     page = await render()
-    expect(page.textContent).toContain('Set by ann@example.com')
+    expect(page.textContent).toContain('Set in the portal by ann@example.com')
     expect(page.textContent).toContain('Pinned by this machine’s administrator to xoffice')
     expect(select(page).dataset.disabled).toBe('false')
   })

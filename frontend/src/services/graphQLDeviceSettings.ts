@@ -23,6 +23,8 @@ export type DeviceSettingName =
   | 'updates' // policy only: no value, a control of on or off
   | 'user_mode'
   | 'initiators'
+  | 'exit' // the machine's exit, {via}: set with setDeviceExit
+  | 'protect' // the machine's traffic through its exit
 
 // cloud+local: either side sets it; local: the machine only; cloud: here only; off, on: fixed by the machine's
 // administrator — and, for a setting whose value is a choice, any of its values (websocket's auto).
@@ -44,6 +46,10 @@ const FIELDS = 'name value at by onDevice control'
 // Settings no product sets: the exit a device goes out through, and Protect, are each device's own at every level, so
 // never shown as its product's.
 const NOT_PRODUCTS = ['exit', 'protect']
+
+// The machine's, every account's on it (graphql-api docs/PROXY-GROUPS.md §15): chosen there only by a signed-in person
+// who manages the device, or its administrator, and one a signed-in person chose ends at their sign-out.
+export const MACHINE_WIDE: DeviceSettingName[] = ['exit', 'protect']
 
 // A setting as read: held by its product where graphql marks it so (fromProduct: its synced or enforced product sets
 // it), named with its level where graphql says (locked); an API that marks it without naming them leaves them unknown.

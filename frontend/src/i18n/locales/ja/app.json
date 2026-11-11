@@ -985,6 +985,7 @@
     "dormantHint": "",
     "keptDormant": "",
     "keptDormantHint": "",
+    "lent": "",
     "none": "",
     "notChosen": "",
     "policyAllowed": "",
@@ -997,8 +998,11 @@
     "policyPinnedHint": "",
     "protectOff": "",
     "protectOffHint": "",
+    "protectOffKeeps": "",
     "protectOn": "",
     "setBy": "",
+    "setInPortalBy": "",
+    "setOnComputerBy": "",
     "setOnDevice": "",
     "setOnDeviceBy": "",
     "through": "",
@@ -1364,6 +1368,8 @@
     "controlOff": "",
     "controlOn": "",
     "initiators": "",
+    "inPortalBy": "",
+    "onComputerBy": "",
     "onDevice": "",
     "onDeviceBy": "",
     "onDeviceConfiguration": "",
@@ -1381,6 +1387,13 @@
     "restore": "復元",
     "restoring": "デバイスを復元中...",
     "thisSystem": "このシステム"
+  },
+  "deviceSignIns": {
+    "doesNotManage": "",
+    "manages": "",
+    "none": "",
+    "signedIn": "",
+    "since": ""
   },
   "deviceSshAccess": {
     "about": "",

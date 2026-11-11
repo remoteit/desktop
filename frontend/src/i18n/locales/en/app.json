@@ -996,6 +996,7 @@
     "dormantHint": "No device available: none of the exit’s devices carries its traffic, so its traffic goes its usual way, Protect off for it, until one does — then it goes out through the exit again by itself. Or choose another exit.",
     "keptDormant": "Protect: off — its exit, {{exit}}, is kept, with no device available",
     "keptDormantHint": "None of the exit’s devices carries its traffic: Protect can be turned on through it once one does. Or choose another exit.",
+    "lent": "Machine-wide through {{name}}’s exit {{exit}}",
     "none": "None — its usual way out",
     "notChosen": "It was not changed: try again.",
     "policyAllowed": "This machine’s administrator allows only some exits",
@@ -1008,8 +1009,11 @@
     "policyPinnedHint": "The pinned exit holds over any chosen here",
     "protectOff": "Protect: off — route {{name}}",
     "protectOffHint": "Turned off on the device, which keeps {{name}} to route through when Protect is on again",
+    "protectOffKeeps": "It keeps {{name}} to route through when Protect is on again",
     "protectOn": "Turn on",
     "setBy": "Set by {{email}}",
+    "setInPortalBy": "Set in the portal by {{name}}",
+    "setOnComputerBy": "Set on this computer by {{name}} — ends when {{name}} signs out",
     "setOnDevice": "Set on the device",
     "setOnDeviceBy": "Set on the device by {{name}}",
     "through": "Going out through {{device}} now",
@@ -1392,6 +1396,8 @@
     "controlOff": "Turned off on the device by its administrator",
     "controlOn": "Turned on on the device by its administrator",
     "initiators": "Control Link connections from this device",
+    "inPortalBy": "Set in the portal by {{name}}",
+    "onComputerBy": "Set on this computer by {{name}} — ends when {{name}} signs out",
     "onDevice": "Set on the device",
     "onDeviceBy": "Set on the device by {{by}}",
     "onDeviceConfiguration": "Set on the device, in its configuration",
@@ -1409,6 +1415,13 @@
     "restore": "restore",
     "restoring": "Restoring device...",
     "thisSystem": "This system"
+  },
+  "deviceSignIns": {
+    "doesNotManage": "Does not manage this device: sees its exit, chosen by someone who does",
+    "manages": "Manages this device: may choose its exit and Protect there",
+    "none": "No one is signed in on it",
+    "signedIn": "{{person}} signed in on its account {{account}}",
+    "since": "since"
   },
   "deviceSshAccess": {
     "about": "Who may log in through the console, as whom — by certificate, signed for minutes when they connect.",

@@ -1007,6 +1007,7 @@
     "dormantHint": "",
     "keptDormant": "",
     "keptDormantHint": "",
+    "lent": "",
     "none": "",
     "notChosen": "",
     "policyAllowed": "",
@@ -1019,8 +1020,11 @@
     "policyPinnedHint": "",
     "protectOff": "",
     "protectOffHint": "",
+    "protectOffKeeps": "",
     "protectOn": "",
     "setBy": "",
+    "setInPortalBy": "",
+    "setOnComputerBy": "",
     "setOnDevice": "",
     "setOnDeviceBy": "",
     "through": "",
@@ -1420,6 +1424,8 @@
     "controlOff": "",
     "controlOn": "",
     "initiators": "",
+    "inPortalBy": "",
+    "onComputerBy": "",
     "onDevice": "",
     "onDeviceBy": "",
     "onDeviceConfiguration": "",
@@ -1437,6 +1443,13 @@
     "restore": "restaurar",
     "restoring": "Restaurando dispositivo...",
     "thisSystem": "Este sistema"
+  },
+  "deviceSignIns": {
+    "doesNotManage": "",
+    "manages": "",
+    "none": "",
+    "signedIn": "",
+    "since": ""
   },
   "deviceSshAccess": {
     "about": "",

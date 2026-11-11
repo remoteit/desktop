@@ -5,6 +5,7 @@ import { DeviceContext } from '../services/Context'
 import { DeviceDescriptionSetting } from '../components/DeviceDescriptionSetting'
 import { DevicePresenceSetting } from '../components/DevicePresenceSetting'
 import { DeviceUserModeSetting } from '../components/DeviceUserModeSetting'
+import { DeviceSignIns } from '../components/DeviceSignIns'
 import { DeviceAnyPortSetting } from '../components/DeviceAnyPortSetting'
 import { DeviceSubnetSetting } from '../components/DeviceSubnetSetting'
 import { DeviceWebsocketSetting } from '../components/DeviceWebsocketSetting'
@@ -61,6 +62,7 @@ export const DeviceEditPage: React.FC = () => {
             <DeviceDescriptionSetting />
             <DevicePresenceSetting />
             <DeviceUserModeSetting />
+            {deviceSessions && <DeviceSignIns deviceId={device.id} />}
             <DeviceSubnetSetting />
             {deviceSessions && <DeviceExitChoice device={device} />}
             <DeviceAnyPortSetting />

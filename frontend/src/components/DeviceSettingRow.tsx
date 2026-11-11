@@ -1,7 +1,9 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { DeviceSetting, DeviceSettingName, settingLocked, settingOn } from '../services/graphQLDeviceSettings'
+import { DeviceSetting, DeviceSettingName, MACHINE_WIDE, settingLocked, settingOn } from '../services/graphQLDeviceSettings'
+import type { DeviceSignIn } from '../services/deviceSignIns'
+import { personName, signInByName } from '../helpers/signInHelper'
 import { productLockNote } from '../helpers/productPolicyHelper'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { ListItemSetting } from './ListItemSetting'
@@ -97,8 +99,10 @@ export const DeviceSettingChoice: React.FC<{
 export const CONFIGURATION = 'configuration'
 
 // Why a setting is as it is, where that is not the portal's doing: the administrator's override, its product holding
-// it, or a change made on the device. None for a setting set here.
-export function settingNote(t: TFunction, setting?: DeviceSetting): string | undefined {
+// it, or a change made on the device. None for a setting set here — but the exit and Protect, the machine's, say who
+// set them in the portal too, and one a person signed in on the device set ends at their sign-out (the sign-ins name
+// them: services/deviceSignIns).
+export function settingNote(t: TFunction, setting?: DeviceSetting, signIns?: DeviceSignIn[] | null): string | undefined {
   if (!setting) return undefined
   switch (setting.control) {
     case 'off':
@@ -109,6 +113,14 @@ export function settingNote(t: TFunction, setting?: DeviceSetting): string | und
       return t('deviceSetting.controlLocal', 'Set only on the device')
   }
   if (setting.locked) return productLockNote(t, setting.locked)
+  const machineWide = MACHINE_WIDE.includes(setting.name)
+  const person = machineWide && setting.onDevice ? personName(signInByName(signIns, setting.by)) : undefined
+  if (person)
+    return t('deviceSetting.onComputerBy', 'Set on this computer by {{name}} — ends when {{name}} signs out', {
+      name: person,
+    })
+  if (machineWide && !setting.onDevice && setting.by)
+    return t('deviceSetting.inPortalBy', 'Set in the portal by {{name}}', { name: setting.by })
   if (setting.onDevice)
     return setting.by === CONFIGURATION
       ? t('deviceSetting.onDeviceConfiguration', 'Set on the device, in its configuration')
