@@ -15,22 +15,39 @@ import {
   namesResolve,
   offersLocalPorts,
   openLocalPort,
+  parseScopeServed,
   probeNames,
+  scopeFor,
   resetLocalPorts,
   setNamesResolve,
   thisMachine,
 } from './localPorts'
 
 const MAC = '80:00:00:00:00:00:00:A1'
-const shellOf = (platform: string, capabilities: string[] = []) => ({
+const shellOf = (platform: string, capabilities: string[] = [], signedIn?: { sub: string; email?: string }) => ({
   compatible: true,
   info: { platform, capabilities },
   has: (c: string) => capabilities.includes(c),
-  call: async () => ({ device: { uid: MAC } }),
+  call: async () => ({ device: { uid: MAC }, ...(signedIn && { signedIn }) }),
 })
+
+// The schema probe's answer: an API whose openLocalPort takes scope and whose LocalPort has it, or one before scope.
+const SCOPED = {
+  mutation: { fields: [{ name: 'openLocalPort', args: [{ name: 'deviceId' }, { name: 'https' }, { name: 'scope' }] }] },
+  localPort: { fields: [{ name: 'port' }, { name: 'scope' }] },
+}
+const UNSCOPED = { mutation: { fields: [{ name: 'openLocalPort', args: [{ name: 'deviceId' }, { name: 'https' }] }] }, localPort: { fields: [{ name: 'port' }] } }
+let schema: any
+const isProbe = (query: unknown) => String(query).includes('__type')
+// The calls other than the schema probe.
+const calls = () => request.mock.calls.filter(([query]) => !isProbe(query))
+// What graphql answers: the probe from `schema`, everything else `answer`.
+const answering = (answer: unknown) =>
+  request.mockImplementation(async (query: unknown) => (isProbe(query) ? { data: { data: schema } } : answer))
 
 beforeEach(() => {
   resetLocalPorts()
+  schema = UNSCOPED
   request.mockReset()
   beacon.mockReset()
   shell.value = undefined
@@ -38,10 +55,13 @@ beforeEach(() => {
 })
 
 describe('this machine', () => {
-  it("an app: the shell's own device, and what the shell says", async () => {
+  it("an app: the shell's own device, and what the shell says — who is signed in on its account too", async () => {
     shell.value = shellOf('mac')
     expect(await thisMachine()).toEqual({ id: MAC, platform: 'mac', localPorts: false })
     expect(beacon).not.toHaveBeenCalled()
+    resetLocalPorts()
+    shell.value = shellOf('mac', [], { sub: 'U1', email: 'u@example.com' })
+    expect(await thisMachine()).toEqual({ id: MAC, platform: 'mac', localPorts: false, signedIn: 'U1' })
   })
 
   it('a browser: the device the beacon was seen by; none, asked again later', async () => {
@@ -65,11 +85,66 @@ describe('offered', () => {
 
 describe('open', () => {
   it("graphql's answer, or its refusal in its own words", async () => {
-    request.mockResolvedValueOnce({ data: { data: { openLocalPort: { port: 33000 } } } })
+    answering({ data: { data: { openLocalPort: { port: 33000 } } } })
     expect(await openLocalPort(MAC, 'S', 8080)).toEqual({ port: 33000 })
-    expect(request.mock.calls[0][1]).toEqual({ deviceId: MAC, serviceId: 'S', port: 8080 })
-    request.mockResolvedValueOnce({ reason: "Port 8080 is web-pi's on this machine" })
+    expect(calls()[0][1]).toEqual({ deviceId: MAC, serviceId: 'S', port: 8080 })
+    answering({ reason: "Port 8080 is web-pi's on this machine" })
     expect(await openLocalPort(MAC, 'S', 8080)).toEqual({ reason: "Port 8080 is web-pi's on this machine" })
+  })
+})
+
+// Whose a port is (graphql-api docs/PROXY-GROUPS.md §15): the app's own on this machine, for the person signed in on
+// its account, is theirs; the portal's elsewhere, the machine's.
+describe('scope', () => {
+  it('ACCOUNT only where the app runs here and the person signed in on its account is the one using it', () => {
+    expect(scopeFor({ id: MAC, signedIn: 'u1' }, 'U1')).toBe('ACCOUNT')
+    expect(scopeFor({ id: MAC, signedIn: 'U2' }, 'U1')).toBeUndefined()
+    expect(scopeFor({ id: MAC }, 'U1')).toBeUndefined() // a browser: the beacon's device, no account known
+    expect(scopeFor({ id: MAC, signedIn: 'U1' }, undefined)).toBeUndefined()
+    expect(scopeFor(null, 'U1')).toBeUndefined()
+  })
+
+  it('the API takes it where openLocalPort has the argument and LocalPort the field', () => {
+    expect(parseScopeServed(SCOPED)).toBe(true)
+    expect(parseScopeServed(UNSCOPED)).toBe(false)
+    expect(parseScopeServed({ ...SCOPED, localPort: UNSCOPED.localPort })).toBe(false)
+    expect(parseScopeServed(undefined)).toBe(false)
+  })
+
+  it('asked for, and read, where the API takes it', async () => {
+    schema = SCOPED
+    answering({ data: { data: { openLocalPort: { port: 33000, scope: 'ACCOUNT' } } } })
+    expect(await openLocalPort(MAC, 'S', undefined, undefined, 'ACCOUNT')).toEqual({ port: 33000, scope: 'ACCOUNT' })
+    const [query, variables] = calls()[0]
+    expect(query).toContain('$scope: PortScope')
+    expect(query).toContain('scope: $scope')
+    expect(query).toMatch(/\{[^{}]*\bscope\b[^{}]*\} \}$/)
+    expect(variables).toMatchObject({ scope: 'ACCOUNT' })
+    // None asked: none sent, the field still read.
+    await openLocalPort(MAC, 'S')
+    expect(calls()[1][0]).not.toContain('$scope')
+    expect(calls()[1][1]).not.toHaveProperty('scope')
+    expect(calls()[1][0]).toMatch(/httpsAvailable scope/)
+  })
+
+  it('an API before it: neither asked for nor read', async () => {
+    answering({ data: { data: { openLocalPort: { port: 33000 } } } })
+    await openLocalPort(MAC, 'S', undefined, undefined, 'ACCOUNT')
+    const [query, variables] = calls()[0]
+    expect(query).not.toContain('scope')
+    expect(variables).not.toHaveProperty('scope')
+  })
+
+  it('the schema read once; a failed read, again next time', async () => {
+    request.mockImplementation(async (query: unknown) => (isProbe(query) ? 'ERROR' : { data: { data: { openLocalPort: {} } } }))
+    await openLocalPort(MAC, 'S', undefined, undefined, 'ACCOUNT')
+    expect(calls()[0][0]).not.toContain('scope')
+    schema = SCOPED
+    answering({ data: { data: { openLocalPort: {} } } })
+    await openLocalPort(MAC, 'S', undefined, undefined, 'ACCOUNT')
+    await openLocalPort(MAC, 'S', undefined, undefined, 'ACCOUNT')
+    expect(calls()[1][0]).toContain('scope: $scope')
+    expect(request.mock.calls.filter(([query]) => isProbe(query))).toHaveLength(2)
   })
 })
 
@@ -123,9 +198,9 @@ describe('https (graphql-api docs/LOCAL-PORT.md, "TLS")', () => {
   })
 
   it('the open sends https, and the fields are read', async () => {
-    request.mockResolvedValue({ data: { data: { openLocalPort: { ...local, https: true, httpsAvailable: true } } } })
+    answering({ data: { data: { openLocalPort: { ...local, https: true, httpsAvailable: true } } } })
     await openLocalPort('M', 'S', undefined, true)
-    const [query, variables] = request.mock.calls[0]
+    const [query, variables] = calls()[0]
     expect(query).toContain('https: $https')
     expect(query).toContain('httpsAvailable')
     expect(variables).toEqual({ deviceId: 'M', serviceId: 'S', port: undefined, https: true })

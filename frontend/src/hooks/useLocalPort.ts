@@ -9,6 +9,7 @@ import {
   graphQLLocalPort,
   offersLocalPorts,
   openLocalPort,
+  scopeFor,
   thisMachine,
 } from '../services/localPorts'
 
@@ -30,6 +31,7 @@ const POLL_FOR_MS = 30_000
 export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortState {
   const enabled = useDeviceSessions()
   const phoneOverride = useSelector((state: State) => !!state.ui.testUI && !!state.ui.localPortsOnPhone)
+  const userId = useSelector((state: State) => state.auth?.user?.id)
   const [machine, setMachine] = useState<Machine | null>()
   const [local, setLocal] = useState<LocalPort>()
   const [error, setError] = useState<string>()
@@ -48,6 +50,8 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
   // A service on this machine's own device has no local port: it is here already.
   const offered = enabled && offersLocalPorts(machine, phoneOverride) && !!serviceId && machine?.id !== deviceId
   const machineId = offered ? machine?.id : undefined
+  // Opened here by the person signed in on this machine: their account's alone (services/localPorts scopeFor).
+  const scope = scopeFor(machine, userId)
 
   useEffect(() => {
     setLocal(undefined)
@@ -76,13 +80,13 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
       if (!machineId || !serviceId) return
       setBusy(true)
       setError(undefined)
-      const answer = await openLocalPort(machineId, serviceId, port, https)
+      const answer = await openLocalPort(machineId, serviceId, port, https, scope)
       setBusy(false)
       if ('reason' in answer) return setError(answer.reason || undefined)
       setLocal(answer)
       setPolling(Date.now())
     },
-    [machineId, serviceId]
+    [machineId, serviceId, scope]
   )
 
   const close = useCallback(async () => {

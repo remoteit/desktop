@@ -101,6 +101,13 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
               ? t('localPortConnect.pending', 'Starting on this machine…')
               : t('localPortConnect.listening', 'Listening — connects when used, closes when idle')}
           </Typography>
+          {local.open && local.scope && (
+            <Typography variant="caption" color="textSecondary" component="div" data-testid="local-port-scope">
+              {local.scope === 'ACCOUNT'
+                ? t('localPortConnect.forAccount', 'For your account')
+                : t('localPortConnect.forMachine', 'For this whole computer')}
+            </Typography>
+          )}
         </Box>
         {launchable && local.open && (
           <IconButton

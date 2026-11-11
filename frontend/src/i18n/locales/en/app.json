@@ -2170,6 +2170,8 @@
     "connect": "Connect",
     "disconnect": "Disconnect",
     "failed": "Not listening: {{detail}}",
+    "forAccount": "For your account",
+    "forMachine": "For this whole computer",
     "launch": "Open in the browser",
     "listening": "Listening — connects when used, closes when idle",
     "opening": "Opening a local port…",

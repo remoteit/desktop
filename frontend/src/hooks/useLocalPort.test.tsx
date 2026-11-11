@@ -8,8 +8,9 @@ const api = vi.hoisted(() => ({
   open: vi.fn(),
   close: vi.fn(),
   ui: {} as any,
+  auth: {} as any,
 }))
-vi.mock('react-redux', () => ({ useSelector: (select: any) => select({ ui: api.ui }) }))
+vi.mock('react-redux', () => ({ useSelector: (select: any) => select({ ui: api.ui, auth: api.auth }) }))
 vi.mock('./useDeviceSessions', () => ({ useDeviceSessions: () => true }))
 vi.mock('../services/browser', () => ({ default: { isIOS: false } }))
 vi.mock('../services/thisDevice', () => ({ thisDevice: async () => undefined }))
@@ -46,6 +47,7 @@ describe('useLocalPort', () => {
     root = createRoot(document.createElement('div'))
     api.machine = { id: '80:00:00:00:00:00:00:A1', platform: 'mac' }
     api.ui = {}
+    api.auth = { user: { id: 'U1' } }
     api.read.mockReset().mockResolvedValue(null)
     api.open.mockReset()
   })
@@ -80,5 +82,26 @@ describe('useLocalPort', () => {
     await act(() => seen.open())
     expect(seen.local).toMatchObject({ port: 33000, open: true })
     expect(seen.error).toBeUndefined()
+  })
+
+  // Whose a port is (graphql-api docs/PROXY-GROUPS.md §15): opened by the app on this machine, for the person signed in
+  // on its account, their account's; anywhere else, the machine's.
+  it("the person signed in on this machine's account: their account's", async () => {
+    api.machine = { ...api.machine, signedIn: 'u1' }
+    await render()
+    api.open.mockResolvedValue({ port: 33000, open: true, state: 'pending', scope: 'ACCOUNT' })
+    await act(() => seen.open())
+    expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, 'ACCOUNT')
+  })
+
+  it("someone else signed in on it, or a browser that cannot say: none asked, the machine's", async () => {
+    api.open.mockResolvedValue({ port: 33000, open: true, state: 'pending' })
+    for (const signedIn of ['U2', undefined]) {
+      api.machine = { id: '80:00:00:00:00:00:00:A1', platform: 'mac', ...(signedIn && { signedIn }) }
+      api.open.mockClear()
+      await render()
+      await act(() => seen.open())
+      expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, undefined)
+    }
   })
 })

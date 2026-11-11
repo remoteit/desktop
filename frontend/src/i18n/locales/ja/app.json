@@ -2125,6 +2125,8 @@
     "connect": "",
     "disconnect": "",
     "failed": "",
+    "forAccount": "",
+    "forMachine": "",
     "launch": "",
     "listening": "",
     "opening": "",

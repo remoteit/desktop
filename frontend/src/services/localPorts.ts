@@ -10,7 +10,12 @@ import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
    The name is for the browser: cookies are kept per host, not per port, so web services on two ports of localhost
    share each other's logins, and two names do not. Every *.at.remote.it name resolves to 127.0.0.1 in public DNS, but a
    router or resolver that guards against DNS rebinding drops such an answer — there, localhost:<port> is used instead.
-   Whether the name works is probed once and remembered; the person can switch either way. */
+   Whether the name works is probed once and remembered; the person can switch either way.
+
+   Whose a port is (graphql-api docs/PROXY-GROUPS.md §15, "Whose a local port is: where it was opened"): one the app
+   opens on the machine it runs on, for the person signed in there, is their account's (scope ACCOUNT): it answers only
+   their accounts on the machine. One opened from the portal elsewhere — or from a browser, which cannot tell which of the
+   machine's accounts it runs in — is the whole machine's. Asked for only where the API takes it. */
 
 export const LOCAL_PORT_DOMAIN = 'at.remote.it'
 
@@ -26,12 +31,51 @@ export type LocalPort = {
   initiatorId: string | null
   https: boolean // served over https (keyless, under *.at.remote.it); while closed, whether it was asked for
   httpsAvailable: boolean // this machine's daemon and the stage can serve it over https
+  // While open, whose it is: the whole machine's, or the account of the person who opened it here. Absent from an API
+  // without scope; null while closed.
+  scope?: PortScope | null
 }
 
-// This machine's device, and what is known of the shell it runs in.
-export type Machine = { id: string; platform?: string; localPorts?: boolean }
+export type PortScope = 'MACHINE' | 'ACCOUNT'
+
+// This machine's device, and what is known of the shell it runs in. signedIn: the person signed in on the OS account the
+// app runs in, as the shell says it — only an app's shell can say it.
+export type Machine = { id: string; platform?: string; localPorts?: boolean; signedIn?: string }
 
 const FIELDS = 'deviceId serviceId name host port open state detail initiatorId https httpsAvailable'
+
+/* Whether the API knows whose a port is: openLocalPort takes `scope` and LocalPort has it. The portal is released apart
+   from graphql, so it is read from the schema once; a failed read is read again next time. */
+let scopeServed: Promise<boolean> | undefined
+
+const SCOPE_PROBE = `query LocalPortScope {
+  mutation: __type(name: "Mutation") { fields { name args { name } } }
+  localPort: __type(name: "LocalPort") { fields { name } }
+}`
+
+export function parseScopeServed(data: any): boolean {
+  const open = (data?.mutation?.fields || []).find((f: { name: string }) => f.name === 'openLocalPort')
+  const takes = !!open?.args?.some((a: { name: string }) => a.name === 'scope')
+  return takes && !!data?.localPort?.fields?.some((f: { name: string }) => f.name === 'scope')
+}
+
+export function localPortScopeServed(): Promise<boolean> {
+  scopeServed ??= graphQLBasicRequest(SCOPE_PROBE, {}, true).then(response => {
+    if (response === 'ERROR') {
+      scopeServed = undefined
+      return false
+    }
+    return parseScopeServed(response.data?.data)
+  })
+  return scopeServed
+}
+
+const fields = async () => (await localPortScopeServed()) ? `${FIELDS} scope` : FIELDS
+
+// The scope to ask for: the person's own account where the app runs on this machine and they are the one signed in on
+// its OS account; else none, the machine's.
+export const scopeFor = (found: Machine | null | undefined, userId?: string): PortScope | undefined =>
+  found?.signedIn && userId && found.signedIn.toUpperCase() === userId.toUpperCase() ? 'ACCOUNT' : undefined
 
 // The machine this page runs on, when it runs our daemon: the shell's own device (thisDevice) in an app, else the device
 // the DNS beacon was seen by — the same detection as "On this machine" (services/localSubnet). null: none here.
@@ -50,7 +94,12 @@ async function findMachine(): Promise<Machine | null> {
   if (shell?.compatible) {
     const status = await shell.call('status', {}).catch(() => undefined)
     if (status?.device?.uid)
-      return { id: status.device.uid, platform: shell.info.platform, localPorts: shell.has('localPorts') }
+      return {
+        id: status.device.uid,
+        platform: shell.info.platform,
+        localPorts: shell.has('localPorts'),
+        ...(status.signedIn?.sub && { signedIn: status.signedIn.sub }),
+      }
   }
   const id = await beaconDevice()
   return id ? { id, platform: isIOSBrowser() ? 'ios' : undefined } : null
@@ -69,24 +118,32 @@ export function offersLocalPorts(found: Machine | null | undefined, phoneOverrid
 
 export async function graphQLLocalPort(deviceId: string, serviceId: string): Promise<LocalPort | null> {
   const response = await graphQLBasicRequest(
-    `query LocalPorts($deviceId: String!, $serviceId: String) { localPorts(deviceId: $deviceId, serviceId: $serviceId) { ${FIELDS} } }`,
+    `query LocalPorts($deviceId: String!, $serviceId: String) { localPorts(deviceId: $deviceId, serviceId: $serviceId) { ${await fields()} } }`,
     { deviceId, serviceId }
   )
   return response !== 'ERROR' ? response.data?.data?.localPorts?.[0] ?? null : null
 }
 
 // Opens it — on the port it had, or `port` from now on; over https (true) or plain (false) from now on, or as it was.
-// graphql serves it over https only where it can (httpsAvailable), plain otherwise. A refusal comes back in graphql's
-// words (the port is in use).
+// graphql serves it over https only where it can (httpsAvailable), plain otherwise. `scope` ACCOUNT, the person's own
+// on this machine, asked only where the API takes it. A refusal comes back in graphql's words (the port is in use).
 export async function openLocalPort(
   deviceId: string,
   serviceId: string,
   port?: number,
-  https?: boolean
+  https?: boolean,
+  scope?: PortScope
 ): Promise<LocalPort | { reason: string }> {
+  const served = await localPortScopeServed()
+  const selection = served ? `${FIELDS} scope` : FIELDS
+  const scoped = served && !!scope
   const response = await graphQLRequestWithReason(
-    `mutation OpenLocalPort($deviceId: String!, $serviceId: String!, $port: Int, $https: Boolean) { openLocalPort(deviceId: $deviceId, serviceId: $serviceId, port: $port, https: $https) { ${FIELDS} } }`,
-    { deviceId, serviceId, port, https }
+    `mutation OpenLocalPort($deviceId: String!, $serviceId: String!, $port: Int, $https: Boolean${
+      scoped ? ', $scope: PortScope' : ''
+    }) { openLocalPort(deviceId: $deviceId, serviceId: $serviceId, port: $port, https: $https${
+      scoped ? ', scope: $scope' : ''
+    }) { ${selection} } }`,
+    { deviceId, serviceId, port, https, ...(scoped && { scope }) }
   )
   if (response === 'ERROR') return { reason: '' }
   if ('reason' in response) return response
@@ -95,7 +152,7 @@ export async function openLocalPort(
 
 export async function closeLocalPort(deviceId: string, serviceId: string): Promise<LocalPort | null> {
   const response = await graphQLBasicRequest(
-    `mutation CloseLocalPort($deviceId: String!, $serviceId: String!) { closeLocalPort(deviceId: $deviceId, serviceId: $serviceId) { ${FIELDS} } }`,
+    `mutation CloseLocalPort($deviceId: String!, $serviceId: String!) { closeLocalPort(deviceId: $deviceId, serviceId: $serviceId) { ${await fields()} } }`,
     { deviceId, serviceId }
   )
   return response !== 'ERROR' ? response.data?.data?.closeLocalPort ?? null : null
@@ -177,4 +234,5 @@ function writeNames(on: boolean, by: 'probe' | 'person') {
 export function resetLocalPorts() {
   machine = undefined
   probed = undefined
+  scopeServed = undefined
 }

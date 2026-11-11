@@ -178,4 +178,20 @@ describe('LocalPortConnect', () => {
     await render()
     expect(container.querySelector('[data-testid="local-port-state"]')!.textContent).toContain('address already in use')
   })
+
+  it("says whose it is while open: the whole computer's, or the person's account; nothing while closed or unknown", async () => {
+    const scope = () => container.querySelector('[data-testid="local-port-scope"]')?.textContent
+    state.local = { ...LOCAL, scope: 'MACHINE' }
+    await render()
+    expect(scope()).toBe('For this whole computer')
+    state.local = { ...LOCAL, scope: 'ACCOUNT' }
+    await render()
+    expect(scope()).toBe('For your account')
+    state.local = { ...LOCAL, open: false, scope: null }
+    await render()
+    expect(scope()).toBeUndefined()
+    state.local = { ...LOCAL }
+    await render()
+    expect(scope()).toBeUndefined()
+  })
 })
