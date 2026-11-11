@@ -12,6 +12,9 @@ vi.mock('axios', () => ({ default: { request } }))
 // What a device's exit adds where the API has sign-ins per account: read from its schema there (deviceSignIns.test.ts).
 const { exitFields } = vi.hoisted(() => ({ exitFields: vi.fn(async () => '') }))
 vi.mock('./deviceSignIns', () => ({ exitSignInFields: exitFields }))
+// An exit's devices counted, where the API counts them: read from its schema there (exitServing.test.ts).
+const { servingFields } = vi.hoisted(() => ({ servingFields: vi.fn(async () => '') }))
+vi.mock('./exitServing', () => ({ exitServingFields: servingFields }))
 
 import { UNSUPPORTED } from './graphQLDaemon'
 import {
@@ -183,6 +186,16 @@ describe('the exits offered', () => {
     expect(asked().query).toContain('reasons')
   })
 
+  it('each with its devices counted, where the API counts them', async () => {
+    const serving = { devices: 2, carrying: 2, healthy: 1, draining: 0 }
+    servingFields.mockResolvedValueOnce('serving { devices carrying healthy draining }')
+    request.mockResolvedValue(answer({ exits: [{ ...mac, reasons: ['OWN'], serving }] }))
+    expect(await graphQLOfferedExits('DEV')).toEqual([{ ...mac, reasons: ['OWN'], serving }])
+    expect(asked().query).toContain('reasons serving { devices carrying healthy draining }')
+    await graphQLOfferedExits('DEV')
+    expect(asked().query).not.toContain('serving')
+  })
+
   it('to you, or, with a device you manage, those it may use as itself too', async () => {
     request.mockResolvedValue(answer({ exits: [mac] }))
     expect(await graphQLOfferedExits('DEV')).toEqual([mac])
@@ -245,6 +258,15 @@ describe('a device’s exit', () => {
     request.mockResolvedValue(errors('Cannot query field "usesExit" on type "Device".'))
     expect(await graphQLDeviceExit('DEV')).toBe(UNSUPPORTED)
     expect(uiSet).not.toHaveBeenCalled()
+  })
+
+  it('its exit’s devices counted, where the API counts them', async () => {
+    servingFields.mockResolvedValueOnce('serving { devices carrying healthy draining }')
+    request.mockResolvedValue(answer({ login: { device: [] } }))
+    await graphQLDeviceExit('DEV')
+    expect(asked().query).toContain('usesExit { id name remoteit owner { id email } offered dormant serving { devices carrying healthy draining } }')
+    await graphQLDeviceExit('DEV')
+    expect(asked().query).not.toContain('serving')
   })
 
   it('who chose it on the machine, where the API has sign-ins per account', async () => {

@@ -23,6 +23,7 @@ import { ThisDevicePart, ThisDeviceView } from '../components/thisDevice/ThisDev
 import { BridgeError, ThisDevice, Capability } from '../services/thisDevice'
 import { createMockBridge, MockBridge, MockBridgeOptions } from '../services/thisDeviceMock'
 import { TransferUsageHint } from '../components/TransferUsage'
+import type { CloudExits, ReadCloudExits } from '../components/thisDevice/cloudExits'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 // "This device" draws itself from the bridge's capabilities alone (device-package docs/one-app-plan.md), against a
@@ -34,6 +35,7 @@ type Props = {
   part?: ThisDevicePart
   renderName?: (uid: string, name: string) => React.ReactNode
   renderExitUsage?: (shown: boolean) => React.ReactNode
+  readExits?: ReadCloudExits
 }
 
 // A part on a mock shell's bridge: another part can be mounted on the same one (mount), as the pages share the machine.
@@ -172,7 +174,7 @@ describe('This device', () => {
     expect(line('protect').getAttribute('data-protect')).toBe('off')
     // No exit chosen yet, two to choose from: Protect waits for Route through.
     expect(control('protect').disabled).toBe(true)
-    expect(line('protect').textContent).toContain('Send all of this Mac’s internet traffic through a device you choose')
+    expect(line('protect').textContent).toContain('Send all of this Mac’s internet traffic through an exit you choose')
 
     // Route through, chosen while Protect is off: kept, nothing turned on; the subtitle names it.
     await act(async () => {
@@ -819,5 +821,125 @@ describe('This device follows what the shell offers', () => {
       expect(container.querySelector('[data-testid="transfer-usage-hint"]')).toBeNull()
       expect(usage).not.toHaveBeenCalled()
     })
+  })
+})
+
+// An exit names no device: remote.it picks which of its devices carries each new connection (graphql-api
+// docs/PROXY-GROUPS.md §13). Signed in, the page lists each exit the engine offers with its devices counted, and says the
+// device of the machine's exit its traffic goes through now; who may not choose the machine's exit here (§15, 1.10.0's
+// chooseRefusal) sees it read-only, with why, and may still turn Protect off.
+describe('This device’s exits, each with its devices', () => {
+  const US_WEST = '80:00:00:00:01:0B:00:03' // remote.it's
+  const OFFICE = '80:00:00:00:01:0B:00:01' // one of the account's
+  const MACHINE = '80:00:00:00:01:0A:BC:DE' // the mock's device
+  const two = { devices: 2, carrying: 2, healthy: 2, draining: 0 }
+  const cloud = (inUse: CloudExits['inUse'] = null): CloudExits => ({
+    serving: new Map([
+      [US_WEST, two],
+      [OFFICE, { devices: 2, carrying: 1, healthy: 1, draining: 0 }],
+    ]),
+    inUse,
+  })
+  const reader = (answer: CloudExits | null) => vi.fn(async (_deviceId: string) => answer)
+  const control = (c: HTMLElement, name: string) =>
+    c.querySelector(`[data-control="${name}"] input, input[data-control="${name}"]`) as HTMLInputElement
+  // The picker's list, opened as a click opens MUI's select: each exit's name, and its devices counted under it.
+  async function listed(c: HTMLElement, name: string) {
+    const field = control(c, name).parentElement!.querySelector('[role="combobox"]')!
+    await act(async () => field.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 })))
+    const list = [...document.querySelectorAll('[role="listbox"]')].at(-1)!
+    const items = [...list.querySelectorAll('[data-exit]')].map(item => [
+      item.querySelector('.MuiListItemText-primary')?.textContent,
+      item.querySelector('.MuiListItemText-secondary')?.textContent ?? null,
+    ])
+    await act(async () => list.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
+    return items
+  }
+  const note = (c: HTMLElement, id: string) => c.querySelector(`[data-note="${id}"]`)?.textContent ?? null
+
+  it('each exit with its devices counted where the page reads them, for this device; the engine’s list alone without', async () => {
+    const readExits = reader(cloud())
+    const { container } = await render({}, { readExits })
+    expect(readExits).toHaveBeenCalledWith(MACHINE)
+    expect(await listed(container, 'route')).toEqual([
+      ['Office', '1 of 2 devices carrying traffic'],
+      ['US West (remote.it)', '2 devices'],
+    ])
+    // The field shows the exit's name alone; the placeholder names what is chosen.
+    expect(container.querySelector('[data-section="protect"] [role="combobox"]')!.textContent).toBe('Choose an exit')
+
+    const signedOut = await render()
+    expect(await listed(signedOut.container, 'route')).toEqual([
+      ['Office', null],
+      ['US West (remote.it)', null],
+    ])
+    expect(note(signedOut.container, 'protect.through')).toBeNull()
+  })
+
+  it('the device of the exit in use, while Protect is on through it; read again as the route or Protect moves', async () => {
+    const readExits = reader(cloud({ id: US_WEST, through: { id: 'E2', name: 'e2' }, serving: two }))
+    const on = await render({ route: US_WEST, status: { vpn: { on: true } } as any }, { readExits })
+    expect(note(on.container, 'protect.through')).toBe('Going out through e2 now · one of 2 devices')
+    expect(on.container.querySelector('[data-section="protect"] [role="combobox"]')!.textContent).toBe('US West (remote.it)')
+
+    // Protect off: nothing goes through it now.
+    const off = await render({ route: US_WEST }, { readExits })
+    expect(note(off.container, 'protect.through')).toBeNull()
+    const asked = readExits.mock.calls.length
+    await act(async () => control(off.container, 'protect').click())
+    await act(async () => {})
+    expect(readExits.mock.calls.length).toBeGreaterThan(asked)
+    expect(note(off.container, 'protect.through')).toBe('Going out through e2 now · one of 2 devices')
+
+    // The account says another exit is in use than the one chosen here: not said of this one.
+    const other = await render(
+      { route: OFFICE, status: { vpn: { on: true } } as any },
+      { readExits: reader(cloud({ id: US_WEST, through: { id: 'E2', name: 'e2' }, serving: two })) }
+    )
+    expect(note(other.container, 'protect.through')).toBeNull()
+  })
+
+  it('who may not choose the machine’s exit here: read-only, with why; Protect off stays theirs', async () => {
+    const chooseRefusal = 'Only someone who manages this device chooses its exit'
+    const off = await render({ route: US_WEST, chooseRefusal }, { readExits: reader(cloud()) })
+    expect(control(off.container, 'route').closest('.MuiInputBase-root')!.classList.contains('Mui-disabled')).toBe(true)
+    expect(control(off.container, 'protect').disabled).toBe(true)
+    expect(note(off.container, 'protect.choose')).toBe(chooseRefusal)
+
+    const on = await render({ route: US_WEST, chooseRefusal, status: { vpn: { on: true } } as any })
+    expect(control(on.container, 'protect').disabled).toBe(false)
+    await act(async () => control(on.container, 'protect').click())
+    expect(on.bridge.calls.filter(c => c.method === 'protect.set').map(c => c.args)).toEqual([{ on: false }])
+    expect(on.container.querySelector('[data-protect]')!.getAttribute('data-protect')).toBe('off')
+    // Off, it is not turned on again here.
+    expect(control(on.container, 'protect').disabled).toBe(true)
+
+    // A shell before 1.10.0 says nothing: the choice is offered, and the shell's refusal shown when it comes.
+    const before = await render({ route: US_WEST })
+    expect(control(before.container, 'protect').disabled).toBe(false)
+    expect(note(before.container, 'protect.choose')).toBeNull()
+  })
+
+  it('remote.it’s exit said so once, where its name says so already', async () => {
+    const exits = [
+      { id: 'pdx1a', name: 'remote.it pdx1a', kind: 'remoteit' as const },
+      { id: US_WEST, name: 'US West', kind: 'remoteit' as const },
+    ]
+    const { container } = await render({ exits })
+    expect((await listed(container, 'route')).map(([name]) => name)).toEqual(['remote.it pdx1a', 'US West (remote.it)'])
+  })
+
+  it('a shell before Protect: its exit picker the same, and the device in use under it', async () => {
+    const caps: Capability[] = ['status', 'vpn', 'exit', 'settings']
+    const status = { vpn: { on: true }, exit: { id: US_WEST, name: 'US West', kind: 'remoteit', state: 'up' } } as any
+    const { container } = await render(
+      { capabilities: caps, status },
+      { readExits: reader(cloud({ id: US_WEST, through: { id: 'E1', name: 'e1' }, serving: two })) }
+    )
+    expect(await listed(container, 'exit')).toEqual([
+      ['Office', '1 of 2 devices carrying traffic'],
+      ['US West (remote.it)', '2 devices'],
+    ])
+    expect(note(container, 'exit.through')).toBe('Going out through e1 now · one of 2 devices')
   })
 })

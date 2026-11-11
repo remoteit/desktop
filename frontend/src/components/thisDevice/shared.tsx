@@ -258,7 +258,9 @@ export const engineLine = (s: DeviceStatus, t: T) =>
     stopped: t('thisDevice.stopped', 'Not running'),
   }[s.engine] ?? s.engine)
 
-export const exitLabel = (x: ExitRef) => (x.kind === 'remoteit' ? `${x.name} (remote.it)` : x.name)
+// remote.it's said so, once: graphql names its exits "remote.it pdx1a" already (docs/PROXY-GROUPS.md §13).
+export const exitLabel = (x: ExitRef) =>
+  x.kind === 'remoteit' && !/^remote\.it\b/i.test(x.name) ? `${x.name} (remote.it)` : x.name
 
 // Access's line: what it does, and the name this machine is reached by while on.
 export const accessLine = (s: DeviceStatus | undefined, kind: string, t: T) => {
@@ -277,7 +279,7 @@ export const protectLine = (s: DeviceStatus | undefined, kind: string, t: T) => 
   if (!p) return ''
   const exit = p.route?.name
   if (!exit)
-    return t('thisDevice.protectChoose', 'Send all of this {{kind}}’s internet traffic through a device you choose.', {
+    return t('thisDevice.protectChoose', 'Send all of this {{kind}}’s internet traffic through an exit you choose.', {
       kind,
     })
   const through = t('thisDevice.protectThrough', 'All traffic from this {{kind}} goes through {{exit}}.', {

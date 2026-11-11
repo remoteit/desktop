@@ -12,6 +12,7 @@ import { selectDevice } from '../selectors/devices'
 import { useThisDevice } from '../hooks/useThisDevice'
 import { ThisDevicePart, ThisDeviceView } from '../components/thisDevice/ThisDeviceView'
 import { TransferUsageHint } from '../components/TransferUsage'
+import { readCloudExits } from '../components/thisDevice/readCloudExits'
 
 /* "This device" (device-package docs/one-app-plan.md): the machine this page runs on, the same page on every
    platform. What it shows comes from the shell's capabilities only (thisDevice.info().capabilities) — never from which
@@ -75,6 +76,7 @@ export const ThisDevicePage: React.FC = () => {
             renderExitUsage={
               signedIn ? shown => <TransferUsageHint accountId={userId} kind="exit" shown={shown} /> : undefined
             }
+            readExits={signedIn ? readCloudExits : undefined}
           />
         </>
       )}

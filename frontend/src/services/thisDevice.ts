@@ -79,7 +79,15 @@
 
    1.10.0 (additive): DeviceStatus.ports — the machine's local ports as the OS account the shell runs in sees them
    (graphql-api docs/PROXY-GROUPS.md §15, "Local ports listed per account"): the daemon's own status.ports, passed as it
-   says them. Absent from a shell or daemon that does not list them; the page then shows what it showed before. */
+   says them. Absent from a shell or daemon that does not list them; the page then shows what it showed before.
+   Also 1.10.0 (additive): who may choose the machine's exit here (graphql-api docs/PROXY-GROUPS.md §15). The exit and
+   Protect are the machine's: a local change to the route, or Protect turned on, is taken only from someone signed in
+   on this OS account who manages the device, or from the machine's administrator — turning Protect off stays
+   everyone's. `ProtectStatus.chooseRefusal` is the engine's reason this account may not choose now (connectd's
+   You.ExitRefusal: "Sign in to choose an exit", "Only someone who manages this device chooses its exit", a sign-in
+   not confirmed yet), absent where it may; the page shows the exit read-only with it, rather than offering a choice
+   the shell would refuse. A shell before 1.10.0 says none: the page offers the choice, and shows the shell's refusal
+   when it comes. */
 
 export const BRIDGE_VERSION = '1.10.0'
 
@@ -141,6 +149,8 @@ export type ProtectStatus = {
   killSwitch?: boolean
   locked?: boolean
   lockedWhy?: string // 1.5.0
+  // 1.10.0: why this OS account may not choose the exit (the route, or Protect on) here; absent: it may.
+  chooseRefusal?: string
 }
 
 // 1.4.0: Allow remote access to services — connectd's services setting (1.3.0's lanServices, a phone's, the same

@@ -1,8 +1,10 @@
 import React from 'react'
 import { Box, Button, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
 import { ExitRef, ThisDevice } from '../../services/thisDevice'
+import { servingLine } from '../../helpers/exitServingHelper'
 import { Icon } from '../Icon'
 import { ThisDeviceModel } from './model'
+import { CloudExits, ReadCloudExits, useCloudExits } from './cloudExits'
 import {
   T,
   Card,
@@ -36,7 +38,10 @@ export const ThisDeviceMain: React.FC<{
   // The account's public-exit transfer, under the exit picker — the page's, signed in. shown: the exit chosen is one of
   // remote.it's, the only ones charged. Called whether shown or not, so what it renders keeps what it read.
   renderExitUsage?: (shown: boolean) => React.ReactNode
-}> = ({ device, m, signedIn, nameEditor, renderExitUsage }) => {
+  // What the account knows of the engine's exits — each one's devices counted, the device of the exit in use — the
+  // page's, signed in (components/thisDevice/cloudExits). The engine's list alone without it.
+  readExits?: ReadCloudExits
+}> = ({ device, m, signedIn, nameEditor, renderExitUsage, readExits }) => {
   const { t, has, status, kind } = m
   const d = status?.device
   const advanced =
@@ -102,10 +107,12 @@ export const ThisDeviceMain: React.FC<{
       )}
 
       {has('access') && <AccessPart device={device} m={m} />}
-      {has('protect') && <ProtectPart device={device} m={m} renderExitUsage={renderExitUsage} />}
+      {has('protect') && (
+        <ProtectPart device={device} m={m} renderExitUsage={renderExitUsage} readExits={readExits} />
+      )}
       {m.servicesVia && <ServicesPart device={device} m={m} />}
       {!m.switches && (has('vpn') || has('exit')) && (
-        <VpnPart device={device} m={m} renderExitUsage={renderExitUsage} />
+        <VpnPart device={device} m={m} renderExitUsage={renderExitUsage} readExits={readExits} />
       )}
 
       {has('status') && status && (
@@ -215,13 +222,26 @@ const AccessPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ devi
   )
 }
 
-type PartProps = { device: ThisDevice; m: ThisDeviceModel; renderExitUsage?: (shown: boolean) => React.ReactNode }
+type PartProps = {
+  device: ThisDevice
+  m: ThisDeviceModel
+  renderExitUsage?: (shown: boolean) => React.ReactNode
+  readExits?: ReadCloudExits
+}
 
-const ProtectPart: React.FC<PartProps> = ({ device, m, renderExitUsage }) => {
+// The exit is the machine's (graphql-api docs/PROXY-GROUPS.md §15): an exit names no device — remote.it picks which of
+// its devices carries each new connection — so each is listed with its devices counted, and the device in use is said,
+// where the account says (readExits). Who may not choose it here (1.10.0's chooseRefusal: not signed in, not a manager)
+// sees it read-only, with why; turning Protect off stays theirs.
+const ProtectPart: React.FC<PartProps> = ({ device, m, renderExitUsage, readExits }) => {
   const { t, status, kind, exits } = m
   const protect = status?.protect
   const protectOn = !!protect?.on
   const routeValue = protect?.route?.id ?? ''
+  const refusal = protect?.chooseRefusal
+  const cloud = useCloudExits(readExits, status?.device?.uid, `${routeValue}|${protectOn}`)
+  const through = protectOn ? throughOf(cloud, routeValue) : null
+  const listed = protect?.route && !exits.some(x => x.id === protect.route!.id) ? [protect.route, ...exits] : exits
   return (
     <Card inset section="protect">
       <ListItem
@@ -230,7 +250,11 @@ const ProtectPart: React.FC<PartProps> = ({ device, m, renderExitUsage }) => {
             edge="end"
             checked={protectOn}
             disabled={
-              m.held || !protect || protect.changing || protect.locked || (!protectOn && !protect.route && exits.length !== 1)
+              m.held ||
+              !protect ||
+              protect.changing ||
+              protect.locked ||
+              (!protectOn && (!!refusal || (!protect.route && exits.length !== 1)))
             }
             inputProps={{ 'aria-label': t('thisDevice.protect', 'remote.it Protect') }}
             data-control="protect"
@@ -265,9 +289,16 @@ const ProtectPart: React.FC<PartProps> = ({ device, m, renderExitUsage }) => {
             size="small"
             label={t('thisDevice.route', 'Route through')}
             value={routeValue}
-            disabled={m.held || !protect || protect.locked}
+            disabled={m.held || !protect || protect.locked || !!refusal}
             InputLabelProps={{ shrink: true }}
-            SelectProps={{ displayEmpty: true }}
+            SelectProps={{
+              displayEmpty: true,
+              // The exit's name alone in the field; its devices are counted in the list.
+              renderValue: value =>
+                listed.find(x => x.id === value)
+                  ? exitLabel(listed.find(x => x.id === value)!)
+                  : t('thisDevice.chooseRoute', 'Choose an exit'),
+            }}
             inputProps={{ 'data-control': 'route' }}
             onChange={e =>
               e.target.value &&
@@ -276,21 +307,16 @@ const ProtectPart: React.FC<PartProps> = ({ device, m, renderExitUsage }) => {
           >
             {!routeValue && (
               <MenuItem value="" disabled>
-                {t('thisDevice.chooseRoute', 'Choose a device')}
+                {t('thisDevice.chooseRoute', 'Choose an exit')}
               </MenuItem>
             )}
-            {protect?.route && !exits.some(x => x.id === protect.route!.id) && (
-              <MenuItem value={protect.route.id}>{exitLabel(protect.route)}</MenuItem>
-            )}
-            {exits.map(x => (
-              <MenuItem key={x.id} value={x.id}>
-                {exitLabel(x)}
-              </MenuItem>
-            ))}
+            {listed.map(x => exitItem(x, cloud, t))}
           </TextField>
           <ExitUsage render={renderExitUsage} exit={protect?.route} />
         </Box>
       </ListItem>
+      {through && <Note id="protect.through" text={throughText(t, through)} />}
+      {refusal && <Note id="protect.choose" text={refusal} />}
     </Card>
   )
 }
@@ -379,9 +405,12 @@ const ServicesPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ de
   )
 }
 
-const VpnPart: React.FC<PartProps> = ({ device, m, renderExitUsage }) => {
+const VpnPart: React.FC<PartProps> = ({ device, m, renderExitUsage, readExits }) => {
   const { t, has, status, exits } = m
   const vpnOn = !!status?.vpn.on
+  const exitValue = status?.exit?.id ?? ''
+  const cloud = useCloudExits(readExits, status?.device?.uid, `${exitValue}|${vpnOn}`)
+  const through = vpnOn ? throughOf(cloud, exitValue) : null
   return (
     <List data-section="vpn">
       {has('vpn') && (
@@ -408,27 +437,50 @@ const VpnPart: React.FC<PartProps> = ({ device, m, renderExitUsage }) => {
               fullWidth
               size="small"
               label={t('thisDevice.exit', 'Exit')}
-              value={status?.exit?.id ?? ''}
+              value={exitValue}
               disabled={m.busy}
               // "None" is a choice like the others: shown, and the label kept above it, in every engine
               InputLabelProps={{ shrink: true }}
-              SelectProps={{ displayEmpty: true }}
+              SelectProps={{
+                displayEmpty: true,
+                renderValue: value => {
+                  const x = exits.find(each => each.id === value)
+                  return x ? exitLabel(x) : t('thisDevice.exitNone', 'None — the usual way out')
+                },
+              }}
               inputProps={{ 'data-control': 'exit' }}
               onChange={e => m.act(async () => m.setStatus(await device.call('exit.set', { id: e.target.value || null })))}
             >
               <MenuItem value="">{t('thisDevice.exitNone', 'None — the usual way out')}</MenuItem>
-              {exits.map(x => (
-                <MenuItem key={x.id} value={x.id}>
-                  {exitLabel(x)}
-                </MenuItem>
-              ))}
+              {exits.map(x => exitItem(x, cloud, t))}
             </TextField>
             <ExitUsage render={renderExitUsage} exit={status?.exit} />
           </Box>
         </ListItem>
       )}
+      {has('exit') && through && <Note id="exit.through" text={throughText(t, through)} />}
     </List>
   )
+}
+
+// An exit in a picker: its name, and under it its devices counted where the account says.
+const exitItem = (x: ExitRef, cloud: CloudExits | null, t: T) => {
+  const counted = servingLine(t, cloud?.serving.get(x.id))
+  return (
+    <MenuItem key={x.id} value={x.id} data-exit={x.id}>
+      <ListItemText primary={exitLabel(x)} secondary={counted} data-serving={counted ?? undefined} />
+    </MenuItem>
+  )
+}
+
+// The device of the machine's exit its traffic goes through now, where the account says so of the exit chosen here.
+const throughOf = (cloud: CloudExits | null, exitId: string) =>
+  exitId && cloud?.inUse?.id === exitId && cloud.inUse.through ? cloud.inUse : null
+
+const throughText = (t: T, inUse: NonNullable<CloudExits['inUse']>) => {
+  const now = t('thisDevice.throughNow', 'Going out through {{device}} now', { device: inUse.through!.name })
+  const counted = servingLine(t, inUse.serving)
+  return counted ? `${now} · ${t('thisDevice.throughOf', 'one of {{counted}}', { counted })}` : now
 }
 
 // Under an exit picker, set in from the field's edge as its helper text is.
