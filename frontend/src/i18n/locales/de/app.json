@@ -1032,6 +1032,7 @@
     "agent": "",
     "configure": "Konfigurieren",
     "details": "Details",
+    "exitFlows": "",
     "logs": "Protokolle",
     "runs": "",
     "shareAccess": "Zugriff freigeben",
@@ -1704,6 +1705,26 @@
     "name": "",
     "notMade": "",
     "title": ""
+  },
+  "exitFlows": {
+    "bytes": "",
+    "carried": "",
+    "error": "",
+    "further": "",
+    "managerHint": "",
+    "more": "",
+    "none": "",
+    "noneYet": "",
+    "ownHint": "",
+    "through": "",
+    "title": "",
+    "window": {
+      "day": "",
+      "days": "",
+      "hour": "",
+      "label": "",
+      "week": ""
+    }
   },
   "exitPage": {
     "activation": "",

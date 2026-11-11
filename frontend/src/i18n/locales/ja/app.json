@@ -1021,6 +1021,7 @@
     "agent": "",
     "configure": "設定",
     "details": "詳細",
+    "exitFlows": "",
     "logs": "ログ",
     "runs": "",
     "shareAccess": "アクセスを共有",
@@ -1667,6 +1668,26 @@
     "name": "",
     "notMade": "",
     "title": ""
+  },
+  "exitFlows": {
+    "bytes": "",
+    "carried": "",
+    "error": "",
+    "further": "",
+    "managerHint": "",
+    "more": "",
+    "none": "",
+    "noneYet": "",
+    "ownHint": "",
+    "through": "",
+    "title": "",
+    "window": {
+      "day": "",
+      "days": "",
+      "hour": "",
+      "label": "",
+      "week": ""
+    }
   },
   "exitPage": {
     "activation": "",

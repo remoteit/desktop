@@ -1043,6 +1043,7 @@
     "agent": "",
     "configure": "Configurar",
     "details": "Detalles",
+    "exitFlows": "",
     "logs": "Registros",
     "runs": "",
     "shareAccess": "Compartir acceso",
@@ -1741,6 +1742,26 @@
     "name": "",
     "notMade": "",
     "title": ""
+  },
+  "exitFlows": {
+    "bytes": "",
+    "carried": "",
+    "error": "",
+    "further": "",
+    "managerHint": "",
+    "more": "",
+    "none": "",
+    "noneYet": "",
+    "ownHint": "",
+    "through": "",
+    "title": "",
+    "window": {
+      "day": "",
+      "days": "",
+      "hour": "",
+      "label": "",
+      "week": ""
+    }
   },
   "exitPage": {
     "activation": "",

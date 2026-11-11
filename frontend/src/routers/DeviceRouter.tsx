@@ -14,6 +14,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
 import { DeviceAgentPage } from '../pages/DeviceAgentPage'
 import { DeviceRunsPage } from '../pages/DeviceRunsPage'
+import { DeviceExitFlowsPage } from '../pages/DeviceExitFlowsPage'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
@@ -85,6 +86,11 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           {deviceSessions && !device?.virtual && (
             <Route path="/devices/:deviceID/runs">
               <DeviceRunsPage />
+            </Route>
+          )}
+          {deviceSessions && !device?.virtual && (
+            <Route path="/devices/:deviceID/exit-flows">
+              <DeviceExitFlowsPage />
             </Route>
           )}
           <Route path="/devices/:deviceID/details">

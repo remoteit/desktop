@@ -2,6 +2,7 @@ import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useExitFlowsServed } from '../hooks/useExitFlowsServed'
 import { Box, Typography } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { LoadingMessage } from './LoadingMessage'
@@ -17,6 +18,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
   const deviceSessions = useDeviceSessions()
+  const exitFlows = useExitFlowsServed(deviceSessions && !!device && !device.virtual)
 
   if (!device) return <LoadingMessage />
 
@@ -78,6 +80,15 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
                 icon="server"
                 iconColor="grayDarker"
                 to={`/devices/${device.id}/runs`}
+                dense
+              />
+            )}
+            {exitFlows && (
+              <ListItemLocation
+                title={t('deviceHeaderMenu.exitFlows', 'Exit flows')}
+                icon="globe"
+                iconColor="grayDarker"
+                to={`/devices/${device.id}/exit-flows`}
                 dense
               />
             )}
