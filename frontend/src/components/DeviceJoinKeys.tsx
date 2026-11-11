@@ -10,6 +10,7 @@ import {
 import { useDeviceIdentity } from '../hooks/useDeviceIdentity'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
+import { useDeviceProduct } from '../hooks/useProductPolicy'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { DynamicButton } from '../buttons/DynamicButton'
 import { IssueDeviceJoinKeyDialog } from './IssueDeviceJoinKeyDialog'
@@ -42,7 +43,8 @@ export function joinKeysOffered(
 /* A device's join keys on its settings page (graphql-api docs/PROXY-GROUPS.md §11, "Externally held identity"): for a
    device that starts fresh at every boot, the only way back as itself. Issued with the key shown once, listed with
    their boots, revoked one by one or all at once — and a key with no boot for 30 days flagged, as a suggestion only.
-   For whoever manages the device, where the API serves them. */
+   For whoever manages the device, where the API serves them. Not issued to a device of an ephemeral product, which is a
+   new device at every start (§11, "Scope"): it registers with its product's join key instead. */
 export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const served = useDeviceIdentity()?.joinKeys
@@ -50,6 +52,8 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
   const manage = device.permissions.includes('MANAGE') && !device.virtual
   const asked = !!served && deviceSessions && manage
   const reports = !!useDeviceSessionInfo(asked ? device.id : undefined)?.agent
+  const product = useDeviceProduct(asked ? device : undefined).state?.product
+  const ephemeral = product?.lifecycle === 'ephemeral'
   const [keys, setKeys] = useState<DeviceJoinKey[] | null>()
   const [issuing, setIssuing] = useState(false)
   const [busy, setBusy] = useState<string>()
@@ -67,6 +71,7 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
   }, [asked, load])
 
   if (!asked || !keys || !joinKeysOffered(device, reports, keys)) return null
+  if (ephemeral && !keys.length) return null
 
   const inForce = keys.filter(key => !keyState(key)).length
   const full = inForce >= KEYS_IN_FORCE
@@ -119,13 +124,15 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
               onClick={() => revoke()}
             />
           )}
-          <DynamicButton
-            size="small"
-            icon="plus"
-            title={t('deviceJoinKeys.issue', 'Issue Key')}
-            disabled={full || !!busy}
-            onClick={() => setIssuing(true)}
-          />
+          {!ephemeral && (
+            <DynamicButton
+              size="small"
+              icon="plus"
+              title={t('deviceJoinKeys.issue', 'Issue Key')}
+              disabled={full || !!busy}
+              onClick={() => setIssuing(true)}
+            />
+          )}
         </Stack>
       </Stack>
       <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -134,7 +141,16 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
           'For a device that starts fresh at every boot: a key brings it back as itself — the same ID, settings, access and history. Each key is shown once, when it is issued.'
         )}
       </Typography>
-      {full && (
+      {ephemeral && (
+        <Typography variant="caption" color="textSecondary" component="p" gutterBottom data-ephemeral>
+          {t('deviceJoinKeys.ephemeral', {
+            product: product?.name,
+            defaultValue:
+              'Devices of {{product}} are ephemeral: each start is a new device, registered with one of the product’s join keys. No device join key is issued to them; revoke these once nothing holds them.',
+          })}
+        </Typography>
+      )}
+      {!ephemeral && full && (
         <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
           {t(
             'deviceJoinKeys.full',

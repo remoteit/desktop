@@ -2,13 +2,14 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { read, revokeOne, revokeAll, identity, sessions, info } = vi.hoisted(() => ({
+const { read, revokeOne, revokeAll, identity, sessions, info, product } = vi.hoisted(() => ({
   read: vi.fn(),
   revokeOne: vi.fn(),
   revokeAll: vi.fn(),
   identity: { current: { joinKeys: true } as any },
   sessions: { current: true },
   info: { current: { agent: { running: 'connectd-go 5.7.0' } } as any },
+  product: { current: null as any },
 }))
 vi.mock('../services/deviceIdentity', () => ({
   graphQLDeviceJoinKeys: read,
@@ -17,6 +18,9 @@ vi.mock('../services/deviceIdentity', () => ({
 }))
 vi.mock('../hooks/useDeviceIdentity', () => ({ useDeviceIdentity: () => identity.current }))
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => sessions.current }))
+vi.mock('../hooks/useProductPolicy', () => ({
+  useDeviceProduct: (d?: IDevice) => ({ state: d ? { product: product.current } : null }),
+}))
 vi.mock('../hooks/useDeviceSessionInfo', () => ({
   useDeviceSessionInfo: (id?: string) => (id ? info.current : undefined),
 }))
@@ -99,6 +103,7 @@ beforeEach(() => {
   identity.current = { joinKeys: true }
   sessions.current = true
   info.current = { agent: { running: 'connectd-go 5.7.0' } }
+  product.current = null
 })
 
 afterEach(() => act(() => root?.unmount()))
@@ -180,6 +185,28 @@ describe('DeviceJoinKeys', () => {
     )
     await act(async () => button('Revoke all keys').click())
     expect(revokeAll).toHaveBeenCalledWith('D1')
+  })
+
+  it('a device of a persistent product, synced or enforced, is issued keys as any other', async () => {
+    product.current = { id: 'P1', name: 'Kiosks', sync: 'enforced', lifecycle: 'persistent' }
+    await render()
+    expect(button('Issue Key').disabled).toBe(false)
+    expect(container.querySelector('[data-ephemeral]')).toBeNull()
+  })
+
+  it("a device of an ephemeral product is issued none: new at every start, it joins with the product's key", async () => {
+    product.current = { id: 'P2', name: 'Pool', sync: 'synced', lifecycle: 'ephemeral' }
+    read.mockResolvedValue([])
+    await render()
+    expect(text()).toBe('')
+
+    // Keys it holds from before are listed, to be revoked.
+    read.mockResolvedValue([key()])
+    await render()
+    expect(button('Issue Key')).toBeUndefined()
+    expect(container.querySelector('[data-ephemeral]')!.textContent).toContain('Devices of Pool are ephemeral')
+    expect(button('Revoke Key')).toBeTruthy()
+    expect(button('Revoke all keys')).toBeTruthy()
   })
 
   it("shows graphql's refusal", async () => {

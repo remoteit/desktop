@@ -1054,6 +1054,7 @@
     "boots": "",
     "created": "",
     "description": "",
+    "ephemeral": "",
     "expired": "",
     "expires": "",
     "full": "",
@@ -2064,6 +2065,12 @@
     "RUNNING": "Läuft",
     "SUCCESS": "Erfolgreich",
     "WAITING": "Wartend"
+  },
+  "joinKeyContainer": {
+    "device": "",
+    "product": "",
+    "productEphemeral": "",
+    "title": ""
   },
   "lanSharePage": {
     "allowUsersToConnect": "Ermöglichen Sie Benutzern, sich über Ihre IP-Adresse und einen benutzerdefinierten Port mit Ihrem Remote-Gerät zu verbinden.",

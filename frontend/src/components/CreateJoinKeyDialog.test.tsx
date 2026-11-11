@@ -168,6 +168,42 @@ describe('CreateJoinKeyDialog', () => {
     expect(body()).toContain('It will not be shown again')
   })
 
+  it('says how to run it in a container: the downloaded file mounted, the device kept in a volume', async () => {
+    createJoinKey.mockResolvedValue({ key: SECRET })
+    await type('Name', 'Line 2')
+    await submit()
+    const run = document.body.querySelectorAll('[data-block]')[1].getAttribute('data-block')!
+    expect(run).toBe(
+      [
+        'docker run -d --name remoteit --restart unless-stopped --network host',
+        '-v remoteit-device:/var/lib/remoteit-device',
+        '-e REMOTEIT_JOIN_KEY_FILE=/run/secrets/remoteit_join_key',
+        '-v "$PWD/remoteit-join-key-line-2.txt:/run/secrets/remoteit_join_key:ro"',
+        'ghcr.io/remoteit/device',
+      ].join(' \\\n  ')
+    )
+    expect(run).not.toContain(SECRET)
+    expect(body()).toContain('one volume per device')
+  })
+
+  it('an ephemeral product’s container has no volume: its devices are new at every start', async () => {
+    createJoinKey.mockResolvedValue({ key: SECRET })
+    await act(async () =>
+      root.render(
+        <ThemeProvider theme={theme}>
+          <CreateJoinKeyDialog product={{ ...product, lifecycle: 'ephemeral' }} onClose={onClose} />
+        </ThemeProvider>
+      )
+    )
+    await type('Name', 'Pool')
+    await submit()
+    const run = document.body.querySelectorAll('[data-block]')[1].getAttribute('data-block')!
+    expect(run).toContain('-e R3_ALLOW_NO_VOLUME=1')
+    expect(run).not.toContain('/var/lib/remoteit-device')
+    expect(run).toContain('remoteit-join-key-pool.txt')
+    expect(body()).toContain('new at every start, so it needs no volume')
+  })
+
   it('sends the expiry as a time', async () => {
     createJoinKey.mockResolvedValue({ key: SECRET })
     await type('Name', 'Line 2')

@@ -189,6 +189,11 @@ export const REGISTRATION_CODE_EXPIRATION_HOURS = 24
 // Where a Control Link daemon takes a product join key from (connectd README): the key, or a file holding it.
 export const JOIN_KEY_ENV = 'REMOTEIT_JOIN_KEY'
 export const JOIN_KEY_FILE_ENV = 'REMOTEIT_JOIN_KEY_FILE'
+// The remote.it device as a container (device-package docs/container-image.md): its image, the path its join key file
+// is mounted at, and the state directory a device that keeps its own key needs as a volume. A device join key needs none.
+export const DEVICE_CONTAINER_IMAGE = env.VITE_DEVICE_CONTAINER_IMAGE || 'ghcr.io/remoteit/device'
+export const DEVICE_CONTAINER_JOIN_KEY_FILE = '/run/secrets/remoteit_join_key'
+export const DEVICE_CONTAINER_STATE = '/var/lib/remoteit-device'
 
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'

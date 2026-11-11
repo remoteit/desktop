@@ -93,7 +93,14 @@ describe('IssueDeviceJoinKeyDialog', () => {
     await act(async () => button('Issue').click())
     expect(create).toHaveBeenCalledWith('D1', 'USB stick', undefined)
     expect(onChanged).toHaveBeenCalledTimes(1)
-    expect(blocks()).toEqual([SECRET, `REMOTEIT_JOIN_KEY=${SECRET}`])
+    expect(blocks().slice(0, 2)).toEqual([SECRET, `REMOTEIT_JOIN_KEY=${SECRET}`])
+    // How to run it as a container: the downloaded file mounted, no volume — and never the key on the command line.
+    const run = blocks()[2]!
+    expect(run).toContain('-e REMOTEIT_JOIN_KEY_FILE=/run/secrets/remoteit_join_key')
+    expect(run).toContain('"$PWD/remoteit-device-join-key-usb-stick.txt:/run/secrets/remoteit_join_key:ro"')
+    expect(run).not.toContain('/var/lib/remoteit-device')
+    expect(run).not.toContain(SECRET)
+    expect(body()).toContain('it needs no volume')
     expect(body()).toContain('Copy or download this key now')
     expect(body()).toContain('It will not be shown again')
     expect(body()).toContain('REMOTEIT_JOIN_KEY_FILE')

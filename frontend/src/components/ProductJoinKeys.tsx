@@ -14,7 +14,7 @@ import { Notice } from './Notice'
 import { dispatch } from '../store'
 
 type Props = {
-  product: Pick<IDeviceProduct, 'id' | 'name' | 'joinKeys'>
+  product: Pick<IDeviceProduct, 'id' | 'name' | 'joinKeys' | 'lifecycle'>
   // A product outside the account's store — remote.it's proxy product, on its admin page —: whether its keys may be
   // changed, and how. Otherwise the account's permissions decide, and the store changes them.
   manage?: boolean

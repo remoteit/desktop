@@ -1065,6 +1065,7 @@
     "boots": "",
     "created": "",
     "description": "",
+    "ephemeral": "",
     "expired": "",
     "expires": "",
     "full": "",
@@ -2106,6 +2107,12 @@
     "RUNNING": "En ejecución",
     "SUCCESS": "Correcto",
     "WAITING": "En espera"
+  },
+  "joinKeyContainer": {
+    "device": "",
+    "product": "",
+    "productEphemeral": "",
+    "title": ""
   },
   "lanSharePage": {
     "allowUsersToConnect": "Permite que los usuarios se conecten a tu dispositivo remoto a través de tu dirección IP usando un puerto personalizado.",

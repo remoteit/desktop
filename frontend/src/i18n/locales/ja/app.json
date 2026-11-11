@@ -1043,6 +1043,7 @@
     "boots": "",
     "created": "",
     "description": "",
+    "ephemeral": "",
     "expired": "",
     "expires": "",
     "full": "",
@@ -2022,6 +2023,12 @@
     "RUNNING": "実行中",
     "SUCCESS": "成功",
     "WAITING": "待機中"
+  },
+  "joinKeyContainer": {
+    "device": "",
+    "product": "",
+    "productEphemeral": "",
+    "title": ""
   },
   "lanSharePage": {
     "allowUsersToConnect": "カスタムポートを使用して、IPアドレス経由でユーザーがリモートデバイスに接続できるようにします。",
