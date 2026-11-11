@@ -3,9 +3,10 @@ import { createRoot } from 'react-dom/client'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Admin → Proxies & exits as tabs: Proxies · Exits · Machines · Access log · Limits & policy · Usage, the tab in the
-// URL's ?view=, each tab its own sections; Usage shown whatever became of the exit policy.
-const { policy } = vi.hoisted(() => ({ policy: vi.fn() }))
+// Admin → Proxies & exits as tabs: Proxies · Exits · Machines · Access log · Exit flows · Limits & policy · Usage, the
+// tab in the URL's ?view=, each tab its own sections; Exit flows only where the API has the lookup; Usage and Exit flows
+// shown whatever became of the exit policy.
+const { policy, flowsServed } = vi.hoisted(() => ({ policy: vi.fn(), flowsServed: vi.fn() }))
 vi.mock('../services/graphQLExitPolicy', () => ({
   graphQLExitPolicy: policy,
   graphQLSetExitPolicy: vi.fn(),
@@ -20,6 +21,8 @@ vi.mock('./AdminRemoteit', () => ({
 vi.mock('./AdminProxyAccess', () => ({ AdminProxyAccess: () => <div data-section="access" /> }))
 vi.mock('./AdminProxyLimits', () => ({ AdminProxyLimits: () => <div data-section="limits" /> }))
 vi.mock('./AdminTransferUsage', () => ({ AdminTransferUsage: () => <div data-section="usage" /> }))
+vi.mock('./AdminExitFlows', () => ({ AdminExitFlows: () => <div data-section="flows" /> }))
+vi.mock('../services/adminExitFlows', () => ({ adminExitFlowsServed: flowsServed }))
 vi.mock('../components/InlineTextFieldSetting', () => ({
   InlineTextFieldSetting: ({ label }: any) => <div data-setting>{label}</div>,
 }))
@@ -81,6 +84,7 @@ describe('AdminProxiesPage', () => {
   beforeEach(() => {
     policy.mockReset()
     policy.mockResolvedValue(POLICY)
+    flowsServed.mockReset().mockResolvedValue(true)
   })
 
   it('reads the tab from ?view=, the Proxies tab without one', () => {
@@ -88,18 +92,20 @@ describe('AdminProxiesPage', () => {
     expect(proxiesView('?view=exits')).toBe('exits')
     expect(proxiesView('?view=machines')).toBe('machines')
     expect(proxiesView('?view=access')).toBe('access')
+    expect(proxiesView('?view=flows')).toBe('flows')
     expect(proxiesView('?view=limits')).toBe('limits')
     expect(proxiesView('?view=usage')).toBe('usage')
     expect(proxiesView('?view=nonsense')).toBe('proxies')
   })
 
-  it('shows six tabs, the Proxies tab first, with remote.it’s proxies alone', async () => {
+  it('shows seven tabs, the Proxies tab first, with remote.it’s proxies alone', async () => {
     const c = await render()
     expect([...c.querySelectorAll('[data-tab]')].map(t => t.textContent)).toEqual([
       'Proxies',
       'Exits',
       'Machines',
       'Access log',
+      'Exit flows',
       'Limits & policy',
       'Usage',
     ])
@@ -123,6 +129,10 @@ describe('AdminProxiesPage', () => {
     expect(location.search).toBe('?view=access')
     expect(sections(c)).toEqual(['access'])
     expect(tab(c, 'access').getAttribute('aria-selected')).toBe('true')
+
+    await act(async () => tab(c, 'flows').click())
+    expect(location.search).toBe('?view=flows')
+    expect(sections(c)).toEqual(['flows'])
 
     await act(async () => tab(c, 'limits').click())
     expect(location.search).toBe('?view=limits')
@@ -154,5 +164,22 @@ describe('AdminProxiesPage', () => {
     await act(async () => tab(c, 'proxies').click())
     expect(sections(c)).toEqual([])
     expect(c.textContent).toContain('Could not read the exit policy.')
+  })
+
+  it('has no Exit flows tab where the API has no lookup, but a link to it still lands there', async () => {
+    flowsServed.mockResolvedValue(false)
+    const c = await render()
+    expect(tab(c, 'flows')).toBeNull()
+    expect(c.querySelectorAll('[data-tab]')).toHaveLength(6)
+
+    const linked = await render('/admin/proxies?view=flows')
+    expect(tab(linked, 'flows').getAttribute('aria-selected')).toBe('true')
+    expect(sections(linked)).toEqual(['flows'])
+  })
+
+  it('shows Exit flows when the exit policy could not be read', async () => {
+    policy.mockResolvedValue('ERROR')
+    const c = await render('/admin/proxies?view=flows')
+    expect(sections(c)).toEqual(['flows'])
   })
 })

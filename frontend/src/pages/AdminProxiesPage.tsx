@@ -26,6 +26,8 @@ import { AdminProxyLimits } from './AdminProxyLimits'
 import { AdminRemoteitExits, AdminRemoteitMachines, AdminRemoteitProxies } from './AdminRemoteit'
 import { AdminProxyAccess } from './AdminProxyAccess'
 import { AdminTransferUsage } from './AdminTransferUsage'
+import { AdminExitFlows } from './AdminExitFlows'
+import { adminExitFlowsServed } from '../services/adminExitFlows'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -37,13 +39,14 @@ import { Icon } from '../components/Icon'
 
 export const PROXIES_ROUTE = '/admin/proxies'
 
-export type ProxiesView = 'proxies' | 'exits' | 'machines' | 'access' | 'limits' | 'usage'
+export type ProxiesView = 'proxies' | 'exits' | 'machines' | 'access' | 'flows' | 'limits' | 'usage'
 
 const VIEWS: { value: ProxiesView; label: string }[] = [
   { value: 'proxies', label: 'Proxies' },
   { value: 'exits', label: 'Exits' },
   { value: 'machines', label: 'Machines' },
   { value: 'access', label: 'Access log' },
+  { value: 'flows', label: 'Exit flows' },
   { value: 'limits', label: 'Limits & policy' },
   { value: 'usage', label: 'Usage' },
 ]
@@ -56,9 +59,10 @@ export const proxiesView = (search: string): ProxiesView => {
 
 /* remote.it's proxies and exits (graphql-api docs/PROXY-GROUPS.md §13, presence-server docs/proxy-plan.md §5, §8), a
    tab each: the proxies, the exits, and the machines that run them (pages/AdminRemoteit.tsx); who used the proxies;
-   each plan's limits on them, the policy every exit keeps — what it refuses beyond what every exit refuses, how fast
-   one account may open flows, how long its flow log and the proxies' access log are kept — and the accounts stopped
-   from using exits; and each account's public transfer this month. A change takes effect at once. Admins only; English
+   the flows through the exits, a complaint's address, port and time looked up (pages/AdminExitFlows.tsx), its tab
+   only where the API has the lookup; each plan's limits on them, the policy every exit keeps — what it refuses beyond
+   what every exit refuses, how fast one account may open flows, how long its flow log and the proxies' access log are
+   kept — and the accounts stopped from using exits; and each account's public transfer this month. A change takes effect at once. Admins only; English
    only, as the rest of /admin. */
 export const AdminProxiesPage: React.FC = () => {
   const history = useHistory()
@@ -67,12 +71,19 @@ export const AdminProxiesPage: React.FC = () => {
   const [policy, setPolicy] = useState<ExitPolicy | null | 'ERROR' | typeof UNSUPPORTED>()
   const [saving, setSaving] = useState(false)
   const [problem, setProblem] = useState<string>()
+  const [flows, setFlows] = useState(false)
 
   const load = useCallback(async () => setPolicy(await graphQLExitPolicy()), [])
 
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    adminExitFlowsServed().then(setFlows)
+  }, [])
+
+  const views = VIEWS.filter(v => v.value !== 'flows' || flows || view === 'flows')
 
   const save = async (change: ExitPolicyChange) => {
     setSaving(true)
@@ -103,6 +114,7 @@ export const AdminProxiesPage: React.FC = () => {
   const body = () => {
     // Its own reads, each failing quietly: nothing of the exit policy stands in its way.
     if (view === 'usage') return <AdminTransferUsage />
+    if (view === 'flows') return <AdminExitFlows />
     if (policy === undefined) return <LoadingMessage />
     if (policy === UNSUPPORTED)
       return (
@@ -218,7 +230,7 @@ export const AdminProxiesPage: React.FC = () => {
         <Gutters>
           <Typography variant="h1">Proxies &amp; exits</Typography>
           <Tabs value={view} TabIndicatorProps={{ sx: { display: 'none' } }} sx={{ minHeight: 0, marginTop: 1 }}>
-            {VIEWS.map(v => (
+            {views.map(v => (
               <Tab
                 key={v.value}
                 value={v.value}
