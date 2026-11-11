@@ -22,8 +22,10 @@ export type UserExitFlow = ExitFlow & { id: string; exit?: string | null; exitNa
 
 export type ExitFlowsPage = { flows: UserExitFlow[]; next: string | null; from: string | null; to: string | null }
 
-// The windows offered, in hours: graphql takes up to 31 days.
-export const WINDOWS = [1, 24, 24 * 7, 24 * 31]
+// How far back people look (graphql moves from up to it; remote.it admins look further through Admin → Exit flows), and
+// the windows offered, in hours: the longest is the whole of it.
+export const LOOK_BACK_DAYS = 31
+export const WINDOWS = [1, 24, 24 * 7, 24 * LOOK_BACK_DAYS]
 export const DEFAULT_WINDOW = 24
 export const PAGE_SIZE = 50
 

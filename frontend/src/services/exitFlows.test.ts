@@ -9,7 +9,15 @@ vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/grap
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request, isAxiosError: () => false } }))
 
-import { appendFlows, exitFlowsServed, fetchExitFlows, parseUserExitFlows, resetExitFlows } from './exitFlows'
+import {
+  LOOK_BACK_DAYS,
+  WINDOWS,
+  appendFlows,
+  exitFlowsServed,
+  fetchExitFlows,
+  parseUserExitFlows,
+  resetExitFlows,
+} from './exitFlows'
 
 const scalar = (name: string) => ({ kind: 'SCALAR', name })
 const nonNull = (ofType: any) => ({ kind: 'NON_NULL', name: null, ofType })
@@ -162,5 +170,13 @@ describe('pages put together', () => {
     const b = { ...FLOW, id: 'b' }
     const c = { ...FLOW, id: 'c' }
     expect(appendFlows([a, b], [b, c, c]).map(f => f.id)).toEqual(['a', 'b', 'c'])
+  })
+})
+
+describe('the windows offered', () => {
+  it('reach back 31 days at most — as far as graphql lets people look — the longest the whole of it', () => {
+    expect(LOOK_BACK_DAYS).toBe(31)
+    expect(Math.max(...WINDOWS)).toBe(LOOK_BACK_DAYS * 24)
+    expect(WINDOWS.every(hours => hours > 0 && hours <= LOOK_BACK_DAYS * 24)).toBe(true)
   })
 })

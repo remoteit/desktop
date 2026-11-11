@@ -5,6 +5,7 @@ import { DeviceContext } from '../services/Context'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { ExitFlowList } from '../components/ExitFlowList'
 import { Gutters } from '../components/Gutters'
+import { LOOK_BACK_DAYS } from '../services/exitFlows'
 
 /* A device's connections through exits (graphql exitFlows; graphql-api docs/PROXY-GROUPS.md §15, "Exit flows: who may
    see them"): to whoever manages it, every one it made through an exit — whoever on the computer opened it — and every
@@ -27,11 +28,13 @@ export const DeviceExitFlowsPage: React.FC = () => {
                 manage
                   ? t(
                       'exitFlows.managerHint',
-                      "Every connection this device made through remote.it's exits — whoever on it opened it — and every one it carried as an exit. Kept as long as remote.it keeps its exits' flow log."
+                      "Every connection this device made through remote.it's exits — whoever on it opened it — and every one it carried as an exit, over the last {{days}} days at most.",
+                      { days: LOOK_BACK_DAYS }
                     )
                   : t(
                       'exitFlows.ownHint',
-                      "Your own connections from this device through remote.it's exits. Those who manage it see everyone's."
+                      "Your own connections from this device through remote.it's exits, over the last {{days}} days at most. Those who manage it see everyone's.",
+                      { days: LOOK_BACK_DAYS }
                     )
               }
             />

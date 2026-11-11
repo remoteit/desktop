@@ -1711,11 +1711,11 @@
     "carried": "carried as an exit",
     "error": "Could not read the connections.",
     "further": "Look further",
-    "managerHint": "Every connection this device made through remote.it's exits — whoever on it opened it — and every one it carried as an exit. Kept as long as remote.it keeps its exits' flow log.",
+    "managerHint": "Every connection this device made through remote.it's exits — whoever on it opened it — and every one it carried as an exit, over the last {{days}} days at most.",
     "more": "More",
     "none": "No connections through an exit in this time.",
     "noneYet": "None found so far: there is more to look through.",
-    "ownHint": "Your own connections from this device through remote.it's exits. Those who manage it see everyone's.",
+    "ownHint": "Your own connections from this device through remote.it's exits, over the last {{days}} days at most. Those who manage it see everyone's.",
     "through": "through {{exit}}",
     "title": "Connections through exits",
     "window": {
