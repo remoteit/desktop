@@ -2938,6 +2938,18 @@
     "toPersistentBody": "",
     "toPersistentTitle": ""
   },
+  "productMaxDevices": {
+    "about": "",
+    "below": "",
+    "label": "",
+    "none": "",
+    "notChanged": "",
+    "over": "",
+    "placeholder": "",
+    "problem": "",
+    "title": "",
+    "zero": ""
+  },
   "productMove": {
     "attach": "",
     "attachTitle": "",

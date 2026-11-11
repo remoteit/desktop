@@ -2938,6 +2938,18 @@
     "toPersistentBody": "Its devices keep their identity on disk from now on, through reboots, and are no longer removed after 10 minutes offline.",
     "toPersistentTitle": "Make {{name}}’s devices persistent?"
   },
+  "productMaxDevices": {
+    "about": "{{counted}} device(s) count against it, disabled ones included; a removed device frees its place. At the maximum, a device that registers is refused and tries again later.",
+    "below": "It has {{counted}}: none is removed, but no device joins until {{over}} are removed.",
+    "label": "Maximum devices",
+    "none": "No maximum",
+    "notChanged": "The maximum was not changed.",
+    "over": "{{over}} over: no device joins until {{over}} are removed.",
+    "placeholder": "No maximum",
+    "problem": "A whole number from 0 to {{ceiling}}, or empty for no maximum",
+    "title": "Device Limit",
+    "zero": "No device can register or be added to this product while it is 0."
+  },
   "productMove": {
     "attach": "Attach",
     "attachTitle": "Attach it to a product",
