@@ -233,6 +233,8 @@ export const SIGN_OUT_EVERYWHERE_TIMEOUT = 10000
 // and the person is watching the button — past this the app signs out locally regardless.
 export const SIGN_OUT_SESSION_TIMEOUT = 5000
 export const PUSH_UNREGISTER_TIMEOUT = 3000
+// Long enough to sign in after a tap, short enough that a tap the app never opened isn't replayed on a later launch
+export const PENDING_NOTIFICATION_TTL = 10 * 60 * 1000
 
 // The APNs environment follows the build's signing, not the API it talks to: a development
 // profile gets sandbox tokens, TestFlight and the App Store production ones (build-ios.yml).

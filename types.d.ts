@@ -73,6 +73,7 @@ declare global {
     // App/settings
     | 'navigate'
     | 'maximize'
+    | 'open'
     | 'showFolder'
     | 'filePrompt'
     | 'cancelBluetooth'

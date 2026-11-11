@@ -3,6 +3,8 @@ import { getAccountIds } from '../models/accounts'
 import { selectOrganization } from '../selectors/organizations'
 import { platforms } from '../platforms'
 import { store } from '../store'
+import { openNotification, NotificationTap } from './openNotification'
+import { emit } from './Controller'
 import browser from './browser'
 import icon from '../assets/noticeIcon.png'
 
@@ -54,7 +56,7 @@ function stateNotification(event: ICloudEvent) {
       let url = `/devices/${target.deviceId}`
       if (target.service?.id) url += `/${target.service?.id}`
       if (event.authUserId !== target.owner?.id) body += ' - ' + target.owner?.email
-      createNotification(`${target.name} ${actions[event.state]}`, url, { body })
+      createNotification(url, { title: `${target.name} ${actions[event.state]}`, body, time: event.timestamp })
     }
   })
 }
@@ -75,7 +77,7 @@ function connectNotification(event: ICloudEvent) {
       body += '\n- Provide connection feedback'
       url = url.replace('devices', 'feedback')
     }
-    createNotification(title, url, { body })
+    createNotification(url, { title, body, time: event.timestamp })
   })
 }
 
@@ -97,7 +99,7 @@ function shareNotification(event: ICloudEvent) {
         const title = `${target.name} ${actions[event.action]}`
         const body = `with ${name} by ${event.actor.email}.`
         const url = event.action === 'add' || event.action === 'update' ? `/devices/${target.id}` : '/devices'
-        createNotification(title, url, { body })
+        createNotification(url, { title, body, time: event.timestamp })
       }
     })
   }
@@ -111,16 +113,21 @@ function transferNotification(event: ICloudEvent) {
       if (isReceiving) {
         const title = `${target.name} was transferred to you`
         const body = `from ${event.actor.email}`
-        createNotification(title, `/devices/${target.deviceId}`, { body })
+        createNotification(`/devices/${target.deviceId}`, { title, body, time: event.timestamp })
       }
       // Don't notify sender or people losing access
     }
   })
 }
 
-function createNotification(title: string, redirect: string, options?: NotificationOptions) {
-  const notification = new Notification(title, { ...options, icon: browser.isPortal ? icon : undefined })
-  notification.onclick = () => store.dispatch.ui.set({ redirect })
+function createNotification(url: string, tap: Required<NotificationTap>) {
+  const notification = new Notification(tap.title, { body: tap.body, icon: browser.isPortal ? icon : undefined })
+  notification.onclick = () => {
+    // A click leaves the window where it was: a browser tab behind others, Electron's hidden in the tray
+    window.focus()
+    if (browser.isElectron) emit('open')
+    openNotification(url, tap)
+  }
   notification.onclose = e => e.preventDefault()
 }
 
