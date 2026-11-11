@@ -3047,6 +3047,18 @@
     "toPersistentBody": "",
     "toPersistentTitle": ""
   },
+  "productMaxDevices": {
+    "aboutLive": "",
+    "below": "",
+    "label": "",
+    "none": "",
+    "notChanged": "",
+    "overLive": "",
+    "placeholder": "",
+    "problem": "",
+    "title": "",
+    "zero": ""
+  },
   "productMove": {
     "attach": "",
     "attachTitle": "",
@@ -3966,6 +3978,8 @@
     "notificationMethod": "Método",
     "notifications": "Notificaciones",
     "notifyEmail": "Correo electrónico",
+    "notifyProductFull": "",
+    "notifyProductFullHelp": "",
     "notifyPush": "Push móvil",
     "notifyRestore": "Correos de restauración de dispositivos",
     "notifyRestoreHelp": "Un dispositivo que administra, pero del que no es propietario, se restaura con un código de restauración. Su propietario siempre recibe un correo.",

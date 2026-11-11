@@ -2992,6 +2992,18 @@
     "toPersistentBody": "",
     "toPersistentTitle": ""
   },
+  "productMaxDevices": {
+    "aboutLive": "",
+    "below": "",
+    "label": "",
+    "none": "",
+    "notChanged": "",
+    "overLive": "",
+    "placeholder": "",
+    "problem": "",
+    "title": "",
+    "zero": ""
+  },
   "productMove": {
     "attach": "",
     "attachTitle": "",
@@ -3873,6 +3885,8 @@
     "notificationMethod": "Methode",
     "notifications": "Benachrichtigungen",
     "notifyEmail": "E-Mail",
+    "notifyProductFull": "",
+    "notifyProductFullHelp": "",
     "notifyPush": "Mobile Push",
     "notifyRestore": "E-Mails zur Gerätewiederherstellung",
     "notifyRestoreHelp": "Ein Gerät, das Sie verwalten, aber nicht besitzen, wird mit einem Wiederherstellungscode wiederhergestellt. Sein Besitzer erhält immer eine E-Mail.",

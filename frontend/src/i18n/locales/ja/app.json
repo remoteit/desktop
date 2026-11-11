@@ -2937,6 +2937,18 @@
     "toPersistentBody": "",
     "toPersistentTitle": ""
   },
+  "productMaxDevices": {
+    "aboutLive": "",
+    "below": "",
+    "label": "",
+    "none": "",
+    "notChanged": "",
+    "overLive": "",
+    "placeholder": "",
+    "problem": "",
+    "title": "",
+    "zero": ""
+  },
   "productMove": {
     "attach": "",
     "attachTitle": "",
@@ -3780,6 +3792,8 @@
     "notificationMethod": "方法",
     "notifications": "通知",
     "notifyEmail": "メール",
+    "notifyProductFull": "",
+    "notifyProductFullHelp": "",
     "notifyPush": "モバイルプッシュ",
     "notifyRestore": "デバイス復元メール",
     "notifyRestoreHelp": "管理しているが所有していないデバイスが復元コードで復元されたとき。所有者には常にメールが送信されます。",
