@@ -1059,6 +1059,7 @@
     "boots": "Boots: {{boots}}",
     "created": "Issued",
     "description": "For a device that starts fresh at every boot: a key brings it back as itself — the same ID, settings, access and history. Each key is shown once, when it is issued.",
+    "ephemeral": "Devices of {{product}} are ephemeral: each start is a new device, registered with one of the product’s join keys. No device join key is issued to them; revoke these once nothing holds them.",
     "expired": "Expired",
     "expires": "Expires",
     "full": "Two keys are in force, the most a device has: revoke one before issuing another. To roll over, issue the next key, install it, see its first boot here, then revoke the old one.",
@@ -2077,6 +2078,12 @@
     "RUNNING": "Running",
     "SUCCESS": "Success",
     "WAITING": "Waiting"
+  },
+  "joinKeyContainer": {
+    "device": "Download the key, then run this beside {{file}}. The container reads it from the file named by {{env}} and comes back as this device at every start: it keeps its identity in memory, so it needs no volume.",
+    "product": "Download the key, then run this beside {{file}}. The container reads it from the file named by {{env}} to register a new device, which keeps its own key in the volume from then on: one volume per device.",
+    "productEphemeral": "Download the key, then run this beside {{file}}. The container reads it from the file named by {{env}}; this product’s devices are new at every start, so it needs no volume.",
+    "title": "Run it in a container"
   },
   "lanSharePage": {
     "allowUsersToConnect": "Allow users to connect to your remote device through your IP address using a custom port.",

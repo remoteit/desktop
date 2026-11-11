@@ -7,10 +7,11 @@ import { CopyCodeBlock } from './CopyCodeBlock'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 import { dispatch } from '../store'
-import { downloadJoinKey } from '../helpers/joinKeyFile'
+import { PRODUCT_JOIN_KEY_FILE, downloadJoinKey } from '../helpers/joinKeyFile'
+import { JoinKeyContainer } from './JoinKeyContainer'
 
 type Props = {
-  product: Pick<IDeviceProduct, 'id' | 'name'>
+  product: Pick<IDeviceProduct, 'id' | 'name' | 'lifecycle'>
   // How the key is made: through the store, unless given (a product outside it — remote.it's proxy product).
   onCreate?: (input: IJoinKeyInput) => Promise<{ key?: string; reason?: string }>
   onClose: () => void
@@ -104,9 +105,15 @@ export const CreateJoinKeyDialog: React.FC<Props> = ({ product, onCreate, onClos
                   'Give it to the machine as {{env}}, or save it in a file only the daemon can read and name the file in {{file}}.',
               })}
             </Typography>
+            <JoinKeyContainer
+              kind="product"
+              prefix={PRODUCT_JOIN_KEY_FILE}
+              name={created.name}
+              ephemeral={product.lifecycle === 'ephemeral'}
+            />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => downloadJoinKey('remoteit-join-key', created.name, created.key)}>
+            <Button onClick={() => downloadJoinKey(PRODUCT_JOIN_KEY_FILE, created.name, created.key)}>
               <Icon name="download" inlineLeft />
               {t('createJoinKey.download', 'Download')}
             </Button>

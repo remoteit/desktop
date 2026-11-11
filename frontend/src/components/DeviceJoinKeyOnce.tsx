@@ -2,7 +2,8 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Typography } from '@mui/material'
 import { JOIN_KEY_ENV, JOIN_KEY_FILE_ENV } from '../constants'
-import { downloadJoinKey } from '../helpers/joinKeyFile'
+import { DEVICE_JOIN_KEY_FILE, downloadJoinKey } from '../helpers/joinKeyFile'
+import { JoinKeyContainer } from './JoinKeyContainer'
 import { CopyCodeBlock } from './CopyCodeBlock'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
@@ -48,6 +49,7 @@ export const DeviceJoinKeyOnce: React.FC<Props> = ({ name, joinKey, children }) 
             'Give it to the device at every boot as {{env}}, or in a file named by {{file}}: from a secret store, a USB stick, or an image built for this device. It then comes back as itself — the same ID, settings, access and history — with new session keys each boot.',
         })}
       </Typography>
+      <JoinKeyContainer kind="device" prefix={DEVICE_JOIN_KEY_FILE} name={name} />
     </>
   )
 }
@@ -56,7 +58,7 @@ export const DeviceJoinKeyOnce: React.FC<Props> = ({ name, joinKey, children }) 
 export const DownloadJoinKeyButton: React.FC<{ name: string; joinKey: string }> = ({ name, joinKey }) => {
   const { t } = useTranslation()
   return (
-    <Button onClick={() => downloadJoinKey('remoteit-device-join-key', name, joinKey)}>
+    <Button onClick={() => downloadJoinKey(DEVICE_JOIN_KEY_FILE, name, joinKey)}>
       <Icon name="download" inlineLeft />
       {t('deviceJoinKeyOnce.download', 'Download')}
     </Button>

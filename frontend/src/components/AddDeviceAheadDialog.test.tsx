@@ -111,6 +111,12 @@ describe('AddDeviceAheadDialog', () => {
     expect([...document.body.querySelectorAll('[data-block]')].map(b => b.getAttribute('data-block'))).toEqual([
       SECRET,
       `REMOTEIT_JOIN_KEY=${SECRET}`,
+      [
+        'docker run -d --name remoteit --restart unless-stopped --network host',
+        '-e REMOTEIT_JOIN_KEY_FILE=/run/secrets/remoteit_join_key',
+        '-v "$PWD/remoteit-device-join-key-kiosk-4.txt:/run/secrets/remoteit_join_key:ro"',
+        'ghcr.io/remoteit/device',
+      ].join(' \\\n  '),
     ])
     expect(button('Download')).toBeTruthy()
 
