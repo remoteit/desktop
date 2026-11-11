@@ -75,9 +75,13 @@
 
    1.9.0 (additive): 'localPorts' — another app on this machine reaches a port the engine listens on at 127.0.0.1
    (graphql-api docs/LOCAL-PORT.md). Only a phone's shell says it, once that is known to work there; a desktop's need
-   not, where it always does. Without it, a phone is offered no local ports. */
+   not, where it always does. Without it, a phone is offered no local ports.
 
-export const BRIDGE_VERSION = '1.9.0'
+   1.10.0 (additive): DeviceStatus.ports — the machine's local ports as the OS account the shell runs in sees them
+   (graphql-api docs/PROXY-GROUPS.md §15, "Local ports listed per account"): the daemon's own status.ports, passed as it
+   says them. Absent from a shell or daemon that does not list them; the page then shows what it showed before. */
+
+export const BRIDGE_VERSION = '1.10.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -198,6 +202,29 @@ export type DeviceStatus = {
   services?: ServicesStatus
   // 1.5.0: whether remote.it's relay (the websocket setting) carries this device's traffic now.
   relay?: { using: boolean }
+  // 1.10.0: the local ports that answer this OS account — every one, to the machine's administrator. Absent: not said.
+  ports?: ListedPort[]
+}
+
+/* 1.10.0: a local port of the machine as the daemon lists it to the caller's OS account (connectd control/client
+   status.go Port). id is the initiator's (graphql's LocalPort.initiatorId), target the service's id, bind as served,
+   tls the name it is served under, state the initiator's: armed, active, refused, bind-failed, rejected. Whose it is:
+   scope 'machine', every account's; 'account', person's (email theirs where the daemon knows it), yours the caller's
+   own. To the administrator alone: another person's, and one that answers no one (noOne: its person is signed in on no
+   account here, or a scope the daemon does not serve). */
+export type ListedPort = {
+  id: string
+  port: number
+  bind: string
+  proto: 'tcp' | 'udp' | string
+  target: string
+  tls?: string
+  state: string
+  scope: 'machine' | 'account' | string
+  person?: string
+  email?: string
+  yours?: boolean
+  noOne?: boolean
 }
 
 export type SettingValue = string | number | boolean | null

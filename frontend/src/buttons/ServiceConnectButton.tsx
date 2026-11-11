@@ -17,6 +17,7 @@ import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
 import { useApplication } from '../hooks/useApplication'
 import { Link } from '../components/Link'
 import { LocalPortConnect } from '../components/LocalPortConnect'
+import { LocalPortsListed } from '../components/LocalPortsListed'
 import { useLocalPort } from '../hooks/useLocalPort'
 import { wantsHttps } from '../services/localPorts'
 
@@ -152,6 +153,12 @@ export const ServiceConnectButton: React.FC = () => {
             )}
           </Gutters>
           {!onPort && !named && portLink && <Gutters size="md" top={null} bottom={null}>{portLink}</Gutters>}
+          {/* The service's other ports here that this machine's daemon lists: the machine's, opened by someone else. */}
+          {localPort.offered && localPort.others.length > 0 && (
+            <Gutters size="md" top={null} bottom={null}>
+              <LocalPortsListed ports={localPort.others} />
+            </Gutters>
+          )}
         </GuideBubble>
         <ConnectionErrorMessage connection={connection} visible={showError} />
       </Gutters>

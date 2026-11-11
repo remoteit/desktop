@@ -72,7 +72,7 @@ describe('LocalPortConnect', () => {
     windowOpen.mockClear()
     names.answer = true
     names.set.mockClear()
-    state = { offered: true, local: LOCAL, busy: false, open: vi.fn(), close: vi.fn() }
+    state = { offered: true, local: LOCAL, others: [], busy: false, open: vi.fn(), close: vi.fn() }
   })
 
   afterEach(() => {
@@ -193,5 +193,53 @@ describe('LocalPortConnect', () => {
     state.local = { ...LOCAL }
     await render()
     expect(scope()).toBeUndefined()
+  })
+
+  // Where the shell lists the machine's ports (graphql-api docs/PROXY-GROUPS.md §15, "Local ports listed per account"):
+  // whose it is as the daemon lists it to this OS account, in connectd's menu words, in place of graphql's scope.
+  it('whose it is, as the daemon lists it to this account on the computer', async () => {
+    const whose = () => container.querySelector('[data-testid="local-port-whose"]')?.textContent
+    const scope = () => container.querySelector('[data-testid="local-port-scope"]')?.textContent
+    const listed = { id: 'i1', port: 33000, bind: '127.0.0.1', proto: 'tcp', target: service.id, state: 'armed' }
+    state.local = { ...LOCAL, scope: 'ACCOUNT' }
+
+    state.listed = { ...listed, scope: 'account', person: 'U1', yours: true }
+    await render()
+    expect(whose()).toBe('On this computer: yours')
+    expect(scope()).toBeUndefined()
+
+    state.listed = { ...listed, scope: 'machine', state: 'active' }
+    await render()
+    expect(whose()).toBe('On this computer: every account')
+
+    // To the machine's administrator: another person's, and one that answers no one until they sign in.
+    state.listed = { ...listed, scope: 'account', person: 'U2', email: 'kim@example.com' }
+    await render()
+    expect(whose()).toBe("On this computer: kim@example.com's")
+    state.listed = { ...listed, scope: 'account', person: 'U2', email: 'kim@example.com', noOne: true }
+    await render()
+    expect(whose()).toBe("On this computer: kim@example.com's: answers no one until they sign in")
+
+    state.listed = { ...listed, scope: 'machine', state: 'bind-failed' }
+    await render()
+    expect(whose()).toBe('On this computer: every account; bind-failed')
+  })
+
+  it('listening but not listed to this account: it does not answer here; not said while it starts', async () => {
+    const whose = () => container.querySelector('[data-testid="local-port-whose"]')?.textContent
+    const scope = () => container.querySelector('[data-testid="local-port-scope"]')?.textContent
+    state.local = { ...LOCAL, scope: 'ACCOUNT' }
+    state.listed = null
+    await render()
+    expect(whose()).toBe(
+      'Does not answer this account on the computer: it answers only the accounts its person is signed in on'
+    )
+    state.local = { ...LOCAL, state: 'pending', scope: 'ACCOUNT' }
+    await render()
+    expect(whose()).toBeUndefined()
+    expect(scope()).toBe('For your account')
+    state.local = { ...LOCAL, open: false, state: 'closed', scope: null }
+    await render()
+    expect(whose()).toBeUndefined()
   })
 })

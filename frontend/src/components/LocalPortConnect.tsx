@@ -7,7 +7,7 @@ import { windowOpen } from '../services/browser'
 import { emit } from '../services/Controller'
 import { useApplication } from '../hooks/useApplication'
 import { LocalPortState } from '../hooks/useLocalPort'
-import { localPortHost, localPortWebURL, namesResolve, setNamesResolve } from '../services/localPorts'
+import { listedWhose, localPortHost, localPortWebURL, namesResolve, setNamesResolve } from '../services/localPorts'
 import { saveLaunchTokens } from '../helpers/connectionHelper'
 import { sshCommand } from '../helpers/sshHelper'
 import { PromptModal } from './PromptModal'
@@ -22,7 +22,11 @@ import { Icon } from './Icon'
    https (graphql-api docs/LOCAL-PORT.md, "TLS"): where the port is served over https, a web service is shown and
    launched as https://<name>:<port>; "Use http instead" reopens it plain, on the same port — the way out when the
    handshake fails (the browser shows a connection error) or the name does not resolve here, since the certificate
-   names the name alone. "Use https" goes back, offered while this machine can serve it. */
+   names the name alone. "Use https" goes back, offered while this machine can serve it.
+   Whose it is: where the shell lists the machine's ports (state.listed), as the daemon lists it to the OS account the
+   app runs in, in the words of connectd's menu — "every account", "yours", another person's — or that it does not
+   answer this account (another person's account port, or one opened for an account not signed in here); elsewhere, the
+   scope graphql says. */
 type Props = { state: LocalPortState; service?: IService; connection?: IConnection }
 
 export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }) => {
@@ -63,6 +67,18 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
     )
   }
 
+  // Not listed while the daemon has yet to apply it: said only once it listens.
+  const whose = !local.open
+    ? undefined
+    : state.listed
+    ? t('localPortConnect.listed', 'On this computer: {{whose}}', { whose: listedWhose(state.listed, t) })
+    : state.listed === null && local.state === 'listening'
+    ? t(
+        'localPortConnect.notListed',
+        'Does not answer this account on the computer: it answers only the accounts its person is signed in on'
+      )
+    : undefined
+
   const endpoint = web ? localPortWebURL(local, names) : ssh ? sshCommand(host, local.port) : `${host}:${local.port}`
 
   const launch = (tokens: ILookup<string> = {}) => {
@@ -101,12 +117,24 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
               ? t('localPortConnect.pending', 'Starting on this machine…')
               : t('localPortConnect.listening', 'Listening — connects when used, closes when idle')}
           </Typography>
-          {local.open && local.scope && (
-            <Typography variant="caption" color="textSecondary" component="div" data-testid="local-port-scope">
-              {local.scope === 'ACCOUNT'
-                ? t('localPortConnect.forAccount', 'For your account')
-                : t('localPortConnect.forMachine', 'For this whole computer')}
+          {whose ? (
+            <Typography
+              variant="caption"
+              color={state.listed ? 'textSecondary' : 'warning.main'}
+              component="div"
+              data-testid="local-port-whose"
+            >
+              {whose}
             </Typography>
+          ) : (
+            local.open &&
+            local.scope && (
+              <Typography variant="caption" color="textSecondary" component="div" data-testid="local-port-scope">
+                {local.scope === 'ACCOUNT'
+                  ? t('localPortConnect.forAccount', 'For your account')
+                  : t('localPortConnect.forMachine', 'For this whole computer')}
+              </Typography>
+            )
           )}
         </Box>
         {launchable && local.open && (

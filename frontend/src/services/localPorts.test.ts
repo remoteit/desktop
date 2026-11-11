@@ -10,6 +10,11 @@ vi.mock('./localSubnet', () => ({ beaconDevice: () => beacon() }))
 vi.mock('./browser', () => ({ default: { isIOS: false } }))
 
 import {
+  listedFor,
+  listedHostPort,
+  listedLine,
+  listedOthers,
+  listedPorts,
   localPortWebURL,
   wantsHttps,
   namesResolve,
@@ -204,5 +209,55 @@ describe('https (graphql-api docs/LOCAL-PORT.md, "TLS")', () => {
     expect(query).toContain('https: $https')
     expect(query).toContain('httpsAvailable')
     expect(variables).toEqual({ deviceId: 'M', serviceId: 'S', port: undefined, https: true })
+  })
+})
+
+/* The machine's local ports as the daemon lists them to this OS account (graphql-api docs/PROXY-GROUPS.md §15, "Local
+   ports listed per account"), said in connectd's menu words — the same ports and lines as connectd's own test
+   (control/client port_test.go TestPortLine). */
+describe('listed ports', () => {
+  const t = (_key: string, text: string, values?: Record<string, unknown>) =>
+    text.replace(/{{(\w+)}}/g, (_, k) => String(values?.[k] ?? ''))
+  const PORTS = [
+    { id: 'm', port: 33000, bind: '127.0.0.1', proto: 'tcp', target: '80:00:00:00:00:00:00:02', state: 'armed', scope: 'machine' },
+    { id: 'a', port: 53, bind: '127.0.0.1', proto: 'udp', target: '80:00:00:00:00:00:00:03', tls: '', state: 'active', scope: 'account', person: 'P1', email: 'pat@example.com', yours: true },
+    { id: 'o', port: 33001, bind: '127.0.0.1', proto: 'tcp', target: '80:00:00:00:00:00:00:07', state: 'armed', scope: 'account', person: 'P3', email: 'lee@example.com' },
+    { id: 'n', port: 33002, bind: '::1', proto: 'tcp', target: '80:00:00:00:00:00:00:04', tls: 'web.at.remote.it', state: 'armed', scope: 'account', person: 'P2', email: 'kim@example.com', noOne: true },
+    { id: 'f', port: 33003, bind: '127.0.0.1', proto: 'tcp', target: '80:00:00:00:00:00:00:05', state: 'refused', scope: 'one-account', noOne: true },
+    { id: 'b', port: 33004, bind: '127.0.0.1', proto: 'tcp', target: '80:00:00:00:00:00:00:06', state: 'bind-failed', scope: 'machine' },
+  ]
+
+  it("each port in one line, as connectd's menu says it", () => {
+    expect(PORTS.map(p => listedLine(p, t))).toEqual([
+      '127.0.0.1:33000 → 80:00:00:00:00:00:00:02 (every account)',
+      '127.0.0.1:53/udp → 80:00:00:00:00:00:00:03 (yours)',
+      "127.0.0.1:33001 → 80:00:00:00:00:00:00:07 (lee@example.com's)",
+      "[::1]:33002 → web.at.remote.it (kim@example.com's: answers no one until they sign in)",
+      '127.0.0.1:33003 → 80:00:00:00:00:00:00:05 (answers no one: scope one-account is not served here; refused)',
+      '127.0.0.1:33004 → 80:00:00:00:00:00:00:06 (every account; bind-failed)',
+    ])
+  })
+
+  it("whose by its person where the daemon does not know their email; copied without the protocol", () => {
+    expect(listedLine({ ...PORTS[3], email: undefined }, t)).toContain("(P2's: answers no one until they sign in)")
+    expect(listedHostPort(PORTS[1])).toBe('127.0.0.1:53')
+    expect(listedHostPort(PORTS[3])).toBe('[::1]:33002')
+  })
+
+  it('a shell or daemon that does not list them says nothing; none listed is an empty list', () => {
+    expect(listedPorts(undefined)).toBeUndefined()
+    expect(listedPorts({ stage: 'solo' })).toBeUndefined()
+    expect(listedPorts({ ports: [] })).toEqual([])
+    expect(listedPorts({ ports: PORTS })).toBe(PORTS)
+  })
+
+  it("the account's own port by its initiator; the service's others beside it", () => {
+    expect(listedFor(PORTS, { initiatorId: 'a' })).toBe(PORTS[1])
+    expect(listedFor(PORTS, { initiatorId: 'gone' })).toBeUndefined()
+    expect(listedFor(PORTS, { initiatorId: null })).toBeUndefined()
+    const shared = [...PORTS, { ...PORTS[0], id: 'm2', port: 33010 }]
+    expect(listedOthers(shared, '80:00:00:00:00:00:00:02', { initiatorId: 'm' }).map(p => p.id)).toEqual(['m2'])
+    expect(listedOthers(shared, '80:00:00:00:00:00:00:02', null).map(p => p.id)).toEqual(['m', 'm2'])
+    expect(listedOthers(shared, '80:00:00:00:00:00:00:99', null)).toEqual([])
   })
 })

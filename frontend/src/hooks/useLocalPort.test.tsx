@@ -9,11 +9,12 @@ const api = vi.hoisted(() => ({
   close: vi.fn(),
   ui: {} as any,
   auth: {} as any,
+  shell: undefined as any,
 }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({ ui: api.ui, auth: api.auth }) }))
 vi.mock('./useDeviceSessions', () => ({ useDeviceSessions: () => true }))
 vi.mock('../services/browser', () => ({ default: { isIOS: false } }))
-vi.mock('../services/thisDevice', () => ({ thisDevice: async () => undefined }))
+vi.mock('../services/thisDevice', () => ({ thisDevice: async () => api.shell }))
 vi.mock('../services/localSubnet', () => ({ beaconDevice: async () => null }))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn(), graphQLRequestWithReason: vi.fn() }))
 vi.mock('../services/localPorts', async importOriginal => ({
@@ -50,6 +51,7 @@ describe('useLocalPort', () => {
     api.auth = { user: { id: 'U1' } }
     api.read.mockReset().mockResolvedValue(null)
     api.open.mockReset()
+    api.shell = undefined
   })
   afterEach(() => act(() => root.unmount()))
 
@@ -103,5 +105,87 @@ describe('useLocalPort', () => {
       await act(() => seen.open())
       expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, undefined)
     }
+  })
+
+  /* The machine's ports as the daemon lists them to this OS account (graphql-api docs/PROXY-GROUPS.md §15, "Local ports
+     listed per account"), through the shell's status: whom the service's port answers here, and its others. */
+  describe('listed by the shell', () => {
+    const port = (id: string, more: object = {}) => ({
+      id,
+      port: 33000,
+      bind: '127.0.0.1',
+      proto: 'tcp',
+      target: SERVICE,
+      state: 'armed',
+      scope: 'machine',
+      ...more,
+    })
+    let status: any
+    let listeners: Set<(status: any) => void>
+    const shellWith = () => {
+      listeners = new Set()
+      return {
+        compatible: true,
+        has: (c: string) => c === 'status',
+        call: vi.fn(async () => status),
+        on: (_event: string, listener: (status: any) => void) => {
+          listeners.add(listener)
+          return () => listeners.delete(listener)
+        },
+      }
+    }
+    const OPEN = { initiatorId: 'mine', open: true, state: 'listening', port: 33000, serviceId: SERVICE }
+
+    it('no shell: nothing said, as before', async () => {
+      api.read.mockResolvedValue(OPEN)
+      await render()
+      expect(seen.listed).toBeUndefined()
+      expect(seen.others).toEqual([])
+    })
+
+    it('a shell or daemon that does not list them: nothing said, as before', async () => {
+      api.read.mockResolvedValue(OPEN)
+      status = { stage: 'solo' }
+      api.shell = shellWith()
+      await render()
+      expect(api.shell.call).toHaveBeenCalledWith('status', {})
+      expect(seen.listed).toBeUndefined()
+      expect(seen.others).toEqual([])
+    })
+
+    it("the open port as listed here — or null, listed to no one of this account; the service's others beside it", async () => {
+      api.read.mockResolvedValue(OPEN)
+      status = { ports: [port('mine', { scope: 'account', person: 'U1', yours: true }), port('kim'), port('x', { target: PI })] }
+      api.shell = shellWith()
+      await render()
+      expect(seen.listed).toMatchObject({ id: 'mine', yours: true })
+      expect(seen.others.map(p => p.id)).toEqual(['kim'])
+
+      // Another person's account port, answering their accounts alone: no longer listed here.
+      await act(async () => listeners.forEach(l => l({ ports: [port('kim')] })))
+      expect(seen.listed).toBeNull()
+      expect(seen.others.map(p => p.id)).toEqual(['kim'])
+    })
+
+    it('closed: nothing to say of it, the others still listed', async () => {
+      api.read.mockResolvedValue({ ...OPEN, initiatorId: null, open: false, state: 'closed' })
+      status = { ports: [port('kim')] }
+      api.shell = shellWith()
+      await render()
+      expect(seen.listed).toBeUndefined()
+      expect(seen.others.map(p => p.id)).toEqual(['kim'])
+    })
+
+    it('read again once the port is open: the daemon lists it once it has applied it', async () => {
+      status = { ports: [] }
+      api.shell = shellWith()
+      await render()
+      expect(seen.listed).toBeUndefined()
+      status = { ports: [port('mine')] }
+      api.open.mockResolvedValue(OPEN)
+      await act(() => seen.open())
+      await act(async () => {})
+      expect(seen.listed).toMatchObject({ id: 'mine', scope: 'machine' })
+    })
   })
 })

@@ -2,11 +2,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { useDeviceSessions } from './useDeviceSessions'
+import { useListedPorts } from './useListedPorts'
+import { ListedPort } from '../services/thisDevice'
 import {
   LocalPort,
   Machine,
   closeLocalPort,
   graphQLLocalPort,
+  listedFor,
+  listedOthers,
   offersLocalPorts,
   openLocalPort,
   scopeFor,
@@ -17,11 +21,17 @@ export type LocalPortState = {
   offered: boolean // this machine runs our daemon, and local ports are offered on it
   local?: LocalPort // the service's local port here, open or closed, once read
   error?: string // why the last open was refused, in graphql's words
+  // Where the shell lists the machine's ports (services/localPorts listedPorts) — undefined where it does not:
+  // listed, the open port as the daemon lists it to this OS account, null when it does not (it answers no one here);
+  // others, the service's other ports listed here — the machine's, opened by someone else, or another person's.
+  listed?: ListedPort | null
+  others: ListedPort[]
   busy: boolean
   open: (port?: number, https?: boolean) => Promise<void>
   close: () => Promise<void>
 }
 
+const NONE: ListedPort[] = []
 const POLL_MS = 1500
 const POLL_FOR_MS = 30_000
 
@@ -52,6 +62,10 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
   const machineId = offered ? machine?.id : undefined
   // Opened here by the person signed in on this machine: their account's alone (services/localPorts scopeFor).
   const scope = scopeFor(machine, userId)
+  // Read again as the port changes: the daemon lists it once it has applied it.
+  const ports = useListedPorts(offered, local && `${local.initiatorId}:${local.open}:${local.state}`)
+  const listed = ports && local?.open ? listedFor(ports, local) ?? null : undefined
+  const others = ports && serviceId ? listedOthers(ports, serviceId, local) : NONE
 
   useEffect(() => {
     setLocal(undefined)
@@ -97,5 +111,5 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
     if (answer) setLocal(answer)
   }, [machineId, serviceId])
 
-  return { offered, local, error, busy, open, close }
+  return { offered, local, error, listed, others, busy, open, close }
 }

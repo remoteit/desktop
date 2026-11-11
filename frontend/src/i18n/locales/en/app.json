@@ -2173,7 +2173,9 @@
     "forAccount": "For your account",
     "forMachine": "For this whole computer",
     "launch": "Open in the browser",
+    "listed": "On this computer: {{whose}}",
     "listening": "Listening — connects when used, closes when idle",
+    "notListed": "Does not answer this account on the computer: it answers only the accounts its person is signed in on",
     "opening": "Opening a local port…",
     "pending": "Starting on this machine…",
     "port": "Port",
@@ -2183,6 +2185,16 @@
     "useLocalhost": "Name does not open? Use localhost",
     "useName": "Use {{name}}",
     "usePort": "Use this port"
+  },
+  "localPortListing": {
+    "everyAccount": "every account",
+    "notServed": "answers no one: scope {{scope}} is not served here",
+    "persons": "{{who}}'s",
+    "untilSignIn": "{{who}}'s: answers no one until they sign in",
+    "yours": "yours"
+  },
+  "localPortsListed": {
+    "title": "Also on a local port of this machine"
   },
   "localSubnetConnect": {
     "address": "resolves here to {{address}}",
@@ -4077,6 +4089,7 @@
     "owner": "Owner",
     "package": "Package {{v}}",
     "permissions": "Permissions",
+    "ports": "Local ports",
     "printers": "Show remote printers on this {{kind}}",
     "protect": "remote.it Protect",
     "protectChoose": "Send all of this {{kind}}’s internet traffic through a device you choose.",

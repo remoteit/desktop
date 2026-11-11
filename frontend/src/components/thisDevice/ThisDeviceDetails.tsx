@@ -1,9 +1,11 @@
 import React from 'react'
 import { List, ListItem, ListItemText, Typography } from '@mui/material'
 import { ThisDeviceModel } from './model'
+import { listedAddress, listedReaches, listedWhose } from '../../services/localPorts'
 
 /* This device's Details (pages/ThisDevicePage.tsx, /this-device/details): what there is to know of it, nothing to
-   change — who owns it and who is signed in on it, how it is reached, what it runs, what it serves and the stages. */
+   change — who owns it and who is signed in on it, how it is reached, what it runs, what it serves, its local ports as
+   this OS account sees them (1.10.0's status.ports, as the menu's "Local ports" lists them) and the stages. */
 
 const COPYABLE = { sx: { userSelect: 'all' as const } }
 
@@ -78,6 +80,23 @@ export const ThisDeviceDetails: React.FC<{ m: ThisDeviceModel }> = ({ m }) => {
                 ]
                   .filter(Boolean)
                   .join(' · ')}
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
+
+      {!!status?.ports?.length && (
+        <List data-section="ports">
+          <Typography variant="subtitle1" paddingX={2}>
+            {t('thisDevice.ports', 'Local ports')}
+          </Typography>
+          {status.ports.map(p => (
+            <ListItem key={p.id} data-port={p.id}>
+              <ListItemText
+                primary={`${listedAddress(p)} → ${listedReaches(p)}`}
+                secondary={listedWhose(p, t)}
+                primaryTypographyProps={COPYABLE}
               />
             </ListItem>
           ))}

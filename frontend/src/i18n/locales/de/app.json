@@ -2173,7 +2173,9 @@
     "forAccount": "",
     "forMachine": "",
     "launch": "",
+    "listed": "",
     "listening": "",
+    "notListed": "",
     "opening": "",
     "pending": "",
     "port": "",
@@ -2183,6 +2185,16 @@
     "useLocalhost": "",
     "useName": "",
     "usePort": ""
+  },
+  "localPortListing": {
+    "everyAccount": "",
+    "notServed": "",
+    "persons": "",
+    "untilSignIn": "",
+    "yours": ""
+  },
+  "localPortsListed": {
+    "title": ""
   },
   "localSubnetConnect": {
     "address": "",
@@ -4077,6 +4089,7 @@
     "owner": "",
     "package": "",
     "permissions": "",
+    "ports": "",
     "printers": "",
     "protect": "",
     "protectChoose": "",

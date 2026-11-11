@@ -546,6 +546,26 @@ describe('This device has what Settings has', () => {
     expect(advanced.container.textContent).not.toContain('Removed from this Mac') // the person said no
   })
 
+  // 1.10.0: the local ports as the daemon lists them to this OS account (graphql-api docs/PROXY-GROUPS.md §15, "Local
+  // ports listed per account"), in connectd's menu words; a shell or daemon without them, no section.
+  it('the local ports in Details, as the daemon lists them to this account', async () => {
+    const ports = [
+      { id: 'm', port: 33000, bind: '127.0.0.1', proto: 'tcp', target: '80:00:00:00:00:00:00:02', tls: 'web.at.remote.it', state: 'armed', scope: 'machine' },
+      { id: 'a', port: 53, bind: '127.0.0.1', proto: 'udp', target: '80:00:00:00:00:00:00:03', state: 'active', scope: 'account', person: 'P1', yours: true },
+      { id: 'n', port: 33002, bind: '127.0.0.1', proto: 'tcp', target: '80:00:00:00:00:00:00:04', state: 'armed', scope: 'account', person: 'P2', email: 'kim@example.com', noOne: true },
+    ]
+    const { container, bridge } = await render({ capabilities: caps, status: { ...status, ports } }, { part: 'details' })
+    expect([...container.querySelectorAll('[data-section="ports"] [data-port]')].map(e => e.textContent)).toEqual([
+      '127.0.0.1:33000 → web.at.remote.itevery account',
+      '127.0.0.1:53/udp → 80:00:00:00:00:00:00:03yours',
+      "127.0.0.1:33002 → 80:00:00:00:00:00:00:04kim@example.com's: answers no one until they sign in",
+    ])
+    await act(async () => bridge.emit('status', { ...bridge.status, ports: [] }))
+    expect(container.querySelector('[data-section="ports"]')).toBeNull()
+    const older = await render({ capabilities: caps, status }, { part: 'details' })
+    expect(sections(older.container)).not.toContain('ports')
+  })
+
   it('the machine’s only one: Uninstall', async () => {
     const { container } = await render(
       { capabilities: caps, status: { ...status, device: { ...status.device, removal: 'uninstall' } }, settings },

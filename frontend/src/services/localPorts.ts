@@ -1,5 +1,5 @@
 import browser from './browser'
-import { thisDevice } from './thisDevice'
+import { DeviceStatus, ListedPort, thisDevice } from './thisDevice'
 import { beaconDevice } from './localSubnet'
 import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 
@@ -157,6 +157,60 @@ export async function closeLocalPort(deviceId: string, serviceId: string): Promi
   )
   return response !== 'ERROR' ? response.data?.data?.closeLocalPort ?? null : null
 }
+
+/* The machine's local ports as this OS account sees them (graphql-api docs/PROXY-GROUPS.md §15, "Local ports listed per
+   account"): the daemon's status.ports, through the shell's status (thisDevice 1.10.0). A machine port answers every
+   account here; an account port only the accounts its person is signed in on — so the service's port, opened for an
+   account, may not answer the account the app runs in. Said in the words of connectd's menu (control/client
+   status.go Port: Address, Reaches, Whose, Line). Absent from an older daemon or shell: undefined, and nothing is said. */
+export const listedPorts = (status?: Partial<DeviceStatus> | null): ListedPort[] | undefined =>
+  Array.isArray(status?.ports) ? status!.ports : undefined
+
+// The listing of the service's port graphql keeps (LocalPort, one a service on a machine): its initiator here.
+export const listedFor = (ports: ListedPort[], local?: Pick<LocalPort, 'initiatorId'> | null) =>
+  local?.initiatorId ? ports.find(p => p.id === local.initiatorId) : undefined
+
+// The service's other ports listed here, beside the one graphql keeps: the machine's, opened by someone else, and —
+// listed where they answer this account — another person's.
+export const listedOthers = (ports: ListedPort[], serviceId: string, local?: Pick<LocalPort, 'initiatorId'> | null) =>
+  ports.filter(p => p.target.toUpperCase() === serviceId.toUpperCase() && p.id !== local?.initiatorId)
+
+// Where it listens: "127.0.0.1:33000", "[::1]:33000", with "/udp" for a UDP one.
+export const listedAddress = (p: Pick<ListedPort, 'bind' | 'port' | 'proto'>) => {
+  const bind = p.bind || '127.0.0.1'
+  return `${bind.includes(':') ? `[${bind}]` : bind}:${p.port}${p.proto === 'udp' ? '/udp' : ''}`
+}
+
+// What is copied: its address without the protocol.
+export const listedHostPort = (p: Pick<ListedPort, 'bind' | 'port'>) => listedAddress({ ...p, proto: 'tcp' })
+
+// What it reaches: its TLS name, else its target's id.
+export const listedReaches = (p: Pick<ListedPort, 'tls' | 'target'>) => p.tls || p.target
+
+// Whether it is served: armed, or carrying a session. A refused one, or one that could not bind, is not.
+export const listedServing = (p: Pick<ListedPort, 'state'>) => p.state === 'armed' || p.state === 'active'
+
+type Say = (key: string, text: string, values?: Record<string, unknown>) => string
+
+// Whom it answers: "every account", "yours", or — to the administrator — whose it is, and that it answers no one where
+// it does. Its state is said where it is not served.
+export function listedWhose(p: ListedPort, t: Say): string {
+  const who = p.email || p.person || ''
+  const whose =
+    p.noOne && p.scope !== 'account'
+      ? t('localPortListing.notServed', 'answers no one: scope {{scope}} is not served here', { scope: p.scope })
+      : p.noOne
+      ? t('localPortListing.untilSignIn', "{{who}}'s: answers no one until they sign in", { who })
+      : p.scope === 'account' && p.yours
+      ? t('localPortListing.yours', 'yours')
+      : p.scope === 'account' && p.person
+      ? t('localPortListing.persons', "{{who}}'s", { who })
+      : t('localPortListing.everyAccount', 'every account')
+  return !listedServing(p) && p.state ? `${whose}; ${p.state}` : whose
+}
+
+// The port as one line says it: "127.0.0.1:33000 → web.at.remote.it (yours)".
+export const listedLine = (p: ListedPort, t: Say) => `${listedAddress(p)} → ${listedReaches(p)} (${listedWhose(p, t)})`
 
 // The host to hand out: the name where it works here, else localhost.
 export const localPortHost = (local: Pick<LocalPort, 'host'>, names: boolean) => (names ? local.host : 'localhost')
