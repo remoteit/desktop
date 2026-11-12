@@ -1,8 +1,8 @@
 {
   "cli": "4.2.0",
   "connectd": "5.7.0",
-  "muxer": "1.0.0",
-  "demuxer": "1.0.0",
+  "muxer": "1.1.1",
+  "demuxer": "1.1.1",
   "cliUrl": "https://downloads.remote.it/cli/v",
   "connectdUrl": "https://downloads.remote.it/connectd/v",
   "muxerUrl": "https://downloads.remote.it/multiport/v",
