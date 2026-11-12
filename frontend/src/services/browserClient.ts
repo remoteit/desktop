@@ -1,4 +1,5 @@
 import { handoff } from './browserGateway'
+import { graphQLDecommissionDevices, graphQLDisableDevices } from './deviceDisable'
 
 /* The portal's channel to this browser's one remote.it client (presence-server docs/browser-client-plan.md §5): the
    shared client at client.on.<stage>.remote.it, reached through a hidden frame of that origin, as a device's page
@@ -11,6 +12,12 @@ export function clientOrigin(): string {
 }
 
 let channel: Promise<MessagePort> | undefined
+let frame: HTMLIFrameElement | undefined
+// Signing out: a client forgotten then is not handed a code — the next person to sign in here registers their own.
+let handoffsStopped = false
+// That this browser has run a client for the portal, kept on the portal's own origin: sign-out forgets one only where one
+// may be (the client's storage is client.on's, which the portal cannot read).
+const USED_KEY = 'remoteit-browser-client'
 
 // The frame lives as long as the page. It loads again by itself when a newer client is published (connectd
 // web/client-worker.js newerPublished: the old client tells its frames to reload, and ends), and says client-ready
@@ -18,8 +25,12 @@ let channel: Promise<MessagePort> | undefined
 // or again after its device was deleted — is given a new one-time code each time it asks, one at a time.
 export function clientChannel(): Promise<MessagePort> {
   channel ??= new Promise<MessagePort>((resolve, reject) => {
+    try {
+      localStorage.setItem(USED_KEY, '1')
+    } catch {}
     const origin = clientOrigin()
-    const frame = document.createElement('iframe')
+    frame = document.createElement('iframe')
+    const own = frame
     frame.src = `${origin}/client.html`
     frame.style.display = 'none'
     frame.setAttribute('aria-hidden', 'true')
@@ -27,30 +38,79 @@ export function clientChannel(): Promise<MessagePort> {
     let handingOff = false
     const timer = setTimeout(() => reject(new Error('the remote.it client did not answer')), 20_000)
     window.addEventListener('message', async e => {
-      if (e.origin !== origin || e.source !== frame.contentWindow) return
+      if (e.origin !== origin || e.source !== own.contentWindow) return
       const d = e.data
-      if (d?.type === 'client-ready') frame.contentWindow?.postMessage({ type: 'connect' }, origin)
+      if (d?.type === 'client-ready') own.contentWindow?.postMessage({ type: 'connect' }, origin)
       else if (d?.type === 'port') {
         clearTimeout(timer)
         if (resolved) channel = Promise.resolve(d.port)
         resolved = true
         resolve(d.port)
-      } else if (d?.type === 'state' && d.state === 'needs-handoff' && !handingOff) {
+      } else if (d?.type === 'state' && d.state === 'needs-handoff' && !handingOff && !handoffsStopped) {
         handingOff = true
         try {
           const h = await handoff()
-          if (h) frame.contentWindow?.postMessage({ type: 'handoff', handoff: h }, origin)
+          if (h) own.contentWindow?.postMessage({ type: 'handoff', handoff: h }, origin)
         } finally {
           handingOff = false
         }
       }
     })
-    document.body.appendChild(frame)
+    document.body.appendChild(own)
   }).catch(err => {
     channel = undefined
     throw err
   })
   return channel
+}
+
+// Makes this browser's client forget itself (connectd web/client-worker.js forget): its key, its UID, the host keys it
+// accepted. Resolves to the UID it was — null for none, or no answer in time.
+export async function forgetBrowserClient(waitMs = 10_000): Promise<string | null> {
+  const port = await clientChannel()
+  const id = Math.random()
+  return new Promise(resolve => {
+    const timer = setTimeout(() => done(null), waitMs)
+    const heard = (m: MessageEvent) => {
+      if (m.data?.type === 'forgotten' && m.data.id === id) done(typeof m.data.uid === 'string' ? m.data.uid : null)
+    }
+    const done = (uid: string | null) => {
+      clearTimeout(timer)
+      port.removeEventListener('message', heard)
+      resolve(uid)
+    }
+    port.addEventListener('message', heard)
+    port.start()
+    port.postMessage({ type: 'forget', id })
+  })
+}
+
+// Whether this browser has run a client for the portal.
+export function browserClientUsed(): boolean {
+  try {
+    return localStorage.getItem(USED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+// The person's reset of this browser's client — one that does not work — or their sign-out: the client forgets itself,
+// and its device is removed as the person (disabled, then decommissioned; a device not theirs any more is refused, and
+// left to its own expiry). After a reset the client registers anew the next time it is used. Signing out, it is not
+// handed a code, and the frame goes: nothing of the client stays in the browser for whoever signs in next.
+export async function resetBrowserClient(options: { signingOut?: boolean } = {}): Promise<void> {
+  if (options.signingOut) handoffsStopped = true
+  const uid = await forgetBrowserClient()
+  if (uid && (await graphQLDisableDevices([uid])) !== 'ERROR') await graphQLDecommissionDevices([uid])
+  if (!options.signingOut) return
+  try {
+    localStorage.removeItem(USED_KEY)
+  } catch {}
+  // The frame gone, nothing of it can ask for a code: the next person to sign in here starts a client of their own.
+  frame?.remove()
+  frame = undefined
+  channel = undefined
+  handoffsStopped = false
 }
 
 export type SSHEvents = {

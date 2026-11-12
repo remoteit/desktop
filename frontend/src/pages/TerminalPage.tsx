@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Box } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
-import { openSSH, SSHSession } from '../services/browserClient'
+import { openSSH, resetBrowserClient, SSHSession } from '../services/browserClient'
 import { graphQLBasicRequest } from '../services/graphQL'
 
 /* A terminal on a device's SSH service through this browser's remote.it client — nothing to install
@@ -12,7 +12,11 @@ import { graphQLBasicRequest } from '../services/graphQL'
    who to log in as; a device with SSH certificates on lets you in by a certificate for minutes, for a key made for the
    session, when its account lets you be that user (graphql sshCertificate) — otherwise the password or the server's
    own questions are asked, and an unknown host key, in the terminal itself, as ssh does; none of them is kept, but an
-   accepted host key, by the client. */
+   accepted host key, by the client. A session that fails, or does not open in RESET_OFFER_MS, offers to reset this
+   browser's client — one whose device was removed cannot sign in again — and opens the terminal anew. */
+const RESET_OFFER_MS = 20_000
+
+
 export const TerminalPage: React.FC = () => {
   const box = useRef<HTMLDivElement>(null)
   const params = new URLSearchParams(useLocation().search)
@@ -20,6 +24,14 @@ export const TerminalPage: React.FC = () => {
   const port = Number(params.get('port') || 22)
   const title = params.get('title') || name
   const serviceId = params.get('service') || ''
+  const [offerReset, setOfferReset] = useState(false)
+  const [resetting, setResetting] = useState(false)
+
+  const reset = async () => {
+    setResetting(true)
+    await resetBrowserClient().catch(() => {})
+    window.location.reload()
+  }
 
   useEffect(() => {
     if (!box.current || !name) return
@@ -61,6 +73,7 @@ export const TerminalPage: React.FC = () => {
 
     let session: SSHSession | undefined
     let live = false
+    let offerTimer: ReturnType<typeof setTimeout> | undefined
     const typed = term.onData(data => {
       if (live && session) return session.input(new TextEncoder().encode(data))
       for (const ch of data) line?.(ch)
@@ -86,11 +99,14 @@ export const TerminalPage: React.FC = () => {
       const user = account || (await readLine('login as: ', true)).trim()
       if (!user) return term.write('No user name: closed.\r\n')
       term.write('\x1b[2mconnecting…\x1b[0m\r\n')
+      offerTimer = setTimeout(() => setOfferReset(true), RESET_OFFER_MS)
       session = await openSSH(
         { name, port, user, cols: term.cols, rows: term.rows },
         {
           open: () => {
             live = true
+            clearTimeout(offerTimer)
+            setOfferReset(false)
             term.focus()
           },
           data: bytes => term.write(bytes),
@@ -101,6 +117,7 @@ export const TerminalPage: React.FC = () => {
           error: message => {
             live = false
             term.write(`\r\n\x1b[31m${message}\x1b[0m\r\n`)
+            setOfferReset(true)
           },
           ask: async (instruction, questions) => {
             if (instruction) term.write(instruction + '\r\n')
@@ -135,11 +152,13 @@ export const TerminalPage: React.FC = () => {
         }
       ).catch(err => {
         term.write(`\r\n\x1b[31m${err.message}\x1b[0m\r\n`)
+        setOfferReset(true)
         return undefined
       })
     })()
 
     return () => {
+      clearTimeout(offerTimer)
       typed.dispose()
       resized.dispose()
       window.removeEventListener('resize', onResize)
@@ -148,5 +167,20 @@ export const TerminalPage: React.FC = () => {
     }
   }, [name, port, serviceId])
 
-  return <Box ref={box} sx={{ position: 'fixed', inset: 0, bgcolor: '#111111', padding: 1 }} />
+  return (
+    <>
+      <Box ref={box} sx={{ position: 'fixed', inset: 0, bgcolor: '#111111', padding: 1 }} />
+      {offerReset && (
+        <Button
+          variant="contained"
+          size="small"
+          disabled={resetting}
+          onClick={reset}
+          sx={{ position: 'fixed', top: 12, right: 12 }}
+        >
+          {resetting ? 'Resetting…' : "Reset this browser's remote.it client"}
+        </Button>
+      )}
+    </>
+  )
 }

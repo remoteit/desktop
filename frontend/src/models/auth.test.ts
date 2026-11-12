@@ -90,6 +90,8 @@ vi.mock('../services/oidc', () => ({
   OidcError: class OidcError extends Error {},
 }))
 vi.mock('../helpers/stageHelper', () => ({ chooseStage, reloadIfStageChanged }))
+const browserClient = vi.hoisted(() => ({ browserClientUsed: vi.fn(), resetBrowserClient: vi.fn() }))
+vi.mock('../services/browserClient', () => browserClient)
 vi.mock('../services/permitteerAccount', () => ({ signOutEverywhere }))
 const { broadcastChatSignout } = vi.hoisted(() => ({ broadcastChatSignout: vi.fn() }))
 vi.mock('../services/chatPopout', () => ({ broadcastChatSignout }))
@@ -976,5 +978,35 @@ describe('auth model — a background heal that fails on boot', () => {
     const dispatch = await boot()
     expect(dispatch.auth.handleSignInSuccess).not.toHaveBeenCalled()
     expect(dispatch.auth.set).toHaveBeenCalledWith(aFailureShowing('consent_required'))
+  })
+})
+
+/* The browser's remote.it client acts for the person who signed in: device pages open through it with no session. So
+   sign-out makes it forget itself and removes its device — while a token can still remove it, before this app's own
+   tokens go — and only in a browser that ran one. */
+describe('auth model — sign-out forgets this browser’s remote.it client', () => {
+  it('a browser that ran a client: reset, as signing out, before the tokens are dropped', async () => {
+    const { oidcClearLocal } = await import('../services/oidc')
+    browserClient.browserClientUsed.mockReturnValue(true)
+    browserClient.resetBrowserClient.mockReset().mockResolvedValue(undefined)
+    const { dispatch } = spyDispatch()
+    await effectsFor(dispatch).signedOut()
+    expect(browserClient.resetBrowserClient).toHaveBeenCalledWith({ signingOut: true })
+    expect(browserClient.resetBrowserClient.mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(oidcClearLocal).mock.invocationCallOrder.at(-1)!
+    )
+  })
+
+  it('a browser that never ran one is not touched, and a client that fails never holds the sign-out', async () => {
+    browserClient.browserClientUsed.mockReturnValue(false)
+    browserClient.resetBrowserClient.mockReset()
+    await effectsFor(spyDispatch().dispatch).signedOut()
+    expect(browserClient.resetBrowserClient).not.toHaveBeenCalled()
+
+    browserClient.browserClientUsed.mockReturnValue(true)
+    browserClient.resetBrowserClient.mockRejectedValue(new Error('no answer'))
+    const { dispatch } = spyDispatch()
+    await effectsFor(dispatch).signedOut()
+    expect(dispatch.auth.set).toHaveBeenCalledWith(expect.objectContaining({ authenticated: false }))
   })
 })
