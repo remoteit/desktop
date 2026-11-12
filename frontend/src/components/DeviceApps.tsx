@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -11,10 +11,11 @@ import {
   Switch,
   Typography,
 } from '@mui/material'
-import { DeviceApp, graphQLDeviceApps, graphQLSetDeviceApp } from '../services/graphQLDeviceApps'
-import { settingLocked, settingOn } from '../services/graphQLDeviceSettings'
-import { useSubnetReach } from '../hooks/useLocalSubnetName'
-import { useDeviceSettings } from '../hooks/useDeviceSettings'
+import { DeviceApp } from '../services/graphQLDeviceApps'
+import { settingLocked } from '../services/graphQLDeviceSettings'
+import { useSubnetName } from '../hooks/useLocalSubnetName'
+import { useDeviceApps } from '../hooks/useDeviceApps'
+import { openTerminal } from '../helpers/terminalHelper'
 import { settingNote } from './DeviceSettingRow'
 import { DeviceMcpExecSetting } from './DeviceMcpExecSetting'
 import { Icon } from './Icon'
@@ -27,48 +28,15 @@ import { Icon } from './Icon'
    the API has no apps. */
 export const DeviceApps: React.FC<{ deviceId: string; canManage: boolean }> = ({ deviceId, canManage }) => {
   const { t } = useTranslation()
-  const [apps, setApps] = useState<DeviceApp[] | null>()
-  const [switching, setSwitching] = useState<string>()
-  const reach = useSubnetReach(deviceId)
-  const settings = useDeviceSettings(deviceId)
-  const consoleSetting = settings.setting('console')
-
-  useEffect(() => {
-    setApps(undefined)
-    graphQLDeviceApps(deviceId).then(setApps)
-  }, [deviceId])
+  const { apps, switching, turn, isOn, consoleSetting, settings } = useDeviceApps(deviceId)
+  const name = useSubnetName(deviceId)
 
   if (!apps?.length) return null
 
-  // The device turns it on or off within seconds: wait for what it says, up to half a minute.
-  const turn = async (app: DeviceApp, on: boolean) => {
-    setSwitching(app.id)
-    const changed =
-      app.id === 'console' && consoleSetting
-        ? await settings.set('console', on)
-        : await graphQLSetDeviceApp(deviceId, app.id, on)
-    if (changed) {
-      for (let waited = 0; waited < 30_000; waited += 2_000) {
-        const now = await graphQLDeviceApps(deviceId)
-        setApps(now)
-        const it = now?.find(a => a.id === app.id)
-        if (!it || it.state !== 'starting') break
-        await new Promise(resolve => setTimeout(resolve, 2_000))
-      }
-    }
-    setSwitching(undefined)
-  }
-
-  const openTerminal = (app: DeviceApp) => {
-    if (!reach.name || !app.serviceId || !app.port) return
-    const query = new URLSearchParams({
-      name: reach.name,
-      port: String(app.port),
-      title: t('deviceApps.console', 'Console'),
-      service: app.serviceId,
-    })
-    window.open(`${location.origin}${location.pathname}#/terminal?${query}`, '_blank')
-  }
+  const openConsole = (app: DeviceApp) =>
+    name && app.serviceId && app.port
+      ? openTerminal({ name, port: app.port, title: t('deviceApps.console', 'Console'), service: app.serviceId })
+      : undefined
 
   const status = (app: DeviceApp) => {
     if (switching === app.id) return t('deviceApps.switching', 'Waiting for the device…')
@@ -86,9 +54,6 @@ export const DeviceApps: React.FC<{ deviceId: string; canManage: boolean }> = ({
     }
   }
 
-  // The administrator's override holds over what is set here: under off the console is off, whatever apps says.
-  const isOn = (app: DeviceApp) =>
-    consoleSetting && ['off', 'on'].includes(consoleSetting.control) ? settingOn(consoleSetting) : app.on
   const note = settingNote(t, consoleSetting)
 
   return (
@@ -130,8 +95,8 @@ export const DeviceApps: React.FC<{ deviceId: string; canManage: boolean }> = ({
               }
             />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {app.state === 'running' && reach.name && (
-                <Button size="small" variant="contained" onClick={() => openTerminal(app)}>
+              {app.state === 'running' && name && (
+                <Button size="small" variant="contained" onClick={() => openConsole(app)}>
                   {t('deviceApps.openTerminal', 'Open terminal')}
                 </Button>
               )}

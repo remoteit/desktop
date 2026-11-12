@@ -9,12 +9,18 @@ export type SubnetReach = {
   checked: boolean // asked, and answered: no local means no daemon here reaches it
 }
 
+// A device's name in device subnets, or one of its services': undefined with the device-sessions flag off, or none.
+// Only the name — whether it works on this machine is useSubnetReach's to ask.
+export const useSubnetName = (deviceId?: string, serviceId?: string): string | undefined => {
+  const enabled = useDeviceSessions()
+  const info = useDeviceSessionInfo(enabled ? deviceId : undefined)
+  return enabled ? (serviceId ? info?.services?.[serviceId] : info?.subnetName) ?? undefined : undefined
+}
+
 // A service's name in device subnets, and whether it works on this machine: through the daemon here when one reaches
 // it, or else — once asked and answered — through the browser client (services/browserGateway).
 export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetReach => {
-  const enabled = useDeviceSessions()
-  const info = useDeviceSessionInfo(enabled ? deviceId : undefined)
-  const name = enabled ? (serviceId ? info?.services?.[serviceId] : info?.subnetName) ?? undefined : undefined
+  const name = useSubnetName(deviceId, serviceId)
   const id = serviceId || deviceId
   const [reach, setReach] = useState<{ local?: LocalSubnetName; checked: boolean }>({ checked: false })
 

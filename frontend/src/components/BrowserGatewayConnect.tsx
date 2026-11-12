@@ -5,11 +5,13 @@ import { IconButton } from '../buttons/IconButton'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { sshCommand } from '../helpers/sshHelper'
 import { gatewayURL, openThroughGateway } from '../services/browserGateway'
+import { openTerminal } from '../helpers/terminalHelper'
 import { Icon } from './Icon'
 
 /* A web service with no agent here to reach it (services/browserGateway): it opens in its own tab, carried by this
    browser's remote.it client — nothing to install, and no connection to start. An SSH service opens a terminal in
-   this app instead (pages/TerminalPage), its session through the same client. The counterpart of LocalSubnetConnect,
+   this app instead (pages/TerminalPage), its session through the same client — from the desktop app, in the web
+   portal (helpers/terminalHelper). The counterpart of LocalSubnetConnect,
    which is shown instead when an agent here does reach it. The console's plain ssh command is offered to copy as well:
    it works from a machine signed in on its remote.it device app. */
 type Props = { name: string; terminal?: { port: number; title?: string; service?: string; console?: boolean } }
@@ -24,12 +26,7 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
 
   const open = async () => {
     // An SSH service: a terminal in this app, its session through the browser's client.
-    if (terminal) {
-      const query = new URLSearchParams({ name, port: String(terminal.port), title: terminal.title || name })
-      if (terminal.service) query.set('service', terminal.service)
-      window.open(`${location.origin}${location.pathname}#/terminal?${query}`, '_blank')
-      return
-    }
+    if (terminal) return openTerminal({ name, port: terminal.port, title: terminal.title, service: terminal.service })
     setOpening(true)
     setFailed(!(await openThroughGateway(name)))
     setOpening(false)

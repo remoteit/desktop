@@ -8,6 +8,8 @@ import { DeviceTagEditor } from '../components/DeviceTagEditor'
 import { AddServiceButton } from '../buttons/AddServiceButton'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
+import { ConsoleTerminalButton } from '../components/ConsoleTerminal'
+import { isConsoleService } from '../helpers/sshHelper'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectDeviceModelAttributes } from '../selectors/devices'
@@ -244,6 +246,7 @@ export const DevicePage: React.FC = () => {
                 {hold.product && hold.services.includes(s.id) && <ProductMark product={hold.product} />}
                 <NetworksIndicator instance={device} service={s} />
                 <JumpIndicator service={s} device={device} />
+                {isConsoleService(s) && <ConsoleTerminalButton device={device} service={s} />}
                 <ServiceMiniState service={s} connection={c} />
               </ListItemLocation>
             )

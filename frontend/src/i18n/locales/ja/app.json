@@ -712,6 +712,13 @@
     "permissionSubLabel": "デバイスの「管理」権限が必要です",
     "webAuthenticationLabel": "Web認証"
   },
+  "consoleTerminal": {
+    "off": "",
+    "open": "",
+    "openInBrowser": "",
+    "starting": "",
+    "turnOn": ""
+  },
   "copyCodeBlock": {
     "copy": "コピー",
     "copyCode": "コードをコピー",

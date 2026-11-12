@@ -14,6 +14,7 @@ import { LocalSubnetConnect } from '../components/LocalSubnetConnect'
 import { isConsoleService } from '../helpers/sshHelper'
 import { useSubnetReach } from '../hooks/useLocalSubnetName'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
+import { ConsoleTerminalOption } from '../components/ConsoleTerminal'
 import { useApplication } from '../hooks/useApplication'
 import { Link } from '../components/Link'
 import { LocalPortConnect } from '../components/LocalPortConnect'
@@ -152,7 +153,17 @@ export const ServiceConnectButton: React.FC = () => {
               </>
             )}
           </Gutters>
-          {!onPort && !named && portLink && <Gutters size="md" top={null} bottom={null}>{portLink}</Gutters>}
+          {!onPort && !named && portLink && (
+            <Gutters size="md" top={null} bottom={null}>
+              {portLink}
+            </Gutters>
+          )}
+          {/* The console: our web SSH, an option beside the ways above. */}
+          {isConsoleService(service) && (
+            <Gutters size="md" top={null} bottom={null}>
+              <ConsoleTerminalOption device={device} service={service} />
+            </Gutters>
+          )}
           {/* The service's other ports here that this machine's daemon lists: the machine's, opened by someone else. */}
           {localPort.offered && localPort.others.length > 0 && (
             <Gutters size="md" top={null} bottom={null}>

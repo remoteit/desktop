@@ -716,6 +716,13 @@
     "permissionSubLabel": "Erfordert die Geräteberechtigung „Verwalten“",
     "webAuthenticationLabel": "Web-Authentifizierung"
   },
+  "consoleTerminal": {
+    "off": "",
+    "open": "",
+    "openInBrowser": "",
+    "starting": "",
+    "turnOn": ""
+  },
   "copyCodeBlock": {
     "copy": "Kopieren",
     "copyCode": "Code kopieren",

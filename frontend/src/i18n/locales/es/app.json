@@ -720,6 +720,13 @@
     "permissionSubLabel": "Requiere el permiso de dispositivo \"Administrar\"",
     "webAuthenticationLabel": "Autenticación web"
   },
+  "consoleTerminal": {
+    "off": "",
+    "open": "",
+    "openInBrowser": "",
+    "starting": "",
+    "turnOn": ""
+  },
   "copyCodeBlock": {
     "copy": "Copiar",
     "copyCode": "Copiar código",

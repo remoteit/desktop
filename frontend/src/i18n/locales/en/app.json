@@ -716,6 +716,13 @@
     "permissionSubLabel": "Requires device 'Manage' permission",
     "webAuthenticationLabel": "Web Authentication"
   },
+  "consoleTerminal": {
+    "off": "The console is off: turn it on to open it in web SSH",
+    "open": "Open in web SSH",
+    "openInBrowser": "Open in web SSH, in your browser",
+    "starting": "The console is starting: web SSH opens it once it runs",
+    "turnOn": "Turn it on"
+  },
   "copyCodeBlock": {
     "copy": "Copy",
     "copyCode": "Copy code",
