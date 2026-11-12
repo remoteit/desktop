@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, ListItem, ListItemIcon } from '@mui/material'
+import { dispatch } from '../store'
 import { refusalOf } from '../services/graphQL'
 import {
   DeviceExit,
@@ -13,6 +14,8 @@ import {
   graphQLOfferedExits,
   graphQLSetDeviceExit,
 } from '../services/graphQLExits'
+import { graphQLSetDeviceRoute, keepProtectServed } from '../services/deviceProtect'
+import { DeviceSetting } from '../services/graphQLDeviceSettings'
 import { servingLine } from '../helpers/exitServingHelper'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { settingNote } from './DeviceSettingRow'
@@ -21,135 +24,189 @@ import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
 
-/* The exit a device's traffic goes out through (graphql-api docs/PROXY-GROUPS.md §13): Device.usesExit — apart from the
-   exit it runs (its Runs) —, chosen here among the exits offered for it (exits, with the device; never the one it runs),
-   each named by why it is offered: remote.it's by plan, its account's own, those shared with the person choosing or
-   reached by their role, and those its networks make available to it. With none of its devices carrying its traffic the
-   exit is dormant — no device available —: its traffic goes its usual way, Protect off for it, until one does, and the
-   choice is kept. Who chose it, and what the machine's
-   administrator decided of it there, are said; their policy holds over the portal. The exit and Protect are the
-   machine's (§15): one chosen there by a signed-in person ends at their sign-out, and may be their own exit, lent to the
-   whole machine. remote.it's exits are the only ones charged. Device sessions only; nothing shows where the API lacks
-   them.
-   An exit is run by one device or several, and remote.it picks the one its new connections go through: each exit is
-   offered with its devices counted (Exit.serving, where the API counts them), and the device of it in use is said with
-   them. Only someone who manages the device chooses; anyone else sees the choice, read-only. The administrator's
-   policy shows in the list too: an exit it does not allow is there, and not chosen.
-   Where the exit is not working on the device — its routes could not be set there, by its own report (Device.exitError,
-   where the API has it) —, a line under the choice says so, and where its traffic goes, in the device's words; the
-   device of the exit its connections would go through is not said then. */
+/* remote.it Protect and the exit it routes through (graphql-api docs/PROXY-GROUPS.md §13, §15), apart, as the device's
+   own app ("remote.it Protect", "Route through") and its menu show them: a Protect switch, and a Route through picker
+   among the exits offered for the device (exits, with the device; never the one it runs), each named by why it is
+   offered and its devices counted (Exit.serving, where the API counts them). The route is kept while Protect is off.
+   Choosing a route leaves Protect as it is (setDeviceExit's keepProtect, where the API has it; an older one turns it on
+   with the route, and says so); Protect cannot be turned on without a route. Underneath they are the device's `exit` and
+   `protect` settings, the machine's: who set each — in the portal, on the machine by a signed-in person (ending at their
+   sign-out), or by its administrator — and what its administrator holds (exit_control: the exit kept local, none
+   allowed, one pinned; Protect's control) are said per control, as the menu says them. Only someone who manages the
+   device changes them; anyone else sees them read-only, and why. With none of its exit's devices carrying its traffic
+   the exit is dormant: its traffic goes its usual way, Protect off for it, until one does. Where the exit is not working
+   on the device (Device.exitError: its routes could not be set there) Protect's line says so, in the device's words.
+   remote.it's exits are the only ones charged. Device sessions only; nothing shows where the API lacks them. */
 export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const [info, setInfo] = useState<DeviceExit | null>()
   const [offered, setOffered] = useState<OfferedExit[]>([])
   const [protect, setProtect] = useState<ProtectInfo | null>(null)
+  const [keepProtect, setKeepProtect] = useState(false)
   const [saving, setSaving] = useState(false)
   const [refusal, setRefusal] = useState<string>()
   const manage = device.permissions.includes('MANAGE')
-  const protectSetting = useDeviceSettings(device.id).setting('protect')
+  const settings = useDeviceSettings(device.id)
+  const protectSetting = settings.setting('protect')
 
   const load = useCallback(async () => {
     const answer = await graphQLDeviceExit(device.id)
     setInfo(answer && typeof answer === 'object' ? answer : null)
     if (!answer || typeof answer !== 'object') return
-    const [forDevice, kept] = await Promise.all([graphQLOfferedExits(device.id), graphQLDeviceProtect(device.id)])
+    const [forDevice, kept, keeps] = await Promise.all([
+      graphQLOfferedExits(device.id),
+      graphQLDeviceProtect(device.id),
+      keepProtectServed(),
+    ])
     setOffered(Array.isArray(forDevice) ? forDevice : [])
     setProtect(kept && typeof kept === 'object' ? kept : null)
+    setKeepProtect(keeps)
   }, [device.id])
 
   useEffect(() => {
     load()
   }, [load])
 
-  const exit = info?.usesExit
-  // Protect off on the device, with the exit it would route through: said, and turned on through it by choosing that
-  // exit here — the device takes the newer choice, as it takes any. Not while its exit is dormant: Protect is off for it
-  // until a device of the exit is in service.
-  const route = info && !exit && !info.exitDormant && protect?.on === false && protect.route ? protect.route : null
-  // Protect off, its exit kept and dormant: nothing to turn on through yet, but the exit kept is said.
-  const keptDormant = info && !exit && info.exitDormant && protect?.on === false && protect.route ? protect.route : null
-  const charged = manage && (exit?.remoteit || !!offered.find(each => each.id === route)?.remoteit)
+  const state = info ? protectState(info, protect, offered, manage) : null
+  const charged = manage && (state?.exit?.remoteit || !!offered.find(each => each.id === state?.route)?.remoteit)
   // The device's own exit traffic is charged to its account, the owner's, not to whoever views it.
   const usage = useTransferUsageHint(device.owner?.id, 'exit', !!charged)
 
-  if (!info) return null
+  if (!info || !state) return null
+  const { on, exit, route, routeName, dormant } = state
 
-  const choices: ISelect[] = [
-    { key: '', name: t('deviceExit.none', 'None — its usual way out') },
-    ...offered.map(each => choiceOf(t, info, each)),
-  ]
-  if (exit && !offered.some(each => each.id === exit.id))
-    choices.push({
-      key: exit.id,
-      name: info.exitDormant
-        ? t('deviceExit.choiceDormant', '{{exit}} · no device available', { exit: exit.name })
-        : exit.name,
-      description: (!info.exitDormant && servingLine(t, exit.serving)) || undefined,
-    })
+  // The machine's administrator holds over the portal (device-package docs/menu-app.md §3), per control: the exit —
+  // kept local, none allowed, one pinned — and Protect's own control. Protect is the exit's too: off is everyone's.
+  const policy = policyLine(t, info)
+  const routeLocked = info.exitPolicy === 'local' || info.exitPolicy === 'never' || !!info.exitPinned
+  const protectHeld = protectLocked(protectSetting)
+  const protectLockedNow =
+    protectHeld || info.exitPolicy === 'local' || !!info.exitPinned || (info.exitPolicy === 'never' && !on)
+  const failing = on ? exitErrorLine(t, info.exitError) : null
 
-  // The machine's administrator's policy holds over the portal: under local or never, nothing is chosen here.
-  const policy = info.exitPolicy
-  const locked = policy === 'local' || policy === 'never'
-  const chosenBy = exit ? chosenLine(t, info) : null
-  const lent = exit ? lentLine(t, info) : null
-  const policyText = policyLine(t, info)
-  const routeName = route ? protect?.routeName || offered.find(each => each.id === route)?.name || route : null
-  // Who turned Protect off, where the setting says: on this computer by someone signed in, ending at their sign-out.
-  const protectNote = route ? settingNote(t, protectSetting) : undefined
-  const keptName = keptDormant ? protect?.routeName || keptDormant : null
+  // Why the switch cannot be turned on here, said under it: no route yet, or its route has no device available.
+  const needsRoute = !on && !route
+  const routeDormant = !on && !!route && dormant
+  const why = !manage
+    ? t('deviceExit.readOnlyBoth', 'Only someone who manages this device changes Protect and its route')
+    : needsRoute
+    ? t('deviceExit.chooseRouteFirst', 'Choose an exit under Route through to turn Protect on')
+    : routeDormant
+    ? t(
+        'deviceExit.routeDormant',
+        '{{exit}} has no device available: Protect can be turned on through it once one does',
+        {
+          exit: routeName,
+        }
+      )
+    : undefined
 
-  const failing = exitErrorLine(t, info.exitError)
-
-  const choose = async (via: string | null) => {
-    if (saving) return
+  const run = async (change: () => Promise<any>) => {
+    if (saving || !manage) return
     setSaving(true)
-    const refused = refusalOf(await graphQLSetDeviceExit(device.id, via))
+    const refused = refusalOf(await change())
     setRefusal(
       refused === undefined ? undefined : refused || t('deviceExit.notChosen', 'It was not changed: try again.')
     )
-    await load()
+    await Promise.all([load(), settings.reload()])
+    // The device list marks Protect on (DeviceName): read the device again for it.
+    if (refused === undefined)
+      dispatch.devices.fetchSingleFull({ id: device.id, accountId: device.accountId, silent: true })
     setSaving(false)
   }
 
+  // On through the route kept; off keeps it.
+  const toggle = () => run(() => graphQLSetDeviceExit(device.id, on ? null : route))
+  // The route alone, Protect as it is; an API without keepProtect turns Protect on with it.
+  const choose = (via: string) =>
+    via &&
+    via !== route &&
+    run(() => (keepProtect ? graphQLSetDeviceRoute(device.id, via) : graphQLSetDeviceExit(device.id, via)))
+
+  const choices: ISelect[] = offered.map(each => choiceOf(t, info, each))
+  if (route && !offered.some(each => each.id === route))
+    choices.push({
+      key: route,
+      name: dormant ? t('deviceExit.choiceDormant', '{{exit}} · no device available', { exit: routeName }) : routeName!,
+      description: (!dormant && exit && servingLine(t, exit.serving)) || undefined,
+    })
+  if (!route)
+    choices.unshift({
+      key: '',
+      name: offered.length
+        ? t('deviceExit.chooseRoute', 'Choose an exit')
+        : t('deviceExit.noExits', 'No exits for this device'),
+      disabled: true,
+    })
+
+  const status = statusLine(t, state, info.usesExitThrough?.name, failing)
+  const protectLines = [
+    failing?.words,
+    settingNote(t, protectSetting),
+    protectHeld ? undefined : protectPolicyLine(t, info),
+    why,
+  ].filter(Boolean) as string[]
+
+  const routeLines = [
+    route ? chosenLine(t, info) : null,
+    lentLine(t, info),
+    manage && !routeLocked && !protectLockedNow && route && !on && !dormant
+      ? t('deviceExit.turnOnHint', 'Turn Protect on to send traffic through it')
+      : null,
+    manage && !routeLocked && !on && !keepProtect && offered.length
+      ? t('deviceExit.choosingTurnsOn', 'Choosing an exit turns Protect on')
+      : null,
+  ].filter(Boolean) as string[]
+
   return (
     <>
-      {!manage && (
-        <ListItemSetting
-          icon="arrow-right-from-bracket"
-          label={
-            exit
-              ? t('deviceExit.readOnly', 'Sends its traffic out through {{exit}}', { exit: exit.name })
-              : t('deviceExit.readOnlyNone', 'No exit — its traffic goes its usual way')
-          }
-          subLabel={t('deviceExit.readOnlyHint', 'Only someone who manages this device chooses its exit')}
-        />
-      )}
-      {manage && (
-        <SelectSetting
-          icon="arrow-right-from-bracket"
-          label={t('deviceExit.via', 'Send its traffic out through')}
-          value={exit?.id ?? ''}
-          values={choices}
-          disabled={saving || locked}
-          helpMessage={t(
-            'deviceExit.viaHint',
-            'All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached.'
-          )}
-          onChange={via => choose(via || null)}
-        />
-      )}
-      {failing && (
-        <ListItemSetting
-          icon="triangle-exclamation"
-          iconColor={failing.color}
-          label={
-            <Box component="span" sx={{ color: `${failing.color === 'danger' ? 'error' : 'warning'}.main` }}>
-              {failing.label}
+      <ListItemSetting
+        icon="shield"
+        iconColor={failing ? failing.color : on && !dormant ? 'primary' : undefined}
+        label={t('deviceExit.protect', 'remote.it Protect')}
+        subLabel={
+          <>
+            <Box
+              component="span"
+              data-protect-status
+              sx={failing ? { color: `${failing.color === 'danger' ? 'error' : 'warning'}.main` } : undefined}
+            >
+              {status}
             </Box>
-          }
-          subLabel={failing.words}
-        />
-      )}
+            {protectLines.map(line => (
+              <Box component="span" display="block" key={line}>
+                {line}
+              </Box>
+            ))}
+          </>
+        }
+        toggle={on}
+        disabled={!manage || saving || protectLockedNow || (!on && (!route || dormant))}
+        onClick={toggle}
+      />
+      <SelectSetting
+        icon="arrow-right-from-bracket"
+        label={t('deviceExit.route', 'Route through')}
+        value={route ?? ''}
+        values={choices}
+        disabled={!manage || saving || routeLocked}
+        helpMessage={t(
+          'deviceExit.routeHint',
+          'The exit Protect sends all of this device’s traffic through, kept while Protect is off. While it cannot be reached, traffic stops rather than going its usual way.'
+        )}
+        helperText={
+          routeLines.length ? (
+            <>
+              {routeLines.map(line => (
+                <Box component="span" display="block" key={line}>
+                  {line}
+                </Box>
+              ))}
+            </>
+          ) : undefined
+        }
+        onChange={choose}
+      />
       {refusal && (
         <ListItem dense>
           <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
@@ -163,75 +220,81 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           <TransferUsageHintText hint={usage} />
         </ListItem>
       )}
-      {route && (
-        <ListItemSetting
-          icon="shield-alt"
-          label={t('deviceExit.protectOff', 'Protect: off — route {{name}}', { name: routeName })}
-          subLabel={
-            protectNote
-              ? `${protectNote}. ${t(
-                  'deviceExit.protectOffKeeps',
-                  'It keeps {{name}} to route through when Protect is on again',
-                  { name: routeName }
-                )}`
-              : t(
-                  'deviceExit.protectOffHint',
-                  'Turned off on the device, which keeps {{name}} to route through when Protect is on again',
-                  { name: routeName }
-                )
-          }
-          button={manage && !locked ? t('deviceExit.protectOn', 'Turn on') : undefined}
-          disabled={saving}
-          onButtonClick={() => choose(route)}
-        />
-      )}
-      {keptName && (
-        <ListItemSetting
-          icon="moon"
-          iconColor="grayDarker"
-          label={t('deviceExit.keptDormant', 'Protect: off — its exit, {{exit}}, is kept, with no device available', {
-            exit: keptName,
-          })}
-          subLabel={t(
-            'deviceExit.keptDormantHint',
-            'None of the exit’s devices carries its traffic: Protect can be turned on through it once one does. Or choose another exit.'
-          )}
-        />
-      )}
-      {exit && info.exitDormant && (
-        <ListItemSetting
-          icon="moon"
-          iconColor="grayDarker"
-          label={t('deviceExit.dormant', 'Its exit, {{exit}}, is dormant', { exit: exit.name })}
-          subLabel={t(
-            'deviceExit.dormantHint',
-            'No device available: none of the exit’s devices carries its traffic, so its traffic goes its usual way, Protect off for it, until one does — then it goes out through the exit again by itself. Or choose another exit.'
-          )}
-        />
-      )}
-      {exit && !info.exitDormant && !exit.offered && (
-        <ListItemSetting
-          icon="triangle-exclamation"
-          iconColor="warning"
-          label={t('deviceExit.waiting', 'None of {{exit}}’s devices takes its traffic now', { exit: exit.name })}
-          subLabel={t(
-            'deviceExit.waitingHint',
-            'Its traffic stops until one does: a device added to the exit, or one of its devices offering itself again. Or choose another exit.'
-          )}
-        />
-      )}
-      {/* Not while it is not working on the device: its traffic is held, or goes out directly, not through it. */}
-      {exit && !info.exitDormant && exit.offered && info.usesExitThrough && !failing && (
-        <ListItemSetting
-          icon="route"
-          label={t('deviceExit.through', 'Going out through {{device}} now', { device: info.usesExitThrough.name })}
-          subLabel={throughLine(t, exit.name, exit.serving)}
-        />
-      )}
-      {chosenBy && <ListItemSetting icon="user" label={chosenBy} subLabel={lent} />}
-      {policyText && <ListItemSetting icon="lock" label={policyText.label} subLabel={policyText.hint} />}
+      {policy && <ListItemSetting icon="lock" label={policy.label} subLabel={policy.hint} />}
     </>
   )
+}
+
+// Protect and its route as the section shows them. On: graphql's exit in use (Device.usesExit, while Protect is on) —
+// read only by someone who manages the device, so anyone else is shown the device's own word (about.protect). The
+// route: the exit in use, else the one kept while off (about.protect.route), named by the device, the exits offered, or
+// its id. Dormant: the device's exit has no device carrying its traffic.
+export type ProtectState = {
+  on: boolean
+  exit: DeviceExit['usesExit']
+  route: string | null
+  routeName: string | null
+  dormant: boolean
+  offered: boolean // the exit in use is taken by one of its devices now
+}
+
+export function protectState(
+  info: DeviceExit,
+  protect: ProtectInfo | null,
+  offered: Pick<OfferedExit, 'id' | 'name'>[],
+  manage: boolean
+): ProtectState {
+  const exit = info.usesExit
+  const on = !!exit || (!manage && protect?.on === true)
+  const route = exit?.id ?? protect?.route ?? null
+  const routeName = exit?.name ?? (protect?.routeName || offered.find(each => each.id === route)?.name || route)
+  return { on, exit, route, routeName, dormant: !!info.exitDormant, offered: exit ? exit.offered !== false : true }
+}
+
+// Protect's line, as the menu says its state: protecting through the exit (and the device of it in use), on but held —
+// its exit dormant, or none of its devices taking its traffic —, off, or not working on the device (exitErrorLine).
+export function statusLine(
+  t: T,
+  state: ProtectState,
+  through: string | undefined,
+  failing: ReturnType<typeof exitErrorLine>
+): string {
+  const exit = state.routeName
+  if (failing) return failing.label
+  if (!state.on) return t('deviceExit.statusOff', 'Off — traffic goes its usual way')
+  if (state.dormant)
+    return t(
+      'deviceExit.statusDormant',
+      'On — {{exit}} has no device available, so traffic goes its usual way until one does',
+      { exit }
+    )
+  if (!state.offered)
+    return t(
+      'deviceExit.statusWaiting',
+      'On — none of {{exit}}’s devices takes its traffic now: it stops until one does',
+      {
+        exit,
+      }
+    )
+  if (through)
+    return t('deviceExit.statusThrough', 'Protecting — going out through {{exit}} (device {{device}})', {
+      exit,
+      device: through,
+    })
+  return t('deviceExit.statusOn', 'Protecting — going out through {{exit}}', { exit })
+}
+
+// Protect held by the machine's administrator (its control: kept local, or held on or off): read-only here.
+export const protectLocked = (setting?: DeviceSetting) =>
+  setting?.control === 'local' || setting?.control === 'on' || setting?.control === 'off'
+
+// Why Protect is not the portal's to change where its own control does not say: the exit's policy — kept local, or
+// pinned — holds Protect too (the menu's "Set by this machine's administrator").
+export function protectPolicyLine(t: T, info: DeviceExit): string | undefined {
+  if (info.exitPolicy === 'local')
+    return t('deviceExit.protectPolicyLocal', 'Set only on the device: its administrator keeps its exit local')
+  if (info.exitPinned) return t('deviceExit.protectPinned', 'Set by this machine’s administrator')
+  return undefined
 }
 
 type T = TFunction
@@ -283,13 +346,6 @@ export function choiceOf(t: T, chooser: Pick<DeviceExit, 'exitAllowed'> | null, 
       : t('deviceExit.notAllowed', 'Not allowed by this machine’s administrator'),
     disabled: !allowed,
   }
-}
-
-// Under the device of the exit in use: the exit's devices counted, where the API counts them, and that remote.it picks.
-export function throughLine(t: T, exit: string, serving?: OfferedExit['serving']): string {
-  const picks = t('deviceExit.throughHint', 'remote.it picks the device of the exit its new connections go through')
-  const counted = servingLine(t, serving)
-  return counted ? `${t('deviceExit.throughOf', '{{exit}}: {{counted}}', { exit, counted })}. ${picks}` : picks
 }
 
 // An exit offered for the device, named by why it is offered: remote.it's and your own by name; one shared with you or

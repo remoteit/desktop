@@ -17,9 +17,11 @@ import {
 import { multiPortServicesServed } from './multiPortServices'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
 import { deviceIdentityFields, identityAdaptor } from './deviceIdentity'
+import { protectAdaptor, protectListFields } from './deviceProtect'
 
-// What a device query adds where the API serves it: whether it is disabled, and whose duplicate it is.
-const probedDeviceFields = async () => (await deviceDisableFields()) + (await deviceIdentityFields())
+// What a device query adds where the API serves it: whether it is disabled, whose duplicate it is, and Protect on.
+const probedDeviceFields = async () =>
+  (await deviceDisableFields()) + (await deviceIdentityFields()) + (await protectListFields())
 
 const DEVICE_PRELOAD_ATTRIBUTES = ['id', 'deviceName', 'status', 'permissions', 'owner', 'quality', 'license']
 
@@ -435,6 +437,7 @@ export function graphQLDeviceAdaptor({
       ...virtualAdaptor(d),
       ...disabledAdaptor(d),
       ...identityAdaptor(d),
+      ...protectAdaptor(d),
     }
   })
   store.dispatch.devices.customAttributes(customAttributes)

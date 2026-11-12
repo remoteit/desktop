@@ -413,6 +413,9 @@ declare global {
     duplicateOf?: { id: string; name?: string } // the device whose identity this one was split off
     duplicate?: IDuplicateFlag // another machine holds this device's identity
     copyCount?: number // how many copies split off this device wait for a decision
+    // remote.it Protect on: the exit its traffic goes out through (Device.usesExit), null while off — read in the list's
+    // query only where the API has it (services/deviceProtect).
+    protectExit?: { id: string; name: string } | null
   }
 
   // Another machine signed in with a device's identity while it was online. kind: device-join-key (refused quietly

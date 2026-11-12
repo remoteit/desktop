@@ -2,7 +2,7 @@
   "accessAccordion": {
     "addAccess": "Add access",
     "guests": "Guests",
-    "noUsers": "No\u00a0users",
+    "noUsers": "No users",
     "organizationMembers": "Organization members",
     "subtitle": "Access"
   },
@@ -62,7 +62,7 @@
     "button": "Add as virtual device"
   },
   "addDevice": {
-    "codeExpiration": "Code expires in {{hours}}\u00a0hours.",
+    "codeExpiration": "Code expires in {{hours}} hours.",
     "registrationCode": "Registration Code"
   },
   "addDeviceAhead": {
@@ -108,7 +108,7 @@
   "addFromNetwork": {
     "discover": "What this device sees",
     "scanForServices": "Scan for Services",
-    "scanNetwork": "Scan\u00a0network"
+    "scanNetwork": "Scan network"
   },
   "addPage": {
     "addAhead": "Before it boots",
@@ -123,7 +123,7 @@
     "oneLineInstall": "One-line install",
     "products": "Products",
     "provisionInBulk": "Provision in bulk",
-    "title": "What do you want to connect\u00a0to?",
+    "title": "What do you want to connect to?",
     "tryDevice": "Try a device",
     "virtualDevice": "Virtual device",
     "virtualDeviceHint": "A NAS, printer or PLC that runs nothing itself",
@@ -999,15 +999,14 @@
   "deviceExit": {
     "byNetwork": "{{exit}} · by its network",
     "choiceDormant": "{{exit}} · no device available",
-    "dormant": "Its exit, {{exit}}, is dormant",
-    "dormantHint": "No device available: none of the exit’s devices carries its traffic, so its traffic goes its usual way, Protect off for it, until one does — then it goes out through the exit again by itself. Or choose another exit.",
+    "chooseRoute": "Choose an exit",
+    "chooseRouteFirst": "Choose an exit under Route through to turn Protect on",
+    "choosingTurnsOn": "Choosing an exit turns Protect on",
     "error": "Not working on this device",
     "errorFailed": "Not working on this device: the exit’s routes could not be set — traffic goes out directly",
     "errorHeld": "Not working on this device: the exit’s routes could not be set — traffic is blocked",
-    "keptDormant": "Protect: off — its exit, {{exit}}, is kept, with no device available",
-    "keptDormantHint": "None of the exit’s devices carries its traffic: Protect can be turned on through it once one does. Or choose another exit.",
     "lent": "Machine-wide through {{name}}’s exit {{exit}}",
-    "none": "None — its usual way out",
+    "noExits": "No exits for this device",
     "notAllowed": "Not allowed by this machine’s administrator",
     "notChosen": "It was not changed: try again.",
     "policyAllowed": "This machine’s administrator allows only some exits",
@@ -1018,26 +1017,25 @@
     "policyNever": "This machine’s administrator allows it no exit",
     "policyPinned": "Pinned by this machine’s administrator to {{id}}",
     "policyPinnedHint": "The pinned exit holds over any chosen here",
-    "protectOff": "Protect: off — route {{name}}",
-    "protectOffHint": "Turned off on the device, which keeps {{name}} to route through when Protect is on again",
-    "protectOffKeeps": "It keeps {{name}} to route through when Protect is on again",
-    "protectOn": "Turn on",
-    "readOnly": "Sends its traffic out through {{exit}}",
-    "readOnlyHint": "Only someone who manages this device chooses its exit",
-    "readOnlyNone": "No exit — its traffic goes its usual way",
+    "protect": "remote.it Protect",
+    "protectPinned": "Set by this machine’s administrator",
+    "protectPolicyLocal": "Set only on the device: its administrator keeps its exit local",
+    "readOnlyBoth": "Only someone who manages this device changes Protect and its route",
+    "route": "Route through",
+    "routeDormant": "{{exit}} has no device available: Protect can be turned on through it once one does",
+    "routeHint": "The exit Protect sends all of this device’s traffic through, kept while Protect is off. While it cannot be reached, traffic stops rather than going its usual way.",
     "setBy": "Set by {{email}}",
     "setInPortalBy": "Set in the portal by {{name}}",
     "setOnComputerBy": "Set on this computer by {{name}} — ends when {{name}} signs out",
     "setOnDevice": "Set on the device",
     "setOnDeviceAdmin": "Set on the device by its administrator",
     "setOnDeviceBy": "Set on the device by {{name}}",
-    "through": "Going out through {{device}} now",
-    "throughHint": "remote.it picks the device of the exit its new connections go through",
-    "throughOf": "{{exit}}: {{counted}}",
-    "via": "Send its traffic out through",
-    "viaHint": "All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached.",
-    "waiting": "None of {{exit}}’s devices takes its traffic now",
-    "waitingHint": "Its traffic stops until one does: a device added to the exit, or one of its devices offering itself again. Or choose another exit.",
+    "statusDormant": "On — {{exit}} has no device available, so traffic goes its usual way until one does",
+    "statusOff": "Off — traffic goes its usual way",
+    "statusOn": "Protecting — going out through {{exit}}",
+    "statusThrough": "Protecting — going out through {{exit}} (device {{device}})",
+    "statusWaiting": "On — none of {{exit}}’s devices takes its traffic now: it stops until one does",
+    "turnOnHint": "Turn Protect on to send traffic through it",
     "whose": "{{exit}} · {{email}}’s"
   },
   "deviceGraphColumn": {
@@ -1128,6 +1126,7 @@
   "deviceName": {
     "new": "NEW",
     "noDeviceFound": "No device found",
+    "protect": "Protect on — going out through {{exit}}",
     "sharedBy": "Shared by {{email}}",
     "unlicensed": "Unlicensed"
   },
@@ -3460,7 +3459,7 @@
     "downloadDescription": "Download our disk image for easy, headless setup with Bluetooth WiFi onboarding.",
     "downloadQuestion": "New to Pi?",
     "downloadTitle": "Download Pi Image",
-    "heading": "Set Up Your Raspberry Pi for\u00a0Remote\u00a0Access",
+    "heading": "Set Up Your Raspberry Pi for Remote Access",
     "onboardDescription": "Set up WiFi via Bluetooth and register your device for remote access.",
     "onboardQuestion": "Have our custom Pi image?",
     "onboardTitle": "Onboard via Bluetooth"
