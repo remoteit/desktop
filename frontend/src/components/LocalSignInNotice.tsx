@@ -14,7 +14,7 @@ export const SIGN_IN_POLL_FOR_MS = 3 * 60_000
    (graphql-api docs/PROXY-GROUPS.md §15, "The portal and an installed daemon"). Connect goes through this page's own
    client meanwhile; Sign in hands off to the installed app's own sign-in — the link opens the app, which signs in with
    Permitteer itself. Never opened without the person's click, and nothing is passed to it. Where the app takes no link
-   (an older package), where to sign in is said instead. */
+   (prod's shared menu, a machine without its stage's app), where to sign in is said instead. */
 export const LocalSignInNotice: React.FC<{ signIn: LocalSignIn }> = ({ signIn }) => {
   const { t } = useTranslation()
   const [asked, setAsked] = useState(false)

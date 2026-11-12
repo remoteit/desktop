@@ -145,3 +145,38 @@ describe('constants — stage', () => {
     }
   })
 })
+
+/* Links to the desktop app (device-package docs/menu-app.md §6.2): the Electron app's remoteit:// where it can sign in
+   to the page's stage (STAGES' stages), the stage's own app's remoteit-<stage>:// beyond them. */
+describe('constants — DESKTOP_PROTOCOL', () => {
+  const pinned = (issuer: string) => ({
+    VITE_OAUTH_ISSUER: issuer,
+    VITE_OAUTH_GRAPHQL_RESOURCE: '',
+    VITE_OAUTH_AGENT_RESOURCE: '',
+    VITE_OAUTH_MCP_RESOURCE: '',
+    VITE_GRAPHQL_API: '',
+    VITE_WEBSOCKET_URL: '',
+    VITE_AGENT_URL: '',
+    PROTOCOL: '',
+  })
+
+  it("solo's portal, or a local stack's: the stage's own app", async () => {
+    expect((await load(pinned('https://login.solo.remote.it'))).DESKTOP_PROTOCOL).toBe('remoteit-solo://')
+    expect((await load(pinned('https://login.local2.remote.it/'))).DESKTOP_PROTOCOL).toBe('remoteit-local2://')
+  })
+
+  it("prod and dev: the Electron app's", async () => {
+    for (const issuer of ['https://login.remote.it', 'https://login.dev.remote.it', '']) {
+      const c = await load(pinned(issuer))
+      expect(c.DESKTOP_PROTOCOL).toBe(c.PROTOCOL)
+      expect(c.DESKTOP_PROTOCOL).toBe('remoteit://')
+    }
+  })
+
+  it('an issuer that is not a remote.it stage, or a scheme set by the build: PROTOCOL', async () => {
+    expect((await load(pinned('https://login.example.test'))).DESKTOP_PROTOCOL).toBe('remoteit://')
+    expect((await load(pinned('https://login.evil.remote.it.example'))).DESKTOP_PROTOCOL).toBe('remoteit://')
+    const c = await load({ ...pinned('https://login.solo.remote.it'), PROTOCOL: 'remoteitdev://' })
+    expect(c.DESKTOP_PROTOCOL).toBe('remoteitdev://')
+  })
+})

@@ -1,6 +1,6 @@
 import React from 'react'
 import browser, { windowOpen } from '../../services/browser'
-import { PROTOCOL } from '../../constants'
+import { DESKTOP_PROTOCOL, EMBEDDED } from '../../constants'
 import { ConnectButton, ConnectButtonProps } from '../ConnectButton'
 import { DynamicButton } from '../DynamicButton'
 import { Notice } from '../../components/Notice'
@@ -35,12 +35,13 @@ export const ComboButton: React.FC<Props> = ({ className, containerProps, childr
               </>
             </Notice>
           )}
-          {browser.isPortal && (
+          {/* Not in the embedded portal: it is the desktop app already. */}
+          {browser.isPortal && !EMBEDDED && (
             <DynamicButton
               {...props}
               color="primary"
               title="Launch Desktop"
-              onClick={() => windowOpen(`${PROTOCOL}connect/${props.service?.id || props.connection?.id}`)}
+              onClick={() => windowOpen(`${DESKTOP_PROTOCOL}connect/${props.service?.id || props.connection?.id}`)}
             />
           )}
         </div>

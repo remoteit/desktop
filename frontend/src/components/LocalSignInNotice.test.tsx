@@ -74,7 +74,7 @@ describe('LocalSignInNotice', () => {
     expect(open).toHaveBeenCalledTimes(1)
   })
 
-  it('no link (an older package): where to sign in, in its platform words, and Check again', () => {
+  it('no link (no app of the stage here to take it): where to sign in, in its platform words, and Check again', () => {
     Object.assign(browser, { isMac: false, isWindows: true })
     render({})
     expect(button('Sign in')).toBeUndefined()

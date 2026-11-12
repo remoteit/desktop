@@ -152,6 +152,14 @@ export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcx
 
 export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
 
+/* The scheme of the desktop app a link from this page opens (Launch Desktop, a copied device or service link). The
+   Electron app (PROTOCOL) signs in to STAGES' stages alone; a stage beyond them — solo, a local stack — has an app of
+   its own, which takes the same links as remoteit-<stage>:// (device-package docs/menu-app.md §6.2). Never remoteit://
+   there: that would open whatever stage the Electron app installed here is on. */
+const issuerStage = OAUTH_ISSUER.match(/^https:\/\/login\.([a-z0-9][a-z0-9-]{0,22})\.remote\.it\/?$/)?.[1]
+export const DESKTOP_PROTOCOL =
+  !env.PROTOCOL && !STAGE && brand.name === 'remoteit' && issuerStage ? `remoteit-${issuerStage}://` : PROTOCOL
+
 // Pairs with the GraphQL stage above, the same pairing Test Settings' stage picker applies:
 // graphql.<stage>…/graphql <-> wss://ws.<stage>…/v1 on the legacy hosts, and the tree's own /ws
 // path on the unified front. Previously these had NO fallback: dropping the env var left the

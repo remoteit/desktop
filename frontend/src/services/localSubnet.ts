@@ -101,7 +101,7 @@ async function sendProbe(): Promise<string | null> {
    this person, and otherwise says whether signing in on it would (signInNeeded) — then the page connects with its own
    client and offers the app's own sign-in: signInLink, remoteit-<stage>://sign-in, which opens the installed app's
    sign-in and carries nothing. Opened on the person's click alone; the app signs in with Permitteer itself. No link:
-   an older package, whose menu is where to sign in. In the Desktop app none of this: the name API answers for the
+   no app of the stage here to take it (prod's shared menu), whose menu is where to sign in. In the Desktop app none of this: the name API answers for the
    person signed in on the app's own account, and the app signs in itself. */
 export type LocalSignIn = { link?: string }
 

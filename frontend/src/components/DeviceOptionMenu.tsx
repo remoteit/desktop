@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { PROTOCOL } from '../constants'
+import { DESKTOP_PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
@@ -114,7 +114,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             key="link"
             icon="link"
             title={t('deviceOptionMenu.serviceLink', 'Service Link')}
-            value={`${PROTOCOL}devices/${device.id}/${service.id}`}
+            value={`${DESKTOP_PROTOCOL}devices/${device.id}/${service.id}`}
             onCopied={handleClose}
           />
         )}
@@ -123,7 +123,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             key="link"
             icon="link"
             title={t('deviceOptionMenu.deviceLink', 'Device Link')}
-            value={`${PROTOCOL}devices/${device.id}`}
+            value={`${DESKTOP_PROTOCOL}devices/${device.id}`}
             onCopied={handleClose}
           />
         )}
